@@ -371,7 +371,7 @@ function genOutagePath(meanFrac, volFrac, seed){
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
-  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:40,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'electrification, economy, EVs'},
+  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:40,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'electrification, economic growth, EVs, etc.'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:40,max:80,step:1,def:64,fmt:v=>v+' %',note:'FY2026 ≈ 64 % · 2023 crisis ≈ 50–55 % · target 70 %'},
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
@@ -380,7 +380,7 @@ const SLIDERS=[
   {id:'newPvMW',label:'New utility solar PV',min:0,max:30000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4 GW existing'},
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:20000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.3 GW existing, behind the meter'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:15000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
-  {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired mid-merit'},
+  {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance in most scenarios'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'headline tax ≈ R308/t (2026) but generator allowances shield most of it — set the price generators actually feel'},
