@@ -8,6 +8,8 @@
 <meta property="og:title" content="GridTwin ZA — Interactive SA Grid Model">
 <meta property="og:description" content="An hourly dispatch model of the South African grid: coal EAF, renewables, storage, load shedding stages, cost and CO₂ — re-solved live in your browser.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://nickhedley.github.io/gridtwin-za/">
+<link rel="canonical" href="https://nickhedley.github.io/gridtwin-za/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -119,6 +121,12 @@ details.assump table{border-collapse:collapse}
 .foot{max-width:1380px; margin:0 auto; padding:0 20px 40px; font-size:11.5px; color:var(--ink2)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
 :focus-visible{outline:2.5px solid var(--alert); outline-offset:2px}
+/* embed mode (?embed=1) — tighter chrome for iframes */
+body.embed .brand p{display:none}
+body.embed footer{display:none}
+body.embed .wrap{padding-top:12px; padding-bottom:24px}
+.sharebtn{width:100%; border:1.5px dashed var(--ink); background:var(--panel2); padding:6px 8px 5px; font-family:'Saira Condensed',sans-serif; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:14px; transition:background .15s}
+.sharebtn:hover{background:var(--panel)}
 </style>
 </head>
 <body>
@@ -147,6 +155,7 @@ details.assump table{border-collapse:collapse}
     <div class="ph"><h2>Scenario Controls</h2><span class="tag">re-solves live</span></div>
     <div class="pb">
       <div class="presets" id="presets"></div>
+      <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
       <div id="controls"></div>
     </div>
   </aside>
@@ -534,7 +543,34 @@ function render(r){
 /* ==================== RUN LOOP ==================== */
 const PROFILES=buildProfiles();
 let lastRes=null, rafPending=false;
-function run(){lastRes=simulate(state,PROFILES);render(lastRes);}
+
+/* --- URL state: read on load, write on change, share button --- */
+const urlParams=new URLSearchParams(location.search);
+if(urlParams.get('embed')==='1') document.body.classList.add('embed');
+SLIDERS.forEach(s=>{
+  if(s.grp||!urlParams.has(s.id))return;
+  const v=Math.min(s.max,Math.max(s.min,+urlParams.get(s.id)||s.def));
+  state[s.id]=v;
+  document.getElementById('in_'+s.id).value=v;
+  document.getElementById('cv_'+s.id).textContent=s.fmt(v);
+  setPresetActive(null);
+});
+function syncURL(){
+  const q=new URLSearchParams();
+  SLIDERS.forEach(s=>{if(!s.grp&&state[s.id]!==s.def)q.set(s.id,state[s.id]);});
+  if(document.body.classList.contains('embed'))q.set('embed','1');
+  const qs=q.toString();
+  history.replaceState(null,'',qs?('?'+qs):location.pathname);
+}
+document.getElementById('shareBtn').addEventListener('click',()=>{
+  const btn=document.getElementById('shareBtn');
+  navigator.clipboard.writeText(location.href).then(()=>{
+    btn.textContent='Link copied';
+    setTimeout(()=>{btn.textContent='Copy scenario link';},1600);
+  }).catch(()=>{btn.textContent=location.href;});
+});
+
+function run(){lastRes=simulate(state,PROFILES);render(lastRes);syncURL();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
