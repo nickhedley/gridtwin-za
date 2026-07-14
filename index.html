@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GridTwin ZA — Interactive South African Power System Model</title>
+<meta name="description" content="Interactive digital twin of the South African power system — adjust the fleet, demand and policy, and watch the grid re-dispatch live. Calibrated to 2026 Eskom data.">
+<meta property="og:title" content="GridTwin ZA — Interactive SA Grid Model">
+<meta property="og:description" content="An hourly dispatch model of the South African grid: coal EAF, renewables, storage, load shedding stages, cost and CO₂ — re-solved live in your browser.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --base:#DFE3DC; --panel:#F7F8F5; --panel2:#EEF0EA;
+  --ink:#22292B; --ink2:#5A6560; --line:#C4CBc1; --line2:#AAB3A8;
+  --coal:#C98A2B; --coal2:#8A5E1D;
+  --veld:#4E7A3C; --veld2:#6FA05A;
+  --sun:#D9A62E; --sky:#3A5F73; --nuke:#7A6FA0;
+  --alert:#C3512F; --alert2:#8F3A20;
+  --ok:#4E7A3C;
+  --shadow:0 1px 0 rgba(34,41,43,.08), 0 6px 18px -8px rgba(34,41,43,.25);
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--base); color:var(--ink); font-family:'Archivo',sans-serif; font-size:14px; line-height:1.45;
+  background-image:linear-gradient(var(--line) 1px, transparent 1px),linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size:36px 36px; background-position:-1px -1px;}
+h1,h2,h3,.disp{font-family:'Saira Condensed',sans-serif; text-transform:uppercase; letter-spacing:.04em}
+.mono{font-family:'IBM Plex Mono',monospace}
+a{color:var(--sky)}
+button{font:inherit; cursor:pointer}
+
+/* ---------- header ---------- */
+header{border-bottom:2px solid var(--ink); background:var(--panel); box-shadow:var(--shadow); position:relative; z-index:5}
+.hwrap{max-width:1380px; margin:0 auto; padding:14px 20px 12px; display:flex; flex-wrap:wrap; gap:14px 28px; align-items:flex-end; justify-content:space-between}
+.brand h1{font-size:30px; font-weight:700; line-height:.95}
+.brand h1 span{color:var(--alert)}
+.brand p{color:var(--ink2); font-size:12.5px; margin-top:3px; max-width:520px}
+/* status board — mimic-panel signature */
+.board{display:flex; align-items:stretch; gap:0; border:2px solid var(--ink); background:var(--ink); color:#E8E4D8; box-shadow:var(--shadow)}
+.board .cell{padding:8px 14px 7px; display:flex; flex-direction:column; justify-content:center; border-right:1px solid #454F49}
+.board .cell:last-child{border-right:none}
+.board .lbl{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA69B; font-family:'Saira Condensed'}
+.board .val{font-family:'IBM Plex Mono'; font-size:19px; font-weight:600; line-height:1.15}
+.lamps{display:flex; gap:5px; align-items:center; padding:0 14px}
+.lamp{width:17px; height:26px; border:1px solid #454F49; border-radius:2px; background:#2C3431; display:flex; align-items:flex-end; justify-content:center; font-family:'IBM Plex Mono'; font-size:9px; color:#7d877e; padding-bottom:2px; transition:background .25s, box-shadow .25s}
+.lamp.on{background:var(--alert); color:#fff; border-color:#E2794F; box-shadow:0 0 10px 1px rgba(217,90,45,.55)}
+.statusword{font-family:'Saira Condensed'; font-weight:700; font-size:21px; letter-spacing:.06em}
+.statusword.ok{color:#8FD08A}.statusword.warn{color:#EFC24A}.statusword.bad{color:#F1794A}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1380px; margin:0 auto; padding:18px 20px 60px; display:grid; grid-template-columns:322px 1fr; gap:18px}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr}}
+.panel{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow)}
+.panel>.ph{display:flex; justify-content:space-between; align-items:baseline; padding:9px 14px 7px; border-bottom:1.5px solid var(--ink); background:var(--panel2)}
+.panel>.ph h2{font-size:16.5px; font-weight:600}
+.panel>.ph .tag{font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'}
+.pb{padding:14px}
+
+/* controls */
+.ctrl{margin-bottom:13px}
+.ctrl .row{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px}
+.ctrl label{font-size:12.5px; font-weight:600}
+.ctrl .cv{font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--ink); background:var(--panel2); border:1px solid var(--line2); padding:0 6px}
+.ctrl small{display:block; color:var(--ink2); font-size:11px; margin-top:1px}
+input[type=range]{width:100%; accent-color:var(--alert); height:22px}
+.grp{border-top:1.5px dashed var(--line2); margin:16px -14px 12px; padding:10px 14px 0}
+.grp h3{font-size:13.5px; color:var(--ink2); font-weight:600; margin-bottom:8px}
+.presets{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px}
+.presets button{border:1.5px solid var(--ink); background:var(--panel); padding:7px 6px 5px; font-family:'Saira Condensed'; font-size:13.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; transition:background .15s}
+.presets button:hover{background:var(--panel2)}
+.presets button.active{background:var(--ink); color:var(--panel)}
+
+/* KPI strip */
+.kpis{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:18px}
+@media(max-width:1150px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow); padding:9px 12px 8px; position:relative}
+.kpi .k{font-family:'Saira Condensed'; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink2)}
+.kpi .v{font-family:'IBM Plex Mono'; font-size:21px; font-weight:600; margin-top:1px}
+.kpi .u{font-size:11px; color:var(--ink2); font-family:'IBM Plex Mono'}
+.kpi .d{position:absolute; top:9px; right:10px; font-family:'IBM Plex Mono'; font-size:10.5px}
+.d.up{color:var(--alert)}.d.dn{color:var(--veld)}
+
+/* map + charts area */
+.main2{display:grid; grid-template-columns:minmax(300px,4fr) minmax(300px,5fr); gap:18px}
+@media(max-width:1150px){.main2{grid-template-columns:1fr}}
+.mapbox svg{width:100%; height:auto; display:block}
+canvas{width:100%; display:block}
+.legend{display:flex; flex-wrap:wrap; gap:5px 12px; padding:8px 14px 12px; font-size:11px; font-family:'IBM Plex Mono'}
+.legend span{display:inline-flex; align-items:center; gap:5px}
+.legend i{width:11px; height:11px; display:inline-block; border:1px solid rgba(34,41,43,.35)}
+.wkbtns{display:flex; gap:0}
+.wkbtns button{border:1.5px solid var(--ink); border-left:none; background:var(--panel); padding:2px 10px 1px; font-family:'Saira Condensed'; font-size:12.5px; font-weight:600; text-transform:uppercase}
+.wkbtns button:first-child{border-left:1.5px solid var(--ink)}
+.wkbtns button.active{background:var(--ink); color:var(--panel)}
+
+.duo{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px}
+@media(max-width:560px){.duo{grid-template-columns:1fr}}
+.mixrow{display:flex; align-items:center; gap:9px; margin-bottom:6px; font-size:12px}
+.mixrow .nm{width:118px; flex:none; font-weight:600}
+.mixrow .barwrap{flex:1; height:15px; background:var(--panel2); border:1px solid var(--line2); position:relative}
+.mixrow .bar{height:100%; transition:width .3s}
+.mixrow .num{width:86px; flex:none; text-align:right; font-family:'IBM Plex Mono'; font-size:11.5px}
+
+.shedbars{display:flex; gap:6px; align-items:flex-end; height:96px; padding:0 4px}
+.shedbars .sb{flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:3px; height:100%}
+.shedbars .sbv{width:100%; background:var(--alert); border:1px solid var(--alert2); min-height:0; transition:height .3s}
+.shedbars .sbl{font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink2)}
+.shednum{font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink2); height:12px}
+
+details.assump{margin-top:18px; background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow)}
+details.assump summary{padding:10px 14px; font-family:'Saira Condensed'; font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; cursor:pointer; background:var(--panel2); border-bottom:1.5px solid transparent}
+details.assump[open] summary{border-bottom-color:var(--ink)}
+details.assump .pb{font-size:12.5px; color:var(--ink)}
+details.assump td{padding:2.5px 14px 2.5px 0; vertical-align:top}
+details.assump table{border-collapse:collapse}
+.foot{max-width:1380px; margin:0 auto; padding:0 20px 40px; font-size:11.5px; color:var(--ink2)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+:focus-visible{outline:2.5px solid var(--alert); outline-offset:2px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hwrap">
+    <div class="brand">
+      <h1>GridTwin <span>ZA</span></h1>
+      <p>An interactive dispatch &amp; scenario model of the South African power system. Adjust the fleet, demand and policy — the year re-simulates hour by hour, instantly.</p>
+    </div>
+    <div class="board" role="status" aria-live="polite">
+      <div class="cell"><span class="lbl">System status</span><span class="statusword ok" id="statusWord">Stable</span></div>
+      <div class="cell" style="justify-content:center"><span class="lbl">Load shedding · max stage</span>
+        <div class="lamps" id="lamps" style="padding:4px 0 0"></div>
+      </div>
+      <div class="cell"><span class="lbl">Peak demand</span><span class="val" id="bdPeak">–</span></div>
+      <div class="cell"><span class="lbl">Energy shed</span><span class="val" id="bdShed">–</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ CONTROLS ============ -->
+  <aside class="panel" aria-label="Scenario controls">
+    <div class="ph"><h2>Scenario Controls</h2><span class="tag">re-solves live</span></div>
+    <div class="pb">
+      <div class="presets" id="presets"></div>
+      <div id="controls"></div>
+    </div>
+  </aside>
+
+  <!-- ============ RESULTS ============ -->
+  <main>
+    <div class="kpis" id="kpis"></div>
+
+    <div class="main2">
+      <section class="panel mapbox" aria-label="Network map">
+        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node = avg output</span></div>
+        <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
+        <div class="legend">
+          <span><i style="background:var(--coal)"></i>Coal</span>
+          <span><i style="background:var(--nuke)"></i>Nuclear</span>
+          <span><i style="background:var(--veld2)"></i>Wind</span>
+          <span><i style="background:var(--sun)"></i>Solar</span>
+          <span><i style="background:var(--sky)"></i>Storage / hydro</span>
+          <span><i style="background:var(--alert)"></i>Peakers</span>
+        </div>
+      </section>
+
+      <section>
+        <div class="panel" aria-label="Weekly dispatch">
+          <div class="ph"><h2>Hourly dispatch</h2>
+            <div class="wkbtns">
+              <button id="wkW" class="active">Winter week</button>
+              <button id="wkS">Summer week</button>
+            </div>
+          </div>
+          <div class="pb" style="padding:10px 10px 4px">
+            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart"></canvas>
+          </div>
+          <div class="legend" id="dispLegend"></div>
+        </div>
+
+        <div class="duo">
+          <div class="panel">
+            <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
+            <div class="pb" id="mix"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h2>Load shedding</h2><span class="tag">hours per stage</span></div>
+            <div class="pb">
+              <div class="shedbars" id="shed"></div>
+              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <details class="assump">
+      <summary>Model assumptions &amp; caveats</summary>
+      <div class="pb">
+        <p style="margin-bottom:8px"><strong>What this is:</strong> a simplified national-level digital twin. One year (8 760 h) of synthetic demand, wind and solar profiles — <strong>calibrated to Eskom's weekly system status reports (June–July 2026)</strong>: winter evening peaks ≈ 26–27.3 GW, fleet EAF ≈ 64 %, OCGT load factor ≈ 1.3 %, 8.3 GW of embedded rooftop PV, and the post-2023 structural demand decline. Dispatch is by merit order: rooftop PV nets off demand → wind / utility PV / CSP → nuclear, hydro, Cahora Bassa imports → coal (× EAF) → pumped storage &amp; batteries → gas CCGT → diesel OCGT → unserved energy. One stage of load shedding ≈ 1 000 MW of unserved demand. Storage recharges from surplus renewables and off-peak coal headroom.</p>
+        <table class="mono" style="font-size:11.5px">
+          <tr><td>Coal marginal cost</td><td>R480/MWh · 1.04 tCO₂/MWh · 42 GW installed</td></tr>
+          <tr><td>Diesel OCGT</td><td>R6 100/MWh · 0.78 tCO₂/MWh · 3.4 GW</td></tr>
+          <tr><td>Gas CCGT</td><td>R1 750/MWh · 0.37 tCO₂/MWh</td></tr>
+          <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh · 1 150 MW @ 85%</td></tr>
+          <tr><td>Existing fleet</td><td>Wind 3.6 GW · Utility PV 4 GW · Rooftop 8.3 GW · CSP 0.5 GW · Batteries 0.8 GW · Pumped storage 2.9 GW</td></tr>
+          <tr><td>New-build annualised capex</td><td>Wind R1 650 · PV R1 050 · Rooftop R1 150 · Battery(4h) R1 500 · CCGT R1 350 /kW·yr</td></tr>
+          <tr><td>Avg tariff-equivalent cost</td><td>(fuel + carbon + new capex) ÷ grid energy served — excludes existing-fleet capex, wires &amp; retail</td></tr>
+        </table>
+        <p style="margin-top:8px"><strong>What it is not:</strong> transmission is schematic only (no network constraints), no unit commitment, reserves or outage stochastics — EAF is applied as a smooth average, so crisis scenarios understate the shedding that real outage volatility caused in 2023. For decision-grade work, use <a href="https://github.com/MeridianEconomics/pypsa-rsa" target="_blank" rel="noopener">PyPSA-RSA</a> — this app is the intuition layer in front of it.</p>
+      </div>
+    </details>
+  </main>
+</div>
+
+<footer class="foot">Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African system (calibrated to Eskom weekly system status reports, June–July 2026). All outputs are indicative — this is an educational scenario explorer, not planning or investment advice.</footer>
+
+<script>
+"use strict";
+/* ==================== MODEL ==================== */
+const HOURS = 8760;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+function buildProfiles(){
+  const rand = mulberry32(20260714);
+  const demand=new Float64Array(HOURS), solar=new Float64Array(HOURS), wind=new Float64Array(HOURS), csp=new Float64Array(HOURS);
+  let windState=0.35;
+  for(let h=0;h<HOURS;h++){
+    const day=Math.floor(h/24), hour=h%24, doy=day%365;
+    const seasonal=Math.cos((doy-172)/365*2*Math.PI);
+    const isWeekend=(day%7===5)||(day%7===6);
+    const holiday=(doy>348||doy<10);
+    const morning=Math.exp(-Math.pow(hour-7.5,2)/6);
+    const evening=Math.exp(-Math.pow(hour-19,2)/4.5);
+    let d=22300+1200*seasonal+1800*morning+(2500+1300*seasonal)*evening-(hour<5?2100:0)-(isWeekend?1600:0)-(holiday?2800:0)+(rand()-0.5)*800;
+    demand[h]=Math.max(13500,d);
+    const sunAmp=0.92-0.22*seasonal, rise=6+1.1*seasonal, set=18.6-1.1*seasonal;
+    if(hour>rise&&hour<set){const x=(hour-rise)/(set-rise);const clouds=0.75+0.25*Math.min(1,rand()*1.6);solar[h]=Math.max(0,sunAmp*Math.sin(Math.PI*x)*clouds);}else solar[h]=0;
+    const eveShift=(hour>=10&&hour<=22)?Math.exp(-Math.pow(hour-17,2)/18):0;
+    csp[h]=Math.min(1,0.65*eveShift*(0.8-0.15*seasonal));
+    windState=0.86*windState+0.14*(0.10+0.48*rand());
+    const diurnal=1+0.12*Math.sin((hour-16)/24*2*Math.PI);
+    wind[h]=Math.min(0.98,Math.max(0.02,windState*diurnal));
+  }
+  return {demand,solar,wind,csp};
+}
+
+const FIXED = {
+  coalInstalledMW:42000, nuclearMW:1860, hydroMW:600, importsMW:1150,
+  psPowerMW:2900, psEnergyMWh:60000, psEff:0.76,
+  ocgtDieselMW:3400, windMW:3600, pvUtilityMW:4000, rooftopMW:8300, cspMW:500,
+  battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
+  costCoal:480, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
+  costCcgt:1750, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
+  acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350,
+};
+
+function simulate(u, prof){
+  const p={...FIXED,...u};
+  const {demand,solar,wind,csp}=prof;
+  const growth=1+p.demandGrowthPct/100;
+  const coalAvail=Math.max(0,(p.coalInstalledMW-p.coalDecomMW))*p.coalEAFPct/100;
+  const windCap=p.windMW+p.newWindMW, pvCap=p.pvUtilityMW+p.newPvMW, rooftopCap=p.rooftopMW+p.newRooftopMW;
+  const battPower=p.battPowerMW+p.newBattMW, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours;
+  const ccgtCap=p.ccgtMW+p.newCcgtMW;
+  const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
+  let psSoc=p.psEnergyMWh*0.7, battSoc=battEnergy*0.5;
+  const E={rooftop:0,wind:0,pv:0,csp:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0};
+  let fuelCost=0, carbonCost=0, shedMWh=0, maxStage=0;
+  const shedHours=[0,0,0,0,0,0,0,0,0];
+  const stackKeys=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
+  const stack={}; stackKeys.forEach(k=>stack[k]=new Float64Array(HOURS));
+  const loadS=new Float64Array(HOURS);
+  for(let h=0;h<HOURS;h++){
+    const hour=h%24;
+    const rawDemand=demand[h]*growth;
+    const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
+    const load=rawDemand-rooftopGen;
+    E.rooftop+=rooftopGen; loadS[h]=load;
+    let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
+    const nuc=p.nuclearMW*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
+    let residual=load-windGen-pvGen-cspGen-nuc-hyd-imp;
+    let coalGen=0;
+    if(residual<0){
+      let surplus=-residual;
+      const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); psSoc+=psChg*p.psEff; surplus-=psChg;
+      const btChg=Math.min(surplus,battPower,battEnergy-battSoc); battSoc+=btChg*p.battEff; surplus-=btChg;
+      E.curtailed+=surplus;
+      const vre=windGen+pvGen;
+      if(vre>0&&surplus>0){const f=Math.max(0,vre-surplus)/vre; windGen*=f; pvGen*=f;}
+    } else {
+      coalGen=Math.min(residual,coalAvail); residual-=coalGen;
+      const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
+      const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+      const g=Math.min(residual,ccgtCap); residual-=g; E.ccgt+=g; stack.ccgt[h]=g; fuelCost+=g*p.costCcgt; carbonCost+=g*cG;
+      const dsl=Math.min(residual,p.ocgtDieselMW); residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*p.costDiesel; carbonCost+=dsl*cD;
+      if(hour<=5||hour>=23){
+        let head=coalAvail-coalGen;
+        if(head>0&&psSoc<p.psEnergyMWh*0.85){const w=Math.min(p.psPowerMW*0.8,p.psEnergyMWh-psSoc,head); coalGen+=w; psSoc+=w*p.psEff; head-=w;}
+        if(head>0&&battSoc<battEnergy*0.8){const w=Math.min(battPower*0.6,battEnergy-battSoc,head); coalGen+=w; battSoc+=w*p.battEff;}
+      }
+      if(residual>1){
+        E.unserved+=residual; shedMWh+=residual;
+        const st=Math.min(8,Math.ceil(residual/1000)); shedHours[st]++; if(st>maxStage)maxStage=st;
+        stack.unserved[h]=residual;
+      }
+    }
+    E.coal+=coalGen; stack.coal[h]=coalGen; fuelCost+=coalGen*p.costCoal; carbonCost+=coalGen*cC;
+    E.wind+=windGen; E.pv+=pvGen; E.csp+=cspGen; E.nuclear+=nuc; E.hydro+=hyd; E.imports+=imp;
+    stack.wind[h]=windGen; stack.pv[h]=pvGen; stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
+    fuelCost+=nuc*p.costNuclear+hyd*p.costHydro+imp*p.costImports;
+  }
+  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt)*1000;
+  const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
+  const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
+  const totalCost=fuelCost+carbonCost+newCapexR;
+  const avgCost=totalCost/Math.max(1,gridServed);
+  const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
+  let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
+  return {E,fuelCost,carbonCost,newCapexR,totalCost,avgCost,co2,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
+          caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
+}
+
+/* ==================== UI DEFINITION ==================== */
+const SLIDERS=[
+  {grp:'Demand & existing fleet'},
+  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:40,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'electrification, economy, EVs'},
+  {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:40,max:80,step:1,def:64,fmt:v=>v+' %',note:'FY2026 ≈ 64 % · 2023 crisis ≈ 50–55 % · target 70 %'},
+  {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
+  {grp:'New build'},
+  {id:'newWindMW',label:'New wind',min:0,max:30000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.6 GW existing'},
+  {id:'newPvMW',label:'New utility solar PV',min:0,max:30000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4 GW existing'},
+  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:20000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.3 GW existing, behind the meter'},
+  {id:'newBattMW',label:'New batteries (4 h)',min:0,max:15000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
+  {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired mid-merit'},
+  {grp:'Policy'},
+  {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'headline tax ≈ R308/t (2026) but generator allowances shield most of it — set the price generators actually feel'},
+];
+const PRESETS={
+  'Today 2026':{},
+  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:14},
+  'IRP-style 2030':{demandGrowthPct:6,coalEAFPct:66,coalDecomMW:5000,newWindMW:6000,newPvMW:5000,newRooftopMW:4000,newBattMW:3000,newCcgtMW:2500},
+  'Deep decarb 2035':{demandGrowthPct:15,coalEAFPct:65,coalDecomMW:18000,newWindMW:22000,newPvMW:16000,newRooftopMW:8000,newBattMW:10000,newCcgtMW:6000,carbonTaxRPerT:640},
+};
+const COLORS={nuclear:'#7A6FA0',hydro:'#5E8DA3',imports:'#8FA3AC',coal:'#C98A2B',ps:'#3A5F73',batt:'#2E7D74',ccgt:'#B0655A',diesel:'#C3512F',wind:'#6FA05A',pv:'#D9A62E',csp:'#E0BE62',unserved:'#22292B',rooftop:'#EBD59A'};
+const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV'};
+
+/* ==================== BUILD CONTROLS ==================== */
+const state={};
+const controlsEl=document.getElementById('controls');
+SLIDERS.forEach(s=>{
+  if(s.grp){const g=document.createElement('div');g.className='grp';g.innerHTML='<h3>'+s.grp+'</h3>';controlsEl.appendChild(g);return;}
+  state[s.id]=s.def;
+  const d=document.createElement('div');d.className='ctrl';
+  d.innerHTML='<div class="row"><label for="in_'+s.id+'">'+s.label+'</label><span class="cv" id="cv_'+s.id+'">'+s.fmt(s.def)+'</span></div>'+
+    '<input type="range" id="in_'+s.id+'" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+s.def+'" aria-label="'+s.label+'">'+
+    (s.note?'<small>'+s.note+'</small>':'');
+  controlsEl.appendChild(d);
+  d.querySelector('input').addEventListener('input',e=>{
+    state[s.id]=+e.target.value;
+    document.getElementById('cv_'+s.id).textContent=s.fmt(state[s.id]);
+    setPresetActive(null); scheduleRun();
+  });
+});
+const presetsEl=document.getElementById('presets');
+Object.keys(PRESETS).forEach((name,i)=>{
+  const b=document.createElement('button');b.textContent=name; if(i===0)b.classList.add('active');
+  b.addEventListener('click',()=>{
+    SLIDERS.forEach(s=>{if(s.grp)return; const v=(name in PRESETS && s.id in PRESETS[name])?PRESETS[name][s.id]:s.def;
+      state[s.id]=v; document.getElementById('in_'+s.id).value=v; document.getElementById('cv_'+s.id).textContent=s.fmt(v);});
+    setPresetActive(b); scheduleRun();
+  });
+  presetsEl.appendChild(b);
+});
+function setPresetActive(btn){presetsEl.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===btn));}
+
+/* lamps */
+const lampsEl=document.getElementById('lamps');
+for(let i=1;i<=8;i++){const l=document.createElement('div');l.className='lamp';l.textContent=i;lampsEl.appendChild(l);}
+
+/* ==================== MAP ==================== */
+const NODES=[
+  {id:'CPT',x:88,y:355,name:'Cape Town · Koeberg / Ankerlig',types:['nuke','alert']},
+  {id:'GRW',x:190,y:372,name:'Gourikwa / Garden Route',types:['alert']},
+  {id:'PE', x:300,y:365,name:'Gqeberha · Cookhouse wind',types:['veld2']},
+  {id:'EC', x:352,y:330,name:'East London',types:['veld2']},
+  {id:'UPG',x:150,y:225,name:'Upington · solar corridor',types:['sun']},
+  {id:'BFN',x:275,y:255,name:'Bloemfontein',types:['sky']},
+  {id:'DBN',x:415,y:280,name:'Durban / Avon',types:['alert']},
+  {id:'DRA',x:372,y:262,name:'Drakensberg / Ingula PS',types:['sky']},
+  {id:'JHB',x:340,y:180,name:'Johannesburg load centre',types:['sky']},
+  {id:'MPU',x:395,y:185,name:'Mpumalanga coal cluster',types:['coal']},
+  {id:'LEP',x:320,y:110,name:'Lephalale · Medupi / Matimba',types:['coal']},
+];
+const LINKS=[['CPT','GRW'],['GRW','PE'],['PE','EC'],['EC','DBN'],['CPT','UPG'],['UPG','BFN'],['BFN','JHB'],['BFN','PE'],['DRA','DBN'],['DRA','JHB'],['JHB','MPU'],['LEP','JHB'],['MPU','DBN'],['BFN','DRA']];
+const ZA_PATH="M60,300 C55,270 70,240 78,215 C85,192 95,170 118,150 C142,130 175,112 210,100 C245,88 285,78 305,80 L318,95 L340,88 C360,82 385,86 400,100 L432,96 C455,112 470,140 476,170 C482,200 478,230 468,258 C458,286 446,310 424,330 C400,352 370,372 335,384 C300,396 258,400 222,396 C186,392 150,382 122,366 C95,350 66,330 60,300 Z";
+function nodeColor(n,res){
+  const t=n.types[0];
+  const m={nuke:'var(--nuke)',coal:'var(--coal)',veld2:'var(--veld2)',sun:'var(--sun)',sky:'var(--sky)',alert:'var(--alert)'};
+  return m[t]||'var(--sky)';
+}
+function buildMap(){
+  let s='<svg viewBox="30 60 470 360" role="img" aria-label="Schematic map of the South African transmission network">';
+  s+='<path d="'+ZA_PATH+'" fill="var(--panel2)" stroke="var(--line2)" stroke-width="1.5"/>';
+  // Lesotho notch
+  s+='<circle cx="350" cy="278" r="14" fill="var(--base)" stroke="var(--line2)" stroke-width="1"/>';
+  LINKS.forEach(([a,b])=>{const A=NODES.find(n=>n.id===a),B=NODES.find(n=>n.id===b);
+    s+='<line x1="'+A.x+'" y1="'+A.y+'" x2="'+B.x+'" y2="'+B.y+'" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="1 3" opacity="0.55"/>';});
+  NODES.forEach(n=>{
+    s+='<g><circle id="nd_'+n.id+'" cx="'+n.x+'" cy="'+n.y+'" r="7" fill="'+nodeColor(n)+'" stroke="var(--ink)" stroke-width="1.4"><title>'+n.name+'</title></circle>';
+    s+='<text x="'+(n.x+11)+'" y="'+(n.y+4)+'" font-size="10" font-family="IBM Plex Mono" fill="var(--ink2)">'+n.id+'</text></g>';
+  });
+  s+='</svg>';
+  document.getElementById('mapholder').innerHTML=s;
+}
+buildMap();
+function updateMap(r){
+  // node radius scaled by share of relevant tech output
+  const t=r.E;
+  const scale=(v,max)=>4+10*Math.min(1,v/max);
+  const set=(id,rad)=>{const el=document.getElementById('nd_'+id); if(el)el.setAttribute('r',rad.toFixed(1));};
+  set('MPU',scale(t.coal*0.62,180e6)); set('LEP',scale(t.coal*0.38,180e6));
+  set('CPT',scale(t.nuclear+t.diesel*0.4,25e6));
+  set('PE',scale(t.wind*0.5,40e6)); set('EC',scale(t.wind*0.3,40e6));
+  set('UPG',scale(t.pv+t.csp,45e6));
+  set('DRA',scale(t.ps,6e6)); set('JHB',scale(t.batt+4e6,20e6));
+  set('DBN',scale(t.diesel*0.4+2e6,12e6)); set('GRW',scale(t.diesel*0.2+t.ccgt*0.5+1e6,12e6));
+  set('BFN',5);
+}
+
+/* ==================== CHARTS ==================== */
+const dispCanvas=document.getElementById('dispatch');
+let weekMode='W';
+document.getElementById('wkW').addEventListener('click',e=>{weekMode='W';toggleWk(e.target);draw(lastRes);});
+document.getElementById('wkS').addEventListener('click',e=>{weekMode='S';toggleWk(e.target);draw(lastRes);});
+function toggleWk(btn){document.querySelectorAll('.wkbtns button').forEach(b=>b.classList.toggle('active',b===btn));}
+const DISP_ORDER=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
+
+function drawDispatch(r){
+  const c=dispCanvas, dpr=window.devicePixelRatio||1;
+  const W=c.clientWidth||600, H=240;
+  c.width=W*dpr; c.height=H*dpr;
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const start=weekMode==='W'? (170*24) : (10*24); // mid-June vs mid-January
+  const N=168;
+  let maxY=0;
+  for(let i=0;i<N;i++){let s=0; DISP_ORDER.forEach(k=>s+=r.stack[k][start+i]); maxY=Math.max(maxY,s,r.loadS[start+i]);}
+  maxY*=1.06;
+  const padL=42,padB=20,padT=8,padR=6;
+  const x=i=>padL+(W-padL-padR)*i/(N-1);
+  const y=v=>H-padB-(H-padB-padT)*v/maxY;
+  // gridlines
+  ctx.strokeStyle='rgba(34,41,43,.13)'; ctx.fillStyle='#5A6560'; ctx.font='10px IBM Plex Mono'; ctx.lineWidth=1;
+  const step=maxY>40000?10000:5000;
+  for(let g=0;g<=maxY;g+=step){ctx.beginPath();ctx.moveTo(padL,y(g));ctx.lineTo(W-padR,y(g));ctx.stroke();ctx.fillText((g/1000)+' GW',2,y(g)+3);}
+  // stacked areas
+  const base=new Float64Array(N);
+  DISP_ORDER.forEach(k=>{
+    ctx.beginPath();
+    for(let i=0;i<N;i++){const v=base[i]; ctx.lineTo(x(i),y(v));}
+    for(let i=N-1;i>=0;i--){base[i]+=r.stack[k][start+i]; ctx.lineTo(x(i),y(base[i]));}
+    ctx.closePath(); ctx.fillStyle=COLORS[k];
+    ctx.globalAlpha=k==='unserved'?0.9:0.92; ctx.fill(); ctx.globalAlpha=1;
+  });
+  // demand line
+  ctx.beginPath();
+  for(let i=0;i<N;i++){const v=r.loadS[start+i]; i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v));}
+  ctx.strokeStyle='#22292B'; ctx.lineWidth=1.6; ctx.stroke();
+  // day ticks
+  ctx.fillStyle='#5A6560';
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  for(let d2=0;d2<7;d2++){ctx.fillText(days[d2],x(d2*24+9),H-6);}
+}
+
+function draw(r){
+  if(!r)return;
+  drawDispatch(r);
+  // legend once
+  const lg=document.getElementById('dispLegend');
+  if(!lg.dataset.done){lg.dataset.done='1';
+    lg.innerHTML=DISP_ORDER.map(k=>'<span><i style="background:'+COLORS[k]+'"></i>'+NAMES[k]+'</span>').join('')+'<span><i style="background:#22292B"></i>Grid demand</span>';}
+}
+
+/* ==================== RENDER RESULTS ==================== */
+const fmtTWh=v=>(v/1e6).toFixed(1);
+function render(r){
+  // board
+  const sw=document.getElementById('statusWord');
+  const shedGWh=r.shedMWh/1000;
+  if(r.maxStage===0){sw.textContent='Stable';sw.className='statusword ok';}
+  else if(r.maxStage<=2){sw.textContent='Constrained';sw.className='statusword warn';}
+  else {sw.textContent='Stage '+r.maxStage;sw.className='statusword bad';}
+  document.querySelectorAll('.lamp').forEach((l,i)=>l.classList.toggle('on',i<r.maxStage));
+  document.getElementById('bdPeak').textContent=(r.peak/1000).toFixed(1)+' GW';
+  document.getElementById('bdShed').textContent=shedGWh<1?'0 GWh':Math.round(shedGWh).toLocaleString()+' GWh';
+
+  // KPIs
+  const genTWh=(['wind','pv','csp','nuclear','hydro','imports','coal','ccgt','diesel','rooftop'].reduce((s,k)=>s+r.E[k],0))/1e6;
+  const cleanShare=100*(r.E.wind+r.E.pv+r.E.csp+r.E.rooftop+r.E.nuclear+r.E.hydro)/(genTWh*1e6);
+  const kpis=[
+    {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
+    {k:'System cost',v:(r.totalCost/1e9).toFixed(0),u:'R bn/yr'},
+    {k:'Avg energy cost',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
+    {k:'CO₂ emissions',v:r.co2.toFixed(0),u:'Mt/yr'},
+    {k:'Clean share',v:cleanShare.toFixed(0),u:'%'},
+    {k:'Curtailment',v:fmtTWh(r.E.curtailed),u:'TWh/yr'},
+  ];
+  document.getElementById('kpis').innerHTML=kpis.map(x=>'<div class="kpi"><div class="k">'+x.k+'</div><div class="v">'+x.v+'<span class="u"> '+x.u+'</span></div></div>').join('');
+
+  // mix
+  const order=['coal','rooftop','wind','pv','csp','nuclear','imports','hydro','ccgt','diesel'];
+  const tot=order.reduce((s,k)=>s+r.E[k],0);
+  document.getElementById('mixTotal').textContent=fmtTWh(tot)+' TWh incl. rooftop';
+  document.getElementById('mix').innerHTML=order.filter(k=>r.E[k]>tot*0.0005||['coal','wind','pv'].includes(k)).map(k=>{
+    const pct=100*r.E[k]/tot;
+    return '<div class="mixrow"><span class="nm">'+NAMES[k]+'</span><span class="barwrap"><span class="bar" style="width:'+pct.toFixed(1)+'%;background:'+COLORS[k]+'"></span></span><span class="num">'+fmtTWh(r.E[k])+' TWh</span></div>';
+  }).join('');
+
+  // shed bars
+  const mx=Math.max(1,...r.shedHours);
+  document.getElementById('shed').innerHTML=[1,2,3,4,5,6,7,8].map(st=>'<div class="sb"><div class="sbv" style="height:'+(100*r.shedHours[st]/mx).toFixed(1)+'%"></div><div class="sbl">S'+st+'</div></div>').join('');
+  document.getElementById('shedNums').innerHTML=[1,2,3,4,5,6,7,8].map(st=>'<div class="shednum" style="flex:1;text-align:center">'+(r.shedHours[st]||'')+'</div>').join('');
+
+  updateMap(r);
+  draw(r);
+}
+
+/* ==================== RUN LOOP ==================== */
+const PROFILES=buildProfiles();
+let lastRes=null, rafPending=false;
+function run(){lastRes=simulate(state,PROFILES);render(lastRes);}
+function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
+window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
+run();
+</script>
+</body>
+</html>
