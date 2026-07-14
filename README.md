@@ -129,7 +129,6 @@ Slider settings are written to the URL. Copy the address bar (or use the
 3. 10-region model on the GCCA Eskom transmission supply regions, with
    transfer limits — making the map show flows
 4. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
-5. Guided "story mode" scenario tours
 
 ## Licence & disclaimer
 
