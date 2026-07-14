@@ -10,6 +10,11 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nickhedley.github.io/gridtwin-za/">
 <link rel="canonical" href="https://nickhedley.github.io/gridtwin-za/">
+<meta property="og:image" content="https://nickhedley.github.io/gridtwin-za/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://nickhedley.github.io/gridtwin-za/og-card.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -116,6 +121,16 @@ canvas{width:100%; display:block}
 .riskhead .rk .k{font-family:'Saira Condensed'; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink2)}
 .riskhead .rk .v{font-family:'IBM Plex Mono'; font-size:18px; font-weight:600}
 .risknote{font-size:10.5px; color:var(--ink2); margin-top:8px}
+.story{margin-bottom:18px; border-width:2px}
+.story .ph{background:var(--ink)}
+.story .ph h2{color:var(--panel)}
+.story .ph .tag{color:#9AA69B}
+.story p{font-size:14px; max-width:72ch}
+.storynav{display:flex; gap:8px; margin-top:10px}
+.storynav button{border:1.5px solid var(--ink); background:var(--panel); padding:5px 14px 4px; font-family:'Saira Condensed',sans-serif; font-size:13.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em}
+.storynav button:hover{background:var(--panel2)}
+.storynav #storyNext{background:var(--alert); color:#fff; border-color:var(--alert2)}
+.storynav #storyExit{margin-left:auto; border-style:dashed}
 
 details.assump{margin-top:18px; background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow)}
 details.assump summary{padding:10px 14px; font-family:'Saira Condensed'; font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; cursor:pointer; background:var(--panel2); border-bottom:1.5px solid transparent}
@@ -160,6 +175,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="ph"><h2>Scenario Controls</h2><span class="tag">re-solves live</span></div>
     <div class="pb">
       <div class="presets" id="presets"></div>
+      <button class="sharebtn" id="storyBtn" type="button" style="border-style:solid; background:var(--ink); color:var(--panel)">▸ Guided tour: SA's grid story</button>
       <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
       <div id="controls"></div>
     </div>
@@ -167,6 +183,18 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
   <!-- ============ RESULTS ============ -->
   <main>
+    <section class="panel story" id="storyPanel" hidden aria-live="polite">
+      <div class="ph"><h2 id="storyTitle"></h2><span class="tag" id="storyStep"></span></div>
+      <div class="pb">
+        <p id="storyText"></p>
+        <div class="storynav">
+          <button id="storyPrev" type="button">‹ Back</button>
+          <button id="storyNext" type="button">Next ›</button>
+          <button id="storyExit" type="button">Exit tour</button>
+        </div>
+      </div>
+    </section>
+
     <div class="kpis" id="kpis"></div>
 
     <div class="main2">
@@ -226,6 +254,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh · 1 150 MW @ 85%</td></tr>
           <tr><td>Existing fleet</td><td>Wind 3.6 GW · Utility PV 4 GW · Rooftop 8.3 GW · CSP 0.5 GW · Batteries 0.8 GW · Pumped storage 2.9 GW</td></tr>
           <tr><td>New-build annualised capex</td><td>Wind R1 650 · PV R1 050 · Rooftop R1 150 · Battery(4h) R1 500 · CCGT R1 350 /kW·yr</td></tr>
+          <tr><td>Grid expansion adder</td><td>Default R600/kW·yr on new wind &amp; utility PV — from TDP 2025–34: ±R390bn for 14 500 km of lines to connect 56 GW ≈ R700/kW·yr annualised. Rooftop PV and (assumed co-located) batteries are exempt. Adjustable via the Policy slider.</td></tr>
           <tr><td>Avg tariff-equivalent cost</td><td>(fuel + carbon + new capex) ÷ grid energy served — excludes existing-fleet capex, wires &amp; retail</td></tr>
         </table>
         <p style="margin-top:8px"><strong>Outage risk:</strong> coal availability follows a mean-corrected daily AR(1) process around the EAF slider, with volatility calibrated to the multi-week swings in Eskom's reported unplanned outages. The risk panel dispatches 60 such synthetic years and reports load shedding as probabilities. Weather and demand noise are held fixed across runs, so the bands reflect outage risk only — real years also vary in weather.</p>
@@ -274,7 +303,7 @@ const FIXED = {
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
   costCoal:480, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
   costCcgt:1750, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
-  acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350,
+  acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
 };
 
 function simulate(u, prof, outPath){
@@ -334,7 +363,7 @@ function simulate(u, prof, outPath){
     stack.wind[h]=windGen; stack.pv[h]=pvGen; stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
     fuelCost+=nuc*p.costNuclear+hyd*p.costHydro+imp*p.costImports;
   }
-  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt)*1000;
+  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+(u.newWindMW+u.newPvMW)*p.txRPerKWyr)*1000;
   const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
   const totalCost=fuelCost+carbonCost+newCapexR;
@@ -376,6 +405,7 @@ const SLIDERS=[
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:15000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired mid-merit'},
   {grp:'Policy'},
+  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'headline tax ≈ R308/t (2026) but generator allowances shield most of it — set the price generators actually feel'},
 ];
 const PRESETS={
@@ -404,13 +434,16 @@ SLIDERS.forEach(s=>{
     setPresetActive(null); scheduleRun();
   });
 });
+function applyState(overrides){
+  SLIDERS.forEach(s=>{if(s.grp)return; const v=(s.id in overrides)?overrides[s.id]:s.def;
+    state[s.id]=v; document.getElementById('in_'+s.id).value=v; document.getElementById('cv_'+s.id).textContent=s.fmt(v);});
+}
 const presetsEl=document.getElementById('presets');
 Object.keys(PRESETS).forEach((name,i)=>{
   const b=document.createElement('button');b.textContent=name; if(i===0)b.classList.add('active');
   b.addEventListener('click',()=>{
-    SLIDERS.forEach(s=>{if(s.grp)return; const v=(name in PRESETS && s.id in PRESETS[name])?PRESETS[name][s.id]:s.def;
-      state[s.id]=v; document.getElementById('in_'+s.id).value=v; document.getElementById('cv_'+s.id).textContent=s.fmt(v);});
-    setPresetActive(b); scheduleRun();
+    applyState(PRESETS[name]);
+    setPresetActive(b); exitStory(); scheduleRun();
   });
   presetsEl.appendChild(b);
 });
@@ -617,6 +650,54 @@ function renderRisk(runs){
   }
 }
 
+/* --- Guided tour (story mode) --- */
+const STORY=[
+ {title:'2023: The crisis', week:'W',
+  s:{coalEAFPct:50,demandGrowthPct:14,outVolPct:6},
+  text:'This is South Africa in 2023: coal availability around 50%, demand still at pre-decline levels, and — crucially — a fleet whose unplanned breakdowns swung wildly from week to week. Look at the risk panel: shedding isn\u2019t a possibility, it\u2019s a certainty, with worst years reaching the highest stages. The lamps on the status board show the average year; the risk bars show the ones people remember.'},
+ {title:'What actually caused it: volatility', week:'W',
+  s:{coalEAFPct:50,demandGrowthPct:14,outVolPct:0},
+  text:'Same broken fleet, same demand — but with the week-to-week volatility switched off (drag the "Outage volatility" slider yourself and watch). Shedding drops dramatically. Averages don\u2019t break grids; bad weeks do. This is why reporting that focuses only on average EAF misses the real story.'},
+ {title:'2026: The recovery', week:'W',
+  s:{},
+  text:'Today\u2019s system: EAF recovered to ~64%, unplanned outages down by ~5 GW, demand structurally lower, and 8.3 GW of rooftop solar quietly serving the midday hours. Probability of any load shedding: effectively zero. Diesel spend has collapsed. Two things ended load shedding at once — so which mattered more?'},
+ {title:'The counterfactual', week:'W',
+  s:{demandGrowthPct:14},
+  text:'Here\u2019s today\u2019s repaired fleet carrying yesterday\u2019s demand (+14%, the pre-decline level). Result: still almost no shedding risk. The generation recovery alone would very likely have ended load shedding — the demand decline turned "very likely" into "certain". Roughly two-thirds a fleet-repair story, one-third a demand story.'},
+ {title:'The rooftop revolution', week:'S',
+  s:{newRooftopMW:8000},
+  text:'Now double the rooftop fleet. Switch to the summer week and watch the midday valley deepen — grid demand collapses while the sun shines, then ramps steeply into the evening. This is the "duck curve" arriving in South Africa: rooftop solar solves energy but sharpens the evening peak, which is exactly what batteries are for.'},
+ {title:'The coal exit question', week:'W',
+  s:{demandGrowthPct:15,coalEAFPct:65,coalDecomMW:18000,newWindMW:22000,newPvMW:16000,newRooftopMW:8000,newBattMW:10000,newCcgtMW:6000,carbonTaxRPerT:640},
+  text:'A 2035-style deep decarbonisation: 18 GW of coal retired, replaced by wind, solar, batteries and some gas. CO\u2082 falls by more than half with zero shedding risk — but note the curtailment KPI and the cost. The trade-offs are real; the question is never "can it work" but "what mix, at what price". Try retiring more coal and watch when the risk bars light up.'},
+ {title:'Your turn', week:'W',
+  s:{},
+  text:'That\u2019s the tour. Every slider re-solves the year instantly, and the risk panel re-runs 60 outage-years in the background. Use "Copy scenario link" to share any configuration you build — and read the assumptions panel at the bottom before quoting numbers.'},
+];
+let storyIdx=-1;
+const storyPanel=document.getElementById('storyPanel');
+function showStory(i){
+  storyIdx=Math.max(0,Math.min(STORY.length-1,i));
+  const st=STORY[storyIdx];
+  storyPanel.hidden=false;
+  document.getElementById('storyTitle').textContent=st.title;
+  document.getElementById('storyStep').textContent=(storyIdx+1)+' / '+STORY.length;
+  document.getElementById('storyText').textContent=st.text;
+  document.getElementById('storyPrev').disabled=storyIdx===0;
+  document.getElementById('storyNext').textContent=storyIdx===STORY.length-1?'Finish':'Next \u203a';
+  applyState(st.s); setPresetActive(null);
+  if(st.week&&st.week!==weekMode){weekMode=st.week;toggleWk(document.getElementById(st.week==='W'?'wkW':'wkS'));}
+  scheduleRun();
+}
+function exitStory(){storyIdx=-1;storyPanel.hidden=true;}
+document.getElementById('storyBtn').addEventListener('click',()=>showStory(0));
+document.getElementById('storyPrev').addEventListener('click',()=>showStory(storyIdx-1));
+document.getElementById('storyNext').addEventListener('click',()=>{
+  if(storyIdx===STORY.length-1){exitStory();applyState({});scheduleRun();}
+  else showStory(storyIdx+1);
+});
+document.getElementById('storyExit').addEventListener('click',()=>{exitStory();syncURL();});
+
 /* --- URL state: read on load, write on change, share button --- */
 const urlParams=new URLSearchParams(location.search);
 if(urlParams.get('embed')==='1') document.body.classList.add('embed');
@@ -632,6 +713,7 @@ function syncURL(){
   const q=new URLSearchParams();
   SLIDERS.forEach(s=>{if(!s.grp&&state[s.id]!==s.def)q.set(s.id,state[s.id]);});
   if(document.body.classList.contains('embed'))q.set('embed','1');
+  if(storyIdx>=0)q.set('story',storyIdx+1);
   const qs=q.toString();
   history.replaceState(null,'',qs?('?'+qs):location.pathname);
 }
@@ -646,7 +728,8 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
 function run(){lastRes=simulate(state,PROFILES);render(lastRes);syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
-run();
+if(urlParams.has('story')){showStory((+urlParams.get('story')||1)-1);}
+else run();
 </script>
 </body>
 </html>
