@@ -111,6 +111,11 @@ canvas{width:100%; display:block}
 .shedbars .sbv{width:100%; background:var(--alert); border:1px solid var(--alert2); min-height:0; transition:height .3s}
 .shedbars .sbl{font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink2)}
 .shednum{font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink2); height:12px}
+.riskhead{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px}
+.riskhead .rk{flex:1; min-width:86px}
+.riskhead .rk .k{font-family:'Saira Condensed'; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink2)}
+.riskhead .rk .v{font-family:'IBM Plex Mono'; font-size:18px; font-weight:600}
+.risknote{font-size:10.5px; color:var(--ink2); margin-top:8px}
 
 details.assump{margin-top:18px; background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow)}
 details.assump summary{padding:10px 14px; font-family:'Saira Condensed'; font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; cursor:pointer; background:var(--panel2); border-bottom:1.5px solid transparent}
@@ -143,7 +148,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="lamps" id="lamps" style="padding:4px 0 0"></div>
       </div>
       <div class="cell"><span class="lbl">Peak demand</span><span class="val" id="bdPeak">–</span></div>
-      <div class="cell"><span class="lbl">Energy shed</span><span class="val" id="bdShed">–</span></div>
+      <div class="cell"><span class="lbl">Expected shed</span><span class="val" id="bdShed">–</span></div>
     </div>
   </div>
 </header>
@@ -198,10 +203,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="mix"></div>
           </div>
           <div class="panel">
-            <div class="ph"><h2>Load shedding</h2><span class="tag">hours per stage</span></div>
+            <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span></div>
             <div class="pb">
+              <div class="riskhead" id="riskHead"></div>
               <div class="shedbars" id="shed"></div>
               <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
+              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
             </div>
           </div>
         </div>
@@ -221,7 +228,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>New-build annualised capex</td><td>Wind R1 650 · PV R1 050 · Rooftop R1 150 · Battery(4h) R1 500 · CCGT R1 350 /kW·yr</td></tr>
           <tr><td>Avg tariff-equivalent cost</td><td>(fuel + carbon + new capex) ÷ grid energy served — excludes existing-fleet capex, wires &amp; retail</td></tr>
         </table>
-        <p style="margin-top:8px"><strong>What it is not:</strong> transmission is schematic only (no network constraints), no unit commitment, reserves or outage stochastics — EAF is applied as a smooth average, so crisis scenarios understate the shedding that real outage volatility caused in 2023. For decision-grade work, use <a href="https://github.com/MeridianEconomics/pypsa-rsa" target="_blank" rel="noopener">PyPSA-RSA</a> — this app is the intuition layer in front of it.</p>
+        <p style="margin-top:8px"><strong>Outage risk:</strong> coal availability follows a mean-corrected daily AR(1) process around the EAF slider, with volatility calibrated to the multi-week swings in Eskom's reported unplanned outages. The risk panel dispatches 60 such synthetic years and reports load shedding as probabilities. Weather and demand noise are held fixed across runs, so the bands reflect outage risk only — real years also vary in weather.</p>
+        <p style="margin-top:8px"><strong>What it is not:</strong> transmission is schematic only (no network constraints), no unit commitment or operating reserves. For decision-grade work, use <a href="https://github.com/MeridianEconomics/pypsa-rsa" target="_blank" rel="noopener">PyPSA-RSA</a> — this app is the intuition layer in front of it.</p>
       </div>
     </details>
   </main>
@@ -269,11 +277,12 @@ const FIXED = {
   acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350,
 };
 
-function simulate(u, prof){
+function simulate(u, prof, outPath){
   const p={...FIXED,...u};
   const {demand,solar,wind,csp}=prof;
   const growth=1+p.demandGrowthPct/100;
-  const coalAvail=Math.max(0,(p.coalInstalledMW-p.coalDecomMW))*p.coalEAFPct/100;
+  const coalInstRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW);
+  const coalAvail=coalInstRem*p.coalEAFPct/100;
   const windCap=p.windMW+p.newWindMW, pvCap=p.pvUtilityMW+p.newPvMW, rooftopCap=p.rooftopMW+p.newRooftopMW;
   const battPower=p.battPowerMW+p.newBattMW, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours;
   const ccgtCap=p.ccgtMW+p.newCcgtMW;
@@ -287,6 +296,7 @@ function simulate(u, prof){
   const loadS=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
     const hour=h%24;
+    const cAvail=outPath?coalInstRem*outPath[Math.floor(h/24)]:coalAvail;
     const rawDemand=demand[h]*growth;
     const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
     const load=rawDemand-rooftopGen;
@@ -303,13 +313,13 @@ function simulate(u, prof){
       const vre=windGen+pvGen;
       if(vre>0&&surplus>0){const f=Math.max(0,vre-surplus)/vre; windGen*=f; pvGen*=f;}
     } else {
-      coalGen=Math.min(residual,coalAvail); residual-=coalGen;
+      coalGen=Math.min(residual,cAvail); residual-=coalGen;
       const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
       const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
       const g=Math.min(residual,ccgtCap); residual-=g; E.ccgt+=g; stack.ccgt[h]=g; fuelCost+=g*p.costCcgt; carbonCost+=g*cG;
       const dsl=Math.min(residual,p.ocgtDieselMW); residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*p.costDiesel; carbonCost+=dsl*cD;
       if(hour<=5||hour>=23){
-        let head=coalAvail-coalGen;
+        let head=cAvail-coalGen;
         if(head>0&&psSoc<p.psEnergyMWh*0.85){const w=Math.min(p.psPowerMW*0.8,p.psEnergyMWh-psSoc,head); coalGen+=w; psSoc+=w*p.psEff; head-=w;}
         if(head>0&&battSoc<battEnergy*0.8){const w=Math.min(battPower*0.6,battEnergy-battSoc,head); coalGen+=w; battSoc+=w*p.battEff;}
       }
@@ -335,11 +345,29 @@ function simulate(u, prof){
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
+// Daily EAF path: AR(1) around the mean, calibrated so week-to-week unplanned-outage
+// swings match Eskom's reported range. Mean-corrected so annual EAF equals the slider.
+function genOutagePath(meanFrac, volFrac, seed){
+  const r=mulberry32(seed), path=new Float64Array(365);
+  const phi=0.92, se=volFrac*Math.sqrt(1-phi*phi);
+  let x=0, sum=0;
+  for(let d=0;d<365;d++){
+    const u1=Math.max(1e-9,r()), u2=r();
+    const g=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+    x=phi*x+se*g;
+    path[d]=x; sum+=x;
+  }
+  const shift=sum/365;
+  for(let d=0;d<365;d++) path[d]=Math.min(0.92,Math.max(0.28,meanFrac+path[d]-shift));
+  return path;
+}
+
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:40,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'electrification, economy, EVs'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:40,max:80,step:1,def:64,fmt:v=>v+' %',note:'FY2026 ≈ 64 % · 2023 crisis ≈ 50–55 % · target 70 %'},
+  {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
   {grp:'New build'},
   {id:'newWindMW',label:'New wind',min:0,max:30000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.6 GW existing'},
@@ -352,7 +380,7 @@ const SLIDERS=[
 ];
 const PRESETS={
   'Today 2026':{},
-  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:14},
+  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:14,outVolPct:6},
   'IRP-style 2030':{demandGrowthPct:6,coalEAFPct:66,coalDecomMW:5000,newWindMW:6000,newPvMW:5000,newRooftopMW:4000,newBattMW:3000,newCcgtMW:2500},
   'Deep decarb 2035':{demandGrowthPct:15,coalEAFPct:65,coalDecomMW:18000,newWindMW:22000,newPvMW:16000,newRooftopMW:8000,newBattMW:10000,newCcgtMW:6000,carbonTaxRPerT:640},
 };
@@ -507,7 +535,7 @@ function render(r){
   else {sw.textContent='Stage '+r.maxStage;sw.className='statusword bad';}
   document.querySelectorAll('.lamp').forEach((l,i)=>l.classList.toggle('on',i<r.maxStage));
   document.getElementById('bdPeak').textContent=(r.peak/1000).toFixed(1)+' GW';
-  document.getElementById('bdShed').textContent=shedGWh<1?'0 GWh':Math.round(shedGWh).toLocaleString()+' GWh';
+  document.getElementById('bdShed').textContent='…';
 
   // KPIs
   const genTWh=(['wind','pv','csp','nuclear','hydro','imports','coal','ccgt','diesel','rooftop'].reduce((s,k)=>s+r.E[k],0))/1e6;
@@ -531,10 +559,9 @@ function render(r){
     return '<div class="mixrow"><span class="nm">'+NAMES[k]+'</span><span class="barwrap"><span class="bar" style="width:'+pct.toFixed(1)+'%;background:'+COLORS[k]+'"></span></span><span class="num">'+fmtTWh(r.E[k])+' TWh</span></div>';
   }).join('');
 
-  // shed bars
-  const mx=Math.max(1,...r.shedHours);
-  document.getElementById('shed').innerHTML=[1,2,3,4,5,6,7,8].map(st=>'<div class="sb"><div class="sbv" style="height:'+(100*r.shedHours[st]/mx).toFixed(1)+'%"></div><div class="sbl">S'+st+'</div></div>').join('');
-  document.getElementById('shedNums').innerHTML=[1,2,3,4,5,6,7,8].map(st=>'<div class="shednum" style="flex:1;text-align:center">'+(r.shedHours[st]||'')+'</div>').join('');
+  // shed bars are rendered by renderRisk (Monte Carlo)
+  detStage=r.maxStage;
+  document.getElementById('riskTag').textContent='computing…';
 
   updateMap(r);
   draw(r);
@@ -542,7 +569,53 @@ function render(r){
 
 /* ==================== RUN LOOP ==================== */
 const PROFILES=buildProfiles();
-let lastRes=null, rafPending=false;
+let lastRes=null, rafPending=false, detStage=0;
+
+/* --- Monte Carlo outage risk (60 synthetic years, chunked async) --- */
+let mcToken=0, mcTimer=null;
+const MC_N=60;
+function scheduleMC(){clearTimeout(mcTimer); mcTimer=setTimeout(runMC,350);}
+async function runMC(){
+  const token=++mcToken;
+  const mean=state.coalEAFPct/100, vol=state.outVolPct/100;
+  const runs=[];
+  for(let i=0;i<MC_N;i+=12){
+    if(token!==mcToken)return;
+    for(let j=i;j<Math.min(MC_N,i+12);j++){
+      const path=genOutagePath(mean,vol,1000+j*7919);
+      const r=simulate(state,PROFILES,path);
+      runs.push({shed:r.shedMWh, stage:r.maxStage, hrs:r.shedHours.slice(1).reduce((a,b)=>a+b,0), diesel:r.E.diesel});
+    }
+    await new Promise(res=>setTimeout(res,0));
+  }
+  if(token!==mcToken)return;
+  renderRisk(runs);
+}
+function renderRisk(runs){
+  const N=runs.length;
+  const pAny=runs.filter(r=>r.shed>1000).length/N;
+  const meanShed=runs.reduce((s,r)=>s+r.shed,0)/N/1000;
+  const sorted=[...runs].sort((a,b)=>a.shed-b.shed);
+  const p90=sorted[Math.floor(0.9*(N-1))].shed/1000;
+  const meanDiesel=runs.reduce((s,r)=>s+r.diesel,0)/N/1e6;
+  const exceed=[1,2,3,4,5,6,7,8].map(s=>runs.filter(r=>r.stage>=s).length/N);
+  document.getElementById('riskTag').textContent=MC_N+' outage-years';
+  document.getElementById('riskHead').innerHTML=
+    '<div class="rk"><div class="k">P(any shedding)</div><div class="v" style="color:'+(pAny>0.5?'var(--alert)':pAny>0.05?'var(--coal2)':'var(--veld)')+'">'+Math.round(pAny*100)+'%</div></div>'+
+    '<div class="rk"><div class="k">Expected shed</div><div class="v">'+(meanShed<1?'0':Math.round(meanShed).toLocaleString())+' GWh</div></div>'+
+    '<div class="rk"><div class="k">P90 shed</div><div class="v">'+(p90<1?'0':Math.round(p90).toLocaleString())+' GWh</div></div>'+
+    '<div class="rk"><div class="k">E[diesel]</div><div class="v">'+meanDiesel.toFixed(1)+' TWh</div></div>';
+  document.getElementById('shed').innerHTML=exceed.map((p,i)=>'<div class="sb"><div class="sbv" style="height:'+(100*p).toFixed(1)+'%"></div><div class="sbl">S'+(i+1)+'</div></div>').join('');
+  document.getElementById('shedNums').innerHTML=exceed.map(p=>'<div class="shednum" style="flex:1;text-align:center">'+(p>0?Math.round(p*100)+'%':'')+'</div>').join('');
+  document.getElementById('bdShed').textContent=meanShed<1?'0 GWh':Math.round(meanShed).toLocaleString()+' GWh';
+  // status word: deterministic stage, upgraded by risk
+  const sw=document.getElementById('statusWord');
+  if(detStage===0){
+    if(pAny>0.5){sw.textContent='At risk';sw.className='statusword bad';}
+    else if(pAny>0.1){sw.textContent='Exposed';sw.className='statusword warn';}
+    else {sw.textContent='Stable';sw.className='statusword ok';}
+  }
+}
 
 /* --- URL state: read on load, write on change, share button --- */
 const urlParams=new URLSearchParams(location.search);
@@ -570,7 +643,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   }).catch(()=>{btn.textContent=location.href;});
 });
 
-function run(){lastRes=simulate(state,PROFILES);render(lastRes);syncURL();}
+function run(){lastRes=simulate(state,PROFILES);render(lastRes);syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
