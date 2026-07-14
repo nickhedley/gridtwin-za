@@ -69,9 +69,15 @@ The 2026 base year is calibrated to **Eskom's weekly system status reports
 **Costs (R/MWh marginal):** coal 480 · nuclear 160 · imports 550 · CCGT 1,750 ·
 diesel 6,100. **Emissions (tCO₂/MWh):** coal 1.04 · CCGT 0.37 · diesel 0.78.
 **New-build annualised capex (R/kW·yr):** wind 1,650 · PV 1,050 · rooftop 1,150
-· battery (4h) 1,500 · CCGT 1,350. The reported average energy cost is
-(fuel + carbon + new-build capex) ÷ grid energy served — it excludes
-existing-fleet capex, network and retail costs, so it is *not* a tariff.
+· battery (4h) 1,500 · CCGT 1,350. **Grid expansion adder:** default
+R600/kW·yr applied to new wind and utility PV (adjustable R0–1,200 via the
+Policy slider), derived from the Transmission Development Plan 2025–34:
+±R390bn of lines and transformers to connect 56 GW ≈ R700/kW·yr annualised.
+Rooftop PV and batteries (assumed co-located) are exempt — one reason embedded
+solar is worth more than its raw capacity suggests. The reported average
+energy cost is (fuel + carbon + new-build capex incl. the grid adder) ÷ grid
+energy served — it still excludes existing-fleet capex, distribution and
+retail costs, so it is *not* a tariff.
 
 Demand, wind and solar profiles are currently **synthetic but calibrated**
 (shape parameters fitted to the reference points above). Replacing them with
@@ -80,9 +86,10 @@ pipeline (`scripts/build_profiles.py`) is already in the repo.
 
 ## Limitations — read before quoting results
 
-- **Single node.** Transmission is schematic only; no network constraints. In
-  reality, grid capacity in the Cape provinces is a binding constraint on
-  renewable build — this model cannot see that.
+- **Single node.** Transmission is schematic only; no network *constraints*.
+  New-build transmission *cost* is approximated by the grid expansion adder,
+  but the model cannot see that grid capacity in the Cape provinces is a
+  binding physical constraint on where and how fast renewables can connect.
 - **No unit commitment or reserves.** Coal has no minimum-stable-generation or
   ramping constraints; no operating reserve margin is enforced. This makes the
   model slightly optimistic in tight hours.
