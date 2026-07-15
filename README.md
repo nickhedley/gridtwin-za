@@ -25,7 +25,9 @@ settings are encoded in the URL, so any configuration can be shared as a link.
 1. **Rooftop / embedded PV** — behind the meter, nets off demand directly
 2. **Wind, utility PV, CSP** — zero marginal cost, curtailed only on surplus
 3. **Nuclear (Koeberg), hydro, Cahora Bassa imports** — near-must-run
+   (new nuclear build is also available via a slider, additive to Koeberg)
 4. **Coal** — 42 GW installed × EAF, the workhorse
+   (new coal build is also available via a slider, additive to the existing fleet)
 5. **Pumped storage & batteries** — discharge before peakers; recharge from
    surplus renewables and off-peak coal headroom
 6. **Gas CCGT** (if built) — mid-merit
@@ -69,15 +71,28 @@ The 2026 base year is calibrated to **Eskom's weekly system status reports
 **Costs (R/MWh marginal):** coal 480 · nuclear 160 · imports 550 · CCGT 1,750 ·
 diesel 6,100. **Emissions (tCO₂/MWh):** coal 1.04 · CCGT 0.37 · diesel 0.78.
 **New-build annualised capex (R/kW·yr):** wind 1,650 · PV 1,050 · rooftop 1,150
-· battery (4h) 1,500 · CCGT 1,350. **Grid expansion adder:** default
-R600/kW·yr applied to new wind and utility PV (adjustable R0–1,200 via the
-Policy slider), derived from the Transmission Development Plan 2025–34:
-±R390bn of lines and transformers to connect 56 GW ≈ R700/kW·yr annualised.
-Rooftop PV and batteries (assumed co-located) are exempt — one reason embedded
-solar is worth more than its raw capacity suggests. The reported average
-energy cost is (fuel + carbon + new-build capex incl. the grid adder) ÷ grid
-energy served — it still excludes existing-fleet capex, distribution and
-retail costs, so it is *not* a tariff.
+· battery (4h) 1,500 · CCGT 1,350 · nuclear 7,500 · coal 4,800. Nuclear is
+based on SA government 2026 market testing (US$2,900–6,700/kW overnight) —
+highly cost-uncertain given that range. Coal is calibrated to Kusile's actual
+build cost (~R233bn / 4.8 GW), a cautionary real-world data point rather than
+a clean benchmark, since the build ran roughly 2× over budget and a decade
+late. **Grid expansion adder:** default R25/kW·yr applied to new wind and
+utility PV (adjustable R0–1,200 via the Policy slider) — a transmission-only
+estimate derived from PyPSA-ZA (Hörsch & Calitz, 2021), which finds
+co-optimised transmission + storage together add R43/MWh even at 94%
+renewables penetration. The paper doesn't split that figure explicitly, but
+its REDZ-vs-CORRIDORS sensitivity test shows batteries and AC lines each
+contribute on the order of R15/MWh, supporting a rough 50/50 split —
+transmission alone ≈R21/MWh ≈R25/kW·yr. Storage cost is deliberately excluded
+here since batteries are already priced via the separate battery slider. The
+Transmission Development Plan 2025–34's ±R390bn / 56 GW ≈ R700/kW·yr figure is
+a national-average, unoptimised-siting cost and remains available as the
+slider's upper bound. Rooftop PV and batteries (assumed co-located) are exempt
+from the adder — one reason embedded solar is worth more than its raw
+capacity suggests. The reported average energy cost is (fuel + carbon +
+new-build capex incl. the grid adder) ÷ grid energy served — it still
+excludes existing-fleet capex, distribution and retail costs, so it is *not*
+a tariff.
 
 Demand, wind and solar profiles are currently **synthetic but calibrated**
 (shape parameters fitted to the reference points above). Replacing them with
