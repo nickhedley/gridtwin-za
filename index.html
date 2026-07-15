@@ -230,8 +230,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Gas CCGT</td><td>R1 750/MWh · 0.37 tCO₂/MWh</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh · 1 150 MW @ 85%</td></tr>
           <tr><td>Existing fleet</td><td>Wind 3.6 GW · Utility PV 4 GW · Rooftop 8.3 GW · CSP 0.5 GW · Batteries 0.8 GW · Pumped storage 2.9 GW</td></tr>
-          <tr><td>New-build annualised capex</td><td>Wind R1 650 · PV R1 050 · Rooftop R1 150 · Battery(4h) R1 500 · CCGT R1 350 /kW·yr</td></tr>
-          <tr><td>Grid expansion adder</td><td>Default R600/kW·yr on new wind &amp; utility PV — from TDP 2025–34: ±R390bn for 14 500 km of lines to connect 56 GW ≈ R700/kW·yr annualised. Rooftop PV and (assumed co-located) batteries are exempt. Adjustable via the Policy slider.</td></tr>
+          <tr><td>New-build annualised capex</td><td>Wind R1 650 · PV R1 050 · Rooftop R1 150 · Battery(4h) R1 500 · CCGT R1 350 · Nuclear R7 500 · Coal R4 800 /kW·yr</td></tr>
+          <tr><td>Grid expansion adder</td><td>Default R25/kW·yr on new wind &amp; utility PV — transmission-only estimate. PyPSA-ZA (Hörsch &amp; Calitz, 2021) finds co-optimised transmission+storage together add R43/MWh at 94% renewables; the paper doesn't split that number explicitly, but its REDZ-vs-CORRIDORS sensitivity test (batteries and AC lines each ~R15/MWh) supports treating it as roughly 50/50 — giving ≈R21/MWh, ≈R25/kW·yr for transmission alone. Storage cost is deliberately excluded here since batteries are already priced via the separate battery slider. The TDP 2025–34's ±R390bn/56GW ≈ R700/kW·yr figure is a national-average, unoptimised-siting upper bound, explorable via the slider (max R1 200/kW·yr). Rooftop PV and co-located batteries are exempt.</td></tr>
           <tr><td>Avg tariff-equivalent cost</td><td>(fuel + carbon + new capex) ÷ grid energy served — excludes existing-fleet capex, wires &amp; retail</td></tr>
         </table>
         <p style="margin-top:8px"><strong>Outage risk:</strong> coal availability follows a mean-corrected daily AR(1) process around the EAF slider, with volatility calibrated to the multi-week swings in Eskom's reported unplanned outages. The risk panel dispatches 60 such synthetic years and reports load shedding as probabilities. Weather and demand noise are held fixed across runs, so the bands reflect outage risk only — real years also vary in weather.</p>
@@ -280,14 +280,15 @@ const FIXED = {
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
   costCoal:480, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
   costCcgt:1750, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
-  acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
+  acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:25,
+  acapNuclear:7500, acapCoal:4800,
 };
 
 function simulate(u, prof, outPath){
   const p={...FIXED,...u};
   const {demand,solar,wind,csp}=prof;
   const growth=1+p.demandGrowthPct/100;
-  const coalInstRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW);
+  const coalInstRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW+p.newCoalMW);
   const coalAvail=coalInstRem*p.coalEAFPct/100;
   const windCap=p.windMW+p.newWindMW, pvCap=p.pvUtilityMW+p.newPvMW, rooftopCap=p.rooftopMW+p.newRooftopMW;
   const battPower=p.battPowerMW+p.newBattMW, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours;
@@ -308,7 +309,7 @@ function simulate(u, prof, outPath){
     const load=rawDemand-rooftopGen;
     E.rooftop+=rooftopGen; loadS[h]=load;
     let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
-    const nuc=p.nuclearMW*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
+    const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     let residual=load-windGen-pvGen-cspGen-nuc-hyd-imp;
     let coalGen=0;
     if(residual<0){
@@ -340,7 +341,7 @@ function simulate(u, prof, outPath){
     stack.wind[h]=windGen; stack.pv[h]=pvGen; stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
     fuelCost+=nuc*p.costNuclear+hyd*p.costHydro+imp*p.costImports;
   }
-  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+(u.newWindMW+u.newPvMW)*p.txRPerKWyr)*1000;
+  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newNuclearMW*p.acapNuclear+u.newCoalMW*p.acapCoal+(u.newWindMW+u.newPvMW)*p.txRPerKWyr)*1000;
   const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
   const totalCost=fuelCost+carbonCost+newCapexR;
@@ -381,8 +382,10 @@ const SLIDERS=[
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:20000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.3 GW existing, behind the meter'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:15000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance in most scenarios'},
+  {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 1.86 GW existing (Koeberg) · SA gov market testing (2026): US$2,900–6,700/kW ≈ R53k–124k/kW overnight · highly cost-uncertain'},
+  {id:'newCoalMW',label:'New coal',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 42 GW existing · calibrated to Kusile\u2019s real build cost (~R233bn / 4.8 GW) · SA\u2019s last new coal build ran ~2× over budget and a decade late'},
   {grp:'Policy'},
-  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
+  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:5,def:25,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP full buildout ≈ R700/kW·yr charges every new MW for the whole national programme, an unoptimised-siting upper bound · PyPSA-ZA (Hörsch & Calitz, 2021) finds co-optimised transmission+storage add only R43/MWh even at 94% renewables — the paper doesn\u2019t split that figure, but a REDZ-vs-CORRIDORS sensitivity test shows batteries and AC lines contribute ~R15/MWh each (comparable magnitude), supporting a rough 50/50 split · transmission-only ≈R21/MWh ≈R25/kW·yr here, storage cost is excluded (batteries priced separately via the battery slider) · rooftop avoids it'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'headline tax ≈ R308/t (2026) but generator allowances shield most of it — set the price generators actually feel'},
 ];
 const PRESETS={
