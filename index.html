@@ -670,6 +670,19 @@ function run(){lastRes=simulate(state,PROFILES);render(lastRes);syncURL();schedu
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
+
+/* --- auto-resize for iframe embeds: reports content height to the parent page --- */
+(function(){
+  if(window.self===window.top) return; // not running inside an iframe, nothing to do
+  function postHeight(){
+    const h=Math.ceil(document.documentElement.scrollHeight);
+    window.parent.postMessage({type:'gridtwin-resize', height:h}, '*');
+  }
+  new ResizeObserver(postHeight).observe(document.body);
+  window.addEventListener('load', postHeight);
+  postHeight();
+})();
+
 </script>
 </body>
 </html>
