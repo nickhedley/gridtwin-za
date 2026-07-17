@@ -26,7 +26,6 @@
   --sun:#D9A62E; --sky:#3A5F73; --nuke:#7A6FA0;
   --alert:#C3512F; --alert2:#8F3A20;
   --ok:#4E7A3C;
-  --sea:#D6E3E7; --land:#EAE4CC;
   --shadow:0 1px 0 rgba(34,41,43,.08), 0 6px 18px -8px rgba(34,41,43,.25);
 }
 *{box-sizing:border-box; margin:0; padding:0}
@@ -81,8 +80,8 @@ input[type=range]{width:100%; accent-color:var(--alert); height:22px}
 .presets button.active{background:var(--ink); color:var(--panel)}
 
 /* KPI strip */
-.kpis{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:18px}
-@media(max-width:1150px){.kpis{grid-template-columns:repeat(3,1fr)}}
+.kpis{display:grid; grid-template-columns:repeat(7,1fr); gap:12px; margin-bottom:18px}
+@media(max-width:1150px){.kpis{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow); padding:9px 12px 8px; position:relative}
 .kpi .k{font-family:'Saira Condensed'; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink2)}
@@ -155,6 +154,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
       <div class="cell"><span class="lbl">Peak demand</span><span class="val" id="bdPeak">–</span></div>
       <div class="cell"><span class="lbl">Expected shed</span><span class="val" id="bdShed">–</span></div>
+      <div class="cell"><span class="lbl">Data</span><span class="statusword" id="bdData" style="font-size:15px; color:#9AA69B">synthetic</span></div>
     </div>
   </div>
 </header>
@@ -231,8 +231,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Gas CCGT</td><td>R1 750/MWh · 0.37 tCO₂/MWh</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh · 1 150 MW @ 85%</td></tr>
           <tr><td>Existing fleet</td><td>Wind 3.6 GW · Utility PV 4 GW · Rooftop 8.3 GW · CSP 0.5 GW · Batteries 0.8 GW · Pumped storage 2.9 GW</td></tr>
-          <tr><td>New-build annualised capex</td><td>Wind R1 650 · PV R1 050 · Rooftop R1 150 · Battery(4h) R1 500 · CCGT R1 350 · Nuclear R7 500 · Coal R4 800 /kW·yr</td></tr>
-          <tr><td>Grid expansion adder</td><td>Default R25/kW·yr on new wind &amp; utility PV — transmission-only estimate. PyPSA-ZA (Hörsch &amp; Calitz, 2021) finds co-optimised transmission+storage together add R43/MWh at 94% renewables; the paper doesn't split that number explicitly, but its REDZ-vs-CORRIDORS sensitivity test (batteries and AC lines each ~R15/MWh) supports treating it as roughly 50/50 — giving ≈R21/MWh, ≈R25/kW·yr for transmission alone. Storage cost is deliberately excluded here since batteries are already priced via the separate battery slider. The TDP 2025–34's ±R390bn/56GW ≈ R700/kW·yr figure is a national-average, unoptimised-siting upper bound, explorable via the slider (max R1 200/kW·yr). Rooftop PV and co-located batteries are exempt.</td></tr>
+          <tr><td>New-build annualised capex</td><td>Wind R1 650 · PV R1 050 · Rooftop R1 150 · Battery(4h) R1 500 · CCGT R1 350 /kW·yr</td></tr>
+          <tr><td>Grid expansion adder</td><td>Default R600/kW·yr on new wind &amp; utility PV — from TDP 2025–34: ±R390bn for 14 500 km of lines to connect 56 GW ≈ R700/kW·yr annualised. Rooftop PV and (assumed co-located) batteries are exempt. Adjustable via the Policy slider.</td></tr>
+          <tr><td>Renewables vs Non-fossil</td><td>"Renewables" = wind + utility PV + rooftop PV + CSP. "Non-fossil" adds nuclear, hydro and (mostly-hydro) imports. Rooftop is reconstructed from an assumed ~6.5 GW embedded fleet — it is behind-the-meter and not in Eskom's figures, so it is the softest input; the true renewables share could be a point or two lower.</td></tr>
           <tr><td>Avg tariff-equivalent cost</td><td>(fuel + carbon + new capex) ÷ grid energy served — excludes existing-fleet capex, wires &amp; retail</td></tr>
         </table>
         <p style="margin-top:8px"><strong>Outage risk:</strong> coal availability follows a mean-corrected daily AR(1) process around the EAF slider, with volatility calibrated to the multi-week swings in Eskom's reported unplanned outages. The risk panel dispatches 60 such synthetic years and reports load shedding as probabilities. Weather and demand noise are held fixed across runs, so the bands reflect outage risk only — real years also vary in weather.</p>
@@ -250,7 +251,16 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 const HOURS = 8760;
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
-function buildProfiles(){
+function buildProfiles(real){
+  if(real&&real.demand&&real.demand.length===HOURS){
+    const demand=Float64Array.from(real.demand);
+    const solar=Float64Array.from(real.solar_pu);
+    const wind=Float64Array.from(real.wind_pu);
+    const csp=new Float64Array(HOURS);
+    // CSP not in Eskom feed — synthesize a small solar-shifted profile from solar shape
+    for(let h=0;h<HOURS;h++){const hour=h%24; const eve=(hour>=10&&hour<=22)?Math.exp(-Math.pow(hour-17,2)/18):0; csp[h]=Math.min(1,0.6*eve);}
+    return {demand,solar,wind,csp,real:true};
+  }
   const rand = mulberry32(20260714);
   const demand=new Float64Array(HOURS), solar=new Float64Array(HOURS), wind=new Float64Array(HOURS), csp=new Float64Array(HOURS);
   let windState=0.35;
@@ -271,7 +281,7 @@ function buildProfiles(){
     const diurnal=1+0.12*Math.sin((hour-16)/24*2*Math.PI);
     wind[h]=Math.min(0.98,Math.max(0.02,windState*diurnal));
   }
-  return {demand,solar,wind,csp};
+  return {demand,solar,wind,csp,real:false};
 }
 
 const FIXED = {
@@ -281,15 +291,14 @@ const FIXED = {
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
   costCoal:480, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
   costCcgt:1750, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
-  acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:25,
-  acapNuclear:7500, acapCoal:4800,
+  acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
 };
 
 function simulate(u, prof, outPath){
   const p={...FIXED,...u};
   const {demand,solar,wind,csp}=prof;
   const growth=1+p.demandGrowthPct/100;
-  const coalInstRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW+p.newCoalMW);
+  const coalInstRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW);
   const coalAvail=coalInstRem*p.coalEAFPct/100;
   const windCap=p.windMW+p.newWindMW, pvCap=p.pvUtilityMW+p.newPvMW, rooftopCap=p.rooftopMW+p.newRooftopMW;
   const battPower=p.battPowerMW+p.newBattMW, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours;
@@ -310,7 +319,7 @@ function simulate(u, prof, outPath){
     const load=rawDemand-rooftopGen;
     E.rooftop+=rooftopGen; loadS[h]=load;
     let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
-    const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
+    const nuc=p.nuclearMW*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     let residual=load-windGen-pvGen-cspGen-nuc-hyd-imp;
     let coalGen=0;
     if(residual<0){
@@ -342,7 +351,7 @@ function simulate(u, prof, outPath){
     stack.wind[h]=windGen; stack.pv[h]=pvGen; stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
     fuelCost+=nuc*p.costNuclear+hyd*p.costHydro+imp*p.costImports;
   }
-  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newNuclearMW*p.acapNuclear+u.newCoalMW*p.acapCoal+(u.newWindMW+u.newPvMW)*p.txRPerKWyr)*1000;
+  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+(u.newWindMW+u.newPvMW)*p.txRPerKWyr)*1000;
   const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
   const totalCost=fuelCost+carbonCost+newCapexR;
@@ -373,7 +382,7 @@ function genOutagePath(meanFrac, volFrac, seed){
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
-  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:40,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'electrification, economic growth, EVs, etc.'},
+  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:40,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'Industrial electrification, economic growth, EVs, etc.'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:40,max:80,step:1,def:64,fmt:v=>v+' %',note:'FY2026 ≈ 64 % · 2023 crisis ≈ 50–55 % · target 70 %'},
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
@@ -382,11 +391,9 @@ const SLIDERS=[
   {id:'newPvMW',label:'New utility solar PV',min:0,max:30000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4 GW existing'},
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:20000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.3 GW existing, behind the meter'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:15000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
-  {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance in most scenarios'},
-  {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 1.86 GW existing (Koeberg) · SA gov market testing (2026): US$2,900–6,700/kW ≈ R53k–124k/kW overnight · highly cost-uncertain'},
-  {id:'newCoalMW',label:'New coal',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 42 GW existing · calibrated to Kusile\u2019s real build cost (~R233bn / 4.8 GW) · SA\u2019s last new coal build ran ~2× over budget and a decade late'},
+  {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance — rarely dispatched when storage is ample'},
   {grp:'Policy'},
-  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:5,def:25,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP full buildout ≈ R700/kW·yr charges every new MW for the whole national programme, an unoptimised-siting upper bound · PyPSA-ZA (Hörsch & Calitz, 2021) finds co-optimised transmission+storage add only R43/MWh even at 94% renewables — the paper doesn\u2019t split that figure, but a REDZ-vs-CORRIDORS sensitivity test shows batteries and AC lines contribute ~R15/MWh each (comparable magnitude), supporting a rough 50/50 split · transmission-only ≈R21/MWh ≈R25/kW·yr here, storage cost is excluded (batteries priced separately via the battery slider) · rooftop avoids it'},
+  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'headline tax ≈ R308/t (2026) but generator allowances shield most of it — set the price generators actually feel'},
 ];
 const PRESETS={
@@ -456,19 +463,10 @@ function nodeColor(n,res){
   return m[t]||'var(--sky)';
 }
 function buildMap(){
-  let s='<svg viewBox="30 60 470 360" role="img" aria-label="Map of South Africa with the schematic transmission network overlaid">';
-  s+='<rect x="30" y="60" width="470" height="360" fill="var(--sea)"/>';
-  // faint graticule for map texture
-  for(let gx=60;gx<500;gx+=60){s+='<line x1="'+gx+'" y1="60" x2="'+gx+'" y2="420" stroke="var(--line2)" stroke-width="0.6" opacity="0.35"/>';}
-  for(let gy=90;gy<420;gy+=60){s+='<line x1="30" y1="'+gy+'" x2="500" y2="'+gy+'" stroke="var(--line2)" stroke-width="0.6" opacity="0.35"/>';}
-  s+='<path d="'+ZA_PATH+'" fill="var(--land)" stroke="var(--ink)" stroke-width="2"/>';
-  // Lesotho enclave
-  s+='<circle cx="350" cy="278" r="14" fill="var(--sea)" stroke="var(--ink)" stroke-width="1.2"/>';
-  s+='<text x="350" y="281" font-size="7" font-family=\'IBM Plex Mono\' text-anchor="middle" fill="var(--ink2)">LES</text>';
-  s+='<text x="60" y="150" font-size="11" font-family=\'Saira Condensed\' font-style="italic" letter-spacing="1.5" fill="var(--ink2)" opacity="0.75">ATLANTIC</text>';
-  s+='<text x="60" y="163" font-size="11" font-family=\'Saira Condensed\' font-style="italic" letter-spacing="1.5" fill="var(--ink2)" opacity="0.75">OCEAN</text>';
-  s+='<text x="455" y="200" font-size="11" font-family=\'Saira Condensed\' font-style="italic" letter-spacing="1.5" fill="var(--ink2)" opacity="0.75">INDIAN</text>';
-  s+='<text x="455" y="213" font-size="11" font-family=\'Saira Condensed\' font-style="italic" letter-spacing="1.5" fill="var(--ink2)" opacity="0.75">OCEAN</text>';
+  let s='<svg viewBox="30 60 470 360" role="img" aria-label="Schematic map of the South African transmission network">';
+  s+='<path d="'+ZA_PATH+'" fill="var(--panel2)" stroke="var(--line2)" stroke-width="1.5"/>';
+  // Lesotho notch
+  s+='<circle cx="350" cy="278" r="14" fill="var(--base)" stroke="var(--line2)" stroke-width="1"/>';
   LINKS.forEach(([a,b])=>{const A=NODES.find(n=>n.id===a),B=NODES.find(n=>n.id===b);
     s+='<line x1="'+A.x+'" y1="'+A.y+'" x2="'+B.x+'" y2="'+B.y+'" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="1 3" opacity="0.55"/>';});
   NODES.forEach(n=>{
@@ -562,13 +560,15 @@ function render(r){
 
   // KPIs
   const genTWh=(['wind','pv','csp','nuclear','hydro','imports','coal','ccgt','diesel','rooftop'].reduce((s,k)=>s+r.E[k],0))/1e6;
-  const cleanShare=100*(r.E.wind+r.E.pv+r.E.csp+r.E.rooftop+r.E.nuclear+r.E.hydro)/(genTWh*1e6);
+  const reShare=100*(r.E.wind+r.E.pv+r.E.csp+r.E.rooftop)/(genTWh*1e6);
+  const nonFossilShare=100*(r.E.wind+r.E.pv+r.E.csp+r.E.rooftop+r.E.nuclear+r.E.hydro+r.E.imports)/(genTWh*1e6);
   const kpis=[
     {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
     {k:'System cost',v:(r.totalCost/1e9).toFixed(0),u:'R bn/yr'},
     {k:'Avg energy cost',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
     {k:'CO₂ emissions',v:r.co2.toFixed(0),u:'Mt/yr'},
-    {k:'Clean share',v:cleanShare.toFixed(0),u:'%'},
+    {k:'Renewables',v:reShare.toFixed(0),u:'%'},
+    {k:'Non-fossil',v:nonFossilShare.toFixed(0),u:'%'},
     {k:'Curtailment',v:fmtTWh(r.E.curtailed),u:'TWh/yr'},
   ];
   document.getElementById('kpis').innerHTML=kpis.map(x=>'<div class="kpi"><div class="k">'+x.k+'</div><div class="v">'+x.v+'<span class="u"> '+x.u+'</span></div></div>').join('');
@@ -591,7 +591,7 @@ function render(r){
 }
 
 /* ==================== RUN LOOP ==================== */
-const PROFILES=buildProfiles();
+let PROFILES=buildProfiles();
 let lastRes=null, rafPending=false, detStage=0;
 
 /* --- Monte Carlo outage risk (60 synthetic years, chunked async) --- */
@@ -671,18 +671,16 @@ function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFram
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
 
-/* --- auto-resize for iframe embeds: reports content height to the parent page --- */
-(function(){
-  if(window.self===window.top) return; // not running inside an iframe, nothing to do
-  function postHeight(){
-    const h=Math.ceil(document.documentElement.scrollHeight);
-    window.parent.postMessage({type:'gridtwin-resize', height:h}, '*');
-  }
-  new ResizeObserver(postHeight).observe(document.body);
-  window.addEventListener('load', postHeight);
-  postHeight();
-})();
-
+/* --- Load real Eskom profiles if profiles.json is present, then re-solve --- */
+fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=>{
+  if(!data||!data.demand||data.demand.length!==HOURS)return;
+  PROFILES=buildProfiles(data);
+  const badge=document.getElementById('bdData');
+  if(badge){badge.textContent=((data.meta&&data.meta.year)?data.meta.year:'real')+' Eskom'; badge.style.color='#8FD08A';}
+  const foot=document.querySelector('.foot');
+  if(foot&&data.meta)foot.innerHTML='Driven by actual Eskom hourly system data ('+data.meta.year+', Eskom Data Portal). Demand, wind and solar profiles are real; fleet mix, costs and outage volatility are modelled. All outputs indicative — educational tool, not planning advice.';
+  run();
+}).catch(()=>{});
 </script>
 </body>
 </html>
