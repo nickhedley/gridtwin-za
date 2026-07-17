@@ -5,7 +5,8 @@ Live at: **https://nickhedley.github.io/gridtwin-za/**
 
 Adjust the fleet, demand and policy — the app re-simulates a full year of hourly
 dispatch instantly in your browser, and runs a 60-year Monte Carlo in the
-background to report load-shedding *risk*, not just a single outcome.
+background to report load-shedding *risk*, not just a single outcome. It runs on
+**actual Eskom hourly data for 2025**.
 
 Built in the spirit of interactive grid models like
 [PyPSA-CA](https://www.eshansingh.xyz/PyPSA-CA/app/), as the fast intuition
@@ -25,12 +26,14 @@ settings are encoded in the URL, so any configuration can be shared as a link.
 1. **Rooftop / embedded PV** — behind the meter, nets off demand directly
 2. **Wind, utility PV, CSP** — zero marginal cost, curtailed only on surplus
 3. **Nuclear (Koeberg), hydro, Cahora Bassa imports** — near-must-run
-   (new nuclear build is also available via a slider, additive to Koeberg)
 4. **Coal** — 42 GW installed × EAF, the workhorse
-   (new coal build is also available via a slider, additive to the existing fleet)
 5. **Pumped storage & batteries** — discharge before peakers; recharge from
    surplus renewables and off-peak coal headroom
-6. **Gas CCGT** (if built) — mid-merit
+6. **Gas CCGT** (if built) — priced as mid-merit, but in practice runs only as
+   backup/insurance: in a solar-and-battery-rich system, storage absorbs the
+   evening peaks and gas is rarely dispatched (near-zero load factor). This
+   mirrors the real tension in SA's gas debate, where LNG import economics want
+   steady offtake but a renewables-heavy grid needs gas only in droughts.
 7. **Diesel OCGT** — last resort, ~R6,100/MWh
 8. **Unserved energy** — reported as load shedding; one stage ≈ 1,000 MW shed
 
@@ -50,54 +53,64 @@ This matters because average EAF alone badly understates crisis dynamics — the
 average. With volatility included, the app's "Crisis 2023" preset reproduces a
 2023-scale outcome; without it, it doesn't.
 
-## Calibration
+## Data
 
-The 2026 base year is calibrated to **Eskom's weekly system status reports
-(June–July 2026)** and public capacity data:
+Demand, wind and solar profiles are **actual Eskom hourly data for 2025**
+(Eskom Data Portal, dataset ESK19243), processed by `scripts/build_profiles.py`
+into `profiles.json`.
 
-| Quantity | Model | Reference |
-|---|---|---|
-| Winter evening peak (grid) | ~27.5 GW | Eskom forecasts 26.3–27.3 GW, winter 2026 |
-| Coal fleet EAF | 64 % default | 64.8 % FYTD (Apr–Jul 2026) |
-| OCGT diesel load factor | ~0 % | 1.29 % FYTD 2026 |
-| Load shedding | Stage 0, P(shed) ≈ 0 | 420+ consecutive days without shedding |
-| Embedded rooftop PV | 8.3 GW | Eskom NTC, June 2026 |
-| Structural demand decline | built into profile | March 2026 peak 26.5 GW vs 28.9 GW in March 2025 |
+- **Demand** is reconstructed to *underlying* demand: Eskom's "Residual Demand"
+  is already net of wind and PV, so gross grid demand = residual + wind + PV;
+  estimated rooftop generation (~6.5 GW embedded fleet, behind-the-meter and
+  absent from Eskom's figures) is then added back, because the app nets rooftop
+  off internally.
+- **Wind and solar** are converted to per-unit capacity factors against
+  estimated nameplate, so app energy = installed MW × Σ(per-unit profile).
+- If `profiles.json` is absent, the app falls back to synthetic calibrated
+  profiles automatically (the status board shows "synthetic" vs "2025 Eskom").
 
-**Fleet (2026):** coal 42 GW · nuclear 1.86 GW · wind 3.6 GW · utility PV 4 GW
-· rooftop PV 8.3 GW · CSP 0.5 GW · batteries 0.8 GW · pumped storage 2.9 GW /
-60 GWh · diesel OCGT 3.4 GW · hydro 0.6 GW · imports 1.15 GW.
+**Observed 2025 (reproduced by the model):** winter peak 31.6 GW (7 July,
+18:00), wind capacity factor ~37%, utility PV ~21%, coal ~72% of generation.
+
+## The KPIs
+
+| KPI | Definition |
+|---|---|
+| Energy supplied | Total annual generation incl. rooftop (TWh) |
+| System cost | Fuel + carbon + annualised capex of *new* build incl. grid adder (R bn/yr) |
+| Avg energy cost | System cost ÷ grid energy served (R/kWh) — **not a tariff** |
+| CO₂ emissions | From coal, CCGT and diesel (Mt/yr) |
+| **Renewables** | wind + utility PV + rooftop PV + CSP, as % of generation |
+| **Non-fossil** | Renewables + nuclear + hydro + (mostly-hydro) imports |
+| Curtailment | Surplus renewable energy spilled (TWh/yr) |
+
+Renewables and Non-fossil are reported separately on purpose: lumping nuclear
+and hydro into a single "clean" figure overstates the renewable build-out.
+On 2025 data at default settings, Renewables ≈ 16% and Non-fossil ≈ 27%.
+Rooftop (~6.5% of generation) is the softest input — it is reconstructed, not
+measured, so the true renewables share could be a point or two lower.
+
+## Assumptions
+
+**Fleet (2026 baseline):** coal 42 GW · nuclear 1.86 GW · wind 3.6 GW · utility
+PV 4 GW · rooftop PV ~6.5 GW (2025) · CSP 0.5 GW · batteries 0.8 GW · pumped
+storage 2.9 GW / 60 GWh · diesel OCGT 3.4 GW · hydro 0.6 GW · imports 1.15 GW.
 
 **Costs (R/MWh marginal):** coal 480 · nuclear 160 · imports 550 · CCGT 1,750 ·
 diesel 6,100. **Emissions (tCO₂/MWh):** coal 1.04 · CCGT 0.37 · diesel 0.78.
-**New-build annualised capex (R/kW·yr):** wind 1,650 · PV 1,050 · rooftop 1,150
-· battery (4h) 1,500 · CCGT 1,350 · nuclear 7,500 · coal 4,800. Nuclear is
-based on SA government 2026 market testing (US$2,900–6,700/kW overnight) —
-highly cost-uncertain given that range. Coal is calibrated to Kusile's actual
-build cost (~R233bn / 4.8 GW), a cautionary real-world data point rather than
-a clean benchmark, since the build ran roughly 2× over budget and a decade
-late. **Grid expansion adder:** default R25/kW·yr applied to new wind and
-utility PV (adjustable R0–1,200 via the Policy slider) — a transmission-only
-estimate derived from PyPSA-ZA (Hörsch & Calitz, 2021), which finds
-co-optimised transmission + storage together add R43/MWh even at 94%
-renewables penetration. The paper doesn't split that figure explicitly, but
-its REDZ-vs-CORRIDORS sensitivity test shows batteries and AC lines each
-contribute on the order of R15/MWh, supporting a rough 50/50 split —
-transmission alone ≈R21/MWh ≈R25/kW·yr. Storage cost is deliberately excluded
-here since batteries are already priced via the separate battery slider. The
-Transmission Development Plan 2025–34's ±R390bn / 56 GW ≈ R700/kW·yr figure is
-a national-average, unoptimised-siting cost and remains available as the
-slider's upper bound. Rooftop PV and batteries (assumed co-located) are exempt
-from the adder — one reason embedded solar is worth more than its raw
-capacity suggests. The reported average energy cost is (fuel + carbon +
-new-build capex incl. the grid adder) ÷ grid energy served — it still
-excludes existing-fleet capex, distribution and retail costs, so it is *not*
-a tariff.
 
-Demand, wind and solar profiles are currently **synthetic but calibrated**
-(shape parameters fitted to the reference points above). Replacing them with
-actual Eskom Data Portal hourly data is the next milestone; the ingestion
-pipeline (`scripts/build_profiles.py`) is already in the repo.
+**New-build annualised capex (R/kW·yr):** wind 1,650 · PV 1,050 · rooftop 1,150
+· battery (4h) 1,500 · CCGT 1,350.
+
+**Grid expansion adder:** default R600/kW·yr applied to new wind and utility PV
+(adjustable R0–1,200 via the Policy slider), derived from the Transmission
+Development Plan 2025–34: ±R390bn of lines and transformers to connect 56 GW ≈
+R700/kW·yr annualised. Rooftop PV and batteries (assumed co-located) are exempt
+— one reason embedded solar is worth more than its raw capacity suggests.
+
+The reported average energy cost is (fuel + carbon + new-build capex incl. the
+grid adder) ÷ grid energy served — it still excludes existing-fleet capex,
+distribution and retail costs, so it is *not* a tariff.
 
 ## Limitations — read before quoting results
 
@@ -108,12 +121,14 @@ pipeline (`scripts/build_profiles.py`) is already in the repo.
 - **No unit commitment or reserves.** Coal has no minimum-stable-generation or
   ramping constraints; no operating reserve margin is enforced. This makes the
   model slightly optimistic in tight hours.
-- **Storage dispatches with simple heuristics**, not optimisation.
-- **Monte Carlo varies outages only.** Weather and demand noise are held fixed
-  across the 60 runs; real years also vary in weather. Bands understate total
-  uncertainty.
+- **Storage dispatches with simple heuristics**, not optimisation. Because it
+  has no foresight, it may hold gas plant idle where a real operator would burn
+  some to preserve storage for an anticipated bad day.
+- **Monte Carlo varies outages only.** Weather and demand are fixed at the
+  actual 2025 year across the 60 runs; real years also vary in weather. Bands
+  understate total uncertainty.
+- **Rooftop is estimated, not measured** (see Data).
 - **Costs are indicative** and the cost metric is not a tariff (see above).
-- **Synthetic profiles** until the real-data milestone lands.
 
 For decision-grade capacity-expansion analysis, use
 [PyPSA-RSA](https://github.com/MeridianEconomics/pypsa-rsa) (Meridian
@@ -125,11 +140,13 @@ opposite trade-off: instant, transparent, and simple enough to reason about.
 
 ```
 index.html                  the entire app (no build step, no dependencies)
+profiles.json               real 2025 Eskom hourly demand/wind/solar profiles
+og-card.png                 social preview image
 scripts/build_profiles.py   Eskom CSV -> profiles.json ingestion pipeline
 ```
 
-The app is a single self-contained HTML file: vanilla JS, custom canvas
-charts, no frameworks, no trackers. Fork it, view source, or open an issue.
+The app is a single self-contained HTML file: vanilla JS, custom canvas charts,
+no frameworks, no trackers. Fork it, view source, or open an issue.
 
 ### Sharing scenarios
 
@@ -140,7 +157,7 @@ Slider settings are written to the URL. Copy the address bar (or use the
 ## Roadmap
 
 1. ~~Monte Carlo outage risk~~ ✅
-2. Real Eskom hourly demand / wind / PV profiles (ingestion script ready)
+2. ~~Real Eskom hourly demand / wind / PV profiles~~ ✅
 3. 10-region model on the GCCA Eskom transmission supply regions, with
    transfer limits — making the map show flows
 4. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
