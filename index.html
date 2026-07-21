@@ -207,6 +207,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               <button id="wkS">Summer week</button>
             </div>
           </div>
+          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week (2025 data, closest to the seasonal median for demand &amp; renewable output)</span></div>
           <div class="pb" style="padding:10px 10px 4px">
             <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart"></canvas>
           </div>
@@ -531,7 +532,7 @@ function drawDispatch(r){
   c.width=W*dpr; c.height=H*dpr;
   const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,W,H);
-  const start=weekMode==='W'? (170*24) : (10*24); // mid-June vs mid-January
+  const start=weekMode==='W'? 3264 : 7848; // representative weeks: closest to seasonal median demand+VRE (winter ~mid-May, summer ~late-Nov)
   const N=168;
   let maxY=0;
   for(let i=0;i<N;i++){let s=0; DISP_ORDER.forEach(k=>s+=r.stack[k][start+i]); maxY=Math.max(maxY,s,r.loadS[start+i]);}
