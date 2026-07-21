@@ -180,11 +180,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node = avg output</span></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
         <div class="legend">
-          <span><i style="background:var(--coal)"></i>Coal</span>
-          <span><i style="background:var(--nuke)"></i>Nuclear</span>
-          <span><i style="background:var(--veld2)"></i>Wind</span>
-          <span><i style="background:var(--sun)"></i>Solar</span>
-          <span><i style="background:var(--sky)"></i>Storage / hydro</span>
+          <span><i style="background:#4A3120"></i>Coal</span>
+          <span><i style="background:#E4322B"></i>Nuclear</span>
+          <span><i style="background:#3EA055"></i>Wind</span>
+          <span><i style="background:#F5C518"></i>Solar</span>
+          <span><i style="background:#1F4E79"></i>Storage / hydro</span>
           <span><i style="background:var(--alert)"></i>Peakers</span>
         </div>
       </section>
@@ -382,15 +382,15 @@ function genOutagePath(meanFrac, volFrac, seed){
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
-  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:40,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'Industrial electrification, economic growth, EVs, etc.'},
+  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:50,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'Industrial electrification, economic growth, EVs, etc.'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:40,max:80,step:1,def:64,fmt:v=>v+' %',note:'FY2026 ≈ 64 % · 2023 crisis ≈ 50–55 % · target 70 %'},
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
   {grp:'New build'},
-  {id:'newWindMW',label:'New wind',min:0,max:30000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.6 GW existing'},
-  {id:'newPvMW',label:'New utility solar PV',min:0,max:30000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4 GW existing'},
-  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:20000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.3 GW existing, behind the meter'},
-  {id:'newBattMW',label:'New batteries (4 h)',min:0,max:15000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
+  {id:'newWindMW',label:'New wind',min:0,max:70000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.6 GW existing'},
+  {id:'newPvMW',label:'New utility solar PV',min:0,max:80000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4 GW existing'},
+  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:40000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.3 GW existing, behind the meter'},
+  {id:'newBattMW',label:'New batteries (4 h)',min:0,max:50000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance — rarely dispatched when storage is ample'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
@@ -402,7 +402,7 @@ const PRESETS={
   'IRP-style 2030':{demandGrowthPct:6,coalEAFPct:66,coalDecomMW:5000,newWindMW:6000,newPvMW:5000,newRooftopMW:4000,newBattMW:3000,newCcgtMW:2500},
   'Deep decarb 2035':{demandGrowthPct:15,coalEAFPct:65,coalDecomMW:18000,newWindMW:22000,newPvMW:16000,newRooftopMW:8000,newBattMW:10000,newCcgtMW:6000,carbonTaxRPerT:640},
 };
-const COLORS={nuclear:'#7A6FA0',hydro:'#5E8DA3',imports:'#8FA3AC',coal:'#C98A2B',ps:'#3A5F73',batt:'#2E7D74',ccgt:'#B0655A',diesel:'#C3512F',wind:'#6FA05A',pv:'#D9A62E',csp:'#E0BE62',unserved:'#22292B',rooftop:'#EBD59A'};
+const COLORS={nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A'};
 const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV'};
 
 /* ==================== BUILD CONTROLS ==================== */
@@ -459,8 +459,8 @@ const LINKS=[['CPT','GRW'],['GRW','PE'],['PE','EC'],['EC','DBN'],['CPT','UPG'],[
 const ZA_PATH="M60,300 C55,270 70,240 78,215 C85,192 95,170 118,150 C142,130 175,112 210,100 C245,88 285,78 305,80 L318,95 L340,88 C360,82 385,86 400,100 L432,96 C455,112 470,140 476,170 C482,200 478,230 468,258 C458,286 446,310 424,330 C400,352 370,372 335,384 C300,396 258,400 222,396 C186,392 150,382 122,366 C95,350 66,330 60,300 Z";
 function nodeColor(n,res){
   const t=n.types[0];
-  const m={nuke:'var(--nuke)',coal:'var(--coal)',veld2:'var(--veld2)',sun:'var(--sun)',sky:'var(--sky)',alert:'var(--alert)'};
-  return m[t]||'var(--sky)';
+  const m={nuke:'#E4322B',coal:'#4A3120',veld2:'#3EA055',sun:'#F5C518',sky:'#1F4E79',alert:'var(--alert)'};
+  return m[t]||'#1F4E79';
 }
 function buildMap(){
   let s='<svg viewBox="30 60 470 360" role="img" aria-label="Schematic map of the South African transmission network">';
