@@ -218,6 +218,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
           </div>
         </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
+          <div class="pb" id="lcoe"></div>
+        </div>
       </section>
     </div>
 
@@ -292,6 +297,8 @@ const FIXED = {
   costCoal:480, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
   costCcgt:1750, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
   acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
+  // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
+  lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600, lcoeCsp:2000, lcoeCcgt:1500, lcoeNuclear:1650, lcoeCoalNew:1200, lcoeDiesel:5500,
 };
 
 function simulate(u, prof, outPath){
@@ -395,6 +402,16 @@ const SLIDERS=[
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'headline tax ≈ R308/t (2026) but generator allowances shield most of it — set the price generators actually feel'},
+  {grp:'LCOE assumptions (R/kWh) — full lifecycle build cost'},
+  {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:550,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
+  {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:750,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 wind bids > solar; anchor R0.75'},
+  {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:900,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
+  {id:'lcoeBatt',label:'Battery (4h)',min:600,max:3500,step:20,def:1600,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
+  {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:2000,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
+  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:3500,step:20,def:1500,fmt:v=>'R'+(v/1000).toFixed(2),note:'fuel-price sensitive'},
+  {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:1650,fmt:v=>'R'+(v/1000).toFixed(2),note:'wide range; SMRs higher'},
+  {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:1200,fmt:v=>'R'+(v/1000).toFixed(2),note:'new-build, not existing fleet'},
+  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:8000,step:50,def:5500,fmt:v=>'R'+(v/1000).toFixed(2),note:'peaking only'},
 ];
 const PRESETS={
   'Today 2026':{},
@@ -585,6 +602,23 @@ function render(r){
   // shed bars are rendered by renderRisk (Monte Carlo)
   detStage=r.maxStage;
   document.getElementById('riskTag').textContent='computing…';
+
+  // LCOE comparison chart
+  const lcoeRows=[
+    {k:'lcoePv',nm:'Utility solar PV',c:COLORS.pv},
+    {k:'lcoeRooftop',nm:'Rooftop PV',c:COLORS.rooftop},
+    {k:'lcoeWind',nm:'Wind',c:COLORS.wind},
+    {k:'lcoeCoalNew',nm:'New coal',c:COLORS.coal},
+    {k:'lcoeCcgt',nm:'Gas CCGT',c:COLORS.ccgt},
+    {k:'lcoeNuclear',nm:'Nuclear',c:COLORS.nuclear},
+    {k:'lcoeBatt',nm:'Battery (4h)',c:COLORS.batt},
+    {k:'lcoeCsp',nm:'CSP',c:COLORS.csp},
+    {k:'lcoeDiesel',nm:'Diesel OCGT',c:COLORS.diesel},
+  ].map(x=>({...x,v:state[x.k]!==undefined?state[x.k]:FIXED[x.k]})).sort((a,b)=>a.v-b.v);
+  const lcoeMax=Math.max(...lcoeRows.map(r=>r.v))*1.02;
+  document.getElementById('lcoe').innerHTML=lcoeRows.map(r=>
+    '<div class="mixrow"><span class="nm">'+r.nm+'</span><span class="barwrap"><span class="bar" style="width:'+(100*r.v/lcoeMax).toFixed(1)+'%;background:'+r.c+'"></span></span><span class="num">R'+(r.v/1000).toFixed(2)+'/kWh</span></div>'
+  ).join('');
 
   updateMap(r);
   draw(r);
