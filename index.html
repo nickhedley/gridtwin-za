@@ -109,6 +109,16 @@ canvas{width:100%; display:block}
 .mixrow .nm{width:118px; flex:none; font-weight:600}
 .mixrow .barwrap{flex:1; height:15px; background:var(--panel2); border:1px solid var(--line2); position:relative}
 .mixrow .bar{display:block; height:100%; transition:width .3s}
+.donutwrap{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+.donut{width:150px; height:150px; flex:none}
+.donut .dc1{font-family:'IBM Plex Mono'; font-size:15px; font-weight:600; fill:var(--ink)}
+.donut .dc2{font-family:'IBM Plex Mono'; font-size:7px; fill:var(--ink2)}
+.mixlegend{flex:1; min-width:150px; display:flex; flex-direction:column; gap:3px}
+.mixleg{display:flex; align-items:center; gap:7px; font-size:11.5px}
+.mixleg .sw{width:11px; height:11px; flex:none; border:1px solid rgba(34,41,43,.3)}
+.mixleg .ln{flex:1; font-weight:600}
+.mixleg .lv{font-family:'IBM Plex Mono'; font-size:11px; color:var(--ink2)}
+.mixleg .lp{font-family:'IBM Plex Mono'; font-size:11px; width:32px; text-align:right}
 .mixrow .num{width:86px; flex:none; text-align:right; font-family:'IBM Plex Mono'; font-size:11.5px}
 
 .shedbars{display:flex; gap:6px; align-items:flex-end; height:96px; padding:0 4px}
@@ -590,14 +600,31 @@ function render(r){
   ];
   document.getElementById('kpis').innerHTML=kpis.map(x=>'<div class="kpi"><div class="k">'+x.k+'</div><div class="v">'+x.v+'<span class="u"> '+x.u+'</span></div></div>').join('');
 
-  // mix
+  // mix — donut chart with legend
   const order=['coal','rooftop','wind','pv','csp','nuclear','imports','hydro','ccgt','diesel'];
   const tot=order.reduce((s,k)=>s+r.E[k],0);
   document.getElementById('mixTotal').textContent=fmtTWh(tot)+' TWh incl. rooftop';
-  document.getElementById('mix').innerHTML=order.filter(k=>r.E[k]>tot*0.0005||['coal','wind','pv'].includes(k)).map(k=>{
-    const pct=100*r.E[k]/tot;
-    return '<div class="mixrow"><span class="nm">'+NAMES[k]+'</span><span class="barwrap"><span class="bar" style="width:'+pct.toFixed(1)+'%;background:'+COLORS[k]+'"></span></span><span class="num">'+fmtTWh(r.E[k])+' TWh</span></div>';
+  const mixData=order.map(k=>({k,v:r.E[k],pct:100*r.E[k]/tot})).filter(d=>d.v>tot*0.0005||['coal','wind','pv'].includes(d.k));
+  // build donut arcs
+  const R=52, r0=30, cx=64, cy=64, C=2*Math.PI;
+  let ang=-Math.PI/2; // start at top
+  const arcs=mixData.map(d=>{
+    const a0=ang, a1=ang+C*d.v/tot; ang=a1;
+    const x0=cx+R*Math.cos(a0), y0=cy+R*Math.sin(a0), x1=cx+R*Math.cos(a1), y1=cy+R*Math.sin(a1);
+    const xi0=cx+r0*Math.cos(a0), yi0=cy+r0*Math.sin(a0), xi1=cx+r0*Math.cos(a1), yi1=cy+r0*Math.sin(a1);
+    const large=(a1-a0)>Math.PI?1:0;
+    return '<path d="M'+x0.toFixed(2)+' '+y0.toFixed(2)+' A'+R+' '+R+' 0 '+large+' 1 '+x1.toFixed(2)+' '+y1.toFixed(2)+
+      ' L'+xi1.toFixed(2)+' '+yi1.toFixed(2)+' A'+r0+' '+r0+' 0 '+large+' 0 '+xi0.toFixed(2)+' '+yi0.toFixed(2)+
+      ' Z" fill="'+COLORS[d.k]+'" stroke="var(--panel)" stroke-width="1"><title>'+NAMES[d.k]+': '+fmtTWh(d.v)+' TWh ('+d.pct.toFixed(1)+'%)</title></path>';
   }).join('');
+  const legend=mixData.map(d=>
+    '<div class="mixleg"><span class="sw" style="background:'+COLORS[d.k]+'"></span><span class="ln">'+NAMES[d.k]+'</span><span class="lv">'+fmtTWh(d.v)+' TWh</span><span class="lp">'+d.pct.toFixed(0)+'%</span></div>'
+  ).join('');
+  document.getElementById('mix').innerHTML=
+    '<div class="donutwrap"><svg viewBox="0 0 128 128" class="donut" role="img" aria-label="Energy mix donut chart">'+arcs+
+    '<text x="64" y="60" text-anchor="middle" class="dc1">'+fmtTWh(tot)+'</text>'+
+    '<text x="64" y="74" text-anchor="middle" class="dc2">TWh/yr</text></svg>'+
+    '<div class="mixlegend">'+legend+'</div></div>';
 
   // shed bars are rendered by renderRisk (Monte Carlo)
   detStage=r.maxStage;
