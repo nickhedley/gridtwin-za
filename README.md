@@ -108,6 +108,20 @@ Development Plan 2025–34: ±R390bn of lines and transformers to connect 56 GW 
 R700/kW·yr annualised. Rooftop PV and batteries (assumed co-located) are exempt
 — one reason embedded solar is worth more than its raw capacity suggests.
 
+**Co-located repurposing (Policy toggle).** When enabled, new solar and battery
+capacity can inherit the grid connection points of decommissioned coal, avoiding
+the transmission adder — but only up to the MW of coal retired (the connection
+headroom that retirement frees). Wind is never exempted: the Highveld coalfields
+(Mpumalanga, Limpopo) have strong solar irradiance but mediocre wind, so siting
+solar on a retired coal connection is geographically credible while siting wind
+there is not. The exemption is therefore `min(coal retired, new solar) × adder`.
+This lets the model demonstrate the connection-inheritance argument — retiring
+coal has grid value beyond the lost megawatts — while respecting its geographic
+limit: it does *not* imply that all new renewables avoid transmission cost, only
+the modest share that could plausibly sit near the coalfields. It is a
+cost-side approximation only; the single-node model does not physically route
+that solar through the old connection.
+
 The reported average energy cost is (fuel + carbon + new-build capex incl. the
 grid adder) ÷ grid energy served — it still excludes existing-fleet capex,
 distribution and retail costs, so it is *not* a tariff.
