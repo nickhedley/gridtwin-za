@@ -112,6 +112,40 @@ The reported average energy cost is (fuel + carbon + new-build capex incl. the
 grid adder) ÷ grid energy served — it still excludes existing-fleet capex,
 distribution and retail costs, so it is *not* a tariff.
 
+### LCOE comparison (separate from the cost engine)
+
+The "Levelised cost comparison" panel shows the full-lifecycle build cost of
+each technology (R/kWh), with adjustable sliders anchored to current South
+African figures:
+
+| Technology | Anchor (R/kWh) | Basis |
+|---|---|---|
+| Utility solar PV | 0.55 | REIPPPP BW7 (2024) bids averaged R0.46; anchor set slightly above unsubsidised |
+| Wind | 0.75 | BW7 wind bids came in above solar (none awarded), signalling higher local cost |
+| Rooftop PV | 0.90 | smaller scale, higher per-kW cost |
+| New coal | 1.20 | new-build, not the existing paid-off fleet |
+| Gas CCGT | 1.50 | fuel-price sensitive |
+| Battery (4h) | 1.60 | — |
+| Nuclear | 1.65 | wide range; SMRs materially higher |
+| CSP | 2.00 | — |
+| Diesel OCGT | 5.50 | peaking only |
+
+Anchors blend REIPPPP Bid Window 7 tariffs, IRENA's *Renewable Power Generation
+Costs in 2024*, and CSIR-style South African assumptions (≈R18.5/USD). A PPA
+tariff is close to but not identical to LCOE (it embeds developer margin), so
+the solar and wind anchors sit slightly above the raw bid numbers.
+
+**Important:** the LCOE sliders drive *only this comparison chart* — they do
+**not** feed the System Cost or Avg energy cost KPIs. LCOE bundles capex, fixed
+O&M and fuel into one number, whereas the dispatch engine deliberately keeps
+marginal cost (fuel + variable O&M, which sets merit order) separate from
+annualised capex (charged on new build regardless of output). Folding LCOE into
+the KPIs would double-count fuel and O&M. The separation is intentional: LCOE
+answers "what is cheapest to *build*?"; marginal cost answers "what do you *run*
+this hour?"; and a plant with high LCOE but near-zero marginal cost (e.g. solar)
+is still dispatched first once built. This mirrors how utilities and the CSIR
+actually separate build and dispatch decisions.
+
 ## Limitations — read before quoting results
 
 - **Single node.** Transmission is schematic only; no network *constraints*.
