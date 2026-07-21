@@ -74,7 +74,7 @@ header{border-bottom:2px solid var(--ink); background:var(--panel); box-shadow:v
 input[type=range]{width:100%; accent-color:var(--alert); height:22px}
 .grp{border-top:1.5px dashed var(--line2); margin:16px -14px 12px; padding:10px 14px 0}
 .grp h3{font-size:13.5px; color:var(--ink2); font-weight:600; margin-bottom:8px}
-.presets{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px}
+.presets{display:grid; grid-template-columns:1fr; gap:7px; margin-bottom:14px}
 .presets button{border:1.5px solid var(--ink); background:var(--panel); padding:7px 6px 5px; font-family:'Saira Condensed'; font-size:13.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; transition:background .15s}
 .presets button:hover{background:var(--panel2)}
 .presets button.active{background:var(--ink); color:var(--panel)}
@@ -426,8 +426,7 @@ const SLIDERS=[
 const PRESETS={
   'Today 2026':{},
   'Crisis 2023':{coalEAFPct:50,demandGrowthPct:14,outVolPct:6},
-  'IRP-style 2030':{demandGrowthPct:6,coalEAFPct:66,coalDecomMW:5000,newWindMW:6000,newPvMW:5000,newRooftopMW:4000,newBattMW:3000,newCcgtMW:2500},
-  'Deep decarb 2035':{demandGrowthPct:15,coalEAFPct:65,coalDecomMW:18000,newWindMW:22000,newPvMW:16000,newRooftopMW:8000,newBattMW:10000,newCcgtMW:6000,carbonTaxRPerT:640},
+  'Future electricity mix':{coalDecomMW:10000,newWindMW:20000,newPvMW:30000,newRooftopMW:10000,newBattMW:8000,newCcgtMW:2500},
 };
 const COLORS={nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A'};
 const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV'};
