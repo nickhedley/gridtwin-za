@@ -71,6 +71,8 @@ header{border-bottom:2px solid var(--ink); background:var(--panel); box-shadow:v
 .ctrl label{font-size:12.5px; font-weight:600}
 .ctrl .cv{font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--ink); background:var(--panel2); border:1px solid var(--line2); padding:0 6px}
 .ctrl small{display:block; color:var(--ink2); font-size:11px; margin-top:1px}
+.tog{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; cursor:pointer}
+.tog input{width:16px; height:16px; accent-color:var(--alert); flex:none; cursor:pointer}
 input[type=range]{width:100%; accent-color:var(--alert); height:22px}
 .grp{border-top:1.5px dashed var(--line2); margin:16px -14px 12px; padding:10px 14px 0}
 .grp h3{font-size:13.5px; color:var(--ink2); font-weight:600; margin-bottom:8px}
@@ -369,7 +371,17 @@ function simulate(u, prof, outPath){
     stack.wind[h]=windGen; stack.pv[h]=pvGen; stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
     fuelCost+=nuc*p.costNuclear+hyd*p.costHydro+imp*p.costImports;
   }
-  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+(u.newWindMW+u.newPvMW)*p.txRPerKWyr)*1000;
+  // Transmission adder on new wind + utility PV. Wind always pays it.
+  // Co-located repurposing: if on, new solar+battery can inherit retired-coal connection
+  // points, exempting them from the adder up to a cap = MW of coal decommissioned.
+  // (Solar suits the Highveld coalfields; wind does not, so wind is never exempt.)
+  let pvAdderMW=u.newPvMW;
+  if(u.repurpose){
+    const inheritable=Math.min(p.coalDecomMW, u.newPvMW+u.newBattMW); // connection headroom freed
+    const pvExempt=Math.min(u.newPvMW, inheritable);
+    pvAdderMW=u.newPvMW-pvExempt;
+  }
+  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
   const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
   const totalCost=fuelCost+carbonCost+newCapexR;
@@ -412,6 +424,7 @@ const SLIDERS=[
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance — rarely dispatched when storage is ample'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
+  {id:'repurpose',toggle:true,def:false,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'headline tax ≈ R308/t (2026) but generator allowances shield most of it — set the price generators actually feel'},
   {grp:'LCOE assumptions (R/kWh) — full lifecycle build cost'},
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:550,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
@@ -437,6 +450,17 @@ const state={};
 const controlsEl=document.getElementById('controls');
 SLIDERS.forEach(s=>{
   if(s.grp){const g=document.createElement('div');g.className='grp';g.innerHTML='<h3>'+s.grp+'</h3>';controlsEl.appendChild(g);return;}
+  if(s.toggle){
+    state[s.id]=s.def?1:0;
+    const d=document.createElement('div');d.className='ctrl';
+    d.innerHTML='<label class="tog"><input type="checkbox" id="in_'+s.id+'"'+(s.def?' checked':'')+'><span>'+s.label+'</span></label>'+(s.note?'<small>'+s.note+'</small>':'');
+    controlsEl.appendChild(d);
+    d.querySelector('input').addEventListener('change',e=>{
+      state[s.id]=e.target.checked?1:0;
+      setPresetActive(null); scheduleRun();
+    });
+    return;
+  }
   state[s.id]=s.def;
   const d=document.createElement('div');d.className='ctrl';
   d.innerHTML='<div class="row"><label for="in_'+s.id+'">'+s.label+'</label><span class="cv" id="cv_'+s.id+'">'+s.fmt(s.def)+'</span></div>'+
@@ -450,8 +474,11 @@ SLIDERS.forEach(s=>{
   });
 });
 function applyState(overrides){
-  SLIDERS.forEach(s=>{if(s.grp)return; const v=(s.id in overrides)?overrides[s.id]:s.def;
-    state[s.id]=v; document.getElementById('in_'+s.id).value=v; document.getElementById('cv_'+s.id).textContent=s.fmt(v);});
+  SLIDERS.forEach(s=>{if(s.grp)return; const v=(s.id in overrides)?overrides[s.id]:(s.toggle?(s.def?1:0):s.def);
+    state[s.id]=v;
+    if(s.toggle){document.getElementById('in_'+s.id).checked=!!v;}
+    else{document.getElementById('in_'+s.id).value=v; document.getElementById('cv_'+s.id).textContent=s.fmt(v);}
+  });
 }
 const presetsEl=document.getElementById('presets');
 Object.keys(PRESETS).forEach((name,i)=>{
@@ -516,6 +543,12 @@ function updateMap(r){
   set('DRA',scale(t.ps,6e6)); set('JHB',scale(t.batt+4e6,20e6));
   set('DBN',scale(t.diesel*0.4+2e6,12e6)); set('GRW',scale(t.diesel*0.2+t.ccgt*0.5+1e6,12e6));
   set('BFN',5);
+  // repurposing cue: ring the coalfield nodes when retired connections are reused for solar
+  const active=state.repurpose && state.coalDecomMW>0 && state.newPvMW>0;
+  ['MPU','LEP'].forEach(id=>{const el=document.getElementById('nd_'+id); if(el){
+    el.setAttribute('stroke', active?'#F5C518':'var(--ink)');
+    el.setAttribute('stroke-width', active?'2.5':'1.4');
+  }});
 }
 
 /* ==================== CHARTS ==================== */
@@ -706,6 +739,10 @@ const urlParams=new URLSearchParams(location.search);
 if(urlParams.get('embed')==='1') document.body.classList.add('embed');
 SLIDERS.forEach(s=>{
   if(s.grp||!urlParams.has(s.id))return;
+  if(s.toggle){
+    const v=urlParams.get(s.id)==='1'?1:0;
+    state[s.id]=v; document.getElementById('in_'+s.id).checked=!!v; setPresetActive(null); return;
+  }
   const v=Math.min(s.max,Math.max(s.min,+urlParams.get(s.id)||s.def));
   state[s.id]=v;
   document.getElementById('in_'+s.id).value=v;
@@ -714,7 +751,7 @@ SLIDERS.forEach(s=>{
 });
 function syncURL(){
   const q=new URLSearchParams();
-  SLIDERS.forEach(s=>{if(!s.grp&&state[s.id]!==s.def)q.set(s.id,state[s.id]);});
+  SLIDERS.forEach(s=>{if(s.grp)return; const def=s.toggle?(s.def?1:0):s.def; if(state[s.id]!==def)q.set(s.id,state[s.id]);});
   if(document.body.classList.contains('embed'))q.set('embed','1');
   const qs=q.toString();
   history.replaceState(null,'',qs?('?'+qs):location.pathname);
