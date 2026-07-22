@@ -1,0 +1,26 @@
+{
+  "wind_mw": {
+    "Eastern Cape": 1352.6,
+    "Limpopo": 0.0,
+    "Mpumalanga": 0.0,
+    "Gauteng": 0.0,
+    "Western Cape": 1274.5,
+    "Northern Cape": 750.5,
+    "Hydra Central": 88.5,
+    "Kwazulu Natal": 0.0,
+    "North West": 0.0,
+    "Free State": 0.0
+  },
+  "solar_mw": {
+    "Eastern Cape": 45.6,
+    "Limpopo": 77.0,
+    "Mpumalanga": 0.0,
+    "Gauteng": 0.0,
+    "Western Cape": 234.3,
+    "Northern Cape": 773.2,
+    "Hydra Central": 256.1,
+    "Kwazulu Natal": 0.0,
+    "North West": 502.5,
+    "Free State": 900.3
+  }
+}
