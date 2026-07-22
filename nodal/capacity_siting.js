@@ -16,6 +16,13 @@ async function loadHeadroomLookup() {
   return headroomLookup;
 }
 
+/**
+ * Evaluate a user's proposed deployment.
+ * @param {string} region - e.g. "Northern Cape"
+ * @param {string} tech - "wind" or "solar"
+ * @param {number} requestedMw
+ * @returns {object} result with headroom, shortfall, and grid-build charge if any
+ */
 async function evaluateDeployment(region, tech, requestedMw) {
   const lookup = await loadHeadroomLookup();
   const entry = lookup[region][tech];
@@ -32,7 +39,7 @@ async function evaluateDeployment(region, tech, requestedMw) {
   }
 
   const shortfallMw = requestedMw - headroom;
-  const lengthKm = entry.corridor_length_km || 300;
+  const lengthKm = entry.corridor_length_km || 300; // fallback if no corridor identified
   const capex = lengthKm * LINE_COST_PER_KM;
   const annualCapex = capex / LINE_LIFETIME_YEARS;
   const annualEnergyMwh = shortfallMw * entry.avg_capacity_factor * HOURS_PER_YEAR;
