@@ -273,8 +273,18 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
               </div>
               <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
+              <button id="siteAllocateBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px; background:var(--ink); color:var(--panel)">Allocate to model</button>
             </div>
             <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
+
+            <div style="margin-top:14px">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
+                <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
+                <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
+              </div>
+              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
+            </div>
+
           </div>
         </div>
 
@@ -306,29 +316,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 <footer class="foot">Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African system (calibrated to Eskom weekly system status reports, June–July 2026). All outputs are indicative — this is an educational scenario explorer, not planning or investment advice.</footer>
 
 <script src="nodal/capacity_siting.js?v=2"></script>
-<script>
-document.getElementById('siteCheckBtn').addEventListener('click', async ()=>{
-  const region=document.getElementById('siteRegion').value;
-  const tech=document.getElementById('siteTech').value;
-  const mw=parseFloat(document.getElementById('siteMw').value)||0;
-  const out=document.getElementById('siteResult');
-  out.textContent='Checking…';
-  try{
-    const r=await evaluateDeployment(region,tech,mw);
-    let html='<strong>'+region+' · '+(tech==='wind'?'Wind':'Solar PV')+' · '+mw+' MW</strong><br>';
-    if(!r.gridBuildNeeded){
-      html+='<span style="color:var(--ok)">✓ Fits within existing grid headroom</span> ('+r.headroomMw+' MW available on this network) — no new transmission needed, generation cost only.';
-    } else {
-      html+='<span style="color:var(--alert)">⚠ Exceeds local headroom</span> ('+r.headroomMw+' MW available, '+r.shortfallMw.toFixed(0)+' MW shortfall on '+r.bindingCorridor+').<br>';
-      html+='Reinforcing that corridor (~'+r.corridorLengthKm+' km) costs an estimated R'+(r.newLineCapexR/1e6).toFixed(0)+'m, adding <strong>R'+r.gridBuildChargeRPerMWh.toFixed(1)+'/MWh</strong> to the shortfall portion.';
-    }
-    out.innerHTML=html;
-  } catch(e){
-    out.textContent='Could not evaluate this region/technology — data may be missing.';
-    console.error(e);
-  }
-});
-</script>
 
 <script>
 "use strict";
@@ -858,5 +845,126 @@ fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=
   run();
 }).catch(()=>{});
 </script>
+
+<script>
+// Running portfolio of user-committed nodal allocations. In-memory only (resets on reload).
+let sitePortfolio=[];
+let siteAllocated={}; // key "region|tech" -> cumulative MW already committed at that node
+let siteSliderContribution={newWindMW:0, newPvMW:0}; // how much of the national slider WE added, for clean reset
+
+function sliderIdFor(tech){return tech==='wind'?'newWindMW':'newPvMW';}
+
+// Bump one national slider by a delta without disturbing any other control's value.
+function bumpSlider(id, deltaMW){
+  const s=SLIDERS.find(x=>x.id===id);
+  if(!s) return;
+  const newVal=Math.min(s.max, Math.max(s.min, state[id]+deltaMW));
+  state[id]=newVal;
+  document.getElementById('in_'+id).value=newVal;
+  document.getElementById('cv_'+id).textContent=s.fmt(newVal);
+  setPresetActive(null);
+  scheduleRun();
+}
+
+async function evaluateAgainstRemaining(region,tech,mw){
+  const lookup=await loadHeadroomLookup();
+  const entry=lookup[region][tech];
+  const key=region+'|'+tech;
+  const already=siteAllocated[key]||0;
+  const remaining=Math.max(0, entry.headroom_mw-already);
+  if(mw<=remaining){
+    return {region,tech,requestedMw:mw,gridBuildNeeded:false,shortfallMw:0,gridBuildChargeRPerMWh:0,
+      note:'Fits within remaining grid headroom ('+remaining.toFixed(0)+' MW left at this node) - no new transmission needed.'};
+  }
+  const shortfallMw=mw-remaining;
+  const lengthKm=entry.corridor_length_km||300;
+  const capex=lengthKm*31000000, annualCapex=capex/45;
+  const annualEnergyMwh=shortfallMw*entry.avg_capacity_factor*8760;
+  const chargePerMwh=annualEnergyMwh>0?annualCapex/annualEnergyMwh:NaN;
+  return {region,tech,requestedMw:mw,gridBuildNeeded:true,shortfallMw,bindingCorridor:entry.binding_corridor,
+    corridorLengthKm:lengthKm,newLineCapexR:capex,gridBuildChargeRPerMWh:Math.round(chargePerMwh*10)/10,
+    note:shortfallMw.toFixed(0)+' MW exceeds remaining headroom on '+entry.binding_corridor+'. Reinforcing (~'+lengthKm+' km) costs an estimated R'+(capex/1e6).toFixed(0)+'m, adding R'+chargePerMwh.toFixed(1)+'/MWh to the shortfall portion.'};
+}
+
+function renderResult(r){
+  const region=r.region, tech=r.tech, mw=r.requestedMw;
+  const out=document.getElementById('siteResult');
+  let html='<strong>'+region+' · '+(tech==='wind'?'Wind':'Solar PV')+' · '+mw+' MW</strong><br>';
+  if(!r.gridBuildNeeded){
+    html+='<span style="color:var(--ok)">✓ Fits within remaining grid headroom</span> — no new transmission needed, generation cost only.';
+  } else {
+    html+='<span style="color:var(--alert)">⚠ Exceeds remaining headroom</span> ('+r.shortfallMw.toFixed(0)+' MW shortfall on '+r.bindingCorridor+').<br>';
+    html+='Reinforcing that corridor (~'+r.corridorLengthKm+' km) costs an estimated R'+(r.newLineCapexR/1e6).toFixed(0)+'m, adding <strong>R'+r.gridBuildChargeRPerMWh.toFixed(1)+'/MWh</strong> to the shortfall portion.';
+  }
+  out.innerHTML=html;
+}
+
+function renderPortfolio(){
+  const el=document.getElementById('sitePortfolio');
+  if(sitePortfolio.length===0){
+    el.innerHTML='Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.';
+    return;
+  }
+  let totalMw=0, totalWithCharge=0;
+  const rows=sitePortfolio.map(a=>{
+    totalMw+=a.mw;
+    if(a.gridBuildNeeded) totalWithCharge+=a.shortfallMw;
+    return '<tr><td style="padding:3px 10px 3px 0">'+a.region+'</td><td style="padding:3px 10px 3px 0">'+(a.tech==='wind'?'Wind':'Solar')+'</td>'+
+      '<td style="padding:3px 10px 3px 0; text-align:right">'+a.mw+' MW</td>'+
+      '<td style="padding:3px 0 3px 0">'+(a.gridBuildNeeded?'<span style="color:var(--alert)">R'+a.gridBuildChargeRPerMWh.toFixed(1)+'/MWh on '+a.shortfallMw.toFixed(0)+' MW</span>':'<span style="color:var(--ok)">free</span>')+'</td></tr>';
+  }).join('');
+  el.innerHTML='<table style="width:100%; border-collapse:collapse">'+rows+'</table>'+
+    '<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--line2)">Total allocated: <strong>'+totalMw.toLocaleString()+' MW</strong>'+
+    (totalWithCharge>0?' · <strong>'+totalWithCharge.toFixed(0)+' MW</strong> triggered a grid-build charge':' · all within existing headroom')+'</div>';
+}
+
+document.getElementById('siteCheckBtn').addEventListener('click', async ()=>{
+  const region=document.getElementById('siteRegion').value;
+  const tech=document.getElementById('siteTech').value;
+  const mw=parseFloat(document.getElementById('siteMw').value)||0;
+  const out=document.getElementById('siteResult');
+  out.textContent='Checking…';
+  try{
+    const r=await evaluateAgainstRemaining(region,tech,mw);
+    renderResult(r);
+  } catch(e){
+    out.textContent='Could not evaluate this region/technology — data may be missing.';
+    console.error(e);
+  }
+});
+
+document.getElementById('siteAllocateBtn').addEventListener('click', async ()=>{
+  const region=document.getElementById('siteRegion').value;
+  const tech=document.getElementById('siteTech').value;
+  const mw=parseFloat(document.getElementById('siteMw').value)||0;
+  if(mw<=0)return;
+  const out=document.getElementById('siteResult');
+  try{
+    const r=await evaluateAgainstRemaining(region,tech,mw);
+    renderResult(r);
+    // commit: decrement local headroom tracking, record in portfolio, push into the national slider
+    const key=region+'|'+tech;
+    siteAllocated[key]=(siteAllocated[key]||0)+mw;
+    sitePortfolio.push(r);
+    renderPortfolio();
+    const sliderId=sliderIdFor(tech);
+    siteSliderContribution[sliderId]+=mw;
+    bumpSlider(sliderId, mw);
+  } catch(e){
+    out.textContent='Could not allocate — data may be missing.';
+    console.error(e);
+  }
+});
+
+document.getElementById('siteResetBtn').addEventListener('click', ()=>{
+  // undo exactly what allocation added to the national sliders, leave everything else untouched
+  bumpSlider('newWindMW', -siteSliderContribution.newWindMW);
+  bumpSlider('newPvMW', -siteSliderContribution.newPvMW);
+  sitePortfolio=[]; siteAllocated={}; siteSliderContribution={newWindMW:0,newPvMW:0};
+  renderPortfolio();
+  document.getElementById('siteResult').textContent='Select a region and technology, then click Check.';
+});
+</script>
+
 </body>
 </html>
