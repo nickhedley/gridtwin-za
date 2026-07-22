@@ -79,6 +79,7 @@ into `profiles.json`.
 | Energy supplied | Total annual generation incl. rooftop (TWh) |
 | System cost | Fuel + carbon + annualised capex of *new* build incl. grid adder (R bn/yr) |
 | Avg energy cost | System cost ÷ grid energy served (R/kWh) — **not a tariff** |
+| Replacement cost | Every MWh (existing + new) priced at its full lifecycle LCOE, ÷ grid energy served (R/kWh) |
 | CO₂ emissions | From coal, CCGT and diesel (Mt/yr) |
 | **Renewables** | wind + utility PV + rooftop PV + CSP, as % of generation |
 | **Non-fossil** | Renewables + nuclear + hydro + (mostly-hydro) imports |
@@ -89,6 +90,33 @@ and hydro into a single "clean" figure overstates the renewable build-out.
 On 2025 data at default settings, Renewables ≈ 16% and Non-fossil ≈ 27%.
 Rooftop (~6.5% of generation) is the softest input — it is reconstructed, not
 measured, so the true renewables share could be a point or two lower.
+
+### Two cost lenses — read both
+
+The app reports cost two ways, because "what does this grid cost?" has two
+legitimate answers that point in opposite directions:
+
+- **Avg energy cost** (the "operating" lens) counts fuel, carbon and the capex
+  of *newly-built* capacity only. Existing plant is treated as sunk, so today's
+  paid-off coal and nuclear are charged just their running cost. This makes the
+  *current* coal-heavy grid look cheap (≈R0.41/kWh on 2025 data) and a
+  build-heavy transition look expensive.
+- **Replacement cost** (the "all-new" lens) prices *every* MWh — existing and
+  new alike — at its full lifecycle LCOE, driven by the adjustable LCOE sliders.
+  It answers "what would this exact mix cost if built entirely new at today's
+  prices?" Because it charges existing coal its *new-build* cost, it makes the
+  current grid look expensive (≈R1.21/kWh) and a renewables-heavy mix cheaper
+  (≈R1.06/kWh).
+
+The same scenario therefore flips: under the operating lens the transition looks
+costlier than today; under the replacement lens it looks cheaper. **Both are
+true** — they answer different questions (run what we have vs build it all
+fresh), and neither is a consumer tariff (both exclude distribution, retail and
+network costs beyond the new-VRE grid adder). The honest reading is to compare
+scenarios *within* a lens and to hold both lenses in view; the truth for any
+real decision sits between them. Replacement cost uses the slider LCOEs for
+wind, PV, rooftop, battery, CSP, CCGT, nuclear and coal, plus fixed lifecycle
+values for hydro (R0.60/kWh), imports (R0.55) and pumped storage (R1.40).
 
 ## Assumptions
 
@@ -149,16 +177,16 @@ Costs in 2024*, and CSIR-style South African assumptions (≈R18.5/USD). A PPA
 tariff is close to but not identical to LCOE (it embeds developer margin), so
 the solar and wind anchors sit slightly above the raw bid numbers.
 
-**Important:** the LCOE sliders drive *only this comparison chart* — they do
-**not** feed the System Cost or Avg energy cost KPIs. LCOE bundles capex, fixed
-O&M and fuel into one number, whereas the dispatch engine deliberately keeps
-marginal cost (fuel + variable O&M, which sets merit order) separate from
-annualised capex (charged on new build regardless of output). Folding LCOE into
-the KPIs would double-count fuel and O&M. The separation is intentional: LCOE
-answers "what is cheapest to *build*?"; marginal cost answers "what do you *run*
-this hour?"; and a plant with high LCOE but near-zero marginal cost (e.g. solar)
-is still dispatched first once built. This mirrors how utilities and the CSIR
-actually separate build and dispatch decisions.
+**What the LCOE sliders drive.** They set the "Levelised cost comparison" chart
+*and* the **Replacement cost** KPI (see Two cost lenses, above). They do **not**
+feed System Cost or Avg energy cost — those use the dispatch engine's marginal
+cost (fuel + variable O&M, which sets merit order) plus annualised capex on new
+build. Keeping LCOE out of the operating-cost KPIs avoids double-counting the
+fuel and O&M that LCOE already bundles in; the replacement-cost KPI is a
+*separate* accounting that prices energy purely at LCOE instead. The underlying
+dispatch always runs on marginal cost regardless of lens: a plant with high LCOE
+but near-zero marginal cost (e.g. solar) is still dispatched first once built.
+This mirrors how utilities and the CSIR separate build and dispatch decisions.
 
 ## Limitations — read before quoting results
 
