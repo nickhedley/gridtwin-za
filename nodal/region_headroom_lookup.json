@@ -48,3 +48,95 @@
       "corridor_length_km": 102,
       "avg_capacity_factor": 0.11
     },
+    "solar": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Gauteng",
+      "corridor_length_km": 102,
+      "avg_capacity_factor": 0.2
+    }
+  },
+  "Western Cape": {
+    "wind": {
+      "headroom_mw": 7500,
+      "binding_corridor": "Western Cape-Hydra Central",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.36
+    },
+    "solar": {
+      "headroom_mw": 7000,
+      "binding_corridor": "Western Cape-Hydra Central",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.19
+    }
+  },
+  "Northern Cape": {
+    "wind": {
+      "headroom_mw": 5500,
+      "binding_corridor": "Northern Cape-Free State",
+      "corridor_length_km": 90,
+      "avg_capacity_factor": 0.4182
+    },
+    "solar": {
+      "headroom_mw": 4750,
+      "binding_corridor": "Northern Cape-Free State",
+      "corridor_length_km": 90,
+      "avg_capacity_factor": 0.2683
+    }
+  },
+  "Hydra Central": {
+    "wind": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Hydra Central-Free State",
+      "corridor_length_km": 310,
+      "avg_capacity_factor": 0.3982
+    },
+    "solar": {
+      "headroom_mw": 7500,
+      "binding_corridor": "Hydra Central-Western Cape",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.2492
+    }
+  },
+  "Kwazulu Natal": {
+    "wind": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.2
+    },
+    "solar": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.17
+    }
+  },
+  "North West": {
+    "wind": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Limpopo-North West",
+      "corridor_length_km": 212,
+      "avg_capacity_factor": 0.15
+    },
+    "solar": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Limpopo-North West",
+      "corridor_length_km": 212,
+      "avg_capacity_factor": 0.22
+    }
+  },
+  "Free State": {
+    "wind": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Free State-Gauteng",
+      "corridor_length_km": 202,
+      "avg_capacity_factor": 0.22
+    },
+    "solar": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Free State-Mpumalanga",
+      "corridor_length_km": 347,
+      "avg_capacity_factor": 0.2298
+    }
+  }
+}
