@@ -82,9 +82,10 @@ input[type=range]{width:100%; accent-color:var(--alert); height:22px}
 .presets button.active{background:var(--ink); color:var(--panel)}
 
 /* KPI strip */
-.kpis{display:grid; grid-template-columns:repeat(7,1fr); gap:12px; margin-bottom:0}
+.kpis{display:grid; grid-template-columns:repeat(8,1fr); gap:12px; margin-bottom:0}
 .kpinote{font-size:11.5px; color:var(--ink2); margin:8px 2px 18px; line-height:1.45; max-width:98ch}
 .kpinote strong{color:var(--ink)}
+@media(max-width:1300px){.kpis{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:1150px){.kpis{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow); padding:9px 12px 8px; position:relative}
@@ -188,7 +189,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <!-- ============ RESULTS ============ -->
   <main>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of <em>newly-built</em> capacity only — they exclude the construction cost of the <em>existing</em> fleet (coal, nuclear and current renewables alike), whose capital is treated as already sunk. This makes today's paid-off coal and nuclear plants appear cheaper than building their equivalent anew, and is why the figure is a scenario-comparison metric, not a tariff.</p>
+    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of <em>newly-built</em> capacity only — existing plant is treated as sunk, so today's paid-off coal and nuclear look cheap. <strong>Replacement cost</strong> is the opposite lens: it prices <em>every</em> MWh (existing and new) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today's prices — so it charges existing coal its new-build cost and makes a coal-heavy grid look expensive. Neither is a tariff; the truth sits between them. Comparing the two across scenarios is the point.</p>
 
     <div class="main2">
       <section class="panel mapbox" aria-label="Network map">
@@ -315,6 +316,8 @@ const FIXED = {
   acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
   lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600, lcoeCsp:2000, lcoeCcgt:1500, lcoeNuclear:1650, lcoeCoalNew:1200, lcoeDiesel:5500,
+  // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
+  lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
 
 function simulate(u, prof, outPath){
@@ -390,8 +393,16 @@ function simulate(u, prof, outPath){
   const totalCost=fuelCost+carbonCost+newCapexR;
   const avgCost=totalCost/Math.max(1,gridServed);
   const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
+  // Full replacement cost: price EVERY MWh (existing + new) at its lifecycle LCOE.
+  // Coal is charged new-build coal LCOE; storage discharge priced at storage LCOE.
+  const lcoeOf={coal:p.lcoeCoalNew, ccgt:p.lcoeCcgt, diesel:p.lcoeDiesel, nuclear:p.lcoeNuclear,
+    hydro:p.lcoeHydro, imports:p.lcoeImports, wind:p.lcoeWind, pv:p.lcoePv, csp:p.lcoeCsp,
+    rooftop:p.lcoeRooftop, ps:p.lcoePs, batt:p.lcoeBatt};
+  let replTotal=0;
+  for(const k in lcoeOf) replTotal += E[k]*lcoeOf[k];
+  const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
-  return {E,fuelCost,carbonCost,newCapexR,totalCost,avgCost,co2,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
+  return {E,fuelCost,carbonCost,newCapexR,totalCost,avgCost,co2,replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
@@ -629,6 +640,7 @@ function render(r){
     {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
     {k:'System cost',v:(r.totalCost/1e9).toFixed(0),u:'R bn/yr'},
     {k:'Avg energy cost',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
+    {k:'Replacement cost',v:(r.replAvg/1000).toFixed(2),u:'R/kWh'},
     {k:'CO₂ emissions',v:r.co2.toFixed(0),u:'Mt/yr'},
     {k:'Renewables',v:reShare.toFixed(0),u:'%'},
     {k:'Non-fossil',v:nonFossilShare.toFixed(0),u:'%'},
