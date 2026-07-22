@@ -1,0 +1,50 @@
+{
+  "Eastern Cape": {
+    "wind": {
+      "headroom_mw": 2000,
+      "binding_corridor": "Eastern Cape-Kwazulu Natal",
+      "corridor_length_km": 167,
+      "avg_capacity_factor": 0.3886
+    },
+    "solar": {
+      "headroom_mw": 5000,
+      "binding_corridor": "Eastern Cape-Kwazulu Natal",
+      "corridor_length_km": 167,
+      "avg_capacity_factor": 0.21
+    }
+  },
+  "Limpopo": {
+    "wind": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Limpopo-Mpumalanga",
+      "corridor_length_km": 121,
+      "avg_capacity_factor": 0.13
+    },
+    "solar": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Limpopo-Mpumalanga",
+      "corridor_length_km": 121,
+      "avg_capacity_factor": 0.2198
+    }
+  },
+  "Mpumalanga": {
+    "wind": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.14
+    },
+    "solar": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.2
+    }
+  },
+  "Gauteng": {
+    "wind": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Gauteng",
+      "corridor_length_km": 102,
+      "avg_capacity_factor": 0.11
+    },
