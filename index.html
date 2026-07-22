@@ -240,6 +240,44 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
           <div class="pb" id="lcoe"></div>
         </div>
+
+        <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
+          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
+          <div class="pb">
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new wind or solar capacity. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
+                <select id="siteRegion" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:150px">
+                  <option value="Eastern Cape">Eastern Cape</option>
+                  <option value="Free State">Free State</option>
+                  <option value="Gauteng">Gauteng</option>
+                  <option value="Hydra Central">Hydra Central</option>
+                  <option value="Kwazulu Natal">KwaZulu-Natal</option>
+                  <option value="Limpopo">Limpopo</option>
+                  <option value="Mpumalanga">Mpumalanga</option>
+                  <option value="North West">North West</option>
+                  <option value="Northern Cape" selected>Northern Cape</option>
+                  <option value="Western Cape">Western Cape</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Technology</label>
+                <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
+                  <option value="solar">Solar PV</option>
+                  <option value="wind">Wind</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">New capacity (MW)</label>
+                <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
+              </div>
+              <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
+            </div>
+            <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
+          </div>
+        </div>
+
       </section>
     </div>
 
@@ -266,6 +304,31 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 </div>
 
 <footer class="foot">Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African system (calibrated to Eskom weekly system status reports, June–July 2026). All outputs are indicative — this is an educational scenario explorer, not planning or investment advice.</footer>
+
+<script src="nodal/capacity_siting.js"></script>
+<script>
+document.getElementById('siteCheckBtn').addEventListener('click', async ()=>{
+  const region=document.getElementById('siteRegion').value;
+  const tech=document.getElementById('siteTech').value;
+  const mw=parseFloat(document.getElementById('siteMw').value)||0;
+  const out=document.getElementById('siteResult');
+  out.textContent='Checking…';
+  try{
+    const r=await evaluateDeployment(region,tech,mw);
+    let html='<strong>'+region+' · '+(tech==='wind'?'Wind':'Solar PV')+' · '+mw+' MW</strong><br>';
+    if(!r.gridBuildNeeded){
+      html+='<span style="color:var(--ok)">✓ Fits within existing grid headroom</span> ('+r.headroomMw+' MW available on this network) — no new transmission needed, generation cost only.';
+    } else {
+      html+='<span style="color:var(--alert)">⚠ Exceeds local headroom</span> ('+r.headroomMw+' MW available, '+r.shortfallMw.toFixed(0)+' MW shortfall on '+r.bindingCorridor+').<br>';
+      html+='Reinforcing that corridor (~'+r.corridorLengthKm+' km) costs an estimated R'+(r.newLineCapexR/1e6).toFixed(0)+'m, adding <strong>R'+r.gridBuildChargeRPerMWh.toFixed(1)+'/MWh</strong> to the shortfall portion.';
+    }
+    out.innerHTML=html;
+  } catch(e){
+    out.textContent='Could not evaluate this region/technology — data may be missing.';
+    console.error(e);
+  }
+});
+</script>
 
 <script>
 "use strict";
