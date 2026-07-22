@@ -189,7 +189,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <!-- ============ RESULTS ============ -->
   <main>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of <em>newly-built</em> capacity only — existing plant is treated as sunk, so today's paid-off coal and nuclear look cheap. <strong>Replacement cost</strong> is the opposite lens: it prices <em>every</em> MWh (existing and new) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today's prices — so it charges existing coal its new-build cost and makes a coal-heavy grid look expensive. Neither is a tariff; the truth sits between them. Comparing the two across scenarios is the point.</p>
+    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk, so today's paid-off coal and nuclear look cheap. <strong>Replacement cost</strong> is the opposite lens: it prices every MWh (existing and new) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today's prices. This means it charges existing coal by its new-build cost and makes a coal-heavy grid look expensive. Neither is a tariff or the complete picture.</p>
 
     <div class="main2">
       <section class="panel mapbox" aria-label="Network map">
@@ -438,7 +438,7 @@ const SLIDERS=[
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance — rarely dispatched when storage is ample'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
-  {id:'repurpose',toggle:true,def:false,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
+  {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'headline tax ≈ R308/t (2026) but generator allowances shield most of it — set the price generators actually feel'},
   {grp:'LCOE assumptions (R/kWh) — full lifecycle build cost'},
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:550,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
