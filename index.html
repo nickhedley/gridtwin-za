@@ -192,7 +192,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk, so today's paid-off coal and nuclear look cheap. <strong>Replacement cost</strong> is the opposite lens: it prices every MWh (existing and new) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today's prices. This means it charges existing coal by its new-build cost and makes a coal-heavy grid look expensive. Neither is a tariff or the complete picture.</p>
 
     <div class="main2">
-      <section class="panel mapbox" aria-label="Network map">
+      <section aria-label="Network map and capacity siting">
+      <div class="panel mapbox">
         <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node = avg output</span></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
         <div class="legend">
@@ -203,43 +204,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span><i style="background:#1F4E79"></i>Storage / hydro</span>
           <span><i style="background:var(--alert)"></i>Peakers</span>
         </div>
-      </section>
-
-      <section>
-        <div class="panel" aria-label="Weekly dispatch">
-          <div class="ph"><h2>Hourly dispatch</h2>
-            <div class="wkbtns">
-              <button id="wkW" class="active">Winter week</button>
-              <button id="wkS">Summer week</button>
-            </div>
-          </div>
-          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week (2025 data, closest to the seasonal median for demand &amp; renewable output)</span></div>
-          <div class="pb" style="padding:10px 10px 4px">
-            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart"></canvas>
-          </div>
-          <div class="legend" id="dispLegend"></div>
-        </div>
-
-        <div class="duo">
-          <div class="panel">
-            <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
-            <div class="pb" id="mix"></div>
-          </div>
-          <div class="panel">
-            <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span></div>
-            <div class="pb">
-              <div class="riskhead" id="riskHead"></div>
-              <div class="shedbars" id="shed"></div>
-              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
-              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
-          <div class="pb" id="lcoe"></div>
-        </div>
+      </div>
 
         <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
           <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
@@ -286,6 +251,43 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
 
           </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="panel" aria-label="Weekly dispatch">
+          <div class="ph"><h2>Hourly dispatch</h2>
+            <div class="wkbtns">
+              <button id="wkW" class="active">Winter week</button>
+              <button id="wkS">Summer week</button>
+            </div>
+          </div>
+          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week (2025 data, closest to the seasonal median for demand &amp; renewable output)</span></div>
+          <div class="pb" style="padding:10px 10px 4px">
+            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart"></canvas>
+          </div>
+          <div class="legend" id="dispLegend"></div>
+        </div>
+
+        <div class="duo">
+          <div class="panel">
+            <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
+            <div class="pb" id="mix"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span></div>
+            <div class="pb">
+              <div class="riskhead" id="riskHead"></div>
+              <div class="shedbars" id="shed"></div>
+              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
+              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
+          <div class="pb" id="lcoe"></div>
         </div>
 
       </section>
