@@ -82,7 +82,9 @@ input[type=range]{width:100%; accent-color:var(--alert); height:22px}
 .presets button.active{background:var(--ink); color:var(--panel)}
 
 /* KPI strip */
-.kpis{display:grid; grid-template-columns:repeat(7,1fr); gap:12px; margin-bottom:18px}
+.kpis{display:grid; grid-template-columns:repeat(7,1fr); gap:12px; margin-bottom:0}
+.kpinote{font-size:11.5px; color:var(--ink2); margin:8px 2px 18px; line-height:1.45; max-width:98ch}
+.kpinote strong{color:var(--ink)}
 @media(max-width:1150px){.kpis{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow); padding:9px 12px 8px; position:relative}
@@ -186,6 +188,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <!-- ============ RESULTS ============ -->
   <main>
     <div class="kpis" id="kpis"></div>
+    <p class="kpinote">Note: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of <em>newly-built</em> capacity only — they exclude the construction cost of the <em>existing</em> fleet (coal, nuclear and current renewables alike), whose capital is treated as already sunk. This makes today's paid-off coal and nuclear plants appear cheaper than building their equivalent anew, and is why the figure is a scenario-comparison metric, not a tariff.</p>
 
     <div class="main2">
       <section class="panel mapbox" aria-label="Network map">
