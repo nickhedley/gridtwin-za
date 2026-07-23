@@ -212,13 +212,40 @@ Economics), which co-optimises investment and dispatch at up to 159-node
 spatial resolution with validated input data. GridTwin ZA is deliberately the
 opposite trade-off: instant, transparent, and simple enough to reason about.
 
-## Repository
+## Sources & data provenance
+
+| Source | What it gave us |
+|---|---|
+| **[Eskom Data Portal](https://www.eskom.co.za/dataportal/)** (dataset ESK19243, 2025 hourly) | The backbone of the live model. Hourly RSA demand, wind and PV columns → the real 2025 profiles in `profiles.json`: demand reconstructed to "underlying" demand (residual + wind + PV, plus estimated rooftop), and per-unit wind (~37% CF) and solar (~21% CF) capacity-factor shapes. This is what took the app from synthetic to "driven by actual Eskom data." |
+| **Eskom weekly system status reports** (June–July 2026) | Calibrated the 2026 baseline and several headline figures: EAF ~64%, winter peak ~27 GW, OCGT diesel load factor ~1.3%, the 420-days-without-shedding streak, and the outage-volatility range (±1.5 GW today vs ±2.5–3 GW in 2023) feeding the Monte Carlo. |
+| **Eskom NTC / press** (2026) | The ~8.3 GW embedded rooftop-solar figure and the structural-demand-decline story (March 2026 peak down 8.3% y/y), both built into demand assumptions. |
+| **[PyPSA-RSA](https://github.com/MeridianEconomics/pypsa-rsa)** (Meridian Economics) | The richest single source for the nodal work: the 10-region network topology, corridor lengths, the St Clair formula and its 400 kV constants (thermal 1,788 MW, SIL 602 MW, 0.7 N-1 derate) used to derive transfer limits, and the full per-station fleet list (capacities, GPS coordinates, decommissioning dates). Also the "decision-grade" backend the app defers to throughout. |
+| **[UCT ZivaHub — Spatialized IRP Demand](https://zivahub.uct.ac.za/)** (Merven / ESRG) | `IRPDemandREF_provincial_no_exports.csv` — hourly demand split across all 10 nodal regions. The one piece of nodal data neither derivable nor synthesisable from the other sources. |
+| **CSIR, [IRENA Renewable Power Generation Costs 2024](https://www.irena.org/), REIPPPP Bid Window 7 tariffs** | Anchored the LCOE assumptions. BW7 was the strongest single input — solar bids averaging R0.46/kWh (anchor set to R0.55), wind bids coming in high enough that none were awarded (anchor R0.75). IRENA/CSIR filled in nuclear, coal, CCGT, batteries, CSP. |
+| **Eskom Transmission Development Plan 2025–34** | Source for the grid-expansion adder (~R390bn / 14,500 km to connect 56 GW, annualised to ~R700/kW·yr, defaulted to R600 in the app) and the evidence base for "transmission is the binding constraint." Also the ~R31m/km blended national line-cost figure used in the nodal capacity-siting tool (from the DEE Minister's April 2025 statement, R440bn / ~14,000km). |
+| **[PyPSA-RSA GIS bundle](https://drive.google.com/drive/folders/17f54zTMEfeFZhNByXxLkf9qcZRdhng03)** (`Existing_Lines.shp`, `rsa_supply_regions.gpkg`) | Real transmission line geometries and the actual 10-region GCCA supply-area boundaries (not a province approximation). Used to derive real per-corridor circuit counts (by matching line endpoints to regions) and to correctly assign generation fleet to supply regions — e.g. revealing that Lethabo Power Station's real supply-area is Gauteng, not Free State province, materially changing the nodal dispatch result. |
+| **[PyPSA-CA](https://www.eshansingh.xyz/PyPSA-CA/app/)** | Not a data source — the design template for the whole app: instant, transparent, browser-based scenario exploration in front of a rigorous optimisation model. |
+
+## Nodal prototype
+
+A 10-region nodal extension lives in `nodal/` — real regional demand, real fleet-to-region assignment, real transfer-limit corridors (derived from actual line geometries where available), a dispatch-with-flows engine, and a capacity-siting tool ("Where To Build" panel) that checks real grid headroom before charging for new transmission. See `nodal/capacity_siting.py` for the full method and `region_headroom_lookup.json` for precomputed results. This is a prototype, not (yet) the primary model the KPIs above are computed from — the single-node engine remains the app's core.
+
+
 
 ```
-index.html                  the entire app (no build step, no dependencies)
-profiles.json               real 2025 Eskom hourly demand/wind/solar profiles
-og-card.png                 social preview image
-scripts/build_profiles.py   Eskom CSV -> profiles.json ingestion pipeline
+index.html                          the entire app (no build step, no dependencies)
+profiles.json                       real 2025 Eskom hourly demand/wind/solar profiles
+og-card.png                         social preview image
+scripts/build_profiles.py           Eskom CSV -> profiles.json ingestion pipeline
+nodal/                               10-region nodal prototype (see "Nodal prototype" above)
+  nodal_engine.py                    dispatch-with-flows engine, real corridor topology
+  capacity_siting.py                 offline tool: computes real per-region grid headroom
+  capacity_siting.js                 browser-side port, powers the "Where To Build" panel
+  region_headroom_lookup.json        precomputed headroom per region/technology
+  demand_2025_regional.csv           hourly 2025 demand, 10 regions (UCT ZivaHub)
+  profiles_regional.json             stylised regional wind/solar profiles (synthetic)
+  fleet_by_region_v2.csv             generation fleet assigned to real GCCA supply regions
+  regional_renewable_capacity.json   installed wind/solar MW per region (REIPPPP sites)
 ```
 
 The app is a single self-contained HTML file: vanilla JS, custom canvas charts,
@@ -235,8 +262,12 @@ Slider settings are written to the URL. Copy the address bar (or use the
 1. ~~Monte Carlo outage risk~~ ✅
 2. ~~Real Eskom hourly demand / wind / PV profiles~~ ✅
 3. 10-region model on the GCCA Eskom transmission supply regions, with
-   transfer limits — making the map show flows
-4. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
+   transfer limits — nodal prototype built (`nodal/`), including a working
+   "Where To Build" capacity-siting panel on the live site; not yet the
+   primary engine behind the main KPIs, and the map doesn't yet show flows
+4. Real (non-synthetic) regional wind/solar profiles for the nodal model —
+   the current `nodal/profiles_regional.json` is stylised, not measured
+5. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
 
 ## Licence & disclaimer
 
