@@ -189,7 +189,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <!-- ============ RESULTS ============ -->
   <main>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk, so today's paid-off coal and nuclear look cheap. <strong>Replacement cost</strong> is the opposite lens: it prices every MWh (existing and new) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today's prices. This means it charges existing coal by its new-build cost and makes a coal-heavy grid look expensive. Neither is a tariff or the complete picture.</p>
+    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk, so today's paid-off coal and nuclear look cheap. <strong>Replacement cost</strong> is the opposite lens: it prices every MWh (existing and new) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today's prices. This means it charges existing coal by its new-build cost and makes a coal-heavy grid look expensive. Neither is a tariff or the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank" rel="noopener">README</a>.</p>
 
     <div class="main2">
       <section aria-label="Network map and capacity siting">
@@ -315,7 +315,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   </main>
 </div>
 
-<footer class="foot">Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African system (calibrated to Eskom weekly system status reports, June–July 2026). All outputs are indicative — this is an educational scenario explorer, not planning or investment advice. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank" rel="noopener">README</a>.</footer>
+<footer class="foot">Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African system (calibrated to Eskom weekly system status reports, June–July 2026). All outputs are indicative — this is an educational scenario explorer, not planning or investment advice.</footer>
 
 <script src="nodal/capacity_siting.js?v=2"></script>
 
@@ -577,6 +577,28 @@ const NODES=[
 ];
 const LINKS=[['CPT','GRW'],['GRW','PE'],['PE','EC'],['EC','DBN'],['CPT','UPG'],['UPG','BFN'],['BFN','JHB'],['BFN','PE'],['DRA','DBN'],['DRA','JHB'],['JHB','MPU'],['LEP','JHB'],['MPU','DBN'],['BFN','DRA']];
 const ZA_PATH="M60,300 C55,270 70,240 78,215 C85,192 95,170 118,150 C142,130 175,112 210,100 C245,88 285,78 305,80 L318,95 L340,88 C360,82 385,86 400,100 L432,96 C455,112 470,140 476,170 C482,200 478,230 468,258 C458,286 446,310 424,330 C400,352 370,372 335,384 C300,396 258,400 222,396 C186,392 150,382 122,366 C95,350 66,330 60,300 Z";
+// Shared with the "Where To Build" nodal siting tool below - declared here (not in that
+// later script block) so it already exists the very first time updateMap() runs.
+let siteAllocated={}; // key "region|tech" -> cumulative MW allocated via the nodal siting tool
+const REGION_TO_NODE={ // best-effort map from the 10 real GCCA regions to this schematic's 11 nodes
+  'Eastern Cape':'PE', 'Free State':'BFN', 'Gauteng':'JHB', 'Hydra Central':'UPG',
+  'Kwazulu Natal':'DBN', 'Limpopo':'LEP', 'Mpumalanga':'MPU', 'Northern Cape':'UPG',
+  'Western Cape':'CPT'
+  // North West has no distinct node in this schematic and won't visually update
+};
+function resolveColor(c){
+  if(c.startsWith('var(')){
+    const varName=c.slice(4,-1).trim();
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim()||'#1F4E79';
+  }
+  return c;
+}
+function mixHex(hex1,hex2,t){
+  const h2rgb=h=>{const c=parseInt(h.slice(1),16); return [(c>>16)&255,(c>>8)&255,c&255];};
+  const [r1,g1,b1]=h2rgb(hex1), [r2,g2,b2]=h2rgb(hex2);
+  const mix=(a,b)=>Math.round(a+(b-a)*t);
+  return '#'+[mix(r1,r2),mix(g1,g2),mix(b1,b2)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
 function nodeColor(n,res){
   const t=n.types[0];
   const m={nuke:'#E4322B',coal:'#4A3120',veld2:'#3EA055',sun:'#F5C518',sky:'#1F4E79',alert:'var(--alert)'};
@@ -615,6 +637,30 @@ function updateMap(r){
     el.setAttribute('stroke', active?'#F5C518':'var(--ink)');
     el.setAttribute('stroke-width', active?'2.5':'1.4');
   }});
+
+  // nodal siting: tint nodes toward wind (green) or solar (yellow) based on allocated MW.
+  // Several regions have no distinct node in this schematic (see REGION_TO_NODE) and multiple
+  // regions can share one node (e.g. Northern Cape + Hydra Central both -> UPG) - allocations
+  // are summed per node. This is illustrative colour, not a claim about exact node capacity.
+  const byNode={};
+  Object.entries(siteAllocated).forEach(([key,mw])=>{
+    const [region,tech]=key.split('|');
+    const nodeId=REGION_TO_NODE[region];
+    if(!nodeId||!mw) return;
+    byNode[nodeId]=byNode[nodeId]||{wind:0,solar:0};
+    byNode[nodeId][tech]+=mw;
+  });
+  NODES.forEach(n=>{
+    const el=document.getElementById('nd_'+n.id);
+    if(!el) return;
+    const alloc=byNode[n.id];
+    const base=resolveColor(nodeColor(n));
+    if(!alloc||(alloc.wind===0&&alloc.solar===0)){ el.setAttribute('fill',base); return; }
+    const dominant=alloc.solar>=alloc.wind?'#F5C518':'#3EA055';
+    const totalMw=alloc.wind+alloc.solar;
+    const t=Math.min(0.85, totalMw/3000); // saturates around 3 GW allocated at that node
+    el.setAttribute('fill', mixHex(base, dominant, t));
+  });
 }
 
 /* ==================== CHARTS ==================== */
@@ -851,7 +897,7 @@ fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=
 <script>
 // Running portfolio of user-committed nodal allocations. In-memory only (resets on reload).
 let sitePortfolio=[];
-let siteAllocated={}; // key "region|tech" -> cumulative MW already committed at that node
+// siteAllocated is declared earlier (near nodeColor) so the map can use it on first render too
 let siteSliderContribution={newWindMW:0, newPvMW:0}; // how much of the national slider WE added, for clean reset
 
 function sliderIdFor(tech){return tech==='wind'?'newWindMW':'newPvMW';}
