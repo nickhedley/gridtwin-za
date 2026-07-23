@@ -210,6 +210,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
           <div class="pb">
             <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new wind or solar capacity. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it — the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
             <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
               <div>
                 <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
@@ -252,7 +253,53 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
           </div>
         </div>
+
+        <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
+          <div class="ph"><h2>Nodal Simulation</h2><span class="tag">full network-flow model · full year</span></div>
+          <div class="pb">
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, and today's current coal EAF/decommissioning sliders plus anything allocated above. This is a separate model from the national KPIs above: it exists to show what genuinely regional dispatch looks like, not (yet) to replace them. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
+            <button id="nodalRunBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Run full year</button>
+            <div id="nodalResult" class="mono" style="font-size:12.5px; padding:10px 12px; margin-top:12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.6">Not run yet.</div>
+          </div>
+        </div>
       </section>
+
+      <script src="nodal/nodal_engine.js"></script>
+      <script src="nodal/nodal_dispatch.js"></script>
+      <script>
+      document.getElementById('nodalRunBtn').addEventListener('click', async ()=>{
+        const btn=document.getElementById('nodalRunBtn');
+        const out=document.getElementById('nodalResult');
+        btn.disabled=true; btn.textContent='Running…';
+        out.textContent='Fetching regional data and solving 8,760 hours…';
+        try{
+          // extra regional wind/solar from the "Where To Build" allocated portfolio (siteAllocated)
+          const extraWind={}, extraSolar={};
+          Object.entries(siteAllocated||{}).forEach(([key,mw])=>{
+            const [region,tech]=key.split('|');
+            if(tech==='wind') extraWind[region]=(extraWind[region]||0)+mw;
+            else extraSolar[region]=(extraSolar[region]||0)+mw;
+          });
+          const summary=await runNodalYear(state.coalEAFPct, state.coalDecomMW, extraWind, extraSolar);
+          const regionRows=Object.entries(summary.byRegion)
+            .map(([r,v])=>({r, sheddingPct: v.demand>0?100*v.unserved/v.demand:0}))
+            .sort((a,b)=>b.sheddingPct-a.sheddingPct)
+            .filter(x=>x.sheddingPct>0.01)
+            .map(x=>x.r+': '+x.sheddingPct.toFixed(1)+'%').join(', ');
+          out.innerHTML='<strong>Annual demand:</strong> '+summary.totalDemandTwh.toFixed(1)+' TWh &nbsp; '+
+            '<strong>Unserved:</strong> '+summary.unservedGwh.toFixed(0)+' GWh ('+summary.unservedPct.toFixed(2)+'%) &nbsp; '+
+            '<strong>Losses:</strong> '+summary.lossesPct.toFixed(2)+'% &nbsp; '+
+            '<strong>Curtailed:</strong> '+summary.curtailedGwh.toFixed(0)+' GWh<br>'+
+            (regionRows?'<span style="color:var(--alert)">Shedding by region: '+regionRows+'</span>':'<span style="color:var(--ok)">No region shed any energy this year.</span>')+
+            '<br><span style="color:var(--ink2); font-size:11px">Solved in '+(summary.runtimeMs/1000).toFixed(1)+'s using coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, plus your allocated portfolio.</span>';
+        } catch(e){
+          out.textContent='Could not run the nodal model - data may be missing from the nodal/ folder.';
+          console.error(e);
+        } finally {
+          btn.disabled=false; btn.textContent='Run full year';
+        }
+      });
+      </script>
 
       <section>
         <div class="panel" aria-label="Weekly dispatch">
@@ -607,7 +654,8 @@ function buildMap(){
   NODES.forEach(n=>{
     const regionNote=nodeToRegions[n.id]?' · nodal region: '+nodeToRegions[n.id].join(' + '):'';
     s+='<g><circle id="nd_'+n.id+'" cx="'+n.x+'" cy="'+n.y+'" r="7" fill="'+nodeColor(n)+'" stroke="var(--ink)" stroke-width="1.4"><title>'+n.name+regionNote+'</title></circle>';
-    s+='<circle id="badge_'+n.id+'" cx="'+(n.x+8)+'" cy="'+(n.y-8)+'" r="0" fill="#F5C518" stroke="var(--panel)" stroke-width="1"><title></title></circle>';
+    s+='<circle id="badge_solar_'+n.id+'" cx="'+(n.x+9)+'" cy="'+(n.y-8)+'" r="0" fill="#F5C518" stroke="var(--panel)" stroke-width="1"><title>Solar allocated</title></circle>';
+    s+='<circle id="badge_wind_'+n.id+'" cx="'+(n.x-9)+'" cy="'+(n.y+8)+'" r="0" fill="#3EA055" stroke="var(--panel)" stroke-width="1"><title>Wind allocated</title></circle>';
     s+='<text x="'+(n.x+11)+'" y="'+(n.y+4)+'" font-size="10" font-family="IBM Plex Mono" fill="var(--ink2)">'+n.id+'</text></g>';
   });
   s+='</svg>';
@@ -633,10 +681,15 @@ function updateMap(r){
     el.setAttribute('stroke-width', active?'2.5':'1.4');
   }});
 
-  // nodal siting: add a separate small badge dot (not a colour blend) for wind/solar
-  // allocated at that node, sized by how much MW has been committed. The node's own
-  // fill colour is never touched - same principle as the coal-repurposing ring above:
-  // two distinct colours stay legible rather than merging into a muddy blend.
+  // nodal siting: two separate badge dots (solar + wind), each sized only by its own
+  // MW - so both show simultaneously instead of one hiding the other. The node's own
+  // fill colour is never touched (same principle as the coal-repurposing ring above),
+  // but its radius gets a genuine bump too, on top of whatever the app's national-total
+  // formula already set - see the caveat in the "Where To Build" panel: nodes like PE/EC
+  // still grow with the national wind total regardless of where you actually sited it,
+  // because the underlying dispatch engine is single-node and has no notion of "this MW
+  // is physically in region X". The bump here is the one part of the map that reflects
+  // your actual siting choice.
   // Several regions have no distinct node in this schematic (see REGION_TO_NODE) and
   // multiple regions can share one node (e.g. Northern Cape + Hydra Central -> UPG) -
   // allocations are summed per node.
@@ -649,17 +702,24 @@ function updateMap(r){
     byNode[nodeId][tech]+=mw;
   });
   NODES.forEach(n=>{
-    const badge=document.getElementById('badge_'+n.id);
-    if(!badge) return;
+    const solarBadge=document.getElementById('badge_solar_'+n.id);
+    const windBadge=document.getElementById('badge_wind_'+n.id);
+    const nodeEl=document.getElementById('nd_'+n.id);
     const alloc=byNode[n.id];
-    if(!alloc||(alloc.wind===0&&alloc.solar===0)){ badge.setAttribute('r','0'); return; }
-    const dominant=alloc.solar>=alloc.wind?'#F5C518':'#3EA055';
-    const totalMw=alloc.wind+alloc.solar;
-    const rad=3+3*Math.min(1, totalMw/3000); // 3-6px, scales with MW committed, caps around 3 GW
-    badge.setAttribute('fill', dominant);
-    badge.setAttribute('r', rad.toFixed(1));
-    badge.querySelector('title').textContent=(alloc.solar>0?alloc.solar.toFixed(0)+' MW solar allocated':'')+
-      (alloc.wind>0&&alloc.solar>0?' · ':'')+(alloc.wind>0?alloc.wind.toFixed(0)+' MW wind allocated':'');
+    if(!alloc){
+      if(solarBadge) solarBadge.setAttribute('r','0');
+      if(windBadge) windBadge.setAttribute('r','0');
+      return;
+    }
+    const badgeR=mw=>mw>0?(3+3*Math.min(1, mw/3000)).toFixed(1):'0'; // 3-6px, caps ~3GW
+    if(solarBadge) solarBadge.setAttribute('r', badgeR(alloc.solar));
+    if(windBadge) windBadge.setAttribute('r', badgeR(alloc.wind));
+    // grow the node's own circle a little on top of its existing (national-total-based) radius
+    if(nodeEl){
+      const currentR=parseFloat(nodeEl.getAttribute('r'))||7;
+      const bump=3*Math.min(1, (alloc.solar+alloc.wind)/3000);
+      nodeEl.setAttribute('r', (currentR+bump).toFixed(1));
+    }
   });
 }
 
