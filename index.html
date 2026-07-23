@@ -257,7 +257,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
           <div class="ph"><h2>Nodal Simulation</h2><span class="tag">full network-flow model · full year</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand per region, Eskom Jun-26 data), and today's current coal EAF/decommissioning/new-rooftop sliders plus anything allocated above. This is a separate model from the national KPIs above: it exists to show what genuinely regional dispatch looks like, not (yet) to replace them. CSP, batteries, pumped storage and imports aren't modelled regionally yet. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, and today's current coal EAF/decommissioning/new-rooftop sliders plus anything allocated above. This is a separate model from the national KPIs above: it exists to show what genuinely regional dispatch looks like, not (yet) to replace them. Batteries and pumped storage aren't modelled regionally yet - that needs real time-coupled charge/discharge state, a bigger piece of work than the rest. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
             <button id="nodalRunBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Run full year</button>
             <div id="nodalResult" class="mono" style="font-size:12.5px; padding:10px 12px; margin-top:12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.6">Not run yet.</div>
           </div>
@@ -286,13 +286,16 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             .sort((a,b)=>b.sheddingPct-a.sheddingPct)
             .filter(x=>x.sheddingPct>0.01)
             .map(x=>x.r+': '+x.sheddingPct.toFixed(1)+'%').join(', ');
+          const cspTwh=(summary.byCarrier.csp||0)/1e6, importsTwh=(summary.byCarrier.imports||0)/1e6;
           out.innerHTML='<strong>Annual demand:</strong> '+summary.totalDemandTwh.toFixed(1)+' TWh &nbsp; '+
-            '<strong>Rooftop PV:</strong> '+summary.rooftopTwh.toFixed(1)+' TWh (netted off demand, real regional Eskom data) &nbsp; '+
+            '<strong>Rooftop PV:</strong> '+summary.rooftopTwh.toFixed(1)+' TWh &nbsp; '+
+            '<strong>CSP:</strong> '+cspTwh.toFixed(2)+' TWh &nbsp; '+
+            '<strong>Imports:</strong> '+importsTwh.toFixed(1)+' TWh &nbsp; '+
             '<strong>Unserved:</strong> '+summary.unservedGwh.toFixed(0)+' GWh ('+summary.unservedPct.toFixed(2)+'%) &nbsp; '+
             '<strong>Losses:</strong> '+summary.lossesPct.toFixed(2)+'% &nbsp; '+
             '<strong>Curtailed:</strong> '+summary.curtailedGwh.toFixed(0)+' GWh<br>'+
             (regionRows?'<span style="color:var(--alert)">Shedding by region: '+regionRows+'</span>':'<span style="color:var(--ok)">No region shed any energy this year.</span>')+
-            '<br><span style="color:var(--ink2); font-size:11px">Solved in '+(summary.runtimeMs/1000).toFixed(1)+'s using coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, '+(state.newRooftopMW/1000).toFixed(1)+' GW new rooftop, plus your allocated portfolio.</span>';
+            '<br><span style="color:var(--ink2); font-size:11px">Solved in '+(summary.runtimeMs/1000).toFixed(1)+'s using coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, '+(state.newRooftopMW/1000).toFixed(1)+' GW new rooftop, plus your allocated portfolio. CSP sited at its real Northern Cape/Hydra Central plants; imports enter via Apollo converter station, Gauteng.</span>';
         } catch(e){
           out.textContent='Could not run the nodal model - data may be missing from the nodal/ folder.';
           console.error(e);
