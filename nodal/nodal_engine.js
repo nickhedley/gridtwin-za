@@ -201,6 +201,16 @@ class NodalEngine {
     }
     gens.push({ name: 'Cahora Bassa import', region: IMPORTS_REGION, carrier: 'imports', cost: IMPORTS_COST,
                 availableMw: IMPORTS_MW * IMPORTS_CF, isRenewable: false }); // must-take, fixed CF, matches single-node treatment
+    // Storage discharge as ordinary generators - this is what lets the existing, already-validated
+    // network-flow routing carry discharged power to OTHER regions automatically, same as any
+    // other generator. Priced between coal (~480-550) and gas/diesel (1750/6100), matching the
+    // single-node engine's own dispatch order (coal first, then storage, then gas/diesel).
+    for (const r of REGIONS) {
+      const psAvail = Math.min(PS_MW_BY_REGION[r] || 0, this.psSoc[r] || 0);
+      if (psAvail > 1e-6) gens.push({ name: r + ' Pumped storage', region: r, carrier: 'ps', cost: 600, availableMw: psAvail, isRenewable: false });
+      const battAvail = Math.min(this.battMw[r] || 0, this.battSoc[r] || 0);
+      if (battAvail > 1e-6) gens.push({ name: r + ' Battery', region: r, carrier: 'batt', cost: 700, availableMw: battAvail, isRenewable: false });
+    }
     gens.sort((a, b) => a.cost - b.cost);
     return gens;
   }
@@ -300,40 +310,97 @@ class NodalEngine {
       if (avail > 1e-6 && gen.isRenewable) totalCurtailed += avail;
       genLog.push({ name: gen.name, region: gen.region, carrier: gen.carrier,
                     homeTake: localTake, curtailed: gen.isRenewable ? avail : 0,
-                    dispatched: gen.availableMw - avail }); // local + exported, whether renewable or not
+                    dispatched: gen.availableMw - avail, available: gen.availableMw });
     }
 
-    // --- Storage pass: local-only. Each region's pumped storage / batteries can only charge
-    // from THAT region's own leftover curtailment and discharge to cover THAT region's own
-    // remaining deficit - they don't receive power routed in from elsewhere via the network.
-    // Real Ingula/Drakensberg/Palmiet often absorb and release power that travelled from other
-    // regions; that would need storage integrated into the flow-routing itself, a bigger change.
-    // Order (charge and discharge) matches the single-node engine: pumped storage before batteries.
-    const curtailedByRegion = new Array(n).fill(0);
-    genLog.forEach(g => { if (g.curtailed > 0) curtailedByRegion[this.nodeIndex[g.region]] += g.curtailed; });
+    // --- Storage discharge: already dispatched as ordinary generators above (see buildGenerators),
+    // so cross-region export already happened via the same validated flow-routing every other
+    // generator uses. Just account for the resulting state-of-charge drop here.
+    let psDischargeTotal = 0, battDischargeTotal = 0;
+    genLog.forEach(g => {
+      if (g.carrier === 'ps') { this.psSoc[g.region] -= g.dispatched; psDischargeTotal += g.dispatched; }
+      if (g.carrier === 'batt') { this.battSoc[g.region] -= g.dispatched; battDischargeTotal += g.dispatched; }
+    });
 
-    let psDischargeTotal = 0, battDischargeTotal = 0, psChargeTotal = 0, battChargeTotal = 0;
-    for (let i = 0; i < n; i++) {
-      const r = REGIONS[i];
-      const psPowerMw = PS_MW_BY_REGION[r] || 0, psEnergyMwh = PS_ENERGY_MWH_BY_REGION[r] || 0;
-      const battPowerMw = this.battMw[r] || 0, battEnergyMwh = battPowerMw * BATT_HOURS;
-
-      // discharge to cover local deficit - pumped storage first, then batteries
-      if (remainingDeficit[i] > 1e-6) {
-        const psDis = Math.min(remainingDeficit[i], psPowerMw, this.psSoc[r]);
-        this.psSoc[r] -= psDis; remainingDeficit[i] -= psDis; psDischargeTotal += psDis;
-        const battDis = Math.min(remainingDeficit[i], battPowerMw, this.battSoc[r]);
-        this.battSoc[r] -= battDis; remainingDeficit[i] -= battDis; battDischargeTotal += battDis;
-      }
-      // charge from local curtailment - pumped storage first, then batteries (matches single-node order)
-      if (curtailedByRegion[i] > 1e-6) {
-        const psChg = Math.min(curtailedByRegion[i], psPowerMw, psEnergyMwh - this.psSoc[r]);
-        this.psSoc[r] += psChg * PS_EFF; curtailedByRegion[i] -= psChg; psChargeTotal += psChg;
-        const battChg = Math.min(curtailedByRegion[i], battPowerMw, battEnergyMwh - this.battSoc[r]);
-        this.battSoc[r] += battChg * BATT_EFF; curtailedByRegion[i] -= battChg; battChargeTotal += battChg;
+    // --- Off-peak coal charging (local only - matches the single-node engine's own national
+    // version, using each region's own idle coal capacity, hours 23:00-05:00). Same gates and
+    // power caps as the single-node engine: pumped storage up to 80% power while below 85% SoC,
+    // batteries up to 60% power while below 80% SoC.
+    let psCoalChargeTotal = 0, battCoalChargeTotal = 0;
+    const hour = hourIdx % 24;
+    if (hour <= 5 || hour >= 23) {
+      const coalHeadroomByRegion = new Array(n).fill(0);
+      genLog.forEach(g => {
+        if (COAL_CARRIERS.includes(g.carrier)) coalHeadroomByRegion[this.nodeIndex[g.region]] += (g.available - g.dispatched);
+      });
+      for (let i = 0; i < n; i++) {
+        const r = REGIONS[i];
+        let head = coalHeadroomByRegion[i];
+        const psPowerMw = PS_MW_BY_REGION[r] || 0, psEnergyMwh = PS_ENERGY_MWH_BY_REGION[r] || 0;
+        if (head > 0 && this.psSoc[r] < psEnergyMwh * 0.85) {
+          const w = Math.min(psPowerMw * 0.8, psEnergyMwh - this.psSoc[r], head);
+          this.psSoc[r] += w * PS_EFF; head -= w; psCoalChargeTotal += w;
+        }
+        const battPowerMw = this.battMw[r] || 0, battEnergyMwh = battPowerMw * BATT_HOURS;
+        if (head > 0 && this.battSoc[r] < battEnergyMwh * 0.8) {
+          const w = Math.min(battPowerMw * 0.6, battEnergyMwh - this.battSoc[r], head);
+          this.battSoc[r] += w * BATT_EFF; head -= w; battCoalChargeTotal += w;
+        }
       }
     }
-    totalCurtailed -= (psChargeTotal + battChargeTotal); // absorbed by storage, no longer wasted
+
+    // --- Charging from curtailed renewables, network-routed. Reuses the same Dijkstra/pathEdges
+    // machinery as the main dispatch loop, continuing to deplete the SAME headroom array (so this
+    // pass only uses whatever transmission capacity is left after the main dispatch). A region's
+    // own storage is naturally preferred (Dijkstra finds distance-0 targets first), but power can
+    // now also travel to a DIFFERENT region's storage if there's spare corridor capacity - this is
+    // the piece that was local-only before.
+    const psCap = REGIONS.map(r => Math.max(0, Math.min(PS_MW_BY_REGION[r] || 0, (PS_ENERGY_MWH_BY_REGION[r] || 0) - this.psSoc[r])));
+    const battCap = REGIONS.map(r => Math.max(0, Math.min(this.battMw[r] || 0, (this.battMw[r] || 0) * BATT_HOURS - this.battSoc[r])));
+    const chargeHeadroom = REGIONS.map((r, i) => psCap[i] + battCap[i]);
+    let psRenewChargeTotal = 0, battRenewChargeTotal = 0;
+    const creditCharge = (i, mwh) => {
+      const toPs = Math.min(mwh, psCap[i]);
+      this.psSoc[REGIONS[i]] += toPs * PS_EFF; psCap[i] -= toPs; psRenewChargeTotal += toPs;
+      const toBatt = Math.min(mwh - toPs, battCap[i]);
+      this.battSoc[REGIONS[i]] += toBatt * BATT_EFF; battCap[i] -= toBatt; battRenewChargeTotal += toBatt;
+      chargeHeadroom[i] -= (toPs + toBatt);
+      return toPs + toBatt;
+    };
+
+    let renewChargeTotal = 0;
+    for (const g of genLog) {
+      if (g.curtailed <= 1e-6) continue;
+      let avail = g.curtailed;
+      const homeIdx = this.nodeIndex[g.region];
+      let guard = 0;
+      while (avail > 1e-6 && guard++ < n) {
+        const { dist, prevEdge } = this.dijkstra(homeIdx, headroom);
+        let target = -1, bestDist = Infinity;
+        for (let i = 0; i < n; i++) {
+          if (chargeHeadroom[i] > 1e-6 && dist[i] < bestDist) { bestDist = dist[i]; target = i; }
+        }
+        if (target === -1) break;
+        const edges = this.pathEdges(target, prevEdge);
+        let bottleneck = Infinity;
+        for (const ei of edges) bottleneck = Math.min(bottleneck, headroom[ei]);
+        const sent = Math.min(avail, chargeHeadroom[target], bottleneck);
+        if (sent <= 1e-9) break;
+        let totalLossFrac = 0;
+        for (const ei of edges) { const e = this.edgeMeta[ei]; totalLossFrac = 1 - (1 - totalLossFrac) * (1 - lossFraction(e.length, sent, e.limit)); }
+        const delivered = sent * (1 - totalLossFrac);
+        const credited = creditCharge(target, delivered);
+        avail -= sent;
+        totalLosses += sent - delivered;
+        renewChargeTotal += credited;
+        for (const ei of edges) headroom[ei] -= sent;
+      }
+      g.curtailed = avail; // update to reflect what charging actually absorbed
+    }
+    totalCurtailed -= renewChargeTotal;
+
+    const psChargeTotal = psCoalChargeTotal + psRenewChargeTotal;
+    const battChargeTotal = battCoalChargeTotal + battRenewChargeTotal;
 
     const unserved = {};
     for (let i = 0; i < n; i++) unserved[REGIONS[i]] = Math.max(remainingDeficit[i], 0);
