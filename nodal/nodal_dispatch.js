@@ -64,13 +64,14 @@ let nodalEngineInstance = null;
  * (cached after that - the engine object itself is also reused across calls).
  * @returns {object} summary: {unservedPct, lossesPct, curtailedGwh, byRegion, runtimeMs}
  */
-async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion, newRooftopMW) {
+async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion, newRooftopMW, newBattMW) {
   const data = await loadNodalData();
   if (!nodalEngineInstance) nodalEngineInstance = new NodalEngine(data);
-  nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0);
+  nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0, newBattMW || 0);
 
   const t0 = performance.now();
   let totalDemand = 0, totalUnserved = 0, totalLosses = 0, totalCurtailed = 0, totalRooftop = 0;
+  let psDischarge = 0, battDischarge = 0;
   const byRegion = {};
   REGIONS.forEach(r => { byRegion[r] = { demand: 0, unserved: 0 }; });
   const byCarrier = {}; // annual MWh dispatched per carrier, national
@@ -86,6 +87,8 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     totalLosses += r.totalLosses;
     totalCurtailed += r.totalCurtailed;
     totalRooftop += Object.values(r.rooftopGen).reduce((a, b) => a + b, 0);
+    psDischarge += r.storage.psDischargeTotal;
+    battDischarge += r.storage.battDischargeTotal;
     r.genLog.forEach(g => { byCarrier[g.carrier] = (byCarrier[g.carrier] || 0) + g.dispatched; });
   }
   const runtimeMs = performance.now() - t0;
@@ -97,6 +100,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     lossesPct: 100 * totalLosses / totalDemand,
     curtailedGwh: totalCurtailed / 1e3,
     rooftopTwh: totalRooftop / 1e6,
+    storageGwh: (psDischarge + battDischarge) / 1e3,
     byRegion,
     byCarrier, // {carrier: annual MWh}
     runtimeMs,
