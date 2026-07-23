@@ -83,6 +83,7 @@ class NodalEngine {
     this.solarPu = data.solarPu;
     this.baseWindMw = data.windMw;
     this.baseSolarMw = data.solarMw;
+    this.baseRooftopMw = data.rooftopMw || {};
     this.rawFleet = data.fleet;
 
     this.nodeIndex = {};
@@ -99,22 +100,26 @@ class NodalEngine {
   }
 
   /**
-   * Apply this run's scenario parameters (EAF, decommissioning, and any extra nodally-sited
-   * wind/solar per region) - call this before dispatchHour(). Cheap: no file I/O, just array
-   * rebuilding, so it's fine to call again whenever slider values or the allocated portfolio change.
    * @param {number} coalEafPct - 0-100
    * @param {number} coalDecomMW
    * @param {object} extraWindByRegion - {region: MW}, e.g. from the "Where To Build" portfolio
    * @param {object} extraSolarByRegion - {region: MW}
+   * @param {number} newRooftopMW - national new-build rooftop, allocated across regions
+   *                                proportionally to each region's existing rooftop share
+   *                                (rooftop tends to grow where it's already concentrated)
    */
-  setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}) {
+  setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}, newRooftopMW = 0) {
     this.thermalFleet = applyCoalScenario(this.rawFleet, coalEafPct, coalDecomMW)
       .sort((a, b) => a.marginalCost - b.marginalCost);
     this.windMw = {};
     this.solarMw = {};
+    this.rooftopMw = {};
+    const totalBaseRooftop = REGIONS.reduce((s, r) => s + (this.baseRooftopMw[r] || 0), 0);
     REGIONS.forEach(r => {
       this.windMw[r] = (this.baseWindMw[r] || 0) + (extraWindByRegion[r] || 0);
       this.solarMw[r] = (this.baseSolarMw[r] || 0) + (extraSolarByRegion[r] || 0);
+      const rooftopShare = totalBaseRooftop > 0 ? (this.baseRooftopMw[r] || 0) / totalBaseRooftop : 0;
+      this.rooftopMw[r] = (this.baseRooftopMw[r] || 0) + newRooftopMW * rooftopShare;
     });
   }
 
@@ -176,8 +181,17 @@ class NodalEngine {
 
   dispatchHour(hourIdx) {
     const n = REGIONS.length;
+    const rawDemand = new Array(n);
     const demand = new Array(n);
-    for (let i = 0; i < n; i++) demand[i] = this.demandByRegion[REGIONS[i]][hourIdx];
+    const rooftopGen = new Array(n);
+    for (let i = 0; i < n; i++) {
+      const r = REGIONS[i];
+      rawDemand[i] = this.demandByRegion[r][hourIdx];
+      // same formula as the single-node engine: 94% derate, capped at 90% of that region's demand
+      const potential = (this.rooftopMw[r] || 0) * this.solarPu[r][hourIdx] * 0.94;
+      rooftopGen[i] = Math.min(potential, rawDemand[i] * 0.9);
+      demand[i] = rawDemand[i] - rooftopGen[i]; // net (grid-facing) demand - this is what the network sees
+    }
     const remainingDeficit = demand.slice();
     const headroom = this.edgeMeta.map(e => e.limit);
 
@@ -231,10 +245,15 @@ class NodalEngine {
 
     const unserved = {};
     for (let i = 0; i < n; i++) unserved[REGIONS[i]] = Math.max(remainingDeficit[i], 0);
-    const demandByName = {};
-    for (let i = 0; i < n; i++) demandByName[REGIONS[i]] = demand[i];
+    const rawDemandByName = {}, netDemandByName = {}, rooftopByName = {};
+    for (let i = 0; i < n; i++) {
+      rawDemandByName[REGIONS[i]] = rawDemand[i];   // true customer demand (what people consumed)
+      netDemandByName[REGIONS[i]] = demand[i];       // grid-facing demand, after rooftop netting - what the network had to solve
+      rooftopByName[REGIONS[i]] = rooftopGen[i];
+    }
 
-    return { hour: hourIdx, demand: demandByName, unserved, totalLosses, totalCurtailed, genLog };
+    return { hour: hourIdx, demand: rawDemandByName, netDemand: netDemandByName,
+             rooftopGen: rooftopByName, unserved, totalLosses, totalCurtailed, genLog };
   }
 }
 
