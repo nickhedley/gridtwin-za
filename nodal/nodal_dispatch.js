@@ -19,11 +19,12 @@ function parseCSVText(text) {
 async function loadNodalData() {
   if (nodalDataCache) return nodalDataCache;
 
-  const [demandText, profiles, cap, fleetText] = await Promise.all([
+  const [demandText, profiles, cap, fleetText, rooftopMw] = await Promise.all([
     fetch('nodal/demand_2025_regional.csv').then(r => r.text()),
     fetch('nodal/profiles_regional.json').then(r => r.json()),
     fetch('nodal/regional_renewable_capacity.json').then(r => r.json()),
     fetch('nodal/fleet_by_region_v2.csv').then(r => r.text()),
+    fetch('nodal/rooftop_mw_by_region.json').then(r => r.json()),
   ]);
 
   const demandRows = parseCSVText(demandText);
@@ -52,7 +53,7 @@ async function loadNodalData() {
     };
   });
 
-  nodalDataCache = { demandByRegion, windPu, solarPu, windMw: cap.wind_mw, solarMw: cap.solar_mw, fleet };
+  nodalDataCache = { demandByRegion, windPu, solarPu, windMw: cap.wind_mw, solarMw: cap.solar_mw, rooftopMw, fleet };
   return nodalDataCache;
 }
 
@@ -63,13 +64,13 @@ let nodalEngineInstance = null;
  * (cached after that - the engine object itself is also reused across calls).
  * @returns {object} summary: {unservedPct, lossesPct, curtailedGwh, byRegion, runtimeMs}
  */
-async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion) {
+async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion, newRooftopMW) {
   const data = await loadNodalData();
   if (!nodalEngineInstance) nodalEngineInstance = new NodalEngine(data);
-  nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {});
+  nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0);
 
   const t0 = performance.now();
-  let totalDemand = 0, totalUnserved = 0, totalLosses = 0, totalCurtailed = 0;
+  let totalDemand = 0, totalUnserved = 0, totalLosses = 0, totalCurtailed = 0, totalRooftop = 0;
   const byRegion = {};
   REGIONS.forEach(r => { byRegion[r] = { demand: 0, unserved: 0 }; });
 
@@ -83,6 +84,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     totalUnserved += Object.values(r.unserved).reduce((a, b) => a + b, 0);
     totalLosses += r.totalLosses;
     totalCurtailed += r.totalCurtailed;
+    totalRooftop += Object.values(r.rooftopGen).reduce((a, b) => a + b, 0);
   }
   const runtimeMs = performance.now() - t0;
 
@@ -92,6 +94,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     unservedPct: 100 * totalUnserved / totalDemand,
     lossesPct: 100 * totalLosses / totalDemand,
     curtailedGwh: totalCurtailed / 1e3,
+    rooftopTwh: totalRooftop / 1e6,
     byRegion,
     runtimeMs,
   };
