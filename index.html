@@ -586,19 +586,6 @@ const REGION_TO_NODE={ // best-effort map from the 10 real GCCA regions to this 
   'Western Cape':'CPT'
   // North West has no distinct node in this schematic and won't visually update
 };
-function resolveColor(c){
-  if(c.startsWith('var(')){
-    const varName=c.slice(4,-1).trim();
-    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim()||'#1F4E79';
-  }
-  return c;
-}
-function mixHex(hex1,hex2,t){
-  const h2rgb=h=>{const c=parseInt(h.slice(1),16); return [(c>>16)&255,(c>>8)&255,c&255];};
-  const [r1,g1,b1]=h2rgb(hex1), [r2,g2,b2]=h2rgb(hex2);
-  const mix=(a,b)=>Math.round(a+(b-a)*t);
-  return '#'+[mix(r1,r2),mix(g1,g2),mix(b1,b2)].map(v=>v.toString(16).padStart(2,'0')).join('');
-}
 function nodeColor(n,res){
   const t=n.types[0];
   const m={nuke:'#E4322B',coal:'#4A3120',veld2:'#3EA055',sun:'#F5C518',sky:'#1F4E79',alert:'var(--alert)'};
@@ -613,6 +600,7 @@ function buildMap(){
     s+='<line x1="'+A.x+'" y1="'+A.y+'" x2="'+B.x+'" y2="'+B.y+'" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="1 3" opacity="0.55"/>';});
   NODES.forEach(n=>{
     s+='<g><circle id="nd_'+n.id+'" cx="'+n.x+'" cy="'+n.y+'" r="7" fill="'+nodeColor(n)+'" stroke="var(--ink)" stroke-width="1.4"><title>'+n.name+'</title></circle>';
+    s+='<circle id="badge_'+n.id+'" cx="'+(n.x+8)+'" cy="'+(n.y-8)+'" r="0" fill="#F5C518" stroke="var(--panel)" stroke-width="1"><title></title></circle>';
     s+='<text x="'+(n.x+11)+'" y="'+(n.y+4)+'" font-size="10" font-family="IBM Plex Mono" fill="var(--ink2)">'+n.id+'</text></g>';
   });
   s+='</svg>';
@@ -638,10 +626,13 @@ function updateMap(r){
     el.setAttribute('stroke-width', active?'2.5':'1.4');
   }});
 
-  // nodal siting: tint nodes toward wind (green) or solar (yellow) based on allocated MW.
-  // Several regions have no distinct node in this schematic (see REGION_TO_NODE) and multiple
-  // regions can share one node (e.g. Northern Cape + Hydra Central both -> UPG) - allocations
-  // are summed per node. This is illustrative colour, not a claim about exact node capacity.
+  // nodal siting: add a separate small badge dot (not a colour blend) for wind/solar
+  // allocated at that node, sized by how much MW has been committed. The node's own
+  // fill colour is never touched - same principle as the coal-repurposing ring above:
+  // two distinct colours stay legible rather than merging into a muddy blend.
+  // Several regions have no distinct node in this schematic (see REGION_TO_NODE) and
+  // multiple regions can share one node (e.g. Northern Cape + Hydra Central -> UPG) -
+  // allocations are summed per node.
   const byNode={};
   Object.entries(siteAllocated).forEach(([key,mw])=>{
     const [region,tech]=key.split('|');
@@ -651,15 +642,17 @@ function updateMap(r){
     byNode[nodeId][tech]+=mw;
   });
   NODES.forEach(n=>{
-    const el=document.getElementById('nd_'+n.id);
-    if(!el) return;
+    const badge=document.getElementById('badge_'+n.id);
+    if(!badge) return;
     const alloc=byNode[n.id];
-    const base=resolveColor(nodeColor(n));
-    if(!alloc||(alloc.wind===0&&alloc.solar===0)){ el.setAttribute('fill',base); return; }
+    if(!alloc||(alloc.wind===0&&alloc.solar===0)){ badge.setAttribute('r','0'); return; }
     const dominant=alloc.solar>=alloc.wind?'#F5C518':'#3EA055';
     const totalMw=alloc.wind+alloc.solar;
-    const t=Math.min(0.85, totalMw/3000); // saturates around 3 GW allocated at that node
-    el.setAttribute('fill', mixHex(base, dominant, t));
+    const rad=3+3*Math.min(1, totalMw/3000); // 3-6px, scales with MW committed, caps around 3 GW
+    badge.setAttribute('fill', dominant);
+    badge.setAttribute('r', rad.toFixed(1));
+    badge.querySelector('title').textContent=(alloc.solar>0?alloc.solar.toFixed(0)+' MW solar allocated':'')+
+      (alloc.wind>0&&alloc.solar>0?' · ':'')+(alloc.wind>0?alloc.wind.toFixed(0)+' MW wind allocated':'');
   });
 }
 
