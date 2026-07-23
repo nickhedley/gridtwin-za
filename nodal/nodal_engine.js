@@ -38,6 +38,24 @@ function lossFraction(lengthKm, flowMw, limitMw) {
   return LOSS_BASE_RATE * (lengthKm / 1000.0) * (loading * loading);
 }
 
+// Real pumped-storage siting (verified via actual GCCA boundary polygons):
+// Ingula (1332MW) + Drakensberg (1000MW) both land in KwaZulu Natal despite straddling the
+// KZN/Free State escarpment - the real supply-area boundary, not the province line, decides it.
+// Palmiet (400MW) + an estimate for the smaller municipally-owned Steenbras scheme -> Western Cape.
+// Energy (MWh) split proportionally to power - individual schemes have different real durations
+// (Drakensberg ~27.6h, Ingula ~4-5h, Palmiet less) but that detail isn't in our data; flagged.
+const PS_MW_BY_REGION = { 'Kwazulu Natal': 2332, 'Western Cape': 568 };
+const PS_ENERGY_MWH_BY_REGION = { 'Kwazulu Natal': 60000 * (2332/2900), 'Western Cape': 60000 * (568/2900) };
+const PS_EFF = 0.76;
+
+// Batteries: Eskom's BESS rollout spans Western Cape, Eastern Cape, Northern Cape and
+// KwaZulu Natal, but no complete public per-site MW breakdown exists (only a few named
+// sites: Hex/Graafwater/Paleisheuwel in WC, Elandskop in KZN). This split is a FLAGGED
+// ESTIMATE weighted toward WC's larger number of confirmed sites, not verified like the rest.
+const BATT_SHARE_BY_REGION = { 'Western Cape': 0.35, 'Eastern Cape': 0.25, 'Northern Cape': 0.20, 'Kwazulu Natal': 0.20 };
+const BATT_HOURS = 4;
+const BATT_EFF = 0.88;
+
 const COAL_CARRIERS = ['coal', 'sasol_coal']; // carriers subject to the EAF/decommissioning sliders
 
 // Real CSP plant siting (verified against actual GCCA supply-region boundaries):
@@ -131,20 +149,29 @@ class NodalEngine {
    * @param {object} extraSolarByRegion - {region: MW}
    * @param {number} newRooftopMW - national new-build rooftop, allocated across regions
    *                                proportionally to each region's existing rooftop share
-   *                                (rooftop tends to grow where it's already concentrated)
+   * @param {number} newBattMW - national new-build battery power, allocated across regions
+   *                             using the same flagged BATT_SHARE_BY_REGION estimate
    */
-  setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}, newRooftopMW = 0) {
+  setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}, newRooftopMW = 0, newBattMW = 0) {
     this.thermalFleet = applyCoalScenario(this.rawFleet, coalEafPct, coalDecomMW)
       .sort((a, b) => a.marginalCost - b.marginalCost);
     this.windMw = {};
     this.solarMw = {};
     this.rooftopMw = {};
+    this.battMw = {};
+    this.psSoc = {};   // MWh, current state of charge per region - carried across dispatchHour() calls
+    this.battSoc = {}; // MWh
     const totalBaseRooftop = REGIONS.reduce((s, r) => s + (this.baseRooftopMw[r] || 0), 0);
     REGIONS.forEach(r => {
       this.windMw[r] = (this.baseWindMw[r] || 0) + (extraWindByRegion[r] || 0);
       this.solarMw[r] = (this.baseSolarMw[r] || 0) + (extraSolarByRegion[r] || 0);
       const rooftopShare = totalBaseRooftop > 0 ? (this.baseRooftopMw[r] || 0) / totalBaseRooftop : 0;
       this.rooftopMw[r] = (this.baseRooftopMw[r] || 0) + newRooftopMW * rooftopShare;
+      const battShare = BATT_SHARE_BY_REGION[r] || 0;
+      this.battMw[r] = 800 * battShare + newBattMW * battShare; // 800MW = single-node app's existing total
+      // start at the same fractions the single-node engine uses (70% pumped storage, 50% batteries)
+      this.psSoc[r] = (PS_ENERGY_MWH_BY_REGION[r] || 0) * 0.7;
+      this.battSoc[r] = (this.battMw[r] * BATT_HOURS) * 0.5;
     });
   }
 
@@ -276,6 +303,38 @@ class NodalEngine {
                     dispatched: gen.availableMw - avail }); // local + exported, whether renewable or not
     }
 
+    // --- Storage pass: local-only. Each region's pumped storage / batteries can only charge
+    // from THAT region's own leftover curtailment and discharge to cover THAT region's own
+    // remaining deficit - they don't receive power routed in from elsewhere via the network.
+    // Real Ingula/Drakensberg/Palmiet often absorb and release power that travelled from other
+    // regions; that would need storage integrated into the flow-routing itself, a bigger change.
+    // Order (charge and discharge) matches the single-node engine: pumped storage before batteries.
+    const curtailedByRegion = new Array(n).fill(0);
+    genLog.forEach(g => { if (g.curtailed > 0) curtailedByRegion[this.nodeIndex[g.region]] += g.curtailed; });
+
+    let psDischargeTotal = 0, battDischargeTotal = 0, psChargeTotal = 0, battChargeTotal = 0;
+    for (let i = 0; i < n; i++) {
+      const r = REGIONS[i];
+      const psPowerMw = PS_MW_BY_REGION[r] || 0, psEnergyMwh = PS_ENERGY_MWH_BY_REGION[r] || 0;
+      const battPowerMw = this.battMw[r] || 0, battEnergyMwh = battPowerMw * BATT_HOURS;
+
+      // discharge to cover local deficit - pumped storage first, then batteries
+      if (remainingDeficit[i] > 1e-6) {
+        const psDis = Math.min(remainingDeficit[i], psPowerMw, this.psSoc[r]);
+        this.psSoc[r] -= psDis; remainingDeficit[i] -= psDis; psDischargeTotal += psDis;
+        const battDis = Math.min(remainingDeficit[i], battPowerMw, this.battSoc[r]);
+        this.battSoc[r] -= battDis; remainingDeficit[i] -= battDis; battDischargeTotal += battDis;
+      }
+      // charge from local curtailment - pumped storage first, then batteries (matches single-node order)
+      if (curtailedByRegion[i] > 1e-6) {
+        const psChg = Math.min(curtailedByRegion[i], psPowerMw, psEnergyMwh - this.psSoc[r]);
+        this.psSoc[r] += psChg * PS_EFF; curtailedByRegion[i] -= psChg; psChargeTotal += psChg;
+        const battChg = Math.min(curtailedByRegion[i], battPowerMw, battEnergyMwh - this.battSoc[r]);
+        this.battSoc[r] += battChg * BATT_EFF; curtailedByRegion[i] -= battChg; battChargeTotal += battChg;
+      }
+    }
+    totalCurtailed -= (psChargeTotal + battChargeTotal); // absorbed by storage, no longer wasted
+
     const unserved = {};
     for (let i = 0; i < n; i++) unserved[REGIONS[i]] = Math.max(remainingDeficit[i], 0);
     const rawDemandByName = {}, netDemandByName = {}, rooftopByName = {};
@@ -286,7 +345,8 @@ class NodalEngine {
     }
 
     return { hour: hourIdx, demand: rawDemandByName, netDemand: netDemandByName,
-             rooftopGen: rooftopByName, unserved, totalLosses, totalCurtailed, genLog };
+             rooftopGen: rooftopByName, unserved, totalLosses, totalCurtailed, genLog,
+             storage: { psDischargeTotal, battDischargeTotal, psChargeTotal, battChargeTotal } };
   }
 }
 
