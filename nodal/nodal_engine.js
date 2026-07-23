@@ -40,6 +40,31 @@ function lossFraction(lengthKm, flowMw, limitMw) {
 
 const COAL_CARRIERS = ['coal', 'sasol_coal']; // carriers subject to the EAF/decommissioning sliders
 
+// Real CSP plant siting (verified against actual GCCA supply-region boundaries):
+// Northern Cape 450MW (KaXu, Bokpoort, Xina, Ilanga, Kathu), Hydra Central 50MW (Khi Solar One)
+const CSP_MW_BY_REGION = { 'Northern Cape': 450, 'Hydra Central': 50 };
+
+// Imports (Cahora Bassa HVDC) enter the grid at Apollo converter station, Ekurhuleni - Gauteng.
+const IMPORTS_REGION = 'Gauteng';
+const IMPORTS_MW = 1150;      // matches the single-node app's assumption
+const IMPORTS_CF = 0.85;
+const IMPORTS_COST = 550;     // R/MWh, matches the single-node app's costImports
+
+// CSP has thermal storage in reality; like the single-node engine, treat its output as
+// must-take (never curtailed) rather than a pure weather-driven renewable.
+// Same synthetic evening-shifted shape the single-node engine uses (hour-of-day only, no
+// real regional CSP dataset exists) - repeated across all 365 days.
+function buildCspProfile() {
+  const arr = new Float64Array(8760);
+  for (let h = 0; h < 8760; h++) {
+    const hour = h % 24;
+    const eve = (hour >= 10 && hour <= 22) ? Math.exp(-Math.pow(hour - 17, 2) / 18) : 0;
+    arr[h] = Math.min(1, 0.6 * eve);
+  }
+  return arr;
+}
+const CSP_PROFILE = buildCspProfile();
+
 /**
  * Given the raw BASE-scenario fleet (with a parsed decomYear per unit) and the app's
  * coalEAFPct / coalDecomMW slider values, returns an adjusted fleet: coal-type units are
@@ -141,7 +166,14 @@ class NodalEngine {
         gens.push({ name: r + ' Solar', region: r, carrier: 'solar', cost: 0,
                     availableMw: sMw * cf, isRenewable: true });
       }
+      const cspMw = CSP_MW_BY_REGION[r] || 0;
+      if (cspMw > 0) {
+        gens.push({ name: r + ' CSP', region: r, carrier: 'csp', cost: 0,
+                    availableMw: cspMw * CSP_PROFILE[hourIdx], isRenewable: false }); // must-take, matches single-node treatment
+      }
     }
+    gens.push({ name: 'Cahora Bassa import', region: IMPORTS_REGION, carrier: 'imports', cost: IMPORTS_COST,
+                availableMw: IMPORTS_MW * IMPORTS_CF, isRenewable: false }); // must-take, fixed CF, matches single-node treatment
     gens.sort((a, b) => a.cost - b.cost);
     return gens;
   }
@@ -240,7 +272,8 @@ class NodalEngine {
 
       if (avail > 1e-6 && gen.isRenewable) totalCurtailed += avail;
       genLog.push({ name: gen.name, region: gen.region, carrier: gen.carrier,
-                    homeTake: localTake, curtailed: gen.isRenewable ? avail : 0 });
+                    homeTake: localTake, curtailed: gen.isRenewable ? avail : 0,
+                    dispatched: gen.availableMw - avail }); // local + exported, whether renewable or not
     }
 
     const unserved = {};
