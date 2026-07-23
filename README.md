@@ -224,11 +224,30 @@ opposite trade-off: instant, transparent, and simple enough to reason about.
 | **CSIR, [IRENA Renewable Power Generation Costs 2024](https://www.irena.org/), REIPPPP Bid Window 7 tariffs** | Anchored the LCOE assumptions. BW7 was the strongest single input — solar bids averaging R0.46/kWh (anchor set to R0.55), wind bids coming in high enough that none were awarded (anchor R0.75). IRENA/CSIR filled in nuclear, coal, CCGT, batteries, CSP. |
 | **Eskom Transmission Development Plan 2025–34** | Source for the grid-expansion adder (~R390bn / 14,500 km to connect 56 GW, annualised to ~R700/kW·yr, defaulted to R600 in the app) and the evidence base for "transmission is the binding constraint." Also the ~R31m/km blended national line-cost figure used in the nodal capacity-siting tool (from the DEE Minister's April 2025 statement, R440bn / ~14,000km). |
 | **[PyPSA-RSA GIS bundle](https://drive.google.com/drive/folders/17f54zTMEfeFZhNByXxLkf9qcZRdhng03)** (`Existing_Lines.shp`, `rsa_supply_regions.gpkg`) | Real transmission line geometries and the actual 10-region GCCA supply-area boundaries (not a province approximation). Used to derive real per-corridor circuit counts (by matching line endpoints to regions) and to correctly assign generation fleet to supply regions — e.g. revealing that Lethabo Power Station's real supply-area is Gauteng, not Free State province, materially changing the nodal dispatch result. |
+| **Eskom — Estimated Rooftop PV by province** (Jun-26, provided directly) | Real installed rooftop PV per province (9,107 MW total). The one region without a direct match (Hydra Central isn't a real province) got its share of the Northern Cape figure split by actual demand proportion (82/18), verified to sum exactly to Eskom's reported total. Netted off regional demand hour-by-hour in the nodal engine, same formula as the single-node model. |
+| **Wikipedia / SolarPACES / Eskom Heritage** (CSP, pumped storage, HVDC siting) | Verified real GPS coordinates for every South African CSP plant (KaXu, Bokpoort, Xina, Ilanga, Kathu, Khi Solar One), the Apollo converter station (Cahora Bassa HVDC receiving terminal, Ekurhuleni), and the Ingula/Drakensberg/Palmiet pumped-storage schemes — each checked against the actual GCCA supply-region polygons (not just "which province") to site them correctly in the nodal model. CSP totals to exactly 500 MW split 450/50 between Northern Cape and Hydra Central, matching the single-node app's existing assumption. |
+| **Eskom / ESI-Africa / African Development Bank** (BESS rollout coverage) | Confirms Eskom's battery storage programme spans Western Cape, Eastern Cape, Northern Cape and KwaZulu-Natal, with a few individual sites named (Hex, Graafwater, Paleisheuwel in WC; Elandskop in KZN). No complete public per-site MW breakdown exists, so the nodal model's regional battery split is a **flagged estimate**, not verified like the other siting decisions above. |
 | **[PyPSA-CA](https://www.eshansingh.xyz/PyPSA-CA/app/)** | Not a data source — the design template for the whole app: instant, transparent, browser-based scenario exploration in front of a rigorous optimisation model. |
 
 ## Nodal prototype
 
-A 10-region nodal extension lives in `nodal/` — real regional demand, real fleet-to-region assignment, real transfer-limit corridors (derived from actual line geometries where available), a dispatch-with-flows engine, and a capacity-siting tool ("Where To Build" panel) that checks real grid headroom before charging for new transmission. See `nodal/capacity_siting.py` for the full method and `region_headroom_lookup.json` for precomputed results. This is a prototype, not (yet) the primary model the KPIs above are computed from — the single-node engine remains the app's core.
+A 10-region nodal extension lives in `nodal/` — real regional demand, real fleet-to-region
+assignment, real transfer-limit corridors (derived from actual line geometries where available),
+and a full dispatch-with-flows engine covering coal, nuclear, hydro, wind, solar, rooftop PV,
+CSP, Cahora Bassa imports, and pumped storage/batteries — all sited using real, verified
+locations (see Sources above). A JavaScript port (`nodal_engine.js` + `nodal_dispatch.js`) runs
+the entire 8,760-hour year live in the browser via the **"Nodal Simulation"** panel, alongside
+the **"Where To Build"** capacity-siting panel that checks real grid headroom before charging
+for new transmission. See `nodal/capacity_siting.py` for the siting method and
+`region_headroom_lookup.json` for precomputed results.
+
+Storage charges and discharges across regions via the real network (not just locally), reusing
+the same flow-routing as everything else — but dispatch is greedy and hour-by-hour with no
+forecasting, so storage can spend charge helping a neighbouring region and be empty when its
+own region needs it later that same day. Battery siting is a flagged estimate (see Sources).
+
+This is a prototype, not (yet) the primary model the KPIs above are computed from — the
+single-node engine remains the app's core, and the two run side by side rather than merged.
 
 
 
@@ -238,7 +257,9 @@ profiles.json                       real 2025 Eskom hourly demand/wind/solar pro
 og-card.png                         social preview image
 scripts/build_profiles.py           Eskom CSV -> profiles.json ingestion pipeline
 nodal/                               10-region nodal prototype (see "Nodal prototype" above)
-  nodal_engine.py                    dispatch-with-flows engine, real corridor topology
+  nodal_engine.py                    Python dispatch-with-flows engine, real corridor topology
+  nodal_engine.js                    browser-side port - runs live via the Nodal Simulation panel
+  nodal_dispatch.js                  fetches nodal data + orchestrates a full-year run in-browser
   capacity_siting.py                 offline tool: computes real per-region grid headroom
   capacity_siting.js                 browser-side port, powers the "Where To Build" panel
   region_headroom_lookup.json        precomputed headroom per region/technology
@@ -246,6 +267,7 @@ nodal/                               10-region nodal prototype (see "Nodal proto
   profiles_regional.json             stylised regional wind/solar profiles (synthetic)
   fleet_by_region_v2.csv             generation fleet assigned to real GCCA supply regions
   regional_renewable_capacity.json   installed wind/solar MW per region (REIPPPP sites)
+  rooftop_mw_by_region.json          real regional rooftop PV (Eskom, Jun-26)
 ```
 
 The app is a single self-contained HTML file: vanilla JS, custom canvas charts,
@@ -261,13 +283,19 @@ Slider settings are written to the URL. Copy the address bar (or use the
 
 1. ~~Monte Carlo outage risk~~ ✅
 2. ~~Real Eskom hourly demand / wind / PV profiles~~ ✅
-3. 10-region model on the GCCA Eskom transmission supply regions, with
-   transfer limits — nodal prototype built (`nodal/`), including a working
-   "Where To Build" capacity-siting panel on the live site; not yet the
-   primary engine behind the main KPIs, and the map doesn't yet show flows
-4. Real (non-synthetic) regional wind/solar profiles for the nodal model —
+3. ~~10-region model with real transfer limits, a working "Where To Build"
+   capacity-siting panel~~ ✅
+4. ~~Full nodal dispatch: rooftop, CSP, imports, and network-integrated
+   storage, all sited using real data~~ ✅ — see "Nodal prototype" above
+5. Merge the nodal engine into the main KPIs/charts, replacing the
+   single-node engine as the primary model (currently runs side by side)
+6. Real (non-synthetic) regional wind/solar profiles for the nodal model —
    the current `nodal/profiles_regional.json` is stylised, not measured
-5. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
+7. Verified (not estimated) regional battery siting, if a complete public
+   site list ever becomes available
+8. Forecast-aware storage dispatch (currently greedy/hour-by-hour, no
+   lookahead - see "Nodal prototype" above)
+9. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
 
 ## Licence & disclaimer
 
