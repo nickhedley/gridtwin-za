@@ -940,6 +940,8 @@ function renderResult(r){
   out.innerHTML=html;
 }
 
+let siteNextId=1; // stable id per portfolio row, for deletion
+
 function renderPortfolio(){
   const el=document.getElementById('sitePortfolio');
   if(sitePortfolio.length===0){
@@ -948,15 +950,31 @@ function renderPortfolio(){
   }
   let totalMw=0, totalWithCharge=0;
   const rows=sitePortfolio.map(a=>{
-    totalMw+=a.mw;
+    totalMw+=a.requestedMw;
     if(a.gridBuildNeeded) totalWithCharge+=a.shortfallMw;
     return '<tr><td style="padding:3px 10px 3px 0">'+a.region+'</td><td style="padding:3px 10px 3px 0">'+(a.tech==='wind'?'Wind':'Solar')+'</td>'+
-      '<td style="padding:3px 10px 3px 0; text-align:right">'+a.mw+' MW</td>'+
-      '<td style="padding:3px 0 3px 0">'+(a.gridBuildNeeded?'<span style="color:var(--alert)">R'+a.gridBuildChargeRPerMWh.toFixed(1)+'/MWh on '+a.shortfallMw.toFixed(0)+' MW</span>':'<span style="color:var(--ok)">free</span>')+'</td></tr>';
+      '<td style="padding:3px 10px 3px 0; text-align:right">'+a.requestedMw+' MW</td>'+
+      '<td style="padding:3px 10px 3px 0">'+(a.gridBuildNeeded?'<span style="color:var(--alert)">R'+a.gridBuildChargeRPerMWh.toFixed(1)+'/MWh on '+a.shortfallMw.toFixed(0)+' MW</span>':'<span style="color:var(--ok)">free</span>')+'</td>'+
+      '<td style="padding:3px 0 3px 6px; text-align:right"><button type="button" class="siteDelBtn" data-id="'+a.id+'" title="Remove this allocation" style="background:none; border:1px solid var(--line2); border-radius:3px; width:18px; height:18px; line-height:1; cursor:pointer; color:var(--ink2); font-size:11px; padding:0">×</button></td></tr>';
   }).join('');
   el.innerHTML='<table style="width:100%; border-collapse:collapse">'+rows+'</table>'+
     '<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--line2)">Total allocated: <strong>'+totalMw.toLocaleString()+' MW</strong>'+
     (totalWithCharge>0?' · <strong>'+totalWithCharge.toFixed(0)+' MW</strong> triggered a grid-build charge':' · all within existing headroom')+'</div>';
+  el.querySelectorAll('.siteDelBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>deleteAllocation(parseInt(btn.dataset.id,10)));
+  });
+}
+
+function deleteAllocation(id){
+  const idx=sitePortfolio.findIndex(a=>a.id===id);
+  if(idx===-1) return;
+  const [removed]=sitePortfolio.splice(idx,1);
+  const key=removed.region+'|'+removed.tech;
+  siteAllocated[key]=Math.max(0,(siteAllocated[key]||0)-removed.requestedMw);
+  const sliderId=sliderIdFor(removed.tech);
+  siteSliderContribution[sliderId]=Math.max(0, siteSliderContribution[sliderId]-removed.requestedMw);
+  bumpSlider(sliderId, -removed.requestedMw);
+  renderPortfolio();
 }
 
 document.getElementById('siteCheckBtn').addEventListener('click', async ()=>{
@@ -986,6 +1004,7 @@ document.getElementById('siteAllocateBtn').addEventListener('click', async ()=>{
     // commit: decrement local headroom tracking, record in portfolio, push into the national slider
     const key=region+'|'+tech;
     siteAllocated[key]=(siteAllocated[key]||0)+mw;
+    r.id=siteNextId++;
     sitePortfolio.push(r);
     renderPortfolio();
     const sliderId=sliderIdFor(tech);
