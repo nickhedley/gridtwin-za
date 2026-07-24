@@ -173,6 +173,55 @@ class NodalEngine {
       this.psSoc[r] = (PS_ENERGY_MWH_BY_REGION[r] || 0) * 0.7;
       this.battSoc[r] = (this.battMw[r] * BATT_HOURS) * 0.5;
     });
+
+    this.buildForecastNeed();
+  }
+
+  /**
+   * Cheap, local-only forecast of near-term stress per region, used so storage can reserve
+   * some of its own capacity for itself before exporting to help a neighbour (see dispatchHour).
+   * Deliberately simple to avoid circularity: it never looks at storage or network imports,
+   * just "raw local demand minus this region's own firm + weather-driven generation" - a
+   * conservative proxy, not a real dispatch simulation. Since the whole year's demand and
+   * renewable profiles are already fully known upfront (this is a batch simulation, not a
+   * live one), a genuine 24h-ahead lookahead is legitimate here, unlike a real grid operator
+   * who only has forecasts.
+   */
+  buildForecastNeed() {
+    const n = REGIONS.length;
+    const firmCapacityByRegion = {};
+    REGIONS.forEach(r => { firmCapacityByRegion[r] = 0; });
+    this.thermalFleet.forEach(g => { firmCapacityByRegion[g.region] = (firmCapacityByRegion[g.region] || 0) + g.capacityMw; });
+
+    const deficitProxy = {};
+    REGIONS.forEach(r => { deficitProxy[r] = new Float64Array(8760); });
+    for (let h = 0; h < 8760; h++) {
+      for (const r of REGIONS) {
+        const rawD = this.demandByRegion[r][h];
+        const rooftop = Math.min((this.rooftopMw[r] || 0) * this.solarPu[r][h] * 0.94, rawD * 0.9);
+        const netD = rawD - rooftop;
+        const variableAvail = (this.windMw[r] || 0) * this.windPu[r][h] + (this.solarMw[r] || 0) * this.solarPu[r][h]
+          + (CSP_MW_BY_REGION[r] || 0) * CSP_PROFILE[h] + (r === IMPORTS_REGION ? IMPORTS_MW * IMPORTS_CF : 0);
+        const rawDeficit = Math.max(0, netD - firmCapacityByRegion[r] - variableAvail);
+        // cap by what this region's OWN storage could plausibly address in an hour - otherwise
+        // a region's entire multi-GW shortfall (which storage could never fully cover anyway)
+        // saturates the reserve fraction to ~100% almost permanently, making the signal useless.
+        const storageScale = Math.max(PS_MW_BY_REGION[r] || 0, this.battMw[r] || 0);
+        deficitProxy[r][h] = Math.min(rawDeficit, storageScale);
+      }
+    }
+
+    // rolling 24h-ahead sum (truncated at year boundary - a minor edge effect in the last 24h only)
+    this.forecastNeed = {};
+    REGIONS.forEach(r => { this.forecastNeed[r] = new Float64Array(8760); });
+    for (const r of REGIONS) {
+      for (let h = 0; h < 8760; h++) {
+        let sum = 0;
+        const end = Math.min(8760, h + 25);
+        for (let k = h + 1; k < end; k++) sum += deficitProxy[r][k];
+        this.forecastNeed[r][h] = sum;
+      }
+    }
   }
 
   buildGenerators(hourIdx) {
@@ -263,6 +312,7 @@ class NodalEngine {
     }
     const remainingDeficit = demand.slice();
     const headroom = this.edgeMeta.map(e => e.limit);
+    const edgeFlow = new Array(this.edgeMeta.length).fill(0); // MW sent this hour, per corridor - for the flows-on-map feature
 
     const gens = this.buildGenerators(hourIdx);
     let totalLosses = 0, totalCurtailed = 0;
@@ -276,6 +326,25 @@ class NodalEngine {
       const localTake = Math.min(avail, Math.max(remainingDeficit[homeIdx], 0));
       remainingDeficit[homeIdx] -= localTake;
       avail -= localTake;
+
+      // Forecast-aware reservation: before storage exports to help ANOTHER region, hold back
+      // some of its own remaining capacity if its own region looks stressed over the next 24h.
+      // Reserved MW simply isn't dispatched this hour (never enters the export loop below), so
+      // it stays banked in SoC for whenever the home region's own forecast need materialises.
+      if ((gen.carrier === 'ps' || gen.carrier === 'batt') && avail > 1e-6) {
+        const energyCap = gen.carrier === 'ps'
+          ? (PS_ENERGY_MWH_BY_REGION[gen.region] || 0)
+          : (this.battMw[gen.region] || 0) * BATT_HOURS;
+        const need = (this.forecastNeed[gen.region] && this.forecastNeed[gen.region][hourIdx]) || 0;
+        // capped at 50%, not 100%: an early attempt using the full 0-100% range saturated near-
+        // permanently under sustained stress (any lasting shortfall summed over 24h tends to exceed
+        // a modest plant's own energy capacity), which stopped being a genuine signal and just
+        // blocked exports almost always. This bound keeps it directionally responsive - reserve
+        // more when the region's own near-term outlook is worse - without ever fully shutting
+        // off exports, which a more careful, iterated calibration could probably improve on.
+        const reserveFrac = energyCap > 0 ? Math.min(0.5, need / energyCap) : 0;
+        avail -= avail * reserveFrac;
+      }
 
       let guard = 0;
       while (avail > 1e-6 && guard++ < n) {
@@ -304,7 +373,7 @@ class NodalEngine {
         remainingDeficit[target] -= delivered;
         avail -= sent;
         totalLosses += sent - delivered;
-        for (const ei of edges) headroom[ei] -= sent;
+        for (const ei of edges) { headroom[ei] -= sent; edgeFlow[ei] += sent; }
       }
 
       if (avail > 1e-6 && gen.isRenewable) totalCurtailed += avail;
@@ -322,10 +391,16 @@ class NodalEngine {
       if (g.carrier === 'batt') { this.battSoc[g.region] -= g.dispatched; battDischargeTotal += g.dispatched; }
     });
 
-    // --- Off-peak coal charging (local only - matches the single-node engine's own national
-    // version, using each region's own idle coal capacity, hours 23:00-05:00). Same gates and
-    // power caps as the single-node engine: pumped storage up to 80% power while below 85% SoC,
-    // batteries up to 60% power while below 80% SoC.
+    // --- Off-peak coal charging, NOW NETWORK-ROUTED (hours 23:00-05:00). A region with idle
+    // local coal capacity can charge ANY region's storage via the real network, not just its
+    // own - this matters a lot in practice: KZN's pumped storage has almost no local coal fleet
+    // to draw from (SA's coal is concentrated in Mpumalanga/Limpopo/Free State), so a local-only
+    // version leaves it with no way to ever recharge once its starting charge is used up. This
+    // also matches how Eskom actually operates: Mpumalanga coal is run harder overnight
+    // specifically to pump water at Drakensberg/Ingula, transmitted via the grid. Same
+    // conservative gates as the single-node engine, applied at the RECEIVING region: pumped
+    // storage only charges this way below 85% SoC (up to 80% of its own power rating),
+    // batteries below 80% SoC (up to 60% of their own power rating).
     let psCoalChargeTotal = 0, battCoalChargeTotal = 0;
     const hour = hourIdx % 24;
     if (hour <= 5 || hour >= 23) {
@@ -333,28 +408,53 @@ class NodalEngine {
       genLog.forEach(g => {
         if (COAL_CARRIERS.includes(g.carrier)) coalHeadroomByRegion[this.nodeIndex[g.region]] += (g.available - g.dispatched);
       });
-      for (let i = 0; i < n; i++) {
-        const r = REGIONS[i];
-        let head = coalHeadroomByRegion[i];
-        const psPowerMw = PS_MW_BY_REGION[r] || 0, psEnergyMwh = PS_ENERGY_MWH_BY_REGION[r] || 0;
-        if (head > 0 && this.psSoc[r] < psEnergyMwh * 0.85) {
-          const w = Math.min(psPowerMw * 0.8, psEnergyMwh - this.psSoc[r], head);
-          this.psSoc[r] += w * PS_EFF; head -= w; psCoalChargeTotal += w;
-        }
-        const battPowerMw = this.battMw[r] || 0, battEnergyMwh = battPowerMw * BATT_HOURS;
-        if (head > 0 && this.battSoc[r] < battEnergyMwh * 0.8) {
-          const w = Math.min(battPowerMw * 0.6, battEnergyMwh - this.battSoc[r], head);
-          this.battSoc[r] += w * BATT_EFF; head -= w; battCoalChargeTotal += w;
+      const psCapOffpeak = REGIONS.map(r => {
+        const psEnergyMwh = PS_ENERGY_MWH_BY_REGION[r] || 0;
+        if (this.psSoc[r] >= psEnergyMwh * 0.85) return 0;
+        return Math.max(0, Math.min((PS_MW_BY_REGION[r] || 0) * 0.8, psEnergyMwh - this.psSoc[r]));
+      });
+      const battCapOffpeak = REGIONS.map(r => {
+        const battEnergyMwh = (this.battMw[r] || 0) * BATT_HOURS;
+        if (this.battSoc[r] >= battEnergyMwh * 0.8) return 0;
+        return Math.max(0, Math.min((this.battMw[r] || 0) * 0.6, battEnergyMwh - this.battSoc[r]));
+      });
+      const offpeakHeadroom = REGIONS.map((r, i) => psCapOffpeak[i] + battCapOffpeak[i]);
+      const creditOffpeak = (i, mwh) => {
+        const toPs = Math.min(mwh, psCapOffpeak[i]);
+        this.psSoc[REGIONS[i]] += toPs * PS_EFF; psCapOffpeak[i] -= toPs; psCoalChargeTotal += toPs;
+        const toBatt = Math.min(mwh - toPs, battCapOffpeak[i]);
+        this.battSoc[REGIONS[i]] += toBatt * BATT_EFF; battCapOffpeak[i] -= toBatt; battCoalChargeTotal += toBatt;
+        offpeakHeadroom[i] -= (toPs + toBatt);
+      };
+      for (let srcIdx = 0; srcIdx < n; srcIdx++) {
+        let avail = coalHeadroomByRegion[srcIdx];
+        if (avail <= 1e-6) continue;
+        let guard = 0;
+        while (avail > 1e-6 && guard++ < n) {
+          const { dist, prevEdge } = this.dijkstra(srcIdx, headroom);
+          let target = -1, bestDist = Infinity;
+          for (let i = 0; i < n; i++) { if (offpeakHeadroom[i] > 1e-6 && dist[i] < bestDist) { bestDist = dist[i]; target = i; } }
+          if (target === -1) break;
+          const edges = this.pathEdges(target, prevEdge);
+          let bottleneck = Infinity;
+          for (const ei of edges) bottleneck = Math.min(bottleneck, headroom[ei]);
+          const sent = Math.min(avail, offpeakHeadroom[target], bottleneck);
+          if (sent <= 1e-9) break;
+          let totalLossFrac = 0;
+          for (const ei of edges) { const e = this.edgeMeta[ei]; totalLossFrac = 1 - (1 - totalLossFrac) * (1 - lossFraction(e.length, sent, e.limit)); }
+          creditOffpeak(target, sent * (1 - totalLossFrac));
+          avail -= sent;
+          totalLosses += sent - sent * (1 - totalLossFrac);
+          for (const ei of edges) { headroom[ei] -= sent; edgeFlow[ei] += sent; }
         }
       }
     }
 
     // --- Charging from curtailed renewables, network-routed. Reuses the same Dijkstra/pathEdges
     // machinery as the main dispatch loop, continuing to deplete the SAME headroom array (so this
-    // pass only uses whatever transmission capacity is left after the main dispatch). A region's
-    // own storage is naturally preferred (Dijkstra finds distance-0 targets first), but power can
-    // now also travel to a DIFFERENT region's storage if there's spare corridor capacity - this is
-    // the piece that was local-only before.
+    // pass only uses whatever transmission capacity is left after the main dispatch and the
+    // off-peak coal charging above). A region's own storage is naturally preferred (Dijkstra
+    // finds distance-0 targets first), but power can travel to a DIFFERENT region's storage too.
     const psCap = REGIONS.map(r => Math.max(0, Math.min(PS_MW_BY_REGION[r] || 0, (PS_ENERGY_MWH_BY_REGION[r] || 0) - this.psSoc[r])));
     const battCap = REGIONS.map(r => Math.max(0, Math.min(this.battMw[r] || 0, (this.battMw[r] || 0) * BATT_HOURS - this.battSoc[r])));
     const chargeHeadroom = REGIONS.map((r, i) => psCap[i] + battCap[i]);
@@ -393,7 +493,7 @@ class NodalEngine {
         avail -= sent;
         totalLosses += sent - delivered;
         renewChargeTotal += credited;
-        for (const ei of edges) headroom[ei] -= sent;
+        for (const ei of edges) { headroom[ei] -= sent; edgeFlow[ei] += sent; }
       }
       g.curtailed = avail; // update to reflect what charging actually absorbed
     }
@@ -413,7 +513,8 @@ class NodalEngine {
 
     return { hour: hourIdx, demand: rawDemandByName, netDemand: netDemandByName,
              rooftopGen: rooftopByName, unserved, totalLosses, totalCurtailed, genLog,
-             storage: { psDischargeTotal, battDischargeTotal, psChargeTotal, battChargeTotal } };
+             storage: { psDischargeTotal, battDischargeTotal, psChargeTotal, battChargeTotal },
+             edgeFlow };
   }
 }
 
