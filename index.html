@@ -259,7 +259,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
           <div class="ph"><h2>Nodal Simulation</h2><span class="tag">full network-flow model · full year</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), and today's current sliders plus anything allocated above. On success, the KPIs and energy mix at the top of the page switch to reflect this real nodal run instead of the instant national engine (see the banner that appears) - the hourly dispatch chart and load-shedding risk panel stay on the national engine for now, since storage/CSP/CCGT and Monte Carlo risk aren't nodally resolved the same way there yet. Storage charges and discharges across the real network - including overnight coal-to-storage charging, which now correctly routes to wherever storage actually sits rather than requiring local coal (KZN's pumped storage has almost no local coal fleet to draw from otherwise). Before exporting to help a neighbouring region, storage checks its own near-term outlook and holds back some capacity if its own region looks likely to need it soon - a simple, capped lookahead, not full forecast optimisation. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), and today's current sliders plus anything allocated above. On success, the KPIs, energy mix, and hourly dispatch chart all switch to reflect this real nodal run instead of the instant national engine (see the banner that appears) - only the load-shedding risk panel stays on the national engine, since Monte Carlo risk isn't nodally resolved yet. Storage charges and discharges across the real network - including overnight coal-to-storage charging, which now correctly routes to wherever storage actually sits rather than requiring local coal (KZN's pumped storage has almost no local coal fleet to draw from otherwise). Before exporting to help a neighbouring region, storage checks its own near-term outlook and holds back some capacity if its own region looks likely to need it soon - a simple, capped lookahead, not full forecast optimisation. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
             <button id="nodalRunBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Run full year</button>
             <div id="nodalResult" class="mono" style="font-size:12.5px; padding:10px 12px; margin-top:12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.6">Not run yet.</div>
           </div>
@@ -373,7 +373,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         const banner=document.getElementById('kpiSourceBanner');
         banner.style.display='block';
         banner.innerHTML='<strong>These KPIs and the energy mix above reflect the real 10-region nodal simulation</strong> (coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, plus your allocated portfolio) — not the instant national engine. '+
-          'The hourly dispatch chart and load-shedding risk panel below still use the national engine (storage/CSP/CCGT-as-slider and Monte Carlo risk are not nodally resolved the same way yet). '+
+          'The hourly dispatch chart above now shows the same real nodal week too. Only the load-shedding risk panel stays on the national engine (Monte Carlo risk is not nodally resolved yet). '+
           'Moving any slider will switch these two panels back to the instant national view - re-run the Nodal Simulation to bring them back.';
       }
 
@@ -411,6 +411,22 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           const nodalE=nodalByCarrierToE(summary);
           const nodalCosts=computeKpiCostsFromE(nodalE, state);
           renderNodalKpis(nodalE, nodalCosts, summary);
+
+          // build a drawDispatch()-compatible object: full 8760-length arrays, indexed by
+          // absolute hour, with just the two representative weeks' positions populated -
+          // drawDispatch only ever reads start+i for i in [0,168), so nothing else is needed.
+          const combinedStack={}; DISP_ORDER.forEach(k=>{combinedStack[k]=new Float64Array(HOURS);});
+          const combinedLoadS=new Float64Array(HOURS);
+          ['W','S'].forEach(mode=>{
+            const off=mode==='W'?3264:7848;
+            const ws=summary.weekStacks[mode];
+            for(let i=0;i<168;i++){
+              combinedLoadS[off+i]=ws.loadS[i];
+              DISP_ORDER.forEach(k=>{ combinedStack[k][off+i]=ws.stack[k][i]; });
+            }
+          });
+          nodalActiveRes={stack:combinedStack, loadS:combinedLoadS};
+          draw(nodalActiveRes);
         } catch(e){
           out.textContent='Could not run the nodal model - data may be missing from the nodal/ folder.';
           console.error(e);
@@ -898,8 +914,8 @@ function updateMap(r){
 /* ==================== CHARTS ==================== */
 const dispCanvas=document.getElementById('dispatch');
 let weekMode='W';
-document.getElementById('wkW').addEventListener('click',e=>{weekMode='W';toggleWk(e.target);draw(lastRes);});
-document.getElementById('wkS').addEventListener('click',e=>{weekMode='S';toggleWk(e.target);draw(lastRes);});
+document.getElementById('wkW').addEventListener('click',e=>{weekMode='W';toggleWk(e.target);draw(nodalActiveRes||lastRes);});
+document.getElementById('wkS').addEventListener('click',e=>{weekMode='S';toggleWk(e.target);draw(nodalActiveRes||lastRes);});
 function toggleWk(btn){document.querySelectorAll('.wkbtns button').forEach(b=>b.classList.toggle('active',b===btn));}
 const DISP_ORDER=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
 
@@ -954,6 +970,7 @@ const fmtTWh=v=>(v/1e6).toFixed(1);
 function render(r){
   const banner=document.getElementById('kpiSourceBanner');
   if(banner) banner.style.display='none';
+  nodalActiveRes=null;
   // board
   const sw=document.getElementById('statusWord');
   const shedGWh=r.shedMWh/1000;
@@ -1034,6 +1051,7 @@ function render(r){
 /* ==================== RUN LOOP ==================== */
 let PROFILES=buildProfiles();
 let lastRes=null, rafPending=false, detStage=0;
+let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 
 /* --- Monte Carlo outage risk (60 synthetic years, chunked async) --- */
 let mcToken=0, mcTimer=null;
