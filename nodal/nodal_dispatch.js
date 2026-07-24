@@ -75,6 +75,9 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
   const byRegion = {};
   REGIONS.forEach(r => { byRegion[r] = { demand: 0, unserved: 0 }; });
   const byCarrier = {}; // annual MWh dispatched per carrier, national
+  const edgeMeta = nodalEngineInstance.edgeMeta;
+  const annualFlow = new Array(edgeMeta.length).fill(0);
+  const peakFlow = new Array(edgeMeta.length).fill(0);
 
   for (let h = 0; h < 8760; h++) {
     const r = nodalEngineInstance.dispatchHour(h);
@@ -90,8 +93,15 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     psDischarge += r.storage.psDischargeTotal;
     battDischarge += r.storage.battDischargeTotal;
     r.genLog.forEach(g => { byCarrier[g.carrier] = (byCarrier[g.carrier] || 0) + g.dispatched; });
+    r.edgeFlow.forEach((f, i) => { annualFlow[i] += f; if (f > peakFlow[i]) peakFlow[i] = f; });
   }
   const runtimeMs = performance.now() - t0;
+
+  const corridorFlows = edgeMeta.map((e, i) => ({
+    regionA: REGIONS[e.a], regionB: REGIONS[e.b], limitMw: e.limit, lengthKm: e.length,
+    annualGwh: annualFlow[i] / 1e3, peakMw: peakFlow[i],
+    utilisationPct: e.limit > 0 ? 100 * peakFlow[i] / e.limit : 0,
+  }));
 
   return {
     totalDemandTwh: totalDemand / 1e6,
@@ -103,6 +113,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     storageGwh: (psDischarge + battDischarge) / 1e3,
     byRegion,
     byCarrier, // {carrier: annual MWh}
+    corridorFlows, // [{regionA, regionB, limitMw, annualGwh, peakMw, utilisationPct}]
     runtimeMs,
   };
 }
