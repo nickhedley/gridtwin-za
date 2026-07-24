@@ -100,7 +100,8 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
   const corridorFlows = edgeMeta.map((e, i) => ({
     regionA: REGIONS[e.a], regionB: REGIONS[e.b], limitMw: e.limit, lengthKm: e.length,
     annualGwh: annualFlow[i] / 1e3, peakMw: peakFlow[i],
-    utilisationPct: e.limit > 0 ? 100 * peakFlow[i] / e.limit : 0,
+    peakUtilPct: e.limit > 0 ? 100 * peakFlow[i] / e.limit : 0,
+    avgUtilPct: e.limit > 0 ? 100 * (annualFlow[i] / 8760) / e.limit : 0,
   }));
 
   return {
@@ -113,7 +114,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     storageGwh: (psDischarge + battDischarge) / 1e3,
     byRegion,
     byCarrier, // {carrier: annual MWh}
-    corridorFlows, // [{regionA, regionB, limitMw, annualGwh, peakMw, utilisationPct}]
+    corridorFlows, // [{regionA, regionB, limitMw, annualGwh, peakMw, peakUtilPct, avgUtilPct}]
     runtimeMs,
   };
 }
