@@ -204,6 +204,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span><i style="background:#1F4E79"></i>Storage / hydro</span>
           <span><i style="background:var(--alert)"></i>Peakers</span>
         </div>
+        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the Nodal Simulation below to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. Hover any line for exact figures.</p>
       </div>
 
         <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
@@ -257,15 +258,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
           <div class="ph"><h2>Nodal Simulation</h2><span class="tag">full network-flow model · full year</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), and today's current sliders plus anything allocated above. This is a separate model from the national KPIs above: it exists to show what genuinely regional dispatch looks like, not (yet) to replace them. Storage can now charge and discharge across regions via the real network, not just locally - but dispatch is greedy and hour-by-hour with no forecasting, so storage can spend charge helping a neighbouring region now and be empty when its own region needs it later that same day; a real operator would hold some back based on forecasts. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), and today's current sliders plus anything allocated above. This is a separate model from the national KPIs above: it exists to show what genuinely regional dispatch looks like, not (yet) to replace them. Storage charges and discharges across the real network - including overnight coal-to-storage charging, which now correctly routes to wherever storage actually sits rather than requiring local coal (KZN's pumped storage has almost no local coal fleet to draw from otherwise). Before exporting to help a neighbouring region, storage checks its own near-term outlook and holds back some capacity if its own region looks likely to need it soon - a simple, capped lookahead, not full forecast optimisation. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
             <button id="nodalRunBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Run full year</button>
             <div id="nodalResult" class="mono" style="font-size:12.5px; padding:10px 12px; margin-top:12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.6">Not run yet.</div>
           </div>
         </div>
       </section>
 
-      <script src="nodal/nodal_engine.js?v=4"></script>
-      <script src="nodal/nodal_dispatch.js?v=4"></script>
+      <script src="nodal/nodal_engine.js?v=5"></script>
+      <script src="nodal/nodal_dispatch.js?v=5"></script>
       <script>
       document.getElementById('nodalRunBtn').addEventListener('click', async ()=>{
         const btn=document.getElementById('nodalRunBtn');
@@ -296,7 +297,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             '<strong>Losses:</strong> '+summary.lossesPct.toFixed(2)+'% &nbsp; '+
             '<strong>Curtailed:</strong> '+summary.curtailedGwh.toFixed(0)+' GWh<br>'+
             (regionRows?'<span style="color:var(--alert)">Shedding by region: '+regionRows+'</span>':'<span style="color:var(--ok)">No region shed any energy this year.</span>')+
-            '<br><span style="color:var(--ink2); font-size:11px">Solved in '+(summary.runtimeMs/1000).toFixed(1)+'s using coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, '+(state.newRooftopMW/1000).toFixed(1)+' GW new rooftop, plus your allocated portfolio. Storage is local-only: it can only charge from and discharge to its own region, not power routed in from elsewhere.</span>';
+            '<br><span style="color:var(--ink2); font-size:11px">Solved in '+(summary.runtimeMs/1000).toFixed(1)+'s using coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, '+(state.newRooftopMW/1000).toFixed(1)+' GW new rooftop, plus your allocated portfolio. Corridor flows now shown on the map above (hover a line for exact figures) - storage can charge/discharge across regions via the real network.</span>';
+          updateFlowsOnMap(summary.corridorFlows);
         } catch(e){
           out.textContent='Could not run the nodal model - data may be missing from the nodal/ folder.';
           console.error(e);
@@ -626,18 +628,68 @@ const NODES=[
   {id:'JHB',x:340,y:180,name:'Johannesburg load centre',types:['sky']},
   {id:'MPU',x:395,y:185,name:'Mpumalanga coal cluster',types:['coal']},
   {id:'LEP',x:320,y:110,name:'Lephalale · Medupi / Matimba',types:['coal']},
+  {id:'NW', x:245,y:165,name:'Rustenburg / Platinum belt',types:['sky']},
 ];
-const LINKS=[['CPT','GRW'],['GRW','PE'],['PE','EC'],['EC','DBN'],['CPT','UPG'],['UPG','BFN'],['BFN','JHB'],['BFN','PE'],['DRA','DBN'],['DRA','JHB'],['JHB','MPU'],['LEP','JHB'],['MPU','DBN'],['BFN','DRA']];
+const LINKS=[['CPT','GRW'],['GRW','PE'],['PE','EC'],['EC','DBN'],['CPT','UPG'],['UPG','BFN'],['BFN','JHB'],['BFN','PE'],['DRA','DBN'],['DRA','JHB'],['JHB','MPU'],['LEP','JHB'],['MPU','DBN'],['BFN','DRA'],
+  // added for full real-corridor coverage (flows-on-map feature)
+  ['PE','UPG'],['PE','DBN'],['BFN','DBN'],['BFN','MPU'],['LEP','MPU'],
+  ['NW','JHB'],['NW','LEP'],['NW','MPU'],['NW','CPT'],['NW','UPG'],['NW','BFN']];
 const ZA_PATH="M60,300 C55,270 70,240 78,215 C85,192 95,170 118,150 C142,130 175,112 210,100 C245,88 285,78 305,80 L318,95 L340,88 C360,82 385,86 400,100 L432,96 C455,112 470,140 476,170 C482,200 478,230 468,258 C458,286 446,310 424,330 C400,352 370,372 335,384 C300,396 258,400 222,396 C186,392 150,382 122,366 C95,350 66,330 60,300 Z";
 // Shared with the "Where To Build" nodal siting tool below - declared here (not in that
 // later script block) so it already exists the very first time updateMap() runs.
 let siteAllocated={}; // key "region|tech" -> cumulative MW allocated via the nodal siting tool
-const REGION_TO_NODE={ // best-effort map from the 10 real GCCA regions to this schematic's 11 nodes
+const REGION_TO_NODE={ // map from the 10 real GCCA regions to this schematic's 12 nodes
   'Eastern Cape':'PE', 'Free State':'BFN', 'Gauteng':'JHB', 'Hydra Central':'UPG',
   'Kwazulu Natal':'DBN', 'Limpopo':'LEP', 'Mpumalanga':'MPU', 'Northern Cape':'UPG',
-  'Western Cape':'CPT'
-  // North West has no distinct node in this schematic and won't visually update
+  'Western Cape':'CPT', 'North West':'NW'
+  // Hydra Central and Northern Cape share UPG (both are real Upington-area supply regions) -
+  // flow between them can't be shown as a distinct line since they render as the same point.
 };
+function resolveColor(c){
+  if(c.startsWith('var(')){
+    const varName=c.slice(4,-1).trim();
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim()||'#1F4E79';
+  }
+  return c;
+}
+function mixHex(hex1,hex2,t){
+  const h2rgb=h=>{const c=parseInt(h.slice(1),16); return [(c>>16)&255,(c>>8)&255,c&255];};
+  const [r1,g1,b1]=h2rgb(hex1), [r2,g2,b2]=h2rgb(hex2);
+  const mix=(a,b)=>Math.round(a+(b-a)*t);
+  return '#'+[mix(r1,r2),mix(g1,g2),mix(b1,b2)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+// Draw real corridor flows onto the schematic map's link lines. Several real corridors can
+// share one schematic link (Hydra Central + Northern Cape both render at the UPG node, since
+// this schematic has one point there, not two) - those get their annual GWh summed and their
+// worst individual utilisation used for colour/width, with all contributing corridors listed
+// in the tooltip so nothing is silently hidden.
+function updateFlowsOnMap(corridorFlows){
+  const byLink={};
+  corridorFlows.forEach(cf=>{
+    const nodeA=REGION_TO_NODE[cf.regionA], nodeB=REGION_TO_NODE[cf.regionB];
+    if(!nodeA||!nodeB||nodeA===nodeB) return; // no distinct line to draw (e.g. Hydra Central-Northern Cape)
+    const key=[nodeA,nodeB].sort().join('_');
+    byLink[key]=byLink[key]||{nodeA,nodeB,gwh:0,maxUtil:0,parts:[]};
+    byLink[key].gwh+=cf.annualGwh;
+    byLink[key].maxUtil=Math.max(byLink[key].maxUtil,cf.utilisationPct);
+    byLink[key].parts.push(cf.regionA+' \u2194 '+cf.regionB+': '+cf.annualGwh.toFixed(0)+' GWh/yr, peak '+cf.peakMw.toFixed(0)+'/'+cf.limitMw+' MW ('+cf.utilisationPct.toFixed(0)+'%)');
+  });
+  const baseColor=resolveColor('var(--ink2)'), hotColor='#C3512F';
+  LINKS.forEach(([a,b])=>{
+    const key=[a,b].sort().join('_');
+    const el=document.getElementById('lk_'+a+'_'+b);
+    if(!el) return;
+    const agg=byLink[key];
+    if(!agg){ el.setAttribute('stroke-width','1.4'); el.setAttribute('opacity','0.35'); el.setAttribute('stroke',baseColor); el.querySelector('title').textContent=''; return; }
+    const t=Math.min(1, agg.maxUtil/100);
+    el.setAttribute('stroke-width', (1.4+4*t).toFixed(1));
+    el.setAttribute('opacity', (0.55+0.4*t).toFixed(2));
+    el.setAttribute('stroke', mixHex(baseColor, hotColor, t));
+    el.setAttribute('stroke-dasharray', t>0.01 ? '0' : '1 3');
+    el.querySelector('title').textContent=agg.parts.join(' | ');
+  });
+}
 function nodeColor(n,res){
   const t=n.types[0];
   const m={nuke:'#E4322B',coal:'#4A3120',veld2:'#3EA055',sun:'#F5C518',sky:'#1F4E79',alert:'var(--alert)'};
@@ -655,7 +707,7 @@ function buildMap(){
   // Lesotho notch
   s+='<circle cx="350" cy="278" r="14" fill="var(--base)" stroke="var(--line2)" stroke-width="1"/>';
   LINKS.forEach(([a,b])=>{const A=NODES.find(n=>n.id===a),B=NODES.find(n=>n.id===b);
-    s+='<line x1="'+A.x+'" y1="'+A.y+'" x2="'+B.x+'" y2="'+B.y+'" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="1 3" opacity="0.55"/>';});
+    s+='<line id="lk_'+a+'_'+b+'" x1="'+A.x+'" y1="'+A.y+'" x2="'+B.x+'" y2="'+B.y+'" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="1 3" opacity="0.55"><title></title></line>';});
   NODES.forEach(n=>{
     const regionNote=nodeToRegions[n.id]?' · nodal region: '+nodeToRegions[n.id].join(' + '):'';
     s+='<g><circle id="nd_'+n.id+'" cx="'+n.x+'" cy="'+n.y+'" r="7" fill="'+nodeColor(n)+'" stroke="var(--ink)" stroke-width="1.4"><title>'+n.name+regionNote+'</title></circle>';
