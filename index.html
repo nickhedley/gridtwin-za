@@ -265,8 +265,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
       </section>
 
-      <script src="nodal/nodal_engine.js?v=5"></script>
-      <script src="nodal/nodal_dispatch.js?v=5"></script>
+      <script src="nodal/nodal_engine.js?v=6"></script>
+      <script src="nodal/nodal_dispatch.js?v=6"></script>
       <script>
       document.getElementById('nodalRunBtn').addEventListener('click', async ()=>{
         const btn=document.getElementById('nodalRunBtn');
@@ -670,10 +670,10 @@ function updateFlowsOnMap(corridorFlows){
     const nodeA=REGION_TO_NODE[cf.regionA], nodeB=REGION_TO_NODE[cf.regionB];
     if(!nodeA||!nodeB||nodeA===nodeB) return; // no distinct line to draw (e.g. Hydra Central-Northern Cape)
     const key=[nodeA,nodeB].sort().join('_');
-    byLink[key]=byLink[key]||{nodeA,nodeB,gwh:0,maxUtil:0,parts:[]};
+    byLink[key]=byLink[key]||{nodeA,nodeB,gwh:0,maxAvgUtil:0,parts:[]};
     byLink[key].gwh+=cf.annualGwh;
-    byLink[key].maxUtil=Math.max(byLink[key].maxUtil,cf.utilisationPct);
-    byLink[key].parts.push(cf.regionA+' \u2194 '+cf.regionB+': '+cf.annualGwh.toFixed(0)+' GWh/yr, peak '+cf.peakMw.toFixed(0)+'/'+cf.limitMw+' MW ('+cf.utilisationPct.toFixed(0)+'%)');
+    byLink[key].maxAvgUtil=Math.max(byLink[key].maxAvgUtil,cf.avgUtilPct);
+    byLink[key].parts.push(cf.regionA+' \u2194 '+cf.regionB+': '+cf.annualGwh.toFixed(0)+' GWh/yr, avg '+cf.avgUtilPct.toFixed(0)+'% / peak '+cf.peakUtilPct.toFixed(0)+'% of '+cf.limitMw+' MW limit');
   });
   const baseColor=resolveColor('var(--ink2)'), hotColor='#C3512F';
   LINKS.forEach(([a,b])=>{
@@ -682,7 +682,10 @@ function updateFlowsOnMap(corridorFlows){
     if(!el) return;
     const agg=byLink[key];
     if(!agg){ el.setAttribute('stroke-width','1.4'); el.setAttribute('opacity','0.35'); el.setAttribute('stroke',baseColor); el.querySelector('title').textContent=''; return; }
-    const t=Math.min(1, agg.maxUtil/100);
+    // driven by AVERAGE utilisation, not peak - peak alone saturates almost every real corridor
+    // to "maxed out" (many corridors touch their limit at least once in a year even when mostly
+    // idle), which made the map show nearly everything as uniformly hot and stopped being useful.
+    const t=Math.min(1, agg.maxAvgUtil/60); // 60% average utilisation reads as "fully hot" - genuinely rare/serious
     el.setAttribute('stroke-width', (1.4+4*t).toFixed(1));
     el.setAttribute('opacity', (0.55+0.4*t).toFixed(2));
     el.setAttribute('stroke', mixHex(baseColor, hotColor, t));
