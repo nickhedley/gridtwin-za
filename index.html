@@ -188,6 +188,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
   <!-- ============ RESULTS ============ -->
   <main>
+    <div id="kpiSourceBanner" style="display:none; font-size:11.5px; padding:8px 12px; margin-bottom:10px; border:1.5px solid var(--alert); background:var(--panel2); border-radius:3px"></div>
     <div class="kpis" id="kpis"></div>
     <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk, so today's paid-off coal and nuclear look cheap. <strong>Replacement cost</strong> is the opposite lens: it prices every MWh (existing and new) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today's prices. This means it charges existing coal by its new-build cost and makes a coal-heavy grid look expensive. Neither is a tariff or the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank" rel="noopener">README</a>.</p>
 
@@ -258,7 +259,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
           <div class="ph"><h2>Nodal Simulation</h2><span class="tag">full network-flow model · full year</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), and today's current sliders plus anything allocated above. This is a separate model from the national KPIs above: it exists to show what genuinely regional dispatch looks like, not (yet) to replace them. Storage charges and discharges across the real network - including overnight coal-to-storage charging, which now correctly routes to wherever storage actually sits rather than requiring local coal (KZN's pumped storage has almost no local coal fleet to draw from otherwise). Before exporting to help a neighbouring region, storage checks its own near-term outlook and holds back some capacity if its own region looks likely to need it soon - a simple, capped lookahead, not full forecast optimisation. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), and today's current sliders plus anything allocated above. On success, the KPIs and energy mix at the top of the page switch to reflect this real nodal run instead of the instant national engine (see the banner that appears) - the hourly dispatch chart and load-shedding risk panel stay on the national engine for now, since storage/CSP/CCGT and Monte Carlo risk aren't nodally resolved the same way there yet. Storage charges and discharges across the real network - including overnight coal-to-storage charging, which now correctly routes to wherever storage actually sits rather than requiring local coal (KZN's pumped storage has almost no local coal fleet to draw from otherwise). Before exporting to help a neighbouring region, storage checks its own near-term outlook and holds back some capacity if its own region looks likely to need it soon - a simple, capped lookahead, not full forecast optimisation. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
             <button id="nodalRunBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Run full year</button>
             <div id="nodalResult" class="mono" style="font-size:12.5px; padding:10px 12px; margin-top:12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.6">Not run yet.</div>
           </div>
@@ -268,6 +269,114 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <script src="nodal/nodal_engine.js?v=6"></script>
       <script src="nodal/nodal_dispatch.js?v=6"></script>
       <script>
+      // --- Nodal -> national KPI/mix merge ---
+      // Maps the nodal engine's real per-carrier annual output onto the same E{} shape the
+      // single-node engine uses, then runs it through the EXACT SAME cost formulas (see
+      // simulate() in the main script) so the numbers are computed identically either way -
+      // only the SOURCE of the underlying generation totals changes.
+      //
+      // Three carriers in the real fleet data don't have a clean single-node bucket and are
+      // folded in as a documented simplification, not a precise mapping:
+      //   ocgt_avf (342MW)   -> diesel (both OCGT-type peakers)
+      //   sasol_gas (425MW)  -> ccgt (gas-fired, closest conceptual match)
+      //   rmippp (578MW)     -> hydro (small renewable/IPP capacity, no cleaner home)
+      // Combined these are under 1.5GW of a ~49GW fleet - immaterial to the KPIs, but
+      // worth knowing this mapping exists rather than assuming perfect carrier fidelity.
+      function nodalByCarrierToE(summary){
+        const bc=summary.byCarrier;
+        const g=k=>bc[k]||0;
+        return {
+          rooftop: summary.rooftopTwh*1e6,
+          wind: g('wind'), pv: g('solar'), csp: g('csp'),
+          nuclear: g('nuclear'),
+          hydro: g('hydro') + g('rmippp'),
+          imports: g('imports'),
+          coal: g('coal') + g('sasol_coal'),
+          ps: g('ps'), batt: g('batt'),
+          ccgt: g('sasol_gas'),
+          diesel: g('ocgt_diesel') + g('ocgt_avf'),
+          unserved: summary.unservedGwh*1e3,
+          curtailed: summary.curtailedGwh*1e3,
+        };
+      }
+
+      // Same formulas as simulate() (lines computing newCapexR onward) - newCapexR is purely
+      // slider-driven (unrelated to which engine computed dispatch), everything else is a
+      // direct per-carrier multiply-and-sum over the ANNUAL totals, since cost/emissions
+      // factors are constant per MWh regardless of which hour generated it.
+      function computeKpiCostsFromE(E, u){
+        const p={...FIXED,...u};
+        const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
+        const fuelCost=E.coal*p.costCoal+E.nuclear*p.costNuclear+E.hydro*p.costHydro+E.imports*p.costImports+E.ccgt*p.costCcgt+E.diesel*p.costDiesel;
+        const carbonCost=E.coal*cC+E.ccgt*cG+E.diesel*cD;
+        let pvAdderMW=u.newPvMW;
+        if(u.repurpose){
+          const inheritable=Math.min(p.coalDecomMW, u.newPvMW+u.newBattMW);
+          pvAdderMW=u.newPvMW-Math.min(u.newPvMW, inheritable);
+        }
+        const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
+        const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
+        const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt;
+        const totalCost=fuelCost+carbonCost+newCapexR;
+        const avgCost=totalCost/Math.max(1,gridServed);
+        const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
+        const lcoeOf={coal:p.lcoeCoalNew, ccgt:p.lcoeCcgt, diesel:p.lcoeDiesel, nuclear:p.lcoeNuclear,
+          hydro:p.lcoeHydro, imports:p.lcoeImports, wind:p.lcoeWind, pv:p.lcoePv, csp:p.lcoeCsp,
+          rooftop:p.lcoeRooftop, ps:p.lcoePs, batt:p.lcoeBatt};
+        let replTotal=0; for(const k in lcoeOf) replTotal+=E[k]*lcoeOf[k];
+        const replAvg=replTotal/Math.max(1,gridServed);
+        return {fuelCost,carbonCost,newCapexR,totalCost,avgCost,co2,replTotal,replAvg};
+      }
+
+      // Renders into the SAME #kpis / #mix DOM the single-node render() uses - same HTML
+      // structure, same COLORS/NAMES, so it looks identical except for the source banner.
+      function renderNodalKpis(E, costs, summary){
+        const genTWh=(['wind','pv','csp','nuclear','hydro','imports','coal','ccgt','diesel','rooftop'].reduce((s,k)=>s+E[k],0))/1e6;
+        const reShare=100*(E.wind+E.pv+E.csp+E.rooftop)/(genTWh*1e6);
+        const nonFossilShare=100*(E.wind+E.pv+E.csp+E.rooftop+E.nuclear+E.hydro+E.imports)/(genTWh*1e6);
+        const kpis=[
+          {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
+          {k:'System cost',v:(costs.totalCost/1e9).toFixed(0),u:'R bn/yr'},
+          {k:'Avg energy cost',v:(costs.avgCost/1000).toFixed(2),u:'R/kWh'},
+          {k:'Replacement cost',v:(costs.replAvg/1000).toFixed(2),u:'R/kWh'},
+          {k:'CO₂ emissions',v:costs.co2.toFixed(0),u:'Mt/yr'},
+          {k:'Renewables',v:reShare.toFixed(0),u:'%'},
+          {k:'Non-fossil',v:nonFossilShare.toFixed(0),u:'%'},
+          {k:'Curtailment',v:fmtTWh(E.curtailed),u:'TWh/yr'},
+        ];
+        document.getElementById('kpis').innerHTML=kpis.map(x=>'<div class="kpi"><div class="k">'+x.k+'</div><div class="v">'+x.v+'<span class="u"> '+x.u+'</span></div></div>').join('');
+
+        const order=['coal','rooftop','wind','pv','csp','nuclear','imports','hydro','ps','batt','ccgt','diesel'];
+        const tot=order.reduce((s,k)=>s+E[k],0);
+        document.getElementById('mixTotal').textContent=fmtTWh(tot)+' TWh incl. rooftop';
+        const mixData=order.map(k=>({k,v:E[k],pct:100*E[k]/tot})).filter(d=>d.v>tot*0.0005||['coal','wind','pv'].includes(d.k));
+        const R=52, r0=30, cx=64, cy=64, C=2*Math.PI;
+        let ang=-Math.PI/2;
+        const arcs=mixData.map(d=>{
+          const a0=ang, a1=ang+C*d.v/tot; ang=a1;
+          const x0=cx+R*Math.cos(a0), y0=cy+R*Math.sin(a0), x1=cx+R*Math.cos(a1), y1=cy+R*Math.sin(a1);
+          const xi0=cx+r0*Math.cos(a0), yi0=cy+r0*Math.sin(a0), xi1=cx+r0*Math.cos(a1), yi1=cy+r0*Math.sin(a1);
+          const large=(a1-a0)>Math.PI?1:0;
+          return '<path d="M'+x0.toFixed(2)+' '+y0.toFixed(2)+' A'+R+' '+R+' 0 '+large+' 1 '+x1.toFixed(2)+' '+y1.toFixed(2)+
+            ' L'+xi1.toFixed(2)+' '+yi1.toFixed(2)+' A'+r0+' '+r0+' 0 '+large+' 0 '+xi0.toFixed(2)+' '+yi0.toFixed(2)+
+            ' Z" fill="'+COLORS[d.k]+'" stroke="var(--panel)" stroke-width="1"><title>'+NAMES[d.k]+': '+fmtTWh(d.v)+' TWh ('+d.pct.toFixed(1)+'%)</title></path>';
+        }).join('');
+        const legend=mixData.map(d=>
+          '<div class="mixleg"><span class="sw" style="background:'+COLORS[d.k]+'"></span><span class="ln">'+NAMES[d.k]+'</span><span class="lv">'+fmtTWh(d.v)+' TWh</span><span class="lp">'+d.pct.toFixed(0)+'%</span></div>'
+        ).join('');
+        document.getElementById('mix').innerHTML=
+          '<div class="donutwrap"><svg viewBox="0 0 128 128" class="donut" role="img" aria-label="Energy mix donut chart">'+arcs+
+          '<text x="64" y="60" text-anchor="middle" class="dc1">'+fmtTWh(tot)+'</text>'+
+          '<text x="64" y="74" text-anchor="middle" class="dc2">TWh/yr</text></svg>'+
+          '<div class="mixlegend">'+legend+'</div></div>';
+
+        const banner=document.getElementById('kpiSourceBanner');
+        banner.style.display='block';
+        banner.innerHTML='<strong>These KPIs and the energy mix above reflect the real 10-region nodal simulation</strong> (coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, plus your allocated portfolio) — not the instant national engine. '+
+          'The hourly dispatch chart and load-shedding risk panel below still use the national engine (storage/CSP/CCGT-as-slider and Monte Carlo risk are not nodally resolved the same way yet). '+
+          'Moving any slider will switch these two panels back to the instant national view - re-run the Nodal Simulation to bring them back.';
+      }
+
       document.getElementById('nodalRunBtn').addEventListener('click', async ()=>{
         const btn=document.getElementById('nodalRunBtn');
         const out=document.getElementById('nodalResult');
@@ -299,6 +408,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             (regionRows?'<span style="color:var(--alert)">Shedding by region: '+regionRows+'</span>':'<span style="color:var(--ok)">No region shed any energy this year.</span>')+
             '<br><span style="color:var(--ink2); font-size:11px">Solved in '+(summary.runtimeMs/1000).toFixed(1)+'s using coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, '+(state.newRooftopMW/1000).toFixed(1)+' GW new rooftop, plus your allocated portfolio. Corridor flows now shown on the map above (hover a line for exact figures) - storage can charge/discharge across regions via the real network.</span>';
           updateFlowsOnMap(summary.corridorFlows);
+          const nodalE=nodalByCarrierToE(summary);
+          const nodalCosts=computeKpiCostsFromE(nodalE, state);
+          renderNodalKpis(nodalE, nodalCosts, summary);
         } catch(e){
           out.textContent='Could not run the nodal model - data may be missing from the nodal/ folder.';
           console.error(e);
@@ -840,6 +952,8 @@ function draw(r){
 /* ==================== RENDER RESULTS ==================== */
 const fmtTWh=v=>(v/1e6).toFixed(1);
 function render(r){
+  const banner=document.getElementById('kpiSourceBanner');
+  if(banner) banner.style.display='none';
   // board
   const sw=document.getElementById('statusWord');
   const shedGWh=r.shedMWh/1000;
