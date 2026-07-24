@@ -242,9 +242,25 @@ for new transmission. See `nodal/capacity_siting.py` for the siting method and
 `region_headroom_lookup.json` for precomputed results.
 
 Storage charges and discharges across regions via the real network (not just locally), reusing
-the same flow-routing as everything else — but dispatch is greedy and hour-by-hour with no
-forecasting, so storage can spend charge helping a neighbouring region and be empty when its
-own region needs it later that same day. Battery siting is a flagged estimate (see Sources).
+the same flow-routing as everything else — including overnight coal-to-storage charging, which
+also routes across the network rather than requiring local coal. That fix mattered: an earlier
+local-only version left KwaZulu-Natal's pumped storage (2,332 MW real capacity at Ingula and
+Drakensberg) completely unable to recharge, since KZN has almost no local coal fleet to draw
+from — it drained its starting charge in the first few weeks and then sat dead for the rest of
+the year. The network-routed fix also matches how Eskom actually operates: Mpumalanga coal run
+harder overnight specifically to pump water at Drakensberg/Ingula, transmitted via the grid.
+Before exporting to help a neighbouring region, storage now checks its own near-term outlook
+(the whole year's demand and renewable profiles are already known upfront, so genuine lookahead
+is legitimate here) and holds back some capacity if its own region looks likely to need it soon
+— capped at a 50% maximum reserve after an earlier, uncapped version saturated near-permanently
+and stopped being a useful signal. This is a simple, bounded heuristic, not full forecast
+optimisation. Battery siting is a flagged estimate (see Sources).
+
+Real corridor flows (annual GWh and peak MW per corridor, from the simulation above) now draw
+onto the schematic map itself — thicker, more solid, redder lines mean a corridor is closer to
+its transfer limit. Several corridors genuinely hit 100% utilisation at peak even under today's
+baseline conditions. A North West node was added to the schematic (it previously had none) so
+all 10 real regions have somewhere to render.
 
 This is a prototype, not (yet) the primary model the KPIs above are computed from — the
 single-node engine remains the app's core, and the two run side by side rather than merged.
@@ -287,15 +303,17 @@ Slider settings are written to the URL. Copy the address bar (or use the
    capacity-siting panel~~ ✅
 4. ~~Full nodal dispatch: rooftop, CSP, imports, and network-integrated
    storage, all sited using real data~~ ✅ — see "Nodal prototype" above
-5. Merge the nodal engine into the main KPIs/charts, replacing the
+5. ~~Flows on the map (real per-corridor annual/peak MW, drawn on the
+   schematic)~~ ✅
+6. ~~Forecast-aware storage dispatch~~ ✅ (simple, capped 24h-ahead
+   reservation - not full optimisation, see "Nodal prototype" above)
+7. Merge the nodal engine into the main KPIs/charts, replacing the
    single-node engine as the primary model (currently runs side by side)
-6. Real (non-synthetic) regional wind/solar profiles for the nodal model —
+8. Real (non-synthetic) regional wind/solar profiles for the nodal model —
    the current `nodal/profiles_regional.json` is stylised, not measured
-7. Verified (not estimated) regional battery siting, if a complete public
+9. Verified (not estimated) regional battery siting, if a complete public
    site list ever becomes available
-8. Forecast-aware storage dispatch (currently greedy/hour-by-hour, no
-   lookahead - see "Nodal prototype" above)
-9. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
+10. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
 
 ## Licence & disclaimer
 
