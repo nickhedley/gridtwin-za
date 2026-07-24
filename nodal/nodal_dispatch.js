@@ -59,10 +59,23 @@ async function loadNodalData() {
 
 let nodalEngineInstance = null;
 
+const WEEK_HOURS = { W: 3264, S: 7848 }; // same fixed representative-week offsets the single-node chart uses
+const NODAL_DISP_ORDER = ['nuclear', 'hydro', 'imports', 'coal', 'ps', 'batt', 'ccgt', 'diesel', 'wind', 'pv', 'csp', 'unserved'];
+
+// Same carrier-folding simplification used for the annual KPI merge (see index.html's
+// nodalByCarrierToE): ocgt_avf->diesel, sasol_gas->ccgt, sasol_coal->coal. Applied per-hour here.
+function foldCarrier(carrier) {
+  if (carrier === 'sasol_coal') return 'coal';
+  if (carrier === 'ocgt_avf') return 'diesel';
+  if (carrier === 'sasol_gas') return 'ccgt';
+  if (carrier === 'solar') return 'pv';
+  if (carrier === 'rmippp') return 'hydro';
+  return carrier;
+}
+
 /**
- * Run a full nodal year with the given scenario parameters. Loads data on first call
- * (cached after that - the engine object itself is also reused across calls).
- * @returns {object} summary: {unservedPct, lossesPct, curtailedGwh, byRegion, runtimeMs}
+ * @returns {object} summary: {unservedPct, lossesPct, curtailedGwh, byRegion, byCarrier,
+ *   corridorFlows, weekStacks: {W:{stack,loadS}, S:{stack,loadS}}, runtimeMs}
  */
 async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion, newRooftopMW, newBattMW) {
   const data = await loadNodalData();
@@ -79,6 +92,13 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
   const annualFlow = new Array(edgeMeta.length).fill(0);
   const peakFlow = new Array(edgeMeta.length).fill(0);
 
+  // hourly capture for the two representative weeks (same shape the single-node dispatch chart uses)
+  const weekStacks = {};
+  ['W', 'S'].forEach(m => {
+    const stack = {}; NODAL_DISP_ORDER.forEach(k => { stack[k] = new Float64Array(168); });
+    weekStacks[m] = { stack, loadS: new Float64Array(168) };
+  });
+
   for (let h = 0; h < 8760; h++) {
     const r = nodalEngineInstance.dispatchHour(h);
     REGIONS.forEach(reg => {
@@ -94,6 +114,19 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     battDischarge += r.storage.battDischargeTotal;
     r.genLog.forEach(g => { byCarrier[g.carrier] = (byCarrier[g.carrier] || 0) + g.dispatched; });
     r.edgeFlow.forEach((f, i) => { annualFlow[i] += f; if (f > peakFlow[i]) peakFlow[i] = f; });
+
+    // capture this hour if it falls in either representative week (168h windows)
+    for (const mode of ['W', 'S']) {
+      const idx = h - WEEK_HOURS[mode];
+      if (idx < 0 || idx >= 168) continue;
+      const ws = weekStacks[mode];
+      ws.loadS[idx] = Object.values(r.netDemand).reduce((a, b) => a + b, 0);
+      ws.stack.unserved[idx] = Object.values(r.unserved).reduce((a, b) => a + b, 0);
+      r.genLog.forEach(g => {
+        const k = foldCarrier(g.carrier);
+        if (ws.stack[k]) ws.stack[k][idx] += g.dispatched;
+      });
+    }
   }
   const runtimeMs = performance.now() - t0;
 
@@ -115,6 +148,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     byRegion,
     byCarrier, // {carrier: annual MWh}
     corridorFlows, // [{regionA, regionB, limitMw, annualGwh, peakMw, peakUtilPct, avgUtilPct}]
+    weekStacks, // {W:{stack:{carrier:Float64Array(168)}, loadS:Float64Array(168)}, S:{...}}
     runtimeMs,
   };
 }
