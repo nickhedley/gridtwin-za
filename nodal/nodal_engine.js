@@ -151,10 +151,38 @@ class NodalEngine {
    *                                proportionally to each region's existing rooftop share
    * @param {number} newBattMW - national new-build battery power, allocated across regions
    *                             using the same flagged BATT_SHARE_BY_REGION estimate
+   * @param {object} extraCoalByRegion - {region: MW}, from "Where To Build" - same EAF applied
+   *                                     as existing coal (SA's own new-build coal history -
+   *                                     Medupi/Kusile - suggests new plants aren't automatically
+   *                                     more reliable than the existing fleet here)
+   * @param {object} extraCcgtByRegion - {region: MW}, dispatchable, no EAF derating
+   * @param {object} extraNuclearByRegion - {region: MW}, treated at the same 90% CF as existing nuclear
+   * @param {object} extraBattByRegion - {region: MW}, from "Where To Build" - sited on top of
+   *                                     whatever the national newBattMW slider already allocated
+   *                                     there via BATT_SHARE_BY_REGION
    */
-  setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}, newRooftopMW = 0, newBattMW = 0) {
+  setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}, newRooftopMW = 0, newBattMW = 0,
+              extraCoalByRegion = {}, extraCcgtByRegion = {}, extraNuclearByRegion = {}, extraBattByRegion = {}) {
     this.thermalFleet = applyCoalScenario(this.rawFleet, coalEafPct, coalDecomMW)
       .sort((a, b) => a.marginalCost - b.marginalCost);
+    // extra region-sited firm capacity from the siting tool - not part of the real fleet data,
+    // added alongside it. Coal gets the same EAF derating as the existing fleet; CCGT and
+    // nuclear are treated as fully dispatchable / fixed-CF respectively, matching how the
+    // single-node engine treats them.
+    const eafFrac = coalEafPct / 100;
+    REGIONS.forEach(r => {
+      const extraCoalMw = extraCoalByRegion[r] || 0;
+      if (extraCoalMw > 0) this.thermalFleet.push({ name: r + ' New Coal', region: r, carrier: 'coal',
+        capacityMw: extraCoalMw * eafFrac, marginalCost: 480, decomYear: Infinity });
+      const extraCcgtMw = extraCcgtByRegion[r] || 0;
+      if (extraCcgtMw > 0) this.thermalFleet.push({ name: r + ' New CCGT', region: r, carrier: 'ccgt',
+        capacityMw: extraCcgtMw, marginalCost: 1750, decomYear: Infinity });
+      const extraNuclearMw = extraNuclearByRegion[r] || 0;
+      if (extraNuclearMw > 0) this.thermalFleet.push({ name: r + ' New Nuclear', region: r, carrier: 'nuclear',
+        capacityMw: extraNuclearMw * 0.90, marginalCost: 160, decomYear: Infinity });
+    });
+    this.thermalFleet.sort((a, b) => a.marginalCost - b.marginalCost);
+
     this.windMw = {};
     this.solarMw = {};
     this.rooftopMw = {};
@@ -168,7 +196,7 @@ class NodalEngine {
       const rooftopShare = totalBaseRooftop > 0 ? (this.baseRooftopMw[r] || 0) / totalBaseRooftop : 0;
       this.rooftopMw[r] = (this.baseRooftopMw[r] || 0) + newRooftopMW * rooftopShare;
       const battShare = BATT_SHARE_BY_REGION[r] || 0;
-      this.battMw[r] = 800 * battShare + newBattMW * battShare; // 800MW = single-node app's existing total
+      this.battMw[r] = 800 * battShare + newBattMW * battShare + (extraBattByRegion[r] || 0); // 800MW = single-node app's existing total
       // start at the same fractions the single-node engine uses (70% pumped storage, 50% batteries)
       this.psSoc[r] = (PS_ENERGY_MWH_BY_REGION[r] || 0) * 0.7;
       this.battSoc[r] = (this.battMw[r] * BATT_HOURS) * 0.5;
@@ -210,6 +238,33 @@ class NodalEngine {
         deficitProxy[r][h] = Math.min(rawDeficit, storageScale);
       }
     }
+    this.hourlyStress = deficitProxy; // kept for the storage-reservation feature elsewhere
+
+    // National net load (demand minus renewable+baseload output) as a price proxy - this is the
+    // real economic mechanism behind wholesale electricity pricing: abundant midday solar drives
+    // net load low (cheap - this is what produces California's "duck curve"), no-sun evening
+    // peaks drive it high (expensive, since more thermal generation is needed). Storage arbitrage
+    // (see dispatchHour) buys low and sells high against this genuine signal, replacing the
+    // earlier clock-time/relative-demand heuristic entirely. Nuclear/hydro (true must-run
+    // baseload) subtract from net load same as renewables; coal/gas/diesel don't, since their
+    // need is exactly what net load is meant to represent - subtracting them would be circular.
+    let nuclearHydroMw = 0;
+    this.thermalFleet.forEach(g => { if (g.carrier === 'nuclear' || g.carrier === 'hydro') nuclearHydroMw += g.capacityMw; });
+    this.netLoad = new Float64Array(8760);
+    for (let h = 0; h < 8760; h++) {
+      let demand = 0, renewableAvail = 0;
+      for (const r of REGIONS) {
+        const rawD = this.demandByRegion[r][h];
+        const rooftop = Math.min((this.rooftopMw[r] || 0) * this.solarPu[r][h] * 0.94, rawD * 0.9);
+        demand += rawD - rooftop;
+        renewableAvail += (this.windMw[r] || 0) * this.windPu[r][h] + (this.solarMw[r] || 0) * this.solarPu[r][h]
+          + (CSP_MW_BY_REGION[r] || 0) * CSP_PROFILE[h] + (r === IMPORTS_REGION ? IMPORTS_MW * IMPORTS_CF : 0);
+      }
+      this.netLoad[h] = demand - renewableAvail - nuclearHydroMw;
+    }
+    const sortedNetLoad = Array.from(this.netLoad).sort((a, b) => a - b);
+    this.cheapThreshold = sortedNetLoad[Math.floor(sortedNetLoad.length * 0.25)];   // bottom 25% net load = cheap hours
+    this.expensiveThreshold = sortedNetLoad[Math.floor(sortedNetLoad.length * 0.75)]; // top 25% net load = expensive hours
 
     // rolling 24h-ahead sum (truncated at year boundary - a minor edge effect in the last 24h only)
     this.forecastNeed = {};
@@ -252,13 +307,21 @@ class NodalEngine {
                 availableMw: IMPORTS_MW * IMPORTS_CF, isRenewable: false }); // must-take, fixed CF, matches single-node treatment
     // Storage discharge as ordinary generators - this is what lets the existing, already-validated
     // network-flow routing carry discharged power to OTHER regions automatically, same as any
-    // other generator. Priced between coal (~480-550) and gas/diesel (1750/6100), matching the
-    // single-node engine's own dispatch order (coal first, then storage, then gas/diesel).
+    // other generator. Off-peak/normal: priced between coal (~480-550) and gas/diesel
+    // (1750/6100), matching the single-node engine's own dispatch order. During genuinely
+    // EXPENSIVE hours - top 25% of national net load, a real price proxy (see buildForecastNeed)
+    // - storage is given priority ahead of coal: this is real arbitrage, selling stored energy
+    // when the system is tightest, not a clock-time or relative-demand heuristic. "Cost" here is
+    // a dispatch-priority device, not a real marginal cost - storage's actual economics are
+    // opportunity-cost/arbitrage, which a merit-order-by-cost model can't natively represent;
+    // this net-load-based version is a genuine (if simplified) approximation of that, not a
+    // proxy for it.
+    const isExpensiveHour = this.netLoad[hourIdx] >= this.expensiveThreshold;
     for (const r of REGIONS) {
       const psAvail = Math.min(PS_MW_BY_REGION[r] || 0, this.psSoc[r] || 0);
-      if (psAvail > 1e-6) gens.push({ name: r + ' Pumped storage', region: r, carrier: 'ps', cost: 600, availableMw: psAvail, isRenewable: false });
+      if (psAvail > 1e-6) gens.push({ name: r + ' Pumped storage', region: r, carrier: 'ps', cost: isExpensiveHour ? 50 : 600, availableMw: psAvail, isRenewable: false });
       const battAvail = Math.min(this.battMw[r] || 0, this.battSoc[r] || 0);
-      if (battAvail > 1e-6) gens.push({ name: r + ' Battery', region: r, carrier: 'batt', cost: 700, availableMw: battAvail, isRenewable: false });
+      if (battAvail > 1e-6) gens.push({ name: r + ' Battery', region: r, carrier: 'batt', cost: isExpensiveHour ? 60 : 700, availableMw: battAvail, isRenewable: false });
     }
     gens.sort((a, b) => a.cost - b.cost);
     return gens;
@@ -391,19 +454,23 @@ class NodalEngine {
       if (g.carrier === 'batt') { this.battSoc[g.region] -= g.dispatched; battDischargeTotal += g.dispatched; }
     });
 
-    // --- Off-peak coal charging, NOW NETWORK-ROUTED (hours 23:00-05:00). A region with idle
-    // local coal capacity can charge ANY region's storage via the real network, not just its
-    // own - this matters a lot in practice: KZN's pumped storage has almost no local coal fleet
-    // to draw from (SA's coal is concentrated in Mpumalanga/Limpopo/Free State), so a local-only
-    // version leaves it with no way to ever recharge once its starting charge is used up. This
-    // also matches how Eskom actually operates: Mpumalanga coal is run harder overnight
-    // specifically to pump water at Drakensberg/Ingula, transmitted via the grid. Same
-    // conservative gates as the single-node engine, applied at the RECEIVING region: pumped
+    // --- Cheap-hour thermal-headroom charging, NETWORK-ROUTED. A region with idle local coal
+    // capacity can charge ANY region's storage via the real network, not just its own - this
+    // matters a lot in practice: KZN's pumped storage has almost no local coal fleet to draw
+    // from (SA's coal is concentrated in Mpumalanga/Limpopo/Free State), so a local-only version
+    // leaves it with no way to ever recharge once its starting charge is used up. Gated by the
+    // same genuine net-load price signal as discharge (bottom 25% - see buildForecastNeed),
+    // not a fixed overnight clock window: this is real arbitrage - buying while cheap, wherever
+    // and whenever that genuinely is, which on a strong solar day can include parts of the
+    // afternoon, not just 23:00-05:00. Separately, actual curtailed renewable surplus (the
+    // strongest, literally-free form of "cheap solar") is captured by its own charging pass
+    // below regardless of this price gate, since wasted generation is worth capturing any time.
+    // Same conservative gates as the single-node engine, applied at the RECEIVING region: pumped
     // storage only charges this way below 85% SoC (up to 80% of its own power rating),
     // batteries below 80% SoC (up to 60% of their own power rating).
     let psCoalChargeTotal = 0, battCoalChargeTotal = 0;
-    const hour = hourIdx % 24;
-    if (hour <= 5 || hour >= 23) {
+    const isCheapHour = this.netLoad[hourIdx] <= this.cheapThreshold;
+    if (isCheapHour) {
       const coalHeadroomByRegion = new Array(n).fill(0);
       genLog.forEach(g => {
         if (COAL_CARRIERS.includes(g.carrier)) coalHeadroomByRegion[this.nodeIndex[g.region]] += (g.available - g.dispatched);
