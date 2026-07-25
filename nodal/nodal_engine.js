@@ -262,9 +262,25 @@ class NodalEngine {
       }
       this.netLoad[h] = demand - renewableAvail - nuclearHydroMw;
     }
-    const sortedNetLoad = Array.from(this.netLoad).sort((a, b) => a - b);
-    this.cheapThreshold = sortedNetLoad[Math.floor(sortedNetLoad.length * 0.25)];   // bottom 25% net load = cheap hours
-    this.expensiveThreshold = sortedNetLoad[Math.floor(sortedNetLoad.length * 0.75)]; // top 25% net load = expensive hours
+    // DAILY-relative thresholds, not a single year-wide one: a real battery doesn't care whether
+    // today is worse than winter - it cares whether there's a cheap-to-expensive spread worth
+    // capturing TODAY. A year-wide threshold is dominated by winter's scale, so on most summer
+    // days even a real, meaningful midday-to-evening solar ramp never clears the bar - batteries
+    // would fire on only a handful of "exceptional" days instead of every evening, unlike
+    // real-world CAISO batteries which reliably cycle daily against California's own summer duck
+    // curve regardless of how that day compares to winter. Using each day's own min-max range
+    // instead means every day with a genuine daily swing gets its own evening peak correctly
+    // identified as relatively expensive (and midday dip as relatively cheap) for THAT day.
+    this.cheapThresholdByHour = new Float64Array(8760);
+    this.expensiveThresholdByHour = new Float64Array(8760);
+    for (let day = 0; day < 365; day++) {
+      const start = day * 24, end = Math.min(8760, start + 24);
+      let dMin = Infinity, dMax = -Infinity;
+      for (let h = start; h < end; h++) { if (this.netLoad[h] < dMin) dMin = this.netLoad[h]; if (this.netLoad[h] > dMax) dMax = this.netLoad[h]; }
+      const range = dMax - dMin;
+      const cheap = dMin + 0.25 * range, expensive = dMin + 0.75 * range;
+      for (let h = start; h < end; h++) { this.cheapThresholdByHour[h] = cheap; this.expensiveThresholdByHour[h] = expensive; }
+    }
 
     // rolling 24h-ahead sum (truncated at year boundary - a minor edge effect in the last 24h only)
     this.forecastNeed = {};
@@ -316,7 +332,7 @@ class NodalEngine {
     // opportunity-cost/arbitrage, which a merit-order-by-cost model can't natively represent;
     // this net-load-based version is a genuine (if simplified) approximation of that, not a
     // proxy for it.
-    const isExpensiveHour = this.netLoad[hourIdx] >= this.expensiveThreshold;
+    const isExpensiveHour = this.netLoad[hourIdx] >= this.expensiveThresholdByHour[hourIdx];
     for (const r of REGIONS) {
       const psAvail = Math.min(PS_MW_BY_REGION[r] || 0, this.psSoc[r] || 0);
       if (psAvail > 1e-6) gens.push({ name: r + ' Pumped storage', region: r, carrier: 'ps', cost: isExpensiveHour ? 50 : 600, availableMw: psAvail, isRenewable: false });
@@ -469,7 +485,7 @@ class NodalEngine {
     // storage only charges this way below 85% SoC (up to 80% of its own power rating),
     // batteries below 80% SoC (up to 60% of their own power rating).
     let psCoalChargeTotal = 0, battCoalChargeTotal = 0;
-    const isCheapHour = this.netLoad[hourIdx] <= this.cheapThreshold;
+    const isCheapHour = this.netLoad[hourIdx] <= this.cheapThresholdByHour[hourIdx];
     if (isCheapHour) {
       const coalHeadroomByRegion = new Array(n).fill(0);
       genLog.forEach(g => {
