@@ -353,7 +353,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         const order=['coal','rooftop','wind','pv','csp','nuclear','imports','hydro','ps','batt','ccgt','diesel'];
         const tot=order.reduce((s,k)=>s+E[k],0);
         document.getElementById('mixTotal').textContent=fmtTWh(tot)+' TWh incl. rooftop';
-        const mixData=order.map(k=>({k,v:E[k],pct:100*E[k]/tot})).filter(d=>d.v>tot*0.0005||['coal','wind','pv'].includes(d.k));
+        const mixData=order.map(k=>({k,v:E[k],pct:100*E[k]/tot})).filter(d=>d.v>tot*0.0005||['coal','wind','pv','ccgt','ps','batt'].includes(d.k));
         const R=52, r0=30, cx=64, cy=64, C=2*Math.PI;
         let ang=-Math.PI/2;
         const arcs=mixData.map(d=>{
@@ -583,6 +583,26 @@ function simulate(u, prof, outPath){
   const stackKeys=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
   const stack={}; stackKeys.forEach(k=>stack[k]=new Float64Array(HOURS));
   const loadS=new Float64Array(HOURS);
+
+  // Pre-pass: net load (residual before coal/storage) is purely a function of demand and
+  // weather/baseload - no dependency on storage state - so it can be computed once upfront to
+  // find genuine "expensive hour" thresholds (same real-price-proxy method used in the nodal
+  // engine: high net load = little renewable output = real scarcity, same mechanism behind
+  // wholesale electricity pricing). This lets storage arbitrage against real economics - buying
+  // near-free curtailed solar, discharging ahead of coal specifically when it's genuinely
+  // scarce - rather than always running strictly after coal regardless of how tight the system is.
+  const netLoadPre=new Float64Array(HOURS);
+  for(let h=0;h<HOURS;h++){
+    const rawDemand=demand[h]*growth;
+    const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
+    const load=rawDemand-rooftopGen;
+    const windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
+    const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
+    netLoadPre[h]=load-windGen-pvGen-cspGen-nuc-hyd-imp;
+  }
+  const sortedNetLoad=Float64Array.from(netLoadPre).sort();
+  const expensiveThreshold=sortedNetLoad[Math.floor(HOURS*0.75)]; // top 25% net load = genuinely expensive hours
+
   for(let h=0;h<HOURS;h++){
     const hour=h%24;
     const cAvail=outPath?coalInstRem*outPath[Math.floor(h/24)]:coalAvail;
@@ -602,9 +622,18 @@ function simulate(u, prof, outPath){
       const vre=windGen+pvGen;
       if(vre>0&&surplus>0){const f=Math.max(0,vre-surplus)/vre; windGen*=f; pvGen*=f;}
     } else {
-      coalGen=Math.min(residual,cAvail); residual-=coalGen;
-      const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-      const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+      const isExpensiveHour=residual>=expensiveThreshold;
+      if(isExpensiveHour){
+        // genuinely expensive hour (top 25% net load, real scarcity) - storage sells ahead of
+        // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
+        const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
+        const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        coalGen=Math.min(residual,cAvail); residual-=coalGen;
+      } else {
+        coalGen=Math.min(residual,cAvail); residual-=coalGen;
+        const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
+        const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+      }
       const g=Math.min(residual,ccgtCap); residual-=g; E.ccgt+=g; stack.ccgt[h]=g; fuelCost+=g*p.costCcgt; carbonCost+=g*cG;
       const dsl=Math.min(residual,p.ocgtDieselMW); residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*p.costDiesel; carbonCost+=dsl*cD;
       if(hour<=5||hour>=23){
@@ -1012,10 +1041,10 @@ function render(r){
   document.getElementById('kpis').innerHTML=kpis.map(x=>'<div class="kpi"><div class="k">'+x.k+'</div><div class="v">'+x.v+'<span class="u"> '+x.u+'</span></div></div>').join('');
 
   // mix — donut chart with legend
-  const order=['coal','rooftop','wind','pv','csp','nuclear','imports','hydro','ccgt','diesel'];
+  const order=['coal','rooftop','wind','pv','csp','nuclear','imports','hydro','ps','batt','ccgt','diesel'];
   const tot=order.reduce((s,k)=>s+r.E[k],0);
   document.getElementById('mixTotal').textContent=fmtTWh(tot)+' TWh incl. rooftop';
-  const mixData=order.map(k=>({k,v:r.E[k],pct:100*r.E[k]/tot})).filter(d=>d.v>tot*0.0005||['coal','wind','pv'].includes(d.k));
+  const mixData=order.map(k=>({k,v:r.E[k],pct:100*r.E[k]/tot})).filter(d=>d.v>tot*0.0005||['coal','wind','pv','ccgt','ps','batt'].includes(d.k));
   // build donut arcs
   const R=52, r0=30, cx=64, cy=64, C=2*Math.PI;
   let ang=-Math.PI/2; // start at top
