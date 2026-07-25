@@ -621,7 +621,18 @@ function simulate(u, prof, outPath){
       E.curtailed+=surplus;
       const vre=windGen+pvGen;
       if(vre>0&&surplus>0){const f=Math.max(0,vre-surplus)/vre; windGen*=f; pvGen*=f;}
+      // E.wind/E.pv (KPI totals, set in the shared block below) correctly use the full windGen/pvGen
+      // here - real generation actually used, whether for load or to charge storage. But the CHART
+      // should only show the load-serving portion, same principle as the coal fix above - otherwise
+      // a fully-successful storage charge (surplus fully absorbed, so the curtailment scaling above
+      // never triggers) leaves wind/solar at their full pre-charge value, making the stack rise above
+      // the demand line during exactly the hours storage is charging from cheap solar.
+      const loadServingRenew=Math.max(0, load-cspGen-nuc-hyd-imp);
+      const vreUsed=windGen+pvGen; // post-curtailment-scaling, i.e. "used" (>= loadServingRenew always)
+      const stackScale=vreUsed>0 ? Math.min(1, loadServingRenew/vreUsed) : 0;
+      stack.wind[h]=windGen*stackScale; stack.pv[h]=pvGen*stackScale;
     } else {
+      stack.wind[h]=windGen; stack.pv[h]=pvGen; // no charging happens from renewables in this branch - full output serves load
       const isExpensiveHour=residual>=expensiveThreshold;
       if(isExpensiveHour){
         // genuinely expensive hour (top 25% net load, real scarcity) - storage sells ahead of
@@ -636,6 +647,11 @@ function simulate(u, prof, outPath){
       }
       const g=Math.min(residual,ccgtCap); residual-=g; E.ccgt+=g; stack.ccgt[h]=g; fuelCost+=g*p.costCcgt; carbonCost+=g*cG;
       const dsl=Math.min(residual,p.ocgtDieselMW); residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*p.costDiesel; carbonCost+=dsl*cD;
+      stack.coal[h]=coalGen; // load-serving coal only - captured here, before any charging bonus below,
+      // so the chart's stack always sums to the demand line. The charging bonus is real generation
+      // and real fuel cost (correctly added to E.coal/fuelCost below), it's just not generation
+      // "serving demand" - visually inflating the coal bar past the demand line would look like a
+      // bug rather than the real thing it represents (extra coal burned specifically to top up storage).
       if(hour<=5||hour>=23){
         let head=cAvail-coalGen;
         if(head>0&&psSoc<p.psEnergyMWh*0.85){const w=Math.min(p.psPowerMW*0.8,p.psEnergyMWh-psSoc,head); coalGen+=w; psSoc+=w*p.psEff; head-=w;}
@@ -647,9 +663,9 @@ function simulate(u, prof, outPath){
         stack.unserved[h]=residual;
       }
     }
-    E.coal+=coalGen; stack.coal[h]=coalGen; fuelCost+=coalGen*p.costCoal; carbonCost+=coalGen*cC;
+    E.coal+=coalGen; fuelCost+=coalGen*p.costCoal; carbonCost+=coalGen*cC;
     E.wind+=windGen; E.pv+=pvGen; E.csp+=cspGen; E.nuclear+=nuc; E.hydro+=hyd; E.imports+=imp;
-    stack.wind[h]=windGen; stack.pv[h]=pvGen; stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
+    stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
     fuelCost+=nuc*p.costNuclear+hyd*p.costHydro+imp*p.costImports;
   }
   // Transmission adder on new wind + utility PV. Wind always pays it.
