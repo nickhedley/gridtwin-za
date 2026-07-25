@@ -600,8 +600,23 @@ function simulate(u, prof, outPath){
     const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     netLoadPre[h]=load-windGen-pvGen-cspGen-nuc-hyd-imp;
   }
-  const sortedNetLoad=Float64Array.from(netLoadPre).sort();
-  const expensiveThreshold=sortedNetLoad[Math.floor(HOURS*0.75)]; // top 25% net load = genuinely expensive hours
+  // DAILY-relative threshold, not a single year-wide one: a real battery doesn't care whether
+  // today is worse than winter - it cares whether there's a cheap-to-expensive spread worth
+  // capturing TODAY. A year-wide threshold (top 25% of all 8760 hours) is dominated by winter's
+  // scale, so on most summer days even a real, meaningful midday-to-evening solar ramp never
+  // clears the bar - explaining batteries firing on only a few "exceptional" summer days instead
+  // of every evening, unlike real-world CAISO batteries which reliably cycle daily against
+  // California's own summer duck curve regardless of how that day compares to winter. Using each
+  // day's own min-max range instead means every day with a genuine daily swing gets its own
+  // evening peak correctly identified as relatively expensive for THAT day.
+  const expensiveThresholdByHour=new Float64Array(HOURS);
+  for(let day=0;day<Math.ceil(HOURS/24);day++){
+    const start=day*24, end=Math.min(HOURS,start+24);
+    let dMin=Infinity, dMax=-Infinity;
+    for(let h=start;h<end;h++){ if(netLoadPre[h]<dMin)dMin=netLoadPre[h]; if(netLoadPre[h]>dMax)dMax=netLoadPre[h]; }
+    const threshold=dMin+0.75*(dMax-dMin); // top quartile of THIS day's own range
+    for(let h=start;h<end;h++) expensiveThresholdByHour[h]=threshold;
+  }
 
   for(let h=0;h<HOURS;h++){
     const hour=h%24;
@@ -633,7 +648,7 @@ function simulate(u, prof, outPath){
       stack.wind[h]=windGen*stackScale; stack.pv[h]=pvGen*stackScale;
     } else {
       stack.wind[h]=windGen; stack.pv[h]=pvGen; // no charging happens from renewables in this branch - full output serves load
-      const isExpensiveHour=residual>=expensiveThreshold;
+      const isExpensiveHour=residual>=expensiveThresholdByHour[h];
       if(isExpensiveHour){
         // genuinely expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
