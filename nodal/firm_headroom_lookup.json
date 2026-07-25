@@ -1,0 +1,282 @@
+{
+  "Eastern Cape": {
+    "coal": {
+      "headroom_mw": 3750,
+      "binding_corridor": "Eastern Cape-Kwazulu Natal",
+      "corridor_length_km": 167,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Eastern Cape-Kwazulu Natal",
+      "corridor_length_km": 167,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 3750,
+      "binding_corridor": "Eastern Cape-Kwazulu Natal",
+      "corridor_length_km": 167,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Eastern Cape-Kwazulu Natal",
+      "corridor_length_km": 167,
+      "avg_capacity_factor": 0.15
+    }
+  },
+  "Limpopo": {
+    "coal": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Limpopo-Mpumalanga",
+      "corridor_length_km": 121,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Limpopo-Mpumalanga",
+      "corridor_length_km": 121,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Limpopo-Mpumalanga",
+      "corridor_length_km": 121,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Limpopo-Mpumalanga",
+      "corridor_length_km": 121,
+      "avg_capacity_factor": 0.15
+    }
+  },
+  "Mpumalanga": {
+    "coal": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.15
+    }
+  },
+  "Gauteng": {
+    "coal": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Gauteng",
+      "corridor_length_km": 102,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Mpumalanga-Gauteng",
+      "corridor_length_km": 102,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Gauteng",
+      "corridor_length_km": 102,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Mpumalanga-Gauteng",
+      "corridor_length_km": 102,
+      "avg_capacity_factor": 0.15
+    }
+  },
+  "Western Cape": {
+    "coal": {
+      "headroom_mw": 5000,
+      "binding_corridor": "Western Cape-Hydra Central",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Western Cape-Hydra Central",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 5250,
+      "binding_corridor": "Western Cape-Hydra Central",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Western Cape-Hydra Central",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.15
+    }
+  },
+  "Northern Cape": {
+    "coal": {
+      "headroom_mw": 5750,
+      "binding_corridor": "Northern Cape-Free State",
+      "corridor_length_km": 90,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Northern Cape-Free State",
+      "corridor_length_km": 90,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 5250,
+      "binding_corridor": "Northern Cape-Free State",
+      "corridor_length_km": 90,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Northern Cape-Free State",
+      "corridor_length_km": 90,
+      "avg_capacity_factor": 0.15
+    }
+  },
+  "Hydra Central": {
+    "coal": {
+      "headroom_mw": 7250,
+      "binding_corridor": "Hydra Central-Western Cape",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Hydra Central-Western Cape",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 5750,
+      "binding_corridor": "Hydra Central-Western Cape",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Hydra Central-Western Cape",
+      "corridor_length_km": 278,
+      "avg_capacity_factor": 0.15
+    }
+  },
+  "Kwazulu Natal": {
+    "coal": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Mpumalanga-Kwazulu Natal",
+      "corridor_length_km": 172,
+      "avg_capacity_factor": 0.15
+    }
+  },
+  "North West": {
+    "coal": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Limpopo-North West",
+      "corridor_length_km": 212,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Limpopo-North West",
+      "corridor_length_km": 212,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Limpopo-North West",
+      "corridor_length_km": 212,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Limpopo-North West",
+      "corridor_length_km": 212,
+      "avg_capacity_factor": 0.15
+    }
+  },
+  "Free State": {
+    "coal": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Free State-Mpumalanga",
+      "corridor_length_km": 347,
+      "avg_capacity_factor": 0.64
+    },
+    "ccgt": {
+      "headroom_mw": 8000,
+      "note": "CCGT cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Free State-Mpumalanga",
+      "corridor_length_km": 347,
+      "avg_capacity_factor": 0.15
+    },
+    "nuclear": {
+      "headroom_mw": 8000,
+      "binding_corridor": "Free State-Mpumalanga",
+      "corridor_length_km": 347,
+      "avg_capacity_factor": 0.9
+    },
+    "batt": {
+      "headroom_mw": 8000,
+      "note": "Battery storage cycles by design (rarely dispatched / short-duration) - a sustained-utilisation network test does not apply, see build_firm_headroom.js comments",
+      "binding_corridor": "Free State-Mpumalanga",
+      "corridor_length_km": 347,
+      "avg_capacity_factor": 0.15
+    }
+  }
+}
