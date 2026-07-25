@@ -211,7 +211,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
           <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new wind or solar capacity. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. CCGT and batteries never carry this charge (see the Nodal Simulation panel below for why).</p>
             <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it — the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
             <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
               <div>
@@ -234,6 +234,10 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
                   <option value="solar">Solar PV</option>
                   <option value="wind">Wind</option>
+                  <option value="coal">Coal</option>
+                  <option value="ccgt">Gas CCGT</option>
+                  <option value="nuclear">Nuclear</option>
+                  <option value="batt">Battery (4h)</option>
                 </select>
               </div>
               <div>
@@ -259,15 +263,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
           <div class="ph"><h2>Nodal Simulation</h2><span class="tag">full network-flow model · full year</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), and today's current sliders plus anything allocated above. On success, the KPIs, energy mix, and hourly dispatch chart all switch to reflect this real nodal run instead of the instant national engine (see the banner that appears) - only the load-shedding risk panel stays on the national engine, since Monte Carlo risk isn't nodally resolved yet. Storage charges and discharges across the real network - including overnight coal-to-storage charging, which now correctly routes to wherever storage actually sits rather than requiring local coal (KZN's pumped storage has almost no local coal fleet to draw from otherwise). Before exporting to help a neighbouring region, storage checks its own near-term outlook and holds back some capacity if its own region looks likely to need it soon - a simple, capped lookahead, not full forecast optimisation. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), plus new coal/CCGT/nuclear/battery siting via "Where To Build" below (coal and nuclear carry a real network-based grid-build charge like wind and solar; CCGT and batteries never do - CCGT is a rarely-dispatched backup technology, and batteries genuinely concentrate their output into real Eskom peak windows, 06:00-09:00 and 17:00-20:00, rather than running sustained, so a sustained-utilisation test doesn't apply to either), and today's current sliders plus anything allocated above. On success, the KPIs, energy mix, and hourly dispatch chart all switch to reflect this real nodal run instead of the instant national engine (see the banner that appears) - only the load-shedding risk panel stays on the national engine, since Monte Carlo risk isn't nodally resolved yet. Storage charges and discharges across the real network - including cheap-hour thermal-headroom charging, which now correctly routes to wherever storage actually sits rather than requiring local coal (KZN's pumped storage has almost no local coal fleet to draw from otherwise) - based on genuine price arbitrage: a national net-load signal (demand minus renewable/baseload output, the same real mechanism behind wholesale electricity pricing and California's "duck curve") identifies genuinely cheap hours (bottom 25%, for charging) and genuinely expensive hours (top 25%, for discharge priority ahead of coal), replacing an earlier clock-time heuristic entirely. Actual curtailed renewable surplus - the strongest, literally-free form of cheap solar - is captured by its own charging pass regardless of this price gate. "Cost" for storage in this engine is a dispatch-priority device, not a real marginal cost - unlike fuel-based generation, storage's actual economics are opportunity-cost/arbitrage, which this net-load approach approximates without a full price-optimisation model. Before exporting to help a neighbouring region, storage checks its own near-term outlook and holds back some capacity if its own region looks likely to need it soon - a simple, capped lookahead, not full forecast optimisation. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
             <button id="nodalRunBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Run full year</button>
             <div id="nodalResult" class="mono" style="font-size:12.5px; padding:10px 12px; margin-top:12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.6">Not run yet.</div>
           </div>
         </div>
       </section>
 
-      <script src="nodal/nodal_engine.js?v=6"></script>
-      <script src="nodal/nodal_dispatch.js?v=6"></script>
+      <script src="nodal/nodal_engine.js?v=11"></script>
+      <script src="nodal/nodal_dispatch.js?v=11"></script>
       <script>
       // --- Nodal -> national KPI/mix merge ---
       // Maps the nodal engine's real per-carrier annual output onto the same E{} shape the
@@ -314,7 +318,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           const inheritable=Math.min(p.coalDecomMW, u.newPvMW+u.newBattMW);
           pvAdderMW=u.newPvMW-Math.min(u.newPvMW, inheritable);
         }
-        const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
+        const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
         const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
         const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt;
         const totalCost=fuelCost+carbonCost+newCapexR;
@@ -383,14 +387,16 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         btn.disabled=true; btn.textContent='Running…';
         out.textContent='Fetching regional data and solving 8,760 hours…';
         try{
-          // extra regional wind/solar from the "Where To Build" allocated portfolio (siteAllocated)
-          const extraWind={}, extraSolar={};
+          // extra regional capacity from the "Where To Build" allocated portfolio (siteAllocated),
+          // routed to the right bucket per technology
+          const extraWind={}, extraSolar={}, extraCoal={}, extraCcgt={}, extraNuclear={}, extraBatt={};
+          const buckets={wind:extraWind, solar:extraSolar, coal:extraCoal, ccgt:extraCcgt, nuclear:extraNuclear, batt:extraBatt};
           Object.entries(siteAllocated||{}).forEach(([key,mw])=>{
             const [region,tech]=key.split('|');
-            if(tech==='wind') extraWind[region]=(extraWind[region]||0)+mw;
-            else extraSolar[region]=(extraSolar[region]||0)+mw;
+            const bucket=buckets[tech];
+            if(bucket) bucket[region]=(bucket[region]||0)+mw;
           });
-          const summary=await runNodalYear(state.coalEAFPct, state.coalDecomMW, extraWind, extraSolar, state.newRooftopMW, state.newBattMW);
+          const summary=await runNodalYear(state.coalEAFPct, state.coalDecomMW, extraWind, extraSolar, state.newRooftopMW, state.newBattMW, extraCoal, extraCcgt, extraNuclear, extraBatt);
           const regionRows=Object.entries(summary.byRegion)
             .map(([r,v])=>({r, sheddingPct: v.demand>0?100*v.unserved/v.demand:0}))
             .sort((a,b)=>b.sheddingPct-a.sheddingPct)
@@ -499,7 +505,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 <footer class="foot">Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African system (calibrated to Eskom weekly system status reports, June–July 2026). All outputs are indicative — this is an educational scenario explorer, not planning or investment advice.</footer>
 
-<script src="nodal/capacity_siting.js?v=2"></script>
+<script src="nodal/capacity_siting.js?v=4"></script>
 
 <script>
 "use strict";
@@ -548,6 +554,12 @@ const FIXED = {
   costCoal:480, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
   costCcgt:1750, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
   acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
+  // New coal/nuclear capex: global capex benchmarks ($3,600/kW coal w/ emissions controls,
+  // $7,500/kW nuclear - mid of published $3,000-4,200 and $6,000-9,000/kW ranges respectively)
+  // converted at ~R16.8/$ and annualised over a 40yr asset life at ~8% - same annuity method
+  // implied by the app's existing acap figures above. Cross-checked: the resulting LCOE lands
+  // close to the app's own pre-existing lcoeCoalNew/lcoeNuclear reference values below.
+  acapCoal:5000, acapNuclear:10500,
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
   lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600, lcoeCsp:2000, lcoeCcgt:1500, lcoeNuclear:1650, lcoeCoalNew:1200, lcoeDiesel:5500,
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
@@ -558,7 +570,7 @@ function simulate(u, prof, outPath){
   const p={...FIXED,...u};
   const {demand,solar,wind,csp}=prof;
   const growth=1+p.demandGrowthPct/100;
-  const coalInstRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW);
+  const coalInstRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW)+p.newCoalMW;
   const coalAvail=coalInstRem*p.coalEAFPct/100;
   const windCap=p.windMW+p.newWindMW, pvCap=p.pvUtilityMW+p.newPvMW, rooftopCap=p.rooftopMW+p.newRooftopMW;
   const battPower=p.battPowerMW+p.newBattMW, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours;
@@ -579,7 +591,7 @@ function simulate(u, prof, outPath){
     const load=rawDemand-rooftopGen;
     E.rooftop+=rooftopGen; loadS[h]=load;
     let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
-    const nuc=p.nuclearMW*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
+    const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     let residual=load-windGen-pvGen-cspGen-nuc-hyd-imp;
     let coalGen=0;
     if(residual<0){
@@ -621,7 +633,7 @@ function simulate(u, prof, outPath){
     const pvExempt=Math.min(u.newPvMW, inheritable);
     pvAdderMW=u.newPvMW-pvExempt;
   }
-  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
+  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
   const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
   const totalCost=fuelCost+carbonCost+newCapexR;
@@ -670,6 +682,8 @@ const SLIDERS=[
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:40000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.3 GW existing, behind the meter'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:50000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance — rarely dispatched when storage is ample'},
+  {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'modern supercritical, same fuel cost as existing fleet · SA has no active new-build coal programme, this is exploratory'},
+  {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
@@ -1152,7 +1166,14 @@ let sitePortfolio=[];
 // siteAllocated is declared earlier (near nodeColor) so the map can use it on first render too
 let siteSliderContribution={newWindMW:0, newPvMW:0}; // how much of the national slider WE added, for clean reset
 
-function sliderIdFor(tech){return tech==='wind'?'newWindMW':'newPvMW';}
+function sliderIdFor(tech){
+  const map={wind:'newWindMW', solar:'newPvMW', coal:'newCoalMW', ccgt:'newCcgtMW', nuclear:'newNuclearMW', batt:'newBattMW'};
+  return map[tech]||'newPvMW';
+}
+function siteTechName(tech){
+  const map={wind:'Wind', solar:'Solar PV', coal:'Coal', ccgt:'Gas CCGT', nuclear:'Nuclear', batt:'Battery'};
+  return map[tech]||tech;
+}
 
 // Bump one national slider by a delta without disturbing any other control's value.
 function bumpSlider(id, deltaMW){
@@ -1189,7 +1210,7 @@ async function evaluateAgainstRemaining(region,tech,mw){
 function renderResult(r){
   const region=r.region, tech=r.tech, mw=r.requestedMw;
   const out=document.getElementById('siteResult');
-  let html='<strong>'+region+' · '+(tech==='wind'?'Wind':'Solar PV')+' · '+mw+' MW</strong><br>';
+  let html='<strong>'+region+' · '+siteTechName(tech)+' · '+mw+' MW</strong><br>';
   if(!r.gridBuildNeeded){
     html+='<span style="color:var(--ok)">✓ Fits within remaining grid headroom</span> — no new transmission needed, generation cost only.';
   } else {
@@ -1211,7 +1232,7 @@ function renderPortfolio(){
   const rows=sitePortfolio.map(a=>{
     totalMw+=a.requestedMw;
     if(a.gridBuildNeeded) totalWithCharge+=a.shortfallMw;
-    return '<tr><td style="padding:3px 10px 3px 0">'+a.region+'</td><td style="padding:3px 10px 3px 0">'+(a.tech==='wind'?'Wind':'Solar')+'</td>'+
+    return '<tr><td style="padding:3px 10px 3px 0">'+a.region+'</td><td style="padding:3px 10px 3px 0">'+siteTechName(a.tech)+'</td>'+
       '<td style="padding:3px 10px 3px 0; text-align:right">'+a.requestedMw+' MW</td>'+
       '<td style="padding:3px 10px 3px 0">'+(a.gridBuildNeeded?'<span style="color:var(--alert)">R'+a.gridBuildChargeRPerMWh.toFixed(1)+'/MWh on '+a.shortfallMw.toFixed(0)+' MW</span>':'<span style="color:var(--ok)">free</span>')+'</td>'+
       '<td style="padding:3px 0 3px 6px; text-align:right"><button type="button" class="siteDelBtn" data-id="'+a.id+'" title="Remove this allocation" style="background:none; border:1px solid var(--line2); border-radius:3px; width:18px; height:18px; line-height:1; cursor:pointer; color:var(--ink2); font-size:11px; padding:0">×</button></td></tr>';
