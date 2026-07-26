@@ -77,16 +77,18 @@ function foldCarrier(carrier) {
  * @returns {object} summary: {unservedPct, lossesPct, curtailedGwh, byRegion, byCarrier,
  *   corridorFlows, weekStacks: {W:{stack,loadS}, S:{stack,loadS}}, runtimeMs}
  */
-async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion, newRooftopMW, newBattMW) {
+async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion, newRooftopMW, newBattMW,
+                             extraCoalByRegion, extraCcgtByRegion, extraNuclearByRegion, extraBattByRegion, coalFlexPct) {
   const data = await loadNodalData();
   if (!nodalEngineInstance) nodalEngineInstance = new NodalEngine(data);
-  nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0, newBattMW || 0);
+  nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0, newBattMW || 0,
+    extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0);
 
   const t0 = performance.now();
   let totalDemand = 0, totalUnserved = 0, totalLosses = 0, totalCurtailed = 0, totalRooftop = 0;
   let psDischarge = 0, battDischarge = 0;
   const byRegion = {};
-  REGIONS.forEach(r => { byRegion[r] = { demand: 0, unserved: 0 }; });
+  REGIONS.forEach(r => { byRegion[r] = { demand: 0, unserved: 0, curtailed: 0, renewablePotential: 0 }; });
   const byCarrier = {}; // annual MWh dispatched per carrier, national
   const edgeMeta = nodalEngineInstance.edgeMeta;
   const annualFlow = new Array(edgeMeta.length).fill(0);
@@ -112,7 +114,13 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     totalRooftop += Object.values(r.rooftopGen).reduce((a, b) => a + b, 0);
     psDischarge += r.storage.psDischargeTotal;
     battDischarge += r.storage.battDischargeTotal;
-    r.genLog.forEach(g => { byCarrier[g.carrier] = (byCarrier[g.carrier] || 0) + g.dispatched; });
+    r.genLog.forEach(g => {
+      byCarrier[g.carrier] = (byCarrier[g.carrier] || 0) + g.dispatched;
+      if (g.carrier === 'wind' || g.carrier === 'solar') {
+        byRegion[g.region].curtailed += g.curtailed;
+        byRegion[g.region].renewablePotential += g.available;
+      }
+    });
     r.edgeFlow.forEach((f, i) => { annualFlow[i] += f; if (f > peakFlow[i]) peakFlow[i] = f; });
 
     // capture this hour if it falls in either representative week (168h windows)
@@ -137,6 +145,19 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     avgUtilPct: e.limit > 0 ? 100 * (annualFlow[i] / 8760) / e.limit : 0,
   }));
 
+  // Curtailment rate (curtailed / potential renewable generation) per region - a rate, not raw
+  // GWh, so a small region with little renewable capacity doesn't look artificially "fine" next
+  // to a large one, and a heavily-built-out region's real severity is visible regardless of scale.
+  const curtailmentByRegion = REGIONS.map(reg => {
+    const b = byRegion[reg];
+    return {
+      region: reg,
+      curtailedGwh: b.curtailed / 1e3,
+      potentialGwh: b.renewablePotential / 1e3,
+      curtailmentRatePct: b.renewablePotential > 0 ? 100 * b.curtailed / b.renewablePotential : 0,
+    };
+  });
+
   return {
     totalDemandTwh: totalDemand / 1e6,
     unservedGwh: totalUnserved / 1e3,
@@ -148,6 +169,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     byRegion,
     byCarrier, // {carrier: annual MWh}
     corridorFlows, // [{regionA, regionB, limitMw, annualGwh, peakMw, peakUtilPct, avgUtilPct}]
+    curtailmentByRegion, // [{region, curtailedGwh, potentialGwh, curtailmentRatePct}]
     weekStacks, // {W:{stack:{carrier:Float64Array(168)}, loadS:Float64Array(168)}, S:{...}}
     runtimeMs,
   };
