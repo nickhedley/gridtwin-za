@@ -318,7 +318,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           const inheritable=Math.min(p.coalDecomMW, u.newPvMW+u.newBattMW);
           pvAdderMW=u.newPvMW-Math.min(u.newPvMW, inheritable);
         }
-        const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
+        const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(Math.max(0,p.coalInstalledMW-u.coalDecomMW)+u.newCoalMW)*(u.coalFlexPct/100)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
         const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
         const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt;
         const totalCost=fuelCost+carbonCost+newCapexR;
@@ -560,6 +560,14 @@ const FIXED = {
   // implied by the app's existing acap figures above. Cross-checked: the resulting LCOE lands
   // close to the app's own pre-existing lcoeCoalNew/lcoeNuclear reference values below.
   acapCoal:5000, acapNuclear:10500,
+  // Coal ramp-rate flexibilisation: SA's current coal fleet ramps at just 0.1-0.7%/min
+  // (Agora Energiewende 2017, via NREL's Greening the Grid programme - genuinely worse than
+  // the "average plant" global benchmark, consistent with Eskom's aging, strained fleet).
+  // IRENA's post-flexibilisation range for hard coal is 3-6%/min. Retrofit cost grounded in a
+  // real completed project (Weisweiler, Germany: EUR125m for 1,200MW = ~EUR104/kW overnight,
+  // annualised over 15yr at 8% - shorter than a new-build life, since it's a retrofit of an
+  // aging asset, not a fresh plant).
+  coalRampBasePct:24, coalRampFlexPct:100, acapCoalFlex:223,
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
   lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600, lcoeCsp:2000, lcoeCcgt:1500, lcoeNuclear:1650, lcoeCoalNew:1200, lcoeDiesel:5500,
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
@@ -576,6 +584,14 @@ function simulate(u, prof, outPath){
   const battPower=p.battPowerMW+p.newBattMW, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours;
   const ccgtCap=p.ccgtMW+p.newCcgtMW;
   const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
+  // Coal ramp-rate limit: how much coal generation can change hour-to-hour, blended between
+  // today's real SA fleet rate and the flexibilised rate based on the flexibilisation slider.
+  // Applied both up (can't instantly meet a sudden peak) and down (can't instantly get out of
+  // the way of a sudden solar surge, which is what forces ADDITIONAL renewable curtailment -
+  // see the surplus branch below, where a coalFloor now applies even during nominal oversupply).
+  const rampPct=p.coalRampBasePct+(p.coalRampFlexPct-p.coalRampBasePct)*(p.coalFlexPct/100);
+  const rampAllowedMW=coalInstRem*rampPct/100;
+  let prevCoalGen=coalAvail*0.5; // reasonable starting assumption, matching psSoc/battSoc's own starting-fraction convention
   let psSoc=p.psEnergyMWh*0.7, battSoc=battEnergy*0.5;
   const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
   const E={rooftop:0,wind:0,pv:0,csp:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0};
@@ -648,6 +664,12 @@ function simulate(u, prof, outPath){
     let coalGen=0;
     if(residual<0){
       let surplus=-residual;
+      // Ramp-down floor: inflexible coal can't instantly drop to zero just because there's a
+      // renewable surplus this hour - it's forced to keep producing at least this much, which
+      // ADDS to what needs absorbing (storage charging first, then genuinely wasted/curtailed).
+      // This is the real mechanism behind "inflexible coal causes additional curtailment".
+      const coalFloor=Math.max(0,prevCoalGen-rampAllowedMW);
+      if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); psSoc+=psChg*p.psEff; surplus-=psChg;
       const btChg=Math.min(surplus,battPower,battEnergy-battSoc); battSoc+=btChg*p.battEff; surplus-=btChg;
       E.curtailed+=surplus;
@@ -665,15 +687,18 @@ function simulate(u, prof, outPath){
       stack.wind[h]=windGen*stackScale; stack.pv[h]=pvGen*stackScale;
     } else {
       stack.wind[h]=windGen; stack.pv[h]=pvGen; // no charging happens from renewables in this branch - full output serves load
+      // Ramp-up ceiling: inflexible coal can't instantly jump to meet a sudden deficit either -
+      // this is the "no ramp up time" problem the flexibilisation slider exists to relax.
+      const coalCeiling=Math.min(cAvail,prevCoalGen+rampAllowedMW);
       const isExpensiveHour=residual>=expensiveThresholdByHour[h];
       if(isExpensiveHour){
         // genuinely expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
         const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
         const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
-        coalGen=Math.min(residual,cAvail); residual-=coalGen;
+        coalGen=Math.min(residual,coalCeiling); residual-=coalGen;
       } else {
-        coalGen=Math.min(residual,cAvail); residual-=coalGen;
+        coalGen=Math.min(residual,coalCeiling); residual-=coalGen;
         const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
         const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
       }
@@ -685,7 +710,7 @@ function simulate(u, prof, outPath){
       // "serving demand" - visually inflating the coal bar past the demand line would look like a
       // bug rather than the real thing it represents (extra coal burned specifically to top up storage).
       if(hour<=5||hour>=23){
-        let head=cAvail-coalGen;
+        let head=coalCeiling-coalGen; // off-peak bonus also respects the ramp ceiling, not just total capacity
         // Target ceilings are no longer a blind nightly chase to 85%/80% regardless of whether
         // it's actually needed - they're capped by genuine anticipated need over the next 24h
         // (see anticipatedShortfall above), never exceeding the original safety ceiling either.
@@ -698,7 +723,7 @@ function simulate(u, prof, outPath){
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(p.psPowerMW*0.8,psTargetCeiling-psSoc,head); coalGen+=w; psSoc+=w*p.psEff; head-=w;}
         if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; battSoc+=w*p.battEff;}
       }
-      coalGenTotal[h]=coalGen;
+      // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
       if(residual>1){
         E.unserved+=residual; shedMWh+=residual;
         const st=Math.min(8,Math.ceil(residual/1000)); shedHours[st]++; if(st>maxStage)maxStage=st;
@@ -706,6 +731,8 @@ function simulate(u, prof, outPath){
       }
     }
     E.coal+=coalGen; fuelCost+=coalGen*p.costCoal; carbonCost+=coalGen*cC;
+    coalGenTotal[h]=coalGen;
+    prevCoalGen=coalGen; // for next hour's ramp reference, regardless of which branch this hour took
     E.wind+=windGen; E.pv+=pvGen; E.csp+=cspGen; E.nuclear+=nuc; E.hydro+=hyd; E.imports+=imp;
     stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
     fuelCost+=nuc*p.costNuclear+hyd*p.costHydro+imp*p.costImports;
@@ -720,7 +747,7 @@ function simulate(u, prof, outPath){
     const pvExempt=Math.min(u.newPvMW, inheritable);
     pvAdderMW=u.newPvMW-pvExempt;
   }
-  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
+  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+(Math.max(0,p.coalInstalledMW-u.coalDecomMW)+u.newCoalMW)*(u.coalFlexPct/100)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
   const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
   const totalCost=fuelCost+carbonCost+newCapexR;
@@ -772,6 +799,7 @@ const SLIDERS=[
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance — rarely dispatched when storage is ample'},
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'modern supercritical, same fuel cost as existing fleet · SA has no active new-build coal programme, this is exploratory'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
+  {id:'coalFlexPct',label:'Coal fleet flexibilised',min:0,max:100,step:5,def:0,fmt:v=>v+'%',note:'retrofit cost R223/kW/yr (real Weisweiler, Germany project) · today\u2019s SA fleet ramps ~24%/hr (Agora 2017) → up to ~100%/hr flexibilised (IRENA post-retrofit range) · applies to the remaining (non-decommissioned) fleet'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
