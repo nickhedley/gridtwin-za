@@ -577,11 +577,15 @@ function simulate(u, prof, outPath){
   const ccgtCap=p.ccgtMW+p.newCcgtMW;
   const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
   let psSoc=p.psEnergyMWh*0.7, battSoc=battEnergy*0.5;
+  const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
   const E={rooftop:0,wind:0,pv:0,csp:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0};
   let fuelCost=0, carbonCost=0, shedMWh=0, maxStage=0;
   const shedHours=[0,0,0,0,0,0,0,0,0];
   const stackKeys=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
   const stack={}; stackKeys.forEach(k=>stack[k]=new Float64Array(HOURS));
+  const coalGenTotal=new Float64Array(HOURS); // TOTAL coal generation per hour, including any off-peak
+  // charging bonus - unlike stack.coal (load-serving only, for the chart), this is what real fuel
+  // cost/emissions and any external cost comparison (e.g. an LP solve) should use
   const loadS=new Float64Array(HOURS);
 
   // Pre-pass: net load (residual before coal/storage) is purely a function of demand and
@@ -599,6 +603,18 @@ function simulate(u, prof, outPath){
     const windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
     const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     netLoadPre[h]=load-windGen-pvGen-cspGen-nuc-hyd-imp;
+  }
+  // Forward-looking signal for off-peak coal-charging: how much genuine coal-insufficient need
+  // (net load exceeding what coal alone can cover) is coming over the NEXT 24 hours. Used so
+  // off-peak charging only spends real coal when there's a real reason to expect storage will
+  // be needed soon, rather than blindly chasing a fixed SoC target every night regardless of
+  // proportionality - see the off-peak charging block below for how this is used.
+  const anticipatedShortfall=new Float64Array(HOURS);
+  for(let h=0;h<HOURS;h++){
+    let sum=0;
+    const end=Math.min(HOURS,h+25);
+    for(let k=h+1;k<end;k++){ const gap=netLoadPre[k]-coalAvail; if(gap>0) sum+=gap; }
+    anticipatedShortfall[h]=sum;
   }
   // DAILY-relative threshold, not a single year-wide one: a real battery doesn't care whether
   // today is worse than winter - it cares whether there's a cheap-to-expensive spread worth
@@ -619,6 +635,7 @@ function simulate(u, prof, outPath){
   }
 
   for(let h=0;h<HOURS;h++){
+    if(h===3264||h===7848) socAtWeekStart[h]={ps:psSoc,batt:battSoc};
     const hour=h%24;
     const cAvail=outPath?coalInstRem*outPath[Math.floor(h/24)]:coalAvail;
     const rawDemand=demand[h]*growth;
@@ -669,9 +686,19 @@ function simulate(u, prof, outPath){
       // bug rather than the real thing it represents (extra coal burned specifically to top up storage).
       if(hour<=5||hour>=23){
         let head=cAvail-coalGen;
-        if(head>0&&psSoc<p.psEnergyMWh*0.85){const w=Math.min(p.psPowerMW*0.8,p.psEnergyMWh-psSoc,head); coalGen+=w; psSoc+=w*p.psEff; head-=w;}
-        if(head>0&&battSoc<battEnergy*0.8){const w=Math.min(battPower*0.6,battEnergy-battSoc,head); coalGen+=w; battSoc+=w*p.battEff;}
+        // Target ceilings are no longer a blind nightly chase to 85%/80% regardless of whether
+        // it's actually needed - they're capped by genuine anticipated need over the next 24h
+        // (see anticipatedShortfall above), never exceeding the original safety ceiling either.
+        // A calm period with little coming stress now charges little to nothing; a period with
+        // real anticipated stress still charges up to the same conservative cap as before. This
+        // is what stopped the mechanism from burning enormous amounts of coal purely to chase a
+        // fixed SoC target when storage started nearly empty with nothing genuinely justifying it.
+        const psTargetCeiling=Math.min(p.psEnergyMWh*0.85, anticipatedShortfall[h]);
+        const battTargetCeiling=Math.min(battEnergy*0.8, anticipatedShortfall[h]);
+        if(head>0&&psSoc<psTargetCeiling){const w=Math.min(p.psPowerMW*0.8,psTargetCeiling-psSoc,head); coalGen+=w; psSoc+=w*p.psEff; head-=w;}
+        if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; battSoc+=w*p.battEff;}
       }
+      coalGenTotal[h]=coalGen;
       if(residual>1){
         E.unserved+=residual; shedMWh+=residual;
         const st=Math.min(8,Math.ceil(residual/1000)); shedHours[st]++; if(st>maxStage)maxStage=st;
@@ -709,6 +736,7 @@ function simulate(u, prof, outPath){
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
   return {E,fuelCost,carbonCost,newCapexR,totalCost,avgCost,co2,replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
+          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
