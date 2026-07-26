@@ -319,7 +319,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           const inheritable=Math.min(p.coalDecomMW, u.newPvMW+u.newBattMW);
           pvAdderMW=u.newPvMW-Math.min(u.newPvMW, inheritable);
         }
-        const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct/100)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
+        const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
         const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
         const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt;
         const totalCost=fuelCost+carbonCost+newCapexR;
@@ -397,7 +397,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             const bucket=buckets[tech];
             if(bucket) bucket[region]=(bucket[region]||0)+mw;
           });
-          const summary=await runNodalYear(state.coalEAFPct, state.coalDecomMW, extraWind, extraSolar, state.newRooftopMW, state.newBattMW, extraCoal, extraCcgt, extraNuclear, extraBatt, state.coalFlexPct);
+          const summary=await runNodalYear(state.coalEAFPct, state.coalDecomMW, extraWind, extraSolar, state.newRooftopMW, state.newBattMW, extraCoal, extraCcgt, extraNuclear, extraBatt, state.coalFlexPct?100:0);
           const regionRows=Object.entries(summary.byRegion)
             .map(([r,v])=>({r, sheddingPct: v.demand>0?100*v.unserved/v.demand:0}))
             .sort((a,b)=>b.sheddingPct-a.sheddingPct)
@@ -596,7 +596,7 @@ function simulate(u, prof, outPath){
   // standard, so it doesn't need retrofitting and isn't subject to the flexibilisation
   // slider or its cost. Only the EXISTING remaining fleet's ramp rate depends on the slider.
   const oldFleetRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW);
-  const rampPct=p.coalRampBasePct+(p.coalRampFlexPct-p.coalRampBasePct)*(p.coalFlexPct/100);
+  const rampPct=p.coalRampBasePct+(p.coalRampFlexPct-p.coalRampBasePct)*(p.coalFlexPct?1:0);
   const rampAllowedMW=oldFleetRem*rampPct/100 + p.newCoalMW*p.coalRampFlexPct/100;
   let prevCoalGen=coalAvail*0.5; // reasonable starting assumption, matching psSoc/battSoc's own starting-fraction convention
   let psSoc=p.psEnergyMWh*0.7, battSoc=battEnergy*0.5;
@@ -754,7 +754,7 @@ function simulate(u, prof, outPath){
     const pvExempt=Math.min(u.newPvMW, inheritable);
     pvAdderMW=u.newPvMW-pvExempt;
   }
-  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct/100)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
+  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
   const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
   const totalCost=fuelCost+carbonCost+newCapexR;
@@ -806,7 +806,7 @@ const SLIDERS=[
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance — rarely dispatched when storage is ample'},
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'modern supercritical, same fuel cost as existing fleet · SA has no active new-build coal programme, this is exploratory'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
-  {id:'coalFlexPct',label:'Coal fleet flexibilised',min:0,max:100,step:5,def:0,fmt:v=>v+'%',note:'retrofit cost R223/kW/yr (real Weisweiler, Germany project) · today\u2019s SA fleet ramps ~24%/hr (Agora 2017) → up to ~100%/hr flexibilised (IRENA post-retrofit range) · applies to the remaining (non-decommissioned) fleet'},
+  {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'retrofit cost R223/kW/yr (real Weisweiler, Germany project) · today\u2019s SA fleet ramps ~24%/hr (Agora 2017) → on = fully flexibilised, ~100%/hr (IRENA post-retrofit range) · applies to the remaining (non-decommissioned) fleet'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
