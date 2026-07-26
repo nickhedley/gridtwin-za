@@ -57,6 +57,12 @@ const BATT_HOURS = 4;
 const BATT_EFF = 0.88;
 
 const COAL_CARRIERS = ['coal', 'sasol_coal']; // carriers subject to the EAF/decommissioning sliders
+// Ramp-rate constants - same sourced figures as the single-node engine: SA's current coal fleet
+// ramps 0.1-0.7%/min (Agora Energiewende 2017, via NREL's Greening the Grid), IRENA's post-
+// flexibilisation range for hard coal is 3-6%/min. See index.html's FIXED.coalRampBasePct for
+// the full sourcing note.
+const COAL_RAMP_BASE_PCT = 24;
+const COAL_RAMP_FLEX_PCT = 100;
 
 // Real CSP plant siting (verified against actual GCCA supply-region boundaries):
 // Northern Cape 450MW (KaXu, Bokpoort, Xina, Ilanga, Kathu), Hydra Central 50MW (Khi Solar One)
@@ -160,9 +166,12 @@ class NodalEngine {
    * @param {object} extraBattByRegion - {region: MW}, from "Where To Build" - sited on top of
    *                                     whatever the national newBattMW slider already allocated
    *                                     there via BATT_SHARE_BY_REGION
+   * @param {number} coalFlexPct - 0-100, same national "Coal fleet flexibilised" slider as the
+   *                               single-node engine, applied per-region here (RAMP-UP only -
+   *                               see the note in buildGenerators() for what's not yet modelled)
    */
   setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}, newRooftopMW = 0, newBattMW = 0,
-              extraCoalByRegion = {}, extraCcgtByRegion = {}, extraNuclearByRegion = {}, extraBattByRegion = {}) {
+              extraCoalByRegion = {}, extraCcgtByRegion = {}, extraNuclearByRegion = {}, extraBattByRegion = {}, coalFlexPct = 0) {
     this.thermalFleet = applyCoalScenario(this.rawFleet, coalEafPct, coalDecomMW)
       .sort((a, b) => a.marginalCost - b.marginalCost);
     // extra region-sited firm capacity from the siting tool - not part of the real fleet data,
@@ -173,7 +182,7 @@ class NodalEngine {
     REGIONS.forEach(r => {
       const extraCoalMw = extraCoalByRegion[r] || 0;
       if (extraCoalMw > 0) this.thermalFleet.push({ name: r + ' New Coal', region: r, carrier: 'coal',
-        capacityMw: extraCoalMw * eafFrac, marginalCost: 480, decomYear: Infinity });
+        capacityMw: extraCoalMw * eafFrac, marginalCost: 480, decomYear: Infinity, isNewBuild: true });
       const extraCcgtMw = extraCcgtByRegion[r] || 0;
       if (extraCcgtMw > 0) this.thermalFleet.push({ name: r + ' New CCGT', region: r, carrier: 'ccgt',
         capacityMw: extraCcgtMw, marginalCost: 1750, decomYear: Infinity });
@@ -200,6 +209,26 @@ class NodalEngine {
       // start at the same fractions the single-node engine uses (70% pumped storage, 50% batteries)
       this.psSoc[r] = (PS_ENERGY_MWH_BY_REGION[r] || 0) * 0.7;
       this.battSoc[r] = (this.battMw[r] * BATT_HOURS) * 0.5;
+    });
+
+    // Ramp-rate setup (RAMP-UP only for now - see the note in buildGenerators() for what's not
+    // yet modelled). Existing coal fleet gets the flexibilisation-slider-blended rate; new-build
+    // coal is assumed inherently flexible from construction, matching the single-node engine's
+    // own treatment - a plant built today wouldn't be designed to match SA's aging fleet's limits.
+    const rampPct = COAL_RAMP_BASE_PCT + (COAL_RAMP_FLEX_PCT - COAL_RAMP_BASE_PCT) * (coalFlexPct / 100);
+    this.coalCapacityByRegion = {};
+    this.rampAllowedByRegion = {};
+    this.prevCoalGenByRegion = {};
+    REGIONS.forEach(r => {
+      let oldCap = 0, newCap = 0;
+      this.thermalFleet.forEach(g => {
+        if (g.region === r && COAL_CARRIERS.includes(g.carrier)) {
+          if (g.isNewBuild) newCap += g.capacityMw; else oldCap += g.capacityMw;
+        }
+      });
+      this.coalCapacityByRegion[r] = oldCap + newCap;
+      this.rampAllowedByRegion[r] = oldCap * rampPct / 100 + newCap * COAL_RAMP_FLEX_PCT / 100;
+      this.prevCoalGenByRegion[r] = this.coalCapacityByRegion[r] * 0.5; // reasonable starting assumption, matching psSoc/battSoc's own convention
     });
 
     this.buildForecastNeed();
@@ -300,6 +329,25 @@ class NodalEngine {
       name: g.name, region: g.region, carrier: g.carrier, cost: g.marginalCost,
       availableMw: g.capacityMw, isRenewable: false,
     }));
+
+    // Ramp-up cap: coal generators in a region can't collectively exceed what ramping allows
+    // this hour, regardless of raw EAF-adjusted capacity - the "no ramp up time" fix. Scaled
+    // down proportionally across that region's coal units (a simplification - doesn't
+    // distinguish which specific unit would ramp fastest, matching the single-node engine's own
+    // aggregate treatment). Ramp-DOWN (forcing coal to keep running into a local surplus, which
+    // forces additional curtailment) is NOT yet modelled here - see setScenario()'s doc comment -
+    // that needs remainingDeficit to go negative to represent forced local surplus, a bigger
+    // change than this ceiling-only version.
+    for (const r of REGIONS) {
+      const ceiling = Math.min(this.coalCapacityByRegion[r] || 0, (this.prevCoalGenByRegion[r] || 0) + (this.rampAllowedByRegion[r] || 0));
+      let regionCoalTotal = 0;
+      gens.forEach(g => { if (g.region === r && COAL_CARRIERS.includes(g.carrier)) regionCoalTotal += g.availableMw; });
+      if (regionCoalTotal > ceiling && regionCoalTotal > 1e-6) {
+        const scale = ceiling / regionCoalTotal;
+        gens.forEach(g => { if (g.region === r && COAL_CARRIERS.includes(g.carrier)) g.availableMw *= scale; });
+      }
+    }
+
     for (const r of REGIONS) {
       const wMw = this.windMw[r] || 0;
       if (wMw > 0) {
@@ -509,6 +557,12 @@ class NodalEngine {
         this.battSoc[REGIONS[i]] += toBatt * BATT_EFF; battCapOffpeak[i] -= toBatt; battCoalChargeTotal += toBatt;
         offpeakHeadroom[i] -= (toPs + toBatt);
       };
+      // Tracks how much EXTRA coal was actually generated per source region for this charging -
+      // real generation, real for ramp-tracking purposes, even though it never appears against
+      // any single generator's own dispatched total (it's routed from a REGION's pooled headroom,
+      // not one specific unit). Without this, prevCoalGenByRegion next hour would understate what
+      // coal actually produced, letting the ramp ceiling allow an unrealistic jump the following hour.
+      const coalOffpeakSentByRegion = new Array(n).fill(0);
       for (let srcIdx = 0; srcIdx < n; srcIdx++) {
         let avail = coalHeadroomByRegion[srcIdx];
         if (avail <= 1e-6) continue;
@@ -527,10 +581,12 @@ class NodalEngine {
           for (const ei of edges) { const e = this.edgeMeta[ei]; totalLossFrac = 1 - (1 - totalLossFrac) * (1 - lossFraction(e.length, sent, e.limit)); }
           creditOffpeak(target, sent * (1 - totalLossFrac));
           avail -= sent;
+          coalOffpeakSentByRegion[srcIdx] += sent;
           totalLosses += sent - sent * (1 - totalLossFrac);
           for (const ei of edges) { headroom[ei] -= sent; edgeFlow[ei] += sent; }
         }
       }
+      this._coalOffpeakSentByRegion = coalOffpeakSentByRegion; // read by the ramp-tracking update below
     }
 
     // --- Charging from curtailed renewables, network-routed. Reuses the same Dijkstra/pathEdges
@@ -584,6 +640,19 @@ class NodalEngine {
 
     const psChargeTotal = psCoalChargeTotal + psRenewChargeTotal;
     const battChargeTotal = battCoalChargeTotal + battRenewChargeTotal;
+
+    // Update ramp reference for next hour: actual dispatched coal per region, including the
+    // off-peak charging bonus (tracked separately above since it's routed from a region's
+    // pooled headroom, not any single generator's own dispatched total) - without this, next
+    // hour's ramp ceiling would be based on an understated "previous generation" figure.
+    const coalDispatchedByRegion = {};
+    REGIONS.forEach(r => { coalDispatchedByRegion[r] = 0; });
+    genLog.forEach(g => { if (COAL_CARRIERS.includes(g.carrier)) coalDispatchedByRegion[g.region] += g.dispatched; });
+    if (this._coalOffpeakSentByRegion) {
+      REGIONS.forEach((r, i) => { coalDispatchedByRegion[r] += this._coalOffpeakSentByRegion[i] || 0; });
+      this._coalOffpeakSentByRegion = null;
+    }
+    REGIONS.forEach(r => { this.prevCoalGenByRegion[r] = coalDispatchedByRegion[r]; });
 
     const unserved = {};
     for (let i = 0; i < n; i++) unserved[REGIONS[i]] = Math.max(remainingDeficit[i], 0);
