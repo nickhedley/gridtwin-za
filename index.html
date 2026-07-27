@@ -205,7 +205,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span><i style="background:#1F4E79"></i>Storage / hydro</span>
           <span><i style="background:var(--alert)"></i>Peakers</span>
         </div>
-        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the Nodal Simulation below to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red ring around a node means real curtailment (wasted wind/solar) in that region - the redder and thicker, the higher the share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Hover any line or ring for exact figures.</p>
+        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the Nodal Simulation below to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means real curtailment (wasted wind/solar) in that region - shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one), and only appears once it's above 1% to keep the map clean. Hover any line or label for exact figures.</p>
         <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central and Northern Cape share one schematic point (UPG) - their figures are combined there for the ring, with each real region's own numbers still listed separately in the hover tooltip.</p>
       </div>
 
@@ -264,15 +264,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
           <div class="ph"><h2>Nodal Simulation</h2><span class="tag">full network-flow model · full year</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), plus new coal/CCGT/nuclear/battery siting via "Where To Build" below (coal and nuclear carry a real network-based grid-build charge like wind and solar; CCGT and batteries never do - CCGT is a rarely-dispatched backup technology, and batteries genuinely concentrate their output into real Eskom peak windows, 06:00-09:00 and 17:00-20:00, rather than running sustained, so a sustained-utilisation test doesn't apply to either). Coal now has a real ramp-rate limit per region too (same "Coal fleet flexibilised" slider as the national engine, same sourced figures - today's SA fleet ~24%/hr, up to 100%/hr flexibilised, new-build coal always flexible) - this is ramp-UP only for now; ramp-DOWN (inflexible coal forced to keep running into a local surplus, adding to curtailment) isn't modelled here yet, unlike the national engine. and today's current sliders plus anything allocated above. On success, the KPIs, energy mix, and hourly dispatch chart all switch to reflect this real nodal run instead of the instant national engine (see the banner that appears), and the network schematic above gets real corridor flows plus a curtailment ring per region - only the load-shedding risk panel stays on the national engine, since Monte Carlo risk isn't nodally resolved yet. Storage charges and discharges across the real network - including cheap-hour thermal-headroom charging, which now correctly routes to wherever storage actually sits rather than requiring local coal (KZN's pumped storage has almost no local coal fleet to draw from otherwise) - based on genuine price arbitrage: a national net-load signal (demand minus renewable/baseload output, the same real mechanism behind wholesale electricity pricing and California's "duck curve") identifies genuinely cheap hours (bottom 25%, for charging) and genuinely expensive hours (top 25%, for discharge priority ahead of coal), replacing an earlier clock-time heuristic entirely. Actual curtailed renewable surplus - the strongest, literally-free form of cheap solar - is captured by its own charging pass regardless of this price gate. "Cost" for storage in this engine is a dispatch-priority device, not a real marginal cost - unlike fuel-based generation, storage's actual economics are opportunity-cost/arbitrage, which this net-load approach approximates without a full price-optimisation model. Before exporting to help a neighbouring region, storage checks its own near-term outlook and holds back some capacity if its own region looks likely to need it soon - a simple, capped lookahead, not full forecast optimisation. Takes a few seconds — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Runs the real 10-region dispatch-with-flows engine for a full 8,760-hour year — actual regional demand, actual transfer-limited corridors, real regional rooftop PV (netted off demand, Eskom Jun-26 data), CSP sited at its real Northern Cape/Hydra Central plants, Cahora Bassa imports entering via Gauteng, pumped storage sited at its real Ingula/Drakensberg (KZN) and Palmiet (Western Cape) schemes, batteries split across regions (an estimate - no full public site list exists), plus new coal/CCGT/nuclear/battery siting via "Where To Build" below (coal and nuclear carry a real network-based grid-build charge like wind and solar; CCGT and batteries never do - CCGT is a rarely-dispatched backup technology, and batteries genuinely concentrate their output into real Eskom peak windows, 06:00-09:00 and 17:00-20:00, rather than running sustained, so a sustained-utilisation test doesn't apply to either). Coal now has a real ramp-rate limit per region too (same "Coal fleet flexibilised" slider as the national engine, same sourced figures - today's SA fleet ~24%/hr, up to 100%/hr flexibilised, new-build coal always flexible) - this is ramp-UP only for now; ramp-DOWN (inflexible coal forced to keep running into a local surplus, adding to curtailment) isn't modelled here yet, unlike the national engine. and today's current sliders plus anything allocated above. On success, the KPIs, energy mix, and hourly dispatch chart all switch to reflect this real nodal run instead of the instant national engine (see the banner that appears), and the network schematic above gets real corridor flows plus a curtailment ring per region - only the load-shedding risk panel stays on the national engine, since Monte Carlo risk isn't nodally resolved yet. Storage charges and discharges across the real network - including cheap-hour thermal-headroom charging, which now correctly routes to wherever storage actually sits rather than requiring local coal (KZN's pumped storage has almost no local coal fleet to draw from otherwise) - based on genuine price arbitrage: a national net-load signal (demand minus renewable/baseload output, the same real mechanism behind wholesale electricity pricing and California's "duck curve") identifies genuinely cheap hours (bottom 25%, for charging) and genuinely expensive hours (top 25%, for discharge priority ahead of coal), replacing an earlier clock-time heuristic entirely. Actual curtailed renewable surplus - the strongest, literally-free form of cheap solar - is captured by its own charging pass regardless of this price gate. "Cost" for storage in this engine is a dispatch-priority device, not a real marginal cost - unlike fuel-based generation, storage's actual economics are opportunity-cost/arbitrage, which this net-load approach approximates without a full price-optimisation model. Before exporting to help a neighbouring region, storage checks its own near-term outlook and holds back some capacity if its own region looks likely to need it soon - a simple, capped lookahead, not full forecast optimisation. Grid-enhancing technologies (if enabled) target only genuinely congested corridors (\u226530% average utilisation), found via a real baseline pass first rather than a blanket national boost - deploying dynamic line rating on an already-idle corridor would be a real-world waste of money. That baseline pass roughly doubles runtime when enabled. Takes a few seconds normally (up to ~10-15s with grid-enhancing technologies on) — it's fetching ~3MB of real data and solving 8,760 hours of network-constrained dispatch, not an instant slider re-solve.</p>
             <button id="nodalRunBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Run full year</button>
             <div id="nodalResult" class="mono" style="font-size:12.5px; padding:10px 12px; margin-top:12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.6">Not run yet.</div>
           </div>
         </div>
       </section>
 
-      <script src="nodal/nodal_engine.js?v=13"></script>
-      <script src="nodal/nodal_dispatch.js?v=13"></script>
+      <script src="nodal/nodal_engine.js?v=14"></script>
+      <script src="nodal/nodal_dispatch.js?v=14"></script>
       <script>
       // --- Nodal -> national KPI/mix merge ---
       // Maps the nodal engine's real per-carrier annual output onto the same E{} shape the
@@ -397,7 +397,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             const bucket=buckets[tech];
             if(bucket) bucket[region]=(bucket[region]||0)+mw;
           });
-          const summary=await runNodalYear(state.coalEAFPct, state.coalDecomMW, extraWind, extraSolar, state.newRooftopMW, state.newBattMW, extraCoal, extraCcgt, extraNuclear, extraBatt, state.coalFlexPct?100:0);
+          const summary=await runNodalYear(state.coalEAFPct, state.coalDecomMW, extraWind, extraSolar, state.newRooftopMW, state.newBattMW, extraCoal, extraCcgt, extraNuclear, extraBatt, state.coalFlexPct?100:0, !!state.getsEnabled);
           const regionRows=Object.entries(summary.byRegion)
             .map(([r,v])=>({r, sheddingPct: v.demand>0?100*v.unserved/v.demand:0}))
             .sort((a,b)=>b.sheddingPct-a.sheddingPct)
@@ -807,6 +807,7 @@ const SLIDERS=[
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'modern supercritical, same fuel cost as existing fleet · SA has no active new-build coal programme, this is exploratory'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'retrofit cost R223/kW/yr (real Weisweiler, Germany project) · today\u2019s SA fleet ramps ~24%/hr (Agora 2017) → on = fully flexibilised, ~100%/hr (IRENA post-retrofit range) · applies to the remaining (non-decommissioned) fleet'},
+  {id:'getsEnabled',toggle:true,def:false,label:'Grid enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on genuinely congested corridors before investing in new grid infrastructure. On = +20% capacity (real DOE/utility deployments, 10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2014 not a blanket national boost, since enhancing an already-idle corridor would be a real-world waste of money. ~R1.55m/km \u2014 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2014 the single-node engine has no corridors to enhance.'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
@@ -958,11 +959,12 @@ function updateFlowsOnMap(corridorFlows){
     el.querySelector('title').textContent=agg.parts.join(' | ');
   });
 }
-// Curtailment ring around each node - same severity colour language as the corridor flow lines
-// (grey to red), so viewers don't need to learn a second colour code. Several real regions can
+// Curtailment % shown directly as text next to each node - more precise and far harder to miss
+// than a thin ring, which turned out too subtle to notice in practice. Colour still carries the
+// same severity language as everything else on this map (grey to red). Several real regions can
 // share one schematic node (Hydra Central + Northern Cape both render at UPG) - aggregated the
-// same way as corridor flows: worst individual rate drives the visual, all contributing regions
-// listed in the tooltip so nothing is hidden.
+// same way as corridor flows: worst individual rate drives the number shown, all contributing
+// regions listed in the tooltip so nothing is hidden.
 function updateCurtailmentOnMap(curtailmentByRegion){
   const byNode={};
   curtailmentByRegion.forEach(c=>{
@@ -974,14 +976,16 @@ function updateCurtailmentOnMap(curtailmentByRegion){
   });
   const baseColor=resolveColor('var(--ink2)'), hotColor='#C3512F';
   NODES.forEach(n=>{
-    const el=document.getElementById('curtail_ring_'+n.id);
+    const el=document.getElementById('curtail_txt_'+n.id);
     if(!el) return;
     const agg=byNode[n.id];
-    if(!agg||agg.parts.length===0){ el.setAttribute('stroke','none'); el.setAttribute('stroke-width','0'); el.querySelector('title').textContent=''; return; }
+    // only show when meaningfully non-zero - a "0%" label at every node would just be clutter
+    // in the (common) case of low or no curtailment, and defeats the point of drawing the eye
+    // to where it actually matters
+    if(!agg||agg.maxRatePct<1||agg.parts.length===0){ el.setAttribute('fill','none'); el.textContent=''; el.querySelector('title').textContent=''; return; }
     const t=Math.min(1, agg.maxRatePct/50); // 50%+ curtailment reads as "fully hot" - genuinely severe
-    el.setAttribute('stroke', mixHex(baseColor, hotColor, t));
-    el.setAttribute('stroke-width', (1.5+2.5*t).toFixed(1));
-    el.setAttribute('opacity', (0.5+0.5*t).toFixed(2));
+    el.setAttribute('fill', mixHex(baseColor, hotColor, t));
+    el.textContent=agg.maxRatePct.toFixed(0)+'% curt.';
     el.querySelector('title').textContent='Curtailment: '+agg.parts.join(' | ');
   });
 }
@@ -1005,7 +1009,7 @@ function buildMap(){
     s+='<line id="lk_'+a+'_'+b+'" x1="'+A.x+'" y1="'+A.y+'" x2="'+B.x+'" y2="'+B.y+'" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="1 3" opacity="0.55"><title></title></line>';});
   NODES.forEach(n=>{
     const regionNote=nodeToRegions[n.id]?' · nodal region: '+nodeToRegions[n.id].join(' + '):'';
-    s+='<g><circle id="curtail_ring_'+n.id+'" cx="'+n.x+'" cy="'+n.y+'" r="11" fill="none" stroke="none" stroke-width="0"><title></title></circle>';
+    s+='<g><text id="curtail_txt_'+n.id+'" x="'+(n.x+11)+'" y="'+(n.y+15)+'" font-size="9.5" font-family="IBM Plex Mono" font-weight="600" fill="none"><title></title></text>';
     s+='<circle id="nd_'+n.id+'" cx="'+n.x+'" cy="'+n.y+'" r="7" fill="'+nodeColor(n)+'" stroke="var(--ink)" stroke-width="1.4"><title>'+n.name+regionNote+'</title></circle>';
     s+='<circle id="badge_solar_'+n.id+'" cx="'+(n.x+9)+'" cy="'+(n.y-8)+'" r="0" fill="#F5C518" stroke="var(--panel)" stroke-width="1"><title>Solar allocated</title></circle>';
     s+='<circle id="badge_wind_'+n.id+'" cx="'+(n.x-9)+'" cy="'+(n.y+8)+'" r="0" fill="#3EA055" stroke="var(--panel)" stroke-width="1"><title>Wind allocated</title></circle>';
@@ -1338,35 +1342,77 @@ function bumpSlider(id, deltaMW){
   scheduleRun();
 }
 
+const GET_UPLIFT_FRAC=0.20; // matches nodal_engine.js's GET_UPLIFT_FRAC - keep in sync if either changes
+const GET_COST_PER_KM=31000000/20; // R1.55m/km - DOE 2024 (via Niskanen Center): GETs cost "less than one-twentieth" of a new line, applied against this app's own R31m/km new-line figure
+const GET_LIFETIME_YEARS=15; // shorter than a 45yr new line - GETs are hardware/software retrofits, not civil infrastructure, matching the same treatment as the coal-flexibilisation refurb cost
+const FIRM_TECHS=['coal','ccgt','nuclear','batt'];
+
 async function evaluateAgainstRemaining(region,tech,mw){
-  const lookup=await loadHeadroomLookup();
+  // BUGFIX: this previously always called loadHeadroomLookup() (wind/solar only) regardless of
+  // tech, so siting coal/CCGT/nuclear/battery here would throw (lookup[region][tech] undefined)
+  // despite firm_headroom_lookup.json and loadFirmHeadroomLookup() existing and being correct -
+  // an integration gap from when firm-tech siting was first built. Found while adding GETs.
+  const lookup=FIRM_TECHS.includes(tech) ? await loadFirmHeadroomLookup() : await loadHeadroomLookup();
   const entry=lookup[region][tech];
   const key=region+'|'+tech;
   const already=siteAllocated[key]||0;
   const remaining=Math.max(0, entry.headroom_mw-already);
+  const getsOn=!!state.getsEnabled;
+  const boostedRemaining=getsOn ? remaining*(1+GET_UPLIFT_FRAC) : remaining;
+  const lengthKm=entry.corridor_length_km||300;
+
   if(mw<=remaining){
-    return {region,tech,requestedMw:mw,gridBuildNeeded:false,shortfallMw:0,gridBuildChargeRPerMWh:0,
+    return {region,tech,requestedMw:mw,gridBuildNeeded:false,getNeeded:false,shortfallMw:0,getPortionMw:0,gridBuildChargeRPerMWh:0,
       note:'Fits within remaining grid headroom ('+remaining.toFixed(0)+' MW left at this node) - no new transmission needed.'};
   }
-  const shortfallMw=mw-remaining;
-  const lengthKm=entry.corridor_length_km||300;
+
+  if(getsOn && mw<=boostedRemaining){
+    // fully covered by grid-enhancing technologies alone - no full new-line construction needed
+    const getPortionMw=mw-remaining;
+    const getCapex=lengthKm*GET_COST_PER_KM, annualGetCapex=getCapex/GET_LIFETIME_YEARS;
+    const annualEnergyMwh=getPortionMw*entry.avg_capacity_factor*8760;
+    const chargePerMwh=annualEnergyMwh>0?annualGetCapex/annualEnergyMwh:NaN;
+    return {region,tech,requestedMw:mw,gridBuildNeeded:false,getNeeded:true,shortfallMw:0,getPortionMw,
+      bindingCorridor:entry.binding_corridor,corridorLengthKm:lengthKm,getCapexR:Math.round(getCapex),
+      gridBuildChargeRPerMWh:Math.round(chargePerMwh*10)/10,
+      note:getPortionMw.toFixed(0)+' MW exceeds remaining headroom on '+entry.binding_corridor+', but fits within grid-enhancing-technology uplift (+20% corridor capacity, ~R'+(getCapex/1e6).toFixed(1)+'m) - adding R'+chargePerMwh.toFixed(1)+'/MWh, well below full new-line construction.'};
+  }
+
+  // exceeds even the GET-boosted headroom (or GETs are off) - the GET portion (if any) covers up
+  // to boostedRemaining at the cheap rate; whatever's still beyond that needs full construction
+  const getPortionMw=getsOn ? (boostedRemaining-remaining) : 0;
+  const constructionPortionMw=mw-boostedRemaining;
   const capex=lengthKm*31000000, annualCapex=capex/45;
-  const annualEnergyMwh=shortfallMw*entry.avg_capacity_factor*8760;
-  const chargePerMwh=annualEnergyMwh>0?annualCapex/annualEnergyMwh:NaN;
-  return {region,tech,requestedMw:mw,gridBuildNeeded:true,shortfallMw,bindingCorridor:entry.binding_corridor,
-    corridorLengthKm:lengthKm,newLineCapexR:capex,gridBuildChargeRPerMWh:Math.round(chargePerMwh*10)/10,
-    note:shortfallMw.toFixed(0)+' MW exceeds remaining headroom on '+entry.binding_corridor+'. Reinforcing (~'+lengthKm+' km) costs an estimated R'+(capex/1e6).toFixed(0)+'m, adding R'+chargePerMwh.toFixed(1)+'/MWh to the shortfall portion.'};
+  const annualEnergyMwhConstruction=constructionPortionMw*entry.avg_capacity_factor*8760;
+  const chargePerMwhConstruction=annualEnergyMwhConstruction>0?annualCapex/annualEnergyMwhConstruction:NaN;
+  let getCapex=0, chargePerMwhGet=0;
+  if(getPortionMw>0){
+    getCapex=lengthKm*GET_COST_PER_KM;
+    const annualEnergyMwhGet=getPortionMw*entry.avg_capacity_factor*8760;
+    chargePerMwhGet=annualEnergyMwhGet>0?(getCapex/GET_LIFETIME_YEARS)/annualEnergyMwhGet:0;
+  }
+  return {region,tech,requestedMw:mw,gridBuildNeeded:true,getNeeded:getPortionMw>0,
+    shortfallMw:constructionPortionMw,getPortionMw,bindingCorridor:entry.binding_corridor,
+    corridorLengthKm:lengthKm,newLineCapexR:Math.round(capex),getCapexR:Math.round(getCapex),
+    gridBuildChargeRPerMWh:Math.round(chargePerMwhConstruction*10)/10,
+    getChargeRPerMWh:Math.round(chargePerMwhGet*10)/10,
+    note:(getPortionMw>0 ? getPortionMw.toFixed(0)+' MW via grid-enhancing tech (R'+chargePerMwhGet.toFixed(1)+'/MWh) + ' : '')
+        +constructionPortionMw.toFixed(0)+' MW still needs full transmission build on '+entry.binding_corridor+' (~'+lengthKm+' km, R'+(capex/1e6).toFixed(0)+'m), adding R'+chargePerMwhConstruction.toFixed(1)+'/MWh to that portion.'};
 }
 
 function renderResult(r){
   const region=r.region, tech=r.tech, mw=r.requestedMw;
   const out=document.getElementById('siteResult');
   let html='<strong>'+region+' · '+siteTechName(tech)+' · '+mw+' MW</strong><br>';
-  if(!r.gridBuildNeeded){
+  if(!r.gridBuildNeeded && !r.getNeeded){
     html+='<span style="color:var(--ok)">✓ Fits within remaining grid headroom</span> — no new transmission needed, generation cost only.';
+  } else if(!r.gridBuildNeeded && r.getNeeded){
+    html+='<span style="color:var(--ok)">✓ Fits with grid-enhancing technologies</span> ('+r.getPortionMw.toFixed(0)+' MW beyond existing headroom, unlocked by +20% capacity on '+r.bindingCorridor+').<br>';
+    html+='Adds <strong>R'+r.gridBuildChargeRPerMWh.toFixed(1)+'/MWh</strong> to that portion — ~R'+(r.getCapexR/1e6).toFixed(1)+'m, well below the R'+(r.corridorLengthKm*31).toFixed(0)+'m a full new line would cost.';
   } else {
-    html+='<span style="color:var(--alert)">⚠ Exceeds remaining headroom</span> ('+r.shortfallMw.toFixed(0)+' MW shortfall on '+r.bindingCorridor+').<br>';
-    html+='Reinforcing that corridor (~'+r.corridorLengthKm+' km) costs an estimated R'+(r.newLineCapexR/1e6).toFixed(0)+'m, adding <strong>R'+r.gridBuildChargeRPerMWh.toFixed(1)+'/MWh</strong> to the shortfall portion.';
+    html+='<span style="color:var(--alert)">⚠ Exceeds '+(r.getNeeded?'even grid-enhancing-technology ':'')+'headroom</span> on '+r.bindingCorridor+'.<br>';
+    if(r.getNeeded) html+=r.getPortionMw.toFixed(0)+' MW via GETs (R'+r.getChargeRPerMWh.toFixed(1)+'/MWh) + ';
+    html+='<strong>'+r.shortfallMw.toFixed(0)+' MW</strong> still needs full transmission build (~'+r.corridorLengthKm+' km, R'+(r.newLineCapexR/1e6).toFixed(0)+'m), adding <strong>R'+r.gridBuildChargeRPerMWh.toFixed(1)+'/MWh</strong> to that portion.';
   }
   out.innerHTML=html;
 }
@@ -1379,18 +1425,25 @@ function renderPortfolio(){
     el.innerHTML='Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.';
     return;
   }
-  let totalMw=0, totalWithCharge=0;
+  let totalMw=0, totalWithCharge=0, totalGetOnly=0;
   const rows=sitePortfolio.map(a=>{
     totalMw+=a.requestedMw;
     if(a.gridBuildNeeded) totalWithCharge+=a.shortfallMw;
+    else if(a.getNeeded) totalGetOnly+=a.getPortionMw;
+    let chargeCell;
+    if(!a.gridBuildNeeded && !a.getNeeded) chargeCell='<span style="color:var(--ok)">free</span>';
+    else if(!a.gridBuildNeeded && a.getNeeded) chargeCell='<span style="color:var(--ok)">GETs: R'+a.gridBuildChargeRPerMWh.toFixed(1)+'/MWh on '+a.getPortionMw.toFixed(0)+' MW</span>';
+    else chargeCell='<span style="color:var(--alert)">'+(a.getNeeded?'GETs+build: ':'')+'R'+a.gridBuildChargeRPerMWh.toFixed(1)+'/MWh on '+a.shortfallMw.toFixed(0)+' MW</span>';
     return '<tr><td style="padding:3px 10px 3px 0">'+a.region+'</td><td style="padding:3px 10px 3px 0">'+siteTechName(a.tech)+'</td>'+
       '<td style="padding:3px 10px 3px 0; text-align:right">'+a.requestedMw+' MW</td>'+
-      '<td style="padding:3px 10px 3px 0">'+(a.gridBuildNeeded?'<span style="color:var(--alert)">R'+a.gridBuildChargeRPerMWh.toFixed(1)+'/MWh on '+a.shortfallMw.toFixed(0)+' MW</span>':'<span style="color:var(--ok)">free</span>')+'</td>'+
+      '<td style="padding:3px 10px 3px 0">'+chargeCell+'</td>'+
       '<td style="padding:3px 0 3px 6px; text-align:right"><button type="button" class="siteDelBtn" data-id="'+a.id+'" title="Remove this allocation" style="background:none; border:1px solid var(--line2); border-radius:3px; width:18px; height:18px; line-height:1; cursor:pointer; color:var(--ink2); font-size:11px; padding:0">×</button></td></tr>';
   }).join('');
   el.innerHTML='<table style="width:100%; border-collapse:collapse">'+rows+'</table>'+
     '<div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--line2)">Total allocated: <strong>'+totalMw.toLocaleString()+' MW</strong>'+
-    (totalWithCharge>0?' · <strong>'+totalWithCharge.toFixed(0)+' MW</strong> triggered a grid-build charge':' · all within existing headroom')+'</div>';
+    (totalWithCharge>0?' · <strong>'+totalWithCharge.toFixed(0)+' MW</strong> triggered a full grid-build charge':'')+
+    (totalGetOnly>0?' · <strong>'+totalGetOnly.toFixed(0)+' MW</strong> covered by grid-enhancing tech only':'')+
+    (totalWithCharge===0&&totalGetOnly===0?' · all within existing headroom':'')+'</div>';
   el.querySelectorAll('.siteDelBtn').forEach(btn=>{
     btn.addEventListener('click', ()=>deleteAllocation(parseInt(btn.dataset.id,10)));
   });
