@@ -1,13 +1,15 @@
 // GridTwin ZA - Capacity siting tool (browser-side)
-// Reads the precomputed region_headroom_lookup.json (built offline in Python -
-// see nodal/capacity_siting.py for the full method) and applies the same
-// grid-build-charge formula, in plain JS with no dependencies.
+// Reads the precomputed region_headroom_lookup.json (wind/solar - built offline in Python, see
+// nodal/capacity_siting.py) and firm_headroom_lookup.json (coal/CCGT/nuclear - built offline in
+// Node, see nodal/build_firm_headroom.js), applying the same grid-build-charge formula either way.
 
 const LINE_COST_PER_KM = 31_000_000;   // R, blended national average (DEE Minister, Apr 2025)
 const LINE_LIFETIME_YEARS = 45;
 const HOURS_PER_YEAR = 8760;
+const FIRM_TECHS = ['coal', 'ccgt', 'nuclear', 'batt'];
 
 let headroomLookup = null;
+let firmHeadroomLookup = null;
 
 async function loadHeadroomLookup() {
   if (headroomLookup) return headroomLookup;
@@ -16,15 +18,22 @@ async function loadHeadroomLookup() {
   return headroomLookup;
 }
 
+async function loadFirmHeadroomLookup() {
+  if (firmHeadroomLookup) return firmHeadroomLookup;
+  const res = await fetch('nodal/firm_headroom_lookup.json');
+  firmHeadroomLookup = await res.json();
+  return firmHeadroomLookup;
+}
+
 /**
  * Evaluate a user's proposed deployment.
  * @param {string} region - e.g. "Northern Cape"
- * @param {string} tech - "wind" or "solar"
+ * @param {string} tech - "wind", "solar", "coal", "ccgt", or "nuclear"
  * @param {number} requestedMw
  * @returns {object} result with headroom, shortfall, and grid-build charge if any
  */
 async function evaluateDeployment(region, tech, requestedMw) {
-  const lookup = await loadHeadroomLookup();
+  const lookup = FIRM_TECHS.includes(tech) ? await loadFirmHeadroomLookup() : await loadHeadroomLookup();
   const entry = lookup[region][tech];
   const headroom = entry.headroom_mw;
 
