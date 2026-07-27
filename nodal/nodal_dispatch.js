@@ -73,16 +73,41 @@ function foldCarrier(carrier) {
   return carrier;
 }
 
+const GET_CONGESTION_THRESHOLD_PCT = 30; // avg utilisation above this = genuinely congested, worth a GET investment
+
 /**
  * @returns {object} summary: {unservedPct, lossesPct, curtailedGwh, byRegion, byCarrier,
  *   corridorFlows, weekStacks: {W:{stack,loadS}, S:{stack,loadS}}, runtimeMs}
  */
 async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion, newRooftopMW, newBattMW,
-                             extraCoalByRegion, extraCcgtByRegion, extraNuclearByRegion, extraBattByRegion, coalFlexPct) {
+                             extraCoalByRegion, extraCcgtByRegion, extraNuclearByRegion, extraBattByRegion, coalFlexPct, getsEnabled) {
   const data = await loadNodalData();
   if (!nodalEngineInstance) nodalEngineInstance = new NodalEngine(data);
+
+  let boostedEdgeIndices = null;
+  if (getsEnabled) {
+    // Baseline (no-GET) pass first, to find which corridors are ACTUALLY congested - GETs get
+    // targeted only at those, not blanket-applied nationally (deploying dynamic line rating on
+    // an already-idle corridor would be a real-world waste of money for zero benefit). This is a
+    // lightweight pass: only edgeFlow is tracked, none of the full metric collection below, to
+    // keep the added runtime reasonable.
+    nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0, newBattMW || 0,
+      extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, false, null);
+    const edgeMetaBaseline = nodalEngineInstance.edgeMeta;
+    const baselineAnnualFlow = new Array(edgeMetaBaseline.length).fill(0);
+    for (let h = 0; h < 8760; h++) {
+      const r = nodalEngineInstance.dispatchHour(h);
+      r.edgeFlow.forEach((f, i) => { baselineAnnualFlow[i] += f; });
+    }
+    boostedEdgeIndices = new Set();
+    edgeMetaBaseline.forEach((e, i) => {
+      const avgUtilPct = e.limit > 0 ? 100 * (baselineAnnualFlow[i] / 8760) / e.limit : 0;
+      if (avgUtilPct >= GET_CONGESTION_THRESHOLD_PCT) boostedEdgeIndices.add(i);
+    });
+  }
+
   nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0, newBattMW || 0,
-    extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0);
+    extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, getsEnabled || false, boostedEdgeIndices);
 
   const t0 = performance.now();
   let totalDemand = 0, totalUnserved = 0, totalLosses = 0, totalCurtailed = 0, totalRooftop = 0;
@@ -138,12 +163,16 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
   }
   const runtimeMs = performance.now() - t0;
 
-  const corridorFlows = edgeMeta.map((e, i) => ({
-    regionA: REGIONS[e.a], regionB: REGIONS[e.b], limitMw: e.limit, lengthKm: e.length,
-    annualGwh: annualFlow[i] / 1e3, peakMw: peakFlow[i],
-    peakUtilPct: e.limit > 0 ? 100 * peakFlow[i] / e.limit : 0,
-    avgUtilPct: e.limit > 0 ? 100 * (annualFlow[i] / 8760) / e.limit : 0,
-  }));
+  const corridorFlows = edgeMeta.map((e, i) => {
+    const isBoosted = nodalEngineInstance.getsEnabled && nodalEngineInstance.boostedEdgeIndices && nodalEngineInstance.boostedEdgeIndices.has(i);
+    const effLimit = e.limit * (isBoosted ? 1.20 : 1); // 1.20 matches GET_UPLIFT_FRAC in nodal_engine.js
+    return {
+      regionA: REGIONS[e.a], regionB: REGIONS[e.b], limitMw: effLimit, baseLimitMw: e.limit, getBoosted: isBoosted, lengthKm: e.length,
+      annualGwh: annualFlow[i] / 1e3, peakMw: peakFlow[i],
+      peakUtilPct: effLimit > 0 ? 100 * peakFlow[i] / effLimit : 0,
+      avgUtilPct: effLimit > 0 ? 100 * (annualFlow[i] / 8760) / effLimit : 0,
+    };
+  });
 
   // Curtailment rate (curtailed / potential renewable generation) per region - a rate, not raw
   // GWh, so a small region with little renewable capacity doesn't look artificially "fine" next
@@ -168,8 +197,10 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     storageGwh: (psDischarge + battDischarge) / 1e3,
     byRegion,
     byCarrier, // {carrier: annual MWh}
-    corridorFlows, // [{regionA, regionB, limitMw, annualGwh, peakMw, peakUtilPct, avgUtilPct}]
+    corridorFlows, // [{regionA, regionB, limitMw, baseLimitMw, getBoosted, annualGwh, peakMw, peakUtilPct, avgUtilPct}]
     curtailmentByRegion, // [{region, curtailedGwh, potentialGwh, curtailmentRatePct}]
+    getsEnabled: !!getsEnabled,
+    getBoostedCorridorCount: boostedEdgeIndices ? boostedEdgeIndices.size : 0,
     weekStacks, // {W:{stack:{carrier:Float64Array(168)}, loadS:Float64Array(168)}, S:{...}}
     runtimeMs,
   };
