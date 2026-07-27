@@ -64,6 +64,17 @@ const COAL_CARRIERS = ['coal', 'sasol_coal']; // carriers subject to the EAF/dec
 const COAL_RAMP_BASE_PCT = 24;
 const COAL_RAMP_FLEX_PCT = 100;
 
+// Grid Enhancing Technologies (dynamic line rating, advanced power flow control, topology
+// optimisation): real, deployed technologies that increase existing corridor capacity without
+// new line construction. Uplift: 10-30% is the consistently cited range across independent
+// sources (DOE 2024 report; Oncor's actual deployment, 12% average/30% peak; NYPA corridor
+// results, up to 15% in winter; WATT/AMP industry report, 10%+ for ~90% of the time) - using
+// 20% as a representative midpoint. Cost: DOE 2024 (via Niskanen Center) states GETs cost
+// "less than one-twentieth of what it would take to build a new line" - applied directly
+// against this app's own real new-line cost (R31m/km, DEE Minister Apr 2025), giving a
+// consistent, same-baseline-derived ~R1.55m/km rather than an unrelated absolute figure.
+const GET_UPLIFT_FRAC = 0.20;
+
 // Real CSP plant siting (verified against actual GCCA supply-region boundaries):
 // Northern Cape 450MW (KaXu, Bokpoort, Xina, Ilanga, Kathu), Hydra Central 50MW (Khi Solar One)
 const CSP_MW_BY_REGION = { 'Northern Cape': 450, 'Hydra Central': 50 };
@@ -169,9 +180,25 @@ class NodalEngine {
    * @param {number} coalFlexPct - 0-100, same national "Coal fleet flexibilised" slider as the
    *                               single-node engine, applied per-region here (RAMP-UP only -
    *                               see the note in buildGenerators() for what's not yet modelled)
+   * @param {boolean} getsEnabled - deploys Grid Enhancing Technologies (dynamic line rating,
+   *                                advanced power flow control, topology optimisation) - boosts
+   *                                every corridor's transfer limit by GET_UPLIFT_FRAC (20%,
+   *                                sourced from real DOE/utility deployments) instead of needing
+   *                                full new-line construction. Only applied to corridors in
+   *                                boostedEdgeIndices (see below), not blanket-applied nationally.
+   * @param {Set<number>} boostedEdgeIndices - which edgeMeta indices actually get the GET uplift
+   *                                           when getsEnabled is true. Identified by a baseline
+   *                                           (no-GET) pass in nodal_dispatch.js's runNodalYear,
+   *                                           which finds genuinely congested corridors first -
+   *                                           deploying GETs on an already-idle corridor would be
+   *                                           a real-world waste, so this isn't a blanket national
+   *                                           toggle. Pass null/undefined for "not yet determined"
+   *                                           (the baseline pass itself, which runs with no boost).
    */
   setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}, newRooftopMW = 0, newBattMW = 0,
-              extraCoalByRegion = {}, extraCcgtByRegion = {}, extraNuclearByRegion = {}, extraBattByRegion = {}, coalFlexPct = 0) {
+              extraCoalByRegion = {}, extraCcgtByRegion = {}, extraNuclearByRegion = {}, extraBattByRegion = {}, coalFlexPct = 0, getsEnabled = false, boostedEdgeIndices = null) {
+    this.getsEnabled = getsEnabled;
+    this.boostedEdgeIndices = boostedEdgeIndices;
     this.thermalFleet = applyCoalScenario(this.rawFleet, coalEafPct, coalDecomMW)
       .sort((a, b) => a.marginalCost - b.marginalCost);
     // extra region-sited firm capacity from the siting tool - not part of the real fleet data,
@@ -438,7 +465,14 @@ class NodalEngine {
       demand[i] = rawDemand[i] - rooftopGen[i]; // net (grid-facing) demand - this is what the network sees
     }
     const remainingDeficit = demand.slice();
-    const headroom = this.edgeMeta.map(e => e.limit);
+    // GETs only boost corridors actually identified as congested (see this.boostedEdgeIndices,
+    // set by the two-pass process in nodal_dispatch.js's runNodalYear) - not a blanket national
+    // multiplier. Deploying dynamic line rating or power flow control on a corridor that's
+    // already sitting at 10% utilisation would be a real-world waste of money for zero benefit;
+    // real utilities target specific congested lines (DOE/WATT Coalition case studies), which is
+    // what this now reflects.
+    const headroom = this.edgeMeta.map((e, i) =>
+      e.limit * (this.getsEnabled && this.boostedEdgeIndices && this.boostedEdgeIndices.has(i) ? (1 + GET_UPLIFT_FRAC) : 1));
     const edgeFlow = new Array(this.edgeMeta.length).fill(0); // MW sent this hour, per corridor - for the flows-on-map feature
 
     const gens = this.buildGenerators(hourIdx);
