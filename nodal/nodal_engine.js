@@ -194,9 +194,19 @@ class NodalEngine {
    *                                           a real-world waste, so this isn't a blanket national
    *                                           toggle. Pass null/undefined for "not yet determined"
    *                                           (the baseline pass itself, which runs with no boost).
+   * @param {number} newWindMW - national "New wind" slider total. Previously this was silently
+   *                             dropped by the nodal engine entirely unless explicitly sited via
+   *                             "Where To Build" - a real gap, since a user could set 30GW on the
+   *                             national slider and the nodal simulation would run as if none of
+   *                             it existed. Whatever's already explicitly sited (extraWindByRegion)
+   *                             is subtracted first; the remainder is auto-distributed proportional
+   *                             to each region's real existing wind capacity - same methodology
+   *                             already used for newRooftopMW above, extended to wind/solar.
+   * @param {number} newPvMW - national "New utility solar PV" slider total, same treatment as newWindMW
    */
   setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}, newRooftopMW = 0, newBattMW = 0,
-              extraCoalByRegion = {}, extraCcgtByRegion = {}, extraNuclearByRegion = {}, extraBattByRegion = {}, coalFlexPct = 0, getsEnabled = false, boostedEdgeIndices = null) {
+              extraCoalByRegion = {}, extraCcgtByRegion = {}, extraNuclearByRegion = {}, extraBattByRegion = {}, coalFlexPct = 0, getsEnabled = false, boostedEdgeIndices = null,
+              newWindMW = 0, newPvMW = 0) {
     this.getsEnabled = getsEnabled;
     this.boostedEdgeIndices = boostedEdgeIndices;
     this.thermalFleet = applyCoalScenario(this.rawFleet, coalEafPct, coalDecomMW)
@@ -226,9 +236,20 @@ class NodalEngine {
     this.psSoc = {};   // MWh, current state of charge per region - carried across dispatchHour() calls
     this.battSoc = {}; // MWh
     const totalBaseRooftop = REGIONS.reduce((s, r) => s + (this.baseRooftopMw[r] || 0), 0);
+    const totalBaseWind = REGIONS.reduce((s, r) => s + (this.baseWindMw[r] || 0), 0);
+    const totalBaseSolar = REGIONS.reduce((s, r) => s + (this.baseSolarMw[r] || 0), 0);
+    // whatever's already explicitly sited via "Where To Build" is real, user-chosen placement -
+    // only the REMAINDER of the national slider (if any) gets auto-distributed, so explicit
+    // siting always takes precedence and nothing gets double-counted
+    const explicitWindTotal = REGIONS.reduce((s, r) => s + (extraWindByRegion[r] || 0), 0);
+    const explicitSolarTotal = REGIONS.reduce((s, r) => s + (extraSolarByRegion[r] || 0), 0);
+    const remainderWindMW = Math.max(0, newWindMW - explicitWindTotal);
+    const remainderSolarMW = Math.max(0, newPvMW - explicitSolarTotal);
     REGIONS.forEach(r => {
-      this.windMw[r] = (this.baseWindMw[r] || 0) + (extraWindByRegion[r] || 0);
-      this.solarMw[r] = (this.baseSolarMw[r] || 0) + (extraSolarByRegion[r] || 0);
+      const windShare = totalBaseWind > 0 ? (this.baseWindMw[r] || 0) / totalBaseWind : 0;
+      const solarShare = totalBaseSolar > 0 ? (this.baseSolarMw[r] || 0) / totalBaseSolar : 0;
+      this.windMw[r] = (this.baseWindMw[r] || 0) + (extraWindByRegion[r] || 0) + remainderWindMW * windShare;
+      this.solarMw[r] = (this.baseSolarMw[r] || 0) + (extraSolarByRegion[r] || 0) + remainderSolarMW * solarShare;
       const rooftopShare = totalBaseRooftop > 0 ? (this.baseRooftopMw[r] || 0) / totalBaseRooftop : 0;
       this.rooftopMw[r] = (this.baseRooftopMw[r] || 0) + newRooftopMW * rooftopShare;
       const battShare = BATT_SHARE_BY_REGION[r] || 0;
