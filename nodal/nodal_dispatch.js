@@ -80,7 +80,8 @@ const GET_CONGESTION_THRESHOLD_PCT = 30; // avg utilisation above this = genuine
  *   corridorFlows, weekStacks: {W:{stack,loadS}, S:{stack,loadS}}, runtimeMs}
  */
 async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion, newRooftopMW, newBattMW,
-                             extraCoalByRegion, extraCcgtByRegion, extraNuclearByRegion, extraBattByRegion, coalFlexPct, getsEnabled) {
+                             extraCoalByRegion, extraCcgtByRegion, extraNuclearByRegion, extraBattByRegion, coalFlexPct, getsEnabled,
+                             newWindMW, newPvMW) {
   const data = await loadNodalData();
   if (!nodalEngineInstance) nodalEngineInstance = new NodalEngine(data);
 
@@ -90,9 +91,10 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     // targeted only at those, not blanket-applied nationally (deploying dynamic line rating on
     // an already-idle corridor would be a real-world waste of money for zero benefit). This is a
     // lightweight pass: only edgeFlow is tracked, none of the full metric collection below, to
-    // keep the added runtime reasonable.
+    // keep the added runtime reasonable. Includes newWindMW/newPvMW so congestion is detected
+    // against the REAL, full scenario (auto-distributed wind/solar included), not one missing it.
     nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0, newBattMW || 0,
-      extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, false, null);
+      extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, false, null, newWindMW || 0, newPvMW || 0);
     const edgeMetaBaseline = nodalEngineInstance.edgeMeta;
     const baselineAnnualFlow = new Array(edgeMetaBaseline.length).fill(0);
     for (let h = 0; h < 8760; h++) {
@@ -107,7 +109,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
   }
 
   nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0, newBattMW || 0,
-    extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, getsEnabled || false, boostedEdgeIndices);
+    extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, getsEnabled || false, boostedEdgeIndices, newWindMW || 0, newPvMW || 0);
 
   const t0 = performance.now();
   let totalDemand = 0, totalUnserved = 0, totalLosses = 0, totalCurtailed = 0, totalRooftop = 0;
