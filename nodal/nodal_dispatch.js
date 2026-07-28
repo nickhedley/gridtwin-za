@@ -73,7 +73,7 @@ function foldCarrier(carrier) {
   return carrier;
 }
 
-const GET_CONGESTION_THRESHOLD_PCT = 30; // avg utilisation above this = genuinely congested, worth a GET investment
+const GET_CONGESTION_THRESHOLD_PCT = 30; // avg utilisation above this = truly congested, worth a GET investment
 
 /**
  * @returns {object} summary: {unservedPct, lossesPct, curtailedGwh, byRegion, byCarrier,
