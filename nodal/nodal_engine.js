@@ -189,7 +189,7 @@ class NodalEngine {
    * @param {Set<number>} boostedEdgeIndices - which edgeMeta indices actually get the GET uplift
    *                                           when getsEnabled is true. Identified by a baseline
    *                                           (no-GET) pass in nodal_dispatch.js's runNodalYear,
-   *                                           which finds genuinely congested corridors first -
+   *                                           which finds truly congested corridors first -
    *                                           deploying GETs on an already-idle corridor would be
    *                                           a real-world waste, so this isn't a blanket national
    *                                           toggle. Pass null/undefined for "not yet determined"
@@ -289,7 +289,7 @@ class NodalEngine {
    * just "raw local demand minus this region's own firm + weather-driven generation" - a
    * conservative proxy, not a real dispatch simulation. Since the whole year's demand and
    * renewable profiles are already fully known upfront (this is a batch simulation, not a
-   * live one), a genuine 24h-ahead lookahead is legitimate here, unlike a real grid operator
+   * live one), a real 24h-ahead lookahead is legitimate here, unlike a real grid operator
    * who only has forecasts.
    */
   buildForecastNeed() {
@@ -321,7 +321,7 @@ class NodalEngine {
     // real economic mechanism behind wholesale electricity pricing: abundant midday solar drives
     // net load low (cheap - this is what produces California's "duck curve"), no-sun evening
     // peaks drive it high (expensive, since more thermal generation is needed). Storage arbitrage
-    // (see dispatchHour) buys low and sells high against this genuine signal, replacing the
+    // (see dispatchHour) buys low and sells high against this real signal, replacing the
     // earlier clock-time/relative-demand heuristic entirely. Nuclear/hydro (true must-run
     // baseload) subtract from net load same as renewables; coal/gas/diesel don't, since their
     // need is exactly what net load is meant to represent - subtracting them would be circular.
@@ -346,7 +346,7 @@ class NodalEngine {
     // would fire on only a handful of "exceptional" days instead of every evening, unlike
     // real-world CAISO batteries which reliably cycle daily against California's own summer duck
     // curve regardless of how that day compares to winter. Using each day's own min-max range
-    // instead means every day with a genuine daily swing gets its own evening peak correctly
+    // instead means every day with a real daily swing gets its own evening peak correctly
     // identified as relatively expensive (and midday dip as relatively cheap) for THAT day.
     this.cheapThresholdByHour = new Float64Array(8760);
     this.expensiveThresholdByHour = new Float64Array(8760);
@@ -420,13 +420,13 @@ class NodalEngine {
     // Storage discharge as ordinary generators - this is what lets the existing, already-validated
     // network-flow routing carry discharged power to OTHER regions automatically, same as any
     // other generator. Off-peak/normal: priced between coal (~480-550) and gas/diesel
-    // (1750/6100), matching the single-node engine's own dispatch order. During genuinely
+    // (1750/6100), matching the single-node engine's own dispatch order. During truly
     // EXPENSIVE hours - top 25% of national net load, a real price proxy (see buildForecastNeed)
     // - storage is given priority ahead of coal: this is real arbitrage, selling stored energy
     // when the system is tightest, not a clock-time or relative-demand heuristic. "Cost" here is
     // a dispatch-priority device, not a real marginal cost - storage's actual economics are
     // opportunity-cost/arbitrage, which a merit-order-by-cost model can't natively represent;
-    // this net-load-based version is a genuine (if simplified) approximation of that, not a
+    // this net-load-based version is a real (if simplified) approximation of that, not a
     // proxy for it.
     const isExpensiveHour = this.netLoad[hourIdx] >= this.expensiveThresholdByHour[hourIdx];
     for (const r of REGIONS) {
@@ -520,7 +520,7 @@ class NodalEngine {
         const need = (this.forecastNeed[gen.region] && this.forecastNeed[gen.region][hourIdx]) || 0;
         // capped at 50%, not 100%: an early attempt using the full 0-100% range saturated near-
         // permanently under sustained stress (any lasting shortfall summed over 24h tends to exceed
-        // a modest plant's own energy capacity), which stopped being a genuine signal and just
+        // a modest plant's own energy capacity), which stopped being a real signal and just
         // blocked exports almost always. This bound keeps it directionally responsive - reserve
         // more when the region's own near-term outlook is worse - without ever fully shutting
         // off exports, which a more careful, iterated calibration could probably improve on.
@@ -578,9 +578,9 @@ class NodalEngine {
     // matters a lot in practice: KZN's pumped storage has almost no local coal fleet to draw
     // from (SA's coal is concentrated in Mpumalanga/Limpopo/Free State), so a local-only version
     // leaves it with no way to ever recharge once its starting charge is used up. Gated by the
-    // same genuine net-load price signal as discharge (bottom 25% - see buildForecastNeed),
+    // same real net-load price signal as discharge (bottom 25% - see buildForecastNeed),
     // not a fixed overnight clock window: this is real arbitrage - buying while cheap, wherever
-    // and whenever that genuinely is, which on a strong solar day can include parts of the
+    // and whenever that truly is, which on a strong solar day can include parts of the
     // afternoon, not just 23:00-05:00. Separately, actual curtailed renewable surplus (the
     // strongest, literally-free form of "cheap solar") is captured by its own charging pass
     // below regardless of this price gate, since wasted generation is worth capturing any time.
