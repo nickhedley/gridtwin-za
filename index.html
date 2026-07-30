@@ -686,7 +686,7 @@ function simulate(u, prof, outPath){
       // renewable surplus this hour - it's forced to keep producing at least this much, which
       // ADDS to what needs absorbing (storage charging first, then wasted/curtailed).
       // This is the real mechanism behind "inflexible coal causes additional curtailment".
-      const coalFloor=Math.max(0,prevCoalGen-rampAllowedMW);
+      const coalFloor=Math.min(cAvail,Math.max(0,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); psSoc+=psChg*p.psEff; surplus-=psChg;
       const btChg=Math.min(surplus,battPower,battEnergy-battSoc); battSoc+=btChg*p.battEff; surplus-=btChg;
@@ -699,7 +699,12 @@ function simulate(u, prof, outPath){
       // a fully-successful storage charge (surplus fully absorbed, so the curtailment scaling above
       // never triggers) leaves wind/solar at their full pre-charge value, making the stack rise above
       // the demand line during exactly the hours storage is charging from cheap solar.
-      const loadServingRenew=Math.max(0, load-cspGen-nuc-hyd-imp);
+      // Forced must-run coal serves load ahead of renewables (it physically cannot back off any
+      // faster), so it takes its share of the demand line first and the rest is left to wind/solar.
+      // Without this the chart showed coal at zero during a surplus hour while it was really
+      // generating several GW, and the stack undershot the demand line by exactly that amount.
+      stack.coal[h]=Math.min(coalGen, Math.max(0, load-cspGen-nuc-hyd-imp));
+      const loadServingRenew=Math.max(0, load-cspGen-nuc-hyd-imp-stack.coal[h]);
       const vreUsed=windGen+pvGen; // post-curtailment-scaling, i.e. "used" (>= loadServingRenew always)
       const stackScale=vreUsed>0 ? Math.min(1, loadServingRenew/vreUsed) : 0;
       stack.wind[h]=windGen*stackScale; stack.pv[h]=pvGen*stackScale;
@@ -708,21 +713,44 @@ function simulate(u, prof, outPath){
       // Ramp-up ceiling: inflexible coal can't instantly jump to meet a sudden deficit either -
       // this is the "no ramp up time" problem the flexibilisation slider exists to relax.
       const coalCeiling=Math.min(cAvail,prevCoalGen+rampAllowedMW);
+      // Ramp-DOWN floor, symmetric with the ceiling. This used to be applied only in the surplus
+      // branch, so during a fast solar ramp - residual demand still positive but falling steeply -
+      // coal could crash downward with no limit at all (measured: -19,318 MW in a single hour
+      // against a 10,080 MW allowance, and all the way to 0 MW output). Real coal cannot do that
+      // in either direction. The floor is treated as MUST-RUN and served before anything else,
+      // rather than bolted on afterwards: if it's applied after storage has already discharged,
+      // forced coal then creates a surplus that immediately recharges storage, an artificial
+      // discharge/recharge oscillation. Any output above demand is absorbed by storage or
+      // curtailed - which is the real mechanism behind inflexible coal wasting renewables.
+      const coalFloor=Math.min(cAvail,Math.max(0,prevCoalGen-rampAllowedMW));
+      // track how much coal actually SERVES LOAD, separately from total coal generated - the
+      // forced-above-demand portion is real generation and real fuel cost, but it is not serving
+      // demand, so it must not appear in the chart stack (same principle as the off-peak charging
+      // bonus above, otherwise the stack rises above the demand line).
+      let coalLoadServing=Math.min(coalFloor,Math.max(0,residual));
+      coalGen=coalFloor;
+      residual-=coalGen;
+      if(residual<0){
+        let forcedSurplus=-residual; residual=0;
+        const psChg=Math.min(forcedSurplus,p.psPowerMW,p.psEnergyMWh-psSoc); psSoc+=psChg*p.psEff; forcedSurplus-=psChg;
+        const btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); battSoc+=btChg*p.battEff; forcedSurplus-=btChg;
+        E.curtailed+=forcedSurplus;
+      }
       const isExpensiveHour=residual>=expensiveThresholdByHour[h];
       if(isExpensiveHour){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
         const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
         const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
-        coalGen=Math.min(residual,coalCeiling); residual-=coalGen;
+        const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; coalLoadServing+=topUp; residual-=topUp;
       } else {
-        coalGen=Math.min(residual,coalCeiling); residual-=coalGen;
+        const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; coalLoadServing+=topUp; residual-=topUp;
         const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
         const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
       }
       const g=Math.min(residual,ccgtCap); residual-=g; E.ccgt+=g; stack.ccgt[h]=g; fuelCost+=g*p.costCcgt; carbonCost+=g*cG;
       const dsl=Math.min(residual,p.ocgtDieselMW); residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*p.costDiesel; carbonCost+=dsl*cD;
-      stack.coal[h]=coalGen; // load-serving coal only - captured here, before any charging bonus below,
+      stack.coal[h]=coalLoadServing; // load-serving coal only - captured here, before any charging bonus below,
       // so the chart's stack always sums to the demand line. The charging bonus is real generation
       // and real fuel cost (correctly added to E.coal/fuelCost below), it's just not generation
       // "serving demand" - visually inflating the coal bar past the demand line would look like a
