@@ -359,6 +359,32 @@ class NodalEngine {
       for (let h = start; h < end; h++) { this.cheapThresholdByHour[h] = cheap; this.expensiveThresholdByHour[h] = expensive; }
     }
 
+    // Forward-looking coal-sufficiency signal. The cheap-hour gate above ("is net load in the
+    // bottom 25% of today's range") is a price proxy - it says renewables/baseload are plentiful
+    // right NOW, but says nothing about whether coal will actually fall short LATER. Cross-
+    // validation against a real PyPSA/HiGHS optimum on the same data found this mattered a lot:
+    // in a baseline scenario where national coal peaks at ~93% of capacity and never binds, the
+    // real optimum charges storage from coal essentially zero, while a cheap-hour-only gate
+    // generated ~142 GWh of coal in one week purely to fill storage - ~31 GWh of that lost
+    // outright to round-trip efficiency, for no benefit, since coal always had the headroom to
+    // serve that demand directly. Charging from coal only pays off if coal is genuinely going to
+    // run short soon (or if the energy is free curtailed renewables, which has its own pass and
+    // is deliberately NOT gated by this). So: sum, over the next 24h, how much national net load
+    // exceeds what coal can actually supply. Zero means coal copes fine and this pathway should
+    // stay shut; positive means storage will really be needed and pre-charging earns its losses.
+    let coalCapacityNational = 0;
+    this.thermalFleet.forEach(g => { if (COAL_CARRIERS.includes(g.carrier)) coalCapacityNational += g.capacityMw; });
+    this.anticipatedCoalShortfall = new Float64Array(8760);
+    for (let h = 0; h < 8760; h++) {
+      let sum = 0;
+      const end = Math.min(8760, h + 25);
+      for (let k = h + 1; k < end; k++) {
+        const gap = this.netLoad[k] - coalCapacityNational;
+        if (gap > 0) sum += gap;
+      }
+      this.anticipatedCoalShortfall[h] = sum;
+    }
+
     // rolling 24h-ahead sum (truncated at year boundary - a minor edge effect in the last 24h only)
     this.forecastNeed = {};
     REGIONS.forEach(r => { this.forecastNeed[r] = new Float64Array(8760); });
@@ -588,8 +614,13 @@ class NodalEngine {
     // storage only charges this way below 85% SoC (up to 80% of its own power rating),
     // batteries below 80% SoC (up to 60% of their own power rating).
     let psCoalChargeTotal = 0, battCoalChargeTotal = 0;
+    // Two conditions now, not one: cheap right now (price proxy) AND coal actually running short
+    // within 24h (real need - see anticipatedCoalShortfall in buildForecastNeed for why). The
+    // curtailed-renewable charging pass further below is deliberately NOT gated this way: free
+    // wasted energy is worth capturing whether or not coal is under stress.
     const isCheapHour = this.netLoad[hourIdx] <= this.cheapThresholdByHour[hourIdx];
-    if (isCheapHour) {
+    const coalWillFallShort = this.anticipatedCoalShortfall[hourIdx] > 0;
+    if (isCheapHour && coalWillFallShort) {
       const coalHeadroomByRegion = new Array(n).fill(0);
       genLog.forEach(g => {
         if (COAL_CARRIERS.includes(g.carrier)) coalHeadroomByRegion[this.nodeIndex[g.region]] += (g.available - g.dispatched);
