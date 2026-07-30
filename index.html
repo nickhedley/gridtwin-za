@@ -274,7 +274,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
       </section>
 
-      <script src="nodal/nodal_engine.js?v=16"></script>
+      <script src="nodal/nodal_engine.js?v=17"></script>
       <script src="nodal/nodal_dispatch.js?v=15"></script>
       <script>
       // --- Nodal -> national KPI/mix merge ---
@@ -652,12 +652,19 @@ function simulate(u, prof, outPath){
   // California's own summer duck curve regardless of how that day compares to winter. Using each
   // day's own min-max range instead means every day with a real daily swing gets its own
   // evening peak correctly identified as relatively expensive for THAT day.
+  // Uses each day's own 75th PERCENTILE, not dMin + 0.75*(dMax-dMin). The range-based version
+  // breaks badly at high solar: a huge midday surplus drags the day's minimum deeply negative
+  // while the evening peak is unchanged, which collapses the threshold and makes ~15 hours a day
+  // count as "expensive" instead of ~6. Storage then spreads its limited energy thinly across all
+  // of them and is flat when the real evening peak arrives - so adding more solar perversely
+  // INCREASED load shedding. A percentile is robust to that skew: the top quarter of hours is
+  // always the top quarter, no matter how negative midday goes.
   const expensiveThresholdByHour=new Float64Array(HOURS);
   for(let day=0;day<Math.ceil(HOURS/24);day++){
     const start=day*24, end=Math.min(HOURS,start+24);
-    let dMin=Infinity, dMax=-Infinity;
-    for(let h=start;h<end;h++){ if(netLoadPre[h]<dMin)dMin=netLoadPre[h]; if(netLoadPre[h]>dMax)dMax=netLoadPre[h]; }
-    const threshold=dMin+0.75*(dMax-dMin); // top quartile of THIS day's own range
+    const vals=[]; for(let h=start;h<end;h++) vals.push(netLoadPre[h]);
+    vals.sort((a,b)=>a-b);
+    const threshold=vals[Math.floor(vals.length*0.75)]; // top quartile of THIS day's own hours
     for(let h=start;h<end;h++) expensiveThresholdByHour[h]=threshold;
   }
 
