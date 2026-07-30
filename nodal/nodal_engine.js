@@ -348,14 +348,20 @@ class NodalEngine {
     // curve regardless of how that day compares to winter. Using each day's own min-max range
     // instead means every day with a real daily swing gets its own evening peak correctly
     // identified as relatively expensive (and midday dip as relatively cheap) for THAT day.
+    // Uses each day's own 25th/75th PERCENTILE, not dMin + f*(dMax-dMin). The range-based version
+    // breaks at high solar: a huge midday surplus drags the day's minimum deeply negative while
+    // the evening peak is unchanged, collapsing the thresholds so that far too many hours count
+    // as "expensive". Storage then spreads its energy thinly instead of saving it for the real
+    // peak - which made adding more solar perversely INCREASE load shedding. A percentile is
+    // robust to that skew: the top quarter of hours is always the top quarter.
     this.cheapThresholdByHour = new Float64Array(8760);
     this.expensiveThresholdByHour = new Float64Array(8760);
     for (let day = 0; day < 365; day++) {
       const start = day * 24, end = Math.min(8760, start + 24);
-      let dMin = Infinity, dMax = -Infinity;
-      for (let h = start; h < end; h++) { if (this.netLoad[h] < dMin) dMin = this.netLoad[h]; if (this.netLoad[h] > dMax) dMax = this.netLoad[h]; }
-      const range = dMax - dMin;
-      const cheap = dMin + 0.25 * range, expensive = dMin + 0.75 * range;
+      const vals = [];
+      for (let h = start; h < end; h++) vals.push(this.netLoad[h]);
+      vals.sort((a, b) => a - b);
+      const cheap = vals[Math.floor(vals.length * 0.25)], expensive = vals[Math.floor(vals.length * 0.75)];
       for (let h = start; h < end; h++) { this.cheapThresholdByHour[h] = cheap; this.expensiveThresholdByHour[h] = expensive; }
     }
 
