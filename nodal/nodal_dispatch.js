@@ -79,6 +79,11 @@ const NODAL_DISP_ORDER = ['nuclear', 'hydro', 'imports', 'coal', 'ps', 'batt', '
 function foldCarrier(carrier) {
   if (carrier === 'sasol_coal') return 'coal';
   if (carrier === 'ocgt_avf') return 'diesel';
+  // ocgt_diesel was missing here. Unmapped carriers fail the `if (ws.stack[k])` guard below and
+  // are SILENTLY DROPPED from the chart stack - so every hour diesel OCGT ran (evening peaks,
+  // 18:00-19:00) the stack fell short by exactly the diesel output, up to 2,072 MW. It also meant
+  // diesel never appeared in the nodal chart at all, despite being dispatched.
+  if (carrier === 'ocgt_diesel') return 'diesel';
   if (carrier === 'sasol_gas') return 'ccgt';
   if (carrier === 'solar') return 'pv';
   if (carrier === 'rmippp') return 'hydro';
