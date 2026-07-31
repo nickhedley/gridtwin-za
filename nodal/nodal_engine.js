@@ -743,6 +743,27 @@ class NodalEngine {
           for (const ei of edges) { headroom[ei] -= sent; edgeFlow[ei] += sent; }
         }
       }
+      // Attribute the extra coal back to the individual units that produced it. Without this,
+      // genLog understates coal by exactly the amount generated for off-peak charging: the energy
+      // was routed from a REGION's pooled headroom and never written to any generator's own
+      // dispatched figure. That left the per-carrier totals wrong and made it impossible to put
+      // storage charging on the dispatch chart, because the generation backing it was missing.
+      // Distributed cheapest-first within each region, in proportion to remaining headroom, which
+      // matches the merit order the main dispatch loop already used.
+      REGIONS.forEach((region, i) => {
+        let toAttribute = coalOffpeakSentByRegion[i];
+        if (toAttribute <= 1e-9) return;
+        const units = genLog.filter(g => g.region === region && COAL_CARRIERS.includes(g.carrier)
+                                      && (g.available - g.dispatched) > 1e-9);
+        // genLog is built in merit order, so iterating in place keeps cheapest-first
+        for (const g of units) {
+          if (toAttribute <= 1e-9) break;
+          const room = g.available - g.dispatched;
+          const take = Math.min(room, toAttribute);
+          g.dispatched += take;
+          toAttribute -= take;
+        }
+      });
       this._coalOffpeakSentByRegion = coalOffpeakSentByRegion; // read by the ramp-tracking update below
     }
 
@@ -798,17 +819,13 @@ class NodalEngine {
     const psChargeTotal = psCoalChargeTotal + psRenewChargeTotal;
     const battChargeTotal = battCoalChargeTotal + battRenewChargeTotal;
 
-    // Update ramp reference for next hour: actual dispatched coal per region, including the
-    // off-peak charging bonus (tracked separately above since it's routed from a region's
-    // pooled headroom, not any single generator's own dispatched total) - without this, next
-    // hour's ramp ceiling would be based on an understated "previous generation" figure.
+    // Update ramp reference for next hour from genLog, which now already includes the off-peak
+    // charging generation (attributed back to individual units above). It previously had to be
+    // added separately here because genLog didn't carry it; doing both would double-count.
     const coalDispatchedByRegion = {};
     REGIONS.forEach(r => { coalDispatchedByRegion[r] = 0; });
     genLog.forEach(g => { if (COAL_CARRIERS.includes(g.carrier)) coalDispatchedByRegion[g.region] += g.dispatched; });
-    if (this._coalOffpeakSentByRegion) {
-      REGIONS.forEach((r, i) => { coalDispatchedByRegion[r] += this._coalOffpeakSentByRegion[i] || 0; });
-      this._coalOffpeakSentByRegion = null;
-    }
+    this._coalOffpeakSentByRegion = null;
     REGIONS.forEach(r => { this.prevCoalGenByRegion[r] = coalDispatchedByRegion[r]; });
     // per-unit output for next hour's ramp reference (merge the [min] and flexible blocks back)
     const perUnitOut = {};
