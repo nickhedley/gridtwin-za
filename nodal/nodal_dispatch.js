@@ -167,7 +167,20 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
       const idx = h - WEEK_HOURS[mode];
       if (idx < 0 || idx >= 168) continue;
       const ws = weekStacks[mode];
-      ws.loadS[idx] = Object.values(r.netDemand).reduce((a, b) => a + b, 0);
+      // Demand line = grid demand + storage charging + network losses. Proven by single-hour
+      // audit: at 07:00 baseline, dispatched 25,590 = netDemand 22,783 + charging 2,800 +
+      // losses 7, exactly. This is correct accounting and reduces chart mismatches from 66/168
+      // to 53/168 at baseline.
+      // The RESIDUAL 53 hours are NOT a charting problem - they are an energy-conservation
+      // violation in the engine. On any hour where storage both charges and discharges, total
+      // generation exceeds netDemand + charging + losses by exactly the discharge amount (hour
+      // 3272: fuelGen 26,215 = 23,403 + 2,800 + 12 exactly, yet storage also discharged 804 MW
+      // with no matching sink). The discharge is not reducing the fuel requirement. Until that
+      // is fixed the stack cannot balance on those hours, and storage charging should not be
+      // added to this chart as a visible layer.
+      ws.loadS[idx] = Object.values(r.netDemand).reduce((a, b) => a + b, 0)
+        + (r.storage ? (r.storage.psChargeTotal || 0) + (r.storage.battChargeTotal || 0) : 0)
+        + (r.totalLosses || 0);
       ws.stack.unserved[idx] = Object.values(r.unserved).reduce((a, b) => a + b, 0);
       r.genLog.forEach(g => {
         const k = foldCarrier(g.carrier);
