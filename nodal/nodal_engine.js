@@ -443,10 +443,23 @@ class NodalEngine {
       if (!st) continue;
       const wantOn = cumulative < need;
       if (wantOn && !st.committed && st.hoursInState >= (u.minDownTime || 0)) {
-        st.committed = true; st.hoursInState = 0; st.prevOut = 0;
+        st.committed = true; st.hoursInState = 0;
+        // prevOut intentionally NOT reset. A unit being recommitted may have been offline only
+        // briefly (or was ramping down) and still has a real physical output level that the ramp
+        // ceiling/floor must reference. Setting prevOut=0 here let units snap from 655 MW to 0
+        // and back, violating their own ramp rate at up to 5x (Kendal: 1,024 MW/hr against
+        // a 205 MW/hr allowance). The ramp-up limit already constrains how fast a recommitted
+        // unit can climb from its current level; zeroing prevOut removes that constraint.
         this.startUpCostAccrued += (u.startUpCost || 0);
       } else if (!wantOn && st.committed && st.hoursInState >= (u.minUpTime || 0)) {
-        st.committed = false; st.hoursInState = 0; st.prevOut = 0;
+        // A unit going offline must first ramp down to zero over real time, not snap off. Keeping
+        // prevOut means buildGenerators' minMw (which uses prevOut - rampDown) correctly floors
+        // the unit at its ramp-constrained minimum during the wind-down hours. Setting prevOut=0
+        // here was what let Kendal ramp down at 6x its physical rate on decommit.
+        st.committed = false; st.hoursInState = 0;
+        // prevOut intentionally NOT reset - the unit carries its last output into the offline
+        // period, and buildGenerators will produce a [min] block at (prevOut - rampDown) until
+        // it reaches zero, at which point commitUnits stops seeing it.
       }
       if (st.committed) cumulative += u.capacityMw;
       st.hoursInState++;
@@ -468,7 +481,7 @@ class NodalEngine {
                     availableMw: g.capacityMw, isRenewable: false });
         return;
       }
-      if (!st.committed) return; // offline - no output at all
+      if (!st.committed) return; // handled post-dispatch as forced generation (see below)
       const cap = g.capacityMw;
       const rampUp = (g.rampUpFrac != null ? g.rampUpFrac : 1) * cap;
       const rampDown = (g.rampDownFrac != null ? g.rampDownFrac : 1) * cap;
@@ -832,6 +845,46 @@ class NodalEngine {
     }
     totalCurtailed -= renewChargeTotal;
 
+    // --- Forced ramp-down generation for ALL coal units (committed or decommitting) whose
+    // physical output floor wasn't met by the dispatch loop. The dispatch loop only takes what
+    // the deficit needs, so when a region's deficit is already covered, a unit's [min] block
+    // gets skipped and its dispatched reads as zero. That snapped prevOut to zero, letting
+    // units violate their ramp-down limit at up to 5x (Kendal: 1,024 MW drop against a
+    // 205 MW/hr allowance). The fix: force the missing generation, absorb the surplus into
+    // storage or curtail it - the same mechanism the single-node engine uses with its
+    // coalFloor in the surplus branch.
+    const perUnitDispatched = {};
+    genLog.forEach(g => {
+      if (!COAL_CARRIERS.includes(g.carrier)) return;
+      const base = g.name.replace(/ \[min\]$/, '');
+      perUnitDispatched[base] = (perUnitDispatched[base] || 0) + g.dispatched;
+    });
+    this.thermalFleet.forEach(g => {
+      if (!COAL_CARRIERS.includes(g.carrier)) return;
+      const st = this.unitState[g.name];
+      if (!st || st.prevOut < 1e-6) return;
+      const rampDown = (g.rampDownFrac != null ? g.rampDownFrac : 1) * g.capacityMw;
+      const floor = Math.max(0, st.prevOut - rampDown);
+      const alreadyDispatched = perUnitDispatched[g.name] || 0;
+      const shortfall = floor - alreadyDispatched;
+      if (shortfall < 1e-6) return; // dispatch loop already met the floor
+      // Force the shortfall
+      const homeIdx = this.nodeIndex[g.region];
+      const usedByDemand = Math.min(shortfall, Math.max(0, remainingDeficit[homeIdx]));
+      remainingDeficit[homeIdx] -= usedByDemand;
+      let surplus = shortfall - usedByDemand;
+      const psRoom = Math.max(0, (PS_ENERGY_MWH_BY_REGION[g.region] || 0) - this.psSoc[g.region]);
+      const psTake = Math.min(surplus, PS_MW_BY_REGION[g.region] || 0, psRoom);
+      if (psTake > 0) { this.psSoc[g.region] += psTake * PS_EFF; surplus -= psTake; psCoalChargeTotal += psTake; }
+      const battRoom = Math.max(0, (this.battMw[g.region] || 0) * BATT_HOURS - this.battSoc[g.region]);
+      const battTake = Math.min(surplus, this.battMw[g.region] || 0, battRoom);
+      if (battTake > 0) { this.battSoc[g.region] += battTake * BATT_EFF; surplus -= battTake; battCoalChargeTotal += battTake; }
+      totalCurtailed += surplus;
+      genLog.push({ name: g.name, region: g.region, carrier: g.carrier,
+                    homeTake: usedByDemand, curtailed: 0,
+                    dispatched: shortfall, available: shortfall });
+    });
+
     const psChargeTotal = psCoalChargeTotal + psRenewChargeTotal;
     const battChargeTotal = battCoalChargeTotal + battRenewChargeTotal;
 
@@ -850,7 +903,27 @@ class NodalEngine {
       const base = g.name.replace(/ \[min\]$/, '');
       perUnitOut[base] = (perUnitOut[base] || 0) + g.dispatched;
     });
-    Object.keys(this.unitState).forEach(nm => { this.unitState[nm].prevOut = perUnitOut[nm] || 0; });
+    this.thermalFleet.forEach(g => {
+      if (!COAL_CARRIERS.includes(g.carrier)) return;
+      const st = this.unitState[g.name];
+      if (!st) return;
+      const dispatched = perUnitOut[g.name] || 0;
+      if (!st.committed && dispatched < 1e-6) {
+        // Decommitting unit whose forced generation wasn't dispatched (or has finished ramping
+        // down): walk prevOut down by rampDown, but no further than zero
+        const rampDown = (g.rampDownFrac != null ? g.rampDownFrac : 1) * g.capacityMw;
+        st.prevOut = Math.max(0, st.prevOut - rampDown);
+      } else {
+        // Normal case: prevOut = what was dispatched, but NEVER below the ramp-constrained
+        // floor. A committed unit still physically runs at [min] even if its [min] block was
+        // only partially dispatched because the region had no deficit. Without this floor,
+        // prevOut could drop to a fraction of [min] in one hour (Kendal* went from 245 to 39),
+        // then next hour's ramp ceiling starts from that artificially low base.
+        const rampDown = (g.rampDownFrac != null ? g.rampDownFrac : 1) * g.capacityMw;
+        const floor = Math.max(0, st.prevOut - rampDown);
+        st.prevOut = Math.max(dispatched, floor);
+      }
+    });
 
     const unserved = {};
     for (let i = 0; i < n; i++) unserved[REGIONS[i]] = Math.max(remainingDeficit[i], 0);
