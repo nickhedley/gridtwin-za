@@ -23,12 +23,13 @@ async function loadNodalData() {
   // stale profiles_regional.json or fleet CSV after the file has been replaced, so a data update
   // silently does nothing and looks like the deploy failed. Bump DATA_V whenever any of these change.
   const DATA_V = '2';
-  const [demandText, profiles, cap, fleetText, rooftopMw] = await Promise.all([
+  const [demandText, profiles, cap, fleetText, rooftopMw, nationalProfiles] = await Promise.all([
     fetch(`nodal/demand_2025_regional.csv?v=${DATA_V}`).then(r => r.text()),
     fetch(`nodal/profiles_regional.json?v=${DATA_V}`).then(r => r.json()),
     fetch(`nodal/regional_renewable_capacity.json?v=${DATA_V}`).then(r => r.json()),
     fetch(`nodal/fleet_by_region_v2.csv?v=${DATA_V}`).then(r => r.text()),
     fetch(`nodal/rooftop_mw_by_region.json?v=${DATA_V}`).then(r => r.json()),
+    fetch(`profiles.json?v=${DATA_V}`).then(r => r.json()),
   ]);
 
   const demandRows = parseCSVText(demandText);
@@ -65,7 +66,12 @@ async function loadNodalData() {
     };
   });
 
-  nodalDataCache = { demandByRegion, windPu, solarPu, windMw: cap.wind_mw, solarMw: cap.solar_mw, rooftopMw, fleet };
+  // Real CSP from national profiles.json (Eskom 2021 measured data). Falls back to the engine's
+  // own synthetic builder if unavailable, but that shape was materially wrong: zero output before
+  // 10:00 while real SA CSP is at ~50% by 09:00.
+  const cspPu = (nationalProfiles && nationalProfiles.csp_pu && nationalProfiles.csp_pu.length === 8760)
+    ? Float64Array.from(nationalProfiles.csp_pu) : null;
+  nodalDataCache = { demandByRegion, windPu, solarPu, windMw: cap.wind_mw, solarMw: cap.solar_mw, rooftopMw, fleet, cspPu };
   return nodalDataCache;
 }
 
