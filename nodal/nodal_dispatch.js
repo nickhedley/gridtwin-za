@@ -50,6 +50,14 @@ async function loadNodalData() {
     return {
       name: r['Power Station Name'], region: r['region'], carrier: r['Carrier'],
       capacityMw: parseFloat(r['Capacity (MW)']), marginalCost: hr * fp + vom, decomYear,
+      // Real per-unit unit-commitment parameters (PyPSA-RSA sourced, same fleet file). Defaults
+      // are permissive so any unit missing a value behaves as it did before this was added.
+      minStableFrac: parseFloat(r['Min Stable Level (%)']) || 0,
+      rampUpFrac: parseFloat(r['Max Ramp Up (%/h)']) || 1,
+      rampDownFrac: parseFloat(r['Max Ramp Down (%/h)']) || 1,
+      minUpTime: parseFloat(r['Min Up Time (h)']) || 0,
+      minDownTime: parseFloat(r['Min Down Time (h)']) || 0,
+      startUpCost: parseFloat(r['Start Up Cost (R)']) || 0,
     };
   });
 
