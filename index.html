@@ -1463,7 +1463,12 @@ async function evaluateAgainstRemaining(region,tech,mw){
   const lookup=FIRM_TECHS.includes(tech) ? await loadFirmHeadroomLookup() : await loadHeadroomLookup();
   const entry=lookup[region][tech];
   const key=region+'|'+tech;
-  const already=siteAllocated[key]||0;
+  // GCCA headroom is connection capacity at transmission substations, NOT a per-technology
+  // allowance - so every technology sited in a region draws from ONE shared regional pool.
+  // Counting each technology against its own separate copy of the same figure would let a user
+  // allocate the region's entire capacity several times over.
+  let already=0;
+  Object.keys(siteAllocated).forEach(k=>{ if(k.split('|')[0]===region) already+=siteAllocated[k]||0; });
   const remaining=Math.max(0, entry.headroom_mw-already);
   const getsOn=!!state.getsEnabled;
   const boostedRemaining=getsOn ? remaining*(1+SITING_GET_UPLIFT_FRAC) : remaining;
