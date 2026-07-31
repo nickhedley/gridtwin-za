@@ -274,8 +274,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
       </section>
 
-      <script src="nodal/nodal_engine.js?v=17"></script>
-      <script src="nodal/nodal_dispatch.js?v=15"></script>
+      <script src="nodal/nodal_engine.js?v=18"></script>
+      <script src="nodal/nodal_dispatch.js?v=18"></script>
       <script>
       // --- Nodal -> national KPI/mix merge ---
       // Maps the nodal engine's real per-carrier annual output onto the same E{} shape the
@@ -517,6 +517,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 "use strict";
 /* ==================== MODEL ==================== */
 const HOURS = 8760;
+const COAL_MINSTABLE_CURVE = [0, 0.65, 0.4628, 0.3085, 0.2314, 0.1851, 0.1543, 0.172, 0.2318, 0.2782, 0.2792];
+function coalMinStableFrac(committedFrac){
+  const x = Math.max(0, Math.min(1, committedFrac)) * 10;
+  const i = Math.min(9, Math.floor(x));
+  return COAL_MINSTABLE_CURVE[i] + (COAL_MINSTABLE_CURVE[i+1] - COAL_MINSTABLE_CURVE[i]) * (x - i);
+}
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
 function buildProfiles(real){
@@ -574,6 +580,13 @@ const FIXED = {
   // annualised over 15yr at 8% - shorter than a new-build life, since it's a retrofit of an
   // aging asset, not a fresh plant).
   coalRampBasePct:24, coalRampFlexPct:100, acapCoalFlex:223,
+  // Aggregate unit-commitment parameters, derived from the same real per-unit fleet data the
+  // nodal engine uses (PyPSA-RSA sourced). This engine has no per-unit fleet loaded - it is the
+  // fast national approximation - so the fleet is represented by a cumulative curve instead:
+  // COAL_MINSTABLE_CURVE[i] is the must-run share of committed capacity when i*10% of the fleet
+  // is synchronised, with units committed cheapest-first (so the always-on cheap units, which
+  // carry the higher 65% Min Stable Levels, are correctly weighted at low commitment).
+  coalStartUpCostRPerMW:224.52,
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
   lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600, lcoeCsp:2000, lcoeCcgt:1500, lcoeNuclear:1650, lcoeCoalNew:1200, lcoeDiesel:5500,
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
@@ -602,6 +615,8 @@ function simulate(u, prof, outPath){
   const oldFleetRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW);
   const rampPct=p.coalRampBasePct+(p.coalRampFlexPct-p.coalRampBasePct)*(p.coalFlexPct?1:0);
   const rampAllowedMW=oldFleetRem*rampPct/100 + p.newCoalMW*p.coalRampFlexPct/100;
+  let prevCommittedMW=coalAvail; // starts fully synchronised, so the year doesn't open cold
+  let startUpCostR=0;
   let prevCoalGen=coalAvail*0.5; // reasonable starting assumption, matching psSoc/battSoc's own starting-fraction convention
   let psSoc=p.psEnergyMWh*0.7, battSoc=battEnergy*0.5;
   const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
@@ -680,13 +695,25 @@ function simulate(u, prof, outPath){
     const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     let residual=load-windGen-pvGen-cspGen-nuc-hyd-imp;
     let coalGen=0;
+    // Commitment: size synchronised capacity to the peak over the next 12 hours, not just this
+    // hour. A myopic view decommits through the midday solar trough and then cannot restart for
+    // the evening peak (real units have min down times up to 48h) - the same fix the nodal
+    // engine needed. Committed capacity then carries a real must-run floor at its Min Stable
+    // Level, which is why coal holds at minimum through the middle of a high-solar day rather
+    // than switching off.
+    let need12=0;
+    for(let k=h;k<Math.min(HOURS,h+12);k++) if(netLoadPre[k]>need12) need12=netLoadPre[k];
+    const committedMW=Math.max(0,Math.min(cAvail,need12));
+    if(committedMW>prevCommittedMW) startUpCostR+=(committedMW-prevCommittedMW)*p.coalStartUpCostRPerMW;
+    prevCommittedMW=committedMW;
+    const minStableMW=committedMW*coalMinStableFrac(coalInstRem>0?committedMW/coalInstRem:0);
     if(residual<0){
       let surplus=-residual;
       // Ramp-down floor: inflexible coal can't instantly drop to zero just because there's a
       // renewable surplus this hour - it's forced to keep producing at least this much, which
       // ADDS to what needs absorbing (storage charging first, then wasted/curtailed).
       // This is the real mechanism behind "inflexible coal causes additional curtailment".
-      const coalFloor=Math.min(cAvail,Math.max(0,prevCoalGen-rampAllowedMW));
+      const coalFloor=Math.min(cAvail,Math.max(minStableMW,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); psSoc+=psChg*p.psEff; surplus-=psChg;
       const btChg=Math.min(surplus,battPower,battEnergy-battSoc); battSoc+=btChg*p.battEff; surplus-=btChg;
@@ -722,7 +749,7 @@ function simulate(u, prof, outPath){
       // forced coal then creates a surplus that immediately recharges storage, an artificial
       // discharge/recharge oscillation. Any output above demand is absorbed by storage or
       // curtailed - which is the real mechanism behind inflexible coal wasting renewables.
-      const coalFloor=Math.min(cAvail,Math.max(0,prevCoalGen-rampAllowedMW));
+      const coalFloor=Math.min(cAvail,Math.max(minStableMW,prevCoalGen-rampAllowedMW));
       // track how much coal actually SERVES LOAD, separately from total coal generated - the
       // forced-above-demand portion is real generation and real fuel cost, but it is not serving
       // demand, so it must not appear in the chart stack (same principle as the off-peak charging
@@ -809,7 +836,7 @@ function simulate(u, prof, outPath){
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
   return {E,fuelCost,carbonCost,newCapexR,totalCost,avgCost,co2,replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
-          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal,
+          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
