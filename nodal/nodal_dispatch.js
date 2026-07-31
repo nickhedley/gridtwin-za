@@ -19,12 +19,16 @@ function parseCSVText(text) {
 async function loadNodalData() {
   if (nodalDataCache) return nodalDataCache;
 
+  // Cache-buster on the DATA files, not just the scripts. Without it a browser happily serves a
+  // stale profiles_regional.json or fleet CSV after the file has been replaced, so a data update
+  // silently does nothing and looks like the deploy failed. Bump DATA_V whenever any of these change.
+  const DATA_V = '2';
   const [demandText, profiles, cap, fleetText, rooftopMw] = await Promise.all([
-    fetch('nodal/demand_2025_regional.csv').then(r => r.text()),
-    fetch('nodal/profiles_regional.json').then(r => r.json()),
-    fetch('nodal/regional_renewable_capacity.json').then(r => r.json()),
-    fetch('nodal/fleet_by_region_v2.csv').then(r => r.text()),
-    fetch('nodal/rooftop_mw_by_region.json').then(r => r.json()),
+    fetch(`nodal/demand_2025_regional.csv?v=${DATA_V}`).then(r => r.text()),
+    fetch(`nodal/profiles_regional.json?v=${DATA_V}`).then(r => r.json()),
+    fetch(`nodal/regional_renewable_capacity.json?v=${DATA_V}`).then(r => r.json()),
+    fetch(`nodal/fleet_by_region_v2.csv?v=${DATA_V}`).then(r => r.text()),
+    fetch(`nodal/rooftop_mw_by_region.json?v=${DATA_V}`).then(r => r.json()),
   ]);
 
   const demandRows = parseCSVText(demandText);
