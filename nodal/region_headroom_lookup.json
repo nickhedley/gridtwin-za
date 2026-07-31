@@ -5,14 +5,14 @@
    "binding_corridor": "Eastern Cape-Kwazulu Natal",
    "corridor_length_km": 167,
    "avg_capacity_factor": 0.3886,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
-   "headroom_mw": 400,
+   "headroom_mw": 0,
    "binding_corridor": "Eastern Cape-Kwazulu Natal",
    "corridor_length_km": 167,
    "avg_capacity_factor": 0.21,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "Limpopo": {
@@ -21,14 +21,14 @@
    "binding_corridor": "Limpopo-Mpumalanga",
    "corridor_length_km": 121,
    "avg_capacity_factor": 0.13,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
    "headroom_mw": 3360,
    "binding_corridor": "Limpopo-Mpumalanga",
    "corridor_length_km": 121,
    "avg_capacity_factor": 0.2198,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "Mpumalanga": {
@@ -37,14 +37,14 @@
    "binding_corridor": "Mpumalanga-Kwazulu Natal",
    "corridor_length_km": 172,
    "avg_capacity_factor": 0.14,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
    "headroom_mw": 3320,
    "binding_corridor": "Mpumalanga-Kwazulu Natal",
    "corridor_length_km": 172,
    "avg_capacity_factor": 0.2,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "Gauteng": {
@@ -53,14 +53,14 @@
    "binding_corridor": "Mpumalanga-Gauteng",
    "corridor_length_km": 102,
    "avg_capacity_factor": 0.11,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
    "headroom_mw": 4680,
    "binding_corridor": "Mpumalanga-Gauteng",
    "corridor_length_km": 102,
    "avg_capacity_factor": 0.2,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "Western Cape": {
@@ -69,14 +69,14 @@
    "binding_corridor": "Western Cape-Hydra Central",
    "corridor_length_km": 278,
    "avg_capacity_factor": 0.36,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
-   "headroom_mw": 1180,
+   "headroom_mw": 0,
    "binding_corridor": "Western Cape-Hydra Central",
    "corridor_length_km": 278,
    "avg_capacity_factor": 0.19,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "Northern Cape": {
@@ -85,14 +85,14 @@
    "binding_corridor": "Northern Cape-Free State",
    "corridor_length_km": 90,
    "avg_capacity_factor": 0.4182,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
    "headroom_mw": 0,
    "binding_corridor": "Northern Cape-Free State",
    "corridor_length_km": 90,
    "avg_capacity_factor": 0.2683,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "Hydra Central": {
@@ -101,14 +101,14 @@
    "binding_corridor": "Hydra Central-Free State",
    "corridor_length_km": 310,
    "avg_capacity_factor": 0.3982,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
    "headroom_mw": 0,
    "binding_corridor": "Hydra Central-Western Cape",
    "corridor_length_km": 278,
    "avg_capacity_factor": 0.2492,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "Kwazulu Natal": {
@@ -117,14 +117,14 @@
    "binding_corridor": "Mpumalanga-Kwazulu Natal",
    "corridor_length_km": 172,
    "avg_capacity_factor": 0.2,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
    "headroom_mw": 5500,
    "binding_corridor": "Mpumalanga-Kwazulu Natal",
    "corridor_length_km": 172,
    "avg_capacity_factor": 0.17,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "North West": {
@@ -133,14 +133,14 @@
    "binding_corridor": "Limpopo-North West",
    "corridor_length_km": 212,
    "avg_capacity_factor": 0.15,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
    "headroom_mw": 1660,
    "binding_corridor": "Limpopo-North West",
    "corridor_length_km": 212,
    "avg_capacity_factor": 0.22,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "Free State": {
@@ -149,20 +149,22 @@
    "binding_corridor": "Free State-Gauteng",
    "corridor_length_km": 202,
    "avg_capacity_factor": 0.22,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   },
   "solar": {
    "headroom_mw": 1420,
    "binding_corridor": "Free State-Mpumalanga",
    "corridor_length_km": 347,
    "avg_capacity_factor": 0.2298,
-   "headroom_source": "GCCA"
+   "headroom_source": "GCCA 2025 + Oct 2025 curtailment update"
   }
  },
  "meta": {
-  "source": "Eskom/NTCSA Generation Connection Capacity Assessment (GCCA 2025, published Oct 2023), with Western Cape and Eastern Cape reflecting the congestion-curtailment capacity NERSA actually APPROVED on 29 Apr 2025 (4% cap, in force 1 Apr 2025 - 31 Mar 2028): 1,180 MW WC and 400 MW EC. Not the 3,470 MW originally proposed in the Jan 2024 GCCA Addendum, which NERSA did not grant in full.",
-  "replaces": "Headroom previously derived from this app's own corridor-utilisation search, which only knew about OPERATIONAL plant. It therefore ignored the committed-but-unbuilt pipeline (REIPPPP preferred bidders through BW6, plus private wheeling projects holding budget quotes) - exactly what depleted the Cape provinces in reality. That made it badly optimistic: 72,250 MW national solar headroom against a published 19,940 MW, and thousands of MW shown as available in the four supply areas Eskom reports as zero.",
-  "caveat": "The six non-Cape figures date from Oct 2023 and have very likely been drawn down since - NTCSA's own project dashboard (Nov 2025) shows 15.2 GW of solar alone seeking connection. Treat them as an upper bound. NTCSA published a GCCA 2025 Curtailment Update on 31 Oct 2025 that should be checked for revised numbers.",
-  "note": "GCCA capacity is technology-agnostic - it is connection capacity at transmission substations, not a per-technology allowance - so the same regional figure applies to every technology and allocations draw from one shared regional pool."
+  "source": "Eskom GCCA 2025 (Oct 2023) for baseline connection capacity, plus NTCSA \"GCCA 2025 Update: Integrating Congestion Curtailment Capacity\" (31 Oct 2025) for the Western Cape and Eastern Cape.",
+  "curtailment_capacity": "The 1,180 MW (WC) and 400 MW (EC) unlocked by 4% congestion curtailment is available to WIND GENERATORS ONLY - the Oct 2025 document is titled and scoped for wind specifically. Solar and firm technologies remain at 0 MW in both provinces. NERSA approval runs 1 Apr 2025 - 31 Mar 2028 at a 4% cap (more restrictive than the 10% / 3,470 MW sought in the Jan 2024 addendum).",
+  "timing_caveat": "That wind capacity is a 2028 figure, not capacity available today: hosting capacity rises from 5,625 MW to 7,205 MW BY 2028, and depends on new infrastructure. 720 MW of the WC allocation sits at the planned Nuweveld / Galenia substations, which NTCSA states must be delivered as SELF-BUILD projects; the EC 400 MW depends on the planned Pembroke transformer.",
+  "replaces": "Headroom previously derived from this app's own corridor-utilisation search, which only knew about OPERATIONAL plant and so ignored the committed-but-unbuilt pipeline that actually depleted the Cape provinces. That gave 72,250 MW national solar headroom against a published ~20 GW, and thousands of MW in the four supply areas Eskom reports as zero.",
+  "caveat": "The six non-Cape figures date from Oct 2023 and have likely been drawn down since - NTCSA's project dashboard (Nov 2025) shows 15.2 GW of solar alone seeking connection. Treat them as an upper bound.",
+  "note": "GCCA capacity is connection capacity at transmission substations, not a per-technology allowance, so allocations draw from one shared regional pool - except the WC/EC curtailment capacity, which is ring-fenced to wind."
  }
 }
