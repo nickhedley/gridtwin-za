@@ -267,7 +267,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
 
         <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
-          <div class="ph"><h2>Nodal Simulation</h2><span class="tag">full network-flow model · full year</span></div>
+          <div class="ph"><h2>Note on the Nodal Simulation</h2><span class="tag">what it models · caveats</span></div>
           <div class="pb">
             <p style="font-size:11.5px; color:var(--ink2); margin-bottom:0; line-height:1.45">Runs the real 10-region network model for a full 8,760-hour year: real demand, transfer-limited corridors, and real plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage) - plus new coal/CCGT/nuclear/battery siting via "Where To Build" above (coal and nuclear carry a real grid-build charge; CCGT and batteries don't, since neither sustains enough utilisation to justify one). Coal has a real per-region ramp-rate limit (ramp-up only for now - ramp-down isn't modelled yet). Storage dispatches on real network-wide price arbitrage, holding back some capacity for its own region's near-term needs before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a real baseline pass first. On success, the KPIs, energy mix, hourly chart, and map above all switch to these real results - only the load-shedding risk panel stays on the national engine. Use the "Run full year" button on the map above.</p>
           </div>
