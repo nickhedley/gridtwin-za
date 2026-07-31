@@ -1391,7 +1391,14 @@ async function runMC(){
 }
 function renderRisk(runs){
   const N=runs.length;
-  const pAny=runs.filter(r=>r.shed>1000).length/N;
+  // Threshold for "a year with load shedding". The old cut-off was 1 GWh - against ~230 TWh of
+  // annual demand that is 0.0004%, i.e. effectively "any shedding at all", so the metric sat on a
+  // knife-edge: a scenario whose runs cluster near it could swing from 3% to 77% on a change that
+  // barely moved expected shed. 100 GWh is roughly 25 evenings of Stage 1 - noticeable, well
+  // short of a crisis year (2022-23 ran to 11-15 TWh) - and far enough from zero that the answer
+  // is stable. The label states the threshold so it isn't read as "any shedding whatsoever".
+  const SHED_THRESHOLD_MWH=100000;
+  const pAny=runs.filter(r=>r.shed>SHED_THRESHOLD_MWH).length/N;
   const meanShed=runs.reduce((s,r)=>s+r.shed,0)/N/1000;
   const sorted=[...runs].sort((a,b)=>a.shed-b.shed);
   const p90=sorted[Math.floor(0.9*(N-1))].shed/1000;
@@ -1399,7 +1406,7 @@ function renderRisk(runs){
   const exceed=[1,2,3,4,5,6,7,8].map(s=>runs.filter(r=>r.stage>=s).length/N);
   document.getElementById('riskTag').textContent=MC_N+' outage-years';
   document.getElementById('riskHead').innerHTML=
-    '<div class="rk"><div class="k">P(any shedding)</div><div class="v" style="color:'+(pAny>0.5?'var(--alert)':pAny>0.05?'var(--coal2)':'var(--veld)')+'">'+Math.round(pAny*100)+'%</div></div>'+
+    '<div class="rk"><div class="k">P(shed &gt;100 GWh)</div><div class="v" style="color:'+(pAny>0.5?'var(--alert)':pAny>0.05?'var(--coal2)':'var(--veld)')+'">'+Math.round(pAny*100)+'%</div></div>'+
     '<div class="rk"><div class="k">Expected shed</div><div class="v">'+(meanShed<1?'0':Math.round(meanShed).toLocaleString())+' GWh</div></div>'+
     '<div class="rk"><div class="k">P90 shed</div><div class="v">'+(p90<1?'0':Math.round(p90).toLocaleString())+' GWh</div></div>'+
     '<div class="rk"><div class="k">E[diesel]</div><div class="v">'+meanDiesel.toFixed(1)+' TWh</div></div>';
