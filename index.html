@@ -530,9 +530,17 @@ function buildProfiles(real){
     const demand=Float64Array.from(real.demand);
     const solar=Float64Array.from(real.solar_pu);
     const wind=Float64Array.from(real.wind_pu);
+    // Real Eskom CSP feed-in (2021 calendar year), replacing an earlier synthetic evening-shifted
+    // Gaussian. That synthetic shape was materially wrong: it produced ZERO output before 10:00,
+    // whereas real SA CSP is already at ~50% of capacity by 09:00 because it runs off stored heat
+    // through the morning, and its real annual capacity factor is ~0.38 rather than the much lower
+    // figure the Gaussian implied. Falls back to the old shape only if the data is unavailable.
     const csp=new Float64Array(HOURS);
-    // CSP not in Eskom feed — synthesize a small solar-shifted profile from solar shape
-    for(let h=0;h<HOURS;h++){const hour=h%24; const eve=(hour>=10&&hour<=22)?Math.exp(-Math.pow(hour-17,2)/18):0; csp[h]=Math.min(1,0.6*eve);}
+    if(real.csp_pu && real.csp_pu.length===HOURS){
+      for(let h=0;h<HOURS;h++) csp[h]=real.csp_pu[h];
+    } else {
+      for(let h=0;h<HOURS;h++){const hour=h%24; const eve=(hour>=10&&hour<=22)?Math.exp(-Math.pow(hour-17,2)/18):0; csp[h]=Math.min(1,0.6*eve);}
+    }
     return {demand,solar,wind,csp,real:true};
   }
   const rand = mulberry32(20260714);
