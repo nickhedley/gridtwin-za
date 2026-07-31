@@ -703,7 +703,18 @@ function simulate(u, prof, outPath){
     // than switching off.
     let need12=0;
     for(let k=h;k<Math.min(HOURS,h+12);k++) if(netLoadPre[k]>need12) need12=netLoadPre[k];
-    const committedMW=Math.max(0,Math.min(cAvail,need12));
+    let committedMW=Math.max(0,Math.min(cAvail,need12));
+    // Decommitment limits. Two constraints, both grounded in the real fleet data rather than
+    // assumed: (1) a small block of capacity has a min down time long enough that it cannot
+    // usefully cycle for a daily solar trough at all, so it stays synchronised - this is only
+    // ~2.9% of the fleet, since 97% of real SA coal capacity can restart within an hour, which
+    // is weaker than often assumed; (2) capacity cannot leave commitment faster than it can
+    // physically ramp down, because a unit has to walk its output down to Min Stable Level
+    // before it can be taken offline. (2) is the binding one in practice and is what stops the
+    // aggregate model shedding tens of GW of commitment in a single hour.
+    const lockedOnMW=cAvail*(1240/42258); // capacity with min-down-time too long to cycle daily
+    committedMW=Math.max(committedMW,lockedOnMW);
+    if(committedMW<prevCommittedMW-rampAllowedMW) committedMW=prevCommittedMW-rampAllowedMW;
     if(committedMW>prevCommittedMW) startUpCostR+=(committedMW-prevCommittedMW)*p.coalStartUpCostRPerMW;
     prevCommittedMW=committedMW;
     const minStableMW=committedMW*coalMinStableFrac(coalInstRem>0?committedMW/coalInstRem:0);
