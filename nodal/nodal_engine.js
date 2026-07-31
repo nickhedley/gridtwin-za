@@ -145,6 +145,9 @@ class NodalEngine {
     this.baseSolarMw = data.solarMw;
     this.baseRooftopMw = data.rooftopMw || {};
     this.rawFleet = data.fleet;
+    // Real CSP profile (Eskom 2021 measured, via profiles.json). If provided, replaces the
+    // synthetic evening-shifted Gaussian that produced zero before 10:00.
+    this.cspProfile = data.cspPu || CSP_PROFILE;
 
     this.nodeIndex = {};
     REGIONS.forEach((r, i) => { this.nodeIndex[r] = i; });
@@ -317,7 +320,7 @@ class NodalEngine {
         const rooftop = Math.min((this.rooftopMw[r] || 0) * this.solarPu[r][h] * 0.94, rawD * 0.9);
         const netD = rawD - rooftop;
         const variableAvail = (this.windMw[r] || 0) * this.windPu[r][h] + (this.solarMw[r] || 0) * this.solarPu[r][h]
-          + (CSP_MW_BY_REGION[r] || 0) * CSP_PROFILE[h] + (r === IMPORTS_REGION ? IMPORTS_MW * IMPORTS_CF : 0);
+          + (CSP_MW_BY_REGION[r] || 0) * this.cspProfile[h] + (r === IMPORTS_REGION ? IMPORTS_MW * IMPORTS_CF : 0);
         const rawDeficit = Math.max(0, netD - firmCapacityByRegion[r] - variableAvail);
         // cap by what this region's OWN storage could plausibly address in an hour - otherwise
         // a region's entire multi-GW shortfall (which storage could never fully cover anyway)
@@ -346,7 +349,7 @@ class NodalEngine {
         const rooftop = Math.min((this.rooftopMw[r] || 0) * this.solarPu[r][h] * 0.94, rawD * 0.9);
         demand += rawD - rooftop;
         renewableAvail += (this.windMw[r] || 0) * this.windPu[r][h] + (this.solarMw[r] || 0) * this.solarPu[r][h]
-          + (CSP_MW_BY_REGION[r] || 0) * CSP_PROFILE[h] + (r === IMPORTS_REGION ? IMPORTS_MW * IMPORTS_CF : 0);
+          + (CSP_MW_BY_REGION[r] || 0) * this.cspProfile[h] + (r === IMPORTS_REGION ? IMPORTS_MW * IMPORTS_CF : 0);
       }
       this.netLoad[h] = demand - renewableAvail - nuclearHydroMw;
     }
@@ -508,7 +511,7 @@ class NodalEngine {
       const cspMw = CSP_MW_BY_REGION[r] || 0;
       if (cspMw > 0) {
         gens.push({ name: r + ' CSP', region: r, carrier: 'csp', cost: 0,
-                    availableMw: cspMw * CSP_PROFILE[hourIdx], isRenewable: false }); // must-take, matches single-node treatment
+                    availableMw: cspMw * this.cspProfile[hourIdx], isRenewable: false }); // must-take, matches single-node treatment
       }
     }
     gens.push({ name: 'Cahora Bassa import', region: IMPORTS_REGION, carrier: 'imports', cost: IMPORTS_COST,
