@@ -209,8 +209,19 @@ class NodalEngine {
               newWindMW = 0, newPvMW = 0) {
     this.getsEnabled = getsEnabled;
     this.boostedEdgeIndices = boostedEdgeIndices;
+    // Per-unit commitment state (Tier 1+2 unit commitment). Each real coal unit is separately
+    // synchronised or offline, carries its own real Min Stable Level / ramp rates / min up-down
+    // times / start-up cost from the fleet data, and cannot violate them. Start assumed online
+    // so the year doesn't open with a fleet-wide cold start.
+    this.unitState = {};
+    this.startUpCostAccrued = 0;
     this.thermalFleet = applyCoalScenario(this.rawFleet, coalEafPct, coalDecomMW)
       .sort((a, b) => a.marginalCost - b.marginalCost);
+    this.thermalFleet.forEach(g => {
+      if (COAL_CARRIERS.includes(g.carrier)) {
+        this.unitState[g.name] = { committed: true, hoursInState: 999, prevOut: g.capacityMw * 0.7 };
+      }
+    });
     // extra region-sited firm capacity from the siting tool - not part of the real fleet data,
     // added alongside it. Coal gets the same EAF derating as the existing fleet; CCGT and
     // nuclear are treated as fully dispatchable / fixed-CF respectively, matching how the
@@ -404,11 +415,72 @@ class NodalEngine {
     }
   }
 
+  /**
+   * Decide which coal units are synchronised this hour. Greedy cheapest-first against expected
+   * need, but a unit can only shut down once it has met its Min Up Time, and can only restart
+   * once it has met its Min Down Time (48h for several real units) - which is exactly why real
+   * SA coal often runs through the midday solar trough at minimum rather than shutting off.
+   */
+  commitUnits(hourIdx) {
+    const coalUnits = this.thermalFleet.filter(g => COAL_CARRIERS.includes(g.carrier));
+    if (!coalUnits.length) return;
+    // National net load is what coal, gas and storage together must cover - a good proxy for the
+    // commitment decision. Look across the next 12 hours, not just this one: a purely myopic
+    // view decommits half the fleet during the midday solar trough and then cannot restart for
+    // the evening peak (several units have 48h minimum down times), which is both unrealistic
+    // and enormously expensive. Real operators commit day-ahead against the coming peak, which
+    // is precisely why coal stays synchronised at minimum through the middle of the day.
+    let need = 0;
+    for (let k = hourIdx; k < Math.min(8760, hourIdx + 12); k++) {
+      if (this.netLoad[k] > need) need = this.netLoad[k];
+    }
+    let cumulative = 0;
+    for (const u of coalUnits) { // already sorted cheapest-first in setScenario
+      const st = this.unitState[u.name];
+      if (!st) continue;
+      const wantOn = cumulative < need;
+      if (wantOn && !st.committed && st.hoursInState >= (u.minDownTime || 0)) {
+        st.committed = true; st.hoursInState = 0; st.prevOut = 0;
+        this.startUpCostAccrued += (u.startUpCost || 0);
+      } else if (!wantOn && st.committed && st.hoursInState >= (u.minUpTime || 0)) {
+        st.committed = false; st.hoursInState = 0; st.prevOut = 0;
+      }
+      if (st.committed) cumulative += u.capacityMw;
+      st.hoursInState++;
+    }
+  }
+
   buildGenerators(hourIdx) {
-    const gens = this.thermalFleet.map(g => ({
-      name: g.name, region: g.region, carrier: g.carrier, cost: g.marginalCost,
-      availableMw: g.capacityMw, isRenewable: false,
-    }));
+    // Per-unit coal dispatch limits (replaces the old region-aggregate ramp scaling). Each
+    // synchronised unit is split into two entries: a MUST-RUN block at its Min Stable Level,
+    // priced far below everything else so merit order always takes it first (a real unit cannot
+    // go below min stable while synchronised), and a flexible block above that at its real
+    // marginal cost. Offline units contribute nothing. Ramp limits are now per-unit and apply in
+    // BOTH directions, using each unit's own real rate rather than one fleet-wide average.
+    const gens = [];
+    this.thermalFleet.forEach(g => {
+      const st = COAL_CARRIERS.includes(g.carrier) ? this.unitState[g.name] : null;
+      if (!st) {
+        gens.push({ name: g.name, region: g.region, carrier: g.carrier, cost: g.marginalCost,
+                    availableMw: g.capacityMw, isRenewable: false });
+        return;
+      }
+      if (!st.committed) return; // offline - no output at all
+      const cap = g.capacityMw;
+      const rampUp = (g.rampUpFrac != null ? g.rampUpFrac : 1) * cap;
+      const rampDown = (g.rampDownFrac != null ? g.rampDownFrac : 1) * cap;
+      const maxMw = Math.min(cap, st.prevOut + rampUp);
+      const minMw = Math.min(maxMw, Math.max((g.minStableFrac || 0) * cap, st.prevOut - rampDown));
+      if (minMw > 1e-6) {
+        gens.push({ name: g.name + ' [min]', region: g.region, carrier: g.carrier, cost: -1e6,
+                    availableMw: minMw, isRenewable: false });
+      }
+      const flexible = Math.max(0, maxMw - Math.max(0, minMw));
+      if (flexible > 1e-6) {
+        gens.push({ name: g.name, region: g.region, carrier: g.carrier, cost: g.marginalCost,
+                    availableMw: flexible, isRenewable: false });
+      }
+    });
 
     // Ramp-up cap: coal generators in a region can't collectively exceed what ramping allows
     // this hour, regardless of raw EAF-adjusted capacity - the "no ramp up time" fix. Scaled
@@ -418,15 +490,7 @@ class NodalEngine {
     // forces additional curtailment) is NOT yet modelled here - see setScenario()'s doc comment -
     // that needs remainingDeficit to go negative to represent forced local surplus, a bigger
     // change than this ceiling-only version.
-    for (const r of REGIONS) {
-      const ceiling = Math.min(this.coalCapacityByRegion[r] || 0, (this.prevCoalGenByRegion[r] || 0) + (this.rampAllowedByRegion[r] || 0));
-      let regionCoalTotal = 0;
-      gens.forEach(g => { if (g.region === r && COAL_CARRIERS.includes(g.carrier)) regionCoalTotal += g.availableMw; });
-      if (regionCoalTotal > ceiling && regionCoalTotal > 1e-6) {
-        const scale = ceiling / regionCoalTotal;
-        gens.forEach(g => { if (g.region === r && COAL_CARRIERS.includes(g.carrier)) g.availableMw *= scale; });
-      }
-    }
+
 
     for (const r of REGIONS) {
       const wMw = this.windMw[r] || 0;
@@ -528,6 +592,7 @@ class NodalEngine {
       e.limit * (this.getsEnabled && this.boostedEdgeIndices && this.boostedEdgeIndices.has(i) ? (1 + GET_UPLIFT_FRAC) : 1));
     const edgeFlow = new Array(this.edgeMeta.length).fill(0); // MW sent this hour, per corridor - for the flows-on-map feature
 
+    this.commitUnits(hourIdx); // decide which units are synchronised before building their limits
     const gens = this.buildGenerators(hourIdx);
     let totalLosses = 0, totalCurtailed = 0;
     const genLog = []; // kept lightweight - only what the UI needs
@@ -745,6 +810,14 @@ class NodalEngine {
       this._coalOffpeakSentByRegion = null;
     }
     REGIONS.forEach(r => { this.prevCoalGenByRegion[r] = coalDispatchedByRegion[r]; });
+    // per-unit output for next hour's ramp reference (merge the [min] and flexible blocks back)
+    const perUnitOut = {};
+    genLog.forEach(g => {
+      if (!COAL_CARRIERS.includes(g.carrier)) return;
+      const base = g.name.replace(/ \[min\]$/, '');
+      perUnitOut[base] = (perUnitOut[base] || 0) + g.dispatched;
+    });
+    Object.keys(this.unitState).forEach(nm => { this.unitState[nm].prevOut = perUnitOut[nm] || 0; });
 
     const unserved = {};
     for (let i = 0; i < n; i++) unserved[REGIONS[i]] = Math.max(remainingDeficit[i], 0);
