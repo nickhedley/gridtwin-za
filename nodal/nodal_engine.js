@@ -601,6 +601,7 @@ class NodalEngine {
       let avail = gen.availableMw;
       if (avail <= 1e-9) continue;
       const homeIdx = this.nodeIndex[gen.region];
+      let reservedMw = 0; // storage held back by the forecast reservation - NOT generated
 
       const localTake = Math.min(avail, Math.max(remainingDeficit[homeIdx], 0));
       remainingDeficit[homeIdx] -= localTake;
@@ -622,7 +623,8 @@ class NodalEngine {
         // more when the region's own near-term outlook is worse - without ever fully shutting
         // off exports, which a more careful, iterated calibration could probably improve on.
         const reserveFrac = energyCap > 0 ? Math.min(0.5, need / energyCap) : 0;
-        avail -= avail * reserveFrac;
+        reservedMw = avail * reserveFrac;
+        avail -= reservedMw;
       }
 
       let guard = 0;
@@ -658,7 +660,14 @@ class NodalEngine {
       if (avail > 1e-6 && gen.isRenewable) totalCurtailed += avail;
       genLog.push({ name: gen.name, region: gen.region, carrier: gen.carrier,
                     homeTake: localTake, curtailed: gen.isRenewable ? avail : 0,
-                    dispatched: gen.availableMw - avail, available: gen.availableMw });
+                    // Subtract reservedMw. The forecast reservation lowers `avail` to hold storage
+                    // back from exporting, but dispatched was computed as availableMw - avail, so
+                    // that held-back energy was recorded as GENERATED. It never left the plant and
+                    // served no demand - phantom generation that broke energy conservation by
+                    // exactly the reserved amount, and inflated coal, cost and CO2 on every hour
+                    // the reservation bit. Storage showed dispatched = half of available with
+                    // homeTake 0 and nothing exported, which is what gave it away.
+                    dispatched: gen.availableMw - avail - reservedMw, available: gen.availableMw });
     }
 
     // --- Storage discharge: already dispatched as ordinary generators above (see buildGenerators),
@@ -812,6 +821,10 @@ class NodalEngine {
         renewChargeTotal += credited;
         for (const ei of edges) { headroom[ei] -= sent; edgeFlow[ei] += sent; }
       }
+      // Energy that went from this generator into storage was dispatched, not curtailed. Only
+      // reducing g.curtailed left it missing from g.dispatched, so genLog understated renewable
+      // output by exactly the amount used for charging.
+      g.dispatched += (g.curtailed - avail);
       g.curtailed = avail; // update to reflect what charging actually absorbed
     }
     totalCurtailed -= renewChargeTotal;
