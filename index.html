@@ -727,17 +727,37 @@ function simulate(u, prof, outPath){
     // aggregate model shedding tens of GW of commitment in a single hour.
     const lockedOnMW=cAvail*(1240/42258); // capacity with min-down-time too long to cycle daily
     committedMW=Math.max(committedMW,lockedOnMW);
+    // Ramp-aware positioning. Storage discharging hard at the evening peak displaces coal, which
+    // ramps DOWN - and when storage empties an hour or two later, coal cannot climb back fast
+    // enough and the system sheds. Measured: 12 GW of batteries drove coal from 6,742 MW at 18:00
+    // to 2,774 MW by 20:00, then the ramp limit bound at 21:00 and 2,221 MW went unserved - while
+    // a SMALLER 3.75 GW battery shed nothing, because coal was never displaced. More storage
+    // making things worse is not a real result; it is greedy hour-by-hour dispatch with no
+    // look-ahead. A real operator watching a battery drain keeps thermal positioned for the
+    // recovery, so coal must stay high enough NOW to reach the net load arriving over the next
+    // few hours, given what it can physically ramp in that time.
+
     if(committedMW<prevCommittedMW-rampAllowedMW) committedMW=prevCommittedMW-rampAllowedMW;
     if(committedMW>prevCommittedMW) startUpCostR+=(committedMW-prevCommittedMW)*p.coalStartUpCostRPerMW;
     prevCommittedMW=committedMW;
     const minStableMW=committedMW*coalMinStableFrac(coalInstRem>0?committedMW/coalInstRem:0);
+    // Ramp-aware floor. Raising committed capacity alone does not help, because the must-run
+    // floor is only ~18% of it - so the binding constraint has to be set directly. Coal must sit
+    // high enough NOW to reach the net load arriving over the next few hours given its ramp rate.
+    let rampAwareFloor=0;
+    for(let k=1;k<=4;k++){
+      const need=netLoadPre[Math.min(HOURS-1,h+k)]-rampAllowedMW*k;
+      if(need>rampAwareFloor) rampAwareFloor=need;
+    }
+    rampAwareFloor=Math.max(0,Math.min(cAvail,rampAwareFloor));
+    const coalFloorBase=Math.max(minStableMW,rampAwareFloor);
     if(residual<0){
       let surplus=-residual;
       // Ramp-down floor: inflexible coal can't instantly drop to zero just because there's a
       // renewable surplus this hour - it's forced to keep producing at least this much, which
       // ADDS to what needs absorbing (storage charging first, then wasted/curtailed).
       // This is the real mechanism behind "inflexible coal causes additional curtailment".
-      const coalFloor=Math.min(cAvail,Math.max(minStableMW,prevCoalGen-rampAllowedMW));
+      const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); psSoc+=psChg*p.psEff; surplus-=psChg;
       const btChg=Math.min(surplus,battPower,battEnergy-battSoc); battSoc+=btChg*p.battEff; surplus-=btChg;
@@ -778,7 +798,7 @@ function simulate(u, prof, outPath){
       // forced coal then creates a surplus that immediately recharges storage, an artificial
       // discharge/recharge oscillation. Any output above demand is absorbed by storage or
       // curtailed - which is the real mechanism behind inflexible coal wasting renewables.
-      const coalFloor=Math.min(cAvail,Math.max(minStableMW,prevCoalGen-rampAllowedMW));
+      const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       // track how much coal actually SERVES LOAD, separately from total coal generated - the
       // forced-above-demand portion is real generation and real fuel cost, but it is not serving
       // demand, so it must not appear in the chart stack (same principle as the off-peak charging
