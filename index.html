@@ -1603,11 +1603,11 @@ function bumpSlider(id, deltaMW){
   scheduleRun();
 }
 
-const SITING_GET_UPLIFT_FRAC=0.20; // same real figure as nodal_engine.js's GET_UPLIFT_FRAC (kept as a separate name deliberately - these are two different <script> tags sharing one global scope in a browser, and both declaring the same top-level const name was exactly the bug that caused a page-breaking SyntaxError)
+const SITING_GET_UPLIFT_FRAC=0.20; // same real figure as nodal_engine.js's GET_UPLIFT_FRAC (kept as a separate name deliberately - these are two different script tags sharing one global scope in a browser, and both declaring the same top-level const name was exactly the bug that caused a page-breaking SyntaxError)
 const GET_COST_PER_KM=31000000/20; // R1.55m/km - DOE 2024 (via Niskanen Center): GETs cost "less than one-twentieth" of a new line, applied against this app's own R31m/km new-line figure
 const GET_LIFETIME_YEARS=15; // shorter than a 45yr new line - GETs are hardware/software retrofits, not civil infrastructure, matching the same treatment as the coal-flexibilisation refurb cost
 // FIRM_TECHS is already declared globally by capacity_siting.js (loaded earlier) - do NOT
-// redeclare it here. Same lesson as SITING_GET_UPLIFT_FRAC above: two <script> tags share one
+// redeclare it here. Same lesson as SITING_GET_UPLIFT_FRAC above: two script tags share one
 // global scope in a browser, and a duplicate top-level const/let anywhere breaks the ENTIRE
 // script block it's in with a page-breaking SyntaxError, not just a silent shadow like it would
 // inside a function.
