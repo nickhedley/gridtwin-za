@@ -274,8 +274,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
       </section>
 
-      <script src="nodal/nodal_engine.js?v=22"></script>
-      <script src="nodal/nodal_dispatch.js?v=22"></script>
+      <script src="nodal/nodal_engine.js?v=23"></script>
+      <script src="nodal/nodal_dispatch.js?v=23"></script>
       <script>
       // --- Nodal -> national KPI/mix merge ---
       // Maps the nodal engine's real per-carrier annual output onto the same E{} shape the
@@ -517,7 +517,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 "use strict";
 /* ==================== MODEL ==================== */
 const HOURS = 8760;
-const COAL_MINSTABLE_CURVE = [0, 0.65, 0.4628, 0.3085, 0.2314, 0.1851, 0.1543, 0.172, 0.2318, 0.2782, 0.2792];
+// Corrected: 16 units (58% of fleet by capacity) had 0% min-stable in the source data, including
+// Medupi, Kusile, Kendal, Matimba — large pulverised-coal baseload units that physically cannot
+// operate below ~50-65%. Those were missing data, not real engineering parameters. Defaulted to
+// 50% (conservative for SA coal). The old curve gave a fleet floor of ~28% of committed capacity;
+// the corrected curve gives ~56%, which is much closer to the PyPSA MIP reference of 15,207 MW
+// and produces visibly more realistic coal behaviour on the chart.
+const COAL_MINSTABLE_CURVE = [0, 0.65, 0.6068, 0.5712, 0.5534, 0.5427, 0.5356, 0.5397, 0.5535, 0.5642, 0.5644];
 function coalMinStableFrac(committedFrac){
   const x = Math.max(0, Math.min(1, committedFrac)) * 10;
   const i = Math.min(9, Math.floor(x));
@@ -622,7 +628,12 @@ function simulate(u, prof, outPath){
   // slider or its cost. Only the EXISTING remaining fleet's ramp rate depends on the slider.
   const oldFleetRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW);
   const rampPct=p.coalRampBasePct+(p.coalRampFlexPct-p.coalRampBasePct)*(p.coalFlexPct?1:0);
-  const rampAllowedMW=oldFleetRem*rampPct/100 + p.newCoalMW*p.coalRampFlexPct/100;
+  // Ramp rate applies to AVAILABLE (EAF-derated) capacity, not installed. The installed-basis
+  // version gave 7,680 MW/hr on a 32 GW fleet at 64% EAF — but only 20.5 GW is actually
+  // running, and a unit that's down for maintenance can't contribute to the fleet's ramp.
+  // The nodal engine already does this correctly (per-unit ramp uses EAF-derated capacity).
+  const coalAvailOld = Math.max(0, p.coalInstalledMW - p.coalDecomMW) * p.coalEAFPct / 100;
+  const rampAllowedMW = coalAvailOld * rampPct / 100 + p.newCoalMW * p.coalRampFlexPct / 100;
   let prevCommittedMW=coalAvail; // starts fully synchronised, so the year doesn't open cold
   let startUpCostR=0;
   let prevCoalGen=coalAvail*0.5; // reasonable starting assumption, matching psSoc/battSoc's own starting-fraction convention
