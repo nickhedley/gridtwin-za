@@ -269,7 +269,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
           <div class="ph"><h2>Note on the Nodal Simulation</h2><span class="tag">what it models · caveats</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:0; line-height:1.45">Runs the real 10-region network model for a full 8,760-hour year: real demand, transfer-limited corridors, and real plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage) - plus new coal/CCGT/nuclear/battery siting via "Where To Build" above (coal, CCGT, nuclear and batteries all carry a real grid-build charge when they exceed regional headroom — CCGT and batteries at a higher R/MWh than coal or nuclear, because their lower utilisation (both ~15% vs coal 64%) spreads the same corridor cost over far fewer MWh). Coal has a real per-region ramp-rate limit (ramp-up only for now - ramp-down isn't modelled yet). Storage dispatches on real network-wide price arbitrage, holding back some capacity for its own region's near-term needs before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a real baseline pass first. On success, the KPIs, energy mix, hourly chart, and map above all switch to these real results - only the load-shedding risk panel stays on the national engine. Use the "Run full year" button on the map above.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:0; line-height:1.45">Runs the real 10-region network model for a full 8,760-hour year: real demand, transfer-limited corridors, and real plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage) - plus new coal/CCGT/nuclear/battery siting via "Where To Build" above (coal, CCGT, nuclear and batteries all carry a real grid-build charge when they exceed regional headroom — CCGT and batteries at a higher R/MWh than coal or nuclear, because their lower utilisation (both ~15% vs coal 64%) spreads the same corridor cost over far fewer MWh). Coal has real per-region ramp-rate limits in both directions (ramp-up and ramp-down), with per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back some capacity for its own region's near-term needs before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a real baseline pass first. On success, the KPIs, energy mix, hourly chart, and map above all switch to these real results - only the load-shedding risk panel stays on the national engine. Use the "Run full year" button on the map above.</p>
           </div>
         </div>
       </section>
@@ -471,7 +471,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="mix"></div>
           </div>
           <div class="panel">
-            <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span></div>
+            <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:4px;background:var(--ink2);color:#fff;font-size:10px">National engine</span></div>
             <div class="pb">
               <div class="riskhead" id="riskHead"></div>
               <div class="shedbars" id="shed"></div>
@@ -1424,6 +1424,14 @@ function render(r){
 /* ==================== RUN LOOP ==================== */
 let PROFILES=buildProfiles();
 let lastRes=null, rafPending=false, detStage=0;
+// Populate header fields immediately with baseline estimates so they're never blank.
+// run() will overwrite these within milliseconds, but this prevents a visible flash of '–'.
+(function(){
+  const peakEl=document.getElementById('bdPeak');
+  const shedEl=document.getElementById('bdShed');
+  if(peakEl&&peakEl.textContent==='–') peakEl.textContent='~30 GW';
+  if(shedEl&&shedEl.textContent==='–') shedEl.textContent='computing…';
+})();
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
 
