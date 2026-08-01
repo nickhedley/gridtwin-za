@@ -209,8 +209,9 @@ class NodalEngine {
    */
   setScenario(coalEafPct, coalDecomMW, extraWindByRegion = {}, extraSolarByRegion = {}, newRooftopMW = 0, newBattMW = 0,
               extraCoalByRegion = {}, extraCcgtByRegion = {}, extraNuclearByRegion = {}, extraBattByRegion = {}, coalFlexPct = 0, getsEnabled = false, boostedEdgeIndices = null,
-              newWindMW = 0, newPvMW = 0) {
+              newWindMW = 0, newPvMW = 0, syncFloorMW = 6000) {
     this.getsEnabled = getsEnabled;
+    this.syncFloorMW = syncFloorMW; // 0 = grid-forming future, 6000 = current grid code
     this.boostedEdgeIndices = boostedEdgeIndices;
     // Per-unit commitment state (Tier 1+2 unit commitment). Each real coal unit is separately
     // synchronised or offline, carries its own real Min Stable Level / ramp rates / min up-down
@@ -844,6 +845,49 @@ class NodalEngine {
       g.curtailed = avail; // update to reflect what charging actually absorbed
     }
     totalCurtailed -= renewChargeTotal;
+
+    // --- Synchronous generation floor. Ensures minimum synchronous online capacity for inertia,
+    // fault current and voltage stability. Non-coal synchronous sources (nuclear, hydro, imports)
+    // are already must-take; only shortfall requiring coal is forced here. Distributed cheapest-
+    // first (already merit-ordered), absorbing surplus into storage or curtailment.
+    if (this.syncFloorMW > 0) {
+      let syncOnline = 0;
+      genLog.forEach(g => {
+        if (['nuclear','hydro','imports','coal','sasol_coal','sasol_gas','ocgt_diesel','ocgt_avf','rmippp'].includes(g.carrier))
+          syncOnline += g.dispatched;
+      });
+      let syncShortfall = this.syncFloorMW - syncOnline;
+      if (syncShortfall > 1) {
+        // Force additional coal, cheapest-first, into regions with spare available capacity
+        for (const g of this.thermalFleet) {
+          if (syncShortfall <= 1) break;
+          if (!COAL_CARRIERS.includes(g.carrier)) continue;
+          const st = this.unitState[g.name];
+          if (!st || !st.committed) continue;
+          const rampUp = (g.rampUpFrac != null ? g.rampUpFrac : 1) * g.capacityMw;
+          const already = genLog.filter(x => x.name === g.name || x.name === g.name+' [min]')
+                                 .reduce((a,x) => a + x.dispatched, 0);
+          const ceiling = Math.min(g.capacityMw, st.prevOut + rampUp);
+          const room = Math.max(0, ceiling - already);
+          if (room < 1) continue;
+          const take = Math.min(room, syncShortfall);
+          const homeIdx = this.nodeIndex[g.region];
+          const usedByDemand = Math.min(take, Math.max(0, remainingDeficit[homeIdx]));
+          remainingDeficit[homeIdx] -= usedByDemand;
+          let surplus = take - usedByDemand;
+          const psRoom = Math.max(0,(PS_ENERGY_MWH_BY_REGION[g.region]||0)-this.psSoc[g.region]);
+          const psTake = Math.min(surplus,PS_MW_BY_REGION[g.region]||0,psRoom);
+          if(psTake>0){this.psSoc[g.region]+=psTake*PS_EFF;surplus-=psTake;psCoalChargeTotal+=psTake;}
+          const battRoom=Math.max(0,(this.battMw[g.region]||0)*BATT_HOURS-this.battSoc[g.region]);
+          const battTake=Math.min(surplus,this.battMw[g.region]||0,battRoom);
+          if(battTake>0){this.battSoc[g.region]+=battTake*BATT_EFF;surplus-=battTake;battCoalChargeTotal+=battTake;}
+          totalCurtailed += surplus;
+          genLog.push({name:g.name,region:g.region,carrier:g.carrier,
+                       homeTake:usedByDemand,curtailed:0,dispatched:take,available:take});
+          syncShortfall -= take;
+        }
+      }
+    }
 
     // --- Forced ramp-down generation for ALL coal units (committed or decommitting) whose
     // physical output floor wasn't met by the dispatch loop. The dispatch loop only takes what
