@@ -1259,7 +1259,7 @@ let weekMode='W';
 document.getElementById('wkW').addEventListener('click',e=>{weekMode='W';toggleWk(e.target);draw(nodalActiveRes||lastRes);});
 document.getElementById('wkS').addEventListener('click',e=>{weekMode='S';toggleWk(e.target);draw(nodalActiveRes||lastRes);});
 function toggleWk(btn){document.querySelectorAll('.wkbtns button').forEach(b=>b.classList.toggle('active',b===btn));}
-const DISP_ORDER=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved','curtailment'];
+const DISP_ORDER=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
 
 function drawDispatch(r){
   const c=dispCanvas, dpr=window.devicePixelRatio||1;
@@ -1291,7 +1291,26 @@ function drawDispatch(r){
     ctx.closePath(); ctx.fillStyle=COLORS[k];
     ctx.globalAlpha=k==='unserved'?0.9:0.92; ctx.fill(); ctx.globalAlpha=1;
   });
-  // demand line
+  // curtailment: hatched area between the generation stack and the demand line.
+  // Drawn BEFORE the demand line so the line sits on top of the hatch.
+  // This keeps the chart y-axis at demand level (not inflated by curtailment) while
+  // still showing where and when curtailment occurred.
+  const curt = r.stack.curtailment || r.curtailMW;
+  if(curt){
+    // build a hatch pattern once
+    const pat=document.createElement('canvas'); pat.width=8; pat.height=8;
+    const pc=pat.getContext('2d');
+    pc.strokeStyle='#6aab6a'; pc.lineWidth=1.5;
+    pc.beginPath(); pc.moveTo(0,8); pc.lineTo(8,0); pc.stroke();
+    const hatch=ctx.createPattern(pat,'repeat');
+    ctx.beginPath();
+    // bottom edge: top of the stacked generation (base[] after all DISP_ORDER fills)
+    for(let i=0;i<N;i++){const v=base[i]; i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v));}
+    // top edge: generation + curtailment, but capped at the canvas top so it never overflows
+    for(let i=N-1;i>=0;i--) ctx.lineTo(x(i),y(Math.min(base[i]+(curt[start+i]||0), maxY)));
+    ctx.closePath(); ctx.fillStyle=hatch; ctx.globalAlpha=0.6; ctx.fill(); ctx.globalAlpha=1;
+  }
+  // demand line (drawn on top of hatch)
   ctx.beginPath();
   for(let i=0;i<N;i++){const v=r.loadS[start+i]; i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v));}
   ctx.strokeStyle='#22292B'; ctx.lineWidth=1.6; ctx.stroke();
@@ -1307,7 +1326,14 @@ function draw(r){
   // legend once
   const lg=document.getElementById('dispLegend');
   if(!lg.dataset.done){lg.dataset.done='1';
-    lg.innerHTML=DISP_ORDER.map(k=>'<span><i style="background:'+COLORS[k]+'"></i>'+NAMES[k]+'</span>').join('')+'<span><i style="background:#22292B"></i>Grid demand + storage charging</span>'+'<span><i style="background:#B8D4B8"></i>Curtailed (wasted)</span>';}
+    // Curtailment is drawn as a hatch, not a solid colour - use a small inline SVG swatch
+    const hatchSvg='<svg width="14" height="14" style="vertical-align:middle;margin-right:3px"><rect width="14" height="14" fill="none" stroke="#6aab6a" stroke-width="0"/>'
+      +'<line x1="0" y1="14" x2="14" y2="0" stroke="#6aab6a" stroke-width="1.5"/>'
+      +'<line x1="-6" y1="8" x2="8" y2="-6" stroke="#6aab6a" stroke-width="1.5"/>'
+      +'<line x1="6" y1="20" x2="20" y2="6" stroke="#6aab6a" stroke-width="1.5"/></svg>';
+    lg.innerHTML=DISP_ORDER.map(k=>'<span><i style="background:'+COLORS[k]+'"></i>'+NAMES[k]+'</span>').join('')
+      +'<span><i style="background:#22292B"></i>Grid demand + storage charging</span>'
+      +'<span>'+hatchSvg+'Curtailed (wasted)</span>';}
 }
 
 /* ==================== RENDER RESULTS ==================== */
