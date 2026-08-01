@@ -1419,6 +1419,13 @@ function render(r){
 
   updateMap(r);
   draw(r);
+  const a11y=document.getElementById('dispatchA11yTable');
+  if(a11y&&r&&r.E){const E=r.E,tot=(E.coal+E.nuclear+E.hydro+E.imports+E.ps+E.batt+E.ccgt+E.diesel+E.wind+E.pv+E.csp+(E.rooftop||0))/1e6;
+    a11y.innerHTML='<table><caption>Annual energy mix summary</caption><thead><tr><th>Source</th><th>TWh/yr</th><th>Share</th></tr></thead><tbody>'
+      +[['Coal',E.coal],['Nuclear',E.nuclear],['Wind',E.wind],['Solar PV',E.pv+(E.rooftop||0)],['CSP',E.csp],
+        ['Hydro / Imports',E.hydro+E.imports],['Storage',E.ps+E.batt],['Gas / Diesel',E.ccgt+E.diesel],['Unserved',E.unserved]]
+       .filter(([,v])=>v>1e4).map(([n,v])=>'<tr><td>'+n+'</td><td>'+(v/1e6).toFixed(1)+'</td><td>'+(100*v/(tot*1e6)).toFixed(1)+'%</td></tr>').join('')
+      +'</tbody></table><p>Peak demand: '+(r.peak/1000).toFixed(1)+' GW. Load shedding: '+(E.unserved>1e4?(E.unserved/1e6).toFixed(2)+' TWh/yr.':'none.')+'</p>';}
 }
 
 /* ==================== RUN LOOP ==================== */
