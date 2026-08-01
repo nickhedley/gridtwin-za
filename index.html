@@ -580,9 +580,7 @@ function buildProfiles(real){
 // rules. Nuclear (1,854 MW) + hydro (600 MW) + imports (850 MW) = 3,304 MW of always-synchronous
 // plant, so additional coal/gas must make up the rest to reach 6,000 MW.
 const SYNC_MIN_MW = 6000;
-// IMPORTS_CF is also declared in nodal_engine.js (loaded first via <script src>).
-// Using typeof guard avoids a SyntaxError from redeclaring a const in the same browser scope.
-if (typeof IMPORTS_CF === 'undefined') { var IMPORTS_CF = 0.85; }
+// IMPORTS_CF = 0.85 is defined in nodal_engine.js (loaded first)
 const FIXED = {
   coalInstalledMW:42000, nuclearMW:1860, hydroMW:600, importsMW:1150,
   psPowerMW:2900, psEnergyMWh:60000, psEff:0.76,
