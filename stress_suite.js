@@ -218,8 +218,11 @@ const cutAt = simScript.indexOf(truncateMarker);
 const simScriptClean = cutAt > 0 ? simScript.slice(0, cutAt) : simScript;
 // Use vm.runInThisContext so function declarations land on the global object
 const vm = require('vm');
+// Inject constants that simulate() needs but are defined in nodal_engine.js
+// (loaded as a separate <script src> in the browser but not available here)
+const injectConsts = 'const IMPORTS_CF = 0.85;\n';
 try {
-  vm.runInThisContext(simScriptClean);
+  vm.runInThisContext(injectConsts + simScriptClean);
 } catch(e) {
   if (typeof simulate === 'undefined') { console.log('vm eval error:', String(e).slice(0,150)); }
 }
