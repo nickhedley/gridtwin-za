@@ -611,7 +611,7 @@ class NodalEngine {
 
     this.commitUnits(hourIdx); // decide which units are synchronised before building their limits
     const gens = this.buildGenerators(hourIdx);
-    let totalLosses = 0, totalCurtailed = 0;
+    let totalLosses = 0, totalCurtailed = 0, forcedCurtailed = 0;
     const genLog = []; // kept lightweight - only what the UI needs
 
     for (const gen of gens) {
@@ -881,7 +881,7 @@ class NodalEngine {
           const battRoom=Math.max(0,(this.battMw[g.region]||0)*BATT_HOURS-this.battSoc[g.region]);
           const battTake=Math.min(surplus,this.battMw[g.region]||0,battRoom);
           if(battTake>0){this.battSoc[g.region]+=battTake*BATT_EFF;surplus-=battTake;battCoalChargeTotal+=battTake;}
-          totalCurtailed += surplus;
+          totalCurtailed += surplus; forcedCurtailed += surplus;
           genLog.push({name:g.name,region:g.region,carrier:g.carrier,
                        homeTake:usedByDemand,curtailed:0,dispatched:take,available:take});
           syncShortfall -= take;
@@ -923,7 +923,7 @@ class NodalEngine {
       const battRoom = Math.max(0, (this.battMw[g.region] || 0) * BATT_HOURS - this.battSoc[g.region]);
       const battTake = Math.min(surplus, this.battMw[g.region] || 0, battRoom);
       if (battTake > 0) { this.battSoc[g.region] += battTake * BATT_EFF; surplus -= battTake; battCoalChargeTotal += battTake; }
-      totalCurtailed += surplus;
+      totalCurtailed += surplus; forcedCurtailed += surplus;
       genLog.push({ name: g.name, region: g.region, carrier: g.carrier,
                     homeTake: usedByDemand, curtailed: 0,
                     dispatched: shortfall, available: shortfall });
@@ -979,7 +979,7 @@ class NodalEngine {
     }
 
     return { hour: hourIdx, demand: rawDemandByName, netDemand: netDemandByName,
-             rooftopGen: rooftopByName, unserved, totalLosses, totalCurtailed, genLog,
+             rooftopGen: rooftopByName, unserved, totalLosses, totalCurtailed, forcedCurtailed, genLog,
              storage: { psDischargeTotal, battDischargeTotal, psChargeTotal, battChargeTotal },
              edgeFlow };
   }
