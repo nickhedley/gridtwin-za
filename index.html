@@ -381,7 +381,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         const banner=document.getElementById('kpiSourceBanner');
         banner.style.display='block';
         banner.innerHTML='<strong>These KPIs and the energy mix above reflect the real 10-region nodal simulation</strong> (coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, plus your allocated portfolio) — not the instant national engine. '+
-          'The hourly dispatch chart above now shows the same real nodal week too. Only the load-shedding risk panel stays on the national engine (Monte Carlo risk is not nodally resolved yet). '+
+          'The hourly dispatch chart above now shows the same real nodal week too. The load-shedding risk panel now shows the nodal unserved figure as its headline estimate; the national Monte Carlo below it gives outage volatility context. '+
           'Moving any slider will switch these two panels back to the instant national view - re-run the Nodal Simulation to bring them back.';
       }
 
@@ -439,6 +439,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             }
           });
           nodalActiveRes={stack:combinedStack, loadS:combinedLoadS};
+          nodalUnservedGwh=summary.unservedGwh; // save for the risk panel
           draw(nodalActiveRes);
         } catch(e){
           out.textContent='Could not run the nodal model - data may be missing from the nodal/ folder.';
@@ -1341,7 +1342,7 @@ const fmtTWh=v=>(v/1e6).toFixed(1);
 function render(r){
   const banner=document.getElementById('kpiSourceBanner');
   if(banner) banner.style.display='none';
-  nodalActiveRes=null;
+  nodalActiveRes=null; nodalUnservedGwh=null;
   // board
   const sw=document.getElementById('statusWord');
   const shedGWh=r.shedMWh/1000;
@@ -1423,6 +1424,7 @@ function render(r){
 let PROFILES=buildProfiles();
 let lastRes=null, rafPending=false, detStage=0;
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
+let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
 
 /* --- Monte Carlo outage risk (60 synthetic years, chunked async) --- */
 let mcToken=0, mcTimer=null;
@@ -1460,7 +1462,20 @@ function renderRisk(runs){
   const meanDiesel=runs.reduce((s,r)=>s+r.diesel,0)/N/1e6;
   const exceed=[1,2,3,4,5,6,7,8].map(s=>runs.filter(r=>r.stage>=s).length/N);
   document.getElementById('riskTag').textContent=MC_N+' outage-years';
-  document.getElementById('riskHead').innerHTML=
+  // If a nodal run has been done, surface its deterministic unserved figure as a prominent
+  // callout ABOVE the MC stats. The nodal figure is more accurate (real network constraints,
+  // real regional demand) but is a single deterministic year, not a probability distribution.
+  // The MC below it then gives the outage volatility context around a national-engine baseline.
+  const nodalCallout = nodalUnservedGwh !== null
+    ? '<div class="rk" style="border-left:3px solid var(--verd);padding-left:8px;margin-bottom:6px">'
+      + '<div class="k" style="font-weight:600">Nodal estimate (typical year)</div>'
+      + '<div class="v" style="color:var(--verd);font-size:1.1em">'
+      + (nodalUnservedGwh < 1 ? '0 GWh' : Math.round(nodalUnservedGwh).toLocaleString() + ' GWh')
+      + '</div>'
+      + '<div style="font-size:10.5px;color:var(--ink2);margin-top:2px">From the full-year nodal run — real 10-region network, corridor limits, real plant siting. More accurate than the national MC below for a deterministic typical year, but a single year only.</div>'
+      + '</div>'
+    : '';
+  document.getElementById('riskHead').innerHTML= nodalCallout +
     '<div class="rk"><div class="k">P(shed &gt;100 GWh)</div><div class="v" style="color:'+(pAny>0.5?'var(--alert)':pAny>0.05?'var(--coal2)':'var(--veld)')+'">'+Math.round(pAny*100)+'%</div></div>'+
     '<div class="rk"><div class="k">Expected shed</div><div class="v">'+(meanShed<1?'0':Math.round(meanShed).toLocaleString())+' GWh</div></div>'+
     '<div class="rk"><div class="k">P90 shed</div><div class="v">'+(p90<1?'0':Math.round(p90).toLocaleString())+' GWh</div></div>'+
