@@ -275,7 +275,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </section>
 
       <script src="nodal/nodal_engine.js?v=24"></script>
-      <script src="nodal/nodal_dispatch.js?v=26"></script>
+      <script src="nodal/nodal_dispatch.js?v=27"></script>
       <script>
       // --- Nodal -> national KPI/mix merge ---
       // Maps the nodal engine's real per-carrier annual output onto the same E{} shape the
@@ -434,7 +434,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             const ws=summary.weekStacks[mode];
             for(let i=0;i<168;i++){
               combinedLoadS[off+i]=ws.loadS[i];
-              DISP_ORDER.forEach(k=>{ combinedStack[k][off+i]=ws.stack[k][i]; });
+              DISP_ORDER.forEach(k=>{ if(ws.stack[k]) combinedStack[k][off+i]=ws.stack[k][i]; });
+              // curtailment comes from the nodal summary's curtailed-per-hour if available
             }
           });
           nodalActiveRes={stack:combinedStack, loadS:combinedLoadS};
@@ -1263,6 +1264,9 @@ function drawDispatch(r){
   const start=weekMode==='W'? 3264 : 7848; // representative weeks: closest to seasonal median demand+VRE (winter ~mid-May, summer ~late-Nov)
   const N=168;
   let maxY=0;
+  // Curtailment: wire curtailMW (single-node) into the stack so the renderer can draw it
+  if(r.curtailMW && !r.stack.curtailment) r.stack.curtailment = r.curtailMW;
+  if(!r.stack.curtailment) r.stack.curtailment = new Float64Array(r.stack.coal.length);
   for(let i=0;i<N;i++){let s=0; DISP_ORDER.forEach(k=>s+=r.stack[k][start+i]); maxY=Math.max(maxY,s,r.loadS[start+i]);}
   maxY*=1.06;
   const padL=42,padB=20,padT=8,padR=6;
@@ -1297,7 +1301,7 @@ function draw(r){
   // legend once
   const lg=document.getElementById('dispLegend');
   if(!lg.dataset.done){lg.dataset.done='1';
-    lg.innerHTML=DISP_ORDER.map(k=>'<span><i style="background:'+COLORS[k]+'"></i>'+NAMES[k]+'</span>').join('')+'<span><i style="background:#22292B"></i>Grid demand + storage charging</span>';}
+    lg.innerHTML=DISP_ORDER.map(k=>'<span><i style="background:'+COLORS[k]+'"></i>'+NAMES[k]+'</span>').join('')+'<span><i style="background:#22292B"></i>Grid demand + storage charging</span>'+'<span><i style="background:#B8D4B8"></i>Curtailed (wasted)</span>';}
 }
 
 /* ==================== RENDER RESULTS ==================== */
