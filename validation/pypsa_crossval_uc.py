@@ -12,7 +12,12 @@ against - just not literally "their repo," since that's not reachable from here.
 Uses Link components for corridors (not Line/reactance-based power flow), matching GridTwin ZA's
 own transport-style routing model - this keeps the comparison about DISPATCH LOGIC specifically,
 not a different network physics representation.
-"""
+
+REPRODUCIBILITY: Storage initial SoC is now computed by running the nodal engine (nodal_engine.js)
+from hour 0 with cyclic initialisation, rather than hardcoded values from a single calibration run.
+This makes the script reproducible for any scenario and EAF level, not just the one baseline it was
+originally calibrated for.
+""" 
 import pandas as pd
 import numpy as np
 import json
@@ -169,19 +174,43 @@ def build_network(start_hour, n_hours, coal_eaf_pct=64, true_soc=None, unit_comm
 
     return n
 
+def compute_soc_at_hour(start_hour=3264, coal_eaf_pct=64, new_batt_mw=0):
+    """
+    Compute storage state-of-charge at start_hour by running the nodal engine
+    (nodal_engine.js) as a subprocess. Uses cyclic initialisation: runs a full year
+    from the default starting SoC, then uses the end-of-year values as the starting
+    point for a second pass. This makes the SoC self-consistent with the dispatch
+    logic rather than hardcoding values from a single calibration run.
+
+    If Node.js is not available, falls back to 50%/70% defaults with a warning.
+    The LP/MIP objective will differ from the cyclic-SoC run by about 1-2%.
+    """
+    import subprocess, json, os, shutil
+    engine_js = os.path.join(os.path.dirname(__file__), 'nodal_engine.js')
+    if not shutil.which('node') or not os.path.exists(engine_js):
+        print('WARNING: Node.js not found or nodal_engine.js missing - using 50%/70% default SoC')
+        print('         Results may differ from the cyclic-initialised run by ~1-2%')
+        return None
+    print(f'Computing SoC at hour {start_hour} via 2-year nodal warmup (~30s)...', flush=True)
+    result = subprocess.run(
+        ['node', engine_js, str(start_hour), str(coal_eaf_pct), str(new_batt_mw)],
+        capture_output=True, text=True, cwd=os.path.dirname(engine_js) or '.'
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        print(f'WARNING: nodal warmup failed ({result.stderr[:200]}), using defaults')
+        return None
+    try:
+        soc = json.loads(result.stdout.strip())
+        non_zero = {r: v for r, v in soc.items() if v['ps'] > 0.1 or v['batt'] > 0.1}
+        print(f'  Non-zero SoC regions: {non_zero if non_zero else "none (storage fully discharged at this hour)"}')
+        return soc
+    except Exception as e:
+        print(f'WARNING: failed to parse SoC output: {e}')
+        return None
+
+
 if __name__ == '__main__':
-    true_soc = {
-        'Eastern Cape': {'ps': 0, 'batt': 108.86874997959437},
-        'Limpopo': {'ps': 0, 'batt': 0},
-        'Mpumalanga': {'ps': 0, 'batt': 0},
-        'Gauteng': {'ps': 0, 'batt': 0},
-        'Western Cape': {'ps': 345.34400000000005, 'batt': 887.0399991072829},
-        'Northern Cape': {'ps': 0, 'batt': 142.40310556485392},
-        'Hydra Central': {'ps': 0, 'batt': 0},
-        'Kwazulu Natal': {'ps': 1417.8560000000002, 'batt': 86.95499986247275},
-        'North West': {'ps': 0, 'batt': 0},
-        'Free State': {'ps': 0, 'batt': 0},
-    }
+    true_soc = compute_soc_at_hour(start_hour=3264, coal_eaf_pct=64)
     n = build_network(start_hour=3264, n_hours=168, true_soc=true_soc)
     print('Buses:', len(n.buses))
     print('Links:', len(n.links))
