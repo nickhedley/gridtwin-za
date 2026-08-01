@@ -189,9 +189,16 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
       // with no matching sink). The discharge is not reducing the fuel requirement. Until that
       // is fixed the stack cannot balance on those hours, and storage charging should not be
       // added to this chart as a visible layer.
+      // Demand line = netDemand + storage charging + losses + forced-coal curtailment.
+      // forcedCurtailed is the surplus from the ramp-down and sync-floor passes where coal was
+      // forced to generate but couldn't be absorbed — that generation IS in genLog.dispatched
+      // so it's in the stack, but the demand line must also include it to balance.
+      // Renewable curtailment is NOT included: those generators' dispatched figures already
+      // exclude the curtailed portion, so they don't appear in the stack either.
       ws.loadS[idx] = Object.values(r.netDemand).reduce((a, b) => a + b, 0)
         + (r.storage ? (r.storage.psChargeTotal || 0) + (r.storage.battChargeTotal || 0) : 0)
-        + (r.totalLosses || 0);
+        + (r.totalLosses || 0)
+        + (r.forcedCurtailed || 0);
       ws.stack.unserved[idx] = Object.values(r.unserved).reduce((a, b) => a + b, 0);
       r.genLog.forEach(g => {
         const k = foldCarrier(g.carrier);
