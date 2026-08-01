@@ -104,7 +104,7 @@ const GET_CONGESTION_THRESHOLD_PCT = 30; // avg utilisation above this = truly c
  */
 async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion, newRooftopMW, newBattMW,
                              extraCoalByRegion, extraCcgtByRegion, extraNuclearByRegion, extraBattByRegion, coalFlexPct, getsEnabled,
-                             newWindMW, newPvMW) {
+                             newWindMW, newPvMW, syncFloorMW = 6000) {
   const data = await loadNodalData();
   if (!nodalEngineInstance) nodalEngineInstance = new NodalEngine(data);
 
@@ -117,7 +117,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     // keep the added runtime reasonable. Includes newWindMW/newPvMW so congestion is detected
     // against the REAL, full scenario (auto-distributed wind/solar included), not one missing it.
     nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0, newBattMW || 0,
-      extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, false, null, newWindMW || 0, newPvMW || 0);
+      extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, false, null, newWindMW || 0, newPvMW || 0, syncFloorMW);
     const edgeMetaBaseline = nodalEngineInstance.edgeMeta;
     const baselineAnnualFlow = new Array(edgeMetaBaseline.length).fill(0);
     for (let h = 0; h < 8760; h++) {
@@ -132,7 +132,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
   }
 
   nodalEngineInstance.setScenario(coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {}, newRooftopMW || 0, newBattMW || 0,
-    extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, getsEnabled || false, boostedEdgeIndices, newWindMW || 0, newPvMW || 0);
+    extraCoalByRegion || {}, extraCcgtByRegion || {}, extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, getsEnabled || false, boostedEdgeIndices, newWindMW || 0, newPvMW || 0, syncFloorMW);
 
   const t0 = performance.now();
   let totalDemand = 0, totalUnserved = 0, totalLosses = 0, totalCurtailed = 0, totalRooftop = 0;
