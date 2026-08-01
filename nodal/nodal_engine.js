@@ -986,3 +986,72 @@ class NodalEngine {
 }
 
 if (typeof module !== 'undefined') module.exports = { NodalEngine, REGIONS, CORRIDORS, lossFraction };
+
+// CLI: called as `node nodal_engine.js <startHour> <coalEafPct> <newBattMw>`
+// Runs the engine from hour 0 to startHour-1 and prints SoC as JSON to stdout.
+// Used by pypsa_crossval_uc.py to get reproducible storage initial conditions.
+if (typeof require !== 'undefined' && require.main === module) {
+  const fs = require('fs');
+  const startHour = parseInt(process.argv[2] || '3264');
+  const coalEafPct = parseFloat(process.argv[3] || '64');
+  const newBattMw  = parseFloat(process.argv[4] || '0');
+
+  function parseCSV(text) {
+    const lines = text.trim().split('\n'), headers = lines[0].split(',');
+    return lines.slice(1).map(line => { const v=line.split(','),r={}; headers.forEach((h,j)=>{r[h]=v[j];}); return r; });
+  }
+
+  const demandRows = parseCSV(fs.readFileSync('demand_2025_regional.csv','utf8'));
+  const demandByRegion = {};
+  REGIONS.forEach(r=>{ demandByRegion[r]=new Float64Array(8760); });
+  demandRows.forEach((row,i)=>{ if(i<8760) REGIONS.forEach(r=>{ const v=row[r+'_corrected']; demandByRegion[r][i]=v&&v!=='-'?parseFloat(v)||0:0; }); });
+
+  const profiles = JSON.parse(fs.readFileSync('profiles_regional.json','utf8'));
+  const windPu={}, solarPu={};
+  REGIONS.forEach(r=>{ windPu[r]=Float64Array.from(profiles.wind_pu[r]); solarPu[r]=Float64Array.from(profiles.solar_pu[r]); });
+
+  const cap = JSON.parse(fs.readFileSync('regional_renewable_capacity.json','utf8'));
+  const rooftopMw = JSON.parse(fs.readFileSync('rooftop_mw_by_region.json','utf8'));
+
+  // fleet: parse CSV keeping quotes/commas correctly via manual field split
+  const fleetRaw = fs.readFileSync('fleet_by_region_v2.csv','utf8').trim().split('\n');
+  // strip surrounding quotes from each field (the CSV uses quoted fields throughout)
+  const unq = s => s ? s.replace(/^"+|"+$/g,'').trim() : '';
+  const fHdr = fleetRaw[0].split(',').map(unq);
+  const fleet = fleetRaw.slice(1).map(line=>{
+    const v=line.split(','), row={};
+    fHdr.forEach((h,j)=>{ row[h]=unq(v[j]||''); }); return row;
+  }).filter(r=>r.Scenario==='BASE').map(r=>{
+    const f=k=>{const v=r[k]; return(!v||v==='-')?0:(parseFloat(v)||0);};
+    return { name:r['Power Station Name'], region:r['region'], carrier:r['Carrier'],
+             capacityMw:f('Capacity (MW)'),
+             marginalCost:f('Heat Rate (GJ/MWh)')*f('Fuel Price (R/GJ)')+f('Variable O&M Cost (R/MWh)'),
+             decomYear:Infinity, minStableFrac:f('Min Stable Level (%)'),
+             rampUpFrac:f('Max Ramp Up (%/h)')||1, rampDownFrac:f('Max Ramp Down (%/h)')||1,
+             minUpTime:f('Min Up Time (h)'), minDownTime:f('Min Down Time (h)'),
+             startUpCost:f('Start Up Cost (R)') };
+  });
+
+  const nat = JSON.parse(fs.readFileSync('profiles.json','utf8'));
+  const cspPu = nat.csp_pu ? Float64Array.from(nat.csp_pu) : null;
+
+  const e = new NodalEngine({ demandByRegion, windPu, solarPu, windMw:cap.wind_mw, solarMw:cap.solar_mw, rooftopMw, fleet, cspPu });
+  // Cyclic initialisation: run a full year from the default starting SoC, then use
+  // the end-of-year SoC as the starting point for a second pass. The SoC at startHour
+  // in the second pass is self-consistent with the dispatch logic - it reflects how
+  // storage actually behaves in this scenario rather than an arbitrary 50%/70% assumption.
+  // This replaces the hardcoded SoC values that were only valid for one specific scenario.
+  e.setScenario(coalEafPct, 0, {},{}, 0, newBattMw, {},{},{},{}, 0, false, null, 0, 0);
+  for (let h = 0; h < 8760; h++) e.dispatchHour(h); // warmup year
+
+  // capture end-of-warmup SoC and re-initialise for the real run
+  const warmupPsSoc = { ...e.psSoc };
+  const warmupBattSoc = { ...e.battSoc };
+  e.setScenario(coalEafPct, 0, {},{}, 0, newBattMw, {},{},{},{}, 0, false, null, 0, 0);
+  REGIONS.forEach(r => { e.psSoc[r] = warmupPsSoc[r] || 0; e.battSoc[r] = warmupBattSoc[r] || 0; });
+  for (let h = 0; h < startHour; h++) e.dispatchHour(h);
+
+  const soc = {};
+  REGIONS.forEach(r => { soc[r] = { ps: Math.round((e.psSoc[r]||0)*100)/100, batt: Math.round((e.battSoc[r]||0)*100)/100 }; });
+  process.stdout.write(JSON.stringify(soc)+'\n');
+}
