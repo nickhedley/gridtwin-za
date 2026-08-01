@@ -19,19 +19,19 @@ function parseCSV(text) {
 }
 
 function loadData() {
-  const demandRows = parseCSV(fs.readFileSync('demand_2025_regional.csv', 'utf8'));
+  const demandRows = parseCSV(fs.readFileSync('nodal/demand_2025_regional.csv', 'utf8'));
   const demandByRegion = {};
   REGIONS.forEach(r => { demandByRegion[r] = new Float64Array(8760); });
   demandRows.forEach((row, i) => { REGIONS.forEach(r => { demandByRegion[r][i] = parseFloat(row[r + '_corrected']); }); });
 
-  const profiles = JSON.parse(fs.readFileSync('profiles_regional.json', 'utf8'));
+  const profiles = JSON.parse(fs.readFileSync('nodal/profiles_regional.json', 'utf8'));
   const windPu = {}, solarPu = {};
   REGIONS.forEach(r => { windPu[r] = Float64Array.from(profiles.wind_pu[r]); solarPu[r] = Float64Array.from(profiles.solar_pu[r]); });
 
-  const cap = JSON.parse(fs.readFileSync('regional_renewable_capacity.json', 'utf8'));
-  const rooftopMw = JSON.parse(fs.readFileSync('rooftop_mw_by_region.json', 'utf8'));
+  const cap = JSON.parse(fs.readFileSync('nodal/regional_renewable_capacity.json', 'utf8'));
+  const rooftopMw = JSON.parse(fs.readFileSync('nodal/rooftop_mw_by_region.json', 'utf8'));
 
-  const fleetRows = parseCSV(fs.readFileSync('fleet_by_region_v2.csv', 'utf8'));
+  const fleetRows = parseCSV(fs.readFileSync('nodal/fleet_by_region_v2.csv', 'utf8'));
   const fleet = fleetRows.filter(r => r.Scenario === 'BASE').map(r => {
     const hr = parseFloat(r['Heat Rate (GJ/MWh)']) || 0;
     const fp = parseFloat(r['Fuel Price (R/GJ)']) || 0;
