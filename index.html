@@ -652,7 +652,8 @@ function simulate(u, prof, outPath){
   const shedHours=[0,0,0,0,0,0,0,0,0];
   const stackKeys=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
   const stack={}; stackKeys.forEach(k=>stack[k]=new Float64Array(HOURS));
-  const chargeMW=new Float64Array(HOURS); // storage charging per hour - REAL load on the system.
+  const chargeMW=new Float64Array(HOURS);   // storage charging per hour
+  const curtailMW=new Float64Array(HOURS);  // wasted renewable potential per hour - REAL load on the system.
   // Previously untracked, so charging was invisible: the demand line ignored it and the stack
   // deliberately excluded the generation serving it. A battery-heavy scenario therefore couldn't
   // show the thing that actually matters about it - that storage CREATES midday load, which is
@@ -786,7 +787,7 @@ function simulate(u, prof, outPath){
       const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); psSoc+=psChg*p.psEff; surplus-=psChg;
       const btChg=Math.min(surplus,battPower,battEnergy-battSoc); battSoc+=btChg*p.battEff; surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
-      E.curtailed+=surplus;
+      curtailMW[h]+=surplus; E.curtailed+=surplus;
       const vre=windGen+pvGen;
       if(vre>0&&surplus>0){const f=Math.max(0,vre-surplus)/vre; windGen*=f; pvGen*=f;}
       // If surplus REMAINS after storage has charged and every curtailable renewable has been
@@ -840,7 +841,7 @@ function simulate(u, prof, outPath){
           const vreD=windGen+pvGen;
           const cut=Math.min(vreD,forcedSurplus);
           if(vreD>0&&cut>0){const f=(vreD-cut)/vreD; windGen*=f; pvGen*=f;}
-          E.curtailed+=cut; forcedSurplus-=cut;
+          curtailMW[h]+=cut; E.curtailed+=cut; forcedSurplus-=cut;
           if(forcedSurplus>0&&coalGen>0){
             const tripped=Math.min(coalGen,forcedSurplus);
             coalGen-=tripped; forcedSurplus-=tripped; E.coalTripped=(E.coalTripped||0)+tripped;
@@ -922,7 +923,7 @@ function simulate(u, prof, outPath){
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
   return {E,fuelCost,carbonCost,newCapexR,totalCost,avgCost,co2,replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
-          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW,
+          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
@@ -981,8 +982,8 @@ const PRESETS={
   'Crisis 2023':{coalEAFPct:50,demandGrowthPct:14,outVolPct:6},
   'Future electricity mix':{coalDecomMW:10000,newWindMW:20000,newPvMW:30000,newRooftopMW:10000,newBattMW:8000,newCcgtMW:2500},
 };
-const COLORS={nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A'};
-const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV'};
+const COLORS={nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
+const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV',curtailment:'Curtailed (wasted)'};
 
 /* ==================== BUILD CONTROLS ==================== */
 const state={};
@@ -1258,7 +1259,7 @@ let weekMode='W';
 document.getElementById('wkW').addEventListener('click',e=>{weekMode='W';toggleWk(e.target);draw(nodalActiveRes||lastRes);});
 document.getElementById('wkS').addEventListener('click',e=>{weekMode='S';toggleWk(e.target);draw(nodalActiveRes||lastRes);});
 function toggleWk(btn){document.querySelectorAll('.wkbtns button').forEach(b=>b.classList.toggle('active',b===btn));}
-const DISP_ORDER=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
+const DISP_ORDER=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved','curtailment'];
 
 function drawDispatch(r){
   const c=dispCanvas, dpr=window.devicePixelRatio||1;
