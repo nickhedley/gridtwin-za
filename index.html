@@ -500,7 +500,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Gas CCGT</td><td>R1 750/MWh · 0.37 tCO₂/MWh</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh · 1 150 MW @ 85%</td></tr>
           <tr><td>Existing fleet</td><td>Wind 3.6 GW · Utility PV 4 GW · Rooftop 8.3 GW · CSP 0.5 GW · Batteries 0.8 GW · Pumped storage 2.9 GW</td></tr>
-          <tr><td>New-build annualised capex</td><td>Wind R1 650 · PV R1 050 · Rooftop R1 150 · Battery(4h) R1 500 · CCGT R1 350 /kW·yr</td></tr>
+          <tr><td>New-build annualised capex</td><td>Wind R1 650 · PV R1 110 · Rooftop R1 150 · Battery(4h) R1 350 · CCGT R1 350 /kW·yr (IRENA 2025, BNEF 2026, IRP 2025)</td></tr>
           <tr><td>Grid expansion adder</td><td>Default R600/kW·yr on new wind &amp; utility PV — from TDP 2025–34: ±R390bn for 14 500 km of lines to connect 56 GW ≈ R700/kW·yr annualised. Rooftop PV and (assumed co-located) batteries are exempt. Adjustable via the Policy slider.</td></tr>
           <tr><td>Renewables vs Non-fossil</td><td>"Renewables" = wind + utility PV + rooftop PV + CSP. "Non-fossil" adds nuclear, hydro and (mostly-hydro) imports. Rooftop is reconstructed from an assumed ~6.5 GW embedded fleet — it is behind-the-meter and not in Eskom's figures, so it is the softest input; the true renewables share could be a point or two lower.</td></tr>
           <tr><td>Avg tariff-equivalent cost</td><td>(fuel + carbon + new capex) ÷ grid energy served — excludes existing-fleet capex, wires &amp; retail</td></tr>
@@ -611,7 +611,7 @@ const FIXED = {
   // carry the higher 65% Min Stable Levels, are correctly weighted at low commitment).
   coalStartUpCostRPerMW:224.52,
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
-  lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600, lcoeCsp:2000, lcoeCcgt:1500, lcoeNuclear:1650, lcoeCoalNew:1200, lcoeDiesel:5500,
+  lcoePv:575, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1450, lcoeCsp:2000, lcoeCcgt:1500, lcoeNuclear:1650, lcoeCoalNew:1200, lcoeDiesel:5500, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
