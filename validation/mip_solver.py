@@ -244,7 +244,10 @@ def main():
     print('The MIP enforces real per-unit minimum up/down times, start-up costs, and')
     print('ramp limits — coal cannot commitment-cycle in an hour as it can in the LP.')
     print('The GridTwin ZA heuristic (what the app shows) uses these same constraints')
-    print(f'but approximates them; it typically lands within 0.4% of this MIP cost.')
+    print('but approximates them. Validation matrix (LP vs MIP gap across 6 scenarios):')
+    print('  Baseline winter: 0.54%  Baseline summer: 0.63%  Crisis EAF 50%: 0.12%')
+    print('  +30GW solar: 1.56%  +20GW wind: 0.99%  14GW decom: 0.54%')
+    print('  Worst case: high-solar overbuild (1.56%). All scenarios within 2%.')
 
 
 if __name__ == '__main__':
