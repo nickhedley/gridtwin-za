@@ -401,7 +401,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             const bucket=buckets[tech];
             if(bucket) bucket[region]=(bucket[region]||0)+mw;
           });
-          const summary=await runNodalYear(state.coalEAFPct, state.coalDecomMW, extraWind, extraSolar, state.newRooftopMW, state.newBattMW, extraCoal, extraCcgt, extraNuclear, extraBatt, state.coalFlexPct?100:0, !!state.getsEnabled, state.newWindMW, state.newPvMW, state.syncMinEnabled!==false?6000:0);
+          const summary=await runNodalYear(state.coalEAFPct, state.coalDecomMW, extraWind, extraSolar, state.newRooftopMW, state.newBattMW, extraCoal, extraCcgt, extraNuclear, extraBatt, state.coalFlexPct?100:0, !!state.getsEnabled, state.newWindMW, state.newPvMW, state.syncMinMW||0);
           const regionRows=Object.entries(summary.byRegion)
             .map(([r,v])=>({r, sheddingPct: v.demand>0?100*v.unserved/v.demand:0}))
             .sort((a,b)=>b.sheddingPct-a.sheddingPct)
@@ -619,7 +619,7 @@ const FIXED = {
 function simulate(u, prof, outPath){
   const p={...FIXED,...u};
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
-  p.syncFloorMW = (p.syncMinEnabled !== false) ? SYNC_MIN_MW : 0;
+  p.syncFloorMW = (typeof p.syncMinMW === 'number') ? p.syncMinMW : (p.syncMinEnabled !== false ? SYNC_MIN_MW : 0);
   const {demand,solar,wind,csp}=prof;
   const growth=1+p.demandGrowthPct/100;
   const coalInstRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW)+p.newCoalMW;
@@ -966,7 +966,7 @@ const SLIDERS=[
   {id:'getsEnabled',toggle:true,def:false,label:'Grid enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. On = +20% capacity (real DOE/utility deployments, 10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2014 not a blanket national boost, since enhancing an already-idle corridor would be a real-world waste of money. ~R1.55m/km \u2014 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2014 the single-node engine has no corridors to enhance.'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
-  {id:'syncMinEnabled',toggle:true,def:true,label:'Synchronous generation floor',note:'Requires a minimum of ~6,000 MW of synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability, and fault current — roughly 15% of SA peak demand, consistent with Eskom\u2019s historical operating practice and published AEMO-style rules. Turn OFF to model a fully grid-forming-capable future where batteries and inverters with grid-forming control can substitute for spinning mass. Grid-forming inverters are real and certified (SMA, ABB, Hitachi), but most of today\u2019s SA fleet is grid-following and would NOT qualify. Applies to both engines.'},
+  {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. 6 GW ≈ 15% of SA peak demand — consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'headline tax ≈ R308/t (2026) but generator allowances shield most of it — set the price generators actually feel'},
   {grp:'LCOE assumptions (R/kWh) — full lifecycle build cost'},
