@@ -1,21 +1,33 @@
-MIT License
+Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
 
-Copyright (c) 2026 nickhedley
+Copyright (c) 2026 Nick Hedley
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+You are free to:
+  Share — copy and redistribute the material in any medium or format
+  Adapt — remix, transform, and build upon the material
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Under the following terms:
+  Attribution — You must give appropriate credit, provide a link to the licence,
+                and indicate if changes were made.
+  NonCommercial — You may not use the material for commercial purposes without
+                  explicit written permission from the copyright holder.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Full licence text: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+
+For commercial licensing enquiries, contact the author via the repository.
+
+---
+
+Data sources incorporated in this repository carry their own licences:
+
+- Eskom hourly system data (2025): Eskom Data Portal — public operational data
+- UCT ESRG Single Node Hourly Demand Model (Bruno Merven, ZivaHub):
+  https://doi.org/10.25375/uct.24137877 — CC BY 4.0
+- PyPSA-RSA network topology and fleet data (Meridian Economics):
+  https://github.com/MeridianEconomics/pypsa-rsa — MIT
+- PVGIS SARAH2 solar profiles: European Commission JRC — open access
+- Renewables.ninja wind profiles: Pfenninger & Staffell — CC BY-NC 4.0
+- REIPPPP project data: DMRE / IPP Office — public domain
+- GCCA connection capacity data: NTCSA — public domain
+
+Users are responsible for complying with the terms of each upstream data source.
