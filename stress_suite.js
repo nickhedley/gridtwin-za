@@ -261,7 +261,51 @@ function runSN(params) {
   }
   return { ...r.E, shedMWh:r.E.unserved, nanCount, negCount, chartMism,
            peakCoal:Math.max(...Array.from({length:SN_HOURS},(_,h)=>r.coalGenTotal[h])),
-           minCoal:Math.min(...Array.from({length:SN_HOURS},(_,h)=>r.coalGenTotal[h])) };
+           minCoal:Math.min(...Array.from({length:SN_HOURS},(_,h)=>r.coalGenTotal[h])),
+           _raw: r }; // full simulate result for energy balance checks
+}
+
+// Helper: check annual energy balance for a simulate() result
+function checkEnergyBalance(result, label) {
+  const r = result._raw || result; // accept both runSN return and raw simulate return
+  const E = r.E;
+  // Total annual generation (all carriers — excludes unserved which is deficit, not generation)
+  const genTotal = E.rooftop + E.wind + E.pv + E.csp + E.nuclear + E.hydro
+    + E.imports + E.coal + E.ps + E.batt + E.ccgt + E.diesel;
+  // stackSum includes unserved (in stack for chart balance) but excludes rooftop (nets off demand)
+  // So: genTotal + E.unserved = stackSum + E.rooftop
+  // Rearranged: genTotal = stackSum + E.rooftop - E.unserved
+  let stackSum = 0;
+  const keys = ['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
+  for(let h=0;h<8760;h++) keys.forEach(k=>{ stackSum += (r.stack[k]?r.stack[k][h]:0); });
+  const expected = stackSum + E.rooftop - E.unserved;
+  const gap = Math.abs(expected - genTotal);
+  const pct = genTotal > 0 ? gap / genTotal * 100 : 0;
+  check(pct < 0.5, `SN ${label}: annual energy balance (genTotal = stack+rooftop-unserved within 0.5%)`,
+    `gap=${gap.toFixed(0)} MWh (${pct.toFixed(3)}%)`);
+
+  // Check: loadS = demand + charging (hourly)
+  let loadSsum = 0, chargeSum = 0;
+  for(let h=0;h<8760;h++){ loadSsum += r.loadS[h]; chargeSum += r.chargeMW[h]; }
+  const demandServed = loadSsum - chargeSum;
+  // genTotal = demandServed + charging + storage_losses + curtailed(forced)
+  // curtailMW includes forced-coal curtailed (in stack) so:
+  // stackSum (gen serving demand+charging) + forced_curtail = loadSsum + forced_curtail
+  // just check stack sums to loadS within tolerance (already done per hour, sum it annually)
+  const loadSgap = Math.abs(stackSum - loadSsum);
+  const loadSpct = loadSgap / loadSsum * 100;
+  check(loadSpct < 0.1, `SN ${label}: annual stack = annual loadS within 0.1%`,
+    `gap=${loadSgap.toFixed(0)} MWh (${loadSpct.toFixed(3)}%)`);
+
+  // Check: curtailed >= 0 and consistent with E.curtailed
+  let curtailSum = 0;
+  for(let h=0;h<8760;h++) curtailSum += (r.curtailMW?r.curtailMW[h]:0);
+  // curtailMW is forced-coal curtailment only; E.curtailed includes renewable curtailment too
+  check(E.curtailed >= curtailSum - 1, `SN ${label}: E.curtailed >= curtailMW sum`,
+    `E.curtailed=${(E.curtailed/1e3).toFixed(0)}GWh curtailMW_sum=${(curtailSum/1e3).toFixed(0)}GWh`);
+  check(E.unserved >= 0 && Number.isFinite(E.unserved), `SN ${label}: E.unserved non-negative finite`);
+
+  return { genTotal, stackSum, demandServed, pct };
 }
 
 console.log('\n' + '='.repeat(70));
@@ -288,7 +332,8 @@ for(const [lbl,p] of snScenarios){
   check(r.chartMism===0, `SN ${lbl}: chart integrity (stack+curtail=loadS)`, r.chartMism?r.chartMism+'/8760':'');
   check(Number.isFinite(r.shedMWh) && r.shedMWh>=0, `SN ${lbl}: shed is finite non-negative`);
   check(Number.isFinite(r.curtailed) && r.curtailed>=0, `SN ${lbl}: curtailed is finite non-negative`);
-  console.log(`  ${lbl}: shed=${(r.shedMWh/1e3).toFixed(1)}GWh curtail=${(r.curtailed/1e3).toFixed(0)}GWh chartMism=${r.chartMism}`);
+  const bal = checkEnergyBalance(r, lbl);
+  console.log(`  ${lbl}: shed=${(r.shedMWh/1e3).toFixed(1)}GWh curtail=${(r.curtailed/1e3).toFixed(0)}GWh balance_gap=${bal.pct.toFixed(3)}%`);
 }
 
 console.log('\n' + '='.repeat(70));
