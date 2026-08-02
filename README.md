@@ -317,7 +317,11 @@ Slider settings are written to the URL. Copy the address bar (or use the
 
 ## Licence & disclaimer
 
-MIT licence — reuse freely with attribution.
+**[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)** — free to use,
+share and adapt with attribution for non-commercial purposes. Commercial use
+requires explicit written permission from the author.
+
+For commercial licensing enquiries, open an issue or contact via the repository.
 
 This is an educational scenario explorer. All outputs are indicative and it is
 not planning, investment or operational advice. Not affiliated with Eskom,
