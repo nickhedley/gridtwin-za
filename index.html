@@ -493,7 +493,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
             Includes all technologies — not just REIPPPP. Dominated by C&amp;I solar PV.
           </p>
-          <div id="nersaBody"></div>
+          <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
         </div>
 
       </section>
@@ -1265,11 +1265,12 @@ fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
   const maxMW=Math.max(...Object.values(prov).map(v=>v.mw),1);
   const sorted=Object.entries(prov).sort((a,b)=>b[1].mw-a[1].mw);
   const tcols={solar:'#F5C518',wind:'#3EA055',batt:'#7EC8E3',biomass:'#8B6914'};
-  let html='<div style="font-size:10.5px;color:var(--ink2);margin-bottom:5px">'+q.period+'</div><div style="margin-bottom:8px;font-size:12px"><strong>'+q.total_facilities
+  let html='<div style="font-size:10px;color:var(--ink2);margin-bottom:4px">'+q.period+'</div><div style="margin-bottom:6px;font-size:11px"><strong>'+q.total_facilities
     +' facilities · '+q.total_mw.toFixed(0)+' MW · R'+q.total_investment_rbn+' bn</strong></div>';
-  html+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">';
+  html+='<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px">';
   (q.by_technology||[]).forEach(t=>{
-    html+=`<span style="background:${tcols[t.tech]||'#aaa'};color:#fff;border-radius:3px;padding:2px 6px;font-size:10px">${t.tech_label} ${t.mw.toFixed(0)}MW</span>`;
+    if(t.mw<0.1) return;
+    html+=`<span style="background:${tcols[t.tech]||'#aaa'};color:#fff;border-radius:3px;padding:1px 5px;font-size:9.5px;white-space:nowrap">${t.tech_label.replace(' PV','').replace('ogas','')}: ${t.mw.toFixed(0)}MW</span>`;
   });
   html+='</div>';
   sorted.forEach(([region,v])=>{
@@ -1285,7 +1286,7 @@ fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
   const yrs=Object.keys(ann).sort();
   if(yrs.length){
     const totalMW=yrs.reduce((s,y)=>s+(ann[y].mw||0),0);
-    html+=`<div style="margin-top:10px;font-size:10.5px;color:var(--ink2)">Cumulative since 2018: <strong style="color:var(--ink)">${(totalMW/1000).toFixed(1)} GW</strong> across all private &amp; embedded generation</div>`;
+    html+=`<div style="margin-top:8px;font-size:10px;color:var(--ink2)">Since 2018: <strong style="color:var(--ink)">${(totalMW/1000).toFixed(1)} GW</strong> private &amp; embedded</div>`;
     const maxYMW=Math.max(...yrs.map(y=>ann[y].mw||0));
     html+='<div style="display:flex;gap:2px;align-items:flex-end;margin-top:6px;height:36px">';
     yrs.forEach(y=>{ const h=Math.round(34*(ann[y].mw||0)/maxYMW);
