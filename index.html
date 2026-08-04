@@ -1260,7 +1260,7 @@ fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
   if(!panel||!data.quarters||!data.quarters.length) return;
   panel.style.display='';
   const q=data.quarters[data.quarters.length-1];
-  tag.textContent=q.quarter_label;
+  const ql=q.quarter_label||''; tag.textContent=(ql.length<20?ql:q.period);
   const prov=q.by_province||{};
   const maxMW=Math.max(...Object.values(prov).map(v=>v.mw),1);
   const sorted=Object.entries(prov).sort((a,b)=>b[1].mw-a[1].mw);
