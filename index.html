@@ -482,6 +482,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
         </div>
 
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
+          <div class="pb" id="lcoe"></div>
+        </div>
+
         <div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
           <div class="ph"><h2>NERSA registrations</h2><span class="tag" id="nersaTag"></span></div>
           <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
@@ -489,11 +494,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             Includes all technologies — not just REIPPPP. Dominated by C&amp;I solar PV.
           </p>
           <div id="nersaBody"></div>
-        </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
-          <div class="pb" id="lcoe"></div>
         </div>
 
       </section>
@@ -1260,12 +1260,12 @@ fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
   if(!panel||!data.quarters||!data.quarters.length) return;
   panel.style.display='';
   const q=data.quarters[data.quarters.length-1];
-  tag.textContent=q.quarter_label+' · '+q.period;
+  tag.textContent=q.quarter_label;
   const prov=q.by_province||{};
   const maxMW=Math.max(...Object.values(prov).map(v=>v.mw),1);
   const sorted=Object.entries(prov).sort((a,b)=>b[1].mw-a[1].mw);
   const tcols={solar:'#F5C518',wind:'#3EA055',batt:'#7EC8E3',biomass:'#8B6914'};
-  let html='<div style="margin-bottom:8px;font-size:12px"><strong>'+q.total_facilities
+  let html='<div style="font-size:10.5px;color:var(--ink2);margin-bottom:5px">'+q.period+'</div><div style="margin-bottom:8px;font-size:12px"><strong>'+q.total_facilities
     +' facilities · '+q.total_mw.toFixed(0)+' MW · R'+q.total_investment_rbn+' bn</strong></div>';
   html+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">';
   (q.by_technology||[]).forEach(t=>{
