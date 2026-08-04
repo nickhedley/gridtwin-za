@@ -1209,7 +1209,7 @@ function buildMap(){
 buildMap();
 // ── Pipeline overlay ─────────────────────────────────────────────────────────
 let pipelineData=null, pipelineVisible=false;
-fetch('nodal/ipp_pipeline.json').then(r=>r.json()).then(d=>{pipelineData=d;}).catch(()=>{});
+fetch('nodal/ipp_pipeline.json').then(r=>r.json()).then(d=>{pipelineData=d;console.log('pipeline loaded:',Object.keys(d.by_region||{}).length,'regions');}).catch(e=>console.warn('pipeline fetch failed:',e.message));
 
 function togglePipeline(){
   pipelineVisible=!pipelineVisible;
@@ -1222,9 +1222,14 @@ function togglePipeline(){
 
 function drawPipeline(){
   document.querySelectorAll('.pipeline-ring').forEach(e=>e.remove());
-  if(!pipelineVisible||!pipelineData) return;
+  if(!pipelineVisible) return;
+  if(!pipelineData){
+    const btn=document.getElementById('pipelineToggle');
+    if(btn) btn.textContent='Pipeline data not loaded';
+    return;
+  }
   const svg=document.querySelector('#mapholder svg');
-  if(!svg) return;
+  if(!svg){ console.warn('drawPipeline: SVG not found in #mapholder'); return; }
   const R2N={'Eastern Cape':'PE','Free State':'BFN','Gauteng':'JHB','Hydra Central':'UPG',
     'Kwazulu Natal':'DBN','Limpopo':'LEP','Mpumalanga':'MPU','Northern Cape':'NCE',
     'North West':'NW','Western Cape':'CPT'};
