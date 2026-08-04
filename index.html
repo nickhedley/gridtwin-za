@@ -196,7 +196,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="main2">
       <section aria-label="Network map and capacity siting">
       <div class="panel mapbox">
-        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" style="margin-left:8px;font-size:10px;padding:2px 7px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px">Pipeline OFF</button></div>
+        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" style="margin-left:8px;font-size:10px;padding:2px 7px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px">Show pipeline</button></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
         <div class="legend">
           <span><i style="background:#4A3120"></i>Coal</span>
@@ -1228,9 +1228,9 @@ function drawPipeline(){
   const R2N={'Eastern Cape':'PE','Free State':'BFN','Gauteng':'JHB','Hydra Central':'UPG',
     'Kwazulu Natal':'DBN','Limpopo':'LEP','Mpumalanga':'MPU','Northern Cape':'NCE',
     'North West':'NW','Western Cape':'CPT'};
-  const NP={PE:{x:595,y:425},BFN:{x:583,y:345},JHB:{x:644,y:280},UPG:{x:143,y:218},
-    DBN:{x:700,y:345},LEP:{x:617,y:210},MPU:{x:662,y:268},NCE:{x:163,y:235},
-    NW:{x:566,y:257},CPT:{x:447,y:414}};
+  // Use actual node positions from the NODES array (defined earlier in this file)
+  const NP={};
+  (typeof NODES!=='undefined'?NODES:[]).forEach(n=>{ NP[n.id]={x:n.x,y:n.y}; });
   const byR=pipelineData.by_region||{};
   const maxMW=Math.max(...Object.values(byR).map(d=>d.total_mw||0),1);
   Object.entries(byR).forEach(([region,data])=>{
