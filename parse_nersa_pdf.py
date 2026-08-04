@@ -83,21 +83,24 @@ def parse_pdf(pdf_path):
     date_match = re.search(r'^(\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4})', full_text, re.MULTILINE)
     period_match = re.search(r'\((\w+)\s+to\s+(\w+)\s+(\d{4})\)', full_text)
 
-    if quarter_match:
-        ql = re.sub(r'\s+', ' ', quarter_match.group(1).strip().title())
-        q_num = {'First':'Q1','Second':'Q2','Third':'Q3','Fourth':'Q4'}
-        quarter_label = ql
-        for k,v in q_num.items():
-            if k in ql:
-                fy = re.search(r'(\d{4}/\d{2,4})', ql)
-                quarter_label = f'{v} {fy.group(1)}' if fy else ql
-                break
-    else:
-        quarter_label = 'Unknown quarter'
     pub_date = date_match.group(1).strip() if date_match else 'Unknown'
     if period_match:
         period = f"{period_match.group(1)}–{period_match.group(2)} {period_match.group(3)}"
     else:
+        period = pub_date
+    # Use calendar year quarter from the period (e.g. July-Sep 2025 → Q3 2025)
+    # Clearer than NERSA's April-March financial year format
+    MONTH_TO_Q = {'january':'Q1','february':'Q1','march':'Q1','april':'Q2','may':'Q2',
+        'june':'Q2','july':'Q3','august':'Q3','september':'Q3','october':'Q4',
+        'november':'Q4','december':'Q4'}
+    pm = re.search(r'(\w+)[–-]\w+\s+(\d{4})', period, re.IGNORECASE)
+    if pm and pm.group(1).lower() in MONTH_TO_Q:
+        quarter_label = f"{MONTH_TO_Q[pm.group(1).lower()]} {pm.group(2)}"
+    elif quarter_match:
+        quarter_label = re.sub(r'\s+', ' ', quarter_match.group(1).strip().title())
+    else:
+        quarter_label = pub_date
+    if False:
         period = pub_date
 
     total_match = re.search(r'(\d[\d\s]+)\s*MW.*?R(\d[\d.,]+)\s*billion', full_text)
