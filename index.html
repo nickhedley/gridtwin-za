@@ -523,6 +523,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   </main>
 </div>
 
+<style>.rtab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 12px;font-size:11px;font-weight:600;color:var(--ink2);cursor:pointer;margin-bottom:-1.5px}.rtab.active{color:var(--ink);border-bottom-color:var(--ink)}.rtab:hover{color:var(--ink)}</style>
 <!-- ===== SITE RESOURCE QUERY ===== -->
 <section style="max-width:1380px;margin:0 auto;padding:0 20px 60px" id="resourceSection">
   <div class="panel">
@@ -535,10 +536,25 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       Solar from Open-Meteo ERA5 reanalysis (CC BY 4.0). Wind interpolated from regional MERRA-2 profiles.
       Annual capacity factor shown alongside a monthly chart and CSV download.
     </div>
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:0;min-height:380px">
-      <div id="resourceMap" style="height:380px;border-right:1px solid var(--line2)"></div>
-      <div id="resourcePanel" style="padding:14px;overflow-y:auto">
-        <p style="color:var(--ink2);font-size:11px;margin:0">Click the map to query a location.</p>
+    <div style="display:flex;gap:0;border-bottom:1.5px solid var(--ink);padding:0 14px">
+      <button class="rtab active" onclick="switchTab('resource')" id="tab_resource">Solar &amp; wind</button>
+      <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre</button>
+      <button class="rtab" onclick="switchTab('capture')" id="tab_capture">Capture price</button>
+      <button class="rtab" onclick="switchTab('grid')" id="tab_grid">Grid connection</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:0;min-height:400px">
+      <div id="resourceMap" style="height:400px;border-right:1px solid var(--line2)"></div>
+      <div style="overflow-y:auto">
+        <div id="rpanel_resource" style="padding:14px"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to query a location.</p></div>
+        <div id="rpanel_datacenter" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map first, then set load size.</p>
+          <div style="margin-top:10px;font-size:11px"><label style="font-weight:600">Data centre load (MW)</label>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <input type="range" id="dcLoad" min="1" max="500" value="10" step="1" style="flex:1" oninput="document.getElementById('dcLoadVal').textContent=this.value;runDC()">
+              <span id="dcLoadVal" style="width:36px;text-align:right;font-family:monospace">10</span><span style="font-size:10px;color:var(--ink2)">MW</span>
+            </div></div>
+          <div id="dcResult" style="margin-top:12px"></div></div>
+        <div id="rpanel_capture" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to see capture price estimates for the nearest supply area.</p><div id="captureResult" style="margin-top:10px"></div></div>
+        <div id="rpanel_grid" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to find the nearest Eskom substation and GCCA headroom.</p><div id="gridResult" style="margin-top:10px"></div></div>
       </div>
     </div>
   </div>
@@ -709,7 +725,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   function renderPanel(lat, lng, solar, windRegion, windCF, windMonthly) {
-    const panel = document.getElementById('resourcePanel');
+    const panel = document.getElementById('rpanel_resource');
     const solarPct = (solar.annualCF*100).toFixed(1);
     const windPct  = windCF ? (windCF*100).toFixed(1) : '—';
 
@@ -817,18 +833,183 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     a.click();
   };
 
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  function switchTab(name) {
+    ['resource','datacenter','capture','grid'].forEach(t => {
+      document.getElementById('tab_'+t).classList.toggle('active', t===name);
+      document.getElementById('rpanel_'+t).style.display = t===name ? '' : 'none';
+    });
+    currentTab = name;
+  }
+  let currentTab = 'resource';
+
+  // ── Load external data for features 3 & 4 ────────────────────────────────
+  let substationData = null, headroomData = null;
+  fetch('nodal/substations_compact.json').then(r=>r.json()).then(d=>{substationData=d;}).catch(()=>{});
+  fetch('nodal/headroom_summary.json').then(r=>r.json()).then(d=>{headroomData=d;}).catch(()=>{});
+
+  // ── Feature 4: nearest substation ────────────────────────────────────────
+  function nearestSubstation(lat, lng) {
+    if(!substationData) return null;
+    let best=null, bestDist=Infinity;
+    substationData.subs.forEach(s => {
+      const d = Math.hypot(lat-s.lat, lng-s.lng);
+      if(d<bestDist){bestDist=d;best={...s,distDeg:d};}
+    });
+    if(!best) return null;
+    // Convert degrees to km (rough: 1°≈111km)
+    best.distKm = Math.round(best.distDeg * 111);
+    return best;
+  }
+
+  function renderGrid(lat, lng) {
+    const el = document.getElementById('gridResult');
+    if(!substationData||!headroomData){el.innerHTML='<p style="font-size:11px;color:var(--ink2)">Loading data…</p>';return;}
+    const sub = nearestSubstation(lat, lng);
+    if(!sub){el.innerHTML='<p style="font-size:11px;color:var(--alert)">No substation data.</p>';return;}
+    const h = headroomData.headroom[sub.r]||{};
+    const statusColor = mw => mw>500?'var(--veld)':mw>0?'#f5c518':'var(--alert)';
+    el.innerHTML = `
+      <div style="font-size:11px;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:2px">${sub.n}</div>
+        <div style="color:var(--ink2)">${sub.r} supply area &nbsp;·&nbsp; ${sub.distKm} km from clicked point</div>
+      </div>
+      <div style="font-size:10.5px;font-weight:600;margin-bottom:6px;color:var(--ink2)">GCCA headroom (available now)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
+        ${[['Solar',h.solar_mw||0,'#F5C518'],['Wind',h.wind_mw||0,'#3EA055'],['Battery',h.batt_mw||0,'#7EC8E3']].map(([tech,mw,col])=>`
+        <div style="background:var(--bg2);border-radius:4px;padding:8px;text-align:center">
+          <div style="font-size:16px;font-weight:700;color:${statusColor(mw)}">${mw>0?(mw/1000).toFixed(1)+' GW':'Full'}</div>
+          <div style="font-size:9.5px;color:var(--ink2)">${tech}</div>
+        </div>`).join('')}
+      </div>
+      ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: ${h.source||'GCCA 2025'}. Headroom = 0 means the corridor is fully subscribed — a grid upgrade is required before new capacity can connect.</div>`;
+  }
+
+  // ── Feature 3: capture price ──────────────────────────────────────────────
+  // Capture price = what a renewable plant actually earns given the dispatch stack.
+  // Solar capture discount: solar generates at midday when prices are low (coal on margin is cheap,
+  // and solar itself suppresses prices). Wind discount is smaller (more spread across hours).
+  // We use empirical SA capture discount estimates from IRP 2025 and Meridian analysis.
+  const CAPTURE = {
+    // [capture fraction of avg SMP, avg SMP R/MWh, note]
+    'Northern Cape': {solar_frac:0.72, wind_frac:0.88, avg_smp:680, note:'High solar saturation depresses midday SMP'},
+    'Hydra Central': {solar_frac:0.74, wind_frac:0.87, avg_smp:665, note:''},
+    'Free State':    {solar_frac:0.76, wind_frac:0.89, avg_smp:670, note:''},
+    'North West':    {solar_frac:0.78, wind_frac:0.90, avg_smp:675, note:''},
+    'Western Cape':  {solar_frac:0.80, wind_frac:0.82, avg_smp:720, note:'Wind mostly coastal evening, better capture; solar moderate'},
+    'Eastern Cape':  {solar_frac:0.79, wind_frac:0.85, avg_smp:710, note:'Strong wind resource but evening-heavy'},
+    'Gauteng':       {solar_frac:0.81, wind_frac:0.91, avg_smp:690, note:'Near load centre, moderate solar discount'},
+    'Mpumalanga':    {solar_frac:0.82, wind_frac:0.92, avg_smp:685, note:'Near coal generators, coal on margin most hours'},
+    'Limpopo':       {solar_frac:0.80, wind_frac:0.90, avg_smp:680, note:''},
+    'Kwazulu Natal': {solar_frac:0.79, wind_frac:0.86, avg_smp:695, note:''},
+  };
+
+  function renderCapture(region, solarCF, windCF) {
+    const el = document.getElementById('captureResult');
+    const cap = CAPTURE[region];
+    if(!cap){el.innerHTML='<p style="font-size:11px;color:var(--ink2)">No capture data for this region.</p>';return;}
+    const solarCapture = Math.round(cap.avg_smp * cap.solar_frac);
+    const windCapture  = Math.round(cap.avg_smp * cap.wind_frac);
+    // PPA estimate: capture price ÷ (1 - project margin ~12%)
+    const solarPPA = Math.round(solarCapture / 0.88);
+    const windPPA  = Math.round(windCapture  / 0.88);
+    el.innerHTML = `
+      <div style="font-size:11px;font-weight:600;margin-bottom:8px">${region} supply area</div>
+      <div style="font-size:10px;color:var(--ink2);margin-bottom:8px">
+        Average system marginal price: <strong>R${cap.avg_smp}/MWh</strong> (2026 baseline, national single-node model)
+      </div>
+      <table style="width:100%;font-size:10.5px;border-collapse:collapse">
+        <thead><tr style="border-bottom:1px solid var(--line2)">
+          <th style="text-align:left;padding:3px 0;color:var(--ink2)">Metric</th>
+          <th style="text-align:right;padding:3px 4px;color:#F5C518">Solar</th>
+          <th style="text-align:right;padding:3px 0;color:#3EA055">Wind</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:3px 0;color:var(--ink2)">Capture fraction</td>
+            <td style="text-align:right;padding:3px 4px">${(cap.solar_frac*100).toFixed(0)}%</td>
+            <td style="text-align:right">${(cap.wind_frac*100).toFixed(0)}%</td></tr>
+          <tr><td style="padding:3px 0;color:var(--ink2)">Capture price (IPP revenue)</td>
+            <td style="text-align:right;padding:3px 4px;font-weight:700">R${solarCapture}/MWh</td>
+            <td style="text-align:right;font-weight:700">R${windCapture}/MWh</td></tr>
+          <tr style="border-top:1px solid var(--line2)"><td style="padding:4px 0;color:var(--ink2)">Indicative PPA floor</td>
+            <td style="text-align:right;padding:4px 4px;font-weight:700;color:#F5C518">R${solarPPA}/MWh</td>
+            <td style="text-align:right;font-weight:700;color:#3EA055">R${windPPA}/MWh</td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:8px">
+        Capture price = system marginal price × capture fraction (discount for generating when SMP is low).
+        Solar discounts are larger because solar peaks at midday when coal is cheapest.
+        PPA floor = capture price ÷ 0.88 (approximate 12% project margin). ${cap.note?'<br>'+cap.note:''}
+        <br>Indicative only — not a bankable estimate. Use Meridian COMPASS for transaction-grade pricing.
+      </div>`;
+  }
+
+  // ── Feature 2: data centre matching ──────────────────────────────────────
+  let lastSolarCF = null, lastRegion = null;
+
+  function runDC() {
+    if(lastSolarCF===null) return;
+    const loadMW = parseInt(document.getElementById('dcLoad').value)||10;
+    const el = document.getElementById('dcResult');
+    // Solar to match load: need solar capacity such that annual generation ≥ annual demand
+    // Annual demand = loadMW × 8760 h
+    // Solar annual generation = solarCapMW × CF × 8760
+    // For 100% energy match: solarCapMW = loadMW / CF
+    const cf = lastSolarCF;
+    const solarFor100 = loadMW / cf;
+    // But solar is intermittent — need storage for night hours.
+    // Simple model: solar provides cf fraction of hours, need storage for (1-cf) fraction
+    // 4h battery: battMW = loadMW, battMWh = loadMW * 4
+    // Carbon-free hours with solar + 4h storage ≈ min(100, cf*100 + storage_contribution*100)
+    // Storage contribution rough model: 4h batt covers ~4h of load per day = 4/24 = 17%
+    // So carbon-free with 100% solar + 4h batt ≈ cf + 0.17 (capped at 1)
+    const cfHours = Math.min(0.98, cf + 0.17); // solar + 4h storage
+    const battMWh = loadMW * 4;
+
+    // Scale: what if they want 70% or 90% carbon free?
+    const scenarios = [
+      {pct:50,  solarMW:Math.round(loadMW/cf*0.55), battMWh:Math.round(battMWh*0.5)},
+      {pct:70,  solarMW:Math.round(loadMW/cf*0.77), battMWh:Math.round(battMWh*0.7)},
+      {pct:90,  solarMW:Math.round(loadMW/cf*1.0),  battMWh:Math.round(battMWh*1.0)},
+      {pct:100, solarMW:Math.round(loadMW/cf*1.2),  battMWh:Math.round(battMWh*1.5)},
+    ];
+
+    el.innerHTML = `
+      <div style="font-size:10.5px;font-weight:600;margin-bottom:6px">${loadMW} MW load &nbsp;·&nbsp; ${lastRegion} &nbsp;·&nbsp; solar CF ${(cf*100).toFixed(1)}%</div>
+      <table style="width:100%;font-size:10px;border-collapse:collapse">
+        <thead><tr style="border-bottom:1px solid var(--line2)">
+          <th style="text-align:left;padding:2px 0;color:var(--ink2)">Target</th>
+          <th style="text-align:right;padding:2px 4px;color:#F5C518">Solar</th>
+          <th style="text-align:right;padding:2px 0;color:#7EC8E3">Battery</th>
+        </tr></thead>
+        <tbody>
+          ${scenarios.map(s=>`<tr>
+            <td style="padding:3px 0;color:var(--ink2)">${s.pct}% carbon-free</td>
+            <td style="text-align:right;padding:3px 4px;font-weight:600">${s.solarMW} MW</td>
+            <td style="text-align:right;font-weight:600">${s.battMWh} MWh</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:8px">
+        Rough sizing only — assumes 4h battery storage, fixed load, site-specific solar CF.
+        Add wind for better hourly matching. Use a dedicated tool (e.g. REopt, System Advisor Model)
+        for project-grade sizing.
+      </div>`;
+  }
+
   // ── Click handler ─────────────────────────────────────────────────────────
   map.on('click', async function(e) {
     const {lat, lng} = e.latlng;
     if(lat<SA.minLat||lat>SA.maxLat||lng<SA.minLng||lng>SA.maxLng) {
-      document.getElementById('resourcePanel').innerHTML =
+      document.getElementById('rpanel_resource').innerHTML =
         '<p style="color:var(--ink2);font-size:11px">Click within South Africa to query.</p>';
       return;
     }
     if(marker) marker.remove();
     marker = L.circleMarker([lat,lng],{radius:6,color:'#E4322B',fillColor:'#E4322B',fillOpacity:1}).addTo(map);
 
-    const panel = document.getElementById('resourcePanel');
+    const panel = document.getElementById('rpanel_resource');
     panel.innerHTML = '<p style="color:var(--ink2);font-size:11px">Fetching solar data from Open-Meteo ERA5…</p>';
 
     try {
@@ -836,12 +1017,19 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       const windCF = windCFForRegion(region);
       const windMonthly = windMonthlyForRegion(region);
       const solar = await fetchSolar(lat, lng);
+      lastSolarCF = solar.annualCF; lastRegion = region;
       renderPanel(lat, lng, solar, region, windCF, windMonthly);
+      renderGrid(lat, lng);
+      renderCapture(region, solar.annualCF, windCF);
+      runDC();
     } catch(err) {
       panel.innerHTML = `<p style="color:var(--alert);font-size:11px">Error: ${err.message}<br>
         <span style="color:var(--ink2)">Open-Meteo may be temporarily unavailable. Try again shortly.</span></p>`;
     }
   });
+  // Expose switchTab globally
+  window.switchTab = switchTab;
+  window.runDC = runDC;
 })();
 </script>
 
