@@ -523,6 +523,272 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   </main>
 </div>
 
+<!-- ===== SITE RESOURCE QUERY ===== -->
+<section style="margin:32px auto;max-width:1300px;padding:0 16px" id="resourceSection">
+  <div class="panel">
+    <div class="ph">
+      <h2>Site resource query</h2>
+      <span class="tag">Solar &amp; wind · click any SA location</span>
+    </div>
+    <div style="padding:12px 14px 0;font-size:11px;color:var(--ink2)">
+      Click anywhere on the map to fetch the hourly solar and wind resource for that location.
+      Solar from Open-Meteo ERA5 reanalysis (CC BY 4.0). Wind interpolated from regional MERRA-2 profiles.
+      Annual capacity factor shown alongside a monthly chart and CSV download.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:0;min-height:380px">
+      <div id="resourceMap" style="height:380px;border-right:1px solid var(--line2)"></div>
+      <div id="resourcePanel" style="padding:14px;overflow-y:auto">
+        <p style="color:var(--ink2);font-size:11px;margin:0">Click the map to query a location.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  // ── Map setup ──────────────────────────────────────────────────────────────
+  const map = L.map('resourceMap', {
+    center: [-29, 25], zoom: 5,
+    minZoom: 4, maxZoom: 10,
+  });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap contributors',
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
+
+  // SA bounding box rough clamp
+  const SA = {minLat:-35, maxLat:-22, minLng:16, maxLng:33};
+
+  let marker = null;
+
+  // ── Regional wind profiles (nearest-centroid lookup) ──────────────────────
+  // centroids of our 10 nodal regions, used for wind CF interpolation
+  const REGION_CENTROIDS = {
+    'Eastern Cape':    {lat:-32.2, lng:26.4},
+    'Western Cape':    {lat:-33.2, lng:19.4},
+    'Northern Cape':   {lat:-29.1, lng:21.1},
+    'Hydra Central':   {lat:-30.5, lng:24.1},
+    'Free State':      {lat:-28.5, lng:25.9},
+    'North West':      {lat:-26.5, lng:25.2},
+    'Gauteng':         {lat:-26.0, lng:28.0},
+    'Mpumalanga':      {lat:-25.5, lng:29.8},
+    'Limpopo':         {lat:-23.9, lng:29.4},
+    'Kwazulu Natal':   {lat:-28.5, lng:30.5},
+  };
+
+  let regionalWindProfiles = null;
+  fetch('nodal/profiles_regional.json').then(r=>r.json()).then(d=>{
+    regionalWindProfiles = d.wind_pu;
+  }).catch(()=>{});
+
+  function nearestRegion(lat, lng) {
+    let best = null, bestDist = Infinity;
+    for(const [r, c] of Object.entries(REGION_CENTROIDS)) {
+      const d = Math.hypot(lat - c.lat, lng - c.lng);
+      if(d < bestDist) { bestDist = d; best = r; }
+    }
+    return best;
+  }
+
+  function windCFForRegion(region) {
+    if(!regionalWindProfiles || !regionalWindProfiles[region]) return null;
+    const p = regionalWindProfiles[region];
+    return p.reduce((s,v)=>s+v,0)/p.length;
+  }
+
+  function windMonthlyForRegion(region) {
+    if(!regionalWindProfiles || !regionalWindProfiles[region]) return null;
+    const p = regionalWindProfiles[region];
+    // 8760 hourly values → 12 monthly averages
+    const daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
+    const monthly = []; let h = 0;
+    for(const days of daysInMonth) {
+      const slice = p.slice(h, h + days*24);
+      monthly.push(slice.reduce((s,v)=>s+v,0)/slice.length);
+      h += days*24;
+    }
+    return monthly;
+  }
+
+  // ── Solar CF from shortwave radiation (standard PV model) ─────────────────
+  // CF ≈ GHI / (G_stc) × η_temp × η_system
+  // We use Open-Meteo ERA5 shortwave_radiation (W/m²) and compute:
+  //   panel output = max(0, (GHI/1000) × (1 - 0.004×(T-25)) ) × system_eff
+  // system_eff ≈ 0.80 (inverter + cable + soiling losses)
+  // G_stc = 1000 W/m² (standard test condition)
+  // Result: fraction of nameplate capacity produced each hour → annual mean = CF
+
+  async function fetchSolar(lat, lng) {
+    const year = 2024; // most recent full year in ERA5
+    const url = `https://archive-api.open-meteo.com/v1/archive`
+      + `?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}`
+      + `&start_date=${year}-01-01&end_date=${year}-12-31`
+      + `&hourly=shortwave_radiation,temperature_2m`
+      + `&timezone=Africa%2FJohannesburg`
+      + `&format=json`;
+    const resp = await fetch(url);
+    if(!resp.ok) throw new Error('Open-Meteo request failed: ' + resp.status);
+    const data = await resp.json();
+    const ghi = data.hourly.shortwave_radiation;   // W/m²
+    const temp = data.hourly.temperature_2m;        // °C
+    const SYSTEM_EFF = 0.80;
+    const pv = ghi.map((g,i) => Math.max(0, (g/1000) * (1 - 0.004*((temp[i]||25)-25))) * SYSTEM_EFF);
+    // annual CF
+    const annualCF = pv.reduce((s,v)=>s+v,0)/pv.length;
+    // monthly CF
+    const daysInMonth = [31,29,31,30,31,30,31,31,30,31,30,31]; // 2024 is leap year
+    const monthly = []; let h = 0;
+    for(const days of daysInMonth) {
+      const slice = pv.slice(h, h + days*24);
+      monthly.push(slice.reduce((s,v)=>s+v,0)/slice.length);
+      h += days*24;
+    }
+    return { annualCF, monthly, hourly: pv, ghiHourly: ghi };
+  }
+
+  // ── Chart rendering ───────────────────────────────────────────────────────
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function renderPanel(lat, lng, solar, windRegion, windCF, windMonthly) {
+    const panel = document.getElementById('resourcePanel');
+    const solarPct = (solar.annualCF*100).toFixed(1);
+    const windPct  = windCF ? (windCF*100).toFixed(1) : '—';
+
+    let html = `
+      <div style="font-size:11px;color:var(--ink2);margin-bottom:8px">
+        ${lat.toFixed(3)}°, ${lng.toFixed(3)}° &nbsp;·&nbsp; ${windRegion} supply area
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:var(--bg2);border-radius:4px;padding:8px;text-align:center">
+          <div style="font-size:20px;font-weight:700;color:#F5C518">${solarPct}%</div>
+          <div style="font-size:10px;color:var(--ink2)">Solar CF (annual)</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:4px;padding:8px;text-align:center">
+          <div style="font-size:20px;font-weight:700;color:#3EA055">${windPct}%</div>
+          <div style="font-size:10px;color:var(--ink2)">Wind CF (regional)</div>
+        </div>
+      </div>
+      <div style="font-size:10px;font-weight:600;margin-bottom:4px;color:var(--ink2)">Monthly capacity factor</div>
+      <canvas id="resourceChart" height="140" style="width:100%;display:block"></canvas>
+      <div style="margin-top:10px">
+        <button onclick="downloadCSV()" style="font-size:10px;padding:3px 10px;border:1px solid var(--line2);background:var(--panel);color:var(--ink);cursor:pointer;border-radius:3px">
+          Download hourly CSV
+        </button>
+        <span style="font-size:9px;color:var(--ink2);margin-left:6px">Open-Meteo ERA5 · 2024 · CC BY 4.0</span>
+      </div>
+      <div style="font-size:9px;color:var(--ink2);margin-top:6px">
+        Solar: site-specific ERA5 reanalysis via Open-Meteo. Wind: regional MERRA-2 average (${windRegion}).
+        Solar CF uses standard PV model: GHI/1000 × temp correction × 0.80 system efficiency.
+      </div>`;
+    panel.innerHTML = html;
+
+    // Draw chart with canvas 2D (no Chart.js dependency)
+    const canvas = document.getElementById('resourceChart');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.offsetWidth || 300, H = 140;
+    canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+
+    const padL=28, padR=6, padT=8, padB=20;
+    const maxCF = Math.max(...solar.monthly, ...(windMonthly||solar.monthly)) * 1.1;
+    const cW = (W-padL-padR)/12;
+
+    function yPx(v) { return padT + (H-padT-padB)*(1-v/maxCF); }
+
+    // grid
+    ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=0.5;
+    for(const pct of [0.1,0.2,0.3,0.4,0.5]) {
+      if(pct > maxCF) continue;
+      ctx.beginPath(); ctx.moveTo(padL, yPx(pct)); ctx.lineTo(W-padR, yPx(pct)); ctx.stroke();
+      ctx.fillStyle='#999'; ctx.font='8px sans-serif'; ctx.textAlign='right';
+      ctx.fillText((pct*100).toFixed(0)+'%', padL-2, yPx(pct)+3);
+    }
+
+    // solar bars
+    ctx.fillStyle='#F5C518';
+    solar.monthly.forEach((v,i) => {
+      const x = padL + i*cW + cW*0.05;
+      const y = yPx(v), h2 = yPx(0)-y;
+      ctx.fillRect(x, y, cW*0.4, h2);
+    });
+
+    // wind bars
+    if(windMonthly) {
+      ctx.fillStyle='#3EA05588';
+      windMonthly.forEach((v,i) => {
+        const x = padL + i*cW + cW*0.5;
+        const y = yPx(v), h2 = yPx(0)-y;
+        ctx.fillRect(x, y, cW*0.4, h2);
+      });
+    }
+
+    // month labels
+    ctx.fillStyle='#666'; ctx.font='8px sans-serif'; ctx.textAlign='center';
+    MONTHS.forEach((m,i) => { ctx.fillText(m, padL + i*cW + cW/2, H-4); });
+
+    // legend
+    ctx.fillStyle='#F5C518'; ctx.fillRect(padL, 2, 8, 6);
+    ctx.fillStyle='#555'; ctx.font='8px sans-serif'; ctx.textAlign='left';
+    ctx.fillText('Solar', padL+10, 8);
+    if(windMonthly) {
+      ctx.fillStyle='#3EA055'; ctx.fillRect(padL+45, 2, 8, 6);
+      ctx.fillStyle='#555'; ctx.fillText('Wind (region)', padL+55, 8);
+    }
+
+    // stash data for CSV download
+    window._resourceData = { lat, lng, solar, windRegion, windMonthly };
+  }
+
+  window.downloadCSV = function() {
+    const d = window._resourceData;
+    if(!d) return;
+    const rows = ['hour,solar_cf,wind_cf_regional'];
+    d.solar.hourly.forEach((s,i) => {
+      // replicate wind monthly value for each hour
+      const month = new Date(2024,0,1);
+      month.setHours(i);
+      const m = month.getMonth();
+      const w = d.windMonthly ? d.windMonthly[m].toFixed(4) : '';
+      rows.push(`${i},${s.toFixed(4)},${w}`);
+    });
+    const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `gridtwin_resource_${d.lat.toFixed(2)}_${d.lng.toFixed(2)}.csv`;
+    a.click();
+  };
+
+  // ── Click handler ─────────────────────────────────────────────────────────
+  map.on('click', async function(e) {
+    const {lat, lng} = e.latlng;
+    if(lat<SA.minLat||lat>SA.maxLat||lng<SA.minLng||lng>SA.maxLng) {
+      document.getElementById('resourcePanel').innerHTML =
+        '<p style="color:var(--ink2);font-size:11px">Click within South Africa to query.</p>';
+      return;
+    }
+    if(marker) marker.remove();
+    marker = L.circleMarker([lat,lng],{radius:6,color:'#E4322B',fillColor:'#E4322B',fillOpacity:1}).addTo(map);
+
+    const panel = document.getElementById('resourcePanel');
+    panel.innerHTML = '<p style="color:var(--ink2);font-size:11px">Fetching solar data from Open-Meteo ERA5…</p>';
+
+    try {
+      const region = nearestRegion(lat, lng);
+      const windCF = windCFForRegion(region);
+      const windMonthly = windMonthlyForRegion(region);
+      const solar = await fetchSolar(lat, lng);
+      renderPanel(lat, lng, solar, region, windCF, windMonthly);
+    } catch(err) {
+      panel.innerHTML = `<p style="color:var(--alert);font-size:11px">Error: ${err.message}<br>
+        <span style="color:var(--ink2)">Open-Meteo may be temporarily unavailable. Try again shortly.</span></p>`;
+    }
+  });
+})();
+</script>
+
 <footer class="foot">Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African system (calibrated to Eskom weekly system status reports, June–July 2026). All outputs are indicative — not planning or investment advice. &copy; 2026 Nick Hedley · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" style="color:inherit">CC BY-NC 4.0</a> · commercial use requires permission.</footer>
 
 <script src="nodal/capacity_siting.js?v=5"></script>
