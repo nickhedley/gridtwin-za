@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --base:#E8EBE6; --panel:#F7F8F5; --panel2:#EEECEA;
+  --base:#F0EDE6; --panel:#F7F8F5; --panel2:#EEECEA;
   --ink:#22292B; --ink2:#5A6560; --line:#C8CBC5; --line2:#AEB3AA;
   --coal:#C4785A; --coal2:#9E5C42;
   --veld:#4A6B7A; --veld2:#6A8E9E;
@@ -32,9 +32,7 @@
 }
 *{box-sizing:border-box; margin:0; padding:0}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--base); color:var(--ink); font-family:'Roboto',sans-serif; font-size:14px; line-height:1.45;
-  background-image:linear-gradient(var(--line) 1px, transparent 1px),linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size:36px 36px; background-position:-1px -1px;}
+body{background:var(--base); color:var(--ink); font-family:'Roboto',sans-serif; font-size:14px; line-height:1.45;}
 h1,h2,h3,.disp{font-family:'Saira Condensed',sans-serif; text-transform:uppercase; letter-spacing:.04em}
 .mono{font-family:'IBM Plex Mono',monospace}
 a{color:var(--sky)}
@@ -43,7 +41,7 @@ button{font:inherit; cursor:pointer}
 /* ---------- header ---------- */
 header{border-bottom:2px solid var(--ink); background:var(--panel); box-shadow:var(--shadow); position:relative; z-index:5}
 .hwrap{max-width:1380px; margin:0 auto; padding:14px 20px 12px; display:flex; flex-wrap:wrap; gap:14px 28px; align-items:flex-end; justify-content:space-between}
-.brand h1{font-size:30px; font-weight:700; line-height:.95}
+.brand h1{font-size:30px; font-weight:700; line-height:.95; text-transform:none; letter-spacing:0}
 .brand h1 span{color:var(--alert)}
 .brand p{color:var(--ink2); font-size:12.5px; margin-top:3px; max-width:520px}
 /* status board — mimic-panel signature */
@@ -75,7 +73,14 @@ header{border-bottom:2px solid var(--ink); background:var(--panel); box-shadow:v
 .ctrl small{display:block; color:var(--ink2); font-size:11px; margin-top:1px}
 .tog{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; cursor:pointer}
 .tog input{width:16px; height:16px; accent-color:var(--alert); flex:none; cursor:pointer}
-input[type=range]{width:100%; accent-color:var(--alert); height:22px}
+input[type=range]{width:100%; accent-color:var(--terra); height:22px}
+input[type=range]::-webkit-slider-runnable-track{
+  background:linear-gradient(to right, var(--terra) 0%, var(--terra) var(--val,50%), var(--line2) var(--val,50%), var(--line2) 100%);
+  border-radius:3px; height:4px;
+}
+input[type=range]::-moz-range-track{background:var(--line2); border-radius:3px; height:4px}
+input[type=range]::-moz-range-progress{background:var(--terra); border-radius:3px; height:4px}
+input[type=range]::-webkit-slider-thumb{margin-top:-6px}
 .grp{border-top:1.5px dashed var(--line2); margin:16px -14px 12px; padding:10px 14px 0}
 .grp h3{font-size:13.5px; color:var(--ink2); font-weight:600; margin-bottom:8px}
 .presets{display:grid; grid-template-columns:1fr; gap:7px; margin-bottom:14px}
@@ -1533,9 +1538,13 @@ SLIDERS.forEach(s=>{
     '<input type="range" id="in_'+s.id+'" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+s.def+'" aria-label="'+s.label+'">'+
     (s.note?'<small>'+s.note+'</small>':'');
   controlsEl.appendChild(d);
-  d.querySelector('input').addEventListener('input',e=>{
+  const inp = d.querySelector('input');
+  function updateTrack(el){ const pct=100*(el.value-el.min)/(el.max-el.min); el.style.setProperty('--val',pct+'%'); }
+  updateTrack(inp);
+  inp.addEventListener('input',e=>{
     state[s.id]=+e.target.value;
     document.getElementById('cv_'+s.id).textContent=s.fmt(state[s.id]);
+    updateTrack(e.target);
     setPresetActive(null); scheduleRun();
   });
 });
