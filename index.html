@@ -50,6 +50,14 @@ header{border-bottom:2px solid #3a5668; background:#517180; box-shadow:var(--sha
 .board .cell:last-child{border-right:none}
 .board .lbl{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA69B; font-family:'Saira Condensed'}
 .board .val{font-family:'IBM Plex Mono'; font-size:19px; font-weight:600; line-height:1.15}
+@media(max-width:700px){
+  .hwrap{padding:10px 14px 10px;gap:8px 14px}
+  .board .cell.hide-mobile{display:none}
+  .board .cell{padding:6px 10px 5px}
+  .board .lbl{font-size:9px}
+  .board .val{font-size:15px}
+  .statusword{font-size:17px}
+}
 .lamps{display:flex; gap:5px; align-items:center; padding:0 14px}
 .lamp{width:17px; height:26px; border:1px solid #454F49; border-radius:2px; background:#2C3431; display:flex; align-items:flex-end; justify-content:center; font-family:'IBM Plex Mono'; font-size:9px; color:#7d877e; padding-bottom:2px; transition:background .25s, box-shadow .25s}
 .lamp.on{background:var(--alert); color:#fff; border-color:#E2794F; box-shadow:0 0 10px 1px rgba(217,90,45,.55)}
@@ -173,12 +181,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div class="board" role="status" aria-live="polite">
       <div class="cell"><span class="lbl">System status</span><span class="statusword ok" id="statusWord">Stable</span></div>
-      <div class="cell" style="justify-content:center"><span class="lbl">Load shedding · max stage</span>
+      <div class="cell hide-mobile" style="justify-content:center"><span class="lbl">Load shedding · max stage</span>
         <div class="lamps" id="lamps" style="padding:4px 0 0"></div>
       </div>
       <div class="cell"><span class="lbl">Peak demand</span><span class="val" id="bdPeak">–</span></div>
-      <div class="cell"><span class="lbl">Expected shed</span><span class="val" id="bdShed">–</span></div>
-      <div class="cell"><span class="lbl">Data</span><span class="statusword" id="bdData" style="font-size:15px; color:#9AA69B">synthetic</span></div>
+      <div class="cell hide-mobile"><span class="lbl">Expected shed</span><span class="val" id="bdShed">–</span></div>
+      <div class="cell hide-mobile"><span class="lbl">Data</span><span class="statusword" id="bdData" style="font-size:15px; color:#9AA69B">synthetic</span></div>
     </div>
   </div>
 </header>
