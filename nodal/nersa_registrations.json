@@ -1,191 +1,75 @@
 {
   "meta": {
-    "description": "NERSA quarterly generation facility registrations, parsed from NERSA media statements. Covers all registered generation facilities (private/C&I/embedded, not just REIPPPP). Province data maps to GridTwin ZA 9-region network (Hydra Central excluded \u2014 NERSA uses standard 9 provinces). Source: NERSA media statements at nersa.org.za. Update: run parse_nersa_pdf.py with the latest quarterly PDF.",
-    "last_updated": "6 November 2025",
-    "total_registered_since_2018_mw": 5504.0
+    "description": "Cumulative NERSA-registered generation capacity in South Africa since 2018. Source: SAPVIA NERSA Registered Plants Dashboard (lookerstudio.google.com/reporting/a7de0801-10c7-4610-8689-3a281e823ac1). Data collated by SAPVIA Grid Access Working Group from NERSA quarterly media statements.",
+    "source": "SAPVIA",
+    "total_mw": 19677,
+    "total_projects": 2503,
+    "note": "Cumulative total since registration regime began in 2018. Includes all registered technologies."
   },
-  "quarters": [
-    {
-      "quarter_label": "Q3 2025",
-      "period": "July\u2013September 2025",
-      "published": "6 November 2025",
-      "total_facilities": 181,
-      "total_mw": 1401.0,
-      "total_investment_rbn": 30.78,
-      "by_technology": [
-        {
-          "tech": "solar",
-          "tech_label": "Solar PV",
-          "facilities": 175,
-          "mw": 649.59,
-          "province_distribution": {
-            "Gauteng": 66,
-            "Western Cape": 50,
-            "Limpopo": 15,
-            "Kwazulu Natal": 11
-          }
-        },
-        {
-          "tech": "wind",
-          "tech_label": "Wind",
-          "facilities": 4,
-          "mw": 750.0,
-          "province_distribution": {
-            "Western Cape": 3,
-            "Northern Cape": 1
-          }
-        },
-        {
-          "tech": "biomass",
-          "tech_label": "Biogas",
-          "facilities": 1,
-          "mw": 0.3,
-          "province_distribution": {
-            "Western Cape": 1
-          }
-        },
-        {
-          "tech": "batt",
-          "tech_label": "BESS",
-          "facilities": 1,
-          "mw": 1.0,
-          "province_distribution": {
-            "Gauteng": 1
-          }
-        }
-      ],
-      "by_province": {
-        "Gauteng": {
-          "facilities": 67,
-          "mw": 64.39,
-          "investment_rm": 951.81
-        },
-        "Western Cape": {
-          "facilities": 54,
-          "mw": 871.82,
-          "investment_rm": 20771.91
-        },
-        "Limpopo": {
-          "facilities": 15,
-          "mw": 154.48,
-          "investment_rm": 2772.15
-        },
-        "Kwazulu Natal": {
-          "facilities": 11,
-          "mw": 5.91,
-          "investment_rm": 72.82
-        },
-        "North West": {
-          "facilities": 6,
-          "mw": 8.34,
-          "investment_rm": 101.19
-        },
-        "Free State": {
-          "facilities": 11,
-          "mw": 4.19,
-          "investment_rm": 63.58
-        },
-        "Eastern Cape": {
-          "facilities": 9,
-          "mw": 5.46,
-          "investment_rm": 100.54
-        },
-        "Northern Cape": {
-          "facilities": 2,
-          "mw": 150.25,
-          "investment_rm": 3213.2
-        },
-        "Mpumalanga": {
-          "facilities": 6,
-          "mw": 136.01,
-          "investment_rm": 2732.76
-        }
-      },
-      "annual_cumulative": {
-        "2018": {
-          "facilities": 52,
-          "mw": 26.0,
-          "investment_rm": 525.0
-        },
-        "2019": {
-          "facilities": 41,
-          "mw": 23.0,
-          "investment_rm": 464.0
-        },
-        "2020": {
-          "facilities": 124,
-          "mw": 53.0,
-          "investment_rm": 681.0
-        },
-        "2021": {
-          "facilities": 282,
-          "mw": 134.0,
-          "investment_rm": 1887.0
-        },
-        "2022": {
-          "facilities": 406,
-          "mw": 1646.0,
-          "investment_rm": 25000.0
-        },
-        "2023": {
-          "facilities": 405,
-          "mw": 4490.0,
-          "investment_rm": 84962.0
-        },
-        "2024": {
-          "facilities": 476,
-          "mw": 4164.0,
-          "investment_rm": 89539.0
-        },
-        "2025": {
-          "facilities": 450,
-          "mw": 5504.0,
-          "investment_rm": 124632.0
-        }
-      },
-      "source_file": "MediaStatement-NERSAregisters181generationfacilitiesin2ndQuarter2025-26FinancialYear.pdf"
+  "cumulative_by_region": {
+    "Free State": {
+      "total_mw": 3406,
+      "solar_mw": 3401,
+      "wind_mw": 0,
+      "bess_mw": 0,
+      "coloc_mw": 0
+    },
+    "Limpopo": {
+      "total_mw": 3144,
+      "solar_mw": 3034,
+      "wind_mw": 0,
+      "bess_mw": 110,
+      "coloc_mw": 0
+    },
+    "Western Cape": {
+      "total_mw": 2988,
+      "solar_mw": 525,
+      "wind_mw": 2452,
+      "bess_mw": 1,
+      "coloc_mw": 0
+    },
+    "Northern Cape": {
+      "total_mw": 2970,
+      "solar_mw": 1132,
+      "wind_mw": 1333,
+      "bess_mw": 0,
+      "coloc_mw": 505
+    },
+    "Gauteng": {
+      "total_mw": 2569,
+      "solar_mw": 2512,
+      "wind_mw": 0,
+      "bess_mw": 2,
+      "coloc_mw": 0
+    },
+    "North West": {
+      "total_mw": 1937,
+      "solar_mw": 1937,
+      "wind_mw": 0,
+      "bess_mw": 0,
+      "coloc_mw": 0
+    },
+    "Mpumalanga": {
+      "total_mw": 1284,
+      "solar_mw": 618,
+      "wind_mw": 510,
+      "bess_mw": 0,
+      "coloc_mw": 0
+    },
+    "Eastern Cape": {
+      "total_mw": 921,
+      "solar_mw": 99,
+      "wind_mw": 822,
+      "bess_mw": 0,
+      "coloc_mw": 0
+    },
+    "Kwazulu Natal": {
+      "total_mw": 457,
+      "solar_mw": 130,
+      "wind_mw": 240,
+      "bess_mw": 0,
+      "coloc_mw": 0
     }
-  ],
-  "annual_cumulative": {
-    "2018": {
-      "facilities": 52,
-      "mw": 26.0,
-      "investment_rm": 525.0
-    },
-    "2019": {
-      "facilities": 41,
-      "mw": 23.0,
-      "investment_rm": 464.0
-    },
-    "2020": {
-      "facilities": 124,
-      "mw": 53.0,
-      "investment_rm": 681.0
-    },
-    "2021": {
-      "facilities": 282,
-      "mw": 134.0,
-      "investment_rm": 1887.0
-    },
-    "2022": {
-      "facilities": 406,
-      "mw": 1646.0,
-      "investment_rm": 25000.0
-    },
-    "2023": {
-      "facilities": 405,
-      "mw": 4490.0,
-      "investment_rm": 84962.0
-    },
-    "2024": {
-      "facilities": 476,
-      "mw": 4164.0,
-      "investment_rm": 89539.0
-    },
-    "2025": {
-      "facilities": 450,
-      "mw": 5504.0,
-      "investment_rm": 124632.0
-    }
-  }
+  },
+  "quarters": []
 }
