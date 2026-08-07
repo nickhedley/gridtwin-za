@@ -470,9 +470,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <section>
         <div class="panel" aria-label="Weekly dispatch">
           <div class="ph"><h2>Hourly dispatch</h2>
-            <div class="wkbtns">
-              <button id="wkW" class="active">Winter week</button>
-              <button id="wkS">Summer week</button>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="wkbtns">
+                <button id="wkW" class="active">Winter week</button>
+                <button id="wkS">Summer week</button>
+              </div>
+              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
             </div>
           </div>
           <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week — hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
@@ -913,23 +916,31 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     const sub = nearestSubstation(lat, lng);
     if(!sub){el.innerHTML='<p style="font-size:11px;color:var(--alert)">No substation data.</p>';return;}
     const h = headroomData.headroom[sub.r]||{};
-    const statusColor = mw => mw>500?'var(--veld)':mw>0?'#f5c518':'var(--alert)';
+    const isTx = sub.voltage_class==='transmission';
+    const vcol = isTx ? 'var(--steel,#4A6B7A)' : 'var(--ink2)';
+    const vLabel = isTx ? '400kV transmission' : '132kV distribution';
+    const statusColor = mw => mw>500?'var(--ok,#4A8C5C)':mw>0?'#f5c518':'var(--alert,#C4785A)';
     el.innerHTML = `
       <div style="font-size:11px;margin-bottom:10px">
         <div style="font-size:14px;font-weight:700;margin-bottom:2px">${sub.n}</div>
-        <div style="color:var(--ink2)">${sub.r} supply area &nbsp;·&nbsp; ${sub.distKm} km from clicked point</div>
+        <div style="color:var(--ink2)">${sub.r} supply area &nbsp;·&nbsp; ${sub.distKm} km away</div>
+        <div style="margin-top:3px">
+          <span style="font-size:10px;padding:1px 6px;border-radius:3px;background:${isTx?'rgba(74,107,122,0.15)':'rgba(0,0,0,0.07)'};color:${vcol};font-weight:600">${vLabel}</span>
+          ${isTx ? '<span style="font-size:10px;color:var(--ink2);margin-left:6px">Suitable for large C&I / IPP connection</span>' : '<span style="font-size:10px;color:var(--ink2);margin-left:6px">Speak to Eskom for HV upgrade options</span>'}
+        </div>
       </div>
       <div style="font-size:10.5px;font-weight:600;margin-bottom:6px;color:var(--ink2)">GCCA headroom (available now)</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
-        ${[['Solar',h.solar_mw||0,'#F5C518'],['Wind',h.wind_mw||0,'#3EA055'],['Battery',h.batt_mw||0,'#7EC8E3']].map(([tech,mw,col])=>`
-        <div style="background:var(--bg2);border-radius:4px;padding:8px;text-align:center">
+        ${[['Solar',h.solar_mw||0],[' Wind',h.wind_mw||0],['Battery',h.batt_mw||0]].map(([tech,mw])=>`
+        <div style="background:var(--bg2,#eee);border-radius:4px;padding:8px;text-align:center">
           <div style="font-size:16px;font-weight:700;color:${statusColor(mw)}">${mw>0?(mw/1000).toFixed(1)+' GW':'Full'}</div>
           <div style="font-size:9.5px;color:var(--ink2)">${tech}</div>
         </div>`).join('')}
       </div>
       ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
-      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: ${h.source||'GCCA 2025'}. Headroom = 0 means the corridor is fully subscribed — a grid upgrade is required before new capacity can connect.</div>`;
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: ${h.source||'GCCA 2025'}. Headroom = 0 means the corridor is fully subscribed.</div>`;
   }
+
 
   // ── Feature 3: capture price ──────────────────────────────────────────────
   // Capture price = what a renewable plant actually earns given the dispatch stack.
@@ -2286,6 +2297,41 @@ fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=
 let sitePortfolio=[];
 // siteAllocated is declared earlier (near nodeColor) so the map can use it on first render too
 let siteSliderContribution={newWindMW:0, newPvMW:0}; // how much of the national slider WE added, for clean reset
+
+function downloadDispatchCSV() {
+  if(!lastRes) return;
+  const r = lastRes;
+  const E = r.E;
+  const carriers = ['coal','nuclear','hydro','imports','wind','pv','csp','rooftop','ps','batt','ccgt','diesel','unserved'];
+  const names = {coal:'Coal',nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',
+    wind:'Wind',pv:'Utility PV',csp:'CSP',rooftop:'Rooftop PV',
+    ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',unserved:'Unserved (shed)'};
+  // Header
+  const rows = ['hour,date_approx,demand_mw,storage_charging_mw,curtailed_mw,' +
+    carriers.map(k=>names[k]).join(',')];
+  const N = 8760;
+  for(let h=0;h<N;h++){
+    const month = Math.floor(h/730)+1;
+    const day = Math.floor((h%730)/24)+1;
+    const hour = h%24;
+    const date = `2025-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}T${String(hour).padStart(2,'0')}:00`;
+    const demand = r.loadS ? r.loadS[h] : 0;
+    const charging = r.chargeMW ? r.chargeMW[h] : 0;
+    const curtailed = r.curtailMW ? r.curtailMW[h] : 0;
+    const cols = carriers.map(k => r.stack[k] ? r.stack[k][h].toFixed(1) : '0');
+    rows.push(`${h},${date},${demand.toFixed(1)},${charging.toFixed(1)},${curtailed.toFixed(1)},${cols.join(',')}`);
+  }
+  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  // Include key scenario params in filename
+  const eaf = state.coalEAFPct||64;
+  const wind = Math.round((state.newWindMW||0)/1000);
+  const solar = Math.round((state.newPvMW||0)/1000);
+  a.download = `gridtwin_za_dispatch_eaf${eaf}${wind?'_w'+wind+'gw':''}${solar?'_s'+solar+'gw':''}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 function sliderIdFor(tech){
   const map={wind:'newWindMW', solar:'newPvMW', coal:'newCoalMW', ccgt:'newCcgtMW', nuclear:'newNuclearMW', batt:'newBattMW'};
