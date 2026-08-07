@@ -465,6 +465,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           });
           nodalActiveRes={stack:combinedStack, loadS:combinedLoadS};
           nodalUnservedGwh=summary.unservedGwh; // save for the risk panel
+          nodalNationalShedGwh=lastRes ? lastRes.shedMWh/1000 : null; // national baseline at same scenario
           draw(nodalActiveRes);
         } catch(e){
           out.textContent='Could not run the nodal model - data may be missing from the nodal/ folder.';
@@ -2229,7 +2230,7 @@ const fmtTWh=v=>(v/1e6).toFixed(1);
 function render(r){
   const banner=document.getElementById('kpiSourceBanner');
   if(banner) banner.style.display='none';
-  nodalActiveRes=null; nodalUnservedGwh=null;
+  nodalActiveRes=null; nodalUnservedGwh=null; nodalNationalShedGwh=null;
   // board
   const sw=document.getElementById('statusWord');
   const shedGWh=r.shedMWh/1000;
@@ -2327,6 +2328,7 @@ let lastRes=null, rafPending=false, detStage=0;
 })();
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
+let nodalNationalShedGwh=null; // national engine shed at same scenario — used to compute corridor correction factor
 
 /* --- Monte Carlo outage risk (60 synthetic years, chunked async) --- */
 let mcToken=0, mcTimer=null;
@@ -2346,10 +2348,27 @@ async function runMC(){
     await new Promise(res=>setTimeout(res,0));
   }
   if(token!==mcToken)return;
-  renderRisk(runs);
+  // Corridor correction factor: if a nodal run exists for this scenario,
+  // scale all MC shed values by (nodal_unserved / national_unserved).
+  // This approximates network constraints (corridor congestion, regional demand
+  // imbalances) without running the full nodal engine 60 times.
+  // Only applied when national shed > 1 GWh to avoid division near zero.
+  let corridorFactor = 1.0;
+  if(nodalUnservedGwh !== null && nodalNationalShedGwh !== null
+     && nodalNationalShedGwh > 1) {
+    corridorFactor = nodalUnservedGwh / nodalNationalShedGwh;
+    // Cap factor: don't amplify beyond 5× or reduce to zero
+    corridorFactor = Math.max(0.1, Math.min(5.0, corridorFactor));
+  }
+  renderRisk(runs, corridorFactor);
 }
-function renderRisk(runs){
+function renderRisk(runs, corridorFactor=1.0){
   const N=runs.length;
+  // Apply corridor correction to shed values (stage and diesel unchanged)
+  const corrRuns = corridorFactor===1.0 ? runs : runs.map(r=>({
+    ...r, shed: r.shed * corridorFactor
+  }));
+  const adjRuns = corrRuns;
   // Threshold for "a year with load shedding". The old cut-off was 1 GWh - against ~230 TWh of
   // annual demand that is 0.0004%, i.e. effectively "any shedding at all", so the metric sat on a
   // knife-edge: a scenario whose runs cluster near it could swing from 3% to 77% on a change that
@@ -2357,13 +2376,16 @@ function renderRisk(runs){
   // short of a crisis year (2022-23 ran to 11-15 TWh) - and far enough from zero that the answer
   // is stable. The label states the threshold so it isn't read as "any shedding whatsoever".
   const SHED_THRESHOLD_MWH=100000;
-  const pAny=runs.filter(r=>r.shed>SHED_THRESHOLD_MWH).length/N;
-  const meanShed=runs.reduce((s,r)=>s+r.shed,0)/N/1000;
-  const sorted=[...runs].sort((a,b)=>a.shed-b.shed);
+  const pAny=adjRuns.filter(r=>r.shed>SHED_THRESHOLD_MWH).length/N;
+  const meanShed=adjRuns.reduce((s,r)=>s+r.shed,0)/N/1000;
+  const sorted=[...adjRuns].sort((a,b)=>a.shed-b.shed);
   const p90=sorted[Math.floor(0.9*(N-1))].shed/1000;
-  const meanDiesel=runs.reduce((s,r)=>s+r.diesel,0)/N/1e6;
-  const exceed=[1,2,3,4,5,6,7,8].map(s=>runs.filter(r=>r.stage>=s).length/N);
-  document.getElementById('riskTag').textContent=MC_N+' outage-years';
+  const meanDiesel=adjRuns.reduce((s,r)=>s+r.diesel,0)/N/1e6;
+  const exceed=[1,2,3,4,5,6,7,8].map(s=>adjRuns.filter(r=>r.stage>=s).length/N);
+  const corrNote = corridorFactor!==1.0
+    ? ` · ×${corridorFactor.toFixed(2)} corridor correction`
+    : '';
+  document.getElementById('riskTag').textContent=MC_N+' outage-years'+corrNote;
   // If a nodal run has been done, surface its deterministic unserved figure as a prominent
   // callout ABOVE the MC stats. The nodal figure is more accurate (real network constraints,
   // real regional demand) but is a single deterministic year, not a probability distribution.
