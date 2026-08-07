@@ -16,21 +16,23 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://nickhedley.github.io/gridtwin-za/og-card.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --base:#DFE3DC; --panel:#F7F8F5; --panel2:#EEF0EA;
-  --ink:#22292B; --ink2:#5A6560; --line:#C4CBc1; --line2:#AAB3A8;
-  --coal:#C98A2B; --coal2:#8A5E1D;
-  --veld:#4E7A3C; --veld2:#6FA05A;
-  --sun:#D9A62E; --sky:#3A5F73; --nuke:#7A6FA0;
-  --alert:#C3512F; --alert2:#8F3A20;
-  --ok:#4E7A3C;
-  --shadow:0 1px 0 rgba(34,41,43,.08), 0 6px 18px -8px rgba(34,41,43,.25);
+  --base:#E8EBE6; --panel:#F7F8F5; --panel2:#EEECEA;
+  --ink:#22292B; --ink2:#5A6560; --line:#C8CBC5; --line2:#AEB3AA;
+  --coal:#C4785A; --coal2:#9E5C42;
+  --veld:#4A6B7A; --veld2:#6A8E9E;
+  --sun:#C4785A; --sky:#4A6B7A; --nuke:#7A6FA0;
+  --alert:#C4785A; --alert2:#9E5C42;
+  --ok:#4A8C5C;
+  --terra:#C4785A; --terra2:#9E5C42;
+  --steel:#4A6B7A; --steel2:#6A8E9E;
+  --shadow:0 1px 0 rgba(34,41,43,.08), 0 6px 18px -8px rgba(34,41,43,.22);
 }
 *{box-sizing:border-box; margin:0; padding:0}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--base); color:var(--ink); font-family:'Archivo',sans-serif; font-size:14px; line-height:1.45;
+body{background:var(--base); color:var(--ink); font-family:'Roboto',sans-serif; font-size:14px; line-height:1.45;
   background-image:linear-gradient(var(--line) 1px, transparent 1px),linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size:36px 36px; background-position:-1px -1px;}
 h1,h2,h3,.disp{font-family:'Saira Condensed',sans-serif; text-transform:uppercase; letter-spacing:.04em}
@@ -54,7 +56,7 @@ header{border-bottom:2px solid var(--ink); background:var(--panel); box-shadow:v
 .lamp{width:17px; height:26px; border:1px solid #454F49; border-radius:2px; background:#2C3431; display:flex; align-items:flex-end; justify-content:center; font-family:'IBM Plex Mono'; font-size:9px; color:#7d877e; padding-bottom:2px; transition:background .25s, box-shadow .25s}
 .lamp.on{background:var(--alert); color:#fff; border-color:#E2794F; box-shadow:0 0 10px 1px rgba(217,90,45,.55)}
 .statusword{font-family:'Saira Condensed'; font-weight:700; font-size:21px; letter-spacing:.06em}
-.statusword.ok{color:#8FD08A}.statusword.warn{color:#EFC24A}.statusword.bad{color:#F1794A}
+.statusword.ok{color:#7DC47A}.statusword.warn{color:#EFC24A}.statusword.bad{color:#F1794A}
 
 /* ---------- layout ---------- */
 .wrap{max-width:1380px; margin:0 auto; padding:18px 20px 60px; display:grid; grid-template-columns:322px 1fr; gap:18px}
@@ -1631,7 +1633,7 @@ function updateFlowsOnMap(corridorFlows){
     byLink[key].maxAvgUtil=Math.max(byLink[key].maxAvgUtil,cf.avgUtilPct);
     byLink[key].parts.push(cf.regionA+' \u2194 '+cf.regionB+': '+cf.annualGwh.toFixed(0)+' GWh/yr, avg '+cf.avgUtilPct.toFixed(0)+'% / peak '+cf.peakUtilPct.toFixed(0)+'% of '+cf.limitMw+' MW limit');
   });
-  const baseColor=resolveColor('var(--ink2)'), hotColor='#C3512F';
+  const baseColor=resolveColor('var(--ink2)'), hotColor='#C4785A';
   LINKS.forEach(([a,b])=>{
     const key=[a,b].sort().join('_');
     const el=document.getElementById('lk_'+a+'_'+b);
@@ -1664,7 +1666,7 @@ function updateCurtailmentOnMap(curtailmentByRegion){
     byNode[nodeId].maxRatePct=Math.max(byNode[nodeId].maxRatePct,c.curtailmentRatePct);
     if(c.potentialGwh>0.5) byNode[nodeId].parts.push(c.region+': '+c.curtailedGwh.toFixed(0)+' GWh curtailed of '+c.potentialGwh.toFixed(0)+' GWh potential ('+c.curtailmentRatePct.toFixed(0)+'%)');
   });
-  const baseColor=resolveColor('var(--ink2)'), hotColor='#C3512F';
+  const baseColor=resolveColor('var(--ink2)'), hotColor='#C4785A';
   NODES.forEach(n=>{
     const el=document.getElementById('curtail_txt_'+n.id);
     if(!el) return;
