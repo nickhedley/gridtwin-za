@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --base:#F0EDE6; --panel:#F7F8F5; --panel2:#EEECEA;
+  --base:#FAF0CD; --panel:#F7F8F5; --panel2:#EEECEA;
   --ink:#22292B; --ink2:#5A6560; --line:#C8CBC5; --line2:#AEB3AA;
   --coal:#C4785A; --coal2:#9E5C42;
   --veld:#4A6B7A; --veld2:#6A8E9E;
@@ -76,11 +76,12 @@ header{border-bottom:2px solid var(--ink); background:var(--panel); box-shadow:v
 input[type=range]{width:100%; accent-color:var(--terra); height:22px}
 input[type=range]::-webkit-slider-runnable-track{
   background:linear-gradient(to right, var(--terra) 0%, var(--terra) var(--val,50%), var(--line2) var(--val,50%), var(--line2) 100%);
-  border-radius:3px; height:4px;
+  border-radius:3px; height:4px; border:none; box-shadow:none;
 }
-input[type=range]::-moz-range-track{background:var(--line2); border-radius:3px; height:4px}
+input[type=range]::-moz-range-track{background:var(--line2); border-radius:3px; height:4px; border:none; box-shadow:none}
 input[type=range]::-moz-range-progress{background:var(--terra); border-radius:3px; height:4px}
-input[type=range]::-webkit-slider-thumb{margin-top:-6px}
+input[type=range]::-webkit-slider-thumb{margin-top:-6px; border:none; box-shadow:none}
+input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var(--terra)}
 .grp{border-top:1.5px dashed var(--line2); margin:16px -14px 12px; padding:10px 14px 0}
 .grp h3{font-size:13.5px; color:var(--ink2); font-weight:600; margin-bottom:8px}
 .presets{display:grid; grid-template-columns:1fr; gap:7px; margin-bottom:14px}
@@ -1491,7 +1492,7 @@ const SLIDERS=[
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'modern supercritical, same fuel cost as existing fleet · SA has no active new-build coal programme, this is exploratory'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'retrofit cost R223/kW/yr (real Weisweiler, Germany project) · today\u2019s SA fleet ramps ~24%/hr (Agora 2017) → on = fully flexibilised, ~100%/hr (IRENA post-retrofit range) · applies to the remaining (non-decommissioned) fleet'},
-  {id:'getsEnabled',toggle:true,def:false,label:'Grid enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. On = +20% capacity (real DOE/utility deployments, 10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2014 not a blanket national boost, since enhancing an already-idle corridor would be a waste of money. ~R1.55m/km \u2014 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2014 the single-node engine has no corridors to enhance.'},
+  {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. On = +20% capacity (real DOE/utility deployments, 10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2014 not a blanket national boost, since enhancing an already-idle corridor would be a waste of money. ~R1.55m/km \u2014 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2014 the single-node engine has no corridors to enhance.'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. Baseline is 6 GW, or roughly 15% of SA peak demand — consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
