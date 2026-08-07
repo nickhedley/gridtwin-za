@@ -1247,6 +1247,68 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   </main>
 </div>
 
+<!-- ===== C&I PRE-FEASIBILITY MODULE ===== -->
+<div style="max-width:1380px;margin:0 auto;padding:0 20px 32px" id="prefeasSection">
+<div class="panel">
+  <div class="ph">
+    <h2>C&amp;I Pre-feasibility</h2>
+    <span class="tag">Solar · NERSA · Financials · Downloadable report</span>
+  </div>
+  <div style="padding:14px">
+    <p style="font-size:11px;color:var(--ink2);margin:0 0 14px">Enter your project details to generate an indicative pre-feasibility assessment covering solar resource, financial case, and regulatory pathway. All outputs are indicative — not a bankable study.</p>
+
+    <!-- Input grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;font-size:11.5px">
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Location</label>
+        <input id="pf_location" type="text" placeholder="e.g. Johannesburg, GP" style="width:100%;padding:5px 8px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+        <div style="font-size:9.5px;color:var(--ink2);margin-top:2px">Or click the map in Site Resource Query above</div>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">System size (kWp)</label>
+        <input id="pf_kwp" type="number" value="500" min="1" max="100000" step="50" style="width:100%;padding:5px 8px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Offtake type</label>
+        <select id="pf_offtake" style="width:100%;padding:5px 8px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+          <option value="ownuse">Own-use (behind-the-meter)</option>
+          <option value="wheeling">Wheeling to remote site</option>
+          <option value="grid">Grid sale / IPP</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px" id="pf_price_label">Eskom tariff (R/kWh)</label>
+        <input id="pf_price" type="number" value="2.50" min="0.5" max="10" step="0.05" style="width:100%;padding:5px 8px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+        <div id="pf_price_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Avg industrial tariff 2026 ≈ R2.50/kWh</div>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Installed cost (R/Wp)</label>
+        <select id="pf_cost_preset" style="width:100%;padding:5px 8px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+          <option value="7">Small C&amp;I rooftop (&lt;100kWp) — R7/Wp</option>
+          <option value="6" selected>Mid C&amp;I (100–1,000kWp) — R6/Wp</option>
+          <option value="5">Large ground-mount (&gt;1MWp) — R5/Wp</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Battery storage</label>
+        <select id="pf_batt" style="width:100%;padding:5px 8px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+          <option value="0">None</option>
+          <option value="2">2h (peak-shift)</option>
+          <option value="4">4h (overnight cover)</option>
+        </select>
+      </div>
+    </div>
+
+    <button onclick="runPrefeas()" style="padding:8px 24px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px">Generate report</button>
+
+    <div id="pf_result" style="display:none">
+      <!-- Results rendered here -->
+    </div>
+  </div>
+</div>
+</div>
+
 <div style="max-width:1380px;margin:0 auto;padding:0 20px 40px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
@@ -2768,6 +2830,247 @@ document.getElementById('siteResetBtn').addEventListener('click', ()=>{
   renderPortfolio();
   document.getElementById('siteResult').textContent='Select a region and technology, then click Check.';
 });
+</script>
+
+
+<script>
+/* ========== C&I Pre-feasibility module ========== */
+
+// Update price label and note when offtake type changes
+document.getElementById('pf_offtake').addEventListener('change', function() {
+  const lbl = document.getElementById('pf_price_label');
+  const note = document.getElementById('pf_price_note');
+  if(this.value==='ownuse'){
+    lbl.textContent='Eskom tariff (R/kWh)';
+    note.textContent='Avg industrial tariff 2026 ≈ R2.50/kWh';
+    document.getElementById('pf_price').value=2.50;
+  } else if(this.value==='wheeling'){
+    lbl.textContent='PPA price to offtaker (R/kWh)';
+    note.textContent='Typical wheeling PPA R1.20–1.80/kWh. Add TUoS ~R0.20/kWh separately.';
+    document.getElementById('pf_price').value=1.50;
+  } else {
+    lbl.textContent='PPA / capture price (R/kWh)';
+    note.textContent='Grid-sale capture price: solar ~R0.49–0.58/kWh depending on region';
+    document.getElementById('pf_price').value=0.55;
+  }
+});
+
+// NERSA registration categories (Schedule 2 of Electricity Regulation Act)
+function nersaCategory(kwp) {
+  if(kwp <= 100)  return {cat:'Schedule 2 (≤100kWp)', nersa:'Registration only (no licence)', timeline:'2–4 weeks', fee:'R0 (exempt from licensing fees)', notes:'Must register with NERSA within 30 days of commissioning. NRS 097 compliance required for grid tie.'};
+  if(kwp <= 1000) return {cat:'Schedule 2 (≤1MWp)', nersa:'Registration required before construction', timeline:'4–8 weeks', fee:'~R15,000 registration fee', notes:'Environmental authorisation likely required. Municipal/Eskom grid agreement needed before energisation.'};
+  if(kwp <= 10000) return {cat:'Schedule 2 (≤10MWp)', nersa:'Generation licence NOT required — registration only', timeline:'6–12 weeks incl. EIA', fee:'~R15,000–50,000 depending on scope', notes:'Basic Assessment or full EIA required depending on location. Requires Eskom/NTCSA grid connection agreement.'};
+  return {cat:'Above 10MWp — Generation licence required', nersa:'Full NERSA generation licence', timeline:'6–18 months', fee:'NERSA tariff application + legal costs ~R200,000+', notes:'Requires full EIA, public participation, grid connection study (R15,000 application fee to NTCSA). Consider REIPPPP or private PPA route.'};
+}
+
+// Grid connection pathway based on system size
+function gridPathway(kwp, offtake) {
+  if(offtake==='ownuse') {
+    if(kwp <= 100) return {authority:'Municipality or Eskom (depending on area)', process:'Small-scale embedded generation (SSEG) application', timeline:'4–12 weeks', docs:['NRS 097 compliant inverter certificate','Single-line diagram','Certificate of Compliance (CoC)','Completed SSEG application form']};
+    if(kwp <= 1000) return {authority:'Municipality or Eskom', process:'SSEG or large embedded generation agreement', timeline:'8–16 weeks', docs:['NRS 097 certificate','Protection relay settings','Load flow study','NERSA registration','Environmental authorisation if applicable']};
+    return {authority:'Eskom/NTCSA', process:'Grid connection agreement — GCCA headroom check required', timeline:'3–12 months', docs:['Grid connection application (R15,000 fee)','Environmental Impact Assessment','Power system study','NERSA registration']};
+  }
+  if(offtake==='wheeling') {
+    return {authority:'NTCSA (transmission) or municipality (distribution)', process:'Wheeling agreement + connection at generation and offtake points', timeline:'6–18 months', docs:['Grid connection applications at both ends','Wheeling agreement with NTCSA','PPA with offtaker','NERSA registration','EIA if >1MWp']};
+  }
+  // grid sale / IPP
+  return {authority:'NTCSA', process:'Grid connection agreement + PPA (private) or REIPPPP bid', timeline:'12–36 months', docs:['GCCA headroom check','Grid connection application (R15,000 fee)','Environmental Impact Assessment','NERSA generation licence (if >10MWp)','PPA with offtaker or REIPPPP bid submission']};
+}
+
+// Financial calculations
+function calcFinancials(kwp, solarCF, priceRkwh, costRwp, battHours, offtake) {
+  const battRwh = 1450; // R/kWh installed (BNEF 2026)
+  const systCostR = kwp * 1000 * costRwp + (battHours > 0 ? kwp * battHours * battRwh : 0);
+  const annualKwh = kwp * solarCF * 8760; // kWp × CF × hours
+  // Own-use: offset Eskom bill. Wheeling/grid: revenue from sales
+  // Assume 90% of generation is utilisable (10% curtailed/grid limits/own-use load factor)
+  const utilisationFactor = offtake==='ownuse' ? 0.85 : 0.90;
+  const annualRevR = annualKwh * utilisationFactor * priceRkwh;
+  // Opex: 1.5% of capex per year (insurance, O&M, monitoring)
+  const annualOpexR = systCostR * 0.015;
+  const annualNetR = annualRevR - annualOpexR;
+  const simplePayback = annualNetR > 0 ? systCostR / annualNetR : Infinity;
+  // IRR: simplified NPV at 10% discount rate over 25 years
+  const r = 0.10, N = 25;
+  let npv = -systCostR;
+  for(let y=1;y<=N;y++) npv += annualNetR / Math.pow(1+r, y);
+  // Binary search for IRR
+  let lo=0, hi=1, irr=0;
+  for(let i=0;i<50;i++){
+    const mid=(lo+hi)/2;
+    let npvMid=-systCostR;
+    for(let y=1;y<=N;y++) npvMid+=annualNetR/Math.pow(1+mid,y);
+    if(npvMid>0) lo=mid; else hi=mid;
+    irr=mid;
+  }
+  // CO2 savings: SA grid emission factor ~0.95 kgCO2/kWh (Eskom 2024)
+  const co2SavedT = annualKwh * utilisationFactor * 0.00095;
+  return {systCostR, annualKwh, annualRevR, annualOpexR, annualNetR, simplePayback, irr, npv, co2SavedT};
+}
+
+async function runPrefeas() {
+  const el = document.getElementById('pf_result');
+  el.style.display='';
+  el.innerHTML='<p style="color:var(--ink2);font-size:11px;padding:8px 0">Calculating…</p>';
+
+  const kwp = parseFloat(document.getElementById('pf_kwp').value)||500;
+  const offtake = document.getElementById('pf_offtake').value;
+  const price = parseFloat(document.getElementById('pf_price').value)||2.50;
+  const costPreset = document.getElementById('pf_cost_preset').value;
+  const costRwp = parseFloat(costPreset==='custom' ? 6 : costPreset);
+  const battHours = parseInt(document.getElementById('pf_batt').value)||0;
+  const locationText = document.getElementById('pf_location').value || 'South Africa';
+
+  // Get solar CF — use lastSiteClick if available from Site Resource Query, else use national average
+  let solarCF = 0.21; // SA national average fallback
+  let solarSource = 'SA national average (fallback)';
+  let region = 'National';
+  if(window._resourceData && window._resourceData.solar) {
+    solarCF = window._resourceData.solar.annualCF;
+    solarSource = window._resourceData.solar.source || 'Site-specific';
+    region = window._resourceData.windRegion || 'Selected location';
+    document.getElementById('pf_location').value = window._resourceData.lat.toFixed(3)+'°, '+window._resourceData.lng.toFixed(3)+'°';
+  }
+
+  const nersa = nersaCategory(kwp);
+  const grid = gridPathway(kwp, offtake);
+  const fin = calcFinancials(kwp, solarCF, price, costRwp, battHours, offtake);
+
+  const offtakeLabel = {ownuse:'Own-use (behind-the-meter)', wheeling:'Wheeling to remote site', 'grid':'Grid sale / IPP'}[offtake];
+  const fmt = (n,dec=0,prefix='R',suffix='') => prefix+(n/1).toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g,',')+suffix;
+
+  const reportHTML = `
+  <div id="pf_report" style="border:1.5px solid var(--ink);padding:0;background:var(--panel)">
+    <!-- Report header -->
+    <div style="background:#517180;color:#fff;padding:16px 20px">
+      <div style="font-family:'Saira Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:.03em">C&amp;I SOLAR PRE-FEASIBILITY REPORT</div>
+      <div style="font-size:11px;opacity:.85;margin-top:2px">${locationText} &nbsp;·&nbsp; ${kwp.toLocaleString()} kWp &nbsp;·&nbsp; ${offtakeLabel} &nbsp;·&nbsp; ${new Date().toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'})}</div>
+    </div>
+    <div style="padding:16px 20px">
+
+    <!-- Disclaimer -->
+    <div style="font-size:9.5px;color:var(--ink2);border-left:3px solid var(--terra);padding-left:8px;margin-bottom:16px">
+      Indicative pre-feasibility only. Not a bankable study. Verify with PVSyst, a registered professional engineer, and NERSA/Eskom before investment decisions.
+    </div>
+
+    <!-- 3-column summary -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">
+      <div style="background:var(--bg2,#eee);border-radius:4px;padding:12px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:#F5C518">${(solarCF*100).toFixed(1)}%</div>
+        <div style="font-size:10px;color:var(--ink2)">Solar CF · ${region}</div>
+        <div style="font-size:9px;color:var(--ink2);margin-top:2px">${(fin.annualKwh/1000).toFixed(0)} MWh/yr yield</div>
+      </div>
+      <div style="background:var(--bg2,#eee);border-radius:4px;padding:12px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--steel,#4A6B7A)">${fin.simplePayback < 20 ? fin.simplePayback.toFixed(1)+' yr' : '>20yr'}</div>
+        <div style="font-size:10px;color:var(--ink2)">Simple payback</div>
+        <div style="font-size:9px;color:var(--ink2);margin-top:2px">IRR ${fin.irr > 0.01 ? (fin.irr*100).toFixed(1)+'%' : 'n/a'} over 25yr</div>
+      </div>
+      <div style="background:var(--bg2,#eee);border-radius:4px;padding:12px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:#3EA055">${fin.co2SavedT.toFixed(0)} t</div>
+        <div style="font-size:10px;color:var(--ink2)">CO₂ saved/yr</div>
+        <div style="font-size:9px;color:var(--ink2);margin-top:2px">vs Eskom grid (0.95 kgCO₂/kWh)</div>
+      </div>
+    </div>
+
+    <!-- Section 1: Resource -->
+    <div style="margin-bottom:16px">
+      <div style="font-family:'Saira Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--ink);padding-bottom:4px;margin-bottom:8px">1. Solar Resource</div>
+      <table style="width:100%;font-size:11px;border-collapse:collapse">
+        <tr><td style="padding:3px 0;color:var(--ink2);width:45%">Annual capacity factor</td><td style="font-weight:600">${(solarCF*100).toFixed(1)}%</td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">Annual yield</td><td style="font-weight:600">${(fin.annualKwh/1000).toFixed(0)} MWh/yr (${(fin.annualKwh/kwp).toFixed(0)} kWh/kWp)</td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">Peak sun hours</td><td>${(solarCF*8760/1000).toFixed(1)} h/day average</td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">Data source</td><td>${solarSource}</td></tr>
+        ${battHours>0?`<tr><td style="padding:3px 0;color:var(--ink2)">Battery storage</td><td>${battHours}h · ${(kwp*battHours).toFixed(0)} kWh · charges from solar surplus</td></tr>`:''}
+      </table>
+    </div>
+
+    <!-- Section 2: Financial -->
+    <div style="margin-bottom:16px">
+      <div style="font-family:'Saira Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--ink);padding-bottom:4px;margin-bottom:8px">2. Financial Case</div>
+      <table style="width:100%;font-size:11px;border-collapse:collapse">
+        <tr><td style="padding:3px 0;color:var(--ink2);width:45%">Installed cost (incl. BOS)</td><td style="font-weight:600">R${fmt(fin.systCostR/1e6,2,'','m')} &nbsp;<span style="font-size:9.5px;color:var(--ink2)">(${costRwp} R/Wp ${battHours>0?'+ R'+battHours*1450+'/kWh battery':''})</span></td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">Annual energy revenue/savings</td><td style="font-weight:600">R${fmt(fin.annualRevR/1e3,0,'','k')}/yr &nbsp;<span style="font-size:9.5px;color:var(--ink2)">(at R${price}/kWh)</span></td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">Annual O&amp;M cost</td><td>R${fmt(fin.annualOpexR/1e3,0,'','k')}/yr &nbsp;<span style="font-size:9.5px;color:var(--ink2)">(1.5% of capex)</span></td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">Annual net benefit</td><td style="font-weight:600">R${fmt(fin.annualNetR/1e3,0,'','k')}/yr</td></tr>
+        <tr style="border-top:1px solid var(--line2)"><td style="padding:4px 0;color:var(--ink2)">Simple payback</td><td style="font-weight:700;color:${fin.simplePayback<10?'var(--ok,#4A8C5C)':fin.simplePayback<15?'#F5A623':'var(--alert)'}">${fin.simplePayback<100?fin.simplePayback.toFixed(1)+' years':'>25 years'}</td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">IRR (25yr, no escalation)</td><td style="font-weight:600">${fin.irr>0.01?(fin.irr*100).toFixed(1)+'%':'&lt;1%'}</td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">NPV (10% discount, 25yr)</td><td style="font-weight:600;color:${fin.npv>0?'var(--ok,#4A8C5C)':'var(--alert)'}">R${fmt(fin.npv/1e6,2,'','m')}</td></tr>
+      </table>
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Assumes no tariff escalation (conservative). At 5% annual Eskom tariff escalation, payback improves by ~20%.</div>
+    </div>
+
+    <!-- Section 3: Regulatory -->
+    <div style="margin-bottom:16px">
+      <div style="font-family:'Saira Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--ink);padding-bottom:4px;margin-bottom:8px">3. Regulatory Pathway</div>
+      <div style="font-size:11px">
+        <div style="font-weight:600;margin-bottom:4px">NERSA registration: ${nersa.cat}</div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:8px">
+          <tr><td style="padding:3px 0;color:var(--ink2);width:45%">Licensing requirement</td><td>${nersa.nersa}</td></tr>
+          <tr><td style="padding:3px 0;color:var(--ink2)">Typical timeline</td><td>${nersa.timeline}</td></tr>
+          <tr><td style="padding:3px 0;color:var(--ink2)">Indicative fee</td><td>${nersa.fee}</td></tr>
+        </table>
+        <div style="font-size:9.5px;color:var(--ink2);margin-bottom:10px">${nersa.notes}</div>
+
+        <div style="font-weight:600;margin-bottom:4px">Grid connection: ${grid.authority}</div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:6px">
+          <tr><td style="padding:3px 0;color:var(--ink2);width:45%">Process</td><td>${grid.process}</td></tr>
+          <tr><td style="padding:3px 0;color:var(--ink2)">Timeline</td><td>${grid.timeline}</td></tr>
+        </table>
+        <div style="font-size:10px;font-weight:600;margin-bottom:3px">Key documents required:</div>
+        <ul style="margin:0 0 0 16px;padding:0;font-size:10px;color:var(--ink2)">
+          ${grid.docs.map(d=>`<li style="margin-bottom:2px">${d}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Next steps -->
+    <div style="background:rgba(74,107,122,0.08);border-left:3px solid var(--steel,#4A6B7A);padding:10px 12px;font-size:10.5px">
+      <div style="font-weight:600;margin-bottom:4px">Recommended next steps</div>
+      <ol style="margin:0 0 0 16px;padding:0;color:var(--ink2)">
+        <li style="margin-bottom:3px">Commission a <strong>PVSyst energy report</strong> from a registered engineer for bankable yield estimates</li>
+        <li style="margin-bottom:3px">Submit <strong>NERSA registration</strong> (${nersa.timeline})</li>
+        <li style="margin-bottom:3px">Apply for <strong>grid connection</strong> to ${grid.authority} — use the Grid Connection tab above to check GCCA headroom first</li>
+        ${offtake==='wheeling'?'<li style="margin-bottom:3px">Obtain NTCSA <strong>wheeling agreement</strong> and negotiate TUoS tariff</li>':
+          offtake==='grid'?'<li style="margin-bottom:3px">Negotiate <strong>PPA with offtaker</strong> or prepare REIPPPP bid</li>':''}
+        <li>Get <strong>3 EPC quotes</strong> — SA market range ${costRwp-1}–${costRwp+1} R/Wp for this system size</li>
+      </ol>
+    </div>
+
+    <div style="margin-top:12px;font-size:9px;color:var(--ink2);text-align:center">
+      Generated by GridTwin ZA &nbsp;·&nbsp; nickhedley.github.io/gridtwin-za &nbsp;·&nbsp; ${new Date().toISOString().slice(0,10)} &nbsp;·&nbsp; Indicative only — not a bankable study
+    </div>
+    </div><!-- /padding -->
+  </div><!-- /report -->
+
+  <div style="margin-top:10px;display:flex;gap:8px">
+    <button onclick="printPrefeas()" style="padding:6px 16px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">↓ Download / Print PDF</button>
+    <button onclick="document.getElementById('pf_result').style.display='none'" style="padding:6px 12px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;color:var(--ink2)">Clear</button>
+  </div>`;
+
+  el.innerHTML = reportHTML;
+}
+
+function printPrefeas() {
+  const report = document.getElementById('pf_report');
+  if(!report) return;
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>C&I Pre-feasibility Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'Roboto',sans-serif;font-size:12px;color:#22292B;margin:20px;line-height:1.4}
+    @media print{body{margin:0}}
+    .ph{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1.5px solid #22292B;padding-bottom:4px;margin-bottom:8px}
+    table{width:100%;border-collapse:collapse}
+    td{padding:3px 0;vertical-align:top}
+    ul,ol{margin:0 0 0 16px;padding:0}
+    li{margin-bottom:2px}
+  </style>
+  </head><body>${report.outerHTML}
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(), 500);
+}
 </script>
 
 </body>
