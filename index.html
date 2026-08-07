@@ -199,6 +199,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="pb">
       <div class="presets" id="presets"></div>
       <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
+      <button class="sharebtn" id="pinBtn" type="button" onclick="pinScenario()" style="margin-top:6px;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink)">📌 Pin for comparison</button>
       <div id="controls"></div>
     </div>
   </aside>
@@ -209,6 +210,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="kpis" id="kpis"></div>
     <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk. Note: system cost excludes any curtailment payments to wind and solar plants contracted under REIPPPP. <strong>Replacement cost</strong> prices every MWh (from existing and new plants) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
 
+    <div id="comparePanel" style="display:none;margin-bottom:18px;border:1.5px solid var(--ink);border-radius:0;background:var(--panel)">
+      <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline">
+        <h2>Scenario comparison</h2>
+        <button onclick="clearPin()" style="font-size:10px;background:none;border:none;cursor:pointer;color:var(--ink2);text-decoration:underline">Clear</button>
+      </div>
+      <div id="compareBody" style="padding:12px 14px;font-size:11px"></div>
+    </div>
     <div class="main2">
       <section aria-label="Network map and capacity siting">
       <div class="panel mapbox">
@@ -1729,7 +1737,8 @@ const SLIDERS=[
 const PRESETS={
   'Today 2026':{},
   'Crisis 2023':{coalEAFPct:50,demandGrowthPct:14,outVolPct:6},
-  'Future electricity mix':{coalDecomMW:10000,newWindMW:20000,newPvMW:30000,newRooftopMW:10000,newBattMW:8000,newCcgtMW:2500},
+  'IRP 2025 (by 2030)':{coalDecomMW:6000,newWindMW:7340,newPvMW:11270,newRooftopMW:5000,newBattMW:1700,newCcgtMW:6000},
+  'Gas bridge':{coalDecomMW:8000,newWindMW:8000,newPvMW:8000,newCcgtMW:6000,newBattMW:2000},
 };
 const COLORS={nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV',curtailment:'Curtailed (wasted)'};
@@ -2471,6 +2480,81 @@ function downloadDispatchCSV() {
   a.download = `gridtwin_za_dispatch_eaf${eaf}${wind?'_w'+wind+'gw':''}${solar?'_s'+solar+'gw':''}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+// ── Scenario comparison ──────────────────────────────────────────────────────
+let pinnedResult = null;
+let pinnedLabel  = null;
+
+function pinScenario() {
+  if(!lastRes) return;
+  pinnedResult = lastRes;
+  // Get active preset name or "Custom"
+  const active = document.querySelector('#presets button.active');
+  pinnedLabel = active ? active.textContent : 'Custom';
+  document.getElementById('pinBtn').textContent = '📌 Pinned: ' + pinnedLabel;
+  document.getElementById('pinBtn').style.background = 'var(--ink)';
+  document.getElementById('pinBtn').style.color = 'var(--panel)';
+  renderComparison();
+}
+
+function clearPin() {
+  pinnedResult = null; pinnedLabel = null;
+  document.getElementById('pinBtn').textContent = '📌 Pin for comparison';
+  document.getElementById('pinBtn').style.background = 'var(--panel)';
+  document.getElementById('pinBtn').style.color = 'var(--ink)';
+  document.getElementById('comparePanel').style.display = 'none';
+}
+
+function renderComparison() {
+  if(!pinnedResult || !lastRes) return;
+  const panel = document.getElementById('comparePanel');
+  const body  = document.getElementById('compareBody');
+  panel.style.display = '';
+  const active = document.querySelector('#presets button.active');
+  const currentLabel = active ? active.textContent : 'Current';
+  const p = pinnedResult, r = lastRes;
+  const pE = p.E, rE = r.E;
+
+  function delta(a, b, decimals, unit, lowerBetter) {
+    const d = b - a;
+    if(Math.abs(d) < 0.005) return {text:'—', col:'var(--ink2)'};
+    const sign = d > 0 ? '+' : '';
+    const col = lowerBetter ? (d < 0 ? 'var(--ok,#4A8C5C)' : 'var(--alert,#C4785A)')
+                             : (d > 0 ? 'var(--ok,#4A8C5C)' : 'var(--alert,#C4785A)');
+    return {text: sign + d.toFixed(decimals) + unit, col};
+  }
+
+  const rows = [
+    {label:'System cost',      a:(p.totalCost/1e9).toFixed(0),  b:(r.totalCost/1e9).toFixed(0),  d:delta(p.totalCost/1e9,  r.totalCost/1e9,  0,' Rbn', true), unit:'R bn/yr'},
+    {label:'Avg energy cost',  a:(p.avgCost/1000).toFixed(2),    b:(r.avgCost/1000).toFixed(2),    d:delta(p.avgCost/1000,   r.avgCost/1000,   2,' R/kWh', true), unit:'R/kWh'},
+    {label:'CO₂ emissions',    a:p.co2.toFixed(0),               b:r.co2.toFixed(0),               d:delta(p.co2,r.co2,0,' Mt',true), unit:'Mt/yr'},
+    {label:'Renewables share', a:((pE.wind+pE.pv+pE.csp+pE.rooftop)/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0))*100).toFixed(0), b:((rE.wind+rE.pv+rE.csp+rE.rooftop)/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0))*100).toFixed(0), d:delta((pE.wind+pE.pv+pE.csp+pE.rooftop)/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0))*100,(rE.wind+rE.pv+rE.csp+rE.rooftop)/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0))*100,0,'%',false), unit:'%'},
+    {label:'Curtailment',      a:(pE.curtailed/1e6).toFixed(1),  b:(rE.curtailed/1e6).toFixed(1),  d:delta(pE.curtailed/1e6, rE.curtailed/1e6, 1,' TWh', true), unit:'TWh/yr'},
+    {label:'Expected shed',    a:(p.shedMWh/1000).toFixed(0),    b:(r.shedMWh/1000).toFixed(0),    d:delta(p.shedMWh/1000,   r.shedMWh/1000,   0,' GWh', true), unit:'GWh/yr'},
+  ];
+
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:140px 1fr 1fr 90px;gap:4px;align-items:center;font-size:10.5px">
+      <div></div>
+      <div style="font-weight:600;color:var(--ink2)">📌 ${pinnedLabel}</div>
+      <div style="font-weight:600">▶ ${currentLabel}</div>
+      <div style="font-weight:600;color:var(--ink2)">Change</div>
+      ${rows.map(row=>`
+        <div style="color:var(--ink2)">${row.label}</div>
+        <div>${row.a} <span style="font-size:9px;color:var(--ink2)">${row.unit}</span></div>
+        <div style="font-weight:600">${row.b} <span style="font-size:9px;color:var(--ink2)">${row.unit}</span></div>
+        <div style="font-weight:700;color:${row.d.col}">${row.d.text}</div>
+      `).join('')}
+    </div>
+    <div style="margin-top:8px;font-size:9.5px;color:var(--ink2)">Green = improvement · Red = worse · Lower cost/emissions is better · Higher renewables share is better</div>`;
+}
+
+// Re-render comparison whenever results update
+const _origRender = render;
+function render(r) {
+  _origRender(r);
+  if(pinnedResult) renderComparison();
 }
 
 function sliderIdFor(tech){
