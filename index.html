@@ -2228,7 +2228,6 @@ function draw(r){
 /* ==================== RENDER RESULTS ==================== */
 const fmtTWh=v=>(v/1e6).toFixed(1);
 function render(r){
-  try {
   const banner=document.getElementById('kpiSourceBanner');
   if(banner) banner.style.display='none';
   nodalActiveRes=null; nodalUnservedGwh=null; nodalNationalShedGwh=null;
@@ -2305,10 +2304,6 @@ function render(r){
     '<div class="mixrow"><span class="nm">'+r.nm+'</span><span class="barwrap"><span class="bar" style="width:'+(100*r.v/lcoeMax).toFixed(1)+'%;background:'+r.c+'"></span></span><span class="num">R'+(r.v/1000).toFixed(2)+'/kWh</span></div>'
   ).join('');
 
-  } catch(err) {
-    console.error('render() threw:', err);
-    document.getElementById('kpis').innerHTML = '<div style="color:red;padding:8px">Render error: '+err.message+'</div>';
-  }
   updateMap(r);
   draw(r);
   const a11y=document.getElementById('dispatchA11yTable');
@@ -2451,7 +2446,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   }).catch(()=>{btn.textContent=location.href;});
 });
 
-function run(){lastRes=simulate(state,PROFILES);renderWithCompare(lastRes);syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);render(lastRes);if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
@@ -2575,12 +2570,6 @@ function renderComparison() {
       `).join('')}
     </div>
     <div style="margin-top:8px;font-size:9.5px;color:var(--ink2)">Green = improvement · Red = worse · Lower cost/emissions is better · Higher renewables share is better</div>`;
-}
-
-// Re-render comparison whenever results update — called from run() below
-function renderWithCompare(r) {
-  render(r);
-  if(pinnedResult) renderComparison();
 }
 
 function sliderIdFor(tech){
