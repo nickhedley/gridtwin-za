@@ -2424,7 +2424,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   }).catch(()=>{btn.textContent=location.href;});
 });
 
-function run(){lastRes=simulate(state,PROFILES);render(lastRes);syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);renderWithCompare(lastRes);syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
@@ -2550,10 +2550,9 @@ function renderComparison() {
     <div style="margin-top:8px;font-size:9.5px;color:var(--ink2)">Green = improvement · Red = worse · Lower cost/emissions is better · Higher renewables share is better</div>`;
 }
 
-// Re-render comparison whenever results update
-const _origRender = render;
-function render(r) {
-  _origRender(r);
+// Re-render comparison whenever results update — called from run() below
+function renderWithCompare(r) {
+  render(r);
   if(pinnedResult) renderComparison();
 }
 
