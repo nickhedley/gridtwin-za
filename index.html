@@ -546,6 +546,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre</button>
       <button class="rtab" onclick="switchTab('capture')" id="tab_capture">Capture price</button>
       <button class="rtab" onclick="switchTab('grid')" id="tab_grid">Grid connection</button>
+      <button class="rtab" onclick="switchTab('wheeling')" id="tab_wheeling">Wheeling</button>
     </div>
     <div id="resourceSplit">
       <div id="resourceMap" style="border-right:1px solid var(--line2)"></div>
@@ -560,6 +561,42 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div id="dcResult" style="margin-top:12px"></div></div>
         <div id="rpanel_capture" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to see capture price estimates for the nearest supply area.</p><div id="captureResult" style="margin-top:10px"></div></div>
         <div id="rpanel_grid" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to find the nearest Eskom substation and GCCA headroom.</p><div id="gridResult" style="margin-top:10px"></div></div>
+        <div id="rpanel_wheeling" style="padding:14px;display:none">
+          <p style="color:var(--ink2);font-size:11px;margin:0 0 10px">Estimate the delivered cost of wheeling renewable energy from a generation region to a consumption region via Eskom's transmission network.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;font-size:11px">
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Generation region</label>
+              <select id="wheelGenRegion" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
+                <option value="Northern Cape">Northern Cape</option>
+                <option value="Hydra Central">Hydra Central</option>
+                <option value="Eastern Cape">Eastern Cape</option>
+                <option value="Western Cape">Western Cape</option>
+                <option value="Free State">Free State</option>
+                <option value="North West">North West</option>
+                <option value="Limpopo">Limpopo</option>
+                <option value="Mpumalanga">Mpumalanga</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Consumption region</label>
+              <select id="wheelConsRegion" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
+                <option value="Gauteng">Gauteng</option>
+                <option value="Kwazulu Natal">KwaZulu-Natal</option>
+                <option value="Western Cape">Western Cape</option>
+                <option value="Eastern Cape">Eastern Cape</option>
+                <option value="Mpumalanga">Mpumalanga</option>
+                <option value="Limpopo">Limpopo</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:11px">
+            <label style="font-weight:600;white-space:nowrap">Load (MW)</label>
+            <input type="range" id="wheelMW" min="1" max="500" value="50" step="1" style="flex:1" oninput="document.getElementById('wheelMWval').textContent=this.value;calcWheeling()">
+            <span id="wheelMWval" style="width:36px;text-align:right;font-family:monospace;font-size:11px">50</span>
+            <span style="font-size:10px;color:var(--ink2)">MW</span>
+          </div>
+          <div id="wheelResult"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -883,9 +920,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
   // ── Tab switching ─────────────────────────────────────────────────────────
   function switchTab(name) {
-    ['resource','datacenter','capture','grid'].forEach(t => {
-      document.getElementById('tab_'+t).classList.toggle('active', t===name);
-      document.getElementById('rpanel_'+t).style.display = t===name ? '' : 'none';
+    ['resource','datacenter','capture','grid','wheeling'].forEach(t => {
+      const tabEl=document.getElementById('tab_'+t); if(tabEl) tabEl.classList.toggle('active', t===name);
+      const panEl=document.getElementById('rpanel_'+t); if(panEl) panEl.style.display = t===name ? '' : 'none';
     });
     currentTab = name;
   }
@@ -938,7 +975,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>`).join('')}
       </div>
       ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
-      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: ${h.source||'GCCA 2025'}. Headroom = 0 means the corridor is fully subscribed.</div>`;
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: ${h.source||'GCCA 2025'}. Headroom = 0 means the corridor is fully subscribed.</div>
+      ${(h.solar_mw||0)===0 && h.corridor_km ? `<div style="margin-top:8px;padding:8px;background:rgba(196,120,90,0.08);border-radius:4px;border-left:3px solid var(--terra,#C4785A)">
+        <div style="font-size:10px;font-weight:600;color:var(--terra,#C4785A);margin-bottom:3px">Corridor upgrade required</div>
+        <div style="font-size:10px;color:var(--ink2)">${h.binding_corridor||'Binding corridor'} · ${h.corridor_km} km</div>
+        <div style="font-size:10px;color:var(--ink2);margin-top:2px">Indicative upgrade cost: <strong>R${Math.round(h.corridor_km*31/1000)}bn – R${Math.round(h.corridor_km*45/1000)}bn</strong> (R31–45m/km for 400kV line, from TDP 2025)</div>
+        <div style="font-size:9px;color:var(--ink2);margin-top:2px">Alternative: GET (grid-enhancing technologies) may unlock 20–30% more capacity on existing corridors at ~R1.55m/km</div>
+      </div>` : ''}`;
   }
 
 
@@ -1092,6 +1135,103 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   // Expose switchTab globally
   window.switchTab = switchTab;
   window.runDC = runDC;
+  window.calcWheeling = calcWheeling;
+
+  // ── Feature 6: Wheeling calculator ────────────────────────────────────────
+  // Corridor distances (km) between key region pairs from GCCA / TDP data
+  const CORRIDOR_KM = {
+    'Northern Cape|Gauteng':    650, 'Northern Cape|Free State':  420,
+    'Northern Cape|Western Cape': 400, 'Northern Cape|Hydra Central': 90,
+    'Hydra Central|Gauteng':    550, 'Hydra Central|Free State':  310,
+    'Hydra Central|Western Cape': 340, 'Hydra Central|Northern Cape': 90,
+    'Eastern Cape|Gauteng':     750, 'Eastern Cape|Kwazulu Natal': 420,
+    'Eastern Cape|Free State':  480, 'Eastern Cape|Western Cape':  680,
+    'Western Cape|Gauteng':     900, 'Western Cape|Eastern Cape':  680,
+    'Free State|Gauteng':       200, 'Free State|Kwazulu Natal':   380,
+    'Limpopo|Gauteng':          200, 'Mpumalanga|Gauteng':         150,
+    'North West|Gauteng':       180, 'North West|Free State':       260,
+  };
+  function corridorKm(gen, cons) {
+    return CORRIDOR_KM[gen+'|'+cons] || CORRIDOR_KM[cons+'|'+gen] || 400;
+  }
+
+  // Wheeling tariff: NTCSA published wheeling framework (2024)
+  // Transmission use-of-system (TUoS): ~R0.18-0.22/kWh depending on distance
+  // Distribution UoS (if applicable): ~R0.05-0.08/kWh
+  // Network losses: ~2-5% over long corridors
+  function calcWheeling() {
+    const gen = document.getElementById('wheelGenRegion').value;
+    const cons = document.getElementById('wheelConsRegion').value;
+    const loadMW = parseInt(document.getElementById('wheelMW').value)||50;
+    const el = document.getElementById('wheelResult');
+    if(!el) return;
+    if(gen===cons){
+      el.innerHTML='<p style="font-size:11px;color:var(--ink2)">Generation and consumption regions are the same — no wheeling needed.</p>';
+      return;
+    }
+    const distKm = corridorKm(gen, cons);
+    // TUoS tariff scales with distance (NTCSA postage stamp + distance component)
+    const tuos = Math.min(0.23, 0.10 + distKm * 0.00019); // R/kWh
+    // Losses: ~2% base + 0.002% per km
+    const lossPct = Math.min(6, 2 + distKm * 0.003);
+    const lossMultiplier = 1 / (1 - lossPct/100);
+    // Capture prices from CAPTURE table (use gen region solar as base)
+    const CAP = {
+      'Northern Cape':{solar:490,wind:600},'Hydra Central':{solar:495,wind:590},
+      'Eastern Cape':{solar:567,wind:609},'Western Cape':{solar:576,wind:590},
+      'Free State':{solar:510,wind:603},'North West':{solar:528,wind:608},
+      'Limpopo':{solar:544,wind:612},'Mpumalanga':{solar:562,wind:623},
+    };
+    const cap = CAP[gen] || {solar:520, wind:600};
+    const ppaSolar = Math.round(cap.solar / 0.88); // R/MWh
+    const ppaWind  = Math.round(cap.wind  / 0.88);
+    const tuosMWh  = Math.round(tuos * 1000); // convert R/kWh → R/MWh
+    const deliveredSolar = Math.round((ppaSolar + tuosMWh) * lossMultiplier);
+    const deliveredWind  = Math.round((ppaWind  + tuosMWh) * lossMultiplier);
+    // Compare with local (Gauteng) PPA
+    const localSolar = 600, localWind = 700; // rough Gauteng/Mpumalanga PPA
+
+    el.innerHTML = `
+      <div style="font-size:10.5px;font-weight:600;margin-bottom:8px">${gen} → ${cons} &nbsp;·&nbsp; ${distKm} km &nbsp;·&nbsp; ${loadMW} MW load</div>
+      <table style="width:100%;font-size:10.5px;border-collapse:collapse">
+        <thead><tr style="border-bottom:1px solid var(--line2)">
+          <th style="text-align:left;padding:2px 0;color:var(--ink2)">Component</th>
+          <th style="text-align:right;padding:2px 4px;color:#F5C518">Solar</th>
+          <th style="text-align:right;padding:2px 0;color:#3EA055">Wind</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:3px 0;color:var(--ink2)">IPP capture price</td>
+            <td style="text-align:right;padding:3px 4px">R${cap.solar}/MWh</td>
+            <td style="text-align:right">R${cap.wind}/MWh</td></tr>
+          <tr><td style="padding:3px 0;color:var(--ink2)">PPA floor (÷0.88)</td>
+            <td style="text-align:right;padding:3px 4px">R${ppaSolar}/MWh</td>
+            <td style="text-align:right">R${ppaWind}/MWh</td></tr>
+          <tr><td style="padding:3px 0;color:var(--ink2)">Wheeling (TUoS)</td>
+            <td style="text-align:right;padding:3px 4px;color:var(--ink2)">R${tuosMWh}/MWh</td>
+            <td style="text-align:right;color:var(--ink2)">R${tuosMWh}/MWh</td></tr>
+          <tr><td style="padding:3px 0;color:var(--ink2)">Losses (${lossPct.toFixed(1)}%)</td>
+            <td style="text-align:right;padding:3px 4px;color:var(--ink2)">+${(lossPct).toFixed(1)}%</td>
+            <td style="text-align:right;color:var(--ink2)">+${(lossPct).toFixed(1)}%</td></tr>
+          <tr style="border-top:1px solid var(--line2)">
+            <td style="padding:4px 0;font-weight:600">Delivered cost</td>
+            <td style="text-align:right;padding:4px 4px;font-weight:700;color:#F5C518">R${deliveredSolar}/MWh</td>
+            <td style="text-align:right;font-weight:700;color:#3EA055">R${deliveredWind}/MWh</td></tr>
+          <tr><td style="padding:2px 0;color:var(--ink2);font-size:9.5px">vs local generation</td>
+            <td style="text-align:right;padding:2px 4px;font-size:9.5px;color:${deliveredSolar<localSolar?'var(--ok,green)':'var(--alert)'}">
+              ${deliveredSolar<localSolar?'✓ cheaper':'▲ pricier'} (local ~R${localSolar})</td>
+            <td style="text-align:right;font-size:9.5px;color:${deliveredWind<localWind?'var(--ok,green)':'var(--alert)'}">
+              ${deliveredWind<localWind?'✓ cheaper':'▲ pricier'} (local ~R${localWind})</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;font-size:9.5px;color:var(--ink2)">
+        Annual energy: ${(loadMW*8760/1000).toFixed(0)} GWh · TUoS from NTCSA wheeling framework (2024).
+        Losses estimated at ${lossPct.toFixed(1)}% for ${distKm} km. Indicative only — not a bankable estimate.
+      </div>`;
+  }
+
+  // Wire up dropdowns
+  document.getElementById('wheelGenRegion').addEventListener('change', calcWheeling);
+  document.getElementById('wheelConsRegion').addEventListener('change', calcWheeling);
 })();
 </script>
 
