@@ -570,7 +570,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div></div>
           <div id="dcResult" style="margin-top:12px"></div></div>
         <div id="rpanel_capture" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to see capture price estimates for the nearest supply area.</p><div id="captureResult" style="margin-top:10px"></div></div>
-        <div id="rpanel_grid" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to find the nearest Eskom substation and GCCA headroom.</p><div id="gridResult" style="margin-top:10px"></div></div>
+        <div id="rpanel_grid" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to find the nearest Eskom substation and GCCA headroom.</p><p style="font-size:9.5px;color:var(--ink2);margin:4px 0 0;padding:4px 8px;background:rgba(196,120,90,0.08);border-left:2px solid var(--terra,#C4785A)">Headroom figures from GCCA 2025 (published Apr 2025) with Oct 2025 curtailment update. Updated annually — check <a href="https://www.ntcsa.co.za/gcca/" target="_blank" style="color:var(--steel,#4A6B7A)">ntcsa.co.za/gcca</a> for the latest release.</p><div id="gridResult" style="margin-top:10px"></div></div>
         <div id="rpanel_wheeling" style="padding:14px;display:none">
           <p style="color:var(--ink2);font-size:11px;margin:0 0 10px">Estimate the delivered cost of wheeling renewable energy from a generation region to a consumption region via Eskom's transmission network.</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;font-size:11px">
@@ -1025,7 +1025,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>`).join('')}
       </div>
       ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
-      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: ${h.source||'GCCA 2025'}. Headroom = 0 means the corridor is fully subscribed.</div>
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: GCCA 2025 + Oct 2025 update (published Apr 2025). Headroom = 0 means the corridor is fully subscribed. Figures updated annually — verify at <a href='https://www.ntcsa.co.za/gcca/' target='_blank'>ntcsa.co.za/gcca</a>.</div>
       ${(h.solar_mw||0)===0 && h.corridor_km ? `<div style="margin-top:8px;padding:8px;background:rgba(196,120,90,0.08);border-radius:4px;border-left:3px solid var(--terra,#C4785A)">
         <div style="font-size:10px;font-weight:600;color:var(--terra,#C4785A);margin-bottom:3px">Corridor upgrade required</div>
         <div style="font-size:10px;color:var(--ink2)">${h.binding_corridor||'Binding corridor'} · ${h.corridor_km} km</div>
@@ -1165,7 +1165,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       const popup = `<div style="font-size:11px;min-width:160px">
         <div style="font-weight:700;font-size:13px;margin-bottom:2px">${s.n}</div>
         <div style="color:#666;margin-bottom:6px">${s.r} &nbsp;·&nbsp; ${voltLabel}</div>
-        <div style="font-size:10px;font-weight:600;color:#888;margin-bottom:3px">GCCA HEADROOM</div>
+        <div style="font-size:10px;font-weight:600;color:#888;margin-bottom:3px">GCCA HEADROOM <span style="font-weight:400;font-size:9px">(GCCA 2025, Apr 2025)</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center">
           <div style="background:#f4f4f2;border-radius:3px;padding:4px">
             <div style="font-weight:600;font-size:12px;color:${h.solar_mw>0?'#F5C518':'#C4785A'}">${solarHr}</div>
