@@ -114,8 +114,8 @@
     <div class="stat-lbl">Substations</div>
   </div>
   <div class="stat-card">
-    <div class="stat-val" style="color:#C4785A">38</div>
-    <div class="stat-lbl">400kV transmission</div>
+    <div class="stat-val" style="color:#C4785A">314</div>
+    <div class="stat-lbl">Existing lines ≥220kV</div>
   </div>
   <div class="stat-card">
     <div class="stat-val" style="color:#F5C518">19.7 GW</div>
@@ -126,10 +126,13 @@
 <!-- Legend -->
 <div id="legend">
   <h3>Infrastructure</h3>
-  <div class="leg-row"><div class="leg-dot" style="background:#517180"></div>400kV transmission</div>
-  <div class="leg-row"><div class="leg-dot" style="background:#9AA69B;width:7px;height:7px"></div>132kV distribution</div>
-  <div class="leg-row" style="margin-top:8px"><div class="leg-line" style="background:rgba(196,120,90,0.8)"></div>Transmission corridor</div>
-  <div class="leg-row"><div class="leg-line" style="background:rgba(81,113,128,0.5)"></div>Distribution corridor</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#517180"></div>400kV substation</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#9AA69B;width:7px;height:7px"></div>132kV substation</div>
+  <div class="leg-row" style="margin-top:8px"><div class="leg-line" style="background:rgba(255,200,50,0.9)"></div>765kV</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(196,120,90,0.9)"></div>400kV</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(81,113,128,0.8)"></div>275kV</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(120,140,120,0.7)"></div>220kV</div>
+  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4);margin-top:4px">Dashed = planned</div>
 </div>
 
 <!-- Controls -->
@@ -229,34 +232,49 @@ function buildLayers(subs) {
     }));
   }
 
-  // 2. Corridor arcs
+  // 2. Real Eskom transmission lines
   if(showCorridors) {
-    const arcData = CORRIDORS.map(([from, to, type]) => ({
-      from: { coordinates: [REGIONS[from].lng, REGIONS[from].lat] },
-      to:   { coordinates: [REGIONS[to].lng,   REGIONS[to].lat] },
-      type,
-    }));
-    layers.push(new deck.ArcLayer({
-      id: 'corridors',
-      data: arcData,
-      getSourcePosition: d => d.from.coordinates,
-      getTargetPosition: d => d.to.coordinates,
-      getSourceColor: d => d.type==='tx' ? [196,120,90,200] : [81,113,128,140],
-      getTargetColor: d => d.type==='tx' ? [196,120,90,200] : [81,113,128,140],
-      getWidth: d => d.type==='tx' ? 2.5 : 1.5,
-      greatCircle: true,
-      pickable: true,
-      onHover: ({object, x, y}) => showTooltip(object ? {
-        name: `${object.from.coordinates[1] < 0 ? '' : ''}Corridor`,
-        info: `${CORRIDORS.find(c=>
-          c[0]===Object.keys(REGIONS).find(k=>REGIONS[k].lng===object.from.coordinates[0]) &&
-          c[1]===Object.keys(REGIONS).find(k=>REGIONS[k].lng===object.to.coordinates[0])
-        )?.[0]||'?'} → ${CORRIDORS.find(c=>
-          c[0]===Object.keys(REGIONS).find(k=>REGIONS[k].lng===object.from.coordinates[0]) &&
-          c[1]===Object.keys(REGIONS).find(k=>REGIONS[k].lng===object.to.coordinates[0])
-        )?.[1]||'?'}\n400kV transmission corridor`
-      } : null, x, y),
-    }));
+    if(transmissionLines.length > 0) {
+      const lineColor = feat => {
+        const v = feat.properties.voltage, pl = feat.properties.status==='planned';
+        const a = pl ? 150 : 210;
+        if(v>=700) return [255,200,50,a];
+        if(v>=380) return [196,120,90,a];
+        if(v>=250) return [81,113,128,a];
+        return [120,140,120,a];
+      };
+      const lineWidth = feat => {
+        const v = feat.properties.voltage, pl = feat.properties.status==='planned';
+        const b = v>=700?3:v>=380?2.5:v>=250?1.8:1.2;
+        return pl ? b*0.65 : b;
+      };
+      layers.push(new deck.GeoJsonLayer({
+        id:'tx-lines',
+        data:{type:'FeatureCollection',features:transmissionLines},
+        getLineColor:lineColor, getLineWidth:lineWidth,
+        lineWidthMinPixels:1, lineCapRounded:true, lineJointRounded:true,
+        pickable:true,
+        onHover:({object,x,y})=>{
+          if(!object){showTooltip(null,x,y);return;}
+          const p=object.properties;
+          const route=p.start&&p.end?`${p.start} → ${p.end}`:p.label;
+          showTooltip({name:`${p.voltage}kV ${p.status==='planned'?'(planned) ':''}line`,info:route||'Eskom transmission'},x,y);
+        },
+      }));
+    } else {
+      // Fallback arcs
+      const arcData=CORRIDORS.map(([from,to,type])=>({
+        from:{coordinates:[REGIONS[from].lng,REGIONS[from].lat]},
+        to:{coordinates:[REGIONS[to].lng,REGIONS[to].lat]},type
+      }));
+      layers.push(new deck.ArcLayer({
+        id:'corridors-fallback',data:arcData,
+        getSourcePosition:d=>d.from.coordinates,getTargetPosition:d=>d.to.coordinates,
+        getSourceColor:d=>d.type==='tx'?[196,120,90,180]:[81,113,128,120],
+        getTargetColor:d=>d.type==='tx'?[196,120,90,180]:[81,113,128,120],
+        getWidth:2,greatCircle:true,
+      }));
+    }
   }
 
   // 3. Region centre dots with headroom glow
@@ -399,6 +417,8 @@ function resetView() {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+let transmissionLines = [];
+
 async function init() {
   // Load substation data
   try {
@@ -407,6 +427,15 @@ async function init() {
     substations = data.subs || [];
   } catch(e) {
     console.warn('Could not load substations:', e);
+  }
+  // Load real Eskom transmission lines
+  try {
+    const resp2 = await fetch('nodal/transmission_lines.geojson');
+    const data2 = await resp2.json();
+    transmissionLines = data2.features || [];
+    console.log('Loaded', transmissionLines.length, 'transmission lines');
+  } catch(e) {
+    console.warn('Could not load transmission lines:', e);
   }
 
   // Init deck.gl with MapLibre base map
