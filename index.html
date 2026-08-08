@@ -982,6 +982,30 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   let substationData = null, headroomData = null;
   fetch('nodal/substations_compact.json').then(r=>r.json()).then(d=>{substationData=d; maybeAddSubLayer();}).catch(()=>{});
   fetch('nodal/headroom_summary.json').then(r=>r.json()).then(d=>{headroomData=d; maybeAddSubLayer();}).catch(()=>{});
+  // Load real Eskom transmission lines and add as Leaflet GeoJSON layer
+  fetch('nodal/transmission_lines.geojson').then(r=>r.json()).then(data=>{
+    function lineStyle(feat) {
+      const v = feat.properties.voltage, pl = feat.properties.status==='planned';
+      let color;
+      if(v>=700) color='#C8A028';
+      else if(v>=380) color='#C4785A';
+      else if(v>=250) color='#517180';
+      else color='#7a8a7a';
+      return {color, weight: v>=380?2:1.5, opacity: pl?0.45:0.75, dashArray: pl?'6 4':null};
+    }
+    L.geoJSON(data, {
+      style: lineStyle,
+      onEachFeature: (feat, layer) => {
+        const p = feat.properties;
+        const route = p.start && p.end ? `${p.start} → ${p.end}` : p.label;
+        const status = p.status==='planned' ? ' <span style="color:#C4785A">(planned)</span>' : '';
+        layer.bindTooltip(
+          `<strong>${p.voltage}kV</strong>${status}<br><span style="font-size:10px;color:#666">${route||''}</span>`,
+          {sticky:true, opacity:0.92}
+        );
+      }
+    }).addTo(map);
+  }).catch(()=>{});
 
   // ── Feature 4: nearest substation ────────────────────────────────────────
   function nearestSubstation(lat, lng) {
