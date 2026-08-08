@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GridTwin ZA — 3D Power Infrastructure</title>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@300;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #E8E4D8; font-family: 'Saira Condensed', sans-serif; overflow: hidden; height: 100vh; }
+
+  #map { position: absolute; inset: 0; }
+
+  /* Header */
+  #hdr {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+    background: linear-gradient(180deg, rgba(13,17,23,0.95) 0%, rgba(13,17,23,0) 100%);
+    padding: 18px 24px 40px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  #hdr h1 { font-size: 28px; font-weight: 700; letter-spacing: .02em; line-height: 1 }
+  #hdr h1 span { color: #C4785A }
+  #hdr p { font-size: 11px; color: rgba(232,228,216,0.55); margin-top: 3px; font-weight: 300; letter-spacing: .05em }
+  #back {
+    font-size: 11px; color: rgba(232,228,216,0.55); text-decoration: none;
+    border: 1px solid rgba(232,228,216,0.2); padding: 5px 12px;
+    font-family: 'IBM Plex Mono', monospace; letter-spacing: .05em;
+    transition: all .2s;
+  }
+  #back:hover { color: #E8E4D8; border-color: rgba(232,228,216,0.5); }
+
+  /* Legend */
+  #legend {
+    position: absolute; bottom: 32px; left: 24px; z-index: 10;
+    background: rgba(13,17,23,0.85); border: 1px solid rgba(232,228,216,0.12);
+    padding: 14px 16px; backdrop-filter: blur(8px);
+    min-width: 190px;
+  }
+  #legend h3 { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: rgba(232,228,216,0.45); margin-bottom: 10px }
+  .leg-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 11px; font-weight: 300 }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0 }
+  .leg-line { width: 24px; height: 2px; flex-shrink: 0 }
+
+  /* Tooltip */
+  #tooltip {
+    position: absolute; z-index: 20; pointer-events: none;
+    background: rgba(13,17,23,0.92); border: 1px solid rgba(232,228,216,0.15);
+    padding: 10px 14px; max-width: 220px; display: none;
+    backdrop-filter: blur(8px);
+  }
+  #tooltip h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px }
+  #tooltip p { font-size: 10px; color: rgba(232,228,216,0.6); line-height: 1.5; font-family: 'IBM Plex Mono', monospace }
+
+  /* Controls */
+  #controls {
+    position: absolute; bottom: 32px; right: 24px; z-index: 10;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .ctrl-btn {
+    background: rgba(13,17,23,0.85); border: 1px solid rgba(232,228,216,0.15);
+    color: rgba(232,228,216,0.7); font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; padding: 7px 12px; cursor: pointer; backdrop-filter: blur(8px);
+    text-align: left; transition: all .2s; letter-spacing: .03em;
+  }
+  .ctrl-btn:hover { color: #E8E4D8; border-color: rgba(232,228,216,0.4); }
+  .ctrl-btn.active { color: #C4785A; border-color: #C4785A; }
+
+  /* Stats bar */
+  #stats {
+    position: absolute; top: 90px; right: 24px; z-index: 10;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .stat-card {
+    background: rgba(13,17,23,0.85); border: 1px solid rgba(232,228,216,0.1);
+    padding: 10px 14px; backdrop-filter: blur(8px); min-width: 150px;
+  }
+  .stat-val { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 600 }
+  .stat-lbl { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: rgba(232,228,216,0.4); margin-top: 2px }
+
+  #loading {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: #0d1117; z-index: 100; flex-direction: column; gap: 12px;
+  }
+  #loading p { font-size: 12px; color: rgba(232,228,216,0.4); letter-spacing: .1em }
+  .spinner { width: 32px; height: 32px; border: 2px solid rgba(196,120,90,0.2); border-top-color: #C4785A; border-radius: 50%; animation: spin .8s linear infinite }
+  @keyframes spin { to { transform: rotate(360deg) } }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>LOADING INFRASTRUCTURE DATA</p>
+</div>
+
+<div id="map"></div>
+
+<!-- Header -->
+<div id="hdr">
+  <div>
+    <h1>GridTwin <span>ZA</span></h1>
+    <p>3D POWER INFRASTRUCTURE · SOUTH AFRICA · DRAG TO ROTATE · SCROLL TO ZOOM</p>
+  </div>
+  <a href="index.html" id="back">← Main model</a>
+</div>
+
+<!-- Stats -->
+<div id="stats">
+  <div class="stat-card">
+    <div class="stat-val" style="color:#517180">159</div>
+    <div class="stat-lbl">Substations</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" style="color:#C4785A">38</div>
+    <div class="stat-lbl">400kV transmission</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" style="color:#F5C518">19.7 GW</div>
+    <div class="stat-lbl">NERSA registered</div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div id="legend">
+  <h3>Infrastructure</h3>
+  <div class="leg-row"><div class="leg-dot" style="background:#517180"></div>400kV transmission</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#9AA69B;width:7px;height:7px"></div>132kV distribution</div>
+  <div class="leg-row" style="margin-top:8px"><div class="leg-line" style="background:rgba(196,120,90,0.8)"></div>Transmission corridor</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(81,113,128,0.5)"></div>Distribution corridor</div>
+</div>
+
+<!-- Controls -->
+<div id="controls">
+  <button class="ctrl-btn active" id="btn3d" onclick="toggleTerrain()">⛰ 3D terrain ON</button>
+  <button class="ctrl-btn" id="btnCorr" onclick="toggleCorridors()">⚡ Corridors ON</button>
+  <button class="ctrl-btn" onclick="resetView()">⌂ Reset view</button>
+</div>
+
+<!-- Tooltip -->
+<div id="tooltip">
+  <h4 id="tt-name"></h4>
+  <p id="tt-info"></p>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+// 10 nodal region centres (approximate geographic centroids)
+const REGIONS = {
+  'Northern Cape':  { lat: -29.5, lng: 21.0 },
+  'Hydra Central':  { lat: -30.2, lng: 24.5 },
+  'Western Cape':   { lat: -33.5, lng: 21.5 },
+  'Eastern Cape':   { lat: -32.5, lng: 26.5 },
+  'Free State':     { lat: -28.5, lng: 26.5 },
+  'Kwazulu Natal':  { lat: -29.5, lng: 30.5 },
+  'Gauteng':        { lat: -26.1, lng: 28.1 },
+  'North West':     { lat: -26.0, lng: 25.5 },
+  'Mpumalanga':     { lat: -25.5, lng: 30.2 },
+  'Limpopo':        { lat: -24.0, lng: 29.5 },
+};
+
+// Transmission corridors (400kV backbone)
+const CORRIDORS = [
+  ['Northern Cape',  'Western Cape',   'tx'],
+  ['Northern Cape',  'Free State',     'tx'],
+  ['Northern Cape',  'Hydra Central',  'tx'],
+  ['Hydra Central',  'Free State',     'tx'],
+  ['Western Cape',   'Eastern Cape',   'tx'],
+  ['Eastern Cape',   'Kwazulu Natal',  'tx'],
+  ['Kwazulu Natal',  'Free State',     'dist'],
+  ['Kwazulu Natal',  'Mpumalanga',     'dist'],
+  ['Free State',     'Gauteng',        'tx'],
+  ['Gauteng',        'Mpumalanga',     'tx'],
+  ['Gauteng',        'North West',     'dist'],
+  ['Gauteng',        'Limpopo',        'tx'],
+  ['Mpumalanga',     'Limpopo',        'dist'],
+  ['North West',     'Northern Cape',  'dist'],
+];
+
+// GCCA headroom by region
+const HEADROOM = {
+  'Northern Cape':  { solar: 3800, wind: 3800, batt: 3800 },
+  'Hydra Central':  { solar: 1200, wind: 1200, batt: 1200 },
+  'Western Cape':   { solar: 0,    wind: 400,  batt: 0 },
+  'Eastern Cape':   { solar: 0,    wind: 400,  batt: 0 },
+  'Free State':     { solar: 1100, wind: 1100, batt: 1100 },
+  'Kwazulu Natal':  { solar: 0,    wind: 0,    batt: 0 },
+  'Gauteng':        { solar: 600,  wind: 600,  batt: 600 },
+  'North West':     { solar: 1450, wind: 1450, batt: 1450 },
+  'Mpumalanga':     { solar: 3320, wind: 3320, batt: 3320 },
+  'Limpopo':        { solar: 3360, wind: 3360, batt: 3360 },
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let deckgl, showTerrain = true, showCorridors = true;
+let substations = [];
+
+// ── Initial view ──────────────────────────────────────────────────────────────
+const INITIAL_VIEW = {
+  longitude: 25.5, latitude: -29.0,
+  zoom: 5.2, pitch: 52, bearing: -15,
+};
+
+// ── Colour helpers ────────────────────────────────────────────────────────────
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return [r, g, b];
+}
+
+// ── Build layers ──────────────────────────────────────────────────────────────
+function buildLayers(subs) {
+  const layers = [];
+
+  // 1. Terrain — uses MapTiler terrain tiles (free, no token for basic use)
+  if(showTerrain) {
+    layers.push(new deck.TerrainLayer({
+      id: 'terrain',
+      minZoom: 0, maxZoom: 14,
+      elevationDecoder: { rScaler: 256*256, gScaler: 256, bScaler: 1, offset: -32768 },
+      elevationData: 'https://demotiles.maplibre.org/terrain-tiles/{z}/{x}/{y}.png',
+      texture: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+      elevationScale: 60,
+      bounds: [16, -35, 33, -22],
+    }));
+  }
+
+  // 2. Corridor arcs
+  if(showCorridors) {
+    const arcData = CORRIDORS.map(([from, to, type]) => ({
+      from: { coordinates: [REGIONS[from].lng, REGIONS[from].lat] },
+      to:   { coordinates: [REGIONS[to].lng,   REGIONS[to].lat] },
+      type,
+    }));
+    layers.push(new deck.ArcLayer({
+      id: 'corridors',
+      data: arcData,
+      getSourcePosition: d => d.from.coordinates,
+      getTargetPosition: d => d.to.coordinates,
+      getSourceColor: d => d.type==='tx' ? [196,120,90,200] : [81,113,128,140],
+      getTargetColor: d => d.type==='tx' ? [196,120,90,200] : [81,113,128,140],
+      getWidth: d => d.type==='tx' ? 2.5 : 1.5,
+      greatCircle: true,
+      pickable: true,
+      onHover: ({object, x, y}) => showTooltip(object ? {
+        name: `${object.from.coordinates[1] < 0 ? '' : ''}Corridor`,
+        info: `${CORRIDORS.find(c=>
+          c[0]===Object.keys(REGIONS).find(k=>REGIONS[k].lng===object.from.coordinates[0]) &&
+          c[1]===Object.keys(REGIONS).find(k=>REGIONS[k].lng===object.to.coordinates[0])
+        )?.[0]||'?'} → ${CORRIDORS.find(c=>
+          c[0]===Object.keys(REGIONS).find(k=>REGIONS[k].lng===object.from.coordinates[0]) &&
+          c[1]===Object.keys(REGIONS).find(k=>REGIONS[k].lng===object.to.coordinates[0])
+        )?.[1]||'?'}\n400kV transmission corridor`
+      } : null, x, y),
+    }));
+  }
+
+  // 3. Region centre dots with headroom glow
+  const regionData = Object.entries(REGIONS).map(([name, coords]) => ({
+    name, coordinates: [coords.lng, coords.lat],
+    headroom: HEADROOM[name] || {},
+  }));
+
+  layers.push(new deck.ScatterplotLayer({
+    id: 'region-glow',
+    data: regionData,
+    getPosition: d => d.coordinates,
+    getRadius: d => {
+      const maxHr = Math.max(d.headroom.solar||0, d.headroom.wind||0);
+      return 8000 + maxHr * 5;
+    },
+    getFillColor: d => {
+      const maxHr = Math.max(d.headroom.solar||0, d.headroom.wind||0);
+      return maxHr > 2000 ? [245,197,24,20] : maxHr > 0 ? [245,197,24,10] : [196,120,90,8];
+    },
+    stroked: false, pickable: false, radiusUnits: 'meters',
+  }));
+
+  // 4. Substation dots
+  if(subs.length > 0) {
+    // Transmission substations (larger, steel blue)
+    const txSubs = subs.filter(s => s.voltage_class === 'transmission');
+    const distSubs = subs.filter(s => s.voltage_class !== 'transmission');
+
+    layers.push(new deck.ScatterplotLayer({
+      id: 'dist-subs',
+      data: distSubs,
+      getPosition: d => [d.lng, d.lat],
+      getRadius: 3200,
+      getFillColor: [154, 166, 155, 200],
+      getLineColor: [100, 110, 100, 255],
+      lineWidthMinPixels: 1,
+      stroked: true,
+      radiusMinPixels: 2.5,
+      radiusUnits: 'meters',
+      pickable: true,
+      onHover: ({object, x, y}) => showTooltip(object ? {
+        name: object.n,
+        info: `${object.r}\n132kV distribution`,
+      } : null, x, y),
+    }));
+
+    layers.push(new deck.ScatterplotLayer({
+      id: 'tx-subs',
+      data: txSubs,
+      getPosition: d => [d.lng, d.lat],
+      getRadius: 6000,
+      getFillColor: [81, 113, 128, 240],
+      getLineColor: [196, 120, 90, 255],
+      lineWidthMinPixels: 1.5,
+      stroked: true,
+      radiusMinPixels: 4,
+      radiusUnits: 'meters',
+      pickable: true,
+      onHover: ({object, x, y}) => showTooltip(object ? {
+        name: object.n,
+        info: `${object.r}\n400kV transmission\n\nGCCA headroom:\nSolar ${(HEADROOM[object.r]?.solar||0).toLocaleString()} MW\nWind ${(HEADROOM[object.r]?.wind||0).toLocaleString()} MW`,
+      } : null, x, y),
+    }));
+
+    // Labels for transmission substations (text layer)
+    layers.push(new deck.TextLayer({
+      id: 'sub-labels',
+      data: txSubs,
+      getPosition: d => [d.lng, d.lat, 2000],
+      getText: d => d.n,
+      getSize: 11,
+      getColor: [232, 228, 216, 180],
+      getBackgroundColor: [13, 17, 23, 160],
+      background: true,
+      backgroundPadding: [3, 1, 3, 1],
+      fontFamily: 'IBM Plex Mono, monospace',
+      fontWeight: 600,
+      getTextAnchor: 'start',
+      getAlignmentBaseline: 'center',
+      getPixelOffset: [8, 0],
+      sizeScale: 1,
+      pickable: false,
+      sizeMinPixels: 8,
+      sizeMaxPixels: 14,
+    }));
+  }
+
+  // 5. Region name labels
+  layers.push(new deck.TextLayer({
+    id: 'region-labels',
+    data: regionData,
+    getPosition: d => [...d.coordinates, 5000],
+    getText: d => d.name.toUpperCase(),
+    getSize: 13,
+    getColor: [232, 228, 216, 100],
+    fontFamily: 'Saira Condensed, sans-serif',
+    fontWeight: 700,
+    getTextAnchor: 'middle',
+    getAlignmentBaseline: 'center',
+    letterSpacing: 0.08,
+    pickable: false,
+    sizeMinPixels: 9,
+    sizeMaxPixels: 18,
+  }));
+
+  return layers;
+}
+
+// ── Tooltip ──────────────────────────────────────────────────────────────────
+function showTooltip(obj, x, y) {
+  const tt = document.getElementById('tooltip');
+  if(!obj) { tt.style.display = 'none'; return; }
+  document.getElementById('tt-name').textContent = obj.name;
+  document.getElementById('tt-info').textContent = obj.info;
+  tt.style.display = 'block';
+  tt.style.left = (x + 14) + 'px';
+  tt.style.top  = (y - 10) + 'px';
+}
+
+// ── Controls ─────────────────────────────────────────────────────────────────
+function toggleTerrain() {
+  showTerrain = !showTerrain;
+  const btn = document.getElementById('btn3d');
+  btn.textContent = `⛰ 3D terrain ${showTerrain ? 'ON' : 'OFF'}`;
+  btn.classList.toggle('active', showTerrain);
+  deckgl.setProps({ layers: buildLayers(substations) });
+}
+
+function toggleCorridors() {
+  showCorridors = !showCorridors;
+  const btn = document.getElementById('btnCorr');
+  btn.textContent = `⚡ Corridors ${showCorridors ? 'ON' : 'OFF'}`;
+  btn.classList.toggle('active', showCorridors);
+  deckgl.setProps({ layers: buildLayers(substations) });
+}
+
+function resetView() {
+  deckgl.setProps({ initialViewState: { ...INITIAL_VIEW, transitionDuration: 1000 } });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init() {
+  // Load substation data
+  try {
+    const resp = await fetch('nodal/substations_compact.json');
+    const data = await resp.json();
+    substations = data.subs || [];
+  } catch(e) {
+    console.warn('Could not load substations:', e);
+  }
+
+  // Init deck.gl with MapLibre base map
+  deckgl = new deck.DeckGL({
+    container: 'map',
+    mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    initialViewState: INITIAL_VIEW,
+    controller: { dragRotate: true, touchRotate: true, keyboard: true },
+    layers: buildLayers(substations),
+    onViewStateChange: ({viewState}) => {
+      // Hide labels when zoomed out far
+      if(viewState.zoom < 4.5) {
+        document.getElementById('tooltip').style.display = 'none';
+      }
+    },
+    getTooltip: () => null, // handled manually
+  });
+
+  document.getElementById('loading').style.display = 'none';
+}
+
+init();
+</script>
+</body>
+</html>
