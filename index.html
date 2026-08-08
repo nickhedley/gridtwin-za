@@ -980,8 +980,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
   // ── Load external data for features 3 & 4 ────────────────────────────────
   let substationData = null, headroomData = null;
-  fetch('nodal/substations_compact.json').then(r=>r.json()).then(d=>{substationData=d;}).catch(()=>{});
-  fetch('nodal/headroom_summary.json').then(r=>r.json()).then(d=>{headroomData=d;}).catch(()=>{});
+  fetch('nodal/substations_compact.json').then(r=>r.json()).then(d=>{substationData=d; maybeAddSubLayer();}).catch(()=>{});
+  fetch('nodal/headroom_summary.json').then(r=>r.json()).then(d=>{headroomData=d; maybeAddSubLayer();}).catch(()=>{});
 
   // ── Feature 4: nearest substation ────────────────────────────────────────
   function nearestSubstation(lat, lng) {
@@ -1145,6 +1145,61 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         Add wind for better hourly matching. Use a dedicated tool (e.g. REopt, System Advisor Model)
         for project-grade sizing.
       </div>`;
+  }
+
+  // ── Substation dots layer ────────────────────────────────────────────────
+  let subLayer = null;
+  function addSubstationLayer(data, headroom) {
+    if(subLayer) { map.removeLayer(subLayer); subLayer=null; }
+    const markers = [];
+    data.subs.forEach(s => {
+      const isTx = s.voltage_class === 'transmission';
+      const r = isTx ? 6 : 4;
+      const col = isTx ? '#517180' : '#9AA69B';
+      const border = isTx ? '#3a5668' : '#7a8a85';
+      const h = headroom && headroom.headroom && headroom.headroom[s.r] || {};
+      const solarHr = h.solar_mw !== undefined ? h.solar_mw.toLocaleString()+' MW' : '—';
+      const windHr  = h.wind_mw  !== undefined ? h.wind_mw.toLocaleString()+' MW'  : '—';
+      const battHr  = h.batt_mw  !== undefined ? h.batt_mw.toLocaleString()+' MW'  : '—';
+      const voltLabel = isTx ? '400kV transmission' : '132kV distribution';
+      const popup = `<div style="font-size:11px;min-width:160px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:2px">${s.n}</div>
+        <div style="color:#666;margin-bottom:6px">${s.r} &nbsp;·&nbsp; ${voltLabel}</div>
+        <div style="font-size:10px;font-weight:600;color:#888;margin-bottom:3px">GCCA HEADROOM</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center">
+          <div style="background:#f4f4f2;border-radius:3px;padding:4px">
+            <div style="font-weight:600;font-size:12px;color:${h.solar_mw>0?'#F5C518':'#C4785A'}">${solarHr}</div>
+            <div style="font-size:9px;color:#888">Solar</div>
+          </div>
+          <div style="background:#f4f4f2;border-radius:3px;padding:4px">
+            <div style="font-weight:600;font-size:12px;color:${h.wind_mw>0?'#3EA055':'#C4785A'}">${windHr}</div>
+            <div style="font-size:9px;color:#888">Wind</div>
+          </div>
+          <div style="background:#f4f4f2;border-radius:3px;padding:4px">
+            <div style="font-weight:600;font-size:12px;color:${h.batt_mw>0?'#7EC8E3':'#C4785A'}">${battHr}</div>
+            <div style="font-size:9px;color:#888">Battery</div>
+          </div>
+        </div>
+        <div style="font-size:9px;color:#aaa;margin-top:5px">Click map for solar/wind resource</div>
+      </div>`;
+      const marker = L.circleMarker([s.lat, s.lng], {
+        radius: r,
+        fillColor: col,
+        color: border,
+        weight: 1.5,
+        fillOpacity: 0.85,
+        opacity: 1,
+        interactive: true,
+        bubblingMouseEvents: false,
+      }).bindPopup(popup, {maxWidth: 220, className: 'sub-popup'});
+      markers.push(marker);
+    });
+    subLayer = L.layerGroup(markers).addTo(map);
+  }
+
+  // Trigger layer once both data sources are ready
+  function maybeAddSubLayer() {
+    if(substationData && headroomData) addSubstationLayer(substationData, headroomData);
   }
 
   // Invalidate map size on container resize (fixes mobile layout shift)
