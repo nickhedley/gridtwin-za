@@ -1329,17 +1329,16 @@ async function runPrefeas() {
   const costPreset = document.getElementById('pf_cost_preset').value;
   const costRwp = parseFloat(costPreset==='custom' ? 6 : costPreset);
   const battHours = parseInt(document.getElementById('pf_batt').value)||0;
-  const locationText = document.getElementById('pf_location').value || 'South Africa';
-
   // Get solar CF — use lastSiteClick if available from Site Resource Query, else use national average
   let solarCF = 0.21; // SA national average fallback
-  let solarSource = 'SA national average (fallback)';
+  let solarSource = 'SA national average (fallback — click the map in Solar & wind tab first for site-specific data)';
   let region = 'National';
+  let locationText = 'South Africa (national average)';
   if(window._resourceData && window._resourceData.solar) {
     solarCF = window._resourceData.solar.annualCF;
-    solarSource = window._resourceData.solar.source || 'Site-specific';
+    solarSource = window._resourceData.solar.source || 'Site-specific (PVGIS SARAH2)';
     region = window._resourceData.windRegion || 'Selected location';
-    document.getElementById('pf_location').value = window._resourceData.lat.toFixed(3)+'°, '+window._resourceData.lng.toFixed(3)+'°';
+    locationText = window._resourceData.lat.toFixed(3)+'°, '+window._resourceData.lng.toFixed(3)+'° · '+region;
   }
 
   const nersa = nersaCategory(kwp);
