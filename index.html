@@ -352,7 +352,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         }
         const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
         const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
-        const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt;
+        const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt-(E.curtailed||0); // exclude curtailed
         const totalCost=fuelCost+carbonCost+newCapexR;
         const avgCost=totalCost/Math.max(1,gridServed);
         const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
@@ -2221,7 +2221,7 @@ function simulate(u, prof, outPath){
   }
   const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
   const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
-  const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
+  const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt-E.curtailed; // net grid gen (storage & curtailed excluded)
   const totalCost=fuelCost+carbonCost+newCapexR;
   const avgCost=totalCost/Math.max(1,gridServed);
   const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
