@@ -1932,8 +1932,8 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
   const DAYS = 365;
   const HOURS = 8760;
   // Scale fleet to currently available capacity (EAF applied)
-  const scaleFactor = coalInstalled / 41530; // ratio vs nominal fleet
-  const availFactor = eafFraction * scaleFactor;
+  const scaleFactor = coalInstalled > 0 ? coalInstalled / 41530 : 0;
+  const availFactor = Math.max(0, eafFraction * scaleFactor);
 
   // Unit state: hours remaining on/offline
   // Start all units in their lowest-cost committed state
@@ -2099,9 +2099,9 @@ function simulate(u, prof, outPath){
   // ── Day-ahead unit commitment schedule ─────────────────────────────────────
   // Build daily commitment decisions using per-unit min up/down times and start-up costs.
   // This replaces the simple committed=available assumption with per-plant scheduling.
-  const coalInstalled = p.coalMW + 0; // current available coal (EAF already in outPath)
+  const coalInstalled = (p.coalInstalledMW || 42000) - (p.coalDecomMW || 0);
   const eafFraction = (p.coalEAFPct || 64) / 100;
-  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, coalInstalled, eafFraction);
+  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, Math.max(0, coalInstalled), eafFraction);
 
   // Forward-looking signal for off-peak coal-charging: how much real coal-insufficient need
   // (net load exceeding what coal alone can cover) is coming over the NEXT 24 hours. Used so
@@ -2146,10 +2146,10 @@ function simulate(u, prof, outPath){
     // UC-derived committed capacity and minimum stable load for this hour
     // ucAvail already accounts for EAF (via availFactor in buildUCSchedule)
     // outPath applies an additional random outage variation around the UC commitment
-    const ucCommitted = ucAvail[h] > 0 ? ucAvail[h] : coalAvail;
+    const ucCommitted = (ucAvail[h] > 0 && !isNaN(ucAvail[h])) ? ucAvail[h] : coalAvail;
     const cAvail = outPath ? Math.min(ucCommitted, coalInstRem*outPath[Math.floor(h/24)]) : ucCommitted;
     // UC-derived minimum stable load replaces the fleet-average minStableMW
-    const ucMSL = ucMinStable[h] > 0 ? Math.min(ucMinStable[h], cAvail) : 0;
+    const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
     const rawDemand=demand[h]*growth;
     const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
     const load=rawDemand-rooftopGen;
@@ -2351,7 +2351,7 @@ function simulate(u, prof, outPath){
         stack.unserved[h]=residual;
       }
     }
-    E.coal+=coalGen; fuelCost+=coalGen*p.costCoal+ucStartCost[h]; carbonCost+=coalGen*cC;
+    E.coal+=coalGen; fuelCost+=coalGen*p.costCoal+(isNaN(ucStartCost[h])?0:ucStartCost[h]); carbonCost+=coalGen*cC;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
     loadS[h]=load+chargeMW[h]; // demand line = grid demand + storage charging (standard convention)
