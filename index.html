@@ -478,7 +478,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
       <section>
         <div class="panel" aria-label="Weekly dispatch">
-          <div class="ph"><h2>Hourly dispatch</h2>
+          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
             <div style="display:flex;align-items:center;gap:10px">
               <div class="wkbtns">
                 <button id="wkW" class="active">Winter week</button>
@@ -2838,7 +2838,11 @@ function downloadDispatchCSV() {
     wind:'Wind',pv:'Utility PV',csp:'CSP',rooftop:'Rooftop PV',
     ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',unserved:'Unserved (shed)'};
   // Header
-  const rows = ['hour,date_approx,demand_mw,storage_charging_mw,curtailed_mw,' +
+  const usingNodal = !!(nodalActiveRes && nodalUnservedGwh !== null);
+  const sourceNote = usingNodal
+    ? '# Source: GridTwin ZA national engine (nodal run active — KPI banner shows network-aware unserved energy)'
+    : '# Source: GridTwin ZA national dispatch engine';
+  const rows = [sourceNote, 'hour,date_approx,demand_mw,storage_charging_mw,curtailed_mw,' +
     carriers.map(k=>names[k]).join(',')];
   const N = 8760;
   for(let h=0;h<N;h++){
