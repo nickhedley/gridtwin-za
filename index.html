@@ -211,7 +211,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <main>
     <div id="kpiSourceBanner" style="display:none; font-size:11.5px; padding:8px 12px; margin-bottom:10px; border:1.5px solid var(--alert); background:var(--panel2); border-radius:3px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note on the cost figures: <strong>Avg marginal cost of energy</strong> is the blended fuel cost per MWh across all generators — coal (R546/MWh) diluted by near-zero-cost wind, solar and nuclear. It will always be below coal’s standalone fuel cost because renewables have no fuel cost. It is <em>not</em> comparable to Eskom’s retail tariff (R2.50/kWh), which must also recover ~R180bn/yr of fixed O&amp;M, depreciation and debt. <strong>System cost</strong> counts fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk (system cost excludes curtailment payments to wind and solar plants contracted under REIPPPP). <strong>Replacement cost</strong> prices every MWh at its full lifecycle LCOE, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
+    <p class="kpinote">Note on the cost figures: <strong>Avg marginal cost of energy*</strong> is the blended fuel cost per MWh across all generators — coal (R546/MWh) diluted by near-zero-cost wind, solar and nuclear. It will always be below coal’s standalone fuel cost because renewables have no fuel cost. It is <em>not</em> comparable to Eskom’s retail tariff (R2.50/kWh), which must also recover ~R180bn/yr of fixed O&amp;M, depreciation and debt. <strong>System cost</strong> counts fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk (system cost excludes curtailment payments to wind and solar plants contracted under REIPPPP). <strong>Replacement cost</strong> prices every MWh at its full lifecycle LCOE, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>. <em>* Avg marginal cost excludes fuel cost attributable to curtailed generation — only REIPPPP contracted plants receive curtailment payments; uncontracted curtailment generates no revenue.</em></p>
 
     <div id="comparePanel" style="display:none;margin-bottom:18px;border:1.5px solid var(--ink);border-radius:0;background:var(--panel)">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline">
@@ -352,7 +352,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         }
         const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
         const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
-        const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt-(E.curtailed||0); // exclude curtailed
+        const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt;
         const totalCost=fuelCost+carbonCost+newCapexR;
         const avgCost=totalCost/Math.max(1,gridServed);
         const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
@@ -373,7 +373,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         const kpis=[
           {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
           {k:'System cost',v:(costs.totalCost/1e9).toFixed(0),u:'R bn/yr'},
-          {k:'Avg marginal cost',v:(costs.avgCost/1000).toFixed(2),u:'R/kWh'},
+          {k:'Avg marginal cost*',v:(costs.avgCost/1000).toFixed(2),u:'R/kWh'},
           {k:'Replacement cost',v:(costs.replAvg/1000).toFixed(2),u:'R/kWh'},
           {k:'CO₂ emissions',v:costs.co2.toFixed(0),u:'Mt/yr'},
           {k:'Renewables',v:reShare.toFixed(0),u:'%'},
@@ -1952,7 +1952,7 @@ function simulate(u, prof, outPath){
   let psSoc=p.psEnergyMWh*0.7, battSoc=battEnergy*0.5;
   const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
   const E={rooftop:0,wind:0,pv:0,csp:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0};
-  let fuelCost=0, carbonCost=0, shedMWh=0, maxStage=0;
+  let fuelCost=0, carbonCost=0, curtailFuelCost=0, shedMWh=0, maxStage=0;
   const shedHours=[0,0,0,0,0,0,0,0,0];
   const stackKeys=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
   const stack={}; stackKeys.forEach(k=>stack[k]=new Float64Array(HOURS));
@@ -2094,6 +2094,10 @@ function simulate(u, prof, outPath){
       curtailMW[h]+=surplus; E.curtailed+=surplus;
       const vre=windGen+pvGen;
       if(vre>0&&surplus>0){const f=Math.max(0,vre-surplus)/vre; windGen*=f; pvGen*=f;}
+      // Track coal fuel cost attributable to curtailed generation (coal floor forced but not served)
+      // Coal curtailment = surplus that remains after storage and after VRE is cut to zero
+      const coalCurtail=Math.max(0, surplus-vre);
+      if(coalCurtail>0) curtailFuelCost+=Math.min(coalGen,coalCurtail)*p.costCoal;
       // If surplus REMAINS after storage has charged and every curtailable renewable has been
       // curtailed to zero, the leftover is coal that physically has nowhere to go. Power cannot
       // simply be dumped, so those units trip - an emergency shutdown that overrides the ramp-down
@@ -2221,9 +2225,9 @@ function simulate(u, prof, outPath){
   }
   const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
   const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
-  const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt-E.curtailed; // net grid gen (storage & curtailed excluded)
+  const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
   const totalCost=fuelCost+carbonCost+newCapexR;
-  const avgCost=totalCost/Math.max(1,gridServed);
+  const avgCost=(fuelCost-curtailFuelCost+carbonCost+newCapexR)/Math.max(1,gridServed);
   const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
   // Full replacement cost: price EVERY MWh (existing + new) at its lifecycle LCOE.
   // Coal is charged new-build coal LCOE; storage discharge priced at storage LCOE.
@@ -2804,7 +2808,7 @@ function render(r){
   const kpis=[
     {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
     {k:'System cost',v:(r.totalCost/1e9).toFixed(0),u:'R bn/yr'},
-    {k:'Avg marginal cost',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
+    {k:'Avg marginal cost*',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
     {k:'Replacement cost',v:(r.replAvg/1000).toFixed(2),u:'R/kWh'},
     {k:'CO₂ emissions',v:r.co2.toFixed(0),u:'Mt/yr'},
     {k:'Renewables',v:reShare.toFixed(0),u:'%'},
