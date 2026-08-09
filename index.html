@@ -989,7 +989,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
   // ── Tab switching ─────────────────────────────────────────────────────────
   function switchTab(name) {
-    if(name==='rooftop' && typeof rtCalc==='function') setTimeout(rtCalc,0);
+    if(name==='rooftop') setTimeout(function(){ if(window.rtCalc) window.rtCalc(); },50);
     ['resource','datacenter','capture','grid','wheeling','prefeas','rooftop'].forEach(t => {
       const tabEl=document.getElementById('tab_'+t); if(tabEl) tabEl.classList.toggle('active', t===name);
       const panEl=document.getElementById('rpanel_'+t); if(panEl) panEl.style.display = t===name ? '' : 'none';
@@ -3413,6 +3413,8 @@ function rtCalc() {
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
     '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
+window.rtCalc = rtCalc;
+window.rtUpdateType = rtUpdateType;
 document.addEventListener('DOMContentLoaded', rtCalc);
 
 </script>
