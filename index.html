@@ -1917,6 +1917,119 @@ const FIXED = {
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
 
+
+// ── Unit Commitment Fleet Data (from PyPSA-RSA fleet_by_region_v2.csv) ────────
+const UC_FLEET = [{"name":"Arnot*","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":146236.9340034813,"marginal_cost":664.1402453697383,"decom":"2027","region":"Mpumalanga"},{"name":"Arnot**","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":146236.9340034813,"marginal_cost":675.4804253697383,"decom":"2029","region":"Mpumalanga"},{"name":"Camden*","cap":570.0,"unit_cap":190.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":56320.930887372,"marginal_cost":702.0914453697383,"decom":"2024","region":"Mpumalanga"},{"name":"Camden**","cap":911.0,"unit_cap":182.2,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":93868.21814561999,"marginal_cost":733.5367253697383,"decom":"2025","region":"Mpumalanga"},{"name":"Duvha*","cap":1150.0,"unit_cap":575.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":183388.7508532424,"marginal_cost":633.5082053697383,"decom":"2033","region":"Mpumalanga"},{"name":"Duvha**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":275083.12627986365,"marginal_cost":633.5082053697383,"decom":"2034","region":"Mpumalanga"},{"name":"Grootvlei*","cap":380.0,"unit_cap":190.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":47428.2396745848,"marginal_cost":711.3985253697383,"decom":"2026","region":"Mpumalanga"},{"name":"Grootvlei**","cap":190.0,"unit_cap":190.0,"n":1,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":23714.1198372924,"marginal_cost":664.1402453697383,"decom":"2027","region":"Mpumalanga"},{"name":"Hendrina*","cap":760.0,"unit_cap":190.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":60075.6596131968,"marginal_cost":687.7242053697383,"decom":"2024","region":"Mpumalanga"},{"name":"Hendrina**","cap":338.0,"unit_cap":169.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":30037.8298065984,"marginal_cost":733.5367253697383,"decom":"2025","region":"Mpumalanga"},{"name":"Kelvin","cap":160.0,"unit_cap":80.0,"n":2,"msl":0.65,"min_up":8,"min_dn":8,"startup_cost":450165.44254835,"marginal_cost":658.5346505574515,"decom":"2027","region":"Gauteng"},{"name":"Kendal*","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2044","region":"Mpumalanga"},{"name":"Kendal**","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2050","region":"Mpumalanga"},{"name":"Komati","cap":114.0,"unit_cap":114.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":8782.97661497838,"marginal_cost":771.6234653697383,"decom":"2022","region":"Mpumalanga"},{"name":"Kriel*","cap":1215.0,"unit_cap":405.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2028","region":"Mpumalanga"},{"name":"Kriel**","cap":1425.0,"unit_cap":475.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Kusile*","cap":2880.0,"unit_cap":720.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":348234.678785074,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile**","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile***","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Lethabo*","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":585.4818653697383,"decom":"2038","region":"Gauteng"},{"name":"Lethabo**","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":608.7947453697383,"decom":"2041","region":"Gauteng"},{"name":"Majuba*","cap":1818.0,"unit_cap":606.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":482186.41170716693,"marginal_cost":620.6770853697383,"decom":"2048","region":"Mpumalanga"},{"name":"Majuba**","cap":1989.0,"unit_cap":663.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":529614.236756997,"marginal_cost":586.7920853697383,"decom":"2051","region":"Mpumalanga"},{"name":"Matimba*","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":616.1590853697384,"decom":"2042","region":"Limpopo"},{"name":"Matimba**","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":608.7947453697383,"decom":"2044","region":"Limpopo"},{"name":"Matla*","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2032","region":"Mpumalanga"},{"name":"Matla**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2036","region":"Mpumalanga"},{"name":"Medupi*","cap":3600.0,"unit_cap":720.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":435293.3484813425,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Medupi**","cap":717.0,"unit_cap":717.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Tutuka*","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Tutuka**","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2031","region":"Mpumalanga"}];
+
+// ── Heuristic Day-Ahead Unit Commitment ───────────────────────────────────────
+// For each day, decides which unit groups to commit based on next-24h net load.
+// Respects min up/down times and adds start-up costs to fuelCost.
+// Returns: commitSchedule[day][unitIdx] = {on: bool, startCost: R}
+//          ucMinStable[hour] = MW  (fleet minimum stable load per hour)
+//          ucAvail[hour] = MW      (committed capacity per hour)
+//          ucStartCost[hour] = R   (start-up cost charged this hour)
+function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
+  const DAYS = 365;
+  const HOURS = 8760;
+  // Scale fleet to currently available capacity (EAF applied)
+  const scaleFactor = coalInstalled / 41530; // ratio vs nominal fleet
+  const availFactor = eafFraction * scaleFactor;
+
+  // Unit state: hours remaining on/offline
+  // Start all units in their lowest-cost committed state
+  const unitState = UC_FLEET.map(u => ({
+    hoursOn: u.min_up,   // start committed (so min_up constraint doesn't immediately bind)
+    hoursOff: 0,
+    isOn: true,
+    cap: u.cap * availFactor,
+    mslMW: u.cap * availFactor * u.msl,
+  }));
+
+  const ucAvail     = new Float64Array(HOURS);
+  const ucMinStable = new Float64Array(HOURS);
+  const ucStartCost = new Float64Array(HOURS);
+
+  for (let day = 0; day < DAYS; day++) {
+    const h0 = day * 24;
+
+    // 24h net load profile for this day
+    const dayLoad = [];
+    for (let h = 0; h < 24; h++) dayLoad.push(netLoadPre[Math.min(HOURS-1, h0+h)]);
+    const peakLoad = Math.max(...dayLoad);
+    const troughLoad = Math.min(...dayLoad);
+    const avgLoad = dayLoad.reduce((a,b)=>a+b,0) / 24;
+
+    // Sort available units by marginal cost (cheapest first = merit order)
+    const merit = UC_FLEET.map((u,i) => ({i, mc: u.marginal_cost, cap: unitState[i].cap}))
+                          .sort((a,b) => a.mc - b.mc);
+
+    // --- Unit commitment decision for this day ---
+    // Greedy: commit cheapest units until we have enough for peak + reserve margin (15%)
+    const targetCapacity = peakLoad * 1.15;
+    let decidedOn = new Array(UC_FLEET.length).fill(false);
+    let totalCommitted = 0;
+
+    for (const {i} of merit) {
+      const u = UC_FLEET[i];
+      const st = unitState[i];
+      if (st.cap <= 0) continue;
+
+      // Must stay on if min_up not yet satisfied
+      const mustOn  = st.isOn  && st.hoursOn  < u.min_up;
+      // Must stay off if min_down not yet satisfied
+      const mustOff = !st.isOn && st.hoursOff < u.min_dn;
+
+      if (mustOff) { decidedOn[i] = false; continue; }
+      if (mustOn)  { decidedOn[i] = true;  totalCommitted += st.cap; continue; }
+
+      // Economic decision: commit if we still need capacity
+      if (totalCommitted < targetCapacity) {
+        decidedOn[i] = true;
+        totalCommitted += st.cap;
+      } else {
+        // De-commit only if trough load can be served without this unit
+        // (i.e. remaining committed capacity >= trough + reserve)
+        decidedOn[i] = false;
+      }
+    }
+
+    // Apply decisions and track state transitions
+    for (let i = 0; i < UC_FLEET.length; i++) {
+      const st = unitState[i];
+      const u  = UC_FLEET[i];
+      const wasOn = st.isOn;
+      const nowOn = decidedOn[i];
+
+      let startCostH = 0;
+      if (!wasOn && nowOn) {
+        // Unit starting up — charge start-up cost in hour h0
+        startCostH = u.startup_cost * availFactor;
+        st.hoursOn = 0; st.hoursOff = 0;
+      } else if (wasOn && !nowOn) {
+        st.hoursOn = 0; st.hoursOff = 0;
+      }
+      st.isOn = nowOn;
+
+      // Fill 24h commitment schedule
+      for (let h = 0; h < 24; h++) {
+        const hi = h0 + h;
+        if (hi >= HOURS) break;
+        if (nowOn) {
+          ucAvail[hi]     += st.cap;
+          ucMinStable[hi] += st.mslMW;
+          if (h === 0) ucStartCost[hi] += startCostH;
+        }
+      }
+
+      // Update hours on/off counters
+      if (nowOn) { st.hoursOn  += 24; st.hoursOff = 0; }
+      else       { st.hoursOff += 24; st.hoursOn  = 0; }
+    }
+  }
+
+  return {ucAvail, ucMinStable, ucStartCost};
+}
+
 function simulate(u, prof, outPath){
   const p={...FIXED,...u};
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
@@ -1983,6 +2096,13 @@ function simulate(u, prof, outPath){
     const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     netLoadPre[h]=load-windGen-pvGen-cspGen-nuc-hyd-imp;
   }
+  // ── Day-ahead unit commitment schedule ─────────────────────────────────────
+  // Build daily commitment decisions using per-unit min up/down times and start-up costs.
+  // This replaces the simple committed=available assumption with per-plant scheduling.
+  const coalInstalled = p.coalMW + 0; // current available coal (EAF already in outPath)
+  const eafFraction = (p.coalEAFPct || 64) / 100;
+  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, coalInstalled, eafFraction);
+
   // Forward-looking signal for off-peak coal-charging: how much real coal-insufficient need
   // (net load exceeding what coal alone can cover) is coming over the NEXT 24 hours. Used so
   // off-peak charging only spends real coal when there's a real reason to expect storage will
@@ -2023,7 +2143,13 @@ function simulate(u, prof, outPath){
   for(let h=0;h<HOURS;h++){
     if(h===3264||h===7848) socAtWeekStart[h]={ps:psSoc,batt:battSoc};
     const hour=h%24;
-    const cAvail=outPath?coalInstRem*outPath[Math.floor(h/24)]:coalAvail;
+    // UC-derived committed capacity and minimum stable load for this hour
+    // ucAvail already accounts for EAF (via availFactor in buildUCSchedule)
+    // outPath applies an additional random outage variation around the UC commitment
+    const ucCommitted = ucAvail[h] > 0 ? ucAvail[h] : coalAvail;
+    const cAvail = outPath ? Math.min(ucCommitted, coalInstRem*outPath[Math.floor(h/24)]) : ucCommitted;
+    // UC-derived minimum stable load replaces the fleet-average minStableMW
+    const ucMSL = ucMinStable[h] > 0 ? Math.min(ucMinStable[h], cAvail) : 0;
     const rawDemand=demand[h]*growth;
     const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
     const load=rawDemand-rooftopGen;
@@ -2100,7 +2226,7 @@ function simulate(u, prof, outPath){
     // lift coal if the sum still falls short of the required minimum.
     const syncPlantNonCoal=p.nuclearMW+p.hydroMW+p.importsMW*IMPORTS_CF;
     const syncDeficit=Math.max(0,(p.syncFloorMW||0)-syncPlantNonCoal);
-    const coalFloorBase=Math.max(minStableMW, rampAwareFloor, Math.min(cAvail, syncDeficit));
+    const coalFloorBase=Math.max(ucMSL, rampAwareFloor, Math.min(cAvail, syncDeficit));
     if(residual<0){
       let surplus=-residual;
       // Ramp-down floor: inflexible coal can't instantly drop to zero just because there's a
@@ -2225,7 +2351,7 @@ function simulate(u, prof, outPath){
         stack.unserved[h]=residual;
       }
     }
-    E.coal+=coalGen; fuelCost+=coalGen*p.costCoal; carbonCost+=coalGen*cC;
+    E.coal+=coalGen; fuelCost+=coalGen*p.costCoal+ucStartCost[h]; carbonCost+=coalGen*cC;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
     loadS[h]=load+chargeMW[h]; // demand line = grid demand + storage charging (standard convention)
