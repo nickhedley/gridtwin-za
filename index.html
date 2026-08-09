@@ -211,7 +211,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <main>
     <div id="kpiSourceBanner" style="display:none; font-size:11.5px; padding:8px 12px; margin-bottom:10px; border:1.5px solid var(--alert); background:var(--panel2); border-radius:3px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note on the cost figures: <strong>Avg marginal cost of energy*</strong> is the blended fuel cost per MWh across all generators — coal (R546/MWh) diluted by near-zero-cost wind, solar and nuclear. It will always be below coal’s standalone fuel cost because renewables have no fuel cost. It is <em>not</em> comparable to Eskom’s retail tariff (R2.50/kWh), which must also recover ~R180bn/yr of fixed O&amp;M, depreciation and debt. <strong>System cost</strong> counts fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk (system cost excludes curtailment payments to wind and solar plants contracted under REIPPPP). <strong>Replacement cost</strong> prices every MWh at its full lifecycle LCOE, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>. <em>* Avg marginal cost excludes fuel cost attributable to curtailed generation — only REIPPPP contracted plants receive curtailment payments; uncontracted curtailment generates no revenue.</em></p>
+    <p class="kpinote">Note on the cost figures: <strong>Avg marginal cost of energy*</strong> is the blended fuel cost per MWh across all generators. <strong>System cost</strong> counts fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk (system cost excludes curtailment payments to wind and solar plants contracted under REIPPPP). <strong>Replacement cost</strong> prices every MWh at its full lifecycle LCOE, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>. <em>*Avg marginal cost excludes fuel cost attributable to curtailed generation.</em></p>
 
     <div id="comparePanel" style="display:none;margin-bottom:18px;border:1.5px solid var(--ink);border-radius:0;background:var(--panel)">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline">
@@ -2038,9 +2038,30 @@ function simulate(u, prof, outPath){
     // engine needed. Committed capacity then carries a real must-run floor at its Min Stable
     // Level, which is why coal holds at minimum through the middle of a high-solar day rather
     // than switching off.
-    let need12=0;
-    for(let k=h;k<Math.min(HOURS,h+12);k++) if(netLoadPre[k]>need12) need12=netLoadPre[k];
-    let committedMW=Math.max(0,Math.min(cAvail,need12));
+    // 24-hour solar-aware commitment lookahead.
+    // Standard 12h window: size coal to peak net load over next 12h.
+    // Extended to 24h: operators plan overnight coal commitment based on next-day solar.
+    // Solar de-commitment: if next 24h has a deep solar trough, allow coal to de-commit
+    // for that period rather than holding full capacity through low-net-load hours.
+    let need24=0, needNight=0, minTrough=Infinity;
+    for(let k=h;k<Math.min(HOURS,h+24);k++){
+      if(netLoadPre[k]>need24) need24=netLoadPre[k];
+      // Night/morning peak (hours 17-23 and 0-6): coal must be ready
+      const hk=k%24;
+      if(hk>=17||hk<=6) { if(netLoadPre[k]>needNight) needNight=netLoadPre[k]; }
+      // Midday trough (hours 9-15): how low does net load go?
+      if(hk>=9&&hk<=15) { if(netLoadPre[k]<minTrough) minTrough=netLoadPre[k]; }
+    }
+    // De-commitment window: during solar peak hours, commit only what the trough needs
+    // plus a buffer for ramp-up to the evening peak. Outside solar hours, commit to peak.
+    const isSolarPeak = hour>=9 && hour<=15;
+    const troughNeed = minTrough===Infinity ? need24 : Math.max(0, minTrough);
+    // Ramp buffer: coal needs ~2h to ramp from trough to evening peak
+    const rampBuffer = Math.max(0, needNight - troughNeed) * 0.15; // 15% of swing as buffer
+    const solarAwareNeed = isSolarPeak
+      ? Math.max(troughNeed + rampBuffer, needNight * 0.35) // never de-commit below 35% of night peak
+      : need24;
+    let committedMW=Math.max(0,Math.min(cAvail, solarAwareNeed));
     // Decommitment limits. Two constraints, both grounded in the real fleet data rather than
     // assumed: (1) a small block of capacity has a min down time long enough that it cannot
     // usefully cycle for a daily solar trough at all, so it stays synchronised - this is only
