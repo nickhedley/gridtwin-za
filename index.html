@@ -575,10 +575,10 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div id="rpanel_capture" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to see capture price estimates for the nearest supply area.</p><div id="captureResult" style="margin-top:10px"></div></div>
         <div id="rpanel_grid" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to find the nearest Eskom substation and GCCA headroom.</p><p style="font-size:9.5px;color:var(--ink2);margin:4px 0 0;padding:4px 8px;background:rgba(196,120,90,0.08);border-left:2px solid var(--terra,#C4785A)">Headroom figures from GCCA 2025 (published Apr 2025) with Oct 2025 curtailment update. Updated annually — check <a href="https://www.ntcsa.co.za/gcca/" target="_blank" style="color:var(--steel,#4A6B7A)">ntcsa.co.za/gcca</a> for the latest release.</p><div id="gridResult" style="margin-top:10px"></div></div>
         <div id="rpanel_wheeling" style="padding:14px;display:none">
-          <p style="color:var(--ink2);font-size:11px;margin:0 0 10px">Estimate the delivered cost of wheeling renewable energy from a generation region to a consumption region via Eskom's transmission network.</p>
+          <p style="color:var(--ink2);font-size:11px;margin:0 0 10px">Estimate the delivered cost of wheeling renewable energy from a generation region to a consumption region via Eskom's transmission network. <strong>Click the map</strong> to auto-set the generation region.</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;font-size:11px">
             <div>
-              <label style="font-weight:600;display:block;margin-bottom:3px">Generation region</label>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Generation region <span style="font-weight:400;color:var(--ink2)">(where the solar/wind is built)</span></label>
               <select id="wheelGenRegion" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
                 <option value="Northern Cape">Northern Cape</option>
                 <option value="Hydra Central">Hydra Central</option>
@@ -591,7 +591,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               </select>
             </div>
             <div>
-              <label style="font-weight:600;display:block;margin-bottom:3px">Consumption region</label>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Consumption region <span style="font-weight:400;color:var(--ink2)">(where power is used)</span></label>
               <select id="wheelConsRegion" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
                 <option value="Gauteng">Gauteng</option>
                 <option value="Kwazulu Natal">KwaZulu-Natal</option>
@@ -1259,6 +1259,17 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       renderGrid(lat, lng);
       renderCapture(region, solar.annualCF, windCF);
       runDC();
+      // Auto-set wheeling generation region from map click
+      const genSel = document.getElementById('wheelGenRegion');
+      if(genSel) {
+        // Match region name to dropdown option
+        const matchOpt = Array.from(genSel.options).find(o =>
+          o.value.toLowerCase() === region.toLowerCase() ||
+          region.toLowerCase().includes(o.value.toLowerCase()) ||
+          o.value.toLowerCase().includes(region.toLowerCase().split(' ')[0])
+        );
+        if(matchOpt) { genSel.value = matchOpt.value; calcWheeling(); }
+      }
     } catch(err) {
       panel.innerHTML = `<p style="color:var(--alert);font-size:11px">Error: ${err.message}<br>
         <span style="color:var(--ink2)">Open-Meteo may be temporarily unavailable. Try again shortly.</span></p>`;
