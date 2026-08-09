@@ -177,7 +177,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <div class="hwrap">
     <div class="brand">
       <h1>GridTwin <span>ZA</span></h1>
-      <p>An interactive dispatch &amp; scenario model of the South African power system.</p>
+      <p>An interactive model of the South African power system for planners and project developers.</p>
     </div>
     <div class="board" role="status" aria-live="polite">
       <div class="cell"><span class="lbl">System status</span><span class="statusword ok" id="statusWord">Stable</span></div>
@@ -208,7 +208,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <main>
     <div id="kpiSourceBanner" style="display:none; font-size:11.5px; padding:8px 12px; margin-bottom:10px; border:1.5px solid var(--alert); background:var(--panel2); border-radius:3px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk. Note: system cost excludes any curtailment payments to wind and solar plants contracted under REIPPPP. <strong>Replacement cost</strong> prices every MWh (from existing and new plants) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
+    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk (system cost excludes any curtailment payments to wind and solar plants contracted under REIPPPP). <strong>Replacement cost</strong> prices every MWh (from existing and new plants) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
 
     <div id="comparePanel" style="display:none;margin-bottom:18px;border:1.5px solid var(--ink);border-radius:0;background:var(--panel)">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline">
@@ -220,7 +220,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="main2">
       <section aria-label="Network map and capacity siting">
       <div class="panel mapbox">
-        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" style="margin-left:8px;font-size:10px;padding:2px 7px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px">REIPPPP project pipeline</button></div>
+        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" style="margin-left:8px;font-size:10px;padding:2px 7px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px">REIPPPP project pipeline</button></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
         <div class="legend">
           <span><i style="background:#4A3120"></i>Coal</span>
@@ -230,7 +230,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span><i style="background:#1F4E79"></i>Storage / hydro</span>
           <span><i style="background:var(--alert)"></i>Peakers</span>
         </div>
-        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the simulation below to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means real curtailment (wasted wind/solar) in that region - shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one), and only appears once it's above 1% to keep the map clean. Hover any line or label for exact figures.</p>
+        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the simulation below to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means real curtailment (wasted wind/solar) in that region - shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one), and only appears once it's above 1% to keep the map clean. Click any line or label for exact figures.</p>
         <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points sharing the Upington corridor area. Hover each for region-specific figures. The REIPPPP project pipeline button overlays dashed rings showing government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) — not the 19.7 GW of private/C&I registrations shown in the NERSA panel below. Grey = preferred bidder, yellow = financial close, green = under construction. Hover a ring for the MW breakdown.</p>
         <div style="padding:8px; border-top:1px solid var(--line2)">
           <button id="nodalRunBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Run full year</button>
