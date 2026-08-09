@@ -2102,7 +2102,7 @@ const SLIDERS=[
   {id:'lcoeBatt',label:'Battery (4h)',min:600,max:3500,step:20,def:1600,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:2000,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:2500,fmt:v=>'R'+(v/1000).toFixed(2),note:'LNG-fired: fuel alone ~R2,100–2,900/MWh at current spot ($14–19/MMBtu × R19/$, Jul 2026). IRP 2025 baseline of $10/MMBtu is well below current prices. Use slider to explore sensitivity'},
-  {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:0,grp:'LCOE ASSUMPTIONS (R/KWH) — FULL LIFECYCLE BUILD COST',note:'When ticked, gas CCGT runs as must-run at 50% of installed capacity every hour — matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only. Forcing the load factor significantly increases curtailment of cheaper renewables.'},
+  {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:0,note:'When ticked, gas CCGT runs as must-run at 50% of installed capacity every hour — matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only. Forcing the load factor significantly increases curtailment of cheaper renewables.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:1650,fmt:v=>'R'+(v/1000).toFixed(2),note:'wide range; SMRs higher'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:1200,fmt:v=>'R'+(v/1000).toFixed(2),note:'new-build, not existing fleet'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:8000,step:50,def:5500,fmt:v=>'R'+(v/1000).toFixed(2),note:'peaking only'},
