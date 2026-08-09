@@ -211,7 +211,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <main>
     <div id="kpiSourceBanner" style="display:none; font-size:11.5px; padding:8px 12px; margin-bottom:10px; border:1.5px solid var(--alert); background:var(--panel2); border-radius:3px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk (system cost excludes any curtailment payments to wind and solar plants contracted under REIPPPP). <strong>Replacement cost</strong> prices every MWh (from existing and new plants) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
+    <p class="kpinote">Note on the cost figures: <strong>Avg marginal cost of energy</strong> is the blended fuel cost per MWh across all generators — coal (R546/MWh) diluted by near-zero-cost wind, solar and nuclear. It will always be below coal’s standalone fuel cost because renewables have no fuel cost. It is <em>not</em> comparable to Eskom’s retail tariff (R2.50/kWh), which must also recover ~R180bn/yr of fixed O&amp;M, depreciation and debt. <strong>System cost</strong> counts fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk (system cost excludes curtailment payments to wind and solar plants contracted under REIPPPP). <strong>Replacement cost</strong> prices every MWh at its full lifecycle LCOE, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
 
     <div id="comparePanel" style="display:none;margin-bottom:18px;border:1.5px solid var(--ink);border-radius:0;background:var(--panel)">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline">
@@ -373,7 +373,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         const kpis=[
           {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
           {k:'System cost',v:(costs.totalCost/1e9).toFixed(0),u:'R bn/yr'},
-          {k:'Avg energy cost',v:(costs.avgCost/1000).toFixed(2),u:'R/kWh'},
+          {k:'Avg marginal cost',v:(costs.avgCost/1000).toFixed(2),u:'R/kWh'},
           {k:'Replacement cost',v:(costs.replAvg/1000).toFixed(2),u:'R/kWh'},
           {k:'CO₂ emissions',v:costs.co2.toFixed(0),u:'Mt/yr'},
           {k:'Renewables',v:reShare.toFixed(0),u:'%'},
@@ -1513,7 +1513,8 @@ function printPrefeas() {
     li{margin-bottom:2px}
   </style>
   </head><body>${report.outerHTML}
-  </body></html>`);
+  
+</body></html>`);
   w.document.close();
   w.focus();
   setTimeout(()=>w.print(), 500);
@@ -1621,12 +1622,91 @@ function printPrefeas() {
 </div>
 
 
+
+<!-- ===== ROOFTOP SOLAR POTENTIAL CALCULATOR ===== -->
+<div style="max-width:1380px;margin:0 auto;padding:0 20px 32px" id="rooftopSection">
+<div class="panel">
+  <div class="ph">
+    <h2>Rooftop solar potential calculator</h2>
+    <span class="tag">Click the map above first for site-specific solar data</span>
+  </div>
+  <div style="padding:14px">
+    <p style="font-size:11px;color:var(--ink2);margin:0 0 14px">Estimate the solar potential, system sizing, and financial case for a rooftop installation. Click any location on the Site Resource Query map above to use site-specific solar data — otherwise a national average of 21% CF is used.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px;font-size:11px">
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">System type</label>
+        <select id="rt_type" onchange="rtUpdateType()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+          <option value="home">Home / small office (&lt;10kWp)</option>
+          <option value="smeci">Small C&amp;I (10-100kWp)</option>
+          <option value="lci" selected>Large C&amp;I (100kWp-1MWp)</option>
+          <option value="industrial">Industrial / warehouse (&gt;1MWp)</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Roof area available (m2)</label>
+        <input id="rt_area" type="number" value="2000" min="10" max="100000" step="100"
+               style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
+               oninput="rtCalc()">
+        <div id="rt_area_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Large C&amp;I: ~170Wp/m2 effective</div>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Roof tilt &amp; orientation</label>
+        <select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+          <option value="1.0">Flat roof (N-facing ballast) - 100%</option>
+          <option value="1.05" selected>15deg north-facing - 105%</option>
+          <option value="1.08">25deg north-facing (optimal) - 108%</option>
+          <option value="0.92">East or west facing - 92%</option>
+          <option value="0.78">South facing - 78%</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Shading &amp; losses</label>
+        <select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+          <option value="0.85">Minimal shading - 85% yield</option>
+          <option value="0.80" selected>Moderate shading - 80% yield</option>
+          <option value="0.70">Heavy shading / losses - 70% yield</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Monthly electricity bill (R)</label>
+        <input id="rt_bill" type="number" value="80000" min="500" max="5000000" step="1000"
+               style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
+               oninput="rtCalc()">
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Tariff (R/kWh)</label>
+        <input id="rt_tariff" type="number" value="2.50" min="0.5" max="10" step="0.05"
+               style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
+               oninput="rtCalc()">
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Battery storage</label>
+        <select id="rt_batt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+          <option value="0" selected>No battery</option>
+          <option value="2">2h (peak-shift)</option>
+          <option value="4">4h (overnight cover)</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation (%/yr)</label>
+        <select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+          <option value="0.03">3% (conservative)</option>
+          <option value="0.05" selected>5% (Eskom historical)</option>
+          <option value="0.08">8% (high scenario)</option>
+        </select>
+      </div>
+    </div>
+    <div id="rt_result"></div>
+  </div>
+</div>
+</div>
+
 <div style="max-width:1380px;margin:0 auto;padding:0 20px 40px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
         <p style="margin-bottom:8px"><strong>What this is:</strong> a simplified national-level digital twin. Hourly demand, wind and solar profiles are drawn from <strong>2025 Eskom data</strong> (the most recent complete year available). Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are <strong>calibrated to Eskom's weekly system status reports (June–July 2026)</strong>: winter evening peaks ≈ 26–27.3 GW, EAF ≈ 64 %, OCGT load factor ≈ 1.3 %, 8.3 GW embedded rooftop PV, post-2023 structural demand decline. Dispatch is by merit order: rooftop PV nets off demand → wind / utility PV / CSP → nuclear, hydro, Cahora Bassa imports → coal (× EAF) → pumped storage &amp; batteries → gas CCGT → diesel OCGT → unserved energy. One stage of load shedding ≈ 1 000 MW of unserved demand. Storage recharges from surplus renewables and off-peak coal headroom.</p>
         <table class="mono" style="font-size:11.5px">
-          <tr><td>Coal marginal cost</td><td>R480/MWh · 1.04 tCO₂/MWh · 42 GW installed</td></tr>
+          <tr><td>Coal marginal cost</td><td>R546/MWh · 1.04 tCO₂/MWh · 42 GW installed (Eskom FY2025 primary energy cost)</td></tr>
           <tr><td>Diesel OCGT</td><td>R6 100/MWh · 0.78 tCO₂/MWh · 3.4 GW</td></tr>
           <tr><td>Gas CCGT</td><td>R2 800/MWh dispatch cost · 0.37 tCO₂/MWh · LNG-fired at ~$14–19/MMBtu spot (Jul 2026). IRP 2025 baseline of $10/MMBtu is below current market prices; LCOE slider explores sensitivity</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh · 1 150 MW @ 85%</td></tr>
@@ -1645,6 +1725,98 @@ function printPrefeas() {
 
 <script src="nodal/capacity_siting.js?v=5"></script>
 
+<script>
+const RT_TYPES = {
+  home:       { wpPerM2: 150, usagePct: 0.90, costRwp: 8.5, label: 'Home / small office' },
+  smeci:      { wpPerM2: 160, usagePct: 0.88, costRwp: 7.0, label: 'Small C&I' },
+  lci:        { wpPerM2: 170, usagePct: 0.85, costRwp: 6.0, label: 'Large C&I' },
+  industrial: { wpPerM2: 175, usagePct: 0.80, costRwp: 5.0, label: 'Industrial / warehouse' },
+};
+function rtUpdateType() {
+  const t = RT_TYPES[document.getElementById('rt_type').value];
+  document.getElementById('rt_area_note').textContent = t.label + ': ~' + t.wpPerM2 + 'Wp/m2 effective';
+  rtCalc();
+}
+function fmtR(n, dec) {
+  dec = dec || 0;
+  return 'R' + n.toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function rtCalc() {
+  const el = document.getElementById('rt_result');
+  if(!el) return;
+  const type    = document.getElementById('rt_type').value;
+  const area    = parseFloat(document.getElementById('rt_area').value) || 2000;
+  const tilt    = parseFloat(document.getElementById('rt_tilt').value) || 1.05;
+  const shading = parseFloat(document.getElementById('rt_shading').value) || 0.80;
+  const bill    = parseFloat(document.getElementById('rt_bill').value) || 80000;
+  const tariff  = parseFloat(document.getElementById('rt_tariff').value) || 2.50;
+  const battH   = parseFloat(document.getElementById('rt_batt').value) || 0;
+  const escal   = parseFloat(document.getElementById('rt_escal').value) || 0.05;
+  const t = RT_TYPES[type];
+  const kwp = Math.round(area * t.wpPerM2 / 1000 * 10) / 10;
+  const panels = Math.round(area / (t.wpPerM2 > 160 ? 2.4 : 2.0));
+  const baseCF = (window._resourceData && window._resourceData.solar) ? window._resourceData.solar.annualCF : 0.21;
+  const location = (window._resourceData && window._resourceData.windRegion) ? window._resourceData.windRegion : 'SA national average';
+  const adjCF = baseCF * tilt * shading;
+  const annualKwh = kwp * adjCF * 8760;
+  const usableKwh = annualKwh * t.usagePct;
+  const solarCapex = kwp * 1000 * t.costRwp;
+  const battCapex  = battH > 0 ? kwp * battH * 1450 : 0;
+  const totalCapex = solarCapex + battCapex;
+  const annualSavings = usableKwh * tariff;
+  const annualOpex    = totalCapex * 0.015;
+  const annualNet     = annualSavings - annualOpex;
+  const monthlyKwh = bill / tariff;
+  const solarCoverage = Math.min(100, (usableKwh / 12 / monthlyKwh * 100));
+  const simplePayback = annualNet > 0 ? totalCapex / annualNet : Infinity;
+  let npvAt10 = -totalCapex;
+  for(let y = 1; y <= 25; y++) npvAt10 += annualNet * Math.pow(1+escal,y) / Math.pow(1.10,y);
+  let lo = 0, hi = 2, irr = 0;
+  for(let i = 0; i < 60; i++) {
+    const mid = (lo+hi)/2; let npvMid = -totalCapex;
+    for(let y=1;y<=25;y++) npvMid += annualNet*Math.pow(1+escal,y)/Math.pow(1+mid,y);
+    if(npvMid>0) lo=mid; else hi=mid; irr=mid;
+  }
+  const co2T = usableKwh * 0.00095;
+  const pbCol = simplePayback<6 ? 'var(--ok,#4A8C5C)' : simplePayback<10 ? '#F5A623' : 'var(--alert,#C4785A)';
+  const monthFactors = [1.0,1.05,1.1,1.05,0.95,0.88,0.88,0.92,1.0,1.05,1.05,0.97];
+  const monthlySavings = monthFactors.map(f => Math.round(usableKwh/12*f*tariff));
+  const maxMS = Math.max.apply(null, monthlySavings);
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  el.innerHTML =
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:16px">' +
+    '<div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:#F5C518">' + kwp.toLocaleString() + ' kWp</div><div style="font-size:9.5px;color:var(--ink2)">System size &middot; ' + panels.toLocaleString() + ' panels</div></div>' +
+    '<div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:#3EA055">' + Math.round(annualKwh/1000).toLocaleString() + ' MWh</div><div style="font-size:9.5px;color:var(--ink2)">Annual yield &middot; ' + (adjCF*100).toFixed(1) + '% CF</div></div>' +
+    '<div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:#517180">' + Math.round(solarCoverage) + '%</div><div style="font-size:9.5px;color:var(--ink2)">of monthly demand covered</div></div>' +
+    '<div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:' + pbCol + '">' + (simplePayback<25 ? simplePayback.toFixed(1)+' yr' : '>25yr') + '</div><div style="font-size:9.5px;color:var(--ink2)">Simple payback</div></div>' +
+    '<div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:var(--ink)">' + (irr>0.005?(irr*100).toFixed(1)+'%':'<1%') + '</div><div style="font-size:9.5px;color:var(--ink2)">IRR (25yr, ' + (escal*100).toFixed(0) + '% escalation)</div></div>' +
+    '<div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:' + (npvAt10>0?'var(--ok,#4A8C5C)':'var(--alert)') + '">' + fmtR(npvAt10/1e6,1) + 'm</div><div style="font-size:9.5px;color:var(--ink2)">NPV at 10% discount</div></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;font-size:11px">' +
+    '<div><div style="font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);margin-bottom:6px">System</div><table style="width:100%;border-collapse:collapse">' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">Installed capacity</td><td style="text-align:right">' + kwp.toLocaleString() + ' kWp</td></tr>' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">Panel count (est.)</td><td style="text-align:right">~' + panels.toLocaleString() + '</td></tr>' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">Adjusted CF</td><td style="text-align:right">' + (adjCF*100).toFixed(1) + '%</td></tr>' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">Location</td><td style="text-align:right;font-size:9.5px">' + location + '</td></tr>' +
+    (battH>0?'<tr><td style="padding:2px 0;color:var(--ink2)">Battery</td><td style="text-align:right">' + battH + 'h &middot; ' + Math.round(kwp*battH) + ' kWh</td></tr>':'') +
+    '</table></div>' +
+    '<div><div style="font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);margin-bottom:6px">Financials</div><table style="width:100%;border-collapse:collapse">' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">Total capex</td><td style="text-align:right;font-weight:600">' + fmtR(totalCapex/1e6,2) + 'm</td></tr>' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">Installed cost</td><td style="text-align:right">' + t.costRwp + ' R/Wp</td></tr>' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">Annual savings</td><td style="text-align:right;font-weight:600">' + fmtR(annualSavings/1e3,0) + 'k/yr</td></tr>' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">Annual O&amp;M</td><td style="text-align:right">' + fmtR(annualOpex/1e3,0) + 'k/yr</td></tr>' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">Net annual benefit</td><td style="text-align:right;font-weight:600">' + fmtR(annualNet/1e3,0) + 'k/yr</td></tr>' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">CO2 avoided</td><td style="text-align:right">' + co2T.toFixed(0) + ' t/yr</td></tr>' +
+    '</table></div></div>' +
+    '<div style="font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);margin-bottom:6px">Estimated monthly savings (year 1)</div>' +
+    '<div style="display:flex;gap:3px;align-items:flex-end;height:52px;margin-bottom:3px">' +
+    monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
+    '</div>' +
+    '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+}
+document.addEventListener('DOMContentLoaded', rtCalc);
+</script>
 <script>
 "use strict";
 /* ==================== MODEL ==================== */
@@ -1715,7 +1887,7 @@ const FIXED = {
   psPowerMW:2900, psEnergyMWh:60000, psEff:0.76,
   ocgtDieselMW:3400, windMW:3600, pvUtilityMW:4000, rooftopMW:8300, cspMW:500,
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
-  costCoal:480, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
+  costCoal:546, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
   costCcgt:2800, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
   acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
   // New coal/nuclear capex: global capex benchmarks ($3,600/kW coal w/ emissions controls,
@@ -2106,7 +2278,7 @@ const SLIDERS=[
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. Baseline is 6 GW, or roughly 15% of SA peak demand — consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
-  {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'Affects the system cost and carbon cost KPIs — but does NOT change which plants dispatch. In SA\'s current fleet, coal (R480/MWh fuel + ~R320/t carbon = R800/MWh total) remains cheaper than gas CCGT (R1,750/MWh + carbon) even at very high carbon prices. The slider is most useful for cost-sensitivity analysis: how much does system cost rise if the carbon price doubles?'},
+  {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'Affects the system cost and carbon cost KPIs — but does NOT change which plants dispatch. In SA\'s current fleet, coal (R546/MWh fuel + ~R320/t carbon = R866/MWh total) remains cheaper than gas CCGT (R1,750/MWh + carbon) even at very high carbon prices. The slider is most useful for cost-sensitivity analysis: how much does system cost rise if the carbon price doubles?'},
   {grp:'LCOE assumptions (R/kWh) — full lifecycle build cost'},
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:550,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
   {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:750,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 wind bids > solar; anchor R0.75'},
@@ -2632,7 +2804,7 @@ function render(r){
   const kpis=[
     {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
     {k:'System cost',v:(r.totalCost/1e9).toFixed(0),u:'R bn/yr'},
-    {k:'Avg energy cost',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
+    {k:'Avg marginal cost',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
     {k:'Replacement cost',v:(r.replAvg/1000).toFixed(2),u:'R/kWh'},
     {k:'CO₂ emissions',v:r.co2.toFixed(0),u:'Mt/yr'},
     {k:'Renewables',v:reShare.toFixed(0),u:'%'},
@@ -2937,7 +3109,7 @@ function renderComparison() {
 
   const rows = [
     {label:'System cost',      a:(p.totalCost/1e9).toFixed(0),  b:(r.totalCost/1e9).toFixed(0),  d:delta(p.totalCost/1e9,  r.totalCost/1e9,  0,' Rbn', true), unit:'R bn/yr'},
-    {label:'Avg energy cost',  a:(p.avgCost/1000).toFixed(2),    b:(r.avgCost/1000).toFixed(2),    d:delta(p.avgCost/1000,   r.avgCost/1000,   2,' R/kWh', true), unit:'R/kWh'},
+    {label:'Avg marginal cost',  a:(p.avgCost/1000).toFixed(2),    b:(r.avgCost/1000).toFixed(2),    d:delta(p.avgCost/1000,   r.avgCost/1000,   2,' R/kWh', true), unit:'R/kWh'},
     {label:'Carbon intensity', a:Math.round(p.co2>0?p.co2*1e9/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0)-pE.curtailed):0), b:Math.round(r.co2>0?r.co2*1e9/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0)-rE.curtailed):0), d:delta(Math.round(p.co2>0?p.co2*1e9/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0)-pE.curtailed):0),Math.round(r.co2>0?r.co2*1e9/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0)-rE.curtailed):0),0,' g/kWh',true), unit:'gCO₂/kWh'},
     {label:'Renewables share', a:((pE.wind+pE.pv+pE.csp+pE.rooftop)/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0))*100).toFixed(0), b:((rE.wind+rE.pv+rE.csp+rE.rooftop)/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0))*100).toFixed(0), d:delta((pE.wind+pE.pv+pE.csp+pE.rooftop)/Math.max(1,Object.values(pE).reduce((s,v)=>s+v,0))*100,(rE.wind+rE.pv+rE.csp+rE.rooftop)/Math.max(1,Object.values(rE).reduce((s,v)=>s+v,0))*100,0,'%',false), unit:'%'},
     {label:'Curtailment',      a:(pE.curtailed/1e6).toFixed(1),  b:(rE.curtailed/1e6).toFixed(1),  d:delta(pE.curtailed/1e6, rE.curtailed/1e6, 1,' TWh', true), unit:'TWh/yr'},
