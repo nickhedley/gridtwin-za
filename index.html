@@ -651,8 +651,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <button onclick="runPrefeas()" style="width:100%;padding:7px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Generate report</button>
           <div id="pf_result"></div>
         <div id="rpanel_rooftop" style="padding:14px;display:none;overflow-y:auto">
-          <div style="padding:14px">
-    <p style="font-size:11px;color:var(--ink2);margin:0 0 14px">Estimate the solar potential, system sizing, and financial case for a rooftop installation. Click any location on the Site Resource Query map above for site-specific data — otherwise a national average of 21% CF is used.</p>
+          <p style="font-size:11px;color:var(--ink2);margin:0 0 14px">Estimate the solar potential, system sizing, and financial case for a rooftop installation. Click any location on the Site Resource Query map above for site-specific data — otherwise a national average of 21% CF is used.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px;font-size:11px">
       <div><label style="font-weight:600;display:block;margin-bottom:3px">System type</label><select id="rt_type" onchange="rtUpdateType()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="home">Home / small office (&lt;10kWp)</option><option value="smeci">Small C&amp;I (10-100kWp)</option><option value="lci" selected>Large C&amp;I (100kWp-1MWp)</option><option value="industrial">Industrial / warehouse (&gt;1MWp)</option></select></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof area (m2)</label><input id="rt_area" type="number" value="2000" min="10" max="100000" step="100" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_area_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Large C&amp;I: ~170Wp/m2 effective</div></div>
@@ -664,7 +663,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation</label><select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.03">3% conservative</option><option value="0.05" selected>5% Eskom historical</option><option value="0.08">8% high scenario</option></select></div>
     </div>
     <div id="rt_result"></div>
-  </div>
         </div>
         </div>
       </div>
@@ -990,6 +988,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
   // ── Tab switching ─────────────────────────────────────────────────────────
   function switchTab(name) {
+    if(name==='rooftop' && typeof rtCalc==='function') setTimeout(rtCalc,0);
     ['resource','datacenter','capture','grid','wheeling','prefeas','rooftop'].forEach(t => {
       const tabEl=document.getElementById('tab_'+t); if(tabEl) tabEl.classList.toggle('active', t===name);
       const panEl=document.getElementById('rpanel_'+t); if(panEl) panEl.style.display = t===name ? '' : 'none';
