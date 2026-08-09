@@ -546,7 +546,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <div class="panel">
     <div class="ph">
       <h2>Site resource query</h2>
-      <span class="tag">Solar &amp; wind · click any SA location</span>
+      <span class="tag">Solar &amp; wind potential · click any SA location</span>
     </div>
     <div style="padding:12px 14px 0;font-size:11px;color:var(--ink2)">
       Click anywhere on the map to fetch the hourly solar and wind resource for that location.
@@ -554,12 +554,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       Annual capacity factor shown alongside a monthly chart and CSV download.
     </div>
     <div style="display:flex;gap:0;border-bottom:1.5px solid var(--ink);padding:0 14px;margin-top:10px">
-      <button class="rtab active" onclick="switchTab('resource')" id="tab_resource">Solar &amp; wind</button>
-      <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre</button>
+      <button class="rtab active" onclick="switchTab('resource')" id="tab_resource">Solar &amp; wind potential</button>
+      <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre captive power potential</button>
       <button class="rtab" onclick="switchTab('capture')" id="tab_capture">Capture price</button>
       <button class="rtab" onclick="switchTab('grid')" id="tab_grid">Grid connection</button>
       <button class="rtab" onclick="switchTab('wheeling')" id="tab_wheeling">Wheeling</button>
-      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas">Pre-feasibility</button>
+      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas">Pre-feasibility analysis</button>
     </div>
     <div id="resourceSplit">
       <div id="resourceMap" style="border-right:1px solid var(--line2)"></div>
