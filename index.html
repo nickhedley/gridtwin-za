@@ -3589,6 +3589,18 @@ function rtInitMap() {
     attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
   }).addTo(rtMap);
 
+  // Street/road names overlay - pure satellite imagery has no text at all, so
+  // without this there is nothing to visually confirm which property is which.
+  // Both are free Esri reference layers designed specifically to sit on top of
+  // an imagery basemap (the standard "hybrid" combination).
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19, maxNativeZoom: 19, opacity: 0.9,
+    attribution: 'Esri'
+  }).addTo(rtMap);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19, maxNativeZoom: 19
+  }).addTo(rtMap);
+
   rtMap.on('click', rtMapClick);
   setTimeout(() => rtMap.invalidateSize(), 200);
 }
