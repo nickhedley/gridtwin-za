@@ -250,3 +250,56 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     runtimeMs,
   };
 }
+
+/**
+ * Assemble everything the MIP optimiser needs for a network-aware solve:
+ * per-region net load, corridor limits, coal units tagged by region, and
+ * storage tagged by region. Reuses the nodal engine's own scenario setup so
+ * the optimiser sees exactly the same system the dispatch engine would.
+ */
+async function getNodalMIPInputs(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion,
+                                 newRooftopMW, newBattMW, extraCoalByRegion, extraCcgtByRegion,
+                                 extraNuclearByRegion, extraBattByRegion, coalFlexPct,
+                                 newWindMW, newPvMW, syncFloorMW = 6000) {
+  const data = await loadNodalData();
+  if (!nodalEngineInstance) nodalEngineInstance = new NodalEngine(data);
+
+  nodalEngineInstance.setScenario(
+    coalEafPct, coalDecomMW, extraWindByRegion || {}, extraSolarByRegion || {},
+    newRooftopMW || 0, newBattMW || 0, extraCoalByRegion || {}, extraCcgtByRegion || {},
+    extraNuclearByRegion || {}, extraBattByRegion || {}, coalFlexPct || 0, false, null,
+    newWindMW || 0, newPvMW || 0, syncFloorMW
+  );
+
+  const eng = nodalEngineInstance;
+  const regionLoadObj = eng.getRegionalNetLoad();
+  const regionLoad = REGIONS.map(r => Array.from(regionLoadObj[r]));
+
+  // Coal units, tagged with their region index and MIP parameters
+  const units = eng.thermalFleet
+    .filter(g => g.carrier === 'coal' && g.capacityMw > 1)
+    .map(g => ({
+      name: g.name,
+      cap: g.capacityMw,
+      region: REGIONS.indexOf(g.region),
+      msl: g.minStableFrac > 0 ? g.minStableFrac : 0.5,
+      min_up: g.minUpTime > 0 ? Math.round(g.minUpTime) : 8,
+      min_dn: g.minDownTime > 0 ? Math.round(g.minDownTime) : 4,
+      startup_cost: g.startUpCost > 0 ? g.startUpCost : 50000,
+      marginal_cost: g.marginalCost > 0 ? g.marginalCost : 600,
+    }))
+    .filter(u => u.region >= 0);
+
+  // Storage by region
+  const sto = [];
+  REGIONS.forEach((r, ri) => {
+    const ps = (typeof PS_MW_BY_REGION !== 'undefined' ? PS_MW_BY_REGION[r] : 0) || 0;
+    if (ps > 0) sto.push({ name: r + ' pumped storage', region: ri, power: ps,
+                           energy: ps * 20, eff: 0.76 });
+    const bt = (eng.battMw && eng.battMw[r]) || 0;
+    if (bt > 0) sto.push({ name: r + ' batteries', region: ri, power: bt,
+                           energy: bt * 4, eff: 0.88 });
+  });
+
+  return { regions: REGIONS.slice(), regionLoad, corridors: eng.getCorridors(), units, sto };
+}
