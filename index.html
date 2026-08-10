@@ -1884,7 +1884,7 @@ const FIXED = {
   // carry the higher 65% Min Stable Levels, are correctly weighted at low commitment).
   coalStartUpCostRPerMW:224.52,
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
-  lcoePv:575, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1450, lcoeCsp:2000, lcoeCcgt:2500, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1200, lcoeDiesel:5500, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
+  lcoePv:575, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1450, lcoeCsp:2000, lcoeCcgt:2500, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1400, lcoeDiesel:5500, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
@@ -2410,7 +2410,7 @@ const SLIDERS=[
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:2000,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:2500,fmt:v=>'R'+(v/1000).toFixed(2),note:'LNG-fired: fuel alone ~R2,100–2,900/MWh at current spot ($14–19/MMBtu × R19/$, Jul 2026). IRP 2025 baseline of $10/MMBtu is well below current prices. Use slider to explore sensitivity'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:1650,fmt:v=>'R'+(v/1000).toFixed(2),note:'wide range; SMRs higher'},
-  {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:1200,fmt:v=>'R'+(v/1000).toFixed(2),note:'new-build, not existing fleet'},
+  {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:1400,fmt:v=>'R'+(v/1000).toFixed(2),note:'new-build, not existing fleet'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:8000,step:50,def:5500,fmt:v=>'R'+(v/1000).toFixed(2),note:'peaking only'},
 ];
 const PRESETS={
