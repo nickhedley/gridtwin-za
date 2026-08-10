@@ -301,13 +301,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
         </div>
 
-        <div class="duo">
-          <div class="panel">
-            <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
-            <div class="pb" id="mix"></div>
-          </div>
-          <div class="panel">
-            <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
+          <div class="pb" id="mix"></div>
+        </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
             <div class="pb">
               <div class="riskhead" id="riskHead"></div>
               <div class="shedbars" id="shed"></div>
@@ -315,7 +315,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
             </div>
           </div>
-        </div>
 
         <div class="panel" style="margin-top:18px">
           <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
