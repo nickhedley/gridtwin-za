@@ -315,6 +315,16 @@ class NodalEngine {
    * Uses the same derates as the dispatch engine so the two stay consistent.
    */
   getRegionalNetLoad() {
+    // Nuclear and hydro capacity live per-unit in thermalFleet (tagged by region and
+    // carrier), not as separate lookup tables - aggregate them once up front, the same
+    // way the national aggregate does it elsewhere in this class.
+    const nuclearMwByRegion = {}, hydroMwByRegion = {};
+    REGIONS.forEach(r => { nuclearMwByRegion[r] = 0; hydroMwByRegion[r] = 0; });
+    this.thermalFleet.forEach(g => {
+      if (g.carrier === 'nuclear') nuclearMwByRegion[g.region] = (nuclearMwByRegion[g.region] || 0) + g.capacityMw;
+      if (g.carrier === 'hydro')   hydroMwByRegion[g.region]   = (hydroMwByRegion[g.region]   || 0) + g.capacityMw;
+    });
+
     const out = {};
     REGIONS.forEach(r => { out[r] = new Float64Array(8760); });
     for (let h = 0; h < 8760; h++) {
@@ -326,8 +336,8 @@ class NodalEngine {
           + (this.solarMw[r] || 0) * this.solarPu[r][h]
           + (CSP_MW_BY_REGION[r] || 0) * this.cspProfile[h]
           + (r === IMPORTS_REGION ? IMPORTS_MW * IMPORTS_CF : 0)
-          + (NUCLEAR_MW_BY_REGION[r] || 0) * 0.90
-          + (HYDRO_MW_BY_REGION[r]   || 0) * 0.55;
+          + nuclearMwByRegion[r] * 0.90
+          + hydroMwByRegion[r] * 0.55;
         out[r][h] = rawD - rooftop - variableAvail;
       }
     }
