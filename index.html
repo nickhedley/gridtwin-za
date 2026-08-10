@@ -594,7 +594,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       Solar from Open-Meteo ERA5 reanalysis (CC BY 4.0). Wind interpolated from regional MERRA-2 profiles.
       Annual capacity factor shown alongside a monthly chart and CSV download.
     </div>
-    <div style="display:flex;gap:0;border-bottom:1.5px solid var(--ink);padding:0 14px;margin-top:10px">
+    <div style="display:flex;flex-wrap:wrap;gap:0;row-gap:2px;border-bottom:1.5px solid var(--ink);padding:0 14px;margin-top:10px">
       <button class="rtab active" onclick="switchTab('resource')" id="tab_resource">Grid-scale solar &amp; wind</button>
       <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre captive power</button>
       <button class="rtab" onclick="switchTab('capture')" id="tab_capture">Capture price</button>
