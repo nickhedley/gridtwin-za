@@ -3777,6 +3777,16 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
   sto.forEach((s, j) => {
     for (let h = 0; h < H; h++) { obj.push('0.5 ch_' + j + '_' + h); obj.push('0.5 di_' + j + '_' + h); }
   });
+  // Small per-MWh-per-km transmission charge on corridor usage, either direction.
+  // Without this an LP with only capacity limits (no cost for using a corridor at
+  // all) is free to spread flow across many corridors arbitrarily - any feasible
+  // routing is equally "cheap". This gives it a real reason to prefer short/direct
+  // paths, as a linear proxy for the real transmission losses the heuristic engine
+  // already prices via lossFraction().
+  corridors.forEach((cd, k) => {
+    const txCost = (0.05 * cd.km).toFixed(3); // R/MWh, ~R0.05 per km - small vs coal's ~R600-900/MWh
+    for (let h = 0; h < H; h++) { obj.push(txCost + ' fpos_' + k + '_' + h); obj.push(txCost + ' fneg_' + k + '_' + h); }
+  });
   L.push('  ' + obj.join(' + '));
   L.push('Subject To');
 
@@ -3789,8 +3799,11 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
         if (s.region === r) { t.push('+ di_' + j + '_' + h); t.push('- ch_' + j + '_' + h); }
       });
       corridors.forEach((cd, k) => {
-        if (cd.a === r) t.push('- f_' + k + '_' + h);   // positive flow leaves region a
-        if (cd.b === r) t.push('+ f_' + k + '_' + h);
+        // fpos = flow a->b, fneg = flow b->a. Region a exports the net (fpos-fneg);
+        // region b receives the same net amount. Split rather than a single signed
+        // variable so the transmission cost above prices usage, not direction.
+        if (cd.a === r) { t.push('- fpos_' + k + '_' + h); t.push('+ fneg_' + k + '_' + h); }
+        if (cd.b === r) { t.push('+ fpos_' + k + '_' + h); t.push('- fneg_' + k + '_' + h); }
       });
       t.push('+ q_' + r + '_' + h);
       L.push(' bal_' + r + '_' + h + ': ' + t.join(' ').replace(/^\\+ /, '')
@@ -3831,8 +3844,10 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
   for (let r = 0; r < nRegions; r++)
     for (let h = 0; h < H; h++) L.push(' 0 <= q_' + r + '_' + h + ' <= 100000');
   corridors.forEach((cd, k) => {
-    for (let h = 0; h < H; h++)
-      L.push(' -' + cd.limit.toFixed(1) + ' <= f_' + k + '_' + h + ' <= ' + cd.limit.toFixed(1));
+    for (let h = 0; h < H; h++) {
+      L.push(' 0 <= fpos_' + k + '_' + h + ' <= ' + cd.limit.toFixed(1));
+      L.push(' 0 <= fneg_' + k + '_' + h + ' <= ' + cd.limit.toFixed(1));
+    }
   });
   sto.forEach((s, j) => {
     for (let h = 0; h < H; h++) {
@@ -3904,12 +3919,11 @@ self.onmessage = async (e) => {
             if (q && q.Primal > 0) qq += q.Primal;
           }
           corridors.forEach((cd, k) => {
-            const f = res.Columns['f_' + k + '_' + h];
-            if (f) {
-              const av = Math.abs(f.Primal);
-              corridorFlow[k] += av;
-              if (av > cd.limit * 0.98) corridorHrsAtLimit[k] += 1;
-            }
+            const fp = res.Columns['fpos_' + k + '_' + h];
+            const fn = res.Columns['fneg_' + k + '_' + h];
+            const posV = fp ? fp.Primal : 0, negV = fn ? fn.Primal : 0;
+            corridorFlow[k] += Math.abs(posV - negV);
+            if (Math.max(posV, negV) > cd.limit * 0.98) corridorHrsAtLimit[k] += 1;
           });
           coalProfile[day*24+h] = gh; chgProfile[day*24+h] = ch;
           disProfile[day*24+h] = di; unservProfile[day*24+h] = qq;
