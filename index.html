@@ -264,7 +264,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
       <div id="compareBody" style="padding:12px 14px;font-size:11px"></div>
     </div>
-    <div class="main2">
+    <div class="main2" style="align-items:start">
+      <div>
 <section aria-label="Network map and capacity siting">
       <div class="panel mapbox">
         <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" style="margin-left:8px;font-size:10px;padding:2px 7px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px">REIPPPP project pipeline</button></div>
@@ -282,62 +283,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div style="padding:8px; border-top:1px solid var(--line2);font-size:10.5px;color:var(--ink2)">Corridor flows come from the <strong>Run the full model</strong> optimiser, which solves all 10 regions together.</div>
       </div>
       </section>
-
-<section>
-        <div class="panel" aria-label="Weekly dispatch">
-          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="wkbtns">
-                <button id="wkW" class="active">Winter week</button>
-                <button id="wkS">Summer week</button>
-              </div>
-              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
-            </div>
-          </div>
-          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week — hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
-          <div class="pb" style="padding:10px 10px 4px">
-            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart" aria-describedby="dispatchTableDesc"></canvas>
-          </div>
-          <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
-        </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
-          <div class="pb" id="mix"></div>
-        </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
-            <div class="pb">
-              <div class="riskhead" id="riskHead"></div>
-              <div class="shedbars" id="shed"></div>
-              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
-              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
-            </div>
-          </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
-          <div class="pb" id="lcoe"></div>
-        </div>
-
-        <div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
-          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
-          <div style="padding:0 14px 12px">
-            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
-              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
-              Includes all technologies.
-            </p>
-            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
-          </div>
-        </div>
-
-      </section>
-    </div>
-
-    <div class="main2" style="margin-top:18px">
-      <section aria-label="Capacity siting tool">
-      <div class="panel" aria-label="Capacity siting tool">
+<section aria-label="Capacity siting tool">
+      <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
           <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
           <div class="pb">
             <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. All technologies — including CCGT and batteries — carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
@@ -389,15 +336,69 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
         </div>
       </section>
-      <section aria-label="Nodal simulation notes">
-      <div class="panel" aria-label="Nodal simulation">
+      </div>
+      <div>
+<section>
+        <div class="panel" aria-label="Weekly dispatch">
+          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="wkbtns">
+                <button id="wkW" class="active">Winter week</button>
+                <button id="wkS">Summer week</button>
+              </div>
+              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
+            </div>
+          </div>
+          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week — hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
+          <div class="pb" style="padding:10px 10px 4px">
+            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart" aria-describedby="dispatchTableDesc"></canvas>
+          </div>
+          <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
+        </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
+          <div class="pb" id="mix"></div>
+        </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
+            <div class="pb">
+              <div class="riskhead" id="riskHead"></div>
+              <div class="shedbars" id="shed"></div>
+              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
+              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
+            </div>
+          </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
+          <div class="pb" id="lcoe"></div>
+        </div>
+
+        <div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
+          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
+          <div style="padding:0 14px 12px">
+            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
+              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
+              Includes all technologies.
+            </p>
+            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
+          </div>
+        </div>
+
+      </section>
+<section aria-label="Nodal simulation notes">
+      <div class="panel" style="margin-top:18px" aria-label="Nodal simulation">
           <div class="ph"><h2>Note on the Nodal Simulation</h2><span class="tag">what it models · caveats</span></div>
           <div class="pb">
             <p style="font-size:11.5px; color:var(--ink2); margin-bottom:0; line-height:1.45">Runs the real 10-region network model for a full 8,760-hour year: real demand, transfer-limited corridors, and plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage) - plus new coal/CCGT/nuclear/battery siting via "Where To Build" above (coal, CCGT, nuclear and batteries all carry a grid-build charge when they exceed regional headroom — CCGT and batteries at a higher R/MWh than coal or nuclear, because their lower utilisation (both ~15% vs coal 64%) spreads the same corridor cost over far fewer MWh). Coal has real per-region ramp-rate limits in both directions (ramp-up and ramp-down), with per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back some capacity for its own region's near-term needs before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a real baseline pass first. On success, the KPIs, energy mix, hourly chart, and map above all switch to these results - only the load-shedding risk panel stays on the national engine. Use the "Run full year" button on the map above.</p>
           </div>
         </div>
       </section>
+      </div>
     </div>
+
 
 <script src="nodal/nodal_engine.js?v=24"></script>
       <script src="nodal/nodal_dispatch.js?v=28"></script>
