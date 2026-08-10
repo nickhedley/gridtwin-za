@@ -307,6 +307,38 @@ class NodalEngine {
    * live one), a real 24h-ahead lookahead is legitimate here, unlike a real grid operator
    * who only has forecasts.
    */
+  /**
+   * Per-region net load (MW) for every hour: regional demand less rooftop and
+   * all variable generation sited in that region. This is the input the MIP
+   * optimiser needs — the residual each region must cover from thermal plant,
+   * storage, or imports across a corridor.
+   * Uses the same derates as the dispatch engine so the two stay consistent.
+   */
+  getRegionalNetLoad() {
+    const out = {};
+    REGIONS.forEach(r => { out[r] = new Float64Array(8760); });
+    for (let h = 0; h < 8760; h++) {
+      for (const r of REGIONS) {
+        const rawD = this.demandByRegion[r][h];
+        const rooftop = Math.min((this.rooftopMw[r] || 0) * this.solarPu[r][h] * 0.94, rawD * 0.9);
+        const variableAvail =
+            (this.windMw[r]  || 0) * this.windPu[r][h]
+          + (this.solarMw[r] || 0) * this.solarPu[r][h]
+          + (CSP_MW_BY_REGION[r] || 0) * this.cspProfile[h]
+          + (r === IMPORTS_REGION ? IMPORTS_MW * IMPORTS_CF : 0)
+          + (NUCLEAR_MW_BY_REGION[r] || 0) * 0.90
+          + (HYDRO_MW_BY_REGION[r]   || 0) * 0.55;
+        out[r][h] = rawD - rooftop - variableAvail;
+      }
+    }
+    return out;
+  }
+
+  /** Corridor list with transfer limits, for the optimiser. */
+  getCorridors() {
+    return this.edgeMeta.map(e => ({ a: e.a, b: e.b, limit: e.limit, km: e.length }));
+  }
+
   buildForecastNeed() {
     const n = REGIONS.length;
     const firmCapacityByRegion = {};
