@@ -18,6 +18,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+*,*::before,*::after{box-sizing:border-box}
+
 :root{
   --base:#FAF0CD; --panel:#F7F8F5; --panel2:#EEECEA;
   --ink:#22292B; --ink2:#5A6560; --line:#C8CBC5; --line2:#AEB3AA;
@@ -32,7 +34,8 @@
 }
 *{box-sizing:border-box; margin:0; padding:0}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--base); color:var(--ink); font-family:'Roboto',sans-serif; font-size:14px; line-height:1.45;}
+html{overflow-x:hidden}
+body{background:var(--base); color:var(--ink); font-family:'Roboto',sans-serif; font-size:14px; line-height:1.45; overflow-x:hidden; max-width:100vw}
 h1,h2,h3,.disp{font-family:'Saira Condensed',sans-serif; text-transform:uppercase; letter-spacing:.04em}
 .mono{font-family:'IBM Plex Mono',monospace}
 a{color:var(--sky)}
@@ -51,12 +54,20 @@ header{border-bottom:2px solid #3a5668; background:#517180; box-shadow:var(--sha
 .board .lbl{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA69B; font-family:'Saira Condensed'}
 .board .val{font-family:'IBM Plex Mono'; font-size:19px; font-weight:600; line-height:1.15}
 @media(max-width:700px){
-  .hwrap{padding:10px 14px 10px;gap:8px 14px}
+  .hwrap{padding:10px 14px 10px;gap:8px 14px;box-sizing:border-box;width:100%;max-width:100%}
+  .board{width:100%;display:grid;grid-template-columns:1fr 1fr;box-sizing:border-box}
   .board .cell.hide-mobile{display:none}
-  .board .cell{padding:6px 10px 5px}
+  .board .cell{padding:6px 8px 5px;min-width:0;border-right:1px solid #454F49;border-bottom:1px solid #454F49}
+  .board .cell:nth-child(2n){border-right:none}
   .board .lbl{font-size:9px}
   .board .val{font-size:15px}
   .statusword{font-size:17px}
+  .brand{min-width:0;flex:1 1 100%}
+  .brand svg{width:44px!important;height:38px!important}
+  .brand h1{font-size:22px}
+  .brand p{font-size:11px}
+  .wrap{box-sizing:border-box;width:100%;max-width:100%}
+  .panel{max-width:100%;box-sizing:border-box}
 }
 .lamps{display:flex; gap:5px; align-items:center; padding:0 14px}
 .lamp{width:17px; height:26px; border:1px solid #454F49; border-radius:2px; background:#2C3431; display:flex; align-items:flex-end; justify-content:center; font-family:'IBM Plex Mono'; font-size:9px; color:#7d877e; padding-bottom:2px; transition:background .25s, box-shadow .25s}
@@ -211,7 +222,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <main>
     <div id="kpiSourceBanner" style="display:none; font-size:11.5px; padding:8px 12px; margin-bottom:10px; border:1.5px solid var(--alert); background:var(--panel2); border-radius:3px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk. Note: system cost excludes any curtailment payments to wind and solar plants contracted under REIPPPP. <strong>Replacement cost</strong> prices every MWh (from existing and new plants) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
+    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk (system cost excludes curtailment payments to wind and solar plants contracted under REIPPPP). <strong>Replacement cost</strong> prices every MWh (from existing and new plants) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
 
     <div id="comparePanel" style="display:none;margin-bottom:18px;border:1.5px solid var(--ink);border-radius:0;background:var(--panel)">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline">
@@ -234,7 +245,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span><i style="background:var(--alert)"></i>Peakers</span>
         </div>
         <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the simulation below to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means real curtailment (wasted wind/solar) in that region - shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one), and only appears once it's above 1% to keep the map clean. Hover any line or label for exact figures.</p>
-        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points sharing the Upington corridor area. Hover each for region-specific figures. The REIPPPP project pipeline button overlays dashed rings showing government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) — not the 19.7 GW of private/C&I registrations shown in the NERSA panel below. Grey = preferred bidder, yellow = financial close, green = under construction. Hover a ring for the MW breakdown.</p>
+        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points sharing the Upington corridor area. Click on each for region-specific figures. The REIPPPP project pipeline button overlays dashed rings showing government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) — not the 19.7 GW of private/C&I registrations shown in the NERSA panel below. Ring colour shows the dominant project status in that region (rings may contain projects at multiple stages). Click a ring for the MW breakdown by status.</p>
         <div style="padding:8px; border-top:1px solid var(--line2)">
           <button id="nodalRunBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Run full year</button>
           <span style="font-size:11px; color:var(--ink2); margin-left:8px">Solves the 10-region network for a full year. Takes a few seconds.</span>
@@ -408,7 +419,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
         const banner=document.getElementById('kpiSourceBanner');
         banner.style.display='block';
-        banner.innerHTML='<strong>These KPIs and the energy mix above reflect the real 10-region nodal simulation</strong> (coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, plus your allocated portfolio) — not the instant national engine. '+
+        banner.innerHTML='<strong>These KPIs and the energy mix below reflect the real 10-region nodal simulation</strong> (coal EAF '+state.coalEAFPct+'%, '+(state.coalDecomMW/1000).toFixed(0)+' GW decommissioned, plus your allocated portfolio) — not the instant national engine. '+
           'The hourly dispatch chart below now shows the same real nodal week too. The load-shedding risk panel now shows the nodal unserved figure as its headline estimate; the national Monte Carlo below it gives outage volatility context. '+
           'Moving any slider will switch these two panels back to the instant national view - re-run the Nodal Simulation to bring them back.';
       }
@@ -1721,24 +1732,25 @@ function printPrefeas() {
 <div style="max-width:1380px;margin:0 auto;padding:0 20px 32px" id="mipSection">
 <div class="panel">
   <div class="ph">
-    <h2>Optimal unit commitment (MIP)</h2>
+    <h2>Optimal dispatch (MIP)</h2>
     <span class="tag">HiGHS solver &middot; runs in your browser</span>
   </div>
   <div style="padding:14px">
     <p style="font-size:11px;color:var(--ink2);margin:0 0 12px">
-      Solves coal unit commitment as a true mixed-integer program &mdash; per-unit on/off decisions,
-      minimum up and down times, and start-up costs &mdash; using the same HiGHS solver behind PyPSA.
-      The instant model above uses a fast heuristic; this shows how close it gets to the optimum.
+      Re-solves coal and storage together as a true mixed-integer program &mdash; per-unit on/off decisions,
+      minimum up times, minimum stable levels, start-up costs, and optimal battery and pumped-storage
+      scheduling &mdash; using the same HiGHS solver behind PyPSA.
+      When it finishes, <strong>the KPIs, energy mix and dispatch chart above switch to the optimal solution</strong>.
     </p>
 
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
       <button id="mipRepBtn" onclick="runMIP('rep')"
               style="padding:7px 16px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">
-        Solve 52 representative days
+        Optimise &middot; 52 representative days
       </button>
       <button id="mipFullBtn" onclick="runMIP('full')"
               style="padding:7px 16px;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">
-        Solve full year
+        Optimise &middot; full year
       </button>
       <button id="mipCancelBtn" onclick="cancelMIP()" style="display:none;padding:7px 14px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;color:var(--ink2)">Cancel</button>
       <span style="font-size:10px;color:var(--ink2)">~30 s &middot; ~4 min</span>
@@ -2904,6 +2916,11 @@ function render(r){
   const banner=document.getElementById('kpiSourceBanner');
   if(banner) banner.style.display='none';
   nodalActiveRes=null; nodalUnservedGwh=null; nodalNationalShedGwh=null;
+  // Clear the MIP takeover unless this render IS the MIP result
+  if(typeof mipActiveRes!=='undefined' && mipActiveRes && r!==mipActiveRes.res){
+    mipActiveRes=null;
+    const mr=document.getElementById('mipResult'); if(mr) mr.innerHTML='';
+  }
   // board
   const sw=document.getElementById('statusWord');
   const shedGWh=r.shedMWh/1000;
@@ -3743,17 +3760,23 @@ document.addEventListener('DOMContentLoaded', rtCalc);
 
 </script>
 <script>
-// ══ MIP Unit Commitment via WebAssembly HiGHS ════════════════════════════════
+// ══ MIP Coal Dispatch via WebAssembly HiGHS ══════════════════════════════════
+// Solves per-unit commitment optimally, then feeds the result back into the
+// main model so the KPIs, energy mix and dispatch chart show the optimum.
 const MIP_FLEET = [{"name":"Arnot*","cap":1050.0,"n":3,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":146236.9340034813,"marginal_cost":664.1402453697383},{"name":"Arnot**","cap":1050.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":146236.9340034813,"marginal_cost":675.4804253697383},{"name":"Camden*","cap":570.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":56320.930887372,"marginal_cost":702.0914453697383},{"name":"Camden**","cap":911.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":93868.21814561999,"marginal_cost":733.5367253697383},{"name":"Duvha*","cap":1150.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":183388.7508532424,"marginal_cost":633.5082053697383},{"name":"Duvha**","cap":1725.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":275083.12627986365,"marginal_cost":633.5082053697383},{"name":"Grootvlei*","cap":380.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":47428.2396745848,"marginal_cost":711.3985253697383},{"name":"Grootvlei**","cap":190.0,"n":1,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":23714.1198372924,"marginal_cost":664.1402453697383},{"name":"Hendrina*","cap":760.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":60075.6596131968,"marginal_cost":687.7242053697383},{"name":"Hendrina**","cap":338.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":30037.8298065984,"marginal_cost":733.5367253697383},{"name":"Kelvin","cap":160.0,"n":2,"msl":0.65,"min_up":8,"min_dn":8,"startup_cost":450165.44254835,"marginal_cost":658.5346505574515},{"name":"Kendal*","cap":1920.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383},{"name":"Kendal**","cap":1920.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383},{"name":"Komati","cap":114.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":8782.97661497838,"marginal_cost":771.6234653697383},{"name":"Kriel*","cap":1215.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383},{"name":"Kriel**","cap":1425.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383},{"name":"Kusile*","cap":2880.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":348234.678785074,"marginal_cost":587.550320932878},{"name":"Kusile**","cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878},{"name":"Kusile***","cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878},{"name":"Lethabo*","cap":1779.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":585.4818653697383},{"name":"Lethabo**","cap":1779.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":608.7947453697383},{"name":"Majuba*","cap":1818.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":482186.41170716693,"marginal_cost":620.6770853697383},{"name":"Majuba**","cap":1989.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":529614.236756997,"marginal_cost":586.7920853697383},{"name":"Matimba*","cap":1845.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":616.1590853697384},{"name":"Matimba**","cap":1845.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":608.7947453697383},{"name":"Matla*","cap":1725.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383},{"name":"Matla**","cap":1725.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383},{"name":"Medupi*","cap":3600.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":435293.3484813425,"marginal_cost":587.550320932878},{"name":"Medupi**","cap":717.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878},{"name":"Tutuka*","cap":1755.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383},{"name":"Tutuka**","cap":1755.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383}];
 
 let mipWorker = null, mipRunning = false;
+let mipActiveRes = null;   // set once an optimal solution has been applied
+let mipStoNames = [];      // storage fleets included in the optimisation
 
-// Worker source — built as a Blob so the whole app stays a single file
 const MIP_WORKER_SRC = `
 let highs = null;
 const FLEET = ${JSON.stringify(MIP_FLEET)};
 
-function buildDayLP(fleet, load, initialOn) {
+// LP for one day. Slack variable u_h keeps the problem feasible when coal
+// alone cannot cover net load; it is priced at the diesel cost so the solver
+// only uses it as a last resort, mirroring the merit order.
+function buildDayLP(fleet, load, initialOn, slackCost, sto, soc0) {
   const H = 24, L = ['Minimize', ' obj:'], obj = [];
   fleet.forEach((u, i) => {
     for (let h = 0; h < H; h++) {
@@ -3761,11 +3784,38 @@ function buildDayLP(fleet, load, initialOn) {
       obj.push((u.startup_cost / 1000).toFixed(2) + ' s_' + i + '_' + h);
     }
   });
+  for (let h = 0; h < H; h++) obj.push(slackCost.toFixed(2) + ' u_' + h);
+  // Tiny cycling penalty so the solver does not churn storage for zero benefit
+  sto.forEach((s, j) => {
+    for (let h = 0; h < H; h++) {
+      obj.push('0.5 ch_' + j + '_' + h);
+      obj.push('0.5 di_' + j + '_' + h);
+    }
+  });
   L.push('  ' + obj.join(' + '));
   L.push('Subject To');
+  // Energy balance: coal + discharge - charge + slack >= net load
   for (let h = 0; h < H; h++) {
-    L.push(' bal_' + h + ': ' + fleet.map((u, i) => 'g_' + i + '_' + h).join(' + ') + ' >= ' + load[h].toFixed(1));
+    const gen = fleet.map((u, i) => 'g_' + i + '_' + h).join(' + ');
+    const dis = sto.map((s, j) => ' + di_' + j + '_' + h).join('');
+    const chg = sto.map((s, j) => ' - ch_' + j + '_' + h).join('');
+    L.push(' bal_' + h + ': ' + gen + dis + chg + ' + u_' + h + ' >= ' + load[h].toFixed(1));
   }
+  // Storage state-of-charge balance, carried over from the previous day
+  sto.forEach((s, j) => {
+    for (let h = 0; h < H; h++) {
+      if (h === 0) {
+        L.push(' soc_' + j + '_0: e_' + j + '_0 - ' + s.eff.toFixed(4) + ' ch_' + j + '_0 + di_' + j + '_0 = ' + soc0[j].toFixed(1));
+      } else {
+        L.push(' soc_' + j + '_' + h + ': e_' + j + '_' + h + ' - e_' + j + '_' + (h-1)
+               + ' - ' + s.eff.toFixed(4) + ' ch_' + j + '_' + h + ' + di_' + j + '_' + h + ' = 0');
+      }
+    }
+    // Daily cyclic constraint: end the day at or above the starting level.
+    // Without this the optimiser drains storage each day and never refills it,
+    // manufacturing energy that does not exist.
+    L.push(' socend_' + j + ': e_' + j + '_' + (H-1) + ' >= ' + soc0[j].toFixed(1));
+  });
   fleet.forEach((u, i) => {
     for (let h = 0; h < H; h++) {
       L.push(' gmax_' + i + '_' + h + ': g_' + i + '_' + h + ' - ' + u.cap.toFixed(1) + ' c_' + i + '_' + h + ' <= 0');
@@ -3791,6 +3841,14 @@ function buildDayLP(fleet, load, initialOn) {
       L.push(' 0 <= s_' + i + '_' + h + ' <= 1');
     }
   });
+  for (let h = 0; h < H; h++) L.push(' 0 <= u_' + h + ' <= 100000');
+  sto.forEach((s, j) => {
+    for (let h = 0; h < H; h++) {
+      L.push(' 0 <= ch_' + j + '_' + h + ' <= ' + s.power.toFixed(1));
+      L.push(' 0 <= di_' + j + '_' + h + ' <= ' + s.power.toFixed(1));
+      L.push(' 0 <= e_'  + j + '_' + h + ' <= ' + s.energy.toFixed(1));
+    }
+  });
   L.push('Binary');
   const bins = [];
   fleet.forEach((u, i) => { for (let h = 0; h < H; h++) bins.push('c_' + i + '_' + h); });
@@ -3800,7 +3858,7 @@ function buildDayLP(fleet, load, initialOn) {
 }
 
 self.onmessage = async (e) => {
-  const { cmd, days, netLoad, availFactor } = e.data;
+  const { cmd, days, netLoad, availFactor, slackCost, sto } = e.data;
   if (cmd !== 'solve') return;
 
   if (!highs) {
@@ -3818,50 +3876,71 @@ self.onmessage = async (e) => {
                      .filter(u => u.cap > 1);
 
   let onState = fleet.map(() => true);
-  let totalFuelCost = 0, totalStartCost = 0, totalGen = 0, totalStarts = 0;
-  let solved = 0, failed = 0;
+  let socState = sto.map(s => s.energy * 0.5);   // start half full
+  const coalProfile = new Float64Array(8760);
+  const chgProfile  = new Float64Array(8760);
+  const disProfile  = new Float64Array(8760);
+  const solvedDay = new Uint8Array(365);
+  let totalStartCost = 0, totalStarts = 0, solved = 0, failed = 0;
   const t0 = Date.now();
 
   for (let d = 0; d < days.length; d++) {
     const day = days[d];
     const load = netLoad.slice(day * 24, day * 24 + 24);
     if (load.length < 24) continue;
-    const lp = buildDayLP(fleet, load, onState);
+    const lp = buildDayLP(fleet, load, onState, slackCost, sto, socState);
     try {
       const r = highs.solve(lp, { time_limit: 20, mip_rel_gap: 0.02 });
       if (r && r.Columns) {
-        let dayFuel = 0, dayStart = 0, dayGen = 0, dayStarts = 0;
+        for (let h = 0; h < 24; h++) {
+          let gh = 0;
+          fleet.forEach((u, i) => {
+            const g = r.Columns['g_' + i + '_' + h];
+            if (g && g.Primal > 0) gh += g.Primal;
+          });
+          coalProfile[day * 24 + h] = gh;
+        }
         fleet.forEach((u, i) => {
           for (let h = 0; h < 24; h++) {
-            const g = r.Columns['g_' + i + '_' + h];
             const s = r.Columns['s_' + i + '_' + h];
-            if (g && g.Primal > 0) { dayGen += g.Primal; dayFuel += g.Primal * u.marginal_cost; }
-            if (s && s.Primal > 0.5) { dayStart += u.startup_cost; dayStarts++; }
+            if (s && s.Primal > 0.5) { totalStartCost += u.startup_cost; totalStarts++; }
           }
         });
-        totalFuelCost += dayFuel; totalStartCost += dayStart;
-        totalGen += dayGen; totalStarts += dayStarts;
+        for (let h = 0; h < 24; h++) {
+          let ch = 0, di = 0;
+          sto.forEach((s, j) => {
+            const cc = r.Columns['ch_' + j + '_' + h];
+            const dd = r.Columns['di_' + j + '_' + h];
+            if (cc && cc.Primal > 0) ch += cc.Primal;
+            if (dd && dd.Primal > 0) di += dd.Primal;
+          });
+          chgProfile[day * 24 + h] = ch;
+          disProfile[day * 24 + h] = di;
+        }
+        socState = sto.map((s, j) => {
+          const col = r.Columns['e_' + j + '_23'];
+          return col ? Math.max(0, col.Primal) : s.energy * 0.5;
+        });
         onState = fleet.map((u, i) => {
           const col = r.Columns['c_' + i + '_23'];
           return col ? col.Primal > 0.5 : false;
         });
+        solvedDay[day] = 1;
         solved++;
       } else failed++;
     } catch (err) { failed++; }
 
     if (d % 2 === 0 || d === days.length - 1) {
-      self.postMessage({
-        type: 'progress', done: d + 1, total: days.length,
-        elapsed: (Date.now() - t0) / 1000
-      });
+      self.postMessage({ type: 'progress', done: d + 1, total: days.length,
+                         elapsed: (Date.now() - t0) / 1000 });
     }
   }
 
   self.postMessage({
-    type: 'done', solved, failed,
-    totalFuelCost, totalStartCost, totalGen, totalStarts,
-    daysCount: days.length, elapsed: (Date.now() - t0) / 1000
-  });
+    type: 'done', solved, failed, totalStartCost, totalStarts,
+    coalProfile, chgProfile, disProfile, solvedDay, daysCount: days.length,
+    elapsed: (Date.now() - t0) / 1000
+  }, [coalProfile.buffer, chgProfile.buffer, disProfile.buffer, solvedDay.buffer]);
 };
 `;
 
@@ -3869,7 +3948,7 @@ function runMIP(mode) {
   if (mipRunning) return;
   if (!lastRes || !lastRes.netLoadPre) {
     document.getElementById('mipResult').innerHTML =
-      '<p style="font-size:11px;color:var(--alert)">Run the model first (move any slider) so there is a net-load profile to optimise.</p>';
+      '<p style="font-size:11px;color:var(--alert)">Move any slider first so there is a scenario to optimise.</p>';
     return;
   }
 
@@ -3880,9 +3959,8 @@ function runMIP(mode) {
   document.getElementById('mipProgress').style.display = '';
   document.getElementById('mipResult').innerHTML = '';
   document.getElementById('mipBar').style.width = '0%';
-  document.getElementById('mipStatus').textContent = 'Loading HiGHS solver (3.4 MB, cached after first run)...';
+  document.getElementById('mipStatus').textContent = 'Loading HiGHS solver (3.4 MB, cached after first run)…';
 
-  // Representative days: one per week, offset to sample different weekdays
   const days = mode === 'full'
     ? Array.from({ length: 365 }, (_, i) => i)
     : Array.from({ length: 52 }, (_, w) => Math.min(364, w * 7 + (w % 7)));
@@ -3891,37 +3969,50 @@ function runMIP(mode) {
   const eaf = (state.coalEAFPct || 64) / 100;
   const coalRem = Math.max(0, (FIXED.coalInstalledMW || 42000) - (state.coalDecomMW || 0));
   const availFactor = eaf * (coalRem / 41530);
+  const slackCost = FIXED.costDiesel || 6100;
 
+  // Storage fleets available to the optimiser: pumped storage + batteries
+  const battMW = (FIXED.battPowerMW || 0) + (state.newBattMW || 0);
+  const battH  = state.newBattHours || FIXED.battHours || 4;
+  const sto = [];
+  if ((FIXED.psPowerMW || 0) > 0)
+    sto.push({ name: 'Pumped storage', power: FIXED.psPowerMW,
+               energy: FIXED.psEnergyMWh, eff: FIXED.psEff || 0.76 });
+  if (battMW > 0)
+    sto.push({ name: 'Batteries', power: battMW,
+               energy: battMW * battH, eff: FIXED.battEff || 0.88 });
+
+  mipStoNames = sto.map(s => s.name);
   const blob = new Blob([MIP_WORKER_SRC], { type: 'application/javascript' });
   mipWorker = new Worker(URL.createObjectURL(blob));
 
   mipWorker.onmessage = (e) => {
     const m = e.data;
     if (m.type === 'loaded') {
-      document.getElementById('mipStatus').textContent = 'Solver ready. Optimising...';
+      document.getElementById('mipStatus').textContent = 'Solver ready. Optimising…';
     } else if (m.type === 'progress') {
-      const pct = (100 * m.done / m.total);
+      const pct = 100 * m.done / m.total;
       document.getElementById('mipBar').style.width = pct.toFixed(1) + '%';
       const rate = m.done / Math.max(0.1, m.elapsed);
       const eta = (m.total - m.done) / Math.max(0.01, rate);
       document.getElementById('mipStatus').textContent =
-        `Day ${m.done} of ${m.total}  ·  ${m.elapsed.toFixed(0)}s elapsed  ·  ~${eta.toFixed(0)}s remaining`;
+        'Day ' + m.done + ' of ' + m.total + '  ·  ' + m.elapsed.toFixed(0) + 's elapsed  ·  ~' + eta.toFixed(0) + 's remaining';
     } else if (m.type === 'done') {
-      renderMIPResult(m, mode);
+      applyMIPResult(m, mode);
       finishMIP();
     } else if (m.type === 'error') {
       document.getElementById('mipResult').innerHTML =
-        `<p style="font-size:11px;color:var(--alert)">${m.message}</p>`;
+        '<p style="font-size:11px;color:var(--alert)">' + m.message + '</p>';
       finishMIP();
     }
   };
   mipWorker.onerror = (err) => {
     document.getElementById('mipResult').innerHTML =
-      `<p style="font-size:11px;color:var(--alert)">Solver error: ${err.message}</p>`;
+      '<p style="font-size:11px;color:var(--alert)">Solver error: ' + err.message + '</p>';
     finishMIP();
   };
 
-  mipWorker.postMessage({ cmd: 'solve', days, netLoad, availFactor });
+  mipWorker.postMessage({ cmd: 'solve', days, netLoad, availFactor, slackCost, sto });
 }
 
 function cancelMIP() {
@@ -3936,69 +4027,185 @@ function finishMIP() {
   document.getElementById('mipRepBtn').disabled = false;
   document.getElementById('mipFullBtn').disabled = false;
   document.getElementById('mipCancelBtn').style.display = 'none';
-  setTimeout(() => { document.getElementById('mipProgress').style.display = 'none'; }, 1500);
+  setTimeout(() => { const p = document.getElementById('mipProgress'); if (p) p.style.display = 'none'; }, 1500);
 }
 
-function renderMIPResult(m, mode) {
+// ── Apply the optimal coal profile back into the model ───────────────────────
+function applyMIPResult(m, mode) {
+  const p = { ...FIXED, ...state };
+  const heurCoalCost = lastRes.E.coal * p.costCoal;
+  const coal = m.coalProfile, chg = m.chgProfile, dis = m.disProfile;
+
+  // Representative-day mode: copy each solved day across its week
+  if (mode === 'rep') {
+    const fill = (arr, from, to) => { for (let h = 0; h < 24; h++) arr[to*24+h] = arr[from*24+h]; };
+    let lastSolved = -1;
+    for (let d = 0; d < 365; d++) {
+      if (m.solvedDay[d]) { lastSolved = d; continue; }
+      if (lastSolved >= 0) { fill(coal, lastSolved, d); fill(chg, lastSolved, d); fill(dis, lastSolved, d); }
+    }
+    const first = Array.from(m.solvedDay).findIndex(v => v === 1);
+    if (first > 0) {
+      for (let d = 0; d < first; d++) { fill(coal, first, d); fill(chg, first, d); fill(dis, first, d); }
+    }
+  }
+
+  // Rebuild the affected parts of the result from the optimal coal profile.
+  // Renewables, nuclear, hydro, imports and storage are unchanged — the MIP
+  // re-solves the coal block only, so everything else carries through.
+  const net = lastRes.netLoadPre;
+  const cG = p.carbonTaxRPerT * p.emisCcgt, cD = p.carbonTaxRPerT * p.emisDiesel;
+  const cC = p.carbonTaxRPerT * p.emisCoal;
+  const ccgtCap = (p.ccgtMW || 0) + (state.newCcgtMW || 0);
+  const dieselCap = lastRes.dieselCap || 3000;
+
+  const E = { ...lastRes.E };
+  const stack = {};
+  for (const k in lastRes.stack) stack[k] = Float64Array.from(lastRes.stack[k]);
+
+  let coalMWh = 0, ccgtMWh = 0, dieselMWh = 0, unservedMWh = 0;
+  let dischargeMWh = 0, chargeMWh = 0, curtailedMWh = 0;
+  let fuelCost = 0, carbonCost = 0;
+
+  for (let h = 0; h < 8760; h++) {
+    const cg = coal[h], dh = dis[h], ch = chg[h];
+    coalMWh += cg; dischargeMWh += dh; chargeMWh += ch;
+    fuelCost += cg * p.costCoal;
+    carbonCost += cg * cC;
+    stack.coal[h] = cg;
+    // Storage discharge shown in the batt band; charging is a demand, not generation
+    stack.batt[h] = dh;
+    stack.ps[h] = 0;
+
+    // Net load after optimal coal and optimal storage
+    let residual = net[h] - cg - dh + ch;
+    if (residual > 0) {
+      const gas = Math.min(residual, ccgtCap); residual -= gas;
+      ccgtMWh += gas; fuelCost += gas * p.costCcgt; carbonCost += gas * cG;
+      stack.ccgt[h] = gas;
+      const dsl = Math.min(residual, dieselCap); residual -= dsl;
+      dieselMWh += dsl; fuelCost += dsl * p.costDiesel; carbonCost += dsl * cD;
+      stack.diesel[h] = dsl;
+      unservedMWh += Math.max(0, residual);
+      stack.unserved[h] = Math.max(0, residual);
+    } else {
+      stack.ccgt[h] = 0; stack.diesel[h] = 0; stack.unserved[h] = 0;
+      curtailedMWh += -residual;
+    }
+  }
+
+  E.coal = coalMWh; E.ccgt = ccgtMWh; E.diesel = dieselMWh; E.unserved = unservedMWh;
+  E.batt = dischargeMWh; E.ps = 0;
+  E.curtailed = curtailedMWh;
+
+  // Start-up cost, scaled to a full year when using representative days
   const scale = mode === 'full' ? 1 : 365 / m.daysCount;
-  const mipFuel  = m.totalFuelCost  * scale;
-  const mipStart = m.totalStartCost * scale;
-  const mipTotal = mipFuel + mipStart;
-  const mipGen   = m.totalGen * scale;
+  const startCost = m.totalStartCost * scale;
+  fuelCost += startCost;
 
-  // Heuristic comparison: coal fuel cost from the instant model
-  const heurCoalCost = lastRes.E.coal * (FIXED.costCoal || 546);
-  const gap = heurCoalCost > 0 ? (heurCoalCost - mipTotal) / heurCoalCost * 100 : 0;
-  const gapAbs = Math.abs(gap);
-  const gapCol = gapAbs < 1 ? 'var(--ok,#4A8C5C)' : gapAbs < 3 ? '#F5A623' : 'var(--alert,#C4785A)';
-  const verdict = gapAbs < 1 ? 'Excellent — the heuristic is effectively optimal'
-                : gapAbs < 3 ? 'Good — minor dispatch inefficiencies'
-                : gapAbs < 10 ? 'Moderate — the heuristic is leaving value on the table'
-                : 'Large — this scenario is at the edge of the heuristic\'s validity';
+  const genKeys = ['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
+  const gridServed = genKeys.reduce((s,k)=>s+(E[k]||0),0) - (E.rooftop||0) - (E.ps||0) - (E.batt||0);
+  const totalCost = fuelCost + carbonCost + lastRes.newCapexR;
+  const co2 = (E.coal*p.emisCoal + E.ccgt*p.emisCcgt + E.diesel*p.emisDiesel) / 1e6;
 
-  const fmt = (n) => 'R' + n.toFixed(1) + 'bn';
-  const label = mode === 'full' ? 'Full year (365 days)' : `52 representative days, scaled to a year`;
+  // Build a result object the existing renderer understands
+  const mipRes = { ...lastRes, E, stack, fuelCost, carbonCost, totalCost, co2,
+                   avgCost: totalCost / Math.max(1, gridServed),
+                   shedMWh: unservedMWh };
+
+  mipActiveRes = { res: mipRes, mode, elapsed: m.elapsed, starts: Math.round(m.totalStarts*scale),
+                   startCost, heurCoalCost, mipCoalCost: coalMWh*p.costCoal + startCost,
+                   solved: m.solved, failed: m.failed, daysCount: m.daysCount,
+                   dischargeTWh: dischargeMWh/1e6, chargeTWh: chargeMWh/1e6,
+                   heurDischargeTWh: ((lastRes.E.batt||0)+(lastRes.E.ps||0))/1e6,
+                   curtailedTWh: curtailedMWh/1e6,
+                   heurCurtailedTWh: (lastRes.E.curtailed||0)/1e6,
+                   stoNames: (typeof mipStoNames !== 'undefined' ? mipStoNames : []) };
+
+  // Take over the KPIs, mix and dispatch chart
+  render(mipRes);
+  draw(mipRes);
+  showMIPBanner();
+  renderMIPSummary();
+}
+
+function showMIPBanner() {
+  const banner = document.getElementById('kpiSourceBanner');
+  if (!banner || !mipActiveRes) return;
+  const a = mipActiveRes;
+  const label = a.mode === 'full' ? 'the full year (365 days)'
+                                  : '52 representative days, one per week';
+  banner.style.display = 'block';
+  const stoTxt = (a.stoNames && a.stoNames.length)
+    ? a.stoNames.join(' and ').toLowerCase()
+    : 'storage';
+  banner.innerHTML =
+    '<strong>These KPIs, the energy mix and the dispatch chart below reflect the optimal MIP solution</strong> — '
+    + 'coal unit commitment and ' + stoTxt + ' dispatch co-optimised over ' + label
+    + ' with HiGHS in ' + a.elapsed.toFixed(0) + 's. '
+    + 'Renewables, nuclear, hydro and imports are fixed inputs; everything dispatchable has been re-optimised together. '
+    + 'Moving any slider returns to the instant heuristic — re-run the optimiser to bring this back.';
+}
+
+function renderMIPSummary() {
+  const a = mipActiveRes;
+  if (!a) return;
+  const saving = a.heurCoalCost - a.mipCoalCost;
+  const gapPct = a.heurCoalCost > 0 ? saving / a.heurCoalCost * 100 : 0;
+  const col = Math.abs(gapPct) < 1 ? 'var(--ok,#4A8C5C)' : Math.abs(gapPct) < 3 ? '#F5A623' : 'var(--alert,#C4785A)';
+  const fmt = n => 'R' + (n/1e9).toFixed(2) + 'bn';
 
   document.getElementById('mipResult').innerHTML = `
-    <div style="border:1.5px solid var(--ink);padding:0">
-      <div style="background:var(--bg2,#eee);padding:7px 12px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink2)">
-        MIP result &middot; ${label} &middot; solved in ${m.elapsed.toFixed(0)}s
+    <div style="border:1.5px solid var(--ink)">
+      <div style="background:#517180;color:#fff;padding:7px 12px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600">
+        Optimal dispatch applied &middot; solved in ${a.elapsed.toFixed(0)}s
       </div>
       <div style="padding:12px">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px">
           <div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center">
-            <div style="font-size:21px;font-weight:700;color:#F5C518">${fmt(mipTotal / 1e9)}</div>
-            <div style="font-size:9.5px;color:var(--ink2)">MIP optimal coal cost</div>
+            <div style="font-size:21px;font-weight:700;color:#F5C518">${fmt(a.mipCoalCost)}</div>
+            <div style="font-size:9.5px;color:var(--ink2)">Optimal coal cost</div>
           </div>
           <div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center">
-            <div style="font-size:21px;font-weight:700;color:#517180">${fmt(heurCoalCost / 1e9)}</div>
+            <div style="font-size:21px;font-weight:700;color:#517180">${fmt(a.heurCoalCost)}</div>
             <div style="font-size:9.5px;color:var(--ink2)">Heuristic coal cost</div>
           </div>
           <div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center">
-            <div style="font-size:21px;font-weight:700;color:${gapCol}">${gap >= 0 ? '' : '+'}${(-gap).toFixed(2)}%</div>
-            <div style="font-size:9.5px;color:var(--ink2)">Heuristic vs optimum</div>
+            <div style="font-size:21px;font-weight:700;color:${col}">${gapPct >= 0 ? '' : '+'}${Math.abs(gapPct).toFixed(2)}%</div>
+            <div style="font-size:9.5px;color:var(--ink2)">${saving >= 0 ? 'Saving vs heuristic' : 'Heuristic was lower'}</div>
           </div>
           <div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center">
-            <div style="font-size:21px;font-weight:700;color:var(--ink)">${Math.round(m.totalStarts * scale).toLocaleString()}</div>
+            <div style="font-size:21px;font-weight:700;color:var(--ink)">${a.starts.toLocaleString()}</div>
             <div style="font-size:9.5px;color:var(--ink2)">Unit start-ups/yr</div>
           </div>
         </div>
-
-        <table style="width:100%;font-size:11px;border-collapse:collapse">
-          <tr><td style="padding:3px 0;color:var(--ink2);width:45%">Fuel cost (optimal dispatch)</td><td style="text-align:right">${fmt(mipFuel / 1e9)}</td></tr>
-          <tr><td style="padding:3px 0;color:var(--ink2)">Start-up cost</td><td style="text-align:right">${fmt(mipStart / 1e9)}</td></tr>
-          <tr style="border-top:1px solid var(--line2)"><td style="padding:4px 0;color:var(--ink2)">Coal generation</td><td style="text-align:right;font-weight:600">${(mipGen / 1e6).toFixed(1)} TWh</td></tr>
-          <tr><td style="padding:3px 0;color:var(--ink2)">Days solved</td><td style="text-align:right">${m.solved} of ${m.daysCount}${m.failed ? ` (${m.failed} hit the time limit)` : ''}</td></tr>
+        <table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:10px">
+          <tr style="border-bottom:1px solid var(--line2)">
+            <td style="padding:3px 0;color:var(--ink2);width:46%"></td>
+            <td style="text-align:right;font-size:9.5px;color:var(--ink2)">HEURISTIC</td>
+            <td style="text-align:right;font-size:9.5px;color:var(--ink2)">OPTIMAL</td>
+          </tr>
+          <tr>
+            <td style="padding:3px 0;color:var(--ink2)">Storage discharged</td>
+            <td style="text-align:right">${a.heurDischargeTWh.toFixed(2)} TWh</td>
+            <td style="text-align:right;font-weight:600">${a.dischargeTWh.toFixed(2)} TWh</td>
+          </tr>
+          <tr>
+            <td style="padding:3px 0;color:var(--ink2)">Renewable curtailment</td>
+            <td style="text-align:right">${a.heurCurtailedTWh.toFixed(2)} TWh</td>
+            <td style="text-align:right;font-weight:600;color:${a.curtailedTWh < a.heurCurtailedTWh ? 'var(--ok,#4A8C5C)' : 'inherit'}">${a.curtailedTWh.toFixed(2)} TWh</td>
+          </tr>
+          <tr>
+            <td style="padding:3px 0;color:var(--ink2)">Coal start-ups</td>
+            <td style="text-align:right;color:var(--ink2)">&mdash;</td>
+            <td style="text-align:right;font-weight:600">${a.starts.toLocaleString()}/yr</td>
+          </tr>
         </table>
-
-        <div style="margin-top:10px;padding:8px 10px;background:rgba(74,107,122,0.08);border-left:3px solid ${gapCol};font-size:10.5px">
-          <strong>${verdict}</strong>
-        </div>
-
-        <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;border-top:1px solid var(--line2);padding-top:7px">
-          Per-unit minimum up/down times, minimum stable levels and start-up costs from the PyPSA-RSA fleet dataset.
-          Solved to a 2% MIP gap with HiGHS ${mode === 'rep' ? '· representative days sample one day per week, scaled to a full year' : ''}.
-          Compares coal cost only — the heuristic and MIP share the same renewable and storage dispatch.
+        <div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:7px">
+          Per-unit minimum up times, minimum stable levels and start-up costs from the PyPSA-RSA fleet dataset.
+          ${a.stoNames && a.stoNames.length ? a.stoNames.join(' and ') + ' co-optimised with round-trip efficiency and state-of-charge carried across days. ' : ''}
+          Solved to a 2% MIP gap. ${a.failed ? a.failed + ' day(s) hit the 20s time limit and kept the heuristic profile. ' : ''}
+          ${a.mode === 'rep' ? 'Representative days are applied across their week; run the full year for exact results.' : ''}
         </div>
       </div>
     </div>`;
