@@ -554,19 +554,31 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       Annual capacity factor shown alongside a monthly chart and CSV download.
     </div>
     <div style="display:flex;gap:0;border-bottom:1.5px solid var(--ink);padding:0 14px;margin-top:10px">
-      <button class="rtab active" onclick="switchTab('resource')" id="tab_resource">Solar &amp; wind</button>
-      <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre</button>
+      <button class="rtab active" onclick="switchTab('resource')" id="tab_resource">Grid-scale solar &amp; wind</button>
+      <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre captive power</button>
       <button class="rtab" onclick="switchTab('capture')" id="tab_capture">Capture price</button>
       <button class="rtab" onclick="switchTab('grid')" id="tab_grid">Grid connection</button>
       <button class="rtab" onclick="switchTab('wheeling')" id="tab_wheeling">Wheeling</button>
-      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas">Pre-feasibility</button>
+      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas">Solar project pre-feasibility</button>
       <button class="rtab" onclick="switchTab('rooftop')" id="tab_rooftop">Rooftop solar</button>
     </div>
+    <div style="padding:8px 14px;border-bottom:1px solid var(--line2);display:flex;gap:6px;align-items:center;background:var(--panel)">
+      <input id="mainSearch" type="text" placeholder="Search address, suburb, town or landmark…"
+             style="flex:1;padding:5px 9px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();mainGeocode();}">
+      <button onclick="mainGeocode()" style="font-size:10px;padding:5px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
+    </div>
+    <div id="mainSearchResults" style="display:none;max-height:160px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
     <div id="resourceSplit">
       <div id="resourceMap" style="border-right:1px solid var(--line2)"></div>
       <div style="overflow-y:auto">
         <div id="rpanel_resource" style="padding:14px"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to query a location.</p></div>
         <div id="rpanel_datacenter" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map first, then set load size.</p>
+          <div style="margin-top:8px;font-size:11px;display:flex;gap:8px;flex-wrap:wrap">
+            <label style="font-weight:600;display:flex;align-items:center;gap:4px"><input type="radio" name="dcTech" value="solar" checked onchange="runDC()"> Solar + battery</label>
+            <label style="font-weight:600;display:flex;align-items:center;gap:4px"><input type="radio" name="dcTech" value="wind" onchange="runDC()"> Wind + battery</label>
+            <label style="font-weight:600;display:flex;align-items:center;gap:4px"><input type="radio" name="dcTech" value="hybrid" onchange="runDC()"> Solar + wind + battery</label>
+          </div>
           <div style="margin-top:10px;font-size:11px"><label style="font-weight:600">Data centre load (MW)</label>
             <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
               <input type="range" id="dcLoad" min="1" max="500" value="10" step="1" style="flex:1" oninput="document.getElementById('dcLoadVal').textContent=this.value;runDC()">
@@ -652,7 +664,30 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div id="pf_result"></div>
         </div>
         <div id="rpanel_rooftop" style="padding:14px;display:none;overflow-y:auto">
-          <p style="font-size:11px;color:var(--ink2);margin:0 0 14px">Estimate the solar potential, system sizing, and financial case for a rooftop installation. Click any location on the Site Resource Query map above for site-specific data — otherwise a national average of 21% CF is used.</p>
+          <p style="font-size:11px;color:var(--ink2);margin:0 0 10px">Estimate the solar potential, system sizing, and financial case for a rooftop installation. Click any location on the Site Resource Query map above for site-specific solar data.</p>
+
+          <!-- Satellite roof tracer -->
+          <div style="border:1.5px solid var(--ink);margin-bottom:12px">
+            <div style="background:var(--bg2,#eee);padding:6px 10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+              <strong style="font-size:11px">📐 Trace your roof on satellite imagery</strong>
+              <div style="display:flex;gap:5px">
+                <button onclick="rtStartTrace()" id="rtTraceBtn" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Start tracing</button>
+                <button onclick="rtUndoPoint()" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Undo</button>
+                <button onclick="rtClearTrace()" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Clear</button>
+              </div>
+            </div>
+            <div style="padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--line2);display:flex;gap:6px;align-items:center">
+              <input id="rtSearch" type="text" placeholder="Search address, suburb or landmark…"
+                     style="flex:1;padding:5px 8px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
+                     onkeydown="if(event.key==='Enter'){event.preventDefault();rtGeocode();}">
+              <button onclick="rtGeocode()" style="font-size:10px;padding:5px 12px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap">Search</button>
+            </div>
+            <div id="rtSearchResults" style="display:none;max-height:150px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
+            <div id="rtMap" style="height:280px;width:100%"></div>
+            <div id="rtTraceInfo" style="padding:6px 10px;font-size:10.5px;color:var(--ink2);background:var(--bg2,#eee);border-top:1px solid var(--line2)">
+              Click <strong>Start tracing</strong>, then click each corner of your roof. Click the first point again (or press Enter) to close the shape.
+            </div>
+          </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px;font-size:11px">
       <div><label style="font-weight:600;display:block;margin-bottom:3px">System type</label><select id="rt_type" onchange="rtUpdateType()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="home">Home / small office (&lt;10kWp)</option><option value="smeci">Small C&amp;I (10-100kWp)</option><option value="lci" selected>Large C&amp;I (100kWp-1MWp)</option><option value="industrial">Industrial / warehouse (&gt;1MWp)</option></select></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof area (m2)</label><input id="rt_area" type="number" value="2000" min="10" max="100000" step="100" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_area_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Large C&amp;I: ~170Wp/m2 effective</div></div>
@@ -966,6 +1001,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
     // stash data for CSV download
     window._resourceData = { lat, lng, solar, windRegion, windMonthly };
+      if(window.rtCalc) setTimeout(window.rtCalc, 0);
   }
 
   window.downloadCSV = function() {
@@ -989,7 +1025,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
   // ── Tab switching ─────────────────────────────────────────────────────────
   function switchTab(name) {
-    if(name==='rooftop') setTimeout(function(){ if(window.rtCalc) window.rtCalc(); },50);
+    if(name==='rooftop') setTimeout(function(){ if(window.rtInitMap) window.rtInitMap(); if(window.rtCalc) window.rtCalc(); },50);
     ['resource','datacenter','capture','grid','wheeling','prefeas','rooftop'].forEach(t => {
       const tabEl=document.getElementById('tab_'+t); if(tabEl) tabEl.classList.toggle('active', t===name);
       const panEl=document.getElementById('rpanel_'+t); if(panEl) panEl.style.display = t===name ? '' : 'none';
@@ -1139,17 +1175,19 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   }
 
   // ── Feature 2: data centre matching ──────────────────────────────────────
-  let lastSolarCF = null, lastRegion = null;
+  let lastSolarCF = null, lastWindCF = null, lastRegion = null;
 
   function runDC() {
     if(lastSolarCF===null) return;
     const loadMW = parseInt(document.getElementById('dcLoad').value)||10;
     const el = document.getElementById('dcResult');
-    // Solar to match load: need solar capacity such that annual generation ≥ annual demand
-    // Annual demand = loadMW × 8760 h
-    // Solar annual generation = solarCapMW × CF × 8760
-    // For 100% energy match: solarCapMW = loadMW / CF
-    const cf = lastSolarCF;
+    const techEl = document.querySelector('input[name="dcTech"]:checked');
+    const tech = techEl ? techEl.value : 'solar';
+    const solarCF = lastSolarCF;
+    const windCF = lastWindCF !== null ? lastWindCF : 0.37; // regional wind CF
+    // Pick CF based on tech
+    const cf = tech==='wind' ? windCF : tech==='hybrid' ? (solarCF*0.6 + windCF*0.4) : solarCF;
+    const techLabel = tech==='wind' ? 'wind' : tech==='hybrid' ? 'solar+wind' : 'solar';
     const solarFor100 = loadMW / cf;
     // But solar is intermittent — need storage for night hours.
     // Simple model: solar provides cf fraction of hours, need storage for (1-cf) fraction
@@ -1271,7 +1309,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       const windCF = windCFForRegion(region);
       const windMonthly = windMonthlyForRegion(region);
       const solar = await fetchSolar(lat, lng);
-      lastSolarCF = solar.annualCF; lastRegion = region;
+      lastSolarCF = solar.annualCF; lastWindCF = windCF; lastRegion = region;
       renderPanel(lat, lng, solar, region, windCF, windMonthly);
       renderGrid(lat, lng);
       renderCapture(region, solar.annualCF, windCF);
@@ -1281,8 +1319,57 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <span style="color:var(--ink2)">Open-Meteo may be temporarily unavailable. Try again shortly.</span></p>`;
     }
   });
+
+  // ── Main address search (Nominatim / OpenStreetMap) ─────────────────────────
+  async function mainGeocode() {
+    const q = document.getElementById('mainSearch').value.trim();
+    const resultsEl = document.getElementById('mainSearchResults');
+    if (!q) { resultsEl.style.display = 'none'; return; }
+
+    resultsEl.style.display = '';
+    resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--ink2)">Searching…</div>';
+
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search'
+        + '?format=json&limit=6&countrycodes=za&addressdetails=1'
+        + '&q=' + encodeURIComponent(q);
+      const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const results = await resp.json();
+
+      if (!results || results.length === 0) {
+        resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--ink2)">No results found. Try a suburb, town, or landmark.</div>';
+        return;
+      }
+
+      resultsEl.innerHTML = results.map(r =>
+        `<div onclick="mainGoTo(${r.lat},${r.lon})"
+              style="padding:7px 14px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
+              onmouseover="this.style.background='var(--bg2,#eee)'"
+              onmouseout="this.style.background='transparent'">
+          <div style="font-weight:600">${(r.display_name||'').split(',')[0]}</div>
+          <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${(r.display_name||'').split(',').slice(1,4).join(',').trim()}</div>
+        </div>`
+      ).join('');
+    } catch (err) {
+      resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--alert)">Search failed — check your connection and try again.</div>';
+    }
+  }
+
+  // Jump the main map to a location and run the full resource query there
+  function mainGoTo(lat, lng) {
+    lat = parseFloat(lat); lng = parseFloat(lng);
+    document.getElementById('mainSearchResults').style.display = 'none';
+    if (map) {
+      map.setView([lat, lng], 12);
+      // Fire the same handler as a map click so every tab updates
+      map.fire('click', { latlng: L.latLng(lat, lng) });
+    }
+  }
+
   // Expose switchTab globally
   window.switchTab = switchTab;
+  window.mainGeocode = mainGeocode;
+  window.mainGoTo = mainGoTo;
   window.runDC = runDC;
   window.calcWheeling = calcWheeling;
   window.runPrefeas = runPrefeas;
@@ -2577,11 +2664,13 @@ fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
     sorted.forEach(([region,v])=>{
       const solPct=(100*v.solar_mw/maxMW).toFixed(1);
       const winPct=(100*v.wind_mw/maxMW).toFixed(1);
+      const besPct=(100*(v.bess_mw||0)/maxMW).toFixed(1);
       html+=`<div style="display:grid;grid-template-columns:90px 1fr 52px;align-items:center;margin-bottom:3px;gap:4px">
         <span style="font-size:10px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${region}</span>
         <div style="background:var(--bg2);border-radius:2px;height:10px;min-width:0;display:flex">
           <div style="width:${solPct}%;background:#F5C518;height:100%;border-radius:2px 0 0 2px"></div>
-          <div style="width:${winPct}%;background:#3EA055;height:100%;border-radius:0 2px 2px 0"></div>
+          <div style="width:${winPct}%;background:#3EA055;height:100%"></div>
+          <div style="width:${besPct}%;background:#7EC8E3;height:100%;border-radius:0 2px 2px 0"></div>
         </div>
         <span style="text-align:right;font-size:10px;white-space:nowrap">${(v.total_mw/1000).toFixed(1)}GW</span></div>`;
     });
@@ -3413,6 +3502,201 @@ function rtCalc() {
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
     '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
+
+// ── Satellite Roof Tracer ─────────────────────────────────────────────────────
+let rtMap = null, rtTracing = false, rtPoints = [], rtMarkers = [], rtPolyline = null, rtPolygon = null;
+
+function rtInitMap() {
+  if (rtMap) { setTimeout(() => rtMap.invalidateSize(), 100); return; }
+  const el = document.getElementById('rtMap');
+  if (!el || typeof L === 'undefined') return;
+
+  // Centre on the last clicked resource location, else Johannesburg
+  const lat = (window._resourceData && window._resourceData.lat) || -26.2041;
+  const lng = (window._resourceData && window._resourceData.lng) || 28.0473;
+
+  rtMap = L.map('rtMap', { zoomControl: true, attributionControl: true }).setView([lat, lng], 19);
+
+  // Esri World Imagery — free satellite tiles, no API key required
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 21, maxNativeZoom: 19,
+    attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
+  }).addTo(rtMap);
+
+  rtMap.on('click', rtMapClick);
+  setTimeout(() => rtMap.invalidateSize(), 200);
+}
+
+function rtStartTrace() {
+  rtInitMap();
+  rtClearTrace();
+  rtTracing = true;
+  const btn = document.getElementById('rtTraceBtn');
+  if (btn) { btn.textContent = 'Tracing… click corners'; btn.style.background = '#F5C518'; }
+  document.getElementById('rtTraceInfo').innerHTML =
+    'Click each corner of your roof. Click the <strong>first point</strong> again to close the shape.';
+  if (rtMap) rtMap.getContainer().style.cursor = 'crosshair';
+}
+
+function rtMapClick(e) {
+  if (!rtTracing) return;
+  const pt = [e.latlng.lat, e.latlng.lng];
+
+  // If clicking near the first point and we have 3+ points, close the polygon
+  if (rtPoints.length >= 3) {
+    const first = rtPoints[0];
+    const dist = rtMap.distance(L.latLng(first[0], first[1]), e.latlng);
+    if (dist < 4) { rtFinishTrace(); return; }
+  }
+
+  rtPoints.push(pt);
+  const m = L.circleMarker(pt, {
+    radius: 5, fillColor: '#F5C518', color: '#fff', weight: 2, fillOpacity: 1
+  }).addTo(rtMap);
+  rtMarkers.push(m);
+
+  if (rtPolyline) rtMap.removeLayer(rtPolyline);
+  if (rtPoints.length > 1) {
+    rtPolyline = L.polyline(rtPoints, { color: '#F5C518', weight: 2.5, dashArray: '5 4' }).addTo(rtMap);
+  }
+  rtUpdateTraceInfo();
+}
+
+function rtUndoPoint() {
+  if (rtPoints.length === 0) return;
+  rtPoints.pop();
+  const m = rtMarkers.pop();
+  if (m) rtMap.removeLayer(m);
+  if (rtPolyline) { rtMap.removeLayer(rtPolyline); rtPolyline = null; }
+  if (rtPolygon) { rtMap.removeLayer(rtPolygon); rtPolygon = null; }
+  if (rtPoints.length > 1) {
+    rtPolyline = L.polyline(rtPoints, { color: '#F5C518', weight: 2.5, dashArray: '5 4' }).addTo(rtMap);
+  }
+  rtUpdateTraceInfo();
+}
+
+function rtClearTrace() {
+  rtPoints = [];
+  rtMarkers.forEach(m => { if (rtMap) rtMap.removeLayer(m); });
+  rtMarkers = [];
+  if (rtPolyline && rtMap) { rtMap.removeLayer(rtPolyline); rtPolyline = null; }
+  if (rtPolygon && rtMap)  { rtMap.removeLayer(rtPolygon);  rtPolygon = null; }
+  rtTracing = false;
+  const btn = document.getElementById('rtTraceBtn');
+  if (btn) { btn.textContent = 'Start tracing'; btn.style.background = 'var(--panel)'; }
+  if (rtMap) rtMap.getContainer().style.cursor = '';
+  const info = document.getElementById('rtTraceInfo');
+  if (info) info.innerHTML = 'Click <strong>Start tracing</strong>, then click each corner of your roof. Click the first point again to close the shape.';
+}
+
+function rtFinishTrace() {
+  if (rtPoints.length < 3) return;
+  rtTracing = false;
+  if (rtPolyline) { rtMap.removeLayer(rtPolyline); rtPolyline = null; }
+  rtPolygon = L.polygon(rtPoints, {
+    color: '#F5C518', weight: 2.5, fillColor: '#F5C518', fillOpacity: 0.28
+  }).addTo(rtMap);
+
+  const areaM2 = rtPolygonArea(rtPoints);
+  const btn = document.getElementById('rtTraceBtn');
+  if (btn) { btn.textContent = 'Start tracing'; btn.style.background = 'var(--panel)'; }
+  if (rtMap) rtMap.getContainer().style.cursor = '';
+
+  // Usable roof area: subtract space for walkways, plant, setbacks, obstructions
+  const usableFactor = 0.72;
+  const usableM2 = Math.round(areaM2 * usableFactor);
+
+  document.getElementById('rt_area').value = usableM2;
+  document.getElementById('rtTraceInfo').innerHTML =
+    `<strong>Traced area: ${Math.round(areaM2).toLocaleString()} m²</strong> · usable after setbacks &amp; obstructions (72%): <strong>${usableM2.toLocaleString()} m²</strong> — applied to the calculator below.`;
+
+  if (window.rtCalc) rtCalc();
+}
+
+// Spherical polygon area (shoelace on an equirectangular projection at the polygon's latitude)
+function rtPolygonArea(pts) {
+  if (pts.length < 3) return 0;
+  const R = 6378137; // Earth radius, metres
+  const latRef = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+  const cosLat = Math.cos(latRef * Math.PI / 180);
+  // Project to local metres
+  const xy = pts.map(p => [
+    R * (p[1] * Math.PI / 180) * cosLat,
+    R * (p[0] * Math.PI / 180)
+  ]);
+  let area = 0;
+  for (let i = 0; i < xy.length; i++) {
+    const j = (i + 1) % xy.length;
+    area += xy[i][0] * xy[j][1] - xy[j][0] * xy[i][1];
+  }
+  return Math.abs(area / 2);
+}
+
+// Enter key closes the polygon
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && rtTracing && rtPoints.length >= 3) { e.preventDefault(); rtFinishTrace(); }
+});
+
+
+// ── Address search (Nominatim / OpenStreetMap) ────────────────────────────────
+let rtSearchTimer = null;
+
+async function rtGeocode() {
+  const q = document.getElementById('rtSearch').value.trim();
+  const resultsEl = document.getElementById('rtSearchResults');
+  if (!q) { resultsEl.style.display = 'none'; return; }
+
+  rtInitMap(); // ensure map exists
+
+  resultsEl.style.display = '';
+  resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">Searching…</div>';
+
+  try {
+    // Bias to South Africa; return up to 6 candidates
+    const url = 'https://nominatim.openstreetmap.org/search'
+      + '?format=json&limit=6&countrycodes=za&addressdetails=1'
+      + '&q=' + encodeURIComponent(q);
+    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const results = await resp.json();
+
+    if (!results || results.length === 0) {
+      resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">No results found. Try a suburb, street name, or landmark.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = results.map((r, i) =>
+      `<div onclick="rtGoTo(${r.lat},${r.lon})"
+            style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
+            onmouseover="this.style.background='var(--bg2,#eee)'"
+            onmouseout="this.style.background='transparent'">
+        <div style="font-weight:600">${(r.display_name||'').split(',')[0]}</div>
+        <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${(r.display_name||'').split(',').slice(1,4).join(',').trim()}</div>
+      </div>`
+    ).join('');
+  } catch (err) {
+    resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--alert)">Search failed — check your connection and try again.</div>';
+  }
+}
+
+function rtGoTo(lat, lng) {
+  rtInitMap();
+  if (rtMap) {
+    rtMap.setView([parseFloat(lat), parseFloat(lng)], 19);
+    rtClearTrace();
+  }
+  document.getElementById('rtSearchResults').style.display = 'none';
+  document.getElementById('rtTraceInfo').innerHTML =
+    'Location found. Click <strong>Start tracing</strong>, then click each corner of the roof.';
+}
+
+window.rtGeocode = rtGeocode;
+window.rtGoTo    = rtGoTo;
+
+window.rtStartTrace = rtStartTrace;
+window.rtUndoPoint  = rtUndoPoint;
+window.rtClearTrace = rtClearTrace;
+window.rtInitMap    = rtInitMap;
+
 window.rtCalc = rtCalc;
 window.rtUpdateType = rtUpdateType;
 document.addEventListener('DOMContentLoaded', rtCalc);
