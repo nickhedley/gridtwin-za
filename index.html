@@ -724,7 +724,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               <button onclick="rtGeocode()" style="font-size:10px;padding:5px 12px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap">Search</button>
             </div>
             <div id="rtSearchResults" style="display:none;max-height:150px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
-            <div id="rtMap" style="height:280px;width:100%"></div>
+            <div id="rtMap" style="height:440px;width:100%"></div>
             <div id="rtTraceInfo" style="padding:6px 10px;font-size:10.5px;color:var(--ink2);background:var(--bg2,#eee);border-top:1px solid var(--line2)">
               Click <strong>Start tracing</strong>, then click each corner of your roof. Click the first point again (or press Enter) to close the shape.
             </div>
@@ -1066,7 +1066,26 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
   // ── Tab switching ─────────────────────────────────────────────────────────
   function switchTab(name) {
-    if(name==='rooftop') setTimeout(function(){ if(window.rtInitMap) window.rtInitMap(); if(window.rtCalc) window.rtCalc(); },50);
+    // Rooftop solar has its own satellite tracer map — showing the main SA-wide
+    // map alongside it is confusing and the two don't talk to each other, so hide
+    // the main map (and its address search, which controls that map) for this tab
+    // only, and let the tracer take the full width instead.
+    const resourceMapEl = document.getElementById('resourceMap');
+    const mainSearchBar = document.getElementById('mainSearch') ? document.getElementById('mainSearch').closest('div') : null;
+    const mainSearchResults = document.getElementById('mainSearchResults');
+    const splitEl = document.getElementById('resourceSplit');
+    if (name === 'rooftop') {
+      if (resourceMapEl) resourceMapEl.style.display = 'none';
+      if (mainSearchBar) mainSearchBar.style.display = 'none';
+      if (mainSearchResults) mainSearchResults.style.display = 'none';
+      if (splitEl) splitEl.style.gridTemplateColumns = '1fr';
+      setTimeout(function(){ if(window.rtInitMap) window.rtInitMap(); if(window.rtCalc) window.rtCalc(); },50);
+    } else {
+      if (resourceMapEl) resourceMapEl.style.display = '';
+      if (mainSearchBar) mainSearchBar.style.display = '';
+      if (splitEl) splitEl.style.gridTemplateColumns = '';
+      if (map) setTimeout(() => map.invalidateSize(), 50);
+    }
     ['resource','datacenter','capture','grid','wheeling','prefeas','rooftop'].forEach(t => {
       const tabEl=document.getElementById('tab_'+t); if(tabEl) tabEl.classList.toggle('active', t===name);
       const panEl=document.getElementById('rpanel_'+t); if(panEl) panEl.style.display = t===name ? '' : 'none';
