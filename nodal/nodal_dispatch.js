@@ -274,6 +274,10 @@ async function getNodalMIPInputs(coalEafPct, coalDecomMW, extraWindByRegion, ext
   const eng = nodalEngineInstance;
   const regionLoadObj = eng.getRegionalNetLoad();
   const regionLoad = REGIONS.map(r => Array.from(regionLoadObj[r]));
+  // Renewable potential (wind+solar+CSP annual MWh) per region - only available as a
+  // side effect of the getRegionalNetLoad() call just made, must be read straight after.
+  const renewablePotentialObj = eng.getRenewablePotential();
+  const renewablePotentialMwh = REGIONS.map(r => renewablePotentialObj[r] || 0);
 
   // Coal units, tagged with their region index and MIP parameters
   const units = eng.thermalFleet
@@ -301,5 +305,5 @@ async function getNodalMIPInputs(coalEafPct, coalDecomMW, extraWindByRegion, ext
                            energy: bt * 4, eff: 0.88 });
   });
 
-  return { regions: REGIONS.slice(), regionLoad, corridors: eng.getCorridors(), units, sto };
+  return { regions: REGIONS.slice(), regionLoad, corridors: eng.getCorridors(), units, sto, renewablePotentialMwh };
 }
