@@ -326,22 +326,40 @@ class NodalEngine {
     });
 
     const out = {};
-    REGIONS.forEach(r => { out[r] = new Float64Array(8760); });
+    // Annual sum of each region's own VARIABLE renewable generation (wind+solar+CSP -
+    // the curtailable pool). Nuclear, hydro and imports are firm/dispatch-like and are
+    // excluded here, same distinction the curtailment feature needs: "how much of this
+    // region's own renewable potential went to waste", not its whole supply mix.
+    const renewablePotentialMwh = {};
+    REGIONS.forEach(r => { out[r] = new Float64Array(8760); renewablePotentialMwh[r] = 0; });
     for (let h = 0; h < 8760; h++) {
       for (const r of REGIONS) {
         const rawD = this.demandByRegion[r][h];
         const rooftop = Math.min((this.rooftopMw[r] || 0) * this.solarPu[r][h] * 0.94, rawD * 0.9);
+        const windGen  = (this.windMw[r]  || 0) * this.windPu[r][h];
+        const solarGen = (this.solarMw[r] || 0) * this.solarPu[r][h];
+        const cspGen   = (CSP_MW_BY_REGION[r] || 0) * this.cspProfile[h];
+        renewablePotentialMwh[r] += windGen + solarGen + cspGen;
         const variableAvail =
-            (this.windMw[r]  || 0) * this.windPu[r][h]
-          + (this.solarMw[r] || 0) * this.solarPu[r][h]
-          + (CSP_MW_BY_REGION[r] || 0) * this.cspProfile[h]
+            windGen + solarGen + cspGen
           + (r === IMPORTS_REGION ? IMPORTS_MW * IMPORTS_CF : 0)
           + nuclearMwByRegion[r] * 0.90
           + hydroMwByRegion[r] * 0.55;
         out[r][h] = rawD - rooftop - variableAvail;
       }
     }
+    this._lastRenewablePotentialMwh = renewablePotentialMwh; // cached for getRenewablePotential()
     return out;
+  }
+
+  /**
+   * Each region's annual variable-renewable (wind+solar+CSP) generation total, in MWh.
+   * Used as the denominator for "% of this region's own renewable potential curtailed".
+   * Must be called after getRegionalNetLoad(), which computes it as a side effect of the
+   * same hourly loop (avoids a second 8,760-hour pass just for this).
+   */
+  getRenewablePotential() {
+    return this._lastRenewablePotentialMwh || {};
   }
 
   /** Corridor list with transfer limits, for the optimiser. */
