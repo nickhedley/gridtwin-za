@@ -3668,12 +3668,25 @@ function rtCalc() {
   const adjCF = baseCF * tilt * shading;
   const annualKwh = kwp * adjCF * 8760;
   const usableKwh = annualKwh * t.usagePct; // after system/inverter losses only
+  const monthlyKwh = bill / tariff; // moved earlier - needed for the sizing check below
+  const annualDemandKwh = monthlyKwh * 12;
+
   // Self-consumption: without a battery, only the fraction of generation that
   // coincides with a load being drawn at that moment actually offsets the bill -
   // the rest is exported. Using total generation vs total demand (ignoring *when*
   // each occurs) would imply near-100% coverage is achievable from solar alone,
   // which is not physically possible without storage to cover nighttime demand.
-  const selfConsumeFrac = Math.min(0.95, t.selfConsumeNoStorage + _rtBatteryUplift(battH));
+  //
+  // The baseline rates above assume a *reasonably sized* system (generation roughly
+  // matching or a little below annual demand). A system that generates meaningfully
+  // more than the building actually consumes has proportionally more midday surplus
+  // with nowhere useful to go, so its achievable self-consumption rate is lower than
+  // the baseline - this factor scales the baseline down as the system gets more
+  // oversized relative to demand. sqrt() rather than a straight 1/ratio penalty,
+  // since some baseline load is always served even by a heavily oversized system.
+  const sizingRatio  = annualDemandKwh > 0 ? usableKwh / annualDemandKwh : 1;
+  const sizingFactor = sizingRatio > 1 ? Math.min(1, 1 / Math.sqrt(sizingRatio)) : 1;
+  const selfConsumeFrac = Math.min(0.95, (t.selfConsumeNoStorage * sizingFactor) + _rtBatteryUplift(battH));
   const selfConsumedKwh = usableKwh * selfConsumeFrac;
   const exportedKwh     = usableKwh - selfConsumedKwh;
   const solarCapex = kwp * 1000 * t.costRwp;
@@ -3685,7 +3698,6 @@ function rtCalc() {
   const annualSavings = selfConsumedKwh * tariff;
   const annualOpex    = totalCapex * 0.015;
   const annualNet     = annualSavings - annualOpex;
-  const monthlyKwh = bill / tariff;
   const solarCoverage = Math.min(100, (selfConsumedKwh / 12 / monthlyKwh * 100));
   const simplePayback = annualNet > 0 ? totalCapex / annualNet : Infinity;
   let npvAt10 = -totalCapex;
@@ -3732,7 +3744,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Without a battery, only ' + Math.round(selfConsumeFrac*100) + '% of generation is assumed self-consumed at full tariff value (' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH)*100) + '% from the ' + battH + 'h battery' : '') + ') — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings figures reflect this, not total generation.</strong> Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumeFrac*100) + '% of generation is assumed self-consumed at full tariff value (' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH)*100) + '% from the ' + battH + 'h battery' : '') + ') — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
 
 // ── Satellite Roof Tracer ─────────────────────────────────────────────────────
