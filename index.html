@@ -712,7 +712,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div style="background:var(--bg2,#eee);padding:6px 10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
               <strong style="font-size:11px">📐 Trace your roof on satellite imagery</strong>
               <div style="display:flex;gap:5px">
-                <button onclick="rtStartTrace()" id="rtTraceBtn" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Start tracing</button>
+                <button onclick="rtStartTrace()" id="rtTraceBtn" style="font-size:10px;padding:3px 9px;border:1px solid var(--alert,#C4785A);background:var(--alert,#C4785A);color:#fff;cursor:pointer;border-radius:2px;font-weight:600">Start tracing</button>
                 <button onclick="rtUndoPoint()" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Undo</button>
                 <button onclick="rtClearTrace()" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Clear</button>
               </div>
@@ -733,13 +733,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
           </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px;font-size:11px">
-      <div><label style="font-weight:600;display:block;margin-bottom:3px">System type</label><select id="rt_type" onchange="rtUpdateType()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="home">Home / small office (&lt;10kWp)</option><option value="smeci">Small C&amp;I (10-100kWp)</option><option value="lci" selected>Large C&amp;I (100kWp-1MWp)</option><option value="industrial">Industrial / warehouse (&gt;1MWp)</option></select></div>
+      <div><label style="font-weight:600;display:block;margin-bottom:3px">Share of roof area to use</label><select id="rt_share" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="100" selected>100% of usable roof space</option><option value="75">75% of usable roof space</option><option value="50">50% of usable roof space</option><option value="25">25% of usable roof space</option><option value="10">10% of usable roof space</option></select><div id="rt_share_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Leave headroom for maintenance access, other rooftop equipment, or phased build-out</div></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof area (m2)</label><input id="rt_area" type="number" value="2000" min="10" max="100000" step="100" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_area_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Large C&amp;I: ~170Wp/m2 effective</div></div>
-      <div><label style="font-weight:600;display:block;margin-bottom:3px">Tilt &amp; orientation</label><select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Flat roof - 100%</option><option value="1.05" selected>15deg north - 105%</option><option value="1.08">25deg north (optimal) - 108%</option><option value="0.92">East/west - 92%</option><option value="0.78">South - 78%</option></select></div>
+      <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof orientation</label><select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Flat roof - 100%</option><option value="1.05" selected>15deg north-facing - 105%</option><option value="1.08">25deg north (optimal) - 108%</option><option value="0.92">East/west-facing - 92%</option><option value="0.78">South-facing - 78%</option><option value="0.95">Mixed / multiple orientations - 95%</option></select><div style="font-size:9.5px;color:var(--ink2);margin-top:2px">Large or irregular roofs often span several orientations — “Mixed” is a blended estimate, not a per-facet calculation</div></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Shading &amp; losses</label><select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.85">Minimal - 85%</option><option value="0.80" selected>Moderate - 80%</option><option value="0.70">Heavy - 70%</option></select></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Monthly bill (R)</label><input id="rt_bill" type="number" value="80000" min="500" max="5000000" step="1000" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff (R/kWh)</label><input id="rt_tariff" type="number" value="2.50" min="0.5" max="10" step="0.05" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
-      <div><label style="font-weight:600;display:block;margin-bottom:3px">Battery storage</label><select id="rt_batt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0" selected>No battery</option><option value="2">2h peak-shift</option><option value="4">4h overnight</option></select></div>
+      <div><label style="font-weight:600;display:block;margin-bottom:3px">Battery storage</label><select id="rt_batt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0" selected>No battery</option><option value="2" id="rt_batt_opt2">2h peak-shift</option><option value="4" id="rt_batt_opt4">4h overnight</option></select><div id="rt_batt_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Sizes update to match your system above</div></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation</label><select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.03">3% conservative</option><option value="0.05" selected>5% Eskom historical</option><option value="0.08">8% high scenario</option></select></div>
     </div>
     <div id="rt_result"></div>
@@ -3640,10 +3640,39 @@ function _rtBatteryUplift(battHours) {
   if (battHours >= 2) return 0.22;
   return 0;
 }
-function rtUpdateType() {
-  const t = RT_TYPES[document.getElementById('rt_type').value];
-  document.getElementById('rt_area_note').textContent = t.label + ': ~' + t.wpPerM2 + 'Wp/m2 effective';
-  rtCalc();
+// Fixed panel packing density (Wp/m2) used for ALL roof sizes - the original
+// per-type spread (150-175 Wp/m2) mostly reflected space lost to walkways/
+// obstructions, which varies by roof more than by building category. Using one
+// value here avoids a circular dependency: system size used to decide which
+// "type" bracket applied, but now type is inferred FROM the resulting size
+// (below), so the density used to get there can't also depend on it.
+const RT_WP_PER_M2 = 165;
+
+// Infer a cost/self-consumption bracket from the computed system size, using
+// the same size bands the old manual "System type" selector offered - just
+// derived automatically instead of asking the user to pick their own building
+// category up front.
+function _rtInferType(kwp) {
+  if (kwp < 10)   return 'home';
+  if (kwp < 100)  return 'smeci';
+  if (kwp < 1000) return 'lci';
+  return 'industrial';
+}
+
+// Battery options are labelled by real kWh for the current system size, not
+// abstract hours - the underlying value (2 or 4) is still "hours equivalent"
+// internally (drives cost and the self-consumption uplift), but what the user
+// sees and picks between is the actual capacity in kWh.
+function _rtUpdateBatteryLabels(kwp) {
+  const opt2 = document.getElementById('rt_batt_opt2');
+  const opt4 = document.getElementById('rt_batt_opt4');
+  const note = document.getElementById('rt_batt_note');
+  if (!opt2 || !opt4) return;
+  const kwh2 = Math.round(kwp * 2);
+  const kwh4 = Math.round(kwp * 4);
+  opt2.textContent = kwh2.toLocaleString() + ' kWh (peak-shift)';
+  opt4.textContent = kwh4.toLocaleString() + ' kWh (overnight cover)';
+  if (note) note.textContent = 'Sized to this ' + kwp.toLocaleString() + ' kWp system \u2014 larger systems support larger batteries';
 }
 function fmtR(n, dec) {
   dec = dec || 0;
@@ -3652,23 +3681,40 @@ function fmtR(n, dec) {
 function rtCalc() {
   const el = document.getElementById('rt_result');
   if(!el) return;
-  const type    = document.getElementById('rt_type').value;
-  const area    = parseFloat(document.getElementById('rt_area').value) || 2000;
-  const tilt    = parseFloat(document.getElementById('rt_tilt').value) || 1.05;
-  const shading = parseFloat(document.getElementById('rt_shading').value) || 0.80;
-  const bill    = parseFloat(document.getElementById('rt_bill').value) || 80000;
-  const tariff  = parseFloat(document.getElementById('rt_tariff').value) || 2.50;
-  const battH   = parseFloat(document.getElementById('rt_batt').value) || 0;
-  const escal   = parseFloat(document.getElementById('rt_escal').value) || 0.05;
+  const area     = parseFloat(document.getElementById('rt_area').value) || 2000;
+  const sharePct = parseFloat(document.getElementById('rt_share').value) || 100;
+  const tilt     = parseFloat(document.getElementById('rt_tilt').value) || 1.05;
+  const shading  = parseFloat(document.getElementById('rt_shading').value) || 0.80;
+  const bill     = parseFloat(document.getElementById('rt_bill').value) || 80000;
+  const tariff   = parseFloat(document.getElementById('rt_tariff').value) || 2.50;
+  const battH    = parseFloat(document.getElementById('rt_batt').value) || 0;
+  const escal    = parseFloat(document.getElementById('rt_escal').value) || 0.05;
+
+  // Effective area actually built on, after the user's chosen share of the
+  // (already usable-after-setbacks) roof area.
+  const effectiveAreaM2 = area * (sharePct / 100);
+  const kwp = Math.round(effectiveAreaM2 * RT_WP_PER_M2 / 1000 * 10) / 10;
+  const panels = Math.round(effectiveAreaM2 / 2.2);
+
+  // System type is now inferred from the resulting system size rather than
+  // asked up front - same cost/self-consumption brackets as before.
+  const type = _rtInferType(kwp);
   const t = RT_TYPES[type];
-  const kwp = Math.round(area * t.wpPerM2 / 1000 * 10) / 10;
-  const panels = Math.round(area / (t.wpPerM2 > 160 ? 2.4 : 2.0));
+
+  document.getElementById('rt_share_note').textContent =
+    sharePct < 100
+      ? Math.round(effectiveAreaM2).toLocaleString() + ' m\u00b2 of ' + Math.round(area).toLocaleString() + ' m\u00b2 used'
+      : 'Leave headroom for maintenance access, other rooftop equipment, or phased build-out';
+
+  // Battery dropdown shows real kWh for this system size, not abstract hours.
+  _rtUpdateBatteryLabels(kwp);
+
   const baseCF = (window._resourceData && window._resourceData.solar) ? window._resourceData.solar.annualCF : 0.21;
   const location = (window._resourceData && window._resourceData.windRegion) ? window._resourceData.windRegion : 'SA national average';
   const adjCF = baseCF * tilt * shading;
   const annualKwh = kwp * adjCF * 8760;
   const usableKwh = annualKwh * t.usagePct; // after system/inverter losses only
-  const monthlyKwh = bill / tariff; // moved earlier - needed for the sizing check below
+  const monthlyKwh = bill / tariff;
   const annualDemandKwh = monthlyKwh * 12;
 
   // Self-consumption: without a battery, only the fraction of generation that
@@ -3726,6 +3772,7 @@ function rtCalc() {
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;font-size:11px">' +
     '<div><div style="font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);margin-bottom:6px">System</div><table style="width:100%;border-collapse:collapse">' +
     '<tr><td style="padding:2px 0;color:var(--ink2)">Installed capacity</td><td style="text-align:right">' + kwp.toLocaleString() + ' kWp</td></tr>' +
+    '<tr><td style="padding:2px 0;color:var(--ink2)">System category</td><td style="text-align:right;font-size:9.5px">' + t.label + ' (auto)</td></tr>' +
     '<tr><td style="padding:2px 0;color:var(--ink2)">Panel count (est.)</td><td style="text-align:right">~' + panels.toLocaleString() + '</td></tr>' +
     '<tr><td style="padding:2px 0;color:var(--ink2)">Adjusted CF</td><td style="text-align:right">' + (adjCF*100).toFixed(1) + '%</td></tr>' +
     '<tr><td style="padding:2px 0;color:var(--ink2)">Location</td><td style="text-align:right;font-size:9.5px">' + location + '</td></tr>' +
@@ -3839,7 +3886,7 @@ function rtClearTrace() {
   if (rtPolygon && rtMap)  { rtMap.removeLayer(rtPolygon);  rtPolygon = null; }
   rtTracing = false;
   const btn = document.getElementById('rtTraceBtn');
-  if (btn) { btn.textContent = 'Start tracing'; btn.style.background = 'var(--panel)'; }
+  if (btn) { btn.textContent = 'Start tracing'; btn.style.background = 'var(--alert,#C4785A)'; btn.style.color = '#fff'; }
   if (rtMap) rtMap.getContainer().style.cursor = '';
   const info = document.getElementById('rtTraceInfo');
   if (info) info.innerHTML = 'Click <strong>Start tracing</strong>, then click each corner of your roof. Click the first point again to close the shape.';
@@ -3855,7 +3902,7 @@ function rtFinishTrace() {
 
   const areaM2 = rtPolygonArea(rtPoints);
   const btn = document.getElementById('rtTraceBtn');
-  if (btn) { btn.textContent = 'Start tracing'; btn.style.background = 'var(--panel)'; }
+  if (btn) { btn.textContent = 'Start tracing'; btn.style.background = 'var(--alert,#C4785A)'; btn.style.color = '#fff'; }
   if (rtMap) rtMap.getContainer().style.cursor = '';
 
   // Usable roof area: subtract space for walkways, plant, setbacks, obstructions
@@ -3965,7 +4012,6 @@ window.rtClearTrace = rtClearTrace;
 window.rtInitMap    = rtInitMap;
 
 window.rtCalc = rtCalc;
-window.rtUpdateType = rtUpdateType;
 document.addEventListener('DOMContentLoaded', rtCalc);
 
 </script>
