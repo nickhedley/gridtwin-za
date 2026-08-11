@@ -234,15 +234,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <button id="mipRepBtn" onclick="runMIP('rep')"
                   style="padding:6px 14px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">
-            Run the full model &middot; 52 rep. days
+            Run the model over 52 representative days (quicker)
           </button>
           <button id="mipFullBtn" onclick="runMIP('full')"
-                  style="padding:6px 14px;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">
+                  style="padding:6px 14px;background:var(--alert,#C4785A);color:#fff;border:1.5px solid var(--alert,#C4785A);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">
             Run the full model &middot; full year
           </button>
           <button id="mipCancelBtn" onclick="cancelMIP()" style="display:none;padding:6px 12px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;color:var(--ink2)">Cancel</button>
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
-            Re-solves the whole system as a true MIP &mdash; coal commitment, storage and corridor flows across all 10 regions. The KPIs, mix and dispatch chart switch to the optimum. <span style="white-space:nowrap">~30 s &middot; ~4 min</span>
+            Re-solves the whole system as a true mixed-integer programming (MIP) model, where coal, storage and corridor flows are fully optimised across all 10 regions.
           </span>
         </div>
 
