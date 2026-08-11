@@ -3684,9 +3684,26 @@ function _rtBatteryHeadroomCaptureFrac(battHours) {
 }
 // Actual uplift in percentage points for a given baseline - applies the headroom-
 // capture fraction above to THIS building's own remaining headroom.
-function _rtBatteryUplift(battHours, baseline) {
+function _rtBatteryUplift(battHours, baseline, battKwh, annualDemandKwh) {
   const headroom = 0.95 - baseline;
-  return _rtBatteryHeadroomCaptureFrac(battHours) * headroom;
+  const tierFrac = _rtBatteryHeadroomCaptureFrac(battHours);
+
+  // The tier-based fraction above assumes battery size scales sensibly with
+  // actual demand (which it normally does, since battery kWh = kWp x hours,
+  // and system size is usually roughly proportional to what a building needs).
+  // That assumption breaks down when demand is trivially small relative to the
+  // system built - e.g. a modest battery on a big roof, attached to a near-zero
+  // bill, can end up holding many DAYS of that tiny household's total demand in
+  // a single charge. No plausible overnight gap can outrun a battery that large,
+  // regardless of its nominal "tier" label, so headroom capture should saturate
+  // once the battery holds more than about a day of the site's own demand.
+  let adequacyFrac = 0;
+  if (annualDemandKwh > 0) {
+    const daysOfAutonomy = battKwh / (annualDemandKwh / 365);
+    adequacyFrac = Math.min(1, daysOfAutonomy); // 1 full day's worth -> treat as fully adequate
+  }
+
+  return Math.max(tierFrac, adequacyFrac) * headroom;
 }
 // Fixed panel packing density (Wp/m2) used for ALL roof sizes - the original
 // per-type spread (150-175 Wp/m2) mostly reflected space lost to walkways/
@@ -3789,7 +3806,7 @@ function rtCalc() {
   // since some baseline load is always served even by a heavily oversized system.
   const sizingRatio  = annualDemandKwh > 0 ? usableKwh / annualDemandKwh : 1;
   const sizingFactor = sizingRatio > 1 ? Math.min(1, 1 / Math.sqrt(sizingRatio)) : 1;
-  const selfConsumeFrac = Math.min(0.95, (t.selfConsumeNoStorage * sizingFactor) + _rtBatteryUplift(battH, t.selfConsumeNoStorage));
+  const selfConsumeFrac = Math.min(0.95, (t.selfConsumeNoStorage * sizingFactor) + _rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh));
   let selfConsumedKwh = usableKwh * selfConsumeFrac;
 
   // Hard ceiling: solar cannot serve night-time demand without storage, no matter
@@ -3801,7 +3818,7 @@ function rtCalc() {
   // formula reaches 110% "coverage" at 10x oversizing). The ceiling is expressed
   // as a fraction of DEMAND, not generation, so it holds regardless of how
   // oversized the system is.
-  const maxCoverageFrac = Math.min(0.95, t.selfConsumeNoStorage + _rtBatteryUplift(battH, t.selfConsumeNoStorage));
+  const maxCoverageFrac = Math.min(0.95, t.selfConsumeNoStorage + _rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh));
   selfConsumedKwh = Math.min(selfConsumedKwh, maxCoverageFrac * annualDemandKwh);
 
   const exportedKwh = usableKwh - selfConsumedKwh;
@@ -3867,7 +3884,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, t.selfConsumeNoStorage)*100) + '% from the ' + (battH<=1.5?'peak-shift':'overnight') + ' battery (' + Math.round(kwp*battH).toLocaleString() + ' kWh)' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh)*100) + '% from the ' + (battH<=1.5?'peak-shift':'overnight') + ' battery (' + Math.round(kwp*battH).toLocaleString() + ' kWh)' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
 
 // ── Satellite Roof Tracer ─────────────────────────────────────────────────────
