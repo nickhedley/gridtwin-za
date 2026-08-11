@@ -2722,6 +2722,65 @@ function resetMapCorridors() {
 }
 window.applyCorridorFlowsToMap = applyCorridorFlowsToMap;
 window.resetMapCorridors = resetMapCorridors;
+
+// ── Live curtailment labels from MIP results ──────────────────────────────────
+// Sets each region's "X% curt." label under its schematic node, coloured red,
+// matching what the note text has always promised. Only shown once curtailment
+// exceeds 1% of that region's own renewable potential, to keep the map clean -
+// expressed as a share of potential (not raw GWh) so a small, heavily-overbuilt
+// region shows up just as clearly as a large one.
+//
+// Each placeholder <text id="curtail_txt_ID"> already carries a <title> child
+// added once in buildMap(). Setting el.textContent would wipe that child out,
+// so the visible label is managed as its own leading text node instead, and
+// the <title> element itself is found/reused (never recreated) and only its
+// own textContent is touched.
+function _setCurtailLabelText(el, text) {
+  if (el.firstChild && el.firstChild.nodeType === 3) el.firstChild.nodeValue = text;
+  else el.insertBefore(document.createTextNode(text), el.firstChild);
+}
+
+function applyCurtailmentToMap(regionCurtMwh, renewablePotentialMwh, regions) {
+  regions.forEach((regionName, i) => {
+    const nodeId = REGION_TO_NODE[regionName];
+    if (!nodeId) return;
+    const el = document.getElementById('curtail_txt_' + nodeId);
+    if (!el) return;
+
+    let title = el.querySelector('title');
+    if (!title) { title = document.createElementNS('http://www.w3.org/2000/svg', 'title'); el.appendChild(title); }
+
+    const potential = (renewablePotentialMwh && renewablePotentialMwh[i]) || 0;
+    const curtailed = (regionCurtMwh && regionCurtMwh[i]) || 0;
+    const pct = potential > 0 ? (curtailed / potential * 100) : 0;
+
+    if (pct > 1) {
+      _setCurtailLabelText(el, pct.toFixed(0) + '% curt.');
+      el.setAttribute('fill', '#D9362A');
+      title.textContent = regionName + ': ' + (curtailed/1e3).toFixed(0) + ' GWh curtailed of ' + (potential/1e3).toFixed(0) + ' GWh renewable potential (' + pct.toFixed(1) + '%)';
+    } else {
+      _setCurtailLabelText(el, '');
+      el.setAttribute('fill', 'none');
+      title.textContent = '';
+    }
+  });
+}
+
+// Clear every curtailment label back to invisible - called alongside
+// resetMapCorridors() whenever a slider moves and the MIP result is stale.
+function resetMapCurtailment() {
+  NODES.forEach(n => {
+    const el = document.getElementById('curtail_txt_' + n.id);
+    if (!el) return;
+    _setCurtailLabelText(el, '');
+    el.setAttribute('fill', 'none');
+    const title = el.querySelector('title');
+    if (title) title.textContent = '';
+  });
+}
+window.applyCurtailmentToMap = applyCurtailmentToMap;
+window.resetMapCurtailment = resetMapCurtailment;
+
 // ── Pipeline overlay ─────────────────────────────────────────────────────────
 let pipelineData=null, pipelineVisible=false;
 fetch('nodal/ipp_pipeline.json').then(r=>r.json()).then(d=>{pipelineData=d;console.log('pipeline loaded:',Object.keys(d.by_region||{}).length,'regions');}).catch(e=>console.warn('pipeline fetch failed:',e.message));
@@ -3004,6 +3063,7 @@ function render(r){
     mipActiveRes=null;
     const mr=document.getElementById('mipResult'); if(mr) mr.innerHTML='';
     if(typeof resetMapCorridors==='function') resetMapCorridors();
+    if(typeof resetMapCurtailment==='function') resetMapCurtailment();
   }
   // board
   const sw=document.getElementById('statusWord');
@@ -3912,8 +3972,9 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
         if (cd.b === r) { t.push('+ fpos_' + k + '_' + h); t.push('- fneg_' + k + '_' + h); }
       });
       t.push('+ q_' + r + '_' + h);
+      t.push('- curt_' + r + '_' + h);
       L.push(' bal_' + r + '_' + h + ': ' + t.join(' ').replace(/^\\+ /, '')
-             + ' >= ' + regionLoad[r][h].toFixed(1));
+             + ' = ' + regionLoad[r][h].toFixed(1));
     }
   }
 
@@ -3949,6 +4010,8 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
   });
   for (let r = 0; r < nRegions; r++)
     for (let h = 0; h < H; h++) L.push(' 0 <= q_' + r + '_' + h + ' <= 100000');
+  for (let r = 0; r < nRegions; r++)
+    for (let h = 0; h < H; h++) L.push(' 0 <= curt_' + r + '_' + h + ' <= 100000');
   corridors.forEach((cd, k) => {
     for (let h = 0; h < H; h++) {
       L.push(' 0 <= fpos_' + k + '_' + h + ' <= ' + cd.limit.toFixed(1));
@@ -3993,6 +4056,10 @@ self.onmessage = async (e) => {
   const chgProfile  = new Float64Array(8760);
   const disProfile  = new Float64Array(8760);
   const unservProfile = new Float64Array(8760);
+  // Per-region curtailment, flat-indexed as region*8760+hour so it transfers as one
+  // buffer. Only populated for solved sample days; representative-day mode fills the
+  // gaps on the main thread the same way it already does for coal/storage/unserved.
+  const curtProfile = new Float64Array(nR * 8760);
   const corridorFlow = new Float64Array(corridors.length);   // annual |MWh| per corridor
   const corridorHrsAtLimit = new Float64Array(corridors.length);
   const solvedDay = new Uint8Array(365);
@@ -4023,6 +4090,8 @@ self.onmessage = async (e) => {
           for (let r = 0; r < nR; r++) {
             const q = res.Columns['q_' + r + '_' + h];
             if (q && q.Primal > 0) qq += q.Primal;
+            const curt = res.Columns['curt_' + r + '_' + h];
+            if (curt && curt.Primal > 0) curtProfile[r * 8760 + day * 24 + h] = curt.Primal;
           }
           corridors.forEach((cd, k) => {
             const fp = res.Columns['fpos_' + k + '_' + h];
@@ -4059,10 +4128,10 @@ self.onmessage = async (e) => {
 
   self.postMessage({
     type: 'done', solved, failed, totalStartCost, totalStarts,
-    coalProfile, chgProfile, disProfile, unservProfile,
+    coalProfile, chgProfile, disProfile, unservProfile, curtProfile,
     corridorFlow, corridorHrsAtLimit,
     solvedDay, daysCount: days.length, elapsed: (Date.now() - t0) / 1000
-  }, [coalProfile.buffer, chgProfile.buffer, disProfile.buffer, unservProfile.buffer,
+  }, [coalProfile.buffer, chgProfile.buffer, disProfile.buffer, unservProfile.buffer, curtProfile.buffer,
       corridorFlow.buffer, corridorHrsAtLimit.buffer, solvedDay.buffer]);
 };
 `;
@@ -4155,18 +4224,28 @@ function applyMIPResult(m, mode) {
   if (!lastRes) return;
   const p = { ...FIXED, ...state };
   const coal = m.coalProfile, chg = m.chgProfile, dis = m.disProfile, uns = m.unservProfile;
+  const curt = m.curtProfile; // flat-indexed region*8760+hour
+  const nRegions = (mipInputs && mipInputs.regions) ? mipInputs.regions.length : 0;
 
   // Representative days are applied across their week
   if (mode === 'rep') {
     const fill = (a, from, to) => { for (let h = 0; h < 24; h++) a[to*24+h] = a[from*24+h]; };
+    // curtProfile is region-major, so filling a day means filling that day's 24
+    // hours within EVERY region's own 8760-hour block, not just one flat range.
+    const fillCurt = (from, to) => {
+      for (let r = 0; r < nRegions; r++) {
+        const base = r * 8760;
+        for (let h = 0; h < 24; h++) curt[base + to*24+h] = curt[base + from*24+h];
+      }
+    };
     let last = -1;
     for (let d = 0; d < 365; d++) {
       if (m.solvedDay[d]) { last = d; continue; }
-      if (last >= 0) { fill(coal,last,d); fill(chg,last,d); fill(dis,last,d); fill(uns,last,d); }
+      if (last >= 0) { fill(coal,last,d); fill(chg,last,d); fill(dis,last,d); fill(uns,last,d); fillCurt(last,d); }
     }
     const first = Array.from(m.solvedDay).findIndex(v => v === 1);
     if (first > 0) for (let d = 0; d < first; d++) {
-      fill(coal,first,d); fill(chg,first,d); fill(dis,first,d); fill(uns,first,d);
+      fill(coal,first,d); fill(chg,first,d); fill(dis,first,d); fill(uns,first,d); fillCurt(first,d);
     }
   }
 
@@ -4248,6 +4327,19 @@ function applyMIPResult(m, mode) {
   renderMIPSummary();
   if (window.applyCorridorFlowsToMap) {
     window.applyCorridorFlowsToMap(m.corridorFlow, m.corridorHrsAtLimit, mipInputs.corridors, mipInputs.regions, m.daysCount);
+  }
+  if (window.applyCurtailmentToMap && curt && nRegions > 0) {
+    // Annual curtailment per region (MWh), scaled the same way every other MIP
+    // profile is - representative-day mode already forward-filled curt above, so
+    // this is a straight sum over the full 8760-hour year, not an extra scale factor.
+    const regionCurtMwh = new Array(nRegions).fill(0);
+    for (let r = 0; r < nRegions; r++) {
+      const base = r * 8760;
+      let sum = 0;
+      for (let h = 0; h < 8760; h++) sum += curt[base + h];
+      regionCurtMwh[r] = sum;
+    }
+    window.applyCurtailmentToMap(regionCurtMwh, mipInputs.renewablePotentialMwh, mipInputs.regions);
   }
 }
 
