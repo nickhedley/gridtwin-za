@@ -3986,10 +3986,21 @@ function rtFinishTrace() {
   const usableM2 = Math.round(areaM2 * usableFactor);
 
   document.getElementById('rt_area').value = usableM2;
-  document.getElementById('rtTraceInfo').innerHTML =
-    `<strong>Traced area: ${Math.round(areaM2).toLocaleString()} m²</strong> · usable after setbacks &amp; obstructions (72%): <strong>${usableM2.toLocaleString()} m²</strong> — applied to the calculator below.`;
+  const traceMsg = `<strong>Traced area: ${Math.round(areaM2).toLocaleString()} m\u00b2</strong> \u00b7 usable after setbacks &amp; obstructions (72%): <strong>${usableM2.toLocaleString()} m\u00b2</strong> \u2014 applied to the calculator below.`;
 
-  if (window.rtCalc) rtCalc();
+  // If the user traced without searching first (panned/zoomed manually to a
+  // known location), fetch site-specific solar data for the polygon's centroid
+  // now - otherwise search already fetched it and re-fetching would just be
+  // redundant (the traced building and searched point are essentially the
+  // same location).
+  if (!window._resourceData) {
+    const centLat = rtPoints.reduce((s, p) => s + p[0], 0) / rtPoints.length;
+    const centLng = rtPoints.reduce((s, p) => s + p[1], 0) / rtPoints.length;
+    _rtFetchSiteData(centLat, centLng, traceMsg);
+  } else {
+    document.getElementById('rtTraceInfo').innerHTML = traceMsg;
+    if (window.rtCalc) rtCalc();
+  }
 }
 
 // Spherical polygon area (shoelace on an equirectangular projection at the polygon's latitude)
@@ -4101,9 +4112,7 @@ function rtGoTo(lat, lng) {
     rtClearTrace();
   }
   document.getElementById('rtSearchResults').style.display = 'none';
-  document.getElementById('rtTraceInfo').innerHTML =
-    'Location found. Click <strong>Start tracing</strong>, then click each corner of the roof.';
-  _rtFetchSiteData(lat, lng);
+  _rtFetchSiteData(lat, lng, 'Location found. Click <strong>Start tracing</strong>, then click each corner of the roof.');
 }
 
 window.rtGeocode = rtGeocode;
