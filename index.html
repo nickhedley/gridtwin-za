@@ -739,7 +739,19 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Shading &amp; losses</label><select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.85">Minimal - 85%</option><option value="0.80" selected>Moderate - 80%</option><option value="0.70">Heavy - 70%</option></select></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Monthly bill (R)</label><input id="rt_bill" type="number" value="80000" min="500" max="5000000" step="1000" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff (R/kWh)</label><input id="rt_tariff" type="number" value="2.50" min="0.5" max="10" step="0.05" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
-      <div><label style="font-weight:600;display:block;margin-bottom:3px">Battery storage</label><select id="rt_batt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0" selected>No battery</option><option value="2" id="rt_batt_opt2">2h peak-shift</option><option value="4" id="rt_batt_opt4">4h overnight</option></select><div id="rt_batt_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Sizes update to match your system above</div></div>
+      <div><label style="font-weight:600;display:block;margin-bottom:3px">Battery storage</label><select id="rt_batt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+        <option value="0" selected>No battery</option>
+        <optgroup label="Peak-shift (shorter, cheaper)">
+          <option value="0.5" id="rt_batt_opt05">Small</option>
+          <option value="1" id="rt_batt_opt1">Medium</option>
+          <option value="1.5" id="rt_batt_opt15">Large</option>
+        </optgroup>
+        <optgroup label="Overnight cover (longer, more expensive)">
+          <option value="2" id="rt_batt_opt2">Small</option>
+          <option value="4" id="rt_batt_opt4">Medium</option>
+          <option value="6" id="rt_batt_opt6">Large</option>
+        </optgroup>
+      </select><div id="rt_batt_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Sizes update to match your system above \u2014 a big solar array does not force a big battery</div></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation</label><select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.03">3% conservative</option><option value="0.05" selected>5% Eskom historical</option><option value="0.08">8% high scenario</option></select></div>
     </div>
     <div id="rt_result"></div>
@@ -3625,19 +3637,33 @@ const RT_TYPES = {
   // solar's midday peak: home (evening-peaked) overlaps worst, C&I with daytime
   // operating hours overlaps best. These are engineering rules-of-thumb, not a
   // site-specific measurement.
-  home:       { wpPerM2: 150, usagePct: 0.90, costRwp: 8.5, label: 'Home / small office',       selfConsumeNoStorage: 0.35 },
-  smeci:      { wpPerM2: 160, usagePct: 0.88, costRwp: 7.0, label: 'Small C&I',                 selfConsumeNoStorage: 0.55 },
-  lci:        { wpPerM2: 170, usagePct: 0.85, costRwp: 6.0, label: 'Large C&I',                 selfConsumeNoStorage: 0.65 },
-  industrial: { wpPerM2: 175, usagePct: 0.80, costRwp: 5.0, label: 'Industrial / warehouse',     selfConsumeNoStorage: 0.60 },
+  //
+  // costRwp: fully-installed cost (panels, inverter, mounting, cabling, labour, COC),
+  // excluding battery. Calibrated to 2026 SA market rates - residential installers
+  // report R15,000-R18,000/kW for a typical 5kW system, commercial R12,000-R18,000/kW
+  // with cost per kW dropping as systems scale up. Smaller systems carry proportionally
+  // more fixed cost (site visit, COC, small-order component pricing), which is why the
+  // per-Wp figure falls as system size (and hence inferred bracket) increases.
+  home:       { wpPerM2: 150, usagePct: 0.90, costRwp: 17.0, label: 'Home / small office',       selfConsumeNoStorage: 0.35 },
+  smeci:      { wpPerM2: 160, usagePct: 0.88, costRwp: 13.0, label: 'Small C&I',                 selfConsumeNoStorage: 0.55 },
+  lci:        { wpPerM2: 170, usagePct: 0.85, costRwp: 11.0, label: 'Large C&I',                 selfConsumeNoStorage: 0.65 },
+  industrial: { wpPerM2: 175, usagePct: 0.80, costRwp: 9.5,  label: 'Industrial / warehouse',     selfConsumeNoStorage: 0.60 },
 };
 
 // Additional self-consumption unlocked by battery storage, on top of the no-storage
 // baseline above - a battery lets midday solar surplus be time-shifted into the
 // evening peak (and, with more hours, partly overnight). Capped so total self-
 // consumption never implies an unrealistically perfect match even with generous storage.
+// Self-consumption uplift from storage, smoothly increasing with diminishing
+// returns as capacity grows - most of the easy gains come from the first couple
+// of hours of storage, with progressively less benefit from each hour beyond that.
 function _rtBatteryUplift(battHours) {
-  if (battHours >= 4) return 0.38;
-  if (battHours >= 2) return 0.22;
+  if (battHours >= 6)   return 0.48;
+  if (battHours >= 4)   return 0.38;
+  if (battHours >= 2)   return 0.22;
+  if (battHours >= 1.5) return 0.19;
+  if (battHours >= 1)   return 0.14;
+  if (battHours >= 0.5) return 0.08;
   return 0;
 }
 // Fixed panel packing density (Wp/m2) used for ALL roof sizes - the original
@@ -3663,16 +3689,25 @@ function _rtInferType(kwp) {
 // abstract hours - the underlying value (2 or 4) is still "hours equivalent"
 // internally (drives cost and the self-consumption uplift), but what the user
 // sees and picks between is the actual capacity in kWh.
+// Six size tiers across two battery purposes, all labelled by real kWh for the
+// current system size. A big solar array does not force a big battery: someone
+// who built a lot of solar can still pick "Peak-shift Small" for a modest
+// battery, rather than being stuck with a single fixed size.
 function _rtUpdateBatteryLabels(kwp) {
-  const opt2 = document.getElementById('rt_batt_opt2');
-  const opt4 = document.getElementById('rt_batt_opt4');
+  const tiers = [
+    ['rt_batt_opt05', 0.5, 'Small'],  ['rt_batt_opt1', 1,  'Medium'], ['rt_batt_opt15', 1.5, 'Large'],
+    ['rt_batt_opt2',  2,   'Small'],  ['rt_batt_opt4', 4,  'Medium'], ['rt_batt_opt6',  6,   'Large'],
+  ];
+  let anyFound = false;
+  tiers.forEach(([id, hours, size]) => {
+    const opt = document.getElementById(id);
+    if (!opt) return;
+    anyFound = true;
+    const kwh = Math.round(kwp * hours);
+    opt.textContent = size + ' \u2014 ' + kwh.toLocaleString() + ' kWh';
+  });
   const note = document.getElementById('rt_batt_note');
-  if (!opt2 || !opt4) return;
-  const kwh2 = Math.round(kwp * 2);
-  const kwh4 = Math.round(kwp * 4);
-  opt2.textContent = kwh2.toLocaleString() + ' kWh (peak-shift)';
-  opt4.textContent = kwh4.toLocaleString() + ' kWh (overnight cover)';
-  if (note) note.textContent = 'Sized to this ' + kwp.toLocaleString() + ' kWp system \u2014 larger systems support larger batteries';
+  if (note && anyFound) note.textContent = 'Sized to this ' + kwp.toLocaleString() + ' kWp system \u2014 a big solar array does not force a big battery';
 }
 function fmtR(n, dec) {
   dec = dec || 0;
@@ -3733,10 +3768,29 @@ function rtCalc() {
   const sizingRatio  = annualDemandKwh > 0 ? usableKwh / annualDemandKwh : 1;
   const sizingFactor = sizingRatio > 1 ? Math.min(1, 1 / Math.sqrt(sizingRatio)) : 1;
   const selfConsumeFrac = Math.min(0.95, (t.selfConsumeNoStorage * sizingFactor) + _rtBatteryUplift(battH));
-  const selfConsumedKwh = usableKwh * selfConsumeFrac;
-  const exportedKwh     = usableKwh - selfConsumedKwh;
+  let selfConsumedKwh = usableKwh * selfConsumeFrac;
+
+  // Hard ceiling: solar cannot serve night-time demand without storage, no matter
+  // how large the array is - past some point, extra capacity is pure export, not
+  // more coverage. Without this, a heavily oversized system's self-consumption
+  // RATE shrinks correctly above, but that shrinking rate is still being
+  // multiplied by an ever-larger generation figure - so the RESULT can still
+  // climb past what's physically possible (confirmed: without this cap the
+  // formula reaches 110% "coverage" at 10x oversizing). The ceiling is expressed
+  // as a fraction of DEMAND, not generation, so it holds regardless of how
+  // oversized the system is.
+  const maxCoverageFrac = Math.min(0.95, t.selfConsumeNoStorage + _rtBatteryUplift(battH));
+  selfConsumedKwh = Math.min(selfConsumedKwh, maxCoverageFrac * annualDemandKwh);
+
+  const exportedKwh = usableKwh - selfConsumedKwh;
   const solarCapex = kwp * 1000 * t.costRwp;
-  const battCapex  = battH > 0 ? kwp * battH * 1450 : 0;
+  // R6,500/kWh installed - 2026 SA market rate for behind-the-meter lithium
+// battery storage (cells + BMS + enclosure + labour), not the much lower
+// utility-scale grid battery cost used elsewhere in this app. Calibrated from
+// current installer pricing: a 5kWh addition runs roughly R40,000-45,000 and a
+// 10kWh addition roughly R60,000-65,000 on top of a base solar-only system.
+  const RT_BATT_R_PER_KWH = 6500;
+  const battCapex  = battH > 0 ? kwp * battH * RT_BATT_R_PER_KWH : 0;
   const totalCapex = solarCapex + battCapex;
   // Exported energy is assumed to earn nothing (SA municipalities generally offer
   // little or no feed-in credit for small embedded generation) - conservative but
@@ -3776,7 +3830,7 @@ function rtCalc() {
     '<tr><td style="padding:2px 0;color:var(--ink2)">Panel count (est.)</td><td style="text-align:right">~' + panels.toLocaleString() + '</td></tr>' +
     '<tr><td style="padding:2px 0;color:var(--ink2)">Adjusted CF</td><td style="text-align:right">' + (adjCF*100).toFixed(1) + '%</td></tr>' +
     '<tr><td style="padding:2px 0;color:var(--ink2)">Location</td><td style="text-align:right;font-size:9.5px">' + location + '</td></tr>' +
-    (battH>0?'<tr><td style="padding:2px 0;color:var(--ink2)">Battery</td><td style="text-align:right">' + battH + 'h &middot; ' + Math.round(kwp*battH) + ' kWh</td></tr>':'') +
+    (battH>0?'<tr><td style="padding:2px 0;color:var(--ink2)">Battery</td><td style="text-align:right">' + (battH<=1.5 ? 'Peak-shift' : 'Overnight') + ' (' + Math.round(kwp*battH).toLocaleString() + ' kWh)</td></tr>':'') +
     '</table></div>' +
     '<div><div style="font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);margin-bottom:6px">Financials</div><table style="width:100%;border-collapse:collapse">' +
     '<tr><td style="padding:2px 0;color:var(--ink2)">Total capex</td><td style="text-align:right;font-weight:600">' + fmtR(totalCapex/1e6,2) + 'm</td></tr>' +
@@ -3791,7 +3845,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumeFrac*100) + '% of generation is assumed self-consumed at full tariff value (' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH)*100) + '% from the ' + battH + 'h battery' : '') + ') — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH)*100) + '% from the ' + (battH<=1.5?'peak-shift':'overnight') + ' battery (' + Math.round(kwp*battH).toLocaleString() + ' kWh)' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
 
 // ── Satellite Roof Tracer ─────────────────────────────────────────────────────
