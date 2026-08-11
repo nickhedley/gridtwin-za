@@ -110,7 +110,7 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 
 /* KPI strip */
 .kpis{display:grid; grid-template-columns:repeat(8,1fr); gap:12px; margin-bottom:0}
-.kpinote{font-size:11.5px; color:var(--ink2); margin:8px 2px 18px; line-height:1.45; max-width:98ch}
+.kpinote{font-size:11.5px; color:var(--ink2); margin:8px 2px 18px; line-height:1.45}
 .kpinote strong{color:var(--ink)}
 @media(max-width:1300px){.kpis{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:1150px){.kpis{grid-template-columns:repeat(4,1fr)}}
@@ -278,7 +278,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span><i style="background:#1F4E79"></i>Storage / hydro</span>
           <span><i style="background:var(--alert)"></i>Peakers</span>
         </div>
-        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the simulation below to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means real curtailment (wasted wind/solar) in that region - shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one), and only appears once it's above 1% to keep the map clean. Hover any line or label for exact figures.</p>
+        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the full model (click the button above) to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means curtailment (wasted wind/solar) in that region - shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one), and only appears once it's above 1% to keep the map clean. Click on any line or label for exact figures.</p>
         <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points sharing the Upington corridor area. Click on each for region-specific figures. The REIPPPP project pipeline button overlays dashed rings showing government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) — not the 19.7 GW of private/C&I registrations shown in the NERSA panel below. Ring colour shows the dominant project status in that region (rings may contain projects at multiple stages). Click a ring for the MW breakdown by status.</p>
         <div style="padding:8px; border-top:1px solid var(--line2);font-size:10.5px;color:var(--ink2)">Corridor flows come from the <strong>Run the full model</strong> optimiser, which solves all 10 regions together.</div>
       </div>
