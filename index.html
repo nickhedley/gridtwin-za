@@ -1445,6 +1445,10 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   window.switchTab = switchTab;
   window.mainGeocode = mainGeocode;
   window.mainGoTo = mainGoTo;
+  window.fetchSolar = fetchSolar;
+  window.nearestRegion = nearestRegion;
+  window.windCFForRegion = windCFForRegion;
+  window.windMonthlyForRegion = windMonthlyForRegion;
   window.runDC = runDC;
   window.calcWheeling = calcWheeling;
   window.runPrefeas = runPrefeas;
@@ -3657,14 +3661,32 @@ const RT_TYPES = {
 // Self-consumption uplift from storage, smoothly increasing with diminishing
 // returns as capacity grows - most of the easy gains come from the first couple
 // of hours of storage, with progressively less benefit from each hour beyond that.
-function _rtBatteryUplift(battHours) {
-  if (battHours >= 6)   return 0.48;
-  if (battHours >= 4)   return 0.38;
-  if (battHours >= 2)   return 0.22;
-  if (battHours >= 1.5) return 0.19;
-  if (battHours >= 1)   return 0.14;
-  if (battHours >= 0.5) return 0.08;
+// Returns the FRACTION of a building's remaining headroom (95% ceiling minus its
+// no-storage baseline) that a given battery size can realistically capture - not
+// a flat percentage-point bonus. This matters: a flat +14pp bonus, say, would let
+// the SAME battery claim 23% of a home's headroom (60pp available) but 47% of a
+// large C&I building's headroom (only 30pp available, since C&I already self-
+// consumes most of its own generation without any storage at all) - the battery
+// would appear MORE effective on the building with LESS unclaimed surplus left to
+// capture, which has it backwards. Expressing uplift as a fraction of headroom
+// keeps the same battery capturing a consistent SHARE of whatever surplus remains,
+// regardless of how high or low that building's starting baseline is.
+// Values calibrated against the home baseline (60pp headroom), where a flat +14pp
+// for 1h was the original estimate: 14/60 = 23% of headroom captured.
+function _rtBatteryHeadroomCaptureFrac(battHours) {
+  if (battHours >= 6)   return 0.80;
+  if (battHours >= 4)   return 0.63;
+  if (battHours >= 2)   return 0.37;
+  if (battHours >= 1.5) return 0.32;
+  if (battHours >= 1)   return 0.23;
+  if (battHours >= 0.5) return 0.13;
   return 0;
+}
+// Actual uplift in percentage points for a given baseline - applies the headroom-
+// capture fraction above to THIS building's own remaining headroom.
+function _rtBatteryUplift(battHours, baseline) {
+  const headroom = 0.95 - baseline;
+  return _rtBatteryHeadroomCaptureFrac(battHours) * headroom;
 }
 // Fixed panel packing density (Wp/m2) used for ALL roof sizes - the original
 // per-type spread (150-175 Wp/m2) mostly reflected space lost to walkways/
@@ -3767,7 +3789,7 @@ function rtCalc() {
   // since some baseline load is always served even by a heavily oversized system.
   const sizingRatio  = annualDemandKwh > 0 ? usableKwh / annualDemandKwh : 1;
   const sizingFactor = sizingRatio > 1 ? Math.min(1, 1 / Math.sqrt(sizingRatio)) : 1;
-  const selfConsumeFrac = Math.min(0.95, (t.selfConsumeNoStorage * sizingFactor) + _rtBatteryUplift(battH));
+  const selfConsumeFrac = Math.min(0.95, (t.selfConsumeNoStorage * sizingFactor) + _rtBatteryUplift(battH, t.selfConsumeNoStorage));
   let selfConsumedKwh = usableKwh * selfConsumeFrac;
 
   // Hard ceiling: solar cannot serve night-time demand without storage, no matter
@@ -3779,7 +3801,7 @@ function rtCalc() {
   // formula reaches 110% "coverage" at 10x oversizing). The ceiling is expressed
   // as a fraction of DEMAND, not generation, so it holds regardless of how
   // oversized the system is.
-  const maxCoverageFrac = Math.min(0.95, t.selfConsumeNoStorage + _rtBatteryUplift(battH));
+  const maxCoverageFrac = Math.min(0.95, t.selfConsumeNoStorage + _rtBatteryUplift(battH, t.selfConsumeNoStorage));
   selfConsumedKwh = Math.min(selfConsumedKwh, maxCoverageFrac * annualDemandKwh);
 
   const exportedKwh = usableKwh - selfConsumedKwh;
@@ -3845,7 +3867,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH)*100) + '% from the ' + (battH<=1.5?'peak-shift':'overnight') + ' battery (' + Math.round(kwp*battH).toLocaleString() + ' kWh)' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, t.selfConsumeNoStorage)*100) + '% from the ' + (battH<=1.5?'peak-shift':'overnight') + ' battery (' + Math.round(kwp*battH).toLocaleString() + ' kWh)' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
 
 // ── Satellite Roof Tracer ─────────────────────────────────────────────────────
@@ -4046,15 +4068,42 @@ async function rtGeocode() {
   }
 }
 
+// Fetch site-specific solar CF for the rooftop tab's map, reusing the exact
+// same Open-Meteo/PVGIS logic and regional wind data the main Site Resource
+// Query map uses - populates window._resourceData so rtCalc()'s existing
+// site-specific lookup (which already checked for this) actually has something
+// to find, rather than always falling back to the national average.
+async function _rtFetchSiteData(lat, lng, contextHtml) {
+  if (!window.fetchSolar || !window.nearestRegion) return; // resource-query script not ready yet
+  const infoEl = document.getElementById('rtTraceInfo');
+  const prefix = contextHtml ? contextHtml + ' ' : '';
+  if (infoEl) infoEl.innerHTML = prefix + 'Fetching site-specific solar data\u2026';
+  try {
+    const region = window.nearestRegion(lat, lng);
+    const windCF = window.windCFForRegion(region);
+    const windMonthly = window.windMonthlyForRegion(region);
+    const solar = await window.fetchSolar(lat, lng);
+    window._resourceData = { lat, lng, solar, windRegion: region, windMonthly };
+    if (infoEl) infoEl.innerHTML =
+      prefix + 'Using site-specific solar data for <strong>' + region + '</strong> (' + (solar.annualCF*100).toFixed(1) + '% CF).';
+  } catch (err) {
+    if (infoEl) infoEl.innerHTML =
+      prefix + 'Could not fetch site-specific solar data (using SA national average instead).';
+  }
+  if (window.rtCalc) window.rtCalc();
+}
+
 function rtGoTo(lat, lng) {
   rtInitMap();
+  lat = parseFloat(lat); lng = parseFloat(lng);
   if (rtMap) {
-    rtMap.setView([parseFloat(lat), parseFloat(lng)], 19);
+    rtMap.setView([lat, lng], 19);
     rtClearTrace();
   }
   document.getElementById('rtSearchResults').style.display = 'none';
   document.getElementById('rtTraceInfo').innerHTML =
     'Location found. Click <strong>Start tracing</strong>, then click each corner of the roof.';
+  _rtFetchSiteData(lat, lng);
 }
 
 window.rtGeocode = rtGeocode;
