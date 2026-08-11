@@ -3684,6 +3684,19 @@ function _rtBatteryHeadroomCaptureFrac(battHours) {
 }
 // Actual uplift in percentage points for a given baseline - applies the headroom-
 // capture fraction above to THIS building's own remaining headroom.
+// Calibrated against a real SA residential installation: 8kWp solar, 10.5kWh
+// battery, 600-1000kWh/month household demand, reporting ~90% real-world grid
+// independence. The tier-based fraction alone (0.32 for a battery this size on
+// an 8kWp system) implied only ~54-73% depending on assumed demand - nowhere
+// close. The gap: solar directly covers daytime load without needing the
+// battery at all, so what the battery actually needs to cover is the
+// evening/overnight portion of demand, not the full day - and a battery that
+// covers roughly 40-45% of a TYPICAL day's total demand (a defensible
+// evening-plus-overnight window, ~10-11 hours) is adequate to reach
+// near-complete coverage in practice, not the full 24 hours this model
+// previously assumed.
+const RT_CRITICAL_DEMAND_FRACTION = 0.436;
+
 function _rtBatteryUplift(battHours, baseline, battKwh, annualDemandKwh) {
   const headroom = 0.95 - baseline;
   const tierFrac = _rtBatteryHeadroomCaptureFrac(battHours);
@@ -3691,16 +3704,15 @@ function _rtBatteryUplift(battHours, baseline, battKwh, annualDemandKwh) {
   // The tier-based fraction above assumes battery size scales sensibly with
   // actual demand (which it normally does, since battery kWh = kWp x hours,
   // and system size is usually roughly proportional to what a building needs).
-  // That assumption breaks down when demand is trivially small relative to the
-  // system built - e.g. a modest battery on a big roof, attached to a near-zero
-  // bill, can end up holding many DAYS of that tiny household's total demand in
-  // a single charge. No plausible overnight gap can outrun a battery that large,
-  // regardless of its nominal "tier" label, so headroom capture should saturate
-  // once the battery holds more than about a day of the site's own demand.
+  // That assumption breaks down when a battery is oversized relative to actual
+  // demand - this checks battery capacity against the realistic portion of a
+  // typical day it actually needs to cover (see RT_CRITICAL_DEMAND_FRACTION
+  // above), rather than the full 24-hour demand.
   let adequacyFrac = 0;
   if (annualDemandKwh > 0) {
-    const daysOfAutonomy = battKwh / (annualDemandKwh / 365);
-    adequacyFrac = Math.min(1, daysOfAutonomy); // 1 full day's worth -> treat as fully adequate
+    const dailyDemandKwh = annualDemandKwh / 365;
+    const criticalKwh = dailyDemandKwh * RT_CRITICAL_DEMAND_FRACTION;
+    adequacyFrac = criticalKwh > 0 ? Math.min(1, battKwh / criticalKwh) : 0;
   }
 
   return Math.max(tierFrac, adequacyFrac) * headroom;
