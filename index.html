@@ -717,11 +717,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <button onclick="rtClearTrace()" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Clear</button>
               </div>
             </div>
-            <div style="padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--line2);display:flex;gap:6px;align-items:center">
+            <div style="padding:8px 10px 4px;background:var(--panel);display:flex;gap:6px;align-items:center">
               <input id="rtSearch" type="text" placeholder="Search address, suburb or landmark…"
                      style="flex:1;padding:5px 8px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
                      onkeydown="if(event.key==='Enter'){event.preventDefault();rtGeocode();}">
               <button onclick="rtGeocode()" style="font-size:10px;padding:5px 12px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap">Search</button>
+            </div>
+            <div style="padding:0 10px 8px;background:var(--panel);border-bottom:1px solid var(--line2);font-size:9.5px;color:var(--ink2)">
+              Address-level precision depends on OpenStreetMap's coverage, which varies — many results are only street-accurate. Once you're on the right street, drag and zoom the satellite view below to visually confirm your exact property before tracing.
             </div>
             <div id="rtSearchResults" style="display:none;max-height:150px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
             <div id="rtMap" style="height:440px;width:100%"></div>
@@ -3615,11 +3618,28 @@ document.getElementById('siteResetBtn').addEventListener('click', ()=>{
 <script>
 
 const RT_TYPES = {
-  home:       { wpPerM2: 150, usagePct: 0.90, costRwp: 8.5, label: 'Home / small office' },
-  smeci:      { wpPerM2: 160, usagePct: 0.88, costRwp: 7.0, label: 'Small C&I' },
-  lci:        { wpPerM2: 170, usagePct: 0.85, costRwp: 6.0, label: 'Large C&I' },
-  industrial: { wpPerM2: 175, usagePct: 0.80, costRwp: 5.0, label: 'Industrial / warehouse' },
+  // usagePct: system/inverter losses only (not a self-consumption factor - see below).
+  // selfConsumeNoStorage: realistic fraction of solar generation actually used on-site
+  // with NO battery, i.e. only the portion that coincides with a load being drawn at
+  // that moment. The rest is exported. Depends on how well each load profile overlaps
+  // solar's midday peak: home (evening-peaked) overlaps worst, C&I with daytime
+  // operating hours overlaps best. These are engineering rules-of-thumb, not a
+  // site-specific measurement.
+  home:       { wpPerM2: 150, usagePct: 0.90, costRwp: 8.5, label: 'Home / small office',       selfConsumeNoStorage: 0.35 },
+  smeci:      { wpPerM2: 160, usagePct: 0.88, costRwp: 7.0, label: 'Small C&I',                 selfConsumeNoStorage: 0.55 },
+  lci:        { wpPerM2: 170, usagePct: 0.85, costRwp: 6.0, label: 'Large C&I',                 selfConsumeNoStorage: 0.65 },
+  industrial: { wpPerM2: 175, usagePct: 0.80, costRwp: 5.0, label: 'Industrial / warehouse',     selfConsumeNoStorage: 0.60 },
 };
+
+// Additional self-consumption unlocked by battery storage, on top of the no-storage
+// baseline above - a battery lets midday solar surplus be time-shifted into the
+// evening peak (and, with more hours, partly overnight). Capped so total self-
+// consumption never implies an unrealistically perfect match even with generous storage.
+function _rtBatteryUplift(battHours) {
+  if (battHours >= 4) return 0.38;
+  if (battHours >= 2) return 0.22;
+  return 0;
+}
 function rtUpdateType() {
   const t = RT_TYPES[document.getElementById('rt_type').value];
   document.getElementById('rt_area_note').textContent = t.label + ': ~' + t.wpPerM2 + 'Wp/m2 effective';
@@ -3647,15 +3667,26 @@ function rtCalc() {
   const location = (window._resourceData && window._resourceData.windRegion) ? window._resourceData.windRegion : 'SA national average';
   const adjCF = baseCF * tilt * shading;
   const annualKwh = kwp * adjCF * 8760;
-  const usableKwh = annualKwh * t.usagePct;
+  const usableKwh = annualKwh * t.usagePct; // after system/inverter losses only
+  // Self-consumption: without a battery, only the fraction of generation that
+  // coincides with a load being drawn at that moment actually offsets the bill -
+  // the rest is exported. Using total generation vs total demand (ignoring *when*
+  // each occurs) would imply near-100% coverage is achievable from solar alone,
+  // which is not physically possible without storage to cover nighttime demand.
+  const selfConsumeFrac = Math.min(0.95, t.selfConsumeNoStorage + _rtBatteryUplift(battH));
+  const selfConsumedKwh = usableKwh * selfConsumeFrac;
+  const exportedKwh     = usableKwh - selfConsumedKwh;
   const solarCapex = kwp * 1000 * t.costRwp;
   const battCapex  = battH > 0 ? kwp * battH * 1450 : 0;
   const totalCapex = solarCapex + battCapex;
-  const annualSavings = usableKwh * tariff;
+  // Exported energy is assumed to earn nothing (SA municipalities generally offer
+  // little or no feed-in credit for small embedded generation) - conservative but
+  // defensible; only self-consumed energy offsets the bill at the full tariff.
+  const annualSavings = selfConsumedKwh * tariff;
   const annualOpex    = totalCapex * 0.015;
   const annualNet     = annualSavings - annualOpex;
   const monthlyKwh = bill / tariff;
-  const solarCoverage = Math.min(100, (usableKwh / 12 / monthlyKwh * 100));
+  const solarCoverage = Math.min(100, (selfConsumedKwh / 12 / monthlyKwh * 100));
   const simplePayback = annualNet > 0 ? totalCapex / annualNet : Infinity;
   let npvAt10 = -totalCapex;
   for(let y = 1; y <= 25; y++) npvAt10 += annualNet * Math.pow(1+escal,y) / Math.pow(1.10,y);
@@ -3668,7 +3699,7 @@ function rtCalc() {
   const co2T = usableKwh * 0.00095;
   const pbCol = simplePayback<6 ? 'var(--ok,#4A8C5C)' : simplePayback<10 ? '#F5A623' : 'var(--alert,#C4785A)';
   const monthFactors = [1.0,1.05,1.1,1.05,0.95,0.88,0.88,0.92,1.0,1.05,1.05,0.97];
-  const monthlySavings = monthFactors.map(f => Math.round(usableKwh/12*f*tariff));
+  const monthlySavings = monthFactors.map(f => Math.round(selfConsumedKwh/12*f*tariff));
   const maxMS = Math.max.apply(null, monthlySavings);
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   el.innerHTML =
@@ -3701,7 +3732,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Without a battery, only ' + Math.round(selfConsumeFrac*100) + '% of generation is assumed self-consumed at full tariff value (' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH)*100) + '% from the ' + battH + 'h battery' : '') + ') — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings figures reflect this, not total generation.</strong> Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
 
 // ── Satellite Roof Tracer ─────────────────────────────────────────────────────
@@ -3877,15 +3908,26 @@ async function rtGeocode() {
       return;
     }
 
-    resultsEl.innerHTML = results.map((r, i) =>
-      `<div onclick="rtGoTo(${r.lat},${r.lon})"
+    // Nominatim's structured address object tells us whether it actually has a
+    // house-level point (house_number present) or only matched a street/suburb -
+    // OSM's South African address coverage is genuinely patchy at house level, so
+    // rather than imply false precision, flag street-level results explicitly.
+    resultsEl.innerHTML = results.map((r, i) => {
+      const addr = r.address || {};
+      const hasHouseNumber = !!addr.house_number;
+      const title = hasHouseNumber
+        ? (addr.house_number + ' ' + (addr.road || '')).trim()
+        : (r.display_name || '').split(',')[0];
+      const subtitle = (r.display_name || '').split(',').slice(hasHouseNumber ? 1 : 1, hasHouseNumber ? 4 : 4).join(',').trim();
+      const precisionNote = hasHouseNumber ? '' : '<span style="color:var(--alert,#C4785A);font-weight:600">street-level match</span> — ';
+      return `<div onclick="rtGoTo(${r.lat},${r.lon})"
             style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
             onmouseover="this.style.background='var(--bg2,#eee)'"
             onmouseout="this.style.background='transparent'">
-        <div style="font-weight:600">${(r.display_name||'').split(',')[0]}</div>
-        <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${(r.display_name||'').split(',').slice(1,4).join(',').trim()}</div>
-      </div>`
-    ).join('');
+        <div style="font-weight:600">${title}</div>
+        <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${precisionNote}${subtitle}</div>
+      </div>`;
+    }).join('');
   } catch (err) {
     resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--alert)">Search failed — check your connection and try again.</div>';
   }
