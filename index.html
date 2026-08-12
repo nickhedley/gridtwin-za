@@ -251,7 +251,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <main>
     <div id="kpiSourceBanner" style="display:none; font-size:11.5px; padding:8px 12px; margin-bottom:10px; border:1.5px solid var(--alert); background:var(--panel2); border-radius:3px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> and <strong>Avg energy cost</strong> count fuel, carbon and the capex of newly-built capacity only – existing plant costs are treated as sunk (system cost excludes curtailment payments to wind and solar plants contracted under REIPPPP). <strong>Replacement cost</strong> prices every MWh (from existing and new plants) at its full lifecycle cost, i.e. what this mix would cost if built entirely new at today’s prices. Neither metric is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
+    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> is the annual total of fuel, carbon and the capex of newly-built capacity only – existing plant is treated as sunk, and curtailment payments to wind and solar contracted under REIPPPP are excluded. <strong>Avg energy cost</strong> is simply that system cost divided by the energy the grid serves, so it is an <em>average</em> across the whole mix, not the marginal cost of the next MWh. <strong>Replacement cost</strong> instead prices every MWh, from existing and new plant alike, at its full lifecycle cost – what this mix would cost if built entirely new at today’s prices. Neither is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
 
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
@@ -3082,7 +3082,7 @@ function render(r){
   const kpis=[
     {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
     {k:'System cost',v:(r.totalCost/1e9).toFixed(0),u:'R bn/yr'},
-    {k:'Avg marginal cost*',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
+    {k:'Avg energy cost*',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
     {k:'Replacement cost',v:(r.replAvg/1000).toFixed(2),u:'R/kWh'},
     {k:'Carbon intensity',v:Math.round(r.co2>0&&r.E?r.co2*1e9/Math.max(1,Object.values(r.E).reduce((s,v)=>s+v,0)-r.E.curtailed):0).toLocaleString(),u:'gCO₂/kWh'},
     {k:'Renewables',v:reShare.toFixed(0),u:'%'},
