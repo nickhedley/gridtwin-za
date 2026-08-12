@@ -114,6 +114,17 @@ Demand, wind and solar profiles are **actual Eskom hourly data for 2025** (Eskom
 
 ## Validation
 
+Model outputs are checked against published benchmarks by `validate_outputs.js`
+(25 checks). Each states its source and tolerance, so a failure identifies which
+real-world figure the model has drifted from. Current status: all passing, with
+coal at 79.9% of local generation against Ember's ~80%, rooftop PV at a 21.2%
+capacity factor against a real 20.8%, and grid-served demand at 202 TWh against
+Eskom's 191 TWh residual for 2025.
+
+The harness asserts first that the model is running on real Eskom profiles: a
+silent fall back to synthetic data overstates solar capacity factor by ~39% and
+would invalidate every benchmark below it.
+
 The instant heuristic engine is benchmarked against the in-browser MIP optimiser
 (HiGHS via WebAssembly), solving identical scenarios:
 
@@ -207,6 +218,8 @@ nodal/
 |---|---|
 | **Eskom Data Portal** (ESK19243, 2025 hourly) | Real 2025 demand, wind and PV profiles |
 | **Eskom weekly system status reports** (Jun–Jul 2026) | 2026 baseline calibration: EAF ~64%, winter peak ~27 GW, outage volatility ±1.5 GW |
+| **NTCSA rooftop PV estimates** (Jun 2026) | Behind-the-meter rooftop capacity: 9,107 MW, +35% year-on-year |
+| **Ember** / Eskom residual demand series | Output validation benchmarks (`validate_outputs.js`, 25 checks) |
 | **PyPSA-RSA** (Meridian Economics) | 10-region topology, corridor limits, St Clair transfer limits, fleet list with GPS coordinates |
 | **UCT ZivaHub** (Merven / ESRG) | Hourly demand split across 10 nodal regions |
 | **PVGIS SARAH2** (EU JRC) | Satellite-based solar capacity factors at 5 km resolution for regional and site-specific profiles |
