@@ -3806,10 +3806,48 @@ function rtCalc() {
   // Exported energy is assumed to earn nothing (SA municipalities generally offer
   // little or no feed-in credit for small embedded generation) - conservative but
   // defensible; only self-consumed energy offsets the bill at the full tariff.
+  // ── Seasonal profile ───────────────────────────────────────────────────────
+  // GENERATION by month, relative to the annual average. Southern hemisphere:
+  // peaks around Dec-Feb, troughs in Jun-Jul.
+  const monthFactors = [1.0,1.05,1.1,1.05,0.95,0.88,0.88,0.92,1.0,1.05,1.05,0.97];
+
+  // DEMAND by month. This was previously flat (annual/12 every month), which
+  // materially flattered the results: SA household demand is markedly higher in
+  // winter, and that is exactly when solar generates least. Sources put a typical
+  // three-bedroom home at 700-900 kWh/month rising to 900-1,100 in the cold
+  // months, with summer 20-35% below winter - a ~1.25-1.4x swing, driven mainly
+  // by the geyser (250 units in January vs 350+ in July for the same showers,
+  // because inlet water is colder and showers run longer).
+  //
+  // Applied as a shape around 1.0 so it changes the DISTRIBUTION across the year
+  // without changing the annual total, which stays anchored to the user's bill.
+  // Normalised to mean exactly 1.0 so the annual total still matches the bill.
+  const demandFactors = [0.8557,0.8458,0.9154,1.0149,1.1144,1.1940,1.2139,1.1542,1.0448,0.9353,0.8657,0.8458];
+
+  // Winter demand is over-represented in a flat model precisely when generation
+  // is weakest, so coverage is computed month by month and summed, rather than
+  // annually. Each month's self-consumption is capped by that month's own demand.
+  const monthlyGenKwh = monthFactors.map(f => usableKwh / 12 * f);
+  const monthlyDemandKwh = demandFactors.map(f => annualDemandKwh / 12 * f);
+  const monthlySelfKwh = monthlyGenKwh.map((g, i) =>
+    Math.min(g * selfConsumeFrac, maxCoverageFrac * monthlyDemandKwh[i]));
+
+  const monthlySavings = monthlySelfKwh.map(k => Math.round(k * tariff));
+
+  // Coverage is the sum of what is actually self-consumed each month against
+  // total annual demand - not an annual average, which hides the fact that the
+  // months with the most demand are the months with the least sun.
+  const seasonalSelfKwh = monthlySelfKwh.reduce((a,b) => a+b, 0);
+  selfConsumedKwh = Math.min(selfConsumedKwh, seasonalSelfKwh);
+  const solarCoverage = annualDemandKwh > 0
+    ? Math.min(100, seasonalSelfKwh / annualDemandKwh * 100)
+    : 0;
+
+  // Financials follow the seasonal figure, so savings, payback, IRR and NPV are
+  // all consistent with the coverage headline and the monthly chart.
   const annualSavings = selfConsumedKwh * tariff;
   const annualOpex    = totalCapex * 0.015;
   const annualNet     = annualSavings - annualOpex;
-  const solarCoverage = Math.min(100, (selfConsumedKwh / 12 / monthlyKwh * 100));
 
   // Load-shifting opportunity: re-run the same coverage maths using the daytime
   // share that would apply if the genuinely shiftable loads (geyser, pool pump,
@@ -3857,8 +3895,7 @@ function rtCalc() {
   }
   const co2T = usableKwh * 0.00095;
   const pbCol = simplePayback<6 ? 'var(--ok,#4A8C5C)' : simplePayback<10 ? '#F5A623' : 'var(--alert,#C4785A)';
-  const monthFactors = [1.0,1.05,1.1,1.05,0.95,0.88,0.88,0.92,1.0,1.05,1.05,0.97];
-  const monthlySavings = monthFactors.map(f => Math.round(selfConsumedKwh/12*f*tariff));
+
   const maxMS = Math.max.apply(null, monthlySavings);
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   el.innerHTML =
@@ -3888,6 +3925,7 @@ function rtCalc() {
     '<tr><td style="padding:2px 0;color:var(--ink2)">CO2 avoided</td><td style="text-align:right">' + co2T.toFixed(0) + ' t/yr</td></tr>' +
     '</table></div></div>' +
     '<div style="font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);margin-bottom:6px">Estimated monthly savings (year 1)</div>' +
+    '<div style="font-size:9.5px;color:var(--ink2);margin-bottom:5px">Winter months earn less: generation is lowest in Jun\u2013Jul, and that is also when household demand peaks (SA homes typically use 25\u201340% more in winter, mostly geyser). Both effects are modelled.</div>' +
     '<div style="display:flex;gap:3px;align-items:flex-end;height:52px;margin-bottom:3px">' +
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
