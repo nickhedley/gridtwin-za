@@ -609,6 +609,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
           </div>
 
+          <!-- Measurement result sits with the map that produced it, not after
+               the inputs - it answers "what did you just measure?" and belongs
+               beside the answer. -->
+          <div id="rt_solar_api" style="display:none"></div>
+
           <!-- STEP 2: the few things only the user knows -->
           <div style="border:1.5px solid var(--ink);margin-bottom:12px">
             <div style="background:var(--ink);color:var(--panel);padding:6px 10px;font-size:11px;font-weight:600">
@@ -662,8 +667,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
     </details>
 
-          <div id="rt_solar_api" style="display:none"></div>
-    <div id="rt_result"></div>
+          <div id="rt_result"></div>
         </div>
         </div>
       </div>
