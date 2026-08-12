@@ -604,7 +604,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <button class="rtab" onclick="switchTab('rooftop')" id="tab_rooftop">Rooftop solar</button>
     </div>
     <div style="padding:8px 14px;border-bottom:1px solid var(--line2);display:flex;gap:6px;align-items:center;background:var(--panel)">
-      <input id="mainSearch" type="text" placeholder="Search address, suburb, town or landmark…"
+      <input id="mainSearch" type="text" placeholder="Search address, suburb, town, landmark — or paste GPS coordinates"
              style="flex:1;padding:5px 9px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
              onkeydown="if(event.key==='Enter'){event.preventDefault();mainGeocode();}">
       <button onclick="mainGeocode()" style="font-size:10px;padding:5px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
@@ -718,13 +718,25 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               </div>
             </div>
             <div style="padding:8px 10px 4px;background:var(--panel);display:flex;gap:6px;align-items:center">
-              <input id="rtSearch" type="text" placeholder="Search address, suburb or landmark…"
+              <input id="rtSearch" type="text" placeholder="Search address, suburb, landmark — or paste GPS coordinates"
                      style="flex:1;padding:5px 8px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
                      onkeydown="if(event.key==='Enter'){event.preventDefault();rtGeocode();}">
               <button onclick="rtGeocode()" style="font-size:10px;padding:5px 12px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap">Search</button>
             </div>
-            <div style="padding:0 10px 8px;background:var(--panel);border-bottom:1px solid var(--line2);font-size:9.5px;color:var(--ink2)">
-              Address-level precision depends on OpenStreetMap's coverage, which varies — many results are only street-accurate. Once you're on the right street, drag and zoom the satellite view below to visually confirm your exact property before tracing.
+            <div style="padding:8px 10px;background:rgba(196,120,90,0.08);border-bottom:1px solid var(--line2);border-left:3px solid var(--alert,#C4785A);font-size:10px;color:var(--ink2);line-height:1.5">
+              <strong style="color:var(--ink)">Can't find your exact house?</strong> OpenStreetMap's house-number coverage in South Africa is patchy, so many searches only match to street level.
+              Pasting GPS coordinates lands you on the exact spot instead &mdash; and it works anywhere, mapped or not.
+              <div style="margin-top:6px">
+                <strong style="color:var(--ink)">On a computer:</strong> open <a href="https://www.google.com/maps" target="_blank" rel="noopener" style="color:var(--alert,#C4785A)">Google Maps</a>,
+                right-click your roof, then click the coordinates at the top of the menu to copy them.
+              </div>
+              <div style="margin-top:4px">
+                <strong style="color:var(--ink)">On a phone:</strong> open Google Maps, press and hold on your roof until a red pin drops, then copy the coordinates shown in the search bar at the top.
+              </div>
+              <div style="margin-top:6px">
+                Paste them into the box above and press Search &mdash; e.g. <code style="font-size:10px;background:var(--panel);padding:1px 4px;border-radius:2px">-26.2041, 28.0473</code>.
+                The map jumps straight there at roof-level zoom, ready to trace.
+              </div>
             </div>
             <div id="rtSearchResults" style="display:none;max-height:150px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
             <div id="rtMap" style="height:440px;width:100%"></div>
@@ -1413,6 +1425,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     const q = document.getElementById('mainSearch').value.trim();
     const resultsEl = document.getElementById('mainSearchResults');
     if (!q) { resultsEl.style.display = 'none'; return; }
+
+    // Accept pasted GPS coordinates here too, same as the rooftop tab - OSM's
+    // SA house-number coverage is patchy, so coordinates are often the only
+    // way to hit an exact property.
+    if (typeof window._rtParseCoords === 'function') {
+      const coords = window._rtParseCoords(q);
+      if (coords) { resultsEl.style.display = 'none'; mainGoTo(coords.lat, coords.lng); return; }
+    }
 
     resultsEl.style.display = '';
     resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--ink2)">Searching…</div>';
@@ -4239,10 +4259,41 @@ document.addEventListener('keydown', e => {
 // ── Address search (Nominatim / OpenStreetMap) ────────────────────────────────
 let rtSearchTimer = null;
 
+// Accepts the formats people actually paste from Google Maps and similar:
+//   -26.2041, 28.0473      -26.2041 28.0473      (-26.2041,28.0473)
+//   26.2041S, 28.0473E     -26.2041°, 28.0473°
+// Returns {lat,lng} or null. Validated against South Africa's real bounding box
+// so a stray pair of numbers in a place name is not mistaken for coordinates.
+function _rtParseCoords(text) {
+  const cleaned = text.replace(/[()\u00b0]/g, ' ').trim();
+  const m = cleaned.match(/^(-?\d{1,2}(?:\.\d+)?)\s*([NSns])?\s*[, ]\s*(-?\d{1,3}(?:\.\d+)?)\s*([EWew])?$/);
+  if (!m) return null;
+  let lat = parseFloat(m[1]);
+  let lng = parseFloat(m[3]);
+  if (m[2] && m[2].toUpperCase() === 'S') lat = -Math.abs(lat);
+  if (m[2] && m[2].toUpperCase() === 'N') lat =  Math.abs(lat);
+  if (m[4] && m[4].toUpperCase() === 'W') lng = -Math.abs(lng);
+  if (m[4] && m[4].toUpperCase() === 'E') lng =  Math.abs(lng);
+  if (isNaN(lat) || isNaN(lng)) return null;
+  // SA bounding box (generous, includes Marion Island longitudes but not wild values)
+  if (lat > -22 || lat < -35.5 || lng < 16 || lng > 33.5) return null;
+  return { lat, lng };
+}
+
 async function rtGeocode() {
   const q = document.getElementById('rtSearch').value.trim();
   const resultsEl = document.getElementById('rtSearchResults');
   if (!q) { resultsEl.style.display = 'none'; return; }
+
+  // Coordinates typed or pasted directly - skip geocoding entirely and jump
+  // straight there. More precise than any address lookup, and works in areas
+  // OSM has not mapped to house-number level (most of South Africa).
+  const coords = _rtParseCoords(q);
+  if (coords) {
+    resultsEl.style.display = 'none';
+    rtGoTo(coords.lat, coords.lng);
+    return;
+  }
 
   rtInitMap(); // ensure map exists
 
@@ -4325,6 +4376,9 @@ function rtGoTo(lat, lng) {
 
 window.rtGeocode = rtGeocode;
 window.rtGoTo    = rtGoTo;
+// Exported so the main resource-query search (defined in an earlier script
+// block) can reuse the same coordinate parser at call time.
+window._rtParseCoords = _rtParseCoords;
 
 window.rtStartTrace = rtStartTrace;
 window.rtUndoPoint  = rtUndoPoint;
