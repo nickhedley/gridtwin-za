@@ -1874,8 +1874,13 @@ const SYNC_MIN_MW = 6000;
 const FIXED = {
   coalInstalledMW:42000, nuclearMW:1860, hydroMW:600, importsMW:1150,
   psPowerMW:2900, psEnergyMWh:60000, psEff:0.76,
-  ocgtDieselMW:3400, windMW:3600, pvUtilityMW:4000, rooftopMW:8300, cspMW:500,
+  ocgtDieselMW:3400, windMW:3600, pvUtilityMW:4000, rooftopMW:9100, cspMW:500,
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
+  // rooftopMW: NTCSA's estimate of behind-the-meter rooftop PV, which is growing
+  // fast enough that this figure dates quickly - 6,800 MW (Jun 2025), 8,294 MW
+  // (May 2026), 9,107 MW (Jun 2026), a 35% year-on-year rise. Updated to 9,100 MW.
+  // Note this is now larger than ALL renewable capacity feeding Eskom's grid
+  // (~7,900 MW), and larger than Medupi and Kusile's combined output.
   costCoal:546, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
   costCcgt:2800, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
   acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
