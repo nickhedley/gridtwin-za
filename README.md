@@ -120,21 +120,29 @@ The instant heuristic engine is benchmarked against the in-browser MIP optimiser
 | Scenario | Heuristic vs MIP gap |
 |---|---|
 | Today's system (no new solar) | −0.5% |
-| +10 GW solar | −1.0% |
-| +25 GW solar | +7.9% |
-| +40 GW solar | +6.5% |
+| +10 GW solar | −0.8% |
+| +25 GW solar | +5.7% |
+| +40 GW solar | +4.8% |
 
-The heuristic commits coal in **8-hour blocks** — three per day, matching the
-minimum up time of 97% of the fleet by capacity. This lets units shut down through
+The heuristic commits coal in **4-hour blocks** — six per day. This lets units shut down through
 a deep midday solar trough and restart for the evening peak, which day-level
 commitment structurally could not: a fully-committed fleet has a ~15 GW minimum
 stable floor while a high-solar midday trough falls to ~2 GW, forcing unavoidable
 overproduction. Moving to 8-hour blocks cut the mean gap from 10.4% to 4.0%.
 
-4-hour blocks scored marginally better on cost but implied ~7,900 unit start-ups a
-year against a real SA fleet figure of roughly 500–1,500, so they were rejected as
-physically unrealistic. The residual high-solar gap is inherent to block-level
-commitment; press **Run the full model** for the true optimum in those scenarios.
+Block size was chosen by benchmarking against the MIP on both cost and cycling.
+4-hour blocks track it better on each: cost gap +5.7%/+4.8% versus +7.9%/+6.5% for
+8-hour, and 7,902 annual start-ups versus the MIP's own 9,281 (8-hour understates
+at 5,618). An earlier version rejected 4-hour blocks by comparing modelled starts
+against the real fleet's ~500–1,500/yr, but that is not like-for-like — the model
+uses 31 unit groups rather than 90+ individual units, and the MIP optimum itself
+implies ~3,200 starts even with no new solar.
+
+Per-day adaptive block sizing was also tested and rejected: a trigger based on
+whether committed minimum stable generation exceeds the day's trough fires on no
+days below 10 GW of new solar and on every day above 25 GW, so it collapses into a
+fixed short block with extra complexity. The residual high-solar gap is inherent to
+block-level commitment; press **Run the full model** for the true optimum.
 
 Benchmark scripts: `calibrate_heuristic.js`, `calibrate_block_commitment.js`.
 
