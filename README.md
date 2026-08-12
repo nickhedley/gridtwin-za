@@ -222,6 +222,7 @@ nodal/
 | **IPP Office quarterly overview** (ipp-projects.co.za) | REIPPPP project pipeline by status |
 | **Eskom BESS Phase 1 per-site ratings** | Verified regional battery split (199 MW / 833 MWh across 8 named sites) |
 | **NTCSA wheeling framework** (2024) | TUoS tariff structure for wheeling calculator |
+| **PyPSA-ZA** (Hörsch & Calitz 2017, arXiv:1710.11199) | Published least-cost 2040 mixes used for the two PyPSA scenario presets |
 | **IRP 2025** (Cabinet-approved Oct 2025) | IRP 2025 preset targets: 7.34 GW wind, 11.27 GW solar, 6 GW gas by 2030 |
 
 ---
@@ -245,7 +246,7 @@ nodal/
 15. ~~Verified substation GPS coordinates~~ ✅ (185 of 186, cross-checked against the transmission network)
 16. ~~Block-level unit commitment calibrated against the MIP~~ ✅
 17. ~~Verified regional battery siting~~ ✅ (Eskom BESS Phase 1 per-site MW, all 8 sites)
-18. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
+18. ~~Least-cost scenario presets~~ ✅ (two presets from the published PyPSA-ZA study — PyPSA-RSA itself publishes no ready-made scenario outputs, so these are derived from published results rather than from re-running the model)
 19. Seasonal load profiles in the rooftop tool (winter geyser load is materially higher than the annual average)
 
 ---
