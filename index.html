@@ -1200,7 +1200,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       // (src='osm') - are drawn solid. Centroid-derived positions are drawn
       // hollow, since they mark a supply zone rather than the physical
       // substation and can be several km out.
-      const isExact = s.src === 'shp' || s.src === 'osm';
+      const isExact = s.src && s.src !== 'centroid';
       const r = isTx ? 6 : 4;
       const col = isExact ? (isTx ? '#517180' : '#9AA69B') : 'transparent';
       const border = isTx ? '#3a5668' : '#7a8a85';
@@ -1228,8 +1228,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
         </div>
         <div style="font-size:9px;margin-top:5px;color:${isExact ? '#4A8C5C' : '#C4785A'}">
-          ${s.src === 'shp' ? '\u25cf Exact NTCSA coordinates'
+          ${s.src === 'dbsa' ? ('\u25cf Exact \u2014 DBSA RFP 008 substation register' + (s.planned ? ' (planned, not yet built)' : ''))
+            : s.src === 'eskom' ? '\u25cf Exact \u2014 Eskom published GPS coordinates'
+            : s.src === 'shp' ? '\u25cf Exact NTCSA coordinates'
             : s.src === 'osm' ? '\u25cf Exact \u2014 OpenStreetMap contributors (ODbL)'
+            : s.src === 'manual' ? '\u25cf Exact \u2014 individually verified'
             : '\u25cb Approximate \u2014 supply-zone centroid, may be several km from the actual site'}
         </div>
         <div style="font-size:9px;color:#aaa;margin-top:3px">Click map for solar/wind resource</div>
