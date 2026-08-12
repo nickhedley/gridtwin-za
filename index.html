@@ -754,6 +754,23 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </select><div id="rt_batt_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Sizes update to match your system above \u2014 a big solar array does not force a big battery</div></div>
       <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation</label><select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.03">3% conservative</option><option value="0.05" selected>5% Eskom historical</option><option value="0.08">8% high scenario</option></select></div>
     </div>
+
+    <!-- ===== OPTIONAL APPLIANCE PROFILE ===== -->
+    <details id="rt_appliance_details" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:14px;background:var(--panel)">
+      <summary style="padding:8px 12px;cursor:pointer;font-size:11.5px;font-weight:600">
+        Refine with your appliances <span style="font-weight:400;color:var(--ink2)">&mdash; optional, improves accuracy</span>
+      </summary>
+      <div style="padding:4px 12px 12px">
+        <p style="font-size:10px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
+          Your bill tells us <em>how much</em> you use, but not <em>when</em> &mdash; and self-consumption depends almost
+          entirely on timing. Tick what you have to replace our generic assumption with a load profile based on your
+          actual appliances. Your bill above still sets total consumption; this only changes how it is spread across the day.
+        </p>
+        <div id="rt_appliances" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px 14px;font-size:11px"></div>
+        <div id="rt_profile_summary" style="margin-top:10px;font-size:10.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px"></div>
+      </div>
+    </details>
+
     <div id="rt_result"></div>
         </div>
         </div>
@@ -3809,6 +3826,7 @@ function rtCalc() {
 
   // Battery dropdown shows real kWh for this system size, not abstract hours.
   _rtUpdateBatteryLabels(kwp);
+  _rtBuildApplianceInputs();
 
   const baseCF = (window._resourceData && window._resourceData.solar) ? window._resourceData.solar.annualCF : 0.21;
   const location = (window._resourceData && window._resourceData.windRegion) ? window._resourceData.windRegion : 'SA national average';
@@ -3840,9 +3858,14 @@ function rtCalc() {
   // the ceiling is not enough, since for a well-matched (not extremely
   // oversized) system the rate-based figure is usually what actually binds,
   // and a raised ceiling does nothing if the rate never reaches it.
-  const effectiveBaseline = t.selfConsumeNoStorage + _rtSizingCeilingBonus(sizingRatio);
+  // If the user has ticked their actual appliances, use the resulting daytime
+  // demand share as the baseline instead of the generic per-building-type
+  // figure - it is derived from THEIR loads rather than an assumed average.
+  const applianceProfile = _rtApplianceProfile();
+  const rawBaseline = applianceProfile ? applianceProfile.dayFracNow : t.selfConsumeNoStorage;
+  const effectiveBaseline = rawBaseline + _rtSizingCeilingBonus(sizingRatio);
 
-  const selfConsumeFrac = Math.min(0.95, (effectiveBaseline * sizingFactor) + _rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh));
+  const selfConsumeFrac = Math.min(0.95, (effectiveBaseline * sizingFactor) + _rtBatteryUplift(battH, rawBaseline, kwp*battH, annualDemandKwh));
   let selfConsumedKwh = usableKwh * selfConsumeFrac;
 
   // Hard ceiling: solar cannot serve night-time demand without storage, no matter
@@ -3854,7 +3877,7 @@ function rtCalc() {
   // formula reaches 110% "coverage" at 10x oversizing). The ceiling is expressed
   // as a fraction of DEMAND, not generation, so it holds regardless of how
   // oversized the system is.
-  const maxCoverageFrac = Math.min(0.95, effectiveBaseline + _rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh));
+  const maxCoverageFrac = Math.min(0.95, effectiveBaseline + _rtBatteryUplift(battH, rawBaseline, kwp*battH, annualDemandKwh));
   selfConsumedKwh = Math.min(selfConsumedKwh, maxCoverageFrac * annualDemandKwh);
 
   const exportedKwh = usableKwh - selfConsumedKwh;
@@ -3874,6 +3897,42 @@ function rtCalc() {
   const annualOpex    = totalCapex * 0.015;
   const annualNet     = annualSavings - annualOpex;
   const solarCoverage = Math.min(100, (selfConsumedKwh / 12 / monthlyKwh * 100));
+
+  // Load-shifting opportunity: re-run the same coverage maths using the daytime
+  // share that would apply if the genuinely shiftable loads (geyser, pool pump,
+  // dishwasher etc.) were scheduled into the solar window. This is the single
+  // most actionable lever most households have, and it costs nothing but a timer.
+  let shiftedCoverage = null;
+  if (applianceProfile && applianceProfile.shiftableKwhDay > 0.5) {
+    const shiftedBaseline = applianceProfile.dayFracShifted;
+    const shiftedEffective = shiftedBaseline + _rtSizingCeilingBonus(sizingRatio);
+    const shiftedSelfFrac = Math.min(0.95, (shiftedEffective * sizingFactor) + _rtBatteryUplift(battH, shiftedBaseline, kwp*battH, annualDemandKwh));
+    const shiftedMaxFrac = Math.min(0.95, shiftedEffective + _rtBatteryUplift(battH, shiftedBaseline, kwp*battH, annualDemandKwh));
+    const shiftedKwh = Math.min(usableKwh * shiftedSelfFrac, shiftedMaxFrac * annualDemandKwh);
+    shiftedCoverage = Math.min(100, shiftedKwh / 12 / monthlyKwh * 100);
+  }
+
+  // Summary shown inside the appliance panel itself
+  const profSummary = document.getElementById('rt_profile_summary');
+  if (profSummary) {
+    if (!applianceProfile) {
+      profSummary.innerHTML = 'Nothing ticked \u2014 using the generic ' + (t.selfConsumeNoStorage*100).toFixed(0) +
+        '% daytime-use assumption for a ' + t.label.toLowerCase() + '.';
+    } else {
+      const gain = shiftedCoverage !== null ? shiftedCoverage - solarCoverage : 0;
+      const shiftNames = applianceProfile.picked.filter(a => a.shiftable >= 0.9).map(a => a.label.toLowerCase());
+      profSummary.innerHTML =
+        '<strong>' + Math.round(applianceProfile.dayFracNow*100) + '% of your demand currently falls in the solar window</strong> ' +
+        '(vs the ' + (t.selfConsumeNoStorage*100).toFixed(0) + '% generic assumption for a ' + t.label.toLowerCase() + ').' +
+        (gain > 1
+          ? '<br><br><strong style="color:var(--ok,#4A8C5C)">\u26A1 Load-shifting opportunity: moving your ' +
+            (shiftNames.length ? shiftNames.slice(0,3).join(', ') : 'flexible loads') +
+            ' to run around midday would lift coverage from ' + Math.round(solarCoverage) + '% to ' +
+            Math.round(shiftedCoverage) + '%</strong> \u2014 that is ' + applianceProfile.shiftableKwhDay.toFixed(1) +
+            ' kWh/day of flexible load, and a plug-in timer is usually all it takes.'
+          : '');
+    }
+  }
   const simplePayback = annualNet > 0 ? totalCapex / annualNet : Infinity;
   let npvAt10 = -totalCapex;
   for(let y = 1; y <= 25; y++) npvAt10 += annualNet * Math.pow(1+escal,y) / Math.pow(1.10,y);
@@ -3920,7 +3979,77 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (t.selfConsumeNoStorage*100).toFixed(0) + '% baseline for this load type' + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh)*100) + '% from the ' + (battH<=1.5?'peak-shift':'overnight') + ' battery (' + Math.round(kwp*battH).toLocaleString() + ' kWh)' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Costs: home R8.5/Wp, small C&I R7/Wp, large C&I R6/Wp, industrial R5/Wp. O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battH>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, kwp*battH, annualDemandKwh)*100) + '% from the ' + (battH<=1.5?'peak-shift':'overnight') + ' battery (' + Math.round(kwp*battH).toLocaleString() + ' kWh)' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+}
+
+
+// ── Appliance load profile (optional refinement) ─────────────────────────────
+// Typical SA household appliance consumption, from 2026 SA sources: a 150L
+// electric geyser runs 3-5h/day at 2-3kW (~8-12 kWh/day for a family of four)
+// and is 30-50% of a typical bill; a pool pump at ~1.1-1.5kW for 6h is the
+// usual number two at 10-20%. Those two dominate, and crucially BOTH are
+// highly shiftable to midday, which is exactly how real installations reach
+// 90%+ self-consumption without an enormous battery.
+//
+// shiftable: can this load realistically be moved to the solar window?
+//   1.0 = fully shiftable (timer/scheduling, no lifestyle change)
+//   0.5 = partly (some discretion over timing)
+//   0.0 = fixed to evening/night or genuinely always-on
+// dayFrac: with NO deliberate shifting, what share already falls in the
+//   ~09:00-16:00 solar window by default?
+const RT_APPLIANCES = [
+  { id:'geyser',    label:'Electric geyser',   kwhDay:9.0,  dayFrac:0.30, shiftable:1.0 },
+  { id:'poolpump',  label:'Pool pump',         kwhDay:6.6,  dayFrac:0.70, shiftable:1.0 },
+  { id:'aircon',    label:'Air conditioning',  kwhDay:6.0,  dayFrac:0.45, shiftable:0.3 },
+  { id:'fridge',    label:'Fridge / freezer',  kwhDay:2.0,  dayFrac:0.42, shiftable:0.0 },
+  { id:'stove',     label:'Electric stove',    kwhDay:2.5,  dayFrac:0.25, shiftable:0.2 },
+  { id:'oven',      label:'Electric oven',     kwhDay:1.5,  dayFrac:0.25, shiftable:0.2 },
+  { id:'tumble',    label:'Tumble dryer',      kwhDay:1.8,  dayFrac:0.35, shiftable:1.0 },
+  { id:'washing',   label:'Washing machine',   kwhDay:1.0,  dayFrac:0.45, shiftable:1.0 },
+  { id:'dishwasher',label:'Dishwasher',        kwhDay:1.2,  dayFrac:0.30, shiftable:1.0 },
+  { id:'heaters',   label:'Electric heaters',  kwhDay:4.0,  dayFrac:0.25, shiftable:0.1 },
+  { id:'lighting',  label:'Lighting',          kwhDay:1.0,  dayFrac:0.10, shiftable:0.0 },
+  { id:'electronics',label:'TV / computers',   kwhDay:1.5,  dayFrac:0.35, shiftable:0.1 },
+];
+
+function _rtBuildApplianceInputs() {
+  const host = document.getElementById('rt_appliances');
+  if (!host || host.children.length) return; // build once
+  host.innerHTML = RT_APPLIANCES.map(a =>
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer">' +
+    '<input type="checkbox" id="rt_app_' + a.id + '" onchange="rtCalc()" style="cursor:pointer">' +
+    '<span>' + a.label + '</span></label>'
+  ).join('');
+}
+
+// Derive what share of total demand falls in the solar window, both as-is and
+// if the genuinely shiftable loads were moved. Returns null when nothing is
+// ticked, so the caller falls back to the generic per-building-type baseline.
+function _rtApplianceProfile() {
+  const picked = RT_APPLIANCES.filter(a => {
+    const el = document.getElementById('rt_app_' + a.id);
+    return el && el.checked;
+  });
+  if (!picked.length) return null;
+
+  let total = 0, dayNow = 0, dayShifted = 0, shiftableKwh = 0;
+  picked.forEach(a => {
+    total += a.kwhDay;
+    dayNow += a.kwhDay * a.dayFrac;
+    // If shifted, the shiftable portion moves fully into the solar window;
+    // the rest stays where it naturally falls.
+    const shiftedFrac = a.dayFrac + (1 - a.dayFrac) * a.shiftable;
+    dayShifted += a.kwhDay * shiftedFrac;
+    shiftableKwh += a.kwhDay * (1 - a.dayFrac) * a.shiftable;
+  });
+  if (total <= 0) return null;
+
+  return {
+    dayFracNow: dayNow / total,
+    dayFracShifted: dayShifted / total,
+    shiftableKwhDay: shiftableKwh,
+    picked: picked,
+  };
 }
 
 // ── Satellite Roof Tracer ─────────────────────────────────────────────────────
