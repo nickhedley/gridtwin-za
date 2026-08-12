@@ -247,6 +247,7 @@ nodal/
 16. ~~Block-level unit commitment calibrated against the MIP~~ ✅
 17. ~~Verified regional battery siting~~ ✅ (Eskom BESS Phase 1 per-site MW, all 8 sites)
 18. ~~Least-cost scenario presets~~ ✅ (two presets from the published PyPSA-ZA study — PyPSA-RSA itself publishes no ready-made scenario outputs, so these are derived from published results rather than from re-running the model)
+19. ~~Raise slider ceilings for deep-decarbonisation scenarios~~ ✅ (wind to 140 GW, PV to 120 GW, demand growth to +120% — the 95% CO₂ case needs ~97 GW of new wind and +78% demand, both previously beyond the sliders)
 19. Seasonal load profiles in the rooftop tool (winter geyser load is materially higher than the annual average)
 
 ---
