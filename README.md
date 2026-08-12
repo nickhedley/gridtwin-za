@@ -42,8 +42,19 @@ Click anywhere on the SA map to get:
 - **Solar & wind:** annual capacity factor from PVGIS SARAH2 satellite data (or Open-Meteo ERA5 fallback), monthly profile chart, CSV download
 - **Data centre matching:** MW load slider → solar + storage sizing for 50/70/90/100% carbon-free hours
 - **Capture price:** IPP revenue estimate and indicative PPA floor by region, for solar and wind, both sides of the transaction
-- **Grid connection:** nearest of 159 Eskom substations (with voltage classification: 400kV transmission vs 132kV distribution), GCCA headroom for solar/wind/battery, corridor upgrade cost if headroom is zero
+- **Grid connection:** nearest of 186 Eskom transmission substations, GCCA headroom for solar/wind/battery, corridor upgrade cost if headroom is zero. 185 carry verified GPS coordinates; each marker shows its provenance and planned substations are flagged as not yet built
 - **Wheeling:** delivered cost calculator (Northern Cape → Gauteng etc.) — PPA + TUoS + losses, vs local generation alternative
+
+### Rooftop solar calculator
+Satellite roof tracer and financial model for a specific building:
+- **Trace your roof** on hybrid satellite imagery (Esri, with street labels) — click the corners and the area is computed and fed into the model, less a 72% usable factor for setbacks and obstructions
+- **Address search or GPS coordinates** — OpenStreetMap geocoding, with results flagged street-level where house-number data is missing; pasting coordinates copied from any mapping app lands exactly on the property
+- **Site-specific solar CF** fetched for the traced location rather than a national average
+- **Self-consumption model** — solar only offsets a bill when generation coincides with load, so coverage is capped by how much demand actually falls in the solar window. Rates scale with system size relative to demand, and with battery capacity measured against the site's own daily usage
+- **Optional appliance profile** — tick the appliances you have to replace the generic assumption with a load profile derived from them, and see a quantified load-shifting opportunity ("moving your geyser and pool pump to midday would lift coverage from X% to Y%")
+
+### Optimal dispatch (MIP)
+**Run the full model** re-solves the whole system as a true mixed-integer program using HiGHS compiled to WebAssembly — no server required. Coal unit commitment, storage scheduling and corridor flows are co-optimised across all 10 regions simultaneously, over either 52 representative days (~30 s) or the full 8,760 hours (~4 min). The KPIs, energy mix and dispatch chart switch to the optimum, corridor lines on the schematic thicken and redden by utilisation, and per-region curtailment appears on the map.
 
 ### C&I Pre-feasibility report
 Enter system size, offtake type, and cost assumptions to generate a downloadable report covering:
@@ -73,16 +84,16 @@ Demand, wind and solar profiles are **actual Eskom hourly data for 2025** (Eskom
 
 | Item | Value | Basis |
 |---|---|---|
-| Coal marginal cost | R480/MWh | Eskom fuel cost |
+| Coal marginal cost | R546/MWh | Eskom FY2025 primary energy cost |
 | Gas CCGT dispatch cost | **R2,800/MWh** | LNG-fired at ~$14–19/MMBtu spot (Jul 2026) × R19/$ × 8 GJ/MWh. IRP 2025 baseline of $10/MMBtu is below current market |
 | Diesel OCGT | R6,100/MWh | Eskom OCGT fuel cost |
 | Nuclear | R160/MWh | Variable O&M only |
 | Imports (Cahora Bassa) | R550/MWh | Published contract rates |
 | **Gas CCGT LCOE** | **R2,500/MWh** | LNG fuel + capital + regasification. Slider range R800–4,000 |
-| Utility solar PV LCOE | R550/kWh | REIPPPP BW7 bids averaged R0.46; anchor above unsubsidised |
-| Wind LCOE | R750/kWh | BW7 wind bids above solar (none awarded) |
-| Battery (4h) LCOE | R1,450/kWh | BNEF 2026, −27% YoY |
-| Nuclear LCOE | R1,650/kWh | Wide range; SMRs higher |
+| Utility solar PV LCOE | R550/MWh | REIPPPP BW7 bids averaged R0.46; anchor above unsubsidised |
+| Wind LCOE | R750/MWh | BW7 wind bids above solar (none awarded) |
+| Battery (4h) LCOE | R1,450/MWh | BNEF 2026, −27% YoY |
+| Nuclear LCOE | R1,650/MWh | Wide range; SMRs higher |
 
 ---
 
@@ -103,25 +114,36 @@ Demand, wind and solar profiles are **actual Eskom hourly data for 2025** (Eskom
 
 ## Validation
 
-The heuristic dispatch engine is cross-validated against a full MIP (PyPSA + HiGHS) across six scenarios:
+The instant heuristic engine is benchmarked against the in-browser MIP optimiser
+(HiGHS via WebAssembly), solving identical scenarios:
 
 | Scenario | Heuristic vs MIP gap |
 |---|---|
-| Baseline (winter week) | 0.54% |
-| Baseline (summer week) | 0.63% |
-| Crisis EAF 50% | 0.12% |
-| +30 GW solar | 1.56% |
-| +20 GW wind | 0.99% |
-| 14 GW decommissioned | 0.54% |
+| Today's system (no new solar) | −0.5% |
+| +10 GW solar | −1.0% |
+| +25 GW solar | +7.9% |
+| +40 GW solar | +6.5% |
 
-See `validation/README.md` for setup and usage of the cross-validation scripts.
+The heuristic commits coal in **8-hour blocks** — three per day, matching the
+minimum up time of 97% of the fleet by capacity. This lets units shut down through
+a deep midday solar trough and restart for the evening peak, which day-level
+commitment structurally could not: a fully-committed fleet has a ~15 GW minimum
+stable floor while a high-solar midday trough falls to ~2 GW, forcing unavoidable
+overproduction. Moving to 8-hour blocks cut the mean gap from 10.4% to 4.0%.
+
+4-hour blocks scored marginally better on cost but implied ~7,900 unit start-ups a
+year against a real SA fleet figure of roughly 500–1,500, so they were rejected as
+physically unrealistic. The residual high-solar gap is inherent to block-level
+commitment; press **Run the full model** for the true optimum in those scenarios.
+
+Benchmark scripts: `calibrate_heuristic.js`, `calibrate_block_commitment.js`.
 
 ---
 
 ## Limitations
 
 - **Single node** (national engine). Transmission is schematic only; no network constraints in the fast engine. The 10-region nodal engine captures corridor congestion and regional shortfalls.
-- **No full unit commitment in national engine.** Coal has aggregate ramp limits and a commitment lookahead, but not per-unit minimum up/down times. The nodal engine enforces real per-unit constraints.
+- **Block-level unit commitment in the national engine.** Coal is committed per unit in 8-hour blocks with real minimum up/down times, minimum stable levels and start-up costs, but not hour-by-hour. The MIP optimiser (Run the full model) commits hourly and co-optimises storage and corridor flows across all 10 regions.
 - **Storage dispatches with bounded heuristics**, not full optimisation.
 - **Monte Carlo varies outages only.** Weather and demand are fixed across the 60 runs.
 - **Rooftop PV is estimated**, not measured.
@@ -145,9 +167,12 @@ scripts/
   build_pipeline_json.py             REIPPPP pipeline data builder
   fetch_sa_solar_grid.py             PVGIS SARAH2 grid fetcher (run locally, ~33 min)
   fetch_substation_coords.py         OSM substation coordinate updater (run locally, ~30 s)
+  fetch_osm_substations.py           bulk Overpass fetch + name matching, distance-guarded
 validation/
   pypsa_crossval_uc.py               cross-validates heuristic against real PyPSA MIP
   mip_solver.py                      Tier 3 "solve this week properly" script
+  calibrate_heuristic.js             benchmarks the heuristic's reserve margin vs the MIP
+  calibrate_block_commitment.js      benchmarks commitment block size vs the MIP
   README.md                          setup and usage guide for validation scripts
 nodal/
   nodal_engine.js                    browser-side 10-region dispatch engine
@@ -160,7 +185,7 @@ nodal/
   region_headroom_lookup.json        GCCA 2025 headroom per region/technology
   firm_headroom_lookup.json          firm headroom (battery/gas)
   headroom_summary.json              compact headroom for Site Resource Query
-  substations_compact.json           159 Eskom substations with OSM-corrected coordinates
+  substations_compact.json           186 substations, 185 with verified GPS coordinates
   ipp_pipeline.json                  REIPPPP pipeline (BW5/6/7, BESIPPPP, RMIPPPP)
   nersa_registrations.json           SAPVIA cumulative + NERSA quarterly data
   sa_solar_grid.json                 PVGIS SARAH2 0.5° grid for Site Resource Query
@@ -179,8 +204,11 @@ nodal/
 | **PVGIS SARAH2** (EU JRC) | Satellite-based solar capacity factors at 5 km resolution for regional and site-specific profiles |
 | **REIPPPP BW7 tariffs + IRENA 2024 + BNEF 2026** | LCOE anchors for all technologies |
 | **Eskom TDP 2025–34** | Grid expansion adder (~R390bn / 14,500 km), corridor upgrade costs |
-| **GCCA 2025 GIS** (NTCSA) | 159 Eskom supply area substations and GCCA headroom by region |
-| **OpenStreetMap Overpass API** | Precise GPS coordinates for ~120 of 159 substations |
+| **GCCA 2025 GIS** (NTCSA) | Supply-area polygons and GCCA connection headroom by region |
+| **NTCSA `Existing_Substations.shp`** | Exact point coordinates for 17 network-expansion substations |
+| **DBSA RFP 008 Appendix A** | National transmission substation register with GPS coordinates and voltage ratings, existing and planned |
+| **Eskom published substation GPS coordinates** | Northern Cape transmission substations |
+| **OpenStreetMap Overpass API** (ODbL) | GPS coordinates for 104 substations, name-matched and verified against the real transmission network |
 | **SAPVIA NERSA Registered Plants Dashboard** | Cumulative registered capacity (19.7 GW, 2,503 projects since 2018) |
 | **NERSA quarterly media statements** | Per-province quarterly registration data |
 | **IPP Office quarterly overview** (ipp-projects.co.za) | REIPPPP project pipeline by status |
@@ -203,9 +231,13 @@ nodal/
 10. ~~Scenario comparison (pin + delta column)~~ ✅
 11. ~~C&I Pre-feasibility report~~ ✅
 12. ~~Monte Carlo nodal corridor correction~~ ✅
-13. Merge nodal engine into main KPIs/charts as primary model
-14. Verified regional battery siting (no complete public site list currently available)
-15. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
+13. ~~In-browser MIP optimiser (HiGHS/WebAssembly) co-optimising commitment, storage and corridor flows~~ ✅
+14. ~~Rooftop solar calculator with satellite roof tracer and appliance load profiling~~ ✅
+15. ~~Verified substation GPS coordinates~~ ✅ (185 of 186, cross-checked against the transmission network)
+16. ~~Block-level unit commitment calibrated against the MIP~~ ✅
+17. Verified regional battery siting (no complete public site list currently available)
+18. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
+19. Seasonal load profiles in the rooftop tool (winter geyser load is materially higher than the annual average)
 
 ---
 
