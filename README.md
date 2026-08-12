@@ -212,6 +212,7 @@ nodal/
 | **SAPVIA NERSA Registered Plants Dashboard** | Cumulative registered capacity (19.7 GW, 2,503 projects since 2018) |
 | **NERSA quarterly media statements** | Per-province quarterly registration data |
 | **IPP Office quarterly overview** (ipp-projects.co.za) | REIPPPP project pipeline by status |
+| **Eskom BESS Phase 1 per-site ratings** | Verified regional battery split (199 MW / 833 MWh across 8 named sites) |
 | **NTCSA wheeling framework** (2024) | TUoS tariff structure for wheeling calculator |
 | **IRP 2025** (Cabinet-approved Oct 2025) | IRP 2025 preset targets: 7.34 GW wind, 11.27 GW solar, 6 GW gas by 2030 |
 
@@ -235,7 +236,7 @@ nodal/
 14. ~~Rooftop solar calculator with satellite roof tracer and appliance load profiling~~ ✅
 15. ~~Verified substation GPS coordinates~~ ✅ (185 of 186, cross-checked against the transmission network)
 16. ~~Block-level unit commitment calibrated against the MIP~~ ✅
-17. Verified regional battery siting (no complete public site list currently available)
+17. ~~Verified regional battery siting~~ ✅ (Eskom BESS Phase 1 per-site MW, all 8 sites)
 18. Precomputed PyPSA-RSA least-cost scenarios as loadable presets
 19. Seasonal load profiles in the rooftop tool (winter geyser load is materially higher than the annual average)
 
