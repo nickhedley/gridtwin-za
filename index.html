@@ -288,6 +288,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </select>
           </div>
           <div>
+            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Decide where to build?</label>
+            <select id="bldRegional" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <option value="0">National &mdash; how much, and when</option>
+              <option value="1" selected>Regional &mdash; also where, within grid limits</option>
+            </select>
+            <div style="font-size:9.5px;color:var(--ink2);margin-top:3px">Regional uses each province&rsquo;s own wind and solar profile, its GCCA connection headroom, and real corridor limits between regions.</div>
+          </div>
+          <div>
             <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Coal availability (EAF)</label>
             <select id="bldEaf" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
               <option value="0.60">60% &mdash; today&rsquo;s floor</option>
@@ -2751,7 +2759,7 @@ function bldBuildLP(opts){
 }
 
 
-function runBuildOpt(){
+async function runBuildOpt(){
   if (bldRunning) return;
   const btn = document.getElementById('bldRunBtn');
   const st  = document.getElementById('bldStatus');
@@ -2765,7 +2773,22 @@ function runBuildOpt(){
     rate:   bldRates(),
     state:  state,
   };
-  const { lp, rate } = bldBuildLP(opts);
+  const useRegional = document.getElementById('bldRegional').value === '1';
+  let built;
+  if (useRegional){
+    st.textContent = 'Loading regional data\u2026';
+    const ok = await bldLoadRegionalData();
+    if (!ok){
+      st.textContent = 'Regional data unavailable \u2014 falling back to the national model.';
+      built = bldBuildLP(opts);
+    } else {
+      built = bldBuildRegionalLP(opts);
+    }
+  } else {
+    built = bldBuildLP(opts);
+  }
+  const { lp, rate, regional } = built;
+  st.textContent = 'Solving\u2026';
 
   if (!bldWorker){
     try {
@@ -2780,7 +2803,8 @@ function runBuildOpt(){
     bldRunning = false; btn.disabled = false; btn.style.opacity = 1;
     if (e.data.type === 'error'){ st.textContent = 'Solver error: ' + e.data.msg; return; }
     st.textContent = '';
-    renderBuildResult(e.data.res, rate, opts);
+    if (regional) renderBuildRegional(e.data.res, rate, opts);
+    else renderBuildResult(e.data.res, rate, opts);
   };
   bldWorker.postMessage({ lp });
 }
@@ -2852,6 +2876,235 @@ function renderBuildResult(res, rate, opts){
     + 'so this sizes the build; use <strong>Run the full model</strong> above to test a '
     + 'resulting mix hour by hour.</div>';
   html += '</div>';
+  host.innerHTML = html;
+}
+
+
+/* ---- Regional mode: WHERE as well as WHEN ---------------------------------
+ * The national optimiser above applies one capacity factor and one headroom
+ * figure to the whole country. For South Africa that is materially wrong,
+ * because the regions with the best resource are exactly the ones with no grid
+ * headroom left:
+ *
+ *   Northern Cape  wind CF 37.9%, solar 23.7%  ->  ZERO headroom
+ *   Hydra Central  wind CF 42.5%, solar 23.6%  ->  ZERO headroom
+ *   Kwazulu Natal  wind CF 21.6%, solar 19.5%  ->  5,500 MW available
+ *
+ * Wind capacity factor varies 1.97x across regions and solar 1.22x, so where
+ * you build changes how much energy you actually get. Building into the
+ * headroom that remains means accepting materially worse resource - which a
+ * national average conceals entirely.
+ */
+const BLD_REGIONS = ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape',
+  'Northern Cape','Hydra Central','Kwazulu Natal','North West','Free State'];
+
+// Real corridor topology from actual line geometries: [from, to, MW transfer limit]
+const BLD_CORRIDORS = [
+  ['Eastern Cape','Hydra Central',1124],['Eastern Cape','Free State',455],
+  ['Eastern Cape','Kwazulu Natal',813],['Free State','Gauteng',1446],
+  ['Free State','Kwazulu Natal',427],['Free State','Mpumalanga',2609],
+  ['Gauteng','Limpopo',4041],['Gauteng','Mpumalanga',13318],
+  ['Gauteng','North West',5680],['Hydra Central','Northern Cape',754],
+  ['Hydra Central','Western Cape',2377],['Kwazulu Natal','Mpumalanga',6552],
+  ['Limpopo','North West',5922],['Mpumalanga','North West',599],
+  ['North West','Western Cape',233],['Northern Cape','Western Cape',823],
+  ['Limpopo','Mpumalanga',5138],['Free State','Hydra Central',2763],
+  ['Free State','Northern Cape',2439],['North West','Northern Cape',663],
+];
+
+// Share of national demand by region
+const BLD_LOAD_SHARE = { 'Gauteng':0.315,'Mpumalanga':0.175,'Kwazulu Natal':0.155,
+  'Western Cape':0.115,'North West':0.075,'Free State':0.055,'Limpopo':0.048,
+  'Eastern Cape':0.042,'Northern Cape':0.014,'Hydra Central':0.006 };
+
+let bldRegProfiles = null, bldHeadroom = null;
+
+async function bldLoadRegionalData(){
+  if (bldRegProfiles && bldHeadroom) return true;
+  try {
+    const [p, h] = await Promise.all([
+      fetch('nodal/profiles_regional.json').then(r => r.ok ? r.json() : null),
+      fetch('nodal/headroom_summary.json').then(r => r.ok ? r.json() : null),
+    ]);
+    if (!p || !h) return false;
+    bldRegProfiles = p; bldHeadroom = h.headroom || h;
+    return true;
+  } catch (e) { return false; }
+}
+
+function bldCoalByRegion(year){
+  const out = {}; BLD_REGIONS.forEach(r => out[r] = 0);
+  for (const u of UC_FLEET){
+    const dy = u.decom === 'beyond 2050' ? 9999 : parseInt(u.decom, 10);
+    if (dy > year && out[u.region] !== undefined) out[u.region] += u.cap;
+  }
+  return out;
+}
+
+function bldBuildRegionalLP(opts){
+  const Y = BLD_YEARS, T = ['wind','pv','batt'];
+  const rd = bldRepDays(8);                    // 8 days keeps the LP browser-sized
+  const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
+  const S = opts.state || FIXED;
+  const VOLL = 60000, CARBON = (S.carbonPrice != null ? S.carbonPrice : 550);
+  const MCcoal = (S.costCoal || 546) + CARBON * (S.emisCoal || 1.04);
+  const MCdiesel = S.costDiesel || 6100;
+
+  const L = ['Minimize',' obj:']; const obj = [];
+  for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y){
+    let c = 0;
+    for (const yy of Y) if (yy >= y)
+      c += bldAnnuity(bldCapex(t,y), BLD_LIFE[t]) / Math.pow(1+BLD_DISC, yy-2026);
+    obj.push(c.toFixed(3) + ' b_' + t + '_' + ri + '_' + y);
+  }
+  for (const y of Y){ const df = 1/Math.pow(1+BLD_DISC, y-2026);
+    for (const r of rd) for (let h = 0; h < 24; h++) for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+      const k = ri + '_' + y + '_' + r.d + '_' + h;
+      obj.push((MCcoal*r.weight*df).toFixed(3) + ' gc_' + k);
+      obj.push((MCdiesel*r.weight*df).toFixed(3) + ' gd_' + k);
+      obj.push((VOLL*r.weight*df).toFixed(3) + ' u_' + k);
+      obj.push((150*r.weight*df).toFixed(3) + ' crt_' + k);
+    }
+  }
+  L.push('  ' + obj.join(' + ')); L.push('Subject To');
+  const cum = (t,ri,y) => Y.filter(yy => yy <= y).map(yy => 'b_'+t+'_'+ri+'_'+yy);
+
+  for (const y of Y){
+    const dg = Math.pow(1+growth, y-2026);
+    const coal = bldCoalByRegion(y);
+    for (const r of rd) for (let h = 0; h < 24; h++){
+      const i = r.d*24 + h;
+      for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+        const R = BLD_REGIONS[ri], k = ri+'_'+y+'_'+r.d+'_'+h;
+        const dem = PROFILES.demand[i]*dg*(BLD_LOAD_SHARE[R]||0);
+        const sp = bldRegProfiles.solar_pu[R][i], wp = bldRegProfiles.wind_pu[R][i];
+        const flows = [];
+        BLD_CORRIDORS.forEach(([a,b], ci) => {
+          const f = '_'+ci+'_'+y+'_'+r.d+'_'+h;
+          if (a === R) flows.push('+ fb'+f+' - fa'+f);
+          if (b === R) flows.push('+ fa'+f+' - fb'+f);
+        });
+        L.push(' bal_'+k+': gc_'+k+' + gd_'+k+' + u_'+k+' - crt_'+k
+          + ' + ' + cum('wind',ri,y).map(v => wp.toFixed(4)+' '+v).join(' + ')
+          + ' + ' + cum('pv',ri,y).map(v => sp.toFixed(4)+' '+v).join(' + ')
+          + ' ' + flows.join(' ')
+          + ' = ' + dem.toFixed(1));
+        L.push(' cmax_'+k+': gc_'+k+' <= ' + (coal[R]*eaf).toFixed(1));
+      }
+    }
+    // PER-REGION GRID HEADROOM - the constraint the national model lacks.
+    for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+      const hr = bldHeadroom[BLD_REGIONS[ri]] || {};
+      L.push(' hw_'+ri+'_'+y+': ' + cum('wind',ri,y).join(' + ') + ' <= ' + (hr.wind_mw||0));
+      L.push(' hp_'+ri+'_'+y+': ' + cum('pv',ri,y).join(' + ')   + ' <= ' + (hr.solar_mw||0));
+      L.push(' hb_'+ri+'_'+y+': ' + cum('batt',ri,y).join(' + ') + ' <= ' + (hr.batt_mw||0));
+    }
+    for (const t of T){
+      const terms = [];
+      for (let ri = 0; ri < BLD_REGIONS.length; ri++) terms.push('b_'+t+'_'+ri+'_'+y);
+      L.push(' rate_'+t+'_'+y+': ' + terms.join(' + ') + ' <= ' + RATE[t].toFixed(1));
+    }
+  }
+
+  L.push('Bounds');
+  for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y)
+    L.push(' 0 <= b_'+t+'_'+ri+'_'+y+' <= 20000');
+  for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
+    for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+      const k = ri+'_'+y+'_'+r.d+'_'+h;
+      L.push(' 0 <= gc_'+k+' <= 60000'); L.push(' 0 <= gd_'+k+' <= 4000');
+      L.push(' 0 <= u_'+k+' <= 60000');  L.push(' 0 <= crt_'+k+' <= 60000');
+    }
+    BLD_CORRIDORS.forEach(([a,b,lim], ci) => {
+      const f = '_'+ci+'_'+y+'_'+r.d+'_'+h;
+      L.push(' 0 <= fa'+f+' <= '+lim); L.push(' 0 <= fb'+f+' <= '+lim);
+    });
+  }
+  L.push('End');
+  return { lp: L.join('\n'), rate: RATE, regional: true };
+}
+
+
+function renderBuildRegional(res, rate, opts){
+  const host = document.getElementById('bldResult');
+  if (!res || !res.Columns){
+    host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
+    return;
+  }
+  const T = ['wind','pv','batt'], LBL = { wind:'Wind', pv:'Solar', batt:'Battery' };
+  const rows = [];
+  const tot = { wind:0, pv:0, batt:0 };
+  for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+    const R = BLD_REGIONS[ri], hr = bldHeadroom[R] || {};
+    const got = {};
+    for (const t of T){
+      let s = 0;
+      for (const y of BLD_YEARS){ const v = res.Columns['b_'+t+'_'+ri+'_'+y]; s += v ? v.Primal : 0; }
+      got[t] = s; tot[t] += s;
+    }
+    // Mean capacity factor for this region, so the user can see the trade-off
+    const sp = bldRegProfiles.solar_pu[R], wp = bldRegProfiles.wind_pu[R];
+    const scf = sp.reduce((a,b)=>a+b,0)/sp.length, wcf = wp.reduce((a,b)=>a+b,0)/wp.length;
+    rows.push({ R, got, hr, scf, wcf });
+  }
+  const built = rows.filter(x => x.got.wind + x.got.pv + x.got.batt > 1);
+  const blocked = rows.filter(x => (x.hr.wind_mw||0) + (x.hr.solar_mw||0) < 1);
+
+  let html = '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)">'
+    + '<th style="text-align:left;padding:4px 6px">Region</th>'
+    + '<th style="text-align:right;padding:4px 6px">Wind GW</th>'
+    + '<th style="text-align:right;padding:4px 6px">Solar GW</th>'
+    + '<th style="text-align:right;padding:4px 6px">Wind CF</th>'
+    + '<th style="text-align:right;padding:4px 6px">Solar CF</th>'
+    + '<th style="text-align:right;padding:4px 6px">Headroom used</th></tr>';
+  for (const x of built.sort((a,b) => (b.got.wind+b.got.pv)-(a.got.wind+a.got.pv))){
+    const hw = x.hr.wind_mw||0, hp = x.hr.solar_mw||0;
+    const useW = hw ? Math.round(x.got.wind/hw*100) : null;
+    const useP = hp ? Math.round(x.got.pv/hp*100) : null;
+    const full = (useW >= 99) || (useP >= 99);
+    html += '<tr style="border-bottom:1px solid var(--line2)">'
+      + '<td style="padding:4px 6px">' + x.R + '</td>'
+      + '<td style="text-align:right;padding:4px 6px">' + (x.got.wind>1?(x.got.wind/1000).toFixed(2):'–') + '</td>'
+      + '<td style="text-align:right;padding:4px 6px">' + (x.got.pv>1?(x.got.pv/1000).toFixed(2):'–') + '</td>'
+      + '<td style="text-align:right;padding:4px 6px;color:var(--ink2)">' + (x.wcf*100).toFixed(0) + '%</td>'
+      + '<td style="text-align:right;padding:4px 6px;color:var(--ink2)">' + (x.scf*100).toFixed(0) + '%</td>'
+      + '<td style="text-align:right;padding:4px 6px' + (full?';color:var(--alert,#C4785A);font-weight:700':'') + '">'
+      + [useW!==null?useW+'% w':null, useP!==null?useP+'% s':null].filter(Boolean).join(' · ') + '</td></tr>';
+  }
+  html += '<tr style="border-top:2px solid var(--ink)"><td style="padding:4px 6px;font-weight:700">TOTAL</td>'
+    + '<td style="text-align:right;padding:4px 6px;font-weight:700">' + (tot.wind/1000).toFixed(2) + '</td>'
+    + '<td style="text-align:right;padding:4px 6px;font-weight:700">' + (tot.pv/1000).toFixed(2) + '</td>'
+    + '<td colspan="3"></td></tr></table>';
+
+  // The headline finding: the best resource is unreachable.
+  html += '<div style="margin-top:10px;font-size:10.5px;line-height:1.5">';
+  if (blocked.length){
+    const names = blocked.map(x => x.R + ' (wind CF ' + (x.wcf*100).toFixed(0) + '%)').join(', ');
+    html += '<div style="border-left:3px solid var(--alert,#C4785A);padding:6px 9px;background:rgba(196,120,90,0.07);margin-bottom:6px">'
+      + '<strong>Best resource, no grid:</strong> ' + names
+      + '. These regions have zero remaining GCCA connection headroom, so nothing can be built there '
+      + 'however good the wind or sun is. The model is pushed into weaker regions instead.</div>';
+  }
+  const filled = built.filter(x => {
+    const hw = x.hr.wind_mw||0, hp = x.hr.solar_mw||0;
+    return (hw && x.got.wind/hw > 0.99) || (hp && x.got.pv/hp > 0.99);
+  });
+  if (filled.length){
+    html += '<div style="border-left:3px solid #F5C518;padding:6px 9px;background:rgba(245,197,24,0.07);margin-bottom:6px">'
+      + '<strong>Headroom exhausted:</strong> ' + filled.map(x => x.R).join(', ')
+      + ' &mdash; every remaining MW of connection capacity is used. Further build here needs '
+      + 'transmission investment, not just generation.</div>';
+  }
+  html += '<div style="color:var(--ink2);margin-top:6px">'
+    + 'Discounted total system cost: <strong>R' + (res.ObjectiveValue/1e9).toFixed(0) + ' bn</strong>. '
+    + 'Each region uses its own hourly wind and solar profile (PVGIS and Renewables.ninja), its GCCA '
+    + 'connection headroom, and real corridor transfer limits between regions. Wind capacity factor '
+    + 'varies almost twofold across South Africa, so where capacity lands changes materially how much '
+    + 'energy it delivers.</div>'
+    + '<div style="color:var(--ink2);margin-top:5px;font-style:italic">'
+    + 'Dispatch is approximated over 8 representative days; use <strong>Run the full model</strong> '
+    + 'above to test a resulting mix hour by hour.</div></div>';
   host.innerHTML = html;
 }
 
