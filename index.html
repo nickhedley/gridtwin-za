@@ -2478,35 +2478,11 @@ const SLIDERS=[
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:1400,fmt:v=>'R'+(v/1000).toFixed(2),note:'new-build, not existing fleet'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:8000,step:50,def:5500,fmt:v=>'R'+(v/1000).toFixed(2),note:'peaking only'},
 ];
-// PyPSA-ZA presets below are derived from PUBLISHED results, not from running the
-// model ourselves. Source: Horsch & Calitz (2017), "PyPSA-ZA: Investment and
-// operation co-optimization of integrating wind and solar in South Africa at high
-// spatial and temporal detail" (arXiv:1710.11199) - the least-cost optimisation
-// that PyPSA-RSA descends from. Reference year 2040, 428 TWh demand, 27 supply
-// regions, hourly resolution.
-//
-// Energy shares from the paper are converted to capacity using this app's own CF
-// assumptions (~35% wind, ~21% utility PV), so they reproduce the published MIX
-// rather than the published capacities exactly. The wind and demand-growth sliders
-// were raised (to 140 GW and +120%) specifically so these scenarios fit without
-// clamping - the 95% CO2 case needs ~97 GW of new wind and +78% demand.
 const PRESETS={
   'Today 2026':{},
   'Crisis 2023':{coalEAFPct:50,demandGrowthPct:14,outVolPct:6},
   'Latest IRP\'s 2030 targets':{coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
   'Future electricity mix':{demandGrowthPct:5,coalDecomMW:21000,newWindMW:28500,newPvMW:42500,newRooftopMW:15000,newBattMW:20000},
-  // Base case: 53% wind, 16% PV, 25% coal; 11 GW new battery, 12 GW gas turbines
-  // running only 1.4% of demand; ~R520/MWh. No new coal or nuclear was chosen.
-  // 1,744 MW / 6,980 MWh awarded across BESIPPPP bid windows 1-3, at named Eskom
-  // substations in the Northern Cape, North West and Free State. Almost none is
-  // operational yet - BW1 projects reach commercial operation from late 2026,
-  // BW2 and BW3 are still pre-financial-close - so this is a pipeline scenario
-  // rather than today's system.
-  'BESIPPPP storage pipeline':{newBattMW:1744},
-  'PyPSA least-cost 2040':{demandGrowthPct:78,coalDecomMW:19900,newWindMW:70000,newPvMW:33000,newBattMW:11000,newCcgtMW:12000,ccgtForceLoad:0},
-  // CO2-limit case: 95% emissions cut (10 MtCO2 cap), 72% wind + 23% PV, ~20% cost
-  // increase, ~19% renewable curtailment, all coal retired.
-  'PyPSA 95% CO\u2082 cut 2040':{demandGrowthPct:78,coalDecomMW:42000,newWindMW:97000,newPvMW:50000,newBattMW:25000,newCcgtMW:20000,ccgtForceLoad:0},
 };
 const COLORS={nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV',curtailment:'Curtailed (wasted)'};
@@ -2552,29 +2528,8 @@ function applyState(overrides){
   });
 }
 const presetsEl=document.getElementById('presets');
-// Hover text for presets that need provenance or caveats stating up front.
-const PRESET_NOTES={
-  'BESIPPPP storage pipeline':
-    'All 1,744 MW / 6,980 MWh of battery storage awarded under the DMRE\'s three BESIPPPP bid windows, '
-    + 'sited at named Eskom substations: 692 MW North West, 616 MW Free State, 436 MW Northern Cape. '
-    + 'Nearly nine times Eskom\'s own 199 MW BESS programme. Almost none is operational yet \u2014 the first '
-    + 'projects reach commercial operation in late 2026 and Red Sands around 2027 \u2014 so this models the '
-    + 'awarded pipeline once built, not today\'s system.',
-  'PyPSA least-cost 2040':
-    'Least-cost 2040 mix from the published PyPSA-ZA study (Horsch & Calitz 2017, arXiv:1710.11199), '
-    + 'the optimisation PyPSA-RSA descends from: 53% wind, 16% PV, 25% coal, no new coal or nuclear built. '
-    + 'Derived from published RESULTS, not from re-running the model. Assumes 428 TWh demand (+78% on today).',
-  'PyPSA 95% CO\u2082 cut 2040':
-    'The same study\'s deep-decarbonisation case: a 10 MtCO\u2082 cap (95% cut), met with 72% wind and '
-    + '23% PV, all coal retired, for a ~20% cost increase and ~19% renewable curtailment. '
-    + 'Needs ~97 GW of new wind. Note this app is SINGLE-NODE: the published study relies on '
-    + 'expanded transmission across 27 regions to smooth wind geographically, which cannot be '
-    + 'represented here, so the risk panel shows more shedding on low-wind evenings than the '
-    + 'study itself found.',
-};
 Object.keys(PRESETS).forEach((name,i)=>{
   const b=document.createElement('button');b.textContent=name; if(i===0)b.classList.add('active');
-  if(PRESET_NOTES[name]) b.title=PRESET_NOTES[name];
   b.addEventListener('click',()=>{
     applyState(PRESETS[name]);
     setPresetActive(b); scheduleRun();
