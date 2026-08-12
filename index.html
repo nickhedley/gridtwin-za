@@ -270,7 +270,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <button id="mipCancelBtn" onclick="cancelMIP()" style="display:none;padding:6px 12px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;color:var(--ink2)">Cancel</button>
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
             Re-solves the whole system as a true mixed-integer programming (MIP) model, where coal, storage and corridor flows are fully optimised across all 10 regions.
-            <strong>Most worth running for high-renewables scenarios:</strong> the instant model commits coal in 8-hour blocks, so it follows a midday solar trough only approximately — benchmarking puts it within 1% of optimal for today's system, widening to around 6&ndash;8% once 25&nbsp;GW or more of new solar is added.
+            <strong>Most worth running for high-renewables scenarios:</strong> the instant model commits coal in 4-hour blocks, so it follows a midday solar trough closely but not hour-by-hour — benchmarking puts it within 1% of optimal for today's system, widening to around 5&ndash;6% once 25&nbsp;GW or more of new solar is added.
           </span>
         </div>
 
@@ -1939,7 +1939,28 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
   //     up and down times regardless of block size (0 violations measured at every
   //     granularity tested).
   //   - Runtime is unchanged in practice (~7 ms for a full year either way).
-  const BLOCK_HOURS = 8;
+  //
+  // REVISITED: variable (per-day adaptive) block sizing was tested and rejected.
+  // A physically-motivated trigger - shorten blocks only on days where the fleet
+  // needed to cover the peak has a minimum stable floor ABOVE the day's trough,
+  // i.e. only where overproduction is actually forced - fires on zero days at
+  // 0-10 GW new solar and on ALL days at 25 GW+. There is no useful subset to be
+  // selective about: under high solar every day needs the shorter block, so
+  // adaptive sizing collapses into a fixed short block with extra complexity.
+  //
+  // That test also corrected an earlier error. 4h blocks were originally rejected
+  // for implying ~7,900 unit start-ups a year against a real SA fleet figure of
+  // ~500-1,500. But the MIP optimum ITSELF implies ~9,300 starts/yr under high
+  // solar, and ~3,200 even with no new solar - so the model's start counts are
+  // not comparable with the real fleet's (31 unit GROUPS rather than 90+ actual
+  // units, no inter-block ramp costs, per-day state resets). Rejecting 4h on that
+  // basis was inconsistent, since the MIP being matched cycles harder still.
+  //
+  // Judged like-for-like against the MIP, 4h tracks it better on BOTH measures:
+  //   cost gap   8h +7.9% / +6.5%   vs   4h +5.7% / +4.8%   (at +25/+40 GW solar)
+  //   start-ups  8h 5,618           vs   4h 7,902           (MIP: 9,281)
+  // so 4h is closer on cost and closer on cycling. Mean gap falls 4.0% -> 2.9%.
+  const BLOCK_HOURS = 4;
   const BLOCKS_PER_DAY = 24 / BLOCK_HOURS;
 
   for (let day = 0; day < DAYS; day++) {
