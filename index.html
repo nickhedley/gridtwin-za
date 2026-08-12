@@ -2481,7 +2481,17 @@ const SLIDERS=[
 const PRESETS={
   'Today 2026':{},
   'Crisis 2023':{coalEAFPct:50,demandGrowthPct:14,outVolPct:6},
-  'Latest IRP\'s 2030 targets':{coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
+  // IRP 2025 (Cabinet-approved Oct 2025), 2030 targets. This previously set only
+  // the BUILD programme and left demand and coal availability at today's values,
+  // which understated the plan: the IRP's adequacy case rests just as much on
+  // demand growing to 255 TWh and Eskom lifting coal EAF to 66-68%, and those are
+  // what make the 8 GW of coal retirements survivable.
+  //   demandGrowthPct 16 : 219.1 TWh baseline x 1.16 = 254 TWh, against the IRP's
+  //                        255 TWh forecast for 2030
+  //   coalEAFPct 68      : top of the IRP's stated 66-68% target band. For scale,
+  //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
+  //                        up on FY2025, so 68% is a stretch but not a fantasy.
+  'Latest IRP\'s 2030 targets':{demandGrowthPct:16,coalEAFPct:68,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
   'Future electricity mix':{demandGrowthPct:5,coalDecomMW:21000,newWindMW:28500,newPvMW:42500,newRooftopMW:15000,newBattMW:20000},
 };
 const COLORS={nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
