@@ -211,6 +211,6 @@ nodal/
 
 ## Licence & disclaimer
 
-**[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)** — free to use, share and adapt with attribution for non-commercial purposes. Commercial use requires explicit written permission from the author.
+**[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)** — free to view, share and link to with attribution, for non-commercial purposes. Commercial use, or distributing modified or derivative versions, requires explicit written permission from the author. This covers the model, calibration and code; the underlying public datasets remain under their own licences and are credited in the application footer.
 
 This is an educational scenario explorer. All outputs are indicative — not planning, investment or operational advice. Not affiliated with Eskom, NTCSA, NERSA, SAPVIA, or Meridian Economics.
