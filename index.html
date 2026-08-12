@@ -238,8 +238,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
   <!-- ============ CONTROLS ============ -->
   <aside class="panel" aria-label="Scenario controls" style="min-width:0;max-width:100%;box-sizing:border-box">
-    <div class="ph"><h2>Scenario Controls</h2><span class="tag">re-solves live</span></div>
+    <div class="ph"><h2><span style="color:var(--ink2);font-weight:400">1 &middot;</span> Set the scenario</h2><span class="tag">re-solves live</span></div>
     <div class="pb">
+      <p style="font-size:10.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45">Start from a preset, or move any slider. Everything below re-solves as you go: the KPIs, the build optimiser in step&nbsp;2, and the full hourly model in step&nbsp;3.</p>
       <div class="presets" id="presets"></div>
       <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
       <button class="sharebtn" id="pinBtn" type="button" onclick="pinScenario()" style="margin-top:6px;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink)">📌 Pin for comparison</button>
@@ -256,15 +257,17 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
     <div class="panel" id="buildSection" style="margin-bottom:18px">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
-        <h2>When to build</h2>
+        <h2><span style="color:var(--ink2);font-weight:400">2 &middot;</span> What should we build, and when?</h2>
         <span class="tag">capacity expansion &middot; least-cost schedule to 2030</span>
       </div>
       <div style="padding:12px 14px">
         <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
-          The sliders above ask &ldquo;does this mix work?&rdquo;. This asks the harder question:
-          <strong>what should be built, and in which year?</strong> It solves for the least-cost build
-          schedule from 2026 to 2030 &mdash; using each unit&rsquo;s real retirement date, technology costs
-          that change year by year, and a limit on how fast capacity can actually be added.
+          Step 1 above is your scenario &mdash; demand, coal availability, retirements. This step
+          takes that scenario and solves for the <strong>least-cost build schedule to 2030</strong>:
+          how much of each technology to add, in which year, and (in regional mode) where. It uses
+          each coal unit&rsquo;s real retirement date, technology costs that change year by year, and a
+          limit on how fast capacity can actually be connected. The answer can then be loaded back
+          into the sliders and tested hour by hour in step 3.
         </p>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:10px">
@@ -280,28 +283,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div id="bldPaceNote" style="font-size:9.5px;color:var(--ink2);margin-top:3px"></div>
           </div>
           <div>
-            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Demand growth to 2030</label>
-            <select id="bldGrowth" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-              <option value="0.0">Flat &mdash; no growth</option>
-              <option value="0.031" selected>IRP 2025 &mdash; 255 TWh by 2030 (+3.1%/yr)</option>
-              <option value="0.05">High &mdash; +5%/yr</option>
-            </select>
-          </div>
-          <div>
             <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Decide where to build?</label>
             <select id="bldRegional" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
               <option value="0">National &mdash; how much, and when</option>
               <option value="1" selected>Regional &mdash; also where, within grid limits</option>
             </select>
             <div style="font-size:9.5px;color:var(--ink2);margin-top:3px">Regional uses each province&rsquo;s own wind and solar profile, its GCCA connection headroom, and real corridor limits between regions.</div>
-          </div>
-          <div>
-            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Coal availability (EAF)</label>
-            <select id="bldEaf" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-              <option value="0.60">60% &mdash; today&rsquo;s floor</option>
-              <option value="0.66" selected>66% &mdash; IRP target band</option>
-              <option value="0.68">68% &mdash; top of IRP band</option>
-            </select>
           </div>
         </div>
 
@@ -321,6 +308,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
         </details>
 
+        <div id="bldInherit" style="font-size:10.5px;color:var(--ink2);background:var(--panel2,rgba(0,0,0,0.03));border-left:3px solid var(--line2);padding:6px 9px;margin-bottom:10px"></div>
+
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <button id="bldRunBtn" onclick="runBuildOpt()"
                   style="padding:6px 14px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;border-radius:2px">
@@ -335,7 +324,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
-        <h2>Run the full model</h2>
+        <h2><span style="color:var(--ink2);font-weight:400">3 &middot;</span> Does it hold up hour by hour?</h2>
         <span class="tag">network-aware MIP &middot; HiGHS &middot; runs in your browser</span>
       </div>
       <div style="padding:12px 14px">
@@ -2767,9 +2756,13 @@ async function runBuildOpt(){
   btn.disabled = true; btn.style.opacity = 0.6;
   st.textContent = 'Solving…';
 
+  // Inherit the scenario from the sliders above rather than duplicating them.
+  // demandGrowthPct is a TOTAL change to 2030; the optimiser needs an annual
+  // rate over the five years, hence the fifth root.
+  const totalGrowth = 1 + (state.demandGrowthPct || 0)/100;
   const opts = {
-    growth: parseFloat(document.getElementById('bldGrowth').value),
-    eaf:    parseFloat(document.getElementById('bldEaf').value),
+    growth: Math.pow(totalGrowth, 1/5) - 1,
+    eaf:    (state.coalEAFPct || 64) / 100,
     rate:   bldRates(),
     state:  state,
   };
@@ -2845,6 +2838,7 @@ function renderBuildResult(res, rate, opts){
   // The binding-constraint annotation. This is the real output: where a
   // technology sits at its cap, the answer is set by how fast we can build, not
   // by economics. Where it does not, the model has genuinely chosen.
+  bldLastTotals = { wind:tot.wind, pv:tot.pv, rooftop:tot.rooftop, batt:tot.batt, ccgt:tot.ccgt };
   const limited = T.filter(t => bound[t] > 0);
   const free    = T.filter(t => bound[t] === 0 && tot[t] > 1);
   const none    = T.filter(t => tot[t] <= 1);
@@ -2876,6 +2870,7 @@ function renderBuildResult(res, rate, opts){
     + 'so this sizes the build; use <strong>Run the full model</strong> above to test a '
     + 'resulting mix hour by hour.</div>';
   html += '</div>';
+  html += bldApplyButton();
   host.innerHTML = html;
 }
 
@@ -3047,6 +3042,7 @@ function renderBuildRegional(res, rate, opts){
     const scf = sp.reduce((a,b)=>a+b,0)/sp.length, wcf = wp.reduce((a,b)=>a+b,0)/wp.length;
     rows.push({ R, got, hr, scf, wcf });
   }
+  bldLastTotals = { wind:tot.wind, pv:tot.pv, batt:tot.batt };
   const built = rows.filter(x => x.got.wind + x.got.pv + x.got.batt > 1);
   const blocked = rows.filter(x => (x.hr.wind_mw||0) + (x.hr.solar_mw||0) < 1);
 
@@ -3105,7 +3101,54 @@ function renderBuildRegional(res, rate, opts){
     + '<div style="color:var(--ink2);margin-top:5px;font-style:italic">'
     + 'Dispatch is approximated over 8 representative days; use <strong>Run the full model</strong> '
     + 'above to test a resulting mix hour by hour.</div></div>';
+  html += bldApplyButton();
   host.innerHTML = html;
+}
+
+
+// Show the user which scenario the build optimiser has inherited, so the link
+// between the sliders above and this panel is visible rather than implicit.
+function bldShowInherit(){
+  const el = document.getElementById('bldInherit');
+  if (!el || typeof state === 'undefined') return;
+  const g = state.demandGrowthPct || 0, e = state.coalEAFPct || 64;
+  const dec = state.coalDecomMW || 0;
+  el.innerHTML = '<strong>Using the scenario set above:</strong> demand '
+    + (g >= 0 ? '+' : '') + g + '% to 2030, coal availability ' + e + '%'
+    + (dec > 0 ? ', ' + (dec/1000).toFixed(1) + ' GW of coal retired' : '')
+    + '. Change the sliders to ask a different question.';
+}
+
+// Take the optimiser's answer and load it into the sliders, so the schedule can
+// then be tested hour-by-hour with the full model. Without this the panel is a
+// dead end - it tells you what to build but you cannot then simulate it.
+let bldLastTotals = null;
+function bldApplyToSliders(){
+  if (!bldLastTotals){
+    const st0 = document.getElementById('bldStatus');
+    if (st0) st0.textContent = 'Solve a build schedule first.';
+    return;
+  }
+  const map = { wind:'newWindMW', pv:'newPvMW', rooftop:'newRooftopMW',
+                batt:'newBattMW', ccgt:'newCcgtMW' };
+  for (const [t, id] of Object.entries(map)){
+    const mw = bldLastTotals[t];
+    if (mw == null) continue;
+    const el = document.getElementById('in_' + id);
+    if (el){ el.value = String(Math.round(mw)); el.dispatchEvent(new Event('input', {bubbles:true})); }
+  }
+  const st = document.getElementById('bldStatus');
+  if (st) st.textContent = 'Loaded into the sliders above \u2014 the dispatch model has re-solved.';
+  document.getElementById('kpis').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function bldApplyButton(){
+  return '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+    + '<button onclick="bldApplyToSliders()" style="padding:5px 12px;background:var(--ok,#4A8C5C);'
+    + 'color:#fff;border:none;cursor:pointer;font-family:\'Saira Condensed\',sans-serif;font-size:12px;'
+    + 'font-weight:600;letter-spacing:.04em;border-radius:2px">Load this build into the model</button>'
+    + '<span style="font-size:10px;color:var(--ink2)">Sets the sliders above, then use '
+    + '<strong>Run the full model</strong> to test it hour by hour.</span></div>';
 }
 
 /* ==================== UI DEFINITION ==================== */
@@ -3944,11 +3987,12 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   }).catch(()=>{btn.textContent=location.href;});
 });
 
-function run(){lastRes=simulate(state,PROFILES);render(lastRes);if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);render(lastRes);if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
 bldInitRates();
+bldShowInherit();
 
 /* --- Load real Eskom profiles if profiles.json is present, then re-solve --- */
 fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=>{
@@ -5045,6 +5089,8 @@ function rtPickPrediction(placeId) {
   }
 }
 window.rtPickPrediction = rtPickPrediction;
+window.bldApplyToSliders = bldApplyToSliders;
+window.bldSetTotals = (t) => { bldLastTotals = t; };   // testing hook
 
 // Close the suggestions when clicking elsewhere, and on Escape - otherwise the
 // dropdown lingers over the map and blocks the click-to-measure interaction.
