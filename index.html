@@ -4377,7 +4377,11 @@ let rtSolarApi = null;   // last successful Building Insights result
 
 async function _rtFetchGoogleSolar(lat, lng) {
   const key = _rtSolarKey();
-  if (!key) return null;   // no config.js, or key left blank - feature simply off
+  if (!key) {
+    console.info('[GridTwin] Google Solar API: no key found. Add one to config.js to enable '
+      + 'per-segment roof orientation. The roof tracer works without it.');
+    return null;
+  }
   const url = 'https://solar.googleapis.com/v1/buildingInsights:findClosest'
             + '?location.latitude=' + lat.toFixed(6)
             + '&location.longitude=' + lng.toFixed(6)
@@ -4385,10 +4389,28 @@ async function _rtFetchGoogleSolar(lat, lng) {
             + '&key=' + key;
   try {
     const r = await fetch(url);
-    if (!r.ok) return null;                      // 404 = no coverage here, which is common
+    if (!r.ok) {
+      // Log the real reason rather than failing silently - 404 means no coverage
+      // at this building, 403 usually means the key is restricted to the wrong
+      // domain or the Solar API is not enabled on the project, 429 is quota.
+      let detail = '';
+      try { const e = await r.json(); detail = (e.error && e.error.message) || ''; } catch (_) {}
+      console.warn('[GridTwin] Google Solar API returned ' + r.status
+        + (r.status === 404 ? ' (no roof data for this location)' : '')
+        + (r.status === 403 ? ' (check: Solar API enabled? key restricted to this domain?)' : '')
+        + (r.status === 429 ? ' (daily quota reached)' : '')
+        + (detail ? ' - ' + detail : ''));
+      return null;
+    }
     const d = await r.json();
     const sp = d.solarPotential;
-    if (!sp || !sp.roofSegmentStats || !sp.roofSegmentStats.length) return null;
+    if (!sp || !sp.roofSegmentStats || !sp.roofSegmentStats.length) {
+      console.warn('[GridTwin] Google Solar API responded but returned no roof segments '
+        + 'for this location.');
+      return null;
+    }
+    console.info('[GridTwin] Google Solar API: ' + sp.roofSegmentStats.length
+      + ' roof segments found, imagery quality ' + (d.imageryQuality || 'unknown') + '.');
 
     // Area-weight each segment's multiplier by its own ground area
     let wsum = 0, asum = 0;
@@ -4414,7 +4436,9 @@ async function _rtFetchGoogleSolar(lat, lng) {
         : null,
     };
   } catch (e) {
-    return null;   // network error, CORS, quota - all fall back to manual
+    console.warn('[GridTwin] Google Solar API request failed: ' + e.message
+      + ' (network, CORS, or blocked request). Falling back to manual tracing.');
+    return null;
   }
 }
 
@@ -4466,9 +4490,18 @@ function _rtApplyGoogleSolar(res) {
 }
 
 async function _rtFetchSiteData(lat, lng, contextHtml) {
-  if (!window.fetchSolar || !window.nearestRegion) return; // resource-query script not ready yet
   const infoEl = document.getElementById('rtTraceInfo');
   const prefix = contextHtml ? contextHtml + ' ' : '';
+
+  // Google Solar roof geometry is fired FIRST and independently. It was
+  // previously nested inside the try block below, after `await fetchSolar(...)`,
+  // which meant a slow or failing Open-Meteo request - or the early return guard
+  // above it - silently prevented the Google call from ever being made, even
+  // with a valid key and full coverage. The two services are unrelated, so
+  // neither should be able to block the other.
+  _rtFetchGoogleSolar(lat, lng).then(_rtApplyGoogleSolar).catch(() => {});
+
+  if (!window.fetchSolar || !window.nearestRegion) return; // resource-query script not ready yet
   if (infoEl) infoEl.innerHTML = prefix + 'Fetching site-specific solar data\u2026';
   try {
     const region = window.nearestRegion(lat, lng);
@@ -4476,9 +4509,6 @@ async function _rtFetchSiteData(lat, lng, contextHtml) {
     const windMonthly = window.windMonthlyForRegion(region);
     const solar = await window.fetchSolar(lat, lng);
     window._resourceData = { lat, lng, solar, windRegion: region, windMonthly };
-    // Roof geometry from Google Solar API - optional, returns null where there
-    // is no coverage (common outside metros), in which case nothing changes.
-    _rtFetchGoogleSolar(lat, lng).then(_rtApplyGoogleSolar);
     if (infoEl) infoEl.innerHTML =
       prefix + 'Using site-specific solar data for <strong>' + region + '</strong> (' + (solar.annualCF*100).toFixed(1) + '% CF).';
   } catch (err) {
