@@ -254,6 +254,77 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <p class="kpinote">Note on the cost figures: <strong>System cost</strong> is the annual total of fuel, carbon and the capex of newly-built capacity only – existing plant is treated as sunk, and curtailment payments to wind and solar contracted under REIPPPP are excluded. <strong>Avg energy cost</strong> is simply that system cost divided by the energy the grid serves, so it is an <em>average</em> across the whole mix, not the marginal cost of the next MWh. <strong>Replacement cost</strong> instead prices every MWh, from existing and new plant alike, at its full lifecycle cost – what this mix would cost if built entirely new at today’s prices. Neither is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
 
 
+    <div class="panel" id="buildSection" style="margin-bottom:18px">
+      <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
+        <h2>When to build</h2>
+        <span class="tag">capacity expansion &middot; least-cost schedule to 2030</span>
+      </div>
+      <div style="padding:12px 14px">
+        <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
+          The sliders above ask &ldquo;does this mix work?&rdquo;. This asks the harder question:
+          <strong>what should be built, and in which year?</strong> It solves for the least-cost build
+          schedule from 2026 to 2030 &mdash; using each unit&rsquo;s real retirement date, technology costs
+          that change year by year, and a limit on how fast capacity can actually be added.
+        </p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:10px">
+          <div>
+            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">How fast can we build?</label>
+            <select id="bldPace" onchange="bldPaceChanged()" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <option value="historical">Historical &mdash; what SA has actually delivered</option>
+              <option value="irp" selected>IRP 2025 pace &mdash; the official plan</option>
+              <option value="masterplan">Masterplan ambition &mdash; ~5 GW/yr renewables</option>
+              <option value="grid">Grid-limited &mdash; all remaining GCCA headroom</option>
+              <option value="none">Unconstrained &mdash; economics only</option>
+            </select>
+            <div id="bldPaceNote" style="font-size:9.5px;color:var(--ink2);margin-top:3px"></div>
+          </div>
+          <div>
+            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Demand growth to 2030</label>
+            <select id="bldGrowth" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <option value="0.0">Flat &mdash; no growth</option>
+              <option value="0.031" selected>IRP 2025 &mdash; 255 TWh by 2030 (+3.1%/yr)</option>
+              <option value="0.05">High &mdash; +5%/yr</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Coal availability (EAF)</label>
+            <select id="bldEaf" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <option value="0.60">60% &mdash; today&rsquo;s floor</option>
+              <option value="0.66" selected>66% &mdash; IRP target band</option>
+              <option value="0.68">68% &mdash; top of IRP band</option>
+            </select>
+          </div>
+        </div>
+
+        <details id="bldAdvanced" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:10px;background:var(--panel)">
+          <summary style="padding:7px 11px;cursor:pointer;font-size:11px;font-weight:600">
+            Set build limits per technology <span style="font-weight:400;color:var(--ink2)">&mdash; GW added per year</span>
+          </summary>
+          <div style="padding:4px 11px 11px">
+            <div id="bldRates" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;font-size:11px"></div>
+            <div style="font-size:9.5px;color:var(--ink2);margin-top:7px">
+              These caps usually decide the answer rather than the economics: renewables already
+              undercut coal on running cost, so the question is how fast they can be connected.
+              South Africa&rsquo;s binding constraint is shifting from procurement pace to grid capacity
+              &mdash; GCCA headroom is already zero in the Northern Cape, Hydra Central, and for
+              solar in the Western Cape.
+            </div>
+          </div>
+        </details>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button id="bldRunBtn" onclick="runBuildOpt()"
+                  style="padding:6px 14px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;border-radius:2px">
+            Solve the build schedule
+          </button>
+          <span id="bldStatus" style="font-size:10.5px;color:var(--ink2)"></span>
+        </div>
+
+        <div id="bldResult" style="margin-top:12px"></div>
+      </div>
+    </div>
+
     <div class="panel" id="mipSection" style="margin-bottom:18px">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
         <h2>Run the full model</h2>
@@ -2444,6 +2515,346 @@ function genOutagePath(meanFrac, volFrac, seed){
   return path;
 }
 
+
+/* ==================== WHEN TO BUILD: CAPACITY EXPANSION ==================== */
+// Solves for the least-cost build schedule 2026-2030: how much of each
+// technology to add in each year, given real per-unit coal retirement dates,
+// technology costs that change year by year, and a limit on build rate.
+//
+// This is a different question from the dispatch model above. That one asks
+// "does this mix work?"; this one asks "what should we build, and when?" - the
+// question the IRP itself answers, and the reason it specifies capacity
+// additions per year rather than a single end-state.
+//
+// Method follows standard capacity-expansion practice: continuous investment
+// variables, dispatch approximated over representative days rather than all
+// 8,760 hours (the full problem would be ~1.75m binaries and is not solvable in
+// a browser), and an equality energy balance with explicit costed curtailment.
+// That last point matters: with a >= balance, surplus renewables spill for free
+// and the optimiser builds without limit.
+
+const BLD_YEARS = [2026, 2027, 2028, 2029, 2030];
+const BLD_TECHS = ['wind', 'pv', 'rooftop', 'batt', 'ccgt'];
+const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distributed',
+                    batt:'Battery (4h)', ccgt:'Gas CCGT' };
+
+// Overnight capex in 2026 (R/kW) and annual real change thereafter.
+// Renewables and storage decline per BNEF's 2035 forecasts (-30% solar, -25%
+// storage, -23% onshore wind). CCGT RISES: BNEF recorded a 16% jump in 2025 to
+// an all-time high, driven by gas-turbine supply chains and data-centre demand.
+const BLD_COST = {
+  wind:    { c2026: 21000, decl:  0.0286 },
+  pv:      { c2026: 12000, decl:  0.0389 },
+  rooftop: { c2026: 17000, decl:  0.0389 },
+  batt:    { c2026: 10500, decl:  0.0315 },
+  ccgt:    { c2026: 18000, decl: -0.0200 },
+};
+const BLD_LIFE = { wind:25, pv:25, rooftop:25, batt:15, ccgt:30 };
+const BLD_DISC = 0.08;
+
+// Build-rate presets, each grounded in something real rather than assumed.
+const BLD_PACE = {
+  historical:  { wind: 250, pv: 300, rooftop:1500, batt: 100, ccgt: 200,
+    note:'REIPPPP delivered ~3.6 GW wind and ~4 GW solar in about 15 years.' },
+  irp:         { wind:2200, pv:1500, rooftop: 500, batt: 550, ccgt:1200,
+    note:'Implied by IRP 2025: 34 GW wind and 25 GW solar by 2039.' },
+  masterplan:  { wind:2500, pv:2000, rooftop:1000, batt:1000, ccgt:1200,
+    note:'Renewable Energy Masterplan ambition of roughly 5 GW a year.' },
+  grid:        { wind:4300, pv:4000, rooftop:2000, batt:4000, ccgt:2000,
+    note:'All remaining GCCA headroom (21.5 GW wind, 19.9 GW solar) spread to 2030. Zero headroom remains in the Northern Cape, Hydra Central, or for Western Cape solar.' },
+  none:        { wind:99000, pv:99000, rooftop:99000, batt:99000, ccgt:99000,
+    note:'No build limit - shows what pure economics would choose, which is not physically deliverable.' },
+};
+
+function bldAnnuity(capexPerKW, life){
+  const r = BLD_DISC;
+  return capexPerKW * r / (1 - Math.pow(1+r, -life));
+}
+function bldCapex(tech, year){
+  return BLD_COST[tech].c2026 * Math.pow(1 - BLD_COST[tech].decl, year - 2026);
+}
+// Coal still standing at the START of a given year, from real per-unit dates.
+function bldCoalMW(year){
+  let cap = 0;
+  for (const u of UC_FLEET){
+    const dy = (u.decom === 'beyond 2050') ? 9999 : parseInt(u.decom, 10);
+    if (dy > year) cap += u.cap;
+  }
+  return cap;
+}
+
+function bldRates(){
+  const out = {};
+  for (const t of BLD_TECHS){
+    const el = document.getElementById('bldRate_' + t);
+    out[t] = el ? Math.max(0, parseFloat(el.value) * 1000) : 0;
+  }
+  return out;
+}
+
+function bldPaceChanged(){
+  const pace = document.getElementById('bldPace').value;
+  const p = BLD_PACE[pace];
+  for (const t of BLD_TECHS){
+    const el = document.getElementById('bldRate_' + t);
+    if (el) el.value = (p[t] / 1000).toFixed(2);
+  }
+  const n = document.getElementById('bldPaceNote');
+  if (n) n.textContent = p.note;
+}
+
+function bldInitRates(){
+  const host = document.getElementById('bldRates');
+  if (!host) return;
+  host.innerHTML = BLD_TECHS.map(t =>
+    '<div><label style="display:block;margin-bottom:2px;color:var(--ink2)">' + BLD_LABEL[t] + '</label>'
+    + '<input id="bldRate_' + t + '" type="number" min="0" max="99" step="0.05" value="0"'
+    + ' style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">'
+    + '<span style="font-size:9px;color:var(--ink2)">GW/yr</span></div>').join('');
+  bldPaceChanged();
+}
+
+
+// Representative days. Deliberately includes the highest-net-load day: that day
+// is what sizes firm capacity, and omitting it would understate the build need.
+function bldRepDays(n){
+  const rows = [];
+  for (let d = 0; d < 365; d++){
+    let netPeak = 0, load = 0;
+    for (let h = 0; h < 24; h++){
+      const i = d*24 + h;
+      load += PROFILES.demand[i];
+      netPeak = Math.max(netPeak,
+        PROFILES.demand[i] - 4000*PROFILES.solar[i] - 3600*PROFILES.wind[i]);
+    }
+    rows.push({ d, load, netPeak });
+  }
+  const chosen = new Set();
+  chosen.add([...rows].sort((a,b)=>b.netPeak-a.netPeak)[0].d);   // tightest day
+  chosen.add([...rows].sort((a,b)=>a.load-b.load)[0].d);          // slackest day
+  const step = Math.floor(365/(n-2));
+  for (let k = 0; chosen.size < n && k < 365; k += step) chosen.add(k);
+  return [...chosen].slice(0, n).map(d => ({ d, weight: 365/n }));
+}
+
+const BLD_WORKER_SRC = `
+let highs = null;
+self.onmessage = async (e) => {
+  const { lp } = e.data;
+  if (!highs) {
+    try {
+      self.importScripts('https://cdn.jsdelivr.net/npm/highs@1.15.2/build/highs.js');
+      highs = await self.Module({ locateFile: (f) => 'https://cdn.jsdelivr.net/npm/highs@1.15.2/build/' + f });
+    } catch (err) { self.postMessage({ type:'error', msg: String(err) }); return; }
+  }
+  try {
+    const res = highs.solve(lp, { time_limit: 120 });
+    self.postMessage({ type:'done', res });
+  } catch (err) { self.postMessage({ type:'error', msg: String(err) }); }
+};
+`;
+
+let bldWorker = null, bldRunning = false;
+
+function bldBuildLP(opts){
+  const Y = BLD_YEARS, T = BLD_TECHS;
+  const rd = bldRepDays(12);
+  const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
+  // `state` is script-scoped, so read it via the accessor rather than assuming a
+  // global - reading undefined fields here silently produces NaN coefficients and
+  // an LP that HiGHS refuses to parse.
+  const S = opts.state || FIXED;
+  const VOLL = 60000, CARBON = (S.carbonPrice != null ? S.carbonPrice : 550);
+  const MC = { coal: S.costCoal || 546, ccgt: S.costCcgt || 2800, diesel: S.costDiesel || 6100 };
+  const EX = { nuclear:1860, hydro:600, imports:1150, ps:2900, diesel:3400,
+               wind:S.windMW || 3600, pv:S.pvUtilityMW || 4000, rooftop:S.rooftopMW || 9100,
+               csp:S.cspMW || 500, batt:S.battPowerMW || 800 };
+  const EMIS_COAL = S.emisCoal || 1.04, EMIS_CCGT = S.emisCcgt || 0.43;
+
+  const L = ['Minimize', ' obj:'];
+  const obj = [];
+  for (const t of T) for (const y of Y){
+    let cost = 0;
+    for (const yy of Y) if (yy >= y)
+      cost += bldAnnuity(bldCapex(t,y), BLD_LIFE[t]) / Math.pow(1+BLD_DISC, yy-2026);
+    obj.push(cost.toFixed(3) + ' b_' + t + '_' + y);
+  }
+  for (const y of Y){
+    const df = 1/Math.pow(1+BLD_DISC, y-2026);
+    for (const r of rd) for (let h = 0; h < 24; h++){
+      const k = y + '_' + r.d + '_' + h;
+      obj.push(((MC.coal + CARBON*EMIS_COAL)*r.weight*df).toFixed(3) + ' gc_' + k);
+      obj.push(((MC.ccgt + CARBON*EMIS_CCGT)*r.weight*df).toFixed(3) + ' gg_' + k);
+      obj.push((MC.diesel*r.weight*df).toFixed(3) + ' gd_' + k);
+      obj.push((VOLL*r.weight*df).toFixed(3) + ' u_' + k);
+      obj.push((150*r.weight*df).toFixed(3) + ' crt_' + k);
+      obj.push((20*r.weight*df).toFixed(3) + ' bdis_' + k);
+    }
+  }
+  L.push('  ' + obj.join(' + '));
+  L.push('Subject To');
+
+  const cum = (t,y) => Y.filter(yy => yy <= y).map(yy => 'b_' + t + '_' + yy);
+
+  for (const y of Y){
+    const dg = Math.pow(1+growth, y-2026);
+    const coalCap = bldCoalMW(y) * eaf;
+    for (const r of rd) for (let h = 0; h < 24; h++){
+      const i = r.d*24 + h, k = y + '_' + r.d + '_' + h;
+      const dem = PROFILES.demand[i]*dg;
+      const sp = PROFILES.solar[i], wp = PROFILES.wind[i];
+      const fixed = EX.nuclear*0.9 + EX.hydro*0.5 + EX.imports*0.9
+                  + EX.wind*wp + (EX.pv + EX.rooftop)*sp + EX.csp*0.38;
+      L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k
+        + ' + u_' + k + ' - crt_' + k + ' + bdis_' + k + ' - bchg_' + k
+        + ' + ' + cum('wind',y).map(v => wp.toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('pv',y).map(v => sp.toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('rooftop',y).map(v => sp.toFixed(4)+' '+v).join(' + ')
+        + ' = ' + (dem - fixed).toFixed(1));
+      L.push(' cmax_' + k + ': gc_' + k + ' <= ' + coalCap.toFixed(1));
+      L.push(' gmax_' + k + ': gg_' + k + ' - ' + cum('ccgt',y).join(' - ') + ' <= 0');
+      L.push(' dmax_' + k + ': gd_' + k + ' <= ' + EX.diesel);
+      L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
+      L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
+    }
+    // Storage must balance over each representative day at 88% round-trip, and
+    // cannot discharge more than its 4-hour duration allows.
+    for (const r of rd){
+      const dis = [], chg = [];
+      for (let h = 0; h < 24; h++){ dis.push('bdis_'+y+'_'+r.d+'_'+h); chg.push('bchg_'+y+'_'+r.d+'_'+h); }
+      L.push(' soc_'+y+'_'+r.d+': ' + dis.join(' + ') + ' - ' + chg.map(v=>'0.88 '+v).join(' - ') + ' <= 0');
+      L.push(' dur_'+y+'_'+r.d+': ' + dis.join(' + ') + ' - ' + cum('batt',y).map(v=>'4 '+v).join(' - ')
+        + ' <= ' + (EX.batt*4));
+    }
+    // Firm-capacity reserve margin at the annual peak. Wind and solar get no
+    // capacity credit: South Africa's system peak is a winter evening, when
+    // solar is zero and wind cannot be relied on.
+    let peak = 0;
+    for (const r of rd) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[r.d*24+h]*dg);
+    const firm = coalCap + EX.nuclear*0.9 + EX.hydro*0.5 + EX.imports*0.9
+               + EX.ps + EX.diesel + EX.batt;
+    L.push(' res_' + y + ': ' + cum('batt',y).join(' + ') + ' + ' + cum('ccgt',y).join(' + ')
+      + ' >= ' + Math.max(0, peak*1.10 - firm).toFixed(1));
+  }
+
+  L.push('Bounds');
+  for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + RATE[t].toFixed(1));
+  for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
+    const k = y + '_' + r.d + '_' + h;
+    L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
+    L.push(' 0 <= gd_'+k+' <= ' + EX.diesel); L.push(' 0 <= u_'+k+' <= 100000');
+    L.push(' 0 <= crt_'+k+' <= 200000');
+    L.push(' 0 <= bdis_'+k+' <= 100000'); L.push(' 0 <= bchg_'+k+' <= 100000');
+  }
+  L.push('End');
+  return { lp: L.join('\n'), rate: RATE };
+}
+
+
+function runBuildOpt(){
+  if (bldRunning) return;
+  const btn = document.getElementById('bldRunBtn');
+  const st  = document.getElementById('bldStatus');
+  bldRunning = true;
+  btn.disabled = true; btn.style.opacity = 0.6;
+  st.textContent = 'Solving…';
+
+  const opts = {
+    growth: parseFloat(document.getElementById('bldGrowth').value),
+    eaf:    parseFloat(document.getElementById('bldEaf').value),
+    rate:   bldRates(),
+    state:  state,
+  };
+  const { lp, rate } = bldBuildLP(opts);
+
+  if (!bldWorker){
+    try {
+      bldWorker = new Worker(URL.createObjectURL(new Blob([BLD_WORKER_SRC], {type:'text/javascript'})));
+    } catch (err){
+      st.textContent = 'Could not start the solver.';
+      bldRunning = false; btn.disabled = false; btn.style.opacity = 1;
+      return;
+    }
+  }
+  bldWorker.onmessage = (e) => {
+    bldRunning = false; btn.disabled = false; btn.style.opacity = 1;
+    if (e.data.type === 'error'){ st.textContent = 'Solver error: ' + e.data.msg; return; }
+    st.textContent = '';
+    renderBuildResult(e.data.res, rate, opts);
+  };
+  bldWorker.postMessage({ lp });
+}
+
+function renderBuildResult(res, rate, opts){
+  const host = document.getElementById('bldResult');
+  if (!res || !res.Columns){
+    host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
+    return;
+  }
+  const Y = BLD_YEARS, T = BLD_TECHS;
+  const mw = {}, tot = {}, bound = {};
+  for (const t of T){
+    tot[t] = 0; bound[t] = 0;
+    mw[t] = Y.map(y => {
+      const v = res.Columns['b_' + t + '_' + y];
+      const q = v ? v.Primal : 0;
+      tot[t] += q;
+      if (q > rate[t] * 0.999 && rate[t] < 90000) bound[t]++;
+      return q;
+    });
+  }
+  const fmt = q => q > 1 ? (q/1000).toFixed(2) : '–';
+
+  let html = '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 6px">GW added</th>'
+    + Y.map(y => '<th style="text-align:right;padding:4px 6px">' + y + '</th>').join('')
+    + '<th style="text-align:right;padding:4px 6px;border-left:1px solid var(--line2)">Total</th></tr>';
+  for (const t of T){
+    html += '<tr style="border-bottom:1px solid var(--line2)">'
+      + '<td style="padding:4px 6px">' + BLD_LABEL[t] + '</td>'
+      + mw[t].map(q => '<td style="text-align:right;padding:4px 6px">' + fmt(q) + '</td>').join('')
+      + '<td style="text-align:right;padding:4px 6px;font-weight:700;border-left:1px solid var(--line2)">'
+      + (tot[t]/1000).toFixed(2) + '</td></tr>';
+  }
+  html += '</table>';
+
+  // The binding-constraint annotation. This is the real output: where a
+  // technology sits at its cap, the answer is set by how fast we can build, not
+  // by economics. Where it does not, the model has genuinely chosen.
+  const limited = T.filter(t => bound[t] > 0);
+  const free    = T.filter(t => bound[t] === 0 && tot[t] > 1);
+  const none    = T.filter(t => tot[t] <= 1);
+  html += '<div style="margin-top:10px;font-size:10.5px;line-height:1.5">';
+  if (limited.length){
+    html += '<div style="border-left:3px solid var(--alert,#C4785A);padding:6px 9px;background:rgba(196,120,90,0.07);margin-bottom:6px">'
+      + '<strong>Limited by build rate, not economics:</strong> '
+      + limited.map(t => BLD_LABEL[t].toLowerCase() + ' (' + bound[t] + ' of 5 years at the cap)').join(', ')
+      + '. The model would build more if it could &mdash; raise the pace to see how much.</div>';
+  }
+  if (free.length){
+    html += '<div style="border-left:3px solid var(--ok,#4A8C5C);padding:6px 9px;background:rgba(74,140,92,0.07);margin-bottom:6px">'
+      + '<strong>Chosen on economics:</strong> ' + free.map(t => BLD_LABEL[t].toLowerCase()).join(', ')
+      + ' &mdash; built below the cap, so this is what least cost actually wants.</div>';
+  }
+  if (none.length){
+    html += '<div style="border-left:3px solid var(--line2);padding:6px 9px;margin-bottom:6px">'
+      + '<strong>Not built:</strong> ' + none.map(t => BLD_LABEL[t].toLowerCase()).join(', ')
+      + ' &mdash; not least-cost under these assumptions.</div>';
+  }
+  html += '<div style="color:var(--ink2);margin-top:6px">'
+    + 'Discounted total system cost over the period: <strong>R'
+    + (res.ObjectiveValue/1e9).toFixed(0) + ' bn</strong> (8% real discount rate). '
+    + 'Coal falls from ' + (bldCoalMW(2026)/1000).toFixed(1) + ' GW to '
+    + (bldCoalMW(2030)/1000).toFixed(1) + ' GW over the period on the real '
+    + 'station-by-station retirement schedule.</div>';
+  html += '<div style="color:var(--ink2);margin-top:5px;font-style:italic">'
+    + 'Dispatch is approximated over 12 representative days rather than all 8,760 hours, '
+    + 'so this sizes the build; use <strong>Run the full model</strong> above to test a '
+    + 'resulting mix hour by hour.</div>';
+  html += '</div>';
+  host.innerHTML = html;
+}
+
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
@@ -3284,6 +3695,7 @@ function run(){lastRes=simulate(state,PROFILES);render(lastRes);if(typeof render
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
+bldInitRates();
 
 /* --- Load real Eskom profiles if profiles.json is present, then re-solve --- */
 fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=>{
