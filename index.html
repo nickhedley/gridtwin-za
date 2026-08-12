@@ -590,14 +590,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <button onclick="rtGeocode()" style="font-size:11px;padding:7px 16px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
               </div>
               <div id="rt_status" style="font-size:10.5px;color:var(--ink2);margin-top:6px">
-                We measure your roof automatically from satellite imagery where available &mdash; its size, and which way each face points.
+                Search an address, then <strong>click your building on the map</strong> &mdash; we measure that roof from satellite imagery: its size and which way each face points. South African address data rarely resolves to house level, so clicking is usually more reliable than searching.
               </div>
             </div>
             <div id="rtSearchResults" style="display:none;max-height:150px;overflow-y:auto;background:var(--panel);border-top:1px solid var(--line2)"></div>
             <div id="rtMap" style="height:300px;background:var(--bg2,#eee);border-top:1px solid var(--line2)"></div>
             <div style="padding:6px 10px;background:var(--panel);border-top:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
               <span id="rtTraceInfo" style="font-size:10px;color:var(--ink2);flex:1;min-width:180px">
-                Search an address above to begin.
+                Search an address, then click your building on the map. Use <strong>Trace manually</strong> only if the automatic measurement is unavailable or looks wrong.
               </span>
               <div style="display:flex;gap:5px">
                 <button onclick="rtStartTrace()" id="rtTraceBtn" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:2px">Trace manually</button>
@@ -4141,7 +4141,14 @@ function rtStartTrace() {
 }
 
 function rtMapClick(e) {
-  if (!rtTracing) return;
+  // Not tracing: a click means "measure the building here". This is the reliable
+  // route when the geocoder only resolves to street level, which is most of South
+  // Africa - the user can see their own roof on the imagery even when no address
+  // lookup can name it.
+  if (!rtTracing) {
+    rtMeasureAt(e.latlng.lat, e.latlng.lng);
+    return;
+  }
   const pt = [e.latlng.lat, e.latlng.lng];
 
   // If clicking near the first point and we have 3+ points, close the polygon
@@ -4303,6 +4310,49 @@ async function rtGeocode() {
   resultsEl.style.display = '';
   resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">Searching…</div>';
 
+  // Try Google Geocoding first when a key is configured. OpenStreetMap's South
+  // African house-number coverage is poor, so most searches only resolve to a
+  // street - which is the single biggest source of friction in this tool.
+  // Google's address data is far more complete here. Falls back to Nominatim on
+  // any failure, so the search box always works with or without a key.
+  const gkey = _rtSolarKey();
+  if (gkey) {
+    try {
+      const gurl = 'https://maps.googleapis.com/maps/api/geocode/json'
+        + '?address=' + encodeURIComponent(q)
+        + '&region=za&components=country:ZA'
+        + '&key=' + gkey;
+      const gr = await fetch(gurl);
+      const gd = await gr.json();
+      if (gd.status === 'OK' && gd.results && gd.results.length) {
+        resultsEl.innerHTML = gd.results.slice(0, 6).map(r => {
+          const loc = r.geometry && r.geometry.location;
+          // ROOFTOP is Google's own term for a house-level match; anything less
+          // precise is flagged so the user knows to click their building instead.
+          const exact = r.geometry && r.geometry.location_type === 'ROOFTOP';
+          const parts = (r.formatted_address || '').split(',');
+          const note = exact ? '' :
+            '<span style="color:var(--alert,#C4785A);font-weight:600">approximate</span> \u2014 ';
+          return `<div onclick="rtGoTo(${loc.lat},${loc.lng},${!!exact})"
+                style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
+                onmouseover="this.style.background='var(--bg2,#eee)'"
+                onmouseout="this.style.background='transparent'">
+              <div style="font-weight:600">${parts[0] || r.formatted_address}</div>
+              <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${note}${parts.slice(1,4).join(',').trim()}</div>
+            </div>`;
+        }).join('');
+        return;
+      }
+      if (gd.status && gd.status !== 'ZERO_RESULTS') {
+        console.warn('[GridTwin] Google Geocoding returned ' + gd.status
+          + (gd.error_message ? ' - ' + gd.error_message : '')
+          + '. Falling back to OpenStreetMap.');
+      }
+    } catch (e) {
+      console.warn('[GridTwin] Google Geocoding failed: ' + e.message + '. Falling back to OpenStreetMap.');
+    }
+  }
+
   try {
     // Bias to South Africa; return up to 6 candidates
     const url = 'https://nominatim.openstreetmap.org/search'
@@ -4328,7 +4378,7 @@ async function rtGeocode() {
         : (r.display_name || '').split(',')[0];
       const subtitle = (r.display_name || '').split(',').slice(hasHouseNumber ? 1 : 1, hasHouseNumber ? 4 : 4).join(',').trim();
       const precisionNote = hasHouseNumber ? '' : '<span style="color:var(--alert,#C4785A);font-weight:600">street-level match</span> — ';
-      return `<div onclick="rtGoTo(${r.lat},${r.lon})"
+      return `<div onclick="rtGoTo(${r.lat},${r.lon},${hasHouseNumber})"
             style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
             onmouseover="this.style.background='var(--bg2,#eee)'"
             onmouseout="this.style.background='transparent'">
@@ -4534,7 +4584,7 @@ function _rtApplyGoogleSolar(res) {
   if (window.rtCalc) rtCalc();
 }
 
-async function _rtFetchSiteData(lat, lng, contextHtml) {
+async function _rtFetchSiteData(lat, lng, contextHtml, skipRoof) {
   const infoEl = document.getElementById('rtTraceInfo');
   const prefix = contextHtml ? contextHtml + ' ' : '';
 
@@ -4544,7 +4594,7 @@ async function _rtFetchSiteData(lat, lng, contextHtml) {
   // above it - silently prevented the Google call from ever being made, even
   // with a valid key and full coverage. The two services are unrelated, so
   // neither should be able to block the other.
-  _rtFetchGoogleSolar(lat, lng).then(_rtApplyGoogleSolar).catch(() => {});
+  if (!skipRoof) _rtFetchGoogleSolar(lat, lng).then(_rtApplyGoogleSolar).catch(() => {});
 
   if (!window.fetchSolar || !window.nearestRegion) return; // resource-query script not ready yet
   if (infoEl) infoEl.innerHTML = prefix + 'Fetching site-specific solar data\u2026';
@@ -4563,7 +4613,7 @@ async function _rtFetchSiteData(lat, lng, contextHtml) {
   if (window.rtCalc) window.rtCalc();
 }
 
-function rtGoTo(lat, lng) {
+function rtGoTo(lat, lng, exact) {
   rtInitMap();
   lat = parseFloat(lat); lng = parseFloat(lng);
   if (rtMap) {
@@ -4571,8 +4621,37 @@ function rtGoTo(lat, lng) {
     rtClearTrace();
   }
   document.getElementById('rtSearchResults').style.display = 'none';
-  _rtFetchSiteData(lat, lng, 'Location found. Click <strong>Start tracing</strong>, then click each corner of the roof.');
+
+  // Only auto-measure when the geocoder actually returned a house-level match.
+  // Google's buildingInsights:findClosest measures the NEAREST building to the
+  // point given - so firing it at a street-level result silently measures
+  // whichever property happens to sit closest, usually not the user's. In that
+  // case we fetch the regional solar resource but leave the roof unmeasured, and
+  // ask the user to click their own building instead.
+  if (exact === true || exact === 'true') {
+    _rtFetchSiteData(lat, lng, '');
+  } else {
+    _rtFetchSiteData(lat, lng, '', true);   // skipRoof = true
+    const s = document.getElementById('rt_status');
+    if (s) s.innerHTML = '<strong style="color:var(--alert,#C4785A)">Street-level match only.</strong> '
+      + 'Click your building on the map below and we will measure that roof.';
+  }
 }
+
+// Click anywhere on a building to measure THAT roof. This is the reliable path
+// when the geocoder cannot resolve a house number, which is most of South Africa.
+function rtMeasureAt(lat, lng) {
+  const s = document.getElementById('rt_status');
+  if (s) s.innerHTML = 'Measuring the building at that point\u2026';
+  _rtFetchGoogleSolar(lat, lng).then(res => {
+    _rtApplyGoogleSolar(res);
+    if (!res && s) {
+      s.innerHTML = 'No satellite roof measurement for that building \u2014 '
+        + 'try clicking nearer its centre, or use <strong>Trace manually</strong>.';
+    }
+  }).catch(() => {});
+}
+window.rtMeasureAt = rtMeasureAt;
 
 window.rtGeocode = rtGeocode;
 window.rtGoTo    = rtGoTo;
