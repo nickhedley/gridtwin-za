@@ -4201,14 +4201,22 @@ function rtFinishTrace() {
   document.getElementById('rt_area').value = usableM2;
   const traceMsg = `<strong>Traced area: ${Math.round(areaM2).toLocaleString()} m\u00b2</strong> \u00b7 usable after setbacks &amp; obstructions (72%): <strong>${usableM2.toLocaleString()} m\u00b2</strong> \u2014 applied to the calculator below.`;
 
-  // If the user traced without searching first (panned/zoomed manually to a
-  // known location), fetch site-specific solar data for the polygon's centroid
-  // now - otherwise search already fetched it and re-fetching would just be
-  // redundant (the traced building and searched point are essentially the
-  // same location).
+  const centLat = rtPoints.reduce((s, p) => s + p[0], 0) / rtPoints.length;
+  const centLng = rtPoints.reduce((s, p) => s + p[1], 0) / rtPoints.length;
+
+  // Google Solar roof geometry is always fetched for the TRACED polygon's centroid.
+  // This previously ran only when window._resourceData was absent, on the reasoning
+  // that a prior address search had already covered it. That was wrong for this
+  // service: Open-Meteo's solar resource is a regional value where a few hundred
+  // metres makes no difference, but Building Insights returns the geometry of ONE
+  // SPECIFIC BUILDING. A search result can sit on the street or a neighbouring
+  // property, so the traced roof is the more accurate point - and if the user
+  // searched first, the old branch meant Google was never queried for the building
+  // they actually outlined.
+  _rtFetchGoogleSolar(centLat, centLng).then(_rtApplyGoogleSolar).catch(() => {});
+
   if (!window._resourceData) {
-    const centLat = rtPoints.reduce((s, p) => s + p[0], 0) / rtPoints.length;
-    const centLng = rtPoints.reduce((s, p) => s + p[1], 0) / rtPoints.length;
+    // No prior search, so the regional solar/wind resource still needs fetching.
     _rtFetchSiteData(centLat, centLng, traceMsg);
   } else {
     document.getElementById('rtTraceInfo').innerHTML = traceMsg;
