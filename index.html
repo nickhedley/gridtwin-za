@@ -4290,6 +4290,38 @@ function _rtParseCoords(text) {
   return { lat, lng };
 }
 
+
+// Loads the Google Maps JavaScript API on demand and returns a Geocoder.
+// Deliberately lazy: the library is only fetched the first time someone actually
+// searches an address, so users who never open the rooftop tab pay no page-weight
+// cost. Resolves to null if the key is absent or the script fails to load.
+let _rtGeocoderPromise = null;
+function _rtGoogleGeocoder(key) {
+  if (_rtGeocoderPromise) return _rtGeocoderPromise;
+  _rtGeocoderPromise = new Promise(resolve => {
+    if (window.google && window.google.maps && window.google.maps.Geocoder) {
+      resolve(new window.google.maps.Geocoder());
+      return;
+    }
+    const cb = '_rtGmapsReady';
+    window[cb] = () => {
+      try { resolve(new window.google.maps.Geocoder()); }
+      catch (e) { resolve(null); }
+    };
+    const s = document.createElement('script');
+    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key)
+          + '&libraries=geocoding&callback=' + cb + '&loading=async';
+    s.async = true;
+    s.onerror = () => {
+      console.warn('[GridTwin] Could not load the Google Maps JS library - '
+        + 'check the key allows the Maps JavaScript API. Using OpenStreetMap search.');
+      resolve(null);
+    };
+    document.head.appendChild(s);
+  });
+  return _rtGeocoderPromise;
+}
+
 async function rtGeocode() {
   const q = document.getElementById('rtSearch').value.trim();
   const resultsEl = document.getElementById('rtSearchResults');
@@ -4315,41 +4347,58 @@ async function rtGeocode() {
   // street - which is the single biggest source of friction in this tool.
   // Google's address data is far more complete here. Falls back to Nominatim on
   // any failure, so the search box always works with or without a key.
+  // Google geocoding via the Maps JavaScript API rather than the REST web service.
+  // The REST endpoint rejects referrer-restricted keys outright ("API keys with
+  // referer restrictions cannot be used with this API") because it is designed for
+  // server-side use and only supports IP restrictions - useless for a browser app,
+  // and removing the restriction would leave a publicly-visible key wide open. The
+  // JS library IS referrer-aware, so the key stays locked to this domain.
+  //
+  // Falls back to OpenStreetMap whenever the library is unavailable or returns
+  // nothing, so search always works with or without a key.
   const gkey = _rtSolarKey();
   if (gkey) {
     try {
-      const gurl = 'https://maps.googleapis.com/maps/api/geocode/json'
-        + '?address=' + encodeURIComponent(q)
-        + '&region=za&components=country:ZA'
-        + '&key=' + gkey;
-      const gr = await fetch(gurl);
-      const gd = await gr.json();
-      if (gd.status === 'OK' && gd.results && gd.results.length) {
-        resultsEl.innerHTML = gd.results.slice(0, 6).map(r => {
-          const loc = r.geometry && r.geometry.location;
-          // ROOFTOP is Google's own term for a house-level match; anything less
-          // precise is flagged so the user knows to click their building instead.
-          const exact = r.geometry && r.geometry.location_type === 'ROOFTOP';
-          const parts = (r.formatted_address || '').split(',');
-          const note = exact ? '' :
-            '<span style="color:var(--alert,#C4785A);font-weight:600">approximate</span> \u2014 ';
-          return `<div onclick="rtGoTo(${loc.lat},${loc.lng},${!!exact})"
-                style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
-                onmouseover="this.style.background='var(--bg2,#eee)'"
-                onmouseout="this.style.background='transparent'">
-              <div style="font-weight:600">${parts[0] || r.formatted_address}</div>
-              <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${note}${parts.slice(1,4).join(',').trim()}</div>
-            </div>`;
-        }).join('');
-        return;
-      }
-      if (gd.status && gd.status !== 'ZERO_RESULTS') {
-        console.warn('[GridTwin] Google Geocoding returned ' + gd.status
-          + (gd.error_message ? ' - ' + gd.error_message : '')
-          + '. Falling back to OpenStreetMap.');
+      const geocoder = await _rtGoogleGeocoder(gkey);
+      if (geocoder) {
+        const gres = await new Promise(resolve => {
+          geocoder.geocode({
+            address: q,
+            componentRestrictions: { country: 'ZA' },
+          }, (results, status) => {
+            if (status === 'OK' && results && results.length) resolve(results);
+            else {
+              if (status !== 'ZERO_RESULTS') {
+                console.warn('[GridTwin] Google geocoding returned ' + status + '. Falling back to OpenStreetMap.');
+              }
+              resolve(null);
+            }
+          });
+        });
+        if (gres) {
+          resultsEl.innerHTML = gres.slice(0, 6).map(r => {
+            const loc = r.geometry && r.geometry.location;
+            const lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
+            const lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
+            // ROOFTOP is Google's term for a genuine house-level match. Anything
+            // less precise is flagged, so the user knows to click their building.
+            const exact = r.geometry && r.geometry.location_type === 'ROOFTOP';
+            const parts = (r.formatted_address || '').split(',');
+            const note = exact ? '' :
+              '<span style="color:var(--alert,#C4785A);font-weight:600">approximate</span> \u2014 ';
+            return `<div onclick="rtGoTo(${lat},${lng},${!!exact})"
+                  style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
+                  onmouseover="this.style.background='var(--bg2,#eee)'"
+                  onmouseout="this.style.background='transparent'">
+                <div style="font-weight:600">${parts[0] || r.formatted_address}</div>
+                <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${note}${parts.slice(1,4).join(',').trim()}</div>
+              </div>`;
+          }).join('');
+          return;
+        }
       }
     } catch (e) {
-      console.warn('[GridTwin] Google Geocoding failed: ' + e.message + '. Falling back to OpenStreetMap.');
+      console.warn('[GridTwin] Google geocoding unavailable: ' + e.message + '. Falling back to OpenStreetMap.');
     }
   }
 
