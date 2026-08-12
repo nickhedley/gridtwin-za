@@ -255,6 +255,32 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <p class="kpinote">Note on the cost figures: <strong>System cost</strong> is the annual total of fuel, carbon and the capex of newly-built capacity only – existing plant is treated as sunk, and curtailment payments to wind and solar contracted under REIPPPP are excluded. <strong>Avg energy cost</strong> is simply that system cost divided by the energy the grid serves, so it is an <em>average</em> across the whole mix, not the marginal cost of the next MWh. <strong>Replacement cost</strong> instead prices every MWh, from existing and new plant alike, at its full lifecycle cost – what this mix would cost if built entirely new at today’s prices. Neither is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
 
 
+    <div class="panel" id="wxSection" style="margin-bottom:18px">
+      <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
+        <h2>How much does the weather change this?</h2>
+        <span class="tag">inter-annual variability &middot; re-solves per weather year</span>
+      </div>
+      <div style="padding:12px 14px">
+        <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
+          Everything above runs on a <strong>single</strong> year of wind and solar weather. This
+          re-solves your scenario once for each weather year on record and reports the spread &mdash;
+          best case, median, P90 and worst. South Africa has the
+          <strong>most variable solar resource in Africa</strong> (coefficient of variation near 0.4,
+          driven by ENSO and the Indian Ocean Dipole), so one year can materially over- or
+          under-state both risk and curtailment. Demand and plant availability are held fixed, so
+          only the weather changes.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button id="wxRunBtn" onclick="runWeatherSpread()"
+                  style="padding:6px 14px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;border-radius:2px">
+            Test across all weather years
+          </button>
+          <span id="wxStatus" style="font-size:10.5px;color:var(--ink2)"></span>
+        </div>
+        <div id="wxResult" style="margin-top:12px"></div>
+      </div>
+    </div>
+
     <div class="panel" id="buildSection" style="margin-bottom:18px">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
         <h2><span style="color:var(--ink2);font-weight:400">2 &middot;</span> What should we build, and when?</h2>
@@ -3149,6 +3175,162 @@ function bldApplyButton(){
     + 'font-weight:600;letter-spacing:.04em;border-radius:2px">Load this build into the model</button>'
     + '<span style="font-size:10px;color:var(--ink2)">Sets the sliders above, then use '
     + '<strong>Run the full model</strong> to test it hour by hour.</span></div>';
+}
+
+
+/* ==================== WEATHER-YEAR VARIABILITY ============================
+ * Every result in this app was previously conditioned on a SINGLE weather year.
+ * That is its weakest methodological assumption, and South Africa is the worst
+ * place to make it: a 2025 study (arXiv:2510.21873) finds SA has the most
+ * variable solar resource in Africa, with a coefficient of variation approaching
+ * 0.4 driven by ENSO and the Indian Ocean Dipole. A 30-year study of Europe
+ * found multiple weather years revealed a FIVE-FOLD increase in the inter-annual
+ * variability of system costs and emissions versus a single-year run.
+ *
+ * It also fixes a conceptual problem in the risk panel. That panel varies coal
+ * availability, which is the right risk driver for today's coal-dominated
+ * system and the wrong one for the system being planned: once coal retires and
+ * renewables pass half of supply, WEATHER is the dominant risk. Varying EAF in a
+ * zero-coal scenario varies nothing at all.
+ *
+ * Loads nodal/profiles_regional_multiyear.json if present. Everything degrades
+ * cleanly to the existing single-year behaviour when it is absent.
+ */
+let bldWeatherYears = null;
+
+async function loadWeatherYears(){
+  if (bldWeatherYears !== null) return bldWeatherYears;
+  try {
+    const r = await fetch('nodal/profiles_regional_multiyear.json');
+    if (!r.ok) { bldWeatherYears = false; return false; }
+    const d = await r.json();
+    if (!d || !d.meta || !Array.isArray(d.meta.years) || !d.meta.years.length){
+      bldWeatherYears = false; return false;
+    }
+    bldWeatherYears = d;
+    console.info('[GridTwin] Weather years loaded: ' + d.meta.years.join(', ')
+      + (d.meta.warning ? ' — ' + d.meta.warning : ''));
+    return d;
+  } catch (e) { bldWeatherYears = false; return false; }
+}
+
+// National per-unit series for one weather year, demand-weighted across regions
+// so it can substitute directly for the single-year national profile.
+function weatherYearNational(year){
+  if (!bldWeatherYears) return null;
+  const wind = new Float64Array(HOURS), solar = new Float64Array(HOURS);
+  let tw = 0;
+  for (const R of BLD_REGIONS){
+    const share = BLD_LOAD_SHARE[R] || 0;
+    const w = bldWeatherYears.wind_pu[R] && bldWeatherYears.wind_pu[R][year];
+    const s = bldWeatherYears.solar_pu[R] && bldWeatherYears.solar_pu[R][year];
+    if (!w || !s) continue;
+    tw += share;
+    for (let h = 0; h < HOURS; h++){ wind[h] += w[h]*share; solar[h] += s[h]*share; }
+  }
+  if (!tw) return null;
+  for (let h = 0; h < HOURS; h++){ wind[h] /= tw; solar[h] /= tw; }
+  return { wind, solar };
+}
+
+// Re-solve the current scenario once per weather year and report the spread.
+// This is the number that matters: not "what happens in 2023" but "what is the
+// range across the weather we have actually observed".
+async function runWeatherSpread(){
+  const btn = document.getElementById('wxRunBtn');
+  const st  = document.getElementById('wxStatus');
+  const host = document.getElementById('wxResult');
+  const d = await loadWeatherYears();
+  if (!d){
+    st.textContent = 'No multi-year weather data found — run fetch_weather_years.py and upload nodal/profiles_regional_multiyear.json.';
+    return;
+  }
+  btn.disabled = true; btn.style.opacity = 0.6;
+  st.textContent = 'Re-solving across ' + d.meta.years.length + ' weather years…';
+  await new Promise(r => setTimeout(r, 20));
+
+  const runs = [];
+  for (const y of d.meta.years){
+    const nat = weatherYearNational(String(y));
+    if (!nat) continue;
+    const prof = { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind,
+                   csp: PROFILES.csp, real: true };
+    const res = simulate(state, prof);
+    const gen = ['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel']
+      .reduce((a,k) => a + (res.E[k]||0), 0);
+    runs.push({
+      year: y,
+      shedGWh: (res.shedMWh||0)/1000,
+      curtTWh: (res.E.curtailed||0)/1e6,
+      costRbn: res.totalCost/1e9,
+      renPct: ((res.E.wind||0)+(res.E.pv||0)+(res.E.rooftop||0)+(res.E.csp||0))/gen*100,
+      dieselTWh: (res.E.diesel||0)/1e6,
+    });
+    st.textContent = 'Solved ' + runs.length + ' of ' + d.meta.years.length + '…';
+    await new Promise(r => setTimeout(r, 0));
+  }
+  btn.disabled = false; btn.style.opacity = 1; st.textContent = '';
+  renderWeatherSpread(runs, d);
+}
+
+function renderWeatherSpread(runs, d){
+  const host = document.getElementById('wxResult');
+  if (!runs.length){ host.innerHTML = '<div style="font-size:11px">No runs completed.</div>'; return; }
+  const stat = k => {
+    const v = runs.map(r => r[k]).sort((a,b) => a-b);
+    const p = q => v[Math.min(v.length-1, Math.floor(q*(v.length-1)))];
+    return { min:v[0], p50:p(0.5), p90:p(0.9), max:v[v.length-1],
+             mean:v.reduce((a,b)=>a+b,0)/v.length };
+  };
+  const METRICS = [
+    ['shedGWh',  'Unserved energy', 'GWh/yr', 0],
+    ['dieselTWh','Diesel run',      'TWh/yr', 2],
+    ['curtTWh',  'Curtailment',     'TWh/yr', 2],
+    ['renPct',   'Renewable share', '%',      1],
+    ['costRbn',  'System cost',     'R bn/yr',0],
+  ];
+  let html = '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 6px">Across '
+    + runs.length + ' weather years</th>'
+    + ['best','median','P90','worst'].map(h => '<th style="text-align:right;padding:4px 6px">'+h+'</th>').join('')
+    + '<th style="text-align:right;padding:4px 6px">spread</th></tr>';
+  for (const [k, label, unit, dp] of METRICS){
+    const s = stat(k);
+    // For unserved and cost, "best" is the low end; for renewable share it is the high end.
+    const goodLow = k !== 'renPct';
+    const best = goodLow ? s.min : s.max, worst = goodLow ? s.max : s.min;
+    const spread = s.min > 0 ? (s.max/s.min).toFixed(2)+'\u00d7' : (s.max - s.min).toFixed(dp);
+    html += '<tr style="border-bottom:1px solid var(--line2)">'
+      + '<td style="padding:4px 6px">' + label + ' <span style="color:var(--ink2)">' + unit + '</span></td>'
+      + '<td style="text-align:right;padding:4px 6px">' + best.toFixed(dp) + '</td>'
+      + '<td style="text-align:right;padding:4px 6px">' + s.p50.toFixed(dp) + '</td>'
+      + '<td style="text-align:right;padding:4px 6px">' + s.p90.toFixed(dp) + '</td>'
+      + '<td style="text-align:right;padding:4px 6px;font-weight:600">' + worst.toFixed(dp) + '</td>'
+      + '<td style="text-align:right;padding:4px 6px;color:var(--ink2)">' + spread + '</td></tr>';
+  }
+  html += '</table>';
+
+  const shed = stat('shedGWh');
+  html += '<div style="margin-top:10px;font-size:10.5px;line-height:1.5">';
+  if (shed.max > 100 && shed.min < 100){
+    html += '<div style="border-left:3px solid var(--alert,#C4785A);padding:6px 9px;background:rgba(196,120,90,0.07);margin-bottom:6px">'
+      + '<strong>Adequacy depends on the weather.</strong> This scenario serves demand in the better '
+      + 'years but sheds up to ' + shed.max.toFixed(0) + ' GWh in the worst one. A single-year run '
+      + 'would have shown only one of those answers.</div>';
+  } else if (shed.max <= 100){
+    html += '<div style="border-left:3px solid var(--ok,#4A8C5C);padding:6px 9px;background:rgba(74,140,92,0.07);margin-bottom:6px">'
+      + '<strong>Adequate in every weather year tested</strong> &mdash; unserved energy stays below '
+      + '100 GWh even in the worst.</div>';
+  }
+  const yrs = runs.map(r => r.year);
+  const worstYr = runs.reduce((a,b) => b.shedGWh > a.shedGWh ? b : a).year;
+  html += '<div style="color:var(--ink2)">Weather years ' + yrs[0] + '&ndash;' + yrs[yrs.length-1]
+    + '; worst for adequacy was <strong>' + worstYr + '</strong>. Demand and plant availability are '
+    + 'held fixed so that only weather varies. South Africa has the most variable solar resource in '
+    + 'Africa, so a single year can materially over- or under-state both risk and curtailment.'
+    + (d.meta.warning ? ' <strong style="color:var(--alert,#C4785A)">' + d.meta.warning + '</strong>' : '')
+    + '</div></div>';
+  host.innerHTML = html;
 }
 
 /* ==================== UI DEFINITION ==================== */
