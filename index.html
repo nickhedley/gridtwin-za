@@ -471,6 +471,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <button onclick="mainGeocode()" style="font-size:10px;padding:5px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
     </div>
     <div id="mainSearchResults" style="display:none;max-height:160px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
+    <div style="padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--line2);font-size:9.5px;color:var(--ink2);display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <strong style="color:var(--ink)">Substations by voltage:</strong>
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#C8A028;border:1px solid #8a6d15;vertical-align:middle"></span> 765&nbsp;kV</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#C4785A;border:1px solid #8f4f34;vertical-align:middle"></span> 400&ndash;533&nbsp;kV</span>
+      <span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#517180;border:1px solid #3a5668;vertical-align:middle"></span> 220&ndash;275&nbsp;kV</span>
+      <span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#9AA69B;border:1px solid #7a8a85;vertical-align:middle"></span> 132&nbsp;kV</span>
+      <span style="color:var(--ink2)"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:transparent;border:1px solid #7a8a85;vertical-align:middle"></span> hollow = approximate location</span>
+    </div>
     <div id="resourceSplit">
       <div id="resourceMap" style="border-right:1px solid var(--line2)"></div>
       <div style="overflow-y:auto">
@@ -1045,9 +1053,19 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     const sub = nearestSubstation(lat, lng);
     if(!sub){el.innerHTML='<p style="font-size:11px;color:var(--alert)">No substation data.</p>';return;}
     const h = headroomData.headroom[sub.r]||{};
-    const isTx = sub.voltage_class==='transmission';
-    const vcol = isTx ? 'var(--steel,#4A6B7A)' : 'var(--ink2)';
-    const vLabel = isTx ? '400kV transmission' : '132kV distribution';
+    // Real voltage from the DBSA register. This previously read
+    // sub.voltage_class, a field that does not exist in the data, so every
+    // substation was labelled 132kV distribution - including 765kV backbone
+    // nodes - and every user was told to "speak to Eskom for HV upgrade options"
+    // regardless of what they were actually next to.
+    const subKv = sub.kv || 0;
+    const isTx = subKv >= 220;
+    const vcol = subKv >= 765 ? '#8a6d15'
+               : subKv >= 400 ? 'var(--alert,#C4785A)'
+               : isTx ? 'var(--steel,#4A6B7A)' : 'var(--ink2)';
+    const vLabel = subKv > 0
+      ? subKv + ' kV ' + (isTx ? 'transmission' : 'distribution')
+      : 'voltage not recorded';
     const statusColor = mw => mw>500?'var(--ok,#4A8C5C)':mw>0?'#f5c518':'var(--alert,#C4785A)';
     el.innerHTML = `
       <div style="font-size:11px;margin-bottom:10px">
@@ -1197,20 +1215,29 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     if(subLayer) { map.removeLayer(subLayer); subLayer=null; }
     const markers = [];
     data.subs.forEach(s => {
-      const isTx = s.voltage_class === 'transmission';
-      // Real point coordinates - NTCSA shapefile (src='shp') or OpenStreetMap
-      // (src='osm') - are drawn solid. Centroid-derived positions are drawn
-      // hollow, since they mark a supply zone rather than the physical
+      // Size and colour by real voltage class, from the DBSA RFP 008 register.
+      // Previously this keyed off s.voltage_class, a field that does not exist in
+      // the data - so isTx was always false and every substation rendered
+      // identically as a small grey dot, regardless of whether it was a 765kV
+      // backbone node or a 132kV distribution point.
+      const kv = s.kv || 0;
+      const vc = kv >= 765 ? { r: 8, col: '#C8A028', border: '#8a6d15', label: '765 kV backbone' }
+               : kv >= 400 ? { r: 6.5, col: '#C4785A', border: '#8f4f34', label: kv + ' kV transmission' }
+               : kv >= 220 ? { r: 5, col: '#517180', border: '#3a5668', label: kv + ' kV transmission' }
+               : kv > 0    ? { r: 3.5, col: '#9AA69B', border: '#7a8a85', label: kv + ' kV distribution' }
+               :             { r: 4, col: '#9AA69B', border: '#7a8a85', label: 'voltage not recorded' };
+      // Real point coordinates are drawn solid; centroid-derived positions are
+      // drawn hollow, since they mark a supply zone rather than the physical
       // substation and can be several km out.
       const isExact = s.src && s.src !== 'centroid';
-      const r = isTx ? 6 : 4;
-      const col = isExact ? (isTx ? '#517180' : '#9AA69B') : 'transparent';
-      const border = isTx ? '#3a5668' : '#7a8a85';
+      const r = vc.r;
+      const col = isExact ? vc.col : 'transparent';
+      const border = vc.border;
       const h = headroom && headroom.headroom && headroom.headroom[s.r] || {};
       const solarHr = h.solar_mw !== undefined ? h.solar_mw.toLocaleString()+' MW' : '—';
       const windHr  = h.wind_mw  !== undefined ? h.wind_mw.toLocaleString()+' MW'  : '—';
       const battHr  = h.batt_mw  !== undefined ? h.batt_mw.toLocaleString()+' MW'  : '—';
-      const voltLabel = isTx ? '400kV transmission' : '132kV distribution';
+      const voltLabel = vc.label;   // real voltage, not a hardcoded guess
       const popup = `<div style="font-size:11px;min-width:160px">
         <div style="font-weight:700;font-size:13px;margin-bottom:2px">${s.n}</div>
         <div style="color:#666;margin-bottom:6px">${s.r} &nbsp;·&nbsp; ${voltLabel}</div>
