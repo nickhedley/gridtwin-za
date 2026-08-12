@@ -1196,8 +1196,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     const markers = [];
     data.subs.forEach(s => {
       const isTx = s.voltage_class === 'transmission';
+      // Exact NTCSA point coordinates (src='shp') are drawn solid; centroid-derived
+      // positions are drawn hollow, since they mark a supply zone rather than the
+      // physical substation and can be several km out.
+      const isExact = s.src === 'shp';
       const r = isTx ? 6 : 4;
-      const col = isTx ? '#517180' : '#9AA69B';
+      const col = isExact ? (isTx ? '#517180' : '#9AA69B') : 'transparent';
       const border = isTx ? '#3a5668' : '#7a8a85';
       const h = headroom && headroom.headroom && headroom.headroom[s.r] || {};
       const solarHr = h.solar_mw !== undefined ? h.solar_mw.toLocaleString()+' MW' : '—';
@@ -1222,7 +1226,10 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div style="font-size:9px;color:#888">Battery</div>
           </div>
         </div>
-        <div style="font-size:9px;color:#aaa;margin-top:5px">Click map for solar/wind resource</div>
+        <div style="font-size:9px;margin-top:5px;color:${isExact ? '#4A8C5C' : '#C4785A'}">
+          ${isExact ? '\u25cf Exact NTCSA coordinates' : '\u25cb Approximate \u2014 supply-zone centroid, may be several km from the actual site'}
+        </div>
+        <div style="font-size:9px;color:#aaa;margin-top:3px">Click map for solar/wind resource</div>
       </div>`;
       const marker = L.circleMarker([s.lat, s.lng], {
         radius: r,
