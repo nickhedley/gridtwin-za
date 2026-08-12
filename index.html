@@ -473,7 +473,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <button onclick="mainGeocode()" style="font-size:10px;padding:5px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
     </div>
     <div id="mainSearchResults" style="display:none;max-height:160px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
-    <div style="padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--line2);font-size:9.5px;color:var(--ink2);display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+    <div id="subVoltageLegend" style="padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--line2);font-size:9.5px;color:var(--ink2);display:flex;gap:12px;flex-wrap:wrap;align-items:center">
       <strong style="color:var(--ink)">Substations by voltage:</strong>
       <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#C8A028;border:1px solid #8a6d15;vertical-align:middle"></span> 765&nbsp;kV</span>
       <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#C4785A;border:1px solid #8f4f34;vertical-align:middle"></span> 400&ndash;533&nbsp;kV</span>
@@ -997,15 +997,20 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     const mainSearchBar = document.getElementById('mainSearch') ? document.getElementById('mainSearch').closest('div') : null;
     const mainSearchResults = document.getElementById('mainSearchResults');
     const splitEl = document.getElementById('resourceSplit');
+    // The substation voltage legend describes the main SA-wide map, so it goes
+    // with it - it means nothing beside the rooftop tab's satellite tracer.
+    const subLegend = document.getElementById('subVoltageLegend');
     if (name === 'rooftop') {
       if (resourceMapEl) resourceMapEl.style.display = 'none';
       if (mainSearchBar) mainSearchBar.style.display = 'none';
       if (mainSearchResults) mainSearchResults.style.display = 'none';
+      if (subLegend) subLegend.style.display = 'none';
       if (splitEl) splitEl.style.gridTemplateColumns = '1fr';
       setTimeout(function(){ if(window.rtInitMap) window.rtInitMap(); if(window.rtCalc) window.rtCalc(); },50);
     } else {
       if (resourceMapEl) resourceMapEl.style.display = '';
       if (mainSearchBar) mainSearchBar.style.display = '';
+      if (subLegend) subLegend.style.display = '';
       if (splitEl) splitEl.style.gridTemplateColumns = '';
       if (map) setTimeout(() => map.invalidateSize(), 50);
     }
