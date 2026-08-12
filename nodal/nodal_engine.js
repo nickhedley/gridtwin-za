@@ -48,11 +48,26 @@ const PS_MW_BY_REGION = { 'Kwazulu Natal': 2332, 'Western Cape': 568 };
 const PS_ENERGY_MWH_BY_REGION = { 'Kwazulu Natal': 60000 * (2332/2900), 'Western Cape': 60000 * (568/2900) };
 const PS_EFF = 0.76;
 
-// Batteries: Eskom's BESS rollout spans Western Cape, Eastern Cape, Northern Cape and
-// KwaZulu Natal, but no complete public per-site MW breakdown exists (only a few named
-// sites: Hex/Graafwater/Paleisheuwel in WC, Elandskop in KZN). This split is a FLAGGED
-// ESTIMATE weighted toward WC's larger number of confirmed sites, not verified like the rest.
-const BATT_SHARE_BY_REGION = { 'Western Cape': 0.35, 'Eastern Cape': 0.25, 'Northern Cape': 0.20, 'Kwazulu Natal': 0.20 };
+// Batteries: VERIFIED from Eskom's BESS Phase 1 per-site MW ratings. All eight sites
+// are now publicly documented, so this is no longer an estimate:
+//   Western Cape   114.5 MW - Skaapvlei 80, Hex 20, Paleisheuwel 9.5, Graafwater 5
+//   Kwazulu Natal   48.0 MW - Pongola 40, Elandskop 8
+//   Eastern Cape    35.0 MW - Melkhout 35
+//   Northern Cape    1.5 MW - Rietfontein 1.5
+// Totals to 199.0 MW / 833.2 MWh, matching Eskom's published "approximately 199 MW /
+// 833 MWh" for Phase 1 - a useful completeness check. Sources: Engineering News
+// (Nov 2023) per-site breakdown, corroborated by the World Bank Implementation Status
+// Report (package listing) and Eskom's own BESS announcements.
+//
+// The previous split (WC 35 / EC 25 / NC 20 / KZN 20) was a flagged estimate weighted by
+// the NUMBER of known sites rather than their MW, which badly misrepresented the fleet:
+// Northern Cape has just one 1.5 MW site (0.8%, not 20%) while Western Cape holds 57.5%.
+//
+// Fleet-average duration is 4.19 h, consistent with BATT_HOURS = 4 below.
+//
+// Phase 2 (a further 144 MW / 616 MWh across four distribution sites and one transmission
+// site) is on hold pending Treasury clarification, so it is excluded until sites are firm.
+const BATT_SHARE_BY_REGION = { 'Western Cape': 0.5754, 'Kwazulu Natal': 0.2412, 'Eastern Cape': 0.1759, 'Northern Cape': 0.0075 };
 const BATT_HOURS = 4;
 const BATT_EFF = 0.88;
 
