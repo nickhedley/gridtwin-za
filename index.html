@@ -4581,7 +4581,9 @@ async function _rtFetchGoogleSolar(lat, lng) {
       const az = s.azimuthDegrees || 0;
       const m = _rtOrientMultiplier(pitch, az);
       wsum += m * area; asum += area;
-      return { area, pitch, az, mult: m };
+      // boundingBox lets us draw the segment on the map so the user can SEE
+      // which building was measured, rather than trusting a number.
+      return { area, pitch, az, mult: m, box: s.boundingBox || null };
     }).filter(s => s.area > 0);
     if (!asum) return null;
 
@@ -4589,6 +4591,8 @@ async function _rtFetchGoogleSolar(lat, lng) {
       blendedMult: wsum / asum,
       segments: segs.sort((a,b) => b.area - a.area),
       totalRoofM2: sp.wholeRoofStats ? sp.wholeRoofStats.areaMeters2 : asum,
+      boundingBox: d.boundingBox || null,
+      centre: d.center || null,
       maxPanels: sp.maxArrayPanelsCount || null,
       panelKw: sp.panelCapacityWatts ? sp.panelCapacityWatts / 1000 : null,
       quality: d.imageryQuality || null,
@@ -4604,8 +4608,54 @@ async function _rtFetchGoogleSolar(lat, lng) {
 }
 
 // Apply Solar API geometry to the calculator, if it returned anything usable.
+
+// Draw the measured building on the map, so the user can SEE what was measured
+// rather than having to trust a number. Each roof face is outlined separately
+// and shaded by how well it is oriented - green for good, terracotta for poor -
+// which also makes the orientation figure self-explanatory.
+let rtSolarLayer = null;
+function _rtDrawMeasuredRoof(res) {
+  if (!rtMap || typeof L === 'undefined') return;
+  if (rtSolarLayer) { rtMap.removeLayer(rtSolarLayer); rtSolarLayer = null; }
+  if (!res) return;
+
+  const shapes = [];
+  const boxToBounds = b => (b && b.sw && b.ne)
+    ? [[b.sw.latitude, b.sw.longitude], [b.ne.latitude, b.ne.longitude]]
+    : null;
+
+  // Individual roof faces, coloured by their yield multiplier
+  (res.segments || []).forEach((s, i) => {
+    const bounds = boxToBounds(s.box);
+    if (!bounds) return;
+    // 1.0 = flat/neutral. Above is better than flat, below is worse.
+    const good = Math.max(0, Math.min(1, (s.mult - 0.78) / 0.30));
+    const col = good > 0.66 ? '#4A8C5C' : good > 0.33 ? '#F5C518' : '#C4785A';
+    const compass = ['N','NE','E','SE','S','SW','W','NW'][Math.round(((s.az % 360) + 360) % 360 / 45) % 8];
+    shapes.push(
+      L.rectangle(bounds, { color: col, weight: 2, fillColor: col, fillOpacity: 0.30 })
+       .bindTooltip(Math.round(s.area) + ' m\u00b2 \u00b7 ' + Math.round(s.pitch) + '\u00b0 facing ' + compass
+                    + ' \u00b7 \u00d7' + s.mult.toFixed(2), { sticky: true })
+    );
+  });
+
+  // Whole-building outline, drawn on top as a dashed boundary
+  const bb = boxToBounds(res.boundingBox);
+  if (bb) {
+    shapes.push(L.rectangle(bb, {
+      color: '#22292B', weight: 2.5, dashArray: '6 4', fill: false,
+    }));
+  }
+
+  if (!shapes.length) return;
+  rtSolarLayer = L.layerGroup(shapes).addTo(rtMap);
+  // Frame the building so it is obvious which one was measured
+  if (bb) rtMap.fitBounds(bb, { padding: [60, 60], maxZoom: 20 });
+}
+
 function _rtApplyGoogleSolar(res) {
   rtSolarApi = res;
+  _rtDrawMeasuredRoof(res);          // show the measured building on the map
   const host = document.getElementById('rt_solar_api');
   if (!host) return;
   if (!res) {
@@ -4642,13 +4692,34 @@ function _rtApplyGoogleSolar(res) {
     areaEl.value = Math.round(res.totalRoofM2 * 0.72);
   }
 
-  // Tell the user, in the step-1 box, that no tracing is needed.
+  // Prominent confirmation in the step-1 box. This was previously a line of small
+  // grey text that was easy to miss entirely, leaving users unsure whether
+  // anything had happened - which is the whole question the tool needs to answer
+  // before they trust the numbers below.
   const statusEl = document.getElementById('rt_status');
   if (statusEl) {
-    statusEl.innerHTML = '<strong style="color:var(--ok,#4A8C5C)">\u2713 Roof measured automatically</strong> \u2014 '
-      + Math.round(res.totalRoofM2) + ' m\u00b2 across ' + res.segments.length + ' '
+    const usableM2 = Math.round(res.totalRoofM2 * 0.72);
+    statusEl.innerHTML =
+      '<div style="background:rgba(74,140,92,0.12);border-left:4px solid var(--ok,#4A8C5C);'
+      + 'padding:9px 11px;border-radius:2px">'
+      + '<div style="font-size:13px;font-weight:700;color:var(--ok,#4A8C5C);margin-bottom:3px">'
+      + '\u2713 Roof measured automatically</div>'
+      + '<div style="font-size:11.5px;color:var(--ink)">'
+      + '<strong>' + Math.round(res.totalRoofM2) + ' m\u00b2</strong> total roof across '
+      + '<strong>' + res.segments.length + '</strong> '
       + (res.segments.length === 1 ? 'face' : 'faces')
-      + '. No tracing needed; adjust below if it looks wrong.';
+      + ' \u00b7 <strong>' + usableM2 + ' m\u00b2</strong> usable for panels'
+      + (res.maxPanels ? ' \u00b7 fits about <strong>' + res.maxPanels + '</strong> panels' : '')
+      + '</div>'
+      + '<div style="font-size:10px;color:var(--ink2);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
+      + '<span>Outlined below:</span>'
+      + '<span><span style="display:inline-block;width:9px;height:9px;background:#4A8C5C;opacity:.5;border:1px solid #4A8C5C;vertical-align:middle"></span> good aspect</span>'
+      + '<span><span style="display:inline-block;width:9px;height:9px;background:#F5C518;opacity:.5;border:1px solid #F5C518;vertical-align:middle"></span> moderate</span>'
+      + '<span><span style="display:inline-block;width:9px;height:9px;background:#C4785A;opacity:.5;border:1px solid #C4785A;vertical-align:middle"></span> poor</span>'
+      + '</div>'
+      + '<div style="font-size:10px;color:var(--ink2);margin-top:3px">'
+      + 'Wrong building? Click the right one on the map.'
+      + '</div></div>';
   }
 
   const segRows = res.segments.slice(0, 5).map(s => {
