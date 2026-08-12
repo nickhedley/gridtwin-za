@@ -4303,10 +4303,38 @@ function _rtGoogleGeocoder(key) {
       resolve(new window.google.maps.Geocoder());
       return;
     }
+
+    // Resolve exactly once, whichever path gets there first.
+    let done = false;
+    const finish = (v) => { if (!done) { done = true; resolve(v); } };
+
+    // HARD TIMEOUT. The script itself loads fine even when the key is rejected -
+    // Google reports auth failures by logging to the console and simply never
+    // invoking the callback, so onerror never fires and the promise would hang
+    // forever, leaving the search box stuck on "Searching...". Anything that has
+    // not produced a Geocoder within 8s is treated as a failure.
+    const timer = setTimeout(() => {
+      console.warn('[GridTwin] Google Maps JS did not initialise within 8s - usually an '
+        + 'API key problem (Maps JavaScript API not enabled, key not permitted for it, '
+        + 'or billing inactive). Check the console for a Google auth error. '
+        + 'Using OpenStreetMap search instead.');
+      finish(null);
+    }, 8000);
+
+    // Google calls this global on an authentication failure.
+    window.gm_authFailure = () => {
+      console.warn('[GridTwin] Google Maps rejected the API key (gm_authFailure). '
+        + 'Check that Maps JavaScript API is enabled and allowed by the key restrictions. '
+        + 'Using OpenStreetMap search instead.');
+      clearTimeout(timer);
+      finish(null);
+    };
+
     const cb = '_rtGmapsReady';
     window[cb] = () => {
-      try { resolve(new window.google.maps.Geocoder()); }
-      catch (e) { resolve(null); }
+      clearTimeout(timer);
+      try { finish(new window.google.maps.Geocoder()); }
+      catch (e) { finish(null); }
     };
     const s = document.createElement('script');
     s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key)
@@ -4315,7 +4343,8 @@ function _rtGoogleGeocoder(key) {
     s.onerror = () => {
       console.warn('[GridTwin] Could not load the Google Maps JS library - '
         + 'check the key allows the Maps JavaScript API. Using OpenStreetMap search.');
-      resolve(null);
+      clearTimeout(timer);
+      finish(null);
     };
     document.head.appendChild(s);
   });
@@ -4362,18 +4391,33 @@ async function rtGeocode() {
       const geocoder = await _rtGoogleGeocoder(gkey);
       if (geocoder) {
         const gres = await new Promise(resolve => {
-          geocoder.geocode({
-            address: q,
-            componentRestrictions: { country: 'ZA' },
-          }, (results, status) => {
-            if (status === 'OK' && results && results.length) resolve(results);
-            else {
-              if (status !== 'ZERO_RESULTS') {
-                console.warn('[GridTwin] Google geocoding returned ' + status + '. Falling back to OpenStreetMap.');
+          // Guard the callback too: if it never fires, fall through to OSM rather
+          // than leaving the search box spinning.
+          let settled = false;
+          const done = (v) => { if (!settled) { settled = true; resolve(v); } };
+          const t = setTimeout(() => {
+            console.warn('[GridTwin] Google geocoding did not respond within 8s. Falling back to OpenStreetMap.');
+            done(null);
+          }, 8000);
+          try {
+            geocoder.geocode({
+              address: q,
+              componentRestrictions: { country: 'ZA' },
+            }, (results, status) => {
+              clearTimeout(t);
+              if (status === 'OK' && results && results.length) done(results);
+              else {
+                if (status !== 'ZERO_RESULTS') {
+                  console.warn('[GridTwin] Google geocoding returned ' + status + '. Falling back to OpenStreetMap.');
+                }
+                done(null);
               }
-              resolve(null);
-            }
-          });
+            });
+          } catch (err) {
+            clearTimeout(t);
+            console.warn('[GridTwin] Google geocoding threw: ' + err.message + '. Falling back to OpenStreetMap.');
+            done(null);
+          }
         });
         if (gres) {
           resultsEl.innerHTML = gres.slice(0, 6).map(r => {
