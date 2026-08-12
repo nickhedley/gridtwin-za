@@ -586,7 +586,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               <div style="display:flex;gap:6px;align-items:center">
                 <input id="rtSearch" type="text" placeholder="Enter your address, or paste GPS coordinates from Google Maps"
                        style="flex:1;padding:7px 9px;border:1px solid var(--line2);background:var(--panel);font-size:12px;border-radius:2px;box-sizing:border-box"
-                       onkeydown="if(event.key==='Enter'){event.preventDefault();rtGeocode();}">
+                       onkeydown="if(event.key==='Enter'){event.preventDefault();rtGeocode();}"
+                       oninput="clearTimeout(rtSearchTimer); rtSearchTimer=setTimeout(_rtAutocomplete, 300);"
+                       autocomplete="off">
                 <button onclick="rtGeocode()" style="font-size:11px;padding:7px 16px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
               </div>
               <div id="rt_status" style="font-size:10.5px;color:var(--ink2);margin-top:6px">
@@ -4269,6 +4271,142 @@ document.addEventListener('keydown', e => {
 // ── Address search (Nominatim / OpenStreetMap) ────────────────────────────────
 let rtSearchTimer = null;
 
+
+// ── Type-ahead address suggestions ───────────────────────────────────────────
+// Users expect a dropdown of predictions as they type - its absence made the
+// search feel broken even when it worked. Uses Google's Places Autocomplete
+// where a key is configured (far better South African address coverage), and
+// falls back to debounced Nominatim lookups otherwise, so the behaviour is the
+// same either way.
+let _rtAutoSvc = null, _rtPlacesSvc = null, _rtLastQuery = '';
+
+async function _rtAutocomplete() {
+  const inp = document.getElementById('rtSearch');
+  const box = document.getElementById('rtSearchResults');
+  if (!inp || !box) return;
+  const q = inp.value.trim();
+  _rtLastQuery = q;
+
+  // Too short to be useful, or the user pasted coordinates - no suggestions needed.
+  if (q.length < 3 || _rtParseCoords(q)) { box.style.display = 'none'; return; }
+
+  const key = _rtSolarKey();
+  if (key) {
+    try {
+      const g = await _rtGoogleGeocoder(key);   // loads the Maps JS library once
+      if (g && window.google && window.google.maps && window.google.maps.places) {
+        if (!_rtAutoSvc) _rtAutoSvc = new window.google.maps.places.AutocompleteService();
+        _rtAutoSvc.getPlacePredictions({
+          input: q,
+          componentRestrictions: { country: 'za' },
+        }, (preds, status) => {
+          // Ignore a response for a query the user has already typed past.
+          if (inp.value.trim() !== _rtLastQuery) return;
+          if (status !== window.google.maps.places.PlacesServiceStatus.OK || !preds || !preds.length) {
+            _rtAutocompleteOSM(q);
+            return;
+          }
+          box.style.display = '';
+          box.innerHTML = preds.slice(0, 6).map(p => {
+            const main = (p.structured_formatting && p.structured_formatting.main_text) || p.description;
+            const sub  = (p.structured_formatting && p.structured_formatting.secondary_text) || '';
+            return `<div onclick="rtPickPrediction('${p.place_id}')"
+                  style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
+                  onmouseover="this.style.background='var(--bg2,#eee)'"
+                  onmouseout="this.style.background='transparent'">
+                <div style="font-weight:600">${main}</div>
+                <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${sub}</div>
+              </div>`;
+          }).join('');
+        });
+        return;
+      }
+    } catch (e) { /* fall through to OSM */ }
+  }
+  _rtAutocompleteOSM(q);
+}
+
+// Debounced Nominatim suggestions - the no-key path. Kept deliberately simple:
+// Nominatim asks for at most one request per second, so this must stay throttled.
+async function _rtAutocompleteOSM(q) {
+  const box = document.getElementById('rtSearchResults');
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search'
+      + '?format=json&limit=6&countrycodes=za&addressdetails=1&q=' + encodeURIComponent(q);
+    const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const results = await r.json();
+    const inp = document.getElementById('rtSearch');
+    if (!inp || inp.value.trim() !== _rtLastQuery) return;   // stale response
+    if (!results || !results.length) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    box.innerHTML = results.map(rr => {
+      const a = rr.address || {};
+      const exact = !!a.house_number;
+      const title = exact ? (a.house_number + ' ' + (a.road || '')).trim()
+                          : (rr.display_name || '').split(',')[0];
+      const sub = (rr.display_name || '').split(',').slice(1, 4).join(',').trim();
+      const note = exact ? '' :
+        '<span style="color:var(--alert,#C4785A);font-weight:600">street-level</span> \u2014 ';
+      return `<div onclick="rtGoTo(${rr.lat},${rr.lon},${exact})"
+            style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
+            onmouseover="this.style.background='var(--bg2,#eee)'"
+            onmouseout="this.style.background='transparent'">
+          <div style="font-weight:600">${title}</div>
+          <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${note}${sub}</div>
+        </div>`;
+    }).join('');
+  } catch (e) { box.style.display = 'none'; }
+}
+
+// Resolve a chosen prediction to coordinates. Places gives us a place_id rather
+// than a location, so this second lookup is required.
+function rtPickPrediction(placeId) {
+  const box = document.getElementById('rtSearchResults');
+  const inp = document.getElementById('rtSearch');
+  if (box) box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">Locating\u2026</div>';
+  try {
+    if (!_rtPlacesSvc) {
+      _rtPlacesSvc = new window.google.maps.places.PlacesService(document.createElement('div'));
+    }
+    _rtPlacesSvc.getDetails({
+      placeId: placeId,
+      fields: ['geometry', 'formatted_address'],
+    }, (place, status) => {
+      if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place || !place.geometry) {
+        if (box) box.style.display = 'none';
+        console.warn('[GridTwin] Could not resolve that suggestion (' + status + ').');
+        return;
+      }
+      const loc = place.geometry.location;
+      const lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
+      const lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
+      if (inp && place.formatted_address) inp.value = place.formatted_address;
+      // A Places result with a precise viewport is house-level; ROOFTOP-equivalent.
+      const exact = !!(place.geometry.location_type === 'ROOFTOP' || place.geometry.viewport);
+      rtGoTo(lat, lng, exact);
+    });
+  } catch (e) {
+    if (box) box.style.display = 'none';
+    console.warn('[GridTwin] Places lookup failed: ' + e.message);
+  }
+}
+window.rtPickPrediction = rtPickPrediction;
+
+// Close the suggestions when clicking elsewhere, and on Escape - otherwise the
+// dropdown lingers over the map and blocks the click-to-measure interaction.
+document.addEventListener('click', e => {
+  if (!e.target.closest('#rtSearch, #rtSearchResults')) {
+    const b = document.getElementById('rtSearchResults');
+    if (b) b.style.display = 'none';
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const b = document.getElementById('rtSearchResults');
+    if (b) b.style.display = 'none';
+  }
+});
+
 // Accepts the formats people actually paste from Google Maps and similar:
 //   -26.2041, 28.0473      -26.2041 28.0473      (-26.2041,28.0473)
 //   26.2041S, 28.0473E     -26.2041°, 28.0473°
@@ -4338,7 +4476,7 @@ function _rtGoogleGeocoder(key) {
     };
     const s = document.createElement('script');
     s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key)
-          + '&libraries=geocoding&callback=' + cb + '&loading=async';
+          + '&libraries=geocoding,places&callback=' + cb + '&loading=async';
     s.async = true;
     s.onerror = () => {
       console.warn('[GridTwin] Could not load the Google Maps JS library - '
