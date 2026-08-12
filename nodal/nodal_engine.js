@@ -68,6 +68,38 @@ const PS_EFF = 0.76;
 // Phase 2 (a further 144 MW / 616 MWh across four distribution sites and one transmission
 // site) is on hold pending Treasury clarification, so it is excluded until sites are firm.
 const BATT_SHARE_BY_REGION = { 'Western Cape': 0.5754, 'Kwazulu Natal': 0.2412, 'Eastern Cape': 0.1759, 'Northern Cape': 0.0075 };
+
+// IPP battery storage procured under the DMRE's BESIPPPP programme - 1,744 MW /
+// 6,980 MWh across three bid windows, versus Eskom's own 199 MW. This is now the
+// overwhelming majority of South African grid storage, and it sits in COMPLETELY
+// different regions to Eskom's fleet, so treating it as an extension of the Eskom
+// split would have put nearly 1.8 GW in the wrong place.
+//
+// Every project is sited at a NAMED Eskom substation, so regions are derived from
+// the substation register rather than estimated:
+//   BW1 (513 MW): Garona 153, Ferrum 103, Nieuwehoop 103, Aggeneis 77 (Northern
+//                 Cape); Mookodi 77 (North West)
+//   BW2 (615 MW): 77 MW each at Ararat, Bighorn, Ngwedi, Marang, Carmel, Hermes,
+//                 Midas and 76 MW at Mercury (North West supply area)
+//   BW3 (616 MW): ~123 MW each at Harvard, Leander, Theseus, Everest, Merapi
+//                 (Free State supply area)
+// Each window's total reconciles exactly to the published figure, which is a
+// useful completeness check. All projects are 4-hour storage, matching BATT_HOURS.
+//
+// Sources: Engineering News BW1/BW2/BW3 project updates, DMRE preferred-bidder
+// media statements (Dec 2024, May 2025), Finergreen BW2 infographic.
+const BESIPPPP_MW_BY_REGION = { 'North West': 692, 'Free State': 616, 'Northern Cape': 436 };
+const BESIPPPP_TOTAL_MW = 1744;
+
+// New-build storage is assumed to follow the BESIPPPP siting pattern rather than
+// Eskom's, because that is where the procurement pipeline actually is: these
+// substations were chosen by Eskom specifically to unlock constrained grid
+// capacity, and further bid windows target the same corridors.
+const NEW_BATT_SHARE_BY_REGION = {
+  'North West':    692 / 1744,
+  'Free State':    616 / 1744,
+  'Northern Cape': 436 / 1744,
+};
 const BATT_HOURS = 4;
 const BATT_EFF = 0.88;
 
@@ -282,8 +314,22 @@ class NodalEngine {
       this.solarMw[r] = (this.baseSolarMw[r] || 0) + (extraSolarByRegion[r] || 0) + remainderSolarMW * solarShare;
       const rooftopShare = totalBaseRooftop > 0 ? (this.baseRooftopMw[r] || 0) / totalBaseRooftop : 0;
       this.rooftopMw[r] = (this.baseRooftopMw[r] || 0) + newRooftopMW * rooftopShare;
+      // Existing storage follows Eskom's own BESS siting. New build follows the
+      // BESIPPPP pattern instead, because that is where procurement is actually
+      // directed - those substations were selected by Eskom to unlock constrained
+      // grid capacity, and successive bid windows target the same corridors.
+      //
+      // The 1,744 MW BESIPPPP pipeline is deliberately NOT added to existing
+      // capacity: almost none of it is operational. Only two BW1 projects
+      // (180 MW) reach commercial operation in late 2026, Red Sands (153 MW) in
+      // about 2027, and BW2/BW3 are still pre-financial-close. Adding it to the
+      // "Today 2026" baseline would overstate present-day storage roughly ninefold.
+      // It is exposed as a preset instead, so users can model it explicitly.
       const battShare = BATT_SHARE_BY_REGION[r] || 0;
-      this.battMw[r] = 800 * battShare + newBattMW * battShare + (extraBattByRegion[r] || 0); // 800MW = single-node app's existing total
+      const ippShare = NEW_BATT_SHARE_BY_REGION[r] || 0;
+      this.battMw[r] = 800 * battShare        // Eskom BESS (800MW = single-node app's existing total)
+                     + newBattMW * ippShare   // slider-driven new build, sited per BESIPPPP
+                     + (extraBattByRegion[r] || 0);
       // start at the same fractions the single-node engine uses (70% pumped storage, 50% batteries)
       this.psSoc[r] = (PS_ENERGY_MWH_BY_REGION[r] || 0) * 0.7;
       this.battSoc[r] = (this.battMw[r] * BATT_HOURS) * 0.5;
