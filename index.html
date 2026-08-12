@@ -640,6 +640,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
     </details>
 
+    <div id="rt_solar_api" style="display:none"></div>
     <div id="rt_result"></div>
         </div>
         </div>
@@ -4209,6 +4210,131 @@ async function rtGeocode() {
 // Query map uses - populates window._resourceData so rtCalc()'s existing
 // site-specific lookup (which already checked for this) actually has something
 // to find, rather than always falling back to the national average.
+
+// ── Google Solar API: per-segment roof geometry ──────────────────────────────
+// Returns each roof face with its own pitch and azimuth, which is the one thing
+// the single "Roof orientation" dropdown genuinely cannot represent: a real roof
+// often spans several directions, and forcing one blended choice was the weakest
+// remaining assumption in this calculator.
+//
+// Coverage in South Africa is NOT guaranteed - Google grades data HIGH (0.1m
+// aerial), MEDIUM (0.25m aerial) or BASE (0.25m satellite, experimental), and
+// much of the country outside metros returns 404. Everything below therefore
+// degrades cleanly: on any failure the manual roof tracer and dropdown continue
+// to work exactly as before.
+//
+// Replace with your own restricted key (Websites -> your domain, API -> Solar API only).
+const GOOGLE_SOLAR_KEY = 'AIzaSyAxBCt9s3-GS6jchrn2u0yBwb_0RFWVZPo';
+
+// Convert a roof segment's real pitch and azimuth into the same yield multiplier
+// the dropdown uses, so Solar API data stays consistent with the rest of the
+// model rather than introducing a second, incompatible scale. Calibrated against
+// the dropdown's own anchors: flat 1.00, 15deg N 1.05, 25deg N 1.08 (optimal),
+// E/W 0.92, S 0.78 - all reproduced to within 0.02.
+function _rtOrientMultiplier(pitchDeg, azimuthDeg) {
+  const OPT_TILT = 25, PEAK_GAIN = 0.08;
+  let dev = Math.abs(((azimuthDeg % 360) + 360) % 360);
+  if (dev > 180) dev = 360 - dev;              // 0 = due north (optimal in SA)
+  const tilt = Math.max(0, Math.min(90, pitchDeg));
+  const tiltFrac = Math.min(1, tilt / OPT_TILT);
+  const dirFactor = Math.cos(dev * Math.PI / 180);
+  const gain = PEAK_GAIN * tiltFrac * Math.max(0, dirFactor);
+  const loss = tiltFrac * Math.max(0, -dirFactor) * 0.28
+             + tiltFrac * (1 - Math.abs(dirFactor)) * 0.09;
+  return Math.max(0.5, 1 + gain - loss);
+}
+
+let rtSolarApi = null;   // last successful Building Insights result
+
+async function _rtFetchGoogleSolar(lat, lng) {
+  if (!GOOGLE_SOLAR_KEY || GOOGLE_SOLAR_KEY.indexOf('YOUR_') === 0) return null;
+  const url = 'https://solar.googleapis.com/v1/buildingInsights:findClosest'
+            + '?location.latitude=' + lat.toFixed(6)
+            + '&location.longitude=' + lng.toFixed(6)
+            + '&requiredQuality=BASE'
+            + '&key=' + GOOGLE_SOLAR_KEY;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;                      // 404 = no coverage here, which is common
+    const d = await r.json();
+    const sp = d.solarPotential;
+    if (!sp || !sp.roofSegmentStats || !sp.roofSegmentStats.length) return null;
+
+    // Area-weight each segment's multiplier by its own ground area
+    let wsum = 0, asum = 0;
+    const segs = sp.roofSegmentStats.map(s => {
+      const area = (s.stats && s.stats.areaMeters2) || 0;
+      const pitch = s.pitchDegrees || 0;
+      const az = s.azimuthDegrees || 0;
+      const m = _rtOrientMultiplier(pitch, az);
+      wsum += m * area; asum += area;
+      return { area, pitch, az, mult: m };
+    }).filter(s => s.area > 0);
+    if (!asum) return null;
+
+    return {
+      blendedMult: wsum / asum,
+      segments: segs.sort((a,b) => b.area - a.area),
+      totalRoofM2: sp.wholeRoofStats ? sp.wholeRoofStats.areaMeters2 : asum,
+      maxPanels: sp.maxArrayPanelsCount || null,
+      panelKw: sp.panelCapacityWatts ? sp.panelCapacityWatts / 1000 : null,
+      quality: d.imageryQuality || null,
+      imageryDate: d.imageryDate
+        ? (d.imageryDate.year + '-' + String(d.imageryDate.month).padStart(2,'0'))
+        : null,
+    };
+  } catch (e) {
+    return null;   // network error, CORS, quota - all fall back to manual
+  }
+}
+
+// Apply Solar API geometry to the calculator, if it returned anything usable.
+function _rtApplyGoogleSolar(res) {
+  rtSolarApi = res;
+  const host = document.getElementById('rt_solar_api');
+  if (!host) return;
+  if (!res) { host.style.display = 'none'; host.innerHTML = ''; return; }
+
+  // Add a data-driven option to the orientation dropdown and select it
+  const sel = document.getElementById('rt_tilt');
+  if (sel) {
+    let opt = document.getElementById('rt_tilt_google');
+    if (!opt) {
+      opt = document.createElement('option');
+      opt.id = 'rt_tilt_google';
+      sel.insertBefore(opt, sel.firstChild);
+    }
+    opt.value = res.blendedMult.toFixed(4);
+    opt.textContent = 'Measured from your roof \u2014 ' + Math.round(res.blendedMult*100) + '%';
+    sel.value = opt.value;
+  }
+
+  const segRows = res.segments.slice(0, 5).map(s => {
+    const compass = ['N','NE','E','SE','S','SW','W','NW'][Math.round(((s.az%360)+360)%360 / 45) % 8];
+    return '<tr><td style="padding:1px 0;color:var(--ink2)">' + Math.round(s.area) + ' m\u00b2</td>'
+         + '<td style="text-align:right">' + Math.round(s.pitch) + '\u00b0 ' + compass + '</td>'
+         + '<td style="text-align:right;font-weight:600">\u00d7' + s.mult.toFixed(2) + '</td></tr>';
+  }).join('');
+
+  host.style.display = '';
+  host.innerHTML =
+    '<div style="border:1px solid var(--line2);border-left:3px solid var(--ok,#4A8C5C);padding:8px 10px;margin-bottom:10px;font-size:10px;color:var(--ink2)">'
+    + '<strong style="color:var(--ink)">Roof measured from imagery</strong> \u2014 Google Solar API found '
+    + res.segments.length + ' roof ' + (res.segments.length === 1 ? 'face' : 'faces')
+    + (res.totalRoofM2 ? ' totalling ' + Math.round(res.totalRoofM2) + ' m\u00b2' : '')
+    + (res.maxPanels ? ', fitting up to ' + res.maxPanels + ' panels' : '') + '.'
+    + '<table style="width:100%;margin-top:5px;border-collapse:collapse;font-size:10px">' + segRows + '</table>'
+    + '<div style="margin-top:5px">Orientation is now the area-weighted average of these faces ('
+    + '<strong>\u00d7' + res.blendedMult.toFixed(2) + '</strong>) rather than a single dropdown choice.'
+    + (res.imageryDate ? ' Imagery ' + res.imageryDate + '.' : '')
+    + (res.quality ? ' Quality: ' + res.quality + '.' : '')
+    + '</div>'
+    + '<div style="margin-top:4px;font-style:italic">Google models roofs from imagery, so this is an estimate \u2014 '
+    + 'override it with the dropdown if it looks wrong for your building.</div>'
+    + '</div>';
+  if (window.rtCalc) rtCalc();
+}
+
 async function _rtFetchSiteData(lat, lng, contextHtml) {
   if (!window.fetchSolar || !window.nearestRegion) return; // resource-query script not ready yet
   const infoEl = document.getElementById('rtTraceInfo');
@@ -4220,6 +4346,9 @@ async function _rtFetchSiteData(lat, lng, contextHtml) {
     const windMonthly = window.windMonthlyForRegion(region);
     const solar = await window.fetchSolar(lat, lng);
     window._resourceData = { lat, lng, solar, windRegion: region, windMonthly };
+    // Roof geometry from Google Solar API - optional, returns null where there
+    // is no coverage (common outside metros), in which case nothing changes.
+    _rtFetchGoogleSolar(lat, lng).then(_rtApplyGoogleSolar);
     if (infoEl) infoEl.innerHTML =
       prefix + 'Using site-specific solar data for <strong>' + region + '</strong> (' + (solar.annualCF*100).toFixed(1) + '% CF).';
   } catch (err) {
