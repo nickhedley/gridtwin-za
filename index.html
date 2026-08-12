@@ -2456,7 +2456,7 @@ const SLIDERS=[
   {id:'newPvMW',label:'New utility solar PV',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4 GW existing'},
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.3 GW existing, behind the meter'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
-  {id:'newCcgtMW',label:'New gas CCGT',min:0,max:10000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance and rarely dispatched when storage is ample (except when IRP artificial load factor is applied)'},
+  {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance and rarely dispatched when storage is ample (except when IRP artificial load factor is applied)'},
   {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:0,ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'When ticked, gas runs as must-run at 50% of installed capacity every hour — matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only.'},
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'modern supercritical, same fuel cost as existing fleet · SA has no active new-build coal programme, this is exploratory'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
@@ -2503,10 +2503,10 @@ const PRESETS={
   // BW2 and BW3 are still pre-financial-close - so this is a pipeline scenario
   // rather than today's system.
   'BESIPPPP storage pipeline':{newBattMW:1744},
-  'PyPSA least-cost 2040':{demandGrowthPct:78,coalDecomMW:19900,newWindMW:70000,newPvMW:33000,newBattMW:11000,newCcgtMW:10000,ccgtForceLoad:0},
+  'PyPSA least-cost 2040':{demandGrowthPct:78,coalDecomMW:19900,newWindMW:70000,newPvMW:33000,newBattMW:11000,newCcgtMW:12000,ccgtForceLoad:0},
   // CO2-limit case: 95% emissions cut (10 MtCO2 cap), 72% wind + 23% PV, ~20% cost
   // increase, ~19% renewable curtailment, all coal retired.
-  'PyPSA 95% CO\u2082 cut 2040':{demandGrowthPct:78,coalDecomMW:42000,newWindMW:97000,newPvMW:50000,newBattMW:25000,newCcgtMW:10000,ccgtForceLoad:0},
+  'PyPSA 95% CO\u2082 cut 2040':{demandGrowthPct:78,coalDecomMW:42000,newWindMW:97000,newPvMW:50000,newBattMW:25000,newCcgtMW:20000,ccgtForceLoad:0},
 };
 const COLORS={nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV',curtailment:'Curtailed (wasted)'};
@@ -2567,7 +2567,10 @@ const PRESET_NOTES={
   'PyPSA 95% CO\u2082 cut 2040':
     'The same study\'s deep-decarbonisation case: a 10 MtCO\u2082 cap (95% cut), met with 72% wind and '
     + '23% PV, all coal retired, for a ~20% cost increase and ~19% renewable curtailment. '
-    + 'Needs ~97 GW of new wind - far beyond anything currently planned, which is the point of the scenario.',
+    + 'Needs ~97 GW of new wind. Note this app is SINGLE-NODE: the published study relies on '
+    + 'expanded transmission across 27 regions to smooth wind geographically, which cannot be '
+    + 'represented here, so the risk panel shows more shedding on low-wind evenings than the '
+    + 'study itself found.',
 };
 Object.keys(PRESETS).forEach((name,i)=>{
   const b=document.createElement('button');b.textContent=name; if(i===0)b.classList.add('active');
