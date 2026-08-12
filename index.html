@@ -3729,6 +3729,21 @@ const RT_WP_PER_M2 = 165;
 // the same size bands the old manual "System type" selector offered - just
 // derived automatically instead of asking the user to pick their own building
 // category up front.
+// Even without a battery, a system that is well-matched to actual demand
+// (generating roughly as much as the building uses annually) commonly achieves
+// meaningfully better self-consumption than a badly mismatched one - there is
+// enough daytime generation to plausibly cover a decent share of daytime and
+// flexible loads, without so much surplus that most of it goes to waste. This
+// was previously missing entirely: the no-battery ceiling was flat regardless
+// of sizing, capping a well-matched 6kW system at the same ceiling as a
+// wildly oversized one. Peaks at a sizing ratio of 1 (generation matches
+// demand) and fades for both badly undersized and heavily oversized systems.
+function _rtSizingCeilingBonus(sizingRatio) {
+  if (!sizingRatio || sizingRatio <= 0) return 0;
+  const distFromIdeal = Math.abs(Math.log(sizingRatio));
+  return Math.max(0, 0.15 * (1 - distFromIdeal));
+}
+
 function _rtInferType(kwp) {
   if (kwp < 10)   return 'home';
   if (kwp < 100)  return 'smeci';
@@ -3818,7 +3833,16 @@ function rtCalc() {
   // since some baseline load is always served even by a heavily oversized system.
   const sizingRatio  = annualDemandKwh > 0 ? usableKwh / annualDemandKwh : 1;
   const sizingFactor = sizingRatio > 1 ? Math.min(1, 1 / Math.sqrt(sizingRatio)) : 1;
-  const selfConsumeFrac = Math.min(0.95, (t.selfConsumeNoStorage * sizingFactor) + _rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh));
+
+  // Effective baseline: the raw per-type rate, boosted when the system is
+  // well-matched to actual demand (see _rtSizingCeilingBonus). This MUST feed
+  // both the rate-based estimate below and the ceiling - applying it only to
+  // the ceiling is not enough, since for a well-matched (not extremely
+  // oversized) system the rate-based figure is usually what actually binds,
+  // and a raised ceiling does nothing if the rate never reaches it.
+  const effectiveBaseline = t.selfConsumeNoStorage + _rtSizingCeilingBonus(sizingRatio);
+
+  const selfConsumeFrac = Math.min(0.95, (effectiveBaseline * sizingFactor) + _rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh));
   let selfConsumedKwh = usableKwh * selfConsumeFrac;
 
   // Hard ceiling: solar cannot serve night-time demand without storage, no matter
@@ -3830,7 +3854,7 @@ function rtCalc() {
   // formula reaches 110% "coverage" at 10x oversizing). The ceiling is expressed
   // as a fraction of DEMAND, not generation, so it holds regardless of how
   // oversized the system is.
-  const maxCoverageFrac = Math.min(0.95, t.selfConsumeNoStorage + _rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh));
+  const maxCoverageFrac = Math.min(0.95, effectiveBaseline + _rtBatteryUplift(battH, t.selfConsumeNoStorage, kwp*battH, annualDemandKwh));
   selfConsumedKwh = Math.min(selfConsumedKwh, maxCoverageFrac * annualDemandKwh);
 
   const exportedKwh = usableKwh - selfConsumedKwh;
