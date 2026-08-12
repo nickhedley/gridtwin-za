@@ -1,10 +1,37 @@
 <!DOCTYPE html>
+<!--
+  ============================================================================
+  GridTwin ZA - Interactive South African Power System Model
+  Copyright (c) 2026 Nick Hedley. All rights reserved.
+
+  Licensed under Creative Commons Attribution-NonCommercial-NoDerivatives 4.0
+  International (CC BY-NC-ND 4.0).
+  https://creativecommons.org/licenses/by-nc-nd/4.0/
+
+  You may view, share and link to this work with attribution. You may NOT:
+    - use it commercially, in whole or in part
+    - distribute modified or derivative versions
+    - incorporate this model, its code, or its calibration into another product
+
+  Commercial licensing and permissions: https://github.com/nickhedley/gridtwin-za
+
+  The model logic, calibration, cost assumptions and presentation are original
+  work. Underlying public datasets (Eskom, NTCSA, NERSA, DMRE, PyPSA-RSA,
+  Open-Meteo, NASA MERRA-2, OpenStreetMap, Esri) remain under their own
+  licences and are credited in the page footer.
+  ============================================================================
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GridTwin ZA — Interactive South African Power System Model</title>
 <meta name="description" content="Interactive digital twin of the South African power system — adjust the fleet, demand and policy, and watch the grid re-dispatch live. Calibrated to 2026 Eskom data.">
+<meta name="author" content="Nick Hedley">
+<meta name="copyright" content="© 2026 Nick Hedley">
+<link rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+<meta name="dcterms.rights" content="© 2026 Nick Hedley. CC BY-NC-ND 4.0. Commercial use or derivative works require written permission.">
+<meta name="dcterms.license" content="https://creativecommons.org/licenses/by-nc-nd/4.0/">
 <meta property="og:title" content="GridTwin ZA — Interactive SA Grid Model">
 <meta property="og:description" content="An hourly dispatch model of the South African grid: coal EAF, renewables, storage, load shedding stages, cost and CO₂ — re-solved live in your browser.">
 <meta property="og:type" content="website">
@@ -1682,7 +1709,39 @@ function printPrefeas() {
       </div>
 </details></div>
 
-<footer class="foot">Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African system (calibrated to Eskom weekly system status reports, June–July 2026). All outputs are indicative — not planning or investment advice. &copy; 2026 Nick Hedley · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" style="color:inherit">CC BY-NC 4.0</a> · commercial use requires permission.</footer>
+<footer class="foot">
+  <div style="max-width:1380px;margin:0 auto">
+    Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African
+    system (calibrated to Eskom weekly system status reports, June&ndash;July 2026).
+    <strong>All outputs are indicative &mdash; not planning or investment advice.</strong>
+
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
+      <strong>Data sources:</strong>
+      Eskom weekly system status reports and annual results (fleet capacity, EAF, primary energy cost) &middot;
+      NTCSA Grid Connection Capacity Assessment 2025 and transmission shapefiles (corridors, substations, headroom) &middot;
+      <a href="https://github.com/PyPSA/pypsa-za" target="_blank" rel="noopener" style="color:inherit">PyPSA-RSA</a>
+      (per-unit fleet parameters: minimum stable levels, up/down times, start-up costs) &middot;
+      NERSA media statements (private and embedded generation registrations) &middot;
+      DMRE / IPP Office (REIPPPP project pipeline) &middot;
+      <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:inherit">Open-Meteo ERA5</a>
+      and PVGIS (solar resource) &middot; NASA MERRA-2 (wind profiles) &middot;
+      <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">OpenStreetMap</a>
+      contributors (geocoding, ODbL) &middot; Esri, Maxar and Earthstar Geographics (satellite imagery) &middot;
+      <a href="https://highs.dev/" target="_blank" rel="noopener" style="color:inherit">HiGHS</a>
+      (MIT) for the in-browser optimiser.
+      Source attributions belong to their respective owners; their inclusion here does not imply endorsement.
+    </div>
+
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
+      &copy; 2026 Nick Hedley. GridTwin ZA &mdash; model, code, calibration and presentation.
+      Licensed under
+      <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">CC BY-NC-ND 4.0</a>:
+      you may share it with attribution, but not use it commercially or distribute modified versions.
+      <strong>Commercial use, redistribution of derivatives, or incorporation into another product requires written permission.</strong>
+      The underlying public datasets above remain under their own licences and are not covered by this notice.
+    </div>
+  </div>
+</footer>
 
 <script src="nodal/capacity_siting.js?v=5"></script>
 
