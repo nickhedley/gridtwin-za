@@ -27,6 +27,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GridTwin ZA — Interactive South African Power System Model</title>
 <meta name="description" content="Interactive digital twin of the South African power system — adjust the fleet, demand and policy, and watch the grid re-dispatch live. Calibrated to 2026 Eskom data.">
+<!-- Optional local config: API keys. Absent by default; the app works without it. -->
+<script src="config.js" onerror="void 0"></script>
 <meta name="author" content="Nick Hedley">
 <meta name="copyright" content="© 2026 Nick Hedley">
 <link rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
@@ -4309,8 +4311,19 @@ async function rtGeocode() {
 // degrades cleanly: on any failure the manual roof tracer and dropdown continue
 // to work exactly as before.
 //
-// Replace with your own restricted key (Websites -> your domain, API -> Solar API only).
-const GOOGLE_SOLAR_KEY = 'AIzaSyAxBCt9s3-GS6jchrn2u0yBwb_0RFWVZPo';
+// The key lives in config.js, NOT here - so updating this file never disturbs it.
+// Create config.js in the same folder as this page:
+//
+//     window.GOOGLE_SOLAR_KEY = 'your-restricted-key-here';
+//
+// Restrict the key in the Google Cloud console before use: Application
+// restrictions -> Websites -> your domain, and API restrictions -> Solar API
+// only. A browser key is always visible in page source, so those restrictions
+// are what protect it, not secrecy.
+//
+// If config.js is absent or the key is blank, everything below simply no-ops and
+// the manual roof tracer works exactly as it always has.
+function _rtSolarKey() { return (typeof window !== 'undefined' && window.GOOGLE_SOLAR_KEY) || ''; }
 
 // Convert a roof segment's real pitch and azimuth into the same yield multiplier
 // the dropdown uses, so Solar API data stays consistent with the rest of the
@@ -4333,12 +4346,13 @@ function _rtOrientMultiplier(pitchDeg, azimuthDeg) {
 let rtSolarApi = null;   // last successful Building Insights result
 
 async function _rtFetchGoogleSolar(lat, lng) {
-  if (!GOOGLE_SOLAR_KEY || GOOGLE_SOLAR_KEY.indexOf('YOUR_') === 0) return null;
+  const key = _rtSolarKey();
+  if (!key) return null;   // no config.js, or key left blank - feature simply off
   const url = 'https://solar.googleapis.com/v1/buildingInsights:findClosest'
             + '?location.latitude=' + lat.toFixed(6)
             + '&location.longitude=' + lng.toFixed(6)
             + '&requiredQuality=BASE'
-            + '&key=' + GOOGLE_SOLAR_KEY;
+            + '&key=' + key;
   try {
     const r = await fetch(url);
     if (!r.ok) return null;                      // 404 = no coverage here, which is common
