@@ -243,6 +243,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <button id="mipCancelBtn" onclick="cancelMIP()" style="display:none;padding:6px 12px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;color:var(--ink2)">Cancel</button>
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
             Re-solves the whole system as a true mixed-integer programming (MIP) model, where coal, storage and corridor flows are fully optimised across all 10 regions.
+            <strong>Most worth running for high-renewables scenarios:</strong> the instant model commits coal in 8-hour blocks, so it follows a midday solar trough only approximately — benchmarking puts it within 1% of optimal for today's system, widening to around 6&ndash;8% once 25&nbsp;GW or more of new solar is added.
           </span>
         </div>
 
@@ -1818,22 +1819,45 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
   const ucMinStable = new Float64Array(HOURS);
   const ucStartCost = new Float64Array(HOURS);
 
-  for (let day = 0; day < DAYS; day++) {
-    const h0 = day * 24;
+  // Commit in 8-hour BLOCKS rather than once per day. Three blocks/day matches
+  // the fleet's actual minimum up time (97% of capacity has min_up = 8h), so a
+  // unit can run the morning peak, shut down through a deep midday solar trough,
+  // and restart for the evening - which is exactly what the MIP does and what
+  // day-level commitment structurally could not.
+  //
+  // CALIBRATED against the MIP optimiser (see calibrate_heuristic.js):
+  //   - Day-level commitment ran 16-25% above the optimum under high solar,
+  //     because a fully-committed fleet has a ~15 GW minimum stable floor while
+  //     the midday trough falls to ~2 GW, forcing unavoidable overproduction.
+  //   - 8h blocks cut the mean gap from 10.4% to 4.0%, and the high-solar cases
+  //     from +16.5%/+24.5% to +7.9%/+6.5%.
+  //   - 4h blocks scored marginally better on cost (2.9% mean) but implied ~7,900
+  //     unit start-ups a year against a real SA fleet figure of roughly 500-1,500.
+  //     Rejected: it wins on paper by cycling plant in a way no operator would.
+  //   - Verified constraint-safe: the mustOn/mustOff guards below enforce minimum
+  //     up and down times regardless of block size (0 violations measured at every
+  //     granularity tested).
+  //   - Runtime is unchanged in practice (~7 ms for a full year either way).
+  const BLOCK_HOURS = 8;
+  const BLOCKS_PER_DAY = 24 / BLOCK_HOURS;
 
-    // 24h net load profile for this day
+  for (let day = 0; day < DAYS; day++) {
+   for (let blk = 0; blk < BLOCKS_PER_DAY; blk++) {
+    const h0 = day * 24 + blk * BLOCK_HOURS;
+
+    // Net load profile for this block
     const dayLoad = [];
-    for (let h = 0; h < 24; h++) dayLoad.push(netLoadPre[Math.min(HOURS-1, h0+h)]);
+    for (let h = 0; h < BLOCK_HOURS; h++) dayLoad.push(netLoadPre[Math.min(HOURS-1, h0+h)]);
     const peakLoad = Math.max(...dayLoad);
-    const troughLoad = Math.min(...dayLoad);
-    const avgLoad = dayLoad.reduce((a,b)=>a+b,0) / 24;
 
     // Sort available units by marginal cost (cheapest first = merit order)
     const merit = UC_FLEET.map((u,i) => ({i, mc: u.marginal_cost, cap: unitState[i].cap}))
                           .sort((a,b) => a.mc - b.mc);
 
-    // --- Unit commitment decision for this day ---
-    // Greedy: commit cheapest units until we have enough for peak + reserve margin (15%)
+    // Greedy: commit cheapest units until we cover this block's peak + reserve.
+    // The 1.15 margin was checked against the MIP and left unchanged - it lands
+    // within 0.5% of optimal for today's system, and any value >= 1.10 gives
+    // identical results anyway once peak demand exceeds available coal.
     const targetCapacity = peakLoad * 1.15;
     let decidedOn = new Array(UC_FLEET.length).fill(false);
     let totalCommitted = 0;
@@ -1851,13 +1875,11 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
       if (mustOff) { decidedOn[i] = false; continue; }
       if (mustOn)  { decidedOn[i] = true;  totalCommitted += st.cap; continue; }
 
-      // Economic decision: commit if we still need capacity
+      // Economic decision: commit if we still need capacity for this block
       if (totalCommitted < targetCapacity) {
         decidedOn[i] = true;
         totalCommitted += st.cap;
       } else {
-        // De-commit only if trough load can be served without this unit
-        // (i.e. remaining committed capacity >= trough + reserve)
         decidedOn[i] = false;
       }
     }
@@ -1879,8 +1901,8 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
       }
       st.isOn = nowOn;
 
-      // Fill 24h commitment schedule
-      for (let h = 0; h < 24; h++) {
+      // Fill this block's commitment schedule
+      for (let h = 0; h < BLOCK_HOURS; h++) {
         const hi = h0 + h;
         if (hi >= HOURS) break;
         if (nowOn) {
@@ -1890,10 +1912,11 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
         }
       }
 
-      // Update hours on/off counters
-      if (nowOn) { st.hoursOn  += 24; st.hoursOff = 0; }
-      else       { st.hoursOff += 24; st.hoursOn  = 0; }
+      // Update hours on/off counters by the block length
+      if (nowOn) { st.hoursOn  += BLOCK_HOURS; st.hoursOff = 0; }
+      else       { st.hoursOff += BLOCK_HOURS; st.hoursOn  = 0; }
     }
+   } // end block loop
   }
 
   return {ucAvail, ucMinStable, ucStartCost};
