@@ -964,7 +964,8 @@ function initResourceQuery(){
     }
     if (pl.newSites.length) {
       const n = pl.newSites[0];
-      rows.push(`<div style="margin-bottom:6px"><strong>Nearest planned substation</strong>`
+      const brandNew = n.newsite ? ' <span style="color:#C4785A;font-weight:600">(new site)</span>' : '';
+      rows.push(`<div style="margin-bottom:6px"><strong>Nearest planned substation</strong>${brandNew}`
         + `<div style="color:var(--ink2);margin-top:2px">${n.site} &middot; ${n.km}\u00a0km away &middot; `
         + `expected <strong>${n.year}</strong> &middot; ${badge(n.phase)}</div>`
         + `<div style="color:var(--ink2);font-size:9.5px">${n.name.slice(0,80)}</div></div>`);
@@ -1276,7 +1277,8 @@ function initResourceQuery(){
       if (p.year > tdpCutoff) continue;
       const op = tdpPhaseStyle(p.phase);
       const tip = `<strong>${p.name}</strong><br>`
-        + `<span style="color:#C4785A">PLANNED &middot; ${p.year} &middot; ${p.phase}</span><br>`
+        + `<span style="color:#C4785A">${p.newsite ? 'NEW SITE' : 'PLANNED'} &middot; ${p.year} &middot; ${p.phase}</span><br>`
+        + (p.newsite ? '<em>Substation does not exist yet</em><br>' : '')
         + (p.km ? `${p.km} km<br>` : '') + (p.prov || '');
       if (p.kind === 'line' && p.pts.length >= 2) {
         items.push(L.polyline(p.pts.map(x => [x.lat, x.lng]), {
@@ -1285,7 +1287,9 @@ function initResourceQuery(){
         }).bindTooltip(tip, { sticky: true }));
       } else if (p.pts.length) {
         items.push(L.circleMarker([p.pts[0].lat, p.pts[0].lng], {
-          radius: p.kind === 'syncon' ? 7 : 5.5,
+          // A planned substation at a site that does not yet exist opens new
+          // ground; one at an existing site is an upgrade. Draw the former bigger.
+          radius: p.newsite ? 10 : p.kind === 'syncon' ? 7 : 5.5,
           color: '#FF3B30', weight: 1.8, opacity: op,
           fillColor: 'transparent', fillOpacity: 0, dashArray: '3,3',
         }).bindTooltip(tip, { sticky: true }));
