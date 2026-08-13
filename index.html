@@ -3162,7 +3162,7 @@ function simulate(u, prof, outPath){
       : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD
       : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt + cG
       : ((curtailMW[h]||0) > 1)          ? 0
-      : (coalGen > 1)                    ? p.costCoal + cC
+      : (coalGen > 1)                    ? coalMarginalCost(coalGen) + cC
       : (imp > 1)                        ? p.costImports
       : (hyd > 1)                        ? p.costHydro
       : (nuc > 1)                        ? p.costNuclear
@@ -3224,6 +3224,30 @@ function simulate(u, prof, outPath){
 // capture price falls as solar penetration rises. That cannibalisation effect
 // is the central economic question in renewables investment and is invisible
 // in an average-cost figure.
+
+// Marginal cost of the coal unit actually on the margin at a given output level.
+// The fleet spans R563-R772/MWh; using one fleet-wide number made every coal
+// hour price identically and erased the intraday spread a battery trades on.
+// Units are dispatched cheapest-first, so the marginal unit is the dearest one
+// needed to reach this output.
+const _coalMeritCurve = (() => {
+  const units = [];
+  for (const g of UC_FLEET){
+    const n = Math.max(1, g.n || 1);
+    const cap = g.unit_cap || (g.cap / n);
+    for (let k = 0; k < n; k++) units.push({ cap, mc: g.marginal_cost });
+  }
+  units.sort((a, b) => a.mc - b.mc);
+  let cum = 0;
+  return units.map(u => { cum += u.cap; return { upTo: cum, mc: u.mc }; });
+})();
+
+function coalMarginalCost(outputMW){
+  if (!(outputMW > 0)) return _coalMeritCurve.length ? _coalMeritCurve[0].mc : 546;
+  for (const s of _coalMeritCurve) if (outputMW <= s.upTo) return s.mc;
+  return _coalMeritCurve[_coalMeritCurve.length - 1].mc;
+}
+
 function priceStatsOf(mp, stack, E){
   const H = mp.length;
   let sum = 0, zero = 0, diesel = 0;
@@ -4814,8 +4838,8 @@ function renderBess(r){
       '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
     + 'What a battery would have earned arbitraging this scenario\u2019s prices, per MW of power '
     + 'capacity. <strong>Arbitrage only</strong> \u2014 South Africa has no ancillary services or '
-    + 'capacity market with published prices, so the streams worth roughly 40% of a GB battery\u2019s '
-    + 'income do not exist here yet.</div>'
+    + 'capacity market with published prices, so the streams worth roughly 40% of a battery\u2019s '
+    + 'income in some other markets do not exist here yet.</div>'
     + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)">'
     + '<th style="text-align:left;padding:4px 6px">Duration</th>'
@@ -4835,22 +4859,34 @@ function renderBess(r){
     + `<strong>${best.h}-hour wins in this scenario.</strong> `
     + (best.h >= 4
         ? 'Longer duration pays because deep midday solar creates a wide, sustained trough to charge '
-          + 'into. That is the same pattern Modo reports in ERCOT, where only four-hour batteries clear '
-          + 'a 12% IRR hurdle.'
+          + 'from.'
         : 'Short duration is enough here because the price spread is narrow and brief \u2014 coal sets '
           + 'the price in most hours, so there is little to arbitrage. Build solar and this flips: at '
           + '20\u201340 GW the four-hour asset earns several times what it does today.')
     + '</div>'
 
+    // A low cycle count looks like a fault. It is not - it is the finding.
+    + (best.cycles < 100
+        ? '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
+          + 'padding:8px 11px;margin-top:9px;font-size:10.5px;line-height:1.55">'
+          + `<strong>Only ${best.cycles} profitable cycles a year \u2014 that is the point, not a fault.</strong> `
+          + 'Coal sets the price in almost every hour, and the spread across the coal merit order is '
+          + 'only a few percent. A round trip at 88% efficiency needs a 13.6% price uplift just to '
+          + 'break even, so coal-to-coal arbitrage never clears. Effectively all the revenue comes '
+          + 'from the handful of evening peaks when diesel runs \u2014 Eskom\u2019s OCGT load factor is '
+          + 'about 1.2%, roughly 100 hours a year.'
+          + '<div style="color:var(--ink2);margin-top:5px">This is why South African batteries are '
+          + 'procured on contract rather than merchant: there is barely any merchant revenue to earn. '
+          + 'Add solar and it changes \u2014 midday surplus creates the spread that a battery trades.</div></div>'
+        : '')
+
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
-    + '<strong>Method:</strong> perfect-foresight daily arbitrage, one cycle a day, charging in the '
-    + 'cheapest hours and discharging in the dearest, at 88% round-trip efficiency. Perfect foresight '
-    + 'is a ceiling, not a forecast \u2014 Modo Energy\u2019s benchmarks make the same assumption, so the '
-    + 'comparison is like for like. For reference, a two-hour GB battery earned about \u00a373,000/MW/yr '
-    + '(\u2248R1.7m) in the year to April 2026 across all revenue streams.'
-    + '<br><br><strong>Why this is a counterfactual.</strong> SAWEM, South Africa\u2019s first wholesale '
+    + '<strong>Method:</strong> Perfect-foresight daily arbitrage, one cycle a day, charging in the '
+    + 'cheapest hours and discharging in the most expensive, at 88% round-trip efficiency. Perfect '
+    + 'foresight is a ceiling, not a forecast.'
+    + '<br><br>SAWEM, South Africa\u2019s first wholesale '
     + 'market, is due to open in Q3 2026. Until it does there are no published prices to benchmark, so '
-    + 'this shows what a battery <em>would</em> have earned had the market existed. Once SAWEM prices '
+    + 'this shows what a battery would have earned had the market existed. Once SAWEM prices '
     + 'publish, this becomes testable against them.</div>';
 }
 
