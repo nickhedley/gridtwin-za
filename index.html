@@ -1927,6 +1927,18 @@ function printPrefeas() {
   // schedule or wheeling guideline.
   const MUNI_WHEELING = {
     'Western Cape': [{
+      name: 'George Municipality',
+      status: 'Wheeling Guideline published; terms carried in the annual tariff book',
+      rules: [
+        'Off-taker must be on a George time-of-use tariff, with an additional basic charge',
+        'Use-of-system charge payable by off-takers and generators inside the George network',
+        'A generator outside George wheeling in via Eskom passes those extra charges to the off-taker',
+        'Generators inside the network pay standard TOU on their own consumption',
+        'Designed to be revenue-neutral for the municipality',
+      ],
+      doc: 'George Municipality Wheeling Guideline + draft tariff book 2025/26',
+      url: 'https://documentportal.george.gov.za/storage/fees-tarriffs/April2021/xabdb83buzkVym5F6ODJ.pdf',
+    }, {
       name: 'City of Cape Town',
       status: 'Bilateral wheeling open to the public since 1 March 2025',
       rules: [
@@ -1964,12 +1976,25 @@ function printPrefeas() {
     }],
   };
 
+  // Only municipalities whose own published documents I could verify are listed
+  // above. Several others are at pilot or framework stage - eThekwini, Ekurhuleni,
+  // City Power, Msunduzi, Overstrand, Stellenbosch, Swartland among them - and
+  // SALGA's survey is the best single place to check current status, because it
+  // moves faster than any list held here.
+  const MUNI_FOOTER = '<div style="margin-top:7px;font-size:9.5px;color:var(--ink2);line-height:1.5">'
+    + 'Only municipalities with a published framework are listed. Others are at pilot or '
+    + 'framework stage and adoption changes often \u2014 SALGA\u2019s '
+    + '<a href="https://www.sseg.org.za/wp-content/uploads/2023/07/SALGA-Status-of-Wheeling-Report-July-2023.pdf" '
+    + 'target="_blank" rel="noopener" style="color:var(--alert,#C4785A)">Status of Wheeling report</a> '
+    + 'surveys progress across the municipal distributors.</div>';
+
   function muniWheelingHtml(consRegion){
     const list = MUNI_WHEELING[consRegion];
     if (!list || !list.length){
       return '<div style="margin-top:8px;font-size:9.5px;color:var(--ink2)">'
         + 'No published municipal wheeling framework on file for this supply area. '
-        + 'Check the relevant metro\u2019s tariff schedule \u2014 several have introduced one recently.</div>';
+        + 'Check the relevant metro\u2019s tariff schedule \u2014 several have introduced one recently.'
+        + MUNI_FOOTER + '</div>';
     }
     return list.map(m => `<div style="margin-top:8px;padding:8px 10px;border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);font-size:10px;line-height:1.5">
       <div style="font-weight:600;font-size:10.5px">${m.name}</div>
@@ -1979,7 +2004,7 @@ function printPrefeas() {
       </ul>
       <div style="margin-top:5px"><a href="${m.url}" target="_blank" rel="noopener"
          style="color:var(--alert,#C4785A);font-size:9.5px">${m.doc}</a></div>
-    </div>`).join('');
+    </div>`).join('') + MUNI_FOOTER;
   }
 
   // Wheeling tariff: NTCSA published wheeling framework (2024)
