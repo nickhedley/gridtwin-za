@@ -131,6 +131,7 @@
       padding: 10px 12px;
       max-height: 40dvh; overflow-y: auto;
       display: none;
+      z-index: 13;            /* above the controls, same as the stats */
     }
     #legend.open { display: block; }
     .leg-row { margin-bottom: 5px; font-size: 10.5px; gap: 6px }
@@ -139,7 +140,9 @@
       gap: 4px; max-width: 48vw;
     }
     .ctrl-btn { padding: 5px 8px; font-size: 10.5px }
-    #tdpYearWrap { font-size: 9.5px }
+    #tdpYearWrap { font-size: 11.5px; line-height: 1.35 }
+    #tdpYearSlider { height: 22px }        /* easier to grab with a thumb */
+    #tdpYearLbl { font-size: 12.5px }
 
     /* The header and stat cards were sized for desktop and never adjusted: a
        150px-wide column of cards starting 90px down covered most of a phone
@@ -160,11 +163,16 @@
       display: block;
       bottom: calc(14px + env(safe-area-inset-bottom)); left: 74px;
     }
+    /* The controls are a COLUMN rising from 14px - four buttons plus the year
+       slider reach roughly 190px. Anchoring the stats at 52px put them inside
+       that range, and with equal z-index the later-declared controls painted on
+       top. Open upward from above the control stack instead, and sit above it. */
     #stats {
-      top: auto; bottom: calc(52px + env(safe-area-inset-bottom));
+      top: auto; bottom: calc(200px + env(safe-area-inset-bottom));
       left: 12px; right: 12px;
       flex-direction: row; gap: 4px;
       display: none;
+      z-index: 13;            /* above #controls and #legend */
       pointer-events: none;   /* informational only - never blocks a map drag */
     }
     #stats.open { display: flex }
@@ -627,13 +635,30 @@ function toggleCorridors() {
 
 // Key and Stats are mutually exclusive on mobile - opening one closes the
 // other, so the map is never covered by both at once.
+// The control stack changes height when the year slider shows or hides with the
+// planned-build toggle, so a fixed offset would either overlap it or leave a
+// gap. Measure the controls and sit just above them.
+function positionStats() {
+  const s = document.getElementById('stats');
+  if (!s || window.innerWidth > 760) return;
+  const ctrl = document.getElementById('controls');
+  const measured = ctrl ? ctrl.getBoundingClientRect().height : 0;
+  // Floor at 178 so a zero/short measurement (pre-layout, or a hidden control
+  // stack) still clears the buttons rather than tucking the stats behind them.
+  const h = Math.max(measured, 178);
+  s.style.bottom = `calc(${Math.round(h) + 22}px + env(safe-area-inset-bottom))`;
+}
+
+window.addEventListener('resize', positionStats);
+window.addEventListener('orientationchange', () => setTimeout(positionStats, 120));
+
 function toggleStats() {
   const s = document.getElementById('stats');
   const b = document.getElementById('statsBtn');
   const open = s.classList.toggle('open');
   b.setAttribute('aria-expanded', open ? 'true' : 'false');
   b.textContent = open ? 'Hide stats' : 'Stats';
-  if (open) closeLegend();
+  if (open) { closeLegend(); positionStats(); }
 }
 
 function closeLegend() {
@@ -705,6 +730,7 @@ function toggleTDP() {
   btn.textContent = `🔨 Planned build ${showTDP ? 'ON' : 'OFF'}`;
   btn.classList.toggle('active', showTDP);
   document.getElementById('tdpYearWrap').style.opacity = showTDP ? 1 : 0.35;
+  positionStats();   // control stack may have changed height
   deckgl.setProps({ layers: buildLayers(substations) });
 }
 
