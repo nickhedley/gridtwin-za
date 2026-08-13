@@ -6059,8 +6059,31 @@ const RT_CRITICAL_DEMAND_FRACTION = 0.436;
 // against a raw kWh figure (a 10.5 kWh battery would have hit the top tier
 // intended for 6h systems). The demand-based adequacy check below was already
 // doing the real work and handles every size correctly on its own.
-function _rtBatteryUplift(battHours, baseline, battKwh, annualDemandKwh) {
-  const headroom = 0.95 - baseline;
+// What fraction of demand this system can physically cover, given how oversized
+// it is and how many days of storage it carries. Verified against an hourly
+// simulation on the real SA solar profile.
+function _rtCoverageCeiling(battKwh, annualDemandKwh, sizingRatio){
+  const days = (annualDemandKwh > 0) ? battKwh / (annualDemandKwh / 365) : 0;
+  const r = sizingRatio || 1;
+  if (r >= 3   && days >= 1.5) return 1.00;
+  if (r >= 2   && days >= 1.0) return 0.99;
+  if (r >= 1.5 && days >= 0.7) return 0.97;
+  return 0.95;
+}
+
+function _rtBatteryUplift(battHours, baseline, battKwh, annualDemandKwh, sizingRatio) {
+  // Ceiling depends on whether the system can actually ride out the worst run of
+  // dull days, which is a function of BOTH oversizing and days of autonomy - not
+  // a fixed 95%. Simulating real SA hourly solar: at 3x+ generation with 1.5+
+  // days of storage there are literally no import hours in the year, so the
+  // honest ceiling is ~100%. A modest system genuinely plateaus near 95%.
+  const days = (annualDemandKwh > 0) ? battKwh / (annualDemandKwh / 365) : 0;
+  const r = sizingRatio || 1;
+  const ceiling = (r >= 3 && days >= 1.5) ? 1.00
+                : (r >= 2 && days >= 1.0) ? 0.99
+                : (r >= 1.5 && days >= 0.7) ? 0.97
+                : 0.95;
+  const headroom = ceiling - baseline;
   if (!(battKwh > 0) || !(annualDemandKwh > 0)) return 0;
   const dailyDemandKwh = annualDemandKwh / 365;
   const criticalKwh = dailyDemandKwh * RT_CRITICAL_DEMAND_FRACTION;
@@ -6203,6 +6226,27 @@ function rtCalc() {
   const type = _rtInferType(kwp);
   const t = RT_TYPES[type];
 
+  // Battery controls scale with the site. Fixed maxima made the control unable
+  // to express a realistic battery for a C&I load - a user could max both the
+  // slider and the number field and still only cover part of the evening window,
+  // which made the coverage ceiling look like an arbitrary wall.
+  (function(){
+    const annualKwhForBatt = (parseFloat(document.getElementById('rt_bill').value)||80000)
+                             * 12 / (parseFloat(document.getElementById('rt_tariff').value)||2.50);
+    const eveningKwh = annualKwhForBatt / 365 * RT_CRITICAL_DEMAND_FRACTION;
+    // Allow up to 3x the evening window - enough to ride out consecutive dull
+    // days, which is what the last few percent of coverage actually needs.
+    const cap = Math.max(40, Math.ceil(eveningKwh * 3 / 10) * 10);
+    const inp = document.getElementById('rt_batt'), sl = document.getElementById('rt_batt_slider');
+    if (inp) inp.max = String(cap);
+    if (sl)  sl.max  = String(cap);
+    const hint = document.getElementById('rt_batt_note');
+    if (hint) hint.textContent = 'Evening and overnight demand is about '
+      + Math.round(eveningKwh).toLocaleString() + ' kWh a day here \u2014 that is what a '
+      + 'battery has to cover to lift self-consumption. Slider goes to '
+      + cap.toLocaleString() + ' kWh (three days of it).';
+  })();
+
   document.getElementById('rt_share_note').textContent =
     sharePct < 100
       ? Math.round(effectiveAreaM2).toLocaleString() + ' m\u00b2 of ' + Math.round(area).toLocaleString() + ' m\u00b2 used'
@@ -6266,7 +6310,8 @@ function rtCalc() {
   const rawBaseline = applianceProfile ? applianceProfile.dayFracNow : _rtBestBaseline(kwp);
   const effectiveBaseline = rawBaseline + _rtSizingCeilingBonus(sizingRatio);
 
-  const selfConsumeFrac = Math.min(0.95, (effectiveBaseline * sizingFactor) + _rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh));
+  const _rtCeiling = _rtCoverageCeiling(battKwh, annualDemandKwh, sizingRatio);
+  const selfConsumeFrac = Math.min(_rtCeiling, (effectiveBaseline * sizingFactor) + _rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh, sizingRatio));
   let selfConsumedKwh = usableKwh * selfConsumeFrac;
 
   // Hard ceiling: solar cannot serve night-time demand without storage, no matter
@@ -6278,7 +6323,14 @@ function rtCalc() {
   // formula reaches 110% "coverage" at 10x oversizing). The ceiling is expressed
   // as a fraction of DEMAND, not generation, so it holds regardless of how
   // oversized the system is.
-  const maxCoverageFrac = Math.min(0.95, effectiveBaseline + _rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh));
+  // 95% is a practical ceiling for a GRID-CONNECTED system, not an arbitrary
+  // one: the last few percent of demand falls in runs of consecutive dull winter
+  // days, and covering those needs days of autonomy rather than one night's
+  // storage. Going the final step to 100% means sizing for the worst week of the
+  // year, which is why installers treat true off-grid as a different and much
+  // more expensive product. The panel now says so when the ceiling binds.
+  const maxCoverageFrac = Math.min(_rtCeiling, effectiveBaseline + _rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh, sizingRatio));
+  const _atCeiling = maxCoverageFrac >= _rtCeiling - 0.001 && _rtCeiling < 0.999;
   selfConsumedKwh = Math.min(selfConsumedKwh, maxCoverageFrac * annualDemandKwh);
 
   const exportedKwh = usableKwh - selfConsumedKwh;
@@ -6345,8 +6397,8 @@ function rtCalc() {
   if (applianceProfile && applianceProfile.shiftableKwhDay > 0.5) {
     const shiftedBaseline = applianceProfile.dayFracShifted;
     const shiftedEffective = shiftedBaseline + _rtSizingCeilingBonus(sizingRatio);
-    const shiftedSelfFrac = Math.min(0.95, (shiftedEffective * sizingFactor) + _rtBatteryUplift(battH, shiftedBaseline, battKwh, annualDemandKwh));
-    const shiftedMaxFrac = Math.min(0.95, shiftedEffective + _rtBatteryUplift(battH, shiftedBaseline, battKwh, annualDemandKwh));
+    const shiftedSelfFrac = Math.min(_rtCeiling, (shiftedEffective * sizingFactor) + _rtBatteryUplift(battH, shiftedBaseline, battKwh, annualDemandKwh, sizingRatio));
+    const shiftedMaxFrac = Math.min(_rtCeiling, shiftedEffective + _rtBatteryUplift(battH, shiftedBaseline, battKwh, annualDemandKwh, sizingRatio));
     const shiftedKwh = Math.min(usableKwh * shiftedSelfFrac, shiftedMaxFrac * annualDemandKwh);
     shiftedCoverage = Math.min(100, shiftedKwh / 12 / monthlyKwh * 100);
   }
@@ -6418,7 +6470,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by inferred bracket: home R17/Wp, small C&I R13/Wp, large C&I R11/Wp, industrial R9.5/Wp (2026 SA installer rates, excluding battery). O&M at 1.5% capex/yr. <strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by inferred bracket: home R17/Wp, small C&I R13/Wp, large C&I R11/Wp, industrial R9.5/Wp (2026 SA installer rates, excluding battery). O&M at 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The last few percent of demand falls in runs of consecutive dull winter days; covering those needs several days of autonomy rather than one night\'s storage, which is where a grid-connected system becomes a true off-grid one and costs step up sharply. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
 
 
