@@ -156,17 +156,23 @@
 <button id="legendBtn" onclick="toggleLegend()" aria-expanded="false"
         aria-controls="legend">Key</button>
 <div id="legend">
-  <h3>Infrastructure</h3>
-  <div class="leg-row"><div class="leg-dot" style="background:#517180"></div>400kV substation</div>
+  <h3 style="margin-bottom:4px">Existing network</h3>
+  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.45);margin-bottom:5px">Solid fill &middot; colour by voltage</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#C8A028"></div>765kV substation</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#C4785A"></div>400kV substation</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#517180"></div>275kV substation</div>
   <div class="leg-row"><div class="leg-dot" style="background:#9AA69B;width:7px;height:7px"></div>132kV substation</div>
-  <div class="leg-row" style="margin-top:8px"><div class="leg-line" style="background:rgba(255,200,50,0.9)"></div>765kV</div>
-  <div class="leg-row"><div class="leg-line" style="background:rgba(196,120,90,0.9)"></div>400kV</div>
-  <div class="leg-row"><div class="leg-line" style="background:rgba(81,113,128,0.8)"></div>275kV</div>
-  <div class="leg-row"><div class="leg-line" style="background:rgba(120,140,120,0.7)"></div>220kV</div>
-  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4);margin-top:4px">Dashed = planned</div>
-  <div class="leg-row" style="margin-top:6px"><div class="leg-line" style="background:rgba(255,70,60,0.8);height:2px"></div>TDP planned build</div>
-  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4)">Brighter = more committed</div>
-  <div class="leg-row"><div class="leg-dot" style="background:transparent;border:2px solid rgba(255,70,60,0.9);width:10px;height:10px"></div>New substation site</div>
+  <div class="leg-row" style="margin-top:6px"><div class="leg-line" style="background:rgba(255,200,50,0.9)"></div>765kV line</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(196,120,90,0.9)"></div>400kV line</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(81,113,128,0.8)"></div>275kV line</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(120,140,120,0.7)"></div>220kV line</div>
+
+  <h3 style="margin-top:10px;margin-bottom:4px">Planned build (TDP)</h3>
+  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.45);margin-bottom:5px">Always red &middot; never filled</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(255,70,60,0.85);height:2px"></div>Planned line</div>
+  <div class="leg-row"><div class="leg-dot" style="background:transparent;border:1.5px dashed rgba(255,70,60,0.9);width:9px;height:9px"></div>Upgrade at existing site</div>
+  <div class="leg-row"><div class="leg-dot" style="background:transparent;border:2.5px solid rgba(255,70,60,0.95);width:13px;height:13px"></div>New substation &mdash; does not exist yet</div>
+  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.45);margin-top:4px">Brighter = more committed &middot; click any dot to name it</div>
 </div>
 
 <!-- Controls -->
@@ -373,7 +379,7 @@ function buildLayers(subs) {
           id: 'tdp-sites',
           data: plannedSites,
           getPosition: d => [d.pts[0].lng, d.pts[0].lat],
-          getRadius: d => d.newsite ? 11000 : d.kind === 'syncon' ? 7500 : 5500,
+          getRadius: d => d.newsite ? 14000 : d.kind === 'syncon' ? 11000 : 9000,
           getFillColor: [0, 0, 0, 0],
           getLineColor: col,
           lineWidthMinPixels: d => d.newsite ? 2.5 : 1,
