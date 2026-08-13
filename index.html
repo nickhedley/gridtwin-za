@@ -2779,7 +2779,17 @@ function simulate(u, prof, outPath){
         }
       }
       stack.wind[h]=windGen; stack.pv[h]=pvGen;
-      const isExpensiveHour=residual>=expensiveThresholdByHour[h];
+      // Compare LIKE WITH LIKE. expensiveThresholdByHour is the 75th percentile of
+      // netLoadPre - net load BEFORE any coal is dispatched. But `residual` at this
+      // point has already had the coal floor subtracted, so it was being measured
+      // against a threshold five times its own scale: mean residual 3,981 MW against
+      // a mean threshold of 20,096 MW. isExpensiveHour was therefore NEVER true in
+      // any hour of any scenario, and the whole storage-arbitrage branch below was
+      // dead code - storage only ever discharged after coal had already topped up,
+      // which is why 30 GW of batteries produced exactly 0.00 TWh while 28.8 TWh
+      // was being curtailed. Testing netLoadPre[h] against its own percentile is
+      // the comparison that was intended.
+      const isExpensiveHour=netLoadPre[h]>=expensiveThresholdByHour[h];
       if(isExpensiveHour){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
