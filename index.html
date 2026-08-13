@@ -3287,13 +3287,24 @@ async function runWeatherSpread(){
     const res = simulate(state, prof);
     const gen = ['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel']
       .reduce((a,k) => a + (res.E[k]||0), 0);
+    // VRE actually produced, and what it COULD have produced before spilling.
+    // Curtailment as a share of available renewable output is the number that
+    // matters: 5 TWh spilled from a small fleet is a different problem from
+    // 5 TWh spilled from a large one.
+    const vreGen = (res.E.wind||0) + (res.E.pv||0) + (res.E.rooftop||0) + (res.E.csp||0);
+    const curtMWh = res.E.curtailed || 0;
     runs.push({
       year: y,
       shedGWh: (res.shedMWh||0)/1000,
-      curtTWh: (res.E.curtailed||0)/1e6,
+      curtTWh: curtMWh/1e6,
+      curtPct: (vreGen + curtMWh) > 0 ? curtMWh/(vreGen + curtMWh)*100 : 0,
       costRbn: res.totalCost/1e9,
-      renPct: ((res.E.wind||0)+(res.E.pv||0)+(res.E.rooftop||0)+(res.E.csp||0))/gen*100,
+      renPct: vreGen/gen*100,
       dieselTWh: (res.E.diesel||0)/1e6,
+      // Worst load-shedding stage reached, and how many hours were shed - the
+      // same measures the risk panel uses, so the two are directly comparable.
+      maxStage: res.maxStage || 0,
+      shedHrs: (res.shedHours||[]).slice(1).reduce((a,b) => a+b, 0),
     });
     st.textContent = 'Solved ' + runs.length + ' of ' + d.meta.years.length + '…';
     await new Promise(r => setTimeout(r, 0));
@@ -3309,37 +3320,67 @@ function renderWeatherSpread(runs, d){
     const v = runs.map(r => r[k]).sort((a,b) => a-b);
     return { min:v[0], p50:v[Math.floor(v.length/2)], max:v[v.length-1] };
   };
-  // Deliberately compact: this sits directly above the KPIs and qualifies them,
-  // so it should read as a caveat on those numbers rather than a separate study.
-  const shed = stat('shedGWh'), curt = stat('curtTWh'), cost = stat('costRbn');
-  const worst = runs.reduce((a,b) => b.shedGWh > a.shedGWh ? b : a);
-  const best  = runs.reduce((a,b) => b.shedGWh < a.shedGWh ? b : a);
-  const risky = shed.max > 100;
+  const shed = stat('shedGWh'), curt = stat('curtPct'), cost = stat('costRbn');
+  const stage = stat('maxStage'), hrs = stat('shedHrs');
+
+  // The two risks pull in OPPOSITE directions, which is the point of showing
+  // both: a poor renewable year threatens adequacy, a good one wastes energy.
+  // A single weather year can only ever show you one of those failure modes.
+  const worstShed = runs.reduce((a,b) => b.shedGWh > a.shedGWh ? b : a);
+  const worstCurt = runs.reduce((a,b) => b.curtPct > a.curtPct ? b : a);
+  const bestVre   = runs.reduce((a,b) => b.renPct  > a.renPct  ? b : a);
+
+  const risky   = shed.max > 100 || stage.max >= 1;
+  const spilly  = curt.max > 10;
 
   const cell = (label, lo, hi, unit, dp) =>
-    '<div style="min-width:118px"><div style="color:var(--ink2);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em">'
+    '<div style="min-width:120px"><div style="color:var(--ink2);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em">'
     + label + '</div><div style="font-size:12.5px;font-weight:700">' + lo.toFixed(dp)
-    + ' – ' + hi.toFixed(dp) + ' <span style="font-weight:400;font-size:10px;color:var(--ink2)">'
+    + ' \u2013 ' + hi.toFixed(dp) + ' <span style="font-weight:400;font-size:10px;color:var(--ink2)">'
     + unit + '</span></div></div>';
 
-  host.innerHTML =
-    '<div style="border:1px solid ' + (risky ? 'var(--alert,#C4785A)' : 'var(--ok,#4A8C5C)')
+  let html = '<div style="border:1px solid ' + (risky ? 'var(--alert,#C4785A)' : (spilly ? '#F5C518' : 'var(--ok,#4A8C5C)'))
     + ';border-left-width:4px;background:var(--panel);padding:8px 11px;border-radius:3px">'
     + '<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">'
-    + cell('Unserved energy', shed.min, shed.max, 'GWh/yr', 0)
-    + cell('Curtailment', curt.min, curt.max, 'TWh/yr', 1)
+    + cell('Load shedding', shed.min, shed.max, 'GWh/yr', 0)
+    + cell('Worst stage', stage.min, stage.max, 'stage', 0)
+    + cell('Curtailment', curt.min, curt.max, '% of renewables', 1)
     + cell('System cost', cost.min, cost.max, 'R bn/yr', 0)
-    + '</div>'
-    + '<div style="font-size:10px;color:var(--ink2);margin-top:6px;line-height:1.45">'
-    + 'Range across ' + runs.length + ' weather years (' + runs[0].year + '\u2013'
-    + runs[runs.length-1].year + '), same fleet and demand throughout. Best year for '
-    + 'adequacy was <strong>' + best.year + '</strong>, worst <strong>' + worst.year + '</strong>. '
+    + '</div>';
+
+  // Say what each end of the range MEANS, rather than leaving the user to infer.
+  html += '<div style="margin-top:7px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:7px">';
+
+  // Bad renewable year -> adequacy risk
+  html += '<div style="border-left:3px solid ' + (risky ? 'var(--alert,#C4785A)' : 'var(--line2)')
+    + ';padding:5px 8px;font-size:10px;line-height:1.45;background:' + (risky ? 'rgba(196,120,90,0.07)' : 'transparent') + '">'
+    + '<strong>Worst renewable year (' + worstShed.year + ')</strong><br>'
     + (risky
-        ? 'This scenario serves demand in good years but sheds up to ' + shed.max.toFixed(0)
-          + '\u00a0GWh in the worst \u2014 a single-year run would show only one of those answers.'
-        : 'Adequate in every year tested.')
+        ? 'Sheds <strong>' + worstShed.shedGWh.toFixed(0) + '\u00a0GWh</strong> over '
+          + worstShed.shedHrs + '\u00a0hours, reaching <strong>stage ' + worstShed.maxStage + '</strong>. '
+          + 'The system is adequate on an average year but not on a poor one.'
+        : 'Still adequate \u2014 no material shedding even in the weakest wind and solar year on record.')
+    + '</div>';
+
+  // Good renewable year -> curtailment risk
+  html += '<div style="border-left:3px solid ' + (spilly ? '#F5C518' : 'var(--line2)')
+    + ';padding:5px 8px;font-size:10px;line-height:1.45;background:' + (spilly ? 'rgba(245,197,24,0.09)' : 'transparent') + '">'
+    + '<strong>Best renewable year (' + bestVre.year + ')</strong><br>'
+    + (spilly
+        ? 'Spills <strong>' + worstCurt.curtPct.toFixed(1) + '%</strong> of everything wind and solar '
+          + 'could generate (' + worstCurt.curtTWh.toFixed(1) + '\u00a0TWh). A good resource year is not '
+          + 'free upside \u2014 without more storage or transmission, the surplus is wasted.'
+        : 'Curtailment stays below 10% even in the strongest year \u2014 the system absorbs what it builds.')
+    + '</div></div>';
+
+  html += '<div style="font-size:10px;color:var(--ink2);margin-top:6px;line-height:1.45">'
+    + 'Range across ' + runs.length + ' weather years (' + runs[0].year + '\u2013'
+    + runs[runs.length-1].year + '), with fleet and demand held fixed so only the weather changes. '
+    + 'The two risks pull in opposite directions: a poor year threatens supply, a good one wastes it. '
+    + 'A single-year run shows only one of them.'
     + (d.meta.warning ? ' <strong style="color:var(--alert,#C4785A)">' + d.meta.warning + '</strong>' : '')
     + '</div></div>';
+  host.innerHTML = html;
 }
 
 /* ==================== UI DEFINITION ==================== */
