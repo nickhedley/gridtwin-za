@@ -269,6 +269,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
+    <div id="carbonBudget" style="border:1.5px solid var(--ink);background:var(--panel);padding:9px 12px;margin-top:10px"></div>
     <p class="kpinote">Note on the cost figures: <strong>System cost</strong> is the annual total of fuel, carbon and the capex of newly-built capacity only – existing plant is treated as sunk, and curtailment payments to wind and solar contracted under REIPPPP are excluded. <strong>Avg energy cost</strong> is simply that system cost divided by the energy the grid serves, so it is an <em>average</em> across the whole mix, not the marginal cost of the next MWh. <strong>Replacement cost</strong> instead prices every MWh, from existing and new plant alike, at its full lifecycle cost – what this mix would cost if built entirely new at today’s prices. Neither is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
 
 
@@ -401,6 +402,35 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
 
         <div id="bldResult" style="margin-top:12px"></div>
+        <details style="border:1px solid var(--line2);border-radius:3px;margin-top:12px;background:var(--panel)">
+          <summary style="padding:8px 11px;cursor:pointer;font-size:11.5px;font-weight:600">
+            What if the grid build slips? <span style="font-weight:400;color:var(--ink2)">&mdash; cost of delay</span>
+          </summary>
+          <div style="padding:4px 11px 11px">
+            <p style="font-size:10.5px;color:var(--ink2);margin:0 0 9px;line-height:1.45">
+              Everything above assumes the Transmission Development Plan lands on schedule.
+              NTCSA itself notes the first five years carry high certainty and beyond 2030 is
+              uncertain &mdash; and 52% of the mapped projects sit in Concept, Pre-Concept or
+              generic Planned rather than Execution. This slips those and re-solves.
+            </p>
+            <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+              <label style="font-size:11px;font-weight:600">Slip uncommitted projects by
+                <select id="delaySlip" style="margin-left:5px;padding:4px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
+                  <option value="1">1 year</option>
+                  <option value="2">2 years</option>
+                  <option value="3" selected>3 years</option>
+                  <option value="5">5 years</option>
+                </select>
+              </label>
+              <button id="delayRunBtn" onclick="runDelayAnalysis()"
+                      style="padding:5px 12px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.04em;border-radius:2px">
+                Compare
+              </button>
+              <span id="delayStatus" style="font-size:10.5px;color:var(--ink2)"></span>
+            </div>
+            <div id="delayResult" style="margin-top:10px"></div>
+          </div>
+        </details>
       </div>
     </div>
 <div class="panel" style="margin-top:18px">
@@ -1356,6 +1386,7 @@ function initResourceQuery(){
   window.toggleTdp = toggleTdp;
   window.setMapTdpYear = setMapTdpYear;
   window.renderGrid = renderGrid;          // used by the map click handler and tests
+  window.exportTdpProjects = exportTdpProjects;
 
   fetch('nodal/tdp_projects.json')
     .then(r => r.ok ? r.json() : null)
@@ -1925,6 +1956,7 @@ function printPrefeas() {
         <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:transparent;border:1.5px dashed #FF3B30;vertical-align:middle"></span> upgrade at an existing site &middot;
         <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:transparent;border:2.5px solid #FF3B30;vertical-align:middle"></span> new substation that does not exist yet.
         Brighter means more committed.</span>
+      <button onclick="exportTdpProjects()" style="padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink);cursor:pointer;font-size:10px;border-radius:2px;white-space:nowrap">Download project list</button>
       <label style="display:flex;align-items:center;gap:6px;margin-left:auto;white-space:nowrap">built by <strong id="tdpYearOut">2034</strong>
         <input type="range" min="2025" max="2035" step="1" value="2034" oninput="setMapTdpYear(this.value)" style="width:130px">
       </label>
@@ -3122,6 +3154,7 @@ async function runBuildOpt(){
 }
 
 function renderBuildResult(res, rate, opts){
+  bldLastResult = { res, rate, opts, regional: false };
   const host = document.getElementById('bldResult');
   if (!res || !res.Columns){
     host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
@@ -3242,6 +3275,7 @@ async function bldLoadRegionalData(){
     ]);
     if (!p || !h) return false;
     bldRegProfiles = p; bldHeadroom = h.headroom || h;
+    await bldLoadTdp();   // the delay comparison needs it, and the LP is synchronous
     return true;
   } catch (e) { return false; }
 }
@@ -3307,10 +3341,21 @@ function bldBuildRegionalLP(opts){
       }
     }
     // PER-REGION GRID HEADROOM - the constraint the national model lacks.
+    // GCCA headroom is what exists TODAY. TDP projects release more of it over
+    // the period, so a delay scenario is modelled by holding back the release
+    // that slipped projects would have delivered. opts.headroomDelay is the slip
+    // in years; 0 is the on-schedule case.
+    const slip = opts.headroomDelay || 0;
+    const rel = slip > 0 ? bldHeadroomRelease(slip) : null;   // needs bldLoadTdp() first
     for (let ri = 0; ri < BLD_REGIONS.length; ri++){
-      const hr = bldHeadroom[BLD_REGIONS[ri]] || {};
-      L.push(' hw_'+ri+'_'+y+': ' + cum('wind',ri,y).join(' + ') + ' <= ' + (hr.wind_mw||0));
-      L.push(' hp_'+ri+'_'+y+': ' + cum('pv',ri,y).join(' + ')   + ' <= ' + (hr.solar_mw||0));
+      const R = BLD_REGIONS[ri];
+      const hr = bldHeadroom[R] || {};
+      // Capacity NOT yet released in this year because its project slipped.
+      const held = rel && rel[R] ? (rel[R][y] || 0) : 0;
+      const wcap = Math.max(0, (hr.wind_mw||0) - held);
+      const pcap = Math.max(0, (hr.solar_mw||0) - held);
+      L.push(' hw_'+ri+'_'+y+': ' + cum('wind',ri,y).join(' + ') + ' <= ' + wcap.toFixed(1));
+      L.push(' hp_'+ri+'_'+y+': ' + cum('pv',ri,y).join(' + ')   + ' <= ' + pcap.toFixed(1));
       L.push(' hb_'+ri+'_'+y+': ' + cum('batt',ri,y).join(' + ') + ' <= ' + (hr.batt_mw||0));
     }
     // BUILD RATE, NATIONAL AND PER REGION.
@@ -3358,6 +3403,7 @@ function bldBuildRegionalLP(opts){
 
 
 function renderBuildRegional(res, rate, opts){
+  bldLastResult = { res, rate, opts, regional: true };
   const host = document.getElementById('bldResult');
   if (!res || !res.Columns){
     host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
@@ -3532,7 +3578,7 @@ function bldShowInherit(){
 // Take the optimiser's answer and load it into the sliders, so the schedule can
 // then be tested hour-by-hour with the full model. Without this the panel is a
 // dead end - it tells you what to build but you cannot then simulate it.
-let bldLastTotals = null;
+let bldLastTotals = null, bldLastResult = null;
 function bldApplyToSliders(){
   if (!bldLastTotals){
     const st0 = document.getElementById('bldStatus');
@@ -3557,6 +3603,9 @@ function bldApplyButton(){
     + '<button onclick="bldApplyToSliders()" style="padding:5px 12px;background:var(--ok,#4A8C5C);'
     + 'color:#fff;border:none;cursor:pointer;font-family:\'Saira Condensed\',sans-serif;font-size:12px;'
     + 'font-weight:600;letter-spacing:.04em;border-radius:2px">Load this build into the model</button>'
+    + '<button onclick="exportBuildSchedule()" style="padding:5px 12px;background:var(--panel);'
+    + 'color:var(--ink);border:1.5px solid var(--ink);cursor:pointer;font-family:\'Saira Condensed\',sans-serif;'
+    + 'font-size:12px;font-weight:600;letter-spacing:.04em;border-radius:2px">Download CSV</button>'
     + '<span style="font-size:10px;color:var(--ink2)">Sets the sliders above, then use '
     + '<strong>Run the full model</strong> to test it hour by hour.</span></div>';
 }
@@ -3741,6 +3790,318 @@ function renderWeatherSpread(runs, d){
     + (d.meta.warning ? ' <strong style="color:var(--alert,#C4785A)">' + d.meta.warning + '</strong>' : '')
     + '</div></div>';
   host.innerHTML = html;
+}
+
+
+/* ==================== CSV EXPORT ==========================================
+ * Resource and dispatch data already export; the capacity-expansion result and
+ * the TDP project list did not - an analyst could see the answer but not take
+ * it away, which is the difference between a demo and a working tool.
+ */
+function csvEscape(v){
+  const s = String(v == null ? '' : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function downloadRows(rows, filename){
+  const csv = rows.map(r => r.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// The build schedule as solved: one row per technology per year, plus the
+// scenario it came from so the file is self-describing months later.
+function exportBuildSchedule(){
+  if (!bldLastResult){
+    const st = document.getElementById('bldStatus');
+    if (st) st.textContent = 'Solve a build schedule first.';
+    return;
+  }
+  const { res, regional, opts } = bldLastResult;
+  const rows = [];
+  rows.push(['GridTwin ZA - least-cost build schedule']);
+  rows.push(['generated', new Date().toISOString().slice(0,16).replace('T',' ')]);
+  rows.push(['mode', regional ? 'regional (decides where)' : 'national']);
+  rows.push(['demand growth to 2030', (state.demandGrowthPct||0) + '%']);
+  rows.push(['coal EAF', (state.coalEAFPct||0) + '%']);
+  rows.push(['build pace', document.getElementById('bldPace').value]);
+  rows.push(['discounted system cost (R bn)', (res.ObjectiveValue/1e9).toFixed(1)]);
+  rows.push([]);
+
+  if (regional){
+    rows.push(['region','technology','year','MW added']);
+    for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+      for (const t of ['wind','pv','batt']){
+        for (const y of BLD_YEARS){
+          const v = res.Columns['b_'+t+'_'+ri+'_'+y];
+          const mw = v ? v.Primal : 0;
+          if (mw > 1) rows.push([BLD_REGIONS[ri], t, y, Math.round(mw)]);
+        }
+      }
+    }
+    // Shadow prices are the most novel output here - what an extra MW of grid
+    // connection capacity is worth per year. Nobody else publishes this.
+    rows.push([]);
+    rows.push(['Shadow price of grid headroom (R per MW per year, final year)']);
+    rows.push(['region','wind','solar']);
+    const byName = {};
+    if (res.Rows) for (const k in res.Rows){ const r = res.Rows[k]; if (r && r.Name) byName[r.Name] = r; }
+    const ly = BLD_YEARS[BLD_YEARS.length-1];
+    for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+      const w = byName['hw_'+ri+'_'+ly], p = byName['hp_'+ri+'_'+ly];
+      const wd = w ? Math.round(Math.abs(w.Dual||0)) : 0;
+      const pd = p ? Math.round(Math.abs(p.Dual||0)) : 0;
+      if (wd > 1000 || pd > 1000) rows.push([BLD_REGIONS[ri], wd, pd]);
+    }
+  } else {
+    rows.push(['technology','year','MW added']);
+    for (const t of BLD_TECHS){
+      for (const y of BLD_YEARS){
+        const v = res.Columns['b_'+t+'_'+y];
+        const mw = v ? v.Primal : 0;
+        if (mw > 1) rows.push([BLD_LABEL[t], y, Math.round(mw)]);
+      }
+    }
+  }
+  downloadRows(rows, 'gridtwin_build_schedule.csv');
+}
+
+// The full TDP project list, so a developer can filter it in a spreadsheet
+// rather than clicking round a map.
+function exportTdpProjects(){
+  if (!tdpData || !tdpData.projects) return;
+  const rows = [['name','kind','province','year','phase','new site','kV','km','site 1','site 2']];
+  for (const p of tdpData.projects.slice().sort((a,b) => a.year - b.year)){
+    rows.push([p.name, p.kind, p.prov, p.year, p.phase, p.newsite ? 'yes' : '',
+               p.kv || '', p.km || '',
+               p.pts[0] ? p.pts[0].n : '', p.pts[1] ? p.pts[1].n : '']);
+  }
+  downloadRows(rows, 'gridtwin_tdp_projects.csv');
+}
+
+
+/* ==================== CARBON BUDGET =======================================
+ * The model already computes annual CO2 but never compared it to anything, so a
+ * scenario's emissions were a number without a verdict. South Africa's NDC
+ * commits to 350-420 MtCO2e nationally by 2030; the Energy Council puts the
+ * implied electricity-sector requirement at roughly 140 Mt, down from about
+ * 200 Mt today. That is the line a scenario either clears or does not.
+ */
+const NDC = {
+  // National NDC range, updated 2021 (South African Government, lodged at COP26).
+  nationalLo: 350, nationalHi: 420,
+  // Electricity sector allocation. The Energy Council of South Africa states the
+  // power sector must fall from ~200 Mt/yr to ~140 Mt/yr to meet the NDC range.
+  // Electricity is historically ~42% of national emissions (Eskom Data Portal).
+  powerToday: 200, powerTarget2030: 140,
+  source: 'NDC 2021 (350-420 MtCO\u2082e national by 2030); electricity-sector figure ' +
+          'from the Energy Council of South Africa. Electricity is around 42% of ' +
+          'national emissions (Eskom Data Portal).',
+};
+
+function renderCarbonBudget(res){
+  const el = document.getElementById('carbonBudget');
+  if (!el || !res) return;
+  const mt = res.co2;                       // Mt CO2 for the scenario year
+  const target = NDC.powerTarget2030;
+  const gap = mt - target;
+  const pctOfTarget = mt / target * 100;
+
+  // Verdict, stated plainly rather than left for the reader to compute.
+  const meets = mt <= target;
+  const close = !meets && gap <= target * 0.15;
+  const col = meets ? 'var(--ok,#4A8C5C)' : close ? '#C8A028' : 'var(--alert,#C4785A)';
+  const verdict = meets
+    ? 'Within the electricity sector\u2019s share of the NDC'
+    : close
+      ? `${gap.toFixed(0)}\u00a0Mt above the sector target \u2014 close, but short`
+      : `${gap.toFixed(0)}\u00a0Mt above the sector target`;
+
+  // Scale bar: today's ~200 Mt at one end, the 140 Mt target marked on it.
+  const scaleMax = Math.max(NDC.powerToday, mt) * 1.05;
+  const pos = v => Math.min(100, v / scaleMax * 100);
+
+  el.innerHTML =
+      `<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">`
+    + `<div><span style="font-size:19px;font-weight:700;color:${col}">${mt.toFixed(0)} Mt</span>`
+    + `<span style="font-size:10.5px;color:var(--ink2)"> CO\u2082 from electricity, this scenario</span></div>`
+    + `<div style="font-size:10.5px;color:${col};font-weight:600">${verdict}</div></div>`
+    // bar
+    + `<div style="position:relative;height:9px;background:var(--line2);margin:8px 0 4px;border-radius:2px">`
+    + `<div style="position:absolute;left:0;top:0;bottom:0;width:${pos(mt)}%;background:${col};border-radius:2px"></div>`
+    + `<div style="position:absolute;left:${pos(target)}%;top:-3px;bottom:-3px;width:2px;background:var(--ink)"></div>`
+    + `</div>`
+    + `<div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--ink2)">`
+    + `<span>0</span><span style="margin-left:auto">NDC sector target ${target} Mt &nbsp;\u00b7&nbsp; today \u2248 ${NDC.powerToday} Mt</span></div>`
+    + `<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.45">`
+    + `This scenario runs at <strong>${pctOfTarget.toFixed(0)}%</strong> of the electricity sector\u2019s `
+    + `2030 allowance. ${NDC.source} Figures are annual, not a cumulative budget \u2014 the model `
+    + `solves one year at a time.</div>`;
+}
+
+
+/* ==================== COST OF DELAY =======================================
+ * Everything above assumes the Transmission Development Plan lands on schedule.
+ * Nobody believes that - NTCSA itself says the first five years carry high
+ * certainty and beyond 2030 is uncertain, and 52% of the 221 mapped projects sit
+ * in Concept, Pre-Concept or generic Planned rather than Execution.
+ *
+ * This slips the uncommitted projects and re-solves, so the question stops being
+ * "is the plan good?" and becomes "what does it cost when it slips?" - which is
+ * the question South African energy debates actually turn on.
+ *
+ * Mechanism: a delayed project does not deliver its connection capacity on time,
+ * so regional GCCA headroom grows more slowly. The capacity-expansion model then
+ * cannot build where it wanted to, and the difference in system cost, unserved
+ * energy and curtailment IS the cost of delay.
+ */
+let delayResult = null;
+
+// How much connection capacity is NOT available in each year because the project
+// that would have released it slipped. Cumulative: a project delayed past a year
+// withholds its capacity in that year and every earlier one.
+let bldTdp = null;   // TDP projects, loaded for the build optimiser's own use
+                     // (tdpData lives inside the map IIFE and is not visible here)
+async function bldLoadTdp(){
+  if (bldTdp !== null) return bldTdp;
+  try {
+    const r = await fetch('nodal/tdp_projects.json');
+    bldTdp = r.ok ? await r.json() : false;
+  } catch (e) { bldTdp = false; }
+  return bldTdp;
+}
+
+function bldHeadroomRelease(slipYears){
+  if (!bldTdp || !bldTdp.projects) return null;
+  const out = {};
+  for (const R of BLD_REGIONS) out[R] = {};
+  for (const p of bldTdp.projects){
+    if (!['line','substation','transformer'].includes(p.kind)) continue;
+    const committed = p.phase === 'Execution' || p.phase === 'Definition';
+    if (committed) continue;                       // these are held on schedule
+    const newYear = p.year + slipYears;
+    const R = p.prov;
+    if (!out[R]) continue;
+    // Indicative capacity per project. The absolute figure is not what the
+    // comparison measures - both runs use the same numbers, so what shows up in
+    // the difference is purely the effect of timing.
+    const mw = p.kind === 'line' ? 400 : 250;
+    for (const y of BLD_YEARS){
+      if (y >= p.year && y < newYear) out[R][y] = (out[R][y] || 0) + mw;
+    }
+  }
+  return out;
+}
+
+// Headroom released by TDP projects, by region and year. A line or substation
+// completing in a region is what turns "no capacity" into "capacity", so this
+// is the channel through which delay bites.
+function subLookupRegion(name){
+  if (!substationData) return null;
+  const s = substationData.subs.find(x => x.n === name);
+  return s ? s.r : null;
+}
+
+async function runDelayAnalysis(){
+  const btn = document.getElementById('delayRunBtn');
+  const st  = document.getElementById('delayStatus');
+  const slip = parseInt(document.getElementById('delaySlip').value, 10);
+  if (!(await bldLoadTdp())){ st.textContent = 'TDP project data not loaded.'; return; }
+  btn.disabled = true; btn.style.opacity = 0.6;
+  st.textContent = 'Solving on-schedule case\u2026';
+  await new Promise(r => setTimeout(r, 20));
+
+  const ok = await bldLoadRegionalData();
+  if (!ok){ st.textContent = 'Regional data unavailable.'; btn.disabled=false; btn.style.opacity=1; return; }
+
+  const highsMod = await ensureHighs();
+  if (!highsMod){ st.textContent = 'Solver unavailable.'; btn.disabled=false; btn.style.opacity=1; return; }
+
+  const base = { growth: Math.pow(1 + (state.demandGrowthPct||0)/100, 1/5) - 1,
+                 eaf: (state.coalEAFPct||64)/100, rate: bldRates(), state };
+
+  const out = [];
+  for (const [label, delayed] of [['On schedule', 0], [`Slipped ${slip}\u00a0years`, slip]]){
+    st.textContent = 'Solving: ' + label + '\u2026';
+    await new Promise(r => setTimeout(r, 20));
+    const { lp } = bldBuildRegionalLP({ ...base, headroomDelay: delayed });
+    const res = highsMod.solve(lp, { time_limit: 120 });
+    if (!res || !res.Columns){ st.textContent = 'Solve failed for ' + label; btn.disabled=false; btn.style.opacity=1; return; }
+    let wind = 0, pv = 0;
+    for (let ri = 0; ri < BLD_REGIONS.length; ri++)
+      for (const y of BLD_YEARS){
+        const w = res.Columns['b_wind_'+ri+'_'+y], p = res.Columns['b_pv_'+ri+'_'+y];
+        wind += w ? w.Primal : 0; pv += p ? p.Primal : 0;
+      }
+    out.push({ label, cost: res.ObjectiveValue/1e9, wind: wind/1000, pv: pv/1000 });
+  }
+  btn.disabled = false; btn.style.opacity = 1; st.textContent = '';
+  delayResult = out;
+  renderDelay(out, slip);
+}
+
+function renderDelay(out, slip){
+  const host = document.getElementById('delayResult');
+  const [a, b] = out;
+  const dCost = b.cost - a.cost;
+  const dRe = (b.wind + b.pv) - (a.wind + a.pv);
+  const pct = a.cost > 0 ? dCost / a.cost * 100 : 0;
+
+  host.innerHTML =
+      '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 6px"></th>'
+    + `<th style="text-align:right;padding:4px 6px">${a.label}</th>`
+    + `<th style="text-align:right;padding:4px 6px">${b.label}</th>`
+    + '<th style="text-align:right;padding:4px 6px">difference</th></tr>'
+    + row('Discounted system cost', a.cost.toFixed(0) + ' Rbn', b.cost.toFixed(0) + ' Rbn',
+          (dCost >= 0 ? '+' : '') + dCost.toFixed(0) + ' Rbn', dCost > 0)
+    + row('Wind built', a.wind.toFixed(1) + ' GW', b.wind.toFixed(1) + ' GW',
+          ((b.wind - a.wind) >= 0 ? '+' : '') + (b.wind - a.wind).toFixed(1) + ' GW', (b.wind - a.wind) < 0)
+    + row('Solar built', a.pv.toFixed(1) + ' GW', b.pv.toFixed(1) + ' GW',
+          ((b.pv - a.pv) >= 0 ? '+' : '') + (b.pv - a.pv).toFixed(1) + ' GW', (b.pv - a.pv) < 0)
+    + '</table>'
+    + '<div style="border-left:3px solid ' + (dCost > 0 ? 'var(--alert,#C4785A)' : 'var(--ok,#4A8C5C)')
+    + ';padding:7px 10px;margin-top:10px;font-size:10.5px;line-height:1.5">'
+    + (dCost > 0
+        ? `<strong>Slipping uncommitted projects by ${slip}\u00a0years costs R${dCost.toFixed(0)}\u00a0bn</strong> `
+          + `(${pct.toFixed(1)}% more) over 2026\u201330`
+          + (dRe < -0.05 ? `, and ${Math.abs(dRe).toFixed(1)}\u00a0GW less renewable capacity gets built` : '')
+          + '. Grid capacity arrives later, so the least-cost build cannot land where it wanted to.'
+        : 'No material cost difference \u2014 at this build pace the binding constraint is not grid timing.')
+    + '<div style="color:var(--ink2);margin-top:5px">Projects in <strong>Execution</strong> and '
+    + '<strong>Definition</strong> are held on schedule; only Concept, Pre-Concept and generic Planned '
+    + 'projects slip \u2014 that is 52% of the 221 mapped projects. Headroom released per project is '
+    + 'indicative; what the comparison measures is the effect of <em>timing</em>, not the absolute figure.</div></div>';
+
+  function row(k, x, y, d, bad){
+    return '<tr style="border-bottom:1px solid var(--line2)">'
+      + `<td style="padding:4px 6px">${k}</td>`
+      + `<td style="text-align:right;padding:4px 6px">${x}</td>`
+      + `<td style="text-align:right;padding:4px 6px">${y}</td>`
+      + `<td style="text-align:right;padding:4px 6px;font-weight:700;color:${bad ? 'var(--alert,#C4785A)' : 'var(--ink2)'}">${d}</td></tr>`;
+  }
+}
+
+// HiGHS is loaded inside the build worker; the delay comparison needs it on the
+// main thread to run two solves back to back.
+let _highs = null;
+async function ensureHighs(){
+  if (_highs) return _highs;
+  try {
+    if (typeof Module === 'undefined' && typeof require === 'undefined'){
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/highs@1.15.2/build/highs.js';
+        s.onload = res; s.onerror = rej; document.head.appendChild(s);
+      });
+    }
+    _highs = await self.Module({ locateFile: f => 'https://cdn.jsdelivr.net/npm/highs@1.15.2/build/' + f });
+    return _highs;
+  } catch (e) { return null; }
 }
 
 /* ==================== UI DEFINITION ==================== */
@@ -4632,7 +4993,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   }).catch(()=>{btn.textContent=location.href;});
 });
 
-function run(){lastRes=simulate(state,PROFILES);render(lastRes);if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
