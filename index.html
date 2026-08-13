@@ -2833,8 +2833,8 @@ function simulate(u, prof, outPath){
     // nothing scarce is on the margin and the price is zero.
     marginalP[h] =
         ((stack.unserved[h]||0) > 1)     ? p.voll
-      : ((stack.diesel[h]||0) > 1)       ? p.costDiesel
-      : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt
+      : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD
+      : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt + cG
       : ((curtailMW[h]||0) > 1)          ? 0
       : (coalGen > 1)                    ? p.costCoal + cC
       : (imp > 1)                        ? p.costImports
@@ -4412,7 +4412,7 @@ const SLIDERS=[
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. Baseline is 6 GW, or roughly 15% of SA peak demand — consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
-  {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'Affects the system cost and carbon cost KPIs — but does NOT change which plants dispatch. In SA\'s current fleet, coal (R546/MWh fuel + ~R320/t carbon = R866/MWh total) remains cheaper than gas CCGT (R1,750/MWh + carbon) even at very high carbon prices. The slider is most useful for cost-sensitivity analysis: how much does system cost rise if the carbon price doubles?'},
+  {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'Affects the system cost and wholesale prices — but does not change which plants dispatch.'},
   {grp:'LCOE assumptions (R/kWh) — full lifecycle build cost'},
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:550,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
   {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:750,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 wind bids > solar; anchor R0.75'},
