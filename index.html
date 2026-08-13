@@ -494,7 +494,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// Deferred until the DOM is parsed. This block used to run inline, immediately
+// after its own markup - but when the site-resource section was moved into the
+// Project planning band, the script stayed put and now executes ~80,000 chars
+// BEFORE the #resourceMap div exists. Leaflet then threw "Map container not
+// found", the IIFE aborted, and the entire panel rendered blank. Waiting for
+// DOMContentLoaded makes initialisation independent of tag order.
 (function(){
+function initResourceQuery(){
+  if (!document.getElementById('resourceMap')) return;   // nothing to attach to
   // ── Map setup ──────────────────────────────────────────────────────────────
   const map = L.map('resourceMap', {
     center: [-29, 25], zoom: 5,
@@ -1695,6 +1703,13 @@ function printPrefeas() {
   // Wire up dropdowns
   document.getElementById('wheelGenRegion').addEventListener('change', calcWheeling);
   document.getElementById('wheelConsRegion').addEventListener('change', calcWheeling);
+}
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initResourceQuery);
+  } else {
+    initResourceQuery();
+  }
 })();
 </script>
 
