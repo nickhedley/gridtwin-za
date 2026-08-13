@@ -241,9 +241,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
 <div style="max-width:1380px;margin:0 auto;padding:0 20px">
-  <div style="margin:28px 0 12px;padding:10px 14px;border-left:5px solid var(--ink);background:var(--panel);border-top:1.5px solid var(--ink);border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)">
-    <div style="font-family:'Saira Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:.03em">System planning</div>
-    <div style="font-size:11px;color:var(--ink2);margin-top:2px">What the country should build, and whether the grid holds up. Everything here responds to the scenario you set on the left.</div>
+  <div style="margin:28px 0 12px;padding:14px;background:var(--alert,#C4785A);border:1.5px solid var(--ink);text-align:center">
+    <div style="font-family:'Saira Condensed',sans-serif;font-size:26px;font-weight:700;letter-spacing:.04em;color:#fff">System planning</div>
   </div>
 </div>
 <div class="wrap">
@@ -252,7 +251,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <aside class="panel" aria-label="Scenario controls" style="min-width:0;max-width:100%;box-sizing:border-box">
     <div class="ph"><h2>Set the scenario</h2><span class="tag">re-solves live</span></div>
     <div class="pb">
-      <p style="font-size:10.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45">Start from a preset, or move any slider. Everything below re-solves as you go.</p>
+      <p style="font-size:10.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45">Start from a preset, or move any slider.</p>
       <div class="presets" id="presets"></div>
       <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
       <button class="sharebtn" id="pinBtn" type="button" onclick="pinScenario()" style="margin-top:6px;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink)">📌 Pin for comparison</button>
@@ -265,7 +264,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div id="kpiSourceBanner" style="display:none; font-size:11.5px; padding:8px 12px; margin-bottom:10px; border:1.5px solid var(--alert); background:var(--panel2); border-radius:3px"></div>
     <div id="wxBar" style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:var(--ink2);border:1px solid var(--line2);background:var(--panel);padding:6px 10px;margin-bottom:10px;border-radius:3px">
       <button id="wxRunBtn" onclick="runWeatherSpread()" style="padding:3px 10px;border:1px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:11px;font-weight:600;border-radius:2px;white-space:nowrap">Show wind &amp; solar extremes</button>
-      <span style="flex:1;min-width:200px">Re-solves every figure below against 10 years of real weather, so you can see the best and worst years rather than one.</span>
+      <span style="flex:1;min-width:200px">Re-solves outputs against 10 years of real weather, so you can see the best and worst years rather than only one.</span>
       <span id="wxStatus"></span>
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
@@ -291,7 +290,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <button id="mipCancelBtn" onclick="cancelMIP()" style="display:none;padding:6px 12px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;color:var(--ink2)">Cancel</button>
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
             Re-solves the whole system as a true mixed-integer programming (MIP) model, where coal, storage and corridor flows are fully optimised across all 10 regions.
-            <strong>Most worth running for high-renewables scenarios:</strong> the instant model commits coal in 4-hour blocks, so it follows a midday solar trough closely but not hour-by-hour — benchmarking puts it within 1% of optimal for today's system, widening to around 5&ndash;6% once 25&nbsp;GW or more of new solar is added.
+            (The instant model commits coal in 4-hour blocks, so it follows a midday solar trough closely but not hour-by-hour — it's accurate in today's system but becomes less accurate once more solar is added).
           </span>
         </div>
 
@@ -339,7 +338,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
       
-<div class="panel" id="buildSection" style="margin-bottom:18px">
+<div class="panel" id="buildSection" style="margin-top:18px;margin-bottom:18px">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
         <h2>Generation capacity build rates</h2>
         <span class="tag">capacity expansion &middot; least-cost schedule to 2030</span>
