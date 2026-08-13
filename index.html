@@ -1196,7 +1196,7 @@ function initResourceQuery(){
     const ps = tdpAtSite(name);
     if (!ps.length) {
       return '<div style="font-size:9.5px;color:#999;margin-top:6px;padding-top:5px;'
-        + 'border-top:1px solid #e6e6e6">No TDP work planned at this substation</div>';
+        + 'border-top:1px solid #e6e6e6">No upgrades planned at this substation</div>';
     }
     const rows = ps.slice(0, 3).map(p => {
       const col = p.phase === 'Execution' ? '#3EA055'
@@ -1207,7 +1207,7 @@ function initResourceQuery(){
     const more = ps.length > 3
       ? `<div style="color:#999;margin-top:2px">+${ps.length - 3} more</div>` : '';
     return '<div style="font-size:9.5px;margin-top:6px;padding-top:5px;border-top:1px solid #e6e6e6">'
-      + `<div style="font-weight:600;color:#C4785A;margin-bottom:1px">PLANNED HERE (${ps.length})</div>`
+      + `<div style="font-weight:600;color:#C4785A;margin-bottom:1px">UPGRADES PLANNED HERE (${ps.length})</div>`
       + rows + more + '</div>';
   }
 
