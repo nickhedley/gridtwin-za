@@ -301,8 +301,11 @@ function buildLayers(subs) {
   // 4. Substation dots
   if(subs.length > 0) {
     // Transmission substations (larger, steel blue)
-    const txSubs = subs.filter(s => s.voltage_class === 'transmission');
-    const distSubs = subs.filter(s => s.voltage_class !== 'transmission');
+    // s.voltage_class does not exist in substations_compact.json - filtering on
+    // it left txSubs empty, so all 185 substations drew as small grey dots. The
+    // data carries a real kV rating (DBSA RFP 008 register), so use that.
+    const txSubs = subs.filter(s => (s.kv || 0) >= 220);
+    const distSubs = subs.filter(s => (s.kv || 0) < 220);
 
     layers.push(new deck.ScatterplotLayer({
       id: 'dist-subs',
@@ -318,7 +321,7 @@ function buildLayers(subs) {
       pickable: true,
       onHover: ({object, x, y}) => showTooltip(object ? {
         name: object.n,
-        info: `${object.r}\n132kV distribution`,
+        info: `${object.r}\n${object.kv ? object.kv + 'kV distribution' : 'voltage not recorded'}`,
       } : null, x, y),
     }));
 
@@ -336,7 +339,7 @@ function buildLayers(subs) {
       pickable: true,
       onHover: ({object, x, y}) => showTooltip(object ? {
         name: object.n,
-        info: `${object.r}\n400kV transmission\n\nGCCA headroom:\nSolar ${(HEADROOM[object.r]?.solar||0).toLocaleString()} MW\nWind ${(HEADROOM[object.r]?.wind||0).toLocaleString()} MW`,
+        info: `${object.r}\n${object.kv ? object.kv + 'kV' : ''} transmission\n\nGCCA headroom:\nSolar ${(HEADROOM[object.r]?.solar||0).toLocaleString()} MW\nWind ${(HEADROOM[object.r]?.wind||0).toLocaleString()} MW`,
       } : null, x, y),
     }));
 
