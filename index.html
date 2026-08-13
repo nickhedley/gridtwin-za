@@ -6024,7 +6024,14 @@ const RT_WP_PER_M2 = 165;
 // demand) and fades for both badly undersized and heavily oversized systems.
 function _rtSizingCeilingBonus(sizingRatio) {
   if (!sizingRatio || sizingRatio <= 0) return 0;
-  const distFromIdeal = Math.abs(Math.log(sizingRatio));
+  // Penalise UNDERsizing only. The bonus represents having enough generation to
+  // cover daytime load reliably rather than intermittently - which is a property
+  // of having enough, not of having exactly the right amount. A symmetric decay
+  // made the CEILING fall as the array grew, so savings peaked at 3,000 m2 and
+  // then eased 3% while capacity kept rising. Adding panels cannot reduce the
+  // kWh a building consumes on site. The per-kWp value still falls with
+  // oversizing, correctly, via sizingFactor on the rate below.
+  const distFromIdeal = Math.max(0, -Math.log(sizingRatio));
   // Capped at 6pp, not 15pp. A well-matched system does help - there is enough
   // generation to cover daytime load reliably rather than only intermittently -
   // but it cannot manufacture daytime demand that does not exist. A typical SA
