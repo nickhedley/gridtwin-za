@@ -54,7 +54,7 @@ the data is correct as published. They are checksums of a specific compilation.
 
 | File | Fingerprint | Compiled |
 |---|---|---|
-| `tdp_projects.json` | `gtza-425638771484e8ec` | 2026-08-13 |
+| `tdp_projects.json` | `gtza-1fe160f81a4d6052` | 2026-08-13 |
 | `substations_compact.json` | `gtza-4a011aef9a492a59` | 2026-08-13 |
 | `headroom_summary.json` | `gtza-93f0182456516e03` | 2026-08-13 |
 | `profiles_regional_multiyear.json` | `gtza-48046d7c4ac04853` | 2026-08-13 |
