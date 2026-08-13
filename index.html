@@ -1289,7 +1289,7 @@ function initResourceQuery(){
         items.push(L.circleMarker([p.pts[0].lat, p.pts[0].lng], {
           // A planned substation at a site that does not yet exist opens new
           // ground; one at an existing site is an upgrade. Draw the former bigger.
-          radius: p.newsite ? 10 : p.kind === 'syncon' ? 7 : 5.5,
+          radius: p.newsite ? 14 : p.kind === 'syncon' ? 11 : 9,
           color: '#FF3B30', weight: 1.8, opacity: op,
           fillColor: 'transparent', fillOpacity: 0, dashArray: '3,3',
         }).bindTooltip(tip, { sticky: true }));
@@ -1878,12 +1878,15 @@ function printPrefeas() {
       <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#C4785A;border:1px solid #8f4f34;vertical-align:middle"></span> 400&ndash;533&nbsp;kV</span>
       <span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#517180;border:1px solid #3a5668;vertical-align:middle"></span> 220&ndash;275&nbsp;kV</span>
       <span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#9AA69B;border:1px solid #7a8a85;vertical-align:middle"></span> 132&nbsp;kV</span>
-      <span style="color:var(--ink2)"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:transparent;border:1px solid #7a8a85;vertical-align:middle"></span> hollow = approximate location</span>
+      <span style="color:var(--ink2)">&nbsp;&mdash;&nbsp;filled dots are the <strong>existing</strong> network</span>
       <button id="tdpToggleBtn" onclick="toggleTdp()" style="display:none;margin-left:auto;padding:3px 10px;border:1.5px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:11px;font-weight:600;border-radius:2px;white-space:nowrap">Show planned build (TDP)</button>
     </div>
     <div id="tdpYearRow" style="display:none;gap:9px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:var(--ink2);padding:0 14px 8px">
       <span style="display:inline-block;width:18px;height:0;border-top:2.5px dashed #FF3B30;vertical-align:middle"></span>
-      <span>Planned lines and sites from NTCSA&rsquo;s Transmission Development Plan &mdash; brighter means more committed.</span>
+      <span><strong>Planned</strong> build is always red and never filled:
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:transparent;border:1.5px dashed #FF3B30;vertical-align:middle"></span> upgrade at an existing site &middot;
+        <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:transparent;border:2.5px solid #FF3B30;vertical-align:middle"></span> new substation that does not exist yet.
+        Brighter means more committed.</span>
       <label style="display:flex;align-items:center;gap:6px;margin-left:auto;white-space:nowrap">built by <strong id="tdpYearOut">2034</strong>
         <input type="range" min="2025" max="2035" step="1" value="2034" oninput="setMapTdpYear(this.value)" style="width:130px">
       </label>
