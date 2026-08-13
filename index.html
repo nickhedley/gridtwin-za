@@ -3603,6 +3603,10 @@ async function loadWeatherYears(){
 function weatherYearNational(year){
   if (!bldWeatherYears) return null;
   const wind = new Float64Array(HOURS), solar = new Float64Array(HOURS);
+  // Series are stored as integers scaled by meta.scale to keep the file small -
+  // at full float precision it was 9 MB, two-thirds of the entire site payload.
+  // Older files without a scale are plain per-unit floats, hence the fallback.
+  const sc = bldWeatherYears.scale || 1;
   let tw = 0;
   for (const R of BLD_REGIONS){
     const share = BLD_LOAD_SHARE[R] || 0;
@@ -3610,7 +3614,8 @@ function weatherYearNational(year){
     const s = bldWeatherYears.solar_pu[R] && bldWeatherYears.solar_pu[R][year];
     if (!w || !s) continue;
     tw += share;
-    for (let h = 0; h < HOURS; h++){ wind[h] += w[h]*share; solar[h] += s[h]*share; }
+    const f = share / sc;
+    for (let h = 0; h < HOURS; h++){ wind[h] += w[h]*f; solar[h] += s[h]*f; }
   }
   if (!tw) return null;
   for (let h = 0; h < HOURS; h++){ wind[h] /= tw; solar[h] /= tw; }
