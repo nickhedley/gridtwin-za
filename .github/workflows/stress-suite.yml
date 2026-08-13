@@ -1,18 +1,43 @@
 name: Stress suite
 
+# The suite exercises nodal_engine.js against index.html and the regional data
+# files. Its real value in this repo is catching MISMATCHED UPLOADS - a new
+# index.html paired with a stale nodal_engine.js, or a data file that never made
+# it across - so it is worth keeping on push. The settings below just stop it
+# costing time it does not need to.
 on:
   push:
     branches: [main]
+    paths-ignore:
+      # Not exercised by the suite, so a change to these cannot break it.
+      - '**.md'
+      - 'gridtwin-3d.html'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'docs/**'
   pull_request:
     branches: [main]
+  workflow_dispatch:        # lets you trigger a run by hand when you want one
+
+# Successive uploads are common here - a data file, then the engine, then
+# index.html. Without this each push queues its own full run and they pile up.
+# Cancelling superseded runs means only the latest state gets tested.
+concurrency:
+  group: stress-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   stress-suite:
     runs-on: ubuntu-latest
+    timeout-minutes: 10      # the suite takes ~20s; anything near this is a hang
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          # Only the tip commit is needed; skipping history makes checkout
+          # noticeably faster on a repo carrying large geojson and profile files.
+          fetch-depth: 1
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
