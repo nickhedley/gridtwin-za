@@ -166,6 +166,7 @@
   <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4);margin-top:4px">Dashed = planned</div>
   <div class="leg-row" style="margin-top:6px"><div class="leg-line" style="background:rgba(255,70,60,0.8);height:2px"></div>TDP planned build</div>
   <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4)">Brighter = more committed</div>
+  <div class="leg-row"><div class="leg-dot" style="background:transparent;border:2px solid rgba(255,70,60,0.9);width:10px;height:10px"></div>New substation site</div>
 </div>
 
 <!-- Controls -->
@@ -372,10 +373,10 @@ function buildLayers(subs) {
           id: 'tdp-sites',
           data: plannedSites,
           getPosition: d => [d.pts[0].lng, d.pts[0].lat],
-          getRadius: d => d.kind === 'syncon' ? 7500 : 5500,
+          getRadius: d => d.newsite ? 11000 : d.kind === 'syncon' ? 7500 : 5500,
           getFillColor: [0, 0, 0, 0],
           getLineColor: col,
-          lineWidthMinPixels: 1,
+          lineWidthMinPixels: d => d.newsite ? 2.5 : 1,
           stroked: true,
           filled: false,
           radiusMinPixels: 5,
@@ -383,7 +384,9 @@ function buildLayers(subs) {
           pickable: true,
           onHover: ({object, x, y}) => showTooltip(object ? {
             name: object.name,
-            info: `PLANNED ${object.kind.toUpperCase()} \u00b7 ${object.year}\n${object.phase}`
+            info: (object.newsite ? 'NEW SITE \u00b7 ' : 'PLANNED ')
+                + `${object.kind.toUpperCase()} \u00b7 ${object.year}\n${object.phase}`
+                + (object.newsite ? '\nSubstation does not exist yet' : '')
                 + (object.prov ? `\n${object.prov}` : ''),
           } : null, x, y),
         }));
