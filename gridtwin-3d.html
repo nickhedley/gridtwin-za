@@ -436,9 +436,9 @@ function buildLayers(subs) {
           pickable: true,
           onHover: ({object, x, y}) => showTooltip(object ? {
             name: object.name,
-            info: `PLANNED \u00b7 ${object.year}\n${object.phase}`
-                + (object.km ? `\n${object.km} km` : '')
-                + (object.prov ? `\n${object.prov}` : ''),
+            info: `<div style="color:#FF463C;font-weight:600">Planned line \u00b7 ${object.year}</div>`
+                + `<div>${object.phase}${object.km ? ' \u00b7 ' + object.km + ' km' : ''}</div>`
+                + (object.prov ? `<div style="color:rgba(232,228,216,0.6)">${object.prov}</div>` : ''),
           } : null, x, y),
         }));
       }
@@ -460,10 +460,13 @@ function buildLayers(subs) {
           pickable: true,
           onHover: ({object, x, y}) => showTooltip(object ? {
             name: object.name,
-            info: (object.newsite ? 'NEW SITE \u00b7 ' : 'PLANNED ')
-                + `${object.kind.toUpperCase()} \u00b7 ${object.year}\n${object.phase}`
-                + (object.newsite ? '\nSubstation does not exist yet' : '')
-                + (object.prov ? `\n${object.prov}` : ''),
+            info: `<div style="color:#FF463C;font-weight:600">`
+                + (object.newsite ? 'New substation' : 'Planned upgrade')
+                + ` \u00b7 ${object.year}</div>`
+                + `<div>${object.phase}</div>`
+                + (object.newsite
+                    ? '<div style="color:#FF463C">This substation does not exist yet</div>' : '')
+                + (object.prov ? `<div style="color:rgba(232,228,216,0.6)">${object.prov}</div>` : ''),
           } : null, x, y),
         }));
       }
@@ -515,7 +518,8 @@ function buildLayers(subs) {
       onClick: ({object}) => { selectSub(object); },
       onHover: ({object, x, y}) => showTooltip(object ? {
         name: object.n,
-        info: `EXISTING \u00b7 ${object.kv ? object.kv + 'kV distribution' : 'voltage not recorded'}\n${object.r}`
+        info: `<div>Existing substation \u00b7 ${object.kv ? object.kv + 'kV distribution' : 'voltage not recorded'}</div>`
+            + `<div style="color:rgba(232,228,216,0.6)">${object.r}</div>`
             + plannedSummary(object.n),
       } : null, x, y),
     }));
@@ -535,9 +539,11 @@ function buildLayers(subs) {
       onClick: ({object}) => { selectSub(object); },
       onHover: ({object, x, y}) => showTooltip(object ? {
         name: object.n,
-        info: `EXISTING \u00b7 ${object.kv ? object.kv + 'kV' : ''} transmission\n${object.r}`
-            + `\n\nGCCA headroom:\nSolar ${(HEADROOM[object.r]?.solar||0).toLocaleString()} MW`
-            + `\nWind ${(HEADROOM[object.r]?.wind||0).toLocaleString()} MW`
+        info: `<div>Existing substation \u00b7 ${object.kv ? object.kv + 'kV' : ''} transmission</div>`
+            + `<div style="color:rgba(232,228,216,0.6)">${object.r}</div>`
+            + `<div style="margin-top:6px">GCCA headroom &nbsp;`
+            + `<strong>Solar</strong> ${(HEADROOM[object.r]?.solar||0).toLocaleString()} MW &nbsp;`
+            + `<strong>Wind</strong> ${(HEADROOM[object.r]?.wind||0).toLocaleString()} MW</div>`
             + plannedSummary(object.n),
       } : null, x, y),
     }));
@@ -594,7 +600,9 @@ function showTooltip(obj, x, y) {
   const tt = document.getElementById('tooltip');
   if(!obj) { tt.style.display = 'none'; return; }
   document.getElementById('tt-name').textContent = obj.name;
-  document.getElementById('tt-info').textContent = obj.info;
+  // innerHTML, not textContent - the info string carries its own markup so the
+  // sections read as separate blocks rather than one run-on paragraph.
+  document.getElementById('tt-info').innerHTML = obj.info;
   tt.style.display = 'block';
   tt.style.left = (x + 14) + 'px';
   tt.style.top  = (y - 10) + 'px';
@@ -668,10 +676,21 @@ function plannedAt(name) {
 
 function plannedSummary(name) {
   const ps = plannedAt(name);
-  if (!ps.length) return '\n\nNo TDP work planned here';
-  const soon = ps[0];
-  const more = ps.length > 1 ? `\n+${ps.length - 1} more TDP project${ps.length > 2 ? 's' : ''}` : '';
-  return `\n\nPLANNED HERE (${ps.length}):\n${soon.year} \u00b7 ${soon.name}\n${soon.phase}${more}`;
+  if (!ps.length) {
+    return '<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(232,228,216,0.15);'
+         + 'color:rgba(232,228,216,0.5)">No upgrades planned here</div>';
+  }
+  // Phase is what tells a reader how much to trust the date, so colour it.
+  const col = ph => ph === 'Execution' ? '#7DC47A'
+                  : ph === 'Definition' ? '#EFC24A' : 'rgba(232,228,216,0.55)';
+  const rows = ps.slice(0, 3).map(p =>
+    `<div style="margin-top:3px"><strong>${p.year}</strong> &middot; ${p.name}`
+    + `<br><span style="color:${col(p.phase)};font-size:10px">${p.phase}</span></div>`).join('');
+  const more = ps.length > 3
+    ? `<div style="margin-top:3px;color:rgba(232,228,216,0.5)">+${ps.length - 3} more</div>` : '';
+  return '<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(232,228,216,0.15)">'
+       + `<div style="color:#FF463C;font-weight:600;letter-spacing:.05em">UPGRADES PLANNED (${ps.length})</div>`
+       + rows + more + '</div>';
 }
 
 // Clicking a substation shows its name; clicking the same one again clears it.
