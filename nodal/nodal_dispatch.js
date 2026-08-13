@@ -151,11 +151,47 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     weekStacks[m] = { stack, loadS: new Float64Array(168) };
   });
 
+  // LOCATIONAL PRICES. A single-node model has one national price, so it cannot
+  // show the thing that actually makes a battery money in a constrained network:
+  // a region spilling renewables while another pays for diesel. genLog already
+  // carries what each generator did and where, so the marginal price per region
+  // can be derived from it - the dearest carrier serving that region in that
+  // hour, or zero where the region is spilling.
+  const CARRIER_COST = { coal: 546, ccgt: 2800, ocgt: 6100, diesel: 6100,
+                         nuclear: 120, hydro: 80, imports: 550,
+                         wind: 0, solar: 0, pv: 0, csp: 0, rmippp: 80, battery: 0 };
+  const locPrice = {};   // region -> Float64Array of hourly marginal price
+  const locSpill = {};   // region -> hours spilling
+  REGIONS.forEach(r => { locPrice[r] = new Float64Array(8760); locSpill[r] = 0; });
+
   for (let h = 0; h < 8760; h++) {
     const r = nodalEngineInstance.dispatchHour(h);
     REGIONS.forEach(reg => {
       byRegion[reg].demand += r.demand[reg];
       byRegion[reg].unserved += r.unserved[reg];
+    });
+
+    // Marginal price per region this hour.
+    const dearest = {}, spilling = {};
+    REGIONS.forEach(reg => { dearest[reg] = 0; spilling[reg] = false; });
+    for (const g of r.genLog){
+      const reg = g.region;
+      if (dearest[reg] === undefined) continue;
+      if ((g.curtailed || 0) > 1) spilling[reg] = true;
+      if ((g.homeTake || 0) > 1){
+        const cost = CARRIER_COST[foldCarrier(g.carrier)] ?? 546;
+        if (cost > dearest[reg]) dearest[reg] = cost;
+      }
+    }
+    // System marginal cost this hour: the dearest carrier running anywhere.
+    let systemMarginal = 0;
+    for (const reg of REGIONS) if (dearest[reg] > systemMarginal) systemMarginal = dearest[reg];
+    REGIONS.forEach(reg => {
+      if ((r.unserved[reg] || 0) > 1) locPrice[reg][h] = 87000;      // scarcity
+      else if (spilling[reg]) { locPrice[reg][h] = 0; locSpill[reg]++; }
+      // A region with no local generator on the margin is importing, so it pays
+      // the system price rather than nothing.
+      else locPrice[reg][h] = dearest[reg] > 0 ? dearest[reg] : systemMarginal;
     });
     totalDemand += Object.values(r.demand).reduce((a, b) => a + b, 0);
     totalUnserved += Object.values(r.unserved).reduce((a, b) => a + b, 0);
@@ -208,6 +244,45 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
   }
   const runtimeMs = performance.now() - t0;
 
+  // Locational battery benchmark: perfect-foresight daily arbitrage on EACH
+  // region's own price. A battery sited where renewables spill can charge at
+  // zero and sell into the local evening, which a national average hides.
+  function bessAt(price, hours, eff){
+    eff = eff || 0.88;
+    let rev = 0, cycles = 0;
+    for (let d = 0; d < 365; d++){
+      const day = [];
+      for (let hh = 0; hh < 24; hh++) day.push(price[d*24 + hh]);
+      const s = day.slice().sort((a, b) => a - b);
+      const cIn = s.slice(0, hours).reduce((a,b) => a+b, 0) / hours;
+      const dOut = s.slice(-hours).reduce((a,b) => a+b, 0) / hours;
+      // Cap the sell price at CCGT: a battery cannot realistically capture the
+      // full value of lost load, and letting R87,000 hours through would make
+      // the benchmark a scarcity-event lottery rather than an arbitrage measure.
+      const capped = Math.min(dOut, 2800);
+      const spread = capped * eff - cIn;
+      if (spread > 0){ rev += spread * hours; cycles++; }
+    }
+    return { rev, cycles };
+  }
+  const bessByRegion = {};
+  REGIONS.forEach(reg => {
+    const p = locPrice[reg];
+    let sum = 0; for (let i = 0; i < p.length; i++) sum += p[i];
+    // Median, not mean: a handful of value-of-lost-load hours drags the mean to
+    // five figures and tells you nothing about what a battery trades against.
+    const sortedP = Float64Array.from(p); sortedP.sort();
+    const medianP = sortedP[Math.floor(sortedP.length / 2)];
+    const b4 = bessAt(p, 4), b2 = bessAt(p, 2);
+    bessByRegion[reg] = {
+      avgPrice: sum / p.length,
+      medianPrice: medianP,
+      spillHours: locSpill[reg],
+      rev4h: b4.rev, cycles4h: b4.cycles,
+      rev2h: b2.rev, cycles2h: b2.cycles,
+    };
+  });
+
   const corridorFlows = edgeMeta.map((e, i) => {
     const isBoosted = nodalEngineInstance.getsEnabled && nodalEngineInstance.boostedEdgeIndices && nodalEngineInstance.boostedEdgeIndices.has(i);
     const effLimit = e.limit * (isBoosted ? 1.20 : 1); // 1.20 matches GET_UPLIFT_FRAC in nodal_engine.js
@@ -243,6 +318,7 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
     byRegion,
     byCarrier, // {carrier: annual MWh}
     corridorFlows, // [{regionA, regionB, limitMw, baseLimitMw, getBoosted, annualGwh, peakMw, peakUtilPct, avgUtilPct}]
+    bessByRegion,  // {region: {avgPrice, spillHours, rev4h, cycles4h, rev2h, cycles2h}}
     curtailmentByRegion, // [{region, curtailedGwh, potentialGwh, curtailmentRatePct}]
     getsEnabled: !!getsEnabled,
     getBoostedCorridorCount: boostedEdgeIndices ? boostedEdgeIndices.size : 0,
