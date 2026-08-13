@@ -431,6 +431,61 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </details>
       </div>
     </div>
+<section aria-label="Capacity siting tool">
+      <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
+          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
+          <div class="pb">
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. All technologies — including CCGT and batteries — carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it — the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the real 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results — only the load-shedding risk panel stays on the national engine.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
+                <select id="siteRegion" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:150px">
+                  <option value="Eastern Cape">Eastern Cape</option>
+                  <option value="Free State">Free State</option>
+                  <option value="Gauteng">Gauteng</option>
+                  <option value="Hydra Central">Hydra Central</option>
+                  <option value="Kwazulu Natal">KwaZulu-Natal</option>
+                  <option value="Limpopo">Limpopo</option>
+                  <option value="Mpumalanga">Mpumalanga</option>
+                  <option value="North West">North West</option>
+                  <option value="Northern Cape" selected>Northern Cape</option>
+                  <option value="Western Cape">Western Cape</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Technology</label>
+                <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
+                  <option value="solar">Solar PV</option>
+                  <option value="wind">Wind</option>
+                  <option value="coal">Coal</option>
+                  <option value="ccgt">Gas CCGT</option>
+                  <option value="nuclear">Nuclear</option>
+                  <option value="batt">Battery (4h)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">New capacity (MW)</label>
+                <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
+              </div>
+              <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
+              <button id="siteAllocateBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px; background:var(--ink); color:var(--panel)">Allocate to model</button>
+            </div>
+            <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
+
+            <div style="margin-top:14px">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
+                <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
+                <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
+              </div>
+              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
 <div class="panel" style="margin-top:18px">
           <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
           <div class="pb" id="lcoe"></div>
@@ -1868,64 +1923,11 @@ function printPrefeas() {
 <div style="max-width:1380px;margin:0 auto;padding:0 20px">
   <div style="margin:22px 0 10px;padding:9px 14px;background:var(--alert,#C4785A);border:1.5px solid var(--ink);text-align:center">
     <div style="font-family:'Saira Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:.04em;color:#fff">Project planning</div>
-    <div style="font-size:10.5px;color:rgba(255,255,255,0.88);margin-top:2px">Tools for a single site rather than the whole country. (These do not depend on the system scenario above.)</div>
+    <div style="font-size:10.5px;color:rgba(255,255,255,0.88);margin-top:2px">Query any specific site rather than the whole country. (This does not depend on the system scenario above.)</div>
   </div>
 </div>
 <div class="projwrap" style="max-width:1380px;margin:0 auto;padding:0 20px 20px">
-<section aria-label="Capacity siting tool">
-      <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
-          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
-          <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. All technologies — including CCGT and batteries — carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it — the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the real 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results — only the load-shedding risk panel stays on the national engine.</p>
-            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
-                <select id="siteRegion" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:150px">
-                  <option value="Eastern Cape">Eastern Cape</option>
-                  <option value="Free State">Free State</option>
-                  <option value="Gauteng">Gauteng</option>
-                  <option value="Hydra Central">Hydra Central</option>
-                  <option value="Kwazulu Natal">KwaZulu-Natal</option>
-                  <option value="Limpopo">Limpopo</option>
-                  <option value="Mpumalanga">Mpumalanga</option>
-                  <option value="North West">North West</option>
-                  <option value="Northern Cape" selected>Northern Cape</option>
-                  <option value="Western Cape">Western Cape</option>
-                </select>
-              </div>
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Technology</label>
-                <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
-                  <option value="solar">Solar PV</option>
-                  <option value="wind">Wind</option>
-                  <option value="coal">Coal</option>
-                  <option value="ccgt">Gas CCGT</option>
-                  <option value="nuclear">Nuclear</option>
-                  <option value="batt">Battery (4h)</option>
-                </select>
-              </div>
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">New capacity (MW)</label>
-                <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
-              </div>
-              <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
-              <button id="siteAllocateBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px; background:var(--ink); color:var(--panel)">Allocate to model</button>
-            </div>
-            <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
 
-            <div style="margin-top:14px">
-              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
-                <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
-                <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
-              </div>
-              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
-            </div>
-
-          </div>
-        </div>
-      </section>
 <section id="resourceSection" style="margin-top:18px;box-sizing:border-box;max-width:100%">
   <div class="panel">
     <div class="ph">
