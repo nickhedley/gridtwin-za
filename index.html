@@ -4869,15 +4869,15 @@ function renderBess(r){
     + (best.cycles < 100
         ? '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
           + 'padding:8px 11px;margin-top:9px;font-size:10.5px;line-height:1.55">'
-          + `<strong>Only ${best.cycles} profitable cycles a year \u2014 that is the point, not a fault.</strong> `
-          + 'Coal sets the price in almost every hour, and the spread across the coal merit order is '
-          + 'only a few percent. A round trip at 88% efficiency needs a 13.6% price uplift just to '
-          + 'break even, so coal-to-coal arbitrage never clears. Effectively all the revenue comes '
-          + 'from the handful of evening peaks when diesel runs \u2014 Eskom\u2019s OCGT load factor is '
-          + 'about 1.2%, roughly 100 hours a year.'
-          + '<div style="color:var(--ink2);margin-top:5px">This is why South African batteries are '
+          + `<strong>Only ${best.cycles} profitable cycles a year in the 2026 electricity mix scenario.</strong> `
+          + 'This is because coal sets the price in almost every hour, and the spread across the coal '
+          + 'merit order is only a few percent. A round trip at 88% efficiency needs a 13.6% price '
+          + 'uplift just to break even, so coal-to-coal arbitrage never clears. Effectively all the '
+          + 'revenue comes from the handful of evening peaks when diesel runs \u2014 Eskom\u2019s OCGT '
+          + 'load factor is about 1.2%, implying roughly 100 hours a year.'
+          + '<div style="color:var(--ink2);margin-top:5px">(This is why South African batteries are '
           + 'procured on contract rather than merchant: there is barely any merchant revenue to earn. '
-          + 'Add solar and it changes \u2014 midday surplus creates the spread that a battery trades.</div></div>'
+          + 'Add substantial solar and things change.)</div></div>'
         : '')
 
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
@@ -4888,19 +4888,10 @@ function renderBess(r){
     + 'market, is due to open in Q3 2026. Until it does there are no published prices to benchmark, so '
     + 'this shows what a battery would have earned had the market existed. Once SAWEM prices '
     + 'publish, this becomes testable against them.'
-    + '<br><br><strong>This is the value of storage flexibility, not a Phase 1 trading strategy.</strong> '
-    + 'The Market Code does define Day-Ahead and Intra-Day markets, but capturing this as a standalone '
-    + 'merchant asset is not realistic at launch: any generator above 10 MW must be a Balance '
-    + 'Responsible Party or appoint one, market participation requires certification and credit cover, '
-    + 'and Phase 1 is deliberately limited \u2014 mostly Eskom generators at first, to contain market '
-    + 'power \u2014 so day-ahead liquidity will be thin. Grid-charging then re-exporting also attracts '
-    + 'network charges at both ends.'
-    + '<div style="margin-top:5px">In practice the two routes to this value are '
-    + '<strong>co-location</strong>, charging directly from an on-site generator with no wheeling in '
-    + 'between, and <strong>portfolio aggregation</strong>, where a trader holds the generation '
-    + 'contracts and the battery in one BRP portfolio and uses the storage to manage imbalance and '
-    + 'shift output. Read the figures above as what that flexibility is worth to whoever captures '
-    + 'it, not as a standalone arbitrage business.</div></div>';
+    + '<br><br>Under Phase 1 of SAWEM, market participation is deliberately limited \u2014 mostly '
+    + 'Eskom generators at first \u2014 so day-ahead liquidity will be thin. Grid-charging then '
+    + 're-exporting also attracts network charges at both ends. So for the time being, direct '
+    + 'contracts or co-location are the most feasible routes for battery operators.</div>';
 }
 
 /* ==================== UI DEFINITION ==================== */
