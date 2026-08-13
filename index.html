@@ -1251,23 +1251,63 @@ function initResourceQuery(){
     const battMWh = loadMW * 4;
 
     // Scale: what if they want 70% or 90% carbon free?
-    // Hybrid is split 60/40 solar:wind by energy, matching the blended CF above,
-    // and reported as two separate builds rather than one meaningless total.
+    // SIZE AGAINST HOURLY MATCHING, NOT ANNUAL ENERGY.
+    // A data centre is a flat 24/7 load. Solar generates in daylight only; wind
+    // blows day and night. The previous version applied the SAME capacity
+    // multipliers to both, which sized on annual energy and badly overstated what
+    // solar can deliver: a build labelled "90% carbon-free" actually met 58% of
+    // hours from solar alone, against 79% from wind and 82% from a hybrid.
+    // Telling a developer 90% when the answer is 58% is the difference between a
+    // viable procurement strategy and a failed one.
+    //
+    // So solve for the capacity that actually hits the target, hour by hour,
+    // against the real profiles.
     const HYB_SOLAR = 0.6, HYB_WIND = 0.4;
-    const mk = (pct, genMult, battMult) => {
-      const totalMW = loadMW / cf * genMult;
-      return {
-        pct,
+    const sp = (PROFILES && PROFILES.solar) || null;
+    const wp = (PROFILES && PROFILES.wind) || null;
+
+    // Fraction of load served hour-by-hour by a given build plus storage.
+    function hourlyMatch(solarMW, windMW, battEnergyMWh){
+      if (!sp || !wp) return null;
+      const N = sp.length, battPower = battEnergyMWh / 4;
+      let soc = battEnergyMWh * 0.5, served = 0;
+      for (let h = 0; h < N; h++){
+        const gen = solarMW * sp[h] + windMW * wp[h];
+        let need = loadMW;
+        const direct = Math.min(gen, need); need -= direct; served += direct;
+        const surplus = gen - direct;
+        if (surplus > 0) soc = Math.min(battEnergyMWh, soc + Math.min(surplus, battPower, battEnergyMWh - soc) * 0.88);
+        if (need > 0){ const dis = Math.min(need, battPower, soc); soc -= dis; served += dis; }
+      }
+      return served / (loadMW * N);
+    }
+
+    // Bisect on the capacity multiplier until the build meets the target.
+    function sizeFor(pct, battMult){
+      const batt = Math.round(battMWh * battMult);
+      const build = g => ({
         solarMW: tech === 'wind'   ? 0
-               : tech === 'hybrid' ? Math.round(loadMW * HYB_SOLAR / solarCF * genMult)
-               :                     Math.round(totalMW),
+               : tech === 'hybrid' ? Math.round(loadMW * HYB_SOLAR / solarCF * g)
+               :                     Math.round(loadMW / solarCF * g),
         windMW:  tech === 'solar'  ? 0
-               : tech === 'hybrid' ? Math.round(loadMW * HYB_WIND / windCF * genMult)
-               :                     Math.round(totalMW),
-        battMWh: Math.round(battMWh * battMult),
-      };
-    };
-    const scenarios = [ mk(50,0.55,0.5), mk(70,0.77,0.7), mk(90,1.0,1.0), mk(100,1.2,1.5) ];
+               : tech === 'hybrid' ? Math.round(loadMW * HYB_WIND / windCF * g)
+               :                     Math.round(loadMW / windCF * g),
+      });
+      if (!sp || !wp){
+        // No profiles loaded - fall back to annual-energy sizing and say so.
+        const b = build(pct/100 * 1.15);
+        return { pct, ...b, battMWh: batt, achieved: null };
+      }
+      let lo = 0.2, hi = 8, best = build(hi), bestAch = null;
+      for (let i = 0; i < 18; i++){
+        const g = (lo + hi) / 2, b = build(g);
+        const m = hourlyMatch(b.solarMW, b.windMW, batt);
+        if (m >= pct/100){ hi = g; best = b; bestAch = m; } else { lo = g; }
+      }
+      if (bestAch === null){ best = build(hi); bestAch = hourlyMatch(best.solarMW, best.windMW, batt); }
+      return { pct, ...best, battMWh: batt, achieved: bestAch };
+    }
+    const scenarios = [ sizeFor(50,0.5), sizeFor(70,0.7), sizeFor(90,1.0), sizeFor(100,1.5) ];
     const showSolar = tech !== 'wind';
     const showWind  = tech !== 'solar';
 
@@ -1285,7 +1325,10 @@ function initResourceQuery(){
         </tr></thead>
         <tbody>
           ${scenarios.map(s=>`<tr>
-            <td style="padding:3px 0;color:var(--ink2)">${s.pct}% carbon-free</td>
+            <td style="padding:3px 0;color:var(--ink2)">${s.pct}% carbon-free${
+              s.achieved !== null && s.achieved !== undefined
+                ? `<span style="font-size:9px;color:${Math.abs(s.achieved*100-s.pct)<3?'var(--ok,#4A8C5C)':'var(--alert,#C4785A)'}"> (${(s.achieved*100).toFixed(0)}% met)</span>`
+                : ''}</td>
             ${showSolar ? `<td style="text-align:right;padding:3px 4px;font-weight:600">${s.solarMW} MW</td>` : ''}
             ${showWind  ? `<td style="text-align:right;padding:3px 4px;font-weight:600">${s.windMW} MW</td>`  : ''}
             <td style="text-align:right;font-weight:600">${s.battMWh} MWh</td>
@@ -1293,8 +1336,10 @@ function initResourceQuery(){
         </tbody>
       </table>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px">
-        Rough sizing only — assumes 4h battery storage, fixed load, and the site-specific
-        capacity factors shown above.${tech==='hybrid' ? ' Hybrid splits generation 60/40 solar:wind by energy.' :
+        Sized by <strong>hour-by-hour matching</strong> against the real generation profiles,
+        not annual energy — a flat 24/7 load needs far more solar than wind for the same
+        carbon-free percentage, because solar only generates in daylight. Assumes 4h battery
+        storage and the capacity factors shown above.${tech==='hybrid' ? ' Hybrid splits generation 60/40 solar:wind by energy.' :
         tech==='solar' ? ' Adding wind would improve hourly matching.' : ''}
         Use a dedicated tool (e.g. REopt, System Advisor Model) for project-grade sizing.
       </div>`;
