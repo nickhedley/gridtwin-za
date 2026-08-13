@@ -477,7 +477,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
         <p style="margin-top:8px"><strong>Risk and variability:</strong> the risk panel dispatches 60 synthetic years, each drawing <em>both</em> an outage path and a real weather year. Coal availability follows a mean-corrected daily AR(1) process around the EAF slider, calibrated to the multi-week swings in Eskom&rsquo;s reported unplanned outages; weather is drawn from 2014&ndash;2023 and cycled so each year is used equally. The two are sampled independently, since unplanned outages track plant condition rather than the weather. This matters most in high-renewable scenarios: varying coal availability alone told you nothing once the coal fleet had retired. Separately, <strong>Show wind &amp; solar extremes</strong> re-solves the scenario against 10 real weather years (2014&ndash;2023, Renewables.ninja / MERRA-2 at capacity-weighted REIPPPP plant locations). South Africa has the most variable solar resource in Africa, and 2022 delivered 17&nbsp;% less wind energy than 2023 from an identical fleet — so a single-year run can materially over- or under-state both adequacy risk and curtailment.</p>
 
-        <p style="margin-top:8px"><strong>Capacity expansion:</strong> the build-schedule optimiser is a linear program solved in-browser with HiGHS. It minimises discounted system cost over 2026&ndash;2030 using representative days rather than all 8&nbsp;760 hours, so it sizes the build rather than proving it — verify any resulting mix with <strong>Run the full model</strong>. In regional mode it also decides <em>where</em>, subject to per-region GCCA headroom and real corridor limits.</p>
+        <p style="margin-top:8px"><strong>Capacity expansion:</strong> the build-schedule optimiser is a linear program solved in-browser with HiGHS. It minimises discounted system cost over 2026&ndash;2030 using representative days rather than all 8&nbsp;760 hours, so it sizes the build rather than proving it — verify any resulting mix with <strong>Run the full model</strong>. In regional mode it also decides <em>where</em>, subject to per-region GCCA headroom, real corridor limits, and a per-region annual build cap of 45% of the national rate — without that last constraint the optimiser concentrated an entire national year of wind into a single province, roughly eleven times what any South African province has sustained.</p>
 
         <p style="margin-top:8px"><strong>What it is not:</strong> the instant model has no network constraints (the MIP does, across 10 regions) and no operating-reserve co-optimisation. Costs exclude existing-fleet capex, wires and retail. The TDP is a published plan, not an investment commitment. For decision-grade work use <a href="https://github.com/MeridianEconomics/pypsa-rsa" target="_blank" rel="noopener">PyPSA-RSA</a> — this app is the intuition layer in front of it.</p>
       </div>
@@ -3313,10 +3313,28 @@ function bldBuildRegionalLP(opts){
       L.push(' hp_'+ri+'_'+y+': ' + cum('pv',ri,y).join(' + ')   + ' <= ' + (hr.solar_mw||0));
       L.push(' hb_'+ri+'_'+y+': ' + cum('batt',ri,y).join(' + ') + ' <= ' + (hr.batt_mw||0));
     }
+    // BUILD RATE, NATIONAL AND PER REGION.
+    // The national cap alone let the optimiser put an entire year's build into
+    // one province - 2,200 MW of wind into Mpumalanga in a single year, then the
+    // same into Gauteng. For scale, the Eastern and Western Cape are the only
+    // provinces that have built wind at volume, and neither exceeded roughly
+    // 200 MW/yr sustained across fourteen years of REIPPPP. Concentrating a
+    // national year into one province is an order-of-magnitude step change in
+    // local EPC capacity, servitude acquisition and grid connection work.
+    //
+    // The regional cap is a SHARE of the national rate rather than a fixed MW
+    // figure, so the two stay consistent when the user changes pace. 45% allows
+    // a genuine lead province - the Northern Cape has taken well over a third of
+    // national solar - without permitting the whole programme to land in one place.
+    const REGION_SHARE = opts.regionShare != null ? opts.regionShare : 0.45;
     for (const t of T){
       const terms = [];
       for (let ri = 0; ri < BLD_REGIONS.length; ri++) terms.push('b_'+t+'_'+ri+'_'+y);
       L.push(' rate_'+t+'_'+y+': ' + terms.join(' + ') + ' <= ' + RATE[t].toFixed(1));
+      const cap = RATE[t] * REGION_SHARE;
+      for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+        L.push(' rrate_'+t+'_'+ri+'_'+y+': b_'+t+'_'+ri+'_'+y+' <= ' + cap.toFixed(1));
+      }
     }
   }
 
@@ -3421,6 +3439,19 @@ function renderBuildRegional(res, rate, opts){
       + '. These regions have zero remaining GCCA connection headroom, so nothing can be built there '
       + 'however good the wind or sun is. The model is pushed into weaker regions instead.</div>';
   }
+  // Flag where the per-region annual cap is binding. A region pinned at its
+  // cap wants more build than one province can absorb in a year, which is a
+  // different message from "the region is full" - it says the build is
+  // deliverable but not that fast in one place.
+  const regionCapMW = (rate.wind || 0) * 0.45;
+  const rateLimited = rows.filter(x => {
+    for (const y of BLD_YEARS){
+      const v = res.Columns['b_wind_' + rows.indexOf(x) + '_' + y];
+      if (v && v.Primal > regionCapMW * 0.995) return true;
+    }
+    return false;
+  });
+
   const filled = built.filter(x => {
     const hw = x.hr.wind_mw||0, hp = x.hr.solar_mw||0;
     return (hw && x.got.wind/hw > 0.99) || (hp && x.got.pv/hp > 0.99);
@@ -3458,6 +3489,17 @@ function renderBuildRegional(res, rate, opts){
       + 'resource with a binding connection limit \u2014 relieving it there buys more than anywhere else. '
       + 'The spread across regions is large, so <em>where</em> transmission is reinforced matters as '
       + 'much as how much.</div></div>';
+  }
+
+  if (rateLimited.length){
+    html += '<div style="border-left:3px solid var(--steel,#4A6B7A);padding:6px 9px;'
+      + 'background:rgba(74,107,122,0.06);margin-bottom:6px">'
+      + '<strong>Building as fast as one province can:</strong> '
+      + rateLimited.map(x => x.R).join(', ')
+      + ' hit the per-region annual limit of ' + Math.round(regionCapMW).toLocaleString()
+      + '\u00a0MW/yr. The resource and the grid headroom are there \u2014 the constraint is how '
+      + 'much one province can physically deliver in a year. For scale, no South African province '
+      + 'has sustained much above 200\u00a0MW/yr of wind.</div>';
   }
 
   html += '<div style="color:var(--ink2);margin-top:6px">'
