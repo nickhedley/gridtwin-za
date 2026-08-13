@@ -55,6 +55,31 @@
   #tooltip p { font-size: 10px; color: rgba(232,228,216,0.6); line-height: 1.5; font-family: 'IBM Plex Mono', monospace }
 
   /* Controls */
+  
+  /* ── Mobile: the legend and controls together covered more than half a phone
+     screen. Collapse the legend behind a "Key" button and shrink the controls,
+     so the map itself stays usable. ───────────────────────────────────────── */
+  #legendBtn {
+    display: none; position: absolute; bottom: 14px; left: 12px; z-index: 12;
+    background: rgba(13,17,23,0.9); color: rgba(232,228,216,0.9);
+    border: 1px solid rgba(232,228,216,0.25); border-radius: 3px;
+    padding: 7px 13px; font-family: 'Saira Condensed', sans-serif;
+    font-size: 12px; font-weight: 600; letter-spacing: .05em; cursor: pointer;
+  }
+  @media (max-width: 760px) {
+    #legendBtn { display: block; }
+    #legend {
+      bottom: 52px; left: 12px; right: 12px; padding: 10px 12px;
+      max-height: 46vh; overflow-y: auto;
+      display: none;
+    }
+    #legend.open { display: block; }
+    .leg-row { margin-bottom: 5px; font-size: 10.5px; gap: 6px }
+    #controls { bottom: 14px; right: 12px; gap: 4px; max-width: 48vw }
+    .ctrl-btn { padding: 5px 8px; font-size: 10.5px }
+    #tdpYearWrap { font-size: 9.5px }
+  }
+
   #controls {
     position: absolute; bottom: 32px; right: 24px; z-index: 10;
     display: flex; flex-direction: column; gap: 6px;
@@ -124,6 +149,8 @@
 </div>
 
 <!-- Legend -->
+<button id="legendBtn" onclick="toggleLegend()" aria-expanded="false"
+        aria-controls="legend">Key</button>
 <div id="legend">
   <h3>Infrastructure</h3>
   <div class="leg-row"><div class="leg-dot" style="background:#517180"></div>400kV substation</div>
@@ -133,7 +160,7 @@
   <div class="leg-row"><div class="leg-line" style="background:rgba(81,113,128,0.8)"></div>275kV</div>
   <div class="leg-row"><div class="leg-line" style="background:rgba(120,140,120,0.7)"></div>220kV</div>
   <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4);margin-top:4px">Dashed = planned</div>
-  <div class="leg-row" style="margin-top:6px"><div class="leg-line" style="background:rgba(245,197,24,1)"></div>TDP planned build</div>
+  <div class="leg-row" style="margin-top:6px"><div class="leg-line" style="background:rgba(255,59,48,1)"></div>TDP planned build</div>
   <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4)">Brighter = more committed</div>
 </div>
 
@@ -333,6 +360,7 @@ function buildLayers(subs) {
       radiusMinPixels: 2.5,
       radiusUnits: 'meters',
       pickable: true,
+      onClick: ({object}) => { selectSub(object); },
       onHover: ({object, x, y}) => showTooltip(object ? {
         name: object.n,
         info: `${object.r}\n${object.kv ? object.kv + 'kV distribution' : 'voltage not recorded'}`,
@@ -345,11 +373,14 @@ function buildLayers(subs) {
     // 'Execution' is committed and under way, 'Pre-Concept' is indicative only.
     if (showTDP && tdpProjects.length) {
       const inYear = p => p.year <= tdpYear;
+      // Bright red, deliberately distinct from the gold used for existing 765 kV
+      // lines. Opacity still tracks certainty.
       const PHASE_COL = {
-        'Execution':   [245, 197, 24, 255],   // committed, brightest
-        'Definition':  [230, 160, 40, 220],
-        'Concept':     [200, 130, 60, 180],
-        'Pre-Concept': [170, 120, 80, 140],   // indicative, faintest
+        'Execution':   [255,  59,  48, 255],   // committed, brightest
+        'Definition':  [235,  60,  55, 215],
+        'Concept':     [205,  70,  65, 175],
+        'Pre-Concept': [175,  80,  75, 135],   // indicative, faintest
+        'Planned':     [225,  65,  60, 195],
       };
       const col = p => PHASE_COL[p.phase] || [170, 120, 80, 140];
 
@@ -410,16 +441,20 @@ function buildLayers(subs) {
       radiusMinPixels: 4,
       radiusUnits: 'meters',
       pickable: true,
+      onClick: ({object}) => { selectSub(object); },
       onHover: ({object, x, y}) => showTooltip(object ? {
         name: object.n,
         info: `${object.r}\n${object.kv ? object.kv + 'kV' : ''} transmission\n\nGCCA headroom:\nSolar ${(HEADROOM[object.r]?.solar||0).toLocaleString()} MW\nWind ${(HEADROOM[object.r]?.wind||0).toLocaleString()} MW`,
       } : null, x, y),
     }));
 
-    // Labels for transmission substations (text layer)
+    // Labels only for the selected substation. Drawing all 178 transmission
+    // names at once made them illegible wherever substations cluster - the
+    // Witwatersrand and Richards Bay areas were a solid block of overlapping
+    // text. Click a dot to name it; hover still gives the full tooltip.
     layers.push(new deck.TextLayer({
       id: 'sub-labels',
-      data: txSubs,
+      data: selectedSub ? [selectedSub] : [],
       getPosition: d => [d.lng, d.lat, 2000],
       getText: d => d.n,
       getSize: 11,
@@ -488,6 +523,20 @@ function toggleCorridors() {
   deckgl.setProps({ layers: buildLayers(substations) });
 }
 
+function toggleLegend() {
+  const l = document.getElementById('legend');
+  const b = document.getElementById('legendBtn');
+  const open = l.classList.toggle('open');
+  b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  b.textContent = open ? 'Hide key' : 'Key';
+}
+
+// Clicking a substation shows its name; clicking the same one again clears it.
+function selectSub(obj) {
+  selectedSub = (obj && selectedSub && obj.n === selectedSub.n) ? null : (obj || null);
+  deckgl.setProps({ layers: buildLayers(substations) });
+}
+
 function toggleTDP() {
   showTDP = !showTDP;
   const btn = document.getElementById('btnTDP');
@@ -512,6 +561,7 @@ function resetView() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 let transmissionLines = [];
 let tdpProjects = [], tdpMeta = null, showTDP = true, tdpYear = 2034;
+let selectedSub = null;   // substation whose name is currently shown
 
 async function init() {
   // Load substation data
