@@ -4822,7 +4822,12 @@ function bessBenchmark(price, hours, eff){
     const spread = dischargeAt * eff - chargeAt;
     if (spread > 0){ rev += spread * hours; mwh += hours; cycles++; spreadSum += spread; }
   }
-  return { revPerMW: rev, cycles, mwh, avgSpread: cycles ? spreadSum/cycles : 0 };
+  // Spread averaged over EVERY day, not only the profitable ones. Conditioning on
+  // profitability made today's 26 diesel days average R1,753 while a Future mix
+  // with 359 ordinary cycles averaged R513 - implying today is the better market
+  // when it in fact earns a quarter as much. Averaging across the year also makes
+  // the row self-consistent: spread x 365 x duration = the revenue beside it.
+  return { revPerMW: rev, cycles, mwh, avgSpread: days ? spreadSum/days : 0 };
 }
 
 function renderBess(r){
@@ -4845,7 +4850,7 @@ function renderBess(r){
     + '<th style="text-align:left;padding:4px 6px">Duration</th>'
     + '<th style="text-align:right;padding:4px 6px">Revenue</th>'
     + '<th style="text-align:right;padding:4px 6px">Cycles/yr</th>'
-    + '<th style="text-align:right;padding:4px 6px">Avg spread</th></tr>'
+    + '<th style="text-align:right;padding:4px 6px">Spread/day</th></tr>'
     + rows.map(x => '<tr style="border-bottom:1px solid var(--line2)'
         + (x === best ? ';background:rgba(125,196,122,0.10)' : '') + '">'
         + `<td style="padding:4px 6px">${x.h}-hour${x === best ? ' <span style="color:var(--ok,#4A8C5C);font-size:9px">BEST</span>' : ''}</td>`
@@ -4883,7 +4888,9 @@ function renderBess(r){
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
     + '<strong>Method:</strong> Perfect-foresight daily arbitrage, one cycle a day, charging in the '
     + 'cheapest hours and discharging in the most expensive, at 88% round-trip efficiency. Perfect '
-    + 'foresight is a ceiling, not a forecast.'
+    + 'foresight is a ceiling, not a forecast. Spread is averaged over every day of the year, '
+    + 'including the days it is not worth cycling \u2014 so spread \u00d7 365 \u00d7 duration gives the '
+    + 'revenue beside it.'
     + '<br><br>SAWEM, South Africa\u2019s first wholesale '
     + 'market, is due to open in Q3 2026. Until it does there are no published prices to benchmark, so '
     + 'this shows what a battery would have earned had the market existed. Once SAWEM prices '
