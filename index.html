@@ -1085,33 +1085,52 @@ function initResourceQuery(){
     const battMWh = loadMW * 4;
 
     // Scale: what if they want 70% or 90% carbon free?
-    const scenarios = [
-      {pct:50,  solarMW:Math.round(loadMW/cf*0.55), battMWh:Math.round(battMWh*0.5)},
-      {pct:70,  solarMW:Math.round(loadMW/cf*0.77), battMWh:Math.round(battMWh*0.7)},
-      {pct:90,  solarMW:Math.round(loadMW/cf*1.0),  battMWh:Math.round(battMWh*1.0)},
-      {pct:100, solarMW:Math.round(loadMW/cf*1.2),  battMWh:Math.round(battMWh*1.5)},
-    ];
+    // Hybrid is split 60/40 solar:wind by energy, matching the blended CF above,
+    // and reported as two separate builds rather than one meaningless total.
+    const HYB_SOLAR = 0.6, HYB_WIND = 0.4;
+    const mk = (pct, genMult, battMult) => {
+      const totalMW = loadMW / cf * genMult;
+      return {
+        pct,
+        solarMW: tech === 'wind'   ? 0
+               : tech === 'hybrid' ? Math.round(loadMW * HYB_SOLAR / solarCF * genMult)
+               :                     Math.round(totalMW),
+        windMW:  tech === 'solar'  ? 0
+               : tech === 'hybrid' ? Math.round(loadMW * HYB_WIND / windCF * genMult)
+               :                     Math.round(totalMW),
+        battMWh: Math.round(battMWh * battMult),
+      };
+    };
+    const scenarios = [ mk(50,0.55,0.5), mk(70,0.77,0.7), mk(90,1.0,1.0), mk(100,1.2,1.5) ];
+    const showSolar = tech !== 'wind';
+    const showWind  = tech !== 'solar';
 
     el.innerHTML = `
-      <div style="font-size:10.5px;font-weight:600;margin-bottom:6px">${loadMW} MW load &nbsp;·&nbsp; ${lastRegion} &nbsp;·&nbsp; solar CF ${(cf*100).toFixed(1)}%</div>
+      <div style="font-size:10.5px;font-weight:600;margin-bottom:6px">${loadMW} MW load &nbsp;·&nbsp; ${lastRegion} &nbsp;·&nbsp; ${
+        tech==='hybrid' ? `solar CF ${(solarCF*100).toFixed(1)}% · wind CF ${(windCF*100).toFixed(1)}%`
+        : tech==='wind' ? `wind CF ${(windCF*100).toFixed(1)}%`
+        : `solar CF ${(solarCF*100).toFixed(1)}%`}</div>
       <table style="width:100%;font-size:10px;border-collapse:collapse">
         <thead><tr style="border-bottom:1px solid var(--line2)">
           <th style="text-align:left;padding:2px 0;color:var(--ink2)">Target</th>
-          <th style="text-align:right;padding:2px 4px;color:#F5C518">Solar</th>
+          ${showSolar ? '<th style="text-align:right;padding:2px 4px;color:#F5C518">Solar</th>' : ''}
+          ${showWind  ? '<th style="text-align:right;padding:2px 4px;color:#7DC47A">Wind</th>'  : ''}
           <th style="text-align:right;padding:2px 0;color:#7EC8E3">Battery</th>
         </tr></thead>
         <tbody>
           ${scenarios.map(s=>`<tr>
             <td style="padding:3px 0;color:var(--ink2)">${s.pct}% carbon-free</td>
-            <td style="text-align:right;padding:3px 4px;font-weight:600">${s.solarMW} MW</td>
+            ${showSolar ? `<td style="text-align:right;padding:3px 4px;font-weight:600">${s.solarMW} MW</td>` : ''}
+            ${showWind  ? `<td style="text-align:right;padding:3px 4px;font-weight:600">${s.windMW} MW</td>`  : ''}
             <td style="text-align:right;font-weight:600">${s.battMWh} MWh</td>
           </tr>`).join('')}
         </tbody>
       </table>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px">
-        Rough sizing only — assumes 4h battery storage, fixed load, site-specific solar CF.
-        Add wind for better hourly matching. Use a dedicated tool (e.g. REopt, System Advisor Model)
-        for project-grade sizing.
+        Rough sizing only — assumes 4h battery storage, fixed load, and the site-specific
+        capacity factors shown above.${tech==='hybrid' ? ' Hybrid splits generation 60/40 solar:wind by energy.' :
+        tech==='solar' ? ' Adding wind would improve hourly matching.' : ''}
+        Use a dedicated tool (e.g. REopt, System Advisor Model) for project-grade sizing.
       </div>`;
   }
 
