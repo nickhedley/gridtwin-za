@@ -157,9 +157,25 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
   // carries what each generator did and where, so the marginal price per region
   // can be derived from it - the dearest carrier serving that region in that
   // hour, or zero where the region is spilling.
-  const CARRIER_COST = { coal: 546, ccgt: 2800, ocgt: 6100, diesel: 6100,
-                         nuclear: 120, hydro: 80, imports: 550,
-                         wind: 0, solar: 0, pv: 0, csp: 0, rmippp: 80, battery: 0 };
+  // WHO CAN SET THE PRICE.
+  // Only dispatchable thermal plant sets the marginal price. Everything else is
+  // a price-taker, and treating them otherwise produced a large artefact:
+  // pricing hydro at its R80/MWh fuel cost made Hydra Central - which has 600 MW
+  // of hydro and no coal - look like it cleared 365 arbitrage cycles a year at
+  // R584k/MW, against 26 cycles and R182k on the single-node model.
+  //
+  //  - NUCLEAR is inflexible baseload. It runs flat out whatever the price, so
+  //    it never sets it. Koeberg at R120/MWh as a price-setter was nonsense.
+  //  - HYDRO is ENERGY-limited, not fuel-limited. A dam operator chooses when to
+  //    release, and will not sell at R80 when the water can displace R546 coal
+  //    later. Its opportunity cost is what it substitutes, so it prices at the
+  //    thermal plant it displaces rather than at its fuel cost.
+  //  - STORAGE (pumped and battery) arbitrages the price; letting it set the
+  //    price would make the battery benchmark circular.
+  //  - RENEWABLES bid at zero and do set the price when they are the only thing
+  //    running - that is what a spilling hour is.
+  const PRICE_SETTING = { coal: 546, ccgt: 2800, ocgt: 6100, diesel: 6100, imports: 550 };
+  const PRICE_TAKER = new Set(['nuclear', 'hydro', 'ps', 'pumped', 'battery', 'batt', 'rmippp']);
   const locPrice = {};   // region -> Float64Array of hourly marginal price
   const locSpill = {};   // region -> hours spilling
   REGIONS.forEach(r => { locPrice[r] = new Float64Array(8760); locSpill[r] = 0; });
@@ -179,8 +195,10 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
       if (dearest[reg] === undefined) continue;
       if ((g.curtailed || 0) > 1) spilling[reg] = true;
       if ((g.homeTake || 0) > 1){
-        const cost = CARRIER_COST[foldCarrier(g.carrier)] ?? 546;
-        if (cost > dearest[reg]) dearest[reg] = cost;
+        const car = foldCarrier(g.carrier);
+        if (PRICE_TAKER.has(car)) continue;          // runs regardless of price
+        const cost = PRICE_SETTING[car];
+        if (cost !== undefined && cost > dearest[reg]) dearest[reg] = cost;
       }
     }
     // System marginal cost this hour: the dearest carrier running anywhere.
@@ -256,10 +274,12 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
       const s = day.slice().sort((a, b) => a - b);
       const cIn = s.slice(0, hours).reduce((a,b) => a+b, 0) / hours;
       const dOut = s.slice(-hours).reduce((a,b) => a+b, 0) / hours;
-      // Cap the sell price at CCGT: a battery cannot realistically capture the
-      // full value of lost load, and letting R87,000 hours through would make
-      // the benchmark a scarcity-event lottery rather than an arbitrage measure.
-      const capped = Math.min(dOut, 2800);
+      // Cap at diesel (R6,100), matching the single-node benchmark. Diesel is a
+      // real dispatchable cost a battery displaces, so it is fairly capturable.
+      // Value of lost load (R87,000) is not: a battery cannot reliably be
+      // available for a scarcity event, and letting those hours through would
+      // make this a lottery on a handful of days rather than an arbitrage measure.
+      const capped = Math.min(dOut, 6100);
       const spread = capped * eff - cIn;
       if (spread > 0){ rev += spread * hours; cycles++; }
     }
