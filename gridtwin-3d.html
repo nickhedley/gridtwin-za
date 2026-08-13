@@ -133,13 +133,21 @@
   <div class="leg-row"><div class="leg-line" style="background:rgba(81,113,128,0.8)"></div>275kV</div>
   <div class="leg-row"><div class="leg-line" style="background:rgba(120,140,120,0.7)"></div>220kV</div>
   <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4);margin-top:4px">Dashed = planned</div>
+  <div class="leg-row" style="margin-top:6px"><div class="leg-line" style="background:rgba(245,197,24,1)"></div>TDP planned build</div>
+  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4)">Brighter = more committed</div>
 </div>
 
 <!-- Controls -->
 <div id="controls">
   <button class="ctrl-btn active" id="btn3d" onclick="toggleTerrain()">⛰ 3D terrain ON</button>
   <button class="ctrl-btn" id="btnCorr" onclick="toggleCorridors()">⚡ Corridors ON</button>
+  <button class="ctrl-btn active" id="btnTDP" onclick="toggleTDP()">🔨 Planned build ON</button>
   <button class="ctrl-btn" onclick="resetView()">⌂ Reset view</button>
+  <div id="tdpYearWrap" style="margin-top:6px;font-size:10.5px;color:rgba(232,228,216,0.75)">
+    <label for="tdpYearSlider">Show planned build by <strong id="tdpYearLbl">2034</strong></label>
+    <input id="tdpYearSlider" type="range" min="2025" max="2035" step="1" value="2034"
+           oninput="setTdpYear(this.value)" style="width:100%;margin-top:2px">
+  </div>
 </div>
 
 <!-- Tooltip -->
@@ -331,6 +339,61 @@ function buildLayers(subs) {
       } : null, x, y),
     }));
 
+    // ── PLANNED TDP INFRASTRUCTURE ───────────────────────────────────────────
+    // Drawn distinctly from the existing network: planned lines are dashed and
+    // amber, planned sites are hollow rings. Colour deepens with certainty -
+    // 'Execution' is committed and under way, 'Pre-Concept' is indicative only.
+    if (showTDP && tdpProjects.length) {
+      const inYear = p => p.year <= tdpYear;
+      const PHASE_COL = {
+        'Execution':   [245, 197, 24, 255],   // committed, brightest
+        'Definition':  [230, 160, 40, 220],
+        'Concept':     [200, 130, 60, 180],
+        'Pre-Concept': [170, 120, 80, 140],   // indicative, faintest
+      };
+      const col = p => PHASE_COL[p.phase] || [170, 120, 80, 140];
+
+      const plannedLines = tdpProjects.filter(p => p.kind === 'line' && p.pts.length >= 2 && inYear(p));
+      if (plannedLines.length) {
+        layers.push(new deck.LineLayer({
+          id: 'tdp-lines',
+          data: plannedLines,
+          getSourcePosition: d => [d.pts[0].lng, d.pts[0].lat],
+          getTargetPosition: d => [d.pts[1].lng, d.pts[1].lat],
+          getColor: col,
+          getWidth: 3,
+          widthMinPixels: 2,
+          pickable: true,
+          onHover: ({object, x, y}) => showTooltip(object ? {
+            name: object.name,
+            info: `PLANNED \u00b7 ${object.year}\n${object.phase}\n${object.prov}`,
+          } : null, x, y),
+        }));
+      }
+
+      const plannedSites = tdpProjects.filter(p => p.kind !== 'line' && inYear(p));
+      if (plannedSites.length) {
+        layers.push(new deck.ScatterplotLayer({
+          id: 'tdp-sites',
+          data: plannedSites,
+          getPosition: d => [d.pts[0].lng, d.pts[0].lat],
+          getRadius: d => d.kind === 'syncon' ? 9000 : 7000,
+          getFillColor: [0, 0, 0, 0],
+          getLineColor: col,
+          lineWidthMinPixels: 2,
+          stroked: true,
+          filled: false,
+          radiusMinPixels: 5,
+          radiusUnits: 'meters',
+          pickable: true,
+          onHover: ({object, x, y}) => showTooltip(object ? {
+            name: object.name,
+            info: `PLANNED ${object.kind.toUpperCase()} \u00b7 ${object.year}\n${object.phase}\n${object.prov}`,
+          } : null, x, y),
+        }));
+      }
+    }
+
     layers.push(new deck.ScatterplotLayer({
       id: 'tx-subs',
       data: txSubs,
@@ -421,12 +484,30 @@ function toggleCorridors() {
   deckgl.setProps({ layers: buildLayers(substations) });
 }
 
+function toggleTDP() {
+  showTDP = !showTDP;
+  const btn = document.getElementById('btnTDP');
+  btn.textContent = `🔨 Planned build ${showTDP ? 'ON' : 'OFF'}`;
+  btn.classList.toggle('active', showTDP);
+  document.getElementById('tdpYearWrap').style.opacity = showTDP ? 1 : 0.35;
+  deckgl.setProps({ layers: buildLayers(substations) });
+}
+
+// Filtering by year is what makes this useful for planning: "is my region
+// unlocked by 2030, or do I wait until 2034?"
+function setTdpYear(v) {
+  tdpYear = parseInt(v, 10);
+  document.getElementById('tdpYearLbl').textContent = tdpYear;
+  deckgl.setProps({ layers: buildLayers(substations) });
+}
+
 function resetView() {
   deckgl.setProps({ initialViewState: { ...INITIAL_VIEW, transitionDuration: 1000 } });
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 let transmissionLines = [];
+let tdpProjects = [], tdpMeta = null, showTDP = true, tdpYear = 2034;
 
 async function init() {
   // Load substation data
@@ -436,6 +517,18 @@ async function init() {
     substations = data.subs || [];
   } catch(e) {
     console.warn('Could not load substations:', e);
+  }
+  // Planned transmission projects from the NTCSA Transmission Development Plan.
+  // For a developer this is the question the existing-network view cannot answer:
+  // my region is full - when does that change, and where?
+  try {
+    const respT = await fetch('nodal/tdp_projects.json');
+    const dataT = await respT.json();
+    tdpProjects = (dataT && dataT.projects) || [];
+    tdpMeta = (dataT && dataT.meta) || null;
+    console.log('Loaded', tdpProjects.length, 'planned TDP projects');
+  } catch(e) {
+    console.warn('Could not load TDP projects:', e);
   }
   // Load real Eskom transmission lines
   try {
