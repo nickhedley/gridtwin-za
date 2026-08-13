@@ -542,6 +542,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">what a market would clear at</span></div>
             <div class="pb" id="priceBody"></div>
           </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Battery revenue benchmark</h2><span class="tag">what a BESS would earn</span></div>
+            <div class="pb" id="bessBody"></div>
+          </div>
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
             <div class="pb" id="carbonBudget"></div>
@@ -4758,6 +4763,97 @@ function renderPricePanel(r){
   }
 }
 
+
+/* ==================== BESS REVENUE BENCHMARK ==============================
+ * What a battery would have earned arbitraging the modelled shadow price, by
+ * duration. This is the South African analogue of Modo Energy's ME BESS indices
+ * - with one structural difference worth stating plainly.
+ *
+ * Modo benchmarks markets that EXIST: real day-ahead, intraday, FCR and aFRR
+ * prices, published daily. South Africa's wholesale market (SAWEM) has not
+ * opened yet, so there is no price history to benchmark against. This computes
+ * the counterfactual instead: what a battery would have earned had the market
+ * existed, using the dispatch model's own marginal prices.
+ *
+ * Method: perfect-foresight daily arbitrage, one cycle a day, charging in the
+ * cheapest N hours and discharging in the dearest N, at 88% round-trip. Perfect
+ * foresight overstates what a real trader achieves - Modo's benchmarks make the
+ * same assumption, so the comparison is like for like, but it is a ceiling not
+ * a forecast.
+ *
+ * ARBITRAGE ONLY. South Africa has no ancillary services market and no capacity
+ * market with published clearing prices, so the two revenue streams that make
+ * up roughly 40% of a GB battery's income simply do not exist here yet.
+ */
+function bessBenchmark(price, hours, eff){
+  eff = eff || 0.88;
+  let rev = 0, cycles = 0, mwh = 0, spreadSum = 0;
+  const days = Math.floor(price.length / 24);
+  for (let d = 0; d < days; d++){
+    const day = [];
+    for (let h = 0; h < 24; h++) day.push(price[d*24 + h]);
+    const s = day.slice().sort((a, b) => a - b);
+    const chargeAt    = s.slice(0, hours).reduce((a,b) => a+b, 0) / hours;
+    const dischargeAt = s.slice(-hours).reduce((a,b) => a+b, 0) / hours;
+    const spread = dischargeAt * eff - chargeAt;
+    if (spread > 0){ rev += spread * hours; mwh += hours; cycles++; spreadSum += spread; }
+  }
+  return { revPerMW: rev, cycles, mwh, avgSpread: cycles ? spreadSum/cycles : 0 };
+}
+
+function renderBess(r){
+  const host = document.getElementById('bessBody');
+  if (!host || !r || !r.marginalP) return;
+  const p = r.marginalP;
+  const rows = [1, 2, 4].map(h => ({ h, ...bessBenchmark(p, h) }));
+  const best = rows.reduce((a, b) => b.revPerMW > a.revPerMW ? b : a);
+  const R = v => 'R' + Math.round(v).toLocaleString();
+  const k = v => 'R' + (v/1000).toFixed(0) + 'k';
+
+  host.innerHTML =
+      '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
+    + 'What a battery would have earned arbitraging this scenario\u2019s prices, per MW of power '
+    + 'capacity. <strong>Arbitrage only</strong> \u2014 South Africa has no ancillary services or '
+    + 'capacity market with published prices, so the streams worth roughly 40% of a GB battery\u2019s '
+    + 'income do not exist here yet.</div>'
+    + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)">'
+    + '<th style="text-align:left;padding:4px 6px">Duration</th>'
+    + '<th style="text-align:right;padding:4px 6px">Revenue</th>'
+    + '<th style="text-align:right;padding:4px 6px">Cycles/yr</th>'
+    + '<th style="text-align:right;padding:4px 6px">Avg spread</th></tr>'
+    + rows.map(x => '<tr style="border-bottom:1px solid var(--line2)'
+        + (x === best ? ';background:rgba(125,196,122,0.10)' : '') + '">'
+        + `<td style="padding:4px 6px">${x.h}-hour${x === best ? ' <span style="color:var(--ok,#4A8C5C);font-size:9px">BEST</span>' : ''}</td>`
+        + `<td style="text-align:right;padding:4px 6px;font-weight:700">${k(x.revPerMW)}/MW/yr</td>`
+        + `<td style="text-align:right;padding:4px 6px">${x.cycles}</td>`
+        + `<td style="text-align:right;padding:4px 6px">${R(x.avgSpread)}/MWh</td></tr>`).join('')
+    + '</table>'
+
+    + '<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);'
+    + 'padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">'
+    + `<strong>${best.h}-hour wins in this scenario.</strong> `
+    + (best.h >= 4
+        ? 'Longer duration pays because deep midday solar creates a wide, sustained trough to charge '
+          + 'into. That is the same pattern Modo reports in ERCOT, where only four-hour batteries clear '
+          + 'a 12% IRR hurdle.'
+        : 'Short duration is enough here because the price spread is narrow and brief \u2014 coal sets '
+          + 'the price in most hours, so there is little to arbitrage. Build solar and this flips: at '
+          + '20\u201340 GW the four-hour asset earns several times what it does today.')
+    + '</div>'
+
+    + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
+    + '<strong>Method:</strong> perfect-foresight daily arbitrage, one cycle a day, charging in the '
+    + 'cheapest hours and discharging in the dearest, at 88% round-trip efficiency. Perfect foresight '
+    + 'is a ceiling, not a forecast \u2014 Modo Energy\u2019s benchmarks make the same assumption, so the '
+    + 'comparison is like for like. For reference, a two-hour GB battery earned about \u00a373,000/MW/yr '
+    + '(\u2248R1.7m) in the year to April 2026 across all revenue streams.'
+    + '<br><br><strong>Why this is a counterfactual.</strong> SAWEM, South Africa\u2019s first wholesale '
+    + 'market, is due to open in Q3 2026. Until it does there are no published prices to benchmark, so '
+    + 'this shows what a battery <em>would</em> have earned had the market existed. Once SAWEM prices '
+    + 'publish, this becomes testable against them.</div>';
+}
+
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
@@ -5663,7 +5759,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function')renderPricePanel(lastRes);if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function')renderPricePanel(lastRes);if(typeof renderBess==='function')renderBess(lastRes);if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
