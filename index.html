@@ -3970,7 +3970,16 @@ function exportBuildSchedule(){
 
 // The full TDP project list, so a developer can filter it in a spreadsheet
 // rather than clicking round a map.
-function exportTdpProjects(){
+let exportTdp = null;   // TDP data for the exporter's own use - the map's tdpData
+                        // lives inside an IIFE and is not visible from here.
+async function exportTdpProjects(){
+  if (!exportTdp){
+    try {
+      const r = await fetch('nodal/tdp_projects.json');
+      exportTdp = r.ok ? await r.json() : null;
+    } catch (e) { exportTdp = null; }
+  }
+  const tdpData = exportTdp;
   if (!tdpData || !tdpData.projects) return;
   const rows = [['name','kind','province','year','phase','new site','kV','km','site 1','site 2']];
   for (const p of tdpData.projects.slice().sort((a,b) => a.year - b.year)){
@@ -5283,10 +5292,26 @@ function syncURL(){
 }
 document.getElementById('shareBtn').addEventListener('click',()=>{
   const btn=document.getElementById('shareBtn');
-  navigator.clipboard.writeText(location.href).then(()=>{
-    btn.textContent='Link copied';
-    setTimeout(()=>{btn.textContent='Copy scenario link';},1600);
-  }).catch(()=>{btn.textContent=location.href;});
+  const done=()=>{ btn.textContent='Link copied';
+    setTimeout(()=>{btn.textContent='Copy scenario link';},1600); };
+  const fallback=()=>{
+    // Older browsers and any non-HTTPS origin have no navigator.clipboard at
+    // all, so calling it threw before .catch() could fire and the button
+    // silently did nothing. Select-and-copy still works everywhere.
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=location.href; ta.setAttribute('readonly','');
+      ta.style.position='absolute'; ta.style.left='-9999px';
+      document.body.appendChild(ta); ta.select();
+      const ok=document.execCommand&&document.execCommand('copy');
+      document.body.removeChild(ta);
+      if(ok){ done(); return; }
+    }catch(e){}
+    btn.textContent=location.href;
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(location.href).then(done).catch(fallback);
+  } else { fallback(); }
 });
 
 function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function')renderPricePanel(lastRes);if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
