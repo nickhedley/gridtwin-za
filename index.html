@@ -1118,6 +1118,80 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     subLayer = L.layerGroup(markers).addTo(map);
   }
 
+
+  // ── Planned transmission (TDP 2024) ──────────────────────────────────────
+  // The substation dots above show the grid as it is today. For a developer
+  // choosing a site, the more useful question is what the grid becomes: a region
+  // with no headroom now may be unlocked by a corridor arriving in 2029. This
+  // layer draws NTCSA's published Transmission Development Plan on the same map,
+  // dashed and amber so it never reads as existing infrastructure.
+  let tdpLayer = null, tdpData = null, tdpShow = false, tdpCutoff = 2034;
+
+  function tdpPhaseStyle(phase) {
+    // Opacity tracks certainty: Execution is committed and under way,
+    // Pre-Concept is indicative and likely to change.
+    return { 'Execution': 0.95, 'Definition': 0.75, 'Concept': 0.55,
+             'Pre-Concept': 0.4, 'Planned': 0.6 }[phase] || 0.5;
+  }
+
+  function addTdpLayer() {
+    if (tdpLayer) { map.removeLayer(tdpLayer); tdpLayer = null; }
+    if (!tdpShow || !tdpData) return;
+    const items = [];
+    for (const p of tdpData.projects) {
+      if (p.year > tdpCutoff) continue;
+      const op = tdpPhaseStyle(p.phase);
+      const tip = `<strong>${p.name}</strong><br>`
+        + `<span style="color:#C4785A">PLANNED &middot; ${p.year} &middot; ${p.phase}</span><br>`
+        + (p.km ? `${p.km} km<br>` : '') + (p.prov || '');
+      if (p.kind === 'line' && p.pts.length >= 2) {
+        items.push(L.polyline(p.pts.map(x => [x.lat, x.lng]), {
+          color: '#E8A83C', weight: p.kv === 765 ? 3.5 : 2,
+          opacity: op, dashArray: '7,5', interactive: true,
+        }).bindTooltip(tip, { sticky: true }));
+      } else if (p.pts.length) {
+        items.push(L.circleMarker([p.pts[0].lat, p.pts[0].lng], {
+          radius: p.kind === 'syncon' ? 7 : 5.5,
+          color: '#E8A83C', weight: 1.8, opacity: op,
+          fillColor: 'transparent', fillOpacity: 0, dashArray: '3,3',
+        }).bindTooltip(tip, { sticky: true }));
+      }
+    }
+    tdpLayer = L.layerGroup(items).addTo(map);
+  }
+
+  function toggleTdp() {
+    tdpShow = !tdpShow;
+    const b = document.getElementById('tdpToggleBtn');
+    if (b) {
+      b.textContent = tdpShow ? 'Hide planned build' : 'Show planned build (TDP)';
+      b.style.background = tdpShow ? 'var(--ink)' : 'var(--panel)';
+      b.style.color = tdpShow ? 'var(--panel)' : 'var(--ink)';
+    }
+    const w = document.getElementById('tdpYearRow');
+    if (w) w.style.display = tdpShow ? 'flex' : 'none';
+    addTdpLayer();
+  }
+
+  function setMapTdpYear(v) {
+    tdpCutoff = parseInt(v, 10);
+    const l = document.getElementById('tdpYearOut');
+    if (l) l.textContent = tdpCutoff;
+    addTdpLayer();
+  }
+
+  // Inline onclick handlers resolve against window, but this code is inside a
+  // closure - expose the two entry points explicitly.
+  window.toggleTdp = toggleTdp;
+  window.setMapTdpYear = setMapTdpYear;
+
+  fetch('nodal/tdp_projects.json')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if (d && d.projects) { tdpData = d;
+      const b = document.getElementById('tdpToggleBtn');
+      if (b) b.style.display = 'inline-block'; } })
+    .catch(() => {});
+
   // Trigger layer once both data sources are ready
   function maybeAddSubLayer() {
     if(substationData && headroomData) addSubstationLayer(substationData, headroomData);
@@ -1659,6 +1733,14 @@ function printPrefeas() {
       <span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#517180;border:1px solid #3a5668;vertical-align:middle"></span> 220&ndash;275&nbsp;kV</span>
       <span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#9AA69B;border:1px solid #7a8a85;vertical-align:middle"></span> 132&nbsp;kV</span>
       <span style="color:var(--ink2)"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:transparent;border:1px solid #7a8a85;vertical-align:middle"></span> hollow = approximate location</span>
+      <button id="tdpToggleBtn" onclick="toggleTdp()" style="display:none;margin-left:auto;padding:3px 10px;border:1.5px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:11px;font-weight:600;border-radius:2px;white-space:nowrap">Show planned build (TDP)</button>
+    </div>
+    <div id="tdpYearRow" style="display:none;gap:9px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:var(--ink2);padding:0 14px 8px">
+      <span style="display:inline-block;width:18px;height:0;border-top:2.5px dashed #E8A83C;vertical-align:middle"></span>
+      <span>Planned lines and sites from NTCSA&rsquo;s Transmission Development Plan &mdash; brighter means more committed.</span>
+      <label style="display:flex;align-items:center;gap:6px;margin-left:auto;white-space:nowrap">built by <strong id="tdpYearOut">2034</strong>
+        <input type="range" min="2025" max="2035" step="1" value="2034" oninput="setMapTdpYear(this.value)" style="width:130px">
+      </label>
     </div>
     <div id="resourceSplit">
       <div id="resourceMap" style="border-right:1px solid var(--line2)"></div>
