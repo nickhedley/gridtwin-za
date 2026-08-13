@@ -1219,9 +1219,14 @@ function initResourceQuery(){
         </tbody>
       </table>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px">
-        Capture price = system marginal price × capture fraction (discount for generating when SMP is low).
-        Solar discounts are larger because solar peaks at midday when coal is cheapest.
-        PPA floor = capture price ÷ 0.88 (approximate 12% project margin). ${cap.note?'<br>'+cap.note:''}
+        Capture price = what a plant actually earns: the generation-weighted average price over the
+        hours it runs, not the annual average. Solar earns less because it generates at midday when
+        prices are lowest — and the gap widens as more solar is built. ${live
+          ? 'The <strong>level</strong> comes from your current scenario\u2019s modelled dispatch, so it moves as you change the sliders; the <strong>regional differences</strong> come from how each area\u2019s wind and solar line up with demand.'
+          : 'Using the 2026 baseline \u2014 run the model to make this scenario-specific.'}
+        <br>The average price shown is national: this is a single-node model, so there is one system
+        price rather than regional ones. PPA floor = capture price ÷ 0.88 (approximate 12% project
+        margin). ${cap.note?'<br>'+cap.note:''}
         <br>Indicative only — not a bankable estimate. Use Meridian COMPASS for transaction-grade pricing.
       </div>`;
   }
@@ -1943,16 +1948,61 @@ function printPrefeas() {
   // ── Feature 6: Wheeling calculator ────────────────────────────────────────
   // Corridor distances (km) between key region pairs from GCCA / TDP data
   const CORRIDOR_KM = {
-    'Northern Cape|Gauteng':    650, 'Northern Cape|Free State':  420,
-    'Northern Cape|Western Cape': 400, 'Northern Cape|Hydra Central': 90,
-    'Hydra Central|Gauteng':    550, 'Hydra Central|Free State':  310,
-    'Hydra Central|Western Cape': 340, 'Hydra Central|Northern Cape': 90,
-    'Eastern Cape|Gauteng':     750, 'Eastern Cape|Kwazulu Natal': 420,
-    'Eastern Cape|Free State':  480, 'Eastern Cape|Western Cape':  680,
-    'Western Cape|Gauteng':     900, 'Western Cape|Eastern Cape':  680,
-    'Free State|Gauteng':       200, 'Free State|Kwazulu Natal':   380,
-    'Limpopo|Gauteng':          200, 'Mpumalanga|Gauteng':         150,
-    'North West|Gauteng':       180, 'North West|Free State':       260,
+    // Distances between supply areas. The 20 corridors that physically exist are
+    // taken from the network data; the remaining 25 pairs are the SHORTEST PATH
+    // across those corridors, because power wheeled from the Western Cape to
+    // Limpopo routes through intermediate regions rather than flying direct.
+    //
+    // Previously any undefined pair fell back to a flat 400 km - so Western Cape
+    // to Limpopo (really ~1,050 km) was priced identically to an adjacent hop,
+    // and 27 of the 45 possible pairs shared that one default. Wheeling tariff
+    // and losses both scale with distance, so the understatement fed straight
+    // into the cost shown.
+    'Eastern Cape|Free State': 480,
+    'Eastern Cape|Gauteng': 680,
+    'Eastern Cape|Hydra Central': 790,
+    'Eastern Cape|Kwazulu Natal': 420,
+    'Eastern Cape|Limpopo': 880,
+    'Eastern Cape|Mpumalanga': 830,
+    'Eastern Cape|North West': 740,
+    'Eastern Cape|Northern Cape': 880,
+    'Eastern Cape|Western Cape': 680,
+    'Free State|Gauteng': 200,
+    'Free State|Hydra Central': 310,
+    'Free State|Kwazulu Natal': 380,
+    'Free State|Limpopo': 400,
+    'Free State|Mpumalanga': 350,
+    'Free State|North West': 260,
+    'Free State|Northern Cape': 400,
+    'Free State|Western Cape': 650,
+    'Gauteng|Hydra Central': 510,
+    'Gauteng|Kwazulu Natal': 580,
+    'Gauteng|Limpopo': 200,
+    'Gauteng|Mpumalanga': 150,
+    'Gauteng|North West': 180,
+    'Gauteng|Northern Cape': 600,
+    'Gauteng|Western Cape': 850,
+    'Hydra Central|Kwazulu Natal': 690,
+    'Hydra Central|Limpopo': 710,
+    'Hydra Central|Mpumalanga': 660,
+    'Hydra Central|North West': 570,
+    'Hydra Central|Northern Cape': 90,
+    'Hydra Central|Western Cape': 340,
+    'Kwazulu Natal|Limpopo': 780,
+    'Kwazulu Natal|Mpumalanga': 730,
+    'Kwazulu Natal|North West': 640,
+    'Kwazulu Natal|Northern Cape': 780,
+    'Kwazulu Natal|Western Cape': 1030,
+    'Limpopo|Mpumalanga': 350,
+    'Limpopo|North West': 380,
+    'Limpopo|Northern Cape': 800,
+    'Limpopo|Western Cape': 1050,
+    'Mpumalanga|North West': 330,
+    'Mpumalanga|Northern Cape': 750,
+    'Mpumalanga|Western Cape': 1000,
+    'North West|Northern Cape': 660,
+    'North West|Western Cape': 910,
+    'Northern Cape|Western Cape': 400
   };
   function corridorKm(gen, cons) {
     return CORRIDOR_KM[gen+'|'+cons] || CORRIDOR_KM[cons+'|'+gen] || 400;
