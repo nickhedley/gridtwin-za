@@ -107,6 +107,11 @@ header{border-bottom:2px solid #3a5668; background:#517180; box-shadow:var(--sha
 /* ---------- layout ---------- */
 .wrap{max-width:1380px; margin:0 auto; padding:18px 20px 60px; display:grid; grid-template-columns:322px 1fr; gap:18px}
 @media(max-width:1000px){.wrap{grid-template-columns:minmax(0,1fr)}}
+/* Project planning sits below system planning at full page width, rather
+   than stacked in the narrow results column beside the scenario sidebar. */
+.projwrap{box-sizing:border-box}
+.projwrap > section{margin-top:0}
+.projwrap .panel{margin-top:0; margin-bottom:18px}
 .panel{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow)}
 .panel>.ph{display:flex; justify-content:space-between; align-items:baseline; padding:9px 14px 7px; border-bottom:1.5px solid var(--ink); background:var(--panel2)}
 .panel>.ph h2{font-size:16.5px; font-weight:600}
@@ -234,6 +239,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   </div>
 </header>
 
+
+<div style="max-width:1380px;margin:0 auto;padding:0 20px">
+  <div style="margin:28px 0 12px;padding:10px 14px;border-left:5px solid var(--ink);background:var(--panel);border-top:1.5px solid var(--ink);border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)">
+    <div style="font-family:'Saira Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:.03em">System planning</div>
+    <div style="font-size:11px;color:var(--ink2);margin-top:2px">What the country should build, and whether the grid holds up. Everything here responds to the scenario you set on the left.</div>
+  </div>
+</div>
 <div class="wrap">
 
   <!-- ============ CONTROLS ============ -->
@@ -304,10 +316,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="main2" style="align-items:start">
       <div>
 
-<div style="margin:26px 0 10px;padding:9px 13px;border-left:4px solid var(--ink);background:var(--panel)">
-  <div style="font-family:'Saira Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.02em">Planning the national system</div>
-  <div style="font-size:10.5px;color:var(--ink2);margin-top:2px">What the country should build, and whether the grid holds up. Everything here responds to the scenario set above.</div>
-</div>
+
 <section aria-label="Network map and capacity siting">
       <div class="panel mapbox">
         <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" style="margin-left:8px;font-size:10px;padding:2px 7px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px">REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" title="Open the real transmission network in an interactive 3D map (new tab)" style="margin-left:6px;font-size:10px;padding:2px 7px;border:1px solid var(--alert,#C4785A);background:var(--panel);color:var(--alert,#C4785A);cursor:pointer;border-radius:3px;text-decoration:none;display:inline-block">3D network map ↗</a></div>
@@ -449,287 +458,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
 </section>
 
-<div style="margin:32px 0 10px;padding:9px 13px;border-left:4px solid var(--alert,#C4785A);background:var(--panel)">
-  <div style="font-family:'Saira Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.02em">Assessing a specific project</div>
-  <div style="font-size:10.5px;color:var(--ink2);margin-top:2px">Tools for one site rather than the whole country: where to connect, what it costs to wheel, and whether a rooftop or utility-scale plant stacks up. These do not depend on the national scenario.</div>
-</div>
-<section aria-label="Capacity siting tool">
-      <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
-          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
-          <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. All technologies — including CCGT and batteries — carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it — the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the real 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results — only the load-shedding risk panel stays on the national engine.</p>
-            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
-                <select id="siteRegion" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:150px">
-                  <option value="Eastern Cape">Eastern Cape</option>
-                  <option value="Free State">Free State</option>
-                  <option value="Gauteng">Gauteng</option>
-                  <option value="Hydra Central">Hydra Central</option>
-                  <option value="Kwazulu Natal">KwaZulu-Natal</option>
-                  <option value="Limpopo">Limpopo</option>
-                  <option value="Mpumalanga">Mpumalanga</option>
-                  <option value="North West">North West</option>
-                  <option value="Northern Cape" selected>Northern Cape</option>
-                  <option value="Western Cape">Western Cape</option>
-                </select>
-              </div>
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Technology</label>
-                <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
-                  <option value="solar">Solar PV</option>
-                  <option value="wind">Wind</option>
-                  <option value="coal">Coal</option>
-                  <option value="ccgt">Gas CCGT</option>
-                  <option value="nuclear">Nuclear</option>
-                  <option value="batt">Battery (4h)</option>
-                </select>
-              </div>
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">New capacity (MW)</label>
-                <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
-              </div>
-              <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
-              <button id="siteAllocateBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px; background:var(--ink); color:var(--panel)">Allocate to model</button>
-            </div>
-            <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
 
-            <div style="margin-top:14px">
-              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
-                <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
-                <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
-              </div>
-              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
-            </div>
 
-          </div>
-        </div>
-      </section>
-<section id="resourceSection" style="margin-top:18px;box-sizing:border-box;max-width:100%">
-  <div class="panel">
-    <div class="ph">
-      <h2>Site resource query</h2>
-      <span class="tag">Solar &amp; wind · click any SA location</span>
-    </div>
-    <div style="padding:12px 14px 0;font-size:11px;color:var(--ink2)">
-      Click anywhere on the map to fetch the hourly solar and wind resource for that location.
-      Solar from Open-Meteo ERA5 reanalysis (CC BY 4.0). Wind interpolated from regional MERRA-2 profiles.
-      Annual capacity factor shown alongside a monthly chart and CSV download.
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:0;row-gap:2px;border-bottom:1.5px solid var(--ink);padding:0 14px;margin-top:10px">
-      <button class="rtab active" onclick="switchTab('resource')" id="tab_resource">Grid-scale solar &amp; wind</button>
-      <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre captive power</button>
-      <button class="rtab" onclick="switchTab('capture')" id="tab_capture">Capture price</button>
-      <button class="rtab" onclick="switchTab('grid')" id="tab_grid">Grid connection</button>
-      <button class="rtab" onclick="switchTab('wheeling')" id="tab_wheeling">Wheeling</button>
-      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas">Solar project pre-feasibility</button>
-      <button class="rtab" onclick="switchTab('rooftop')" id="tab_rooftop">Rooftop solar</button>
-    </div>
-    <div style="padding:8px 14px;border-bottom:1px solid var(--line2);display:flex;gap:6px;align-items:center;background:var(--panel)">
-      <input id="mainSearch" type="text" placeholder="Search address, suburb, town, landmark — or paste GPS coordinates"
-             style="flex:1;padding:5px 9px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
-             onkeydown="if(event.key==='Enter'){event.preventDefault();mainGeocode();}">
-      <button onclick="mainGeocode()" style="font-size:10px;padding:5px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
-    </div>
-    <div id="mainSearchResults" style="display:none;max-height:160px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
-    <div id="subVoltageLegend" style="padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--line2);font-size:9.5px;color:var(--ink2);display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-      <strong style="color:var(--ink)">Substations by voltage:</strong>
-      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#C8A028;border:1px solid #8a6d15;vertical-align:middle"></span> 765&nbsp;kV</span>
-      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#C4785A;border:1px solid #8f4f34;vertical-align:middle"></span> 400&ndash;533&nbsp;kV</span>
-      <span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#517180;border:1px solid #3a5668;vertical-align:middle"></span> 220&ndash;275&nbsp;kV</span>
-      <span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#9AA69B;border:1px solid #7a8a85;vertical-align:middle"></span> 132&nbsp;kV</span>
-      <span style="color:var(--ink2)"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:transparent;border:1px solid #7a8a85;vertical-align:middle"></span> hollow = approximate location</span>
-    </div>
-    <div id="resourceSplit">
-      <div id="resourceMap" style="border-right:1px solid var(--line2)"></div>
-      <div style="overflow-y:auto">
-        <div id="rpanel_resource" style="padding:14px"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to query a location.</p></div>
-        <div id="rpanel_datacenter" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map first, then set load size.</p>
-          <div style="margin-top:8px;font-size:11px;display:flex;gap:8px;flex-wrap:wrap">
-            <label style="font-weight:600;display:flex;align-items:center;gap:4px"><input type="radio" name="dcTech" value="solar" checked onchange="runDC()"> Solar + battery</label>
-            <label style="font-weight:600;display:flex;align-items:center;gap:4px"><input type="radio" name="dcTech" value="wind" onchange="runDC()"> Wind + battery</label>
-            <label style="font-weight:600;display:flex;align-items:center;gap:4px"><input type="radio" name="dcTech" value="hybrid" onchange="runDC()"> Solar + wind + battery</label>
-          </div>
-          <div style="margin-top:10px;font-size:11px"><label style="font-weight:600">Data centre load (MW)</label>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-              <input type="range" id="dcLoad" min="1" max="500" value="10" step="1" style="flex:1" oninput="document.getElementById('dcLoadVal').textContent=this.value;runDC()">
-              <span id="dcLoadVal" style="width:36px;text-align:right;font-family:monospace">10</span><span style="font-size:10px;color:var(--ink2)">MW</span>
-            </div></div>
-          <div id="dcResult" style="margin-top:12px"></div></div>
-        <div id="rpanel_capture" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to see capture price estimates for the nearest supply area.</p><div id="captureResult" style="margin-top:10px"></div></div>
-        <div id="rpanel_grid" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to find the nearest Eskom substation and GCCA headroom.</p><p style="font-size:9.5px;color:var(--ink2);margin:4px 0 0;padding:4px 8px;background:rgba(196,120,90,0.08);border-left:2px solid var(--terra,#C4785A)">Headroom figures from GCCA 2025 (published Apr 2025) with Oct 2025 curtailment update. Updated annually — check <a href="https://www.ntcsa.co.za/gcca/" target="_blank" style="color:var(--steel,#4A6B7A)">ntcsa.co.za/gcca</a> for the latest release.</p><div id="gridResult" style="margin-top:10px"></div></div>
-        <div id="rpanel_wheeling" style="padding:14px;display:none">
-          <p style="color:var(--ink2);font-size:11px;margin:0 0 10px">Estimate the delivered cost of wheeling renewable energy from a generation region to a consumption region via Eskom's transmission network.</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;font-size:11px">
-            <div>
-              <label style="font-weight:600;display:block;margin-bottom:3px">Generation region</label>
-              <select id="wheelGenRegion" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
-                <option value="Northern Cape">Northern Cape</option>
-                <option value="Hydra Central">Hydra Central</option>
-                <option value="Eastern Cape">Eastern Cape</option>
-                <option value="Western Cape">Western Cape</option>
-                <option value="Free State">Free State</option>
-                <option value="North West">North West</option>
-                <option value="Limpopo">Limpopo</option>
-                <option value="Mpumalanga">Mpumalanga</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-weight:600;display:block;margin-bottom:3px">Consumption region</label>
-              <select id="wheelConsRegion" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
-                <option value="Gauteng">Gauteng</option>
-                <option value="Kwazulu Natal">KwaZulu-Natal</option>
-                <option value="Western Cape">Western Cape</option>
-                <option value="Eastern Cape">Eastern Cape</option>
-                <option value="Mpumalanga">Mpumalanga</option>
-                <option value="Limpopo">Limpopo</option>
-              </select>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:11px">
-            <label style="font-weight:600;white-space:nowrap">Load (MW)</label>
-            <input type="range" id="wheelMW" min="1" max="500" value="50" step="1" style="flex:1" oninput="document.getElementById('wheelMWval').textContent=this.value;calcWheeling()">
-            <span id="wheelMWval" style="width:36px;text-align:right;font-family:monospace;font-size:11px">50</span>
-            <span style="font-size:10px;color:var(--ink2)">MW</span>
-          </div>
-          <div id="wheelResult"></div>
-        </div>
-        <div id="rpanel_prefeas" style="padding:14px;display:none;overflow-y:auto">
-          <p style="color:var(--ink2);font-size:11px;margin:0 0 10px">Generate an indicative pre-feasibility report covering solar resource, financial case, and regulatory pathway.</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;font-size:11px">
-            <div>
-              <label style="font-weight:600;display:block;margin-bottom:3px">System size (kWp)</label>
-              <input id="pf_kwp" type="number" value="500" min="1" max="100000" step="50" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-            </div>
-            <div>
-              <label style="font-weight:600;display:block;margin-bottom:3px">Offtake type</label>
-              <select id="pf_offtake" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-                <option value="ownuse">Own-use (behind-the-meter)</option>
-                <option value="wheeling">Wheeling to remote site</option>
-                <option value="grid">Grid sale / IPP</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-weight:600;display:block;margin-bottom:3px" id="pf_price_label">Eskom tariff (R/kWh)</label>
-              <input id="pf_price" type="number" value="2.50" min="0.5" max="10" step="0.05" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-              <div id="pf_price_note" style="font-size:9px;color:var(--ink2);margin-top:2px">Avg industrial 2026 ≈ R2.50/kWh</div>
-            </div>
-            <div>
-              <label style="font-weight:600;display:block;margin-bottom:3px">Installed cost</label>
-              <select id="pf_cost_preset" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-                <option value="7">Rooftop &lt;100kWp — R7/Wp</option>
-                <option value="6" selected>Mid C&amp;I 100–1,000kWp — R6/Wp</option>
-                <option value="5">Ground-mount &gt;1MWp — R5/Wp</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-weight:600;display:block;margin-bottom:3px">Battery storage</label>
-              <select id="pf_batt" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-                <option value="0">None</option>
-                <option value="2">2h (peak-shift)</option>
-                <option value="4">4h (overnight)</option>
-              </select>
-            </div>
-          </div>
-          <button onclick="runPrefeas()" style="width:100%;padding:7px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Generate report</button>
-          <div id="pf_result"></div>
-        </div>
-        <div id="rpanel_rooftop" style="padding:14px;display:none;overflow-y:auto">
 
-          <!-- STEP 1: find the building -->
-          <div style="border:1.5px solid var(--ink);margin-bottom:12px">
-            <div style="background:var(--ink);color:var(--panel);padding:6px 10px;font-size:11px;font-weight:600">
-              1 &nbsp;Find your building
-            </div>
-            <div style="padding:10px">
-              <div style="display:flex;gap:6px;align-items:center">
-                <input id="rtSearch" type="text" placeholder="Enter your address, or paste GPS coordinates from Google Maps"
-                       style="flex:1;padding:7px 9px;border:1px solid var(--line2);background:var(--panel);font-size:12px;border-radius:2px;box-sizing:border-box"
-                       onkeydown="if(event.key==='Enter'){event.preventDefault();rtGeocode();}"
-                       oninput="clearTimeout(rtSearchTimer); rtSearchTimer=setTimeout(_rtAutocomplete, 300);"
-                       autocomplete="off">
-                <button onclick="rtGeocode()" style="font-size:11px;padding:7px 16px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
-              </div>
-              <div id="rt_status" style="font-size:10.5px;color:var(--ink2);margin-top:6px">
-                Search an address, then <strong>click your building on the map</strong> &mdash; we measure that roof from satellite imagery: its size and which way each face points. South African address data rarely resolves to house level, so clicking is usually more reliable than searching.
-              </div>
-            </div>
-            <div id="rtSearchResults" style="display:none;max-height:150px;overflow-y:auto;background:var(--panel);border-top:1px solid var(--line2)"></div>
-            <div id="rtMap" style="height:300px;background:var(--bg2,#eee);border-top:1px solid var(--line2)"></div>
-            <div style="padding:6px 10px;background:var(--panel);border-top:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-              <span id="rtTraceInfo" style="font-size:10px;color:var(--ink2);flex:1;min-width:180px">
-                Search an address, then click your building on the map. Use <strong>Trace manually</strong> only if the automatic measurement is unavailable or looks wrong.
-              </span>
-              <div style="display:flex;gap:5px">
-                <button onclick="rtStartTrace()" id="rtTraceBtn" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:2px">Trace manually</button>
-                <button onclick="rtUndoPoint()" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Undo</button>
-                <button onclick="rtClearTrace()" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Clear</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- STEP 2: the few things only the user knows -->
-          <div style="border:1.5px solid var(--ink);margin-bottom:12px">
-            <div style="background:var(--ink);color:var(--panel);padding:6px 10px;font-size:11px;font-weight:600">
-              2 &nbsp;Your electricity use
-            </div>
-            <div style="padding:10px">
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:11px">
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Monthly bill (R)</label><input id="rt_bill" type="number" value="80000" min="500" max="5000000" step="1000" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff (R/kWh)</label><input id="rt_tariff" type="number" value="2.50" min="0.5" max="10" step="0.05" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Battery storage (kWh)</label>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input id="rt_batt" type="number" value="0" min="0" max="200" step="0.5"
-                 style="width:74px;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
-                 oninput="rtSyncBattSlider();rtCalc()">
-          <input id="rt_batt_slider" type="range" min="0" max="40" step="0.5" value="0"
-                 style="flex:1;min-width:0" oninput="rtSyncBattInput();rtCalc()">
-        </div>
-        <div id="rt_batt_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Enter your exact battery size, or drag to explore</div></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Share of roof area to use</label><select id="rt_share" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="100" selected>100% of usable roof space</option><option value="75">75% of usable roof space</option><option value="50">50% of usable roof space</option><option value="25">25% of usable roof space</option><option value="10">10% of usable roof space</option></select><div id="rt_share_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Leave headroom for maintenance access, other rooftop equipment, or phased build-out</div></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Everything Google or our defaults already handle -->
-          <details id="rt_advanced" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:14px;background:var(--panel)">
-            <summary style="padding:8px 12px;cursor:pointer;font-size:11px;font-weight:600">
-              Adjust roof assumptions <span style="font-weight:400;color:var(--ink2)">&mdash; measured automatically, override if needed</span>
-            </summary>
-            <div style="padding:4px 12px 12px">
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:11px">
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof area (m2)</label><input id="rt_area" type="number" value="2000" min="10" max="100000" step="100" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_area_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Large C&amp;I: ~170Wp/m2 effective</div></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof orientation</label><select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Flat roof - 100%</option><option value="1.05" selected>15deg north-facing - 105%</option><option value="1.08">25deg north (optimal) - 108%</option><option value="0.92">East/west-facing - 92%</option><option value="0.78">South-facing - 78%</option><option value="0.95">Mixed / multiple orientations - 95%</option></select><div style="font-size:9.5px;color:var(--ink2);margin-top:2px">Pick the direction your panels will actually face, not the shape of the whole roof — installers typically concentrate panels on the best-facing section rather than spreading them evenly, so most homes should use a single-orientation option even on a geometrically complex roof. Only choose “Mixed” if panels will genuinely be split across clearly different directions (e.g. a deliberate east+west array).</div></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Shading &amp; losses</label><select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.85">Minimal - 85%</option><option value="0.80" selected>Moderate - 80%</option><option value="0.70">Heavy - 70%</option></select></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation</label><select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.03">3% conservative</option><option value="0.05" selected>5% Eskom historical</option><option value="0.08">8% high scenario</option></select></div>
-              </div>
-            </div>
-          </details>
-
-          <details id="rt_appliance_details" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:14px;background:var(--panel)">
-      <summary style="padding:8px 12px;cursor:pointer;font-size:11.5px;font-weight:600">
-        Refine with your appliances <span style="font-weight:400;color:var(--ink2)">&mdash; optional, improves accuracy</span>
-      </summary>
-      <div style="padding:4px 12px 12px">
-        <p style="font-size:10px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
-          Your bill tells us <em>how much</em> you use, but not <em>when</em> &mdash; and self-consumption depends almost
-          entirely on timing. Tick what you have to replace our generic assumption with a load profile based on your
-          actual appliances. Your bill above still sets total consumption; this only changes how it is spread across the day.
-        </p>
-        <div id="rt_appliances" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px 14px;font-size:11px"></div>
-        <div id="rt_profile_summary" style="margin-top:10px;font-size:10.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px"></div>
-      </div>
-    </details>
-
-          <div id="rt_result"></div>
-        </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
       </div>
     </div>
@@ -1833,9 +1564,290 @@ function printPrefeas() {
   </main>
 </div>
 
+<div style="max-width:1380px;margin:0 auto;padding:0 20px">
+  <div style="margin:28px 0 12px;padding:10px 14px;border-left:5px solid var(--alert,#C4785A);background:var(--panel);border-top:1.5px solid var(--ink);border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)">
+    <div style="font-family:'Saira Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:.03em">Project planning</div>
+    <div style="font-size:11px;color:var(--ink2);margin-top:2px">Tools for a single site rather than the whole country: where to connect, what it costs to wheel, and whether a specific plant stacks up. These do not depend on the scenario above.</div>
+  </div>
+</div>
+<div class="projwrap" style="max-width:1380px;margin:0 auto;padding:0 20px 20px">
+<section aria-label="Capacity siting tool">
+      <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
+          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
+          <div class="pb">
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. All technologies — including CCGT and batteries — carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it — the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the real 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results — only the load-shedding risk panel stays on the national engine.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
+                <select id="siteRegion" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:150px">
+                  <option value="Eastern Cape">Eastern Cape</option>
+                  <option value="Free State">Free State</option>
+                  <option value="Gauteng">Gauteng</option>
+                  <option value="Hydra Central">Hydra Central</option>
+                  <option value="Kwazulu Natal">KwaZulu-Natal</option>
+                  <option value="Limpopo">Limpopo</option>
+                  <option value="Mpumalanga">Mpumalanga</option>
+                  <option value="North West">North West</option>
+                  <option value="Northern Cape" selected>Northern Cape</option>
+                  <option value="Western Cape">Western Cape</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Technology</label>
+                <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
+                  <option value="solar">Solar PV</option>
+                  <option value="wind">Wind</option>
+                  <option value="coal">Coal</option>
+                  <option value="ccgt">Gas CCGT</option>
+                  <option value="nuclear">Nuclear</option>
+                  <option value="batt">Battery (4h)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">New capacity (MW)</label>
+                <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
+              </div>
+              <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
+              <button id="siteAllocateBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px; background:var(--ink); color:var(--panel)">Allocate to model</button>
+            </div>
+            <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
 
+            <div style="margin-top:14px">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
+                <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
+                <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
+              </div>
+              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
+            </div>
 
+          </div>
+        </div>
+      </section>
+<section id="resourceSection" style="margin-top:18px;box-sizing:border-box;max-width:100%">
+  <div class="panel">
+    <div class="ph">
+      <h2>Site resource query</h2>
+      <span class="tag">Solar &amp; wind · click any SA location</span>
+    </div>
+    <div style="padding:12px 14px 0;font-size:11px;color:var(--ink2)">
+      Click anywhere on the map to fetch the hourly solar and wind resource for that location.
+      Solar from Open-Meteo ERA5 reanalysis (CC BY 4.0). Wind interpolated from regional MERRA-2 profiles.
+      Annual capacity factor shown alongside a monthly chart and CSV download.
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:0;row-gap:2px;border-bottom:1.5px solid var(--ink);padding:0 14px;margin-top:10px">
+      <button class="rtab active" onclick="switchTab('resource')" id="tab_resource">Grid-scale solar &amp; wind</button>
+      <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre captive power</button>
+      <button class="rtab" onclick="switchTab('capture')" id="tab_capture">Capture price</button>
+      <button class="rtab" onclick="switchTab('grid')" id="tab_grid">Grid connection</button>
+      <button class="rtab" onclick="switchTab('wheeling')" id="tab_wheeling">Wheeling</button>
+      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas">Solar project pre-feasibility</button>
+      <button class="rtab" onclick="switchTab('rooftop')" id="tab_rooftop">Rooftop solar</button>
+    </div>
+    <div style="padding:8px 14px;border-bottom:1px solid var(--line2);display:flex;gap:6px;align-items:center;background:var(--panel)">
+      <input id="mainSearch" type="text" placeholder="Search address, suburb, town, landmark — or paste GPS coordinates"
+             style="flex:1;padding:5px 9px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();mainGeocode();}">
+      <button onclick="mainGeocode()" style="font-size:10px;padding:5px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
+    </div>
+    <div id="mainSearchResults" style="display:none;max-height:160px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
+    <div id="subVoltageLegend" style="padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--line2);font-size:9.5px;color:var(--ink2);display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <strong style="color:var(--ink)">Substations by voltage:</strong>
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#C8A028;border:1px solid #8a6d15;vertical-align:middle"></span> 765&nbsp;kV</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#C4785A;border:1px solid #8f4f34;vertical-align:middle"></span> 400&ndash;533&nbsp;kV</span>
+      <span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#517180;border:1px solid #3a5668;vertical-align:middle"></span> 220&ndash;275&nbsp;kV</span>
+      <span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#9AA69B;border:1px solid #7a8a85;vertical-align:middle"></span> 132&nbsp;kV</span>
+      <span style="color:var(--ink2)"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:transparent;border:1px solid #7a8a85;vertical-align:middle"></span> hollow = approximate location</span>
+    </div>
+    <div id="resourceSplit">
+      <div id="resourceMap" style="border-right:1px solid var(--line2)"></div>
+      <div style="overflow-y:auto">
+        <div id="rpanel_resource" style="padding:14px"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to query a location.</p></div>
+        <div id="rpanel_datacenter" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map first, then set load size.</p>
+          <div style="margin-top:8px;font-size:11px;display:flex;gap:8px;flex-wrap:wrap">
+            <label style="font-weight:600;display:flex;align-items:center;gap:4px"><input type="radio" name="dcTech" value="solar" checked onchange="runDC()"> Solar + battery</label>
+            <label style="font-weight:600;display:flex;align-items:center;gap:4px"><input type="radio" name="dcTech" value="wind" onchange="runDC()"> Wind + battery</label>
+            <label style="font-weight:600;display:flex;align-items:center;gap:4px"><input type="radio" name="dcTech" value="hybrid" onchange="runDC()"> Solar + wind + battery</label>
+          </div>
+          <div style="margin-top:10px;font-size:11px"><label style="font-weight:600">Data centre load (MW)</label>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <input type="range" id="dcLoad" min="1" max="500" value="10" step="1" style="flex:1" oninput="document.getElementById('dcLoadVal').textContent=this.value;runDC()">
+              <span id="dcLoadVal" style="width:36px;text-align:right;font-family:monospace">10</span><span style="font-size:10px;color:var(--ink2)">MW</span>
+            </div></div>
+          <div id="dcResult" style="margin-top:12px"></div></div>
+        <div id="rpanel_capture" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to see capture price estimates for the nearest supply area.</p><div id="captureResult" style="margin-top:10px"></div></div>
+        <div id="rpanel_grid" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to find the nearest Eskom substation and GCCA headroom.</p><p style="font-size:9.5px;color:var(--ink2);margin:4px 0 0;padding:4px 8px;background:rgba(196,120,90,0.08);border-left:2px solid var(--terra,#C4785A)">Headroom figures from GCCA 2025 (published Apr 2025) with Oct 2025 curtailment update. Updated annually — check <a href="https://www.ntcsa.co.za/gcca/" target="_blank" style="color:var(--steel,#4A6B7A)">ntcsa.co.za/gcca</a> for the latest release.</p><div id="gridResult" style="margin-top:10px"></div></div>
+        <div id="rpanel_wheeling" style="padding:14px;display:none">
+          <p style="color:var(--ink2);font-size:11px;margin:0 0 10px">Estimate the delivered cost of wheeling renewable energy from a generation region to a consumption region via Eskom's transmission network.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;font-size:11px">
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Generation region</label>
+              <select id="wheelGenRegion" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
+                <option value="Northern Cape">Northern Cape</option>
+                <option value="Hydra Central">Hydra Central</option>
+                <option value="Eastern Cape">Eastern Cape</option>
+                <option value="Western Cape">Western Cape</option>
+                <option value="Free State">Free State</option>
+                <option value="North West">North West</option>
+                <option value="Limpopo">Limpopo</option>
+                <option value="Mpumalanga">Mpumalanga</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Consumption region</label>
+              <select id="wheelConsRegion" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
+                <option value="Gauteng">Gauteng</option>
+                <option value="Kwazulu Natal">KwaZulu-Natal</option>
+                <option value="Western Cape">Western Cape</option>
+                <option value="Eastern Cape">Eastern Cape</option>
+                <option value="Mpumalanga">Mpumalanga</option>
+                <option value="Limpopo">Limpopo</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:11px">
+            <label style="font-weight:600;white-space:nowrap">Load (MW)</label>
+            <input type="range" id="wheelMW" min="1" max="500" value="50" step="1" style="flex:1" oninput="document.getElementById('wheelMWval').textContent=this.value;calcWheeling()">
+            <span id="wheelMWval" style="width:36px;text-align:right;font-family:monospace;font-size:11px">50</span>
+            <span style="font-size:10px;color:var(--ink2)">MW</span>
+          </div>
+          <div id="wheelResult"></div>
+        </div>
+        <div id="rpanel_prefeas" style="padding:14px;display:none;overflow-y:auto">
+          <p style="color:var(--ink2);font-size:11px;margin:0 0 10px">Generate an indicative pre-feasibility report covering solar resource, financial case, and regulatory pathway.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;font-size:11px">
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px">System size (kWp)</label>
+              <input id="pf_kwp" type="number" value="500" min="1" max="100000" step="50" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Offtake type</label>
+              <select id="pf_offtake" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+                <option value="ownuse">Own-use (behind-the-meter)</option>
+                <option value="wheeling">Wheeling to remote site</option>
+                <option value="grid">Grid sale / IPP</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px" id="pf_price_label">Eskom tariff (R/kWh)</label>
+              <input id="pf_price" type="number" value="2.50" min="0.5" max="10" step="0.05" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <div id="pf_price_note" style="font-size:9px;color:var(--ink2);margin-top:2px">Avg industrial 2026 ≈ R2.50/kWh</div>
+            </div>
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Installed cost</label>
+              <select id="pf_cost_preset" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+                <option value="7">Rooftop &lt;100kWp — R7/Wp</option>
+                <option value="6" selected>Mid C&amp;I 100–1,000kWp — R6/Wp</option>
+                <option value="5">Ground-mount &gt;1MWp — R5/Wp</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Battery storage</label>
+              <select id="pf_batt" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+                <option value="0">None</option>
+                <option value="2">2h (peak-shift)</option>
+                <option value="4">4h (overnight)</option>
+              </select>
+            </div>
+          </div>
+          <button onclick="runPrefeas()" style="width:100%;padding:7px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Generate report</button>
+          <div id="pf_result"></div>
+        </div>
+        <div id="rpanel_rooftop" style="padding:14px;display:none;overflow-y:auto">
 
+          <!-- STEP 1: find the building -->
+          <div style="border:1.5px solid var(--ink);margin-bottom:12px">
+            <div style="background:var(--ink);color:var(--panel);padding:6px 10px;font-size:11px;font-weight:600">
+              1 &nbsp;Find your building
+            </div>
+            <div style="padding:10px">
+              <div style="display:flex;gap:6px;align-items:center">
+                <input id="rtSearch" type="text" placeholder="Enter your address, or paste GPS coordinates from Google Maps"
+                       style="flex:1;padding:7px 9px;border:1px solid var(--line2);background:var(--panel);font-size:12px;border-radius:2px;box-sizing:border-box"
+                       onkeydown="if(event.key==='Enter'){event.preventDefault();rtGeocode();}"
+                       oninput="clearTimeout(rtSearchTimer); rtSearchTimer=setTimeout(_rtAutocomplete, 300);"
+                       autocomplete="off">
+                <button onclick="rtGeocode()" style="font-size:11px;padding:7px 16px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
+              </div>
+              <div id="rt_status" style="font-size:10.5px;color:var(--ink2);margin-top:6px">
+                Search an address, then <strong>click your building on the map</strong> &mdash; we measure that roof from satellite imagery: its size and which way each face points. South African address data rarely resolves to house level, so clicking is usually more reliable than searching.
+              </div>
+            </div>
+            <div id="rtSearchResults" style="display:none;max-height:150px;overflow-y:auto;background:var(--panel);border-top:1px solid var(--line2)"></div>
+            <div id="rtMap" style="height:300px;background:var(--bg2,#eee);border-top:1px solid var(--line2)"></div>
+            <div style="padding:6px 10px;background:var(--panel);border-top:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+              <span id="rtTraceInfo" style="font-size:10px;color:var(--ink2);flex:1;min-width:180px">
+                Search an address, then click your building on the map. Use <strong>Trace manually</strong> only if the automatic measurement is unavailable or looks wrong.
+              </span>
+              <div style="display:flex;gap:5px">
+                <button onclick="rtStartTrace()" id="rtTraceBtn" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:2px">Trace manually</button>
+                <button onclick="rtUndoPoint()" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Undo</button>
+                <button onclick="rtClearTrace()" style="font-size:10px;padding:3px 9px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;border-radius:2px">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: the few things only the user knows -->
+          <div style="border:1.5px solid var(--ink);margin-bottom:12px">
+            <div style="background:var(--ink);color:var(--panel);padding:6px 10px;font-size:11px;font-weight:600">
+              2 &nbsp;Your electricity use
+            </div>
+            <div style="padding:10px">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:11px">
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Monthly bill (R)</label><input id="rt_bill" type="number" value="80000" min="500" max="5000000" step="1000" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff (R/kWh)</label><input id="rt_tariff" type="number" value="2.50" min="0.5" max="10" step="0.05" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Battery storage (kWh)</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="rt_batt" type="number" value="0" min="0" max="200" step="0.5"
+                 style="width:74px;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
+                 oninput="rtSyncBattSlider();rtCalc()">
+          <input id="rt_batt_slider" type="range" min="0" max="40" step="0.5" value="0"
+                 style="flex:1;min-width:0" oninput="rtSyncBattInput();rtCalc()">
+        </div>
+        <div id="rt_batt_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Enter your exact battery size, or drag to explore</div></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Share of roof area to use</label><select id="rt_share" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="100" selected>100% of usable roof space</option><option value="75">75% of usable roof space</option><option value="50">50% of usable roof space</option><option value="25">25% of usable roof space</option><option value="10">10% of usable roof space</option></select><div id="rt_share_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Leave headroom for maintenance access, other rooftop equipment, or phased build-out</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Everything Google or our defaults already handle -->
+          <details id="rt_advanced" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:14px;background:var(--panel)">
+            <summary style="padding:8px 12px;cursor:pointer;font-size:11px;font-weight:600">
+              Adjust roof assumptions <span style="font-weight:400;color:var(--ink2)">&mdash; measured automatically, override if needed</span>
+            </summary>
+            <div style="padding:4px 12px 12px">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:11px">
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof area (m2)</label><input id="rt_area" type="number" value="2000" min="10" max="100000" step="100" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_area_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Large C&amp;I: ~170Wp/m2 effective</div></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof orientation</label><select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Flat roof - 100%</option><option value="1.05" selected>15deg north-facing - 105%</option><option value="1.08">25deg north (optimal) - 108%</option><option value="0.92">East/west-facing - 92%</option><option value="0.78">South-facing - 78%</option><option value="0.95">Mixed / multiple orientations - 95%</option></select><div style="font-size:9.5px;color:var(--ink2);margin-top:2px">Pick the direction your panels will actually face, not the shape of the whole roof — installers typically concentrate panels on the best-facing section rather than spreading them evenly, so most homes should use a single-orientation option even on a geometrically complex roof. Only choose “Mixed” if panels will genuinely be split across clearly different directions (e.g. a deliberate east+west array).</div></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Shading &amp; losses</label><select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.85">Minimal - 85%</option><option value="0.80" selected>Moderate - 80%</option><option value="0.70">Heavy - 70%</option></select></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation</label><select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.03">3% conservative</option><option value="0.05" selected>5% Eskom historical</option><option value="0.08">8% high scenario</option></select></div>
+              </div>
+            </div>
+          </details>
+
+          <details id="rt_appliance_details" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:14px;background:var(--panel)">
+      <summary style="padding:8px 12px;cursor:pointer;font-size:11.5px;font-weight:600">
+        Refine with your appliances <span style="font-weight:400;color:var(--ink2)">&mdash; optional, improves accuracy</span>
+      </summary>
+      <div style="padding:4px 12px 12px">
+        <p style="font-size:10px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
+          Your bill tells us <em>how much</em> you use, but not <em>when</em> &mdash; and self-consumption depends almost
+          entirely on timing. Tick what you have to replace our generic assumption with a load profile based on your
+          actual appliances. Your bill above still sets total consumption; this only changes how it is spread across the day.
+        </p>
+        <div id="rt_appliances" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px 14px;font-size:11px"></div>
+        <div id="rt_profile_summary" style="margin-top:10px;font-size:10.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px"></div>
+      </div>
+    </details>
+
+          <div id="rt_result"></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <div style="max-width:1380px;margin:0 auto;padding:0 20px 40px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
