@@ -884,6 +884,66 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     return best;
   }
 
+
+  // ── Planned infrastructure near a clicked point ──────────────────────────
+  // The nearest EXISTING substation answers "where would I connect today". For a
+  // developer that is only half the question, because in the best resource areas
+  // the answer today is "nowhere - there is no headroom". What changes the
+  // decision is what NTCSA is building nearby, and when.
+  function plannedNear(lat, lng, existingName) {
+    if (!tdpData) return null;
+    const out = { atExisting: [], newSites: [], lines: [] };
+    for (const p of tdpData.projects) {
+      for (const pt of p.pts) {
+        const km = Math.hypot(lat - pt.lat, lng - pt.lng) * 111;
+        if (km > 120) continue;                       // beyond plausible connection range
+        const rec = { ...p, km: Math.round(km), site: pt.n };
+        if (existingName && pt.n === existingName) { out.atExisting.push(rec); break; }
+        if (p.kind === 'line') { out.lines.push(rec); break; }
+        out.newSites.push(rec); break;
+      }
+    }
+    const first = a => a.sort((x, y) => x.year - y.year || x.km - y.km);
+    first(out.atExisting); first(out.newSites); first(out.lines);
+    return out;
+  }
+
+  function plannedHtml(lat, lng, existingName) {
+    const pl = plannedNear(lat, lng, existingName);
+    if (!pl) return '';
+    const rows = [];
+    const badge = ph => {
+      const col = ph === 'Execution' ? 'var(--ok,#4A8C5C)'
+                : ph === 'Definition' ? '#C8A028' : 'var(--ink2)';
+      return `<span style="color:${col};font-weight:600">${ph}</span>`;
+    };
+    if (pl.atExisting.length) {
+      const e = pl.atExisting.slice(0, 3);
+      rows.push(`<div style="margin-bottom:6px"><strong>Planned at ${existingName}</strong>`
+        + e.map(p => `<div style="color:var(--ink2);margin-top:2px">${p.year} &middot; ${p.name.slice(0,64)} &middot; ${badge(p.phase)}</div>`).join('')
+        + (pl.atExisting.length > 3 ? `<div style="color:var(--ink2)">+${pl.atExisting.length-3} more</div>` : '')
+        + '</div>');
+    }
+    if (pl.newSites.length) {
+      const n = pl.newSites[0];
+      rows.push(`<div style="margin-bottom:6px"><strong>Nearest planned substation</strong>`
+        + `<div style="color:var(--ink2);margin-top:2px">${n.site} &middot; ${n.km}\u00a0km away &middot; `
+        + `expected <strong>${n.year}</strong> &middot; ${badge(n.phase)}</div>`
+        + `<div style="color:var(--ink2);font-size:9.5px">${n.name.slice(0,80)}</div></div>`);
+    }
+    if (pl.lines.length) {
+      const l = pl.lines[0];
+      rows.push(`<div><strong>Nearest planned line</strong>`
+        + `<div style="color:var(--ink2);margin-top:2px">${l.name.slice(0,64)} &middot; `
+        + `expected <strong>${l.year}</strong> &middot; ${badge(l.phase)}</div></div>`);
+    }
+    if (!rows.length) return '';
+    return `<div style="border-left:3px solid #E8A83C;background:rgba(232,168,60,0.07);padding:7px 10px;margin-top:10px;font-size:10.5px;line-height:1.5">`
+      + rows.join('')
+      + `<div style="color:var(--ink2);margin-top:6px;font-size:9.5px">From NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034. `
+      + `Execution is committed and under way; Concept and Pre-Concept are indicative and may move. Not an investment commitment.</div></div>`;
+  }
+
   function renderGrid(lat, lng) {
     const el = document.getElementById('gridResult');
     if(!substationData||!headroomData){el.innerHTML='<p style="font-size:11px;color:var(--ink2)">Loading data…</p>';return;}
@@ -928,7 +988,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div style="font-size:10px;color:var(--ink2)">${h.binding_corridor||'Binding corridor'} · ${h.corridor_km} km</div>
         <div style="font-size:10px;color:var(--ink2);margin-top:2px">Indicative upgrade cost: <strong>R${Math.round(h.corridor_km*31/1000)}bn – R${Math.round(h.corridor_km*45/1000)}bn</strong> (R31–45m/km for 400kV line, from TDP 2025)</div>
         <div style="font-size:9px;color:var(--ink2);margin-top:2px">Alternative: GET (grid-enhancing technologies) may unlock 20–30% more capacity on existing corridors at ~R1.55m/km</div>
-      </div>` : ''}`;
+      </div>` : ''}` + plannedHtml(lat, lng, sub.n);
   }
 
 
@@ -1184,6 +1244,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   // closure - expose the two entry points explicitly.
   window.toggleTdp = toggleTdp;
   window.setMapTdpYear = setMapTdpYear;
+  window.renderGrid = renderGrid;          // used by the map click handler and tests
 
   fetch('nodal/tdp_projects.json')
     .then(r => r.ok ? r.json() : null)
