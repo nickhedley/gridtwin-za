@@ -2176,7 +2176,43 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
 
   // Unit state: hours remaining on/offline
   // Start all units in their lowest-cost committed state
-  const unitState = UC_FLEET.map(u => ({
+  // UNIT-LEVEL COMMITMENT.
+  // UC_FLEET stores 31 station GROUPS covering 85 individual units. Committing a
+  // group all-or-nothing forces, say, all 1,050 MW of Arnot* on or off together,
+  // when in reality one 350 MW unit can run while the other two shut down.
+  //
+  // That matters specifically for the midday solar trough. A committed group
+  // contributes its FULL minimum stable load (~56% of capacity fleet-wide, so
+  // 23.4 GW if everything were committed), and coarse granularity means the fleet
+  // cannot settle onto a low enough floor - which overstates the coal that must
+  // keep running through the solar peak, and so overstates curtailment.
+  // Expanding to individual units lets the floor land where the real fleet can.
+  //
+  // Suggested by Prof. Bruno Merven (UCT Energy Systems Research Group), whose
+  // point was that minimum stable level plus ramp rates are what produce the
+  // "Buffalo curve" - coal unable to drop far enough at midday to make room for
+  // solar while remaining available for the morning and evening peaks.
+  const UC_UNITS = [];
+  for (const g of UC_FLEET) {
+    const n = Math.max(1, g.n || 1);
+    const unitCap = g.unit_cap || (g.cap / n);
+    for (let k = 0; k < n; k++) {
+      UC_UNITS.push({
+        name: g.name + ' U' + (k + 1),
+        cap: unitCap,
+        msl: g.msl,
+        min_up: g.min_up,
+        min_dn: g.min_dn,
+        marginal_cost: g.marginal_cost,
+        // Start-up cost is per unit, so scale the group figure down.
+        startup_cost: (g.startup_cost || 0) / n,
+        region: g.region,
+        decom: g.decom,
+      });
+    }
+  }
+
+  const unitState = UC_UNITS.map(u => ({
     hoursOn: u.min_up,   // start committed (so min_up constraint doesn't immediately bind)
     hoursOff: 0,
     isOn: true,
@@ -2241,7 +2277,7 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
     const peakLoad = Math.max(...dayLoad);
 
     // Sort available units by marginal cost (cheapest first = merit order)
-    const merit = UC_FLEET.map((u,i) => ({i, mc: u.marginal_cost, cap: unitState[i].cap}))
+    const merit = UC_UNITS.map((u,i) => ({i, mc: u.marginal_cost, cap: unitState[i].cap}))
                           .sort((a,b) => a.mc - b.mc);
 
     // Greedy: commit cheapest units until we cover this block's peak + reserve.
@@ -2249,11 +2285,11 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
     // within 0.5% of optimal for today's system, and any value >= 1.10 gives
     // identical results anyway once peak demand exceeds available coal.
     const targetCapacity = peakLoad * 1.15;
-    let decidedOn = new Array(UC_FLEET.length).fill(false);
+    let decidedOn = new Array(UC_UNITS.length).fill(false);
     let totalCommitted = 0;
 
     for (const {i} of merit) {
-      const u = UC_FLEET[i];
+      const u = UC_UNITS[i];
       const st = unitState[i];
       if (st.cap <= 0) continue;
 
@@ -2275,9 +2311,9 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
     }
 
     // Apply decisions and track state transitions
-    for (let i = 0; i < UC_FLEET.length; i++) {
+    for (let i = 0; i < UC_UNITS.length; i++) {
       const st = unitState[i];
-      const u  = UC_FLEET[i];
+      const u  = UC_UNITS[i];
       const wasOn = st.isOn;
       const nowOn = decidedOn[i];
 
