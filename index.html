@@ -484,7 +484,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
           </div>
         </div>
-<div style="margin-top:18px"><details class="assump">
+<div style="margin-top:18px"><details class="assump" id="validationPanel" style="margin-top:12px">
+      <summary>How the model compares to Eskom&rsquo;s published figures</summary>
+      <div class="pb" id="validationBody"></div>
+</details>
+<details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
         <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: winter evening peaks &asymp; 26&ndash;27.3&nbsp;GW, EAF &asymp; 64&nbsp;%, OCGT load factor &asymp; 1.3&nbsp;%, <strong>9.1&nbsp;GW</strong> embedded rooftop PV (NTCSA, June 2026), post-2023 structural demand decline.</p>
@@ -4104,6 +4108,118 @@ async function ensureHighs(){
   } catch (e) { return null; }
 }
 
+
+/* ==================== CALIBRATION vs ESKOM ACTUALS ========================
+ * Two DIFFERENT comparisons, deliberately kept apart.
+ *
+ * 1. STRUCTURAL INPUTS - EAF, installed capacity, rooftop PV, demand level.
+ *    These are facts about the system, not dispatch choices. If the model and
+ *    Eskom disagree here, the model is simply stale and should be updated.
+ *
+ * 2. DISPATCH OUTCOMES - diesel burn, generation mix. Divergence here does NOT
+ *    mean the model is wrong. South Africa has no independent system operator
+ *    and no competitive market: Eskom dispatches its own fleet under take-or-pay
+ *    IPP contracts. In February-March 2026 it spent roughly R93m running IPP
+ *    diesel turbines to meet contractual minimum load factors WHILE holding
+ *    excess coal in cold reserve. A merit-order model would never do that, and
+ *    is right not to. The gap measures what the absence of a market costs -
+ *    which is a finding, not an error.
+ *
+ * Conflating the two would make a correct model look broken.
+ */
+const ESKOM_ACTUALS = {
+  asOf: '6 August 2026',
+  source: 'Eskom weekly System Status reports',
+  url: 'https://www.eskom.co.za/dataportal/',
+  structural: [
+    { k: 'Coal fleet EAF',        model: () => state.coalEAFPct,
+      actual: 67.2, unit: '%',
+      note: 'Financial year to date, 1 Apr\u20136 Aug 2026. Highest since Nov 2020; '
+          + 'was 60.05% over the same period last year.' },
+    { k: 'OCGT load factor',      model: () => 1.3,
+      actual: 1.17, unit: '%',
+      note: 'FYTD 2026. Diesel spend R948m against R5.73bn last year.' },
+    { k: 'Rooftop PV installed',  model: () => (FIXED.rooftopMW/1000),
+      actual: 9.1, unit: 'GW',
+      note: 'NTCSA, June 2026. Grew 35% year on year, so this figure dates quickly.' },
+    { k: 'Winter peak demand',    model: () => Math.round((lastRes && lastRes.peak ? lastRes.peak : 0)/100)/10,
+      actual: 27, unit: 'GW',
+      note: 'Eskom 2026 Winter Outlook forecast, down from ~30 GW in 2025. Both figures are '
+          + 'grid-facing (after rooftop nets off), so this gap is real: the model runs on the '
+          + '2025 demand series and demand has since declined structurally.' },
+    { k: 'Coal installed',        model: () => FIXED.coalInstalledMW/1000,
+      actual: 42, unit: 'GW', note: 'Nominal fleet capacity before EAF.' },
+  ],
+};
+
+function renderValidation(){
+  const host = document.getElementById('validationBody');
+  if (!host) return;
+  const A = ESKOM_ACTUALS;
+
+  const rows = A.structural.map(r => {
+    const m = r.model();
+    const diff = m - r.actual;
+    const pct = r.actual ? Math.abs(diff) / r.actual * 100 : 0;
+    // 5% is the point at which a calibration input is worth revisiting rather
+    // than being ordinary rounding or a live slider setting.
+    const drift = pct > 5;
+    const col = drift ? 'var(--alert,#C4785A)' : 'var(--ok,#4A8C5C)';
+    return '<tr style="border-bottom:1px solid var(--line2)">'
+      + `<td style="padding:4px 6px">${r.k}</td>`
+      + `<td style="text-align:right;padding:4px 6px">${m.toFixed(1)}${r.unit}</td>`
+      + `<td style="text-align:right;padding:4px 6px">${r.actual}${r.unit}</td>`
+      + `<td style="text-align:right;padding:4px 6px;font-weight:700;color:${col}">`
+      + (diff >= 0 ? '+' : '') + diff.toFixed(1) + '</td>'
+      + `<td style="padding:4px 6px;font-size:9.5px;color:var(--ink2)">${r.note}</td></tr>`;
+  }).join('');
+
+  const drifted = A.structural.filter(r => {
+    const m = r.model();
+    return r.actual && Math.abs(m - r.actual) / r.actual * 100 > 5;
+  });
+
+  host.innerHTML =
+      '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:8px;line-height:1.45">'
+    + `Model inputs against Eskom&rsquo;s published figures as at <strong>${A.asOf}</strong>. `
+    + 'These are <strong>structural facts</strong> \u2014 availability, capacity, demand level \u2014 '
+    + 'not dispatch decisions, so a gap here means the model needs updating.</div>'
+    + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)">'
+    + '<th style="text-align:left;padding:4px 6px">Input</th>'
+    + '<th style="text-align:right;padding:4px 6px">Model</th>'
+    + '<th style="text-align:right;padding:4px 6px">Eskom</th>'
+    + '<th style="text-align:right;padding:4px 6px">Gap</th>'
+    + '<th style="text-align:left;padding:4px 6px">Source</th></tr>'
+    + rows + '</table>'
+    + (drifted.length
+        ? '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
+          + 'padding:7px 10px;margin-top:9px;font-size:10.5px;line-height:1.5">'
+          + '<strong>Drifted from published figures:</strong> '
+          + drifted.map(r => r.k.toLowerCase()).join(', ')
+          + '. Move the sliders to match, or treat the default as out of date.</div>'
+        : '<div style="border-left:3px solid var(--ok,#4A8C5C);background:rgba(74,140,92,0.07);'
+          + 'padding:7px 10px;margin-top:9px;font-size:10.5px">'
+          + 'All structural inputs within 5% of Eskom&rsquo;s published figures.</div>')
+
+    // ── The part that needs framing, not a pass/fail ──────────────────────
+    + '<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);'
+    + 'padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">'
+    + '<strong>Why dispatch is not compared the same way</strong><br>'
+    + 'This model dispatches on merit order \u2014 cheapest plant first. Eskom does not, and cannot: '
+    + 'South Africa has no independent system operator and no competitive market, so Eskom dispatches '
+    + 'its own fleet under take-or-pay contracts with IPPs. In February and March 2026 it spent about '
+    + '<strong>R93 million running IPP diesel turbines to meet contractual minimum load factors while '
+    + 'holding excess coal capacity in cold reserve</strong>. A least-cost model would never do that, '
+    + 'and is right not to.'
+    + '<div style="margin-top:6px;color:var(--ink2)">So where the model burns less diesel or runs a '
+    + 'different mix than Eskom reports, that gap is not necessarily model error \u2014 it is partly a '
+    + 'measure of what the current market structure costs. Read it as a question worth asking, not a '
+    + 'score.</div></div>'
+    + `<div style="font-size:9.5px;color:var(--ink2);margin-top:7px">Source: ${A.source}. `
+    + `Update these figures when Eskom publishes; the comparison is only as current as the date above.</div>`;
+}
+
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
@@ -4993,7 +5109,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   }).catch(()=>{btn.textContent=location.href;});
 });
 
-function run(){lastRes=simulate(state,PROFILES);render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
