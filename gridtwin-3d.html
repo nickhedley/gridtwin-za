@@ -202,9 +202,15 @@ let deckgl, showTerrain = true, showCorridors = true;
 let substations = [];
 
 // ── Initial view ──────────────────────────────────────────────────────────────
+// Pitch is degrees from vertical: 0 is straight down, 90 is fully horizontal.
+// 52 sat well past halfway toward the horizon, which foreshortened the country -
+// the far side compressed into a band and distant substations bunched together.
+// 34 keeps enough tilt for terrain relief and pylon height to read, while the
+// national geography stays legible. Bearing eased from -15 to -8 so the map sits
+// closer to north-up, which makes provinces easier to place at a glance.
 const INITIAL_VIEW = {
   longitude: 25.5, latitude: -29.0,
-  zoom: 5.2, pitch: 52, bearing: -15,
+  zoom: 5.2, pitch: 34, bearing: -8,
 };
 
 // ── Colour helpers ────────────────────────────────────────────────────────────
