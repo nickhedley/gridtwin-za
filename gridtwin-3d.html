@@ -75,6 +75,21 @@
     padding: 7px 13px; font-family: 'Saira Condensed', sans-serif;
     font-size: 12px; font-weight: 600; letter-spacing: .05em; cursor: pointer;
   }
+  /* The year slider is a control, not a caption - size it like one so users
+     notice it is there. Sizing lives here, not inline, or the stylesheet
+     cannot raise it on small screens. */
+  #tdpYearWrap {
+    margin-top: 7px; padding: 7px 9px;
+    background: rgba(13,17,23,0.85); border: 1px solid rgba(232,228,216,0.18);
+    border-radius: 3px;
+    font-family: 'Saira Condensed', sans-serif;
+    font-size: 12.5px; line-height: 1.4; color: rgba(232,228,216,0.9);
+    letter-spacing: .02em;
+  }
+  #tdpYearWrap label { display: block; cursor: pointer }
+  #tdpYearLbl { font-size: 14px; color: #FF6B5C }
+  #tdpYearSlider { width: 100%; margin-top: 4px; height: 20px; accent-color: #FF463C; cursor: pointer }
+
   #legendBtn {
     display: none; position: absolute; bottom: 14px; left: 12px; z-index: 12;
     background: rgba(13,17,23,0.9); color: rgba(232,228,216,0.9);
@@ -140,9 +155,9 @@
       gap: 4px; max-width: 48vw;
     }
     .ctrl-btn { padding: 5px 8px; font-size: 10.5px }
-    #tdpYearWrap { font-size: 11.5px; line-height: 1.35 }
-    #tdpYearSlider { height: 22px }        /* easier to grab with a thumb */
-    #tdpYearLbl { font-size: 12.5px }
+    #tdpYearWrap { font-size: 13px; padding: 8px 10px }
+    #tdpYearLbl { font-size: 15px }
+    #tdpYearSlider { height: 26px }        /* easier to grab with a thumb */
 
     /* The header and stat cards were sized for desktop and never adjusted: a
        150px-wide column of cards starting 90px down covered most of a phone
@@ -259,10 +274,10 @@
   <button class="ctrl-btn" id="btnCorr" onclick="toggleCorridors()">⚡ Corridors ON</button>
   <button class="ctrl-btn active" id="btnTDP" onclick="toggleTDP()">🔨 Planned build ON</button>
   <button class="ctrl-btn" onclick="resetView()">⌂ Reset view</button>
-  <div id="tdpYearWrap" style="margin-top:6px;font-size:10.5px;color:rgba(232,228,216,0.75)">
+  <div id="tdpYearWrap">
     <label for="tdpYearSlider">Show planned build by <strong id="tdpYearLbl">2034</strong></label>
     <input id="tdpYearSlider" type="range" min="2025" max="2035" step="1" value="2034"
-           oninput="setTdpYear(this.value)" style="width:100%;margin-top:2px">
+           oninput="setTdpYear(this.value)">
   </div>
 </div>
 
