@@ -4264,8 +4264,7 @@ function renderValidation(){
   host.innerHTML =
       '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:8px;line-height:1.45">'
     + `Model inputs against Eskom&rsquo;s published figures as at <strong>${A.asOf}</strong>. `
-    + 'These are <strong>structural facts</strong> \u2014 availability, capacity, demand level \u2014 '
-    + 'not dispatch decisions, so a gap here means the model needs updating.</div>'
+    + 'A gap here means the model needs updating.</div>'
     + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)">'
     + '<th style="text-align:left;padding:4px 6px">Input</th>'
@@ -4288,16 +4287,14 @@ function renderValidation(){
     + '<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);'
     + 'padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">'
     + '<strong>Why dispatch is not compared the same way</strong><br>'
-    + 'This model dispatches on merit order \u2014 cheapest plant first. Eskom does not, and cannot: '
-    + 'South Africa has no independent system operator and no competitive market, so Eskom dispatches '
-    + 'its own fleet under take-or-pay contracts with IPPs. In February and March 2026 it spent about '
-    + '<strong>R93 million running IPP diesel turbines to meet contractual minimum load factors while '
-    + 'holding excess coal capacity in cold reserve</strong>. A least-cost model would never do that, '
-    + 'and is right not to.'
+    + 'This model dispatches on merit order \u2014 cheapest plant first. Eskom does not since South '
+    + 'Africa does not yet have an independent system operator and competitive market. In February '
+    + 'and March 2026 it spent about <strong>R93 million running IPP diesel turbines to meet '
+    + 'contractual minimum load factors while holding excess coal capacity in cold reserve</strong>. '
+    + 'A least-cost model would never do that.'
     + '<div style="margin-top:6px;color:var(--ink2)">So where the model burns less diesel or runs a '
     + 'different mix than Eskom reports, that gap is not necessarily model error \u2014 it is partly a '
-    + 'measure of what the current market structure costs. Read it as a question worth asking, not a '
-    + 'score.</div></div>'
+    + 'measure of what the current market structure costs.</div></div>'
     + `<div style="font-size:9.5px;color:var(--ink2);margin-top:7px">Source: ${A.source}. `
     + `Update these figures when Eskom publishes; the comparison is only as current as the date above.</div>`;
 }
@@ -4380,10 +4377,9 @@ function renderPricePanel(r){
 
     + `<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.45">`
     + `<strong>These are shadow prices, not observed ones.</strong> South Africa has no wholesale `
-    + `market \u2014 Eskom dispatches administratively under take-or-pay contracts. This is what a `
-    + `competitive market <em>would</em> clear at given this dispatch: the running cost of the most `
-    + `expensive plant needed in each hour, zero when renewables are being spilled, and the value of `
-    + `lost load (R87,000/MWh) when demand goes unserved.</div>`;
+    + `market (yet). This is what a competitive market <em>would</em> clear at based on the running `
+    + `cost of the most expensive plant needed in each hour and the value of lost load `
+    + `(R87,000/MWh) when demand goes unserved.</div>`;
 
   function kpi(k, v, u){
     return `<div><div style="font-size:9.5px;color:var(--ink2);text-transform:uppercase;letter-spacing:.08em">${k}</div>`
