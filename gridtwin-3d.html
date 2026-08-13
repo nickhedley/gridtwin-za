@@ -135,7 +135,7 @@
 <!-- Stats -->
 <div id="stats">
   <div class="stat-card">
-    <div class="stat-val" style="color:#517180">159</div>
+    <div class="stat-val" style="color:#517180">185</div>
     <div class="stat-lbl">Substations</div>
   </div>
   <div class="stat-card">
@@ -143,8 +143,8 @@
     <div class="stat-lbl">Existing lines ≥220kV</div>
   </div>
   <div class="stat-card">
-    <div class="stat-val" style="color:#F5C518">19.7 GW</div>
-    <div class="stat-lbl">NERSA registered</div>
+    <div class="stat-val" style="color:#FF463C">80</div>
+    <div class="stat-lbl">Planned lines ≥220kV</div>
   </div>
 </div>
 
@@ -160,7 +160,7 @@
   <div class="leg-row"><div class="leg-line" style="background:rgba(81,113,128,0.8)"></div>275kV</div>
   <div class="leg-row"><div class="leg-line" style="background:rgba(120,140,120,0.7)"></div>220kV</div>
   <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4);margin-top:4px">Dashed = planned</div>
-  <div class="leg-row" style="margin-top:6px"><div class="leg-line" style="background:rgba(255,59,48,1)"></div>TDP planned build</div>
+  <div class="leg-row" style="margin-top:6px"><div class="leg-line" style="background:rgba(255,70,60,0.8);height:2px"></div>TDP planned build</div>
   <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.4)">Brighter = more committed</div>
 </div>
 
@@ -318,6 +318,75 @@ function buildLayers(subs) {
     }
   }
 
+    // ── PLANNED TDP INFRASTRUCTURE ───────────────────────────────────────────
+    // Drawn distinctly from the existing network: planned lines are dashed and
+    // amber, planned sites are hollow rings. Colour deepens with certainty -
+    // 'Execution' is committed and under way, 'Pre-Concept' is indicative only.
+    if (showTDP && tdpProjects.length) {
+      const inYear = p => p.year <= tdpYear;
+      // Bright red, deliberately distinct from the gold used for existing 765 kV
+      // lines. Opacity still tracks certainty.
+      // Red, to separate planned build from the gold used for existing 765 kV.
+      // Alpha is held well below full so the network shows through: with 230
+      // projects at 255 alpha the map read as a solid red wash.
+      const PHASE_COL = {
+        'Execution':   [255,  70,  60, 205],   // committed, strongest
+        'Definition':  [240,  85,  70, 165],
+        'Concept':     [225, 105,  90, 125],
+        'Pre-Concept': [205, 125, 110,  95],   // indicative, faintest
+        'Planned':     [235,  95,  80, 145],
+      };
+      const col = p => PHASE_COL[p.phase] || [170, 120, 80, 140];
+
+      const plannedLines = tdpProjects.filter(p => p.kind === 'line' && p.pts.length >= 2 && inYear(p));
+      if (plannedLines.length) {
+        layers.push(new deck.LineLayer({
+          id: 'tdp-lines',
+          data: plannedLines,
+          getSourcePosition: d => [d.pts[0].lng, d.pts[0].lat],
+          getTargetPosition: d => [d.pts[1].lng, d.pts[1].lat],
+          getColor: col,
+          // Deliberately THINNER than the existing network beneath it (which runs
+          // 3 / 2.5 / 1.8 / 1.2 by kV). Planned build is an overlay, not a
+          // replacement - at the previous 6/3 it was twice the weight of a real
+          // 765 kV line and buried the network it is meant to annotate.
+          getWidth: d => d.kv === 765 ? 2.2 : 1.4,
+          widthMinPixels: 1,
+          pickable: true,
+          onHover: ({object, x, y}) => showTooltip(object ? {
+            name: object.name,
+            info: `PLANNED \u00b7 ${object.year}\n${object.phase}`
+                + (object.km ? `\n${object.km} km` : '')
+                + (object.prov ? `\n${object.prov}` : ''),
+          } : null, x, y),
+        }));
+      }
+
+      const plannedSites = tdpProjects.filter(p => p.kind !== 'line' && inYear(p));
+      if (plannedSites.length) {
+        layers.push(new deck.ScatterplotLayer({
+          id: 'tdp-sites',
+          data: plannedSites,
+          getPosition: d => [d.pts[0].lng, d.pts[0].lat],
+          getRadius: d => d.kind === 'syncon' ? 7500 : 5500,
+          getFillColor: [0, 0, 0, 0],
+          getLineColor: col,
+          lineWidthMinPixels: 1,
+          stroked: true,
+          filled: false,
+          radiusMinPixels: 5,
+          radiusUnits: 'meters',
+          pickable: true,
+          onHover: ({object, x, y}) => showTooltip(object ? {
+            name: object.name,
+            info: `PLANNED ${object.kind.toUpperCase()} \u00b7 ${object.year}\n${object.phase}`
+                + (object.prov ? `\n${object.prov}` : ''),
+          } : null, x, y),
+        }));
+      }
+    }
+
+
   // 3. Region centre dots with headroom glow
   const regionData = Object.entries(REGIONS).map(([name, coords]) => ({
     name, coordinates: [coords.lng, coords.lat],
@@ -366,68 +435,6 @@ function buildLayers(subs) {
         info: `${object.r}\n${object.kv ? object.kv + 'kV distribution' : 'voltage not recorded'}`,
       } : null, x, y),
     }));
-
-    // ── PLANNED TDP INFRASTRUCTURE ───────────────────────────────────────────
-    // Drawn distinctly from the existing network: planned lines are dashed and
-    // amber, planned sites are hollow rings. Colour deepens with certainty -
-    // 'Execution' is committed and under way, 'Pre-Concept' is indicative only.
-    if (showTDP && tdpProjects.length) {
-      const inYear = p => p.year <= tdpYear;
-      // Bright red, deliberately distinct from the gold used for existing 765 kV
-      // lines. Opacity still tracks certainty.
-      const PHASE_COL = {
-        'Execution':   [255,  59,  48, 255],   // committed, brightest
-        'Definition':  [235,  60,  55, 215],
-        'Concept':     [205,  70,  65, 175],
-        'Pre-Concept': [175,  80,  75, 135],   // indicative, faintest
-        'Planned':     [225,  65,  60, 195],
-      };
-      const col = p => PHASE_COL[p.phase] || [170, 120, 80, 140];
-
-      const plannedLines = tdpProjects.filter(p => p.kind === 'line' && p.pts.length >= 2 && inYear(p));
-      if (plannedLines.length) {
-        layers.push(new deck.LineLayer({
-          id: 'tdp-lines',
-          data: plannedLines,
-          getSourcePosition: d => [d.pts[0].lng, d.pts[0].lat],
-          getTargetPosition: d => [d.pts[1].lng, d.pts[1].lat],
-          getColor: col,
-          // 765 kV corridors are the backbone of the plan - draw them heavier.
-          getWidth: d => d.kv === 765 ? 6 : 3,
-          widthMinPixels: 2,
-          pickable: true,
-          onHover: ({object, x, y}) => showTooltip(object ? {
-            name: object.name,
-            info: `PLANNED \u00b7 ${object.year}\n${object.phase}`
-                + (object.km ? `\n${object.km} km` : '')
-                + (object.prov ? `\n${object.prov}` : ''),
-          } : null, x, y),
-        }));
-      }
-
-      const plannedSites = tdpProjects.filter(p => p.kind !== 'line' && inYear(p));
-      if (plannedSites.length) {
-        layers.push(new deck.ScatterplotLayer({
-          id: 'tdp-sites',
-          data: plannedSites,
-          getPosition: d => [d.pts[0].lng, d.pts[0].lat],
-          getRadius: d => d.kind === 'syncon' ? 9000 : 7000,
-          getFillColor: [0, 0, 0, 0],
-          getLineColor: col,
-          lineWidthMinPixels: 2,
-          stroked: true,
-          filled: false,
-          radiusMinPixels: 5,
-          radiusUnits: 'meters',
-          pickable: true,
-          onHover: ({object, x, y}) => showTooltip(object ? {
-            name: object.name,
-            info: `PLANNED ${object.kind.toUpperCase()} \u00b7 ${object.year}\n${object.phase}`
-                + (object.prov ? `\n${object.prov}` : ''),
-          } : null, x, y),
-        }));
-      }
-    }
 
     layers.push(new deck.ScatterplotLayer({
       id: 'tx-subs',
