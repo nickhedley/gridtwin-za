@@ -1564,6 +1564,30 @@ function initResourceQuery(){
     }
   });
 
+
+  // ── Suggest-as-you-type ───────────────────────────────────────────────────
+  // Both search boxes only fired on Enter or the button, so nothing appeared
+  // while typing and the search looked broken. Debounce at 350 ms: long enough
+  // that a normal typist triggers one request per pause rather than one per
+  // keystroke, which also keeps us well inside Nominatim's 1 req/sec usage
+  // policy. Three characters minimum - shorter queries match half of South
+  // Africa and the results are useless.
+  function attachTypeahead(inputId, fn){
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    let timer = null, lastQ = '';
+    el.addEventListener('input', () => {
+      const q = el.value.trim();
+      if (timer) clearTimeout(timer);
+      if (q.length < 3 || q === lastQ) return;
+      timer = setTimeout(() => { lastQ = q; fn(); }, 350);
+    });
+    // Enter should search immediately rather than wait out the debounce.
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter'){ if (timer) clearTimeout(timer); lastQ = el.value.trim(); }
+    });
+  }
+
   // ── Main address search (Nominatim / OpenStreetMap) ─────────────────────────
   async function mainGeocode() {
     const q = document.getElementById('mainSearch').value.trim();
@@ -1629,6 +1653,7 @@ function initResourceQuery(){
   window.runDC = runDC;
   window.calcWheeling = calcWheeling;
   window.renderCapture = renderCapture;
+  attachTypeahead('mainSearch', mainGeocode);
   window.runPrefeas = runPrefeas;
   window.printPrefeas = printPrefeas;
 
@@ -1775,8 +1800,9 @@ async function runPrefeas() {
       <table style="width:100%;font-size:11px;border-collapse:collapse">
         <tr><td style="padding:3px 0;color:var(--ink2);width:45%">Annual capacity factor</td><td style="font-weight:600">${(solarCF*100).toFixed(1)}%</td></tr>
         <tr><td style="padding:3px 0;color:var(--ink2)">Annual yield</td><td style="font-weight:600">${(fin.annualKwh/1000).toFixed(0)} MWh/yr (${(fin.annualKwh/kwp).toFixed(0)} kWh/kWp)</td></tr>
-        <tr><td style="padding:3px 0;color:var(--ink2)">Peak sun hours</td><td>${(solarCF*8760/1000).toFixed(1)} h/day average</td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">Peak sun hours</td><td>${(solarCF*24).toFixed(1)} h/day average</td></tr>
         <tr><td style="padding:3px 0;color:var(--ink2)">Data source</td><td>${solarSource}</td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">Array assumption</td><td>Fixed tilt at optimal angle, equator-facing. A real roof at a poorer pitch or azimuth typically yields 5&ndash;15% less.</td></tr>
         ${battHours>0?`<tr><td style="padding:3px 0;color:var(--ink2)">Battery storage</td><td>${battHours}h · ${(battKwhours).toFixed(0)} kWh · charges from solar surplus</td></tr>`:''}
       </table>
     </div>
@@ -2159,6 +2185,7 @@ function printPrefeas() {
             </div>
             <div id="rtSearchResults" style="display:none;max-height:150px;overflow-y:auto;background:var(--panel);border-top:1px solid var(--line2)"></div>
             <div id="rtMap" style="height:300px;background:var(--bg2,#eee);border-top:1px solid var(--line2)"></div>
+            <div id="rtMapHint" style="display:none;padding:6px 10px;background:rgba(196,120,90,0.07);border-top:1px solid var(--line2);font-size:10px;color:var(--ink2)">Showing Johannesburg by default — search an address above, paste GPS coordinates, or pan and zoom to your own roof, then trace it.</div>
             <div style="padding:6px 10px;background:var(--panel);border-top:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
               <span id="rtTraceInfo" style="font-size:10px;color:var(--ink2);flex:1;min-width:180px">
                 Search an address, then click your building on the map. Use <strong>Trace manually</strong> only if the automatic measurement is unavailable or looks wrong.
@@ -6242,7 +6269,13 @@ function rtInitMap() {
   const lat = (window._resourceData && window._resourceData.lat) || -26.2041;
   const lng = (window._resourceData && window._resourceData.lng) || 28.0473;
 
-  rtMap = L.map('rtMap', { zoomControl: true, attributionControl: true }).setView([lat, lng], 19);
+  // Zoom 19 is roof-level. With no location chosen yet that shows an anonymous
+  // patch of an arbitrary Johannesburg rooftop with nothing to orient by, which
+  // reads as a broken map. Open at 16 - streets and blocks visible, obviously a
+  // real place - and let rtGoTo() zoom to 19 once a location is actually picked.
+  const hasSite = !!(window._resourceData && window._resourceData.lat);
+  rtMap = L.map('rtMap', { zoomControl: true, attributionControl: true })
+            .setView([lat, lng], hasSite ? 19 : 16);
 
   // Esri World Imagery — free satellite tiles, no API key required
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -6263,6 +6296,11 @@ function rtInitMap() {
   }).addTo(rtMap);
 
   rtMap.on('click', rtMapClick);
+  if (!hasSite) {
+    // A one-off hint so an unlocated map does not look like a failure.
+    const hint = document.getElementById('rtMapHint');
+    if (hint) hint.style.display = '';
+  }
   setTimeout(() => rtMap.invalidateSize(), 200);
 }
 
@@ -6543,6 +6581,25 @@ document.addEventListener('keydown', e => {
     if (b) b.style.display = 'none';
   }
 });
+
+// Suggest-as-you-type for the rooftop search, same 350 ms debounce as the main
+// map's. Defined here rather than reusing attachTypeahead because that lives
+// inside the site-resource IIFE and is not visible at this scope.
+(function(){
+  const el = document.getElementById('rtSearch');
+  if (!el) return;
+  let timer = null, lastQ = '';
+  el.addEventListener('input', () => {
+    const q = el.value.trim();
+    if (timer) clearTimeout(timer);
+    if (q.length < 3 || q === lastQ) return;
+    timer = setTimeout(() => { lastQ = q; if (typeof rtGeocode === 'function') rtGeocode(); }, 350);
+  });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ if (timer) clearTimeout(timer); lastQ = el.value.trim(); }
+  });
+})();
+
 
 // Accepts the formats people actually paste from Google Maps and similar:
 //   -26.2041, 28.0473      -26.2041 28.0473      (-26.2041,28.0473)
@@ -7034,6 +7091,8 @@ async function _rtFetchSiteData(lat, lng, contextHtml, skipRoof) {
 
 function rtGoTo(lat, lng, exact) {
   rtInitMap();
+  const _h = document.getElementById('rtMapHint');
+  if (_h) _h.style.display = 'none';
   lat = parseFloat(lat); lng = parseFloat(lng);
   if (rtMap) {
     rtMap.setView([lat, lng], 19);
