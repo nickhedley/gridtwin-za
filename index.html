@@ -3340,6 +3340,19 @@ function renderBuildResult(res, rate, opts){
  * headroom that remains means accepting materially worse resource - which a
  * national average conceals entirely.
  */
+// Existing battery power by region, from the BESIPPPP award shares already used
+// for regional siting. Needed so the regional LP knows what storage a region
+// ALREADY has before deciding what to add.
+const BLD_EX_BATT = (() => {
+  const share = { 'Western Cape':0.5754, 'Kwazulu Natal':0.2412,
+                  'Eastern Cape':0.1759, 'Northern Cape':0.0075 };
+  const out = {};
+  for (const R of ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape',
+                   'Northern Cape','Hydra Central','Kwazulu Natal','North West','Free State'])
+    out[R] = 800 * (share[R] || 0);
+  return out;
+})();
+
 const BLD_REGIONS = ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape',
   'Northern Cape','Hydra Central','Kwazulu Natal','North West','Free State'];
 
@@ -3430,14 +3443,42 @@ function bldBuildRegionalLP(opts){
           if (a === R) flows.push('+ fb'+f+' - fa'+f);
           if (b === R) flows.push('+ fa'+f+' - fb'+f);
         });
+        // Storage dispatch. Without bdis/bchg in the balance, a battery in this
+        // model was pure cost with no benefit, so the regional LP built ZERO
+        // storage while the national LP - which does carry these terms - built
+        // 2.75 GW on the identical scenario. Two modes of the same tool gave
+        // contradictory answers to the same question.
         L.push(' bal_'+k+': gc_'+k+' + gd_'+k+' + u_'+k+' - crt_'+k
+          + ' + bdis_'+k+' - bchg_'+k
           + ' + ' + cum('wind',ri,y).map(v => wp.toFixed(4)+' '+v).join(' + ')
           + ' + ' + cum('pv',ri,y).map(v => sp.toFixed(4)+' '+v).join(' + ')
           + ' ' + flows.join(' ')
           + ' = ' + dem.toFixed(1));
         L.push(' cmax_'+k+': gc_'+k+' <= ' + (coal[R]*eaf).toFixed(1));
+        // Power rating: cannot discharge or charge faster than what is built
+        // (plus what already exists in the region).
+        L.push(' bdmax_'+k+': bdis_'+k+' - ' + cum('batt',ri,y).join(' - ')
+          + ' <= ' + ((BLD_EX_BATT&&BLD_EX_BATT[R])||0).toFixed(1));
+        L.push(' bcmax_'+k+': bchg_'+k+' - ' + cum('batt',ri,y).join(' - ')
+          + ' <= ' + ((BLD_EX_BATT&&BLD_EX_BATT[R])||0).toFixed(1));
       }
     }
+    // Storage must balance over each representative day at 88% round-trip, and
+    // cannot discharge more than its 4-hour duration allows. Same formulation as
+    // the national LP, applied per region.
+    for (const r of rd) for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+      const R = BLD_REGIONS[ri], dis = [], chg = [];
+      for (let h = 0; h < 24; h++){
+        dis.push('bdis_'+ri+'_'+y+'_'+r.d+'_'+h);
+        chg.push('bchg_'+ri+'_'+y+'_'+r.d+'_'+h);
+      }
+      const ex = ((BLD_EX_BATT&&BLD_EX_BATT[R])||0);
+      L.push(' soc_'+ri+'_'+y+'_'+r.d+': ' + dis.join(' + ')
+        + ' - ' + chg.map(v=>'0.88 '+v).join(' - ') + ' <= 0');
+      L.push(' dur_'+ri+'_'+y+'_'+r.d+': ' + dis.join(' + ')
+        + ' - ' + cum('batt',ri,y).map(v=>'4 '+v).join(' - ') + ' <= ' + (ex*4).toFixed(1));
+    }
+
     // PER-REGION GRID HEADROOM - the constraint the national model lacks.
     // GCCA headroom is what exists TODAY. TDP projects release more of it over
     // the period, so a delay scenario is modelled by holding back the release
@@ -3489,6 +3530,7 @@ function bldBuildRegionalLP(opts){
       const k = ri+'_'+y+'_'+r.d+'_'+h;
       L.push(' 0 <= gc_'+k+' <= 60000'); L.push(' 0 <= gd_'+k+' <= 4000');
       L.push(' 0 <= u_'+k+' <= 60000');  L.push(' 0 <= crt_'+k+' <= 60000');
+      L.push(' 0 <= bdis_'+k+' <= 60000'); L.push(' 0 <= bchg_'+k+' <= 60000');
     }
     BLD_CORRIDORS.forEach(([a,b,lim], ci) => {
       const f = '_'+ci+'_'+y+'_'+r.d+'_'+h;
