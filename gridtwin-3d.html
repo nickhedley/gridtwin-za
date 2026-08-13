@@ -361,12 +361,15 @@ function buildLayers(subs) {
           getSourcePosition: d => [d.pts[0].lng, d.pts[0].lat],
           getTargetPosition: d => [d.pts[1].lng, d.pts[1].lat],
           getColor: col,
-          getWidth: 3,
+          // 765 kV corridors are the backbone of the plan - draw them heavier.
+          getWidth: d => d.kv === 765 ? 6 : 3,
           widthMinPixels: 2,
           pickable: true,
           onHover: ({object, x, y}) => showTooltip(object ? {
             name: object.name,
-            info: `PLANNED \u00b7 ${object.year}\n${object.phase}\n${object.prov}`,
+            info: `PLANNED \u00b7 ${object.year}\n${object.phase}`
+                + (object.km ? `\n${object.km} km` : '')
+                + (object.prov ? `\n${object.prov}` : ''),
           } : null, x, y),
         }));
       }
@@ -388,7 +391,8 @@ function buildLayers(subs) {
           pickable: true,
           onHover: ({object, x, y}) => showTooltip(object ? {
             name: object.name,
-            info: `PLANNED ${object.kind.toUpperCase()} \u00b7 ${object.year}\n${object.phase}\n${object.prov}`,
+            info: `PLANNED ${object.kind.toUpperCase()} \u00b7 ${object.year}\n${object.phase}`
+                + (object.prov ? `\n${object.prov}` : ''),
           } : null, x, y),
         }));
       }
