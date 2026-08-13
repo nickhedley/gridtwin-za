@@ -338,60 +338,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
 
-      </div>
-      <div>
-<section>
-        <div class="panel" aria-label="Weekly dispatch">
-          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="wkbtns">
-                <button id="wkW" class="active">Winter week</button>
-                <button id="wkS">Summer week</button>
-              </div>
-              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
-            </div>
-          </div>
-          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week — hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
-          <div class="pb" style="padding:10px 10px 4px">
-            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart" aria-describedby="dispatchTableDesc"></canvas>
-          </div>
-          <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
-        </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
-          <div class="pb" id="mix"></div>
-        </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
-            <div class="pb">
-              <div class="riskhead" id="riskHead"></div>
-              <div class="shedbars" id="shed"></div>
-              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
-              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
-            </div>
-          </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
-          <div class="pb" id="lcoe"></div>
-        </div>
-
-        <div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
-          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
-          <div style="padding:0 14px 12px">
-            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
-              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
-              Includes all technologies.
-            </p>
-            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
-          </div>
-        </div>
-
-      </section>
-<section style="margin-top:18px;box-sizing:border-box;max-width:100%">
-    <div class="panel" id="buildSection" style="margin-bottom:18px">
+      
+<div class="panel" id="buildSection" style="margin-bottom:18px">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
         <h2>Generation capacity build rates</h2>
         <span class="tag">capacity expansion &middot; least-cost schedule to 2030</span>
@@ -456,7 +404,61 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div id="bldResult" style="margin-top:12px"></div>
       </div>
     </div>
-</section>
+<div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
+          <div class="pb" id="lcoe"></div>
+        </div>
+
+        
+</div>
+      <div>
+<section>
+        <div class="panel" aria-label="Weekly dispatch">
+          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="wkbtns">
+                <button id="wkW" class="active">Winter week</button>
+                <button id="wkS">Summer week</button>
+              </div>
+              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
+            </div>
+          </div>
+          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week — hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
+          <div class="pb" style="padding:10px 10px 4px">
+            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart" aria-describedby="dispatchTableDesc"></canvas>
+          </div>
+          <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
+        </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
+          <div class="pb" id="mix"></div>
+        </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
+            <div class="pb">
+              <div class="riskhead" id="riskHead"></div>
+              <div class="shedbars" id="shed"></div>
+              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
+              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
+            </div>
+          </div>
+
+        <div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
+          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
+          <div style="padding:0 14px 12px">
+            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
+              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
+              Includes all technologies.
+            </p>
+            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
+          </div>
+        </div>
+
+      </section>
+<section style="margin-top:18px;box-sizing:border-box;max-width:100%">
+    </section>
 
 
 
