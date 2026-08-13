@@ -251,35 +251,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <!-- ============ RESULTS ============ -->
   <main>
     <div id="kpiSourceBanner" style="display:none; font-size:11.5px; padding:8px 12px; margin-bottom:10px; border:1.5px solid var(--alert); background:var(--panel2); border-radius:3px"></div>
+    <div id="wxBar" style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:var(--ink2);border:1px solid var(--line2);background:var(--panel);padding:6px 10px;margin-bottom:10px;border-radius:3px">
+      <button id="wxRunBtn" onclick="runWeatherSpread()" style="padding:3px 10px;border:1px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:11px;font-weight:600;border-radius:2px;white-space:nowrap">Show wind &amp; solar extremes</button>
+      <span style="flex:1;min-width:200px">Re-solves every figure below against 10 years of real weather, so you can see the best and worst years rather than one.</span>
+      <span id="wxStatus"></span>
+    </div>
+    <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
     <p class="kpinote">Note on the cost figures: <strong>System cost</strong> is the annual total of fuel, carbon and the capex of newly-built capacity only – existing plant is treated as sunk, and curtailment payments to wind and solar contracted under REIPPPP are excluded. <strong>Avg energy cost</strong> is simply that system cost divided by the energy the grid serves, so it is an <em>average</em> across the whole mix, not the marginal cost of the next MWh. <strong>Replacement cost</strong> instead prices every MWh, from existing and new plant alike, at its full lifecycle cost – what this mix would cost if built entirely new at today’s prices. Neither is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
 
-
-    <div class="panel" id="wxSection" style="margin-bottom:18px">
-      <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
-        <h2>How much does the weather change this?</h2>
-        <span class="tag">inter-annual variability &middot; re-solves per weather year</span>
-      </div>
-      <div style="padding:12px 14px">
-        <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
-          Everything above runs on a <strong>single</strong> year of wind and solar weather. This
-          re-solves your scenario once for each weather year on record and reports the spread &mdash;
-          best case, median, P90 and worst. South Africa has the
-          <strong>most variable solar resource in Africa</strong> (coefficient of variation near 0.4,
-          driven by ENSO and the Indian Ocean Dipole), so one year can materially over- or
-          under-state both risk and curtailment. Demand and plant availability are held fixed, so
-          only the weather changes.
-        </p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <button id="wxRunBtn" onclick="runWeatherSpread()"
-                  style="padding:6px 14px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;border-radius:2px">
-            Test across all weather years
-          </button>
-          <span id="wxStatus" style="font-size:10.5px;color:var(--ink2)"></span>
-        </div>
-        <div id="wxResult" style="margin-top:12px"></div>
-      </div>
-    </div>
 
     <div class="panel" id="buildSection" style="margin-bottom:18px">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
@@ -3275,62 +3255,42 @@ async function runWeatherSpread(){
 
 function renderWeatherSpread(runs, d){
   const host = document.getElementById('wxResult');
-  if (!runs.length){ host.innerHTML = '<div style="font-size:11px">No runs completed.</div>'; return; }
+  if (!runs.length){ host.innerHTML = ''; return; }
   const stat = k => {
     const v = runs.map(r => r[k]).sort((a,b) => a-b);
-    const p = q => v[Math.min(v.length-1, Math.floor(q*(v.length-1)))];
-    return { min:v[0], p50:p(0.5), p90:p(0.9), max:v[v.length-1],
-             mean:v.reduce((a,b)=>a+b,0)/v.length };
+    return { min:v[0], p50:v[Math.floor(v.length/2)], max:v[v.length-1] };
   };
-  const METRICS = [
-    ['shedGWh',  'Unserved energy', 'GWh/yr', 0],
-    ['dieselTWh','Diesel run',      'TWh/yr', 2],
-    ['curtTWh',  'Curtailment',     'TWh/yr', 2],
-    ['renPct',   'Renewable share', '%',      1],
-    ['costRbn',  'System cost',     'R bn/yr',0],
-  ];
-  let html = '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
-    + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 6px">Across '
-    + runs.length + ' weather years</th>'
-    + ['best','median','P90','worst'].map(h => '<th style="text-align:right;padding:4px 6px">'+h+'</th>').join('')
-    + '<th style="text-align:right;padding:4px 6px">spread</th></tr>';
-  for (const [k, label, unit, dp] of METRICS){
-    const s = stat(k);
-    // For unserved and cost, "best" is the low end; for renewable share it is the high end.
-    const goodLow = k !== 'renPct';
-    const best = goodLow ? s.min : s.max, worst = goodLow ? s.max : s.min;
-    const spread = s.min > 0 ? (s.max/s.min).toFixed(2)+'\u00d7' : (s.max - s.min).toFixed(dp);
-    html += '<tr style="border-bottom:1px solid var(--line2)">'
-      + '<td style="padding:4px 6px">' + label + ' <span style="color:var(--ink2)">' + unit + '</span></td>'
-      + '<td style="text-align:right;padding:4px 6px">' + best.toFixed(dp) + '</td>'
-      + '<td style="text-align:right;padding:4px 6px">' + s.p50.toFixed(dp) + '</td>'
-      + '<td style="text-align:right;padding:4px 6px">' + s.p90.toFixed(dp) + '</td>'
-      + '<td style="text-align:right;padding:4px 6px;font-weight:600">' + worst.toFixed(dp) + '</td>'
-      + '<td style="text-align:right;padding:4px 6px;color:var(--ink2)">' + spread + '</td></tr>';
-  }
-  html += '</table>';
+  // Deliberately compact: this sits directly above the KPIs and qualifies them,
+  // so it should read as a caveat on those numbers rather than a separate study.
+  const shed = stat('shedGWh'), curt = stat('curtTWh'), cost = stat('costRbn');
+  const worst = runs.reduce((a,b) => b.shedGWh > a.shedGWh ? b : a);
+  const best  = runs.reduce((a,b) => b.shedGWh < a.shedGWh ? b : a);
+  const risky = shed.max > 100;
 
-  const shed = stat('shedGWh');
-  html += '<div style="margin-top:10px;font-size:10.5px;line-height:1.5">';
-  if (shed.max > 100 && shed.min < 100){
-    html += '<div style="border-left:3px solid var(--alert,#C4785A);padding:6px 9px;background:rgba(196,120,90,0.07);margin-bottom:6px">'
-      + '<strong>Adequacy depends on the weather.</strong> This scenario serves demand in the better '
-      + 'years but sheds up to ' + shed.max.toFixed(0) + ' GWh in the worst one. A single-year run '
-      + 'would have shown only one of those answers.</div>';
-  } else if (shed.max <= 100){
-    html += '<div style="border-left:3px solid var(--ok,#4A8C5C);padding:6px 9px;background:rgba(74,140,92,0.07);margin-bottom:6px">'
-      + '<strong>Adequate in every weather year tested</strong> &mdash; unserved energy stays below '
-      + '100 GWh even in the worst.</div>';
-  }
-  const yrs = runs.map(r => r.year);
-  const worstYr = runs.reduce((a,b) => b.shedGWh > a.shedGWh ? b : a).year;
-  html += '<div style="color:var(--ink2)">Weather years ' + yrs[0] + '&ndash;' + yrs[yrs.length-1]
-    + '; worst for adequacy was <strong>' + worstYr + '</strong>. Demand and plant availability are '
-    + 'held fixed so that only weather varies. South Africa has the most variable solar resource in '
-    + 'Africa, so a single year can materially over- or under-state both risk and curtailment.'
+  const cell = (label, lo, hi, unit, dp) =>
+    '<div style="min-width:118px"><div style="color:var(--ink2);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em">'
+    + label + '</div><div style="font-size:12.5px;font-weight:700">' + lo.toFixed(dp)
+    + ' – ' + hi.toFixed(dp) + ' <span style="font-weight:400;font-size:10px;color:var(--ink2)">'
+    + unit + '</span></div></div>';
+
+  host.innerHTML =
+    '<div style="border:1px solid ' + (risky ? 'var(--alert,#C4785A)' : 'var(--ok,#4A8C5C)')
+    + ';border-left-width:4px;background:var(--panel);padding:8px 11px;border-radius:3px">'
+    + '<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">'
+    + cell('Unserved energy', shed.min, shed.max, 'GWh/yr', 0)
+    + cell('Curtailment', curt.min, curt.max, 'TWh/yr', 1)
+    + cell('System cost', cost.min, cost.max, 'R bn/yr', 0)
+    + '</div>'
+    + '<div style="font-size:10px;color:var(--ink2);margin-top:6px;line-height:1.45">'
+    + 'Range across ' + runs.length + ' weather years (' + runs[0].year + '\u2013'
+    + runs[runs.length-1].year + '), same fleet and demand throughout. Best year for '
+    + 'adequacy was <strong>' + best.year + '</strong>, worst <strong>' + worst.year + '</strong>. '
+    + (risky
+        ? 'This scenario serves demand in good years but sheds up to ' + shed.max.toFixed(0)
+          + '\u00a0GWh in the worst \u2014 a single-year run would show only one of those answers.'
+        : 'Adequate in every year tested.')
     + (d.meta.warning ? ' <strong style="color:var(--alert,#C4785A)">' + d.meta.warning + '</strong>' : '')
     + '</div></div>';
-  host.innerHTML = html;
 }
 
 /* ==================== UI DEFINITION ==================== */
