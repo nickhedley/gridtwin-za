@@ -82,6 +82,48 @@
     padding: 7px 13px; font-family: 'Saira Condensed', sans-serif;
     font-size: 12px; font-weight: 600; letter-spacing: .05em; cursor: pointer;
   }
+  
+
+  /* Very small phones: drop the strapline entirely rather than let it wrap. */
+  
+
+  #controls {
+    position: absolute; bottom: 32px; right: 24px; z-index: 10;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .ctrl-btn {
+    background: rgba(13,17,23,0.85); border: 1px solid rgba(232,228,216,0.15);
+    color: rgba(232,228,216,0.7); font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; padding: 7px 12px; cursor: pointer; backdrop-filter: blur(8px);
+    text-align: left; transition: all .2s; letter-spacing: .03em;
+  }
+  .ctrl-btn:hover { color: #E8E4D8; border-color: rgba(232,228,216,0.4); }
+  .ctrl-btn.active { color: #C4785A; border-color: #C4785A; }
+
+  /* Stats bar */
+  #stats {
+    position: absolute; top: 90px; right: 24px; z-index: 10;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .stat-card {
+    background: rgba(13,17,23,0.85); border: 1px solid rgba(232,228,216,0.1);
+    padding: 10px 14px; backdrop-filter: blur(8px); min-width: 150px;
+  }
+  .stat-val { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 600 }
+  .stat-lbl { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: rgba(232,228,216,0.4); margin-top: 2px }
+
+  #loading {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: #0d1117; z-index: 100; flex-direction: column; gap: 12px;
+  }
+  #loading p { font-size: 12px; color: rgba(232,228,216,0.4); letter-spacing: .1em }
+  .spinner { width: 32px; height: 32px; border: 2px solid rgba(196,120,90,0.2); border-top-color: #C4785A; border-radius: 50%; animation: spin .8s linear infinite }
+  @keyframes spin { to { transform: rotate(360deg) } }
+
+  /* ── Mobile overrides ──────────────────────────────────────────────────
+     These MUST come last. They previously sat above the desktop #stats and
+     .stat-card rules, which then won at every width and left mobile with
+     full-size cards and no collapse behaviour. */
   @media (max-width: 760px) {
     #legendBtn { display: block; bottom: calc(14px + env(safe-area-inset-bottom)); }
     #legend {
@@ -134,44 +176,10 @@
     .stat-lbl { font-size: 7.5px; line-height: 1.15 }
   }
 
-  /* Very small phones: drop the strapline entirely rather than let it wrap. */
   @media (max-width: 420px) {
     #hdr p { display: none }
     .stat-lbl { font-size: 7.5px }
   }
-
-  #controls {
-    position: absolute; bottom: 32px; right: 24px; z-index: 10;
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .ctrl-btn {
-    background: rgba(13,17,23,0.85); border: 1px solid rgba(232,228,216,0.15);
-    color: rgba(232,228,216,0.7); font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px; padding: 7px 12px; cursor: pointer; backdrop-filter: blur(8px);
-    text-align: left; transition: all .2s; letter-spacing: .03em;
-  }
-  .ctrl-btn:hover { color: #E8E4D8; border-color: rgba(232,228,216,0.4); }
-  .ctrl-btn.active { color: #C4785A; border-color: #C4785A; }
-
-  /* Stats bar */
-  #stats {
-    position: absolute; top: 90px; right: 24px; z-index: 10;
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .stat-card {
-    background: rgba(13,17,23,0.85); border: 1px solid rgba(232,228,216,0.1);
-    padding: 10px 14px; backdrop-filter: blur(8px); min-width: 150px;
-  }
-  .stat-val { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 600 }
-  .stat-lbl { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: rgba(232,228,216,0.4); margin-top: 2px }
-
-  #loading {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: #0d1117; z-index: 100; flex-direction: column; gap: 12px;
-  }
-  #loading p { font-size: 12px; color: rgba(232,228,216,0.4); letter-spacing: .1em }
-  .spinner { width: 32px; height: 32px; border: 2px solid rgba(196,120,90,0.2); border-top-color: #C4785A; border-radius: 50%; animation: spin .8s linear infinite }
-  @keyframes spin { to { transform: rotate(360deg) } }
 </style>
 </head>
 <body>
