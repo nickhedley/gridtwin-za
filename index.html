@@ -474,6 +474,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
           </div>
 
+        
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">what a market would clear at</span></div>
+            <div class="pb" id="priceBody"></div>
+          </div>
         <div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
           <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
           <div style="padding:0 14px 12px">
@@ -2262,6 +2267,10 @@ const FIXED = {
   coalInstalledMW:42000, nuclearMW:1860, hydroMW:600, importsMW:1150,
   psPowerMW:2900, psEnergyMWh:60000, psEff:0.76,
   ocgtDieselMW:3400, windMW:3600, pvUtilityMW:4000, rooftopMW:9100, cspMW:500,
+  // Value of lost load, used as the wholesale price ceiling in hours with
+  // unserved demand. R87,000/MWh is mid-range for South African planning
+  // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
+  voll:87000,
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
   // rooftopMW: NTCSA's estimate of behind-the-meter rooftop PV, which is growing
   // fast enough that this figure dates quickly - 6,800 MW (Jun 2025), 8,294 MW
@@ -2535,7 +2544,8 @@ function simulate(u, prof, outPath){
   // deliberately excluded the generation serving it. A battery-heavy scenario therefore couldn't
   // show the thing that actually matters about it - that storage CREATES midday load, which is
   // what absorbs surplus solar. Real operator charts (CAISO, National Grid) always show this.
-  const coalGenTotal=new Float64Array(HOURS); // TOTAL coal generation per hour, including any off-peak
+  const coalGenTotal=new Float64Array(HOURS);
+  const marginalP=new Float64Array(HOURS);   // R/MWh, shadow wholesale price // TOTAL coal generation per hour, including any off-peak
   // charging bonus - unlike stack.coal (load-serving only, for the chart), this is what real fuel
   // cost/emissions and any external cost comparison (e.g. an LP solve) should use
   const loadS=new Float64Array(HOURS);
@@ -2811,6 +2821,25 @@ function simulate(u, prof, outPath){
         stack.unserved[h]=residual;
       }
     }
+    // ── HOURLY MARGINAL PRICE ────────────────────────────────────────────
+    // The cost of the most expensive unit dispatched this hour: what a
+    // competitive wholesale market would clear at. South Africa has no such
+    // market, so these are SHADOW prices - what the system would pay if
+    // dispatch were priced rather than administered.
+    //
+    // Read down the merit order, most expensive first. Unserved energy sets
+    // the price at the value of lost load; when renewables are spilling,
+    // nothing scarce is on the margin and the price is zero.
+    marginalP[h] =
+        ((stack.unserved[h]||0) > 1)     ? p.voll
+      : ((stack.diesel[h]||0) > 1)       ? p.costDiesel
+      : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt
+      : ((curtailMW[h]||0) > 1)          ? 0
+      : (coalGen > 1)                    ? p.costCoal + cC
+      : (imp > 1)                        ? p.costImports
+      : (hyd > 1)                        ? p.costHydro
+      : (nuc > 1)                        ? p.costNuclear
+      :                                    0;
     E.coal+=coalGen; fuelCost+=coalGen*p.costCoal+(isNaN(ucStartCost[h])?0:ucStartCost[h]); carbonCost+=coalGen*cC;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
@@ -2854,13 +2883,54 @@ function simulate(u, prof, outPath){
   for(const k in lcoeOf) replTotal += E[k]*lcoeOf[k];
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
-  return {E,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
+  return {E,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
 // Daily EAF path: AR(1) around the mean, calibrated so week-to-week unplanned-outage
 // swings match Eskom's reported range. Mean-corrected so annual EAF equals the slider.
+
+// Summary statistics over the hourly shadow price, plus CAPTURE PRICE by
+// technology - what each generator actually earns, which is not the average.
+// Solar generates when solar is on the margin and prices are lowest, so its
+// capture price falls as solar penetration rises. That cannibalisation effect
+// is the central economic question in renewables investment and is invisible
+// in an average-cost figure.
+function priceStatsOf(mp, stack, E){
+  const H = mp.length;
+  let sum = 0, zero = 0, diesel = 0;
+  const sorted = new Float64Array(mp);
+  for (let h = 0; h < H; h++){
+    sum += mp[h];
+    if (mp[h] < 1) zero++;
+    if (mp[h] > 5000) diesel++;
+  }
+  sorted.sort();
+  const pct = q => sorted[Math.min(H-1, Math.floor(H*q))];
+
+  // Capture price = generation-weighted average price for that technology.
+  const cap = (series) => {
+    let rev = 0, mwh = 0;
+    for (let h = 0; h < H; h++){ const g = series[h]||0; rev += g*mp[h]; mwh += g; }
+    return mwh > 0 ? rev/mwh : 0;
+  };
+  const avg = sum/H;
+  // Monthly means, for the profile chart. 730 hours is a month to within a day.
+  const monthly = [];
+  for (let m = 0; m < 12; m++){
+    let s = 0, n = 0;
+    for (let h = Math.floor(m*H/12); h < Math.floor((m+1)*H/12); h++){ s += mp[h]; n++; }
+    monthly.push(n ? s/n : 0);
+  }
+  return {
+    avg, median: pct(0.5), p95: pct(0.95), max: sorted[H-1],
+    zeroHours: zero, dieselHours: diesel, monthly,
+    capture: { wind: cap(stack.wind), pv: cap(stack.pv), coal: cap(stack.coal) },
+    duration: Array.from({length: 101}, (_, i) => sorted[Math.min(H-1, Math.floor(H*i/100))]),
+  };
+}
+
 function genOutagePath(meanFrac, volFrac, seed){
   const r=mulberry32(seed), path=new Float64Array(365);
   const phi=0.92, se=volFrac*Math.sqrt(1-phi*phi);
@@ -4229,6 +4299,96 @@ function renderValidation(){
     + `Update these figures when Eskom publishes; the comparison is only as current as the date above.</div>`;
 }
 
+
+/* ==================== WHOLESALE SHADOW PRICE =============================
+ * South Africa has no wholesale market, so these are SHADOW prices: what a
+ * competitive market would clear at, given this dispatch. Labelled as such
+ * throughout - presenting them as observed prices would be wrong.
+ */
+function renderPricePanel(r){
+  const host = document.getElementById('priceBody');
+  if (!host || !r || !r.priceStats) return;
+  const s = r.priceStats;
+  const R = v => 'R' + Math.round(v).toLocaleString();
+  const capPct = t => s.avg > 0 ? (s.capture[t] / s.avg * 100) : 100;
+
+  // Capture price is the number a developer actually banks. Flag it when it
+  // falls materially below the average, because that is the investment signal.
+  const capRow = (label, key, colour) => {
+    const p = capPct(key);
+    const warn = p < 70;
+    return `<tr style="border-bottom:1px solid var(--line2)">`
+      + `<td style="padding:4px 6px"><span style="display:inline-block;width:8px;height:8px;background:${colour};border-radius:2px;margin-right:6px"></span>${label}</td>`
+      + `<td style="text-align:right;padding:4px 6px;font-weight:700">${R(s.capture[key])}</td>`
+      + `<td style="text-align:right;padding:4px 6px;color:${warn ? 'var(--alert,#C4785A)' : 'var(--ink2)'}">`
+      + `${p.toFixed(0)}%</td></tr>`;
+  };
+
+  const MON = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+  const maxMon = Math.max(...s.monthly, 1);
+  const bars = s.monthly.map((v, i) =>
+    `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px">`
+    + `<div style="width:100%;background:var(--steel,#4A6B7A);height:${Math.max(1, v/maxMon*54)}px"></div>`
+    + `<div style="font-size:8px;color:var(--ink2)">${MON[i]}</div></div>`).join('');
+
+  // Duration curve: price sorted high to low across the year.
+  const dur = s.duration.slice().reverse();
+  const maxD = Math.max(...dur, 1);
+  const pts = dur.map((v, i) => `${(i/100*100).toFixed(1)},${(60 - v/maxD*58).toFixed(1)}`).join(' ');
+
+  host.innerHTML =
+      `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">`
+    + kpi('Average', R(s.avg), '/MWh')
+    + kpi('Median', R(s.median), '/MWh')
+    + kpi('95th percentile', R(s.p95), '/MWh')
+    + kpi('Hours at zero', s.zeroHours.toLocaleString(), (s.zeroHours/87.6).toFixed(0) + '% of year')
+    + `</div>`
+
+    + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">`
+    // monthly profile
+    + `<div><div style="font-size:10px;font-weight:600;color:var(--ink2);margin-bottom:4px">Monthly average</div>`
+    + `<div style="display:flex;gap:2px;align-items:flex-end;height:70px">${bars}</div></div>`
+    // duration curve
+    + `<div><div style="font-size:10px;font-weight:600;color:var(--ink2);margin-bottom:4px">Price duration curve</div>`
+    + `<svg viewBox="0 0 100 62" preserveAspectRatio="none" style="width:100%;height:70px">`
+    + `<polyline points="${pts}" fill="none" stroke="var(--alert,#C4785A)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>`
+    + `</svg>`
+    + `<div style="display:flex;justify-content:space-between;font-size:8px;color:var(--ink2)"><span>0%</span><span>hours of the year</span><span>100%</span></div></div>`
+    + `</div>`
+
+    + `<div style="font-size:10px;font-weight:600;color:var(--ink2);margin:12px 0 3px">Capture price \u2014 what each technology actually earns</div>`
+    + `<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">`
+    + `<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 6px">Technology</th>`
+    + `<th style="text-align:right;padding:4px 6px">Capture price</th>`
+    + `<th style="text-align:right;padding:4px 6px">vs average</th></tr>`
+    + capRow('Wind', 'wind', 'var(--veld,#7DC47A)')
+    + capRow('Utility solar', 'pv', '#F5C518')
+    + capRow('Coal', 'coal', 'var(--coal2,#8a8a8a)')
+    + `</table>`
+
+    + (capPct('pv') < 70
+        ? `<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);padding:7px 10px;margin-top:9px;font-size:10.5px;line-height:1.5">`
+          + `<strong>Solar is cannibalising its own price.</strong> It earns ${R(s.capture.pv)}/MWh \u2014 `
+          + `just ${capPct('pv').toFixed(0)}% of the ${R(s.avg)} average \u2014 because it generates in the `
+          + `hours when solar sets the price, and prices are at zero for ${s.zeroHours.toLocaleString()} `
+          + `hours a year. Each additional GW earns less than the last. Storage, demand shifting or `
+          + `transmission to other regions are what break the effect.</div>`
+        : '')
+
+    + `<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.45">`
+    + `<strong>These are shadow prices, not observed ones.</strong> South Africa has no wholesale `
+    + `market \u2014 Eskom dispatches administratively under take-or-pay contracts. This is what a `
+    + `competitive market <em>would</em> clear at given this dispatch: the running cost of the most `
+    + `expensive plant needed in each hour, zero when renewables are being spilled, and the value of `
+    + `lost load (R87,000/MWh) when demand goes unserved.</div>`;
+
+  function kpi(k, v, u){
+    return `<div><div style="font-size:9.5px;color:var(--ink2);text-transform:uppercase;letter-spacing:.08em">${k}</div>`
+      + `<div style="font-size:17px;font-weight:700;font-family:'IBM Plex Mono',monospace">${v}</div>`
+      + `<div style="font-size:9px;color:var(--ink2)">${u}</div></div>`;
+  }
+}
+
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
@@ -5118,7 +5278,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   }).catch(()=>{btn.textContent=location.href;});
 });
 
-function run(){lastRes=simulate(state,PROFILES);render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function')renderPricePanel(lastRes);if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
