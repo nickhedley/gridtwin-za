@@ -1181,6 +1181,36 @@ function initResourceQuery(){
       </div>`;
   }
 
+
+  // TDP work planned at a named substation, soonest first. An existing
+  // substation's popup should say what is coming there - that is often more
+  // decision-relevant than today's headroom, especially where headroom is zero.
+  function tdpAtSite(name) {
+    if (!tdpData || !tdpData.projects) return [];
+    return tdpData.projects
+      .filter(p => p.pts.some(pt => pt.n === name))
+      .sort((a, b) => a.year - b.year);
+  }
+
+  function tdpPopupBlock(name) {
+    const ps = tdpAtSite(name);
+    if (!ps.length) {
+      return '<div style="font-size:9.5px;color:#999;margin-top:6px;padding-top:5px;'
+        + 'border-top:1px solid #e6e6e6">No TDP work planned at this substation</div>';
+    }
+    const rows = ps.slice(0, 3).map(p => {
+      const col = p.phase === 'Execution' ? '#3EA055'
+                : p.phase === 'Definition' ? '#C8A028' : '#999';
+      return `<div style="margin-top:2px"><strong>${p.year}</strong> ${p.name}`
+           + ` <span style="color:${col}">${p.phase}</span></div>`;
+    }).join('');
+    const more = ps.length > 3
+      ? `<div style="color:#999;margin-top:2px">+${ps.length - 3} more</div>` : '';
+    return '<div style="font-size:9.5px;margin-top:6px;padding-top:5px;border-top:1px solid #e6e6e6">'
+      + `<div style="font-weight:600;color:#C4785A;margin-bottom:1px">PLANNED HERE (${ps.length})</div>`
+      + rows + more + '</div>';
+  }
+
   // ── Substation dots layer ────────────────────────────────────────────────
   let subLayer = null;
   function addSubstationLayer(data, headroom) {
@@ -1212,7 +1242,8 @@ function initResourceQuery(){
       const voltLabel = vc.label;   // real voltage, not a hardcoded guess
       const popup = `<div style="font-size:11px;min-width:160px">
         <div style="font-weight:700;font-size:13px;margin-bottom:2px">${s.n}</div>
-        <div style="color:#666;margin-bottom:6px">${s.r} &nbsp;·&nbsp; ${voltLabel}</div>
+        <div style="color:#666;margin-bottom:1px"><span style="color:#3EA055;font-weight:600">EXISTING</span> &nbsp;·&nbsp; ${voltLabel}</div>
+        <div style="color:#666;margin-bottom:6px">${s.r}</div>
         <div style="font-size:10px;font-weight:600;color:#888;margin-bottom:3px">GCCA HEADROOM <span style="font-weight:400;font-size:9px">(GCCA 2025, Apr 2025)</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center">
           <div style="background:#f4f4f2;border-radius:3px;padding:4px">
@@ -1234,9 +1265,11 @@ function initResourceQuery(){
             : s.src === 'shp' ? '\u25cf Exact NTCSA coordinates'
             : s.src === 'osm' ? '\u25cf Exact \u2014 OpenStreetMap contributors (ODbL)'
             : s.src === 'manual' ? '\u25cf Exact \u2014 individually verified'
+            : s.src === 'line-geom' ? '\u25cf Derived \u2014 where its own transmission lines terminate'
             : '\u25cb Approximate \u2014 supply-zone centroid, may be several km from the actual site'}
         </div>
-        <div style="font-size:9px;color:#aaa;margin-top:3px">Click map for solar/wind resource</div>
+        ${tdpPopupBlock(s.n)}
+        <div style="font-size:9px;color:#aaa;margin-top:5px">Click map for solar/wind resource</div>
       </div>`;
       const marker = L.circleMarker([s.lat, s.lng], {
         radius: r,
@@ -1328,7 +1361,12 @@ function initResourceQuery(){
     .then(r => r.ok ? r.json() : null)
     .then(d => { if (d && d.projects) { tdpData = d;
       const b = document.getElementById('tdpToggleBtn');
-      if (b) b.style.display = 'inline-block'; } })
+      if (b) b.style.display = 'inline-block';
+      // Substation popups embed the planned-work block, but they are built as
+      // soon as substation and headroom data arrive - usually BEFORE this file
+      // lands. Without rebuilding, every popup would say "no TDP work planned".
+      if (substationData && headroomData) addSubstationLayer(substationData, headroomData);
+    } })
     .catch(() => {});
 
   // Trigger layer once both data sources are ready
