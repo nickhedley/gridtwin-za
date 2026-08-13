@@ -440,7 +440,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               <div class="riskhead" id="riskHead"></div>
               <div class="shedbars" id="shed"></div>
               <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
-              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
+              <p class="risknote" id="riskNote">Bars: probability the year reaches at least stage S, across 60 simulated years.</p>
             </div>
           </div>
 
@@ -475,7 +475,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Renewables vs Non-fossil</td><td>&ldquo;Renewables&rdquo; = wind + utility PV + rooftop PV + CSP. &ldquo;Non-fossil&rdquo; adds nuclear, hydro and (mostly-hydro) imports. Rooftop is reconstructed from an assumed embedded fleet — it is behind-the-meter and absent from Eskom&rsquo;s figures, so it remains the softest input.</td></tr>
         </table>
 
-        <p style="margin-top:8px"><strong>Risk and variability:</strong> coal availability follows a mean-corrected daily AR(1) process around the EAF slider, calibrated to the multi-week swings in Eskom&rsquo;s reported unplanned outages; the risk panel dispatches 60 synthetic years and reports load shedding as probabilities. Separately, <strong>Show wind &amp; solar extremes</strong> re-solves the scenario against 10 real weather years (2014&ndash;2023, Renewables.ninja / MERRA-2 at capacity-weighted REIPPPP plant locations). South Africa has the most variable solar resource in Africa, and 2022 delivered 17&nbsp;% less wind energy than 2023 from an identical fleet — so a single-year run can materially over- or under-state both adequacy risk and curtailment.</p>
+        <p style="margin-top:8px"><strong>Risk and variability:</strong> the risk panel dispatches 60 synthetic years, each drawing <em>both</em> an outage path and a real weather year. Coal availability follows a mean-corrected daily AR(1) process around the EAF slider, calibrated to the multi-week swings in Eskom&rsquo;s reported unplanned outages; weather is drawn from 2014&ndash;2023 and cycled so each year is used equally. The two are sampled independently, since unplanned outages track plant condition rather than the weather. This matters most in high-renewable scenarios: varying coal availability alone told you nothing once the coal fleet had retired. Separately, <strong>Show wind &amp; solar extremes</strong> re-solves the scenario against 10 real weather years (2014&ndash;2023, Renewables.ninja / MERRA-2 at capacity-weighted REIPPPP plant locations). South Africa has the most variable solar resource in Africa, and 2022 delivered 17&nbsp;% less wind energy than 2023 from an identical fleet — so a single-year run can materially over- or under-state both adequacy risk and curtailment.</p>
 
         <p style="margin-top:8px"><strong>Capacity expansion:</strong> the build-schedule optimiser is a linear program solved in-browser with HiGHS. It minimises discounted system cost over 2026&ndash;2030 using representative days rather than all 8&nbsp;760 hours, so it sizes the build rather than proving it — verify any resulting mix with <strong>Run the full model</strong>. In regional mode it also decides <em>where</em>, subject to per-region GCCA headroom and real corridor limits.</p>
 
@@ -4424,12 +4424,46 @@ async function runMC(){
   const token=++mcToken;
   const mean=state.coalEAFPct/100, vol=state.outVolPct/100;
   const runs=[];
+
+  // WEATHER YEARS IN THE RISK PANEL.
+  // This used to vary coal availability ONLY. That is the right risk driver for
+  // a coal-dominated system and the wrong one for the system being planned: once
+  // coal retires and renewables pass half of supply, weather is what threatens
+  // adequacy. In a zero-coal scenario the old panel varied nothing at all, yet
+  // still reported stress - internally contradictory, and the reason this was on
+  // the fix list.
+  //
+  // Now each simulated year draws BOTH an outage path and a real weather year
+  // (2014-2023, Renewables.ninja/MERRA-2 at REIPPPP plant locations). The two are
+  // sampled independently, which is the right assumption here: Eskom's unplanned
+  // outages are driven by plant condition and maintenance, not by whether it was
+  // a windy year.
+  const wx = await loadWeatherYears();
+  const wxYears = wx && wx.meta && wx.meta.years ? wx.meta.years : null;
+  // Cache the national profile per weather year - building it walks 10 regions
+  // x 8760 hours, and MC_N draws would otherwise rebuild the same few repeatedly.
+  const wxCache = new Map();
+  const profileFor = (y) => {
+    if (!wxYears) return PROFILES;
+    if (!wxCache.has(y)) {
+      const nat = weatherYearNational(String(y));
+      wxCache.set(y, nat ? { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind,
+                             csp: PROFILES.csp, real: true } : PROFILES);
+    }
+    return wxCache.get(y);
+  };
+
   for(let i=0;i<MC_N;i+=12){
     if(token!==mcToken)return;
     for(let j=i;j<Math.min(MC_N,i+12);j++){
       const path=genOutagePath(mean,vol,1000+j*7919);
-      const r=simulate(state,PROFILES,path);
-      runs.push({shed:r.shedMWh, stage:r.maxStage, hrs:r.shedHours.slice(1).reduce((a,b)=>a+b,0), diesel:r.E.diesel});
+      // Cycle deterministically through the weather years so every year is drawn
+      // an equal number of times - with only 10 on record, random sampling over
+      // 60 draws would leave the spread lumpy.
+      const wy = wxYears ? wxYears[j % wxYears.length] : null;
+      const r=simulate(state,profileFor(wy),path);
+      runs.push({shed:r.shedMWh, stage:r.maxStage, hrs:r.shedHours.slice(1).reduce((a,b)=>a+b,0),
+                 diesel:r.E.diesel, wxYear:wy});
     }
     await new Promise(res=>setTimeout(res,0));
   }
@@ -4446,9 +4480,9 @@ async function runMC(){
     // Cap factor: don't amplify beyond 5× or reduce to zero
     corridorFactor = Math.max(0.1, Math.min(5.0, corridorFactor));
   }
-  renderRisk(runs, corridorFactor);
+  renderRisk(runs, corridorFactor, wxYears);
 }
-function renderRisk(runs, corridorFactor=1.0){
+function renderRisk(runs, corridorFactor=1.0, wxYears=null){
   const N=runs.length;
   // Apply corridor correction to shed values (stage and diesel unchanged)
   const corrRuns = corridorFactor===1.0 ? runs : runs.map(r=>({
@@ -4485,6 +4519,25 @@ function renderRisk(runs, corridorFactor=1.0){
       + '<div style="font-size:10.5px;color:var(--ink2);margin-top:2px">From the full-year nodal run — real 10-region network, corridor limits, real plant siting. More accurate than the national MC below for a deterministic typical year, but a single year only.</div>'
       + '</div>'
     : '';
+  // State what the simulation actually varies. Previously this claimed EAF only,
+  // which became untrue once weather years were added - and was misleading even
+  // before, in scenarios where coal has retired and EAF varies nothing.
+  const noteEl = document.getElementById('riskNote');
+  if (noteEl) {
+    if (wxYears && wxYears.length) {
+      const worst = adjRuns.reduce((a,b) => b.shed > a.shed ? b : a);
+      noteEl.innerHTML = 'Bars: probability the year reaches at least stage S, across '
+        + N + ' simulated years. Each draws an <strong>outage path</strong> (your EAF \u00b1 volatility) '
+        + 'and a <strong>real weather year</strong> (' + wxYears[0] + '\u2013' + wxYears[wxYears.length-1]
+        + '), sampled independently.'
+        + (worst.wxYear ? ' Worst run drew ' + worst.wxYear + ' weather.' : '');
+    } else {
+      noteEl.innerHTML = 'Bars: probability the year reaches at least stage S, across ' + N
+        + ' simulated outage-years at your average EAF \u00b1 volatility. '
+        + '<strong>Weather is held fixed</strong> \u2014 add nodal/profiles_regional_multiyear.json '
+        + 'to vary it, which matters most once coal retires.';
+    }
+  }
   document.getElementById('riskHead').innerHTML= nodalCallout +
     '<div class="rk"><div class="k">P(shed &gt;100 GWh)</div><div class="v" style="color:'+(pAny>0.5?'var(--alert)':pAny>0.05?'var(--coal2)':'var(--veld)')+'">'+Math.round(pAny*100)+'%</div></div>'+
     '<div class="rk"><div class="k">Expected shed</div><div class="v">'+(meanShed<1?'0':Math.round(meanShed).toLocaleString())+' GWh</div></div>'+
