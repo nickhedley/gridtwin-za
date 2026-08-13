@@ -940,7 +940,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         + `expected <strong>${l.year}</strong> &middot; ${badge(l.phase)}</div></div>`);
     }
     if (!rows.length) return '';
-    return `<div style="border-left:3px solid #E8A83C;background:rgba(232,168,60,0.07);padding:7px 10px;margin-top:10px;font-size:10.5px;line-height:1.5">`
+    return `<div style="border-left:3px solid #FF3B30;background:rgba(255,59,48,0.07);padding:7px 10px;margin-top:10px;font-size:10.5px;line-height:1.5">`
       + rows.join('')
       + `<div style="color:var(--ink2);margin-top:6px;font-size:9.5px">From NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034. `
       + `Execution is committed and under way; Concept and Pre-Concept are indicative and may move. Not an investment commitment.</div></div>`;
@@ -1208,13 +1208,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         + (p.km ? `${p.km} km<br>` : '') + (p.prov || '');
       if (p.kind === 'line' && p.pts.length >= 2) {
         items.push(L.polyline(p.pts.map(x => [x.lat, x.lng]), {
-          color: '#E8A83C', weight: p.kv === 765 ? 3.5 : 2,
+          color: '#FF3B30', weight: p.kv === 765 ? 3.5 : 2,
           opacity: op, dashArray: '7,5', interactive: true,
         }).bindTooltip(tip, { sticky: true }));
       } else if (p.pts.length) {
         items.push(L.circleMarker([p.pts[0].lat, p.pts[0].lng], {
           radius: p.kind === 'syncon' ? 7 : 5.5,
-          color: '#E8A83C', weight: 1.8, opacity: op,
+          color: '#FF3B30', weight: 1.8, opacity: op,
           fillColor: 'transparent', fillOpacity: 0, dashArray: '3,3',
         }).bindTooltip(tip, { sticky: true }));
       }
@@ -1799,7 +1799,7 @@ function printPrefeas() {
       <button id="tdpToggleBtn" onclick="toggleTdp()" style="display:none;margin-left:auto;padding:3px 10px;border:1.5px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:11px;font-weight:600;border-radius:2px;white-space:nowrap">Show planned build (TDP)</button>
     </div>
     <div id="tdpYearRow" style="display:none;gap:9px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:var(--ink2);padding:0 14px 8px">
-      <span style="display:inline-block;width:18px;height:0;border-top:2.5px dashed #E8A83C;vertical-align:middle"></span>
+      <span style="display:inline-block;width:18px;height:0;border-top:2.5px dashed #FF3B30;vertical-align:middle"></span>
       <span>Planned lines and sites from NTCSA&rsquo;s Transmission Development Plan &mdash; brighter means more committed.</span>
       <label style="display:flex;align-items:center;gap:6px;margin-left:auto;white-space:nowrap">built by <strong id="tdpYearOut">2034</strong>
         <input type="range" min="2025" max="2035" step="1" value="2034" oninput="setMapTdpYear(this.value)" style="width:130px">
