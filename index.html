@@ -303,6 +303,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div class="main2" style="align-items:start">
       <div>
+
+<div style="margin:26px 0 10px;padding:9px 13px;border-left:4px solid var(--ink);background:var(--panel)">
+  <div style="font-family:'Saira Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.02em">Planning the national system</div>
+  <div style="font-size:10.5px;color:var(--ink2);margin-top:2px">What the country should build, and whether the grid holds up. Everything here responds to the scenario set above.</div>
+</div>
 <section aria-label="Network map and capacity siting">
       <div class="panel mapbox">
         <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" style="margin-left:8px;font-size:10px;padding:2px 7px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px">REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" title="Open the real transmission network in an interactive 3D map (new tab)" style="margin-left:6px;font-size:10px;padding:2px 7px;border:1px solid var(--alert,#C4785A);background:var(--panel);color:var(--alert,#C4785A);cursor:pointer;border-radius:3px;text-decoration:none;display:inline-block">3D network map ↗</a></div>
@@ -321,61 +326,61 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div style="padding:8px; border-top:1px solid var(--line2);font-size:10.5px;color:var(--ink2)">Corridor flows come from the <strong>Run the full model</strong> optimiser, which solves all 10 regions together.</div>
       </div>
       </section>
-<section aria-label="Capacity siting tool">
-      <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
-          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
-          <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. All technologies — including CCGT and batteries — carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it — the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the real 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results — only the load-shedding risk panel stays on the national engine.</p>
-            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
-                <select id="siteRegion" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:150px">
-                  <option value="Eastern Cape">Eastern Cape</option>
-                  <option value="Free State">Free State</option>
-                  <option value="Gauteng">Gauteng</option>
-                  <option value="Hydra Central">Hydra Central</option>
-                  <option value="Kwazulu Natal">KwaZulu-Natal</option>
-                  <option value="Limpopo">Limpopo</option>
-                  <option value="Mpumalanga">Mpumalanga</option>
-                  <option value="North West">North West</option>
-                  <option value="Northern Cape" selected>Northern Cape</option>
-                  <option value="Western Cape">Western Cape</option>
-                </select>
-              </div>
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Technology</label>
-                <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
-                  <option value="solar">Solar PV</option>
-                  <option value="wind">Wind</option>
-                  <option value="coal">Coal</option>
-                  <option value="ccgt">Gas CCGT</option>
-                  <option value="nuclear">Nuclear</option>
-                  <option value="batt">Battery (4h)</option>
-                </select>
-              </div>
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">New capacity (MW)</label>
-                <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
-              </div>
-              <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
-              <button id="siteAllocateBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px; background:var(--ink); color:var(--panel)">Allocate to model</button>
-            </div>
-            <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
 
-            <div style="margin-top:14px">
-              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
-                <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
-                <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
-              </div>
-              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
-            </div>
 
+
+      </div>
+      <div>
+<section>
+        <div class="panel" aria-label="Weekly dispatch">
+          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="wkbtns">
+                <button id="wkW" class="active">Winter week</button>
+                <button id="wkS">Summer week</button>
+              </div>
+              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
+            </div>
+          </div>
+          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week — hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
+          <div class="pb" style="padding:10px 10px 4px">
+            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart" aria-describedby="dispatchTableDesc"></canvas>
+          </div>
+          <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
+        </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
+          <div class="pb" id="mix"></div>
+        </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
+            <div class="pb">
+              <div class="riskhead" id="riskHead"></div>
+              <div class="shedbars" id="shed"></div>
+              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
+              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
+            </div>
+          </div>
+
+        <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
+          <div class="pb" id="lcoe"></div>
+        </div>
+
+        <div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
+          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
+          <div style="padding:0 14px 12px">
+            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
+              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
+              Includes all technologies.
+            </p>
+            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
           </div>
         </div>
-      </section>
 
+      </section>
 <section style="margin-top:18px;box-sizing:border-box;max-width:100%">
     <div class="panel" id="buildSection" style="margin-bottom:18px">
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
@@ -443,84 +448,65 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
     </div>
 </section>
-      </div>
-      <div>
-<section>
-        <div class="panel" aria-label="Weekly dispatch">
-          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="wkbtns">
-                <button id="wkW" class="active">Winter week</button>
-                <button id="wkS">Summer week</button>
+
+<div style="margin:32px 0 10px;padding:9px 13px;border-left:4px solid var(--alert,#C4785A);background:var(--panel)">
+  <div style="font-family:'Saira Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.02em">Assessing a specific project</div>
+  <div style="font-size:10.5px;color:var(--ink2);margin-top:2px">Tools for one site rather than the whole country: where to connect, what it costs to wheel, and whether a rooftop or utility-scale plant stacks up. These do not depend on the national scenario.</div>
+</div>
+<section aria-label="Capacity siting tool">
+      <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
+          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
+          <div class="pb">
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. All technologies — including CCGT and batteries — carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it — the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the real 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results — only the load-shedding risk panel stays on the national engine.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
+                <select id="siteRegion" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:150px">
+                  <option value="Eastern Cape">Eastern Cape</option>
+                  <option value="Free State">Free State</option>
+                  <option value="Gauteng">Gauteng</option>
+                  <option value="Hydra Central">Hydra Central</option>
+                  <option value="Kwazulu Natal">KwaZulu-Natal</option>
+                  <option value="Limpopo">Limpopo</option>
+                  <option value="Mpumalanga">Mpumalanga</option>
+                  <option value="North West">North West</option>
+                  <option value="Northern Cape" selected>Northern Cape</option>
+                  <option value="Western Cape">Western Cape</option>
+                </select>
               </div>
-              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Technology</label>
+                <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
+                  <option value="solar">Solar PV</option>
+                  <option value="wind">Wind</option>
+                  <option value="coal">Coal</option>
+                  <option value="ccgt">Gas CCGT</option>
+                  <option value="nuclear">Nuclear</option>
+                  <option value="batt">Battery (4h)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">New capacity (MW)</label>
+                <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
+              </div>
+              <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
+              <button id="siteAllocateBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px; background:var(--ink); color:var(--panel)">Allocate to model</button>
             </div>
-          </div>
-          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week — hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
-          <div class="pb" style="padding:10px 10px 4px">
-            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart" aria-describedby="dispatchTableDesc"></canvas>
-          </div>
-          <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
-        </div>
+            <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
 
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
-          <div class="pb" id="mix"></div>
-        </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
-            <div class="pb">
-              <div class="riskhead" id="riskHead"></div>
-              <div class="shedbars" id="shed"></div>
-              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
-              <p class="risknote">Bars: probability the year reaches at least stage S, across 60 simulated outage-years at your average EAF ± volatility.</p>
+            <div style="margin-top:14px">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
+                <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
+                <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
+              </div>
+              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
             </div>
-          </div>
 
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
-          <div class="pb" id="lcoe"></div>
-        </div>
-
-        <div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
-          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
-          <div style="padding:0 14px 12px">
-            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
-              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
-              Includes all technologies.
-            </p>
-            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
           </div>
         </div>
-
       </section>
-
-      </div>
-    </div>
-
-
-<script src="nodal/nodal_engine.js?v=24"></script>
-      <script src="nodal/nodal_dispatch.js?v=28"></script>
-      <script>
-
-
-
-
-
-
-
-      </script>
-
-<style>.rtab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 12px;font-size:11px;font-weight:600;color:var(--ink2);cursor:pointer;margin-bottom:-1.5px}.rtab.active{color:#fff !important;border-bottom-color:#517180;background:#517180;border-radius:3px 3px 0 0}.rtab:hover{color:#517180}
-#resourceMap{height:400px}
-#resourceSplit{display:grid;grid-template-columns:1fr 380px;min-height:400px}
-@media(max-width:700px){
-  #resourceSplit{grid-template-columns:1fr;min-height:auto}
-  #resourceMap{height:280px;border-right:none;border-bottom:1px solid var(--line2)}
-  .rtab{padding:6px 8px;font-size:10px}
-}</style>
-<!-- ===== SITE RESOURCE QUERY ===== -->
 <section id="resourceSection" style="margin-top:18px;box-sizing:border-box;max-width:100%">
   <div class="panel">
     <div class="ph">
@@ -744,6 +730,33 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
   </div>
 </section>
+
+      </div>
+    </div>
+
+
+<script src="nodal/nodal_engine.js?v=24"></script>
+      <script src="nodal/nodal_dispatch.js?v=28"></script>
+      <script>
+
+
+
+
+
+
+
+      </script>
+
+<style>.rtab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 12px;font-size:11px;font-weight:600;color:var(--ink2);cursor:pointer;margin-bottom:-1.5px}.rtab.active{color:#fff !important;border-bottom-color:#517180;background:#517180;border-radius:3px 3px 0 0}.rtab:hover{color:#517180}
+#resourceMap{height:400px}
+#resourceSplit{display:grid;grid-template-columns:1fr 380px;min-height:400px}
+@media(max-width:700px){
+  #resourceSplit{grid-template-columns:1fr;min-height:auto}
+  #resourceMap{height:280px;border-right:none;border-bottom:1px solid var(--line2)}
+  .rtab{padding:6px 8px;font-size:10px}
+}</style>
+<!-- ===== SITE RESOURCE QUERY ===== -->
+
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
