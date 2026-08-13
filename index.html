@@ -975,6 +975,23 @@ function initResourceQuery(){
         + `<div style="color:var(--ink2);margin-top:2px">${l.name.slice(0,64)} &middot; `
         + `expected <strong>${l.year}</strong> &middot; ${badge(l.phase)}</div></div>`);
     }
+    // Provincial totals from the TDP's own "Planned overhead lines" tables -
+    // authoritative km by voltage, covering local strengthening that never
+    // appears as a named project.
+    const byProv = tdpData.meta && tdpData.meta.line_km_by_province;
+    const sub = substationData && nearestSubstation(lat, lng);
+    const provRows = byProv && sub && byProv[sub.r];
+    if (provRows) {
+      const parts = Object.keys(provRows).filter(k => /^\d+$/.test(k)).sort((a,b) => b-a)
+        .map(kv => `${kv}\u00a0kV ${provRows[kv].total.toLocaleString()}\u00a0km`);
+      if (parts.length) {
+        const shared = provRows._shared_with
+          ? ` <span style="color:var(--ink2)">(reported jointly with ${provRows._shared_with})</span>` : '';
+        rows.push(`<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,59,48,0.25)">`
+          + `<strong>Total planned line in ${sub.r}</strong>${shared}`
+          + `<div style="color:var(--ink2);margin-top:2px">${parts.join(' \u00b7 ')}</div></div>`);
+      }
+    }
     if (!rows.length) return '';
     return `<div style="border-left:3px solid #FF3B30;background:rgba(255,59,48,0.07);padding:7px 10px;margin-top:10px;font-size:10.5px;line-height:1.5">`
       + rows.join('')
