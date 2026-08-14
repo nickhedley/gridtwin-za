@@ -585,7 +585,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
             <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &mdash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
             <div class="pb" style="padding:10px 10px 4px">
-              <canvas id="spWeek" height="200" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
+              <canvas id="spWeek" height="216" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
             </div>
             <p id="spWeekDesc" class="sr-only">Hourly shadow price for a representative 168-hour week, each bar coloured by the technology setting the price in that hour.</p>
             <div class="pb" id="spWeekLegend" style="padding:0 12px 4px"></div>
@@ -3647,6 +3647,45 @@ function simulate(u, prof, outPath){
       }
     }
   }
+  /* ---- NEGATIVE PRICES IN COAL-FORCED SURPLUS HOURS -----------------------
+   * Every curtailment hour in this model is coal-forced: renewables are spilled
+   * BECAUSE the coal ramp-down floor is binding, never because VRE alone exceeds
+   * demand with everything flexible off. In a market, such hours price NEGATIVE:
+   * an inflexible unit pays to keep running rather than incur a stop-start
+   * cycle, so the marginal MWh of consumption has negative value.
+   *
+   * Depth is DERIVED from the model's own startup parameter, not asserted.
+   * A unit riding through a k-hour surplus spell rather than restarting after it
+   * will pay up to startup/k per MWh to stay on:
+   *
+   *     price(spell of k hours) = - coalStartUpCostRPerMW / k
+   *
+   * Short dips price deeper (fewer MWh over which to spread the avoided
+   * restart), long gluts shallower - the shape observed in inflexibility-driven
+   * markets. With SU = R224.52/MW this gives roughly -R112 (2h spell) to
+   * -R19 (12h), deliberately SHALLOW: South Africa has no production subsidies,
+   * so there is no bidder paying to generate beyond avoided cycling. If this
+   * model ever produces German-style -R1000 hours, that is a bug, not a market.
+   * (Dividing further by the ~0.65 min-stable share would deepen these ~1.5x;
+   * omitted to stay conservative and avoid duplicating the min-stable curve.)
+   *
+   * Storage charging in these hours is PAID at this price by anything reading
+   * marginalP (the battery revenue benchmark does); the charge basis fed to
+   * storage bids stays floored at zero - a deliberate conservatism, noted here.
+   */
+  {
+    let h0 = 0;
+    while (h0 < HOURS) {
+      const forced = (hh) => (curtailMW[hh] || 0) > 1 && (stack.coal[hh] || 0) > 1;
+      if (!forced(h0)) { h0++; continue; }
+      let h1 = h0;
+      while (h1 + 1 < HOURS && forced(h1 + 1)) h1++;
+      const k = h1 - h0 + 1;
+      const price = -(p.coalStartUpCostRPerMW / k);
+      for (let hh = h0; hh <= h1; hh++) { marginalP[hh] = price; marginalTech[hh] = 'coalneg'; }
+      h0 = h1 + 1;
+    }
+  }
   // Transmission adder on new wind + utility PV. Wind always pays it.
   // Co-located repurposing: if on, new solar+battery can inherit retired-coal connection
   // points, exempting them from the adder up to a cap = MW of coal decommissioned.
@@ -5509,12 +5548,13 @@ function weekStartHour(){ return (typeof weekMode !== 'undefined' && weekMode ==
  */
 let spWeekMode = 'W';
 const SP_TECH_LABEL = { unserved:'Unserved (VoLL)', diesel:'Diesel OCGT', ccgt:'Gas CCGT',
-                        batt:'Battery', ps:'Pumped storage',
+                        batt:'Battery', ps:'Pumped storage', coalneg:'Must-run coal (paying)',
                         coal:'Coal', imports:'Imports', hydro:'Hydro', nuclear:'Nuclear',
                         curtail:'Renewables spilling', none:'Nothing scarce' };
 const SP_ZERO_COL = '#7DC47A';
 function spTechColour(t){
   if (t === 'curtail' || t === 'none') return SP_ZERO_COL;
+  if (t === 'coalneg') return '#8A5A2B';   // coal-adjacent but distinct: paying, not earning
   return (typeof COLORS !== 'undefined' && COLORS[t]) ? COLORS[t] : '#999';
 }
 
@@ -5522,7 +5562,7 @@ function drawShadowPriceWeek(r){
   const c = document.getElementById('spWeek');
   if (!c || !r || !r.marginalP || !r.marginalTech) return;
   const dpr = window.devicePixelRatio || 1;
-  const W = c.clientWidth || 600, H = 200;
+  const W = c.clientWidth || 600, H = 216;
   c.width = W*dpr; c.height = H*dpr;
   const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,W,H);
@@ -5536,7 +5576,7 @@ function drawShadowPriceWeek(r){
   // flatten every other bar. Clipped bars are drawn to the top of the axis.
   const srt = win.slice().sort((a,b) => a-b);
   const cap = Math.max(100, srt[Math.floor(N*0.98)]);
-  const padL = 46, padB = 16, plotW = W-padL-6, plotH = H-padB-8;
+  const padL = 46, padB = 32, plotW = W-padL-6, plotH = H-padB-8;
   const css = getComputedStyle(document.documentElement);
   const line2 = css.getPropertyValue('--line2').trim() || '#ddd';
   const ink2  = css.getPropertyValue('--ink2').trim()  || '#777';
@@ -5549,11 +5589,20 @@ function drawShadowPriceWeek(r){
     ctx.fillText('R'+Math.round(v), padL-4, y+3);
   }
   const bw = plotW/N;
+  // Negative hours draw BELOW the baseline, scaled to the deepest negative in
+  // the window and capped at 14px so shallow negatives stay legible without
+  // stealing height from the positive axis.
+  const minNeg = Math.min(0, ...win);
+  const negScale = minNeg < 0 ? 14/Math.abs(minNeg) : 0;
   for (let i = 0; i < N; i++){
     const v = win[i], over = v > cap;
-    const h = Math.max(v < 1 ? 2 : 1, Math.min(v, cap)/cap*plotH);
     ctx.fillStyle = spTechColour(wt[i]);
-    ctx.fillRect(padL + i*bw, 8 + plotH - h, Math.max(1, bw-0.4), h);
+    if (v < 0){
+      ctx.fillRect(padL + i*bw, 8 + plotH, Math.max(1, bw-0.4), Math.max(2, -v*negScale));
+    } else {
+      const h = Math.max(v < 1 ? 2 : 1, Math.min(v, cap)/cap*plotH);
+      ctx.fillRect(padL + i*bw, 8 + plotH - h, Math.max(1, bw-0.4), h);
+    }
     if (over){ ctx.fillStyle = '#000'; ctx.globalAlpha = 0.25;
                ctx.fillRect(padL + i*bw, 8, Math.max(1, bw-0.4), 3); ctx.globalAlpha = 1; }
   }
@@ -5568,7 +5617,7 @@ function drawShadowPriceWeek(r){
     const k = (wt[i] === 'none') ? 'curtail' : wt[i];
     (agg[k] = agg[k] || {n:0, sum:0}).n++; agg[k].sum += win[i];
   }
-  const order = ['unserved','diesel','ccgt','batt','ps','coal','imports','hydro','nuclear','curtail'];
+  const order = ['unserved','diesel','ccgt','batt','ps','coal','imports','hydro','nuclear','coalneg','curtail'];
   const leg = document.getElementById('spWeekLegend');
   if (leg) leg.innerHTML = order.filter(k => agg[k]).map(k =>
       '<span style="display:inline-block;margin:0 10px 3px 0;font-size:9.5px;'
@@ -5591,6 +5640,10 @@ function drawShadowPriceWeek(r){
              + agg[top].n + ' of 168 hours). ' : '')
     + (zero ? 'Green hours price at zero \u2014 renewables are spilling and nothing scarce is on '
               + 'the margin (' + zero + ' this week). ' : '')
+    + (agg.coalneg ? 'Bars below the line are NEGATIVE prices: renewables curtailed because must-run '
+              + 'coal cannot back down, so inflexible plant pays to stay on rather than restart \u2014 '
+              + 'depth is the avoided startup cost spread over the surplus spell (' + agg.coalneg.n
+              + ' hours, mean R' + Math.round(agg.coalneg.sum/agg.coalneg.n) + '). ' : '')
     + (over ? 'Bars with a dark cap run past the top of the axis (' + over + ' hours), clipped so '
               + 'one scarcity hour does not flatten the rest. ' : '')
     + ((agg.batt || agg.ps) ? 'Storage bids its opportunity cost, not its fuel cost: the value of the best '
