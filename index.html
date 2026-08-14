@@ -1194,7 +1194,7 @@ function initResourceQuery(){
       ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
       <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Curtailment risk if you build here</div>
-        <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.r); renderNeighbours(sub.r); }catch(e){} }, 0); return ''; })()}
+        <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.r); renderNeighbours(sub.r, lat, lng); }catch(e){} }, 0); return ''; })()}
       </div>
       <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Who else is queuing here</div>
@@ -1386,52 +1386,69 @@ function initResourceQuery(){
   fetch('nodal/reea_projects.json').then(r => r.ok ? r.json() : null)
     .then(d => { reeaSite = d; }).catch(() => {});
 
-  function renderNeighbours(province){
+  function renderNeighbours(province, lat, lng){
     const el = document.getElementById('neighbourResult');
     if (!el) return;
-    if (!reeaSite || !reeaSite.projects || !province){ el.innerHTML = ''; return; }
-    // Hydra Central is a supply area, not a province. The environmental register
-    // is organised by province, so read it as the Northern Cape - which is where
-    // most of that corridor's development sits - and say so.
-    const isSupplyArea = province === 'Hydra Central';
-    const lookup = isSupplyArea ? 'Northern Cape' : province;
+    if (!reeaSite || !reeaSite.projects){ el.innerHTML = ''; return; }
     const now = new Date().getFullYear();
-    const here = reeaSite.projects.filter(p =>
-      p.province === lookup && p.status === 'Approved' && p.decided && typeof p.mw === 'number');
-    if (!here.length){ el.innerHTML = ''; return; }
 
-    const totMW = here.reduce((s, p) => s + p.mw, 0);
-    const stale = here.filter(p => now - +p.decided.slice(0,4) >= 5);
-    const staleMW = stale.reduce((s, p) => s + p.mw, 0);
-    const byDist = {};
-    here.forEach(p => {
-      const d = (p.district || 'Unspecified').replace(/\s*District Municipality$/i, '');
-      (byDist[d] = byDist[d] || { n: 0, mw: 0 }).n++; byDist[d].mw += p.mw;
-    });
-    const top = Object.entries(byDist).sort((a,b) => b[1].mw - a[1].mw).slice(0, 4);
+    // Nearest substation to the clicked point - the same assignment every
+    // project in the register has been given, so the comparison is like for like.
+    let near = null, bestD = Infinity;
+    if (typeof lat === 'number' && substationData) {
+      for (const s of substationData.subs){
+        const d = Math.hypot((s.lat - lat) * 111, (s.lng - lng) * 111 * Math.cos(lat * Math.PI / 180));
+        if (d < bestD){ bestD = d; near = s.n; }
+      }
+    }
+    const atSub = near ? reeaSite.projects.filter(p =>
+      p.sub === near && p.status === 'Approved' && p.decided && typeof p.mw === 'number') : [];
+    const inProv = reeaSite.projects.filter(p =>
+      p.province === province && p.status === 'Approved' && p.decided && typeof p.mw === 'number');
+    if (!atSub.length && !inProv.length){ el.innerHTML = ''; return; }
 
-    el.innerHTML =
-        '<div style="font-size:10.5px;line-height:1.55;margin-bottom:7px">'
-      + `<strong>${here.length.toLocaleString()} approved projects totalling ${(totMW/1000).toFixed(1)} GW `
-      + `are permitted in ${lookup}${isSupplyArea ? ' (Hydra Central spans the Karoo; the register is organised by province)' : ''}</strong>, of which <strong style="color:var(--alert,#C4785A)">`
-      + `${stale.length.toLocaleString()} (${(staleMW/1000).toFixed(1)} GW) have been waiting five years `
-      + 'or more</strong>. They hold environmental approval and have not been built.</div>'
-      + '<table class="mono" style="width:100%;font-size:10.5px;border-collapse:collapse">'
-      + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:3px 5px">Busiest districts</th>'
-      + '<th style="text-align:right;padding:3px 5px">Projects</th>'
-      + '<th style="text-align:right;padding:3px 5px">Capacity</th></tr>'
-      + top.map(([d, v]) => '<tr style="border-bottom:1px solid var(--line2)">'
-          + `<td style="padding:3px 5px">${d}</td>`
-          + `<td style="text-align:right;padding:3px 5px;color:var(--ink2)">${v.n}</td>`
-          + `<td style="text-align:right;padding:3px 5px;font-weight:700">${(v.mw/1000).toFixed(1)} GW</td></tr>`).join('')
-      + '</table>'
-      + '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
-      + 'Counted at province level: a clicked point cannot be resolved to a district, because '
-      + 'substations carry no district and the environmental register carries no coordinates. '
-      + 'An environmental authorisation is not a grid allocation \u2014 but under IGCAR no project can '
-      + 'hold a budget quote without one, so this is who is ahead of you in the permitting queue. '
-      + 'Source: DFFE renewable energy EIA register.</div>';
+    const sum = a => a.reduce((s, p) => s + p.mw, 0);
+    const old = a => a.filter(p => now - +p.decided.slice(0,4) >= 5);
+    const subMW = sum(atSub), subOld = old(atSub), provOld = old(inProv);
+
+    let html = '';
+    if (near && atSub.length){
+      html += '<div style="font-size:10.5px;line-height:1.55;margin-bottom:8px">'
+        + `<strong>${atSub.length} approved project${atSub.length>1?'s':''} totalling `
+        + `${(subMW/1000).toFixed(1)} GW would most likely connect at ${near}</strong>, the same point as `
+        + `this site. ${subOld.length ? `<strong style="color:var(--alert,#C4785A)">${subOld.length} of them `
+        + `(${(sum(subOld)/1000).toFixed(1)} GW) have held approval for five years or more.</strong>` : ''}</div>`;
+      // The five nearest competitors, oldest approval first.
+      const listed = atSub.slice().sort((a,b) => a.decided.localeCompare(b.decided)).slice(0, 5);
+      html += '<table class="mono" style="width:100%;font-size:10px;border-collapse:collapse">'
+        + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:3px 4px">Longest waiting here</th>'
+        + '<th style="text-align:right;padding:3px 4px">MW</th>'
+        + '<th style="text-align:right;padding:3px 4px">Approved</th></tr>'
+        + listed.map(p => {
+            const age = now - +p.decided.slice(0,4);
+            return '<tr style="border-bottom:1px solid var(--line2)">'
+              + `<td style="padding:3px 4px">${(p.applicant || p.name || '').slice(0, 34)}</td>`
+              + `<td style="text-align:right;padding:3px 4px">${p.mw}</td>`
+              + `<td style="text-align:right;padding:3px 4px;color:${age>=5?'var(--alert,#C4785A)':'var(--ink2)'}">`
+              + `${p.decided.slice(0,4)}</td></tr>`;
+          }).join('')
+        + '</table>';
+    }
+    if (inProv.length){
+      html += `<div style="font-size:10px;color:var(--ink2);margin-top:${atSub.length?'7px':'0'};line-height:1.5">`
+        + `Across ${province}: <strong>${inProv.length.toLocaleString()} approved projects, `
+        + `${(sum(inProv)/1000).toFixed(1)} GW</strong>, of which ${provOld.length.toLocaleString()} `
+        + `(${(sum(provOld)/1000).toFixed(1)} GW) have waited five years or more.</div>`;
+    }
+    html += '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
+      + 'Each project is matched to its nearest substation from the environmental register\u2019s own '
+      + 'polygon centroid \u2014 a proxy for the likely connection point, not a declared one. An '
+      + 'environmental authorisation is not a grid allocation, but under IGCAR no project can hold a '
+      + 'budget quote without one, so this is who is ahead of you in the permitting queue. '
+      + 'Source: DFFE renewable energy EIA register, 2026 Q1.</div>';
+    el.innerHTML = html;
   }
+
 
   // ── Curtailment risk at a site ────────────────────────────────────────────
   // The question a developer actually needs answered: if I build here, what
