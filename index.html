@@ -345,7 +345,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
         <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the full model (click the button above) to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means curtailment (wasted wind/solar) in that region — shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Click on any line or label for exact figures.</p>
         <p style="font-size:10.5px;color:var(--ink2);padding:0 8px 8px">This schematic is deliberately simplified &mdash; 10 regions and the corridors between them, so flows stay readable. For the real thing, the <a href="gridtwin-3d.html" target="_blank" rel="noopener" style="color:var(--alert,#C4785A)">3D network map</a> plots every mapped transmission line at 220&nbsp;kV and above, plus all 185 substations.</p>
-        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points sharing the Upington corridor area. Click on each for region-specific figures. The REIPPPP project pipeline button overlays dashed rings showing government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) — not the 19.7 GW of private/C&I registrations shown in the NERSA registrations panel. Ring size scales with total capacity and ring colour shows the earliest project status in that region, so a region containing projects at several stages takes the colour of its least advanced. Hover a ring for the capacity split by technology.</p>
+        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points sharing the Upington corridor area. Click on each for region-specific figures. The REIPPPP project pipeline button overlays dashed rings showing government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) — not the 19.7 GW of private/C&I registrations shown in the NERSA registrations panel. Ring size scales with total capacity and ring colour shows the status holding the most capacity in that region. Hover a ring for the split by technology and by status — preferred bidder, financial close, or under construction.</p>
       </div>
       </section>
 
@@ -6397,19 +6397,31 @@ function drawPipeline(){
     const nid=R2N[region], pos=NP[nid];
     if(!pos||!data.total_mw) return;
     const ringR=8+10*Math.min(1,data.total_mw/maxMW);
-    const col={preferred_bidder:'#aaa',financial_close:'#f5c518',construction:'#3ea055'}[data.earliest_status]||'#aaa';
+    // Colour by the status holding the most capacity. `earliest_status` gave a
+    // region 2 GW under construction and 100 MW at preferred bidder the colour
+    // of the 100 MW, which read as far less advanced than it is.
+    const STATUS_COL={preferred_bidder:'#aaa',financial_close:'#f5c518',construction:'#3ea055'};
+    const bs=data.by_status||{};
+    const dominant=Object.entries(bs).sort((a,b)=>b[1].mw-a[1].mw)[0];
+    const col=STATUS_COL[dominant?dominant[0]:data.earliest_status]||'#aaa';
     const el=document.createElementNS('http://www.w3.org/2000/svg','circle');
     el.setAttribute('cx',pos.x); el.setAttribute('cy',pos.y); el.setAttribute('r',ringR);
     el.setAttribute('fill','none'); el.setAttribute('stroke',col);
     el.setAttribute('stroke-width','2'); el.setAttribute('stroke-dasharray','4 2');
     el.setAttribute('class','pipeline-ring');
     const t=document.createElementNS('http://www.w3.org/2000/svg','title');
-    t.textContent=region+' pipeline: '+(data.total_mw/1000).toFixed(1)+'GW'
-      +(data.solar_mw?' · solar '+(data.solar_mw/1000).toFixed(1)+'GW':'')
-      +(data.wind_mw?' · wind '+(data.wind_mw/1000).toFixed(1)+'GW':'')
-      +(data.batt_mw?' · battery '+(data.batt_mw/1000).toFixed(1)+'GW':'')
-      +' ('+({preferred_bidder:'preferred bidder',financial_close:'financial close',
-               construction:'under construction'}[data.earliest_status]||'pipeline')+')';
+    const LBL={preferred_bidder:'preferred bidder',financial_close:'financial close',
+               construction:'under construction'};
+    const mw=v=>v>=1000?(v/1000).toFixed(1)+'GW':Math.round(v)+'MW';
+    const statusLine=Object.entries(bs)
+      .sort((a,b)=>b[1].mw-a[1].mw)
+      .map(([k,x])=>'  '+(LBL[k]||k)+': '+mw(x.mw)+' ('+x.n+' project'+(x.n>1?'s':'')+')')
+      .join('\n');
+    t.textContent=region+' pipeline: '+mw(data.total_mw)
+      +(data.solar_mw?' · solar '+mw(data.solar_mw):'')
+      +(data.wind_mw?' · wind '+mw(data.wind_mw):'')
+      +(data.batt_mw?' · battery '+mw(data.batt_mw):'')
+      +(statusLine?'\n\nBy status:\n'+statusLine:'');
     el.appendChild(t); svg.appendChild(el);
   });
 }
