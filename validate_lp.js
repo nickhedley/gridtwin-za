@@ -31,9 +31,9 @@ const ROOT = process.argv[2] || 'testroot';
 const NATIONAL_FIELDS = {
   windMW: 9999, pvUtilityMW: 9999, rooftopMW: 9999, cspMW: 9999, battPowerMW: 9999,
   costCoal: 1234, costCcgt: 4321, costDiesel: 7777, emisCoal: 2.5, emisCcgt: 1.5,
-  carbonTaxRPerT: 999, emisDiesel: 3.3,
+  carbonTaxRPerT: 999, emisDiesel: 3.3, lpCurtailCostR: 555, lpBattDischargeCostR: 77,
 };
-const REGIONAL_FIELDS = { costCoal: 1234, costDiesel: 7777, emisCoal: 2.5, carbonTaxRPerT: 999, emisDiesel: 3.3 };
+const REGIONAL_FIELDS = { costCoal: 1234, costDiesel: 7777, emisCoal: 2.5, carbonTaxRPerT: 999, emisDiesel: 3.3, lpCurtailCostR: 555 };
 
 function boot(root) {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
