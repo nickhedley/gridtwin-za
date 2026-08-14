@@ -3777,13 +3777,13 @@ function bldBuildLP(opts){
   // `state` is script-scoped, so read it via the accessor rather than assuming a
   // global - reading undefined fields here silently produces NaN coefficients and
   // an LP that HiGHS refuses to parse.
-  const S = opts.state || FIXED;
+  const S = { ...FIXED, ...(opts.state || {}) };
   const VOLL = 60000, CARBON = (S.carbonPrice != null ? S.carbonPrice : 550);
-  const MC = { coal: S.costCoal || 546, ccgt: S.costCcgt || 2800, diesel: S.costDiesel || 6100 };
-  const EX = { nuclear:1860, hydro:600, imports:1150, ps:2900, diesel:3400,
-               wind:S.windMW || 3600, pv:S.pvUtilityMW || 4000, rooftop:S.rooftopMW || 9100,
-               csp:S.cspMW || 600, batt:S.battPowerMW || 800 };
-  const EMIS_COAL = S.emisCoal || 1.04, EMIS_CCGT = S.emisCcgt || 0.43;
+  const MC = { coal: S.costCoal, ccgt: S.costCcgt, diesel: S.costDiesel };
+  const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:S.ocgtDieselMW,
+               wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
+               csp:S.cspMW, batt:S.battPowerMW };
+  const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt;
 
   const L = ['Minimize', ' obj:'];
   const obj = [];
@@ -4072,10 +4072,10 @@ function bldBuildRegionalLP(opts){
   const Y = BLD_YEARS, T = ['wind','pv','batt'];
   const rd = bldRepDays(8);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
-  const S = opts.state || FIXED;
+  const S = { ...FIXED, ...(opts.state || {}) };
   const VOLL = 60000, CARBON = (S.carbonPrice != null ? S.carbonPrice : 550);
-  const MCcoal = (S.costCoal || 546) + CARBON * (S.emisCoal || 1.04);
-  const MCdiesel = S.costDiesel || 6100;
+  const MCcoal = S.costCoal + CARBON * S.emisCoal;
+  const MCdiesel = S.costDiesel;
 
   const L = ['Minimize',' obj:']; const obj = [];
   for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y){
