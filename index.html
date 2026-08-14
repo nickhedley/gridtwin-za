@@ -4748,6 +4748,8 @@ function renderPricePanel(r){
     + kpi('Hours at zero', s.zeroHours.toLocaleString(), (s.zeroHours/87.6).toFixed(0) + '% of year')
     + `</div>`
 
+    + '<canvas id="priceWeek" style="width:100%;height:130px;display:block;margin-bottom:3px"></canvas>'
+    + '<div id="priceWeekNote" style="font-size:9.5px;color:var(--ink2);line-height:1.45;margin-bottom:12px"></div>'
     + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">`
     // monthly profile
     + `<div><div style="font-size:10px;font-weight:600;color:var(--ink2);margin-bottom:4px">Monthly average</div>`
@@ -4863,8 +4865,8 @@ function renderBess(r){
         + `<td style="text-align:right;padding:4px 6px">${x.cycles}</td>`
         + `<td style="text-align:right;padding:4px 6px">${R(x.avgSpread)}/MWh</td></tr>`).join('')
     + '</table>'
-
-    + '<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);'
+    + '<canvas id="bessWeek" style="width:100%;height:120px;display:block;margin-top:10px"></canvas>'
+    + '<div id="bessWeekNote" style="font-size:9.5px;color:var(--ink2);line-height:1.45"></div>'    + '<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);'
     + 'padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">'
     + `<strong>${best.h}-hour wins in this scenario.</strong> `
     + (best.h >= 4
@@ -4991,6 +4993,115 @@ function renderLocationalBess(){
     + 'Revenue tracks spill hours, but not simply: a region can spill so heavily that its own evening '
     + 'price collapses too, leaving cheap energy and nowhere profitable to sell it. The best sites pair '
     + 'plenty of surplus with a firm local price to discharge into.</div>';
+}
+
+
+/* ---- Representative-week charts for price and battery operation -----------
+ * Same 168-hour windows as the dispatch chart (winter 3264, summer 7848), so
+ * the three read together: what was dispatched, what it priced at, and what a
+ * battery would have done about it.
+ */
+function weekStartHour(){ return (typeof weekMode !== 'undefined' && weekMode === 'S') ? 7848 : 3264; }
+
+function drawPriceWeek(r){
+  const c = document.getElementById('priceWeek');
+  if (!c || !r || !r.marginalP) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = c.clientWidth || 600, H = 130;
+  c.width = W*dpr; c.height = H*dpr;
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const start = weekStartHour(), N = 168;
+  const p = r.marginalP;
+  // Clip the axis at the 98th percentile: a single value-of-lost-load hour would
+  // flatten every other bar to nothing.
+  const win = []; for (let i = 0; i < N; i++) win.push(p[start+i] || 0);
+  const srt = win.slice().sort((a,b) => a-b);
+  const cap = Math.max(100, srt[Math.floor(N*0.98)]);
+  const padL = 42, padB = 16, plotW = W-padL-6, plotH = H-padB-8;
+  const css = getComputedStyle(document.documentElement);
+  const line2 = css.getPropertyValue('--line2').trim() || '#ddd';
+  const ink2  = css.getPropertyValue('--ink2').trim()  || '#777';
+
+  ctx.strokeStyle = line2; ctx.lineWidth = 1; ctx.font = '9px "IBM Plex Mono", monospace';
+  ctx.fillStyle = ink2; ctx.textAlign = 'right';
+  for (let g = 0; g <= 3; g++){
+    const y = 8 + plotH*(1-g/3), v = cap*g/3;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W-6, y); ctx.stroke();
+    ctx.fillText('R'+Math.round(v), padL-4, y+3);
+  }
+  const bw = plotW/N;
+  for (let i = 0; i < N; i++){
+    const v = win[i];
+    const over = v > cap;
+    const h = Math.min(v, cap)/cap*plotH;
+    ctx.fillStyle = v < 1 ? '#7DC47A' : over ? '#C4785A' : '#4A6B7A';
+    ctx.fillRect(padL + i*bw, 8 + plotH - h, Math.max(1, bw-0.4), h);
+  }
+  ctx.fillStyle = ink2; ctx.textAlign = 'center';
+  const D = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  for (let d = 0; d < 7; d++) ctx.fillText(D[d], padL + (d*24+12)*bw, H-4);
+  const zero = win.filter(v => v < 1).length, spike = win.filter(v => v > cap).length;
+  const note = document.getElementById('priceWeekNote');
+  if (note) note.innerHTML = 'Marginal price across the '
+    + ((typeof weekMode!=='undefined' && weekMode==='S') ? 'summer' : 'winter')
+    + ' week, matching the dispatch chart above. '
+    + '<span style="color:#7DC47A">Green</span> hours price at zero \u2014 renewables spilling, nothing '
+    + 'scarce on the margin (' + zero + ' this week). '
+    + (spike ? '<span style="color:#C4785A">Red</span> bars run past the top of the axis (' + spike + ' hours), '
+             + 'clipped so one scarcity hour does not flatten the rest.' : '');
+}
+
+function drawBessWeek(r){
+  const c = document.getElementById('bessWeek');
+  if (!c || !r || !r.marginalP) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = c.clientWidth || 600, H = 120;
+  c.width = W*dpr; c.height = H*dpr;
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const start = weekStartHour(), N = 168, hours = 4;
+  const p = r.marginalP;
+
+  // Re-run the same daily arbitrage the table reports, but keep WHICH hours it
+  // charges and discharges so the week can be drawn.
+  const act = new Int8Array(N);              // -1 charge, +1 discharge
+  for (let d = 0; d < 7; d++){
+    const day = [];
+    for (let h = 0; h < 24; h++) day.push({ h, p: p[start + d*24 + h] || 0 });
+    const byP = day.slice().sort((a,b) => a.p - b.p);
+    const chg = byP.slice(0, hours), dis = byP.slice(-hours);
+    const cIn = chg.reduce((s,x) => s+x.p, 0)/hours;
+    const dOut = Math.min(dis.reduce((s,x) => s+x.p, 0)/hours, 6100);
+    if (dOut*0.88 - cIn <= 0) continue;      // not worth cycling this day
+    chg.forEach(x => act[d*24 + x.h] = -1);
+    dis.forEach(x => act[d*24 + x.h] = 1);
+  }
+  const css = getComputedStyle(document.documentElement);
+  const line2 = css.getPropertyValue('--line2').trim() || '#ddd';
+  const ink2  = css.getPropertyValue('--ink2').trim()  || '#777';
+  const padL = 42, padB = 16, plotW = W-padL-6, plotH = H-padB-10;
+  const mid = 10 + plotH/2;
+  ctx.strokeStyle = line2; ctx.beginPath(); ctx.moveTo(padL, mid); ctx.lineTo(W-6, mid); ctx.stroke();
+  ctx.font = '9px "IBM Plex Mono", monospace'; ctx.fillStyle = ink2; ctx.textAlign = 'right';
+  ctx.fillText('discharge', padL-4, 16);
+  ctx.fillText('charge', padL-4, H-padB-2);
+  const bw = plotW/N;
+  for (let i = 0; i < N; i++){
+    if (!act[i]) continue;
+    const h = plotH/2 - 3;
+    ctx.fillStyle = act[i] > 0 ? '#C4785A' : '#4A6B7A';
+    if (act[i] > 0) ctx.fillRect(padL + i*bw, mid - h, Math.max(1, bw-0.4), h);
+    else            ctx.fillRect(padL + i*bw, mid,     Math.max(1, bw-0.4), h);
+  }
+  ctx.fillStyle = ink2; ctx.textAlign = 'center';
+  const D = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  for (let d = 0; d < 7; d++) ctx.fillText(D[d], padL + (d*24+12)*bw, H-4);
+  let cycled = 0;
+  for (let d = 0; d < 7; d++){ for (let h = 0; h < 24; h++) if (act[d*24+h] > 0){ cycled++; break; } }
+  const note = document.getElementById('bessWeekNote');
+  if (note) note.textContent = 'When a four-hour battery would charge and discharge over the same week \u2014 '
+    + cycled + ' of 7 days worth cycling. Blank days are ones where the spread never covers the round trip.';
 }
 
 /* ==================== UI DEFINITION ==================== */
@@ -5521,8 +5632,8 @@ function updateMap(r){
 /* ==================== CHARTS ==================== */
 const dispCanvas=document.getElementById('dispatch');
 let weekMode='W';
-document.getElementById('wkW').addEventListener('click',e=>{weekMode='W';toggleWk(e.target);draw(nodalActiveRes||lastRes);});
-document.getElementById('wkS').addEventListener('click',e=>{weekMode='S';toggleWk(e.target);draw(nodalActiveRes||lastRes);});
+document.getElementById('wkW').addEventListener('click',e=>{weekMode='W';toggleWk(e.target);draw(nodalActiveRes||lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);});
+document.getElementById('wkS').addEventListener('click',e=>{weekMode='S';toggleWk(e.target);draw(nodalActiveRes||lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);});
 function toggleWk(btn){document.querySelectorAll('.wkbtns button').forEach(b=>b.classList.toggle('active',b===btn));}
 const DISP_ORDER=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
 
@@ -5898,7 +6009,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function')renderPricePanel(lastRes);if(typeof renderBess==='function')renderBess(lastRes);if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);}if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
