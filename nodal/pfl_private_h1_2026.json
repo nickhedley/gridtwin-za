@@ -1,0 +1,116 @@
+{
+ "meta": {
+  "description": "Privately procured capacity reaching commercial operation in H1 2026. Feeds by_source.private in regional_renewable_capacity.json.",
+  "source": "Alao, O. & Kruger, W. (2026, August). South African IPPs: financial close and commercial operations monitor, H1 2026 update. Power Futures Lab, UCT GSB.",
+  "scope_warning": "H1 2026 ONLY. This does NOT close identity 3. Private and wheeled projects that reached commercial operation BEFORE January 2026 are not in this file and are not covered by the PFL H1 monitor. Expect roughly 1,300-1,400 MW of earlier private capacity still unaccounted for against the 2,311 MW gap.",
+  "captive_exclusion": "Captive (behind-the-meter) projects are listed but excluded from the regional totals: they suppress demand rather than adding supply, so counting them as generation would double-count against demand that is already lower for their existence.",
+  "compiled": "2026-08-14",
+  "fingerprint": "gtza-9d74cc154141e60e"
+ },
+ "by_region_wheeled": {
+  "Limpopo": {
+   "solar_mw": 388,
+   "wind_mw": 0
+  },
+  "North West": {
+   "solar_mw": 100,
+   "wind_mw": 0
+  },
+  "Northern Cape": {
+   "solar_mw": 0,
+   "wind_mw": 140
+  },
+  "Eastern Cape": {
+   "solar_mw": 0,
+   "wind_mw": 330
+  }
+ },
+ "projects": [
+  {
+   "name": "Mooi Plaats",
+   "mw": 240,
+   "tech": "solar",
+   "province": "Limpopo",
+   "route": "Wheeling",
+   "note": "Anglo American, Mogalakwena"
+  },
+  {
+   "name": "Bolobedu",
+   "mw": 148,
+   "tech": "solar",
+   "province": "Limpopo",
+   "route": "Wheeling",
+   "note": "Voltalia / Rio Tinto"
+  },
+  {
+   "name": "ARM Platinum",
+   "mw": 100,
+   "tech": "solar",
+   "province": "North West",
+   "route": "Wheeling",
+   "note": "African Rainbow Minerals"
+  },
+  {
+   "name": "Umsobomvu",
+   "mw": 140,
+   "tech": "wind",
+   "province": "Northern Cape",
+   "route": "Wheeling",
+   "note": "EDF, Noupoort area"
+  },
+  {
+   "name": "Impofu North",
+   "mw": 110,
+   "tech": "wind",
+   "province": "Eastern Cape",
+   "route": "Wheeling",
+   "note": "Enel, Kouga"
+  },
+  {
+   "name": "Impofu East",
+   "mw": 110,
+   "tech": "wind",
+   "province": "Eastern Cape",
+   "route": "Wheeling",
+   "note": "Enel, Kouga"
+  },
+  {
+   "name": "Impofu West",
+   "mw": 110,
+   "tech": "wind",
+   "province": "Eastern Cape",
+   "route": "Wheeling",
+   "note": "Enel, Kouga"
+  },
+  {
+   "name": "Lephalale 1",
+   "mw": 68,
+   "tech": "solar",
+   "province": "Limpopo",
+   "route": "Captive",
+   "note": "Exxaro - behind the meter"
+  },
+  {
+   "name": "PPC Slurry",
+   "mw": 10,
+   "tech": "solar",
+   "province": "North West",
+   "route": "Captive",
+   "note": "PPC - behind the meter"
+  },
+  {
+   "name": "PPC Dwaalboom",
+   "mw": 10,
+   "tech": "solar",
+   "province": "Limpopo",
+   "route": "Captive",
+   "note": "PPC - behind the meter"
+  }
+ ],
+ "totals": {
+  "wheeled_mw": 958,
+  "captive_mw_excluded": 88,
+  "wheeled_solar_mw": 488,
+  "wheeled_wind_mw": 470
+ }
+}
