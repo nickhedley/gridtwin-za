@@ -576,7 +576,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Clean coal (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
+            <div class="ph"><h2>&lsquo;Clean coal&rsquo; (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
             <div class="pb" id="ccsBody"></div>
           </div>
           <div class="panel" style="margin-top:18px">
@@ -3019,7 +3019,10 @@ function simulate(u, prof, outPath){
     const pen = (p.ccsPenaltyPct || 25) / 100;
     const cap = (p.ccsCaptureRatePct || 90) / 100;
     const keep = Math.max(0.4, 1 - pen);
-    p.coalInstalledMW = p.coalInstalledMW * keep;          // saleable capacity
+    // NOTE: the capacity penalty is applied further down, to the fleet that
+    // remains AFTER decommissioning and new build - see coalInstRem. Applying it
+    // here would subtract retired MW from an already-penalised figure and would
+    // let new coal escape the penalty altogether.
     p.costCoal = p.costCoal / keep                          // more fuel per MWh sold
                + (p.ccsOpexR || 180)                        // solvent, compression
                + (p.ccsCapexR || 260)                       // annualised retrofit
@@ -3030,7 +3033,11 @@ function simulate(u, prof, outPath){
   p.syncFloorMW = (typeof p.syncMinMW === 'number') ? p.syncMinMW : (p.syncMinEnabled !== false ? SYNC_MIN_MW : 0);
   const {demand,solar,wind,csp}=prof;
   const growth=1+p.demandGrowthPct/100;
-  const coalInstRem=Math.max(0,p.coalInstalledMW-p.coalDecomMW)+p.newCoalMW;
+  // Retire nameplate, add nameplate, THEN take the capture penalty off whatever
+  // fleet is left - existing and new alike. A new station with capture loses the
+  // same fraction of its output to the capture plant as a retrofitted one.
+  const ccsKeep = p.ccsEnabled ? Math.max(0.4, 1 - (p.ccsPenaltyPct || 25)/100) : 1;
+  const coalInstRem=(Math.max(0,p.coalInstalledMW-p.coalDecomMW)+p.newCoalMW)*ccsKeep;
   const coalAvail=coalInstRem*p.coalEAFPct/100;
   const windCap=p.windMW+p.newWindMW, pvCap=p.pvUtilityMW+p.newPvMW, rooftopCap=p.rooftopMW+p.newRooftopMW;
   const battPower=p.battPowerMW+p.newBattMW, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours;
@@ -5639,7 +5646,11 @@ function renderCCS(r){
   const base = FIXED.costCoal;
   const withCcs = base/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 120);
   const netCut = 1 - (1 - cap)/keep;
-  const lostGW = FIXED.coalInstalledMW * pen / 1000;
+  // Use the scenario's actual fleet, not the nameplate constant, so the panel
+  // tracks the decommissioning and new-build sliders.
+  const fleetMW = Math.max(0, (state.coalInstalledMW ?? FIXED.coalInstalledMW) - (state.coalDecomMW || 0))
+                + (state.newCoalMW || 0);
+  const lostGW = fleetMW * pen / 1000;
   const R = v => 'R' + Math.round(v).toLocaleString();
   const c2 = v => (v/1000).toFixed(2);
 
@@ -5659,9 +5670,10 @@ function renderCCS(r){
     + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">New build, lifecycle</td>`
     + `<td style="text-align:right;padding:4px 5px">R${c2(state.lcoeCoalNew ?? 1200)}/kWh</td>`
     + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">R${c2((state.lcoeCoalNew ?? 1200)/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 120))}/kWh</td></tr>`
-    + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">Saleable capacity</td>`
-    + `<td style="text-align:right;padding:4px 5px">${(FIXED.coalInstalledMW/1000).toFixed(1)} GW</td>`
-    + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">${(FIXED.coalInstalledMW*keep/1000).toFixed(1)} GW</td></tr>`
+    + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">Saleable capacity`
+    + `<br><span style="font-size:9px;color:var(--ink2)">after this scenario\u2019s retirements and new build</span></td>`
+    + `<td style="text-align:right;padding:4px 5px">${(fleetMW/1000).toFixed(1)} GW</td>`
+    + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">${(fleetMW*keep/1000).toFixed(1)} GW</td></tr>`
     + `<tr><td style="padding:4px 5px">Net emissions cut</td>`
     + `<td style="text-align:right;padding:4px 5px">\u2014</td>`
     + `<td style="text-align:right;padding:4px 5px;font-weight:700">${(netCut*100).toFixed(0)}%</td></tr>`
