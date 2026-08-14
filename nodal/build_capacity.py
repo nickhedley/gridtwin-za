@@ -125,19 +125,22 @@ regional = {
             "plant commissioned before January 2026 is not in the PFL H1 monitor and is missing "
             "here - roughly 1.8 GW of solar remains unexplained against FIXED.pvUtilityMW, so "
             "identity 3 stays PENDING and pvUtilityMW must NOT be re-derived from this file yet. "
-            "Wind, by contrast, now slightly EXCEEDS FIXED.windMW - see meta.WIND_OVERSHOOT. (2) RMIPPPP contributes about 225 MW of "
+            "Wind is NOT affected by this gap - see meta.WIND_PROVENANCE. (2) RMIPPPP contributes about 225 MW of "
             "contracted operational capacity across Northern Cape, Eastern Cape and Western Cape; "
             "the report does not give the provincial split, so it is excluded rather than guessed. "
             "(3) CSP is reported here at 600 MW (Northern Cape) - index.html FIXED.cspMW of 500 "
             "is understated. (4) Peakers (Avon 670 MW KZN, Dedisa 335 MW Eastern Cape, diesel "
             "OCGT) are not renewable and are out of scope for this file."
         ),
-        "WIND_OVERSHOOT": (
-            "REIPPPP wind online (4042) + PFL H1 2026 wheeled wind (470) = 4512 MW, against "
-            "FIXED.windMW of 4458 - an overshoot of 54 MW. Since the PFL figure is H1 2026 only "
-            "and cannot be double-counted against pre-2026 plant, either windMW is slightly "
-            "understated or some H1 2026 wheeled wind is already inside the REIPPPP total. "
-            "Resolve before re-deriving windMW; do not adjust either number to make it close."
+        "WIND_PROVENANCE": (
+            "FIXED.windMW is DERIVED from this file: 4042 MW REIPPPP (IPP Office Q4 2025/26) "
+            "+ 470 MW private/wheeled (PFL H1 2026) = 4512 MW. It previously read 4458, built as "
+            "3600 + 858, where the 3600 baseline had muddled provenance and the 858 mixed "
+            "grid-supply with wheeled capacity. Two published sources, disjoint universes - the "
+            "IPP Office does not cover private procurement, so Umsobomvu and the three Impofu "
+            "farms appear once, in the private bucket. NOTE the equality is now a consistency "
+            "check, not independent corroboration; it will fail if pre-2026 private WIND is "
+            "later found, which is correct - re-derive the constant rather than patching it."
         ),
         "region_key_note": "Region keys follow GridTwin ZA convention: 'Kwazulu Natal', and 'Hydra Central' is a supply area, not a province.",
         "licence": "CC BY-NC-ND 4.0",
