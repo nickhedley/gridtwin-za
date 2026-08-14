@@ -557,6 +557,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="bessLocBody"></div>
           </div>
 
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
+            <div class="pb" id="capFcBody"></div>
+          </div>
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
             <div class="pb" id="carbonBudget"></div>
@@ -875,8 +880,13 @@ function initResourceQuery(){
       </div>
       <div style="font-size:9px;color:var(--ink2);margin-top:6px">
         Solar: ${solar.source}. Wind: regional MERRA-2 average (${windRegion}).
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line2)">
+        <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Resource risk &mdash; P50 / P90</div>
+        <div id="p90Result"></div>
       </div>`;
     panel.innerHTML = html;
+    if (typeof renderP90 === 'function') renderP90(windRegion);
 
     // Draw chart with canvas 2D (no Chart.js dependency)
     const canvas = document.getElementById('resourceChart');
@@ -1250,6 +1260,80 @@ function initResourceQuery(){
       </div>`;
   }
 
+
+
+  // ── P50 / P90 from ten real weather years ─────────────────────────────────
+  // Every lender asks for these. P50 is the median year; P90 is the level
+  // exceeded in nine years out of ten, and it is what debt gets sized against.
+  // Ten years is a short record - a bank will want twenty and its own
+  // consultant - but it is a real distribution from real weather rather than a
+  // rule-of-thumb haircut on a single year, which is what most desktop studies
+  // still use.
+  let p90Data = null;
+  fetch('nodal/profiles_regional_multiyear.json')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { p90Data = d; if (typeof renderP90 === 'function') renderP90(); })
+    .catch(() => {});
+
+  // Exceedance level from a sample: the value that the series beats in `pct` of
+  // years. Linear interpolation between order statistics - with ten points the
+  // difference from a fitted distribution is small, and interpolating is honest
+  // about the sample rather than implying more precision than exists.
+  function exceedance(sorted, pct){
+    if (!sorted.length) return 0;
+    const idx = (1 - pct) * (sorted.length - 1);
+    const lo = Math.floor(idx), hi = Math.ceil(idx);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+
+  function renderP90(region){
+    const el = document.getElementById('p90Result');
+    if (!el) return;
+    const reg = region || (window._resourceData && window._resourceData.windRegion) || null;
+    if (!p90Data || !reg || !p90Data.solar_pu[reg]){ el.innerHTML = ''; return; }
+    const sc = p90Data.scale || 1;
+    const rows = [];
+    for (const [tech, key] of [['Solar', 'solar_pu'], ['Wind', 'wind_pu']]){
+      const byYear = p90Data[key][reg];
+      if (!byYear) continue;
+      const years = Object.keys(byYear).sort();
+      const cfs = years.map(y => {
+        const s = byYear[y];
+        let t = 0; for (let i = 0; i < s.length; i++) t += s[i];
+        return t / s.length / sc;
+      });
+      const sorted = cfs.slice().sort((a, b) => a - b);
+      const p50 = exceedance(sorted, 0.50), p90 = exceedance(sorted, 0.90), p10 = exceedance(sorted, 0.10);
+      const worstIdx = cfs.indexOf(sorted[0]), bestIdx = cfs.indexOf(sorted[sorted.length-1]);
+      rows.push({ tech, p10, p50, p90, worst: years[worstIdx], best: years[bestIdx],
+                  spread: (sorted[sorted.length-1] - sorted[0]) / p50 });
+    }
+    if (!rows.length){ el.innerHTML = ''; return; }
+
+    el.innerHTML =
+        '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+      + '<tr style="border-bottom:1px solid var(--line2)">'
+      + '<th style="text-align:left;padding:3px 5px"></th>'
+      + '<th style="text-align:right;padding:3px 5px">P10</th>'
+      + '<th style="text-align:right;padding:3px 5px">P50</th>'
+      + '<th style="text-align:right;padding:3px 5px">P90</th>'
+      + '<th style="text-align:right;padding:3px 5px">P90/P50</th></tr>'
+      + rows.map(r => '<tr style="border-bottom:1px solid var(--line2)">'
+          + `<td style="padding:3px 5px">${r.tech}</td>`
+          + `<td style="text-align:right;padding:3px 5px;color:var(--ink2)">${(r.p10*100).toFixed(1)}%</td>`
+          + `<td style="text-align:right;padding:3px 5px;font-weight:700">${(r.p50*100).toFixed(1)}%</td>`
+          + `<td style="text-align:right;padding:3px 5px;font-weight:700">${(r.p90*100).toFixed(1)}%</td>`
+          + `<td style="text-align:right;padding:3px 5px;color:${r.p90/r.p50 < 0.95 ? 'var(--alert,#C4785A)' : 'var(--ink2)'}">`
+          + `${(r.p90/r.p50*100).toFixed(1)}%</td></tr>`).join('')
+      + '</table>'
+      + '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
+      + `Capacity factor across ten weather years (2014\u20132023) for the ${reg} supply area. `
+      + '<strong>P90</strong> is the level exceeded in nine years out of ten \u2014 the number debt is '
+      + 'sized against. '
+      + rows.map(r => `${r.tech} ran worst in ${r.worst}, best in ${r.best}`).join('; ') + '. '
+      + 'Regional averages, not a site measurement: your own P90 depends on terrain and turbine or '
+      + 'module choice, and a lender will want twenty years and their own resource consultant.</div>';
+  }
 
   // ── Curtailment risk at a site ────────────────────────────────────────────
   // The question a developer actually needs answered: if I build here, what
@@ -1775,6 +1859,7 @@ function initResourceQuery(){
   window.runDC = runDC;
   window.calcWheeling = calcWheeling;
   window.renderCapture = renderCapture;
+  window.renderP90 = renderP90;
   attachTypeahead('mainSearch', mainGeocode);
   window.runPrefeas = runPrefeas;
   window.printPrefeas = printPrefeas;
@@ -5244,6 +5329,98 @@ function renderQueuePressure(){
     + 'Sources: SAPVIA\u2019s collation of NERSA statements, and NTCSA\u2019s GCCA.</div>';
 }
 
+
+/* ==================== CAPTURE PRICE FORECAST =============================
+ * What a wind or solar PPA is worth in each year to 2030, as the build-out
+ * cannibalises its own price. This is the product Modo actually makes money
+ * from - not the daily index, the long-term forecast that debt gets sized
+ * against.
+ *
+ * Method: take the scenario's build rates, add that capacity year by year, and
+ * re-run the dispatch to get each year's price and capture. It is the existing
+ * engine run five times, not a new model - which is the point: the forecast and
+ * the dispatch cannot disagree, because they are the same code.
+ */
+let captureForecast = null;
+
+function runCaptureForecast(){
+  const host = document.getElementById('capFcBody');
+  if (!host || typeof simulate !== 'function') return;
+  host.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Running five annual dispatches\u2026</p>';
+  setTimeout(() => {
+    try {
+      const rate = (typeof bldRates === 'function') ? bldRates() : { wind: 2200, pv: 1500 };
+      const base = { ...state };
+      const rows = [];
+      for (let i = 0; i < 5; i++){
+        const yr = 2026 + i;
+        const s = { ...base,
+          newWindMW: (base.newWindMW || 0) + rate.wind * (i + 1),
+          newPvMW:   (base.newPvMW   || 0) + rate.pv   * (i + 1),
+          demandGrowthPct: (base.demandGrowthPct || 0) + 3.1 * (i + 1),
+        };
+        const r = simulate(s, PROFILES);
+        const ps = r.priceStats;
+        if (!ps) continue;
+        rows.push({ yr, avg: ps.avg,
+                    wind: ps.capture.wind, pv: ps.capture.pv,
+                    windPct: ps.avg > 0 ? ps.capture.wind/ps.avg : 1,
+                    pvPct:   ps.avg > 0 ? ps.capture.pv/ps.avg   : 1,
+                    addedWind: rate.wind*(i+1), addedPv: rate.pv*(i+1) });
+      }
+      captureForecast = rows;
+      renderCaptureForecast();
+    } catch (e){
+      host.innerHTML = '<p style="font-size:11px;color:var(--alert)">Forecast failed: ' + e.message + '</p>';
+    }
+  }, 20);
+}
+
+function renderCaptureForecast(){
+  const host = document.getElementById('capFcBody');
+  if (!host) return;
+  if (!captureForecast){
+    host.innerHTML = '<p style="font-size:10.5px;color:var(--ink2);line-height:1.5">'
+      + 'Projects this scenario\u2019s build rates forward to 2030 and re-runs the dispatch for each year, '
+      + 'to show what a wind or solar PPA is worth as the build-out cannibalises its own price. '
+      + '<button onclick="runCaptureForecast()" style="font-size:10px;padding:3px 10px;margin-left:4px;'
+      + 'border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px">'
+      + 'Run forecast</button></p>';
+    return;
+  }
+  const R = v => 'R' + Math.round(v).toLocaleString();
+  const first = captureForecast[0], last = captureForecast[captureForecast.length-1];
+  const drop = t => first[t+'Pct'] > 0 ? (1 - last[t+'Pct']/first[t+'Pct']) * 100 : 0;
+
+  host.innerHTML =
+      '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)">'
+    + '<th style="text-align:left;padding:4px 5px">Year</th>'
+    + '<th style="text-align:right;padding:4px 5px">Added</th>'
+    + '<th style="text-align:right;padding:4px 5px">Avg price</th>'
+    + '<th style="text-align:right;padding:4px 5px">Wind capture</th>'
+    + '<th style="text-align:right;padding:4px 5px">Solar capture</th></tr>'
+    + captureForecast.map(r => '<tr style="border-bottom:1px solid var(--line2)">'
+        + `<td style="padding:4px 5px">${r.yr}</td>`
+        + `<td style="text-align:right;padding:4px 5px;color:var(--ink2)">+${((r.addedWind+r.addedPv)/1000).toFixed(1)} GW</td>`
+        + `<td style="text-align:right;padding:4px 5px">${R(r.avg)}</td>`
+        + `<td style="text-align:right;padding:4px 5px;font-weight:700">${R(r.wind)} <span style="font-weight:400;color:var(--ink2);font-size:9px">${(r.windPct*100).toFixed(0)}%</span></td>`
+        + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:${r.pvPct<0.6?'var(--alert,#C4785A)':'inherit'}">${R(r.pv)} <span style="font-weight:400;color:var(--ink2);font-size:9px">${(r.pvPct*100).toFixed(0)}%</span></td></tr>`).join('')
+    + '</table>'
+    + `<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">`
+    + `<strong>Solar capture falls ${drop('pv').toFixed(0)}% by ${last.yr}; wind falls ${drop('wind').toFixed(0)}%.</strong> `
+    + 'Every GW of solar built lowers the price in exactly the hours the next solar plant will generate. '
+    + 'Wind holds up better because it blows when solar does not \u2014 which is why a PPA signed on today\u2019s '
+    + 'capture price, escalating at CPI, can still be underwater in real terms by 2030.'
+    + '</div>'
+    + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
+    + 'Adds this scenario\u2019s build rates cumulatively and re-runs the full dispatch for each year, with '
+    + 'demand growing 3.1% a year. The forecast uses the same engine as everything else on this page, so '
+    + 'it cannot disagree with the dispatch it came from. It assumes the build actually happens at the '
+    + 'rate set \u2014 change the build sliders and re-run to test a different path. Not a substitute for '
+    + 'a transaction-grade forecast.</div>';
+}
+
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
@@ -6149,7 +6326,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);}if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);}if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
