@@ -79,13 +79,26 @@ console.log('\nIdentity 3 - regional operational sums to the national constant, 
   const reipppp = sum(cap.by_source.reipppp.solar_mw);
   const priv = sum(cap.by_source.private.solar_mw);
 
-  if (priv === 0) {
-    // Do NOT pass this by loosening the tolerance. The private/wheeled component
-    // is genuinely absent, so the identity cannot be evaluated yet. Reporting it
-    // as PENDING keeps it visible instead of silently green.
+  const coverage = (cap.meta || {}).private_coverage;
+  if (coverage !== 'complete') {
+    // Do NOT pass this by loosening the tolerance. by_source.private is populated
+    // but INCOMPLETE - the PFL monitor covers H1 2026 only, so private plant
+    // commissioned earlier is missing. Reporting PENDING with the narrowed gap
+    // keeps it visible instead of silently green.
     pend('FIXED.pvUtilityMW = sum(reipppp solar) + sum(private solar)',
-         `by_source.private is empty - pending the Power Futures Lab monitor. ` +
-         `reipppp = ${reipppp} MW, constant = ${pvConst} MW, unexplained gap = ${(pvConst - reipppp).toFixed(0)} MW.`);
+         `by_source.private coverage is "${coverage}", not complete. ` +
+         `reipppp = ${reipppp} MW + private = ${priv} MW = ${reipppp + priv} MW, ` +
+         `constant = ${pvConst} MW, unexplained gap = ${(pvConst - reipppp - priv).toFixed(0)} MW.`);
+
+    // Wind has no separate identity in the brief, but the same decomposition applies
+    // and currently OVERSHOOTS - which a solar-only check would hide.
+    const wm = html.match(/windMW\s*:\s*([0-9.]+)/);
+    const wConst = wm ? parseFloat(wm[1]) : null;
+    const wTotal = sum(cap.by_source.reipppp.wind_mw) + sum(cap.by_source.private.wind_mw);
+    pend('FIXED.windMW = sum(reipppp wind) + sum(private wind)',
+         `${wTotal} MW against a constant of ${wConst} MW - ` +
+         `${wTotal > wConst ? 'OVERSHOOT of ' + (wTotal - wConst).toFixed(0) : 'gap of ' + (wConst - wTotal).toFixed(0)} MW. ` +
+         `An overshoot cannot be closed by adding the missing pre-2026 plant; see meta.WIND_OVERSHOOT.`);
   } else {
     check('FIXED.pvUtilityMW = sum(reipppp solar) + sum(private solar)',
           Math.abs(reipppp + priv - pvConst) <= TOL,
