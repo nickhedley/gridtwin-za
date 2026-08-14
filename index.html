@@ -2891,11 +2891,26 @@ const FIXED = {
   // capacity expansion LPs. Diesel was previously carbon-free in the LPs while
   // carbon-taxed in dispatch - the same split the carbon price itself had.
   carbonTaxRPerT:46,
-  // Storage cycling cost, R per MWh discharged. This is the degradation term in a
-  // storage bid: a battery will not cycle for less than the wear it incurs doing so.
-  // ASSUMPTION, not a sourced figure - review before quoting. Pumped storage is
-  // mechanical and cycles far more cheaply than an electrochemical cell.
-  battCycleCostR:180, psCycleCostR:20,
+  // Storage cycling cost, R per MWh discharged - the degradation term in a storage
+  // bid (the CD in CAISO's storage DEB). DERIVED, not guessed:
+  //   wear = pack replacement cost / lifetime discharged energy, cycling share only
+  //   = ($130/kWh replacement x R16.21/USD) / (8,000 cycles x 80% DoD = 6,400 kWh)
+  //   = R329/MWh average wear x ~50% cycling share (calendar aging happens whether
+  //     or not the battery cycles, so only the cycling share is a marginal cost)
+  //   ~= R165/MWh marginal.
+  // FX: USD/ZAR 16.21 spot, 14 Aug 2026 (Bloomberg); 30-day average 16.47. The
+  // replacement purchase is years out, so spot is a proxy - revisit if the rand
+  // moves past roughly R15 or R18, which shifts the figure by about R10 either way.
+  // Anchors: cell/module replacement projected $120-150/kWh; LFP cycle life
+  // 6,000-10,000 at 80% DoD; industry wear-cost modelling spans $5-15/MWh (with
+  // residual-value credit) to ~$56/MWh (full augmentation, no credit); academic
+  // marginal-degradation work lands $7-17/MWh at $200/kWh capex. R165 (~$10/MWh)
+  // sits inside every one of those ranges. Sensitivity band roughly R100-R250
+  // across plausible cycle life, cycling share and FX.
+  // Pumped storage is mechanical - no cell wear; R20 reflects variable O&M only.
+  // With the opportunity-cost floor these rarely bind in priced hours; they set
+  // the bid floor in slack hours.
+  battCycleCostR:165, psCycleCostR:20,
   // Value of lost load, used as the wholesale price ceiling in hours with
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
@@ -3217,6 +3232,7 @@ function simulate(u, prof, outPath){
   // afterwards, so it cannot drift from what was actually dispatched.
   const storageMarginal=new Array(HOURS).fill(null);
   const storageBid=new Float64Array(HOURS);
+  const thermalP=new Float64Array(HOURS);
   const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
   const E={rooftop:0,wind:0,pv:0,csp:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0};
   let fuelCost=0, carbonCost=0, curtailFuelCost=0, shedMWh=0, maxStage=0;
@@ -3549,17 +3565,24 @@ function simulate(u, prof, outPath){
     // Read down the merit order, most expensive first. Unserved energy sets
     // the price at the value of lost load; when renewables are spilling,
     // nothing scarce is on the margin and the price is zero.
-    marginalP[h] =
+    // Thermal-only price: what the hour clears at IGNORING storage - the cost of
+    // the most expensive non-storage unit running. This is both the fallthrough
+    // when storage is not marginal, and the input to the storage opportunity-cost
+    // pass below (a battery's opportunity cost is defined over the prices thermal
+    // plant would otherwise set, so the series must exclude storage's own bids).
+    thermalP[h] =
         ((stack.unserved[h]||0) > 1)     ? p.voll
       : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD
       : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt + cG
       : ((curtailMW[h]||0) > 1)          ? 0
-      : (storageMarginal[h])             ? storageBid[h]
       : (coalGen > 1)                    ? coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC
       : (imp > 1)                        ? p.costImports
       : (hyd > 1)                        ? p.costHydro
       : (nuc > 1)                        ? p.costNuclear
       :                                    0;
+    // Storage-marginal hours are finalised AFTER the year completes, once each
+    // day's opportunity cost is known - see the second pass below the hour loop.
+    marginalP[h] = storageMarginal[h] ? storageBid[h] : thermalP[h];
     marginalTech[h] =
         ((stack.unserved[h]||0) > 1)     ? 'unserved'
       : ((stack.diesel[h]||0) > 1)       ? 'diesel'
@@ -3579,6 +3602,50 @@ function simulate(u, prof, outPath){
     E.wind+=windGen; E.pv+=pvGen; E.csp+=cspGen; E.nuclear+=nuc; E.hydro+=hyd; E.imports+=imp;
     stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
     fuelCost+=nuc*p.costNuclear+hyd*p.costHydro+imp*p.costImports;
+  }
+  /* ---- STORAGE OPPORTUNITY-COST PASS ---------------------------------------
+   * A storage unit's bid is not its short-run cost. It bids the value it forgoes
+   * by discharging NOW rather than in the best remaining hour - the opportunity
+   * cost of a fixed stock of energy. This is how mature markets formalise it:
+   * CAISO's storage default energy bid is
+   *
+   *     DEB = max( En/lambda + CD ,  OC )
+   *
+   * where En/lambda is the energy cost grossed up for round-trip losses, CD the
+   * cycle-depth (degradation) cost, and OC the opportunity cost, defined for a
+   * D-hour resource as the D-th highest price of the trading day - a 4-hour
+   * battery that discharges in one hour gives up one of the four best hours it
+   * could have served, so the 4th-highest price is what the marginal MWh forgoes.
+   * (CAISO ESDER Phase 4; 2022 DMM Special Report on Battery Storage.)
+   *
+   * Implemented here per LOCAL day over the thermal-only series computed above:
+   * using thermalP rather than marginalP keeps the definition non-circular -
+   * storage's own bids cannot feed its own opportunity cost.
+   *
+   * The bid is capped at the hour's own thermal alternative when one is running:
+   * the dispatch chose storage AHEAD of that alternative, which is only
+   * consistent with a bid at or below it. Uncapped, a bid above coal's cost
+   * would claim a clearing price the dispatch itself contradicts. When nothing
+   * thermal is running above storage, the bid stands uncapped.
+   */
+  {
+    const battD = Math.max(1, Math.min(24, Math.round(p.battHours || 4)));
+    const psD   = Math.max(1, Math.min(24, Math.round((p.psEnergyMWh / Math.max(1, p.psPowerMW)) || 8)));
+    for (let d0 = 0; d0 < HOURS; d0 += 24) {
+      const day = [];
+      for (let k = 0; k < 24 && d0 + k < HOURS; k++) day.push(thermalP[d0 + k]);
+      const desc = day.slice().sort((a, b) => b - a);
+      const ocBatt = desc[Math.min(battD, desc.length) - 1] || 0;
+      const ocPs   = desc[Math.min(psD,   desc.length) - 1] || 0;
+      for (let k = 0; k < 24 && d0 + k < HOURS; k++) {
+        const h = d0 + k, m = storageMarginal[h];
+        if (!m) continue;
+        const srmc = storageBid[h];                    // basis (loss-adjusted) + cycle cost
+        const bid  = Math.max(srmc, m === 'batt' ? ocBatt : ocPs);
+        marginalP[h] = (thermalP[h] > 1) ? Math.min(bid, thermalP[h]) : bid;
+        storageBid[h] = marginalP[h];                  // keep the recorded bid consistent
+      }
+    }
   }
   // Transmission adder on new wind + utility PV. Wind always pays it.
   // Co-located repurposing: if on, new solar+battery can inherit retired-coal connection
@@ -5526,6 +5593,11 @@ function drawShadowPriceWeek(r){
               + 'the margin (' + zero + ' this week). ' : '')
     + (over ? 'Bars with a dark cap run past the top of the axis (' + over + ' hours), clipped so '
               + 'one scarcity hour does not flatten the rest. ' : '')
+    + ((agg.batt || agg.ps) ? 'Storage bids its opportunity cost, not its fuel cost: the value of the best '
+        + 'remaining hour it could have served instead (CAISO-style, the D-th highest thermal price of the '
+        + 'day for D-hour storage), floored at its charging basis plus cycling wear and capped at the '
+        + 'alternative it displaced. Storage at its power or energy limit is constrained, not marginal, '
+        + 'and the unit above it prices the hour. ' : '')
     + '<strong>These are shadow prices, not observed ones.</strong> South Africa has no wholesale '
     + 'market, so this is what the system would pay if dispatch were priced rather than administered.';
 }
