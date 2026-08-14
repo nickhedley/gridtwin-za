@@ -2887,6 +2887,9 @@ const FIXED = {
   // the nodal path and both capacity expansion LPs all read it. It previously
   // did not exist here, and the LPs fell through to a hardcoded 550 that no
   // slider could change.
+  // Applies to coal, gas AND diesel in both the hourly dispatch and both
+  // capacity expansion LPs. Diesel was previously carbon-free in the LPs while
+  // carbon-taxed in dispatch - the same split the carbon price itself had.
   carbonTaxRPerT:46,
   // Value of lost load, used as the wholesale price ceiling in hours with
   // unserved demand. R87,000/MWh is mid-range for South African planning
@@ -3822,7 +3825,7 @@ function bldBuildLP(opts){
   const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:S.ocgtDieselMW,
                wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
                csp:S.cspMW, batt:S.battPowerMW };
-  const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt;
+  const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt, EMIS_DIESEL = S.emisDiesel;
 
   const L = ['Minimize', ' obj:'];
   const obj = [];
@@ -3838,7 +3841,7 @@ function bldBuildLP(opts){
       const k = y + '_' + r.d + '_' + h;
       obj.push(((MC.coal + CARBON*EMIS_COAL)*r.weight*df).toFixed(3) + ' gc_' + k);
       obj.push(((MC.ccgt + CARBON*EMIS_CCGT)*r.weight*df).toFixed(3) + ' gg_' + k);
-      obj.push((MC.diesel*r.weight*df).toFixed(3) + ' gd_' + k);
+      obj.push(((MC.diesel + CARBON*EMIS_DIESEL)*r.weight*df).toFixed(3) + ' gd_' + k);
       obj.push((VOLL*r.weight*df).toFixed(3) + ' u_' + k);
       obj.push((150*r.weight*df).toFixed(3) + ' crt_' + k);
       obj.push((20*r.weight*df).toFixed(3) + ' bdis_' + k);
@@ -4114,7 +4117,7 @@ function bldBuildRegionalLP(opts){
   const S = { ...FIXED, ...(opts.state || {}) };
   const VOLL = 60000, CARBON = S.carbonTaxRPerT;
   const MCcoal = S.costCoal + CARBON * S.emisCoal;
-  const MCdiesel = S.costDiesel;
+  const MCdiesel = S.costDiesel + CARBON * S.emisDiesel;
 
   const L = ['Minimize',' obj:']; const obj = [];
   for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y){
