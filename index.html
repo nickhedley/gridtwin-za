@@ -5356,12 +5356,15 @@ function drawBessWeek(r){
  * registered capacity than grid to take it, while KwaZulu-Natal sits at 8%.
  */
 let queueNersa = null, queueHeadroom = null;
-let queueBQ = null;
+let queueBQ = null, queueREEA = null;
 Promise.all([
   fetch('nodal/nersa_registrations.json').then(r => r.ok ? r.json() : null).catch(() => null),
   fetch('nodal/headroom_summary.json').then(r => r.ok ? r.json() : null).catch(() => null),
   fetch('nodal/bq_queue.json').then(r => r.ok ? r.json() : null).catch(() => null),
-]).then(([n, h, b]) => { queueNersa = n; queueHeadroom = h; queueBQ = b; renderQueuePressure(); });
+  fetch('nodal/reea_projects.json').then(r => r.ok ? r.json() : null).catch(() => null),
+]).then(([n, h, b, e]) => {
+  queueNersa = n; queueHeadroom = h; queueBQ = b; queueREEA = e; renderQueuePressure();
+});
 
 
 /* ---- Allocations past their expected commissioning year --------------------
@@ -5375,6 +5378,74 @@ Promise.all([
  * already passed, is occupying capacity it has not used. That is the closest
  * public proxy for the problem, and it is derivable today.
  */
+
+/* ---- Environmental Authorisation age --------------------------------------
+ * The closest unbiased public answer to "how long has this project been sitting
+ * on its allocation". An EA is compulsory under Eskom's IGCAR readiness
+ * criteria, so its decision date is a lower bound on when a project became
+ * ready to build. The DFFE register is dated, names the applicant, and retains
+ * refused, lapsed and withdrawn applications - so unlike press-release scraping
+ * it does not systematically omit the projects that stalled, which are exactly
+ * the ones in question.
+ */
+function reeaAgeHtml(){
+  if (!queueREEA || !queueREEA.projects) return '';
+  const now = new Date().getFullYear();
+  const appr = queueREEA.projects.filter(p =>
+    p.status === 'Approved' && p.decided && typeof p.mw === 'number');
+  if (!appr.length) return '';
+
+  const bands = [
+    { lo: 0, hi: 2, label: '0\u20132 years' },
+    { lo: 3, hi: 4, label: '3\u20134 years' },
+    { lo: 5, hi: 7, label: '5\u20137 years' },
+    { lo: 8, hi: 99, label: '8+ years' },
+  ];
+  const rows = bands.map(b => {
+    const sel = appr.filter(p => { const a = now - +p.decided.slice(0,4); return a >= b.lo && a <= b.hi; });
+    return { ...b, n: sel.length, mw: sel.reduce((s,p) => s + p.mw, 0) };
+  });
+  const totMW = appr.reduce((s,p) => s + p.mw, 0);
+  const stale = rows.filter(r => r.lo >= 5).reduce((a,b) => ({ n: a.n+b.n, mw: a.mw+b.mw }), { n:0, mw:0 });
+  const maxMW = Math.max(...rows.map(r => r.mw), 1);
+
+  return '<div style="margin-top:13px;padding-top:11px;border-top:1.5px solid var(--ink)">'
+    + '<div style="font-size:11px;font-weight:700;margin-bottom:3px">How long since environmental approval</div>'
+    + '<div style="font-size:9.5px;color:var(--ink2);margin-bottom:8px;line-height:1.5">'
+    + `${appr.length.toLocaleString()} authorised projects carrying ${(totMW/1000).toFixed(0)} GW. An `
+    + 'Environmental Authorisation is required before a budget quote under IGCAR, so its date is a '
+    + 'lower bound on how long a project has been ready to build.</div>'
+    + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 5px">Since approval</th>'
+    + '<th style="text-align:right;padding:4px 5px">Projects</th>'
+    + '<th style="text-align:right;padding:4px 5px">Capacity</th>'
+    + '<th style="padding:4px 5px"></th></tr>'
+    + rows.map(r => {
+        const col = r.lo >= 8 ? 'var(--alert,#C4785A)' : r.lo >= 5 ? '#D9A441' : 'var(--veld)';
+        return '<tr style="border-bottom:1px solid var(--line2)">'
+          + `<td style="padding:4px 5px">${r.label}</td>`
+          + `<td style="text-align:right;padding:4px 5px;color:var(--ink2)">${r.n.toLocaleString()}</td>`
+          + `<td style="text-align:right;padding:4px 5px;font-weight:700">${(r.mw/1000).toFixed(1)} GW</td>`
+          + `<td style="padding:4px 5px;width:70px"><span style="display:block;height:7px;background:${col};`
+          + `width:${(r.mw/maxMW*100).toFixed(0)}%"></span></td></tr>`;
+      }).join('')
+    + '</table>'
+    + '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
+    + 'padding:8px 11px;margin-top:9px;font-size:10.5px;line-height:1.55">'
+    + `<strong>${stale.n.toLocaleString()} projects holding ${(stale.mw/1000).toFixed(0)} GW have been `
+    + `environmentally approved for five years or more.</strong> That is ${(stale.mw/totMW*100).toFixed(0)}% `
+    + 'of authorised capacity, cleared to build and not built. Not all of them hold grid allocations \u2014 '
+    + 'but under IGCAR none could hold one without this approval first.'
+    + '<div style="margin-top:5px;color:var(--ink2)">Environmental authorisations lapse if unused, '
+    + 'typically after five years. A project still listed as Approved from 2016 has either been renewed '
+    + 'or is carrying a permission it never acted on.</div></div>'
+    + '<div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.5">'
+    + `Source: DFFE Renewable Energy EIA Application Database, ${queueREEA.meta.source_file || 'quarterly release'}. `
+    + 'An EA is not a grid allocation, and declared capacity may differ from what is finally built. '
+    + 'This measures how long projects have been permitted, not how long they have held grid capacity \u2014 '
+    + 'which is not published anywhere.</div></div>';
+}
+
 function bqSlipHtml(){
   if (!queueBQ || !queueBQ.editions || !queueBQ.editions.length) return '';
   const now = new Date().getFullYear();
@@ -5483,7 +5554,8 @@ function renderQueuePressure(){
     + 'substantially the utility-scale capacity that competes for transmission headroom, not rooftop. '
     + 'Headroom is the GCCA figure for the larger of solar or wind, which the two share. '
     + 'Sources: SAPVIA\u2019s collation of NERSA statements, and NTCSA\u2019s GCCA.</div>'
-    + bqSlipHtml();
+    + bqSlipHtml()
+    + reeaAgeHtml();
 }
 
 
