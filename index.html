@@ -577,6 +577,22 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Hourly wholesale shadow price</h2>
+              <div class="wkbtns">
+                <button id="spW" class="active">Winter week</button>
+                <button id="spS">Summer week</button>
+              </div>
+            </div>
+            <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &mdash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
+            <div class="pb" style="padding:10px 10px 4px">
+              <canvas id="spWeek" height="200" aria-label="Hourly wholesale shadow price, coloured by price-setting technology" aria-describedby="spWeekDesc"></canvas>
+            </div>
+            <p id="spWeekDesc" class="sr-only">Hourly shadow price for a representative 168-hour week, each bar coloured by the technology setting the price in that hour.</p>
+            <div class="pb" id="spWeekLegend" style="padding:0 12px 4px"></div>
+            <div class="pb" id="spWeekNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.45"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Battery revenue benchmark</h2><span class="tag">what a BESS would earn</span></div>
             <div class="pb" id="bessBody"></div>
           </div>
@@ -3181,6 +3197,9 @@ function simulate(u, prof, outPath){
   // what absorbs surplus solar. Real operator charts (CAISO, National Grid) always show this.
   const coalGenTotal=new Float64Array(HOURS);
   const marginalP=new Float64Array(HOURS);   // R/MWh, shadow wholesale price
+  // Which technology set that price. Derived from the SAME cascade below, so it
+  // cannot drift from marginalP: read the two together or not at all.
+  const marginalTech=new Array(HOURS).fill('none');
   // Carry the capture cost into the marginal price. The merit curve holds each
   // unit's own fuel cost, so the energy penalty scales it and the capture costs
   // add on top - the same build-up p.costCoal gets, applied per unit.
@@ -3490,6 +3509,16 @@ function simulate(u, prof, outPath){
       : (hyd > 1)                        ? p.costHydro
       : (nuc > 1)                        ? p.costNuclear
       :                                    0;
+    marginalTech[h] =
+        ((stack.unserved[h]||0) > 1)     ? 'unserved'
+      : ((stack.diesel[h]||0) > 1)       ? 'diesel'
+      : ((stack.ccgt[h]||0) > 1)         ? 'ccgt'
+      : ((curtailMW[h]||0) > 1)          ? 'curtail'
+      : (coalGen > 1)                    ? 'coal'
+      : (imp > 1)                        ? 'imports'
+      : (hyd > 1)                        ? 'hydro'
+      : (nuc > 1)                        ? 'nuclear'
+      :                                    'none';
     E.coal+=coalGen; fuelCost+=coalGen*p.costCoal+(isNaN(ucStartCost[h])?0:ucStartCost[h]); carbonCost+=coalGen*cC;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
@@ -3533,7 +3562,7 @@ function simulate(u, prof, outPath){
   for(const k in lcoeOf) replTotal += E[k]*lcoeOf[k];
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
-  return {E,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
+  return {E,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -5394,6 +5423,101 @@ function drawPriceWeek(r){
              + 'clipped so one scarcity hour does not flatten the rest.' : '');
 }
 
+/* ---- Hourly wholesale shadow price, coloured by price-setting technology ----
+ * Same 168-hour windows as the dispatch chart, but with its OWN week toggle so
+ * it can be read against either season without moving the dispatch chart.
+ * Colour comes from r.marginalTech, which is written in the same cascade that
+ * writes r.marginalP - there is no second copy of the merit order here.
+ */
+let spWeekMode = 'W';
+const SP_TECH_LABEL = { unserved:'Unserved (VoLL)', diesel:'Diesel OCGT', ccgt:'Gas CCGT',
+                        coal:'Coal', imports:'Imports', hydro:'Hydro', nuclear:'Nuclear',
+                        curtail:'Renewables spilling', none:'Nothing scarce' };
+const SP_ZERO_COL = '#7DC47A';
+function spTechColour(t){
+  if (t === 'curtail' || t === 'none') return SP_ZERO_COL;
+  return (typeof COLORS !== 'undefined' && COLORS[t]) ? COLORS[t] : '#999';
+}
+
+function drawShadowPriceWeek(r){
+  const c = document.getElementById('spWeek');
+  if (!c || !r || !r.marginalP || !r.marginalTech) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = c.clientWidth || 600, H = 200;
+  c.width = W*dpr; c.height = H*dpr;
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  const start = (spWeekMode === 'S') ? 7848 : 3264, N = 168;
+  const p = r.marginalP, tech = r.marginalTech;
+  const win = [], wt = [];
+  for (let i = 0; i < N; i++){ win.push(p[start+i] || 0); wt.push(tech[start+i] || 'none'); }
+
+  // Clip at the 98th percentile: one value-of-lost-load hour would otherwise
+  // flatten every other bar. Clipped bars are drawn to the top of the axis.
+  const srt = win.slice().sort((a,b) => a-b);
+  const cap = Math.max(100, srt[Math.floor(N*0.98)]);
+  const padL = 46, padB = 16, plotW = W-padL-6, plotH = H-padB-8;
+  const css = getComputedStyle(document.documentElement);
+  const line2 = css.getPropertyValue('--line2').trim() || '#ddd';
+  const ink2  = css.getPropertyValue('--ink2').trim()  || '#777';
+
+  ctx.strokeStyle = line2; ctx.lineWidth = 1;
+  ctx.font = '9px "IBM Plex Mono", monospace'; ctx.fillStyle = ink2; ctx.textAlign = 'right';
+  for (let g = 0; g <= 4; g++){
+    const y = 8 + plotH*(1-g/4), v = cap*g/4;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W-6, y); ctx.stroke();
+    ctx.fillText('R'+Math.round(v), padL-4, y+3);
+  }
+  const bw = plotW/N;
+  for (let i = 0; i < N; i++){
+    const v = win[i], over = v > cap;
+    const h = Math.max(v < 1 ? 2 : 1, Math.min(v, cap)/cap*plotH);
+    ctx.fillStyle = spTechColour(wt[i]);
+    ctx.fillRect(padL + i*bw, 8 + plotH - h, Math.max(1, bw-0.4), h);
+    if (over){ ctx.fillStyle = '#000'; ctx.globalAlpha = 0.25;
+               ctx.fillRect(padL + i*bw, 8, Math.max(1, bw-0.4), 3); ctx.globalAlpha = 1; }
+  }
+  ctx.fillStyle = ink2; ctx.textAlign = 'center';
+  const D = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  for (let d = 0; d < 7; d++) ctx.fillText(D[d], padL + (d*24+12)*bw, H-4);
+
+  // Legend: only technologies that actually set the price this week, with the
+  // hours they set it and their mean price when they did.
+  const agg = {};
+  for (let i = 0; i < N; i++){
+    const k = (wt[i] === 'none') ? 'curtail' : wt[i];
+    (agg[k] = agg[k] || {n:0, sum:0}).n++; agg[k].sum += win[i];
+  }
+  const order = ['unserved','diesel','ccgt','coal','imports','hydro','nuclear','curtail'];
+  const leg = document.getElementById('spWeekLegend');
+  if (leg) leg.innerHTML = order.filter(k => agg[k]).map(k =>
+      '<span style="display:inline-block;margin:0 10px 3px 0;font-size:9.5px;'
+    + 'font-family:\'IBM Plex Mono\',monospace;color:var(--ink2);white-space:nowrap">'
+    + '<span style="display:inline-block;width:9px;height:9px;background:' + spTechColour(k)
+    + ';margin-right:4px;vertical-align:-1px"></span>' + SP_TECH_LABEL[k]
+    + ' &middot; ' + agg[k].n + 'h &middot; R' + Math.round(agg[k].sum/agg[k].n) + '</span>').join('');
+
+  const zero = (agg.curtail ? agg.curtail.n : 0);
+  const over = win.filter(v => v > cap).length;
+  const top = order.filter(k => agg[k] && k !== 'curtail')
+                   .sort((a,b) => agg[b].n - agg[a].n)[0];
+  const note = document.getElementById('spWeekNote');
+  if (note) note.innerHTML =
+      'What a competitive market would clear at, hour by hour, across the '
+    + (spWeekMode === 'S' ? 'summer' : 'winter') + ' week. Each bar is coloured by the '
+    + 'technology on the margin \u2014 the most expensive unit running in that hour, which is '
+    + 'what sets the price for everyone. '
+    + (top ? '<strong>' + SP_TECH_LABEL[top] + '</strong> sets the price most often here ('
+             + agg[top].n + ' of 168 hours). ' : '')
+    + (zero ? 'Green hours price at zero \u2014 renewables are spilling and nothing scarce is on '
+              + 'the margin (' + zero + ' this week). ' : '')
+    + (over ? 'Bars with a dark cap run past the top of the axis (' + over + ' hours), clipped so '
+              + 'one scarcity hour does not flatten the rest. ' : '')
+    + '<strong>These are shadow prices, not observed ones.</strong> South Africa has no wholesale '
+    + 'market, so this is what the system would pay if dispatch were priced rather than administered.';
+}
+
 function drawBessWeek(r){
   const c = document.getElementById('bessWeek');
   if (!c || !r || !r.marginalP) return;
@@ -6578,7 +6702,8 @@ const dispCanvas=document.getElementById('dispatch');
 let weekMode='W';
 document.getElementById('wkW').addEventListener('click',e=>{weekMode='W';toggleWk(e.target);draw(nodalActiveRes||lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);});
 document.getElementById('wkS').addEventListener('click',e=>{weekMode='S';toggleWk(e.target);draw(nodalActiveRes||lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);});
-function toggleWk(btn){document.querySelectorAll('.wkbtns button').forEach(b=>b.classList.toggle('active',b===btn));}
+function toggleWk(btn){const g=btn.parentElement;(g?g.querySelectorAll('button'):[]).forEach(b=>b.classList.toggle('active',b===btn));}
+['spW','spS'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',e=>{spWeekMode=(id==='spW')?'W':'S';toggleWk(e.target);if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(nodalActiveRes||lastRes);});});
 const DISP_ORDER=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
 
 function drawDispatch(r){
@@ -6953,7 +7078,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);}if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderGasSRMC==='function'&&!document.getElementById('gas_zar'))renderGasSRMC();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderGasSRMC==='function'&&!document.getElementById('gas_zar'))renderGasSRMC();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
