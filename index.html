@@ -5356,10 +5356,70 @@ function drawBessWeek(r){
  * registered capacity than grid to take it, while KwaZulu-Natal sits at 8%.
  */
 let queueNersa = null, queueHeadroom = null;
+let queueBQ = null;
 Promise.all([
   fetch('nodal/nersa_registrations.json').then(r => r.ok ? r.json() : null).catch(() => null),
   fetch('nodal/headroom_summary.json').then(r => r.ok ? r.json() : null).catch(() => null),
-]).then(([n, h]) => { queueNersa = n; queueHeadroom = h; renderQueuePressure(); });
+  fetch('nodal/bq_queue.json').then(r => r.ok ? r.json() : null).catch(() => null),
+]).then(([n, h, b]) => { queueNersa = n; queueHeadroom = h; queueBQ = b; renderQueuePressure(); });
+
+
+/* ---- Allocations past their expected commissioning year --------------------
+ * What a developer actually wants to know is how long a project has held a
+ * budget quote without acting on it. That cannot be computed from public data:
+ * NTCSA's GCCA tables are anonymised and carry expected COMMISSIONING year
+ * only - the date a budget quote was issued is not published anywhere.
+ *
+ * What the tables do support is a slip check. A project still listed as holding
+ * an active BQ, in a region with no spare headroom, whose expected year has
+ * already passed, is occupying capacity it has not used. That is the closest
+ * public proxy for the problem, and it is derivable today.
+ */
+function bqSlipHtml(){
+  if (!queueBQ || !queueBQ.editions || !queueBQ.editions.length) return '';
+  const now = new Date().getFullYear();
+  const ed = queueBQ.editions[queueBQ.editions.length - 1];
+  const late = ed.projects.filter(p => p.expected < now);
+  if (!late.length) return '';
+  const lateMW = late.reduce((s, p) => s + p.mw, 0);
+  const totMW = ed.projects.reduce((s, p) => s + p.mw, 0);
+
+  // Group by region so it reads against the pressure table above.
+  const byReg = {};
+  late.forEach(p => { (byReg[p.region] = byReg[p.region] || { n: 0, mw: 0 }).n++; byReg[p.region].mw += p.mw; });
+
+  return '<div style="margin-top:13px;padding-top:11px;border-top:1.5px solid var(--ink)">'
+    + '<div style="font-size:11px;font-weight:700;margin-bottom:3px">Allocations past their expected year</div>'
+    + `<div style="font-size:9.5px;color:var(--ink2);margin-bottom:8px;line-height:1.5">`
+    + `From ${ed.label}, published ${ed.published}. ${ed.scope}.</div>`
+    + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 5px">Supply area</th>'
+    + '<th style="text-align:right;padding:4px 5px">Overdue</th>'
+    + '<th style="text-align:right;padding:4px 5px">Capacity held</th></tr>'
+    + Object.entries(byReg).sort((a,b) => b[1].mw - a[1].mw).map(([r, v]) =>
+        '<tr style="border-bottom:1px solid var(--line2)">'
+        + `<td style="padding:4px 5px">${r}</td>`
+        + `<td style="text-align:right;padding:4px 5px;color:var(--ink2)">${v.n} project${v.n>1?'s':''}</td>`
+        + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">${v.mw.toLocaleString()} MW</td></tr>`).join('')
+    + '</table>'
+    + '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
+    + 'padding:8px 11px;margin-top:9px;font-size:10.5px;line-height:1.55">'
+    + `<strong>${late.length} of ${ed.projects.length} projects holding active budget quotes \u2014 `
+    + `${lateMW.toLocaleString()} MW of ${totMW.toLocaleString()} \u2014 are past the year they were expected `
+    + 'to commission.</strong> They still hold their grid allocation. In supply areas already at zero '
+    + 'headroom, that capacity is not available to anyone else.'
+    + '<div style="margin-top:5px;color:var(--ink2)">Eskom\u2019s Interim Grid Capacity Allocation Rules '
+    + 'moved to \u2018first ready, first served\u2019 in 2023 precisely to stop this, after Bid Window 6 '
+    + 'failed to produce a single preferred wind bidder because the capacity was already spoken for. '
+    + 'The rules let Eskom revoke a budget quote for non-compliance; industry reports that revocation '
+    + 'is rare.</div></div>'
+    + '<div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.5">'
+    + '<strong>This is a slip measure, not a queue age.</strong> The GCCA tables are anonymised and '
+    + 'give expected commissioning year only \u2014 the date a budget quote was issued is not published, '
+    + 'so how long a project has held its allocation cannot be derived from public sources. A missed '
+    + 'year is also not proof of hoarding: upstream transmission delay would produce the same signal, '
+    + 'and that is not the developer\u2019s doing.</div></div>';
+}
 
 function renderQueuePressure(){
   const host = document.getElementById('queueBody');
@@ -5422,7 +5482,8 @@ function renderQueuePressure(){
     + '10 MW and above takes the total from 19,677 MW to 18,356 MW \u2014 so these figures are '
     + 'substantially the utility-scale capacity that competes for transmission headroom, not rooftop. '
     + 'Headroom is the GCCA figure for the larger of solar or wind, which the two share. '
-    + 'Sources: SAPVIA\u2019s collation of NERSA statements, and NTCSA\u2019s GCCA.</div>';
+    + 'Sources: SAPVIA\u2019s collation of NERSA statements, and NTCSA\u2019s GCCA.</div>'
+    + bqSlipHtml();
 }
 
 
