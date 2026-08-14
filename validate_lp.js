@@ -24,15 +24,16 @@ const { JSDOM } = require('jsdom');
 const fs = require('fs'), path = require('path');
 const ROOT = process.argv[2] || 'testroot';
 
-// carbonPrice is deliberately absent from this list: it is genuinely NOT a key
-// of FIXED, so `S.carbonPrice != null ? S.carbonPrice : 550` is a real default
-// rather than a duplicated constant. Whether carbonTaxRPerT should feed it is a
-// separate question. Do not "fix" that guard on the strength of this file.
+// carbonTaxRPerT is now in FIXED and is the ONLY carbon price in the model. Both
+// LPs previously fell through to a hardcoded 550 that no slider could change,
+// while the hourly dispatch used the slider - two halves of the model on
+// different carbon prices. These two entries are what catches that recurring.
 const NATIONAL_FIELDS = {
   windMW: 9999, pvUtilityMW: 9999, rooftopMW: 9999, cspMW: 9999, battPowerMW: 9999,
   costCoal: 1234, costCcgt: 4321, costDiesel: 7777, emisCoal: 2.5, emisCcgt: 1.5,
+  carbonTaxRPerT: 999,
 };
-const REGIONAL_FIELDS = { costCoal: 1234, costDiesel: 7777, emisCoal: 2.5 };
+const REGIONAL_FIELDS = { costCoal: 1234, costDiesel: 7777, emisCoal: 2.5, carbonTaxRPerT: 999 };
 
 function boot(root) {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -116,16 +117,21 @@ function check(label, ok, detail) {
       const build = () => ${fn}(mkOpts()).lp;
       let base;
       try { base = build(); } catch (e) { return { buildError: String(e) }; }
-      const res = {};
+      const res = {}, src = {};
       for (const k of Object.keys(FIELDS)) {
-        const original = FIXED[k];
-        FIXED[k] = FIELDS[k];
+        // S resolves as { ...FIXED, ...state }, so for a field the SLIDER carries,
+        // state wins and perturbing FIXED proves nothing. Perturb whichever object
+        // actually supplies the value.
+        const holder = (typeof state !== 'undefined' && k in state) ? state : FIXED;
+        src[k] = (holder === FIXED) ? 'FIXED' : 'state';
+        const original = holder[k];
+        holder[k] = FIELDS[k];
         let after;
         try { after = build(); } catch (e) { after = 'ERROR:' + e; }
-        FIXED[k] = original;
+        holder[k] = original;
         res[k] = (after !== base);
       }
-      return { moved: res, baseLen: base.length };`);
+      return { moved: res, src, baseLen: base.length };`);
 
     if (r.error || r.buildError) {
       check(`${fn} builds an LP`, false, r.error || r.buildError);
@@ -133,8 +139,9 @@ function check(label, ok, detail) {
     }
     check(`${fn} builds an LP`, true, `${r.baseLen} chars`);
     for (const k of Object.keys(fields)) {
-      check(`FIXED.${k} reaches ${fn}`, r.moved[k] === true,
-            r.moved[k] ? '' : 'perturbing FIXED did not change the LP - the constant is not being read');
+      const where = (r.src && r.src[k]) || 'FIXED';
+      check(`${where}.${k} reaches ${fn}`, r.moved[k] === true,
+            r.moved[k] ? '' : `perturbing ${where} did not change the LP - the constant is not being read`);
     }
   }
 
