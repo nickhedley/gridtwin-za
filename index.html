@@ -333,7 +333,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 <section aria-label="Network map and capacity siting">
       <div class="panel mapbox">
-        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn" style="margin-left:8px">Show REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
+        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
         <div class="legend">
           <span><i style="background:#4A3120"></i>Coal</span>
@@ -6035,7 +6035,7 @@ function togglePipeline(){
   // set var(--verd), which is not a variable this stylesheet defines (it is
   // --veld), so the active state had no background at all.
   btn.textContent=pipelineVisible?'Hide REIPPPP project pipeline':'Show REIPPPP project pipeline';
-  btn.classList.toggle('active', pipelineVisible);
+  btn.classList.toggle('active', !pipelineVisible);
   drawPipeline();
 }
 
