@@ -2878,6 +2878,16 @@ const FIXED = {
   // pvUtilityMW is NOT yet derived the same way: about 1,823 MW of private solar
   // commissioned before Jan 2026 is unsourced, so 4,974 stands with a known gap.
   ocgtDieselMW:3400, windMW:4512, pvUtilityMW:4974, rooftopMW:9100, cspMW:600,
+  // Effective carbon price on ELECTRICITY GENERATION, R/tCO2e. The headline
+  // Phase 2 rate is R308/t from 1 Jan 2026 (up from R236), but generation is
+  // covered by tax-free allowances of up to 85%, so the rate actually paid is
+  // roughly 15% of headline. Reference points on the slider: 308 headline,
+  // 462 the 2030 scheduled rate, 640 the punitive rate for exceeding a carbon
+  // budget. This is the ONLY carbon price in the model - the hourly dispatch,
+  // the nodal path and both capacity expansion LPs all read it. It previously
+  // did not exist here, and the LPs fell through to a hardcoded 550 that no
+  // slider could change.
+  carbonTaxRPerT:46,
   // Value of lost load, used as the wholesale price ceiling in hours with
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
@@ -3807,7 +3817,7 @@ function bldBuildLP(opts){
   // global - reading undefined fields here silently produces NaN coefficients and
   // an LP that HiGHS refuses to parse.
   const S = { ...FIXED, ...(opts.state || {}) };
-  const VOLL = 60000, CARBON = (S.carbonPrice != null ? S.carbonPrice : 550);
+  const VOLL = 60000, CARBON = S.carbonTaxRPerT;
   const MC = { coal: S.costCoal, ccgt: S.costCcgt, diesel: S.costDiesel };
   const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:S.ocgtDieselMW,
                wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
@@ -4102,7 +4112,7 @@ function bldBuildRegionalLP(opts){
   const rd = bldRepDays(8);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   const S = { ...FIXED, ...(opts.state || {}) };
-  const VOLL = 60000, CARBON = (S.carbonPrice != null ? S.carbonPrice : 550);
+  const VOLL = 60000, CARBON = S.carbonTaxRPerT;
   const MCcoal = S.costCoal + CARBON * S.emisCoal;
   const MCdiesel = S.costDiesel;
 
@@ -6134,7 +6144,7 @@ const SLIDERS=[
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. Baseline is 6 GW, or roughly 15% of SA peak demand — consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
-  {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:20,def:0,fmt:v=>'R'+v+'/t',note:'Affects the system cost and wholesale prices — but does not change which plants dispatch.'},
+  {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+v+'/t',note:'Default R46/t is the effective rate on generation — the R308/t Phase 2 headline less allowances of up to 85%. Try R308 (headline), R462 (2030) or R640 (carbon-budget breach). Feeds dispatch, wholesale prices AND the build optimiser — but does not change which plants dispatch.'},
   {grp:'LCOE assumptions (R/kWh) — full lifecycle build cost'},
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:550,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
   {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:750,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 wind bids > solar; anchor R0.75'},
