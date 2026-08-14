@@ -548,6 +548,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="bessBody"></div>
           </div>
           <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Where a battery earns most</h2><span class="tag">nodal &middot; needs full model run</span></div>
+            <div class="pb" id="bessLocBody"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
             <div class="pb" id="carbonBudget"></div>
           </div>
@@ -4901,6 +4906,93 @@ function renderBess(r){
     + 'contracts or co-location are the most feasible routes for battery operators.</div>';
 }
 
+
+/* ==================== LOCATIONAL BESS BENCHMARK ==========================
+ * The national benchmark above implicitly assumes one battery can reach every
+ * scarcity hour in the country. A real asset sits in one region and captures
+ * only what happens there - so the national figure is an upper bound, and this
+ * is what a SITED battery earns.
+ *
+ * Built from the network optimiser's own per-region output: a region that is
+ * spilling renewables prices at zero, one with unserved demand prices at
+ * scarcity, and otherwise it pays the system marginal cost. That is the same
+ * logic as the national series, applied region by region.
+ */
+let bessLocational = null;
+
+function computeLocationalBess(curt, uns, regions, systemPrice){
+  if (!curt || !regions || !regions.length || !systemPrice) return null;
+  const out = {};
+  regions.forEach((reg, ri) => {
+    const base = ri * 8760;
+    const price = new Float64Array(8760);
+    let spill = 0;
+    for (let h = 0; h < 8760; h++){
+      if ((uns && uns[base + h] > 1)) price[h] = 87000;          // local scarcity
+      else if (curt[base + h] > 1){ price[h] = 0; spill++; }     // local spill
+      else price[h] = systemPrice[h];                            // imports at system cost
+    }
+    // Same arbitrage as the national benchmark, on this region's own price.
+    const run = (hours) => {
+      let rev = 0, cycles = 0, spreadSum = 0;
+      for (let d = 0; d < 365; d++){
+        const day = [];
+        for (let hh = 0; hh < 24; hh++) day.push(price[d*24 + hh]);
+        const s = day.slice().sort((a, b) => a - b);
+        const cIn = s.slice(0, hours).reduce((a,b) => a+b, 0) / hours;
+        const dOut = Math.min(s.slice(-hours).reduce((a,b) => a+b, 0) / hours, 6100);
+        const sp = dOut * 0.88 - cIn;
+        if (sp > 0){ rev += sp * hours; cycles++; spreadSum += sp; }
+      }
+      return { rev, cycles, spread: spreadSum / 365 };
+    };
+    out[reg] = { spillHours: spill, h4: run(4), h2: run(2) };
+  });
+  return out;
+}
+
+function renderLocationalBess(){
+  const host = document.getElementById('bessLocBody');
+  if (!host) return;
+  if (typeof window!=='undefined' && window.bessLocational) bessLocational = window.bessLocational;
+  if (!bessLocational){
+    host.innerHTML = '<p style="font-size:10.5px;color:var(--ink2);line-height:1.5">'
+      + 'Run the network optimiser (<strong>Run the full model</strong>, above) to see where a battery '
+      + 'earns most. A single national price hides the thing that actually pays: one region spilling '
+      + 'renewables while another is short.</p>';
+    return;
+  }
+  const rows = Object.entries(bessLocational)
+    .map(([reg, x]) => ({ reg, ...x }))
+    .sort((a, b) => b.h4.rev - a.h4.rev);
+  const best = rows[0], worst = rows[rows.length - 1];
+  const k = v => 'R' + (v/1000).toFixed(0) + 'k';
+
+  host.innerHTML =
+      '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
+    + 'What a <strong>sited</strong> four-hour battery earns, by supply area. The national figure above '
+    + 'assumes one asset can reach every scarcity hour in the country; a real battery only captures '
+    + 'what happens where it stands.</div>'
+    + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)">'
+    + '<th style="text-align:left;padding:4px 6px">Supply area</th>'
+    + '<th style="text-align:right;padding:4px 6px">Spill hrs</th>'
+    + '<th style="text-align:right;padding:4px 6px">Cycles</th>'
+    + '<th style="text-align:right;padding:4px 6px">4h revenue</th></tr>'
+    + rows.map((x, i) => '<tr style="border-bottom:1px solid var(--line2)'
+        + (i === 0 ? ';background:rgba(125,196,122,0.10)' : '') + '">'
+        + `<td style="padding:4px 6px">${x.reg}</td>`
+        + `<td style="text-align:right;padding:4px 6px;color:var(--ink2)">${x.spillHours.toLocaleString()}</td>`
+        + `<td style="text-align:right;padding:4px 6px;color:var(--ink2)">${x.h4.cycles}</td>`
+        + `<td style="text-align:right;padding:4px 6px;font-weight:700">${k(x.h4.rev)}/MW/yr</td></tr>`).join('')
+    + '</table>'
+    + `<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">`
+    + `<strong>${best.reg} pays best</strong> at ${k(best.h4.rev)}/MW/yr, against ${k(worst.h4.rev)} in ${worst.reg}. `
+    + 'Revenue tracks spill hours, but not simply: a region can spill so heavily that its own evening '
+    + 'price collapses too, leaving cheap energy and nowhere profitable to sell it. The best sites pair '
+    + 'plenty of surplus with a firm local price to discharge into.</div>';
+}
+
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
@@ -5806,7 +5898,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function')renderPricePanel(lastRes);if(typeof renderBess==='function')renderBess(lastRes);if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function')renderPricePanel(lastRes);if(typeof renderBess==='function')renderBess(lastRes);if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
@@ -8001,6 +8093,16 @@ function applyMIPResult(m, mode) {
     }
     window.applyCurtailmentToMap(regionCurtMwh, mipInputs.renewablePotentialMwh, mipInputs.regions);
   }
+
+  // Locational battery benchmark, from the optimiser's own per-region output.
+  // Only meaningful once the network model has run - the single-node engine has
+  // no regions to differentiate.
+  try {
+    if (nRegions && lastRes && lastRes.marginalP) {
+      bessLocational = computeLocationalBess(curt, uns, mipInputs.regions, lastRes.marginalP);
+      if (typeof renderLocationalBess === 'function') renderLocationalBess();
+    }
+  } catch (e) { /* benchmark is supplementary; never break the dispatch view */ }
 }
 
 function showMIPBanner() {
