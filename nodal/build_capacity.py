@@ -27,6 +27,10 @@ def fingerprint(doc):
     return "gtza-" + hashlib.sha256(s.encode()).hexdigest()[:16]
 
 
+def total(d):
+    return round(sum(d.values()), 1)
+
+
 # ---------------------------------------------------------------------------
 # 1. REIPPPP operational capacity by province and technology
 #    Source: report p.18, "Capacity Online (MW)" per province.
@@ -44,18 +48,23 @@ reipppp_online = {
     "landfill_gas_mw": dict(blank(), **{"Gauteng": 8.0}),
 }
 
-# Private / wheeled operational capacity. EMPTY - pending the Power Futures Lab
-# monitor, which is the only source that allocates wheeled plant by province.
+# Private / wheeled operational capacity, from the PFL H1 2026 monitor.
+# INCOMPLETE: H1 2026 only. Private and wheeled plant that reached commercial
+# operation before January 2026 is not covered by the H1 monitor and is not here.
+# Captive (behind-the-meter) capacity is listed in the source but deliberately
+# excluded: it suppresses demand rather than adding supply.
+pfl = json.load(open("nodal/pfl_private_h1_2026.json"))
 private_online = {"solar_mw": blank(), "wind_mw": blank()}
+for region, v in pfl["by_region_wheeled"].items():
+    private_online["solar_mw"][region] = float(v.get("solar_mw", 0))
+    private_online["wind_mw"][region] = float(v.get("wind_mw", 0))
+assert round(total(private_online["solar_mw"]) + total(private_online["wind_mw"]), 1) \
+    == pfl["totals"]["wheeled_mw"], "PFL regional split does not sum to its own total"
 
 # Engine-facing totals: sum across sources. Utility PV only; CSP is carried
 # separately as FIXED.cspMW in index.html.
 solar_total = {r: reipppp_online["solar_mw"][r] + private_online["solar_mw"][r] for r in REGIONS}
 wind_total = {r: reipppp_online["wind_mw"][r] + private_online["wind_mw"][r] for r in REGIONS}
-
-
-def total(d):
-    return round(sum(d.values()), 1)
 
 
 prov_online_sum = round(sum(total(v) for v in reipppp_online.values()), 1)
@@ -89,7 +98,8 @@ regional = {
             "commissioned-plant figures, not bid-window awards."
         ),
         "source_reipppp": SRC + ", p.18 (Capacity Online by province and technology)",
-        "source_private": "PENDING - Power Futures Lab IPP monitor, H1 2026 update",
+        "source_private": "Alao, O. & Kruger, W. (2026), South African IPPs: financial close and commercial operations monitor, H1 2026 update, Power Futures Lab, UCT GSB (see nodal/pfl_private_h1_2026.json)",
+        "private_coverage": "h1-2026-only",
         "as_at": "2026-03-31",
         "compiled": COMPILED,
         "REBUILD_NOTE": (
@@ -111,13 +121,23 @@ regional = {
             "permits rather than commissioning, so it gives location only."
         ),
         "known_gaps": (
-            "(1) Private / wheeled operational capacity is NOT included - the by_source.private "
-            "block is empty pending the PFL monitor. (2) RMIPPPP contributes about 225 MW of "
+            "(1) by_source.private covers H1 2026 ONLY (958 MW wheeled). Private and wheeled "
+            "plant commissioned before January 2026 is not in the PFL H1 monitor and is missing "
+            "here - roughly 1.8 GW of solar remains unexplained against FIXED.pvUtilityMW, so "
+            "identity 3 stays PENDING and pvUtilityMW must NOT be re-derived from this file yet. "
+            "Wind, by contrast, now slightly EXCEEDS FIXED.windMW - see meta.WIND_OVERSHOOT. (2) RMIPPPP contributes about 225 MW of "
             "contracted operational capacity across Northern Cape, Eastern Cape and Western Cape; "
             "the report does not give the provincial split, so it is excluded rather than guessed. "
             "(3) CSP is reported here at 600 MW (Northern Cape) - index.html FIXED.cspMW of 500 "
             "is understated. (4) Peakers (Avon 670 MW KZN, Dedisa 335 MW Eastern Cape, diesel "
             "OCGT) are not renewable and are out of scope for this file."
+        ),
+        "WIND_OVERSHOOT": (
+            "REIPPPP wind online (4042) + PFL H1 2026 wheeled wind (470) = 4512 MW, against "
+            "FIXED.windMW of 4458 - an overshoot of 54 MW. Since the PFL figure is H1 2026 only "
+            "and cannot be double-counted against pre-2026 plant, either windMW is slightly "
+            "understated or some H1 2026 wheeled wind is already inside the REIPPPP total. "
+            "Resolve before re-deriving windMW; do not adjust either number to make it close."
         ),
         "region_key_note": "Region keys follow GridTwin ZA convention: 'Kwazulu Natal', and 'Hydra Central' is a supply area, not a province.",
         "licence": "CC BY-NC-ND 4.0",
