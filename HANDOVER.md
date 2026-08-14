@@ -38,7 +38,8 @@ solar                 488 MW   Limpopo 388, North West 100
 wind                  470 MW   Eastern Cape 330, Northern Cape 140
 ```
 
-**Engine-facing totals: solar 3,151 MW, wind 4,512 MW.** The private block covers
+**Engine-facing totals: solar 3,151 MW, wind 4,512 MW.** `FIXED.windMW` is derived from
+the wind figure and must not be hand-edited. The private block covers
 **H1 2026 only** — see open item 1. Captive (behind-the-meter) capacity of 88 MW is
 listed in the source and deliberately excluded: it suppresses demand rather than adding
 supply.
@@ -91,20 +92,29 @@ allocate by province, the privately procured wheeled capacity. So every regional
 carries a `source` tag and the national constant is the sum of both components.
 
 ```
-solar   2,663 + 488 = 3,151  vs  pvUtilityMW 4,974   gap      1,823 MW
-wind    4,042 + 470 = 4,512  vs  windMW      4,458   OVER        54 MW
+wind    4,042 + 470 = 4,512  vs  windMW      4,512   PASS
+solar   2,663 + 488 = 3,151  vs  pvUtilityMW 4,974   gap 1,823 MW, PENDING
 ```
 
-`meta.private_coverage` is `h1-2026-only`, so `validate_capacity.js` reports both as
-PENDING with the residual printed. It only evaluates the identity when coverage reads
-`complete`. **Do not let either go green on a widened tolerance** — the residuals are
-the finding.
+**Wind now passes, and `windMW` was corrected to 4,512 as a result.** It previously read
+4,458, built as 3,600 + 858, where the 3,600 baseline had muddled provenance and the 858
+mixed grid-supply with wheeled capacity — a figure that could not be decomposed. The two
+sources are disjoint universes: the IPP Office does not cover private procurement, so
+Umsobomvu and the three Impofu farms appear once, in the private bucket.
 
-The wind **overshoot** is the sharper of the two, because it cannot be closed by adding
-the missing pre-2026 plant — adding more only widens it. Either `windMW` is understated,
-or some H1 2026 wheeled wind is already inside the REIPPPP total. Umsobomvu and the three
-Impofu farms are the candidates, sitting in provinces where REIPPPP wind is heavy. See
-`meta.WIND_OVERSHOOT`. Do not adjust either number to make it close.
+Read that PASS for what it is. `windMW` is now **derived** from these components, so the
+equality is a consistency check, not independent corroboration — it confirms the constant
+and the file agree, and fails loudly if either is edited alone. It will also fail if
+pre-2026 private **wind** is later found, which is the correct behaviour: the constant
+would then be understated and must be re-derived, not patched.
+
+Solar stays PENDING. `meta.private_coverage` is `h1-2026-only`, and the validator only
+evaluates the solar identity when it reads `complete`. **Do not let it go green on a
+widened tolerance** — the 1,823 MW residual is the finding.
+
+This is what the source tagging bought: the overshoot only became visible once
+`by_source` was populated. A single opaque total had hidden a badly derived constant.
+Keep identity 3 as a permanent assertion, not a one-off check.
 
 ---
 
@@ -116,7 +126,7 @@ python3 audit.py <index.html>    29/29
 node validate_outputs.js         26/26
 node eng5.js                       6/6   monotonicity
 node jsdom_local2.js            renders without error
-node validate_capacity.js        13/13   (+2 pending — see identity 3)
+node validate_capacity.js        14/14   (+1 pending — see identity 3)
 node validate_lp.js              18/18
 ```
 
@@ -205,27 +215,24 @@ and is not here.
    changed to an unsubstantiated figure, and the "Existing fleet" documentation row
    still reads "Utility PV 4 GW" for the same reason. Change both in one commit once
    the earlier private capacity is sourced.
-2. **Wind overshoot of 54 MW.** See identity 3. Likely a double-count between the PFL
-   wheeled list and the REIPPPP total, or an understated `windMW`. Settle this before
-   re-deriving either.
-3. **`carbonPrice` is disconnected.** It is not a key of `FIXED` and not a slider — the
+2. **`carbonPrice` is disconnected.** It is not a key of `FIXED` and not a slider — the
    nearest is `carbonTaxRPerT`. So `CARBON` is pinned at R550/t in both LPs regardless
    of what a user sets. Same class of disconnection as the `S` bug, but it needs a
    decision about intent: whether `carbonTaxRPerT` should feed it, and whether R550
    should survive at all given the statutory rate is R308 with allowances taking the
    effective rate far lower.
-4. **`emisCoal || 0.95` at line 5812 disagrees with `FIXED.emisCoal` = 1.04.** Dead
+3. **`emisCoal || 0.95` at line 5812 disagrees with `FIXED.emisCoal` = 1.04.** Dead
    today, because that site already uses `{ ...FIXED, ...state }`. A latent wrong
    answer if the resolution ever changes.
-5. **Fourteen other surviving `X || <literal>` fallbacks** shadow a `FIXED` key (the
+4. **Fourteen other surviving `X || <literal>` fallbacks** shadow a `FIXED` key (the
    CCS cluster at 3116–3182, `coalInstalledMW` at 3206, `costCoal` at 5811,
    `costDiesel` at 8998, `ccgtMW` at 9056). All currently agree with `FIXED`. That is
    the pre-drift state, not a safe one.
-6. **Named-project layer.** The Q4 quarterly is aggregate throughout — zero project
+5. **Named-project layer.** The Q4 quarterly is aggregate throughout — zero project
    names. The annual *"An Overview of the IPPPP"* on the same publications page
    historically carries project-level tables and is the route to named entries and the
    Hydra Central split.
-7. **`sa_solar_grid.json`** is fetched at index.html:798 and does not exist; the page
+6. **`sa_solar_grid.json`** is fetched at index.html:798 and does not exist; the page
    degrades to the Open-Meteo ERA5 fallback. Probably obsolete — remove the fetch or
    restore the file.
 
