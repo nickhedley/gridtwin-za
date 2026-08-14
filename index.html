@@ -113,7 +113,18 @@ header{border-bottom:2px solid #3a5668; background:#517180; box-shadow:var(--sha
 .projwrap > section{margin-top:0}
 .projwrap .panel{margin-top:0; margin-bottom:18px}
 .panel{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow)}
-.panel>.ph{display:flex; justify-content:space-between; align-items:baseline; padding:9px 14px 7px; border-bottom:1.5px solid var(--ink); background:var(--panel2)}
+.panel>/* Header-bar controls. A <button> and an <a> do not agree on box height by
+   default, and .ph is a flex row with align-items:baseline, so each child sizes
+   to its own content. One class, padding-based - a fixed height clipped the
+   text - applied to both so they cannot drift apart. */
+.hbtn{display:inline-block; vertical-align:middle; font-family:inherit; font-size:10px;
+  line-height:1.4; font-weight:600; padding:3px 9px; margin:0; border-radius:3px;
+  border:1px solid var(--line2); background:var(--panel); color:var(--ink2);
+  text-decoration:none; cursor:pointer; white-space:nowrap; box-sizing:border-box}
+.hbtn:hover{border-color:var(--ink2)}
+.hbtn.primary{background:var(--steel); border-color:var(--steel); color:#fff}
+.hbtn.primary:hover{background:var(--steel2); border-color:var(--steel2)}
+.ph{display:flex; justify-content:space-between; align-items:baseline; padding:9px 14px 7px; border-bottom:1.5px solid var(--ink); background:var(--panel2)}
 .panel>.ph h2{font-size:16.5px; font-weight:600}
 .panel>.ph .tag{font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'}
 .pb{padding:14px}
@@ -318,7 +329,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 <section aria-label="Network map and capacity siting">
       <div class="panel mapbox">
-        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" style="margin-left:8px;display:inline-flex;align-items:center;justify-content:center;height:21px;padding:0 8px;box-sizing:border-box;font-size:10px;line-height:1;border-radius:3px;font-family:inherit;cursor:pointer;border:1px solid var(--line2);background:var(--panel);color:var(--ink2)">REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" title="Open the real transmission network in an interactive 3D map (new tab)" style="margin-left:6px;display:inline-flex;align-items:center;justify-content:center;height:21px;padding:0 8px;box-sizing:border-box;font-size:10px;line-height:1;border-radius:3px;font-family:inherit;cursor:pointer;border:1px solid var(--steel,#4A6B7A);background:var(--steel,#4A6B7A);color:#fff;text-decoration:none;font-weight:600">3D network map ↗</a></div>
+        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn" style="margin-left:8px">REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
         <div class="legend">
           <span><i style="background:#4A3120"></i>Coal</span>
