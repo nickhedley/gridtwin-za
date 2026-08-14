@@ -1,11 +1,11 @@
 {
  "wind_mw": {
-  "Eastern Cape": 1566.0,
+  "Eastern Cape": 1896.0,
   "Limpopo": 0.0,
   "Mpumalanga": 0.0,
   "Gauteng": 0.0,
   "Western Cape": 738.0,
-  "Northern Cape": 1738.0,
+  "Northern Cape": 1878.0,
   "Hydra Central": 0.0,
   "Kwazulu Natal": 0.0,
   "North West": 0.0,
@@ -13,14 +13,14 @@
  },
  "solar_mw": {
   "Eastern Cape": 70.0,
-  "Limpopo": 118.0,
+  "Limpopo": 506.0,
   "Mpumalanga": 0.0,
   "Gauteng": 0.0,
   "Western Cape": 359.0,
   "Northern Cape": 1570.0,
   "Hydra Central": 0.0,
   "Kwazulu Natal": 0.0,
-  "North West": 275.0,
+  "North West": 375.0,
   "Free State": 271.0
  },
  "by_source": {
@@ -101,23 +101,23 @@
   "private": {
    "solar_mw": {
     "Eastern Cape": 0.0,
-    "Limpopo": 0.0,
+    "Limpopo": 388.0,
     "Mpumalanga": 0.0,
     "Gauteng": 0.0,
     "Western Cape": 0.0,
     "Northern Cape": 0.0,
     "Hydra Central": 0.0,
     "Kwazulu Natal": 0.0,
-    "North West": 0.0,
+    "North West": 100.0,
     "Free State": 0.0
    },
    "wind_mw": {
-    "Eastern Cape": 0.0,
+    "Eastern Cape": 330.0,
     "Limpopo": 0.0,
     "Mpumalanga": 0.0,
     "Gauteng": 0.0,
     "Western Cape": 0.0,
-    "Northern Cape": 0.0,
+    "Northern Cape": 140.0,
     "Hydra Central": 0.0,
     "Kwazulu Natal": 0.0,
     "North West": 0.0,
@@ -147,15 +147,17 @@
  "meta": {
   "description": "Operational renewable capacity by GridTwin ZA nodal region. Rebuilt from commissioned-plant figures, not bid-window awards.",
   "source_reipppp": "IPP Office, IPPPP Quarterly Report Q4 2025/26 (as at 31 March 2026), p.18 (Capacity Online by province and technology)",
-  "source_private": "PENDING - Power Futures Lab IPP monitor, H1 2026 update",
+  "source_private": "Alao, O. & Kruger, W. (2026), South African IPPs: financial close and commercial operations monitor, H1 2026 update, Power Futures Lab, UCT GSB (see nodal/pfl_private_h1_2026.json)",
+  "private_coverage": "h1-2026-only",
   "as_at": "2026-03-31",
   "compiled": "2026-08-14",
   "REBUILD_NOTE": "Replaces a file assembled from REIPPPP bid-window AWARDS. The award-based file put North West at 722 MW and Northern Cape at 473 MW of solar; the commissioned figures are 275 and 1570. Wind was also misdistributed: Western Cape was 1274 MW against a published 738, Northern Cape 890 against 1738.",
   "HYDRA_CENTRAL_ZERO": "*** Hydra Central is set to ZERO and this WILL change the nodal network model. *** Hydra Central is a transmission supply area spanning the Karoo across the Northern Cape / Eastern Cape provincial boundary (Hydra, Gamma, Koruson, Aquila). The IPP Office reports by province, so an unknown slice of the Northern Cape's 3918 MW physically connects into Hydra Central. That slice cannot be sized without named projects, so the full provincial figure sits in Northern Cape and Hydra Central is zero. A wrong split would be worse than an absent one. To restore it, match named operational projects to nearest substation using substations_compact.json; reea_projects.json already does this for environmental authorisations, but covers permits rather than commissioning, so it gives location only.",
-  "known_gaps": "(1) Private / wheeled operational capacity is NOT included - the by_source.private block is empty pending the PFL monitor. (2) RMIPPPP contributes about 225 MW of contracted operational capacity across Northern Cape, Eastern Cape and Western Cape; the report does not give the provincial split, so it is excluded rather than guessed. (3) CSP is reported here at 600 MW (Northern Cape) - index.html FIXED.cspMW of 500 is understated. (4) Peakers (Avon 670 MW KZN, Dedisa 335 MW Eastern Cape, diesel OCGT) are not renewable and are out of scope for this file.",
+  "known_gaps": "(1) by_source.private covers H1 2026 ONLY (958 MW wheeled). Private and wheeled plant commissioned before January 2026 is not in the PFL H1 monitor and is missing here - roughly 1.8 GW of solar remains unexplained against FIXED.pvUtilityMW, so identity 3 stays PENDING and pvUtilityMW must NOT be re-derived from this file yet. Wind, by contrast, now slightly EXCEEDS FIXED.windMW - see meta.WIND_OVERSHOOT. (2) RMIPPPP contributes about 225 MW of contracted operational capacity across Northern Cape, Eastern Cape and Western Cape; the report does not give the provincial split, so it is excluded rather than guessed. (3) CSP is reported here at 600 MW (Northern Cape) - index.html FIXED.cspMW of 500 is understated. (4) Peakers (Avon 670 MW KZN, Dedisa 335 MW Eastern Cape, diesel OCGT) are not renewable and are out of scope for this file.",
+  "WIND_OVERSHOOT": "REIPPPP wind online (4042) + PFL H1 2026 wheeled wind (470) = 4512 MW, against FIXED.windMW of 4458 - an overshoot of 54 MW. Since the PFL figure is H1 2026 only and cannot be double-counted against pre-2026 plant, either windMW is slightly understated or some H1 2026 wheeled wind is already inside the REIPPPP total. Resolve before re-deriving windMW; do not adjust either number to make it close.",
   "region_key_note": "Region keys follow GridTwin ZA convention: 'Kwazulu Natal', and 'Hydra Central' is a supply area, not a province.",
   "licence": "CC BY-NC-ND 4.0",
   "copyright": "(c) 2026 Nick Hedley",
-  "fingerprint": "gtza-25d89e1e846b0b31"
+  "fingerprint": "gtza-d4829e6ac16d8fc8"
  }
 }
