@@ -577,7 +577,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Hourly wholesale shadow price</h2>
+            <div class="ph"><h2>Price-setting technology by hour</h2>
               <div class="wkbtns">
                 <button id="spW" class="active">Winter week</button>
                 <button id="spS">Summer week</button>
@@ -585,7 +585,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
             <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &mdash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
             <div class="pb" style="padding:10px 10px 4px">
-              <canvas id="spWeek" height="200" aria-label="Hourly wholesale shadow price, coloured by price-setting technology" aria-describedby="spWeekDesc"></canvas>
+              <canvas id="spWeek" height="200" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
             </div>
             <p id="spWeekDesc" class="sr-only">Hourly shadow price for a representative 168-hour week, each bar coloured by the technology setting the price in that hour.</p>
             <div class="pb" id="spWeekLegend" style="padding:0 12px 4px"></div>
@@ -5391,7 +5391,11 @@ function weekStartHour(){ return (typeof weekMode !== 'undefined' && weekMode ==
  * chart, one toggle. Do not re-add it.
  */
 
-/* ---- Hourly wholesale shadow price, coloured by price-setting technology ----
+/* ---- Price-setting technology by hour ------------------------------------
+ * Panel heading is "Price-setting technology by hour", deliberately distinct from
+ * the "Wholesale shadow price" panel above it, which shows annual statistics.
+ * That one aggregates the year; this one shows one representative week hour by
+ * hour and colours each bar by the unit on the margin.
  * Same 168-hour windows as the dispatch chart, but with its OWN week toggle so
  * it can be read against either season without moving the dispatch chart.
  * Colour comes from r.marginalTech, which is written in the same cascade that
