@@ -2891,6 +2891,11 @@ const FIXED = {
   // capacity expansion LPs. Diesel was previously carbon-free in the LPs while
   // carbon-taxed in dispatch - the same split the carbon price itself had.
   carbonTaxRPerT:46,
+  // Storage cycling cost, R per MWh discharged. This is the degradation term in a
+  // storage bid: a battery will not cycle for less than the wear it incurs doing so.
+  // ASSUMPTION, not a sourced figure - review before quoting. Pumped storage is
+  // mechanical and cycles far more cheaply than an electrochemical cell.
+  battCycleCostR:180, psCycleCostR:20,
   // Value of lost load, used as the wholesale price ceiling in hours with
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
@@ -3196,6 +3201,22 @@ function simulate(u, prof, outPath){
   let startUpCostR=0;
   let prevCoalGen=coalAvail*0.5; // reasonable starting assumption, matching psSoc/battSoc's own starting-fraction convention
   let psSoc=p.psEnergyMWh*0.7, battSoc=battEnergy*0.5;
+  // Cost basis of the energy currently in store, R per MWh OF STORED ENERGY.
+  // Efficiency loss is applied on the way in (soc += w*eff), so the basis already
+  // carries it: charging 100 MWh at R0 into an 88% battery stores 88 MWh at R0/MWh;
+  // charging from coal at R600 stores it at R600/0.88 = R682/MWh delivered.
+  let psBasis=0, battBasis=0;
+  const addCharge=(which,mw,costR)=>{
+    if(mw<=0) return;
+    if(which==='ps'){ const e=mw*p.psEff; psBasis=(psSoc*psBasis+mw*costR)/Math.max(1e-9,psSoc+e); }
+    else { const e=mw*p.battEff; battBasis=(battSoc*battBasis+mw*costR)/Math.max(1e-9,battSoc+e); }
+  };
+  // Which resource was genuinely ON THE MARGIN each hour. A resource sitting at its
+  // power or energy limit is NOT marginal - it is constrained, and the next unit up
+  // sets the price. Recorded in the dispatch itself rather than reconstructed
+  // afterwards, so it cannot drift from what was actually dispatched.
+  const storageMarginal=new Array(HOURS).fill(null);
+  const storageBid=new Float64Array(HOURS);
   const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
   const E={rooftop:0,wind:0,pv:0,csp:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0};
   let fuelCost=0, carbonCost=0, curtailFuelCost=0, shedMWh=0, maxStage=0;
@@ -3377,8 +3398,8 @@ function simulate(u, prof, outPath){
       // This is the real mechanism behind "inflexible coal causes additional curtailment".
       const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
-      const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); psSoc+=psChg*p.psEff; surplus-=psChg;
-      const btChg=Math.min(surplus,battPower,battEnergy-battSoc); battSoc+=btChg*p.battEff; surplus-=btChg;
+      const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); addCharge('ps',psChg,0); psSoc+=psChg*p.psEff; surplus-=psChg;
+      const btChg=Math.min(surplus,battPower,battEnergy-battSoc); addCharge('batt',btChg,0); battSoc+=btChg*p.battEff; surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       curtailMW[h]+=surplus; E.curtailed+=surplus;
       const vre=windGen+pvGen;
@@ -3429,8 +3450,8 @@ function simulate(u, prof, outPath){
       residual-=coalGen;
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
-        const psChg=Math.min(forcedSurplus,p.psPowerMW,p.psEnergyMWh-psSoc); psSoc+=psChg*p.psEff; forcedSurplus-=psChg;
-        const btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); battSoc+=btChg*p.battEff; forcedSurplus-=btChg;
+        const psChg=Math.min(forcedSurplus,p.psPowerMW,p.psEnergyMWh-psSoc); addCharge('ps',psChg,0); psSoc+=psChg*p.psEff; forcedSurplus-=psChg;
+        const btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); addCharge('batt',btChg,0); battSoc+=btChg*p.battEff; forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
         // off instantly), then coal trips if the oversupply still exceeds all renewable output.
@@ -3457,17 +3478,32 @@ function simulate(u, prof, outPath){
       // was being curtailed. Testing netLoadPre[h] against its own percentile is
       // the comparison that was intended.
       const isExpensiveHour=netLoadPre[h]>=expensiveThresholdByHour[h];
+      // A resource is MARGINAL only if it is the last one dispatched AND it still had
+      // room to give more. Storage at its power or energy limit is constrained, not
+      // marginal, and the next unit up sets the price. `slack` captures that.
+      const psLim=Math.min(p.psPowerMW,psSoc), btLim=Math.min(battPower,battSoc);
       if(isExpensiveHour){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
-        const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
+        const btDis=Math.min(residual,btLim); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
+        // storage discharged ahead of coal here, so coal is above it in this hour's order
+        if(topUp<=1){
+          if(btDis>1&&btDis<btLim-1) storageMarginal[h]='batt';
+          else if(psDis>1&&psDis<psLim-1) storageMarginal[h]='ps';
+        }
       } else {
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
-        const psDis=Math.min(residual,p.psPowerMW,psSoc); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const btDis=Math.min(residual,battPower,battSoc); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
+        const btDis=Math.min(residual,btLim); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        if(btDis>1&&btDis<btLim-1) storageMarginal[h]='batt';
+        else if(psDis>1&&psDis<psLim-1) storageMarginal[h]='ps';
       }
+      // Bid = cost basis of the stored energy (already net of round-trip losses) plus
+      // the cycling cost. Recorded now, while the basis is the one that applied.
+      if(storageMarginal[h]==='batt') storageBid[h]=battBasis+p.battCycleCostR;
+      else if(storageMarginal[h]==='ps') storageBid[h]=psBasis+p.psCycleCostR;
       // IRP 50% annual load factor: if toggled, treat half of CCGT capacity as must-run
       const ccgtMustRun = p.ccgtForceLoad ? Math.round(ccgtCap*0.5) : 0;
       if(ccgtMustRun>0){
@@ -3493,8 +3529,9 @@ function simulate(u, prof, outPath){
         // fixed SoC target when storage started nearly empty with nothing to justify it.
         const psTargetCeiling=Math.min(p.psEnergyMWh*0.85, anticipatedShortfall[h]);
         const battTargetCeiling=Math.min(battEnergy*0.8, anticipatedShortfall[h]);
-        if(head>0&&psSoc<psTargetCeiling){const w=Math.min(p.psPowerMW*0.8,psTargetCeiling-psSoc,head); coalGen+=w; psSoc+=w*p.psEff; head-=w; chargeMW[h]+=w;}
-        if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; battSoc+=w*p.battEff; chargeMW[h]+=w;}
+        const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC;  // this charge is bought from coal
+        if(head>0&&psSoc<psTargetCeiling){const w=Math.min(p.psPowerMW*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge('ps',w,chgC); psSoc+=w*p.psEff; head-=w; chargeMW[h]+=w;}
+        if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; addCharge('batt',w,chgC); battSoc+=w*p.battEff; chargeMW[h]+=w;}
       }
       // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
       if(residual>1){
@@ -3517,6 +3554,7 @@ function simulate(u, prof, outPath){
       : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD
       : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt + cG
       : ((curtailMW[h]||0) > 1)          ? 0
+      : (storageMarginal[h])             ? storageBid[h]
       : (coalGen > 1)                    ? coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC
       : (imp > 1)                        ? p.costImports
       : (hyd > 1)                        ? p.costHydro
@@ -3527,6 +3565,7 @@ function simulate(u, prof, outPath){
       : ((stack.diesel[h]||0) > 1)       ? 'diesel'
       : ((stack.ccgt[h]||0) > 1)         ? 'ccgt'
       : ((curtailMW[h]||0) > 1)          ? 'curtail'
+      : (storageMarginal[h])             ? storageMarginal[h]
       : (coalGen > 1)                    ? 'coal'
       : (imp > 1)                        ? 'imports'
       : (hyd > 1)                        ? 'hydro'
@@ -5403,6 +5442,7 @@ function weekStartHour(){ return (typeof weekMode !== 'undefined' && weekMode ==
  */
 let spWeekMode = 'W';
 const SP_TECH_LABEL = { unserved:'Unserved (VoLL)', diesel:'Diesel OCGT', ccgt:'Gas CCGT',
+                        batt:'Battery', ps:'Pumped storage',
                         coal:'Coal', imports:'Imports', hydro:'Hydro', nuclear:'Nuclear',
                         curtail:'Renewables spilling', none:'Nothing scarce' };
 const SP_ZERO_COL = '#7DC47A';
@@ -5461,7 +5501,7 @@ function drawShadowPriceWeek(r){
     const k = (wt[i] === 'none') ? 'curtail' : wt[i];
     (agg[k] = agg[k] || {n:0, sum:0}).n++; agg[k].sum += win[i];
   }
-  const order = ['unserved','diesel','ccgt','coal','imports','hydro','nuclear','curtail'];
+  const order = ['unserved','diesel','ccgt','batt','ps','coal','imports','hydro','nuclear','curtail'];
   const leg = document.getElementById('spWeekLegend');
   if (leg) leg.innerHTML = order.filter(k => agg[k]).map(k =>
       '<span style="display:inline-block;margin:0 10px 3px 0;font-size:9.5px;'
