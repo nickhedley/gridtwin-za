@@ -2911,6 +2911,17 @@ const FIXED = {
   // With the opportunity-cost floor these rarely bind in priced hours; they set
   // the bid floor in slack hours.
   battCycleCostR:165, psCycleCostR:20,
+  // Capacity-expansion LP penalties, R/MWh. lpCurtailCostR is the price the
+  // build optimiser pays per MWh of renewable energy spilled - the term that
+  // stops it building 40 GW of solar and throwing half away. Lower it and the
+  // LP overbuilds and spills more; raise it and it builds less and sites more
+  // carefully - it directly shapes Where To Build. 150 is the long-standing
+  // model value, now named and testable rather than typed into two objective
+  // rows that could drift apart. lpBattDischargeCostR is the LP's per-MWh
+  // battery cycling wear; kept as its own (older, lower) figure rather than
+  // silently re-pointed at battCycleCostR because changing the LP's economics
+  // is a modelling decision, not a refactor - see the note where it is used.
+  lpCurtailCostR:150, lpBattDischargeCostR:20,
   // Value of lost load, used as the wholesale price ceiling in hours with
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
@@ -3988,8 +3999,12 @@ function bldBuildLP(opts){
       obj.push(((MC.ccgt + CARBON*EMIS_CCGT)*r.weight*df).toFixed(3) + ' gg_' + k);
       obj.push(((MC.diesel + CARBON*EMIS_DIESEL)*r.weight*df).toFixed(3) + ' gd_' + k);
       obj.push((VOLL*r.weight*df).toFixed(3) + ' u_' + k);
-      obj.push((150*r.weight*df).toFixed(3) + ' crt_' + k);
-      obj.push((20*r.weight*df).toFixed(3) + ' bdis_' + k);
+      obj.push((S.lpCurtailCostR*r.weight*df).toFixed(3) + ' crt_' + k);
+      // NOTE: the LP's battery wear (20) is far below the dispatch engine's
+      // battCycleCostR (165). Aligning them would make the build optimiser
+      // cycle batteries less and value them lower - a real modelling change,
+      // flagged as an open question rather than smuggled into a rename.
+      obj.push((S.lpBattDischargeCostR*r.weight*df).toFixed(3) + ' bdis_' + k);
     }
   }
   L.push('  ' + obj.join(' + '));
@@ -4277,7 +4292,7 @@ function bldBuildRegionalLP(opts){
       obj.push((MCcoal*r.weight*df).toFixed(3) + ' gc_' + k);
       obj.push((MCdiesel*r.weight*df).toFixed(3) + ' gd_' + k);
       obj.push((VOLL*r.weight*df).toFixed(3) + ' u_' + k);
-      obj.push((150*r.weight*df).toFixed(3) + ' crt_' + k);
+      obj.push((S.lpCurtailCostR*r.weight*df).toFixed(3) + ' crt_' + k);
     }
   }
   L.push('  ' + obj.join(' + ')); L.push('Subject To');
