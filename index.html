@@ -490,7 +490,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
           <div class="pb" id="lcoe"></div>
         </div>
-<div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Grid queue pressure</h2><span class="tag">pipeline vs headroom</span></div>
+            <div class="pb" id="queueBody"></div>
+          </div>
+          <div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
           <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
           <div style="padding:0 14px 12px">
             <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
@@ -1145,6 +1150,10 @@ function initResourceQuery(){
         </div>`).join('')}
       </div>
       ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
+      <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
+        <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Curtailment risk if you build here</div>
+        <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.r); }catch(e){} }, 0); return ''; })()}
+      </div>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: GCCA 2025 + Oct 2025 update (published Apr 2025). &ldquo;Full&rdquo; means the corridor is fully subscribed — no capacity available to connect. Figures updated annually — verify at <a href='https://www.ntcsa.co.za/gcca/' target='_blank'>ntcsa.co.za/gcca</a>.</div>
       ${(h.solar_mw||0)===0 && h.corridor_km ? `<div style="margin-top:8px;padding:8px;background:rgba(196,120,90,0.08);border-radius:4px;border-left:3px solid var(--terra,#C4785A)">
         <div style="font-size:10px;font-weight:600;color:var(--terra,#C4785A);margin-bottom:3px">Corridor upgrade required</div>
@@ -1239,6 +1248,59 @@ function initResourceQuery(){
         margin). ${cap.note?'<br>'+cap.note:''}
         <br>Indicative only — not a bankable estimate. Use Meridian COMPASS for transaction-grade pricing.
       </div>`;
+  }
+
+
+  // ── Curtailment risk at a site ────────────────────────────────────────────
+  // The question a developer actually needs answered: if I build here, what
+  // share of my output gets spilled? Modo cannot answer it because they do not
+  // model the network. The single-node engine gives the national spill rate;
+  // the region's own queue pressure says whether this site sits where the
+  // congestion is.
+  function renderCurtailRisk(region){
+    const el = document.getElementById('curtRiskResult');
+    if (!el) return;
+    const r = (typeof lastRes !== 'undefined') ? lastRes : null;
+    if (!r || !r.E){ el.innerHTML = ''; return; }
+    const used = (r.E.wind || 0) + (r.E.pv || 0);
+    const spilled = r.E.curtailed || 0;
+    const nat = (used + spilled) > 0 ? spilled / (used + spilled) : 0;
+
+    // Curtailment lands where the grid is thinnest, not evenly. Scale the
+    // national rate by how oversubscribed this supply area is.
+    let mult = 1, pressure = null;
+    if (typeof queueNersa !== 'undefined' && queueNersa && typeof queueHeadroom !== 'undefined' && queueHeadroom){
+      const reg = (queueNersa.cumulative_by_region || {})[region];
+      const hh = (queueHeadroom.headroom || queueHeadroom)[region];
+      if (reg && hh){
+        const avail = Math.max(hh.solar_mw || 0, hh.wind_mw || 0);
+        pressure = avail > 0 ? reg.total_mw / avail : Infinity;
+        mult = (pressure === Infinity) ? 2.2 : Math.max(0.35, Math.min(2.2, 0.35 + pressure * 0.9));
+      }
+    }
+    const sitePct = Math.min(60, nat * 100 * mult);
+    const band = sitePct >= 15 ? '#C4785A' : sitePct >= 6 ? '#D9A441' : '#7DC47A';
+    const verdict = sitePct >= 15 ? 'High \u2014 model this into your yield'
+                  : sitePct >= 6  ? 'Moderate \u2014 worth a sensitivity'
+                  : 'Low on the current build';
+
+    el.innerHTML =
+        '<div style="display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px">'
+      + `<div><div style="font-size:22px;font-weight:700;color:${band};font-family:'IBM Plex Mono',monospace">`
+      + `${sitePct.toFixed(1)}%</div>`
+      + '<div style="font-size:9.5px;color:var(--ink2)">of output spilled, this scenario</div></div>'
+      + `<div style="font-size:11px;color:${band};font-weight:600">${verdict}</div></div>`
+      + '<table class="mono" style="width:100%;font-size:10.5px;border-collapse:collapse">'
+      + `<tr><td style="padding:2px 0;color:var(--ink2)">National spill rate</td><td style="text-align:right">${(nat*100).toFixed(1)}%</td></tr>`
+      + `<tr><td style="padding:2px 0;color:var(--ink2)">${region} queue pressure</td><td style="text-align:right">${
+          pressure === null ? '\u2014' : pressure === Infinity ? 'headroom full' : pressure.toFixed(2)+'\u00d7'}</td></tr>`
+      + `<tr><td style="padding:2px 0;color:var(--ink2)">Regional multiplier</td><td style="text-align:right">${mult.toFixed(2)}\u00d7</td></tr>`
+      + '</table>'
+      + '<div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">'
+      + 'The modelled national spill rate, scaled by how oversubscribed this supply area is. Move the '
+      + 'build sliders and this moves with them \u2014 your curtailment risk depends on what else gets '
+      + 'built, not on your site alone. Run the network model for a corridor-level figure rather than '
+      + 'this regional approximation.</div>';
   }
 
   // ── Feature 2: data centre matching ──────────────────────────────────────
@@ -5102,6 +5164,81 @@ function drawBessWeek(r){
   const note = document.getElementById('bessWeekNote');
   if (note) note.textContent = 'When a four-hour battery would charge and discharge over the same week \u2014 '
     + cycled + ' of 7 days worth cycling. Blank days are ones where the spread never covers the round trip.';
+}
+
+
+/* ==================== GRID QUEUE PRESSURE ================================
+ * Registered project pipeline against available connection headroom, by supply
+ * area. Neither dataset is new - SAPVIA publish the NERSA registrations and
+ * NTCSA publish the GCCA headroom - but joining them is what makes them useful,
+ * and nobody publishes the join. Five of nine provinces turn out to have more
+ * registered capacity than grid to take it, while KwaZulu-Natal sits at 8%.
+ */
+let queueNersa = null, queueHeadroom = null;
+Promise.all([
+  fetch('nodal/nersa_registrations.json').then(r => r.ok ? r.json() : null).catch(() => null),
+  fetch('nodal/headroom_summary.json').then(r => r.ok ? r.json() : null).catch(() => null),
+]).then(([n, h]) => { queueNersa = n; queueHeadroom = h; renderQueuePressure(); });
+
+function renderQueuePressure(){
+  const host = document.getElementById('queueBody');
+  if (!host) return;
+  if (!queueNersa || !queueHeadroom){
+    host.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Loading grid and pipeline data\u2026</p>';
+    return;
+  }
+  const reg = queueNersa.cumulative_by_region || {};
+  const hr  = queueHeadroom.headroom || queueHeadroom;
+  const rows = Object.entries(reg).map(([r, v]) => {
+    const h = hr[r] || {};
+    const avail = Math.max(h.solar_mw || 0, h.wind_mw || 0);
+    return { r, mw: v.total_mw || 0, avail,
+             ratio: avail > 0 ? (v.total_mw / avail) : Infinity,
+             solar: v.solar_mw || 0, wind: v.wind_mw || 0, bess: v.bess_mw || 0 };
+  }).sort((a, b) => b.ratio - a.ratio);
+
+  const totR = rows.reduce((s, x) => s + x.mw, 0);
+  const totH = rows.reduce((s, x) => s + x.avail, 0);
+  const band = x => x.ratio === Infinity ? { c:'#C4785A', t:'Full' }
+                  : x.ratio >= 1        ? { c:'#C4785A', t:(x.ratio).toFixed(1)+'\u00d7 over' }
+                  : x.ratio >= 0.6      ? { c:'#D9A441', t:(x.ratio*100).toFixed(0)+'% taken' }
+                  :                       { c:'#7DC47A', t:(x.ratio*100).toFixed(0)+'% taken' };
+
+  host.innerHTML =
+      '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
+    + 'Capacity already registered with NERSA against the connection headroom NTCSA publishes for each '
+    + 'supply area. A region above 100% has more projects queued than grid to take them \u2014 not every '
+    + 'registration reaches financial close, but the ordering shows where the competition is.</div>'
+    + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)">'
+    + '<th style="text-align:left;padding:4px 6px">Supply area</th>'
+    + '<th style="text-align:right;padding:4px 6px">Registered</th>'
+    + '<th style="text-align:right;padding:4px 6px">Headroom</th>'
+    + '<th style="text-align:right;padding:4px 6px">Pressure</th></tr>'
+    + rows.map(x => {
+        const b = band(x);
+        const barW = x.ratio === Infinity ? 100 : Math.min(100, x.ratio * 100);
+        return '<tr style="border-bottom:1px solid var(--line2)">'
+          + `<td style="padding:4px 6px">${x.r}</td>`
+          + `<td style="text-align:right;padding:4px 6px">${x.mw.toLocaleString()} MW</td>`
+          + `<td style="text-align:right;padding:4px 6px;color:var(--ink2)">${x.avail ? x.avail.toLocaleString()+' MW' : '\u2014'}</td>`
+          + `<td style="text-align:right;padding:4px 6px">`
+          + `<span style="display:inline-block;width:52px;height:7px;background:var(--line2);vertical-align:middle;margin-right:5px">`
+          + `<span style="display:block;width:${barW}%;height:7px;background:${b.c}"></span></span>`
+          + `<span style="color:${b.c};font-weight:700">${b.t}</span></td></tr>`;
+      }).join('')
+    + '</table>'
+    + `<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">`
+    + `<strong>${rows.filter(x => x.ratio >= 1).length} of ${rows.length} supply areas are oversubscribed`
+    + `</strong>, while ${rows[rows.length-1].r} sits at ${(rows[rows.length-1].ratio*100).toFixed(0)}% of its headroom. `
+    + `Nationally ${totR.toLocaleString()} MW is registered against ${totH.toLocaleString()} MW of headroom \u2014 `
+    + `close to balanced in total, but badly matched in place. The grid, not the resource, is what decides `
+    + `where the next project can go.</div>`
+    + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
+    + 'Registered capacity is cumulative since the registration regime began in 2018 and includes all '
+    + 'technologies; it is not a measure of what has been built, and a registration is not a grid '
+    + 'connection. Headroom is the GCCA figure for the larger of solar or wind, which the two share. '
+    + 'Sources: SAPVIA\u2019s collation of NERSA quarterly statements, and NTCSA\u2019s GCCA.</div>';
 }
 
 /* ==================== UI DEFINITION ==================== */
