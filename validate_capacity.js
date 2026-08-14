@@ -80,25 +80,28 @@ console.log('\nIdentity 3 - regional operational sums to the national constant, 
   const priv = sum(cap.by_source.private.solar_mw);
 
   const coverage = (cap.meta || {}).private_coverage;
+
+  // WIND: windMW is DERIVED from these components, so this equality is a
+  // consistency check, not independent corroboration - it confirms the constant
+  // and the file agree, and fails loudly if either is edited alone. It will also
+  // fail if pre-2026 private WIND is later found, which is the correct behaviour:
+  // the constant would then be understated and must be re-derived, not patched.
+  {
+    const wm = html.match(/windMW\s*:\s*([0-9.]+)/);
+    const wConst = wm ? parseFloat(wm[1]) : null;
+    const wTotal = sum(cap.by_source.reipppp.wind_mw) + sum(cap.by_source.private.wind_mw);
+    check('FIXED.windMW = sum(reipppp wind) + sum(private wind)',
+          Math.abs(wTotal - wConst) <= TOL,
+          `${sum(cap.by_source.reipppp.wind_mw)} + ${sum(cap.by_source.private.wind_mw)} = ${wTotal} vs ${wConst}`);
+  }
+
+  // SOLAR: still PENDING. Private coverage is H1 2026 only, so the residual is
+  // real missing plant rather than an error. Do NOT widen the tolerance to pass.
   if (coverage !== 'complete') {
-    // Do NOT pass this by loosening the tolerance. by_source.private is populated
-    // but INCOMPLETE - the PFL monitor covers H1 2026 only, so private plant
-    // commissioned earlier is missing. Reporting PENDING with the narrowed gap
-    // keeps it visible instead of silently green.
     pend('FIXED.pvUtilityMW = sum(reipppp solar) + sum(private solar)',
          `by_source.private coverage is "${coverage}", not complete. ` +
          `reipppp = ${reipppp} MW + private = ${priv} MW = ${reipppp + priv} MW, ` +
          `constant = ${pvConst} MW, unexplained gap = ${(pvConst - reipppp - priv).toFixed(0)} MW.`);
-
-    // Wind has no separate identity in the brief, but the same decomposition applies
-    // and currently OVERSHOOTS - which a solar-only check would hide.
-    const wm = html.match(/windMW\s*:\s*([0-9.]+)/);
-    const wConst = wm ? parseFloat(wm[1]) : null;
-    const wTotal = sum(cap.by_source.reipppp.wind_mw) + sum(cap.by_source.private.wind_mw);
-    pend('FIXED.windMW = sum(reipppp wind) + sum(private wind)',
-         `${wTotal} MW against a constant of ${wConst} MW - ` +
-         `${wTotal > wConst ? 'OVERSHOOT of ' + (wTotal - wConst).toFixed(0) : 'gap of ' + (wConst - wTotal).toFixed(0)} MW. ` +
-         `An overshoot cannot be closed by adding the missing pre-2026 plant; see meta.WIND_OVERSHOOT.`);
   } else {
     check('FIXED.pvUtilityMW = sum(reipppp solar) + sum(private solar)',
           Math.abs(reipppp + priv - pvConst) <= TOL,
