@@ -1,30 +1,32 @@
 {
-  "wind_mw": {
-    "Eastern Cape": 1352.6,
-    "Limpopo": 0.0,
-    "Mpumalanga": 0.0,
-    "Gauteng": 0.0,
-    "Western Cape": 1274.5,
-    "Northern Cape": 750.5,
-    "Hydra Central": 88.5,
-    "Kwazulu Natal": 0.0,
-    "North West": 0.0,
-    "Free State": 0.0
-  },
-  "solar_mw": {
-    "Eastern Cape": 45.6,
-    "Limpopo": 477.0,
-    "Mpumalanga": 480.0,
-    "Gauteng": 0.0,
-    "Western Cape": 234.3,
-    "Northern Cape": 773.2,
-    "Hydra Central": 256.1,
-    "Kwazulu Natal": 0.0,
-    "North West": 1322.5,
-    "Free State": 1820.3
-  },
-  "meta": {
-    "solar_bw6": "BW6 (Dec 2022 preferred bidders, commercial close Apr 2024): 860 MW solar, 0 MW wind. Projects: Doornhoek 120MW + Boitumelo 150MW + Kutlwano 150MW (all NW); Virginia 240MW + Good Hope 200MW (both FS). No wind awarded (grid constraint in Cape provinces).",
-    "solar_bw7": "BW7 (Dec 2024 preferred bidders, commercial close expected H2 2025): 1,760 MW solar, 0 MW wind awarded. 8 projects across Mpumalanga, Free State, North West, Limpopo. Provincial split approximate (press release detail). Wind: 932 MW eligible but not awarded; under value-for-money negotiations."
-  }
+ "wind_mw": {
+  "Eastern Cape": 1682.6,
+  "Limpopo": 0.0,
+  "Mpumalanga": 0.0,
+  "Gauteng": 0.0,
+  "Western Cape": 1274.5,
+  "Northern Cape": 890.5,
+  "Hydra Central": 88.5,
+  "Kwazulu Natal": 0.0,
+  "North West": 0.0,
+  "Free State": 0.0
+ },
+ "solar_mw": {
+  "Eastern Cape": 45.6,
+  "Limpopo": 865.0,
+  "Mpumalanga": 480.0,
+  "Gauteng": 0.0,
+  "Western Cape": 234.3,
+  "Northern Cape": 773.2,
+  "Hydra Central": 256.1,
+  "Kwazulu Natal": 0.0,
+  "North West": 1422.5,
+  "Free State": 1820.3
+ },
+ "meta": {
+  "solar_bw6": "BW6 (Dec 2022 preferred bidders, commercial close Apr 2024): 860 MW solar, 0 MW wind. Projects: Doornhoek 120MW + Boitumelo 150MW + Kutlwano 150MW (all NW); Virginia 240MW + Good Hope 200MW (both FS). No wind awarded (grid constraint in Cape provinces).",
+  "solar_bw7": "BW7 (Dec 2024 preferred bidders, commercial close expected H2 2025): 1,760 MW solar, 0 MW wind awarded. 8 projects across Mpumalanga, Free State, North West, Limpopo. Provincial split approximate (press release detail). Wind: 932 MW eligible but not awarded; under value-for-money negotiations.",
+  "h1_2026_update": "Added the 958 MW of privately-procured wheeled capacity reaching commercial operation in H1 2026 (Impofu x3, Mooi Plaats, Umsobomvu, Bolobedu, ARM Platinum), per Alao & Kruger, Power Futures Lab, 17 Aug 2026. Behind-the-meter captive generation (88 MW) is excluded, as it suppresses demand rather than adding supply.",
+  "UNRESOLVED": "The 874 MW of PUBLICLY-procured H1 2026 commercial operations (Phezukomoya, Coleskop, Doornhoek, Grootspruit, Graspan, Mulilo Total Hydra, Umoyilanga 2) has NOT been added here. The solar_bw6/solar_bw7 notes above describe those bid windows as present in these totals, yet ipp_pipeline.json also lists Doornhoek, Boitumelo, Kutlwano, Virginia and Good Hope as pipeline. Both cannot be true. Resolve the provenance of the BW6/BW7 capacity before adding publicly-procured projects here, or they will be double counted."
+ }
 }
