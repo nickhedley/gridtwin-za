@@ -573,6 +573,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
 
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Clean coal (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
+            <div class="pb" id="ccsBody"></div>
+          </div>
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Gas short-run marginal cost</h2><span class="tag">what gas power costs to run</span></div>
             <div class="pb" id="gasBody"></div>
@@ -2759,6 +2764,10 @@ const FIXED = {
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
   voll:87000,
+  // Clean coal (CCS). Defaults are mid-range for a post-combustion amine
+  // retrofit; every one is exposed in the policy panel.
+  ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
+  ccsOpexR:180, ccsCapexR:260, ccsTsR:120,
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
   // rooftopMW: NTCSA's estimate of behind-the-meter rooftop PV, which is growing
   // fast enough that this figure dates quickly - 6,800 MW (Jun 2025), 8,294 MW
@@ -2989,6 +2998,33 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
 
 function simulate(u, prof, outPath){
   const p={...FIXED,...u};
+  // ── CLEAN COAL (CCS) ──────────────────────────────────────────────────────
+  // Applied here so every downstream calculation - dispatch, cost, emissions,
+  // the shadow price, the battery benchmark - sees a consistent coal fleet.
+  //
+  // The three effects, in the order they bite:
+  //  1. ENERGY PENALTY. The capture plant runs off the host station, consuming
+  //     20-30% of gross output. Saleable capacity falls by that fraction and
+  //     fuel per MWh DELIVERED rises by 1/(1-penalty). This happens before any
+  //     capex and is the effect most often left out of "clean coal" arguments.
+  //  2. COST. Capture opex, plus annualised retrofit capital, plus transport
+  //     and storage to a site that in South Africa is not under the plant.
+  //  3. EMISSIONS. Capture rate applies to what is burned, but more is burned
+  //     per MWh sold - so NET reduction lands at 67-72%, not the 90% capture
+  //     rate. That range is from the published integrated assessment of CCS in
+  //     South Africa's power sector, and the model reproduces it from the
+  //     arithmetic rather than asserting it.
+  if (p.ccsEnabled) {
+    const pen = (p.ccsPenaltyPct || 25) / 100;
+    const cap = (p.ccsCaptureRatePct || 90) / 100;
+    const keep = Math.max(0.4, 1 - pen);
+    p.coalInstalledMW = p.coalInstalledMW * keep;          // saleable capacity
+    p.costCoal = p.costCoal / keep                          // more fuel per MWh sold
+               + (p.ccsOpexR || 180)                        // solvent, compression
+               + (p.ccsCapexR || 260)                       // annualised retrofit
+               + (p.ccsTsR || 120);                         // transport and storage
+    p.emisCoal = p.emisCoal * (1 - cap) / keep;             // net of the penalty
+  }
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
   p.syncFloorMW = (typeof p.syncMinMW === 'number') ? p.syncMinMW : (p.syncMinEnabled !== false ? SYNC_MIN_MW : 0);
   const {demand,solar,wind,csp}=prof;
@@ -5562,6 +5598,93 @@ function renderGasSRMC(){
   }
 }
 
+
+/* ==================== CLEAN COAL (CCS) POLICY ============================
+ * What "clean coal" would actually cost and deliver, applied to the live model
+ * rather than shown in isolation. Toggling it on re-runs everything: dispatch,
+ * load shedding, cost, emissions, the shadow price and the battery benchmark.
+ */
+function renderCCS(r){
+  const host = document.getElementById('ccsBody');
+  if (!host || !r) return;
+  const on = !!state.ccsEnabled;
+  const pen = (state.ccsPenaltyPct ?? 25) / 100;
+  const cap = (state.ccsCaptureRatePct ?? 90) / 100;
+  const keep = Math.max(0.4, 1 - pen);
+  const base = FIXED.costCoal;
+  const withCcs = base/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 120);
+  const netCut = 1 - (1 - cap)/keep;
+  const lostGW = FIXED.coalInstalledMW * pen / 1000;
+  const R = v => 'R' + Math.round(v).toLocaleString();
+  const c2 = v => (v/1000).toFixed(2);
+
+  host.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">'
+    + `<button onclick="toggleCCS()" class="hbtn${on ? ' active' : ''}" style="margin:0">`
+    + `${on ? 'Clean coal ON \u2014 applied to the model' : 'Apply clean coal (CCS) to the model'}</button>`
+    + `<span style="font-size:9.5px;color:var(--ink2)">${on ? 'every panel below reflects it' : 'toggles the whole model, not just this box'}</span></div>`
+
+    + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 5px"></th>'
+    + '<th style="text-align:right;padding:4px 5px">Unabated</th>'
+    + '<th style="text-align:right;padding:4px 5px">With capture</th></tr>'
+    + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">Existing fleet, running cost</td>`
+    + `<td style="text-align:right;padding:4px 5px">R${c2(base)}/kWh</td>`
+    + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">R${c2(withCcs)}/kWh</td></tr>`
+    + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">New build, lifecycle</td>`
+    + `<td style="text-align:right;padding:4px 5px">R${c2(state.lcoeCoalNew ?? 1200)}/kWh</td>`
+    + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">R${c2((state.lcoeCoalNew ?? 1200)/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 120))}/kWh</td></tr>`
+    + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">Saleable capacity</td>`
+    + `<td style="text-align:right;padding:4px 5px">${(FIXED.coalInstalledMW/1000).toFixed(1)} GW</td>`
+    + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">${(FIXED.coalInstalledMW*keep/1000).toFixed(1)} GW</td></tr>`
+    + `<tr><td style="padding:4px 5px">Net emissions cut</td>`
+    + `<td style="text-align:right;padding:4px 5px">\u2014</td>`
+    + `<td style="text-align:right;padding:4px 5px;font-weight:700">${(netCut*100).toFixed(0)}%</td></tr>`
+    + '</table>'
+
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:11px">'
+    + ci('ccsPenaltyPct', 'Energy penalty', '%', state.ccsPenaltyPct ?? 25, 1)
+    + ci('ccsCaptureRatePct', 'Capture rate', '%', state.ccsCaptureRatePct ?? 90, 1)
+    + ci('ccsOpexR', 'Capture opex', 'R/MWh', state.ccsOpexR ?? 180, 10)
+    + ci('ccsCapexR', 'Retrofit capital', 'R/MWh', state.ccsCapexR ?? 260, 10)
+    + ci('ccsTsR', 'Transport + storage', 'R/MWh', state.ccsTsR ?? 120, 10)
+    + '</div>'
+
+    + '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
+    + 'padding:8px 11px;margin-top:11px;font-size:10.5px;line-height:1.55">'
+    + `<strong>A ${(cap*100).toFixed(0)}% capture rate delivers a ${(netCut*100).toFixed(0)}% net emissions cut, not 90%.</strong> `
+    + 'The capture plant runs off the host station, so more coal is burned per MWh sold \u2014 and that '
+    + `extra coal is only ${(cap*100).toFixed(0)}% captured too. This is <strong>combustion emissions only</strong>. `
+    + 'The published integrated assessment of CCS in South Africa\u2019s power sector puts the '
+    + '<em>lifecycle</em> reduction lower still, at 67\u201372%, once upstream coal mining and methane '
+    + 'are counted \u2014 which this model does not track.'
+    + `<div style="margin-top:5px;color:var(--ink2)">The energy penalty also removes <strong>${lostGW.toFixed(1)} GW</strong> `
+    + 'of saleable capacity from the fleet before a rand of capital is spent \u2014 on a system that already '
+    + 'sheds load. Toggle it on and watch the load-shedding panel, not just the cost.</div></div>'
+
+    + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
+    + '<strong>The South African constraint is where the CO\u2082 goes.</strong> The Council for Geoscience '
+    + 'atlas puts national storage at 149.9 Gt, but <strong>98.5% of it is offshore</strong> \u2014 and the '
+    + 'coal fleet is inland on the Highveld. The Leandra pilot in Mpumalanga has drilled an 1,800 m '
+    + 'characterisation borehole and is entering its injection phase; no CO\u2082 has been stored yet. The '
+    + 'pilot was moved there from the Zululand basin partly for proximity to emitters and partly '
+    + 'because of seismicity and possible fault reactivation. Transport and storage cost here is a '
+    + 'placeholder for infrastructure that does not exist \u2014 treat it as the most uncertain input on '
+    + 'this page.</div>';
+
+  function ci(id, label, unit, val, step){
+    return '<div>'
+      + `<label style="font-size:9px;color:var(--ink2);display:block">${label} <span style="opacity:.7">${unit}</span></label>`
+      + `<input id="ccs_${id}" type="number" value="${val}" step="${step}" onchange="setCCS('${id}',this.value)" `
+      + 'style="width:100%;padding:3px 5px;font-size:11px;font-family:\'IBM Plex Mono\',monospace;'
+      + 'border:1px solid var(--line2);background:var(--panel);color:var(--ink);border-radius:2px;box-sizing:border-box">'
+      + '</div>';
+  }
+}
+
+function toggleCCS(){ state.ccsEnabled = !state.ccsEnabled; run(); }
+function setCCS(k, v){ state[k] = parseFloat(v); run(); }
+
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
@@ -6470,7 +6593,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);}if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderGasSRMC==='function'&&!document.getElementById('gas_zar'))renderGasSRMC();if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);}if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderGasSRMC==='function'&&!document.getElementById('gas_zar'))renderGasSRMC();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
