@@ -614,7 +614,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Diesel OCGT</td><td>R6&nbsp;100/MWh &middot; 0.78&nbsp;tCO&#8322;/MWh &middot; 3.4&nbsp;GW</td></tr>
           <tr><td>Gas CCGT</td><td>R2&nbsp;800/MWh dispatch cost &middot; 0.37&nbsp;tCO&#8322;/MWh &middot; LNG-fired. IRP 2025&rsquo;s $10/MMBtu baseline sits below current spot; the LCOE slider explores sensitivity</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; 1&nbsp;150&nbsp;MW @ 85&nbsp;%</td></tr>
-          <tr><td>Existing fleet</td><td>Wind 3.6&nbsp;GW &middot; Utility PV 4&nbsp;GW &middot; Rooftop 9.1&nbsp;GW &middot; CSP 0.5&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
+          <tr><td>Existing fleet</td><td>Wind 4.5&nbsp;GW &middot; Utility PV 4&nbsp;GW &middot; Rooftop 9.1&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
           <tr><td>New-build capex</td><td>Wind R21&nbsp;000 &middot; PV R12&nbsp;000 &middot; Rooftop R17&nbsp;000 &middot; Battery&nbsp;(4h) R10&nbsp;500 &middot; CCGT R18&nbsp;000 /kW. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT <em>rises</em>, having hit a record high in 2025</td></tr>
           <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region</td></tr>
           <tr><td>Planned build</td><td>221 projects from NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034, all nine provinces, each with its published commissioning year and delivery phase</td></tr>
@@ -2855,7 +2855,7 @@ const FIXED = {
   // Kruger (Power Futures Lab, 17 Aug 2026). Includes grid-supply and wheeled
   // projects; excludes 88 MW of behind-the-meter captive generation, which
   // suppresses demand rather than adding supply.
-  ocgtDieselMW:3400, windMW:4458, pvUtilityMW:4974, rooftopMW:9100, cspMW:500,
+  ocgtDieselMW:3400, windMW:4458, pvUtilityMW:4974, rooftopMW:9100, cspMW:600,
   // Value of lost load, used as the wholesale price ceiling in hours with
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
@@ -3771,13 +3771,13 @@ function bldBuildLP(opts){
   // `state` is script-scoped, so read it via the accessor rather than assuming a
   // global - reading undefined fields here silently produces NaN coefficients and
   // an LP that HiGHS refuses to parse.
-  const S = opts.state || FIXED;
+  const S = { ...FIXED, ...(opts.state || {}) };
   const VOLL = 60000, CARBON = (S.carbonPrice != null ? S.carbonPrice : 550);
-  const MC = { coal: S.costCoal || 546, ccgt: S.costCcgt || 2800, diesel: S.costDiesel || 6100 };
-  const EX = { nuclear:1860, hydro:600, imports:1150, ps:2900, diesel:3400,
-               wind:S.windMW || 3600, pv:S.pvUtilityMW || 4000, rooftop:S.rooftopMW || 9100,
-               csp:S.cspMW || 500, batt:S.battPowerMW || 800 };
-  const EMIS_COAL = S.emisCoal || 1.04, EMIS_CCGT = S.emisCcgt || 0.43;
+  const MC = { coal: S.costCoal, ccgt: S.costCcgt, diesel: S.costDiesel };
+  const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:S.ocgtDieselMW,
+               wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
+               csp:S.cspMW, batt:S.battPowerMW };
+  const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt;
 
   const L = ['Minimize', ' obj:'];
   const obj = [];
@@ -4066,10 +4066,10 @@ function bldBuildRegionalLP(opts){
   const Y = BLD_YEARS, T = ['wind','pv','batt'];
   const rd = bldRepDays(8);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
-  const S = opts.state || FIXED;
+  const S = { ...FIXED, ...(opts.state || {}) };
   const VOLL = 60000, CARBON = (S.carbonPrice != null ? S.carbonPrice : 550);
-  const MCcoal = (S.costCoal || 546) + CARBON * (S.emisCoal || 1.04);
-  const MCdiesel = S.costDiesel || 6100;
+  const MCcoal = S.costCoal + CARBON * S.emisCoal;
+  const MCdiesel = S.costDiesel;
 
   const L = ['Minimize',' obj:']; const obj = [];
   for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y){
