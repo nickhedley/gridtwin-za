@@ -558,6 +558,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
 
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Gas short-run marginal cost</h2><span class="tag">what gas power costs to run</span></div>
+            <div class="pb" id="gasBody"></div>
+          </div>
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
             <div class="pb" id="capFcBody"></div>
@@ -5421,6 +5426,128 @@ function renderCaptureForecast(){
     + 'a transaction-grade forecast.</div>';
 }
 
+
+/* ==================== GAS SHORT-RUN MARGINAL COST ========================
+ * South Africa's answer to Montel's gas SRMC index - built differently, because
+ * the inputs Montel reads live simply do not exist here.
+ *
+ *   GAS    Montel converts TTF futures. South Africa has no gas hub. Sasol's
+ *          Mozambique supply is contracted and declining; incremental gas is
+ *          imported LNG priced off JKM or Brent plus regas and transport. So
+ *          the input is a delivered $/MMBtu that the user sets, not a quote.
+ *   CARBON Montel isolates an EUA spot price from a traded ETC. South Africa
+ *          has a carbon TAX: R308/tCO2e from 1 January 2026, up 31% from R236.
+ *          But electricity generation carries tax-free allowances of up to 85%,
+ *          so the effective rate is a fraction of the headline. That gap is the
+ *          single biggest difference from the European calculation.
+ *   VOM    Montel uses EUR 2.00/MWh. R60/MWh is the equivalent order for an SA
+ *          CCGT and is exposed as an input rather than buried.
+ *
+ * Because there is no live price to read, the useful question here is not "what
+ * does gas cost right now" but "at what gas price does gas beat coal" - so the
+ * panel solves for that breakeven and shows the whole build-up.
+ */
+const GAS_DEFAULTS = {
+  usdMMBtu: 16.5,      // delivered LNG, mid of the $14-19 range seen Jul 2026
+  zar: 19.0,
+  effPct: 52,          // modern CCGT, HHV basis
+  carbonR: 308,        // headline rate, 1 Jan 2026
+  allowPct: 85,        // electricity generation tax-free allowance
+  vomR: 60,
+};
+
+function gasSRMC(o){
+  // 1 MMBtu = 0.293071 MWh thermal. Fuel per MWh electrical = price / efficiency.
+  const fuelRPerMWhth = o.usdMMBtu * o.zar / 0.293071;
+  const fuelRPerMWhe = fuelRPerMWhth / (o.effPct / 100);
+  // Natural gas ~0.0561 tCO2/GJ = 0.2019 tCO2/MWh thermal.
+  const tCO2PerMWhe = 0.2019 / (o.effPct / 100);
+  const effCarbonR = o.carbonR * (1 - o.allowPct / 100);
+  const carbonRPerMWhe = tCO2PerMWhe * effCarbonR;
+  return {
+    fuel: fuelRPerMWhe, carbon: carbonRPerMWhe, vom: o.vomR,
+    total: fuelRPerMWhe + carbonRPerMWhe + o.vomR,
+    tCO2PerMWhe, effCarbonR,
+  };
+}
+
+function renderGasSRMC(){
+  const host = document.getElementById('gasBody');
+  if (!host) return;
+  const g = { ...GAS_DEFAULTS };
+  ['usdMMBtu','zar','effPct','carbonR','allowPct','vomR'].forEach(k => {
+    const el = document.getElementById('gas_' + k);
+    if (el && el.value !== '') g[k] = parseFloat(el.value);
+  });
+  const r = gasSRMC(g);
+
+  // Coal's SRMC on the same basis, from the model's own constants.
+  const p = { ...FIXED, ...(typeof state !== 'undefined' ? state : {}) };
+  const coalFuel = p.costCoal || 546;
+  const coalCarbon = (p.emisCoal || 0.95) * g.carbonR * (1 - g.allowPct/100);
+  const coalTotal = coalFuel + coalCarbon;
+
+  // Gas price at which gas SRMC equals coal's.
+  const perDollar = g.zar / 0.293071 / (g.effPct/100);
+  const breakeven = (coalTotal - r.carbon - g.vomR) / perDollar;
+
+  const R = v => 'R' + Math.round(v).toLocaleString();
+  const row = (label, val, sub) =>
+      '<tr style="border-bottom:1px solid var(--line2)">'
+    + `<td style="padding:4px 5px">${label}${sub ? `<br><span style="font-size:9px;color:var(--ink2)">${sub}</span>` : ''}</td>`
+    + `<td style="text-align:right;padding:4px 5px;font-weight:600">${R(val)}</td></tr>`;
+
+  host.innerHTML =
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:11px">'
+    + inp('gas_usdMMBtu', 'LNG delivered', '$/MMBtu', g.usdMMBtu, 0.5)
+    + inp('gas_zar', 'ZAR / USD', 'rate', g.zar, 0.25)
+    + inp('gas_effPct', 'Plant efficiency', '%', g.effPct, 1)
+    + inp('gas_carbonR', 'Carbon tax', 'R/tCO\u2082e', g.carbonR, 10)
+    + inp('gas_allowPct', 'Tax-free allowance', '%', g.allowPct, 5)
+    + inp('gas_vomR', 'Variable O&M', 'R/MWh', g.vomR, 5)
+    + '</div>'
+
+    + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
+    + row('Fuel', r.fuel, `${g.usdMMBtu.toFixed(2)} $/MMBtu \u00d7 R${g.zar.toFixed(2)} \u00f7 ${(g.effPct/100).toFixed(2)} efficiency`)
+    + row('Carbon', r.carbon, `${r.tCO2PerMWhe.toFixed(3)} tCO\u2082/MWh \u00d7 R${Math.round(r.effCarbonR)} effective`)
+    + row('Variable O&M', r.vom, 'operations, maintenance, consumables')
+    + '<tr style="border-top:1.5px solid var(--ink)">'
+    + '<td style="padding:6px 5px;font-weight:700">Short-run marginal cost</td>'
+    + `<td style="text-align:right;padding:6px 5px;font-weight:700;font-size:15px">${R(r.total)}<span style="font-size:10px;font-weight:400;color:var(--ink2)">/MWh</span></td></tr>`
+    + '</table>'
+
+    + `<div style="border-left:3px solid ${r.total > coalTotal ? 'var(--alert,#C4785A)' : 'var(--ok,#4A8C5C)'};`
+    + 'background:rgba(74,107,122,0.06);padding:8px 11px;margin-top:11px;font-size:10.5px;line-height:1.55">'
+    + `<strong>Gas runs at ${R(r.total)}/MWh against coal at ${R(coalTotal)}/MWh</strong> \u2014 `
+    + (r.total > coalTotal
+        ? `${(r.total/coalTotal).toFixed(1)}\u00d7 the cost, so gas only runs when coal cannot. `
+        : 'cheaper than coal on running cost. ')
+    + (breakeven > 0
+        ? `Gas would match coal at <strong>$${breakeven.toFixed(2)}/MMBtu</strong> delivered, against `
+          + `$${g.usdMMBtu.toFixed(2)} assumed here. IRP 2025 planned on $10/MMBtu.`
+        : 'Carbon and O&M alone already exceed coal\u2019s running cost at this carbon rate.')
+    + '</div>'
+
+    + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
+    + '<strong>Why this is a calculator, not an index.</strong> Montel converts live TTF futures and a '
+    + 'traded EUA price. South Africa has neither: no gas hub, and a carbon <em>tax</em> rather than an '
+    + 'allowance market. The tax is R308/tCO\u2082e from 1 January 2026, up 31% from R236 \u2014 but '
+    + 'electricity generation carries tax-free allowances of up to 85%, so the effective rate is '
+    + `R${Math.round(r.effCarbonR)}/t, and carbon is only ${(r.carbon/r.total*100).toFixed(0)}% of the total here. `
+    + 'Set the allowance to 0% to see what full exposure would look like. Gas is 0.2019 tCO\u2082 per MWh '
+    + 'thermal; coal SRMC uses this model\u2019s own fuel and emissions constants, so the comparison is '
+    + 'internally consistent.</div>';
+
+  function inp(id, label, unit, val, step){
+    return '<div>'
+      + `<label style="font-size:9px;color:var(--ink2);display:block">${label} <span style="opacity:.7">${unit}</span></label>`
+      + `<input id="${id}" type="number" value="${val}" step="${step}" oninput="renderGasSRMC()" `
+      + 'style="width:100%;padding:3px 5px;font-size:11px;font-family:\'IBM Plex Mono\',monospace;'
+      + 'border:1px solid var(--line2);background:var(--panel);color:var(--ink);border-radius:2px;box-sizing:border-box">'
+      + '</div>';
+  }
+}
+
 /* ==================== UI DEFINITION ==================== */
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
@@ -6326,7 +6453,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);}if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);if(typeof drawPriceWeek==='function')drawPriceWeek(lastRes);}if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderGasSRMC==='function'&&!document.getElementById('gas_zar'))renderGasSRMC();if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
