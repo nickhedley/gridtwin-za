@@ -3459,11 +3459,17 @@ function coalMarginalCost(outputMW){
 function priceStatsOf(mp, stack, E){
   const H = mp.length;
   let sum = 0, zero = 0, diesel = 0;
+  // Scarcity hours are those priced at the value of lost load - the system had
+  // nothing left to dispatch. They measure a shortage, not a generation cost.
+  let scarcity = 0, sumEx = 0, nEx = 0;
+  const SCARCITY_FLOOR = 50000;
   const sorted = new Float64Array(mp);
   for (let h = 0; h < H; h++){
     sum += mp[h];
     if (mp[h] < 1) zero++;
     if (mp[h] > 5000) diesel++;
+    if (mp[h] >= SCARCITY_FLOOR) scarcity++;
+    else { sumEx += mp[h]; nEx++; }
   }
   sorted.sort();
   const pct = q => sorted[Math.min(H-1, Math.floor(H*q))];
@@ -3485,6 +3491,9 @@ function priceStatsOf(mp, stack, E){
   return {
     avg, median: pct(0.5), p95: pct(0.95), max: sorted[H-1],
     zeroHours: zero, dieselHours: diesel, monthly,
+    scarcityHours: scarcity,
+    avgExScarcity: nEx ? sumEx / nEx : 0,
+    scarcityShare: (avg > 0 && H) ? (scarcity * 87000 / H) / avg : 0,
     capture: { wind: cap(stack.wind), pv: cap(stack.pv), coal: cap(stack.coal) },
     duration: Array.from({length: 101}, (_, i) => sorted[Math.min(H-1, Math.floor(H*i/100))]),
   };
@@ -4949,7 +4958,22 @@ function renderPricePanel(r){
     + kpi('Median', R(s.median), '/MWh')
     + kpi('95th percentile', R(s.p95), '/MWh')
     + kpi('Hours at zero', s.zeroHours.toLocaleString(), (s.zeroHours/87.6).toFixed(0) + '% of year')
+    + (s.scarcityHours > 0
+        ? kpi('Cost of generation', R(s.avgExScarcity), 'excluding shortage hours')
+        : '')
     + `</div>`
+
+    + (s.scarcityHours > 0
+        ? '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
+          + 'padding:8px 11px;margin-bottom:11px;font-size:10.5px;line-height:1.55">'
+          + `<strong>${s.scarcityHours} hours priced at the value of lost load, `
+          + `contributing ${(s.scarcityShare*100).toFixed(0)}% of the average.</strong> `
+          + 'Those are hours the system had nothing left to dispatch, priced at what an hour without '
+          + 'power costs the economy rather than what generation costs. They say the system ran '
+          + `<em>short</em>, not that electricity became expensive to make \u2014 strip them out and the `
+          + `cost of generation is ${R(s.avgExScarcity)}/MWh against the ${R(s.avg)} headline. `
+          + 'Read the first number for the cost of the mix and the second for the cost of the shortfall.</div>'
+        : '')
 
     + '<canvas id="priceWeek" style="width:100%;height:130px;display:block;margin-bottom:3px"></canvas>'
     + '<div id="priceWeekNote" style="font-size:9.5px;color:var(--ink2);line-height:1.45;margin-bottom:12px"></div>'
@@ -5660,8 +5684,15 @@ function renderCCS(r){
     + '<em>lifecycle</em> reduction lower still, at 67\u201372%, once upstream coal mining and methane '
     + 'are counted \u2014 which this model does not track.'
     + `<div style="margin-top:5px;color:var(--ink2)">The energy penalty also removes <strong>${lostGW.toFixed(1)} GW</strong> `
-    + 'of saleable capacity from the fleet before a rand of capital is spent \u2014 on a system that already '
-    + 'sheds load. Toggle it on and watch the load-shedding panel, not just the cost.</div></div>'
+    + 'of saleable capacity from the fleet before a rand of capital is spent. The plant is not retired \u2014 '
+    + 'it still burns the same coal \u2014 but a quarter of its output now runs the capture equipment '
+    + 'instead of reaching customers. On a system whose peak is already near its available capacity, '
+    + 'that is enough to bring load shedding back.'
+    + '<div style="margin-top:5px">This model applies capture to today\'s fleet and changes nothing '
+    + 'else, so the lost capacity shows up as shortage. A real policy would have to build roughly '
+    + `<strong>${lostGW.toFixed(1)} GW</strong> of replacement plant first \u2014 which is a cost this panel does not `
+    + 'show. Watch the wholesale price panel: it now separates the cost of generation from the cost '
+    + 'of the shortfall, and the two answer different questions.</div></div></div>'
 
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
     + '<strong>The South African constraint is where the CO\u2082 goes.</strong> The Council for Geoscience '
