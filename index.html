@@ -510,6 +510,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="ph"><h2>Grid queue pressure</h2><span class="tag">pipeline vs headroom</span></div>
             <div class="pb" id="queueBody"></div>
           </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Permitted but not built</h2><span class="tag">environmental approvals</span></div>
+            <div class="pb" id="reeaBody"></div>
+          </div>
 <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
             <div class="pb" id="carbonBudget"></div>
@@ -1189,7 +1194,11 @@ function initResourceQuery(){
       ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
       <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Curtailment risk if you build here</div>
-        <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.r); }catch(e){} }, 0); return ''; })()}
+        <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.r); renderNeighbours(sub.r); }catch(e){} }, 0); return ''; })()}
+      </div>
+      <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
+        <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Who else is queuing here</div>
+        <div id="neighbourResult"></div>
       </div>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: GCCA 2025 + Oct 2025 update (published Apr 2025). &ldquo;Full&rdquo; means the corridor is fully subscribed — no capacity available to connect. Figures updated annually — verify at <a href='https://www.ntcsa.co.za/gcca/' target='_blank'>ntcsa.co.za/gcca</a>.</div>
       ${(h.solar_mw||0)===0 && h.corridor_km ? `<div style="margin-top:8px;padding:8px;background:rgba(196,120,90,0.08);border-radius:4px;border-left:3px solid var(--terra,#C4785A)">
@@ -1360,6 +1369,68 @@ function initResourceQuery(){
       + rows.map(r => `${r.tech} ran worst in ${r.worst}, best in ${r.best}`).join('; ') + '. '
       + 'Regional averages, not a site measurement: your own P90 depends on terrain and turbine or '
       + 'module choice, and a lender will want twenty years and their own resource consultant.</div>';
+  }
+
+
+  // ── Who else is queuing here ──────────────────────────────────────────────
+  // Approved-but-unbuilt projects in the same supply area, from the DFFE
+  // environmental register. A developer's practical question is not just "is
+  // there headroom" but "who am I behind, and are they actually moving".
+  //
+  // Scope is PROVINCE, not district: substations carry a province but no
+  // district, and the environmental register carries a district but no
+  // coordinates, so a clicked point cannot be resolved to a district without
+  // boundary data the model does not hold. The district split is shown within
+  // the province so the local texture is still visible.
+  let reeaSite = null;
+  fetch('nodal/reea_projects.json').then(r => r.ok ? r.json() : null)
+    .then(d => { reeaSite = d; }).catch(() => {});
+
+  function renderNeighbours(province){
+    const el = document.getElementById('neighbourResult');
+    if (!el) return;
+    if (!reeaSite || !reeaSite.projects || !province){ el.innerHTML = ''; return; }
+    // Hydra Central is a supply area, not a province. The environmental register
+    // is organised by province, so read it as the Northern Cape - which is where
+    // most of that corridor's development sits - and say so.
+    const isSupplyArea = province === 'Hydra Central';
+    const lookup = isSupplyArea ? 'Northern Cape' : province;
+    const now = new Date().getFullYear();
+    const here = reeaSite.projects.filter(p =>
+      p.province === lookup && p.status === 'Approved' && p.decided && typeof p.mw === 'number');
+    if (!here.length){ el.innerHTML = ''; return; }
+
+    const totMW = here.reduce((s, p) => s + p.mw, 0);
+    const stale = here.filter(p => now - +p.decided.slice(0,4) >= 5);
+    const staleMW = stale.reduce((s, p) => s + p.mw, 0);
+    const byDist = {};
+    here.forEach(p => {
+      const d = (p.district || 'Unspecified').replace(/\s*District Municipality$/i, '');
+      (byDist[d] = byDist[d] || { n: 0, mw: 0 }).n++; byDist[d].mw += p.mw;
+    });
+    const top = Object.entries(byDist).sort((a,b) => b[1].mw - a[1].mw).slice(0, 4);
+
+    el.innerHTML =
+        '<div style="font-size:10.5px;line-height:1.55;margin-bottom:7px">'
+      + `<strong>${here.length.toLocaleString()} approved projects totalling ${(totMW/1000).toFixed(1)} GW `
+      + `are permitted in ${lookup}${isSupplyArea ? ' (Hydra Central spans the Karoo; the register is organised by province)' : ''}</strong>, of which <strong style="color:var(--alert,#C4785A)">`
+      + `${stale.length.toLocaleString()} (${(staleMW/1000).toFixed(1)} GW) have been waiting five years `
+      + 'or more</strong>. They hold environmental approval and have not been built.</div>'
+      + '<table class="mono" style="width:100%;font-size:10.5px;border-collapse:collapse">'
+      + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:3px 5px">Busiest districts</th>'
+      + '<th style="text-align:right;padding:3px 5px">Projects</th>'
+      + '<th style="text-align:right;padding:3px 5px">Capacity</th></tr>'
+      + top.map(([d, v]) => '<tr style="border-bottom:1px solid var(--line2)">'
+          + `<td style="padding:3px 5px">${d}</td>`
+          + `<td style="text-align:right;padding:3px 5px;color:var(--ink2)">${v.n}</td>`
+          + `<td style="text-align:right;padding:3px 5px;font-weight:700">${(v.mw/1000).toFixed(1)} GW</td></tr>`).join('')
+      + '</table>'
+      + '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
+      + 'Counted at province level: a clicked point cannot be resolved to a district, because '
+      + 'substations carry no district and the environmental register carries no coordinates. '
+      + 'An environmental authorisation is not a grid allocation \u2014 but under IGCAR no project can '
+      + 'hold a budget quote without one, so this is who is ahead of you in the permitting queue. '
+      + 'Source: DFFE renewable energy EIA register.</div>';
   }
 
   // ── Curtailment risk at a site ────────────────────────────────────────────
@@ -5363,7 +5434,9 @@ Promise.all([
   fetch('nodal/bq_queue.json').then(r => r.ok ? r.json() : null).catch(() => null),
   fetch('nodal/reea_projects.json').then(r => r.ok ? r.json() : null).catch(() => null),
 ]).then(([n, h, b, e]) => {
-  queueNersa = n; queueHeadroom = h; queueBQ = b; queueREEA = e; renderQueuePressure();
+  queueNersa = n; queueHeadroom = h; queueBQ = b; queueREEA = e;
+  renderQueuePressure();
+  if (typeof renderReeaPanel === 'function') renderReeaPanel();
 });
 
 
@@ -5388,6 +5461,14 @@ Promise.all([
  * it does not systematically omit the projects that stalled, which are exactly
  * the ones in question.
  */
+function renderReeaPanel(){
+  const host = document.getElementById('reeaBody');
+  if (!host) return;
+  const html = reeaAgeHtml();
+  host.innerHTML = html ||
+    '<p style="font-size:11px;color:var(--ink2)">Environmental authorisation data not loaded.</p>';
+}
+
 function reeaAgeHtml(){
   if (!queueREEA || !queueREEA.projects) return '';
   const now = new Date().getFullYear();
@@ -5409,9 +5490,8 @@ function reeaAgeHtml(){
   const stale = rows.filter(r => r.lo >= 5).reduce((a,b) => ({ n: a.n+b.n, mw: a.mw+b.mw }), { n:0, mw:0 });
   const maxMW = Math.max(...rows.map(r => r.mw), 1);
 
-  return '<div style="margin-top:13px;padding-top:11px;border-top:1.5px solid var(--ink)">'
-    + '<div style="font-size:11px;font-weight:700;margin-bottom:3px">How long since environmental approval</div>'
-    + '<div style="font-size:9.5px;color:var(--ink2);margin-bottom:8px;line-height:1.5">'
+  return '<div>'
+    + '<div style="font-size:9.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
     + `${appr.length.toLocaleString()} authorised projects carrying ${(totMW/1000).toFixed(0)} GW. An `
     + 'Environmental Authorisation is required before a budget quote under IGCAR, so its date is a '
     + 'lower bound on how long a project has been ready to build.</div>'
@@ -5554,8 +5634,7 @@ function renderQueuePressure(){
     + 'substantially the utility-scale capacity that competes for transmission headroom, not rooftop. '
     + 'Headroom is the GCCA figure for the larger of solar or wind, which the two share. '
     + 'Sources: SAPVIA\u2019s collation of NERSA statements, and NTCSA\u2019s GCCA.</div>'
-    + bqSlipHtml()
-    + reeaAgeHtml();
+    + bqSlipHtml();
 }
 
 
