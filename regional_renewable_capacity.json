@@ -1,0 +1,34 @@
+{
+ "wind_mw": {
+  "Eastern Cape": 1682.6,
+  "Limpopo": 0.0,
+  "Mpumalanga": 0.0,
+  "Gauteng": 0.0,
+  "Western Cape": 1274.5,
+  "Northern Cape": 890.5,
+  "Hydra Central": 88.5,
+  "Kwazulu Natal": 0.0,
+  "North West": 0.0,
+  "Free State": 0.0
+ },
+ "solar_mw": {
+  "Eastern Cape": 0,
+  "Limpopo": 465.0,
+  "Mpumalanga": 0,
+  "Gauteng": 0.0,
+  "Western Cape": 234.3,
+  "Northern Cape": 473.2,
+  "Hydra Central": 256.1,
+  "Kwazulu Natal": 0.0,
+  "North West": 722.5,
+  "Free State": 386.3
+ },
+ "meta": {
+  "solar_bw6": "BW6 (Dec 2022 preferred bidders, commercial close Apr 2024): 860 MW solar, 0 MW wind. Projects: Doornhoek 120MW + Boitumelo 150MW + Kutlwano 150MW (all NW); Virginia 240MW + Good Hope 200MW (both FS). No wind awarded (grid constraint in Cape provinces).",
+  "solar_bw7": "BW7 (Dec 2024 preferred bidders, commercial close expected H2 2025): 1,760 MW solar, 0 MW wind awarded. 8 projects across Mpumalanga, Free State, North West, Limpopo. Provincial split approximate (press release detail). Wind: 932 MW eligible but not awarded; under value-for-money negotiations.",
+  "h1_2026_update": "Added the 958 MW of privately-procured wheeled capacity reaching commercial operation in H1 2026 (Impofu x3, Mooi Plaats, Umsobomvu, Bolobedu, ARM Platinum), per Alao & Kruger, Power Futures Lab, 17 Aug 2026. Behind-the-meter captive generation (88 MW) is excluded, as it suppresses demand rather than adding supply.",
+  "UNRESOLVED": "The 874 MW of PUBLICLY-procured H1 2026 commercial operations (Phezukomoya, Coleskop, Doornhoek, Grootspruit, Graspan, Mulilo Total Hydra, Umoyilanga 2) has NOT been added here. The solar_bw6/solar_bw7 notes above describe those bid windows as present in these totals, yet ipp_pipeline.json also lists Doornhoek, Boitumelo, Kutlwano, Virginia and Good Hope as pipeline. Both cannot be true. Resolve the provenance of the BW6/BW7 capacity before adding publicly-procured projects here, or they will be double counted.",
+  "STOPGAP_WARNING": "*** STOPGAP - NEEDS A FULL REBUILD ***  SOLAR was assembled from REIPPPP bid-window AWARDS rather than commissioned plant, so it counted un-built projects as operational: Mpumalanga showed 480 MW, exactly the BW7 preferred-bidder capacity in ipp_pipeline.json, in a province with essentially no operational utility solar. Identifiable pipeline capacity has been subtracted, removing the definite double-count. TWO PROBLEMS REMAIN: (1) the solar total of ~2.5 GW is roughly 0.8-1.1 GW BELOW the real operational fleet of ~3.3-3.6 GW, and (2) the geography is still wrong - Free State and North West still lead the Northern Cape, which is inverted from reality. WIND is NOT affected: its totals and geography match the real operational fleet and were left untouched. FIX: rebuild solar plant-by-plant from the IPP Office project list with commercial operation dates. Until then the nodal engine under-credits Northern Cape solar and over-credits Free State and North West, affecting regional curtailment, the locational battery benchmark and Where To Build.",
+  "stopgap_applied": "2026-08-20"
+ }
+}
