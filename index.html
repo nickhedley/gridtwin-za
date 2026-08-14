@@ -2769,6 +2769,8 @@ const FIXED = {
   // retrofit; every one is exposed in the policy panel.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
   ccsOpexR:180, ccsCapexR:260, ccsTsR:120,
+  // Tariff side: retrofit capital, allowed return and asset life.
+  ccsCapexRkW:38000, ccsWaccPct:9, ccsLifeYrs:20,
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
   // rooftopMW: NTCSA's estimate of behind-the-meter rooftop PV, which is growing
   // fast enough that this figure dates quickly - 6,800 MW (Jun 2025), 8,294 MW
@@ -5689,6 +5691,49 @@ function renderCCS(r){
     + `<td style="text-align:right;padding:4px 5px">\u2014</td>`
     + `<td style="text-align:right;padding:4px 5px;font-weight:700">${(netCut*100).toFixed(0)}%</td></tr>`
     + '</table>'
+
+    // ── Capital recovery, the tariff side ────────────────────────────────
+    + (() => {
+        const rKw = state.ccsCapexRkW ?? 38000;                 // R/kW installed
+        const gw = fleetMW / 1000;
+        const totalBn = rKw * (fleetMW * 1000) / 1e9;           // R/kW \u00d7 kW \u2192 R bn
+        const wacc = (state.ccsWaccPct ?? 9) / 100;
+        const life = state.ccsLifeYrs ?? 20;
+        // Annual revenue requirement: return on the un-depreciated asset plus
+        // straight-line depreciation. Mid-life return is the standard shorthand.
+        const annualBn = totalBn * (wacc/2 + 1/life);
+        // Recovered over sales volume that the energy penalty has already cut.
+        const salesTWh = (lastRes && lastRes.E)
+          ? (Object.entries(lastRes.E).filter(([k]) => !['curtailed','unserved','coalTripped'].includes(k))
+              .reduce((s,[,v]) => s+v, 0)) / 1e6 : 200;
+        const cPerKwh = annualBn * 1e9 / (salesTWh * 1e9) * 100;
+        return '<div style="margin-top:13px;padding-top:11px;border-top:1.5px solid var(--ink)">'
+          + '<div style="font-size:11px;font-weight:700;margin-bottom:3px">Capital recovery \u2014 the tariff side</div>'
+          + '<div style="font-size:9.5px;color:var(--ink2);margin-bottom:8px;line-height:1.5">'
+          + 'Running cost is only half of it. The retrofit enters the Regulatory Asset Base and flows '
+          + 'into Eskom\u2019s revenue requirement as return plus depreciation \u2014 for decades, and '
+          + 'whether or not the plant runs.</div>'
+          + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
+          + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">Programme capital<br><span style="font-size:9px;color:var(--ink2)">R${(rKw/1000).toFixed(0)}k/kW \u00d7 ${gw.toFixed(1)} GW</span></td>`
+          + `<td style="text-align:right;padding:4px 5px;font-weight:700">R${totalBn.toFixed(0)}bn</td></tr>`
+          + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">Added to revenue requirement<br><span style="font-size:9px;color:var(--ink2)">${(wacc*100).toFixed(0)}% return, ${life}-year life</span></td>`
+          + `<td style="text-align:right;padding:4px 5px;font-weight:700">R${annualBn.toFixed(0)}bn/yr</td></tr>`
+          + `<tr><td style="padding:4px 5px;font-weight:700">Tariff impact<br><span style="font-size:9px;color:var(--ink2);font-weight:400">over ${salesTWh.toFixed(0)} TWh of sales, already reduced by the energy penalty</span></td>`
+          + `<td style="text-align:right;padding:4px 5px;font-weight:700;font-size:15px;color:var(--alert,#C4785A)">+${cPerKwh.toFixed(0)}c<span style="font-size:10px;font-weight:400;color:var(--ink2)">/kWh</span></td></tr>`
+          + '</table>'
+          + '<div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">'
+          + 'This is on top of the running cost above, not instead of it. Note the compounding: the '
+          + 'energy penalty cuts the sales volume the capital is recovered over, so the same rand of '
+          + 'capex lands harder per kWh. For scale, Medupi cost about R145bn for 4.8 GW \u2014 roughly '
+          + 'R30m/MW \u2014 so a capture retrofit at R38m/MW is the same order as building the station '
+          + 'again. A real submission would model each unit\u2019s remaining life, phasing and financing '
+          + 'separately; this is a transparent approximation, not a tariff application.</div>'
+          + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px">'
+          + ci('ccsCapexRkW', 'Retrofit capital', 'R/kW', rKw, 1000)
+          + ci('ccsWaccPct', 'Return (WACC)', '%', state.ccsWaccPct ?? 9, 0.5)
+          + ci('ccsLifeYrs', 'Asset life', 'years', life, 1)
+          + '</div></div>';
+      })()
 
     + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:11px">'
     + ci('ccsPenaltyPct', 'Energy penalty', '%', state.ccsPenaltyPct ?? 25, 1)
