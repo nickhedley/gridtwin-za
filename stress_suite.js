@@ -245,7 +245,10 @@ const BASE_SN = {demandGrowthPct:0,coalEAFPct:64,coalDecomMW:0,newWindMW:0,newPv
 
 function runSN(params) {
   const r = simulate({...BASE_SN,...params}, snProfiles);
-  const keys = ['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
+  // 'hybrid' added 14 Aug 2026 (RMIPPPP firm dispatchable renewables). A new
+  // carrier must be added to EVERY hardcoded list like this one, or the energy
+  // balance silently reports the new carrier's output as an unexplained gap.
+  const keys = ['nuclear','hydro','imports','hybrid','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
   let nanCount=0, negCount=0, chartMism=0;
   for(let h=0;h<SN_HOURS;h++){
     keys.forEach(k=>{ const v=r.stack[k]?.[h]||0; if(!Number.isFinite(v))nanCount++; if(v<-1e-6)negCount++; });
@@ -271,12 +274,15 @@ function checkEnergyBalance(result, label) {
   const E = r.E;
   // Total annual generation (all carriers — excludes unserved which is deficit, not generation)
   const genTotal = E.rooftop + E.wind + E.pv + E.csp + E.nuclear + E.hydro
-    + E.imports + E.coal + E.ps + E.batt + E.ccgt + E.diesel;
+    + E.imports + (E.hybrid || 0) + E.coal + E.ps + E.batt + E.ccgt + E.diesel;
   // stackSum includes unserved (in stack for chart balance) but excludes rooftop (nets off demand)
   // So: genTotal + E.unserved = stackSum + E.rooftop
   // Rearranged: genTotal = stackSum + E.rooftop - E.unserved
   let stackSum = 0;
-  const keys = ['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
+  // 'hybrid' added 14 Aug 2026 (RMIPPPP firm dispatchable renewables). A new
+  // carrier must be added to EVERY hardcoded list like this one, or the energy
+  // balance silently reports the new carrier's output as an unexplained gap.
+  const keys = ['nuclear','hydro','imports','hybrid','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
   for(let h=0;h<8760;h++) keys.forEach(k=>{ stackSum += (r.stack[k]?r.stack[k][h]:0); });
   const expected = stackSum + E.rooftop - E.unserved;
   const gap = Math.abs(expected - genTotal);

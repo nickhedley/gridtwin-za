@@ -206,6 +206,156 @@ and is not here.
 
 ---
 
+## Known distortion: `rooftopMW` is not all rooftop
+
+Eskom's footnote to the series `FIXED.rooftopMW` is taken from reads:
+
+> Rooftop PV includes ground-mounted as well as all other PV installations that do
+> not have contracts with NTCSA.
+
+The bucket is **contractual, not physical**. Any ground-mounted farm selling to a
+private offtaker has no NTCSA contract and lands here rather than in Eskom's PV
+line - Mooi Plaats (240 MW), Bolobedu (148 MW) and the rest of the PFL wheeled
+list are inside the 9,100 MW.
+
+**Why it matters here.** `rooftopMW` nets off demand: it is modelled as demand
+suppression, never curtailed, and takes no connection headroom. Ground-mounted
+grid-connected plant is the opposite - it is supply, it can be curtailed, and it
+competes for headroom. So an unknown slice of this constant is modelled as the
+wrong kind of thing. The effect is to understate utility-scale generation and to
+understate the curtailment and headroom pressure it creates, which is exactly what
+the nodal engine exists to measure.
+
+**Not corrected, deliberately.** Eskom publishes one number and does not break out
+the ground-mounted share. Fixing it needs that split, not an estimate: an estimate
+would move capacity between two constants that are each independently sourced,
+which is a worse position than a documented distortion. Candidate sources are
+SAPVIA's portal segments (C&I large-scale 1-50 MW and utility-scale are the
+ground-mounted candidates) or PFL's wheeled-project monitor, which lists such
+projects individually and is already a source in this model.
+
+**Interaction with the pvUtilityMW gap below:** the 488 MW of PFL wheeled solar
+currently in `by_source.private` is inside Eskom's rooftop figure too, so it is
+double-counted today. That is a live error, unlike the distortion above.
+
+## The 1,823 MW pvUtilityMW gap - what it is and how to close it
+
+`FIXED.pvUtilityMW` is 4,974 MW. Sourced components account for 3,151 MW
+(2,663 REIPPPP + 488 PFL wheeled H1 2026), leaving **1,823 MW unexplained**.
+Identity 3 reports this as PENDING and must not be closed by widening a
+tolerance - the residual IS the finding.
+
+**Settled 14 Aug 2026: SAPVIA's headline "private" figure cannot close it.**
+SAPVIA's "6.1 GW private" (end-2024) and the "6,165 MW rooftop" figure for
+Oct 2024 are 65 MW apart - the same measurement, two descriptions. Both sit in
+one continuous behind-the-meter series this model already carries as
+`FIXED.rooftopMW`: 2,264 MW (Eskom, Aug 2022) -> 6,165 (SAPVIA, Oct 2024) ->
+7,300 (NTCSA, Sep 2025) -> 9,107 (NTCSA, Jun 2026). Adding the private aggregate
+to `pvUtilityMW` would double-count almost all of it.
+
+**CSIR corroborates the REIPPPP component (14 Aug 2026).** CSIR's *Statistics of
+utility-scale power generation in South Africa* reports capacity "excluding embedded
+generation capacity and private capacity" - the closest published analogue to what
+`pvUtilityMW` is meant to be. Its 2022 edition gives solar PV **2,287 MW** at
+31 Dec 2022 (wind 3,443, CSP 500). Our REIPPPP solar of 2,663 MW at Mar 2026 sits
+exactly where that trajectory lands three years on. So the REIPPPP component is
+right and complete - independently confirmed by a series built on a different basis.
+
+That narrows the gap to a DEFINITIONAL question, which must be settled before any
+data hunt:
+
+| If `pvUtilityMW` means | Correct value | Constant is |
+|---|---|---|
+| CSIR basis: utility-scale, grid-connected, excludes private | ~2,663 MW | 2,311 MW too high |
+| CSIR basis + private wheeled | >=3,151 MW | 1,823 MW too high, unless ~1,823 MW of pre-2026 wheeled solar exists |
+
+A plausibility check on the second row: PFL found 488 MW of wheeled solar in the six
+months of H1 2026. For the gap to be pre-2026 wheeled capacity, roughly 1,823 MW would
+have to have accumulated before that - about four years at the H1 2026 rate, during a
+period when wheeling was far less developed. Possible, but it needs evidence rather
+than assumption. CSIR cannot settle it either way: it excludes private capacity by
+construction and so cannot see wheeled projects at all.
+
+**Recommended order: decide the definition, then re-derive.** If CSIR basis, the
+constant can be corrected today from sourced components and identity 3 closes. If it
+includes wheeled, the earlier PFL monitors decide it - and would have to show far more
+than expected.
+
+Legitimate sources are SUBSETS of that aggregate, or a different series:
+1. **Earlier PFL monitors** - the H1 2026 edition supplied the 488 MW already in
+   the file, on exactly the right basis (wheeled only, captive excluded).
+   Previous editions extend it backwards. Cleanest route; source already
+   validated. PFL's IPP data hub: powerfutureslab.co.za
+2. **SAPVIA's own segments**, not the aggregate: "C&I large-scale 1-50MW" and
+   "utility-scale" from their data portal.
+3. **CSIR utility-scale generation statistics**, which track capacity by actual
+   start of operation - the right basis for this model.
+
+**Do not assume the gap is all one thing.** Part is pre-2026 wheeled utility PV;
+part may be an overstatement in `pvUtilityMW` itself, which has never been
+re-derived from sourced components. When the sourced total gets close, consider
+that the constant may be wrong rather than the data incomplete - the same
+correction already made to `windMW` (4,458 -> 4,512).
+
+**Open risk:** the 488 MW of PFL wheeled solar is only safe if NTCSA's rooftop
+estimate excludes wheeled grid-connected projects. NTCSA derives it from demand
+suppression, which sees only behind-the-meter generation, and PFL excludes
+captive projects for the same reason - so they should not overlap. That rests on
+inference about NTCSA's method, not a stated definition. Confirm before the next
+private-capacity addition.
+
+## Supply-area split (applied 14 Aug 2026)
+
+The IPP Office reports by PROVINCE; this model is keyed by Eskom TRANSMISSION
+SUPPLY AREA - ten values including Hydra Central, which is not a province at all.
+`build_capacity.py` step 1b redistributes each province's ONLINE capacity using
+CONTRACTED shares from `nodal/supply_area_split_draft.json`, built by
+`build_supply_area_split.py` from the IPP Office project-location table (BW1-BW4
++ CSP window) plus the DMRE BW5 preferred-bidder statement.
+
+**Applied as shares, never as absolute megawatts.** The split file carries
+contracted capacity; this file carries capacity online. Substituting contracted MW
+directly would break the national identities. The build asserts each technology's
+total is unchanged to within 0.2 MW.
+
+Two consequences that look like bugs and are not:
+
+- **Eastern Cape solar is ZERO.** Dreunberg is the only EC solar project in
+  BW1-BW4 and it connects into Hydra Central, so all 70 MW moves. Verified with a
+  real site coordinate: Ruigtevallei 70.5 km vs Delphi 142.6 km.
+- **Western Cape wind gains ~419 MW.** Roggeveld, Karusa and Soetwater are filed
+  by the IPP Office under the Northern Cape but connect at Komsberg, in the
+  Western Cape supply area. This is the Hydra Central distortion running the
+  opposite way, and it is the reason the split exists at all.
+
+Hydra Central goes from 88 MW wind / 256 MW solar to **669 / 459 MW**. Its largest
+single input is EDF's Koruson 1 cluster (San Kraal + Phezukomoya, 280 MW), sited at
+Koruson substation on a STATED connection point rather than a proximity estimate.
+
+Pending: Graspan Solar (75 MW, Siyancuma, Northern Cape) was commissioned in April
+2026, just after the 31 Mar 2026 reporting date. It belongs to the Northern Cape
+supply area and should be added when the capacity file rolls forward - see
+`pending_next_quarterly` in the split file.
+
+## Cost families - which number governs what (audited 14 Aug 2026)
+
+The model carries four cost representations. This is the professional structure
+(PLEXOS / PyPSA / ReEDS): capex + life for investment, SRMC for dispatch, LCOE as
+reporting only - never an optimisation input, because LCOE bakes in an assumed
+capacity factor, which is what a model is supposed to solve for.
+
+| Family | Where | Governs | Notes |
+|---|---|---|---|
+| `BLD_COST` + `BLD_LIFE` + `BLD_DISC` | index.html | **What gets built** - both capacity-expansion LPs, via `bldAnnuity()` | Overnight R/kW + real decline rates, documented at the block |
+| `cost*` (six constants) | `FIXED` | **Who runs and what hours clear at** - dispatch SRMC | Fuel-only by source definition (Eskom "primary energy input costs only"). Carbon added separately via `carbonTaxRPerT x emis*`. VOM deliberately absent - adding it is a live decision affecting all technologies at once |
+| `acap*` | `FIXED` | Nothing - headline capex reporting (`newCapexR`) | R/kW-yr annualised |
+| `lcoe*` | `FIXED` | Nothing - replacement-cost reckoning (`replTotal`) and the comparison chart | Reconciled to slider values 14 Aug 2026 (`lcoeBatt` 1450->1600, `lcoePv` 575->550, zero behavioural change); every shadowed slider now reads `def:FIXED.x` and `validate_lp.js` asserts they never diverge |
+
+Sourcing added the same day: `costCoal` 546 = Eskom FY2025 coal primary energy;
+`costDiesel` 6100 vs ~R6,011/MWh observed Mar 2026; `costNuclear`, `costHydro`,
+`costImports` bases documented at the block. `costCcgt` 2800 predates the JKM
+benchmark work and sits high - see open items.
+
 ## Open items
 
 1. **Pre-2026 private capacity.** The PFL H1 2026 monitor is in and populates

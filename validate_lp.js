@@ -32,8 +32,9 @@ const NATIONAL_FIELDS = {
   windMW: 9999, pvUtilityMW: 9999, rooftopMW: 9999, cspMW: 9999, battPowerMW: 9999,
   costCoal: 1234, costCcgt: 4321, costDiesel: 7777, emisCoal: 2.5, emisCcgt: 1.5,
   carbonTaxRPerT: 999, emisDiesel: 3.3, lpCurtailCostR: 555, lpBattDischargeCostR: 77,
+  vomCoal: 444, vomCcgt: 333, vomDiesel: 222,
 };
-const REGIONAL_FIELDS = { costCoal: 1234, costDiesel: 7777, emisCoal: 2.5, carbonTaxRPerT: 999, emisDiesel: 3.3, lpCurtailCostR: 555 };
+const REGIONAL_FIELDS = { costCoal: 1234, costDiesel: 7777, emisCoal: 2.5, carbonTaxRPerT: 999, emisDiesel: 3.3, lpCurtailCostR: 555, vomCoal: 444, vomDiesel: 222 };
 
 function boot(root) {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -103,6 +104,21 @@ function check(label, ok, detail) {
   check('bldBuildRegionalLP is reachable', avail.regional === true);
   check('Where To Build defaults to the regional LP', avail.defaultRegional === '1',
         `bldRegional = ${avail.defaultRegional}`);
+
+  // Slider defaults vs FIXED: one source of truth. Any slider whose id is also
+  // a FIXED key must read its default FROM FIXED (def:FIXED.x). A numeric
+  // literal there is drift waiting to happen - it is exactly how lcoeBatt sat
+  // at 1450 in FIXED while the slider (the LIVE value) said 1600.
+  const drift = await runProbe(w, `
+    const bad = [];
+    for (const sl of SLIDERS){
+      if (!(sl.id in FIXED) || sl.toggle) continue;
+      if (sl.def !== FIXED[sl.id]) bad.push(sl.id + ': slider ' + sl.def + ' vs FIXED ' + FIXED[sl.id]);
+    }
+    return { bad };`);
+  check('Slider defaults match FIXED for every shadowed key',
+        drift.bad && drift.bad.length === 0,
+        drift.bad && drift.bad.length ? drift.bad.join('; ') : '');
 
   for (const [fn, fields] of [['bldBuildLP', NATIONAL_FIELDS], ['bldBuildRegionalLP', REGIONAL_FIELDS]]) {
     console.log(`\n  ${fn} - every FIXED constant must reach the model`);

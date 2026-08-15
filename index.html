@@ -609,10 +609,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="ccsBody"></div>
           </div>
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Gas short-run marginal cost</h2><span class="tag">what gas power costs to run</span></div>
-            <div class="pb" id="gasBody"></div>
-          </div>
-          <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
             <div class="pb" id="capFcBody"></div>
           </div>
@@ -803,76 +799,26 @@ function initResourceQuery(){
     return monthly;
   }
 
-  // ── Solar CF: PVGIS SARAH2 grid (primary) or Open-Meteo ERA5 (fallback) ────
-  // Primary: pre-computed 0.5° grid from PVGIS SARAH2 satellite data.
-  // PVGIS SARAH2 is significantly more accurate than ERA5 for SA:
-  //   - satellite-observed irradiance vs modelled from atmospheric variables
-  //   - half the aerosol bias (~5% vs ~10-15% ERA5 overestimate in SA)
-  // Fallback: Open-Meteo ERA5 (CORS-enabled) if grid file not present.
+  // ── Solar CF: Open-Meteo ERA5 ────────────────────────────────────────────
+  // REMOVED 14 Aug 2026: a PVGIS SARAH2 grid path that fetched
+  // nodal/sa_solar_grid.json. That file has never existed in the repo, so the
+  // fetch always 404'd and every solar figure this model has produced came from
+  // the Open-Meteo path below. The dead branch also labelled its output
+  // "PVGIS SARAH2 (satellite, +/-5% accuracy)", a claim that could never be true.
+  // The rationale for wanting it stands and is worth reviving IF the grid is ever
+  // built: PVGIS SARAH2 is satellite-OBSERVED irradiance rather than modelled from
+  // atmospheric variables, with roughly half the aerosol bias over South Africa
+  // (~5% vs the ~10-15% ERA5 overestimate the fallback warns about in its own
+  // source label). Building it needs a few hundred PVGIS API calls on a 0.5 deg
+  // land grid - a one-off offline job, not something to fetch at page load.
+  // Do not re-add the fetch without the file.
 
-  let pvgisGrid = null;
-  fetch('nodal/sa_solar_grid.json').then(r=>r.json()).then(d=>{
-    pvgisGrid = d;
-    console.log('PVGIS grid loaded:', d.meta?.n_points, 'land points');
-  }).catch(()=>{ console.log('PVGIS grid not found — will use Open-Meteo ERA5 fallback'); });
-
-  function bilinearInterp(grid, lat, lng) {
-    // Bilinear interpolation in the pre-computed PVGIS grid
-    const meta = grid.meta;
-    const [latMin,,latStep] = meta.lat_range;
-    const [lonMin,,lonStep] = meta.lon_range;
-    // find surrounding grid points
-    const latI = (lat - latMin) / latStep;
-    const lonI = (lng - lonMin) / lonStep;
-    const la = Math.floor(latI), lb = la + 1;
-    const lo = Math.floor(lonI), lp = lo + 1;
-    const latA = latMin + la * latStep, latB = latMin + lb * latStep;
-    const lonA = lonMin + lo * lonStep, lonB = lonMin + lp * lonStep;
-    const tLat = (lat - latA) / (latB - latA);
-    const tLon = (lng - lonA) / (lonB - lonA);
-    const get = (la,lo) => {
-      const k = (latMin + la*latStep).toFixed(1) + ',' + (lonMin + lo*lonStep).toFixed(1);
-      return grid.cf[k] ?? null;
-    };
-    const v00=get(la,lo), v01=get(la,lp), v10=get(lb,lo), v11=get(lb,lp);
-    const vals = [v00,v01,v10,v11].filter(v=>v!==null);
-    if(!vals.length) return null;
-    // use available values (gracefully handle ocean/null corners)
-    if(vals.length === 4) {
-      return v00*(1-tLat)*(1-tLon) + v01*(1-tLat)*tLon + v10*tLat*(1-tLon) + v11*tLat*tLon;
-    }
-    return vals.reduce((s,v)=>s+v,0)/vals.length; // fallback: average of available
-  }
-
-  // Monthly solar CF from PVGIS: derive from annual CF × seasonal shape
-  // We use a representative monthly shape for SA (from our existing regional profiles)
   // scaled to match the interpolated annual CF
   const SA_MONTHLY_SHAPE = [0.85,0.87,0.96,1.06,1.07,1.02,1.04,1.10,1.11,1.03,0.93,0.84];
   // (Jan–Dec, normalised so mean=1.0, from PVGIS SA regional data)
 
   async function fetchSolar(lat, lng) {
-    // Try PVGIS grid first
-    if(pvgisGrid) {
-      const annualCF = bilinearInterp(pvgisGrid, lat, lng);
-      if(annualCF !== null) {
-        const shapeSum = SA_MONTHLY_SHAPE.reduce((s,v)=>s+v,0)/12;
-        const monthly = SA_MONTHLY_SHAPE.map(s => annualCF * s / shapeSum);
-        // synthesise hourly from monthly × diurnal shape (for CSV download)
-        const hourly = [];
-        const daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
-        daysInMonth.forEach((days,mi) => {
-          for(let d=0;d<days;d++) for(let h=0;h<24;h++) {
-            // simple diurnal: sine curve, 0 at night
-            const solarAngle = Math.PI * (h - 6) / 12;
-            const diurnal = h>=6&&h<=18 ? Math.max(0, Math.sin(solarAngle)) : 0;
-            const norm = 2/Math.PI; // normalise sine so daily mean = monthly CF
-            hourly.push(monthly[mi] * diurnal / norm * Math.PI/2);
-          }
-        });
-        return { annualCF, monthly, hourly, source: 'PVGIS SARAH2 (satellite, ±5% accuracy)' };
-      }
-    }
-    // Fallback: Open-Meteo ERA5
+    // Open-Meteo ERA5 - the only solar path (see the note above).
     const year = 2024;
     const url = 'https://archive-api.open-meteo.com/v1/archive'
       + '?latitude='+lat.toFixed(4)+'&longitude='+lng.toFixed(4)
@@ -1151,15 +1097,15 @@ function initResourceQuery(){
     // appears as a named project.
     const byProv = tdpData.meta && tdpData.meta.line_km_by_province;
     const sub = substationData && nearestSubstation(lat, lng);
-    const provRows = byProv && sub && byProv[sub.r];
-    if (provRows) {
-      const parts = Object.keys(provRows).filter(k => /^\d+$/.test(k)).sort((a,b) => b-a)
-        .map(kv => `${kv}\u00a0kV ${provRows[kv].total.toLocaleString()}\u00a0km`);
+    const areaRows = byProv && sub && byProv[sub.area];
+    if (areaRows) {
+      const parts = Object.keys(areaRows).filter(k => /^\d+$/.test(k)).sort((a,b) => b-a)
+        .map(kv => `${kv}\u00a0kV ${areaRows[kv].total.toLocaleString()}\u00a0km`);
       if (parts.length) {
-        const shared = provRows._shared_with
-          ? ` <span style="color:var(--ink2)">(reported jointly with ${provRows._shared_with})</span>` : '';
+        const shared = areaRows._shared_with
+          ? ` <span style="color:var(--ink2)">(reported jointly with ${areaRows._shared_with})</span>` : '';
         rows.push(`<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,59,48,0.25)">`
-          + `<strong>Total planned line in ${sub.r}</strong>${shared}`
+          + `<strong>Total planned line in ${sub.area}</strong>${shared}`
           + `<div style="color:var(--ink2);margin-top:2px">${parts.join(' \u00b7 ')}</div></div>`);
       }
     }
@@ -1175,7 +1121,7 @@ function initResourceQuery(){
     if(!substationData||!headroomData){el.innerHTML='<p style="font-size:11px;color:var(--ink2)">Loading data…</p>';return;}
     const sub = nearestSubstation(lat, lng);
     if(!sub){el.innerHTML='<p style="font-size:11px;color:var(--alert)">No substation data.</p>';return;}
-    const h = headroomData.headroom[sub.r]||{};
+    const h = headroomData.headroom[sub.area]||{};
     // Real voltage from the DBSA register. This previously read
     // sub.voltage_class, a field that does not exist in the data, so every
     // substation was labelled 132kV distribution - including 765kV backbone
@@ -1193,7 +1139,7 @@ function initResourceQuery(){
     el.innerHTML = `
       <div style="font-size:11px;margin-bottom:10px">
         <div style="font-size:14px;font-weight:700;margin-bottom:2px">${sub.n}</div>
-        <div style="color:var(--ink2)">${sub.r} supply area &nbsp;·&nbsp; ${sub.distKm} km away</div>
+        <div style="color:var(--ink2)">${sub.area} supply area &nbsp;·&nbsp; ${sub.distKm} km away</div>
         <div style="margin-top:3px">
           <span style="font-size:10px;padding:1px 6px;border-radius:3px;background:${isTx?'rgba(74,107,122,0.15)':'rgba(0,0,0,0.07)'};color:${vcol};font-weight:600">${vLabel}</span>
           ${isTx ? '<span style="font-size:10px;color:var(--ink2);margin-left:6px">Suitable for large C&I / IPP connection</span>' : '<span style="font-size:10px;color:var(--ink2);margin-left:6px">Speak to Eskom for HV upgrade options</span>'}
@@ -1210,7 +1156,7 @@ function initResourceQuery(){
       ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
       <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Curtailment risk if you build here</div>
-        <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.r); renderNeighbours(sub.r, lat, lng); }catch(e){} }, 0); return ''; })()}
+        <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.area); renderNeighbours(sub.area, lat, lng); }catch(e){} }, 0); return ''; })()}
       </div>
       <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Who else is queuing here</div>
@@ -1393,19 +1339,28 @@ function initResourceQuery(){
   // environmental register. A developer's practical question is not just "is
   // there headroom" but "who am I behind, and are they actually moving".
   //
-  // Scope is PROVINCE, not district: substations carry a province but no
-  // district, and the environmental register carries a district but no
-  // coordinates, so a clicked point cannot be resolved to a district without
-  // boundary data the model does not hold. The district split is shown within
-  // the province so the local texture is still visible.
+  // NAMING, settled 14 Aug 2026. Substations carry `area` - an Eskom TRANSMISSION
+  // SUPPLY AREA, not a province. The ten values include Hydra Central, a Karoo
+  // supply area straddling the Northern Cape / Eastern Cape provincial boundary.
+  // headroom_summary.json and tdp meta.line_km_by_province are keyed the same way.
+  // reea_projects.json 'province' is genuinely PROVINCIAL: nine values, no Hydra
+  // Central. The two vocabularies must not be matched blindly - doing so silently
+  // returned nothing for every Hydra Central substation. Where a supply area has
+  // no provincial counterpart the neighbours panel says so rather than showing an
+  // empty section. Scope stays coarser than district: the register carries a
+  // district but no coordinates, so a clicked point cannot be resolved to one.
   let reeaSite = null;
   fetch('nodal/reea_projects.json').then(r => r.ok ? r.json() : null)
     .then(d => { reeaSite = d; }).catch(() => {});
 
-  function renderNeighbours(province, lat, lng){
+  function renderNeighbours(area, lat, lng){
     const el = document.getElementById('neighbourResult');
     if (!el) return;
     if (!reeaSite || !reeaSite.projects){ el.innerHTML = ''; return; }
+    // `area` is a supply area; the register is keyed by province. Hydra Central
+    // has no provincial equivalent, so the province roll-up is skipped there
+    // rather than quietly reporting zero projects.
+    const areaIsProvince = reeaSite.projects.some(p => p.province === area);
     const now = new Date().getFullYear();
 
     // Nearest substation to the clicked point - the same assignment every
@@ -1419,8 +1374,8 @@ function initResourceQuery(){
     }
     const atSub = near ? reeaSite.projects.filter(p =>
       p.sub === near && p.status === 'Approved' && p.decided && typeof p.mw === 'number') : [];
-    const inProv = reeaSite.projects.filter(p =>
-      p.province === province && p.status === 'Approved' && p.decided && typeof p.mw === 'number');
+    const inProv = areaIsProvince ? reeaSite.projects.filter(p =>
+      p.province === area && p.status === 'Approved' && p.decided && typeof p.mw === 'number') : [];
     if (!atSub.length && !inProv.length){ el.innerHTML = ''; return; }
 
     const sum = a => a.reduce((s, p) => s + p.mw, 0);
@@ -1452,7 +1407,7 @@ function initResourceQuery(){
     }
     if (inProv.length){
       html += `<div style="font-size:10px;color:var(--ink2);margin-top:${atSub.length?'7px':'0'};line-height:1.5">`
-        + `Across ${province}: <strong>${inProv.length.toLocaleString()} approved projects, `
+        + `Across ${area}: <strong>${inProv.length.toLocaleString()} approved projects, `
         + `${(sum(inProv)/1000).toFixed(1)} GW</strong>, of which ${provOld.length.toLocaleString()} `
         + `(${(sum(provOld)/1000).toFixed(1)} GW) have waited five years or more.</div>`;
     }
@@ -1691,7 +1646,7 @@ function initResourceQuery(){
       const r = vc.r;
       const col = isExact ? vc.col : 'transparent';
       const border = vc.border;
-      const h = headroom && headroom.headroom && headroom.headroom[s.r] || {};
+      const h = headroom && headroom.headroom && headroom.headroom[s.area] || {};
       const solarHr = h.solar_mw !== undefined ? h.solar_mw.toLocaleString()+' MW' : '—';
       const windHr  = h.wind_mw  !== undefined ? h.wind_mw.toLocaleString()+' MW'  : '—';
       const battHr  = h.batt_mw  !== undefined ? h.batt_mw.toLocaleString()+' MW'  : '—';
@@ -1699,7 +1654,7 @@ function initResourceQuery(){
       const popup = `<div style="font-size:11px;min-width:160px">
         <div style="font-weight:700;font-size:13px;margin-bottom:2px">${s.n}</div>
         <div style="color:#666;margin-bottom:1px"><span style="color:#3EA055;font-weight:600">EXISTING</span> &nbsp;·&nbsp; ${voltLabel}</div>
-        <div style="color:#666;margin-bottom:6px">${s.r}</div>
+        <div style="color:#666;margin-bottom:6px">${s.area}</div>
         <div style="font-size:10px;font-weight:600;color:#888;margin-bottom:3px">GCCA HEADROOM <span style="font-weight:400;font-size:9px">(GCCA 2025, Apr 2025)</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center">
           <div style="background:#f4f4f2;border-radius:3px;padding:4px">
@@ -2087,7 +2042,7 @@ async function runPrefeas() {
   let locationText = 'South Africa (national average)';
   if(window._resourceData && window._resourceData.solar) {
     solarCF = window._resourceData.solar.annualCF;
-    solarSource = window._resourceData.solar.source || 'Site-specific (PVGIS SARAH2)';
+    solarSource = window._resourceData.solar.source || 'Open-Meteo ERA5';
     region = window._resourceData.windRegion || 'Selected location';
     locationText = window._resourceData.lat.toFixed(3)+'°, '+window._resourceData.lng.toFixed(3)+'° · '+region;
   }
@@ -2869,7 +2824,20 @@ const FIXED = {
   // windMW is DERIVED from regional_renewable_capacity.json, not set by hand:
   //   4,042 MW REIPPPP (IPP Office Q4 2025/26, capacity online at 31 Mar 2026)
   // +   470 MW private/wheeled (PFL H1 2026 monitor)
-  // = 4,512 MW. Two published sources, disjoint universes. The previous 4,458
+  // +   100 MW Eskom's own Sere wind farm, added 14 Aug 2026 - it is neither
+  //           REIPPPP nor privately procured and fell through both buckets.
+  //           Found by arithmetic: Eskom's Weekly System Status Report gives
+  //           "Wind (Eskom+IPP) 4,142.6 MW" = our REIPPPP 4,042.6 + exactly 100.
+  //           Connects at Juno, 14.7 km, Western Cape supply area.
+  //           VERIFIED 14 Aug 2026 against the alternative explanation - that the
+  //           residual was RMIPPPP wind rather than Sere. It is not. Only
+  //           REIPPPP+Sere reproduces 4,142.6; every combination containing
+  //           RMIPPPP wind overshoots (+63.0 with Umoyilanga's Dassiesridge,
+  //           +49.0 with Dassiesridge and Oya, +149.0 with all three). So the
+  //           wind inside hybrid projects is reported ONLY in Eskom's "Hybrid"
+  //           line, never decomposed into the Wind line - which also confirms
+  //           hybridMW cannot double-count against windMW or pvUtilityMW.
+  // = 4,612 MW. Three published sources, disjoint universes. The previous 4,458
   // was 3,600 + 858, where the 3,600 baseline had muddled provenance and the
   // 858 mixed grid-supply with wheeled - a figure that could not be decomposed.
   // validate_capacity.js asserts this equality; if you change windMW by hand it
@@ -2877,7 +2845,24 @@ const FIXED = {
   // rather than adding supply.
   // pvUtilityMW is NOT yet derived the same way: about 1,823 MW of private solar
   // commissioned before Jan 2026 is unsourced, so 4,974 stands with a known gap.
-  ocgtDieselMW:3400, windMW:4512, pvUtilityMW:4974, rooftopMW:9100, cspMW:600,
+  ocgtDieselMW:3400, windMW:4612, pvUtilityMW:4974, rooftopMW:9107.4, cspMW:600,
+  // RMIPPPP HYBRID - firm dispatchable renewables, a category of its own.
+  // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
+  // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
+  // portfolios (Oya, Umoyilanga, Mulilo Total Hydra, Scatec Kenhardt) contracted
+  // to deliver FIRM capacity, so their PV and wind components are NOT inside
+  // pvUtilityMW or windMW - there is no double count.
+  //
+  // DISPATCH: the RMIPPPP requires each project to be dispatchable between 05:00
+  // and 21:30 daily on System Operator instruction, with a minimum daily capacity
+  // factor of 50% inside that window. Eskom pays a CAPACITY charge for
+  // availability, so an available hybrid is always taken: it behaves as a
+  // zero-marginal-cost infeed inside its window and delivers nothing outside it.
+  // Meridian Economics models RMIPPPP the same way - "a dispatchable generator and
+  // not as distinct solar PV, wind, battery storage and peaking capacity".
+  // hybridCF is delivered fraction of contracted capacity inside the window; 0.85
+  // sits above the 50% contractual floor and below perfect availability.
+  hybridMW:335.1, hybridStartHour:5, hybridEndHour:21, hybridCF:0.85,
   // Effective carbon price on ELECTRICITY GENERATION, R/tCO2e. The headline
   // Phase 2 rate is R308/t from 1 Jan 2026 (up from R236), but generation is
   // covered by tax-free allowances of up to 85%, so the rate actually paid is
@@ -2918,9 +2903,10 @@ const FIXED = {
   // carefully - it directly shapes Where To Build. 150 is the long-standing
   // model value, now named and testable rather than typed into two objective
   // rows that could drift apart. lpBattDischargeCostR is the LP's per-MWh
-  // battery cycling wear; kept as its own (older, lower) figure rather than
-  // silently re-pointed at battCycleCostR because changing the LP's economics
-  // is a modelling decision, not a refactor - see the note where it is used.
+  // battery cycling wear; deliberately LOWER than battCycleCostR because the
+  // LP's capex annuity already pays for the cells at the ~1 cycle/day its
+  // daily energy constraint permits - full wear here would double-count.
+  // Resolved with solver evidence; see the note where it is used.
   lpCurtailCostR:150, lpBattDischargeCostR:20,
   // Value of lost load, used as the wholesale price ceiling in hours with
   // unserved demand. R87,000/MWh is mid-range for South African planning
@@ -2933,13 +2919,115 @@ const FIXED = {
   // Tariff side: retrofit capital, allowed return and asset life.
   ccsCapexRkW:38000, ccsWaccPct:9, ccsLifeYrs:20,
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
-  // rooftopMW: NTCSA's estimate of behind-the-meter rooftop PV, which is growing
-  // fast enough that this figure dates quickly - 6,800 MW (Jun 2025), 8,294 MW
-  // (May 2026), 9,107 MW (Jun 2026), a 35% year-on-year rise. Updated to 9,100 MW.
-  // Note this is now larger than ALL renewable capacity feeding Eskom's grid
+  // rooftopMW is DERIVED from nodal/rooftop_mw_by_region.json, not hand-set. That
+  // file is Eskom's Weekly System Status Report provincial table (Jun-26 row),
+  // with Eskom's Northern Cape 758.4 MW split across the two supply areas it
+  // spans (Northern Cape 621.9 + Hydra Central 136.5). Its regions sum to
+  // 9,107.4 MW and validate_capacity.js asserts this constant equals that sum -
+  // it previously read a hand-rounded 9,100, which no longer matched the file.
+  // Trend: 6,800 MW (Jun 2025), 8,294 MW (May 2026), 9,107.4 MW (Jun 2026) - a
+  // 35% year-on-year rise, so this figure dates quickly. Now larger than ALL
+  // renewable capacity feeding Eskom's grid
   // (~7,900 MW), and larger than Medupi and Kusile's combined output.
+  //
+  // KNOWN DISTORTION - "rooftop" IS NOT ALL ROOFTOP (documented 14 Aug 2026).
+  // Eskom's own footnote to this series reads: "Rooftop PV includes ground-mounted
+  // as well as all other PV installations that do not have contracts with NTCSA."
+  // The bucket is defined CONTRACTUALLY, not physically. A 240 MW ground-mounted
+  // wheeled farm selling to a private offtaker has no NTCSA contract, so it lands
+  // here rather than in the PV line - Mooi Plaats (240 MW), Bolobedu (148 MW) and
+  // the rest of the PFL wheeled list are inside this 9,100.
+  //
+  // Why that matters for THIS model: rooftopMW nets off demand (it is treated as
+  // demand suppression and is never curtailed), whereas ground-mounted grid-
+  // connected plant is SUPPLY - it feeds the network, can be curtailed, and
+  // competes for connection headroom. So an unknown slice of this constant is
+  // being modelled as the wrong kind of thing: it suppresses demand when it
+  // should be adding supply. The effect is to understate both utility-scale
+  // generation and the curtailment/headroom pressure it creates.
+  //
+  // It is NOT corrected here because the split is not published. Eskom reports
+  // one number; the ground-mounted share of it is not broken out anywhere found
+  // as of 14 Aug 2026. Correcting it needs that split, NOT an estimate - and an
+  // estimate would move capacity between two constants that are each sourced,
+  // which is worse than a documented distortion.
+  // Sources that might settle it: SAPVIA's data portal segments capacity into
+  // residential / C&I SSEG (<1MW) / C&I large-scale (1-50MW) / utility-scale -
+  // the last two are the ground-mounted candidates; or PFL's wheeled-project
+  // monitor, which lists such projects individually and is already a source here.
+  /* ================= COST FAMILIES - WHICH NUMBER GOVERNS WHAT =============
+   * Audited 14 Aug 2026. The model carries FOUR cost representations. This is
+   * the professional structure (PLEXOS/PyPSA/ReEDS): capex+life for investment,
+   * SRMC for dispatch, LCOE as REPORTING ONLY - never an optimisation input,
+   * because LCOE bakes in an assumed capacity factor, which is what a model is
+   * supposed to solve for.
+   *
+   *   BLD_COST + BLD_LIFE + BLD_DISC  GOVERNS the capacity-expansion LPs.
+   *       Overnight R/kW + life + discount -> bldAnnuity(). The only costs
+   *       that decide WHAT GETS BUILT.
+   *   cost* (below)                   GOVERNS dispatch and prices.
+   *       Fuel-only SRMC, R/MWh. Carbon is added separately as
+   *       carbonTaxRPerT x emis*; VOM is NOT included (documented below).
+   *       The only costs that decide WHO RUNS and what hours clear at.
+   *   acap*                           REPORTING: headline capex R/kW-yr in the
+   *       cost readout (newCapexR). Decides nothing.
+   *   lcoe*                           REPORTING: replacement-cost reckoning
+   *       (replTotal) and the technology comparison chart. Decides nothing.
+   *
+   * lcoe* and matching slider defs reconciled 14 Aug 2026 (lcoeBatt 1450->1600,
+   * lcoePv 575->550, to the values sliders were already using live - zero
+   * behavioural change); every slider that shadows a FIXED key now reads its
+   * default FROM FIXED, and validate_lp.js asserts the two never diverge again.
+   * ========================================================================== */
+  // Dispatch SRMC, R/MWh, FUEL-ONLY - sourced 14 Aug 2026:
+  //   costCoal 546     Eskom FY2025 primary energy cost for coal, R546/MWh
+  //                    (Eskom AFS/integrated report; widely cited, e.g.
+  //                    MyBroadband Mar 2026 "R546 per MWh cost in the 2025
+  //                    financial year"). Basis per Eskom: "primary energy input
+  //                    costs only, excluding Eskom's other operating costs" -
+  //                    i.e. fuel-only, VOM excluded BY SOURCE DEFINITION.
+  //   costNuclear 160  Koeberg fuel; Eskom disclosed ~11c/kWh (R110) for FY2024,
+  //                    escalated. Fuel-only, same source basis.
+  //   costHydro 30     own-hydro water/consumables, nominal.
+  //   costImports 550  Cahora Bassa & international purchases at contracted
+  //                    rates (these DO embed the supplier's O&M and return -
+  //                    contracted price, not a cost build-up).
+  //   costCcgt 1968    DERIVED from the FY2026 JKM reference (14 Aug 2026):
+  //                    JKM realised Jan-Aug 2026 averaged ~$15.5 (low-teens
+  //                    January, $18.75 April shoulder, $21.2 August on the
+  //                    Hormuz disruption; 52wk range $9.46-22.35), blended
+  //                    with elevated Q4 forwards -> ~$16.5 FY JKM, + ~$2
+  //                    regas/transport = $18.50/MMBtu delivered SA.
+  //                    1968 = 18.50 x R16.21/USD / 0.293071 MWh-per-MMBtu
+  //                           / 0.52 CCGT efficiency (HHV). FUEL-ONLY.
+  //                    A full-year reference, not spot: spot $23 would bake
+  //                    the Hormuz spike into every scenario; the pre-spike
+  //                    "calm" $16.5 delivered would pretend 2026 didn't
+  //                    happen. Replaces 2800, which predated the benchmark
+  //                    work and carried no derivation. GAS_DEFAULTS in the
+  //                    SRMC panel uses the same $18.50, so panel and model
+  //                    agree by construction.
+  //   costDiesel 6100  Eskom OCGT: recent runs reported at ~R6,011/MWh
+  //                    (Mar 2026). Fuel-only.
+  // VOM is deliberately ABSENT from all six (professional SRMC would add
+  // R20-80/MWh thermal). Adding it is a live decision - it raises coal-set
+  // prices ~12% and must be done for ALL technologies at once or the LP tilts.
+  // Do not add VOM to one constant in passing.
   costCoal:546, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
-  costCcgt:2800, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
+  costCcgt:1968, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
+  // Variable O&M, R/MWh, THERMAL ONLY - added 14 Aug 2026 following the
+  // professional convention (NREL ATB 2022/2024, used by ReEDS/GenX; EIA AEO):
+  // per-MWh VOM for thermal plant, ZERO for wind/solar/battery, whose O&M is
+  // fixed R/kW-yr by convention - the zeros are the standard, not an omission.
+  // ATB anchors converted at R16.21/USD: CCGT $2 -> R32 (Ember uses EUR 2, same
+  // order); OCGT $4.1-4.5 -> R70; nuclear $2.4-3 -> R45; coal $4.5-6 (EIA/S&L
+  // basis) -> R80. Everywhere SRMC is used these ADD to fuel + carbon:
+  // dispatch price = fuel + carbon + VOM, in both engines and both LPs.
+  // costHydro (30) already IS consumables/VOM - hydro has no fuel - and
+  // costImports is a contracted PRICE that embeds the supplier's O&M, so
+  // neither gets a separate adder. CSP never sets a price in this model, so
+  // its ATB VOM (~$4) is omitted rather than carried dead.
+  vomCoal:80, vomCcgt:35, vomDiesel:70, vomNuclear:45,
   acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
   // New coal/nuclear capex: global capex benchmarks ($3,600/kW coal w/ emissions controls,
   // $7,500/kW nuclear - mid of published $3,000-4,200 and $6,000-9,000/kW ranges respectively)
@@ -2962,8 +3050,24 @@ const FIXED = {
   // is synchronised, with units committed cheapest-first (so the always-on cheap units, which
   // carry the higher 65% Min Stable Levels, are correctly weighted at low commitment).
   coalStartUpCostRPerMW:224.52,
+  // LCOE = SRMC + annuitised capex / capacity factor, so LCOE can NEVER be below
+  // a technology's own SRMC. validate_outputs.js now asserts that invariant.
+  //   lcoeDiesel 9000  CORRECTED 14 Aug 2026 from 5500, which was BELOW diesel's
+  //                    own SRMC (R6,206 = 6100 fuel + 70 VOM + carbon) and so
+  //                    definitionally impossible. Peaker LCOE is dominated by
+  //                    capacity factor: R13,000/kW OCGT capex over 25yr at 8%
+  //                    = R1,218/kW-yr, which at 5% CF (realistic for Eskom's
+  //                    OCGT fleet) adds R2,780/MWh -> R8,986, rounded to 9000.
+  //                    At 2% CF it would be R13,200; at 10%, R7,600. THE 5% CF
+  //                    IS THE ASSUMPTION - change it and this number moves a lot.
+  //   lcoeCcgt 2500    verified consistent 14 Aug 2026 with the derived gas cost:
+  //                    BLD_COST ccgt R18,000/kW over 30yr at 8% + SRMC R2,020
+  //                    implies R2,385 at 50% CF and R2,628 at 30% CF. 2500 sits
+  //                    between them. It was NOT consistent with the old R2,800
+  //                    fuel cost (which implied R3,217-3,460) - doing the gas
+  //                    derivation properly fixed this reference by side effect.
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
-  lcoePv:575, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1450, lcoeCsp:2000, lcoeCcgt:2500, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1400, lcoeDiesel:5500, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
+  lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600, lcoeCsp:2000, lcoeCcgt:2500, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1400, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
@@ -3232,8 +3336,17 @@ function simulate(u, prof, outPath){
   // carries it: charging 100 MWh at R0 into an 88% battery stores 88 MWh at R0/MWh;
   // charging from coal at R600 stores it at R600/0.88 = R682/MWh delivered.
   let psBasis=0, battBasis=0;
-  const addCharge=(which,mw,costR)=>{
+  // Every basis-affecting event, in call order, with the SOC it saw. The basis is
+  // REPLAYED after the negative-price pass (see below): a charge taken in a
+  // coal-forced surplus hour is actually PAID FOR, not free, and the price of
+  // that hour is not known until the spell length is known - which is only after
+  // the year completes. Dispatch itself is unaffected by cost, so the recorded
+  // SOC trajectory stays valid and the replay is exact rather than approximate.
+  const basisLog=[];
+  // hr is passed explicitly: addCharge is defined outside the hour loop.
+  const addCharge=(hr,which,mw,costR)=>{
     if(mw<=0) return;
+    basisLog.push({t:'chg', h:hr, which, mw, soc:(which==='ps'?psSoc:battSoc), cost:costR});
     if(which==='ps'){ const e=mw*p.psEff; psBasis=(psSoc*psBasis+mw*costR)/Math.max(1e-9,psSoc+e); }
     else { const e=mw*p.battEff; battBasis=(battSoc*battBasis+mw*costR)/Math.max(1e-9,battSoc+e); }
   };
@@ -3245,10 +3358,10 @@ function simulate(u, prof, outPath){
   const storageBid=new Float64Array(HOURS);
   const thermalP=new Float64Array(HOURS);
   const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
-  const E={rooftop:0,wind:0,pv:0,csp:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0};
+  const E={rooftop:0,wind:0,pv:0,csp:0,hybrid:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0};
   let fuelCost=0, carbonCost=0, curtailFuelCost=0, shedMWh=0, maxStage=0;
   const shedHours=[0,0,0,0,0,0,0,0,0];
-  const stackKeys=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
+  const stackKeys=['nuclear','hydro','imports','hybrid','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
   const stack={}; stackKeys.forEach(k=>stack[k]=new Float64Array(HOURS));
   const chargeMW=new Float64Array(HOURS);   // storage charging per hour
   const curtailMW=new Float64Array(HOURS);  // wasted renewable potential per hour - REAL load on the system.
@@ -3283,8 +3396,30 @@ function simulate(u, prof, outPath){
     const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
     const load=rawDemand-rooftopGen;
     const windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
+    // DISPATCH ORDER IS DELIBERATE, NOT A SHORTCUT (settled 14 Aug 2026).
+    // Nuclear, hydro and imports are FIXED INFEEDS, not dispatched: Cahora Bassa
+    // is a take-or-pay contract - the energy arrives regardless of price - and
+    // nuclear/hydro run at their availability. Coal is must-run within UC
+    // min-stable and ramp constraints; storage moves on state of charge; gas and
+    // diesel are the true flexible margin. A naive cheapest-first cost sort would
+    // be LESS realistic (it would flex a contract that cannot flex, and it would
+    // erase the coal-forced curtailment that drives the negative-price hours).
+    // Professional cost-ordered dispatch is cost order SUBJECT TO these same
+    // constraints - with them in place it converges to this ordering. Note the
+    // economics anyway: contracted imports (R550) now undercut marginal coal
+    // (R674 with VOM and carbon) - true, and no code change follows from it.
     const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
-    netLoadPre[h]=load-windGen-pvGen-cspGen-nuc-hyd-imp;
+    // RMIPPPP hybrid: AVAILABLE inside 05:00-21:30, nothing outside. It is
+    // dispatched on System Operator instruction, so it is NOT must-run - it is
+    // called into residual demand ahead of coal (the capacity charge is already
+    // paid, so its marginal cost is effectively zero) and dispatched DOWN when
+    // there is nothing to serve. Modelling it as an unconditional infeed breaks
+    // the energy balance: in hours where coal is already at its must-run floor
+    // the displaced energy has nowhere to go.
+    const hybAvail = ((h % 24) >= p.hybridStartHour && (h % 24) <= p.hybridEndHour)
+                   ? p.hybridMW * p.hybridCF : 0;
+    netLoadPre[h]=load-windGen-pvGen-cspGen-nuc-hyd-imp
+                 - Math.min(hybAvail, Math.max(0, load-windGen-pvGen-cspGen-nuc-hyd-imp));
   }
   // ── Day-ahead unit commitment schedule ─────────────────────────────────────
   // Build daily commitment decisions using per-unit min up/down times and start-up costs.
@@ -3346,7 +3481,17 @@ function simulate(u, prof, outPath){
     E.rooftop+=rooftopGen; loadS[h]=load;
     let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
     const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
+    // RMIPPPP hybrid: AVAILABLE inside 05:00-21:30, nothing outside. It is
+    // dispatched on System Operator instruction, so it is NOT must-run - it is
+    // called into residual demand ahead of coal (the capacity charge is already
+    // paid, so its marginal cost is effectively zero) and dispatched DOWN when
+    // there is nothing to serve. Modelling it as an unconditional infeed breaks
+    // the energy balance: in hours where coal is already at its must-run floor
+    // the displaced energy has nowhere to go.
+    const hybAvail = ((h % 24) >= p.hybridStartHour && (h % 24) <= p.hybridEndHour)
+                   ? p.hybridMW * p.hybridCF : 0;
     let residual=load-windGen-pvGen-cspGen-nuc-hyd-imp;
+    const hyb=Math.min(Math.max(0,residual), hybAvail); residual-=hyb;
     let coalGen=0;
     // Commitment: size synchronised capacity to the peak over the next 12 hours, not just this
     // hour. A myopic view decommits through the midday solar trough and then cannot restart for
@@ -3425,8 +3570,8 @@ function simulate(u, prof, outPath){
       // This is the real mechanism behind "inflexible coal causes additional curtailment".
       const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
-      const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); addCharge('ps',psChg,0); psSoc+=psChg*p.psEff; surplus-=psChg;
-      const btChg=Math.min(surplus,battPower,battEnergy-battSoc); addCharge('batt',btChg,0); battSoc+=btChg*p.battEff; surplus-=btChg;
+      const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*p.psEff; surplus-=psChg;
+      const btChg=Math.min(surplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*p.battEff; surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       curtailMW[h]+=surplus; E.curtailed+=surplus;
       const vre=windGen+pvGen;
@@ -3477,8 +3622,8 @@ function simulate(u, prof, outPath){
       residual-=coalGen;
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
-        const psChg=Math.min(forcedSurplus,p.psPowerMW,p.psEnergyMWh-psSoc); addCharge('ps',psChg,0); psSoc+=psChg*p.psEff; forcedSurplus-=psChg;
-        const btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); addCharge('batt',btChg,0); battSoc+=btChg*p.battEff; forcedSurplus-=btChg;
+        const psChg=Math.min(forcedSurplus,p.psPowerMW,p.psEnergyMWh-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*p.psEff; forcedSurplus-=psChg;
+        const btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*p.battEff; forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
         // off instantly), then coal trips if the oversupply still exceeds all renewable output.
@@ -3529,18 +3674,18 @@ function simulate(u, prof, outPath){
       }
       // Bid = cost basis of the stored energy (already net of round-trip losses) plus
       // the cycling cost. Recorded now, while the basis is the one that applied.
-      if(storageMarginal[h]==='batt') storageBid[h]=battBasis+p.battCycleCostR;
-      else if(storageMarginal[h]==='ps') storageBid[h]=psBasis+p.psCycleCostR;
+      if(storageMarginal[h]==='batt'){ storageBid[h]=battBasis+p.battCycleCostR; basisLog.push({t:'bid',h,which:'batt'}); }
+      else if(storageMarginal[h]==='ps'){ storageBid[h]=psBasis+p.psCycleCostR; basisLog.push({t:'bid',h,which:'ps'}); }
       // IRP 50% annual load factor: if toggled, treat half of CCGT capacity as must-run
       const ccgtMustRun = p.ccgtForceLoad ? Math.round(ccgtCap*0.5) : 0;
       if(ccgtMustRun>0){
         const forced=Math.min(ccgtMustRun,ccgtCap);
         E.ccgt+=forced; stack.ccgt[h]=(stack.ccgt[h]||0)+forced;
-        fuelCost+=forced*p.costCcgt; carbonCost+=forced*cG;
+        fuelCost+=forced*(p.costCcgt+p.vomCcgt); carbonCost+=forced*cG;
         residual=Math.max(0,residual-forced);
       }
-      const g=Math.min(residual,ccgtCap-ccgtMustRun); residual-=g; E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*p.costCcgt; carbonCost+=g*cG;
-      const dsl=Math.min(residual,p.ocgtDieselMW); residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*p.costDiesel; carbonCost+=dsl*cD;
+      const g=Math.min(residual,ccgtCap-ccgtMustRun); residual-=g; E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*(p.costCcgt+p.vomCcgt); carbonCost+=g*cG;
+      const dsl=Math.min(residual,p.ocgtDieselMW); residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
       // stack.coal is set from coalGenTotal in the shared block below, AFTER the off-peak charging
       // bonus, so it reflects every MWh coal actually generated. That is correct now the demand
       // line includes storage charging: coal burned to charge storage is real generation meeting
@@ -3556,9 +3701,9 @@ function simulate(u, prof, outPath){
         // fixed SoC target when storage started nearly empty with nothing to justify it.
         const psTargetCeiling=Math.min(p.psEnergyMWh*0.85, anticipatedShortfall[h]);
         const battTargetCeiling=Math.min(battEnergy*0.8, anticipatedShortfall[h]);
-        const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC;  // this charge is bought from coal
-        if(head>0&&psSoc<psTargetCeiling){const w=Math.min(p.psPowerMW*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge('ps',w,chgC); psSoc+=w*p.psEff; head-=w; chargeMW[h]+=w;}
-        if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; addCharge('batt',w,chgC); battSoc+=w*p.battEff; chargeMW[h]+=w;}
+        const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
+        if(head>0&&psSoc<psTargetCeiling){const w=Math.min(p.psPowerMW*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*p.psEff; head-=w; chargeMW[h]+=w;}
+        if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; addCharge(h,'batt',w,chgC); battSoc+=w*p.battEff; chargeMW[h]+=w;}
       }
       // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
       if(residual>1){
@@ -3583,13 +3728,13 @@ function simulate(u, prof, outPath){
     // plant would otherwise set, so the series must exclude storage's own bids).
     thermalP[h] =
         ((stack.unserved[h]||0) > 1)     ? p.voll
-      : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD
-      : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt + cG
+      : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD + p.vomDiesel
+      : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt + cG + p.vomCcgt
       : ((curtailMW[h]||0) > 1)          ? 0
-      : (coalGen > 1)                    ? coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC
+      : (coalGen > 1)                    ? coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC + p.vomCoal
       : (imp > 1)                        ? p.costImports
       : (hyd > 1)                        ? p.costHydro
-      : (nuc > 1)                        ? p.costNuclear
+      : (nuc > 1)                        ? p.costNuclear + p.vomNuclear
       :                                    0;
     // Storage-marginal hours are finalised AFTER the year completes, once each
     // day's opportunity cost is known - see the second pass below the hour loop.
@@ -3605,15 +3750,91 @@ function simulate(u, prof, outPath){
       : (hyd > 1)                        ? 'hydro'
       : (nuc > 1)                        ? 'nuclear'
       :                                    'none';
-    E.coal+=coalGen; fuelCost+=coalGen*p.costCoal+(isNaN(ucStartCost[h])?0:ucStartCost[h]); carbonCost+=coalGen*cC;
+    E.coal+=coalGen; fuelCost+=coalGen*(p.costCoal+p.vomCoal)+(isNaN(ucStartCost[h])?0:ucStartCost[h]); carbonCost+=coalGen*cC;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
     loadS[h]=load+chargeMW[h]; // demand line = grid demand + storage charging (standard convention)
     prevCoalGen=coalGen; // for next hour's ramp reference, regardless of which branch this hour took
     E.wind+=windGen; E.pv+=pvGen; E.csp+=cspGen; E.nuclear+=nuc; E.hydro+=hyd; E.imports+=imp;
+    E.hybrid=(E.hybrid||0)+hyb; stack.hybrid[h]=hyb;
     stack.csp[h]=cspGen; stack.nuclear[h]=nuc; stack.hydro[h]=hyd; stack.imports[h]=imp;
-    fuelCost+=nuc*p.costNuclear+hyd*p.costHydro+imp*p.costImports;
+    fuelCost+=nuc*(p.costNuclear+p.vomNuclear)+hyd*p.costHydro+imp*p.costImports;
   }
+  /* ---- NEGATIVE PRICES IN COAL-FORCED SURPLUS HOURS -----------------------
+   * Every curtailment hour in this model is coal-forced: renewables are spilled
+   * BECAUSE the coal ramp-down floor is binding, never because VRE alone exceeds
+   * demand with everything flexible off. In a market, such hours price NEGATIVE:
+   * an inflexible unit pays to keep running rather than incur a stop-start
+   * cycle, so the marginal MWh of consumption has negative value.
+   *
+   * Depth is DERIVED from the model's own startup parameter, not asserted.
+   * A unit riding through a k-hour surplus spell rather than restarting after it
+   * will pay up to startup/k per MWh to stay on:
+   *
+   *     price(spell of k hours) = - coalStartUpCostRPerMW / k
+   *
+   * Short dips price deeper (fewer MWh over which to spread the avoided
+   * restart), long gluts shallower - the shape observed in inflexibility-driven
+   * markets. With SU = R224.52/MW this gives roughly -R112 (2h spell) to
+   * -R19 (12h), deliberately SHALLOW: South Africa has no production subsidies,
+   * so there is no bidder paying to generate beyond avoided cycling. If this
+   * model ever produces German-style -R1000 hours, that is a bug, not a market.
+   * (Dividing further by the ~0.65 min-stable share would deepen these ~1.5x;
+   * omitted to stay conservative and avoid duplicating the min-stable curve.)
+   *
+   * Storage charging in these hours is PAID at this price by anything reading
+   * marginalP, AND now flows into the stored-energy basis - see the replay pass
+   * immediately below, which removed the zero floor this comment used to warn
+   * about.
+   */
+  {
+    let h0 = 0;
+    while (h0 < HOURS) {
+      const forced = (hh) => (curtailMW[hh] || 0) > 1 && (stack.coal[hh] || 0) > 1;
+      if (!forced(h0)) { h0++; continue; }
+      let h1 = h0;
+      while (h1 + 1 < HOURS && forced(h1 + 1)) h1++;
+      const k = h1 - h0 + 1;
+      const price = -(p.coalStartUpCostRPerMW / k);
+      for (let hh = h0; hh <= h1; hh++) { marginalP[hh] = price; marginalTech[hh] = 'coalneg'; }
+      h0 = h1 + 1;
+    }
+  }
+  /* ---- STORAGE BASIS REPLAY ------------------------------------------------
+   * A charge taken in a coal-forced surplus hour is PAID FOR, not free: those
+   * hours clear negative (see the pass above). The hour loop could not know that
+   * - the depth depends on the spell length, which is only known once the year
+   * completes - so it recorded every charge at its provisional cost and logged
+   * the SOC it saw. Costs never affect dispatch, so that trajectory is still
+   * valid and this replay is exact rather than an approximation.
+   *
+   * Measured on the high-RE scenario before this was written: 6.68 of 12.0 TWh
+   * of charging (55.7%) happens in hours that price negative, at a mean of
+   * -R38/MWh. Leaving the basis floored at zero therefore overstated storage's
+   * cost of energy in every hour it later sold - the conservatism this replaces.
+   */
+  {
+    let psB = 0, battB = 0;
+    for (const ev of basisLog) {
+      if (ev.t === 'chg') {
+        // Use the hour's ACTUAL price where it turned out to be negative;
+        // otherwise the provisional cost stands (0 for spilled VRE, coal's
+        // marginal cost for a deliberate coal-fill).
+        const cost = (marginalTech[ev.h] === 'coalneg') ? marginalP[ev.h] : ev.cost;
+        if (ev.which === 'ps') {
+          const e = ev.mw * p.psEff;
+          psB = (ev.soc * psB + ev.mw * cost) / Math.max(1e-9, ev.soc + e);
+        } else {
+          const e = ev.mw * p.battEff;
+          battB = (ev.soc * battB + ev.mw * cost) / Math.max(1e-9, ev.soc + e);
+        }
+      } else {
+        storageBid[ev.h] = (ev.which === 'batt' ? battB + p.battCycleCostR
+                                                : psB   + p.psCycleCostR);
+      }
+    }
+  }
+
   /* ---- STORAGE OPPORTUNITY-COST PASS ---------------------------------------
    * A storage unit's bid is not its short-run cost. It bids the value it forgoes
    * by discharging NOW rather than in the best remaining hour - the opportunity
@@ -3651,50 +3872,12 @@ function simulate(u, prof, outPath){
       for (let k = 0; k < 24 && d0 + k < HOURS; k++) {
         const h = d0 + k, m = storageMarginal[h];
         if (!m) continue;
+        if (marginalTech[h] === 'coalneg') continue;   // negative pass already priced it
         const srmc = storageBid[h];                    // basis (loss-adjusted) + cycle cost
         const bid  = Math.max(srmc, m === 'batt' ? ocBatt : ocPs);
         marginalP[h] = (thermalP[h] > 1) ? Math.min(bid, thermalP[h]) : bid;
         storageBid[h] = marginalP[h];                  // keep the recorded bid consistent
       }
-    }
-  }
-  /* ---- NEGATIVE PRICES IN COAL-FORCED SURPLUS HOURS -----------------------
-   * Every curtailment hour in this model is coal-forced: renewables are spilled
-   * BECAUSE the coal ramp-down floor is binding, never because VRE alone exceeds
-   * demand with everything flexible off. In a market, such hours price NEGATIVE:
-   * an inflexible unit pays to keep running rather than incur a stop-start
-   * cycle, so the marginal MWh of consumption has negative value.
-   *
-   * Depth is DERIVED from the model's own startup parameter, not asserted.
-   * A unit riding through a k-hour surplus spell rather than restarting after it
-   * will pay up to startup/k per MWh to stay on:
-   *
-   *     price(spell of k hours) = - coalStartUpCostRPerMW / k
-   *
-   * Short dips price deeper (fewer MWh over which to spread the avoided
-   * restart), long gluts shallower - the shape observed in inflexibility-driven
-   * markets. With SU = R224.52/MW this gives roughly -R112 (2h spell) to
-   * -R19 (12h), deliberately SHALLOW: South Africa has no production subsidies,
-   * so there is no bidder paying to generate beyond avoided cycling. If this
-   * model ever produces German-style -R1000 hours, that is a bug, not a market.
-   * (Dividing further by the ~0.65 min-stable share would deepen these ~1.5x;
-   * omitted to stay conservative and avoid duplicating the min-stable curve.)
-   *
-   * Storage charging in these hours is PAID at this price by anything reading
-   * marginalP (the battery revenue benchmark does); the charge basis fed to
-   * storage bids stays floored at zero - a deliberate conservatism, noted here.
-   */
-  {
-    let h0 = 0;
-    while (h0 < HOURS) {
-      const forced = (hh) => (curtailMW[hh] || 0) > 1 && (stack.coal[hh] || 0) > 1;
-      if (!forced(h0)) { h0++; continue; }
-      let h1 = h0;
-      while (h1 + 1 < HOURS && forced(h1 + 1)) h1++;
-      const k = h1 - h0 + 1;
-      const price = -(p.coalStartUpCostRPerMW / k);
-      for (let hh = h0; hh <= h1; hh++) { marginalP[hh] = price; marginalTech[hh] = 'coalneg'; }
-      h0 = h1 + 1;
     }
   }
   // Transmission adder on new wind + utility PV. Wind always pays it.
@@ -3854,6 +4037,13 @@ const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distribu
 // Renewables and storage decline per BNEF's 2035 forecasts (-30% solar, -25%
 // storage, -23% onshore wind). CCGT RISES: BNEF recorded a 16% jump in 2025 to
 // an all-time high, driven by gas-turbine supply chains and data-centre demand.
+// Overnight capex, R/kW in 2026 money, with an annual real decline rate.
+// THIS is what the build LPs optimise on (via bldAnnuity + BLD_LIFE + BLD_DISC)
+// - not acap*, not lcoe*. At R16.2/USD these imply wind ~$1,300/kW, PV ~$740/kW,
+// battery R10,500/kW for 4h = R2,625/kWh (~$162/kWh installed), CCGT ~$1,110/kW.
+// Declines are annual real cost reductions; ccgt's is NEGATIVE (costs rising 2%/yr,
+// consistent with post-2022 turbine market tightness). Cross-check: these annuitise
+// to numbers near the lcoe* reference anchors at typical capacity factors.
 const BLD_COST = {
   wind:    { c2026: 21000, decl:  0.0286 },
   pv:      { c2026: 12000, decl:  0.0389 },
@@ -3977,7 +4167,7 @@ function bldBuildLP(opts){
   // an LP that HiGHS refuses to parse.
   const S = { ...FIXED, ...(opts.state || {}) };
   const VOLL = 60000, CARBON = S.carbonTaxRPerT;
-  const MC = { coal: S.costCoal, ccgt: S.costCcgt, diesel: S.costDiesel };
+  const MC = { coal: S.costCoal + S.vomCoal, ccgt: S.costCcgt + S.vomCcgt, diesel: S.costDiesel + S.vomDiesel };
   const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:S.ocgtDieselMW,
                wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
                csp:S.cspMW, batt:S.battPowerMW };
@@ -4000,10 +4190,20 @@ function bldBuildLP(opts){
       obj.push(((MC.diesel + CARBON*EMIS_DIESEL)*r.weight*df).toFixed(3) + ' gd_' + k);
       obj.push((VOLL*r.weight*df).toFixed(3) + ' u_' + k);
       obj.push((S.lpCurtailCostR*r.weight*df).toFixed(3) + ' crt_' + k);
-      // NOTE: the LP's battery wear (20) is far below the dispatch engine's
-      // battCycleCostR (165). Aligning them would make the build optimiser
-      // cycle batteries less and value them lower - a real modelling change,
-      // flagged as an open question rather than smuggled into a rename.
+      // RESOLVED (14 Aug 2026): lpBattDischargeCostR (20) deliberately stays BELOW
+      // the dispatch engine's battCycleCostR (165). They are different quantities.
+      // The LP already pays for battery cells through its capex annuity (BLD_LIFE
+      // batt = 15yr at 8%), and its daily energy constraint caps cycling at ~1
+      // cycle/day - exactly the throughput the annuity assumes - so charging full
+      // marginal wear here would pay for the same cells twice. battCycleCostR is
+      // a BID: the marginal wear an owner of an already-built battery weighs when
+      // deciding whether to cycle now; full wear belongs there. Only wear beyond
+      // the amortised assumption belongs in a planning objective, which is ~0
+      // here, leaving 20 as non-cell variable O&M.
+      // Solver-tested (HiGHS on the actual LP, wear 20/165/329): builds are
+      // IDENTICAL at default build rates (all cap-bound); at 4x rates, higher
+      // wear trims PV ~5% and rooftop ~33% and cuts cycling ~5% - so if build
+      // rates are ever relaxed as a headline scenario, revisit.
       obj.push((S.lpBattDischargeCostR*r.weight*df).toFixed(3) + ' bdis_' + k);
     }
   }
@@ -4276,8 +4476,8 @@ function bldBuildRegionalLP(opts){
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   const S = { ...FIXED, ...(opts.state || {}) };
   const VOLL = 60000, CARBON = S.carbonTaxRPerT;
-  const MCcoal = S.costCoal + CARBON * S.emisCoal;
-  const MCdiesel = S.costDiesel + CARBON * S.emisDiesel;
+  const MCcoal = S.costCoal + S.vomCoal + CARBON * S.emisCoal;
+  const MCdiesel = S.costDiesel + S.vomDiesel + CARBON * S.emisDiesel;
 
   const L = ['Minimize',' obj:']; const obj = [];
   for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y){
@@ -5019,10 +5219,10 @@ function bldHeadroomRelease(slipYears){
 // Headroom released by TDP projects, by region and year. A line or substation
 // completing in a region is what turns "no capacity" into "capacity", so this
 // is the channel through which delay bites.
-function subLookupRegion(name){
+function subLookupArea(name){
   if (!substationData) return null;
   const s = substationData.subs.find(x => x.n === name);
-  return s ? s.r : null;
+  return s ? s.area : null;
 }
 
 async function runDelayAnalysis(){
@@ -5625,6 +5825,32 @@ function drawShadowPriceWeek(r){
   const D = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   for (let d = 0; d < 7; d++) ctx.fillText(D[d], padL + (d*24+12)*bw, H-4);
 
+
+  // Gas SRMC reference lines - the "same chart for the SRMC of gas". Gas costs
+  // the same in every hour, so its week chart IS a horizontal line over these
+  // bars: hours above the line are in gas's money, hours below are not.
+  // Two lines because there are two honest answers: what THIS MODEL charges
+  // for gas (costCcgt + carbon, the exact number the ccgt bars clear at), and
+  // what the Ember/Montel method gives at the current JKM benchmark using the
+  // panel inputs below (fuel/efficiency + carbon at the effective rate + VOM).
+  const pSr = { ...FIXED, ...(typeof state !== 'undefined' ? state : {}) };
+  const srmcLines = [
+    { label: 'gas SRMC',
+      val: pSr.costCcgt + pSr.carbonTaxRPerT * pSr.emisCcgt + pSr.vomCcgt, col: '#B0655A' },
+  ];
+  const srmcOff = [];
+  for (const ln of srmcLines){
+    if (ln.val > cap || ln.val <= 0) { srmcOff.push(ln); continue; }
+    const y = 8 + plotH * (1 - ln.val / cap);
+    ctx.save();
+    ctx.strokeStyle = ln.col; ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - 6, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = '8.5px "IBM Plex Mono", monospace'; ctx.fillStyle = ln.col; ctx.textAlign = 'right';
+    ctx.fillText(ln.label + ' R' + Math.round(ln.val), W - 8, y - 3);
+    ctx.restore();
+  }
+
   // Legend: only technologies that actually set the price this week, with the
   // hours they set it and their mean price when they did.
   const agg = {};
@@ -5661,6 +5887,11 @@ function drawShadowPriceWeek(r){
               + ' hours, mean R' + Math.round(agg.coalneg.sum/agg.coalneg.n) + '). ' : '')
     + (over ? 'Bars with a dark cap run past the top of the axis (' + over + ' hours), clipped so '
               + 'one scarcity hour does not flatten the rest. ' : '')
+    + (srmcOff.length ? srmcOff.map(ln =>
+          '<strong>' + ln.label.replace(' \u00b7 ', ' (') + ')</strong> is R'
+          + Math.round(ln.val).toLocaleString() + '/MWh \u2014 above this chart\u2019s range, so gas is '
+          + 'out of the money in every hour shown. ').join('')
+        : 'Dashed lines mark gas SRMC: hours above a line are hours gas would profitably run. ')
     + ((agg.batt || agg.ps) ? 'Storage bids its opportunity cost, not its fuel cost: the value of the best '
         + 'remaining hour it could have served instead (CAISO-style, the D-th highest thermal price of the '
         + 'day for D-hour storage), floored at its charging basis plus cycling wear and capped at the '
@@ -5885,10 +6116,12 @@ function renderQueuePressure(){
   }
   const reg = queueNersa.cumulative_by_region || {};
   const hr  = queueHeadroom.headroom || queueHeadroom;
-  const rows = Object.entries(reg).map(([r, v]) => {
-    const h = hr[r] || {};
+  // Keyed by SUPPLY AREA (Hydra Central included), matching headroom_summary.json
+  // and substations_compact.json `area` - not by province.
+  const rows = Object.entries(reg).map(([area, v]) => {
+    const h = hr[area] || {};
     const avail = Math.max(h.solar_mw || 0, h.wind_mw || 0);
-    return { r, mw: v.total_mw || 0, avail,
+    return { area, mw: v.total_mw || 0, avail,
              ratio: avail > 0 ? (v.total_mw / avail) : Infinity,
              solar: v.solar_mw || 0, wind: v.wind_mw || 0, bess: v.bess_mw || 0 };
   }).sort((a, b) => b.ratio - a.ratio);
@@ -5915,7 +6148,7 @@ function renderQueuePressure(){
         const b = band(x);
         const barW = x.ratio === Infinity ? 100 : Math.min(100, x.ratio * 100);
         return '<tr style="border-bottom:1px solid var(--line2)">'
-          + `<td style="padding:4px 6px">${x.r}</td>`
+          + `<td style="padding:4px 6px">${x.area}</td>`
           + `<td style="text-align:right;padding:4px 6px">${x.mw.toLocaleString()} MW</td>`
           + `<td style="text-align:right;padding:4px 6px;color:var(--ink2)">${x.avail ? x.avail.toLocaleString()+' MW' : '\u2014'}</td>`
           + `<td style="text-align:right;padding:4px 6px">`
@@ -5926,7 +6159,7 @@ function renderQueuePressure(){
     + '</table>'
     + `<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">`
     + `<strong>${rows.filter(x => x.ratio >= 1).length} of ${rows.length} supply areas are oversubscribed`
-    + `</strong>, while ${rows[rows.length-1].r} sits at ${(rows[rows.length-1].ratio*100).toFixed(0)}% of its headroom. `
+    + `</strong>, while ${rows[rows.length-1].area} sits at ${(rows[rows.length-1].ratio*100).toFixed(0)}% of its headroom. `
     + `Nationally ${totR.toLocaleString()} MW is registered against ${totH.toLocaleString()} MW of headroom \u2014 `
     + `close to balanced in total, but badly matched in place. The grid, not the resource, is what decides `
     + `where the next project can go.</div>`
@@ -6034,128 +6267,12 @@ function renderCaptureForecast(){
 }
 
 
-/* ==================== GAS SHORT-RUN MARGINAL COST ========================
- * South Africa's answer to Montel's gas SRMC index - built differently, because
- * the inputs Montel reads live simply do not exist here.
- *
- *   GAS    Montel converts TTF futures. South Africa has no gas hub. Sasol's
- *          Mozambique supply is contracted and declining; incremental gas is
- *          imported LNG priced off JKM or Brent plus regas and transport. So
- *          the input is a delivered $/MMBtu that the user sets, not a quote.
- *   CARBON Montel isolates an EUA spot price from a traded ETC. South Africa
- *          has a carbon TAX: R308/tCO2e from 1 January 2026, up 31% from R236.
- *          But electricity generation carries tax-free allowances of up to 85%,
- *          so the effective rate is a fraction of the headline. That gap is the
- *          single biggest difference from the European calculation.
- *   VOM    Montel uses EUR 2.00/MWh. R60/MWh is the equivalent order for an SA
- *          CCGT and is exposed as an input rather than buried.
- *
- * Because there is no live price to read, the useful question here is not "what
- * does gas cost right now" but "at what gas price does gas beat coal" - so the
- * panel solves for that breakeven and shows the whole build-up.
+/* The Gas SRMC panel was REMOVED on 14 Aug 2026. Its calculation now lives in
+ * FIXED.costCcgt (derived, documented at the constant) and its scenario lever is
+ * the 'Gas running cost' slider. It duplicated the model's own number with six
+ * editable inputs that fed nothing - the same one-number-two-places pattern
+ * removed everywhere else that day. Do not re-add it; extend the slider note.
  */
-const GAS_DEFAULTS = {
-  usdMMBtu: 16.5,      // delivered LNG, mid of the $14-19 range seen Jul 2026
-  zar: 19.0,
-  effPct: 52,          // modern CCGT, HHV basis
-  carbonR: 308,        // headline rate, 1 Jan 2026
-  allowPct: 85,        // electricity generation tax-free allowance
-  vomR: 60,
-};
-
-function gasSRMC(o){
-  // 1 MMBtu = 0.293071 MWh thermal. Fuel per MWh electrical = price / efficiency.
-  const fuelRPerMWhth = o.usdMMBtu * o.zar / 0.293071;
-  const fuelRPerMWhe = fuelRPerMWhth / (o.effPct / 100);
-  // Natural gas ~0.0561 tCO2/GJ = 0.2019 tCO2/MWh thermal.
-  const tCO2PerMWhe = 0.2019 / (o.effPct / 100);
-  const effCarbonR = o.carbonR * (1 - o.allowPct / 100);
-  const carbonRPerMWhe = tCO2PerMWhe * effCarbonR;
-  return {
-    fuel: fuelRPerMWhe, carbon: carbonRPerMWhe, vom: o.vomR,
-    total: fuelRPerMWhe + carbonRPerMWhe + o.vomR,
-    tCO2PerMWhe, effCarbonR,
-  };
-}
-
-function renderGasSRMC(){
-  const host = document.getElementById('gasBody');
-  if (!host) return;
-  const g = { ...GAS_DEFAULTS };
-  ['usdMMBtu','zar','effPct','carbonR','allowPct','vomR'].forEach(k => {
-    const el = document.getElementById('gas_' + k);
-    if (el && el.value !== '') g[k] = parseFloat(el.value);
-  });
-  const r = gasSRMC(g);
-
-  // Coal's SRMC on the same basis, from the model's own constants.
-  const p = { ...FIXED, ...(typeof state !== 'undefined' ? state : {}) };
-  const coalFuel = p.costCoal || 546;
-  const coalCarbon = (p.emisCoal || 0.95) * g.carbonR * (1 - g.allowPct/100);
-  const coalTotal = coalFuel + coalCarbon;
-
-  // Gas price at which gas SRMC equals coal's.
-  const perDollar = g.zar / 0.293071 / (g.effPct/100);
-  const breakeven = (coalTotal - r.carbon - g.vomR) / perDollar;
-
-  const R = v => 'R' + Math.round(v).toLocaleString();
-  const row = (label, val, sub) =>
-      '<tr style="border-bottom:1px solid var(--line2)">'
-    + `<td style="padding:4px 5px">${label}${sub ? `<br><span style="font-size:9px;color:var(--ink2)">${sub}</span>` : ''}</td>`
-    + `<td style="text-align:right;padding:4px 5px;font-weight:600">${R(val)}</td></tr>`;
-
-  host.innerHTML =
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:11px">'
-    + inp('gas_usdMMBtu', 'LNG delivered', '$/MMBtu', g.usdMMBtu, 0.5)
-    + inp('gas_zar', 'ZAR / USD', 'rate', g.zar, 0.25)
-    + inp('gas_effPct', 'Plant efficiency', '%', g.effPct, 1)
-    + inp('gas_carbonR', 'Carbon tax', 'R/tCO\u2082e', g.carbonR, 10)
-    + inp('gas_allowPct', 'Tax-free allowance', '%', g.allowPct, 5)
-    + inp('gas_vomR', 'Variable O&M', 'R/MWh', g.vomR, 5)
-    + '</div>'
-
-    + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
-    + row('Fuel', r.fuel, `${g.usdMMBtu.toFixed(2)} $/MMBtu \u00d7 R${g.zar.toFixed(2)} \u00f7 ${(g.effPct/100).toFixed(2)} efficiency`)
-    + row('Carbon', r.carbon, `${r.tCO2PerMWhe.toFixed(3)} tCO\u2082/MWh \u00d7 R${Math.round(r.effCarbonR)} effective`)
-    + row('Variable O&M', r.vom, 'operations, maintenance, consumables')
-    + '<tr style="border-top:1.5px solid var(--ink)">'
-    + '<td style="padding:6px 5px;font-weight:700">Short-run marginal cost</td>'
-    + `<td style="text-align:right;padding:6px 5px;font-weight:700;font-size:15px">${R(r.total)}<span style="font-size:10px;font-weight:400;color:var(--ink2)">/MWh</span></td></tr>`
-    + '</table>'
-
-    + `<div style="border-left:3px solid ${r.total > coalTotal ? 'var(--alert,#C4785A)' : 'var(--ok,#4A8C5C)'};`
-    + 'background:rgba(74,107,122,0.06);padding:8px 11px;margin-top:11px;font-size:10.5px;line-height:1.55">'
-    + `<strong>Gas runs at ${R(r.total)}/MWh against coal at ${R(coalTotal)}/MWh</strong> \u2014 `
-    + (r.total > coalTotal
-        ? `${(r.total/coalTotal).toFixed(1)}\u00d7 the cost, so gas only runs when coal cannot. `
-        : 'cheaper than coal on running cost. ')
-    + (breakeven > 0
-        ? `Gas would match coal at <strong>$${breakeven.toFixed(2)}/MMBtu</strong> delivered, against `
-          + `$${g.usdMMBtu.toFixed(2)} assumed here. IRP 2025 planned on $10/MMBtu.`
-        : 'Carbon and O&M alone already exceed coal\u2019s running cost at this carbon rate.')
-    + '</div>'
-
-    + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
-    + '<strong>Why this is a calculator, not an index.</strong> Montel converts live TTF futures and a '
-    + 'traded EUA price. South Africa has neither: no gas hub, and a carbon <em>tax</em> rather than an '
-    + 'allowance market. The tax is R308/tCO\u2082e from 1 January 2026, up 31% from R236 \u2014 but '
-    + 'electricity generation carries tax-free allowances of up to 85%, so the effective rate is '
-    + `R${Math.round(r.effCarbonR)}/t, and carbon is only ${(r.carbon/r.total*100).toFixed(0)}% of the total here. `
-    + 'Set the allowance to 0% to see what full exposure would look like. Gas is 0.2019 tCO\u2082 per MWh '
-    + 'thermal; coal SRMC uses this model\u2019s own fuel and emissions constants, so the comparison is '
-    + 'internally consistent.</div>';
-
-  function inp(id, label, unit, val, step){
-    return '<div>'
-      + `<label style="font-size:9px;color:var(--ink2);display:block">${label} <span style="opacity:.7">${unit}</span></label>`
-      + `<input id="${id}" type="number" value="${val}" step="${step}" oninput="renderGasSRMC()" `
-      + 'style="width:100%;padding:3px 5px;font-size:11px;font-family:\'IBM Plex Mono\',monospace;'
-      + 'border:1px solid var(--line2);background:var(--panel);color:var(--ink);border-radius:2px;box-sizing:border-box">'
-      + '</div>';
-  }
-}
-
-
 /* ==================== CLEAN COAL (CCS) POLICY ============================
  * What "clean coal" would actually cost and deliver, applied to the live model
  * rather than shown in isolation. Toggling it on re-runs everything: dispatch,
@@ -6316,32 +6433,33 @@ const SLIDERS=[
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'Multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
   {grp:'New build (national view/region agnostic)'},
-  {id:'newWindMW',label:'New wind',min:0,max:140000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4.5 GW existing (4,042 REIPPPP + 470 wheeled)'},
+  {id:'newWindMW',label:'New wind',min:0,max:140000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4.6 GW existing (4,042 REIPPPP + 470 wheeled + 100 Eskom Sere)'},
   {id:'newPvMW',label:'New utility solar PV',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 5 GW existing (H1 2026: +974 MW)'},
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 9.1 GW existing, behind the meter'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance and rarely dispatched when storage is ample (except when IRP artificial load factor is applied)'},
-  {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:0,ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'When ticked, gas runs as must-run at 50% of installed capacity every hour — matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only.'},
+  {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'When ticked, gas runs as must-run at 50% of installed capacity every hour — matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only.'},
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'Modern supercritical, same fuel cost as existing fleet'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
   {id:'ccsEnabled',toggle:true,def:false,label:'Apply \u2018clean coal\u2019 (CCS) technologies to the model',note:'Existing coal plants are retrofitted with CCS technology and new-build plants include CCS. See the \u2018Clean coal\u2019 (CCS) panel on the right to gauge the impact on outputs'},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit cost R223/kW/yr (based on Weisweiler, Germany project) · today\u2019s SA fleet ramps ~24%/hr (Agora 2017). Once fully flexibilised, ~100%/hr (IRENA post-retrofit range) · applies to the remaining (non-decommissioned) fleet'},
   {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. When switched on, the result is +20% capacity (based on DOE/utility deployments showing +10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2014 not a blanket national boost, since enhancing an already-idle corridor would be wasteful. Costs R1.55m/km \u2014 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2014 the single-node engine has no corridors to enhance.'},
   {grp:'Policy'},
-  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:600,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
+  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
   {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. Baseline is 6 GW, or roughly 15% of SA peak demand — consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+v+'/t',note:'Default R46/t is the effective rate on generation — the R308/t Phase 2 headline less allowances of up to 85%. Try R308 (headline), R462 (2030) or R640 (carbon-budget breach). Feeds dispatch, wholesale prices AND the build optimiser — but does not change which plants dispatch.'},
+  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'Fuel-only SRMC of gas power - NOT the build cost (that is the Gas CCGT slider under new-build costs). Default R1,968 = $18.50/MMBtu delivered LNG (FY2026 JKM reference: realised Jan-Aug ~$15.5 blended with elevated Q4 forwards, +$2 regas) \u00d7 R16.21/USD \u00f7 52% CCGT efficiency. Each $1/MMBtu \u2248 R106/MWh: try ~R2,450 for the Aug 2026 Hormuz spot ($23) or ~R1,280 for the pre-spike analyst consensus ($12). Carbon is added separately. Gas matches coal\u2019s running cost only near $5\u20136/MMBtu delivered; IRP 2025 planned on $10. Feeds dispatch, prices AND the build optimiser.'},
   {grp:'LCOE assumptions (R/kWh) — full lifecycle build cost'},
-  {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:550,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
-  {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:750,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 wind bids > solar; anchor R0.75'},
-  {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:900,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
-  {id:'lcoeBatt',label:'Battery (4h)',min:600,max:3500,step:20,def:1600,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
-  {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:2000,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
-  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:2500,fmt:v=>'R'+(v/1000).toFixed(2),note:'LNG-fired: fuel alone ~R2,100–2,900/MWh at current spot prices ($14–19/MMBtu × R19/$, as of Jul 2026). IRP 2025 baseline of $10/MMBtu is well below current prices. Use slider to explore sensitivity.'},
-  {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:1650,fmt:v=>'R'+(v/1000).toFixed(2),note:'Wide range; SMRs higher'},
-  {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:1400,fmt:v=>'R'+(v/1000).toFixed(2)},
-  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:8000,step:50,def:5500,fmt:v=>'R'+(v/1000).toFixed(2),},
+  {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
+  {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 wind bids > solar; anchor R0.75'},
+  {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
+  {id:'lcoeBatt',label:'Battery (4h)',min:600,max:3500,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
+  {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
+  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'LNG-fired: fuel alone ~R2,100–2,900/MWh at current spot prices ($14–19/MMBtu × R19/$, as of Jul 2026). IRP 2025 baseline of $10/MMBtu is well below current prices. Use slider to explore sensitivity.'},
+  {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Wide range; SMRs higher'},
+  {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2)},
+  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Peaker LCOE is dominated by how little it runs. R9.00 assumes a 5% capacity factor; at 2% it is R13.2 and at 10% R7.6. Its floor is diesel\u2019s own running cost of ~R6.2/MWh \u2014 LCOE can never sit below SRMC.'},
 ];
 const PRESETS={
   'Today 2026':{},
@@ -6359,7 +6477,7 @@ const PRESETS={
   'Latest IRP\'s 2030 targets':{demandGrowthPct:16,coalEAFPct:68,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
   'Future electricity mix':{demandGrowthPct:5,coalDecomMW:21000,newWindMW:28500,newPvMW:42500,newRooftopMW:15000,newBattMW:20000},
 };
-const COLORS={nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
+const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV',curtailment:'Curtailed (wasted)'};
 
 /* ==================== BUILD CONTROLS ==================== */
@@ -7230,7 +7348,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderGasSRMC==='function'&&!document.getElementById('gas_zar'))renderGasSRMC();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
@@ -9349,17 +9467,17 @@ function applyMIPResult(m, mode) {
   for (let h = 0; h < 8760; h++) {
     const cg = coal[h], dh = dis[h], ch = chg[h];
     coalMWh += cg; disMWh += dh; chgMWh += ch;
-    fuelCost += cg * p.costCoal; carbonCost += cg * cC;
+    fuelCost += cg * (p.costCoal + p.vomCoal); carbonCost += cg * cC;
     stack.coal[h] = cg; stack.batt[h] = dh; stack.ps[h] = 0;
 
     // The MIP's regional slack is unserved energy the network could not reach.
     // Peakers can still cover part of it, so run it through the merit order.
     let residual = Math.max(0, uns[h]);
     const gas = Math.min(residual, ccgtCap); residual -= gas;
-    ccgtMWh += gas; fuelCost += gas * p.costCcgt; carbonCost += gas * cG;
+    ccgtMWh += gas; fuelCost += gas * (p.costCcgt + p.vomCcgt); carbonCost += gas * cG;
     stack.ccgt[h] = gas;
     const dsl = Math.min(residual, dieselCap); residual -= dsl;
-    dieselMWh += dsl; fuelCost += dsl * p.costDiesel; carbonCost += dsl * cD;
+    dieselMWh += dsl; fuelCost += dsl * (p.costDiesel + p.vomDiesel); carbonCost += dsl * cD;
     stack.diesel[h] = dsl;
     unservedMWh += residual; stack.unserved[h] = residual;
 

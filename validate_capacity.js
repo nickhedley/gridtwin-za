@@ -89,10 +89,13 @@ console.log('\nIdentity 3 - regional operational sums to the national constant, 
   {
     const wm = html.match(/windMW\s*:\s*([0-9.]+)/);
     const wConst = wm ? parseFloat(wm[1]) : null;
-    const wTotal = sum(cap.by_source.reipppp.wind_mw) + sum(cap.by_source.private.wind_mw);
-    check('FIXED.windMW = sum(reipppp wind) + sum(private wind)',
+    const wR = sum(cap.by_source.reipppp.wind_mw);
+    const wP = sum(cap.by_source.private.wind_mw);
+    const wE = sum((cap.by_source.eskom || { wind_mw: {} }).wind_mw);
+    const wTotal = wR + wP + wE;
+    check('FIXED.windMW = sum(reipppp + private + eskom wind)',
           Math.abs(wTotal - wConst) <= TOL,
-          `${sum(cap.by_source.reipppp.wind_mw)} + ${sum(cap.by_source.private.wind_mw)} = ${wTotal} vs ${wConst}`);
+          `${wR} + ${wP} + ${wE} = ${wTotal} vs ${wConst}`);
   }
 
   // SOLAR: still PENDING. Private coverage is H1 2026 only, so the residual is
@@ -106,6 +109,18 @@ console.log('\nIdentity 3 - regional operational sums to the national constant, 
     check('FIXED.pvUtilityMW = sum(reipppp solar) + sum(private solar)',
           Math.abs(reipppp + priv - pvConst) <= TOL,
           `${reipppp} + ${priv} = ${reipppp + priv} vs ${pvConst}`);
+  }
+
+  // rooftopMW must equal the regional file it is derived from. Same discipline as
+  // windMW: the constant and the file are one number in two places, so assert it.
+  {
+    const rt = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/rooftop_mw_by_region.json'), 'utf8'));
+    const rtSum = Math.round(Object.values(rt).reduce((a, b) => a + b, 0) * 10) / 10;
+    const rm = html.match(/rooftopMW\s*:\s*([0-9.]+)/);
+    const rConst = rm ? parseFloat(rm[1]) : null;
+    check('FIXED.rooftopMW = sum(rooftop_mw_by_region)',
+          Math.abs(rtSum - rConst) <= TOL,
+          `${rtSum} vs ${rConst}`);
   }
 
   const cspM = html.match(/cspMW\s*:\s*([0-9.]+)/);
@@ -130,9 +145,16 @@ console.log('\nStructural - derived fields recomputed, not hand-edited');
   const engineSolar = sum(cap.solar_mw), engineWind = sum(cap.wind_mw);
   if (cap.by_source) {
     check('engine-facing solar_mw = sum over sources',
-          Math.abs(engineSolar - (sum(cap.by_source.reipppp.solar_mw) + sum(cap.by_source.private.solar_mw))) < 1e-9);
+          Math.abs(engineSolar - srcSum('solar_mw')) < 1e-9);
+  // Sum a technology across EVERY source bucket, not a hardcoded pair. `eskom`
+  // was added on 14 Aug 2026 and the old two-bucket form silently excluded it.
+  function srcSum(tech){
+    return Object.values(cap.by_source).reduce((t, b) => t + sum(b[tech] || {}), 0);
+  }
+
+
     check('engine-facing wind_mw = sum over sources',
-          Math.abs(engineWind - (sum(cap.by_source.reipppp.wind_mw) + sum(cap.by_source.private.wind_mw))) < 1e-9);
+          Math.abs(engineWind - srcSum('wind_mw')) < 1e-9);
   }
 
   const REG = Object.keys(cap.wind_mw);
