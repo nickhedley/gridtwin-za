@@ -615,7 +615,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 <div style="margin-top:18px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
-        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: winter evening peaks &asymp; 26&ndash;27.3&nbsp;GW, EAF &asymp; 64&nbsp;%, OCGT load factor &asymp; 1.3&nbsp;%, <strong>9.1&nbsp;GW</strong> embedded rooftop PV (NTCSA, June 2026), post-2023 structural demand decline.</p>
+        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: winter evening peaks &asymp; 26&ndash;27.3&nbsp;GW, EAF &asymp; 64&nbsp;%, OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline.</p>
 
         <p style="margin-bottom:8px"><strong>How dispatch works:</strong> merit order — rooftop PV nets off demand &rarr; wind / utility PV / CSP &rarr; nuclear, hydro, Cahora Bassa imports &rarr; coal &rarr; pumped storage &amp; batteries &rarr; gas CCGT &rarr; diesel OCGT &rarr; unserved energy. One stage of load shedding &asymp; 1&nbsp;000&nbsp;MW of unserved demand.</p>
 
@@ -626,7 +626,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Diesel OCGT</td><td>R6&nbsp;100/MWh fuel &middot; +R70 VOM &middot; 0.78&nbsp;tCO&#8322;/MWh &middot; 3.4&nbsp;GW</td></tr>
           <tr><td>Gas CCGT</td><td>R1&nbsp;968/MWh fuel &middot; +R35 VOM &middot; 0.37&nbsp;tCO&#8322;/MWh &middot; LNG-fired. FY2026 JKM reference: $18.50/MMBtu delivered &times; R16.21/USD &divide; 52% efficiency. Carbon added separately. Use the Gas running cost slider for spot ($23 &asymp; R2&nbsp;450) or pre-Hormuz consensus ($12 &asymp; R1&nbsp;280)</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; 1&nbsp;150&nbsp;MW @ 85&nbsp;%</td></tr>
-          <tr><td>Existing fleet</td><td>Wind 4.6&nbsp;GW (REIPPPP 4.0 + wheeled 0.47 + Eskom Sere 0.1) &middot; Utility PV 5.0&nbsp;GW &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, dispatchable 05:00&ndash;21:30) &middot; Rooftop 9.1&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
+          <tr><td>Existing fleet</td><td>Wind 4.6&nbsp;GW (REIPPPP 4.0 + wheeled 0.47 + Eskom Sere 0.1) &middot; Utility PV 3.2&nbsp;GW (REIPPPP 2.66 + wheeled 0.49) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, dispatchable 05:00&ndash;21:30) &middot; Rooftop 9.1&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
           <tr><td>New-build capex</td><td>Wind R21&nbsp;000 &middot; PV R12&nbsp;000 &middot; Rooftop R17&nbsp;000 &middot; Battery&nbsp;(4h) R10&nbsp;500 &middot; CCGT R18&nbsp;000 /kW. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT <em>rises</em>, having hit a record high in 2025</td></tr>
           <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region</td></tr>
           <tr><td>Planned build</td><td>221 projects from NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034, all nine provinces, each with its published commissioning year and delivery phase</td></tr>
@@ -2845,7 +2845,7 @@ const FIXED = {
   // rather than adding supply.
   // pvUtilityMW is NOT yet derived the same way: about 1,823 MW of private solar
   // commissioned before Jan 2026 is unsourced, so 4,974 stands with a known gap.
-  ocgtDieselMW:3400, windMW:4612, pvUtilityMW:4974, rooftopMW:9107.4, cspMW:600,
+  ocgtDieselMW:3400, windMW:4612, pvUtilityMW:3151, rooftopMW:8619.4, cspMW:600,
   // RMIPPPP HYBRID - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -2919,12 +2919,27 @@ const FIXED = {
   // Tariff side: retrofit capital, allowed return and asset life.
   ccsCapexRkW:38000, ccsWaccPct:9, ccsLifeYrs:20,
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
-  // rooftopMW is DERIVED from nodal/rooftop_mw_by_region.json, not hand-set. That
-  // file is Eskom's Weekly System Status Report provincial table (Jun-26 row),
-  // with Eskom's Northern Cape 758.4 MW split across the two supply areas it
-  // spans (Northern Cape 621.9 + Hydra Central 136.5). Its regions sum to
-  // 9,107.4 MW and validate_capacity.js asserts this constant equals that sum -
-  // it previously read a hand-rounded 9,100, which no longer matched the file.
+  // pvUtilityMW is DERIVED, corrected 4,974 -> 3,151 on 15 Aug 2026:
+  //   2,663 MW REIPPPP online at 31 Mar 2026 (IPP Office Q4 2025/26)
+  // +   488 MW privately wheeled, ground-mounted (PFL H1 2026 monitor)
+  // = 3,151 MW. The identity check in validate_capacity.js is now STRICT.
+  // The old 4,974 was a hand-set constant carrying ~1,823 MW that never existed:
+  // Eskom's Week 32 report settles it - their "PV" line (NTCSA-contracted
+  // utility PV) is 2,780.2 MW in Aug 2026, which our 2,663 reproduces exactly
+  // after adding Graspan (75 MW, COD Apr 2026, after our reporting date) and
+  // ~42 MW of later CODs. So the REIPPPP component was complete all along and
+  // the constant was simply wrong - same failure and same fix as windMW
+  // (4,458 -> 4,512). CSIR's utility-scale series corroborates independently
+  // (2,287 MW at Dec 2022 extrapolates onto our number, not onto 4,974).
+  // rooftopMW is DERIVED from nodal/rooftop_mw_by_region.json MINUS the 488 MW
+  // of ground-mounted wheeled plant above - Eskom's footnote puts all PV
+  // "that does not have contracts with NTCSA" in the Rooftop line, including
+  // ground-mounted farms, so the same 488 MW sat in BOTH constants: a live
+  // double count, removed 15 Aug 2026. The subtraction is done here rather than
+  // in the regional file, which stays verbatim Eskom (Jun-26 provincial table). That
+  // The regional file's provinces sum to 9,107.4 (Eskom Northern Cape 758.4 is
+  // split 621.9 Northern Cape + 136.5 Hydra Central); validate_capacity.js
+  // asserts FIXED.rooftopMW = that sum minus the wheeled 488.
   // Trend: 6,800 MW (Jun 2025), 8,294 MW (May 2026), 9,107.4 MW (Jun 2026) - a
   // 35% year-on-year rise, so this figure dates quickly. Now larger than ALL
   // renewable capacity feeding Eskom's grid
@@ -5356,7 +5371,9 @@ const ESKOM_ACTUALS = {
       note: 'FYTD 2026. Diesel spend R948m against R5.73bn last year.' },
     { k: 'Rooftop PV installed',  model: () => (FIXED.rooftopMW/1000),
       actual: 9.1, unit: 'GW',
-      note: 'NTCSA, June 2026. Grew 35% year on year, so this figure dates quickly.' },
+      note: 'NTCSA, June 2026, grew 35% y/y. The model reads LOWER by design: Eskom\u2019s '
+          + 'rooftop line includes 0.49 GW of ground-mounted wheeled plant (their bucket is '
+          + 'contractual, not physical), which this model counts as utility supply instead.' },
     { k: 'Winter peak demand',    model: () => Math.round((lastRes && lastRes.peak ? lastRes.peak : 0)/100)/10,
       actual: 27, unit: 'GW',
       note: 'Eskom 2026 Winter Outlook forecast, down from ~30 GW in 2025. Both figures are '
@@ -5371,10 +5388,11 @@ const ESKOM_ACTUALS = {
           + 'the model should read HIGHER here and the gap is expected, not an error.' },
     { k: 'Utility PV installed',  model: () => FIXED.pvUtilityMW/1000,
       actual: 2.78, unit: 'GW',
-      note: 'Eskom Week 32 "PV" = NTCSA-contracted utility PV only; ground-mounted plant '
-          + 'without an NTCSA contract sits in the Rooftop line instead. KNOWN OPEN ISSUE: '
-          + 'pvUtilityMW is a hand-set constant carrying an unexplained ~2.2 GW above this '
-          + 'figure. See HANDOVER.md - the identity check for it is deliberately PENDING.' },
+      note: 'Eskom Week 32 "PV" = NTCSA-contracted utility PV only. The model reads higher '
+          + 'by design: it adds 0.49 GW of privately wheeled ground-mounted plant that Eskom '
+          + 'books under Rooftop, and its REIPPPP figure is the 31 Mar 2026 reporting date '
+          + '(Eskom\u2019s Aug line adds Graspan +75 MW and ~42 MW of later CODs). '
+          + 'RESOLVED 15 Aug 2026: was 4.97 GW with an unexplained 2.2 GW - see HANDOVER.' },
     { k: 'Hybrid (RMIPPPP)',      model: () => FIXED.hybridMW/1000,
       actual: 0.335, unit: 'GW',
       note: 'Eskom Week 32 "Hybrid" - firm dispatchable solar+wind+battery portfolios, '
@@ -6527,8 +6545,8 @@ const SLIDERS=[
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
   {grp:'New build (national view/region agnostic)'},
   {id:'newWindMW',label:'New wind',min:0,max:140000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4.6 GW existing (4,042 REIPPPP + 470 wheeled + 100 Eskom Sere)'},
-  {id:'newPvMW',label:'New utility solar PV',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 5 GW existing (H1 2026: +974 MW)'},
-  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 9.1 GW existing, behind the meter'},
+  {id:'newPvMW',label:'New utility solar PV',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.2 GW existing (2,663 REIPPPP + 488 wheeled; H1 2026 added 974 MW)'},
+  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.6 GW existing, behind the meter (Eskom estimates 9.1; 0.49 GW of that is ground-mounted wheeled plant, modelled as utility supply instead)'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance and rarely dispatched when storage is ample (except when IRP artificial load factor is applied)'},
   {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'When ticked, gas runs as must-run at 50% of installed capacity every hour — matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only.'},
