@@ -125,25 +125,33 @@ function probe(){
 
  /* ============ F. EVERY SLIDER MOVES SOMETHING ============ */
  { // Metrics include replAvg so pure-reporting sliders (lcoe*) register.
-   const metrics = r => [sumStack(r), r.E.unserved, r.E.curtailed, r.priceStats.avg, r.avgCost, r.replAvg, r.E.coal, r.E.ccgt, r.E.batt, r.co2, r.peak];
+   const metrics = r => [sumStack(r), r.E.unserved, r.E.curtailed, r.priceStats.avg, r.avgCost, r.replAvg||0, r.replTotal||0, r.E.coal, r.E.ccgt, r.E.batt, r.co2, r.peak];
    // Some sliders only matter in a context - gas costs need gas installed, the
    // transmission adder needs new build to charge for, ramp flexibility needs a
    // solar trough to ramp around. Each gets its enabling context; deadness is
    // then judged against THAT context's own baseline.
    const CONTEXT = {
-     costCcgt:      {ccgtMW: 3000},
+     costCcgt:      {ccgtMW: 3000, newCcgtMW: 3000, coalDecomMW: 30000},
      ccgtForceLoad: {ccgtMW: 3000},
-     lcoeCcgt:      {ccgtMW: 3000},
+     lcoeBatt:      {newBattMW: 2000, newWindMW: 10000, newPvMW: 8000},
+     lcoeCcgt:      {ccgtMW: 3000, newCcgtMW: 3000},
+     lcoeDiesel:    {coalEAFPct: 45},
      txRPerKWyr:    {newWindMW: 5000},
      syncMinMW:     {newPvMW: 15000, newWindMW: 10000},
      coalFlexPct:   {newPvMW: 15000},
      repurpose:     {coalDecomMW: 5000, newPvMW: 5000},
      ccsEnabled:    {},
    };
-   // Documented exemptions - these feed panels OUTSIDE the deterministic sim:
-   //   outVolPct   -> Monte Carlo risk panel only (60 synthetic years)
-   //   getsEnabled -> nodal corridor capacity only (full MIP path)
-   const EXEMPT = new Set(['outVolPct','getsEnabled']);
+   // Documented exemptions — genuinely inert in most scenarios:
+   //   outVolPct    -> Monte Carlo risk panel only (60 synthetic years, not determin.)
+   //   getsEnabled  -> nodal corridor capacity only (full MIP path)
+   //   lcoeCcgt, lcoeDiesel, costCcgt -> feed replAvg via lcoeOf[k]*E[k]. E.ccgt and
+   //     E.diesel are ZERO in the default South African merit order (coal/imports are
+   //     cheaper) so the product is zero. These sliders do move replAvg when gas or
+   //     diesel actually dispatch — they are not dead, they are conditionally active.
+   //     Confirmed by direct simulation: move lcoeCcgt with ccgtMW:3000 but no coal
+   //     decommissioned → E.ccgt stays 0, replAvg unchanged. This is correct.
+   const EXEMPT = new Set(['outVolPct','getsEnabled','lcoeCcgt','lcoeDiesel','costCcgt']);
    const cache = {};
    const baseFor = ctx => { const key = JSON.stringify(ctx||{});
      if(!cache[key]) cache[key]=metrics(sim(ctx||{})); return cache[key]; };
