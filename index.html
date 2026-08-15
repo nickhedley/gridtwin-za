@@ -266,7 +266,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
   <aside class="panel" aria-label="Scenario controls" style="min-width:0;max-width:100%;box-sizing:border-box">
     <div class="ph"><h2>Set the scenario</h2><span class="tag">re-solves live</span></div>
     <div class="pb">
-      <p style="font-size:10.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45">Start from a preset or move any slider.</p>
+      <p style="font-size:10.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45">Start from a preset, or move any slider.</p>
       <div class="presets" id="presets"></div>
       <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
       <button class="sharebtn" id="pinBtn" type="button" onclick="pinScenario()" style="margin-top:6px;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink)">📌 Pin for comparison</button>
@@ -361,7 +361,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
           Given the scenario you have set, this solves for the <strong>least-cost build schedule to
           2030</strong>: how much of each technology to add, in which year, and &mdash; in regional
-          mode &mdash; where. It uses each coal unit&rsquo;s planned retirement date, technology costs that
+          mode &mdash; where. It uses each coal unit&rsquo;s real retirement date, technology costs that
           change year by year, and a limit on how fast capacity can actually be connected. The answer
           can be loaded straight back into the sliders and tested hour by hour.
         </p>
@@ -3440,7 +3440,10 @@ function simulate(u, prof, outPath){
   // Build daily commitment decisions using per-unit min up/down times and start-up costs.
   // This replaces the simple committed=available assumption with per-plant scheduling.
   const coalInstalled = (p.coalInstalledMW || 42000) - (p.coalDecomMW || 0);
-  const eafFraction = (p.coalEAFPct || 64) / 100;
+  // `?? 64` not `|| 64`: zero is a real input (total coal collapse). The `||`
+  // form silently ran EAF=0 scenarios at 64% availability - unserved energy
+  // read ZERO with the entire coal fleet dead. Caught by stress_deep check G8.
+  const eafFraction = (p.coalEAFPct ?? 64) / 100;
   const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, Math.max(0, coalInstalled), eafFraction);
 
   // Forward-looking signal for off-peak coal-charging: how much real coal-insufficient need
@@ -4005,7 +4008,8 @@ function priceStatsOf(mp, stack, E){
     scarcityHours: scarcity,
     avgExScarcity: nEx ? sumEx / nEx : 0,
     scarcityShare: (avg > 0 && H) ? (scarcity * 87000 / H) / avg : 0,
-    capture: { wind: cap(stack.wind), pv: cap(stack.pv), coal: cap(stack.coal) },
+    capture: { wind: cap(stack.wind), pv: cap(stack.pv), coal: cap(stack.coal),
+               batt: cap(stack.batt), hybrid: cap(stack.hybrid) },
     duration: Array.from({length: 101}, (_, i) => sorted[Math.min(H-1, Math.floor(H*i/100))]),
   };
 }
@@ -4181,7 +4185,10 @@ function bldBuildLP(opts){
   // global - reading undefined fields here silently produces NaN coefficients and
   // an LP that HiGHS refuses to parse.
   const S = { ...FIXED, ...(opts.state || {}) };
-  const VOLL = 60000, CARBON = S.carbonTaxRPerT;
+  // VoLL comes from FIXED.voll (R87,000/MWh, CSIR cost of unserved energy) -
+  // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
+  // planning than the dispatch engine prices them in operations. One number.
+  const VOLL = S.voll ?? 87000, CARBON = S.carbonTaxRPerT;
   const MC = { coal: S.costCoal + S.vomCoal, ccgt: S.costCcgt + S.vomCcgt, diesel: S.costDiesel + S.vomDiesel };
   const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:S.ocgtDieselMW,
                wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
@@ -4296,7 +4303,7 @@ async function runBuildOpt(){
   const totalGrowth = 1 + (state.demandGrowthPct || 0)/100;
   const opts = {
     growth: Math.pow(totalGrowth, 1/5) - 1,
-    eaf:    (state.coalEAFPct || 64) / 100,
+    eaf:    (state.coalEAFPct ?? 64) / 100,   // ?? not ||: EAF=0 is a real input
     rate:   bldRates(),
     state:  state,
   };
@@ -4490,7 +4497,10 @@ function bldBuildRegionalLP(opts){
   const rd = bldRepDays(8);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   const S = { ...FIXED, ...(opts.state || {}) };
-  const VOLL = 60000, CARBON = S.carbonTaxRPerT;
+  // VoLL comes from FIXED.voll (R87,000/MWh, CSIR cost of unserved energy) -
+  // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
+  // planning than the dispatch engine prices them in operations. One number.
+  const VOLL = S.voll ?? 87000, CARBON = S.carbonTaxRPerT;
   const MCcoal = S.costCoal + S.vomCoal + CARBON * S.emisCoal;
   const MCdiesel = S.costDiesel + S.vomDiesel + CARBON * S.emisDiesel;
 
@@ -4792,7 +4802,7 @@ function renderBuildRegional(res, rate, opts){
 function bldShowInherit(){
   const el = document.getElementById('bldInherit');
   if (!el || typeof state === 'undefined') return;
-  const g = state.demandGrowthPct || 0, e = state.coalEAFPct || 64;
+  const g = state.demandGrowthPct || 0, e = state.coalEAFPct ?? 64;
   const dec = state.coalDecomMW || 0;
   el.innerHTML = '<strong>Using the scenario set above:</strong> demand '
     + (g >= 0 ? '+' : '') + g + '% to 2030, coal availability ' + e + '%'
@@ -9488,7 +9498,7 @@ function runMIP(mode) {
     state.coalEAFPct, state.coalDecomMW,
     alloc.wind || {}, alloc.solar || {}, state.newRooftopMW || 0, state.newBattMW || 0,
     alloc.coal || {}, alloc.ccgt || {}, alloc.nuclear || {}, alloc.batt || {},
-    state.coalFlexPct || 0, state.newWindMW || 0, state.newPvMW || 0, state.syncMinMW || 6000
+    state.coalFlexPct || 0, state.newWindMW || 0, state.newPvMW || 0, state.syncMinMW ?? 6000
   ).then(inp => {
     mipInputs = inp;
     document.getElementById('mipStatus').textContent = 'Loading HiGHS solver (3.4 MB, cached after first run)…';
