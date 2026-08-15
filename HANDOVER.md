@@ -206,6 +206,34 @@ and is not here.
 
 ---
 
+## Deep stress test (15 Aug 2026) - two bugs found and fixed
+
+`stress_deep.js` (repo root, `node stress_deep.js` against a checkout in
+`testroot/`) probes cross-talk the standing suites don't: price<->cost coherence
+per marginal technology, exact VOM decomposition, hybrid window physics, basis-
+replay visibility, a full every-slider-moves-something sweep with per-slider
+enabling contexts, extreme-scenario boundedness, EAF/carbon monotonicity, and
+rendered-panel consistency. 40 checks; all pass as of this date.
+
+It found two real defects on its first run:
+
+1. **`(p.coalEAFPct || 64)` - falsy-zero fallback.** EAF=0 silently became 64%:
+   "total coal collapse" scenarios showed ZERO unserved energy with the whole
+   fleet dead. Fixed with `??` at three sites (dispatch, LP inputs, and a third
+   consumer), plus the same fix on `syncMinMW`. After the fix, EAF=0 correctly
+   yields ~122 TWh unserved and unserved is monotone in EAF.
+2. **LP VoLL drift.** Both build LPs hardcoded `VOLL = 60000` while dispatch
+   prices unserved energy at `FIXED.voll = 87000` (CSIR cost of unserved
+   energy) - planning penalised blackouts 31% cheaper than operations priced
+   them. Both LPs now read `S.voll ?? 87000`. The national build LP re-solved
+   Optimal (R335.8bn, builds at the IRP rate caps) after the change.
+
+Two things it flagged that are NOT bugs, recorded to save the next person the
+investigation: storage discharge exceeds charging by up to the fleet's initial
+state of charge (~64 GWh, drawn down once per year - a convention, not free
+energy); and `outVolPct`/`getsEnabled` legitimately move nothing in the
+deterministic engine (Monte Carlo panel and nodal corridors respectively).
+
 ## Known distortion: `rooftopMW` is not all rooftop
 
 Eskom's footnote to the series `FIXED.rooftopMW` is taken from reads:
