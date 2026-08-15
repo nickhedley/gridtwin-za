@@ -189,5 +189,24 @@ console.log('\nFingerprints');
   }
 }
 
+// ---- PENDING ADDITIONS - print, never pass silently -------------------------
+// Known-future capacity lives in the split file's pending_next_quarterly, not in
+// the capacity file, because the capacity file must match its published source
+// table (currently IPP Office Q4, 31 Mar 2026). Hand-adding a known COD ahead of
+// its table is exactly how pvUtilityMW became a wrong constant. This block makes
+// the queue impossible to forget: every validation run prints it until the next
+// quarterly rollforward consumes it.
+try {
+  const split = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/supply_area_split_draft.json'), 'utf8'));
+  const q = split.pending_next_quarterly || [];
+  if (q.length) {
+    console.log('\nPending next quarterly rollforward (IPP Office Q1 2026/27, 30 Jun basis):');
+    for (const x of q)
+      console.log(`  QUEUED  ${x.name} - ${x.mw} MW ${x.tech}, ${x.area} (COD ${x.cod}). ` +
+                  'On rollforward: add to reipppp, re-derive pvUtilityMW, and re-anchor the ' +
+                  'Eskom Week-32 reconciliation comments, which currently use this project as a bridge.');
+  }
+} catch (e) { /* split file optional in older checkouts */ }
+
 console.log(`\n${pass}/${pass + fail} checks passed` + (pending ? `, ${pending} pending` : ''));
 if (fail) process.exit(1);
