@@ -238,71 +238,35 @@ projects individually and is already a source in this model.
 currently in `by_source.private` is inside Eskom's rooftop figure too, so it is
 double-counted today. That is a live error, unlike the distortion above.
 
-## The 1,823 MW pvUtilityMW gap - what it is and how to close it
+## The pvUtilityMW gap - RESOLVED 15 Aug 2026
 
-`FIXED.pvUtilityMW` is 4,974 MW. Sourced components account for 3,151 MW
-(2,663 REIPPPP + 488 PFL wheeled H1 2026), leaving **1,823 MW unexplained**.
-Identity 3 reports this as PENDING and must not be closed by widening a
-tolerance - the residual IS the finding.
+`pvUtilityMW` was a hand-set 4,974 MW carrying an unexplained 1,823 MW above its
+sourced components. Eskom's Weekly System Status Report (Week 32, Aug 2026)
+settled it: their "PV" line - NTCSA-contracted utility PV - is **2,780.2 MW**,
+which our REIPPPP figure of 2,663 MW (31 Mar 2026) reproduces exactly after
+adding Graspan (75 MW, COD Apr 2026, after our reporting date) and ~42 MW of
+later CODs. So the REIPPPP component was complete all along; there was never a
+hidden pre-2026 wheeled fleet; **the constant was simply wrong** - the same
+failure and the same fix as `windMW` (4,458 -> 4,512). CSIR's utility-scale
+series corroborates independently.
 
-**Settled 14 Aug 2026: SAPVIA's headline "private" figure cannot close it.**
-SAPVIA's "6.1 GW private" (end-2024) and the "6,165 MW rooftop" figure for
-Oct 2024 are 65 MW apart - the same measurement, two descriptions. Both sit in
-one continuous behind-the-meter series this model already carries as
-`FIXED.rooftopMW`: 2,264 MW (Eskom, Aug 2022) -> 6,165 (SAPVIA, Oct 2024) ->
-7,300 (NTCSA, Sep 2025) -> 9,107 (NTCSA, Jun 2026). Adding the private aggregate
-to `pvUtilityMW` would double-count almost all of it.
+Corrected values, both now derived and strictly asserted (16/16, zero pending):
 
-**CSIR corroborates the REIPPPP component (14 Aug 2026).** CSIR's *Statistics of
-utility-scale power generation in South Africa* reports capacity "excluding embedded
-generation capacity and private capacity" - the closest published analogue to what
-`pvUtilityMW` is meant to be. Its 2022 edition gives solar PV **2,287 MW** at
-31 Dec 2022 (wind 3,443, CSP 500). Our REIPPPP solar of 2,663 MW at Mar 2026 sits
-exactly where that trajectory lands three years on. So the REIPPPP component is
-right and complete - independently confirmed by a series built on a different basis.
+    pvUtilityMW = 2,663 REIPPPP + 488 PFL wheeled            = 3,151
+    rooftopMW   = 9,107.4 (Eskom Jun-26 table) - 488 wheeled = 8,619.4
 
-That narrows the gap to a DEFINITIONAL question, which must be settled before any
-data hunt:
+The 488 subtraction removes the **double count**: Eskom's rooftop bucket is
+contractual (their footnote: includes ground-mounted plant without NTCSA
+contracts), so the wheeled fleet sat in both constants. The two identities now
+share one sourced number (`by_source.private`) and cannot drift apart. The
+earlier PFL-monitor request and the "definitional question" below it are moot;
+the sections that discussed them are superseded by this one.
 
-| If `pvUtilityMW` means | Correct value | Constant is |
-|---|---|---|
-| CSIR basis: utility-scale, grid-connected, excludes private | ~2,663 MW | 2,311 MW too high |
-| CSIR basis + private wheeled | >=3,151 MW | 1,823 MW too high, unless ~1,823 MW of pre-2026 wheeled solar exists |
-
-A plausibility check on the second row: PFL found 488 MW of wheeled solar in the six
-months of H1 2026. For the gap to be pre-2026 wheeled capacity, roughly 1,823 MW would
-have to have accumulated before that - about four years at the H1 2026 rate, during a
-period when wheeling was far less developed. Possible, but it needs evidence rather
-than assumption. CSIR cannot settle it either way: it excludes private capacity by
-construction and so cannot see wheeled projects at all.
-
-**Recommended order: decide the definition, then re-derive.** If CSIR basis, the
-constant can be corrected today from sourced components and identity 3 closes. If it
-includes wheeled, the earlier PFL monitors decide it - and would have to show far more
-than expected.
-
-Legitimate sources are SUBSETS of that aggregate, or a different series:
-1. **Earlier PFL monitors** - the H1 2026 edition supplied the 488 MW already in
-   the file, on exactly the right basis (wheeled only, captive excluded).
-   Previous editions extend it backwards. Cleanest route; source already
-   validated. PFL's IPP data hub: powerfutureslab.co.za
-2. **SAPVIA's own segments**, not the aggregate: "C&I large-scale 1-50MW" and
-   "utility-scale" from their data portal.
-3. **CSIR utility-scale generation statistics**, which track capacity by actual
-   start of operation - the right basis for this model.
-
-**Do not assume the gap is all one thing.** Part is pre-2026 wheeled utility PV;
-part may be an overstatement in `pvUtilityMW` itself, which has never been
-re-derived from sourced components. When the sourced total gets close, consider
-that the constant may be wrong rather than the data incomplete - the same
-correction already made to `windMW` (4,458 -> 4,512).
-
-**Open risk:** the 488 MW of PFL wheeled solar is only safe if NTCSA's rooftop
-estimate excludes wheeled grid-connected projects. NTCSA derives it from demand
-suppression, which sees only behind-the-meter generation, and PFL excludes
-captive projects for the same reason - so they should not overlap. That rests on
-inference about NTCSA's method, not a stated definition. Confirm before the next
-private-capacity addition.
+Impact: removes 2,311 MW of phantom solar from the national engine (the nodal
+engine already used the correct file). Default average price R738.6 -> R741.3
+(+0.4%); diesel hours 14 -> 16 - slightly less midday solar, slightly more
+evening scarcity. The validation panel now shows both constants against Eskom's
+Week 32 lines with the reconciliation in the notes.
 
 ## Supply-area split (applied 14 Aug 2026)
 
