@@ -5776,6 +5776,56 @@ function weekStartHour(){ return (typeof weekMode !== 'undefined' && weekMode ==
  * Colour comes from r.marginalTech, which is written in the same cascade that
  * writes r.marginalP - there is no second copy of the merit order here.
  */
+
+/* ==================== CANVAS CHART HOVER TOOLTIPS =========================
+ * One mechanism for every canvas chart. A draw function records how to invert
+ * its own geometry by setting `canvas.__hit`; this attaches a single shared
+ * listener that reads it. Charts therefore cannot drift out of sync with their
+ * tooltips - there is no second copy of the bar layout.
+ *
+ * __hit = { padL, bw, N, resolve(i) -> html|null }
+ * padL/bw/N are the plot geometry; resolve turns a bar index into its label.
+ */
+let _chartTip = null;
+function chartTipEl(){
+  if (_chartTip) return _chartTip;
+  _chartTip = document.createElement('div');
+  _chartTip.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;display:none;'
+    + 'background:var(--panel,#fff);border:1px solid var(--line,#ccc);border-radius:5px;'
+    + 'padding:6px 9px;font:11.5px/1.5 "IBM Plex Mono",monospace;color:var(--ink,#222);'
+    + 'box-shadow:0 3px 12px rgba(0,0,0,.16);max-width:260px';
+  document.body.appendChild(_chartTip);
+  return _chartTip;
+}
+function attachChartHover(canvas){
+  if (!canvas || canvas.__hoverBound) return;
+  canvas.__hoverBound = true;
+  canvas.style.cursor = 'crosshair';
+  const hide = () => { const t = chartTipEl(); t.style.display = 'none'; };
+  canvas.addEventListener('mouseleave', hide);
+  canvas.addEventListener('mousemove', ev => {
+    const hit = canvas.__hit;
+    if (!hit) return hide();
+    const rect = canvas.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const i = Math.floor((x - hit.padL) / hit.bw);
+    if (i < 0 || i >= hit.N) return hide();
+    const html = hit.resolve(i);
+    if (!html) return hide();
+    const t = chartTipEl();
+    t.innerHTML = html;
+    t.style.display = 'block';
+    // keep it on screen near the cursor
+    const tw = t.offsetWidth, th = t.offsetHeight;
+    let left = ev.clientX + 14, top = ev.clientY - th - 10;
+    if (left + tw > window.innerWidth - 8) left = ev.clientX - tw - 14;
+    if (top < 8) top = ev.clientY + 16;
+    t.style.left = left + 'px'; t.style.top = top + 'px';
+  });
+}
+const DAY_NM = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function hourLabel(i){ return DAY_NM[Math.floor(i/24)%7] + ' ' + String(i%24).padStart(2,'0') + ':00'; }
+
 let spWeekMode = 'W';
 const SP_TECH_LABEL = { unserved:'Unserved (VoLL)', diesel:'Diesel OCGT', ccgt:'Gas CCGT',
                         batt:'Battery', ps:'Pumped storage', coalneg:'Must-run coal (paying)',
@@ -5840,6 +5890,19 @@ function drawShadowPriceWeek(r){
   const D = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   for (let d = 0; d < 7; d++) ctx.fillText(D[d], padL + (d*24+12)*bw, H-4);
 
+
+  // Hover: hour, price and the technology that set it. Reads the same win/wt
+  // arrays the bars were drawn from, so the tooltip cannot disagree with them.
+  c.__hit = { padL, bw, N, resolve: i => {
+    const t = wt[i], v = win[i];
+    return '<strong>' + hourLabel(i) + '</strong><br>'
+         + 'Price <strong>R' + Math.round(v).toLocaleString() + '</strong>/MWh<br>'
+         + '<span style="color:' + spTechColour(t) + '">&#9632;</span> '
+         + (SP_TECH_LABEL[t] || t)
+         + (v > cap ? '<br><span style="opacity:.7">bar clipped at R'
+             + Math.round(cap).toLocaleString() + '</span>' : '');
+  } };
+  attachChartHover(c);
 
   // Gas SRMC reference lines - the "same chart for the SRMC of gas". Gas costs
   // the same in every hour, so its week chart IS a horizontal line over these
@@ -5963,6 +6026,17 @@ function drawBessWeek(r){
   for (let d = 0; d < 7; d++) ctx.fillText(D[d], padL + (d*24+12)*bw, H-4);
   let cycled = 0;
   for (let d = 0; d < 7; d++){ for (let h = 0; h < 24; h++) if (act[d*24+h] > 0){ cycled++; break; } }
+  // Hover: hour, price, and whether the battery charged or discharged then.
+  c.__hit = { padL, bw, N, resolve: i => {
+    const v = p[start+i] || 0, a = act[i];
+    const state = a === 1 ? '<span style="color:#4A8C5C">&#9632;</span> Discharging (selling)'
+                : a === -1 ? '<span style="color:#B0655A">&#9632;</span> Charging (buying)'
+                : '<span style="opacity:.6">&#9632;</span> Idle';
+    return '<strong>' + hourLabel(i) + '</strong><br>'
+         + 'Price <strong>R' + Math.round(v).toLocaleString() + '</strong>/MWh<br>' + state;
+  } };
+  attachChartHover(c);
+
   const note = document.getElementById('bessWeekNote');
   if (note) note.textContent = 'When a four-hour battery would charge and discharge over the same week \u2014 '
     + cycled + ' of 7 days worth cycling. Blank days are ones where the spread never covers the round trip.';
@@ -7012,6 +7086,24 @@ function drawDispatch(r){
   ctx.strokeStyle='rgba(34,41,43,.13)'; ctx.fillStyle='#5A6560'; ctx.font='10px IBM Plex Mono'; ctx.lineWidth=1;
   const step=maxY>40000?10000:5000;
   for(let g=0;g<=maxY;g+=step){ctx.beginPath();ctx.moveTo(padL,y(g));ctx.lineTo(W-padR,y(g));ctx.stroke();ctx.fillText((g/1000)+' GW',2,y(g)+3);}
+  // Hover: full generation split for the hour, largest carriers first. Uses the
+  // same DISP_ORDER and r.stack the areas were drawn from.
+  c.__hit = { padL, bw:(W-padL-padR)/(N-1), N, resolve: i => {
+    const rows = DISP_ORDER.map(k => ({ k, v: r.stack[k][start+i] || 0 }))
+                           .filter(o => o.v > 1).sort((a,b) => b.v - a.v);
+    if (!rows.length) return null;
+    const dem = r.loadS[start+i] || 0;
+    const nm = k => (typeof CARRIER_NM !== 'undefined' && CARRIER_NM[k]) ? CARRIER_NM[k]
+                  : k.charAt(0).toUpperCase() + k.slice(1);
+    return '<strong>' + hourLabel(i) + '</strong><br>'
+      + 'Demand <strong>' + (dem/1000).toFixed(2) + ' GW</strong>'
+      + '<div style="margin-top:4px">'
+      + rows.map(o => '<span style="color:' + (COLORS[o.k]||'#999') + '">&#9632;</span> '
+          + nm(o.k) + ' <strong>' + (o.v/1000).toFixed(2) + '</strong> GW').join('<br>')
+      + '</div>';
+  } };
+  attachChartHover(c);
+
   // stacked areas
   const base=new Float64Array(N);
   DISP_ORDER.forEach(k=>{
