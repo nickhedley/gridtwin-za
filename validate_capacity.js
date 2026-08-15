@@ -98,18 +98,16 @@ console.log('\nIdentity 3 - regional operational sums to the national constant, 
           `${wR} + ${wP} + ${wE} = ${wTotal} vs ${wConst}`);
   }
 
-  // SOLAR: still PENDING. Private coverage is H1 2026 only, so the residual is
-  // real missing plant rather than an error. Do NOT widen the tolerance to pass.
-  if (coverage !== 'complete') {
-    pend('FIXED.pvUtilityMW = sum(reipppp solar) + sum(private solar)',
-         `by_source.private coverage is "${coverage}", not complete. ` +
-         `reipppp = ${reipppp} MW + private = ${priv} MW = ${reipppp + priv} MW, ` +
-         `constant = ${pvConst} MW, unexplained gap = ${(pvConst - reipppp - priv).toFixed(0)} MW.`);
-  } else {
-    check('FIXED.pvUtilityMW = sum(reipppp solar) + sum(private solar)',
-          Math.abs(reipppp + priv - pvConst) <= TOL,
-          `${reipppp} + ${priv} = ${reipppp + priv} vs ${pvConst}`);
-  }
+  // SOLAR: STRICT since 15 Aug 2026. The identity was PENDING while the constant
+  // (4,974) carried an unexplained 1,823 MW residual; Eskom's Week 32 report
+  // settled it - their NTCSA-contracted PV line (2,780.2, Aug) reproduces our
+  // REIPPPP figure exactly after post-reporting-date CODs, proving the residual
+  // was a wrong constant, not missing plant. The old coverage escape hatch is
+  // deliberately GONE: with the constant derived, "coverage" can no longer
+  // justify a gap, and any future mismatch is a real error.
+  check('FIXED.pvUtilityMW = sum(reipppp solar) + sum(private solar)',
+        Math.abs(reipppp + priv - pvConst) <= TOL,
+        `${reipppp} + ${priv} = ${reipppp + priv} vs ${pvConst}`);
 
   // rooftopMW must equal the regional file it is derived from. Same discipline as
   // windMW: the constant and the file are one number in two places, so assert it.
@@ -118,9 +116,16 @@ console.log('\nIdentity 3 - regional operational sums to the national constant, 
     const rtSum = Math.round(Object.values(rt).reduce((a, b) => a + b, 0) * 10) / 10;
     const rm = html.match(/rooftopMW\s*:\s*([0-9.]+)/);
     const rConst = rm ? parseFloat(rm[1]) : null;
-    check('FIXED.rooftopMW = sum(rooftop_mw_by_region)',
-          Math.abs(rtSum - rConst) <= TOL,
-          `${rtSum} vs ${rConst}`);
+    // The constant is the Eskom table MINUS wheeled ground-mounted solar: Eskom's
+    // rooftop bucket is contractual (their footnote: includes ground-mounted plant
+    // without NTCSA contracts), so the wheeled 488 sat in BOTH rooftopMW and
+    // pvUtilityMW - a live double count until 15 Aug 2026. The subtraction uses
+    // by_source.private from the capacity file, so the two identities share one
+    // sourced number and cannot drift apart.
+    const wheeled = sum(cap.by_source.private.solar_mw);
+    check('FIXED.rooftopMW = sum(rooftop_mw_by_region) - wheeled private solar',
+          Math.abs(rtSum - wheeled - rConst) <= TOL,
+          `${rtSum} - ${wheeled} = ${(rtSum - wheeled).toFixed(1)} vs ${rConst}`);
   }
 
   const cspM = html.match(/cspMW\s*:\s*([0-9.]+)/);
