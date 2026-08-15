@@ -4,47 +4,47 @@
   "Limpopo": 0.0,
   "Mpumalanga": 0.0,
   "Gauteng": 0.0,
-  "Western Cape": 738.0,
-  "Northern Cape": 1878.0,
-  "Hydra Central": 0.0,
+  "Western Cape": 1256.9,
+  "Northern Cape": 790.1,
+  "Hydra Central": 669.0,
   "Kwazulu Natal": 0.0,
   "North West": 0.0,
   "Free State": 0.0
  },
  "solar_mw": {
-  "Eastern Cape": 70.0,
+  "Eastern Cape": 0.0,
   "Limpopo": 506.0,
   "Mpumalanga": 0.0,
-  "Gauteng": 0.0,
+  "Gauteng": 50.0,
   "Western Cape": 359.0,
-  "Northern Cape": 1570.0,
-  "Hydra Central": 0.0,
+  "Northern Cape": 1282.6,
+  "Hydra Central": 459.5,
   "Kwazulu Natal": 0.0,
-  "North West": 375.0,
-  "Free State": 271.0
+  "North West": 325.0,
+  "Free State": 168.9
  },
  "by_source": {
   "reipppp": {
    "solar_mw": {
-    "Eastern Cape": 70.0,
+    "Eastern Cape": 0.0,
     "Limpopo": 118.0,
     "Mpumalanga": 0.0,
-    "Gauteng": 0.0,
+    "Gauteng": 50.0,
     "Western Cape": 359.0,
-    "Northern Cape": 1570.0,
-    "Hydra Central": 0.0,
+    "Northern Cape": 1282.6,
+    "Hydra Central": 459.5,
     "Kwazulu Natal": 0.0,
-    "North West": 275.0,
-    "Free State": 271.0
+    "North West": 225.0,
+    "Free State": 168.9
    },
    "wind_mw": {
     "Eastern Cape": 1566.0,
     "Limpopo": 0.0,
     "Mpumalanga": 0.0,
     "Gauteng": 0.0,
-    "Western Cape": 738.0,
-    "Northern Cape": 1738.0,
-    "Hydra Central": 0.0,
+    "Western Cape": 1156.9,
+    "Northern Cape": 650.1,
+    "Hydra Central": 669.0,
     "Kwazulu Natal": 0.0,
     "North West": 0.0,
     "Free State": 0.0
@@ -123,6 +123,32 @@
     "North West": 0.0,
     "Free State": 0.0
    }
+  },
+  "eskom": {
+   "solar_mw": {
+    "Eastern Cape": 0.0,
+    "Limpopo": 0.0,
+    "Mpumalanga": 0.0,
+    "Gauteng": 0.0,
+    "Western Cape": 0.0,
+    "Northern Cape": 0.0,
+    "Hydra Central": 0.0,
+    "Kwazulu Natal": 0.0,
+    "North West": 0.0,
+    "Free State": 0.0
+   },
+   "wind_mw": {
+    "Eastern Cape": 0.0,
+    "Limpopo": 0.0,
+    "Mpumalanga": 0.0,
+    "Gauteng": 0.0,
+    "Western Cape": 100.0,
+    "Northern Cape": 0.0,
+    "Hydra Central": 0.0,
+    "Kwazulu Natal": 0.0,
+    "North West": 0.0,
+    "Free State": 0.0
+   }
   }
  },
  "reconciliation": {
@@ -158,6 +184,6 @@
   "region_key_note": "Region keys follow GridTwin ZA convention: 'Kwazulu Natal', and 'Hydra Central' is a supply area, not a province.",
   "licence": "CC BY-NC-ND 4.0",
   "copyright": "(c) 2026 Nick Hedley",
-  "fingerprint": "gtza-d4829e6ac16d8fc8"
+  "fingerprint": "gtza-ad882c49d164e7d0"
  }
 }
