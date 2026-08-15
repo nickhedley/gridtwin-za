@@ -5475,7 +5475,7 @@ function renderPricePanel(r){
   const MON = ['J','F','M','A','M','J','J','A','S','O','N','D'];
   const maxMon = Math.max(...s.monthly, 1);
   const bars = s.monthly.map((v, i) =>
-    `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px">`
+    `<div title="${['January','February','March','April','May','June','July','August','September','October','November','December'][i]}: ${R(v)}/MWh average" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;cursor:help">`
     + `<div style="width:100%;background:var(--steel,#4A6B7A);height:${Math.max(1, v/maxMon*54)}px"></div>`
     + `<div style="font-size:8px;color:var(--ink2)">${MON[i]}</div></div>`).join('');
 
@@ -5515,6 +5515,10 @@ function renderPricePanel(r){
     + `<div><div style="font-size:10px;font-weight:600;color:var(--ink2);margin-bottom:4px">Price duration curve</div>`
     + `<svg viewBox="0 0 100 62" preserveAspectRatio="none" style="width:100%;height:70px">`
     + `<polyline points="${pts}" fill="none" stroke="var(--alert,#C4785A)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>`
+    // Invisible wide hit-targets over the duration curve: one per percentile, so the
+    // curve can be read at any point. Drawn last so they sit above the line.
+    + dur.map((v, i) => `<rect x="${(i-0.5).toFixed(1)}" y="0" width="1" height="60" fill="transparent">`
+        + `<title>Top ${i}% of hours: R${Math.round(v).toLocaleString()}/MWh or above</title></rect>`).join('')
     + `</svg>`
     + `<div style="display:flex;justify-content:space-between;font-size:8px;color:var(--ink2)"><span>0%</span><span>hours of the year</span><span>100%</span></div></div>`
     + `</div>`
@@ -6947,11 +6951,11 @@ fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
       const winPct=(100*v.wind_mw/maxMW).toFixed(1);
       const besPct=(100*(v.bess_mw||0)/maxMW).toFixed(1);
       html+=`<div style="display:grid;grid-template-columns:90px 1fr 52px;align-items:center;margin-bottom:3px;gap:4px">
-        <span style="font-size:10px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${region}</span>
+        <span title="${region}: solar ${v.solar_mw.toFixed(0)} MW · wind ${v.wind_mw.toFixed(0)} MW · BESS ${(v.bess_mw||0).toFixed(0)} MW · total ${v.total_mw.toFixed(0)} MW" style="font-size:10px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help">${region}</span>
         <div style="background:var(--bg2);border-radius:2px;height:10px;min-width:0;display:flex">
-          <div style="width:${solPct}%;background:#F5C518;height:100%;border-radius:2px 0 0 2px"></div>
-          <div style="width:${winPct}%;background:#3EA055;height:100%"></div>
-          <div style="width:${besPct}%;background:#7EC8E3;height:100%;border-radius:0 2px 2px 0"></div>
+          <div title="${region} — solar ${v.solar_mw.toFixed(0)} MW" style="width:${solPct}%;background:#F5C518;height:100%;border-radius:2px 0 0 2px"></div>
+          <div title="${region} — wind ${v.wind_mw.toFixed(0)} MW" style="width:${winPct}%;background:#3EA055;height:100%"></div>
+          <div title="${region} — BESS ${(v.bess_mw||0).toFixed(0)} MW" style="width:${besPct}%;background:#7EC8E3;height:100%;border-radius:0 2px 2px 0"></div>
         </div>
         <span style="text-align:right;font-size:10px;white-space:nowrap">${(v.total_mw/1000).toFixed(1)}GW</span></div>`;
     });
