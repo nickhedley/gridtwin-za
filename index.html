@@ -5343,14 +5343,14 @@ async function ensureHighs(){
  * Conflating the two would make a correct model look broken.
  */
 const ESKOM_ACTUALS = {
-  asOf: '6 August 2026',
+  asOf: '9 August 2026 (Week 32)',
   source: 'Eskom weekly System Status reports',
   url: 'https://www.eskom.co.za/dataportal/',
   structural: [
     { k: 'Coal fleet EAF',        model: () => state.coalEAFPct,
-      actual: 67.2, unit: '%',
-      note: 'Financial year to date, 1 Apr\u20136 Aug 2026. Highest since Nov 2020; '
-          + 'was 60.05% over the same period last year.' },
+      actual: 67.95, unit: '%',
+      note: 'Calendar year to date, Week 32 2026 (2025 full year: 62.44%). Week 32 alone was '
+          + '72.15%, and the year has run above 70% since Week 27.' },
     { k: 'OCGT load factor',      model: () => 1.3,
       actual: 1.17, unit: '%',
       note: 'FYTD 2026. Diesel spend R948m against R5.73bn last year.' },
@@ -5364,6 +5364,21 @@ const ESKOM_ACTUALS = {
           + '2025 demand series and demand has since declined structurally.' },
     { k: 'Coal installed',        model: () => FIXED.coalInstalledMW/1000,
       actual: 42, unit: 'GW', note: 'Nominal fleet capacity before EAF.' },
+    { k: 'Wind installed',        model: () => FIXED.windMW/1000,
+      actual: 4.14, unit: 'GW',
+      note: 'Eskom Week 32 "Wind (Eskom+IPP)" = REIPPPP 4,042.6 + Sere 100. The model adds '
+          + '470 MW of privately wheeled wind, which Eskom does not count in this line - so '
+          + 'the model should read HIGHER here and the gap is expected, not an error.' },
+    { k: 'Utility PV installed',  model: () => FIXED.pvUtilityMW/1000,
+      actual: 2.78, unit: 'GW',
+      note: 'Eskom Week 32 "PV" = NTCSA-contracted utility PV only; ground-mounted plant '
+          + 'without an NTCSA contract sits in the Rooftop line instead. KNOWN OPEN ISSUE: '
+          + 'pvUtilityMW is a hand-set constant carrying an unexplained ~2.2 GW above this '
+          + 'figure. See HANDOVER.md - the identity check for it is deliberately PENDING.' },
+    { k: 'Hybrid (RMIPPPP)',      model: () => FIXED.hybridMW/1000,
+      actual: 0.335, unit: 'GW',
+      note: 'Eskom Week 32 "Hybrid" - firm dispatchable solar+wind+battery portfolios, '
+          + 'reported whole rather than split into the PV and Wind lines.' },
   ],
 };
 
@@ -6445,7 +6460,7 @@ const SLIDERS=[
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit cost R223/kW/yr (based on Weisweiler, Germany project) · today\u2019s SA fleet ramps ~24%/hr (Agora 2017). Once fully flexibilised, ~100%/hr (IRENA post-retrofit range) · applies to the remaining (non-decommissioned) fleet'},
   {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. When switched on, the result is +20% capacity (based on DOE/utility deployments showing +10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2014 not a blanket national boost, since enhancing an already-idle corridor would be wasteful. Costs R1.55m/km \u2014 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2014 the single-node engine has no corridors to enhance.'},
   {grp:'Policy'},
-  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr · rooftop avoids it'},
+  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr gross; R600 default nets off the share already committed · rooftop avoids it'},
   {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. Baseline is 6 GW, or roughly 15% of SA peak demand — consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
   {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+v+'/t',note:'Default R46/t is the effective rate on generation — the R308/t Phase 2 headline less allowances of up to 85%. Try R308 (headline), R462 (2030) or R640 (carbon-budget breach). Feeds dispatch, wholesale prices AND the build optimiser — but does not change which plants dispatch.'},
@@ -6456,10 +6471,10 @@ const SLIDERS=[
   {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeBatt',label:'Battery (4h)',min:600,max:3500,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
-  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'LNG-fired: fuel alone ~R2,100–2,900/MWh at current spot prices ($14–19/MMBtu × R19/$, as of Jul 2026). IRP 2025 baseline of $10/MMBtu is well below current prices. Use slider to explore sensitivity.'},
+  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'LNG-fired BUILD cost, not running cost - the fuel is the Gas running cost slider (R1,968/MWh). At that fuel cost this R2.50 implies a 30-50% capacity factor. IRP 2025 assumed $10/MMBtu, roughly half the FY2026 reference of $18.50 delivered.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Wide range; SMRs higher'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2)},
-  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Peaker LCOE is dominated by how little it runs. R9.00 assumes a 5% capacity factor; at 2% it is R13.2 and at 10% R7.6. Its floor is diesel\u2019s own running cost of ~R6.2/MWh \u2014 LCOE can never sit below SRMC.'},
+  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Peaker LCOE is dominated by how little it runs. R9.00 assumes a 5% capacity factor; at 2% it is R13.2 and at 10% R7.6. Its floor is diesel\u2019s own running cost of ~R6.2/kWh \u2014 LCOE can never sit below SRMC.'},
 ];
 const PRESETS={
   'Today 2026':{},
