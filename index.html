@@ -686,7 +686,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         EAF&nbsp;52&nbsp;% with 12&nbsp;% demand growth, switching reserve on moves diesel from 1,843 to
         2,031 running hours. Still missing: <strong>unit-level forced outages</strong> (EAF is applied as
         a smooth derate rather than lumpy trips, which is why the model sheds less than Eskom does) and
-        intra-regional network limits below the ten-region corridor level.</p>
+        intra-regional network limits below the ten-region corridor level &mdash; though
+        new build from the sliders is now sited against <strong>GCCA connection headroom</strong>
+        rather than simply following the existing fleet, so capacity no longer piles into the
+        Northern Cape and Hydra Central, which have had zero solar headroom since GCCA&nbsp;2025.
+        Beyond about 19.9&nbsp;GW of new solar the model reports that the scenario has outrun
+        national connection headroom instead of quietly absorbing it.</p>
         <p style="margin-bottom:8px">The model&rsquo;s own winter peak runs higher than Eskom&rsquo;s reported evening peak (~27&nbsp;GW) because it is driven by the 2025 demand series and includes storage charging &mdash; the System adequacy and validation panels show the gap rather than hiding it.</p>
 
         <p style="margin-bottom:8px"><strong>How dispatch works:</strong> merit order — rooftop PV nets off demand &rarr; wind / utility PV / CSP &rarr; nuclear, hydro, Cahora Bassa imports &rarr; coal &rarr; pumped storage &amp; batteries &rarr; gas CCGT &rarr; diesel OCGT &rarr; unserved energy. One stage of load shedding &asymp; 1&nbsp;000&nbsp;MW of unserved demand.</p>
