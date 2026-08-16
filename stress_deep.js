@@ -198,6 +198,22 @@ function probe(){
    ck('G9 average price monotone increasing in carbon tax', co2.every((v,i)=> i===0 || v >= co2[i-1] - 0.5), co2.map(v=>Math.round(v)).join(' <= '));
  }
 
+ /* ============ H0. LABEL MAPS COVER EVERY DRAWN CARRIER ============ */
+ { // A carrier in COLORS but not NAMES renders a correctly-coloured swatch
+   // labelled "undefined" - which is exactly what shipped when hybrid was added
+   // to DISP_ORDER and COLORS but not NAMES. Cheap check, real bug caught.
+   const missingName = DISP_ORDER.filter(k => !NAMES[k]);
+   ck('H0a every DISP_ORDER carrier has a NAMES label', missingName.length===0,
+      missingName.length ? 'undefined labels: '+missingName.join(', ') : DISP_ORDER.length+' carriers');
+   const missingCol = DISP_ORDER.filter(k => !COLORS[k]);
+   ck('H0b every DISP_ORDER carrier has a COLORS entry', missingCol.length===0,
+      missingCol.length ? 'no colour: '+missingCol.join(', ') : '');
+   const colKeys = Object.keys(COLORS), nmKeys = Object.keys(NAMES);
+   ck('H0c COLORS and NAMES cover the same carriers',
+      colKeys.every(k=>nmKeys.includes(k)) && nmKeys.every(k=>colKeys.includes(k)),
+      colKeys.length+' vs '+nmKeys.length+' keys');
+ }
+
  /* ============ H. PANEL CROSS-TALK (rendered DOM) ============ */
  { const r = sim({});
    window.lastRes = r;
