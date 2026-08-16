@@ -136,6 +136,11 @@ function probe(){
      lcoeBatt:      {newBattMW: 2000, newWindMW: 10000, newPvMW: 8000},
      lcoeCcgt:      {ccgtMW: 3000, newCcgtMW: 3000},
      lcoeDiesel:    {coalEAFPct: 45},
+     // interruptible load only fires when the system is actually short, so it
+     // needs a scarcity context - at EAF 68 South Africa has surplus and DR
+     // is never called, which is correct behaviour rather than a dead slider.
+     drInterruptMW:   {coalEAFPct: 55},
+     drInterruptCostR:{coalEAFPct: 55},
      txRPerKWyr:    {newWindMW: 5000},
      syncMinMW:     {newPvMW: 15000, newWindMW: 10000},
      coalFlexPct:   {newPvMW: 15000},
