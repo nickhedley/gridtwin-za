@@ -18,7 +18,7 @@ CHECKS = [
     # Tab labels
     ('Grid-scale solar &amp; wind',                                'tab: grid-scale solar & wind'),
     ('Data centre captive power',                                  'tab: data centre captive power'),
-    ('Solar project pre-feasibility',                              'tab: solar project pre-feasibility'),
+    ('Project pre-feasibility',                              'tab: project pre-feasibility'),
     ('Rooftop solar</button>',                                     'tab: rooftop solar'),
     # Presets & costs
     ("Latest IRP",                                                 'IRP preset name'),
