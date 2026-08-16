@@ -676,8 +676,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <strong>Ember's metered generation</strong> (12 months to May 2026) on 16 Aug 2026, which
         found the model overstating non-fossil generation by about 8&nbsp;percentage points. Koeberg's
         capacity factor was corrected from a hardcoded 0.90 to 0.75, and turbine/panel availability
-        derates were added to wind (0.95) and utility PV (0.98) &mdash; the model previously sent the
-        raw resource profile straight to generation. A separate audit then found rooftop PV running at
+        availability derates were briefly added to wind and utility PV and then removed
+        as a double count: the national profiles are Eskom&rsquo;s own <em>metered</em> hourly output
+        (Data Portal ESK19243), so availability, losses and real curtailment are already inside the
+        per-unit series, and the regional profiles are Renewables.ninja, whose PV already carries a
+        10&nbsp;% system loss. The wind capacity factor reading high against Ember is a normalisation
+        issue in profiles.json &mdash; metered energy divided by an understated nameplate &mdash; and
+        the resulting <em>energy</em> matches Ember closely (11.3 vs 11.6&nbsp;TWh). A separate audit
+        found rooftop PV running at
         21.2&nbsp;% capacity factor against utility PV&rsquo;s 22.1&nbsp;%, which is physically wrong:
         a rooftop fleet takes whatever orientation the roof has, is shaded, is never cleaned, does not
         track, and sits in Gauteng and the Western Cape rather than the Northern Cape. Its derate moved
@@ -3174,24 +3180,29 @@ const FIXED = {
   // avoid, which is the number a carbon price ought to be set against.
   carbonCapEnabled:0, carbonCapMt:140,
   // ── CALIBRATION AGAINST EMBER, 16 Aug 2026 ──────────────────────────────
-  // Ember's metered South African generation (12 months to May 2026) showed the
-  // model running non-fossil ~7.7pp high. Three causes, fixed here:
+  // Ember's metered generation (12 months to May 2026) showed the model running
+  // non-fossil high. One real fix, and one mistake worth recording:
   //
-  // 1. nuclearCF was a hardcoded 0.90 - a healthy-PWR design figure. Koeberg has
-  //    been through steam generator replacement and life-extension outages and
-  //    Ember's 11.5 TWh implies ~71%. 0.75 allows some recovery from that.
-  // 2. windAvail / pvAvail: the model previously sent the raw resource profile
-  //    straight to generation with NO availability or loss derate. Real farms
-  //    lose output to turbine availability, wakes, soiling and electrical
-  //    losses. These are TECHNICAL derates only.
-  // 3. Curtailment is deliberately NOT in these numbers. Ember reports metered
-  //    output, which is already net of the network curtailment Eskom applies to
-  //    Cape wind - so calibrating the derates to match Ember exactly would bake
-  //    curtailment into the technical assumption and then double-count it as
-  //    soon as a scenario curtails. The residual gap to Ember is that real
-  //    curtailment, which the single-node engine cannot see (it has no network);
-  //    the nodal engine computes it explicitly.
-  nuclearCF:0.75, windAvail:0.95, pvAvail:0.98,
+  // nuclearCF was a hardcoded 0.90 - a healthy-PWR design figure. Koeberg has
+  // been through steam generator replacement and life-extension outages, and
+  // Ember's 11.5 TWh implies ~71%. 0.75 allows some recovery from that.
+  //
+  // NO windAvail / pvAvail DERATE. Availability and loss derates were briefly
+  // added here and then REMOVED as a double count. The national profiles are
+  // Eskom Data Portal ESK19243 - actual METERED hourly output - so availability,
+  // electrical losses and real curtailment are already inside the per-unit
+  // series. The regional profiles are Renewables.ninja, whose PV series already
+  // carries an explicit 10% system loss. Deriving a fresh derate on top of
+  // either would charge those losses twice.
+  //
+  // The wind CF reading high (37.3% vs Ember's implied 32%) is NOT an
+  // availability problem: profiles.json normalises metered energy against
+  // wind_nameplate_est = 3,466 MW, and the resulting ENERGY reproduces Ember
+  // almost exactly (11.3 vs 11.6 TWh). The per-unit values are inflated because
+  // that nameplate understates the true 2025 average operating fleet - a data
+  // issue in profiles.json, listed in HANDOVER, not something to paper over with
+  // a fabricated loss factor in the engine.
+  nuclearCF:0.75,
   // ROOFTOP DERATE, corrected 16 Aug 2026 (was 0.94).
   // Rooftop and utility PV previously ran within 1pp of each other - 21.2% vs
   // 22.1% - which is physically wrong. They share the same national profile,
@@ -3853,7 +3864,7 @@ function simulate(u, prof, outPath){
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen;
     E.rooftop+=rooftopGen; loadS[h]=load;
-    let windGen=windCap*wind[h]*(p.windAvail??0.95), pvGen=pvCap*solar[h]*(p.pvAvail??0.98), cspGen=p.cspMW*csp[h];
+    let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
     const nuc=(p.nuclearMW+p.newNuclearMW)*(p.nuclearCF??0.75), hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     // RMIPPPP hybrid: AVAILABLE inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
