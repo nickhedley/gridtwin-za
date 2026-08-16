@@ -18,6 +18,18 @@ const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
 
+// Model constants read straight out of index.html at MODULE scope, so any check
+// can compare against what the model actually uses. Added 16 Aug 2026 after the
+// rooftop capacity-factor check was found measuring against a hardcoded 9,100 MW
+// that no longer matched FIXED.rooftopMW - a validator drifting from its own model
+// is worse than no validator, because it reports green while checking nothing.
+const ROOT_DIR = process.argv[2] || '.';
+const INDEX_SRC = fs.readFileSync(path.join(ROOT_DIR, 'index.html'), 'utf8');
+function readFixed(name, fallback){
+  const m = INDEX_SRC.match(new RegExp('\\b' + name + '\\s*:\\s*([0-9.]+)'));
+  return m ? parseFloat(m[1]) : fallback;
+}
+
 const ROOT = path.resolve('testroot');
 const results = [];
 
@@ -147,11 +159,24 @@ function readKpis(doc) {
   checkRange('Grid-served demand (net of rooftop)', gridServed, 170, 215,
     'Eskom residual demand: 191.4 TWh (2025), ~177 TWh annualised (2026)', 'TWh/yr');
 
-  // Rooftop generation must be consistent with NTCSA's installed capacity at a
-  // physically realistic capacity factor. SA fixed-tilt PV runs ~20-22%.
-  const rooftopCF = rooftopTwh * 1e6 / (9100 * 8760) * 100;
-  checkRange('Rooftop implied capacity factor', rooftopCF, 17, 24,
-    'NTCSA 9,107 MW (Jun 2026); SA fixed-tilt PV CF ~20.8% (profiles.json)', '%');
+  // Rooftop generation must be consistent with the model's own installed
+  // capacity at a physically realistic capacity factor.
+  //
+  // TWO CORRECTIONS, 16 Aug 2026. The denominator was hardcoded 9,100 MW - the
+  // NTCSA figure BEFORE the 488 MW of ground-mounted wheeled plant was moved to
+  // utility supply - so it no longer matched FIXED.rooftopMW and the check was
+  // measuring against a fleet the model does not have. It now reads the constant.
+  //
+  // The range was also justified by "SA fixed-tilt PV CF ~20.8%", which is the
+  // very conflation the rooftop audit corrected: a ROOFTOP fleet is not an
+  // optimally-sited fixed-tilt plant. It takes whatever orientation the roof has,
+  // is shaded, is never cleaned, does not track, and sits in Gauteng and the
+  // Western Cape rather than the Northern Cape. 14-20% is the defensible band for
+  // a distributed fleet; anything at or above utility PV's ~22% is a red flag.
+  const rooftopMwConst = readFixed('rooftopMW', 8619.4);
+  const rooftopCF = rooftopTwh * 1e6 / (rooftopMwConst * 8760) * 100;
+  checkRange('Rooftop implied capacity factor', rooftopCF, 14, 20,
+    `over FIXED.rooftopMW = ${rooftopMwConst} MW; distributed fleets run well below utility PV`, '%');
 
   // StatsSA reports LOCAL generation, excluding imports and behind-the-meter
   // rooftop. Recompute on that basis or the comparison is meaningless.
