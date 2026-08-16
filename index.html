@@ -680,9 +680,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         as a double count: the national profiles are Eskom&rsquo;s own <em>metered</em> hourly output
         (Data Portal ESK19243), so availability, losses and real curtailment are already inside the
         per-unit series, and the regional profiles are Renewables.ninja, whose PV already carries a
-        10&nbsp;% system loss. The wind capacity factor reading high against Ember is a normalisation
-        issue in profiles.json &mdash; metered energy divided by an understated nameplate &mdash; and
-        the resulting <em>energy</em> matches Ember closely (11.3 vs 11.6&nbsp;TWh). A separate audit
+        10&nbsp;% system loss. The wind capacity factor was reading high against Ember because of a
+        normalisation error in profiles.json &mdash; metered energy divided by an understated
+        nameplate of 3,466&nbsp;MW. Re-derived on 16&nbsp;Aug&nbsp;2026 to 4,044&nbsp;MW, which lands
+        on the REIPPPP wind fleet independently, so the model now reproduces Ember&rsquo;s 11.6&nbsp;TWh
+        exactly for the fleet Eskom meters, plus 1.3&nbsp;TWh from privately wheeled wind that neither
+        Eskom nor Ember counts. A separate audit
         found rooftop PV running at
         21.2&nbsp;% capacity factor against utility PV&rsquo;s 22.1&nbsp;%, which is physically wrong:
         a rooftop fleet takes whatever orientation the roof has, is shaded, is never cleaned, does not
