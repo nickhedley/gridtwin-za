@@ -206,6 +206,158 @@ and is not here.
 
 ---
 
+## Final platform sweep (15 Aug 2026)
+
+Last full pass before hand-off. Two real bugs, three comment contradictions, and
+a standing list of the weak assumptions that remain BY DESIGN.
+
+**Bug 1 - nodal engines still double-counted the wheeled 488 MW.** The
+pvUtilityMW correction fixed the national engine, but both nodal consumers
+(nodal_engine.js and nodal_dispatch.js) net rooftop off demand from
+rooftop_mw_by_region.json - which contains the wheeled fleet - while the same
+plant generates as supply from by_source.private. Both now subtract
+by_source.private.solar_mw per region at load (rooftop file stays verbatim
+Eskom). Limpopo was the dramatic case: 388 of its 561.8 MW "rooftop" was Mooi
+Plaats + Bolobedu. National reconciles exactly: 9,107.4 - 488 = 8,619.4.
+
+**Bug 2 - a fourth and fifth `coalEAFPct || 64`.** Two more sites missed by the
+earlier fix (the build-LP invocation and the CSV export filename). The LP one
+mattered doubly because the EAF slider's minimum is now 0, making EAF=0
+reachable from the UI. All five sites now use `??`. The one remaining `|| 0` is
+a pure display of the value itself, where zero is fine.
+
+**Comment contradictions removed:** the pre-correction pvUtilityMW paragraph
+("4,974 stands with a known gap") still sat in FIXED above the new derivation
+saying the opposite; the rooftop-distortion note still described the double
+count as uncorrectable; and the hybrid window comment now states the half-hour
+approximation (hourly model runs the 05:00-21:30 contract window to 22:00 -
+long rather than short, because the obligation is availability, not a cap).
+
+**Verified clean:** the build worker is a pure HiGHS solver (no stale copy of
+any dispatch or cost logic); every remaining `|| <number>` fallback is on a
+parameter that cannot legitimately be zero or is display-only.
+
+**Weak assumptions that remain, deliberately - the honest list:**
+- Hydro at a flat 0.55 CF and imports at 0.85 all year: no drought risk, no
+  Cahora Bassa outage scenario. Both are fixed infeeds.
+- Demand is the single 2025 hourly series scaled; no structural reshaping
+  (electrification, mining closures) beyond the growth slider.
+- battEff 0.88 applied once on charge; no degradation, no calendar ageing.
+- The 2026-baseline CAPTURE table's regional SHAPE is judgement calibrated to
+  IRP/Meridian commentary; the LEVEL now tracks the live model but the regional
+  spread does not re-derive per scenario.
+- Wheeling TUoS is a distance-scaled approximation of NTCSA's zonal tariff, not
+  the actual zone matrix; losses likewise.
+- BTM_DISPLACED_EF 0.95 is a judgement between the model's grid average (0.78)
+  and its marginal coal (1.04).
+- Hybrid CF 0.85 within its window is asserted, not derived from RMIPPPP
+  performance data (none published).
+
+## Three planner/developer features added (15 Aug 2026)
+
+1. **System adequacy panel** (above the validation block). LOLE (h/yr with
+   unserved load), EUE (GWh/yr), and monthly reserve margin as a 12-bar chart
+   with hover detail. Firm capacity = coal x EAF + nuclear x0.9 + hydro +
+   imports x0.85 + peakers + storage power + hybrid x CF; wind/solar excluded
+   from firm by convention (they reduce residual load), matching Eskom's weekly
+   OR framing. Verified: LOLE/EUE reconcile exactly with the run's unserved
+   hours; defaults show 0 LOLE, firm 39.2 GW, min margin 24% (Jun).
+2. **Unified project pre-feasibility** (was solar-only). Solar / wind / hybrid
+   (60/40, same convention as the data-centre tab). Wind CF comes from the
+   clicked region's profile (same source as the resource tab); wind capex R21/W
+   (the main model's build cost); opex 1.5%/2.5%/2.0% of capex by tech. The
+   report shows the chosen tech's CF and swaps "peak sun hours" for
+   "equivalent full-load hours" on non-solar.
+3. **Site curtailment risk in the Grid connection tab.**
+   applyCurtailmentToMap now publishes per-region shares
+   (window.__nodalCurtByRegion), and the grid tab shows "curtailment risk at
+   this connection: X%" - the SAME numbers on the SAME basis as the schematic
+   labels, so the two can never disagree. Prompts to run the full model when no
+   nodal result exists.
+
+CCS module kept as-is per user decision - it is live government policy
+discussion and the module's role is answering "why doesn't SA just do CCS"
+quantitatively.
+
+## Final platform sweep (15 Aug 2026) - the eight-list problem
+
+A new carrier must be added to EVERY hardcoded carrier list, and the app had
+EIGHT of its own beyond the test suites' copies. All were missing `hybrid`:
+
+1. `DISP_ORDER` - the dispatch chart's own stack order. **The rendered chart was
+   drawing without the hybrid band**: 285 MW of served generation invisible, the
+   stack top floating below the demand line through 05:00-21:00. Slipped every
+   suite because stress_suite validates its own (updated) key list, not the
+   chart's. Worst per-hour gap now 0 MW.
+2. `genKeys` in the avgCost path - hybrid's 1.77 TWh was missing from the
+   gridServed DENOMINATOR while its costs sat in the numerator: **average system
+   cost was overstated ~0.9%** (R550.2 -> R545.5 at defaults).
+3. The same `genKeys` copy in the nodal cost overlay.
+4. KPI `genTWh` plus `reShare`/`nonFossilShare` - hybrid is renewable, so the
+   renewable share was understated ~0.9 pp.
+5. The CSV export carrier list and its names map (now `Hybrid (RMIPPPP)`).
+6. The weather-spread generation total.
+7. The energy-mix donut list.
+8. The accessibility dispatch table's hand-rolled total.
+
+`lcoeOf` also gained `hybrid: 1900` (RMIPPPP awarded tariffs cluster
+R1.5-2.3/kWh; midpoint) so replacement-cost weighting covers all served energy.
+
+Also fixed in the sweep: **the NERSA category rules were two amendments stale** -
+the pre-feasibility tab said a generation licence is required above 10 MWp,
+which is pre-2021 law. The Aug 2021 ERA amendment raised the threshold to
+100 MW and the Dec 2022 amendment (effective Jan 2023) removed it entirely:
+generation of any size registers rather than licenses, and the binding steps
+are environmental authorisation and the grid connection agreement. The tab now
+states the post-2023 regime and says NERSA is no longer the timeline driver.
+
+Checked clean: the BLD and MIP worker sources carry no stale VOLL (the 60000s
+remaining in the file are LP variable bounds and the pumped-storage energy
+constant); scenario presets reference only live sliders and current defaults;
+permalink state, season toggles and CSV downloads verified against the new
+carrier; no `E.x+E.y` hand-rolled sum anywhere lacks hybrid (regex-swept).
+
+## Site Resource Query box - cross-tab audit (15 Aug 2026)
+
+All seven tabs audited for internal consistency, cross-tab consistency, and
+consistency with the main model. Three real defects fixed, one structural fix:
+
+1. **Battery cost disagreed 4.5x between adjacent tabs.** Rooftop priced
+   behind-the-meter batteries at R6,500/kWh installed; pre-feasibility priced the
+   same thing at R1,450/kWh - a utility cell-pack figure mislabelled "installed
+   (BNEF 2026)". A 100 kWh C&I battery really lands ~R500-700k, not R145k, so
+   pre-feas payback figures were materially flattering. Both tabs now read ONE
+   shared constant `BTM_BATT_R_PER_KWH = 6500` (utility-scale EPC in the main
+   model is R2,625/kWh for contrast - BTM does not get that price).
+2. **Wheeling tab carried its own hardcoded 2026 capture table** (Northern Cape
+   solar R490 etc.) while the Capture tab tracked the live model - the two tabs
+   could show different capture prices for the same region on the same screen.
+   Both now call one `captureFor(region)` helper: live-adjusted when a model run
+   exists, 2026 baseline otherwise, and the footer says which. The "vs local"
+   comparison also previously hardcoded "Gauteng ~R600/700"; it now prices
+   building at the consumption region through the same helper.
+3. **Data-centre tab sized on national profiles but labelled with site CFs.**
+   The hourly-matching bisect ran against the national solar shape (22.5% CF)
+   while the header quoted the clicked site's CF (e.g. 26.5% in the Northern
+   Cape) - a ~10%+ sizing mislabel. It now simulates on the REGIONAL profiles
+   from profiles_regional.json (solar shape rescaled to the site's own CF; wind
+   used directly since its mean IS the displayed CF) and the header says which
+   profiles sized the build. Also removed a dead `cfHours = cf + 0.17` relic
+   from the pre-hourly-model era.
+4. **One emission factor.** Pre-feas and rooftop each hardcoded 0.95 kg/kWh; now
+   one `BTM_DISPLACED_EF = 0.95` with the honest justification: the model's grid
+   AVERAGE is 0.78 tCO2/MWh but its MARGINAL generator is coal (1.04) for 8,700+
+   h/yr, and displaced generation is marginal - 0.95 is deliberately between.
+   `PPA_MARGIN = 0.12` similarly unified across capture and wheeling.
+
+Checked and left alone: grid-connection tab (reads the same headroom_summary and
+substation kv as the nodal engine - already consistent); capture-fraction row now
+shows the live fraction when live (it previously showed the static one next to a
+live price, so the row could not reproduce the price beside it); wheeling TUoS
+(R100-230/MWh distance-scaled) and losses (2%+0.003%/km, cap 6%) are within the
+NTCSA framework's published brackets; the flat-24/7-load assumption in wheeling's
+annual-energy line is now stated rather than silent.
+
 ## Deep stress test (15 Aug 2026) - two bugs found and fixed
 
 `stress_deep.js` (repo root, `node stress_deep.js` against a checkout in
