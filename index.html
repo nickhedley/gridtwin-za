@@ -3266,8 +3266,16 @@ const FIXED = {
   // non-fossil high. One real fix, and one mistake worth recording:
   //
   // nuclearCF was a hardcoded 0.90 - a healthy-PWR design figure. Koeberg has
-  // been through steam generator replacement and life-extension outages, and
-  // Ember's 11.5 TWh implies ~71%. 0.75 allows some recovery from that.
+  // been through steam generator replacement and life-extension outages.
+  //
+  // CORRECTED AGAIN 16 Aug 2026, and worth recording why. It was first set to
+  // 0.75 from Ember's 11.5 TWh over 1.86 GW = 70.6%. But that is a GROSS figure
+  // and this model produces SENT-OUT: at ~5% house load the observed sent-out CF
+  // is 67.1%, so 0.75 was 12% above the thing it was meant to match. Every other
+  // carrier here is already sent-out - coal by its coefficients, wind and solar
+  // by their metered profiles, imports at the border - so nuclear was the one
+  // inconsistent carrier. 0.70 keeps the intended modest recovery allowance
+  // while sitting on the right basis.
   //
   // NO windAvail / pvAvail DERATE. Availability and loss derates were briefly
   // added here and then REMOVED as a double count. The national profiles are
@@ -3284,7 +3292,7 @@ const FIXED = {
   // that nameplate understates the true 2025 average operating fleet - a data
   // issue in profiles.json, listed in HANDOVER, not something to paper over with
   // a fabricated loss factor in the engine.
-  nuclearCF:0.75,
+  nuclearCF:0.70,
   // ── DEMAND RESPONSE ──────────────────────────────────────────────────────
   // Two mechanisms, because they are genuinely different products:
   //
@@ -6109,10 +6117,14 @@ const ESKOM_ACTUALS = {
           + 'Treat a gap here as a question about rooftop, not about utility PV.' },
     { k: 'Nuclear generation',    model: () => (lastRes && lastRes.E) ? lastRes.E.nuclear/1e6 : 0,
       actual: 11.5, unit: 'TWh/yr',
-      note: 'Ember, 12 months to May 2026. Koeberg\u2019s capacity factor was corrected from a '
-          + 'hardcoded 0.90 - a healthy-PWR design figure - to 0.75 on 16 Aug 2026, after this '
-          + 'comparison showed the model overstating nuclear by 28%. Ember implies about 71%; 0.75 '
-          + 'allows some recovery from the steam generator replacement outages.' },
+      note: 'Ember, 12 months to May 2026 - GROSS, so compare against 10.95 TWh sent-out. '
+          + 'Koeberg\u2019s capacity factor was corrected twice on 16 Aug 2026: from a hardcoded '
+          + '0.90 (a healthy-PWR design figure) to 0.75, and then to 0.70 when a basis audit found '
+          + 'nuclear was the ONE carrier calibrated on Ember\u2019s gross figure while the model '
+          + 'produces sent-out. Observed sent-out CF is 67.1%; 0.70 keeps a modest recovery '
+          + 'allowance after the steam generator replacement outages. Every other carrier was '
+          + 'already consistent - coal through its per-sent-out coefficients, wind and solar '
+          + 'through their metered profiles, imports at the border.' },
     { k: 'Hybrid (RMIPPPP)',      model: () => FIXED.hybridMW/1000,
       actual: 0.335, unit: 'GW',
       note: 'Eskom Week 32 "Hybrid" - firm dispatchable solar+wind+battery portfolios, '
