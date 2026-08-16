@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>GridTwin ZA — 3D Power Infrastructure</title>
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <title>GridTwin ZA — 3D Power Infrastructure</title>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@300;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
@@ -46,12 +49,17 @@
     position: absolute; bottom: 32px; left: 24px; z-index: 10;
     background: rgba(13,17,23,0.85); border: 1px solid rgba(232,228,216,0.12);
     padding: 14px 16px; backdrop-filter: blur(8px);
-    min-width: 190px;
+    min-width: 190px; max-width: 250px;
   }
   #legend h3 { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: rgba(232,228,216,0.45); margin-bottom: 10px }
   .leg-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 11px; font-weight: 300 }
   .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0 }
   .leg-line { width: 24px; height: 2px; flex-shrink: 0 }
+  /* Prose notes must NOT be .leg-row: that is display:flex, and a text-only
+     flex item sizes to max-content, which stretched the whole legend across
+     half the map. Plain block, wraps normally. */
+  .leg-note { font-size: 9.5px; color: rgba(232,228,216,0.45);
+              line-height: 1.5; margin-bottom: 7px; }
 
   /* Tooltip */
   #tooltip {
@@ -250,7 +258,7 @@
         aria-controls="stats">Stats</button>
 <div id="legend">
   <h3 style="margin-bottom:4px">Existing network</h3>
-  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.45);margin-bottom:5px">Solid fill &middot; colour by voltage</div>
+  <div class="leg-note">Solid fill &middot; colour by voltage</div>
   <div class="leg-row"><div class="leg-dot" style="background:#C8A028"></div>765kV substation</div>
   <div class="leg-row"><div class="leg-dot" style="background:#C4785A"></div>400kV substation</div>
   <div class="leg-row"><div class="leg-dot" style="background:#517180"></div>275kV substation</div>
@@ -261,20 +269,18 @@
   <div class="leg-row"><div class="leg-line" style="background:rgba(120,140,120,0.7)"></div>220kV line</div>
 
   <h3 style="margin-top:10px;margin-bottom:4px">SAPP interconnectors</h3>
-  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.45);margin-bottom:5px">Lines leaving South Africa</div>
+  <div class="leg-note">Lines leaving South Africa</div>
   <div class="leg-row"><div class="leg-line" style="background:rgba(90,215,225,0.95);height:2.5px"></div>Crosses the SA border</div>
   <div class="leg-row"><div class="leg-line" style="background:rgba(90,215,225,0.45);height:1.5px"></div>Onward regional leg</div>
-  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.45);margin-bottom:5px;line-height:1.5">
-    10 circuits cross into Namibia, Mozambique, Botswana and Eswatini; 2 more carry on
-    to Zimbabwe and Maputo without touching South Africa. Geometry stops at the border,
-    so each line ends at its crossing point. Hover for detail.</div>
+  <div class="leg-note">10 circuits to Namibia, Mozambique, Botswana and Eswatini,
+    plus 2 onward legs. Lines end at the border. Hover for detail.</div>
 
   <h3 style="margin-top:10px;margin-bottom:4px">Planned build (TDP)</h3>
-  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.45);margin-bottom:5px">Always red &middot; never filled</div>
+  <div class="leg-note">Always red &middot; never filled</div>
   <div class="leg-row"><div class="leg-line" style="background:rgba(255,70,60,0.85);height:2px"></div>Planned line</div>
   <div class="leg-row"><div class="leg-dot" style="background:transparent;border:1.5px dashed rgba(255,70,60,0.9);width:9px;height:9px"></div>Upgrade at existing site</div>
   <div class="leg-row"><div class="leg-dot" style="background:transparent;border:2.5px solid rgba(255,70,60,0.95);width:13px;height:13px"></div>New substation &mdash; does not exist yet</div>
-  <div class="leg-row" style="font-size:9.5px;color:rgba(232,228,216,0.45);margin-top:4px">Brighter = more committed &middot; click any dot to name it</div>
+  <div class="leg-note" style="margin-top:4px">Brighter = more committed &middot; click any dot to name it</div>
 </div>
 
 <!-- Controls -->
