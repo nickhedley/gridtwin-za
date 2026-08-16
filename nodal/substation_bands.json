@@ -1,0 +1,1313 @@
+{
+ "meta": {
+  "title": "INDICATIVE connection-capability bands - GridTwin ZA estimate, NOT an Eskom figure",
+  "estimate_warning": "These bands are OUR OWN ESTIMATE, produced by GridTwin ZA. Eskom and NTCSA publish connection headroom by REGION only; no per-substation figure is published. We disaggregate the published regional number using network topology, so the regional totals remain exactly Eskom's while the split within a region is ours.",
+  "method": "connected circuit capacity by voltage class, minus the largest single circuit (N-1), minus existing generation within 120 km; regional GCCA headroom then shared out in that proportion.",
+  "limitations": [
+   "Not a load flow. Real headroom depends on contingency analysis, voltage stability and short-circuit levels.",
+   "Circuit ratings inferred from voltage class; real ratings vary roughly twofold with conductor and conditions.",
+   "About 69% of line endpoints match the substation register, so some nodes appear less connected than they are.",
+   "Existing generation is matched by nearest-substation within 120 km and is incomplete.",
+   "Bands are a screening ranking. They are not a connection allowance and carry no commitment from any party."
+  ],
+  "use": "Rank substations worth an enquiry first. Always confirm with a GCCA study and an NTCSA connection application.",
+  "regional_source": "GCCA 2025 + Oct 2025 update (Eskom/NTCSA published, by region)"
+ },
+ "bands": {
+  "Acacia": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Acornhoek": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  "Aggeneis": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 5,
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  "Agulhas": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Alpha": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 6,
+   "kv": 765,
+   "area": "Mpumalanga"
+  },
+  "Apollo": {
+   "solar": "strong",
+   "wind": "strong",
+   "circuits": 12,
+   "kv": 533,
+   "area": "Gauteng"
+  },
+  "Aquila": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Hydra Central"
+  },
+  "Ararat": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "North West"
+  },
+  "Ariadne": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Aries": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  "Arnot": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 10,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Artemis": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Free State"
+  },
+  "Athene": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Aurora": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Avon": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 6,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Bacchus": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 5,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Benburg": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Bernina": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Bighorn": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 5,
+   "kv": 400,
+   "area": "North West"
+  },
+  "Bloedrivier": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Bloukrans": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Borutho": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 1,
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  "Boundary": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  "Brenner": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Camden": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 9,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Carmel": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "North West"
+  },
+  "Chivelston": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 6,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Craighall": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Croydon": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Danskraal": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Dedisa": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  "Delphi": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  "Dinaledi": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  "Diphororo": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Droerivier": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 7,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Eiger": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 5,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Emkhiweni": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Eros": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 1,
+   "kv": 132,
+   "area": "Eastern Cape"
+  },
+  "Esselen": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 6,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Etna": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Everest": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 275,
+   "area": "Free State"
+  },
+  "Ferrum": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  "Fordsburg": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Foskor": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  "Galenia": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Gamma": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 2,
+   "kv": 765,
+   "area": "Hydra Central"
+  },
+  "Garona": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 1,
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  "Georgedale": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Glockner": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 12,
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  "Grassridge": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  "Groeipunt": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  "Gromis": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 2,
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  "Grootvlei": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 7,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Gumeni": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Harvard": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 275,
+   "area": "Free State"
+  },
+  "Hector": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Helios": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  "Hendrina": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Hermes": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 400,
+   "area": "North West"
+  },
+  "Hydra": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 14,
+   "kv": 400,
+   "area": "Hydra Central"
+  },
+  "Illovo": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Impala": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Incandu": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Ingagane": {
+   "solar": "moderate",
+   "wind": "limited",
+   "circuits": 6,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Invubu": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 6,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Juno": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Jupiter": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Kappa": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Kestrel": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Hydra Central"
+  },
+  "Khanyazwe": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  "Klaarwater": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 1,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Koeberg": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 5,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Komati": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  "Komatipoort": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  "Komsberg": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Kookfontein": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Koring": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Koruson": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Hydra Central"
+  },
+  "Kronos": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  "Kruispunt": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  "Kwagga": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Leander": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Free State"
+  },
+  "Lepini": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Leseding": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 3,
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  "Lewensaar": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  "Lomond": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "North West"
+  },
+  "Lulamisa": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  "Majuba": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 6,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Makalu": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Manogeng": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Marang": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "North West"
+  },
+  "Marathon": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 5,
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  "Matimba": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 7,
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  "Medupi": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 3,
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  "Merapi": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 1,
+   "kv": 275,
+   "area": "Free State"
+  },
+  "Mercury": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 5,
+   "kv": 400,
+   "area": "North West"
+  },
+  "Merensky": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  "Mersey": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 8,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Midas": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 5,
+   "kv": 400,
+   "area": "North West"
+  },
+  "Minerva": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 10,
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  "Mookodi": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "North West"
+  },
+  "Muldersvlei": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 6,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Nama": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 2,
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  "Neptune": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  "Nevis": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Ngwedi": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "North West"
+  },
+  "Nieuwehoop": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  "Njala": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Normandie": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Olien": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  "Olympus": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Oranjemond": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 1,
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  "Paulputs": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 1,
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  "Pegasus": {
+   "solar": "strong",
+   "wind": "strong",
+   "circuits": 8,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Pelly": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  "Pembroke": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 1,
+   "kv": 220,
+   "area": "Eastern Cape"
+  },
+  "Perseus": {
+   "solar": "strong",
+   "wind": "strong",
+   "circuits": 14,
+   "kv": 400,
+   "area": "Free State"
+  },
+  "Philippi": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Pieterboth": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Pinotage": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Pluto": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 11,
+   "kv": 400,
+   "area": "North West"
+  },
+  "Poseidon": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 8,
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  "Prairie": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  "Princess": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Prospect": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Proteus": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Rabbit": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Rigi": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Rockdale": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  "Roodekuil": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 3,
+   "kv": 220,
+   "area": "Hydra Central"
+  },
+  "Ruigtevallei": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 2,
+   "kv": 220,
+   "area": "Hydra Central"
+  },
+  "Scafell": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Sebenza": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  "Senakangwedi": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  "Silimela": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Simplon": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  "Snowdon": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 6,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Sol": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Sorata": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 132,
+   "area": "Kwazulu Natal"
+  },
+  "Spencer": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  "Spitskop": {
+   "solar": "strong",
+   "wind": "strong",
+   "circuits": 8,
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  "Sterrekus": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 765,
+   "area": "Western Cape"
+  },
+  "Stikland": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Tabor": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  "Taunus": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Theseus": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Free State"
+  },
+  "Thuso": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Trident": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 275,
+   "area": "North West"
+  },
+  "Tugela": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  "Umfolozi": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 5,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Upington": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  "Venus": {
+   "solar": "strong",
+   "wind": "strong",
+   "circuits": 10,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Vulcan": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 5,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Vuyani": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  "Warmbad": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  "Watershed": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "North West"
+  },
+  "Westgate": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Wildebees": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  "Witkop": {
+   "solar": "strong",
+   "wind": "strong",
+   "circuits": 8,
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  "Gariep": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 132,
+   "area": "Free State"
+  },
+  "Van der Kloof": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 2,
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  "Buffalo": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 132,
+   "area": "Eastern Cape"
+  },
+  "Port Rex": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 132,
+   "area": "Eastern Cape"
+  },
+  "Beta": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 7,
+   "kv": 765,
+   "area": "Free State"
+  },
+  "Highveld": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 275,
+   "area": "Free State"
+  },
+  "Lethabo": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 8,
+   "kv": 275,
+   "area": "Free State"
+  },
+  "Verdun": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  "Hera": {
+   "solar": "moderate",
+   "wind": "moderate",
+   "circuits": 6,
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  "Ingula": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 3,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Hillside": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 132,
+   "area": "Kwazulu Natal"
+  },
+  "Drakensberg": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  "Dwaalboom": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 132,
+   "area": "Limpopo"
+  },
+  "Dwarsberg": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "North West"
+  },
+  "Atlas": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  "Duvha": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 7,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Zeus": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 5,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Kendal": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Matla": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 10,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Kriel": {
+   "solar": "limited",
+   "wind": "limited",
+   "circuits": 5,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Tutuka": {
+   "solar": "moderate",
+   "wind": "limited",
+   "circuits": 8,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Kusile": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  "Anderson": {
+   "solar": "none",
+   "wind": "none",
+   "circuits": 0,
+   "kv": 275,
+   "area": "North West"
+  },
+  "Palmiet": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Gourikwa": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 2,
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  "Ankerlig": {
+   "solar": "none",
+   "wind": "limited",
+   "circuits": 4,
+   "kv": 400,
+   "area": "Western Cape"
+  }
+ }
+}
