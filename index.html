@@ -672,7 +672,17 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 <div style="margin-top:18px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
-        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: EAF &asymp; 68&nbsp;% (calendar year to date, Week&nbsp;32), OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline.</p>
+        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: EAF &asymp; 68&nbsp;% (calendar year to date, Week&nbsp;32), OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline. Output was calibrated against
+        <strong>Ember's metered generation</strong> (12 months to May 2026) on 16 Aug 2026, which
+        found the model overstating non-fossil generation by about 8&nbsp;percentage points. Koeberg's
+        capacity factor was corrected from a hardcoded 0.90 to 0.75, and turbine/panel availability
+        derates were added to wind (0.95) and utility PV (0.98) &mdash; the model previously sent the
+        raw resource profile straight to generation. The remaining gap is deliberate rather than
+        tuned away: Ember reports metered output, already net of the network curtailment Eskom applies
+        to Cape wind, and it does not count privately wheeled plant or fully capture behind-the-meter
+        rooftop. Calibrating the derates to close that gap would bake curtailment into a technical
+        assumption and then double-count it whenever a scenario curtails. The validation panel shows
+        the four carriers against Ember so the difference stays visible.</p>
         <p style="margin-bottom:8px"><strong>Price formation:</strong> coal sets the marginal price in
         almost every hour of the default scenario, so the shadow price is nearly flat
         (roughly R715&ndash;760) and storage has little to arbitrage. That is a real property of a
@@ -3156,6 +3166,25 @@ const FIXED = {
   // constraint is the marginal abatement cost: what the last tonne costs to
   // avoid, which is the number a carbon price ought to be set against.
   carbonCapEnabled:0, carbonCapMt:140,
+  // ── CALIBRATION AGAINST EMBER, 16 Aug 2026 ──────────────────────────────
+  // Ember's metered South African generation (12 months to May 2026) showed the
+  // model running non-fossil ~7.7pp high. Three causes, fixed here:
+  //
+  // 1. nuclearCF was a hardcoded 0.90 - a healthy-PWR design figure. Koeberg has
+  //    been through steam generator replacement and life-extension outages and
+  //    Ember's 11.5 TWh implies ~71%. 0.75 allows some recovery from that.
+  // 2. windAvail / pvAvail: the model previously sent the raw resource profile
+  //    straight to generation with NO availability or loss derate. Real farms
+  //    lose output to turbine availability, wakes, soiling and electrical
+  //    losses. These are TECHNICAL derates only.
+  // 3. Curtailment is deliberately NOT in these numbers. Ember reports metered
+  //    output, which is already net of the network curtailment Eskom applies to
+  //    Cape wind - so calibrating the derates to match Ember exactly would bake
+  //    curtailment into the technical assumption and then double-count it as
+  //    soon as a scenario curtails. The residual gap to Ember is that real
+  //    curtailment, which the single-node engine cannot see (it has no network);
+  //    the nodal engine computes it explicitly.
+  nuclearCF:0.75, windAvail:0.95, pvAvail:0.98,
   // Clean coal (CCS). Defaults are mid-range for a post-combustion amine
   // retrofit; every one is exposed in the policy panel.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
@@ -3802,8 +3831,8 @@ function simulate(u, prof, outPath){
     const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
     const load=rawDemand-rooftopGen;
     E.rooftop+=rooftopGen; loadS[h]=load;
-    let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
-    const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
+    let windGen=windCap*wind[h]*(p.windAvail??0.95), pvGen=pvCap*solar[h]*(p.pvAvail??0.98), cspGen=p.cspMW*csp[h];
+    const nuc=(p.nuclearMW+p.newNuclearMW)*(p.nuclearCF??0.75), hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     // RMIPPPP hybrid: AVAILABLE inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -5849,6 +5878,31 @@ const ESKOM_ACTUALS = {
           + 'books under Rooftop, and its REIPPPP figure is the 31 Mar 2026 reporting date '
           + '(Eskom\u2019s Aug line adds Graspan +75 MW and ~42 MW of later CODs). '
           + 'RESOLVED 15 Aug 2026: was 4.97 GW with an unexplained 2.2 GW - see HANDOVER.' },
+    { k: 'Coal generation',       model: () => (lastRes && lastRes.E) ? lastRes.E.coal/1e6 : 0,
+      actual: 177.7, unit: 'TWh/yr',
+      note: 'Ember metered generation, 12 months to May 2026. The model runs lower partly because it '
+          + 'carries more renewable output (see the rows below) and partly because its demand series '
+          + 'is the 2025 Eskom profile rather than the outturn year.' },
+    { k: 'Wind generation',       model: () => (lastRes && lastRes.E) ? lastRes.E.wind/1e6 : 0,
+      actual: 11.6, unit: 'TWh/yr',
+      note: 'Ember, 12 months to May 2026. The model reads high for two reasons that are NOT errors: '
+          + 'it counts 470 MW of privately wheeled wind that Ember does not put in its Wind line '
+          + '(~1.4 TWh), and Ember reports METERED output, already net of the network curtailment '
+          + 'Eskom applies to Cape wind, which a single-node model cannot see. Turbine availability '
+          + 'and losses are modelled (windAvail 0.95); curtailment is left to the nodal engine.' },
+    { k: 'Solar generation',      model: () => (lastRes && lastRes.E)
+        ? (lastRes.E.pv + lastRes.E.rooftop + lastRes.E.csp)/1e6 : 0,
+      actual: 19.4, unit: 'TWh/yr',
+      note: 'Ember, 12 months to May 2026, all solar. The model includes 8.6 GW of behind-the-meter '
+          + 'rooftop at ~21% capacity factor; Ember is widely understood to under-capture '
+          + 'behind-the-meter generation, so neither figure is a clean benchmark for the other. '
+          + 'Treat a gap here as a question about rooftop, not about utility PV.' },
+    { k: 'Nuclear generation',    model: () => (lastRes && lastRes.E) ? lastRes.E.nuclear/1e6 : 0,
+      actual: 11.5, unit: 'TWh/yr',
+      note: 'Ember, 12 months to May 2026. Koeberg\u2019s capacity factor was corrected from a '
+          + 'hardcoded 0.90 - a healthy-PWR design figure - to 0.75 on 16 Aug 2026, after this '
+          + 'comparison showed the model overstating nuclear by 28%. Ember implies about 71%; 0.75 '
+          + 'allows some recovery from the steam generator replacement outages.' },
     { k: 'Hybrid (RMIPPPP)',      model: () => FIXED.hybridMW/1000,
       actual: 0.335, unit: 'GW',
       note: 'Eskom Week 32 "Hybrid" - firm dispatchable solar+wind+battery portfolios, '
