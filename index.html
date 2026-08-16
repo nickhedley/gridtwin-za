@@ -678,9 +678,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         (roughly R715&ndash;760) and storage has little to arbitrage. That is a real property of a
         coal-dominated single-node system, not a bug &mdash; but it means battery revenue, capture-price
         spreads and the value of flexibility are all understated at default settings and only become
-        meaningful once enough wind and solar are added to push coal off the margin. The model also has
-        no reserve requirement, unit-level outages or intra-regional network limits, all of which raise
-        peaker running in the real system.</p>
+        meaningful once enough wind and solar are added to push coal off the margin. The model now carries an explicit
+        <strong>operating reserve</strong> (N-1 contingency plus load- and VRE-following terms, all on
+        sliders). At today&rsquo;s fleet it rarely binds &mdash; South Africa has roughly 7&nbsp;GW of
+        fast-start peakers and storage against a reserve need near 1.3&nbsp;GW &mdash; so it is not what
+        keeps prices flat; coal simply sets the price in every hour. It bites once coal is tight: at
+        EAF&nbsp;52&nbsp;% with 12&nbsp;% demand growth, switching reserve on moves diesel from 1,843 to
+        2,031 running hours. Still missing: <strong>unit-level forced outages</strong> (EAF is applied as
+        a smooth derate rather than lumpy trips, which is why the model sheds less than Eskom does) and
+        intra-regional network limits below the ten-region corridor level.</p>
         <p style="margin-bottom:8px">The model&rsquo;s own winter peak runs higher than Eskom&rsquo;s reported evening peak (~27&nbsp;GW) because it is driven by the 2025 demand series and includes storage charging &mdash; the System adequacy and validation panels show the gap rather than hiding it.</p>
 
         <p style="margin-bottom:8px"><strong>How dispatch works:</strong> merit order — rooftop PV nets off demand &rarr; wind / utility PV / CSP &rarr; nuclear, hydro, Cahora Bassa imports &rarr; coal &rarr; pumped storage &amp; batteries &rarr; gas CCGT &rarr; diesel OCGT &rarr; unserved energy. One stage of load shedding &asymp; 1&nbsp;000&nbsp;MW of unserved demand.</p>
@@ -3086,6 +3092,18 @@ const FIXED = {
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
   voll:87000,
+  // OPERATING RESERVE. Eskom carries reserve in several products (instantaneous,
+  // regulating, ten-minute, supplemental). The model represents the binding
+  // physical requirement rather than the product split:
+  //   contingency  = the largest single unit online (N-1). SA's biggest units are
+  //                  the 794 MW Medupi/Kusile sets, so this dominates.
+  //   regulating   = a share of load, covering demand forecast error and normal
+  //                  variability.
+  //   VRE-following = a share of wind+solar output, since forecast error scales
+  //                  with how much variable generation is running.
+  // Reserve is capacity that is COMMITTED BUT NOT DISPATCHED - that is the whole
+  // point, and the reason adding it separates peak from off-peak prices.
+  reserveEnabled:1, reserveContingencyMW:794, reserveRegulatingPct:2.0, reserveVrePct:5.0,
   // Clean coal (CCS). Defaults are mid-range for a post-combustion amine
   // retrofit; every one is exposed in the policy panel.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
@@ -3272,7 +3290,18 @@ const UC_FLEET = [{"name":"Arnot*","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.6
 //          ucMinStable[hour] = MW  (fleet minimum stable load per hour)
 //          ucAvail[hour] = MW      (committed capacity per hour)
 //          ucStartCost[hour] = R   (start-up cost charged this hour)
-function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
+function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
+  // resOpts carries the reserve settings through from simulate(); absent means
+  // reserve off, which reproduces the pre-reserve behaviour exactly.
+  const RES_ON = !!(resOpts && resOpts.on);
+  const RES_CONT = (resOpts && resOpts.contingencyMW) || 0;
+  const RES_REG  = (resOpts && resOpts.regPct)  || 0;
+  const RES_VRE  = (resOpts && resOpts.vrePct)  || 0;
+  const RES_VREMW = (resOpts && resOpts.vreMW) || null;   // hourly wind+solar
+  function reserveReqAt(h, load){
+    const vre = RES_VREMW ? (RES_VREMW[Math.min(RES_VREMW.length-1, h)] || 0) : 0;
+    return RES_CONT + load * RES_REG/100 + vre * RES_VRE/100;
+  }
   const DAYS = 365;
   const HOURS = 8760;
   // Scale fleet to currently available capacity (EAF applied)
@@ -3386,10 +3415,12 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction) {
                           .sort((a,b) => a.mc - b.mc);
 
     // Greedy: commit cheapest units until we cover this block's peak + reserve.
-    // The 1.15 margin was checked against the MIP and left unchanged - it lands
-    // within 0.5% of optimal for today's system, and any value >= 1.10 gives
-    // identical results anyway once peak demand exceeds available coal.
-    const targetCapacity = peakLoad * 1.15;
+    // The reserve requirement is now EXPLICIT (contingency + regulating + a VRE
+    // term) rather than the old flat peakLoad x 1.15 fudge. With reserve off,
+    // the 1.15 behaviour is preserved exactly so old scenarios still reproduce.
+    const targetCapacity = RES_ON
+      ? peakLoad + reserveReqAt(h0, peakLoad)
+      : peakLoad * 1.15;
     let decidedOn = new Array(UC_UNITS.length).fill(false);
     let totalCommitted = 0;
 
@@ -3618,13 +3649,34 @@ function simulate(u, prof, outPath){
   // form silently ran EAF=0 scenarios at 64% availability - unserved energy
   // read ZERO with the entire coal fleet dead. Caught by stress_deep check G8.
   const eafFraction = (p.coalEAFPct ?? 64) / 100;
-  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, Math.max(0, coalInstalled), eafFraction);
+  // Hourly wind+solar for the VRE-following reserve term. Built before UC so the
+  // commitment can see it - reserve need scales with how much variable output is
+  // actually running, not with installed capacity.
+  const _vreMW = new Float64Array(HOURS);
+  for (let h = 0; h < HOURS; h++)
+    _vreMW[h] = (p.windMW + p.newWindMW) * wind[h] + (p.pvUtilityMW + p.newPvMW) * solar[h];
+  const RESERVE = {
+    on: !!(p.reserveEnabled ?? 1),
+    contingencyMW: p.reserveContingencyMW ?? 794,
+    regPct: p.reserveRegulatingPct ?? 2.0,
+    vrePct: p.reserveVrePct ?? 5.0,
+    vreMW: _vreMW,
+  };
+  const reserveMWAt = h => RESERVE.on
+    ? RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100 + _vreMW[h] * RESERVE.vrePct/100
+    : 0;
+  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, Math.max(0, coalInstalled), eafFraction, RESERVE);
 
   // Forward-looking signal for off-peak coal-charging: how much real coal-insufficient need
   // (net load exceeding what coal alone can cover) is coming over the NEXT 24 hours. Used so
   // off-peak charging only spends real coal when there's a real reason to expect storage will
   // be needed soon, rather than blindly chasing a fixed SoC target every night regardless of
   // proportionality - see the off-peak charging block below for how this is used.
+  // Reserve actually carried each hour, kept for the adequacy panel and CSV.
+  const reserveMWArr=new Float64Array(HOURS);
+  // Minimum stable level floor for hour h, used when clamping the reserve
+  // withholding so coal is never pushed below what committed units can do.
+  const ucMSLraw = h => (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? ucMinStable[h] : 0;
   const anticipatedShortfall=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
     let sum=0;
@@ -3664,8 +3716,21 @@ function simulate(u, prof, outPath){
     // ucAvail already accounts for EAF (via availFactor in buildUCSchedule)
     // outPath applies an additional random outage variation around the UC commitment
     const ucCommitted = (ucAvail[h] > 0 && !isNaN(ucAvail[h])) ? ucAvail[h] : coalAvail;
-    const cAvail = outPath ? Math.min(ucCommitted, coalInstRem*outPath[Math.floor(h/24)]) : ucCommitted;
-    // UC-derived minimum stable load replaces the fleet-average minStableMW
+    const cAvailRaw = outPath ? Math.min(ucCommitted, coalInstRem*outPath[Math.floor(h/24)]) : ucCommitted;
+    // OPERATING RESERVE: capacity that is committed but must NOT be dispatched,
+    // so it can respond to a unit trip or a forecast error. Coal carries the
+    // spinning share; the fast-start fleet (OCGT, storage) can cover the rest
+    // without being synchronised, so only the balance is withheld from coal.
+    // Withholding it is what forces peakers on in tight hours and lifts the
+    // price above coal SRMC - without this the system prices flat all year.
+    const reserveNeed = reserveMWAt(h);
+    const fastStart   = p.ocgtDieselMW + (p.ccgtMW||0) + battPower + p.psPowerMW;
+    const reserveOnCoal = Math.max(0, reserveNeed - fastStart);
+    reserveMWArr[h] = reserveNeed;
+    const cAvail = Math.max(ucMSLraw(h), cAvailRaw - reserveOnCoal);
+    // UC-derived minimum stable load replaces the fleet-average minStableMW.
+    // Clamped to cAvail AFTER the reserve withholding, so a committed fleet is
+    // never asked to sit below its own minimum stable level.
     const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
     const rawDemand=demand[h]*growth;
     const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
@@ -4111,7 +4176,7 @@ function simulate(u, prof, outPath){
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
   return {E,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
-          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW,
+          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
@@ -6760,6 +6825,14 @@ function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
+  {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
+   note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output. At today\u2019s fleet this rarely binds \u2014 South Africa has ~7 GW of fast-start peakers and storage against a reserve need near 1.3 GW \u2014 but it bites hard once coal is tight or peakers retire.'},
+  {id:'reserveContingencyMW',label:'N-1 contingency reserve',min:0,max:1600,step:20,def:FIXED.reserveContingencyMW,fmt:v=>v+' MW',
+   note:'Cover for the largest single unit tripping. 794 MW is a Medupi/Kusile set, the biggest on the system.'},
+  {id:'reserveRegulatingPct',label:'Regulating reserve',min:0,max:8,step:0.5,def:FIXED.reserveRegulatingPct,fmt:v=>v+' % of load',
+   note:'Cover for demand forecast error and normal minute-to-minute variability.'},
+  {id:'reserveVrePct',label:'Wind & solar following reserve',min:0,max:25,step:1,def:FIXED.reserveVrePct,fmt:v=>v+' % of VRE output',
+   note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2014 which is why reserve costs rise with a high-renewables fleet.'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:68,fmt:v=>v+' %',note:'FY2026 to date = 68% · 2023 crisis = 50–55% · target 70%'},
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'Multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
@@ -7490,6 +7563,12 @@ function renderAdequacy(r){
     </div>
     <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--ink2)"><span>Jan</span><span>Dec</span></div>
     <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.5">
+      ${(r.reserveMW && r.reserveMW.length) ? 'Operating reserve carried: <strong>'
+        + Math.round(Array.from(r.reserveMW).reduce((a,b)=>a+b,0)/r.reserveMW.length).toLocaleString()
+        + '&nbsp;MW</strong> average, '
+        + Math.round(Math.max.apply(null, Array.from(r.reserveMW))).toLocaleString()
+        + '&nbsp;MW peak &mdash; N-1 plus load and VRE following terms. Fast-start plant covers most of it '
+        + 'at today&rsquo;s fleet, so it seldom forces extra coal on.<br>' : ''}
       Firm capacity ${(firm/1000).toFixed(1)} GW: coal&times;EAF + nuclear + hydro + imports + peakers +
       storage power + hybrid. Wind and solar are not counted as firm &mdash; they reduce the load
       the firm fleet must meet, which is how Eskom&rsquo;s weekly report frames operating reserve.
