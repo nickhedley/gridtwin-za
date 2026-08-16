@@ -698,6 +698,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         Northern Cape and Hydra Central, which have had zero solar headroom since GCCA&nbsp;2025.
         Beyond about 19.9&nbsp;GW of new solar the model reports that the scenario has outrun
         national connection headroom instead of quietly absorbing it.</p>
+        <p style="margin-bottom:8px"><strong>Carbon cap:</strong> the build optimiser can be run
+        <em>subject to</em> an emissions ceiling rather than only reporting against the NDC, which is
+        how the IRP poses the question. The answer is informative: the least-cost plan already lands
+        under about 100&nbsp;Mt, so meeting the sector&rsquo;s 140&nbsp;Mt share costs nothing extra.
+        Tighten to 80&nbsp;Mt and the plan costs roughly R25bn more, with a marginal abatement cost
+        near R1,500/tCO&#8322; &mdash; far above today&rsquo;s R46/t effective carbon price, which is
+        the point: a price at that level will not on its own deliver a cap that tight.</p>
         <p style="margin-bottom:8px">The model&rsquo;s own winter peak runs higher than Eskom&rsquo;s reported evening peak (~27&nbsp;GW) because it is driven by the 2025 demand series and includes storage charging &mdash; the System adequacy and validation panels show the gap rather than hiding it.</p>
 
         <p style="margin-bottom:8px"><strong>How dispatch works:</strong> merit order — rooftop PV nets off demand &rarr; wind / utility PV / CSP &rarr; nuclear, hydro, Cahora Bassa imports &rarr; coal &rarr; pumped storage &amp; batteries &rarr; gas CCGT &rarr; diesel OCGT &rarr; unserved energy. One stage of load shedding &asymp; 1&nbsp;000&nbsp;MW of unserved demand.</p>
@@ -3142,6 +3149,13 @@ const FIXED = {
   // ~32 point gap at EAF 68, hence 47%. mttrHours is the mean repair time for a
   // forced coal outage. Seed is fixed so the headline scenario is reproducible.
   outageUnitLevel:1, outageForcedSharePct:47, outageMttrH:72, outageSeed:20260816,
+  // CARBON CAP in the build optimiser. Off by default so the headline answer
+  // stays "least cost, carbon priced". Switched on, the LP must MEET the cap
+  // rather than merely report against it - which is how the IRP and every
+  // capacity-expansion study actually pose the question. The dual on that
+  // constraint is the marginal abatement cost: what the last tonne costs to
+  // avoid, which is the number a carbon price ought to be set against.
+  carbonCapEnabled:0, carbonCapMt:140,
   // Clean coal (CCS). Defaults are mid-range for a post-combustion amine
   // retrofit; every one is exposed in the policy panel.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
@@ -4564,6 +4578,7 @@ function bldBuildLP(opts){
   // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
   // planning than the dispatch engine prices them in operations. One number.
   const VOLL = S.voll ?? 87000, CARBON = S.carbonTaxRPerT;
+  const CAP_ON = !!(S.carbonCapEnabled), CAP_MT = S.carbonCapMt ?? 140;
   const MC = { coal: S.costCoal + S.vomCoal, ccgt: S.costCcgt + S.vomCcgt, diesel: S.costDiesel + S.vomDiesel };
   const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:S.ocgtDieselMW,
                wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
@@ -4630,6 +4645,23 @@ function bldBuildLP(opts){
       L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
     }
+    // ── CARBON CAP ────────────────────────────────────────────────────────
+    // Emissions this year must not exceed the cap. Representative days carry a
+    // weight scaling them to a full year, so the same weights used in the
+    // objective give annual tonnes here. Applied to the FINAL year only: the NDC
+    // is a 2030 target, and constraining every intermediate year would impose a
+    // trajectory the target itself does not specify.
+    if (CAP_ON && y === Y[Y.length - 1]){
+      const capTerms = [];
+      for (const r of rd) for (let h = 0; h < 24; h++){
+        const kk = y + '_' + r.d + '_' + h;
+        capTerms.push((EMIS_COAL   * r.weight).toFixed(6) + ' gc_' + kk);
+        capTerms.push((EMIS_CCGT   * r.weight).toFixed(6) + ' gg_' + kk);
+        capTerms.push((EMIS_DIESEL * r.weight).toFixed(6) + ' gd_' + kk);
+      }
+      L.push(' co2cap: ' + capTerms.join(' + ') + ' <= ' + (CAP_MT * 1e6).toFixed(0));
+    }
+
     // Storage must balance over each representative day at 88% round-trip, and
     // cannot discharge more than its 4-hour duration allows.
     for (const r of rd){
@@ -4725,6 +4757,25 @@ function renderBuildResult(res, rate, opts){
     host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
     return;
   }
+  // Marginal abatement cost: the dual on the carbon cap is what the LAST tonne
+  // cost to avoid. It is the number a carbon price should be compared against -
+  // a price below it will not deliver the cap, a price above it overshoots.
+  let macNote = '';
+  if (state.carbonCapEnabled){
+    const row = (res.Rows || []).find(r => r.Name === 'co2cap');
+    const mac = row ? Math.abs(row.Dual) : 0;
+    const cap = state.carbonCapMt ?? FIXED.carbonCapMt;
+    macNote = mac > 1
+      ? `<div style="margin:8px 0;padding:7px 9px;border-left:3px solid var(--alert,#C4785A);background:var(--panel2);font-size:10.5px;line-height:1.5">
+           <strong>Carbon cap binds at ${cap}&nbsp;Mt.</strong> Marginal abatement cost
+           <strong>R${Math.round(mac).toLocaleString()}/tCO&#8322;</strong> &mdash; what it costs to avoid the
+           last tonne. Today&rsquo;s effective carbon price is R${state.carbonTaxRPerT ?? FIXED.carbonTaxRPerT}/t, so a
+           price at that level would not on its own deliver this cap.</div>`
+      : `<div style="margin:8px 0;padding:7px 9px;border-left:3px solid var(--ok,#4A8C5C);background:var(--panel2);font-size:10.5px;line-height:1.5">
+           <strong>Carbon cap of ${cap}&nbsp;Mt is not binding.</strong> The least-cost plan already comes in
+           under it, so the ceiling costs nothing and the build is unchanged. Tighten it to find where
+           emissions start to drive the plan.</div>`;
+  }
   const Y = BLD_YEARS, T = BLD_TECHS;
   const mw = {}, tot = {}, bound = {};
   for (const t of T){
@@ -4788,7 +4839,7 @@ function renderBuildResult(res, rate, opts){
     + 'resulting mix hour by hour.</div>';
   html += '</div>';
   html += bldApplyButton();
-  host.innerHTML = html;
+  host.innerHTML = macNote + html;
 }
 
 
@@ -6957,6 +7008,10 @@ function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
+  {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
+   note:'Make the build optimiser MEET an emissions ceiling in 2030, rather than only reporting whether it does. This is how the IRP poses the question. Off by default so the headline answer stays least-cost with carbon priced; on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
+  {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
+   note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that \u2014 which is itself the useful finding: meeting the NDC is not what makes this expensive.'},
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
    note:'Model availability as individual units tripping and being repaired (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Same average availability either way \u2014 the slider still means what it says \u2014 but the bad hours are now genuinely bad. At EAF 55% this moves shedding from 3 hours to 207.'},
   {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
