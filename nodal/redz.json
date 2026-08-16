@@ -1,0 +1,172 @@
+{
+ "meta": {
+  "title": "Renewable Energy Development Zones (REDZ), South Africa",
+  "count": 11,
+  "gazettes": [
+   "GN 114, Government Gazette 41445, 16 Feb 2018 - REDZ 1-8 (Minister Molewa)",
+   "GN 142/144/145, Government Gazette 44191, 26 Feb 2021 - REDZ 9-11 (Minister Creecy)"
+  ],
+  "effect": "A large-scale wind or solar PV facility inside a REDZ needs only a Basic Assessment rather than a full Environmental Impact Assessment - roughly 147 days against 300.",
+  "TECHNOLOGY MATTERS": "Five REDZs are gazetted for SOLAR PV ONLY. A wind project there gets no streamlining. Check the technology field, not just the location.",
+  "BOUNDARIES ARE APPROXIMATE": "The gazetted REDZs are irregular polygons. This file holds a CENTRE POINT and an equivalent-area RADIUS (sqrt(area/pi)) as a circular approximation, because we do not hold the official shapefiles. Use it to decide whether a site is worth checking - never as a determination. The authoritative screening tool is the DFFE Environmental GIS portal.",
+  "official_screening_tool": "https://egis.environment.gov.za/redz",
+  "areas_source": "CSIR Strategic Environmental Assessment Phase 1 (2015) published zone areas; Phase 2 (2019) for REDZ 9-11.",
+  "compiled": "2026-08-16, GridTwin ZA",
+  "purpose": "REDZs concentrate utility-scale wind and solar into areas the state has already assessed as suitable, through two Strategic Environmental Assessments (CSIR, 2015 and 2019). They serve two ends: FAST-TRACKED APPROVAL - a Basic Assessment instead of a full EIA - and SMOOTHER GRID INTEGRATION, since the zones were gazetted alongside five Strategic Transmission Corridors so that generation clusters where network investment is planned. GN 145 of 2021 sets a separate streamlined procedure for electricity grid infrastructure inside a REDZ.",
+  "polygons_not_held": "The official REDZ boundaries are published as shapefiles and KMZ on the DFFE E-GIS portal, but downloading them requires registration, so this file holds centre points and equivalent-area radii instead. TO UPGRADE: download 'REDZs Phase 1' (KMZ, zones 1-8) and 'REDZs Phase 2' (KMZ, zones 9-11) from https://egis.environment.gov.za/redz, convert to GeoJSON, and replace the radius screening with a point-in-polygon test. Until then every output states that boundaries are approximate."
+ },
+ "zones": [
+  {
+   "id": 1,
+   "name": "Overberg",
+   "province": "Western Cape",
+   "lat": -34.4,
+   "lng": 19.9,
+   "area_km2": 5263,
+   "radius_km": 41,
+   "tech": [
+    "wind",
+    "solar"
+   ],
+   "phase": 1
+  },
+  {
+   "id": 2,
+   "name": "Komsberg",
+   "province": "Western Cape",
+   "lat": -32.7,
+   "lng": 20.6,
+   "area_km2": 8846,
+   "radius_km": 53,
+   "tech": [
+    "wind",
+    "solar"
+   ],
+   "phase": 1
+  },
+  {
+   "id": 3,
+   "name": "Cookhouse",
+   "province": "Eastern Cape",
+   "lat": -32.75,
+   "lng": 25.8,
+   "area_km2": 7366,
+   "radius_km": 48,
+   "tech": [
+    "wind",
+    "solar"
+   ],
+   "phase": 1
+  },
+  {
+   "id": 4,
+   "name": "Stormberg",
+   "province": "Eastern Cape",
+   "lat": -31.3,
+   "lng": 26.5,
+   "area_km2": 12041,
+   "radius_km": 62,
+   "tech": [
+    "wind",
+    "solar"
+   ],
+   "phase": 1
+  },
+  {
+   "id": 5,
+   "name": "Kimberley",
+   "province": "Free State / Northern Cape",
+   "lat": -28.74,
+   "lng": 24.77,
+   "area_km2": 9568,
+   "radius_km": 55,
+   "tech": [
+    "solar"
+   ],
+   "phase": 1
+  },
+  {
+   "id": 6,
+   "name": "Vryburg",
+   "province": "North West",
+   "lat": -26.96,
+   "lng": 24.73,
+   "area_km2": 9204,
+   "radius_km": 54,
+   "tech": [
+    "solar"
+   ],
+   "phase": 1
+  },
+  {
+   "id": 7,
+   "name": "Upington",
+   "province": "Northern Cape",
+   "lat": -28.45,
+   "lng": 21.25,
+   "area_km2": 12833,
+   "radius_km": 64,
+   "tech": [
+    "solar"
+   ],
+   "phase": 1
+  },
+  {
+   "id": 8,
+   "name": "Springbok",
+   "province": "Northern Cape",
+   "lat": -29.66,
+   "lng": 17.89,
+   "area_km2": 15214,
+   "radius_km": 70,
+   "tech": [
+    "wind",
+    "solar"
+   ],
+   "phase": 1
+  },
+  {
+   "id": 9,
+   "name": "Emalahleni",
+   "province": "Mpumalanga",
+   "lat": -25.87,
+   "lng": 29.23,
+   "area_km2": 6000,
+   "radius_km": 44,
+   "tech": [
+    "solar"
+   ],
+   "phase": 2,
+   "note": "Declared partly for the just transition - Emalahleni is the heart of the coal complex. Gazetted for solar PV only, which drew criticism given the local wind resource."
+  },
+  {
+   "id": 10,
+   "name": "Klerksdorp",
+   "province": "North West (incl. parts of Free State)",
+   "lat": -26.85,
+   "lng": 26.67,
+   "area_km2": 6000,
+   "radius_km": 44,
+   "tech": [
+    "solar"
+   ],
+   "phase": 2,
+   "note": "Chosen partly for proximity to Gauteng demand and for post-mining economic support."
+  },
+  {
+   "id": 11,
+   "name": "Beaufort West",
+   "province": "Western Cape",
+   "lat": -32.36,
+   "lng": 22.58,
+   "area_km2": 8000,
+   "radius_km": 50,
+   "tech": [
+    "wind",
+    "solar"
+   ],
+   "phase": 2,
+   "note": "The zone lies mainly EAST of the town; geography favours wind."
+  }
+ ]
+}
