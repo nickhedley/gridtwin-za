@@ -7362,6 +7362,10 @@ SLIDERS.forEach(s=>{
   }
   state[s.id]=s.def;
   const d=document.createElement('div');d.className='ctrl';
+  // ctrlStyle was previously honoured only in the toggle branch above, so the
+  // indent on dependent RANGE sliders (2030 emissions ceiling, the three reserve
+  // components) silently did nothing. Applied here too.
+  if(s.ctrlStyle)d.style.cssText=s.ctrlStyle;
   d.innerHTML='<div class="row"><label for="in_'+s.id+'">'+s.label+'</label><span class="cv" id="cv_'+s.id+'">'+s.fmt(s.def)+'</span></div>'+
     '<input type="range" id="in_'+s.id+'" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+s.def+'" aria-label="'+s.label+'">'+
     (s.note?'<small>'+s.note+'</small>':'');
