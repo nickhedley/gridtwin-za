@@ -6057,10 +6057,17 @@ const ESKOM_ACTUALS = {
           + 'runs high, and SAPVIA\u2019s ~10 GW figure for ALL South African solar at end-2025 '
           + 'sits awkwardly beside 8-9 GW of rooftop plus 2.8 GW of operational REIPPPP/RMIPPPP.' },
     { k: 'Winter peak demand',    model: () => Math.round((lastRes && lastRes.peak ? lastRes.peak : 0)/100)/10,
-      actual: 27, unit: 'GW',
-      note: 'Eskom 2026 Winter Outlook forecast, down from ~30 GW in 2025. Both figures are '
-          + 'grid-facing (after rooftop nets off), so this gap is real: the model runs on the '
-          + '2025 demand series and demand has since declined structurally.' },
+      actual: 28.7, unit: 'GW',
+      note: 'Highest OBSERVED evening peak in Eskom\u2019s weekly statements - the 28,699 MW '
+          + '"peak-in-the-peak" of late June 2026. Routine winter evenings ran 24.9-27.2 GW '
+          + '(27 Apr 24,948; 18 May 26,179; 14 Aug 27,177). The model reads ~10% high, and this '
+          + 'is a REAL discrepancy rather than a definitional one: at the 18h June peak solar is '
+          + 'zero, so the model\u2019s underlying-demand series equals grid demand at that hour. '
+          + 'Annual energy is about right while the peak is high, so the demand SHAPE is too peaky '
+          + 'rather than the level being wrong. It matters because peak drives the reserve margin '
+          + 'and LOLE in the adequacy panel above - treat those as conservative. Previously this '
+          + 'row cited a vague 27 GW from the Winter Outlook; replaced 16 Aug 2026 with sourced '
+          + 'observed peaks.' },
     { k: 'Coal installed',        model: () => FIXED.coalInstalledMW/1000,
       actual: 42, unit: 'GW', note: 'Nominal fleet capacity before EAF.' },
     { k: 'Wind installed',        model: () => FIXED.windMW/1000,
