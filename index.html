@@ -250,8 +250,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 #jumpNav a:hover{color:#fff}
 #jumpNav a.active{color:#fff;border-bottom-color:var(--alert,#D9362A)}
 #jumpNav a.jn-strong{color:rgba(255,255,255,0.9)}
-#jumpNav .jn-grp{flex:0 0 auto;font-size:9px;letter-spacing:.13em;
-  text-transform:uppercase;color:rgba(255,255,255,0.34);padding:0 8px 0 0;white-space:nowrap}
+/* Orange, and big enough to read. 34% white on the dark bar measured 3.03:1
+   at 9px - technically near the floor and in practice unreadable. The scheme
+   orange #C4785A on #22292B is 4.35:1, and 12px lifts it off the threshold.
+   --alert2 is WRONG here: it is the darker shade, which drops to 2.86:1 on a
+   dark background even though it was the right pick on the light banners. */
+#jumpNav .jn-grp{flex:0 0 auto;font-size:12px;letter-spacing:.1em;font-weight:700;
+  text-transform:uppercase;color:var(--alert,#C4785A);padding:0 9px 0 0;white-space:nowrap}
 #jumpNav .jn-sep{flex:0 0 auto;width:1px;height:16px;margin:0 8px;
   background:rgba(255,255,255,0.18)}
 /* anchors sit under the sticky bar rather than behind it */
