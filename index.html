@@ -677,7 +677,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         found the model overstating non-fossil generation by about 8&nbsp;percentage points. Koeberg's
         capacity factor was corrected from a hardcoded 0.90 to 0.75, and turbine/panel availability
         derates were added to wind (0.95) and utility PV (0.98) &mdash; the model previously sent the
-        raw resource profile straight to generation. The remaining gap is deliberate rather than
+        raw resource profile straight to generation. A separate audit then found rooftop PV running at
+        21.2&nbsp;% capacity factor against utility PV&rsquo;s 22.1&nbsp;%, which is physically wrong:
+        a rooftop fleet takes whatever orientation the roof has, is shaded, is never cleaned, does not
+        track, and sits in Gauteng and the Western Cape rather than the Northern Cape. Its derate moved
+        from 0.94 to 0.78, giving ~17.6&nbsp;%. Note also that the 9.1&nbsp;GW rooftop figure is itself
+        an <em>inference</em> &mdash; NTCSA derives it from residual load on sunny versus cloudy days
+        and counts only systems under 100&nbsp;kWp &mdash; and analysts have questioned whether it runs
+        high. The remaining gap is deliberate rather than
         tuned away: Ember reports metered output, already net of the network curtailment Eskom applies
         to Cape wind, and it does not count privately wheeled plant or fully capture behind-the-meter
         rooftop. Calibrating the derates to close that gap would bake curtailment into a technical
@@ -3185,6 +3192,21 @@ const FIXED = {
   //    curtailment, which the single-node engine cannot see (it has no network);
   //    the nodal engine computes it explicitly.
   nuclearCF:0.75, windAvail:0.95, pvAvail:0.98,
+  // ROOFTOP DERATE, corrected 16 Aug 2026 (was 0.94).
+  // Rooftop and utility PV previously ran within 1pp of each other - 21.2% vs
+  // 22.1% - which is physically wrong. They share the same national profile,
+  // but a rooftop fleet differs from a utility plant in every direction:
+  //   * orientation is whatever the roof happens to be (east, west, flat),
+  //     not optimal north tilt
+  //   * shading from trees, parapets, neighbouring buildings
+  //   * soiling, with no cleaning regime
+  //   * no tracking, where new utility PV increasingly has single-axis
+  //   * and it sits where the money and the load are - Gauteng and the Western
+  //     Cape - not in the Northern Cape where the resource is
+  // 0.78 of the national profile gives ~17.5%, the standard fleet-average range
+  // for distributed PV. This also closes most of the remaining solar gap against
+  // Ember's metered figure.
+  rooftopDerate:0.78,
   // Clean coal (CCS). Defaults are mid-range for a post-combustion amine
   // retrofit; every one is exposed in the policy panel.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
@@ -3694,7 +3716,7 @@ function simulate(u, prof, outPath){
   const netLoadPre=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
     const rawDemand=demand[h]*growth;
-    const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
+    const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen;
     const windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
     // DISPATCH ORDER IS DELIBERATE, NOT A SHORTCUT (settled 14 Aug 2026).
@@ -3828,7 +3850,7 @@ function simulate(u, prof, outPath){
     // never asked to sit below its own minimum stable level.
     const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
     const rawDemand=demand[h]*growth;
-    const rooftopGen=Math.min(rooftopCap*solar[h]*0.94, rawDemand*0.9);
+    const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen;
     E.rooftop+=rooftopGen; loadS[h]=load;
     let windGen=windCap*wind[h]*(p.windAvail??0.95), pvGen=pvCap*solar[h]*(p.pvAvail??0.98), cspGen=p.cspMW*csp[h];
@@ -5858,7 +5880,12 @@ const ESKOM_ACTUALS = {
       actual: 9.1, unit: 'GW',
       note: 'NTCSA, June 2026, grew 35% y/y. The model reads LOWER by design: Eskom\u2019s '
           + 'rooftop line includes 0.49 GW of ground-mounted wheeled plant (their bucket is '
-          + 'contractual, not physical), which this model counts as utility supply instead.' },
+          + 'contractual, not physical), which this model counts as utility supply instead. '
+          + 'TREAT THE BENCHMARK ITSELF WITH CARE: NTCSA does not meter this fleet, it INFERS it '
+          + 'by the residual-load method - comparing grid demand on sunny against cloudy days by '
+          + 'province - and counts only systems under 100 kWp. Analysts have argued the series '
+          + 'runs high, and SAPVIA\u2019s ~10 GW figure for ALL South African solar at end-2025 '
+          + 'sits awkwardly beside 8-9 GW of rooftop plus 2.8 GW of operational REIPPPP/RMIPPPP.' },
     { k: 'Winter peak demand',    model: () => Math.round((lastRes && lastRes.peak ? lastRes.peak : 0)/100)/10,
       actual: 27, unit: 'GW',
       note: 'Eskom 2026 Winter Outlook forecast, down from ~30 GW in 2025. Both figures are '
