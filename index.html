@@ -25,7 +25,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GridTwin ZA — Interactive South African Power System Model</title>
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <title>GridTwin ZA — Interactive South African Power System Model</title>
 <meta name="description" content="Interactive digital twin of the South African power system — adjust the fleet, demand and policy, and watch the grid re-dispatch live. Calibrated to 2026 Eskom data.">
 <!-- Optional local config: API keys. Absent by default; the app works without it. -->
 <script src="config.js" onerror="void 0"></script>
@@ -229,6 +232,36 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 .sharebtn{width:100%; min-width:0; max-width:100%; box-sizing:border-box; overflow-wrap:break-word; border:1.5px dashed var(--ink); background:var(--panel2); padding:6px 8px 5px; font-family:'Saira Condensed',sans-serif; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:14px; transition:background .15s}
 .sharebtn:hover{background:var(--panel)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ── Sticky section nav ──────────────────────────────────────────────────
+   21 panels is a long scroll, and the Project planning half sat right at the
+   bottom. Jump links rather than collapsing the sections: nothing is hidden,
+   the narrative order survives for a first-time reader, and a repeat user is
+   one click from any panel. */
+#jumpNav{position:sticky;top:0;z-index:60;background:var(--ink,#22292B);
+  border-bottom:1px solid rgba(255,255,255,0.14)}
+#jumpNav .jn-wrap{max-width:1380px;margin:0 auto;padding:0 20px;
+  display:flex;align-items:center;gap:3px;overflow-x:auto;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch}
+#jumpNav .jn-wrap::-webkit-scrollbar{display:none}
+#jumpNav a{flex:0 0 auto;padding:9px 11px;font-size:11px;font-weight:600;
+  color:rgba(255,255,255,0.62);text-decoration:none;white-space:nowrap;
+  border-bottom:2px solid transparent}
+#jumpNav a:hover{color:#fff}
+#jumpNav a.active{color:#fff;border-bottom-color:var(--alert,#D9362A)}
+#jumpNav a.jn-strong{color:rgba(255,255,255,0.9)}
+#jumpNav .jn-grp{flex:0 0 auto;font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:rgba(255,255,255,0.34);padding:0 8px 0 0;white-space:nowrap}
+#jumpNav .jn-sep{flex:0 0 auto;width:1px;height:16px;margin:0 8px;
+  background:rgba(255,255,255,0.18)}
+/* anchors sit under the sticky bar rather than behind it */
+[id^="nav-"]{scroll-margin-top:60px}
+@media (max-width:760px){
+  #jumpNav .jn-wrap{padding:0 12px}
+  #jumpNav a{padding:8px 9px;font-size:10.5px}
+  #jumpNav .jn-grp{display:none}
+  #jumpNav .jn-sep{display:none}
+}
 </style>
 </head>
 <body>
@@ -253,10 +286,26 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
   </div>
 </header>
+<nav id="jumpNav" aria-label="Section navigation">
+  <div class="jn-wrap">
+    <span class="jn-grp">System planning</span>
+    <a href="#nav-system">Scenario</a>
+    <a href="#nav-network">Network</a>
+    <a href="#nav-wheretobuild">Where to build</a>
+    <a href="#nav-buildrates">Build rates</a>
+    <a href="#nav-pipeline">Pipeline</a>
+    <a href="#nav-results">Results</a>
+    <a href="#nav-prices">Prices</a>
+    <span class="jn-sep"></span>
+    <span class="jn-grp">Project planning</span>
+    <a href="#nav-project" class="jn-strong">Site tools</a>
+  </div>
+</nav>
+
 
 
 <div style="max-width:1380px;margin:0 auto;padding:0 20px">
-  <div style="margin:22px 0 10px;padding:9px 14px;background:var(--alert,#C4785A);border:1.5px solid var(--ink);text-align:center">
+  <div id="nav-system" style="margin:22px 0 10px;padding:9px 14px;background:var(--alert,#C4785A);border:1.5px solid var(--ink);text-align:center">
     <div style="font-family:'Saira Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:.04em;color:#fff">System planning</div>
   </div>
 </div>
@@ -331,7 +380,21 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div>
 
 
-<section aria-label="Network map and capacity siting">
+<div id="nav-results" class="panel" style="margin-top:18px">
+  <div class="ph"><h2>System adequacy</h2><span class="tag">reserve margin &middot; LOLE &middot; EUE</span></div>
+  <div class="pb" id="adequacyBody" style="padding:12px 14px"><p style="font-size:11px;color:var(--ink2);margin:0">Run the model to compute adequacy statistics.</p></div>
+</div><div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
+            <div class="pb">
+              <div class="riskhead" id="riskHead"></div>
+              <div class="shedbars" id="shed"></div>
+              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
+              <p class="risknote" id="riskNote">Bars: probability the year reaches at least stage S, across 60 simulated years.</p>
+            </div>
+          </div><div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Annual electricity mix</h2><span class="tag" id="mixTotal"></span></div>
+          <div class="pb" id="mix"></div>
+        </div><section id="nav-network" aria-label="Network map and capacity siting">
       <div class="panel mapbox">
         <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
@@ -343,16 +406,16 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span><i style="background:#1F4E79"></i>Storage / hydro</span>
           <span><i style="background:var(--alert)"></i>Peakers</span>
         </div>
-        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the full model (click the button above) to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means curtailment (wasted wind/solar) in that region — shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Click on any line or label for exact figures.</p>
+        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the full model (click the button above) to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means curtailment (wasted wind/solar) in that region — shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Labels appear above 1&nbsp;% to keep the map readable, so a region with no label may still be spilling a little. Click on any line or label for exact figures.</p>
         <p style="font-size:10.5px;color:var(--ink2);padding:0 8px 8px">This schematic is deliberately simplified &mdash; 10 regions and the corridors between them, so flows stay readable. For the real thing, the <a href="gridtwin-3d.html" target="_blank" rel="noopener" style="color:var(--alert,#C4785A)">3D network map</a> plots every mapped transmission line at 220&nbsp;kV and above, plus all 185 substations.</p>
-        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points sharing the Upington corridor area. Click on each for region-specific figures. The REIPPPP project pipeline button overlays dashed rings showing government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) — not the 19.7 GW of private/C&I registrations shown in the NERSA registrations panel. Ring size scales with total capacity and ring colour shows the status holding the most capacity in that region. Hover a ring for the split by technology and by status — preferred bidder, financial close, or under construction.</p>
+        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points sharing the Upington corridor area. Click on each for region-specific figures. The REIPPPP project pipeline button overlays dashed rings showing government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) — not the private/C&I registrations shown in the NERSA registrations panel. Ring size scales with total capacity and ring colour shows the status holding the most capacity in that region. Click on a ring for the split by technology and by status — preferred bidder, financial close, or under construction.</p>
       </div>
       </section>
 
 
 
       
-<div class="panel" id="buildSection" style="margin-top:18px;margin-bottom:18px">
+<div class="panel" id="buildSection" style="margin-top:18px;margin-bottom:18px"><span id="nav-buildrates" style="position:relative;top:-96px;display:block;height:0"></span>
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
         <h2>Generation capacity build rates</h2>
         <span class="tag">capacity expansion &middot; least-cost schedule to 2030</span>
@@ -361,7 +424,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
           Given the scenario you have set, this solves for the <strong>least-cost build schedule to
           2030</strong>: how much of each technology to add, in which year, and &mdash; in regional
-          mode &mdash; where. It uses each coal unit&rsquo;s real retirement date, technology costs that
+          mode &mdash; where. It uses each coal unit&rsquo;s planned retirement date, technology costs that
           change year by year, and a limit on how fast capacity can actually be connected. The answer
           can be loaded straight back into the sliders and tested hour by hour.
         </p>
@@ -447,7 +510,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
     </div>
 <section aria-label="Capacity siting tool">
-      <div class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
+      <div id="nav-wheretobuild" class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
           <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
           <div class="pb">
             <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. All technologies — including CCGT and batteries — carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
@@ -501,26 +564,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
       </section>
 
-<div class="panel" id="nersaPanel" style="margin-top:18px;display:none">
-          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
-          <div style="padding:0 14px 12px">
-            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
-              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
-              Includes all technologies.
-            </p>
-            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
-          </div>
-        </div>
 
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Grid queue pressure</h2><span class="tag">pipeline vs headroom</span></div>
-            <div class="pb" id="queueBody"></div>
-          </div>
 
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Permitted but not built</h2><span class="tag">environmental approvals</span></div>
-            <div class="pb" id="reeaBody"></div>
-          </div>
+          
+
+          
 <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
             <div class="pb" id="carbonBudget"></div>
@@ -529,6 +577,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
           <div class="pb" id="lcoe"></div>
         </div>
+
 <div style="margin-top:18px"><details class="assump" id="validationPanel" style="margin-top:12px">
       <summary>How the model compares to Eskom&rsquo;s published figures</summary>
       <div class="pb" id="validationBody"></div>
@@ -555,23 +604,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
         </div>
 
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Annual energy mix</h2><span class="tag" id="mixTotal"></span></div>
-          <div class="pb" id="mix"></div>
-        </div>
-
-        <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
-            <div class="pb">
-              <div class="riskhead" id="riskHead"></div>
-              <div class="shedbars" id="shed"></div>
-              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
-              <p class="risknote" id="riskNote">Bars: probability the year reaches at least stage S, across 60 simulated years.</p>
-            </div>
-          </div>
+        
 
         
-          <div class="panel" style="margin-top:18px">
+
+        
+          <div id="nav-prices" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">what a market would clear at</span></div>
             <div class="pb" id="priceBody"></div>
           </div>
@@ -604,13 +642,28 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
 
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>&lsquo;Clean coal&rsquo; (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
-            <div class="pb" id="ccsBody"></div>
-          </div>
+          
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
             <div class="pb" id="capFcBody"></div>
+          </div><div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="position:relative;top:-96px;display:block;height:0"></span>
+          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
+          <div style="padding:0 14px 12px">
+            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
+              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
+              Includes all technologies.
+            </p>
+            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
+          </div>
+        </div><div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Grid queue pressure</h2><span class="tag">pipeline vs headroom</span></div>
+            <div class="pb" id="queueBody"></div>
+          </div><div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Permitted but not built</h2><span class="tag">environmental approvals</span></div>
+            <div class="pb" id="reeaBody"></div>
+          </div><div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>&lsquo;Clean coal&rsquo; (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
+            <div class="pb" id="ccsBody"></div>
           </div>
 <div style="margin-top:18px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
@@ -765,10 +818,30 @@ function initResourceQuery(){
     'Kwazulu Natal':   {lat:-28.5, lng:30.5},
   };
 
-  let regionalWindProfiles = null;
+  let regionalWindProfiles = null, regionalSolarProfiles = null;
   fetch('nodal/profiles_regional.json').then(r=>r.json()).then(d=>{
     regionalWindProfiles = d.wind_pu;
+    regionalSolarProfiles = d.solar_pu;
   }).catch(()=>{});
+
+  // ── Shared behind-the-meter constants ────────────────────────────────────
+  // ONE battery price and ONE emission factor for every tab in this box, so two
+  // adjacent tabs can never quote a 4.5x different battery cost again (rooftop
+  // said R6,500/kWh installed while pre-feasibility said R1,450 - the R1,450 was
+  // a utility cell-pack figure mislabelled "installed"; retail reality for
+  // small-scale is ~R6,000-7,000/kWh, e.g. a 5 kWh unit lands around R32k).
+  // Utility-scale EPC in the main model is R2,625/kWh (R10,500/kW at 4h) - a
+  // behind-the-meter system does not get that price.
+  const BTM_BATT_R_PER_KWH = 6500;
+  // CO2 displaced by behind-the-meter solar, tCO2/MWh. The main model's grid
+  // AVERAGE at defaults is 0.78; its MARGINAL generator is coal (1.04) in
+  // 8,700+ hours of the year. Displaced generation is marginal, not average,
+  // so 0.95 is a deliberately conservative between-value. Used by BOTH the
+  // pre-feasibility and rooftop tabs - keep them identical.
+  const BTM_DISPLACED_EF = 0.95;
+  // A PPA prices BELOW expected merchant capture in exchange for certainty;
+  // 12% is the margin both the capture and wheeling tabs assume. One number.
+  const PPA_MARGIN = 0.12;
 
   function nearestRegion(lat, lng) {
     let best = null, bestDist = Infinity;
@@ -1154,6 +1227,10 @@ function initResourceQuery(){
         </div>`).join('')}
       </div>
       ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
+      ${(()=>{ const c=(window.__nodalCurtByRegion||{})[sub.area];
+        if(c===undefined) return '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Curtailment risk: run the full model (button above the schematic) to compute it for this connection.</div>';
+        const col=c>10?'var(--alert,#C4785A)':c>1?'#f5c518':'var(--ok,#4A8C5C)';
+        return `<div style="margin-top:6px;font-size:10.5px">Curtailment risk at this connection: <strong style="color:${col}">${c.toFixed(1)}%</strong> <span style="font-size:9.5px;color:var(--ink2)">of ${sub.area}\u2019s renewable potential spills under the current scenario \u2014 same basis as the schematic labels.</span></div>`; })()}
       <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Curtailment risk if you build here</div>
         <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.area); renderNeighbours(sub.area, lat, lng); }catch(e){} }, 0); return ''; })()}
@@ -1191,6 +1268,30 @@ function initResourceQuery(){
     'Kwazulu Natal': {solar_frac:0.79, wind_frac:0.86, avg_smp:695, note:''},
   };
 
+  // One capture computation for every tab. Returns the region's capture prices,
+  // live-adjusted against the current scenario's dispatch when a result exists,
+  // 2026-baseline otherwise. The wheeling tab previously carried its own
+  // hardcoded table (Northern Cape solar R490 etc.) that could disagree with
+  // the Capture tab for the SAME region on the SAME screen.
+  function captureFor(region){
+    const cap = CAPTURE[region];
+    if(!cap) return null;
+    const ps = (typeof lastRes !== 'undefined' && lastRes && lastRes.priceStats) ? lastRes.priceStats : null;
+    const REF_SOLAR = 0.77, REF_WIND = 0.87;   // national mean of the static table
+    let avgSmp = cap.avg_smp, sFrac = cap.solar_frac, wFrac = cap.wind_frac, live = false;
+    if (ps && ps.avg > 0){
+      live = true;
+      avgSmp = Math.round(ps.avg);
+      const mS = ps.capture.pv / ps.avg, mW = ps.capture.wind / ps.avg;
+      sFrac = Math.max(0, Math.min(1.3, cap.solar_frac * (mS / REF_SOLAR)));
+      wFrac = Math.max(0, Math.min(1.3, cap.wind_frac  * (mW / REF_WIND)));
+    }
+    return { avgSmp, sFrac, wFrac, live,
+             solar: Math.round(avgSmp * sFrac), wind: Math.round(avgSmp * wFrac),
+             ppaSolar: Math.round(avgSmp * sFrac / (1 - PPA_MARGIN)),
+             ppaWind:  Math.round(avgSmp * wFrac / (1 - PPA_MARGIN)) };
+  }
+
   function renderCapture(region, solarCF, windCF) {
     const el = document.getElementById('captureResult');
     const cap = CAPTURE[region];
@@ -1205,21 +1306,10 @@ function initResourceQuery(){
     // The regional SHAPE is still useful - Western Cape wind captures better
     // than Northern Cape solar because it blows in the evening - so keep the
     // relative differences and let the model set the LEVEL.
-    const ps = (typeof lastRes !== 'undefined' && lastRes && lastRes.priceStats) ? lastRes.priceStats : null;
-    const REF_SOLAR = 0.77, REF_WIND = 0.87;   // national mean of the table below
-    let avgSmp = cap.avg_smp, sFrac = cap.solar_frac, wFrac = cap.wind_frac, live = false;
-    if (ps && ps.avg > 0){
-      live = true;
-      avgSmp = Math.round(ps.avg);
-      const mS = ps.capture.pv / ps.avg, mW = ps.capture.wind / ps.avg;
-      sFrac = Math.max(0, Math.min(1.3, cap.solar_frac * (mS / REF_SOLAR)));
-      wFrac = Math.max(0, Math.min(1.3, cap.wind_frac  * (mW / REF_WIND)));
-    }
-    const solarCapture = Math.round(avgSmp * sFrac);
-    const windCapture  = Math.round(avgSmp * wFrac);
-    // PPA estimate: capture price ÷ (1 - project margin ~12%)
-    const solarPPA = Math.round(solarCapture / 0.88);
-    const windPPA  = Math.round(windCapture  / 0.88);
+    const c = captureFor(region);
+    const avgSmp = c.avgSmp, sFrac = c.sFrac, wFrac = c.wFrac, live = c.live;
+    const solarCapture = c.solar, windCapture = c.wind;
+    const solarPPA = c.ppaSolar, windPPA = c.ppaWind;
     el.innerHTML = `
       <div style="font-size:11px;font-weight:600;margin-bottom:8px">${region} supply area</div>
       <div style="font-size:10px;color:var(--ink2);margin-bottom:8px">
@@ -1234,9 +1324,9 @@ function initResourceQuery(){
           <th style="text-align:right;padding:3px 0;color:#3EA055">Wind</th>
         </tr></thead>
         <tbody>
-          <tr><td style="padding:3px 0;color:var(--ink2)">Capture fraction</td>
-            <td style="text-align:right;padding:3px 4px">${(cap.solar_frac*100).toFixed(0)}%</td>
-            <td style="text-align:right">${(cap.wind_frac*100).toFixed(0)}%</td></tr>
+          <tr><td style="padding:3px 0;color:var(--ink2)">Capture fraction${live?' (this scenario)':''}</td>
+            <td style="text-align:right;padding:3px 4px">${(sFrac*100).toFixed(0)}%</td>
+            <td style="text-align:right">${(wFrac*100).toFixed(0)}%</td></tr>
           <tr><td style="padding:3px 0;color:var(--ink2)">Capture price (IPP revenue)</td>
             <td style="text-align:right;padding:3px 4px;font-weight:700">R${solarCapture}/MWh</td>
             <td style="text-align:right;font-weight:700">R${windCapture}/MWh</td></tr>
@@ -1488,14 +1578,9 @@ function initResourceQuery(){
     const cf = tech==='wind' ? windCF : tech==='hybrid' ? (solarCF*0.6 + windCF*0.4) : solarCF;
     const techLabel = tech==='wind' ? 'wind' : tech==='hybrid' ? 'solar+wind' : 'solar';
     const solarFor100 = loadMW / cf;
-    // But solar is intermittent — need storage for night hours.
-    // Simple model: solar provides cf fraction of hours, need storage for (1-cf) fraction
-    // 4h battery: battMW = loadMW, battMWh = loadMW * 4
-    // Carbon-free hours with solar + 4h storage ≈ min(100, cf*100 + storage_contribution*100)
-    // Storage contribution rough model: 4h batt covers ~4h of load per day = 4/24 = 17%
-    // So carbon-free with 100% solar + 4h batt ≈ cf + 0.17 (capped at 1)
-    const cfHours = Math.min(0.98, cf + 0.17); // solar + 4h storage
-    const battMWh = loadMW * 4;
+    // The rough cf+17% shortcut that used to live here is gone - the hourly
+    // matching model below replaced it, and it was never displayed anyway.
+    const battMWh = loadMW * 4;   // scenario battery seed: 4h at full load
 
     // Scale: what if they want 70% or 90% carbon free?
     // SIZE AGAINST HOURLY MATCHING, NOT ANNUAL ENERGY.
@@ -1510,8 +1595,25 @@ function initResourceQuery(){
     // So solve for the capacity that actually hits the target, hour by hour,
     // against the real profiles.
     const HYB_SOLAR = 0.6, HYB_WIND = 0.4;
-    const sp = (PROFILES && PROFILES.solar) || null;
-    const wp = (PROFILES && PROFILES.wind) || null;
+    // Simulate on the REGIONAL hourly profiles, not the national ones. The
+    // header quotes the site's solar CF and the region's wind CF, so the sizing
+    // must be solved against shapes with THOSE CFs - the national solar profile
+    // is 22.5% while a Northern Cape site is ~26%, and sizing on the wrong
+    // shape mislabels the result by 10%+. Solar: regional shape rescaled to the
+    // site's own annual CF (shape is regional, level is the clicked point).
+    // Wind: the regional profile directly - its mean IS the displayed wind CF.
+    let sp = (PROFILES && PROFILES.solar) || null;
+    let wp = (PROFILES && PROFILES.wind) || null;
+    let profileNote = 'national profiles';
+    if (regionalSolarProfiles && regionalSolarProfiles[lastRegion] && solarCF){
+      const rsp = regionalSolarProfiles[lastRegion];
+      const rcf = rsp.reduce((a,b)=>a+b,0)/rsp.length;
+      if (rcf > 0){ sp = rsp.map(v => Math.min(1, v * solarCF/rcf)); profileNote = lastRegion + ' profiles'; }
+    }
+    if (regionalWindProfiles && regionalWindProfiles[lastRegion]){
+      wp = regionalWindProfiles[lastRegion];
+      profileNote = lastRegion + ' profiles';
+    }
 
     // Fraction of load served hour-by-hour by a given build plus storage.
     function hourlyMatch(solarMW, windMW, battEnergyMWh){
@@ -1562,7 +1664,7 @@ function initResourceQuery(){
       <div style="font-size:10.5px;font-weight:600;margin-bottom:6px">${loadMW} MW load &nbsp;·&nbsp; ${lastRegion} &nbsp;·&nbsp; ${
         tech==='hybrid' ? `solar CF ${(solarCF*100).toFixed(1)}% · wind CF ${(windCF*100).toFixed(1)}%`
         : tech==='wind' ? `wind CF ${(windCF*100).toFixed(1)}%`
-        : `solar CF ${(solarCF*100).toFixed(1)}%`}</div>
+        : `solar CF ${(solarCF*100).toFixed(1)}%`} &nbsp;·&nbsp; sized on ${profileNote}</div>
       <table style="width:100%;font-size:10px;border-collapse:collapse">
         <thead><tr style="border-bottom:1px solid var(--line2)">
           <th style="text-align:left;padding:2px 0;color:var(--ink2)">Target</th>
@@ -1973,10 +2075,25 @@ document.getElementById('pf_offtake').addEventListener('change', function() {
 
 // NERSA registration categories (Schedule 2 of Electricity Regulation Act)
 function nersaCategory(kwp) {
-  if(kwp <= 100)  return {cat:'Schedule 2 (≤100kWp)', nersa:'Registration only (no licence)', timeline:'2–4 weeks', fee:'R0 (exempt from licensing fees)', notes:'Must register with NERSA within 30 days of commissioning. NRS 097 compliance required for grid tie.'};
-  if(kwp <= 1000) return {cat:'Schedule 2 (≤1MWp)', nersa:'Registration required before construction', timeline:'4–8 weeks', fee:'~R15,000 registration fee', notes:'Environmental authorisation likely required. Municipal/Eskom grid agreement needed before energisation.'};
-  if(kwp <= 10000) return {cat:'Schedule 2 (≤10MWp)', nersa:'Generation licence NOT required — registration only', timeline:'6–12 weeks incl. EIA', fee:'~R15,000–50,000 depending on scope', notes:'Basic Assessment or full EIA required depending on location. Requires Eskom/NTCSA grid connection agreement.'};
-  return {cat:'Above 10MWp — Generation licence required', nersa:'Full NERSA generation licence', timeline:'6–18 months', fee:'NERSA tariff application + legal costs ~R200,000+', notes:'Requires full EIA, public participation, grid connection study (R15,000 application fee to NTCSA). Consider REIPPPP or private PPA route.'};
+  // ERA Schedule 2 as amended: the Aug 2021 amendment raised the licensing
+  // threshold from 1 MW to 100 MW, and the Dec 2022 amendment (effective Jan
+  // 2023) REMOVED it entirely - generation facilities of ANY size are exempt
+  // from licensing provided they have a registered offtaker or serve own use,
+  // and instead REGISTER with NERSA. Trading and distribution remain licensed
+  // activities; the grid connection itself still needs Eskom/NTCSA or municipal
+  // approval, which is usually the real timeline. This previously said a
+  // licence was required above 10 MWp - pre-2021 law, two amendments stale.
+  if(kwp <= 100)  return {cat:'SSEG (\u2264100 kVA)', nersa:'NERSA registration; utility SSEG process',
+    timeline:'2\u20134 weeks', fee:'No NERSA fee',
+    notes:'Register with NERSA and the local utility. NRS 097-2-1 compliance required for grid tie.'};
+  if(kwp <= 1000) return {cat:'\u22641 MWp', nersa:'NERSA registration (no licence)',
+    timeline:'4\u20138 weeks', fee:'Registration only',
+    notes:'Registration before operation. Municipal/Eskom connection agreement needed before energisation.'};
+  return {cat:'Above 1 MWp \u2014 registration, any size', nersa:'NERSA registration (licence exemption since Jan 2023, no size cap)',
+    timeline:'2\u20136 months, driven by EIA and grid connection rather than NERSA',
+    fee:'Registration only',
+    notes:'Environmental authorisation (Basic Assessment or EIA) and an Eskom/NTCSA connection '
+        + 'budget quote + agreement are the binding steps. Wheeling additionally needs a use-of-system agreement.'};
 }
 
 // Grid connection pathway based on system size
@@ -1994,16 +2111,23 @@ function gridPathway(kwp, offtake) {
 }
 
 // Financial calculations
-function calcFinancials(kwp, solarCF, priceRkwh, costRwp, battHours, offtake) {
-  const battRwh = 1450; // R/kWh installed (BNEF 2026)
+function calcFinancials(kwp, solarCF, priceRkwh, costRwp, battHours, offtake, tech) {
+  // Shared with the rooftop tab (BTM_BATT_R_PER_KWH). This previously said
+  // R1,450/kWh "installed (BNEF 2026)" - that is a utility cell-pack price, not
+  // an installed behind-the-meter system. The rooftop tab next door priced the
+  // SAME thing at R6,500/kWh; a 100 kWh C&I battery really lands ~R500-700k,
+  // not R145k. Wrong by ~4.5x, and payback figures inherited the error.
+  const battRwh = (typeof BTM_BATT_R_PER_KWH !== 'undefined') ? BTM_BATT_R_PER_KWH : 6500;
   const systCostR = kwp * 1000 * costRwp + (battHours > 0 ? kwp * battHours * battRwh : 0);
   const annualKwh = kwp * solarCF * 8760; // kWp × CF × hours
   // Own-use: offset Eskom bill. Wheeling/grid: revenue from sales
   // Assume 90% of generation is utilisable (10% curtailed/grid limits/own-use load factor)
   const utilisationFactor = offtake==='ownuse' ? 0.85 : 0.90;
   const annualRevR = annualKwh * utilisationFactor * priceRkwh;
-  // Opex: 1.5% of capex per year (insurance, O&M, monitoring)
-  const annualOpexR = systCostR * 0.015;
+  // Opex by technology: solar ~1.5% of capex/yr; wind ~2.5% (gearboxes, blades,
+  // crane call-outs); hybrid between. Standard O&M brackets.
+  const opexPct = tech==='wind' ? 0.025 : tech==='hybrid' ? 0.020 : 0.015;
+  const annualOpexR = systCostR * opexPct;
   const annualNetR = annualRevR - annualOpexR;
   const simplePayback = annualNetR > 0 ? systCostR / annualNetR : Infinity;
   // IRR: simplified NPV at 10% discount rate over 25 years
@@ -2019,8 +2143,10 @@ function calcFinancials(kwp, solarCF, priceRkwh, costRwp, battHours, offtake) {
     if(npvMid>0) lo=mid; else hi=mid;
     irr=mid;
   }
-  // CO2 savings: SA grid emission factor ~0.95 kgCO2/kWh (Eskom 2024)
-  const co2SavedT = annualKwh * utilisationFactor * 0.00095;
+  // CO2 displaced, tCO2/MWh: shared BTM_DISPLACED_EF (see its definition for why
+  // 0.95 - the model's grid average is 0.78 but its marginal generator is coal
+  // at 1.04 for 8,700+ h/yr, and displaced generation is marginal).
+  const co2SavedT = annualKwh * utilisationFactor * ((typeof BTM_DISPLACED_EF!=='undefined'?BTM_DISPLACED_EF:0.95)/1000);
   return {systCostR, annualKwh, annualRevR, annualOpexR, annualNetR, simplePayback, irr, npv, co2SavedT};
 }
 
@@ -2033,8 +2159,15 @@ async function runPrefeas() {
   const offtake = document.getElementById('pf_offtake').value;
   const price = parseFloat(document.getElementById('pf_price').value)||2.50;
   const costPreset = document.getElementById('pf_cost_preset').value;
-  const costRwp = parseFloat(costPreset==='custom' ? 6 : costPreset);
+  let costRwp = parseFloat(costPreset==='custom' ? 6 : costPreset);
   const battHours = parseInt(document.getElementById('pf_batt').value)||0;
+  const techEl = document.querySelector('input[name="pfTech"]:checked');
+  const pfTech = techEl ? techEl.value : 'solar';
+  // Wind has no small-scale market: utility turbines start ~2-4 MW each, and the
+  // main model's build cost is R21,000/kW (R21/W). Hybrid blends 60/40 by energy,
+  // the SAME convention as the data-centre tab (HYB_SOLAR/HYB_WIND there).
+  if (pfTech === 'wind')   costRwp = 21;
+  if (pfTech === 'hybrid') costRwp = costRwp * 0.6 + 21 * 0.4;
   // Get solar CF — use lastSiteClick if available from Site Resource Query, else use national average
   let solarCF = 0.21; // SA national average fallback
   let solarSource = 'SA national average (fallback — click the map in Solar & wind tab first for site-specific data)';
@@ -2047,9 +2180,20 @@ async function runPrefeas() {
     locationText = window._resourceData.lat.toFixed(3)+'°, '+window._resourceData.lng.toFixed(3)+'° · '+region;
   }
 
+  // CF by technology: wind from the clicked region's profile (same source as the
+  // resource tab); hybrid = 60% site solar + 40% regional wind, matching the
+  // data-centre tab's convention exactly.
+  let cf = solarCF, cfLabel = 'solar CF';
+  const regWindCF = (typeof lastWindCF !== 'undefined' && lastWindCF !== null) ? lastWindCF
+                  : (typeof windCFForRegion === 'function' ? windCFForRegion(region) : null);
+  if (pfTech === 'wind'){
+    cf = regWindCF || 0.35; cfLabel = 'wind CF (regional' + (regWindCF ? '' : ' fallback 35%') + ')';
+  } else if (pfTech === 'hybrid'){
+    cf = solarCF * 0.6 + (regWindCF || 0.35) * 0.4; cfLabel = 'hybrid CF (60% solar / 40% wind)';
+  }
   const nersa = nersaCategory(kwp);
   const grid = gridPathway(kwp, offtake);
-  const fin = calcFinancials(kwp, solarCF, price, costRwp, battHours, offtake);
+  const fin = calcFinancials(kwp, cf, price, costRwp, battHours, offtake, pfTech);
 
   const offtakeLabel = {ownuse:'Own-use (behind-the-meter)', wheeling:'Wheeling to remote site', 'grid':'Grid sale / IPP'}[offtake];
   const fmt = (n,dec=0,prefix='R',suffix='') => prefix+(n/1).toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g,',')+suffix;
@@ -2071,7 +2215,7 @@ async function runPrefeas() {
     <!-- 3-column summary -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">
       <div style="background:var(--bg2,#eee);border-radius:4px;padding:12px;text-align:center">
-        <div style="font-size:24px;font-weight:700;color:#F5C518">${(solarCF*100).toFixed(1)}%</div>
+        <div style="font-size:24px;font-weight:700;color:${pfTech==='wind'?'#3EA055':pfTech==='hybrid'?'#6FA8A0':'#F5C518'}">${(cf*100).toFixed(1)}%</div>
         <div style="font-size:10px;color:var(--ink2)">Solar CF · ${region}</div>
         <div style="font-size:9px;color:var(--ink2);margin-top:2px">${(fin.annualKwh/1000).toFixed(0)} MWh/yr yield</div>
       </div>
@@ -2091,9 +2235,9 @@ async function runPrefeas() {
     <div style="margin-bottom:16px">
       <div style="font-family:'Saira Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--ink);padding-bottom:4px;margin-bottom:8px">1. Solar Resource</div>
       <table style="width:100%;font-size:11px;border-collapse:collapse">
-        <tr><td style="padding:3px 0;color:var(--ink2);width:45%">Annual capacity factor</td><td style="font-weight:600">${(solarCF*100).toFixed(1)}%</td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2);width:45%">Annual capacity factor (${cfLabel})</td><td style="font-weight:600">${(cf*100).toFixed(1)}%</td></tr>
         <tr><td style="padding:3px 0;color:var(--ink2)">Annual yield</td><td style="font-weight:600">${(fin.annualKwh/1000).toFixed(0)} MWh/yr (${(fin.annualKwh/kwp).toFixed(0)} kWh/kWp)</td></tr>
-        <tr><td style="padding:3px 0;color:var(--ink2)">Peak sun hours</td><td>${(solarCF*24).toFixed(1)} h/day average</td></tr>
+        <tr><td style="padding:3px 0;color:var(--ink2)">${pfTech==='solar' ? 'Peak sun hours' : 'Equivalent full-load hours'}</td><td>${pfTech==='solar' ? (solarCF*24).toFixed(1)+' h/day average' : Math.round(cf*8760).toLocaleString()+' h/yr'}</td></tr>
         <tr><td style="padding:3px 0;color:var(--ink2)">Data source</td><td>${solarSource}</td></tr>
         <tr><td style="padding:3px 0;color:var(--ink2)">Array assumption</td><td>Fixed tilt at optimal angle, equator-facing. A real roof at a poorer pitch or azimuth typically yields 5&ndash;15% less.</td></tr>
         ${battHours>0?`<tr><td style="padding:3px 0;color:var(--ink2)">Battery storage</td><td>${battHours}h · ${(battKwhours).toFixed(0)} kWh · charges from solar surplus</td></tr>`:''}
@@ -2381,21 +2525,20 @@ function printPrefeas() {
     // Losses: ~2% base + 0.002% per km
     const lossPct = Math.min(6, 2 + distKm * 0.003);
     const lossMultiplier = 1 / (1 - lossPct/100);
-    // Capture prices from CAPTURE table (use gen region solar as base)
-    const CAP = {
-      'Northern Cape':{solar:490,wind:600},'Hydra Central':{solar:495,wind:590},
-      'Eastern Cape':{solar:567,wind:609},'Western Cape':{solar:576,wind:590},
-      'Free State':{solar:510,wind:603},'North West':{solar:528,wind:608},
-      'Limpopo':{solar:544,wind:612},'Mpumalanga':{solar:562,wind:623},
-    };
-    const cap = CAP[gen] || {solar:520, wind:600};
-    const ppaSolar = Math.round(cap.solar / 0.88); // R/MWh
-    const ppaWind  = Math.round(cap.wind  / 0.88);
+    // SAME capture source as the Capture tab - one computation, two tabs. This
+    // previously carried its own hardcoded 2026 table, so the two tabs could
+    // show different capture prices for the same region on the same screen.
+    const c = captureFor(gen) || { solar:520, wind:600, ppaSolar:591, ppaWind:682, live:false };
+    const cap = { solar: c.solar, wind: c.wind };
+    const ppaSolar = c.ppaSolar, ppaWind = c.ppaWind;
     const tuosMWh  = Math.round(tuos * 1000); // convert R/kWh → R/MWh
     const deliveredSolar = Math.round((ppaSolar + tuosMWh) * lossMultiplier);
     const deliveredWind  = Math.round((ppaWind  + tuosMWh) * lossMultiplier);
-    // Compare with local (Gauteng) PPA
-    const localSolar = 600, localWind = 700; // rough Gauteng/Mpumalanga PPA
+    // Local comparison = building AT the consumption region instead: same helper,
+    // same basis, rather than a hardcoded "Gauteng ~R600/700" that went stale
+    // the moment the live scenario moved.
+    const lc = captureFor(cons) || { ppaSolar:600, ppaWind:700 };
+    const localSolar = lc.ppaSolar, localWind = lc.ppaWind;
 
     el.innerHTML = `
       <div style="font-size:10.5px;font-weight:600;margin-bottom:8px">${gen} → ${cons} &nbsp;·&nbsp; ${distKm} km &nbsp;·&nbsp; ${loadMW} MW load</div>
@@ -2409,7 +2552,7 @@ function printPrefeas() {
           <tr><td style="padding:3px 0;color:var(--ink2)">IPP capture price</td>
             <td style="text-align:right;padding:3px 4px">R${cap.solar}/MWh</td>
             <td style="text-align:right">R${cap.wind}/MWh</td></tr>
-          <tr><td style="padding:3px 0;color:var(--ink2)">PPA floor (÷0.88)</td>
+          <tr><td style="padding:3px 0;color:var(--ink2)">PPA floor (÷${(1-PPA_MARGIN).toFixed(2)})</td>
             <td style="text-align:right;padding:3px 4px">R${ppaSolar}/MWh</td>
             <td style="text-align:right">R${ppaWind}/MWh</td></tr>
           <tr><td style="padding:3px 0;color:var(--ink2)">Wheeling (TUoS)</td>
@@ -2430,8 +2573,11 @@ function printPrefeas() {
         </tbody>
       </table>
       <div style="margin-top:8px;font-size:9.5px;color:var(--ink2)">
-        Annual energy: ${(loadMW*8760/1000).toFixed(0)} GWh · TUoS from NTCSA wheeling framework (2024).
-        Losses estimated at ${lossPct.toFixed(1)}% for ${distKm} km.
+        Annual energy: ${(loadMW*8760/1000).toFixed(0)} GWh assuming a flat 24/7 load · TUoS from
+        NTCSA wheeling framework (2024) · losses estimated at ${lossPct.toFixed(1)}% for ${distKm} km.
+        Capture prices ${c.live ? 'from your current scenario (same basis as the Capture price tab)'
+                                : 'are the 2026 baseline — run the model to make them scenario-specific'}.
+        “vs local” = building the same plant in the consumption region instead.
       </div>
       <div style="margin-top:6px;padding:7px 9px;background:rgba(196,120,90,0.07);border-left:3px solid var(--alert,#C4785A);font-size:9.5px;line-height:1.5;color:var(--ink2)">
         <strong>This is transmission only.</strong> It covers NTCSA use-of-system and network
@@ -2469,7 +2615,7 @@ function printPrefeas() {
 </div>
 
 <div style="max-width:1380px;margin:0 auto;padding:0 20px">
-  <div style="margin:22px 0 10px;padding:9px 14px;background:var(--alert,#C4785A);border:1.5px solid var(--ink);text-align:center">
+  <div id="nav-project" style="margin:22px 0 10px;padding:9px 14px;background:var(--alert,#C4785A);border:1.5px solid var(--ink);text-align:center">
     <div style="font-family:'Saira Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:.04em;color:#fff">Project planning</div>
     <div style="font-size:10.5px;color:rgba(255,255,255,0.88);margin-top:2px">Query any specific site rather than the whole country. (This does not depend on the system scenario above.)</div>
   </div>
@@ -2477,7 +2623,7 @@ function printPrefeas() {
 <div class="projwrap" style="max-width:1380px;margin:0 auto;padding:0 20px 20px">
 
 <section id="resourceSection" style="margin-top:18px;box-sizing:border-box;max-width:100%">
-  <div class="panel">
+  <div id="nav-sitetools" class="panel">
     <div class="ph">
       <h2>Site resource query</h2>
       <span class="tag">Solar &amp; wind · click any SA location</span>
@@ -2493,7 +2639,7 @@ function printPrefeas() {
       <button class="rtab" onclick="switchTab('capture')" id="tab_capture">Capture price</button>
       <button class="rtab" onclick="switchTab('grid')" id="tab_grid">Grid connection</button>
       <button class="rtab" onclick="switchTab('wheeling')" id="tab_wheeling">Wheeling</button>
-      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas">Solar project pre-feasibility</button>
+      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas">Project pre-feasibility</button>
       <button class="rtab" onclick="switchTab('rooftop')" id="tab_rooftop">Rooftop solar</button>
     </div>
     <div style="padding:8px 14px;border-bottom:1px solid var(--line2);display:flex;gap:6px;align-items:center;background:var(--panel)">
@@ -2587,7 +2733,12 @@ function printPrefeas() {
             </div>
             <div>
               <label style="font-weight:600;display:block;margin-bottom:3px">Offtake type</label>
-              <select id="pf_offtake" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <div style="grid-column:1/-1;display:flex;gap:12px;font-size:10.5px;align-items:center">
+        <span style="color:var(--ink2)">Technology:</span>
+        <label><input type="radio" name="pfTech" value="solar" checked onchange="runPrefeas&&window.__pfDirty&&window.__pfDirty()"> Solar</label>
+        <label><input type="radio" name="pfTech" value="wind" onchange="runPrefeas&&window.__pfDirty&&window.__pfDirty()"> Wind</label>
+        <label><input type="radio" name="pfTech" value="hybrid" onchange="runPrefeas&&window.__pfDirty&&window.__pfDirty()"> Hybrid (60/40)</label>
+      </div><select id="pf_offtake" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
                 <option value="ownuse">Own-use (behind-the-meter)</option>
                 <option value="wheeling">Wheeling to remote site</option>
                 <option value="grid">Grid sale / IPP</option>
@@ -2740,6 +2891,11 @@ function printPrefeas() {
     </div>
 
     <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
+      For more information, contact Nick Hedley at
+      <a href="mailto:hedley.nick@gmail.com" style="color:inherit;text-decoration:underline">hedley.nick@gmail.com</a>
+    </div>
+
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
       &copy; 2026 Nick Hedley. GridTwin ZA &mdash; model, code, calibration and presentation.
       Licensed under
       <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">CC BY-NC-ND 4.0</a>:
@@ -2843,8 +2999,6 @@ const FIXED = {
   // validate_capacity.js asserts this equality; if you change windMW by hand it
   // will fail. Excludes 88 MW behind-the-meter captive, which suppresses demand
   // rather than adding supply.
-  // pvUtilityMW is NOT yet derived the same way: about 1,823 MW of private solar
-  // commissioned before Jan 2026 is unsourced, so 4,974 stands with a known gap.
   ocgtDieselMW:3400, windMW:4612, pvUtilityMW:3151, rooftopMW:8619.4, cspMW:600,
   // RMIPPPP HYBRID - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
@@ -2855,7 +3009,10 @@ const FIXED = {
   //
   // DISPATCH: the RMIPPPP requires each project to be dispatchable between 05:00
   // and 21:30 daily on System Operator instruction, with a minimum daily capacity
-  // factor of 50% inside that window. Eskom pays a CAPACITY charge for
+  // factor of 50% inside that window. An hourly model cannot express 21:30:
+  // hybridEndHour 21 (hour-beginning) runs the window to 22:00, half an hour
+  // long. The alternative (ending at 21:00) would be half an hour short; long
+  // was chosen because the contract's obligation is availability, not a cap. Eskom pays a CAPACITY charge for
   // availability, so an available hybrid is always taken: it behaves as a
   // zero-marginal-cost infeed inside its window and delivers nothing outside it.
   // Meridian Economics models RMIPPPP the same way - "a dispatchable generator and
@@ -2961,15 +3118,15 @@ const FIXED = {
   // should be adding supply. The effect is to understate both utility-scale
   // generation and the curtailment/headroom pressure it creates.
   //
-  // It is NOT corrected here because the split is not published. Eskom reports
-  // one number; the ground-mounted share of it is not broken out anywhere found
-  // as of 14 Aug 2026. Correcting it needs that split, NOT an estimate - and an
-  // estimate would move capacity between two constants that are each sourced,
-  // which is worse than a documented distortion.
-  // Sources that might settle it: SAPVIA's data portal segments capacity into
-  // residential / C&I SSEG (<1MW) / C&I large-scale (1-50MW) / utility-scale -
-  // the last two are the ground-mounted candidates; or PFL's wheeled-project
-  // monitor, which lists such projects individually and is already a source here.
+  // CORRECTED 15 Aug 2026 for the KNOWN wheeled fleet: the 488 MW that PFL's
+  // monitor identifies project-by-project is subtracted here (rooftopMW =
+  // 9,107.4 - 488 = 8,619.4) and per-region in BOTH nodal consumers
+  // (nodal_engine.js and nodal_dispatch.js), sharing by_source.private so the
+  // engines cannot drift. Limpopo is the dramatic case: 388 of its 561.8 MW
+  // "rooftop" was Mooi Plaats + Bolobedu, ground-mounted wheeled plant.
+  // Any FURTHER ground-mounted capacity inside Eskom's series (pre-2026
+  // installations PFL has not catalogued) remains uncorrected - that residual
+  // needs a published split, not an estimate.
   /* ================= COST FAMILIES - WHICH NUMBER GOVERNS WHAT =============
    * Audited 14 Aug 2026. The model carries FOUR cost representations. This is
    * the professional structure (PLEXOS/PyPSA/ReEDS): capex+life for investment,
@@ -3909,7 +4066,9 @@ function simulate(u, prof, outPath){
     pvAdderMW=u.newPvMW-pvExempt;
   }
   const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
-  const genKeys=['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
+  // 'hybrid' added 15 Aug 2026: it serves the grid, so excluding it from the
+    // denominator while its costs sat in the numerator overstated avgCost ~0.9%.
+    const genKeys=['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed=genKeys.reduce((s,k)=>s+E[k],0)-E.rooftop-E.ps-E.batt; // net grid gen (storage is shifted energy)
   // Behind-the-meter capex, split out. Rooftop PV is funded by the households and
   // businesses that install it, and its energy never enters the grid - gridServed
@@ -3925,9 +4084,11 @@ function simulate(u, prof, outPath){
   const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
   // Full replacement cost: price EVERY MWh (existing + new) at its lifecycle LCOE.
   // Coal is charged new-build coal LCOE; storage discharge priced at storage LCOE.
+  // hybrid at R1,900/MWh: RMIPPPP awarded tariffs cluster R1.5-2.3/kWh; midpoint,
+  // used only as a replacement-cost weight for its 1.77 TWh - not a dispatch cost.
   const lcoeOf={coal:p.lcoeCoalNew, ccgt:p.lcoeCcgt, diesel:p.lcoeDiesel, nuclear:p.lcoeNuclear,
     hydro:p.lcoeHydro, imports:p.lcoeImports, wind:p.lcoeWind, pv:p.lcoePv, csp:p.lcoeCsp,
-    rooftop:p.lcoeRooftop, ps:p.lcoePs, batt:p.lcoeBatt};
+    rooftop:p.lcoeRooftop, ps:p.lcoePs, batt:p.lcoeBatt, hybrid:1900};
   let replTotal=0;
   for(const k in lcoeOf) replTotal += E[k]*lcoeOf[k];
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
@@ -4941,7 +5102,7 @@ async function runWeatherSpread(){
     const prof = { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind,
                    csp: PROFILES.csp, real: true };
     const res = simulate(state, prof);
-    const gen = ['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel']
+    const gen = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel']
       .reduce((a,k) => a + (res.E[k]||0), 0);
     // VRE actually produced, and what it COULD have produced before spilling.
     // Curtailment as a share of available renewable output is the number that
@@ -5280,7 +5441,7 @@ async function runDelayAnalysis(){
   if (!highsMod){ st.textContent = 'Solver unavailable.'; btn.disabled=false; btn.style.opacity=1; return; }
 
   const base = { growth: Math.pow(1 + (state.demandGrowthPct||0)/100, 1/5) - 1,
-                 eaf: (state.coalEAFPct||64)/100, rate: bldRates(), state };
+                 eaf: (state.coalEAFPct??64)/100, rate: bldRates(), state };
 
   const out = [];
   for (const [label, delayed] of [['On schedule', 0], [`Slipped ${slip}\u00a0years`, slip]]){
@@ -6859,6 +7020,14 @@ function _setCurtailLabelText(el, text) {
 }
 
 function applyCurtailmentToMap(regionCurtMwh, renewablePotentialMwh, regions) {
+  // Publish the shares for the Grid connection tab: same numbers, same basis
+  // (share of the region's own renewable potential), so the site query and the
+  // schematic can never disagree.
+  window.__nodalCurtByRegion = window.__nodalCurtByRegion || {};
+  regions.forEach((regionName, i) => {
+    const pot = renewablePotentialMwh[i] || 0;
+    window.__nodalCurtByRegion[regionName] = pot > 0 ? 100 * (regionCurtMwh[i] || 0) / pot : 0;
+  });
   regions.forEach((regionName, i) => {
     const nodeId = REGION_TO_NODE[regionName];
     if (!nodeId) return;
@@ -7137,7 +7306,9 @@ document.getElementById('wkW').addEventListener('click',e=>{weekMode='W';toggleW
 document.getElementById('wkS').addEventListener('click',e=>{weekMode='S';toggleWk(e.target);draw(nodalActiveRes||lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);});
 function toggleWk(btn){const g=btn.parentElement;(g?g.querySelectorAll('button'):[]).forEach(b=>b.classList.toggle('active',b===btn));}
 ['spW','spS'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('click',e=>{spWeekMode=(id==='spW')?'W':'S';toggleWk(e.target);if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(nodalActiveRes||lastRes);});});
-const DISP_ORDER=['nuclear','hydro','imports','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
+// 'hybrid' added 15 Aug 2026: the chart was drawing WITHOUT it - 285 MW of served
+  // generation invisible, stack below the demand line through 05:00-21:00.
+  const DISP_ORDER=['nuclear','hydro','imports','hybrid','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
 
 function drawDispatch(r){
   const c=dispCanvas, dpr=window.devicePixelRatio||1;
@@ -7234,6 +7405,60 @@ function draw(r){
 
 /* ==================== RENDER RESULTS ==================== */
 const fmtTWh=v=>(v/1e6).toFixed(1);
+// ── System adequacy: the planner's trio ─────────────────────────────────────
+// LOLE  = hours/year with any unserved energy (loss-of-load expectation).
+// EUE   = unserved energy for the year (expected unserved energy).
+// Reserve margin = (firm available capacity − monthly peak) / monthly peak,
+// where firm = coal×EAF + nuclear×0.9 + hydro + imports×0.85 + peakers +
+// storage power + hybrid (available in its window at evening peak). Wind/solar
+// are excluded from FIRM capacity by convention - they appear in the demand
+// side as reduced residual load, matching how Eskom's weekly report frames OR.
+const MONTH_N=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_D=[31,28,31,30,31,30,31,31,30,31,30,31];
+function renderAdequacy(r){
+  const el=document.getElementById('adequacyBody');
+  if(!el||!r||!r.stack) return;
+  const p={...FIXED,...state};
+  const firm=(p.coalInstalledMW-(p.coalDecomMW||0))*((p.coalEAFPct??64)/100)
+    +(p.nuclearMW+(p.newNuclearMW||0))*0.90+p.hydroMW+p.importsMW*0.85
+    +p.ocgtDieselMW+(p.ccgtMW||0)+(p.newCcgtMW||0)
+    +p.psPowerMW+p.battPowerMW+(p.newBattMW||0)
+    +p.hybridMW*p.hybridCF;
+  let lole=0, h0=0; const mPeak=new Array(12).fill(0);
+  for(let m=0;m<12;m++){
+    const hrs=MONTH_D[m]*24;
+    for(let h=h0;h<h0+hrs&&h<8760;h++){
+      if(r.stack.unserved[h]>1) lole++;
+      if(r.loadS[h]>mPeak[m]) mPeak[m]=r.loadS[h];
+    }
+    h0+=hrs;
+  }
+  const eueGWh=r.E.unserved/1000;
+  const rm=mPeak.map(pk=>pk>0?100*(firm-pk)/pk:0);
+  const worst=rm.indexOf(Math.min(...rm));
+  const rmCol=v=>v>=15?'var(--ok,#4A8C5C)':v>=8?'#f5c518':'var(--alert,#C4785A)';
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+      <div><div style="font-size:19px;font-weight:700;color:${lole>0?'var(--alert,#C4785A)':'var(--ok,#4A8C5C)'}">${lole.toLocaleString()}</div>
+        <div style="font-size:9.5px;color:var(--ink2)">LOLE &middot; h/yr with unserved load</div></div>
+      <div><div style="font-size:19px;font-weight:700;color:${eueGWh>0.5?'var(--alert,#C4785A)':'var(--ok,#4A8C5C)'}">${eueGWh<0.05?'0':eueGWh.toFixed(1)}</div>
+        <div style="font-size:9.5px;color:var(--ink2)">EUE &middot; GWh/yr unserved</div></div>
+      <div><div style="font-size:19px;font-weight:700;color:${rmCol(rm[worst])}">${rm[worst].toFixed(0)}%</div>
+        <div style="font-size:9.5px;color:var(--ink2)">Min reserve margin (${MONTH_N[worst]})</div></div>
+    </div>
+    <div style="font-size:9.5px;color:var(--ink2);margin-bottom:3px">Reserve margin by month (firm capacity vs monthly peak)</div>
+    <div style="display:flex;gap:2px;align-items:flex-end;height:52px">
+      ${rm.map((v,i)=>`<div title="${MONTH_N[i]}: firm ${(firm/1000).toFixed(1)} GW vs peak ${(mPeak[i]/1000).toFixed(1)} GW &rarr; ${v.toFixed(1)}% margin" style="flex:1;cursor:help;background:${rmCol(v)};height:${Math.max(2,Math.min(100,v*2.4))}%;border-radius:1px"></div>`).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--ink2)"><span>Jan</span><span>Dec</span></div>
+    <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.5">
+      Firm capacity ${(firm/1000).toFixed(1)} GW: coal&times;EAF + nuclear + hydro + imports + peakers +
+      storage power + hybrid. Wind and solar are not counted as firm &mdash; they reduce the load
+      the firm fleet must meet, which is how Eskom&rsquo;s weekly report frames operating reserve.
+      Planning norms typically target LOLE in the low tens of hours; the IRP frames adequacy in EUE terms.
+    </div>`;
+}
+
 function render(r){
   const banner=document.getElementById('kpiSourceBanner');
   if(banner) banner.style.display='none';
@@ -7256,9 +7481,10 @@ function render(r){
   document.getElementById('bdShed').textContent='…';
 
   // KPIs
-  const genTWh=(['wind','pv','csp','nuclear','hydro','imports','coal','ccgt','diesel','rooftop'].reduce((s,k)=>s+r.E[k],0))/1e6;
-  const reShare=100*(r.E.wind+r.E.pv+r.E.csp+r.E.rooftop+r.E.hydro)/(genTWh*1e6);
-  const nonFossilShare=100*(r.E.wind+r.E.pv+r.E.csp+r.E.rooftop+r.E.nuclear+r.E.hydro+r.E.imports)/(genTWh*1e6);
+  if(typeof renderAdequacy==='function') renderAdequacy(r);
+    const genTWh=(['wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ccgt','diesel','rooftop'].reduce((s,k)=>s+r.E[k],0))/1e6;
+  const reShare=100*(r.E.wind+r.E.pv+r.E.csp+(r.E.hybrid||0)+r.E.rooftop+r.E.hydro)/(genTWh*1e6);
+  const nonFossilShare=100*(r.E.wind+r.E.pv+r.E.csp+(r.E.hybrid||0)+r.E.rooftop+r.E.nuclear+r.E.hydro+r.E.imports)/(genTWh*1e6);
   const kpis=[
     {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
     {k:'System cost',v:(r.totalCost/1e9).toFixed(0),u:'R bn/yr'},
@@ -7272,7 +7498,7 @@ function render(r){
   document.getElementById('kpis').innerHTML=kpis.map(x=>'<div class="kpi"><div class="k">'+x.k+'</div><div class="v">'+x.v+'<span class="u"> '+x.u+'</span></div></div>').join('');
 
   // mix — donut chart with legend
-  const order=['coal','rooftop','wind','pv','csp','nuclear','imports','hydro','ps','batt','ccgt','diesel'];
+  const order=['coal','rooftop','wind','pv','csp','hybrid','nuclear','imports','hydro','ps','batt','ccgt','diesel'];
   const tot=order.reduce((s,k)=>s+r.E[k],0);
   document.getElementById('mixTotal').textContent=fmtTWh(tot)+' TWh incl. rooftop';
   const mixData=order.map(k=>({k,v:r.E[k],pct:100*r.E[k]/tot})).filter(d=>d.v>tot*0.0005||['coal','wind','pv','ccgt','ps','batt'].includes(d.k));
@@ -7321,8 +7547,8 @@ function render(r){
   updateMap(r);
   draw(r);
   const a11y=document.getElementById('dispatchA11yTable');
-  if(a11y&&r&&r.E){const E=r.E,tot=(E.coal+E.nuclear+E.hydro+E.imports+E.ps+E.batt+E.ccgt+E.diesel+E.wind+E.pv+E.csp+(E.rooftop||0))/1e6;
-    a11y.innerHTML='<table><caption>Annual energy mix summary</caption><thead><tr><th>Source</th><th>TWh/yr</th><th>Share</th></tr></thead><tbody>'
+  if(a11y&&r&&r.E){const E=r.E,tot=(E.coal+(E.hybrid||0)+E.nuclear+E.hydro+E.imports+E.ps+E.batt+E.ccgt+E.diesel+E.wind+E.pv+E.csp+(E.rooftop||0))/1e6;
+    a11y.innerHTML='<table><caption>Annual electricity mix summary</caption><thead><tr><th>Source</th><th>TWh/yr</th><th>Share</th></tr></thead><tbody>'
       +[['Coal',E.coal],['Nuclear',E.nuclear],['Wind',E.wind],['Solar PV',E.pv+(E.rooftop||0)],['CSP',E.csp],
         ['Hydro / Imports',E.hydro+E.imports],['Storage',E.ps+E.batt],['Gas / Diesel',E.ccgt+E.diesel],['Unserved',E.unserved]]
        .filter(([,v])=>v>1e4).map(([n,v])=>'<tr><td>'+n+'</td><td>'+(v/1e6).toFixed(1)+'</td><td>'+(100*v/(tot*1e6)).toFixed(1)+'%</td></tr>').join('')
@@ -7559,10 +7785,10 @@ function downloadDispatchCSV() {
   if(!lastRes) return;
   const r = lastRes;
   const E = r.E;
-  const carriers = ['coal','nuclear','hydro','imports','wind','pv','csp','rooftop','ps','batt','ccgt','diesel','unserved'];
+  const carriers = ['coal','nuclear','hydro','imports','hybrid','wind','pv','csp','rooftop','ps','batt','ccgt','diesel','unserved'];
   const names = {coal:'Coal',nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',
     wind:'Wind',pv:'Utility PV',csp:'CSP',rooftop:'Rooftop PV',
-    ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',unserved:'Unserved (shed)'};
+    ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',unserved:'Unserved (shed)',hybrid:'Hybrid (RMIPPPP)'};
   // Header
   const usingNodal = !!(nodalActiveRes && nodalUnservedGwh !== null);
   const sourceNote = usingNodal
@@ -7586,7 +7812,7 @@ function downloadDispatchCSV() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   // Include key scenario params in filename
-  const eaf = state.coalEAFPct||64;
+  const eaf = state.coalEAFPct ?? 64;   // ?? not ||: an EAF-0 export must not be named eaf64
   const wind = Math.round((state.newWindMW||0)/1000);
   const solar = Math.round((state.newPvMW||0)/1000);
   a.download = `gridtwin_za_dispatch_eaf${eaf}${wind?'_w'+wind+'gw':''}${solar?'_s'+solar+'gw':''}.csv`;
@@ -8206,7 +8432,8 @@ function rtCalc() {
 // utility-scale grid battery cost used elsewhere in this app. Calibrated from
 // current installer pricing: a 5kWh addition runs roughly R40,000-45,000 and a
 // 10kWh addition roughly R60,000-65,000 on top of a base solar-only system.
-  const RT_BATT_R_PER_KWH = 6500;
+  // Shared with the pre-feasibility tab - one behind-the-meter battery price.
+  const RT_BATT_R_PER_KWH = (typeof BTM_BATT_R_PER_KWH !== 'undefined') ? BTM_BATT_R_PER_KWH : 6500;
   const battCapex  = battKwh > 0 ? battKwh * RT_BATT_R_PER_KWH : 0;
   const totalCapex = solarCapex + battCapex;
   // Exported energy is assumed to earn nothing (SA municipalities generally offer
@@ -8299,7 +8526,7 @@ function rtCalc() {
     for(let y=1;y<=25;y++) npvMid += annualNet*Math.pow(1+escal,y)/Math.pow(1+mid,y);
     if(npvMid>0) lo=mid; else hi=mid; irr=mid;
   }
-  const co2T = usableKwh * 0.00095;
+  const co2T = usableKwh * ((typeof BTM_DISPLACED_EF !== 'undefined' ? BTM_DISPLACED_EF : 0.95)/1000);   // shared EF, see BTM_DISPLACED_EF
   const pbCol = simplePayback<6 ? 'var(--ok,#4A8C5C)' : simplePayback<10 ? '#F5A623' : 'var(--alert,#C4785A)';
 
   const maxMS = Math.max.apply(null, monthlySavings);
@@ -9673,7 +9900,7 @@ function applyMIPResult(m, mode) {
   const startCost = m.totalStartCost * scale;
   fuelCost += startCost;
 
-  const genKeys = ['rooftop','wind','pv','csp','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
+  const genKeys = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed = genKeys.reduce((s,k)=>s+(E[k]||0),0) - (E.rooftop||0) - (E.ps||0) - (E.batt||0);
   const totalCost = fuelCost + carbonCost + lastRes.newCapexR;
   const co2 = (E.coal*p.emisCoal + E.ccgt*p.emisCcgt + E.diesel*p.emisDiesel) / 1e6;
@@ -9827,6 +10054,27 @@ function renderMIPSummary() {
 
 window.runMIP = runMIP;
 window.cancelMIP = cancelMIP;
+
+// Scroll-spy for the sticky nav: highlight whichever anchor is currently at
+// the top of the viewport. IntersectionObserver rather than a scroll handler
+// so it costs nothing while idle.
+(function(){
+  const links = [...document.querySelectorAll('#jumpNav a')];
+  const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  if (!targets.length || !('IntersectionObserver' in window)) return;
+  const seen = new Map();
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => seen.set(e.target, e.intersectionRatio));
+    let best = null, bestTop = Infinity;
+    targets.forEach(t => {
+      const top = t.getBoundingClientRect().top;
+      if (top <= 90 && top > -1e6 && Math.abs(top - 60) < bestTop){ bestTop = Math.abs(top - 60); best = t; }
+    });
+    links.forEach(a => a.classList.toggle('active',
+      best && a.getAttribute('href') === '#' + best.id));
+  }, { rootMargin: '-50px 0px -70% 0px', threshold: [0, 0.1, 0.5, 1] });
+  targets.forEach(t => io.observe(t));
+})();
 </script>
 
 </body>
