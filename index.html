@@ -6083,15 +6083,16 @@ const ESKOM_ACTUALS = {
           + 'RESOLVED 15 Aug 2026: was 4.97 GW with an unexplained 2.2 GW - see HANDOVER.' },
     { k: 'Coal generation',       model: () => (lastRes && lastRes.E) ? lastRes.E.coal/1e6 : 0,
       actual: 177.7, unit: 'TWh/yr',
-      note: 'Ember, 12 months to May 2026. KNOWN GAP, under investigation: the model has NO energy '
-          + 'sinks between generator and customer - its balance is generation = load exactly. Real '
-          + 'systems lose energy to station auxiliary consumption (coal plants use 6-10% of gross '
-          + 'output on mills, fans and FGD), to T&D losses (Eskom reports ~9.1%, of which ~7% is '
-          + 'distribution including theft) and to SADC exports (~4-5 TWh/yr). Coal absorbs the whole '
-          + 'shortfall because it is the swing producer. Consequence: coal generation, CO2 and fuel '
-          + 'cost here are understated by roughly a tenth, and renewable shares correspondingly '
-          + 'overstated. Not yet corrected because the three causes are not separable from the data '
-          + 'to hand - see HANDOVER.md.' },
+      note: 'Ember, 12 months to May 2026. RESOLVED 16 Aug 2026 - this is a GROSS vs SENT-OUT '
+          + 'difference, not a model error. Ember reports GROSS generation; this model produces '
+          + 'SENT-OUT, because its cost and emission coefficients are Eskom\u2019s per-sent-out '
+          + 'figures (R546/MWh primary energy, 1.04 tCO2/MWh). Converting Ember to sent-out at '
+          + 'standard auxiliary rates - coal 7.7%, nuclear 5%, renewables nil, since only thermal '
+          + 'plant carries meaningful house load for mills, fans and FGD - gives 218.8 TWh against '
+          + 'the model\u2019s 218.9, a difference of 0.02%. On that basis Ember\u2019s coal is '
+          + '164.0 TWh against our 157.0, and the 7 TWh remainder is almost exactly offset by our '
+          + 'higher renewables (rooftop and privately wheeled wind, both explained in the rows '
+          + 'below). Costs and emissions are therefore NOT understated.' },
     { k: 'Wind generation',       model: () => (lastRes && lastRes.E) ? lastRes.E.wind/1e6 : 0,
       actual: 11.6, unit: 'TWh/yr',
       note: 'Ember, 12 months to May 2026. The model reads high for two reasons that are NOT errors: '
