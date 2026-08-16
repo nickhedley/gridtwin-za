@@ -684,9 +684,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         fast-start peakers and storage against a reserve need near 1.3&nbsp;GW &mdash; so it is not what
         keeps prices flat; coal simply sets the price in every hour. It bites once coal is tight: at
         EAF&nbsp;52&nbsp;% with 12&nbsp;% demand growth, switching reserve on moves diesel from 1,843 to
-        2,031 running hours. Still missing: <strong>unit-level forced outages</strong> (EAF is applied as
-        a smooth derate rather than lumpy trips, which is why the model sheds less than Eskom does) and
-        intra-regional network limits below the ten-region corridor level &mdash; though
+        2,031 running hours. <strong>Unit-level forced outages</strong> are now modelled too: availability
+        comes from a two-state Markov process over the 85 individual coal units rather than a flat
+        derate, so several units can be out at once and the bad hours are genuinely bad. The EAF
+        slider still sets the annual average; what changes is the shape. It matters most where it
+        should &mdash; at EAF&nbsp;55&nbsp;% the model sheds for 207 hours instead of 3, and diesel
+        runs 1,402 hours instead of 415. A fixed seed keeps the headline scenario reproducible; the
+        risk panel varies it. Still simplified: unit trips are drawn independently, where real ones
+        cluster (common-mode failures, coal quality, a stressed fleet), and intra-regional network
+        limits below the ten-region corridor level remain out of scope &mdash; though
         new build from the sliders is now sited against <strong>GCCA connection headroom</strong>
         rather than simply following the existing fleet, so capacity no longer piles into the
         Northern Cape and Hydra Central, which have had zero solar headroom since GCCA&nbsp;2025.
@@ -3131,6 +3137,11 @@ const FIXED = {
   // Reserve is capacity that is COMMITTED BUT NOT DISPATCHED - that is the whole
   // point, and the reason adding it separates peak from off-peak prices.
   reserveEnabled:1, reserveContingencyMW:794, reserveRegulatingPct:2.0, reserveVrePct:5.0,
+  // Unit-level forced outages. forcedSharePct is the portion of total
+  // unavailability that is UNPLANNED - Eskom's UCLF is roughly 15 points of a
+  // ~32 point gap at EAF 68, hence 47%. mttrHours is the mean repair time for a
+  // forced coal outage. Seed is fixed so the headline scenario is reproducible.
+  outageUnitLevel:1, outageForcedSharePct:47, outageMttrH:72, outageSeed:20260816,
   // Clean coal (CCS). Defaults are mid-range for a post-combustion amine
   // retrofit; every one is exposed in the policy panel.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
@@ -3693,6 +3704,13 @@ function simulate(u, prof, outPath){
     ? RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100 + _vreMW[h] * RESERVE.vrePct/100
     : 0;
   const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, Math.max(0, coalInstalled), eafFraction, RESERVE);
+  // Lumpy unit availability. Skipped when an explicit Monte Carlo path is
+  // supplied (that path is already the outage draw for the run) and when the
+  // toggle is off, which restores the smooth-derate behaviour exactly.
+  const unitOutage = (!outPath && (p.outageUnitLevel ?? 1))
+    ? genUnitOutagePath(eafFraction, p.outageForcedSharePct ?? 47,
+                        p.outageMttrH ?? 72, p.outageSeed ?? 20260816)
+    : null;
 
   // Forward-looking signal for off-peak coal-charging: how much real coal-insufficient need
   // (net load exceeding what coal alone can cover) is coming over the NEXT 24 hours. Used so
@@ -3743,7 +3761,14 @@ function simulate(u, prof, outPath){
     // ucAvail already accounts for EAF (via availFactor in buildUCSchedule)
     // outPath applies an additional random outage variation around the UC commitment
     const ucCommitted = (ucAvail[h] > 0 && !isNaN(ucAvail[h])) ? ucAvail[h] : coalAvail;
-    const cAvailRaw = outPath ? Math.min(ucCommitted, coalInstRem*outPath[Math.floor(h/24)]) : ucCommitted;
+    // Availability for this hour. Priority: an explicit Monte Carlo outPath if
+    // one was passed, otherwise the unit-level Markov path when enabled, else
+    // the UC commitment on its own (the old smooth-derate behaviour).
+    const availFrac = outPath ? outPath[Math.floor(h/24)]
+                    : (unitOutage ? unitOutage[h] : null);
+    const cAvailRaw = (availFrac != null)
+      ? Math.min(ucCommitted, coalInstRem * availFrac)
+      : ucCommitted;
     // OPERATING RESERVE: capacity that is committed but must NOT be dispatched,
     // so it can respond to a unit trip or a forecast error. Coal carries the
     // spinning share; the fast-start fleet (OCGT, storage) can cover the rest
@@ -4282,6 +4307,86 @@ function priceStatsOf(mp, stack, E){
                batt: cap(stack.batt), hybrid: cap(stack.hybrid) },
     duration: Array.from({length: 101}, (_, i) => sorted[Math.min(H-1, Math.floor(H*i/100))]),
   };
+}
+
+/* ==================== UNIT-LEVEL FORCED OUTAGES ===========================
+ * EAF applied as a smooth derate says the fleet is 68% available in EVERY hour.
+ * Reality is lumpy: a 794 MW Medupi set is either running or it is not, and the
+ * bad hours are the ones where several units happen to be out at once. That
+ * difference is why a smooth-derate model shows zero unserved energy at EAF 68%
+ * while Eskom still sheds - the smooth version never experiences a bad draw.
+ *
+ * Two-state Markov per unit, the standard approach in adequacy work:
+ *   available --(lambda)--> forced out --(mu)--> available
+ *   mu     = 1/MTTR                    (repair rate, per hour)
+ *   lambda = mu * FOR / (1 - FOR)      (so the steady state equals FOR)
+ *
+ * PRESERVING THE EAF SLIDER. The user's EAF must still mean what it says, so
+ * total unavailability is split into a PLANNED part (smooth, and shifted into
+ * the low-demand months the way real maintenance is scheduled) and an UNPLANNED
+ * part (this lumpy Markov process). The unplanned share defaults to Eskom's own
+ * rough split - UCLF is about 15 points of a ~32 point total gap - and the
+ * long-run mean of the combined path reproduces the EAF the user set.
+ *
+ * DETERMINISTIC BY DEFAULT. A fixed seed means the headline scenario is
+ * reproducible and the validators stay meaningful; the Monte Carlo panel varies
+ * the seed across its runs, which is where the distribution belongs.
+ */
+function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed){
+  const HOURS = 8760;
+  const rnd = mulberry32(seed >>> 0);
+
+  // Build the unit list once from the same fleet the UC scheduler uses.
+  const units = [];
+  for (const g of UC_FLEET){
+    const n = Math.max(1, g.n || 1);
+    const uc = g.unit_cap || (g.cap / n);
+    for (let k = 0; k < n; k++) units.push(uc);
+  }
+  const fleetMW = units.reduce((a,b) => a+b, 0) || 1;
+
+  const unavail = Math.max(0, 1 - eafFrac);
+  const forcedFrac  = unavail * Math.min(1, Math.max(0, forcedSharePct/100));
+  const plannedFrac = unavail - forcedFrac;
+
+  // ---- forced: two-state Markov per unit -------------------------------------
+  const MTTR = Math.max(4, mttrHours);
+  const mu = 1 / MTTR;
+  const FOR = Math.min(0.6, Math.max(0, forcedFrac));
+  const lambda = FOR >= 1 ? 1 : mu * FOR / (1 - FOR);
+
+  const up = new Uint8Array(units.length);
+  const avail = new Float64Array(HOURS);
+  // Start each unit in its steady state so the year does not open all-healthy.
+  for (let i = 0; i < units.length; i++) up[i] = rnd() < FOR ? 0 : 1;
+
+  for (let h = 0; h < HOURS; h++){
+    let mw = 0;
+    for (let i = 0; i < units.length; i++){
+      if (up[i]){ if (rnd() < lambda) up[i] = 0; }
+      else      { if (rnd() < mu)     up[i] = 1; }
+      if (up[i]) mw += units[i];
+    }
+    avail[h] = mw / fleetMW;      // fraction of fleet forced-available
+  }
+
+  // ---- planned: smooth, and pushed into the low-demand months ----------------
+  // Real maintenance is scheduled away from the winter peak. A simple seasonal
+  // shape does that: heavier Sep-Feb, lighter May-Aug.
+  const MDAYS = [31,28,31,30,31,30,31,31,30,31,30,31];
+  const SEASON = [1.35,1.35,1.20,1.05,0.65,0.45,0.45,0.55,1.10,1.30,1.35,1.35];
+  let wsum = 0;
+  for (let m = 0; m < 12; m++) wsum += SEASON[m] * MDAYS[m] * 24;
+  const scale = wsum > 0 ? (plannedFrac * HOURS) / wsum : 0;
+  let h0 = 0;
+  for (let m = 0; m < 12; m++){
+    const hrs = MDAYS[m] * 24;
+    const off = SEASON[m] * scale;             // planned unavailable this month
+    for (let h = h0; h < h0 + hrs && h < HOURS; h++)
+      avail[h] = Math.max(0, avail[h] - off);
+    h0 += hrs;
+  }
+  return avail;   // hourly fraction of the coal fleet available
 }
 
 function genOutagePath(meanFrac, volFrac, seed){
@@ -6852,6 +6957,12 @@ function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
+  {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
+   note:'Model availability as individual units tripping and being repaired (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Same average availability either way \u2014 the slider still means what it says \u2014 but the bad hours are now genuinely bad. At EAF 55% this moves shedding from 3 hours to 207.'},
+  {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
+   note:'How much of the EAF gap is unplanned trips rather than scheduled maintenance. Eskom\u2019s UCLF runs about 15 points of a ~32 point total gap, hence 47%. Planned outages are smooth and pushed into the low-demand months, the way real maintenance is scheduled.'},
+  {id:'outageMttrH',label:'Mean time to repair',min:8,max:400,step:8,def:FIXED.outageMttrH,fmt:v=>v+' h',
+   note:'How long a forced outage lasts on average. Shorter repairs mean more frequent, shallower events; longer ones mean rarer but deeper troughs for the same annual EAF.'},
   {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
    note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output. At today\u2019s fleet this rarely binds \u2014 South Africa has ~7 GW of fast-start peakers and storage against a reserve need near 1.3 GW \u2014 but it bites hard once coal is tight or peakers retire.'},
   {id:'reserveContingencyMW',label:'N-1 contingency reserve',min:0,max:1600,step:20,def:FIXED.reserveContingencyMW,fmt:v=>v+' MW',
