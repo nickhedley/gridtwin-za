@@ -724,6 +724,16 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         Northern Cape and Hydra Central, which have had zero solar headroom since GCCA&nbsp;2025.
         Beyond about 19.9&nbsp;GW of new solar the model reports that the scenario has outrun
         national connection headroom instead of quietly absorbing it.</p>
+        <p style="margin-bottom:8px"><strong>Demand response</strong> is modelled as two separate
+        products, because they behave differently. <em>Interruptible load</em> &mdash; contracted
+        industrial customers Eskom can drop, historically the smelters &mdash; defaults to 1,200&nbsp;MW
+        because it genuinely exists, is called before any shedding, and is reported apart from unserved
+        energy: a managed reduction under contract is not a blackout. It is not free, and the
+        compensation is booked into system cost. <em>Shiftable load</em> &mdash; water heating,
+        pumping, irrigation and EV charging moved within the day, strictly energy-neutral &mdash;
+        defaults to ZERO, because at meaningful scale it does not yet exist here. It is a scenario
+        lever rather than a description of today, and is worth testing alongside a high-solar build
+        since it soaks up midday output.</p>
         <p style="margin-bottom:8px"><strong>Carbon cap:</strong> the build optimiser can be run
         <em>subject to</em> an emissions ceiling rather than only reporting against the NDC, which is
         how the IRP poses the question. The answer is informative: the least-cost plan already lands
@@ -3275,6 +3285,22 @@ const FIXED = {
   // issue in profiles.json, listed in HANDOVER, not something to paper over with
   // a fabricated loss factor in the engine.
   nuclearCF:0.75,
+  // ── DEMAND RESPONSE ──────────────────────────────────────────────────────
+  // Two mechanisms, because they are genuinely different products:
+  //
+  // INTERRUPTIBLE LOAD (drInterruptMW). Contracted large industrial load that
+  // Eskom can drop in a shortage - historically the aluminium smelters and other
+  // energy-intensive users, through Demand Market Participation and instantaneous
+  // interruptible load contracts. It is REAL and already exists, so it defaults
+  // ON at 1,200 MW. It is not free: the customer is compensated, at a rate far
+  // below the cost of unserved energy but well above diesel, which is exactly why
+  // it sits between them in the merit order.
+  //
+  // SHIFTABLE LOAD (drShiftPct). Load moved WITHIN a day rather than dropped -
+  // water heating, pumping, irrigation, EV charging. Energy-neutral over 24
+  // hours. At meaningful scale this barely exists in South Africa yet, so it
+  // defaults to ZERO and is a scenario lever rather than a description of today.
+  drInterruptMW:1200, drInterruptCostR:4000, drShiftPct:0,
   // ROOFTOP DERATE, corrected 16 Aug 2026 (was 0.94).
   // Rooftop and utility PV previously ran within 1pp of each other - 21.2% vs
   // 22.1% - which is physically wrong. They share the same national profile,
@@ -3764,7 +3790,7 @@ function simulate(u, prof, outPath){
   const storageBid=new Float64Array(HOURS);
   const thermalP=new Float64Array(HOURS);
   const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
-  const E={rooftop:0,wind:0,pv:0,csp:0,hybrid:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0};
+  const E={rooftop:0,wind:0,pv:0,csp:0,hybrid:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0,dr:0};
   let fuelCost=0, carbonCost=0, curtailFuelCost=0, shedMWh=0, maxStage=0;
   const shedHours=[0,0,0,0,0,0,0,0,0];
   const stackKeys=['nuclear','hydro','imports','hybrid','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
@@ -3796,9 +3822,39 @@ function simulate(u, prof, outPath){
   // wholesale electricity pricing). This lets storage arbitrage against real economics - buying
   // near-free curtailed solar, discharging ahead of coal specifically when it's
   // scarce - rather than always running strictly after coal regardless of how tight the system is.
+  // SHIFTABLE DEMAND RESPONSE. Applied to the demand series before anything
+  // else, because scheduled DR is known ahead of time - unit commitment should
+  // see the shaped profile, not be surprised by it. Within each day the model
+  // moves a share of load out of the highest NET-load hours (after wind and
+  // solar) into the lowest, which is what a price signal would do. Strictly
+  // energy-neutral per day: what comes off the peak goes back into the trough.
+  const drShift = Math.max(0, Math.min(30, p.drShiftPct ?? 0)) / 100;
+  const demandDR = new Float64Array(HOURS);
+  for (let h = 0; h < HOURS; h++) demandDR[h] = demand[h];
+  if (drShift > 0){
+    const vreCap = { w: windCap, p: pvCap };
+    for (let d = 0; d < 365; d++){
+      const h0 = d*24; if (h0+24 > HOURS) break;
+      const idx = [];
+      for (let k = 0; k < 24; k++){
+        const h = h0+k;
+        idx.push({ h, net: demand[h]*growth - (vreCap.w*wind[h] + vreCap.p*solar[h]) });
+      }
+      idx.sort((a,b) => b.net - a.net);
+      const nMove = 6;                                  // top and bottom six hours
+      let moved = 0;
+      for (let k = 0; k < nMove; k++){
+        const take = demand[idx[k].h] * drShift;
+        demandDR[idx[k].h] -= take; moved += take;
+      }
+      const per = moved / nMove;
+      for (let k = 0; k < nMove; k++) demandDR[idx[23-k].h] += per;
+    }
+  }
+
   const netLoadPre=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
-    const rawDemand=demand[h]*growth;
+    const rawDemand=demandDR[h]*growth;
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen;
     const windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
@@ -3867,6 +3923,11 @@ function simulate(u, prof, outPath){
   // proportionality - see the off-peak charging block below for how this is used.
   // Reserve actually carried each hour, kept for the adequacy panel and CSV.
   const reserveMWArr=new Float64Array(HOURS);
+  // Interruptible load actually called each hour, and its contracted size.
+  const drMW=new Float64Array(HOURS);
+  const DR_INT  = Math.max(0, p.drInterruptMW ?? 1200);
+  const DR_COST = Math.max(0, p.drInterruptCostR ?? 4000);
+  let drCostR = 0;   // total compensation paid to interruptible customers
   // Minimum stable level floor for hour h, used when clamping the reserve
   // withholding so coal is never pushed below what committed units can do.
   const ucMSLraw = h => (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? ucMinStable[h] : 0;
@@ -3932,7 +3993,7 @@ function simulate(u, prof, outPath){
     // Clamped to cAvail AFTER the reserve withholding, so a committed fleet is
     // never asked to sit below its own minimum stable level.
     const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
-    const rawDemand=demand[h]*growth;
+    const rawDemand=demandDR[h]*growth;   // same shaped series the UC saw
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen;
     E.rooftop+=rooftopGen; loadS[h]=load;
@@ -4163,6 +4224,27 @@ function simulate(u, prof, outPath){
         if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; addCharge(h,'batt',w,chgC); battSoc+=w*p.battEff; chargeMW[h]+=w;}
       }
       // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
+      // INTERRUPTIBLE LOAD, called before anything is shed. Contracted industrial
+      // customers are paid to drop, at a rate well below the cost of unserved
+      // energy - so the system uses it first, which is the whole point of having
+      // it. Booked separately from unserved because it is a managed reduction
+      // under contract, not a blackout, and conflating the two would overstate
+      // both reliability and its cost.
+      if (residual > 1 && DR_INT > 0){
+        const drUse = Math.min(residual, DR_INT);
+        drMW[h] = drUse; E.dr += drUse; residual -= drUse;
+        // Interruptible load is a DEMAND REDUCTION, not a generator. It is taken
+        // off the demand line where that line is BUILT, further down - writing it
+        // here was silently discarded, because loadS[h] is reassigned from
+        // `load + chargeMW[h]` after this point. The stress suite caught it.
+        // Compensation is a REAL COST and is booked here. It does not set the
+        // market price, because these contracts are emergency instruments that
+        // Eskom calls to avoid shedding rather than economic dispatch against
+        // diesel - so the prevailing scarcity price stands. But the payment is
+        // made, and leaving it out made interruptible load look free.
+        drCostR += drUse * DR_COST;
+        if (drUse > 0 && marginalP[h] < DR_COST){ marginalP[h] = DR_COST; marginalTech[h] = 'dr'; }
+      }
       if(residual>1){
         E.unserved+=residual; shedMWh+=residual;
         const st=Math.min(8,Math.ceil(residual/1000)); shedHours[st]++; if(st>maxStage)maxStage=st;
@@ -4210,7 +4292,10 @@ function simulate(u, prof, outPath){
     E.coal+=coalGen; fuelCost+=coalGen*(p.costCoal+p.vomCoal)+(isNaN(ucStartCost[h])?0:ucStartCost[h]); carbonCost+=coalGen*cC;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
-    loadS[h]=load+chargeMW[h]; // demand line = grid demand + storage charging (standard convention)
+    // Interruptible load comes off the demand line: the customer stopped
+    // consuming, so the chart identity stack+curtailed=loadS still holds and
+    // the dip is visible where DR was called.
+    loadS[h]=load+chargeMW[h]-drMW[h]; // demand line = grid demand + storage charging (standard convention)
     prevCoalGen=coalGen; // for next hour's ramp reference, regardless of which branch this hour took
     E.wind+=windGen; E.pv+=pvGen; E.csp+=cspGen; E.nuclear+=nuc; E.hydro+=hyd; E.imports+=imp;
     E.hybrid=(E.hybrid||0)+hyb; stack.hybrid[h]=hyb;
@@ -4360,9 +4445,11 @@ function simulate(u, prof, outPath){
   // less coal burns. Numerator and denominator must agree on what counts as grid.
   const btmCapexR = u.newRooftopMW * p.acapRooftop * 1000;
   const gridCapexR = newCapexR - btmCapexR;
-  const totalCost=fuelCost+carbonCost+newCapexR;          // whole-economy view
-  const gridCost=fuelCost+carbonCost+gridCapexR;          // what the grid bears
-  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR)/Math.max(1,gridServed);
+  const totalCost=fuelCost+carbonCost+newCapexR+drCostR;  // whole-economy view
+  const gridCost=fuelCost+carbonCost+gridCapexR+drCostR;  // what the grid bears
+  // drCostR included: compensation paid to interruptible customers is part of
+  // what the system costs to run, and omitting it made demand response look free.
+  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+drCostR)/Math.max(1,gridServed);
   const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
   // Full replacement cost: price EVERY MWh (existing + new) at its lifecycle LCOE.
   // Coal is charged new-build coal LCOE; storage discharge priced at storage LCOE.
@@ -4376,7 +4463,7 @@ function simulate(u, prof, outPath){
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
   return {E,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
-          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr,
+          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr, drMW, drCostR,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
@@ -7172,6 +7259,12 @@ function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
+  {id:'drInterruptMW',label:'Interruptible load',min:0,max:4000,step:100,def:FIXED.drInterruptMW,fmt:v=>v+' MW',
+   note:'Contracted large industrial load Eskom can drop in a shortage \u2014 historically the aluminium smelters and other energy-intensive users, through Demand Market Participation and instantaneous interruptible contracts. Called BEFORE anything is shed, because the customer is compensated at far less than the cost of a blackout. Reported separately from unserved energy: a managed reduction under contract is not load shedding.'},
+  {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString()+'/MWh',
+   note:'What the customer is paid to drop. Sits between diesel (R6,100) and the cost of unserved energy (R87,000) \u2014 which is exactly why the system calls it after peakers and before shedding.'},
+  {id:'drShiftPct',label:'Shiftable load',min:0,max:30,step:1,def:FIXED.drShiftPct,fmt:v=>v+' % of daily load',
+   note:'Load MOVED within the day rather than dropped \u2014 water heating, pumping, irrigation, EV charging \u2014 out of the six highest net-load hours into the six lowest. Strictly energy-neutral per day. Defaults to ZERO because this barely exists at scale in South Africa yet: it is a scenario lever, not a description of today. It also soaks up midday solar, so it is worth testing alongside a high-PV build.'},
   {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
    note:'Make the build optimiser MEET an emissions ceiling in 2030, rather than only reporting whether it does. This is how the IRP poses the question. Off by default so the headline answer stays least-cost with carbon priced; on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
@@ -7920,6 +8013,11 @@ function renderAdequacy(r){
     </div>
     <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--ink2)"><span>Jan</span><span>Dec</span></div>
     <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.5">
+      ${(r.E && r.E.dr > 1) ? 'Interruptible load called: <strong>'
+        + (r.E.dr/1000).toFixed(0) + '&nbsp;GWh</strong> over '
+        + (()=>{let n=0;for(let h=0;h<8760;h++) if(r.drMW && r.drMW[h]>1) n++; return n;})()
+        + ' hours &mdash; contracted industrial customers paid to reduce, called before any shedding. '
+        + 'LOLE and EUE above count only genuine unserved energy, not this.<br>' : ''}
       ${(r.reserveMW && r.reserveMW.length) ? 'Operating reserve carried: <strong>'
         + Math.round(Array.from(r.reserveMW).reduce((a,b)=>a+b,0)/r.reserveMW.length).toLocaleString()
         + '&nbsp;MW</strong> average, '
