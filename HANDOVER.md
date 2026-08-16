@@ -253,6 +253,44 @@ parameter that cannot legitimately be zero or is display-only.
 - Hybrid CF 0.85 within its window is asserted, not derived from RMIPPPP
   performance data (none published).
 
+## OPEN: coal 11% below Ember - the model has no energy sinks (16 Aug 2026)
+
+    our domestic generation   210.3 TWh      Ember 224.6 TWh    -6.4%
+    our coal                  157.0 TWh      Ember 177.7 TWh   -11.6%
+
+DIAGNOSIS. The model's energy balance is generation = loadS EXACTLY - the stress
+suite enforces that identity. Real systems lose energy in three places between
+the generator terminal and the customer, and this model represents none of them:
+
+  1. STATION AUXILIARY CONSUMPTION. Coal plants consume 6-10% of gross output
+     internally (mills, fans, ID/FD, FGD on Medupi/Kusile). Ember reports
+     generation; our coal figure behaves like sent-out. At 10% aux, our 157.0
+     becomes 174.4 gross against Ember's 177.7.
+  2. T&D LOSSES. Eskom reports about 9.1% total - 2.8% transmission and ~7%
+     distribution including non-technical (theft, tampering, billing).
+  3. EXPORTS to SADC, roughly 4-5 TWh/yr, not modelled at all.
+
+Coal absorbs essentially the whole gap because it is the swing producer.
+
+WHY IT IS NOT YET FIXED. Each candidate alone either over- or under-shoots, and
+the three are not separable from the data to hand: Ember's South African source
+detail does not say whether its figures are gross or sent-out, which decides
+whether (1) applies at all. Fitting a single fudge factor to close 14.3 TWh would
+reproduce the exact mistake made earlier the same day with the wind availability
+derates - right number, wrong mechanism, breaking as soon as anyone corrects the
+underlying cause.
+
+WHAT WOULD RESOLVE IT. Confirm whether Eskom's ESK19243 series (and therefore
+Ember) reports gross or sent-out generation. If gross, add station auxiliary
+consumption as a parameter on thermal output - which is the physically correct
+place, proportional to generation rather than demand, and it does NOT distort
+peak demand. T&D losses would then be a separate, smaller term applied to grid
+demand, and exports a third.
+
+IMPACT WHILE OPEN: coal generation, CO2 and fuel cost are all understated by
+roughly a tenth. Shares of renewables are correspondingly overstated. The
+validation panel shows the coal row against Ember so the gap stays visible.
+
 ## Peak demand: investigated 16 Aug 2026, NOT an error
 
 The model peaks at 31.6 GW against Eskom's quoted winter evening peaks of
