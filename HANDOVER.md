@@ -253,6 +253,32 @@ parameter that cannot legitimately be zero or is display-only.
 - Hybrid CF 0.85 within its window is asserted, not derived from RMIPPPP
   performance data (none published).
 
+## Peak demand: investigated 16 Aug 2026, NOT an error
+
+The model peaks at 31.6 GW against Eskom's quoted winter evening peaks of
+24.9-28.7 GW, and this looked like a 10% overstatement. It is not. Two findings
+settle it:
+
+1. DEFINITIONAL. Eskom quotes peak demand against ESKOM FLEET availability -
+   "evening peak 27,177 MW, available capacity 30,878 MW". IPP renewables and
+   imports serve load on top of that, so the quoted figure is not total system
+   demand. Netting them off the model (1.0 GW IPP wind/CSP/hybrid + 1.0 GW
+   Cahora Bassa at the peak hour) gives 29.6 GW against Eskom's 28.7 - about 3%
+   apart, on a 2025 series that predates further decline.
+
+2. THE ENERGY SIDE RULES OUT INFLATION. The model generates 210.3 TWh against
+   Ember's 224.6 TWh. It is 6% LOW on energy. A demand series inflated 10% could
+   not produce that. Scaling demand down 9% to "fix" the peak would drive coal to
+   139 TWh against Ember's 177.7 - a 22% shortfall, far worse than the 11% we
+   already carry.
+
+The demand duration curve is also well formed: top hour only 1.9% above the
+10th, load factor 77.5%, squarely in the normal 75-80% range for South Africa.
+No spikes, no artefacts.
+
+DO NOT rescale the demand series to close this gap. The validation panel now
+states the definitional difference instead of implying an error.
+
 ## RESOLVED: wind_nameplate_est in profiles.json (16 Aug 2026)
 
 `profiles.json` normalised Eskom's metered hourly wind output against
