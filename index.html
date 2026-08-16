@@ -7268,7 +7268,7 @@ const SLIDERS=[
   {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
    note:'Make the build optimiser MEET an emissions ceiling in 2030, rather than only reporting whether it does. This is how the IRP poses the question. Off by default so the headline answer stays least-cost with carbon priced; on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
-   note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that \u2014 which is itself the useful finding: meeting the NDC is not what makes this expensive.'},
+   ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that \u2014 which is itself the useful finding: meeting the NDC is not what makes this expensive.'},
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
    note:'Model availability as individual units tripping and being repaired (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Same average availability either way \u2014 the slider still means what it says \u2014 but the bad hours are now genuinely bad. At EAF 55% this moves shedding from 3 hours to 207.'},
   {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
@@ -7278,11 +7278,11 @@ const SLIDERS=[
   {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
    note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output. At today\u2019s fleet this rarely binds \u2014 South Africa has ~7 GW of fast-start peakers and storage against a reserve need near 1.3 GW \u2014 but it bites hard once coal is tight or peakers retire.'},
   {id:'reserveContingencyMW',label:'N-1 contingency reserve',min:0,max:1600,step:20,def:FIXED.reserveContingencyMW,fmt:v=>v+' MW',
-   note:'Cover for the largest single unit tripping. 794 MW is a Medupi/Kusile set, the biggest on the system.'},
+   ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'Cover for the largest single unit tripping. 794 MW is a Medupi/Kusile set, the biggest on the system.'},
   {id:'reserveRegulatingPct',label:'Regulating reserve',min:0,max:8,step:0.5,def:FIXED.reserveRegulatingPct,fmt:v=>v+' % of load',
-   note:'Cover for demand forecast error and normal minute-to-minute variability.'},
+   ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'Cover for demand forecast error and normal minute-to-minute variability.'},
   {id:'reserveVrePct',label:'Wind & solar following reserve',min:0,max:25,step:1,def:FIXED.reserveVrePct,fmt:v=>v+' % of VRE output',
-   note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2014 which is why reserve costs rise with a high-renewables fleet.'},
+   ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2014 which is why reserve costs rise with a high-renewables fleet.'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:68,fmt:v=>v+' %',note:'FY2026 to date = 68% · 2023 crisis = 50–55% · target 70%'},
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'Multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
@@ -7976,6 +7976,36 @@ const fmtTWh=v=>(v/1e6).toFixed(1);
 // side as reduced residual load, matching how Eskom's weekly report frames OR.
 const MONTH_N=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_D=[31,28,31,30,31,30,31,31,30,31,30,31];
+// Hover for the monthly reserve-margin bars. The native title attribute was
+// giving a help cursor and the browser's ~1s delayed tooltip, which reads as
+// "hovering does nothing". This reuses the same instant styled tooltip the
+// canvas charts use, and works on tap as well as hover.
+function bindAdequacyHover(){
+  const host = document.getElementById('adequacyBody');
+  if (!host || host.__adqBound) return;
+  host.__adqBound = true;
+  const show = (el, ev) => {
+    const tip = chartTipEl();
+    tip.innerHTML = el.getAttribute('data-tip') || '';
+    tip.style.display = 'block';
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    let left = ev.clientX + 14, top = ev.clientY - th - 10;
+    if (left + tw > window.innerWidth - 8) left = ev.clientX - tw - 14;
+    if (top < 8) top = ev.clientY + 16;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  };
+  const hide = () => { chartTipEl().style.display = 'none'; };
+  host.addEventListener('mousemove', ev => {
+    const el = ev.target.closest('.adqbar');
+    if (el) show(el, ev); else hide();
+  });
+  host.addEventListener('mouseleave', hide);
+  host.addEventListener('click', ev => {
+    const el = ev.target.closest('.adqbar');
+    if (el) show(el, ev); else hide();
+  });
+}
+
 function renderAdequacy(r){
   const el=document.getElementById('adequacyBody');
   if(!el||!r||!r.stack) return;
@@ -8009,7 +8039,7 @@ function renderAdequacy(r){
     </div>
     <div style="font-size:9.5px;color:var(--ink2);margin-bottom:3px">Reserve margin by month (firm capacity vs monthly peak)</div>
     <div style="display:flex;gap:2px;align-items:flex-end;height:52px">
-      ${rm.map((v,i)=>`<div title="${MONTH_N[i]}: firm ${(firm/1000).toFixed(1)} GW vs peak ${(mPeak[i]/1000).toFixed(1)} GW &rarr; ${v.toFixed(1)}% margin" style="flex:1;cursor:help;background:${rmCol(v)};height:${Math.max(2,Math.min(100,v*2.4))}%;border-radius:1px"></div>`).join('')}
+      ${rm.map((v,i)=>`<div class="adqbar" data-tip="${MONTH_N[i]} &middot; reserve margin <strong>${v.toFixed(1)}%</strong><br>firm ${(firm/1000).toFixed(1)} GW vs peak ${(mPeak[i]/1000).toFixed(1)} GW<br><span style='opacity:.75'>spare ${((firm-mPeak[i])/1000).toFixed(1)} GW</span>" style="flex:1;cursor:pointer;background:${rmCol(v)};height:${Math.max(2,Math.min(100,v*2.4))}%;border-radius:1px;position:relative"></div>`).join('')}
     </div>
     <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--ink2)"><span>Jan</span><span>Dec</span></div>
     <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.5">
@@ -8029,6 +8059,7 @@ function renderAdequacy(r){
       the firm fleet must meet, which is how Eskom&rsquo;s weekly report frames operating reserve.
       Planning norms typically target LOLE in the low tens of hours; the IRP frames adequacy in EUE terms.
     </div>`;
+  bindAdequacyHover();
 }
 
 function render(r){
