@@ -253,43 +253,35 @@ parameter that cannot legitimately be zero or is display-only.
 - Hybrid CF 0.85 within its window is asserted, not derived from RMIPPPP
   performance data (none published).
 
-## OPEN: coal 11% below Ember - the model has no energy sinks (16 Aug 2026)
+## RESOLVED: coal "11% below Ember" was gross vs sent-out (16 Aug 2026)
 
-    our domestic generation   210.3 TWh      Ember 224.6 TWh    -6.4%
-    our coal                  157.0 TWh      Ember 177.7 TWh   -11.6%
+NOT a model error. Ember reports GROSS generation; this model produces SENT-OUT.
 
-DIAGNOSIS. The model's energy balance is generation = loadS EXACTLY - the stress
-suite enforces that identity. Real systems lose energy in three places between
-the generator terminal and the customer, and this model represents none of them:
+THE TEST THAT SETTLES IT. Our coal is purely residual - demand minus every other
+source - so the coal gap IS the total supply gap, and the total is the right
+thing to test. Converting Ember to a sent-out basis at standard auxiliary rates
+(coal 7.7%, nuclear 5%, renewables nil, since only thermal plant carries
+meaningful house load for mills, fans, ID/FD and FGD):
 
-  1. STATION AUXILIARY CONSUMPTION. Coal plants consume 6-10% of gross output
-     internally (mills, fans, ID/FD, FGD on Medupi/Kusile). Ember reports
-     generation; our coal figure behaves like sent-out. At 10% aux, our 157.0
-     becomes 174.4 gross against Ember's 177.7.
-  2. T&D LOSSES. Eskom reports about 9.1% total - 2.8% transmission and ~7%
-     distribution including non-technical (theft, tampering, billing).
-  3. EXPORTS to SADC, roughly 4-5 TWh/yr, not modelled at all.
+    Ember gross                     224.59 TWh
+    Ember sent-out                  210.26 TWh
+    plus our imports 8.56           218.82 TWh
+    OUR MODEL                       218.87 TWh     <- 0.02% apart
 
-Coal absorbs essentially the whole gap because it is the swing producer.
+On a sent-out basis Ember's coal is 164.0 TWh against our 157.0, and that 7 TWh
+remainder is almost exactly offset by our higher renewables - rooftop capture
+(+2.0) and privately wheeled wind (+2.6) - both already documented.
 
-WHY IT IS NOT YET FIXED. Each candidate alone either over- or under-shoots, and
-the three are not separable from the data to hand: Ember's South African source
-detail does not say whether its figures are gross or sent-out, which decides
-whether (1) applies at all. Fitting a single fudge factor to close 14.3 TWh would
-reproduce the exact mistake made earlier the same day with the wind availability
-derates - right number, wrong mechanism, breaking as soon as anyone corrects the
-underlying cause.
+WHY COSTS AND EMISSIONS ARE FINE. costCoal (R546/MWh, Eskom FY2025 primary
+energy) and emisCoal (1.04 tCO2/MWh) are both per SENT-OUT MWh, which is the
+standard Eskom convention. Applying them to sent-out generation is correct.
+Grossing up generation without also converting the coefficients would have
+DOUBLE-COUNTED auxiliary consumption and overstated both cost and CO2 by ~8%.
 
-WHAT WOULD RESOLVE IT. Confirm whether Eskom's ESK19243 series (and therefore
-Ember) reports gross or sent-out generation. If gross, add station auxiliary
-consumption as a parameter on thermal output - which is the physically correct
-place, proportional to generation rather than demand, and it does NOT distort
-peak demand. T&D losses would then be a separate, smaller term applied to grid
-demand, and exports a third.
-
-IMPACT WHILE OPEN: coal generation, CO2 and fuel cost are all understated by
-roughly a tenth. Shares of renewables are correspondingly overstated. The
-validation panel shows the coal row against Ember so the gap stays visible.
+DO NOT add an auxiliary-consumption term to close this gap. The earlier
+suspicion that coal, CO2 and fuel cost were understated by a tenth was wrong,
+and acting on it would have introduced a real error into figures that are
+currently right.
 
 ## Peak demand: investigated 16 Aug 2026, NOT an error
 
