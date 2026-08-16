@@ -154,7 +154,10 @@ input[type=range]::-moz-range-progress{background:var(--terra); border-radius:3p
 input[type=range]::-webkit-slider-thumb{margin-top:-6px; border:none; box-shadow:none}
 input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var(--terra)}
 .grp{border-top:1.5px dashed var(--line2); margin:16px -14px 12px; padding:10px 14px 0}
-.grp h3{font-size:13.5px; color:var(--ink2); font-weight:600; margin-bottom:8px}
+/* Scenario-control group headers. Bumped from 13.5px/600/ink2 to 16px/700 in
+   the scheme's dark blue so the four sections of the control panel read as
+   headings rather than as another slider label. */
+.grp h3{font-size:16px; color:var(--veld,#4A6B7A); font-weight:700; margin-bottom:8px; letter-spacing:.01em}
 .presets{display:grid; grid-template-columns:minmax(0,1fr); gap:7px; margin-bottom:14px}
 .presets button{border:1.5px solid var(--ink); background:var(--panel); padding:7px 6px 5px; font-family:'Saira Condensed'; font-size:13.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; transition:background .15s; min-width:0; max-width:100%; overflow-wrap:break-word}
 .presets button:hover{background:var(--panel2)}
@@ -7281,6 +7284,13 @@ function renderCCS(r){
 function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 
 /* ==================== UI DEFINITION ==================== */
+// Shared indent for controls that are GATED BY THE TOGGLE ABOVE THEM, so the
+// dependency is visible at a glance. Used by: 2030 emissions ceiling (under
+// the carbon cap toggle), the three reserve components (under Operating
+// reserve), and Force 50% load factor (under Gas CCGT capacity). One constant
+// rather than five copies - they must look identical or the grouping reads as
+// accidental.
+const SUB_CTRL = 'padding-left:16px;border-left:3px solid var(--alert2,#9E5C42);margin-left:6px;margin-top:-2px';
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
@@ -7293,7 +7303,7 @@ const SLIDERS=[
   {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
    note:'Make the build optimiser MEET an emissions ceiling in 2030, rather than only reporting whether it does. This is how the IRP poses the question. Off by default so the headline answer stays least-cost with carbon priced; on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
-   ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that \u2014 which is itself the useful finding: meeting the NDC is not what makes this expensive.'},
+   ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that \u2014 which is itself the useful finding: meeting the NDC is not what makes this expensive.'},
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
    note:'Model availability as individual units tripping and being repaired (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Same average availability either way \u2014 the slider still means what it says \u2014 but the bad hours are now genuinely bad. At EAF 55% this moves shedding from 3 hours to 207.'},
   {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
@@ -7303,11 +7313,11 @@ const SLIDERS=[
   {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
    note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output. At today\u2019s fleet this rarely binds \u2014 South Africa has ~7 GW of fast-start peakers and storage against a reserve need near 1.3 GW \u2014 but it bites hard once coal is tight or peakers retire.'},
   {id:'reserveContingencyMW',label:'N-1 contingency reserve',min:0,max:1600,step:20,def:FIXED.reserveContingencyMW,fmt:v=>v+' MW',
-   ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'Cover for the largest single unit tripping. 794 MW is a Medupi/Kusile set, the biggest on the system.'},
+   ctrlStyle:SUB_CTRL,note:'Cover for the largest single unit tripping. 794 MW is a Medupi/Kusile set, the biggest on the system.'},
   {id:'reserveRegulatingPct',label:'Regulating reserve',min:0,max:8,step:0.5,def:FIXED.reserveRegulatingPct,fmt:v=>v+' % of load',
-   ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'Cover for demand forecast error and normal minute-to-minute variability.'},
+   ctrlStyle:SUB_CTRL,note:'Cover for demand forecast error and normal minute-to-minute variability.'},
   {id:'reserveVrePct',label:'Wind & solar following reserve',min:0,max:25,step:1,def:FIXED.reserveVrePct,fmt:v=>v+' % of VRE output',
-   ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2014 which is why reserve costs rise with a high-renewables fleet.'},
+   ctrlStyle:SUB_CTRL,note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2014 which is why reserve costs rise with a high-renewables fleet.'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:68,fmt:v=>v+' %',note:'FY2026 to date = 68% · 2023 crisis = 50–55% · target 70%'},
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'Multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
@@ -7317,7 +7327,7 @@ const SLIDERS=[
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.6 GW existing, behind the meter (Eskom estimates 9.1 GW; 0.49 GW of that is ground-mounted wheeled plant, modelled as utility supply instead)'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance and rarely dispatched when storage is ample (except when IRP artificial load factor is applied)'},
-  {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:'padding-left:14px;border-left:2px solid var(--line2);margin-left:4px;margin-top:-4px',note:'When ticked, gas runs as must-run at 50% of installed capacity every hour — matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only.'},
+  {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:SUB_CTRL,note:'When ticked, gas runs as must-run at 50% of installed capacity every hour — matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only.'},
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'Modern supercritical, same fuel cost as existing fleet'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
   {id:'ccsEnabled',toggle:true,def:false,label:'Apply \u2018clean coal\u2019 (CCS) technologies to the model',note:'Existing coal plants are retrofitted with CCS technology and new-build plants include CCS. See the \u2018Clean coal\u2019 (CCS) panel on the right to gauge the impact on outputs'},
