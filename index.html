@@ -705,7 +705,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; 1&nbsp;150&nbsp;MW @ 85&nbsp;%</td></tr>
           <tr><td>Existing fleet</td><td>Wind 4.6&nbsp;GW (REIPPPP 4.0 + wheeled 0.47 + Eskom Sere 0.1) &middot; Utility PV 3.2&nbsp;GW (REIPPPP 2.66 + wheeled 0.49) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, contracted dispatchable 05:00&ndash;21:30; modelled hourly as 05:00&ndash;22:00) &middot; Rooftop 8.6&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
           <tr><td>New-build capex</td><td>Wind R21&nbsp;000 &middot; PV R12&nbsp;000 &middot; Rooftop R17&nbsp;000 &middot; Battery&nbsp;(4h) R10&nbsp;500 &middot; CCGT R18&nbsp;000 /kW. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT <em>rises</em>, having hit a record high in 2025</td></tr>
-          <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region</td></tr>
+          <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region. <em>Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &mdash; they are not published by Eskom or NTCSA.</em></td></tr>
           <tr><td>Planned build</td><td>221 projects from NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034, all nine provinces, each with its published commissioning year and delivery phase</td></tr>
           <tr><td>Renewables vs Non-fossil</td><td>&ldquo;Renewables&rdquo; = wind + utility PV + rooftop PV + CSP + hydro. &ldquo;Non-fossil&rdquo; adds nuclear and (mostly-hydro) imports.</td></tr>
         </table>
@@ -1100,6 +1100,10 @@ function initResourceQuery(){
   let substationData = null, headroomData = null;
   fetch('nodal/substations_compact.json').then(r=>r.json()).then(d=>{substationData=d; maybeAddSubLayer();}).catch(()=>{});
   fetch('nodal/headroom_summary.json').then(r=>r.json()).then(d=>{headroomData=d; maybeAddSubLayer();}).catch(()=>{});
+  // Indicative per-substation connection-capability bands. OUR ESTIMATE, not an
+  // Eskom figure - see the meta block in the file and the banner in the grid tab.
+  let subBands = null;
+  fetch('nodal/substation_bands.json').then(r=>r.json()).then(d=>{subBands=d;}).catch(()=>{});
   // Load real Eskom transmission lines and add as Leaflet GeoJSON layer
   fetch('nodal/transmission_lines.geojson').then(r=>r.json()).then(data=>{
     function lineStyle(feat) {
@@ -1255,6 +1259,24 @@ function initResourceQuery(){
         </div>`).join('')}
       </div>
       ${h.binding_corridor?`<div style="font-size:10px;color:var(--ink2)">Binding corridor: ${h.binding_corridor} (${h.corridor_km} km)</div>`:''}
+      ${(()=>{ if(!subBands||!subBands.bands) return '';
+        const b=subBands.bands[sub.n]; if(!b) return '';
+        const COL={strong:'var(--ok,#4A8C5C)',moderate:'#C9A227',limited:'#C4785A',none:'var(--ink2)'};
+        const TXT={strong:'Strong',moderate:'Moderate',limited:'Limited',none:'None'};
+        const pill=v=>`<span style="color:${COL[v]};font-weight:600">${TXT[v]}</span>`;
+        return `<div style="margin-top:8px;padding:7px 9px;border:1px dashed var(--line2);border-radius:4px;background:var(--panel2)">
+          <div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--alert2,#9E5C42);font-weight:700;margin-bottom:3px">
+            GridTwin estimate &mdash; not an Eskom figure</div>
+          <div style="font-size:10.5px">Indicative connection capability at this substation:
+            solar ${pill(b.solar)} &middot; wind ${pill(b.wind)}
+            <span style="color:var(--ink2)">(${b.circuits} transmission circuit${b.circuits===1?'':'s'} at ${b.kv} kV)</span></div>
+          <div style="font-size:9px;color:var(--ink2);line-height:1.5;margin-top:4px">
+            Eskom publishes connection headroom by region only. We split that published regional figure
+            across substations using network topology &mdash; circuits connected, minus the largest one
+            (N-1), minus nearby existing generation. The regional totals stay Eskom&rsquo;s; the split
+            within a region is ours. This is a screening rank to decide where to enquire first, not a
+            connection allowance, and it is no substitute for a GCCA study and an NTCSA application.</div>
+        </div>`; })()}
       ${(()=>{ const c=(window.__nodalCurtByRegion||{})[sub.area];
         if(c===undefined) return '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Curtailment risk: run the full model (button above the schematic) to compute it for this connection.</div>';
         const col=c>10?'var(--alert,#C4785A)':c>1?'#f5c518':'var(--ok,#4A8C5C)';
