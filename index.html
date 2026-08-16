@@ -744,7 +744,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; 1&nbsp;150&nbsp;MW @ 85&nbsp;%</td></tr>
           <tr><td>Existing fleet</td><td>Wind 4.6&nbsp;GW (REIPPPP 4.0 + wheeled 0.47 + Eskom Sere 0.1) &middot; Utility PV 3.2&nbsp;GW (REIPPPP 2.66 + wheeled 0.49) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, contracted dispatchable 05:00&ndash;21:30; modelled hourly as 05:00&ndash;22:00) &middot; Rooftop 8.6&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
           <tr><td>New-build capex</td><td>Wind R21&nbsp;000 &middot; PV R12&nbsp;000 &middot; Rooftop R17&nbsp;000 &middot; Battery&nbsp;(4h) R10&nbsp;500 &middot; CCGT R18&nbsp;000 /kW. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT <em>rises</em>, having hit a record high in 2025</td></tr>
-          <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region. <em>Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &mdash; they are not published by Eskom or NTCSA.</em></td></tr>
+          <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region &middot; 11 Renewable Energy Development Zones (GN&nbsp;114 / Gazette&nbsp;41445 2018 and GN&nbsp;142/144/145 / Gazette&nbsp;44191 2021), held as centre points and equivalent-area radii rather than gazetted polygons. <em>Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &mdash; they are not published by Eskom or NTCSA.</em></td></tr>
           <tr><td>Planned build</td><td>221 projects from NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034, all nine provinces, each with its published commissioning year and delivery phase</td></tr>
           <tr><td>Renewables vs Non-fossil</td><td>&ldquo;Renewables&rdquo; = wind + utility PV + rooftop PV + CSP + hydro. &ldquo;Non-fossil&rdquo; adds nuclear and (mostly-hydro) imports.</td></tr>
         </table>
@@ -1143,6 +1143,32 @@ function initResourceQuery(){
   // Eskom figure - see the meta block in the file and the banner in the grid tab.
   let subBands = null;
   fetch('nodal/substation_bands.json').then(r=>r.json()).then(d=>{subBands=d;}).catch(()=>{});
+  // Renewable Energy Development Zones. Inside one, a large-scale wind or solar
+  // PV facility needs only a Basic Assessment rather than a full EIA - roughly
+  // 147 days against 300, which is the single biggest programme difference
+  // between two otherwise identical sites.
+  let redzData = null;
+  fetch('nodal/redz.json').then(r=>r.json()).then(d=>{redzData=d;}).catch(()=>{});
+
+  // Nearest REDZ to a point, with a plain-language verdict. Deliberately
+  // conservative: we hold centre points and equivalent-area radii, NOT the
+  // gazetted polygons, so this screens rather than determines.
+  function redzScreen(lat, lng, tech){
+    if (!redzData || !redzData.zones) return null;
+    const R = 6371, rad = d => d*Math.PI/180;
+    let best = null;
+    for (const z of redzData.zones){
+      const dLat = rad(z.lat-lat), dLng = rad(z.lng-lng);
+      const a = Math.sin(dLat/2)**2 + Math.cos(rad(lat))*Math.cos(rad(z.lat))*Math.sin(dLng/2)**2;
+      const km = 2*R*Math.asin(Math.sqrt(a));
+      if (!best || km < best.km) best = { z, km };
+    }
+    if (!best) return null;
+    const covered = !tech || best.z.tech.includes(tech === 'hybrid' ? 'wind' : tech);
+    const inside  = best.km <= best.z.radius_km;
+    const near    = best.km <= best.z.radius_km * 1.6;
+    return { ...best, covered, inside, near };
+  }
   // Load real Eskom transmission lines and add as Leaflet GeoJSON layer
   fetch('nodal/transmission_lines.geojson').then(r=>r.json()).then(data=>{
     function lineStyle(feat) {
@@ -2282,6 +2308,41 @@ async function runPrefeas() {
   }
   const nersa = nersaCategory(kwp);
   const grid = gridPathway(kwp, offtake);
+  // REDZ screening for the clicked point. Only meaningful for utility-scale
+  // projects - the streamlined route applies to LARGE-SCALE wind and solar PV
+  // facilities, not to a rooftop system.
+  const rz = (window._resourceData && kwp >= 1000)
+    ? redzScreen(window._resourceData.lat, window._resourceData.lng, pfTech) : null;
+  const redzHtml = !rz ? '' : `
+    <div style="margin:10px 0;padding:8px 10px;border:1px dashed var(--line2);border-radius:4px;background:var(--panel2)">
+      <div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--alert2,#9E5C42);font-weight:700;margin-bottom:3px">
+        GridTwin estimate &mdash; approximate boundaries</div>
+      <div style="font-size:10.5px;line-height:1.55">
+        Nearest Renewable Energy Development Zone: <strong>${rz.z.name}</strong>
+        (${rz.z.province}) &middot; about <strong>${Math.round(rz.km)}&nbsp;km</strong> from this point.
+        ${ rz.inside && rz.covered
+            ? `<span style="color:var(--ok,#4A8C5C);font-weight:600">Likely inside, and gazetted for ${pfTech==='wind'?'wind':'solar PV'}.</span>
+               A large-scale facility here would need only a <strong>Basic Assessment</strong> rather than a
+               full EIA &mdash; roughly 147 days against 300.`
+            : rz.inside && !rz.covered
+            ? `<span style="color:var(--alert,#C4785A);font-weight:600">Likely inside, but this zone is gazetted for
+               ${rz.z.tech.join(' and ')} only.</span> A ${pfTech} project here gets <strong>no</strong> streamlining
+               and still needs a full EIA. Five of the eleven REDZs are solar-only &mdash; the technology matters
+               as much as the location.`
+            : rz.near
+            ? `<span style="color:#C9A227;font-weight:600">Close to the boundary.</span> Worth checking precisely:
+               the gazetted zone is an irregular polygon and this is a circular approximation.`
+            : `Outside the zones, so a large-scale facility would follow the full EIA route
+               (roughly 300 days) unless another exemption applies.` }
+        ${ rz.z.note ? `<div style="margin-top:4px;color:var(--ink2)">${rz.z.note}</div>` : '' }
+      </div>
+      <div style="font-size:9px;color:var(--ink2);line-height:1.5;margin-top:5px">
+        We hold zone centre points and equivalent-area radii, not the gazetted shapefiles, so treat this as a
+        screening prompt rather than a determination. Confirm on the DFFE Environmental GIS portal:
+        <a href="https://egis.environment.gov.za/redz" target="_blank" rel="noopener" style="color:inherit">egis.environment.gov.za/redz</a>.
+        Declared by GN&nbsp;114 (Gazette&nbsp;41445, 2018) for zones&nbsp;1&ndash;8 and GN&nbsp;142/144/145
+        (Gazette&nbsp;44191, 2021) for zones&nbsp;9&ndash;11.</div>
+    </div>`;
   const fin = calcFinancials(kwp, cf, price, costRwp, battHours, offtake, pfTech);
 
   const offtakeLabel = {ownuse:'Own-use (behind-the-meter)', wheeling:'Wheeling to remote site', 'grid':'Grid sale / IPP'}[offtake];
@@ -2352,6 +2413,7 @@ async function runPrefeas() {
     <div style="margin-bottom:16px">
       <div style="font-family:'Saira Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--ink);padding-bottom:4px;margin-bottom:8px">3. Regulatory Pathway</div>
       <div style="font-size:11px">
+        ${redzHtml}
         <div style="font-weight:600;margin-bottom:4px">NERSA registration: ${nersa.cat}</div>
         <table style="width:100%;border-collapse:collapse;margin-bottom:8px">
           <tr><td style="padding:3px 0;color:var(--ink2);width:45%">Licensing requirement</td><td>${nersa.nersa}</td></tr>
