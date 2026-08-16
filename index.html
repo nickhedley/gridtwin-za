@@ -303,7 +303,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <a href="#nav-prices">Prices</a>
     <span class="jn-sep"></span>
     <span class="jn-grp">Project planning</span>
-    <a href="#nav-project" class="jn-strong">Site tools</a>
+    <a href="#nav-project" class="jn-strong">Site assessment</a>
   </div>
 </nav>
 
@@ -6782,7 +6782,10 @@ const PRESETS={
   'Future electricity mix':{demandGrowthPct:5,coalDecomMW:21000,newWindMW:28500,newPvMW:42500,newRooftopMW:15000,newBattMW:20000},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
-const NAMES={nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV',curtailment:'Curtailed (wasted)'};
+// NAMES must carry every key COLORS does, or the legend renders 'undefined'
+// next to a correctly-coloured swatch - which is exactly what happened when
+// hybrid was added to DISP_ORDER and COLORS but not here.
+const NAMES={hybrid:'Hybrid (RMIPPPP)',nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV',curtailment:'Curtailed (wasted)'};
 
 /* ==================== BUILD CONTROLS ==================== */
 const state={};
