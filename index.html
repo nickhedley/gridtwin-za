@@ -305,8 +305,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
 <div style="max-width:1380px;margin:0 auto;padding:0 20px">
-  <div id="nav-system" style="margin:22px 0 10px;padding:9px 14px;background:var(--alert,#C4785A);border:1.5px solid var(--ink);text-align:center">
-    <div style="font-family:'Saira Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:.04em;color:#fff">System planning</div>
+  <div id="nav-system" style="margin:22px 0 10px;padding:10px 14px;background:var(--panel);border:1.5px solid var(--ink);text-align:center">
+    <div style="font-family:'Saira Condensed',sans-serif;font-size:23px;font-weight:700;letter-spacing:.04em;color:var(--alert2,#9E5C42)">System planning</div>
   </div>
 </div>
 <div class="wrap">
@@ -380,7 +380,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div>
 
 
-<div id="nav-results" class="panel" style="margin-top:18px">
+<div id="nav-results" class="panel">
   <div class="ph"><h2>System adequacy</h2><span class="tag">reserve margin &middot; LOLE &middot; EUE</span></div>
   <div class="pb" id="adequacyBody" style="padding:12px 14px"><p style="font-size:11px;color:var(--ink2);margin:0">Run the model to compute adequacy statistics.</p></div>
 </div><div class="panel" style="margin-top:18px">
@@ -394,7 +394,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div><div class="panel" style="margin-top:18px">
           <div class="ph"><h2>Annual electricity mix</h2><span class="tag" id="mixTotal"></span></div>
           <div class="pb" id="mix"></div>
-        </div><section id="nav-network" aria-label="Network map and capacity siting">
+        </div>
+<section id="nav-network" aria-label="Network map and capacity siting" style="display:block;margin-top:18px">
       <div class="panel mapbox">
         <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
@@ -2615,9 +2616,9 @@ function printPrefeas() {
 </div>
 
 <div style="max-width:1380px;margin:0 auto;padding:0 20px">
-  <div id="nav-project" style="margin:22px 0 10px;padding:9px 14px;background:var(--alert,#C4785A);border:1.5px solid var(--ink);text-align:center">
-    <div style="font-family:'Saira Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:.04em;color:#fff">Project planning</div>
-    <div style="font-size:10.5px;color:rgba(255,255,255,0.88);margin-top:2px">Query any specific site rather than the whole country. (This does not depend on the system scenario above.)</div>
+  <div id="nav-project" style="margin:22px 0 10px;padding:10px 14px;background:var(--panel);border:1.5px solid var(--ink);text-align:center">
+    <div style="font-family:'Saira Condensed',sans-serif;font-size:23px;font-weight:700;letter-spacing:.04em;color:var(--alert2,#9E5C42)">Project planning</div>
+    <div style="font-size:10.5px;color:var(--ink2);margin-top:2px">Query any specific site rather than the whole country. (This does not depend on the system scenario above.)</div>
   </div>
 </div>
 <div class="projwrap" style="max-width:1380px;margin:0 auto;padding:0 20px 20px">
