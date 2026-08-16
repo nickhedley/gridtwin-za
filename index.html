@@ -672,7 +672,16 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 <div style="margin-top:18px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
-        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: EAF &asymp; 68&nbsp;% (calendar year to date, Week&nbsp;32), OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline. The model&rsquo;s own winter peak runs higher than Eskom&rsquo;s reported evening peak (~27&nbsp;GW) because it is driven by the 2025 demand series and includes storage charging &mdash; the System adequacy and validation panels show the gap rather than hiding it.</p>
+        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: EAF &asymp; 68&nbsp;% (calendar year to date, Week&nbsp;32), OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline.</p>
+        <p style="margin-bottom:8px"><strong>Price formation:</strong> coal sets the marginal price in
+        almost every hour of the default scenario, so the shadow price is nearly flat
+        (roughly R715&ndash;760) and storage has little to arbitrage. That is a real property of a
+        coal-dominated single-node system, not a bug &mdash; but it means battery revenue, capture-price
+        spreads and the value of flexibility are all understated at default settings and only become
+        meaningful once enough wind and solar are added to push coal off the margin. The model also has
+        no reserve requirement, unit-level outages or intra-regional network limits, all of which raise
+        peaker running in the real system.</p>
+        <p style="margin-bottom:8px">The model&rsquo;s own winter peak runs higher than Eskom&rsquo;s reported evening peak (~27&nbsp;GW) because it is driven by the 2025 demand series and includes storage charging &mdash; the System adequacy and validation panels show the gap rather than hiding it.</p>
 
         <p style="margin-bottom:8px"><strong>How dispatch works:</strong> merit order — rooftop PV nets off demand &rarr; wind / utility PV / CSP &rarr; nuclear, hydro, Cahora Bassa imports &rarr; coal &rarr; pumped storage &amp; batteries &rarr; gas CCGT &rarr; diesel OCGT &rarr; unserved energy. One stage of load shedding &asymp; 1&nbsp;000&nbsp;MW of unserved demand.</p>
 
@@ -5559,9 +5568,15 @@ const ESKOM_ACTUALS = {
       actual: 67.95, unit: '%',
       note: 'Calendar year to date, Week 32 2026 (2025 full year: 62.44%). Week 32 alone was '
           + '72.15%, and the year has run above 70% since Week 27.' },
-    { k: 'OCGT load factor',      model: () => 1.3,
+    { k: 'OCGT load factor',      model: () => (lastRes && lastRes.E)
+        ? 100 * lastRes.E.diesel / Math.max(1, FIXED.ocgtDieselMW * 8760) : 0,
       actual: 1.17, unit: '%',
-      note: 'FYTD 2026. Diesel spend R948m against R5.73bn last year.' },
+      note: 'FYTD 2026; diesel spend R948m against R5.73bn last year. This row was '
+          + 'previously hardcoded to 1.3% and so always agreed with Eskom - it now reports '
+          + 'what the model actually dispatches. At EAF 68% the model needs almost no diesel, '
+          + 'while Eskom still runs OCGTs for reserve, unit-level trips and network '
+          + 'constraints that a national single-node model does not represent. A gap here is '
+          + 'expected and informative rather than an error.' },
     { k: 'Rooftop PV installed',  model: () => (FIXED.rooftopMW/1000),
       actual: 9.1, unit: 'GW',
       note: 'NTCSA, June 2026, grew 35% y/y. The model reads LOWER by design: Eskom\u2019s '
@@ -5813,6 +5828,11 @@ function renderBess(r){
   const host = document.getElementById('bessBody');
   if (!host || !r || !r.marginalP) return;
   const p = r.marginalP;
+  // p95-minus-median of the scenario's own prices: if this is tiny there is
+  // genuinely no arbitrage available and the panel should say so rather than
+  // reporting R0/MW with no explanation.
+  const _sp = Array.from(r.marginalP).sort((a,b)=>a-b);
+  const spread = _sp[Math.floor(0.95*8759)] - _sp[Math.floor(0.5*8759)];
   const rows = [1, 2, 4].map(h => ({ h, ...bessBenchmark(p, h) }));
   const best = rows.reduce((a, b) => b.revPerMW > a.revPerMW ? b : a);
   const R = v => 'R' + Math.round(v).toLocaleString();
@@ -5823,7 +5843,14 @@ function renderBess(r){
     + 'What a battery would have earned arbitraging this scenario\u2019s prices, per MW of power '
     + 'capacity. <strong>Arbitrage only</strong> \u2014 South Africa has no ancillary services or '
     + 'capacity market with published prices, so the streams worth roughly 40% of a battery\u2019s '
-    + 'income in some other markets do not exist here yet.</div>'
+    + 'income in some other markets do not exist here yet.'
+    + (spread < 60
+        ? ' <strong>This scenario shows almost nothing to arbitrage:</strong> coal sets the price in '
+          + 'nearly every hour, so the shadow price barely moves and a battery has no spread to trade. '
+          + 'That is a real result for a coal-dominated system, not a modelling failure \u2014 add wind '
+          + 'and solar (try 20 GW PV and 15 GW wind) and the spread, and this number, open up.'
+        : '')
+    + '</div>'
     + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)">'
     + '<th style="text-align:left;padding:4px 6px">Duration</th>'
