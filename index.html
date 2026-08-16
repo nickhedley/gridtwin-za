@@ -421,7 +421,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
       
-<div class="panel" id="buildSection" style="margin-top:18px;margin-bottom:18px"><span id="nav-buildrates" style="position:relative;top:-96px;display:block;height:0"></span>
+<div class="panel" id="buildSection" style="margin-top:18px;margin-bottom:18px"><span id="nav-buildrates" style="display:block;height:0"></span>
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
         <h2>Generation capacity build rates</h2>
         <span class="tag">capacity expansion &middot; least-cost schedule to 2030</span>
@@ -653,7 +653,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
             <div class="pb" id="capFcBody"></div>
-          </div><div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="position:relative;top:-96px;display:block;height:0"></span>
+          </div><div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
           <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
           <div style="padding:0 14px 12px">
             <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
@@ -10092,25 +10092,38 @@ function renderMIPSummary() {
 window.runMIP = runMIP;
 window.cancelMIP = cancelMIP;
 
-// Scroll-spy for the sticky nav: highlight whichever anchor is currently at
-// the top of the viewport. IntersectionObserver rather than a scroll handler
-// so it costs nothing while idle.
+// Scroll-spy for the sticky nav. Deterministic rule: the active section is the
+// LAST anchor whose top has passed under the bar; above the first, it is the
+// first. Recomputed on every scroll (rAF-throttled, so it costs one cheap pass
+// per frame only while actually scrolling) rather than on IntersectionObserver
+// threshold crossings - the observer version left a stale highlight whenever
+// the page moved without crossing a threshold, which is why the bar could open
+// showing "Pipeline" on a page sitting at the top.
 (function(){
   const links = [...document.querySelectorAll('#jumpNav a')];
-  const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
-  if (!targets.length || !('IntersectionObserver' in window)) return;
-  const seen = new Map();
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => seen.set(e.target, e.intersectionRatio));
-    let best = null, bestTop = Infinity;
-    targets.forEach(t => {
-      const top = t.getBoundingClientRect().top;
-      if (top <= 90 && top > -1e6 && Math.abs(top - 60) < bestTop){ bestTop = Math.abs(top - 60); best = t; }
-    });
-    links.forEach(a => a.classList.toggle('active',
-      best && a.getAttribute('href') === '#' + best.id));
-  }, { rootMargin: '-50px 0px -70% 0px', threshold: [0, 0.1, 0.5, 1] });
-  targets.forEach(t => io.observe(t));
+  const pairs = links.map(a => ({ a, t: document.querySelector(a.getAttribute('href')) }))
+                     .filter(p => p.t);
+  if (!pairs.length) return;
+  const BAR = 70;                       // sticky bar height plus a little slack
+  let queued = false;
+  function update(){
+    queued = false;
+    let activeIdx = 0;                  // default: first section
+    for (let i = 0; i < pairs.length; i++){
+      if (pairs[i].t.getBoundingClientRect().top <= BAR) activeIdx = i; else break;
+    }
+    // at the very bottom the last section may never reach the bar - claim it
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4)
+      activeIdx = pairs.length - 1;
+    pairs.forEach((p, i) => p.a.classList.toggle('active', i === activeIdx));
+  }
+  function onScroll(){ if (!queued){ queued = true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  window.addEventListener('resize', onScroll, { passive:true });
+  // run once now, and again after layout settles (fonts, map, async panels)
+  update();
+  window.addEventListener('load', update);
+  setTimeout(update, 400); setTimeout(update, 1500);
 })();
 </script>
 
