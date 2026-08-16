@@ -253,6 +253,34 @@ parameter that cannot legitimately be zero or is display-only.
 - Hybrid CF 0.85 within its window is asserted, not derived from RMIPPPP
   performance data (none published).
 
+## Basis audit: every carrier is now sent-out (16 Aug 2026)
+
+Prompted by asking whether the gross/sent-out distinction was applied
+CONSISTENTLY. It was not - nuclear was the one carrier on the wrong basis.
+
+    coal        residual; coefficients are Eskom per-sent-out      SENT-OUT  ok
+    wind        Eskom ESK19243 metered hourly profile              SENT-OUT  ok
+    utility PV  Eskom ESK19243 metered hourly profile              SENT-OUT  ok
+    CSP         Eskom normalised feed-in profile                   SENT-OUT  ok
+    hydro       fixed infeed                                       SENT-OUT  ok
+    imports     metered at the border                              SENT-OUT  ok
+    rooftop     behind-the-meter; netted against a demand series   consistent
+                built by adding rooftop back, so the two agree
+    nuclear     nuclearCF                                          WAS GROSS
+
+nuclearCF had been set to 0.75 from Ember's 11.5 TWh / 1.86 GW = 70.6% - but
+that is GROSS. At ~5% house load the observed SENT-OUT CF is 67.1%, so 0.75 sat
+12% above the figure it was meant to match. Corrected to 0.70, which keeps the
+intended modest recovery allowance on the right basis. Nuclear 12.20 -> 11.41
+TWh; coal absorbs the difference, 157.0 -> 159.9 TWh.
+
+DOES THE BASIS EXPLAIN THE RENEWABLES GAP? No. Renewables carry no meaningful
+auxiliary load, so gross = sent-out for them and converting Ember changes their
+figures not at all. Wind stays +22% and solar +11% against Ember, and those
+remain what was already documented: 470 MW of privately wheeled wind Eskom does
+not meter, unmodelled network curtailment, and a rooftop capacity factor (17.6%)
+above the 14.9% Ember implies - the derate acknowledged as soft.
+
 ## RESOLVED: coal "11% below Ember" was gross vs sent-out (16 Aug 2026)
 
 NOT a model error. Ember reports GROSS generation; this model produces SENT-OUT.
