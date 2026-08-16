@@ -95,6 +95,84 @@ const BESIPPPP_TOTAL_MW = 1744;
 // Eskom's, because that is where the procurement pipeline actually is: these
 // substations were chosen by Eskom specifically to unlock constrained grid
 // capacity, and further bid windows target the same corridors.
+// GCCA 2025 connection headroom by region, MW. This is the CONNECTION constraint
+// (what NTCSA will let you plug in), distinct from the corridor transfer limits
+// used in the flow routing. Four of the best resource regions are already at
+// zero for solar - Northern Cape, Hydra Central, Eastern Cape and Western Cape -
+// which is precisely why new build cannot simply follow resource quality.
+//
+// Mirrors nodal/headroom_summary.json; the build optimiser already respects
+// these, and as of 16 Aug 2026 the slider path does too.
+const GCCA_HEADROOM_MW = {
+  'Kwazulu Natal': { solar: 5500, wind: 5500, batt: 5500 },
+  'Gauteng':       { solar: 4680, wind: 4680, batt: 4680 },
+  'Limpopo':       { solar: 3360, wind: 3360, batt: 3360 },
+  'Mpumalanga':    { solar: 3320, wind: 3320, batt: 3320 },
+  'North West':    { solar: 1660, wind: 1660, batt: 1660 },
+  'Free State':    { solar: 1420, wind: 1420, batt: 1420 },
+  'Eastern Cape':  { solar: 0,    wind: 400,  batt: 0    },
+  'Western Cape':  { solar: 0,    wind: 1180, batt: 0    },
+  'Northern Cape': { solar: 0,    wind: 0,    batt: 0    },
+  'Hydra Central': { solar: 0,    wind: 0,    batt: 0    },
+};
+
+/**
+ * Distribute a national slider total across regions, respecting GCCA connection
+ * headroom. Regions are filled in order of their EXISTING fleet share (a proxy
+ * for resource quality and developer preference), each capped at its headroom;
+ * whatever will not fit spills to the regions that still have room. If every
+ * region is full the remainder is placed pro-rata anyway and reported as
+ * over-headroom, because the user asked for that capacity and the honest answer
+ * is "this needs grid build", not silently dropping it.
+ *
+ * Previously the remainder was spread pro-rata to existing fleet with no
+ * headroom check at all, so a big "New utility solar PV" setting piled capacity
+ * into the Northern Cape and Hydra Central - which have had zero solar headroom
+ * since GCCA 2025. The build optimiser never did this; only the slider path did.
+ */
+function allocateWithHeadroom(totalMW, shareByRegion, tech) {
+  const out = {}, over = {};
+  REGIONS.forEach(r => { out[r] = 0; over[r] = 0; });
+  if (!(totalMW > 0)) return { alloc: out, over, overTotal: 0 };
+
+  const room = {};
+  REGIONS.forEach(r => {
+    const h = GCCA_HEADROOM_MW[r];
+    room[r] = h ? (h[tech] != null ? h[tech] : 0) : 0;
+  });
+
+  let remaining = totalMW;
+  // Up to a few passes: place pro-rata among regions that still have room,
+  // then re-spread whatever did not fit.
+  for (let pass = 0; pass < 6 && remaining > 1e-6; pass++) {
+    const open = REGIONS.filter(r => room[r] - out[r] > 1e-6);
+    if (!open.length) break;
+    const wsum = open.reduce((s, r) => s + (shareByRegion[r] || 0), 0);
+    let placed = 0;
+    open.forEach(r => {
+      const w = wsum > 0 ? (shareByRegion[r] || 0) / wsum : 1 / open.length;
+      const want = remaining * w;
+      const can = Math.max(0, room[r] - out[r]);
+      const take = Math.min(want, can);
+      out[r] += take; placed += take;
+    });
+    if (placed <= 1e-9) break;
+    remaining -= placed;
+  }
+  // Anything still unplaced exceeds national headroom. Site it pro-rata and flag it.
+  let overTotal = 0;
+  if (remaining > 1e-6) {
+    const wsum = REGIONS.reduce((s, r) => s + (shareByRegion[r] || 0), 0);
+    REGIONS.forEach(r => {
+      const w = wsum > 0 ? (shareByRegion[r] || 0) / wsum : 1 / REGIONS.length;
+      const add = remaining * w;
+      out[r] += add; over[r] += add;
+    });
+    overTotal = remaining;
+  }
+  return { alloc: out, over, overTotal };
+}
+
 const NEW_BATT_SHARE_BY_REGION = {
   'North West':    692 / 1744,
   'Free State':    616 / 1744,
@@ -307,11 +385,31 @@ class NodalEngine {
     const explicitSolarTotal = REGIONS.reduce((s, r) => s + (extraSolarByRegion[r] || 0), 0);
     const remainderWindMW = Math.max(0, newWindMW - explicitWindTotal);
     const remainderSolarMW = Math.max(0, newPvMW - explicitSolarTotal);
+    // Headroom-aware distribution of the national slider remainder. Explicit
+    // "Where To Build" placements are untouched - the user chose those, and the
+    // Where To Build tool already prices the grid-build charge for exceeding
+    // headroom. Only the auto-distributed remainder is constrained here.
+    const windShareBy = {}, solarShareBy = {};
     REGIONS.forEach(r => {
-      const windShare = totalBaseWind > 0 ? (this.baseWindMw[r] || 0) / totalBaseWind : 0;
-      const solarShare = totalBaseSolar > 0 ? (this.baseSolarMw[r] || 0) / totalBaseSolar : 0;
-      this.windMw[r] = (this.baseWindMw[r] || 0) + (extraWindByRegion[r] || 0) + remainderWindMW * windShare;
-      this.solarMw[r] = (this.baseSolarMw[r] || 0) + (extraSolarByRegion[r] || 0) + remainderSolarMW * solarShare;
+      windShareBy[r]  = totalBaseWind  > 0 ? (this.baseWindMw[r]  || 0) / totalBaseWind  : 0;
+      solarShareBy[r] = totalBaseSolar > 0 ? (this.baseSolarMw[r] || 0) / totalBaseSolar : 0;
+    });
+    const windAlloc  = allocateWithHeadroom(remainderWindMW,  windShareBy,  'wind');
+    const solarAlloc = allocateWithHeadroom(remainderSolarMW, solarShareBy, 'solar');
+    // Published so the UI can say when a scenario has outrun the grid.
+    this.headroomOverflow = {
+      wind:  windAlloc.overTotal,
+      solar: solarAlloc.overTotal,
+      byRegion: REGIONS.reduce((o, r) => {
+        o[r] = { wind: windAlloc.over[r] || 0, solar: solarAlloc.over[r] || 0 }; return o;
+      }, {}),
+    };
+
+    REGIONS.forEach(r => {
+      const windShare = windShareBy[r];
+      const solarShare = solarShareBy[r];
+      this.windMw[r] = (this.baseWindMw[r] || 0) + (extraWindByRegion[r] || 0) + (windAlloc.alloc[r] || 0);
+      this.solarMw[r] = (this.baseSolarMw[r] || 0) + (extraSolarByRegion[r] || 0) + (solarAlloc.alloc[r] || 0);
       const rooftopShare = totalBaseRooftop > 0 ? (this.baseRooftopMw[r] || 0) / totalBaseRooftop : 0;
       this.rooftopMw[r] = (this.baseRooftopMw[r] || 0) + newRooftopMW * rooftopShare;
       // Existing storage follows Eskom's own BESS siting. New build follows the
@@ -1133,6 +1231,16 @@ if (typeof require !== 'undefined' && require.main === module) {
 
   const cap = JSON.parse(fs.readFileSync('regional_renewable_capacity.json','utf8'));
   const rooftopMw = JSON.parse(fs.readFileSync('rooftop_mw_by_region.json','utf8'));
+
+  // WHEELED-SOLAR DOUBLE COUNT (fixed 15 Aug 2026, matching the national engine):
+  // Eskom's rooftop series is contractual, so the ~488 MW of ground-mounted
+  // wheeled solar in by_source.private sits INSIDE rooftop_mw_by_region.json as
+  // well. It generates as supply from the capacity file, so leaving it in the
+  // rooftop netting counts it twice. Subtract per region, sharing the same
+  // sourced number the capacity identities use - the rooftop file itself stays
+  // verbatim Eskom.
+  const _priv = (cap.by_source && cap.by_source.private && cap.by_source.private.solar_mw) || {};
+  Object.keys(rooftopMw).forEach(r => { rooftopMw[r] = Math.max(0, rooftopMw[r] - (_priv[r] || 0)); });
 
   // fleet: parse CSV keeping quotes/commas correctly via manual field split
   const fleetRaw = fs.readFileSync('fleet_by_region_v2.csv','utf8').trim().split('\n');
