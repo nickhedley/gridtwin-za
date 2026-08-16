@@ -1,6 +1,7 @@
 {
  "meta": {
   "title": "INDICATIVE connection-capability bands - GridTwin ZA estimate, NOT an Eskom figure",
+  "generated_by": "build_substation_bands.py",
   "estimate_warning": "These bands are OUR OWN ESTIMATE, produced by GridTwin ZA. Eskom and NTCSA publish connection headroom by REGION only; no per-substation figure is published. We disaggregate the published regional number using network topology, so the regional totals remain exactly Eskom's while the split within a region is ours.",
   "method": "connected circuit capacity by voltage class, minus the largest single circuit (N-1), minus existing generation within 120 km; regional GCCA headroom then shared out in that proportion.",
   "limitations": [
@@ -11,7 +12,12 @@
    "Bands are a screening ranking. They are not a connection allowance and carry no commitment from any party."
   ],
   "use": "Rank substations worth an enquiry first. Always confirm with a GCCA study and an NTCSA connection application.",
-  "regional_source": "GCCA 2025 + Oct 2025 update (Eskom/NTCSA published, by region)"
+  "regional_source": "GCCA 2025 + Oct 2025 update (Eskom/NTCSA published, by region)",
+  "band_thresholds": {
+   "strong": 0.03,
+   "moderate": 0.012,
+   "basis": "share of national headroom for that technology"
+  }
  },
  "bands": {
   "Acacia": {
