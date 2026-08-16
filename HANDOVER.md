@@ -253,26 +253,35 @@ parameter that cannot legitimately be zero or is display-only.
 - Hybrid CF 0.85 within its window is asserted, not derived from RMIPPPP
   performance data (none published).
 
-## OPEN DATA ISSUE: wind_nameplate_est in profiles.json (16 Aug 2026)
+## RESOLVED: wind_nameplate_est in profiles.json (16 Aug 2026)
 
-`profiles.json` normalises Eskom's metered hourly wind output against
-`wind_nameplate_est = 3466` MW, giving `wind_cf_2025 = 0.373`. The ENERGY is
-right - 3,466 x 8760 x 0.373 = 11.3 TWh against Ember's 11.6 TWh for the 12
-months to May 2026 - but 3,466 MW understates the true average operating fleet
-during 2025, so every per-unit value in the series is inflated by roughly
-3,466/4,000 = 0.87. Applied to today's 4,612 MW the model produces 15.0 TWh of
-wind against Ember's 11.6.
+`profiles.json` normalised Eskom's metered hourly wind output against
+`wind_nameplate_est = 3466` MW, giving `wind_cf_2025 = 0.373`. The METERED
+ENERGY was always right - 3,466 x 8760 x 0.373 = 11.33 TWh against Ember's
+11.35 TWh for calendar 2025, agreeing to 0.2% - but the divisor understated the
+operating fleet, so every per-unit value was inflated by ~1.17x.
 
-DO NOT fix this with an availability or loss derate in the engine. That was
-tried on 16 Aug 2026 and reverted: these profiles are METERED output, so
-availability, electrical losses and real curtailment are already inside them,
-and the regional Renewables.ninja series additionally carries an explicit 10%
-PV system loss. A derate charges those losses twice.
+Re-derived by requiring the series to reproduce Ember's 11.6 TWh (12 months to
+May 2026) over the 4,142 MW fleet Eskom actually meters (REIPPPP 4,042 + Eskom
+Sere 100). That solves to 4,044 MW - which lands on the REIPPPP wind fleet
+independently, a check on the method rather than a fitted value. `wind_pu` was
+rescaled by 0.8629 and `wind_cf_2025` is now 0.3197.
 
-The correct fix is to re-derive `wind_nameplate_est` (and check `pv_nameplate_est`
-= 2,789 the same way) against the capacity-weighted average operating fleet
-through 2025, then regenerate the per-unit series. Until then the validation
-panel's Wind generation row shows the gap and explains it.
+Result: model wind 15.0 -> 12.9 TWh, of which 11.60 TWh is Ember-comparable
+(exactly Ember's 11.6) and 1.32 TWh is the 470 MW of privately wheeled wind that
+Eskom does not meter and Ember does not count.
+
+DO NOT compensate for anything like this with an availability or loss derate in
+the engine. That was tried on 16 Aug 2026 and reverted: the national profiles are
+METERED output (Eskom Data Portal ESK19243), so availability, electrical losses
+and real curtailment are already inside them, and the regional Renewables.ninja
+series additionally carries an explicit 10% PV system loss. A derate charges
+those losses twice, and would have produced roughly the right number by the wrong
+mechanism - breaking the moment anyone corrected the nameplate.
+
+`pv_nameplate_est` (2,789 MW, CF 20.8%) was checked the same way and LEFT ALONE.
+Ember's Solar line is all solar - utility plus distributed - so there is no clean
+utility-only external anchor, and 20.8% is a reasonable SA fixed-tilt figure.
 
 ## Three planner/developer features added (15 Aug 2026)
 
