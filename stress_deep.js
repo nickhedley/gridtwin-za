@@ -151,7 +151,13 @@ function probe(){
    //     diesel actually dispatch — they are not dead, they are conditionally active.
    //     Confirmed by direct simulation: move lcoeCcgt with ccgtMW:3000 but no coal
    //     decommissioned → E.ccgt stays 0, replAvg unchanged. This is correct.
-   const EXEMPT = new Set(['outVolPct','getsEnabled','lcoeCcgt','lcoeDiesel','costCcgt']);
+   //   carbonCapEnabled, carbonCapMt -> constrain the BUILD LP (bldBuildLP),
+   //     not the dispatch engine this sweep exercises. Their effect is tested
+   //     directly instead: see the cap sweep in the session notes - the cap is
+   //     slack above ~100 Mt and binds below, lifting the objective from
+   //     R334bn to R359bn at 80 Mt with a R1,477/t shadow price.
+   const EXEMPT = new Set(['outVolPct','getsEnabled','lcoeCcgt','lcoeDiesel','costCcgt',
+                           'carbonCapEnabled','carbonCapMt']);
    const cache = {};
    const baseFor = ctx => { const key = JSON.stringify(ctx||{});
      if(!cache[key]) cache[key]=metrics(sim(ctx||{})); return cache[key]; };
