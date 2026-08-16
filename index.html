@@ -7540,10 +7540,36 @@ function render(r){
     {k:'lcoeBatt',nm:'Battery (4h)',c:COLORS.batt},
     {k:'lcoeCsp',nm:'CSP',c:COLORS.csp},
     {k:'lcoeDiesel',nm:'Diesel OCGT',c:COLORS.diesel},
-  ].map(x=>({...x,v:state[x.k]!==undefined?state[x.k]:FIXED[x.k]})).sort((a,b)=>a.v-b.v);
+  ].map(x=>({...x,v:state[x.k]!==undefined?state[x.k]:FIXED[x.k]}));
+
+  // New coal WITH CCS - derived, not a slider. It reuses the EXACT build-up the
+  // dispatch engine applies to p.costCoal when ccsEnabled, so the bar and the
+  // dispatch cost can never tell different stories:
+  //     cost / (1 - energy penalty)  +  solvent/compression  +  annualised
+  //     capture capital  +  transport and storage
+  // Everything comes from the CCS panel's own sliders, so dragging them moves
+  // this bar live. Caveat stated in the tooltip: those defaults are calibrated
+  // to a post-combustion RETROFIT; purpose-built integrated capture on a new
+  // plant is generally cheaper per kW, so this reads as a conservative ceiling.
+  {
+    const g = k => (state[k] !== undefined ? state[k] : FIXED[k]);
+    const keep = Math.max(0.4, 1 - (g('ccsPenaltyPct') || 25) / 100);
+    const base = g('lcoeCoalNew');
+    const add  = (g('ccsOpexR') || 180) + (g('ccsCapexR') || 260) + (g('ccsTsR') || 120);
+    const v    = base / keep + add;
+    lcoeRows.push({ k:'lcoeCoalCcs', nm:'New coal + CCS', c:'#8A5A2B', v,
+      tip:'Derived from the Clean coal (CCS) panel, using the same build-up the dispatch '
+        + 'engine applies: R' + Math.round(base) + '/MWh \u00f7 ' + keep.toFixed(2)
+        + ' energy penalty = R' + Math.round(base/keep) + ', plus R' + (g('ccsOpexR')||180)
+        + ' solvent and compression, R' + (g('ccsCapexR')||260) + ' annualised capture capital and R'
+        + (g('ccsTsR')||120) + ' transport and storage. Move the CCS sliders and this bar moves. '
+        + 'Those defaults describe a post-combustion RETROFIT; purpose-built capture on a new plant '
+        + 'is usually cheaper per kW, so treat this as a conservative ceiling.' });
+  }
+  lcoeRows.sort((a,b)=>a.v-b.v);
   const lcoeMax=Math.max(...lcoeRows.map(r=>r.v))*1.02;
   document.getElementById('lcoe').innerHTML=lcoeRows.map(r=>
-    '<div class="mixrow"><span class="nm">'+r.nm+'</span><span class="barwrap"><span class="bar" style="width:'+(100*r.v/lcoeMax).toFixed(1)+'%;background:'+r.c+'"></span></span><span class="num">R'+(r.v/1000).toFixed(2)+'/kWh</span></div>'
+    '<div class="mixrow"'+(r.tip?' title="'+r.tip.replace(/"/g,'&quot;')+'" style="cursor:help"':'')+'><span class="nm">'+r.nm+'</span><span class="barwrap"><span class="bar" style="width:'+(100*r.v/lcoeMax).toFixed(1)+'%;background:'+r.c+'"></span></span><span class="num">R'+(r.v/1000).toFixed(2)+'/kWh</span></div>'
   ).join('');
 
   updateMap(r);
