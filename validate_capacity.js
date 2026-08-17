@@ -295,14 +295,51 @@ try {
 // as_at date - meaning the source should already include it, and leaving it
 // queued invites someone to add it a second time.
 {
-  const asAt = new Date((cap.meta && cap.meta.as_at) || '2026-03-31');
-  const risky = [];
+  // THE TWO BUCKETS HAVE DIFFERENT EFFECTIVE DATES, and conflating them nearly
+  // caused a 380 MW double count on 17 Aug 2026.
+  //
+  //   reipppp : anchored to meta.as_at, the IPP Office quarterly basis (31 Mar)
+  //   private : anchored to the PFL monitor, which covers H1 2026 - i.e. through
+  //             30 JUNE, three months LATER than meta.as_at
+  //
+  // Comparing a wheeled project's COD against 31 March would clear anything
+  // commissioned April-June as "not yet counted", when the PFL monitor has
+  // almost certainly already got it. Mooi Plaats (240 MW) and Umsobomvu (140 MW)
+  // were both queued on that mistaken basis and were already in
+  // by_source.private the whole time.
+  const asAtReipppp = new Date((cap.meta && cap.meta.as_at) || '2026-03-31');
+  const privCov = String((cap.meta && cap.meta.private_coverage) || '');
+  // "h1-2026-only" means commercial operations through 30 June 2026.
+  const mH = privCov.match(/h([12])-(\d{4})/i);
+  const asAtPrivate = mH
+    ? new Date(`${mH[2]}-${mH[1] === '1' ? '06-30' : '12-31'}`)
+    : asAtReipppp;
+
+  // Named projects already in the private source - the definitive check, because
+  // a name match beats any date arithmetic.
+  let privNames = new Set();
+  try {
+    const pfl = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal', 'pfl_private_h1_2026.json'), 'utf8'));
+    (pfl.projects || []).forEach(pr => privNames.add(String(pr.name).toLowerCase().replace(/[^a-z0-9]/g,'')));
+  } catch (e) {}
+
+  const risky = [], named = [];
   for (const x of q) {
+    const nm = String(x.name).toLowerCase().replace(/[^a-z0-9]/g,'');
+    const hit = [...privNames].find(n => n.length > 4 && nm.includes(n));
+    if (hit && x.bucket === 'private') { named.push(x); continue; }
     if (!x.cod) continue;
-    // COD is written as e.g. "August 2026" or "April 2026"
     const d = new Date(x.cod + (/\d{4}$/.test(x.cod) ? ' 01' : ''));
-    if (!isNaN(d) && d <= asAt) risky.push(x);
+    const basis = x.bucket === 'private' ? asAtPrivate : asAtReipppp;
+    if (!isNaN(d) && d <= basis) risky.push(x);
   }
+  if (named.length) {
+    console.log('\n  *** ALREADY IN THE PRIVATE SOURCE - NAME MATCH ***');
+    named.forEach(x => console.log(`    ${x.name} (${x.mw} MW) appears in pfl_private_h1_2026.json projects[]`));
+    console.log('  Delete these queue entries. They are counted already.');
+  }
+  console.log(`\n  Bucket basis dates: reipppp ${asAtReipppp.toISOString().slice(0,10)} · ` +
+              `private ${asAtPrivate.toISOString().slice(0,10)} (coverage "${privCov}")`);
   if (risky.length) {
     console.log('\n  *** DOUBLE-COUNT RISK ***');
     console.log('  These queued projects have a COD on or before the capacity file date, so the');
