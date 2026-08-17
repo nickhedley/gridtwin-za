@@ -425,6 +425,43 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## EXTREME-EVENT HANDLING (17 Aug 2026)
+
+The expansion optimiser works over 12 representative days. Two changes, because a
+plan can look adequate on a sample and fail on an event the sample never held.
+
+1. BETTER DAY SELECTION. bldRepDays previously chose the tightest single HOUR, the
+slackest day, and the rest at even calendar intervals. Nothing selected for a
+SUSTAINED event - a five-day winter wind drought simply did not exist in the
+sample. Two extra windows are now chosen deliberately:
+
+    worst 3-day rolling NET LOAD   sustained scarcity
+    worst 3-day rolling WIND       the drought itself
+
+The sample now clusters where it should: three of eight days fall in late June and
+early July, where previously none did. Standard practice - representative days
+plus explicitly chosen extreme periods, rather than hoping a sample catches the
+tail.
+
+2. FULL-YEAR STRESS TEST, run automatically after every solve. Rather than making
+the optimiser see 8,760 hours - which is not browser-tractable, ~30x the LP and
+minutes to solve - this takes the build the optimiser CHOSE and runs it through
+the hourly dispatch engine, which already does full chronology with unit
+commitment, lumpy outages and reserve. Then it does it again with coal 10 points
+below plan, because the tight years are the ones where availability also
+disappoints.
+
+Three verdicts, all tested: holds up / holds at plan but fails under stress /
+sheds on a full year.
+
+IT IMMEDIATELY SAID SOMETHING USEFUL. The standard optimiser output (11 GW wind,
+7.5 GW solar, 2.8 GW battery) has ZERO unserved energy across the full year as
+planned - but sheds for 3 hours once coal runs 10 points worse. The plan has no
+margin for a bad year, which the 12-day sample could never have shown.
+
+It is a validation step, not an optimisation change. It cannot fix a bad plan; it
+tells you when the plan you have is one.
+
 ## CHRONOLOGICAL STORAGE, and what it revealed (17 Aug 2026)
 
 Storage in the regional expansion LP balanced WITHIN each representative day, so
