@@ -341,7 +341,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote">Note on the cost figures: <strong>System cost</strong> is the annual total of fuel, carbon and the capex of newly-built capacity only – existing plants are treated as sunk, and curtailment payments to wind and solar contracted under REIPPPP are excluded. <strong>Avg energy cost</strong> is grid-facing: fuel, carbon and the capex of new <em>grid-connected</em> plant, divided by the energy the grid serves. Behind-the-meter rooftop PV is excluded from both sides. <strong>Replacement cost</strong> instead prices every MWh, from existing and new plant alike, at its full lifecycle cost – i.e., what this mix would cost if built entirely new at today’s prices. Neither is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="https://github.com/nickhedley/gridtwin-za/blob/main/README.md" target="_blank">README</a>.</p>
+    <p class="kpinote"><strong>Note on the cost figures:</strong> System cost is the annual total of fuel, carbon and the capex of newly-built capacity only &ndash; existing plants are treated as sunk, and curtailment payments to wind and solar contracted under REIPPPP are excluded. Avg energy cost is grid-facing: fuel, carbon and the capex of new grid-connected plants, divided by the energy the grid serves. Behind-the-meter rooftop PV is excluded from both sides. Replacement cost instead prices every MWh, from both existing and new plants, at its full lifecycle cost &ndash; i.e., what this mix would cost if built entirely new at today&rsquo;s prices. Neither is a tariff nor the complete picture. Full methodology, data sources and limitations in the README.</p>md" target="_blank">README</a>.</p>
 
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
@@ -362,7 +362,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <button id="mipCancelBtn" onclick="cancelMIP()" style="display:none;padding:6px 12px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;color:var(--ink2)">Cancel</button>
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
             Re-solves the whole system as a true mixed-integer programming (MIP) model, where coal, storage and corridor flows are fully optimised across all 10 regions.
-            (The instant model commits coal in 4-hour blocks, so it follows a midday solar trough closely but not hour-by-hour — it's accurate in today's system but becomes less accurate once more solar is added).
+            (The instant model commits coal in 4-hour blocks, so it follows a midday solar trough closely but not hour-by-hour — it's accurate in today's system but becomes less accurate once more solar is added.)
           </span>
         </div>
 
@@ -415,9 +415,27 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <span><i style="background:#1F4E79"></i>Storage / hydro</span>
           <span><i style="background:var(--alert)"></i>Peakers</span>
         </div>
-        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Faint dashed lines = corridors with no data yet. Run the full model (click the button above) to see real flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red "X% curt." label under a node means curtailment (wasted wind/solar) in that region — shown as a share of that region's own renewable potential going to waste, not the raw GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Labels appear above 1&nbsp;% to keep the map readable, so a region with no label may still be spilling a little. Click on any line or label for exact figures.</p>
-        <p style="font-size:10.5px;color:var(--ink2);padding:0 8px 8px">This schematic is deliberately simplified &mdash; 10 regions and the corridors between them, so flows stay readable. For the real thing, the <a href="gridtwin-3d.html" target="_blank" rel="noopener" style="color:var(--alert,#C4785A)">3D network map</a> plots every mapped transmission line at 220&nbsp;kV and above, plus all 185 substations.</p>
-        <p style="font-size:10.5px; color:var(--ink2); padding:0 8px 8px; margin:0">Note: Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points sharing the Upington corridor area. Click on each for region-specific figures. The REIPPPP project pipeline button overlays dashed rings showing government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) — not the private/C&I registrations shown in the NERSA registrations panel. Ring size scales with total capacity and ring colour shows the status holding the most capacity in that region. Click on a ring for the split by technology and by status — preferred bidder, financial close, or under construction.</p>
+        <p style="font-size:11px;color:var(--ink2);line-height:1.6">
+        <strong>Run the full model</strong> (click the orange button near the top of the model) to see real
+        flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red
+        &ldquo;X% curt.&rdquo; label under a node means curtailment (wasted wind/solar) in that region
+        &mdash; shown as a share of that region&rsquo;s own renewable potential going to waste, not the raw
+        GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Click on any
+        line or label for exact figures.</p>
+      <p style="font-size:11px;color:var(--ink2);line-height:1.6">
+        This schematic is deliberately simplified. For the real thing, the
+        <a href="gridtwin-3d.html">3D network map</a> plots every transmission line at 220&nbsp;kV and
+        above, plus all 185 substations.</p>
+      <p style="font-size:11px;color:var(--ink2);line-height:1.6">
+        <strong>Note:</strong> Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points
+        sharing the Upington corridor area. Click on each for region-specific figures.</p>
+      <p style="font-size:11px;color:var(--ink2);line-height:1.6">
+        The <strong>REIPPPP project pipeline</strong> button overlays dashed rings showing
+        government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) &ndash; not the private/C&amp;I
+        registrations shown in the NERSA registrations panel. Ring size scales with total capacity and
+        ring colour shows the status holding the most capacity in that region. Click on a ring for the
+        split by technology and by status &ndash; preferred bidder, financial close, or under
+        construction.</p>
       </div>
       </section>
 
@@ -6450,7 +6468,7 @@ function renderPricePanel(r){
 
     + `<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.45">`
     + `<strong>These are shadow prices, not observed ones.</strong> South Africa has no wholesale `
-    + `market (yet). This is what a competitive market <em>would</em> clear at based on the running `
+    + `market (yet). This is what a competitive market would clear at based on the running `
     + `cost of the most expensive plant needed in each hour and the value of lost load `
     + `(R87,000/MWh) when demand goes unserved.</div>`;
 
@@ -7447,26 +7465,26 @@ const SUB_CTRL = 'padding-left:16px;border-left:3px solid var(--alert2,#9E5C42);
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
-  {id:'vppGeyserPoolMW',label:'Virtual power plant \u2014 controllable pool',min:0,max:12000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(2)+' GW',
-   note:'How much behind-the-meter load COULD be aggregated nationally. 4 GW is our estimate for electric geysers: residential is ~17% of consumption and the geyser 40\u201350% of a household bill, averaging ~1.8 GW \u2014 but geyser load is what MAKES the morning and evening peaks, so at a coincidence factor near three it contributes far more into them. Eskom\u2019s old ripple control managed 1\u20132 GW. Raise it above 4 GW to include pool pumps, air conditioning and EV charging as those fleets grow. Nothing happens until you set an enrolment share below.'},
+  {id:'vppGeyserPoolMW',label:'Virtual power plants \u2013 national potential',min:0,max:12000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(2)+' GW',
+   note:'How much behind-the-meter load could be aggregated nationally. 4 GW is our estimate for electric geysers, which contribute significantly to morning and evening peaks. Raise the slider above 4 GW to include pool pumps, air conditioning and EV charging as those fleets grow. Nothing happens until you set an enrolment share below.'},
   {id:'vppRegion',label:'\u2014 where it is sited',select:['National','Western Cape','Gauteng','Kwazulu Natal','Eastern Cape','Northern Cape','Free State','Mpumalanga','Limpopo','North West'],def:'National',ctrlStyle:SUB_CTRL,
    note:'National spreads the enrolled pool across regions by their share of electricity DEMAND \u2014 not rooftop solar, which would misplace it badly (the Northern Cape is 6.8% of national rooftop but 2.1% of demand). Naming a region concentrates the pool there, capped at what that region plausibly holds. This only changes the answer in the regional build optimiser: the single-node engine has no geography. Cape Town\u2019s municipal VPP is the live example \u2014 the Western Cape is 10% of national demand, so its pool tops out near 400 MW.'},
   {id:'vppEnrolPct',label:'\u2014 share actually enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',ctrlStyle:SUB_CTRL,
-   note:'The share of that pool signed up and dispatchable. Aggregates BEHIND-THE-METER assets \u2014 rooftop solar, household batteries and above all controllable electric geysers \u2014 into one plant. Cape Town has an RMI-backed feasibility study for a municipal VPP; eThekwini\u2019s Project Smart Solar with Plentify, funded by AFD and the EU, is connecting residential PV, batteries and geysers into a city-wide VPP. Defaults to ZERO because these are pilots, not a national programme \u2014 this is a policy lever, not a description of today. Watch for diminishing returns: around 50 % enrolment the evening peak stops falling and simply MOVES to the early hours \u2014 you have flattened the curve as far as it will go, and past that point a VPP is buying flexibility and resilience rather than peak reduction.'},
-  {id:'drInterruptMW',label:'Interruptible load',min:0,max:4000,step:100,def:FIXED.drInterruptMW,fmt:v=>v+' MW',
-   note:'Contracted large industrial load Eskom can drop in a shortage \u2014 historically the aluminium smelters and other energy-intensive users, through Demand Market Participation and instantaneous interruptible contracts. Called BEFORE anything is shed, because the customer is compensated at far less than the cost of a blackout. Reported separately from unserved energy: a managed reduction under contract is not load shedding.'},
-  {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString()+'/MWh',
-   note:'What the customer is paid to drop. Sits between diesel (R6,100) and the cost of unserved energy (R87,000) \u2014 which is exactly why the system calls it after peakers and before shedding.'},
+   note:'The share of that pool signed up and dispatchable. Aggregates behind-the-meter assets into one plant. Both Cape Town and eThekwini are working to implement city-wide VPPs. The slider defaults to zero because these are pilots. Watch for diminishing returns: at around 50% enrolment, the evening peak stops falling and moves to the early hours because the curve has flattened. Past that point, a VPP is buying flexibility and resilience rather than peak reduction.'},
+  {id:'drInterruptMW',label:'Large interruptible load/demand flexibility',min:0,max:4000,step:100,def:FIXED.drInterruptMW,fmt:v=>v+' MW',
+   note:'Contracted large industrial load that Eskom can drop in a shortage (for a fee) \u2013 historically the aluminium smelters and other energy-intensive users. Called before anything is shed, because the customer is compensated at far less than the cost of a blackout. Reported separately from unserved energy: a managed reduction under contract is not load shedding.'},
+  {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString()+'/MWh',ctrlStyle:SUB_CTRL,
+   note:'What a customer is paid to reduce their power use. Sits between the cost of diesel and the cost of unserved energy.'},
   {id:'drShiftPct',label:'Shiftable load',min:0,max:30,step:1,def:FIXED.drShiftPct,fmt:v=>v+' % of daily load',
-   note:'Load MOVED within the day rather than dropped \u2014 water heating, pumping, irrigation, EV charging \u2014 out of the six highest net-load hours into the six lowest. Strictly energy-neutral per day. Defaults to ZERO because this barely exists at scale in South Africa yet: it is a scenario lever, not a description of today. It also soaks up midday solar, so it is worth testing alongside a high-PV build.'},
+   note:'Load moved within the day rather than dropped. I.e., loads including water heating, pumping, irrigation and EV charging are shifted out of the six highest net-load hours into the six lowest. Strictly energy-neutral per day. Defaults to zero because this barely exists at scale in South Africa yet but is a potential policy lever. It also soaks up midday solar, so it is worth testing alongside a high-PV build.'},
   {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
-   note:'Make the build optimiser MEET an emissions ceiling in 2030, rather than only reporting whether it does. This is how the IRP poses the question. Off by default so the headline answer stays least-cost with carbon priced; on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
+   note:'Make the build optimiser meet an emissions ceiling in 2030, rather than only reporting whether it does. When turned on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
-   ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that \u2014 which is itself the useful finding: meeting the NDC is not what makes this expensive.'},
+   ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that.'},
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
-   note:'Model availability as individual units tripping and being repaired (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Same average availability either way \u2014 the slider still means what it says \u2014 but the bad hours are now genuinely bad. At EAF 55% this moves shedding from 3 hours to 207.'},
+   note:'When turned on, individual units trip and must be taken out for repairs (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Means the bad hours are more extreme. At an EAF of 55%, for example, this moves shedding from 3 hours to 207 hours.'},
   {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
-   note:'How much of the EAF gap is unplanned trips rather than scheduled maintenance. Eskom\u2019s UCLF runs about 15 points of a ~32 point total gap, hence 47%. Planned outages are smooth and pushed into the low-demand months, the way real maintenance is scheduled.'},
+   note:'How much of the EAF gap is unplanned trips rather than scheduled maintenance. Eskom\u2019s UCLF currently runs at about 47%. Planned outages are smooth and pushed into the low-demand months, the way real maintenance is scheduled.'},
   {id:'outageMttrH',label:'Mean time to repair',min:8,max:400,step:8,def:FIXED.outageMttrH,fmt:v=>v+' h',
    note:'How long a forced outage lasts on average. Shorter repairs mean more frequent, shallower events; longer ones mean rarer but deeper troughs for the same annual EAF.'},
   {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
@@ -8292,11 +8310,13 @@ function renderAdequacy(r){
         + Math.round(Array.from(r.reserveMW).reduce((a,b)=>a+b,0)/r.reserveMW.length).toLocaleString()
         + '&nbsp;MW</strong> average, '
         + Math.round(Math.max.apply(null, Array.from(r.reserveMW))).toLocaleString()
-        + '&nbsp;MW peak &mdash; N-1 plus load and VRE following terms. Fast-start plant covers most of it '
-        + 'at today&rsquo;s fleet, so it seldom forces extra coal on.<br>' : ''}
-      Firm capacity ${(firm/1000).toFixed(1)} GW: coal&times;EAF + nuclear + hydro + imports + peakers +
-      storage power + hybrid. Wind and solar are not counted as firm &mdash; they reduce the load
-      the firm fleet must meet, which is how Eskom&rsquo;s weekly report frames operating reserve.
+        + '&nbsp;MW at most &mdash; capacity held back, not dispatched, so the system can cover a unit '
+        + 'tripping or a forecast error. Peakers and storage can supply nearly all of it today, so it '
+        + 'rarely forces extra coal to run.<br>' : ''}
+      Firm capacity ${(firm/1000).toFixed(1)} GW is what can be relied on at peak: coal after EAF
+      losses, plus nuclear, hydro, imports, peakers, storage and hybrid. Wind and solar do not count as
+      firm &mdash; instead they lower the load that firm plant has to meet, which is how Eskom&rsquo;s
+      weekly report treats them.
       Planning norms typically target LOLE in the low tens of hours; the IRP frames adequacy in EUE terms.
     </div>`;
 }
