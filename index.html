@@ -3329,6 +3329,11 @@ const FIXED = {
   rooftopDerate:0.78,
   // Clean coal (CCS). Defaults are mid-range for a post-combustion amine
   // retrofit; every one is exposed in the policy panel.
+  // NOTE: every consumer of these reads them with `??`, never `||`. Zero is a
+  // MEANINGFUL setting for all of them - a capture rate of 0 means no capture,
+  // a penalty of 0 means a free retrofit - and `||` silently substituted the
+  // default, so moving any CCS slider to zero changed nothing at all. Same
+  // class of bug as the coalEAFPct one found on 15 Aug.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
   ccsOpexR:180, ccsCapexR:260, ccsTsR:120,
   // Tariff side: retrofit capital, allowed return and asset life.
@@ -3726,17 +3731,17 @@ function simulate(u, prof, outPath){
   //     South Africa's power sector, and the model reproduces it from the
   //     arithmetic rather than asserting it.
   if (p.ccsEnabled) {
-    const pen = (p.ccsPenaltyPct || 25) / 100;
-    const cap = (p.ccsCaptureRatePct || 90) / 100;
+    const pen = (p.ccsPenaltyPct ?? 25) / 100;
+    const cap = (p.ccsCaptureRatePct ?? 90) / 100;
     const keep = Math.max(0.4, 1 - pen);
     // NOTE: the capacity penalty is applied further down, to the fleet that
     // remains AFTER decommissioning and new build - see coalInstRem. Applying it
     // here would subtract retired MW from an already-penalised figure and would
     // let new coal escape the penalty altogether.
     p.costCoal = p.costCoal / keep                          // more fuel per MWh sold
-               + (p.ccsOpexR || 180)                        // solvent, compression
-               + (p.ccsCapexR || 260)                       // annualised retrofit
-               + (p.ccsTsR || 120);                         // transport and storage
+               + (p.ccsOpexR ?? 180)                        // solvent, compression
+               + (p.ccsCapexR ?? 260)                       // annualised retrofit
+               + (p.ccsTsR ?? 120);                         // transport and storage
     p.emisCoal = p.emisCoal * (1 - cap) / keep;             // net of the penalty
   }
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
@@ -3746,7 +3751,7 @@ function simulate(u, prof, outPath){
   // Retire nameplate, add nameplate, THEN take the capture penalty off whatever
   // fleet is left - existing and new alike. A new station with capture loses the
   // same fraction of its output to the capture plant as a retrofitted one.
-  const ccsKeep = p.ccsEnabled ? Math.max(0.4, 1 - (p.ccsPenaltyPct || 25)/100) : 1;
+  const ccsKeep = p.ccsEnabled ? Math.max(0.4, 1 - (p.ccsPenaltyPct ?? 25)/100) : 1;
   const coalInstRem=(Math.max(0,p.coalInstalledMW-p.coalDecomMW)+p.newCoalMW)*ccsKeep;
   const coalAvail=coalInstRem*p.coalEAFPct/100;
   const windCap=p.windMW+p.newWindMW, pvCap=p.pvUtilityMW+p.newPvMW, rooftopCap=p.rooftopMW+p.newRooftopMW;
@@ -3773,6 +3778,9 @@ function simulate(u, prof, outPath){
   let prevCommittedMW=coalAvail; // starts fully synchronised, so the year doesn't open cold
   let startUpCostR=0;
   let prevCoalGen=coalAvail*0.5; // reasonable starting assumption, matching psSoc/battSoc's own starting-fraction convention
+  // Hours of its own rating a pumped-storage scheme aims to hold for the evening
+  // peak. Eskom's schemes are built around roughly a 4-6 hour evening discharge.
+  const PS_PEAK_HOURS = 4;
   let psSoc=p.psEnergyMWh*0.7, battSoc=battEnergy*0.5;
   // Cost basis of the energy currently in store, R per MWh OF STORED ENERGY.
   // Efficiency loss is applied on the way in (soc += w*eff), so the basis already
@@ -3820,8 +3828,8 @@ function simulate(u, prof, outPath){
   // Carry the capture cost into the marginal price. The merit curve holds each
   // unit's own fuel cost, so the energy penalty scales it and the capture costs
   // add on top - the same build-up p.costCoal gets, applied per unit.
-  const ccsCostMult = p.ccsEnabled ? 1/Math.max(0.4, 1-(p.ccsPenaltyPct||25)/100) : 1;
-  const ccsCostAdd  = p.ccsEnabled ? ((p.ccsOpexR||180)+(p.ccsCapexR||260)+(p.ccsTsR||120)) : 0; // TOTAL coal generation per hour, including any off-peak
+  const ccsCostMult = p.ccsEnabled ? 1/Math.max(0.4, 1-(p.ccsPenaltyPct ?? 25)/100) : 1;
+  const ccsCostAdd  = p.ccsEnabled ? ((p.ccsOpexR ?? 180)+(p.ccsCapexR ?? 260)+(p.ccsTsR ?? 120)) : 0; // TOTAL coal generation per hour, including any off-peak
   // charging bonus - unlike stack.coal (load-serving only, for the chart), this is what real fuel
   // cost/emissions and any external cost comparison (e.g. an LP solve) should use
   const loadS=new Float64Array(HOURS);
@@ -3897,7 +3905,7 @@ function simulate(u, prof, outPath){
   // ── Day-ahead unit commitment schedule ─────────────────────────────────────
   // Build daily commitment decisions using per-unit min up/down times and start-up costs.
   // This replaces the simple committed=available assumption with per-plant scheduling.
-  const coalInstalled = (p.coalInstalledMW || 42000) - (p.coalDecomMW || 0);
+  const coalInstalled = (p.coalInstalledMW ?? 42000) - (p.coalDecomMW || 0);
   // `?? 64` not `|| 64`: zero is a real input (total coal collapse). The `||`
   // form silently ran EAF=0 scenarios at 64% availability - unserved energy
   // read ZERO with the entire coal fleet dead. Caught by stress_deep check G8.
@@ -4228,8 +4236,24 @@ function simulate(u, prof, outPath){
         // real anticipated stress still charges up to the same conservative cap as before. This
         // is what stopped the mechanism from burning enormous amounts of coal purely to chase a
         // fixed SoC target when storage started nearly empty with nothing to justify it.
-        const psTargetCeiling=Math.min(p.psEnergyMWh*0.85, anticipatedShortfall[h]);
-        const battTargetCeiling=Math.min(battEnergy*0.8, anticipatedShortfall[h]);
+        // Charge target. Gating this on anticipatedShortfall ALONE was a defect:
+        // in a surplus system that term is zero in almost every hour, so the
+        // ceiling collapsed to zero, storage could never recharge, and 2.9 GW of
+        // pumped storage coasted on its opening state of charge and then sat idle
+        // for the rest of the year - 0.04 TWh against the 3-4 TWh Eskom's schemes
+        // actually deliver. The adequacy panel meanwhile counted that same 2.9 GW
+        // as firm capacity, so the two disagreed.
+        //
+        // Real pumped storage cycles DAILY: pump overnight, generate into the
+        // evening peak, whether or not a shortfall is forecast. The floor below
+        // restores that - enough stored energy to cover the plant's own power
+        // rating through a typical evening peak - while the anticipatedShortfall
+        // term still lifts the target higher when genuine stress is coming, which
+        // was the original and correct purpose of that mechanism.
+        const psDailyFloor  = Math.min(p.psEnergyMWh*0.60, p.psPowerMW*PS_PEAK_HOURS);
+        const battDailyFloor= Math.min(battEnergy*0.60, battPower*p.battHours*0.75);
+        const psTargetCeiling=Math.min(p.psEnergyMWh*0.85, Math.max(anticipatedShortfall[h], psDailyFloor));
+        const battTargetCeiling=Math.min(battEnergy*0.8, Math.max(anticipatedShortfall[h], battDailyFloor));
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(p.psPowerMW*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*p.psEff; head-=w; chargeMW[h]+=w;}
         if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; addCharge(h,'batt',w,chgC); battSoc+=w*p.battEff; chargeMW[h]+=w;}
@@ -4414,7 +4438,7 @@ function simulate(u, prof, outPath){
    * thermal is running above storage, the bid stands uncapped.
    */
   {
-    const battD = Math.max(1, Math.min(24, Math.round(p.battHours || 4)));
+    const battD = Math.max(1, Math.min(24, Math.round(p.battHours ?? 4)));
     const psD   = Math.max(1, Math.min(24, Math.round((p.psEnergyMWh / Math.max(1, p.psPowerMW)) || 8)));
     for (let d0 = 0; d0 < HOURS; d0 += 24) {
       const day = [];
