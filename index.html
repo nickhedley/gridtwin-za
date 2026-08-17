@@ -5288,6 +5288,36 @@ const BLD_CORRIDORS = [
   ['Free State','Northern Cape',2439],['North West','Northern Cape',663],
 ];
 
+// Corridor lengths, km. Needed to price transmission expansion per MW-km rather
+// than with one flat national number. Taken from the binding-corridor distances
+// in nodal/headroom_summary.json where the corridor appears there; the rest are
+// straight-line distances between regional load centres, which is a reasonable
+// proxy for a transmission route and is flagged as such.
+// Transmission expansion cost. NTCSA's TDP puts a 400 kV double-circuit line in
+// the region of R12-18m per km, carrying roughly 1,400 MW - about R10,000 per
+// MW-km. Applied as an annuity over a 40-year life like any other asset, so it
+// competes with generation on the same basis rather than being priced separately.
+const TX_R_PER_MW_KM = 10000;
+const TX_LIFE_YEARS  = 40;
+// A sanity ceiling per corridor per year. Without it the LP will happily build
+// tens of gigawatts of line to avoid a little curtailment, which is arithmetically
+// optimal and physically absurd - real corridors take years to permit and build.
+const TX_MAX_MW_PER_CORRIDOR = 4000;
+
+const BLD_CORRIDOR_KM = {
+  'Eastern Cape|Kwazulu Natal':167, 'Limpopo|Mpumalanga':121, 'Mpumalanga|Kwazulu Natal':172,
+  'Gauteng|Mpumalanga':102, 'Hydra Central|Western Cape':278, 'Free State|Northern Cape':90,
+  'Limpopo|North West':212, 'Free State|Mpumalanga':347,
+  // straight-line proxies
+  'Eastern Cape|Hydra Central':420, 'Eastern Cape|Free State':390, 'Free State|Gauteng':320,
+  'Free State|Kwazulu Natal':330, 'Gauteng|Limpopo':280, 'Gauteng|North West':160,
+  'Hydra Central|Northern Cape':300, 'Mpumalanga|North West':340, 'North West|Western Cape':900,
+  'Northern Cape|Western Cape':560, 'Free State|Hydra Central':330, 'North West|Northern Cape':480,
+};
+function bldCorridorKm(a, b){
+  return BLD_CORRIDOR_KM[a+'|'+b] || BLD_CORRIDOR_KM[b+'|'+a] || 300;
+}
+
 // Share of national demand by region
 const BLD_LOAD_SHARE = { 'Gauteng':0.315,'Mpumalanga':0.175,'Kwazulu Natal':0.155,
   'Western Cape':0.115,'North West':0.075,'Free State':0.055,'Limpopo':0.048,
@@ -5336,6 +5366,17 @@ function bldBuildRegionalLP(opts){
     for (const yy of Y) if (yy >= y)
       c += bldAnnuity(bldCapex(t,y), BLD_LIFE[t]) / Math.pow(1+BLD_DISC, yy-2026);
     obj.push(c.toFixed(3) + ' b_' + t + '_' + ri + '_' + y);
+  }
+  // Transmission expansion, annuitised the same way generation capex is, so the
+  // optimiser trades a line against a wind farm on equal terms.
+  for (let ci = 0; ci < BLD_CORRIDORS.length; ci++){
+    const km = bldCorridorKm(BLD_CORRIDORS[ci][0], BLD_CORRIDORS[ci][1]);
+    for (const y of Y){
+      let c = 0;
+      for (const yy of Y) if (yy >= y)
+        c += bldAnnuity(TX_R_PER_MW_KM * km, TX_LIFE_YEARS) / Math.pow(1+BLD_DISC, yy-2026);
+      obj.push(c.toFixed(3) + ' tx_' + ci + '_' + y);
+    }
   }
   for (const y of Y){ const df = 1/Math.pow(1+BLD_DISC, y-2026);
     for (const r of rd) for (let h = 0; h < 24; h++) for (let ri = 0; ri < BLD_REGIONS.length; ri++){
@@ -5443,7 +5484,26 @@ function bldBuildRegionalLP(opts){
     }
   }
 
+  // Flow on a corridor cannot exceed its existing rating plus everything built on
+  // it up to and including this year. Written for each direction separately, since
+  // fa and fb are the two directions of the same wire and BOTH share the capacity.
+  for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
+    BLD_CORRIDORS.forEach(([a,b,lim], ci) => {
+      const f = '_'+ci+'_'+y+'_'+r.d+'_'+h;
+      const built = Y.filter(yy => yy <= y).map(yy => '- tx_'+ci+'_'+yy).join(' ');
+      L.push(' txa'+f+': fa'+f+' ' + built + ' <= ' + lim);
+      L.push(' txb'+f+': fb'+f+' ' + built + ' <= ' + lim);
+    });
+  }
+
   L.push('Bounds');
+  // TRANSMISSION EXPANSION. tx_<ci>_<y> is MW of extra transfer capacity built on
+  // corridor ci by year y - a DECISION VARIABLE, so the optimiser weighs building
+  // a line against siting generation somewhere less windy but better connected.
+  // Until now the model priced transmission with one flat national adder, which
+  // could tell you what the grid cost but never where it should go.
+  for (let ci = 0; ci < BLD_CORRIDORS.length; ci++) for (const y of Y)
+    L.push(' 0 <= tx_'+ci+'_'+y+' <= ' + TX_MAX_MW_PER_CORRIDOR);
   for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y)
     L.push(' 0 <= b_'+t+'_'+ri+'_'+y+' <= 20000');
   for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
@@ -5453,9 +5513,12 @@ function bldBuildRegionalLP(opts){
       L.push(' 0 <= u_'+k+' <= 60000');  L.push(' 0 <= crt_'+k+' <= 60000');
       L.push(' 0 <= bdis_'+k+' <= 60000'); L.push(' 0 <= bchg_'+k+' <= 60000');
     }
+    // Flow bounds are now a CONSTRAINT rather than a bound, because the limit is
+    // no longer a constant: it is the existing rating plus whatever the optimiser
+    // has chosen to build on that corridor up to this year.
     BLD_CORRIDORS.forEach(([a,b,lim], ci) => {
       const f = '_'+ci+'_'+y+'_'+r.d+'_'+h;
-      L.push(' 0 <= fa'+f+' <= '+lim); L.push(' 0 <= fb'+f+' <= '+lim);
+      L.push(' 0 <= fa'+f+' <= 100000'); L.push(' 0 <= fb'+f+' <= 100000');
     });
   }
   L.push('End');
@@ -5470,6 +5533,42 @@ function renderBuildRegional(res, rate, opts){
     host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
     return;
   }
+  // TRANSMISSION BUILT. The optimiser now chooses where to reinforce the network,
+  // weighing a line against siting generation somewhere better connected. Worth
+  // reporting prominently: transmission access, not investor appetite, is the
+  // binding constraint on South Africa's build-out.
+  const txBuilt = [];
+  BLD_CORRIDORS.forEach(([a,b,lim], ci) => {
+    let mw = 0;
+    for (const y of BLD_YEARS){ const v = res.Columns['tx_'+ci+'_'+y]; if (v) mw += v.Primal || 0; }
+    if (mw > 1) txBuilt.push({ a, b, mw, lim, km: bldCorridorKm(a,b) });
+  });
+  txBuilt.sort((x,y) => y.mw - x.mw);
+  const txCostR = txBuilt.reduce((acc,t) => acc + t.mw * t.km * TX_R_PER_MW_KM, 0);
+  const txHtml = !txBuilt.length ? '' : `
+    <div style="border-left:3px solid var(--veld,#4A6B7A);padding:8px 11px;background:var(--panel2);margin-bottom:11px">
+      <div style="font-size:11.5px;font-weight:600;margin-bottom:4px">
+        Transmission reinforcement chosen by the optimiser</div>
+      <table style="width:100%;border-collapse:collapse;font-size:10.5px">
+        <tr style="border-bottom:1px solid var(--line2)">
+          <th style="text-align:left;padding:3px 4px">Corridor</th>
+          <th style="text-align:right;padding:3px 4px">Build</th>
+          <th style="text-align:right;padding:3px 4px">Existing</th>
+          <th style="text-align:right;padding:3px 4px">km</th></tr>
+        ${txBuilt.map(t => `<tr>
+          <td style="padding:3px 4px">${t.a} &ndash; ${t.b}</td>
+          <td class="mono" style="text-align:right;padding:3px 4px">${Math.round(t.mw).toLocaleString()} MW</td>
+          <td class="mono" style="text-align:right;padding:3px 4px;color:var(--ink2)">${t.lim.toLocaleString()} MW</td>
+          <td class="mono" style="text-align:right;padding:3px 4px;color:var(--ink2)">${t.km}</td></tr>`).join('')}
+      </table>
+      <div style="font-size:10px;color:var(--ink2);line-height:1.5;margin-top:5px">
+        About <strong>R${(txCostR/1e9).toFixed(1)}bn</strong> of network capex at R${TX_R_PER_MW_KM.toLocaleString()}/MW-km,
+        annuitised over ${TX_LIFE_YEARS} years and traded off against generation on the same basis. Corridor
+        lengths are the binding-corridor distances from GCCA where available, otherwise straight-line
+        proxies. Build is capped at ${TX_MAX_MW_PER_CORRIDOR.toLocaleString()}&nbsp;MW per corridor per year,
+        since the arithmetic will otherwise buy far more line than could be permitted and built.</div>
+    </div>`;
+
   const T = ['wind','pv','batt'], LBL = { wind:'Wind', pv:'Solar', batt:'Battery' };
   const rows = [];
   const tot = { wind:0, pv:0, batt:0 };
@@ -5619,7 +5718,7 @@ function renderBuildRegional(res, rate, opts){
     + 'Dispatch is approximated over 8 representative days; use <strong>Run the full model</strong> '
     + 'above to test a resulting mix hour by hour.</div></div>';
   html += bldApplyButton();
-  host.innerHTML = html;
+  host.innerHTML = txHtml + html;
 }
 
 
