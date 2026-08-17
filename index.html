@@ -744,7 +744,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         slider still sets the annual average; what changes is the shape. It matters most where it
         should &ndash; at EAF&nbsp;55&nbsp;% the model sheds for 207 hours instead of 3, and diesel
         runs 1,402 hours instead of 415. A fixed seed keeps the headline scenario reproducible; the
-        risk panel varies it. Still simplified: unit trips are drawn independently, where real ones
+        risk panel varies it. <strong>Part-load heat rate</strong> is now modelled: a coal unit burns more
+        fuel per MWh the further it is backed off, so emissions follow fuel burned rather than energy
+        sold. The penalty averages 1.5&nbsp;% today and 3.6&nbsp;% with 20&nbsp;GW of extra solar,
+        because solar is what pushes coal to part load. Ignoring it would overstate the CO&#8322;
+        saving from that solar by about 4&nbsp;%. Still simplified: unit trips are drawn independently, where real ones
         cluster (common-mode failures, coal quality, a stressed fleet), and intra-regional network
         limits below the ten-region corridor level remain out of scope &ndash; though
         new build from the sliders is now sited against <strong>GCCA connection headroom</strong>
@@ -3370,6 +3374,19 @@ const FIXED = {
   // issue in profiles.json, listed in HANDOVER, not something to paper over with
   // a fabricated loss factor in the engine.
   nuclearCF:0.70,
+  // PART-LOAD HEAT RATE. A coal unit burns more fuel per MWh the further it is
+  // backed off: auxiliaries, mill and fan power and boiler losses are largely
+  // fixed, so they spread over less output. The model previously costed every
+  // coal MWh at the same R546 whatever the load factor, which flatters part-load
+  // running - and part-load running is exactly what more solar produces.
+  //
+  //   HR(x) = HR_nominal x (1 + k x (1/x - 1)),  x = load fraction of committed
+  //
+  // At full load the multiplier is 1. At MSL (about 55% for the SA fleet) with
+  // k = 0.10 it is about 1.08, i.e. 8% more fuel per MWh - consistent with the
+  // 5-12% range typically quoted for subcritical coal between MSL and full load.
+  // The floor on x stops the curve blowing up as output approaches zero.
+  coalPartLoadK:0.10,
   // ── DEMAND RESPONSE ──────────────────────────────────────────────────────
   // Two mechanisms, because they are genuinely different products:
   //
@@ -4086,6 +4103,10 @@ function simulate(u, prof, outPath){
   // proportionality - see the off-peak charging block below for how this is used.
   // Reserve actually carried each hour, kept for the adequacy panel and CSV.
   const reserveMWArr=new Float64Array(HOURS);
+  // Part-load multiplier actually applied each hour, kept for the marginal
+  // price and for reporting.
+  const partLoadF=new Float64Array(HOURS).fill(1);
+  let coalFuelMWh=0;   // coal output x part-load multiplier = fuel-equivalent MWh
   // Interruptible load actually called each hour, and its contracted size.
   const drMW=new Float64Array(HOURS);
   const DR_INT  = Math.max(0, p.drInterruptMW ?? 1200);
@@ -4444,12 +4465,21 @@ function simulate(u, prof, outPath){
     // when storage is not marginal, and the input to the storage opportunity-cost
     // pass below (a battery's opportunity cost is defined over the prices thermal
     // plant would otherwise set, so the series must exclude storage's own bids).
+    // Part-load multiplier must be computed BEFORE the price expression below
+    // reads it. Placed here rather than further down, where it was originally
+    // written next to the fuel-cost accumulation - the price was then reading a
+    // still-zero array and part-load never reached the marginal cost at all.
+    {
+      const plK = p.coalPartLoadK ?? 0.10;
+      const plX = (cAvail > 1) ? Math.max(0.35, Math.min(1, coalGen / cAvail)) : 1;
+      partLoadF[h] = (plK > 0 && coalGen > 1) ? (1 + plK * (1/plX - 1)) : 1;
+    }
     thermalP[h] =
         ((stack.unserved[h]||0) > 1)     ? p.voll
       : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD + p.vomDiesel
       : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt + cG + p.vomCcgt
       : ((curtailMW[h]||0) > 1)          ? 0
-      : (coalGen > 1)                    ? coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC + p.vomCoal
+      : (coalGen > 1)                    ? coalMarginalCost(coalGen) * partLoadF[h] * ccsCostMult + ccsCostAdd + cC * partLoadF[h] + p.vomCoal
       : (imp > 1)                        ? p.costImports
       : (hyd > 1)                        ? p.costHydro
       : (nuc > 1)                        ? p.costNuclear + p.vomNuclear
@@ -4468,7 +4498,14 @@ function simulate(u, prof, outPath){
       : (hyd > 1)                        ? 'hydro'
       : (nuc > 1)                        ? 'nuclear'
       :                                    'none';
-    E.coal+=coalGen; fuelCost+=coalGen*(p.costCoal+p.vomCoal)+(isNaN(ucStartCost[h])?0:ucStartCost[h]); carbonCost+=coalGen*cC;
+    // Part-load heat rate: the same MWh costs more fuel, and emits more CO2,
+    // when the committed fleet is running well below its capability. Computed
+    // above, before the price expression needs it.
+    const plF = partLoadF[h];
+    E.coal+=coalGen;
+    coalFuelMWh += coalGen * plF;   // fuel-equivalent MWh, for emissions
+    fuelCost+=coalGen*(p.costCoal*plF+p.vomCoal)+(isNaN(ucStartCost[h])?0:ucStartCost[h]);
+    carbonCost+=coalGen*cC*plF;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
     // Interruptible load comes off the demand line: the customer stopped
@@ -4629,7 +4666,10 @@ function simulate(u, prof, outPath){
   // drCostR included: compensation paid to interruptible customers is part of
   // what the system costs to run, and omitting it made demand response look free.
   const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+drCostR)/Math.max(1,gridServed);
-  const co2=(E.coal*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
+  // Emissions follow FUEL BURNED, not energy sold. coalFuelMWh is coal output
+  // scaled by the part-load heat-rate multiplier, so a fleet held at part load
+  // emits more per MWh delivered - which is the physical point of the curve.
+  const co2=(coalFuelMWh*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
   // Full replacement cost: price EVERY MWh (existing + new) at its lifecycle LCOE.
   // Coal is charged new-build coal LCOE; storage discharge priced at storage LCOE.
   // hybrid at R1,900/MWh: RMIPPPP awarded tariffs cluster R1.5-2.3/kWh; midpoint,
@@ -4642,7 +4682,7 @@ function simulate(u, prof, outPath){
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
   let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
   return {E,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
-          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr, drMW, drCostR,
+          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
@@ -7639,6 +7679,8 @@ const SLIDERS=[
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
   {grp:'Existing coal fleet'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:68,fmt:v=>v+' %',note:'FY2026 to date = 68% · 2023 crisis = 50–55% · target 70%'},
+  {id:'coalPartLoadK',label:'Part-load heat rate penalty',min:0,max:0.25,step:0.01,def:FIXED.coalPartLoadK,fmt:v=>v===0?'off':'+'+(v*100).toFixed(0)+'% at half load',
+   note:'A coal unit burns more fuel per MWh the further it is backed off, because auxiliaries, mills, fans and boiler losses are largely fixed and spread over less output. Set to zero and every coal MWh costs the same whatever the load factor, which flatters part-load running \u2013 and part-load running is exactly what more solar produces. At the default the penalty averages 1.5% today but 3.6% with 20 GW of extra solar, and it raises CO\u2082 as well as cost, because emissions follow fuel burned rather than energy sold.'},
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
    ctrlStyle:SUB_CTRL,note:'When turned on, individual units trip and must be taken out for repairs (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Means the bad hours are more extreme. At an EAF of 55%, for example, this moves shedding from 3 hours to 207 hours.'},
   {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
