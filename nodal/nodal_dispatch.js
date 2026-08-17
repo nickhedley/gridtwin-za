@@ -71,6 +71,17 @@ async function loadNodalData() {
   // 10:00 while real SA CSP is at ~50% by 09:00.
   const cspPu = (nationalProfiles && nationalProfiles.csp_pu && nationalProfiles.csp_pu.length === 8760)
     ? Float64Array.from(nationalProfiles.csp_pu) : null;
+
+  // WHEELED-SOLAR DOUBLE COUNT (fixed 15 Aug 2026, matching the national engine):
+  // Eskom's rooftop series is contractual, so the ~488 MW of ground-mounted
+  // wheeled solar in by_source.private sits INSIDE rooftop_mw_by_region.json as
+  // well. It generates as supply from the capacity file, so leaving it in the
+  // rooftop netting counts it twice. Subtract per region, sharing the same
+  // sourced number the capacity identities use - the rooftop file itself stays
+  // verbatim Eskom.
+  const _priv = (cap.by_source && cap.by_source.private && cap.by_source.private.solar_mw) || {};
+  Object.keys(rooftopMw).forEach(r => { rooftopMw[r] = Math.max(0, rooftopMw[r] - (_priv[r] || 0)); });
+
   nodalDataCache = { demandByRegion, windPu, solarPu, windMw: cap.wind_mw, solarMw: cap.solar_mw, rooftopMw, fleet, cspPu };
   return nodalDataCache;
 }
@@ -97,6 +108,43 @@ function foldCarrier(carrier) {
 }
 
 const GET_CONGESTION_THRESHOLD_PCT = 30; // avg utilisation above this = truly congested, worth a GET investment
+
+/* ============================================================================
+ * runNodalYear() IS NOT WIRED UP. IT HAS NEVER RUN IN PRODUCTION.
+ * ============================================================================
+ * Retired 17 Aug 2026 after an audit found it is defined here, referenced only
+ * in comments, and never called from index.html. The live "nodal" capability is
+ * getNodalMIPInputs() below, which feeds the regional build optimiser - an
+ * OPTIMISER over representative days, not an hourly dispatch.
+ *
+ * WHY IT WAS NOT REVIVED, having been considered as the basis for regional VPP
+ * siting:
+ *
+ *   COST. 8,760 hours x 10 regions with a Dijkstra shortest-path routing per
+ *   hour over the corridor graph, and the GET path runs the whole year TWICE -
+ *   once to find congested corridors, once for real. Seconds to tens of seconds;
+ *   it would need its own worker.
+ *
+ *   DUPLICATION. It answers the same questions as the national engine in
+ *   simulate(). Two engines that must agree, with no reconciliation test between
+ *   them, is a standing source of the exact divergence bugs this project has
+ *   spent a lot of effort finding.
+ *
+ *   SCOPE. What it adds over the live MIP is temporal granularity on corridor
+ *   flows - which hour a corridor is congested. That is an OPERATIONS question.
+ *   GridTwin is a planning and project-development tool, and the MIP's
+ *   representative-day resolution is the right one for that.
+ *
+ *   ITS ONE REAL ADVANTAGE - transmission losses, which the national engine does
+ *   not model - turned out to be a non-issue. The demand series is Eskom's
+ *   TRANSMISSION-LEVEL demand and is already gross of downstream losses: our
+ *   206 TWh of grid demand against Eskom's 183 TWh of billed sales implies ~11%,
+ *   matching Eskom's reported 9.1%. Adding a loss factor would double-count.
+ *
+ * DO NOT call this expecting it to match the rest of the model. If an hourly
+ * nodal view is ever genuinely wanted, treat it as its own project, starting
+ * with a reconciliation test against simulate().
+ * ========================================================================== */
 
 /**
  * @returns {object} summary: {unservedPct, lossesPct, curtailedGwh, byRegion, byCarrier,
@@ -353,10 +401,71 @@ async function runNodalYear(coalEafPct, coalDecomMW, extraWindByRegion, extraSol
  * storage tagged by region. Reuses the nodal engine's own scenario setup so
  * the optimiser sees exactly the same system the dispatch engine would.
  */
+/**
+ * SITE-BASED VIRTUAL POWER PLANTS.
+ *
+ * vppByRegion is {region: controllableMW} - the behind-the-meter load a VPP can
+ * actually dispatch in that region. Two effects, applied where the optimiser can
+ * see them:
+ *
+ *   1. Controllable geysers move WITHIN each day, out of that region's highest
+ *      net-load hours into its lowest. Water-filled rather than dumped, or the
+ *      returning load just builds a new peak in the small hours - the same
+ *      rebound that dogged Eskom's ripple control.
+ *   2. Enrolled household batteries are added to that region's storage through
+ *      the existing extraBattByRegion hook.
+ *
+ * Crucially this happens on REGIONAL net load, so a VPP sited in the Western
+ * Cape relieves the Western Cape and changes what flows over its corridors -
+ * which is the question a municipality actually has, and the reason a national
+ * slider could not answer it.
+ *
+ * The shift is strictly energy-neutral per region per day: nothing is created,
+ * only moved.
+ */
+function applyVppToRegionLoad(regionLoad, regionNames, vppByRegion) {
+  if (!vppByRegion) return { shifted: regionLoad, movedMwhByRegion: {} };
+  const moved = {};
+  const out = regionLoad.map((arr, ri) => {
+    const mw = vppByRegion[regionNames[ri]] || 0;
+    moved[regionNames[ri]] = 0;
+    if (!(mw > 0)) return arr;
+    const a = Array.from(arr);
+    const days = Math.floor(a.length / 24);
+    for (let d = 0; d < days; d++) {
+      const h0 = d * 24;
+      const idx = [];
+      for (let k = 0; k < 24; k++) idx.push({ h: h0 + k, v: a[h0 + k] });
+      idx.sort((x, y) => y.v - x.v);
+      // take from the six highest net-load hours, capped so no hour is gutted
+      let took = 0;
+      for (let k = 0; k < 6; k++) {
+        const t = Math.min(mw, Math.max(0, a[idx[k].h] * 0.45));
+        a[idx[k].h] -= t; took += t;
+      }
+      // water-fill into the twelve lowest, levelling rather than dumping
+      const cand = idx.slice().sort((x, y) => x.v - y.v).slice(0, 12).map(c => c.h);
+      let left = took;
+      for (let pass = 0; pass < 24 && left > 1e-6; pass++) {
+        const lvl = Math.min(...cand.map(h => a[h]));
+        const at = cand.filter(h => a[h] <= lvl + 1e-6);
+        const nxt = Math.min(...cand.map(h => a[h] > lvl + 1e-6 ? a[h] : Infinity));
+        const room = nxt === Infinity ? Infinity : (nxt - lvl) * at.length;
+        const put = Math.min(left, room === Infinity ? left : room);
+        at.forEach(h => { a[h] += put / at.length; });
+        left -= put;
+      }
+      moved[regionNames[ri]] += took;
+    }
+    return a;
+  });
+  return { shifted: out, movedMwhByRegion: moved };
+}
+
 async function getNodalMIPInputs(coalEafPct, coalDecomMW, extraWindByRegion, extraSolarByRegion,
                                  newRooftopMW, newBattMW, extraCoalByRegion, extraCcgtByRegion,
                                  extraNuclearByRegion, extraBattByRegion, coalFlexPct,
-                                 newWindMW, newPvMW, syncFloorMW = 6000) {
+                                 newWindMW, newPvMW, syncFloorMW = 6000, vppByRegion = null) {
   const data = await loadNodalData();
   if (!nodalEngineInstance) nodalEngineInstance = new NodalEngine(data);
 
@@ -369,7 +478,13 @@ async function getNodalMIPInputs(coalEafPct, coalDecomMW, extraWindByRegion, ext
 
   const eng = nodalEngineInstance;
   const regionLoadObj = eng.getRegionalNetLoad();
-  const regionLoad = REGIONS.map(r => Array.from(regionLoadObj[r]));
+  let regionLoad = REGIONS.map(r => Array.from(regionLoadObj[r]));
+
+  // Site-based VPP: reshape the chosen regions' net load before the optimiser
+  // sees it. Done on a COPY - regionLoadObj comes from the engine's cached data
+  // and mutating it would contaminate every later run.
+  const vppApplied = applyVppToRegionLoad(regionLoad, REGIONS, vppByRegion);
+  regionLoad = vppApplied.shifted;
   // Renewable potential (wind+solar+CSP annual MWh) per region - only available as a
   // side effect of the getRegionalNetLoad() call just made, must be read straight after.
   const renewablePotentialObj = eng.getRenewablePotential();
@@ -401,5 +516,7 @@ async function getNodalMIPInputs(coalEafPct, coalDecomMW, extraWindByRegion, ext
                            energy: bt * 4, eff: 0.88 });
   });
 
-  return { regions: REGIONS.slice(), regionLoad, corridors: eng.getCorridors(), units, sto, renewablePotentialMwh };
+  return { regions: REGIONS.slice(), regionLoad, corridors: eng.getCorridors(), units, sto,
+           renewablePotentialMwh,
+           vppShiftedMwhByRegion: vppApplied.movedMwhByRegion };
 }
