@@ -9,7 +9,7 @@ CHECKS = [
     ('node size = avg output',                                     'node size label'),
     ('Show REIPPPP project pipeline',                              'REIPPPP button text'),
     ('Click on each for region-specific',                          'click on each (was Hover)'),
-    ('Ring size scales with total capacity and ring colour shows the status',                             'ring colour key rewrite'),
+    ('Ring size scales with total capacity',                       'ring colour key rewrite'),
     ('planners and project developers',                            'subtitle'),
     ('curtailment payments to wind and solar contracted under REIPPPP are excluded', 'cost note trimmed'),
     # KPI labels
