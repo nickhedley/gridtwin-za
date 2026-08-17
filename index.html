@@ -4970,22 +4970,48 @@ function bldInitRates(){
 function bldRepDays(n){
   const rows = [];
   for (let d = 0; d < 365; d++){
-    let netPeak = 0, load = 0;
+    let netPeak = 0, load = 0, netLoad = 0, wind = 0;
     for (let h = 0; h < 24; h++){
       const i = d*24 + h;
       load += PROFILES.demand[i];
-      netPeak = Math.max(netPeak,
-        PROFILES.demand[i] - 4000*PROFILES.solar[i] - 3600*PROFILES.wind[i]);
+      wind += PROFILES.wind[i];
+      const net = PROFILES.demand[i] - 4000*PROFILES.solar[i] - 3600*PROFILES.wind[i];
+      netLoad += net;                                   // daily total, for rolling windows
+      netPeak = Math.max(netPeak, net);                 // worst single hour
     }
-    rows.push({ d, load, netPeak });
+    rows.push({ d, load, netPeak, netLoad, wind });
   }
   // Chronological order matters once storage can carry between days: the
   // sequence of representative days has to run through the year, and each needs
   // to know which day precedes it.
+  // MULTI-DAY STRESS. The single-hour netPeak above finds the tightest HOUR, and
+  // the even calendar spacing below covers the seasons - but neither selects for
+  // a SUSTAINED event, which is the failure mode that actually threatens a
+  // high-renewables system. A five-day winter wind drought simply did not exist
+  // in the sample.
+  //
+  // Two extra windows are therefore chosen deliberately:
+  //   the worst 3-day rolling NET LOAD  - sustained scarcity
+  //   the worst 3-day rolling WIND      - the drought itself
+  // Both are standard practice: representative days plus explicitly chosen
+  // extreme periods, rather than hoping a random sample catches the tail.
+  const roll = (arr, w) => {
+    let best = { i: 0, v: -Infinity };
+    for (let i = 0; i + w <= arr.length; i++){
+      let sum = 0; for (let j = i; j < i + w; j++) sum += arr[j];
+      if (sum > best.v) best = { i, v: sum };
+    }
+    return best.i;
+  };
+  const netByDay = rows.map(r => r.netLoad);
+  const windByDay = rows.map(r => -r.wind);          // maximise -wind = minimise wind
+
   const chosen = new Set();
-  chosen.add([...rows].sort((a,b)=>b.netPeak-a.netPeak)[0].d);   // tightest day
+  chosen.add([...rows].sort((a,b)=>b.netPeak-a.netPeak)[0].d);   // tightest hour
   chosen.add([...rows].sort((a,b)=>a.load-b.load)[0].d);          // slackest day
-  const step = Math.floor(365/(n-2));
+  chosen.add(roll(netByDay, 3) + 1);                              // worst 3-day net load
+  chosen.add(roll(windByDay, 3) + 1);                             // worst 3-day wind lull
+  const step = Math.floor(365/Math.max(1, n-4));
   for (let k = 0; chosen.size < n && k < 365; k += step) chosen.add(k);
   // Sort into calendar order and tell each day which one precedes it, so the
   // storage level can carry forward. prevD is undefined for the first day, which
@@ -5289,7 +5315,11 @@ function renderBuildResult(res, rate, opts){
     + 'resulting mix hour by hour.</div>';
   html += '</div>';
   html += bldApplyButton();
+  html += '<div id="bldStress"></div>';
   host.innerHTML = macNote + html;
+  // The national optimiser uses the same 12 representative days, so its plan
+  // needs the same full-year check.
+  try { bldStressTest(); } catch(e){ console.error('stress test:', e); }
 }
 
 
@@ -5905,7 +5935,10 @@ function renderBuildRegional(res, rate, opts){
     + 'Dispatch is approximated over 8 representative days; use <strong>Run the full model</strong> '
     + 'above to test a resulting mix hour by hour.</div></div>';
   html += bldApplyButton();
+  html += '<div id="bldStress"></div>';
   host.innerHTML = txHtml + html;
+  // Run the plan against a real year straight away rather than waiting to be asked.
+  try { bldStressTest(); } catch(e){ console.error('stress test:', e); }
 }
 
 
@@ -5926,6 +5959,80 @@ function bldShowInherit(){
 // then be tested hour-by-hour with the full model. Without this the panel is a
 // dead end - it tells you what to build but you cannot then simulate it.
 let bldLastTotals = null, bldLastResult = null;
+/* ==================== FULL-YEAR STRESS TEST ===============================
+ * The expansion optimiser works over 12 representative days. That keeps it
+ * browser-fast, but it means the build it recommends has never been tested
+ * against a real 8,760-hour year - and a plan can look perfectly adequate on a
+ * sample while failing on a sustained event the sample never contained.
+ *
+ * This closes that loop the cheap way. Rather than making the optimiser see the
+ * whole year, it takes the build the optimiser CHOSE and runs it through the
+ * hourly dispatch engine, which already does full chronology with unit
+ * commitment, lumpy forced outages and reserve. Then it reports whether the plan
+ * sheds - and does the same again under a stressed fleet, since the tightest
+ * real years are the ones where availability is also poor.
+ *
+ * It is a validation step, not an optimisation change. It cannot fix a bad plan;
+ * it tells you when the plan you have is one.
+ */
+function bldStressTest(){
+  const host = document.getElementById('bldStress');
+  if (!host) return;
+  if (!bldLastTotals){ host.innerHTML = ''; return; }
+
+  const over = {
+    newWindMW: bldLastTotals.wind || 0,
+    newPvMW:   bldLastTotals.pv   || 0,
+    newBattMW: bldLastTotals.batt || 0,
+    newCcgtMW: bldLastTotals.ccgt || 0,
+    newRooftopMW: bldLastTotals.rooftop || 0,
+  };
+  const run = extra => {
+    const r = simulate({ ...state, ...over, ...extra }, PROFILES);
+    let lole = 0;
+    for (let h = 0; h < 8760; h++) if (r.stack.unserved[h] > 1) lole++;
+    return { lole, eue: r.E.unserved/1000, cost: r.avgCost };
+  };
+  // As planned, then with the coal fleet 10 points worse - the tight years are
+  // the ones where availability disappoints too, and a plan that only works at
+  // the assumed EAF is not much of a plan.
+  const base = run({});
+  const hard = run({ coalEAFPct: Math.max(0, (state.coalEAFPct ?? 68) - 10) });
+
+  const verdict = base.lole === 0 && hard.lole === 0
+    ? { c:'var(--ok,#4A8C5C)', t:'Holds up.', d:'No unserved energy across the full year, even with coal availability 10 points below plan.' }
+    : base.lole === 0
+    ? { c:'#C9A227', t:'Holds at plan, fails under stress.', d:'No shedding at the assumed fleet availability, but '
+        + hard.lole + ' hours and ' + Math.round(hard.eue).toLocaleString() + ' GWh unserved once coal runs 10 points worse. '
+        + 'The plan has no margin for a bad year.' }
+    : { c:'var(--alert,#C4785A)', t:'Sheds on a full year.', d:'The optimiser sized this over 12 representative days and it '
+        + 'does not hold across 8,760 hours: ' + base.lole + ' hours and ' + Math.round(base.eue).toLocaleString()
+        + ' GWh unserved as planned, rising to ' + hard.lole + ' hours under stressed availability. '
+        + 'The sample missed something the full year contains.' };
+
+  host.innerHTML = `
+    <div style="border-left:3px solid ${verdict.c};padding:9px 12px;background:var(--panel2);margin-top:11px">
+      <div style="font-size:11.5px;font-weight:600;margin-bottom:3px">Full-year check &ndash; ${verdict.t}</div>
+      <div style="font-size:10.5px;line-height:1.55">${verdict.d}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px">
+        <tr style="border-bottom:1px solid var(--line2)">
+          <th style="text-align:left;padding:3px 4px"></th>
+          <th style="text-align:right;padding:3px 4px">Hours short</th>
+          <th style="text-align:right;padding:3px 4px">GWh unserved</th></tr>
+        <tr><td style="padding:3px 4px">As planned</td>
+          <td class="mono" style="text-align:right;padding:3px 4px">${base.lole}</td>
+          <td class="mono" style="text-align:right;padding:3px 4px">${Math.round(base.eue).toLocaleString()}</td></tr>
+        <tr><td style="padding:3px 4px">Coal 10 points worse</td>
+          <td class="mono" style="text-align:right;padding:3px 4px">${hard.lole}</td>
+          <td class="mono" style="text-align:right;padding:3px 4px">${Math.round(hard.eue).toLocaleString()}</td></tr>
+      </table>
+      <div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:5px">
+        The build above is sized on 12 representative days; this runs it through all 8,760 hours in the
+        dispatch engine, with unit commitment, lumpy forced outages and operating reserve. A plan can look
+        adequate on a sample and still fail on a sustained event the sample never contained.</div>
+    </div>`;
+}
+
 function bldApplyToSliders(){
   if (!bldLastTotals){
     const st0 = document.getElementById('bldStatus');
