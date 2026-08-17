@@ -372,6 +372,38 @@ No spikes, no artefacts.
 DO NOT rescale the demand series to close this gap. The validation panel now
 states the definitional difference instead of implying an error.
 
+## queue_project.js — intake tool for trade-press sightings (17 Aug 2026)
+
+Asked whether we could scrape trade press. Finding articles is the easy half and
+a Google Alert does it free; the hard half is trusting what an announcement says,
+because announcements are marketing documents.
+
+    node queue_project.js --name "..." --mw 155 --tech wind --area Mpumalanga \
+         --cod "August 2026" --bucket private --gwh 480 --turbines 25 \
+         --source "https://..." [--commit]
+
+Dry-run by default. It refuses to queue anything that fails, and it checks:
+
+  * CAPACITY FACTOR against physics. Ilikwa's announced ">140 GWh" over 50 MW is
+    a 32% CF, which is not achievable in the Free State - the tool says so and
+    tells you to use the nameplate. This is the check that justifies the tool.
+  * EQUIPMENT SANITY. Turbines must imply 1.5-8 MW machines, panels 250-800 W.
+    A miss usually means the MW figure is AC while the equipment count is DC, or
+    that a phase boundary has been crossed.
+  * BUCKET, and what it implies downstream - private goes to by_source.private
+    and never touches the Eskom reconciliation; reipppp does.
+  * DUPLICATES against the existing queue, normalised so punctuation differences
+    do not slip through.
+  * DOUBLE-COUNTING against the capacity file's as_at date.
+
+WHAT WAS DELIBERATELY NOT BUILT: an actual scraper. Privately wheeled
+commissioning has no registry and no disclosure obligation - PowerFutureLab
+themselves use media reports - so there is nothing structured to scrape. RSS
+feeds and Google Alerts cover the finding half at zero cost and zero
+maintenance, and South Africa commissions well under one private project a week,
+so the volume never justifies a fragile HTML scraper. The value was always in
+validation, not fetching.
+
 ## DOUBLE-COUNT GUARD, and the REPLACE-never-ADD rule (17 Aug 2026)
 
 THE RULE. When a new PowerFutureLab monitor or IPP Office quarterly lands, it
