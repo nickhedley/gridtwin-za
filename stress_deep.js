@@ -139,6 +139,9 @@ function probe(){
      // interruptible load only fires when the system is actually short, so it
      // needs a scarcity context - at EAF 68 South Africa has surplus and DR
      // is never called, which is correct behaviour rather than a dead slider.
+     // the controllable geyser pool only matters if anyone is enrolled in it,
+     // which is correct: at zero enrolment the pool size is irrelevant.
+     vppGeyserPoolMW: {vppEnrolPct: 50},
      drInterruptMW:   {coalEAFPct: 55},
      drInterruptCostR:{coalEAFPct: 55},
      txRPerKWyr:    {newWindMW: 5000},
