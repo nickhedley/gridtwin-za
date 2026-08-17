@@ -218,8 +218,8 @@ console.log('\nFingerprints');
   const qEnds = [ '2026-06-30', '2026-09-30', '2026-12-31', '2027-03-31' ].map(d => new Date(d));
   const due = qEnds.filter(q => q > asAt && (now - q) / 86400000 > 75);
   if (due.length) {
-    const q = due[due.length - 1].toISOString().slice(0,10);
-    console.log(`  STALE  A newer IPP Office quarterly should be out: the ${q} edition is ~${Math.floor((now-due[due.length-1])/86400000)} days past its quarter end.`);
+    const qLabel = due[due.length - 1].toISOString().slice(0,10);
+    console.log(`  STALE  A newer IPP Office quarterly should be out: the ${qLabel} edition is ~${Math.floor((now-due[due.length-1])/86400000)} days past its quarter end.`);
     console.log('         Check https://www.ipp-projects.co.za for the current IPPPP Quarterly Report.');
   } else {
     console.log('  ok     No newer IPP Office quarterly is due yet.');
@@ -264,6 +264,48 @@ console.log('\nFingerprints');
 try {
   const split = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/supply_area_split_draft.json'), 'utf8'));
   const q = split.pending_next_quarterly || [];
+
+// ---- DOUBLE-COUNT GUARD ------------------------------------------------------
+// THE RULE, and the reason for it.
+//
+// When a new PowerFutureLab monitor or IPP Office quarterly lands, it will
+// ALREADY CONTAIN the projects sitting in our queue - that is the whole point of
+// a later reporting date. So the update procedure is REPLACE, never ADD:
+//
+//     1. Replace by_source.private (or .reipppp) wholesale with the new edition
+//     2. Re-derive FIXED.windMW / FIXED.pvUtilityMW from the rebuilt file
+//     3. THEN delete the queue entries the new edition now covers
+//
+// Adding queued megawatts on top of a refreshed source counts them twice. This
+// is not hypothetical: FIXED.pvUtilityMW carried 1,823 phantom MW for exactly
+// this reason until 15 Aug 2026, because 488 MW of wheeled plant sat in both the
+// utility and rooftop buckets at once.
+//
+// The check below fires when a queued project's COD is on or before the file's
+// as_at date - meaning the source should already include it, and leaving it
+// queued invites someone to add it a second time.
+{
+  const asAt = new Date((cap.meta && cap.meta.as_at) || '2026-03-31');
+  const risky = [];
+  for (const x of q) {
+    if (!x.cod) continue;
+    // COD is written as e.g. "August 2026" or "April 2026"
+    const d = new Date(x.cod + (/\d{4}$/.test(x.cod) ? ' 01' : ''));
+    if (!isNaN(d) && d <= asAt) risky.push(x);
+  }
+  if (risky.length) {
+    console.log('\n  *** DOUBLE-COUNT RISK ***');
+    console.log('  These queued projects have a COD on or before the capacity file date, so the');
+    console.log('  file should ALREADY include them. Adding them again would double count:');
+    risky.forEach(x => console.log(`    ${x.name} (COD ${x.cod}) vs file as at ${asAt.toISOString().slice(0,10)}`));
+    console.log('  Verify against the source, then DELETE these queue entries rather than adding them.');
+  } else if (q.length) {
+    console.log(`\n  Double-count guard: all ${q.length} queued projects post-date the file (${asAt.toISOString().slice(0,10)}), so none are`);
+    console.log('  in it yet. On the next refresh, REPLACE the bucket from source and then clear');
+    console.log('  the queue - never add queued MW on top of a refreshed source.');
+  }
+}
+
   if (q.length) {
     console.log('\nPending next quarterly rollforward (IPP Office Q1 2026/27, 30 Jun basis):');
     for (const x of q) {
