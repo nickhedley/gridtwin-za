@@ -253,6 +253,41 @@ parameter that cannot legitimately be zero or is display-only.
 - Hybrid CF 0.85 within its window is asserted, not derived from RMIPPPP
   performance data (none published).
 
+## Two-pass professional audit (16 Aug 2026) - two real defects
+
+ENERGY-SYSTEM PASS. Physical limits, merit order, capacity factors, emissions
+consistency and seasonality all checked out - coal peaks at 98% of its available
+capacity, ramps stay well inside fleet capability, CO2 reconciles exactly to
+carrier x emission factor, winter/summer ratio 1.15. ONE serious defect:
+
+  STORAGE WAS IDLE. 2.9 GW of pumped storage produced 0.042 TWh for the year
+  against the 3-4 TWh Eskom's schemes actually deliver, and charged in ZERO
+  hours. Cause: the charge ceiling was gated on anticipatedShortfall ALONE -
+      psTargetCeiling = min(psEnergyMWh*0.85, anticipatedShortfall[h])
+  and in a surplus system that term is zero almost everywhere, so the ceiling
+  collapsed, storage could never recharge, and it coasted on its opening state
+  of charge before sitting idle. The adequacy panel meanwhile counted the same
+  2.9 GW as FIRM capacity, so the two panels disagreed. Fixed by adding a daily
+  cycling floor (enough stored energy to cover the plant's rating through a
+  4-hour evening peak) while keeping anticipatedShortfall as the term that lifts
+  the target higher before genuine stress. Result: PS 0.04 -> 3.45 TWh, charging
+  4.79 TWh, round-trip 0.776 (real PS is 75-78%), peak coal 27.97 -> 27.60 GW,
+  coal +1.1 TWh which is exactly the round-trip loss.
+
+CODER PASS. 149 top-level declarations, no duplicate names, 12 fetches with 9
+catch handlers, no JSON.parse without a guard. ONE class of defect:
+
+  SEVEN MORE FALSY-ZERO BUGS. `x || N` returns N when x is 0. Confirmed live:
+  setting ANY CCS slider to zero changed nothing - capture rate 0 still reported
+  23.3 Mt instead of 220.7. Converted 12 sites to `??`: ccsPenaltyPct,
+  ccsCaptureRatePct, ccsOpexR, ccsCapexR, ccsTsR, coalInstalledMW, battHours.
+  This is the same bug found in coalEAFPct on 15 Aug, so a standing guard is now
+  in stress_deep.js (check G0) that sweeps every parameter whose zero is a real
+  scenario and fails if the answer does not move.
+
+Also noted, not defects: 7 declarations referenced once (event handlers wired
+through onclick attributes, so the reference is in markup not script).
+
 ## Basis audit: every carrier is now sent-out (16 Aug 2026)
 
 Prompted by asking whether the gross/sent-out distinction was applied
