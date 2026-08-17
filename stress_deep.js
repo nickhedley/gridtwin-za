@@ -209,6 +209,29 @@ function probe(){
    ck('G9 average price monotone increasing in carbon tax', co2.every((v,i)=> i===0 || v >= co2[i-1] - 0.5), co2.map(v=>Math.round(v)).join(' <= '));
  }
 
+ /* ============ G0. FALSY-ZERO GUARD ============ */
+ { // `x || N` returns N when x is 0, silently ignoring a meaningful zero. This
+   // has now bitten three times: coalEAFPct (EAF=0 ran at 64%), syncMinMW, and
+   // the whole CCS parameter set (any slider at zero changed nothing at all).
+   // Every parameter whose zero is a real scenario is swept here.
+   const ZERO_MEANS_SOMETHING = ['ccsPenaltyPct','ccsCaptureRatePct','ccsOpexR',
+     'ccsCapexR','ccsTsR','coalEAFPct','drInterruptMW','reserveContingencyMW'];
+   const ctx = { ccsEnabled:1, ccgtMW:2000 };
+   const dead = [];
+   for (const k of ZERO_MEANS_SOMETHING){
+     const hi = sim({ ...ctx, [k]: (FIXED[k] || 50) });
+     const zero = sim({ ...ctx, [k]: 0 });
+     const same = Math.abs(hi.avgCost - zero.avgCost) < 1e-6
+               && Math.abs(hi.co2 - zero.co2) < 1e-9
+               && Math.abs(hi.E.coal - zero.E.coal) < 1;
+     if (same) dead.push(k);
+   }
+   ck('G0 setting a meaningful parameter to ZERO changes the answer',
+      dead.length===0,
+      dead.length ? 'IGNORED AT ZERO (likely `||` not `??`): '+dead.join(', ')
+                  : ZERO_MEANS_SOMETHING.length+' parameters checked');
+ }
+
  /* ============ H0. LABEL MAPS COVER EVERY DRAWN CARRIER ============ */
  { // A carrier in COLORS but not NAMES renders a correctly-coloured swatch
    // labelled "undefined" - which is exactly what shipped when hybrid was added
