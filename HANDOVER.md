@@ -425,6 +425,34 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## PRIMARY SOURCE FOUND for wheeled commissioning: #PowerTracker (17 Aug 2026)
+
+CORRECTION to the note below, which said no systematic source existed for
+privately wheeled commissioning and that trade press was therefore the fastest
+signal. That was wrong.
+
+Oxpeckers #PowerTracker (powertracker.oxpeckers.org) carries an explicit ENERGY
+WHEELING category and sends EMAIL ALERTS on point changes. It flagged Ilikwa's
+commissioning the same week. That is the event-driven source the workflow was
+missing - a wheeled commissioning now surfaces immediately rather than waiting
+up to six months for the next PowerFutureLab monitor.
+
+ACTION: subscribe to alerts. It is now first in the SOURCE CALENDAR printed by
+validate_capacity.js.
+
+LICENCE, and why we do not simply ingest it. PowerTracker content is CC BY-SA
+4.0; our data files are CC BY-NC-ND 4.0. Those do not compose - Share-Alike
+would require our derivative to carry BY-SA, which conflicts with both the NC
+and ND terms. The resolution is the one we already use for IPP Office and Eskom
+figures: a project FACT (name, MW, technology, location, COD) is not
+copyrightable, so we use PowerTracker to DISCOVER and VERIFY, record the fact in
+our own compilation with attribution, and never copy the dataset. queue_project.js
+recognises a PowerTracker URL in --source and prints this note.
+
+PowerFutureLab remains the AUTHORITATIVE half-yearly reconciliation; PowerTracker
+is the fast alert. They are complements, not substitutes - use PowerTracker to
+know something happened, and the monitor to true up the totals.
+
 ## STAYING CURRENT: the structural problem, and what tooling can do
 
 Asked how we avoid missing project commissionings. The honest answer is that the
