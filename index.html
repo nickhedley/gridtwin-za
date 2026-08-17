@@ -7935,7 +7935,7 @@ fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
       const winPct=(100*v.wind_mw/maxMW).toFixed(1);
       const besPct=(100*(v.bess_mw||0)/maxMW).toFixed(1);
       html+=`<div style="display:grid;grid-template-columns:90px 1fr 52px;align-items:center;margin-bottom:3px;gap:4px">
-        <span title="${region}: solar ${v.solar_mw.toFixed(0)} MW · wind ${v.wind_mw.toFixed(0)} MW · BESS ${(v.bess_mw||0).toFixed(0)} MW · total ${v.total_mw.toFixed(0)} MW" style="font-size:10px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" class="tipbar" data-tip="${region}">${region}</span>
+        <span title="${region}: solar ${v.solar_mw.toFixed(0)} MW · wind ${v.wind_mw.toFixed(0)} MW · BESS ${(v.bess_mw||0).toFixed(0)} MW · total ${v.total_mw.toFixed(0)} MW" style="font-size:10px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${region}</span>
         <div style="background:var(--bg2);border-radius:2px;height:10px;min-width:0;display:flex">
           <div title="${region} — solar ${v.solar_mw.toFixed(0)} MW" style="width:${solPct}%;background:#F5C518;height:100%;border-radius:2px 0 0 2px"></div>
           <div title="${region} — wind ${v.wind_mw.toFixed(0)} MW" style="width:${winPct}%;background:#3EA055;height:100%"></div>
