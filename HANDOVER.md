@@ -425,6 +425,44 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## PART-LOAD HEAT RATE (17 Aug 2026)
+
+Third of three PLEXOS-gap features. Coal was costed at a flat R546/MWh whatever
+its load factor. Real units burn more fuel per MWh when backed off - auxiliaries,
+mills, fans and boiler losses are largely fixed and spread over less output.
+
+    HR(x) = HR_nominal x (1 + k x (1/x - 1)),  x = coalGen / committed capacity
+    k = coalPartLoadK, default 0.10, on a slider; x floored at 0.35
+
+At MSL (~55%) with k=0.10 the multiplier is about 1.08 - within the 5-12% range
+usually quoted for subcritical coal between MSL and full load.
+
+DISTINCT FROM THE MERIT CURVE, and additive to it. _coalMeritCurve already varied
+the marginal cost by WHICH station is at the margin as output rises. Part-load is
+the separate effect that EACH RUNNING STATION is less efficient when backed off.
+Both now apply.
+
+THE FINDING: the penalty grows with solar, because solar is what pushes coal to
+part load.
+
+                          mean multiplier   CO2 Mt   avg cost
+    today, k=0                     1.000     167.4     561.9
+    today, k=0.10                  1.015     169.9     568.7
+    +20 GW PV, k=0                 1.000     130.4     605.2
+    +20 GW PV, k=0.10              1.036     134.3     616.0
+
+Ignoring part-load overstates the CO2 saving from 20 GW of solar by 1.4 Mt, about
+4%. Modest now, larger at higher penetration - and only visible in an hourly model.
+
+TWO BUGS FOUND WHILE BUILDING IT, both from placement:
+  * thermalP read partLoadF BEFORE the array was written, so part-load never
+    reached the marginal price. Prices did not move at all until the computation
+    was hoisted above the price expression.
+  * CO2 was computed from E.coal x emisCoal - energy SOLD, not fuel BURNED - so
+    emissions ignored the multiplier entirely. Now uses coalFuelMWh, which is coal
+    output scaled by the multiplier. This is the physically important half: the
+    whole point is that a backed-off fleet emits more per MWh delivered.
+
 ## RESERVE CO-OPTIMISATION: built, correct, and defaults OFF (17 Aug 2026)
 
 Second of three PLEXOS-gap features. Energy and reserve now compete for the same
