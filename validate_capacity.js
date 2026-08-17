@@ -243,15 +243,25 @@ console.log('\nFingerprints');
     console.log('         commission into a future quarterly. That is expected, not missing data.');
 
   console.log('\n  SOURCE CALENDAR');
-  console.log('    IPP Office IPPPP Quarterly    quarterly, ~75d lag   ipp-projects.co.za        REIPPPP online capacity');
-  console.log('    Eskom Weekly System Status    WEEKLY                eskom.co.za              totals by technology - see drift note');
-  console.log('    PowerFutureLab IPP monitor    half-yearly           gsb.uct.ac.za/powerfuturelab   privately wheeled plant');
-  console.log('    NERSA registrations           ~quarterly            nersa.org.za             registered private generation');
+  console.log('    Oxpeckers #PowerTracker       EVENT-DRIVEN alerts   powertracker.oxpeckers.org  WHEELED commissioning - subscribe');
+  console.log('    IPP Office IPPPP Quarterly    quarterly, ~75d lag   ipp-projects.co.za          REIPPPP online capacity');
+  console.log('    Eskom Weekly System Status    WEEKLY                eskom.co.za                 totals by technology - see drift note');
+  console.log('    PowerFutureLab IPP monitor    half-yearly           powerfutureslab.co.za       privately wheeled, authoritative but slow');
+  console.log('    NERSA registrations           ~quarterly            nersa.org.za                registered private generation');
+  console.log('\n  WHEELED PLANT - USE POWERTRACKER. Oxpeckers #PowerTracker carries an explicit');
+  console.log('  "Energy Wheeling" category and sends EMAIL ALERTS on point changes, so a wheeled');
+  console.log('  commissioning arrives the week it happens rather than waiting six months for the');
+  console.log('  next PowerFutureLab monitor. Subscribe at powertracker.oxpeckers.org. This closes');
+  console.log('  the gap that previously made trade press the fastest available signal.');
+  console.log('\n  LICENCE. PowerTracker content is CC BY-SA 4.0; our data files are CC BY-NC-ND 4.0.');
+  console.log('  Those do NOT compose - Share-Alike would require our derivative to be BY-SA too.');
+  console.log('  So use PowerTracker to DISCOVER and VERIFY a commissioning, record the underlying');
+  console.log('  FACTS (name, MW, technology, location, COD - not copyrightable) in our own');
+  console.log('  compilation with attribution, and do NOT ingest their dataset wholesale.');
   console.log('\n  DRIFT DETECTOR. Eskom\'s weekly report publishes installed totals by technology, so a');
   console.log('  jump in its Wind or PV line means something commissioned. BUT it counts only');
-  console.log('  NTCSA-CONTRACTED plant - privately wheeled projects never appear in it. For wheeled');
-  console.log('  capacity there is NO weekly source, which is why trade press is genuinely the');
-  console.log('  fastest signal available and worth queuing from as it appears.');
+  console.log('  NTCSA-CONTRACTED plant - wheeled projects never appear in it. That is what');
+  console.log('  PowerTracker is for.');
 }
 
 // ---- PENDING ADDITIONS - print, never pass silently -------------------------
