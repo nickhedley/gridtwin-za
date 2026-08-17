@@ -4979,12 +4979,22 @@ function bldRepDays(n){
     }
     rows.push({ d, load, netPeak });
   }
+  // Chronological order matters once storage can carry between days: the
+  // sequence of representative days has to run through the year, and each needs
+  // to know which day precedes it.
   const chosen = new Set();
   chosen.add([...rows].sort((a,b)=>b.netPeak-a.netPeak)[0].d);   // tightest day
   chosen.add([...rows].sort((a,b)=>a.load-b.load)[0].d);          // slackest day
   const step = Math.floor(365/(n-2));
   for (let k = 0; chosen.size < n && k < 365; k += step) chosen.add(k);
-  return [...chosen].slice(0, n).map(d => ({ d, weight: 365/n }));
+  // Sort into calendar order and tell each day which one precedes it, so the
+  // storage level can carry forward. prevD is undefined for the first day, which
+  // is where the opening state of charge is set.
+  const ordered = [...chosen].slice(0, n).sort((a, b) => a - b);
+  return ordered.map((d, i) => ({
+    d, weight: 365/n,
+    prevD: i === 0 ? undefined : ordered[i-1],
+  }));
 }
 
 const BLD_WORKER_SRC = `
@@ -5359,6 +5369,18 @@ const BLD_CORRIDORS = [
 // would clear at. The machinery is here and correct; it is the South African
 // system that makes it uninteresting today.
 const RESERVE_COOPT = false;
+
+// CHRONOLOGICAL STORAGE. With this off, each representative day must end at the
+// state of charge it started at, so storage can shift within a day but NEVER
+// between days - and the multi-day service is invisible to the optimiser.
+//
+// That is a refinement in a coal-heavy system and a correctness problem once coal
+// retires. Tested 17 Aug 2026: with 30 GW of coal retired and build caps lifted,
+// the within-day model built 21.5 GW wind, 19.9 GW solar and 0.4 GW of storage -
+// 1.7 GWh for a 41 GW renewable fleet, which is not a defensible plan. It simply
+// could not see the value of banking energy across days, so it overbuilt VRE to
+// brute-force through the bad ones instead.
+const STORAGE_CHRONO = true;
 const RES_CONTINGENCY_MW = 794;   // largest unit, a Medupi/Kusile set
 const RES_LOAD_PCT = 2.0;
 const RES_VRE_PCT  = 5.0;
@@ -5405,11 +5427,34 @@ async function bldLoadRegionalData(){
   } catch (e) { return false; }
 }
 
-function bldCoalByRegion(year){
+function bldCoalByRegion(year, extraDecomMW){
+  // BUGFIX 17 Aug 2026. This retired coal ONLY on each unit's published
+  // decommissioning date and ignored the "Coal decommissioned" slider entirely,
+  // so the regional build optimiser was blind to it. The panel above it even
+  // printed "using the scenario set above ... X GW retired" while the LP used
+  // the untouched fleet - the display and the model disagreed.
+  //
+  // Caught by running a 30 GW-retired scenario and getting byte-identical
+  // builds and an identical R616bn objective to the base case.
+  //
+  // Extra retirement beyond the published dates is taken off OLDEST FIRST, which
+  // is how a real programme would run and matches the national engine's own
+  // treatment.
   const out = {}; BLD_REGIONS.forEach(r => out[r] = 0);
+  const alive = [];
   for (const u of UC_FLEET){
     const dy = u.decom === 'beyond 2050' ? 9999 : parseInt(u.decom, 10);
-    if (dy > year && out[u.region] !== undefined) out[u.region] += u.cap;
+    if (dy > year && out[u.region] !== undefined){ out[u.region] += u.cap; alive.push({ ...u, dy }); }
+  }
+  let left = Math.max(0, extraDecomMW || 0);
+  if (left > 0){
+    alive.sort((a, b) => a.dy - b.dy);        // nearest retirement date first
+    for (const u of alive){
+      if (left <= 0) break;
+      const take = Math.min(u.cap, left);
+      out[u.region] = Math.max(0, out[u.region] - take);
+      left -= take;
+    }
   }
   return out;
 }
@@ -5458,7 +5503,7 @@ function bldBuildRegionalLP(opts){
 
   for (const y of Y){
     const dg = Math.pow(1+growth, y-2026);
-    const coal = bldCoalByRegion(y);
+    const coal = bldCoalByRegion(y, S.coalDecomMW || 0);
     for (const r of rd) for (let h = 0; h < 24; h++){
       const i = r.d*24 + h;
       for (let ri = 0; ri < BLD_REGIONS.length; ri++){
@@ -5507,8 +5552,34 @@ function bldBuildRegionalLP(opts){
         chg.push('bchg_'+ri+'_'+y+'_'+r.d+'_'+h);
       }
       const ex = ((BLD_EX_BATT&&BLD_EX_BATT[R])||0);
-      L.push(' soc_'+ri+'_'+y+'_'+r.d+': ' + dis.join(' + ')
-        + ' - ' + chg.map(v=>'0.88 '+v).join(' - ') + ' <= 0');
+      if (!STORAGE_CHRONO){
+        // WITHIN-DAY ONLY. Each representative day must end where it started, so
+        // storage can shift within a day but never between days.
+        L.push(' soc_'+ri+'_'+y+'_'+r.d+': ' + dis.join(' + ')
+          + ' - ' + chg.map(v=>'0.88 '+v).join(' - ') + ' <= 0');
+      } else {
+        // CHRONOLOGICAL LINKING. State of charge carries from one representative
+        // day to the next, so storage can bank energy on a windy day and spend it
+        // on a still one - the service that actually matters once coal is gone.
+        //
+        // Each representative day stands for r.weight real days, so its net
+        // charge or discharge is multiplied by that weight before it moves the
+        // stored level. That is what stops a single modelled day quietly
+        // standing in for a month of sustained imbalance.
+        //
+        //   e_<k> = e_<k-1> + weight x (0.88 x charge - discharge)
+        //   0 <= e_<k> <= energy capacity
+        const kk = ri+'_'+y+'_'+r.d;
+        const prev = (r.prevD !== undefined) ? (' - e_'+ri+'_'+y+'_'+r.prevD) : '';
+        L.push(' soc_'+kk+': e_'+kk + prev
+          + ' - ' + chg.map(v=>(0.88*r.weight).toFixed(4)+' '+v).join(' - ')
+          + ' + ' + dis.map(v=>r.weight.toFixed(4)+' '+v).join(' + ')
+          + ' = ' + (r.prevD === undefined ? (ex*4*0.5).toFixed(1) : '0'));
+        // stored energy cannot exceed what is built plus what already exists
+        L.push(' ecap_'+kk+': e_'+kk
+          + ' - ' + cum('batt',ri,y).map(v=>'4 '+v).join(' - ')
+          + ' <= ' + (ex*4).toFixed(1));
+      }
       L.push(' dur_'+ri+'_'+y+'_'+r.d+': ' + dis.join(' + ')
         + ' - ' + cum('batt',ri,y).map(v=>'4 '+v).join(' - ') + ' <= ' + (ex*4).toFixed(1));
     }
@@ -5633,6 +5704,10 @@ function bldBuildRegionalLP(opts){
       L.push(' 0 <= fa'+f+' <= 100000'); L.push(' 0 <= fb'+f+' <= 100000');
     });
   }
+  // Stored energy level at the end of each representative day.
+  if (STORAGE_CHRONO)
+    for (const y of Y) for (const r of rd) for (let ri = 0; ri < BLD_REGIONS.length; ri++)
+      L.push(' 0 <= e_'+ri+'_'+y+'_'+r.d+' <= 2000000');
   L.push('End');
   return { lp: L.join('\n'), rate: RATE, regional: true };
 }
