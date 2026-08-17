@@ -19,16 +19,6 @@
    "cod": "April 2026"
   },
   {
-   "name": "Koruson 2 \u2014 Umsobomvu wind",
-   "mw": 140,
-   "tech": "wind",
-   "area": "Eastern Cape",
-   "cod": "April 2026",
-   "bucket": "private",
-   "developer": "Envusa Energy",
-   "note": "COD CORRECTED 17 Aug 2026 from August to April: Mining Weekly reported it at COD on 24 Apr 2026. Wheeled to Valterra Platinum, Kumba Iron Ore and De Beers via a licensed trader. Eastern Cape per Mining Weekly."
-  },
-  {
    "name": "Koruson 2 \u2014 Hartebeesthoek wind",
    "mw": 140,
    "tech": "wind",
@@ -36,17 +26,7 @@
    "cod": "June 2026",
    "bucket": "private",
    "developer": "Envusa Energy",
-   "note": "COD CORRECTED 17 Aug 2026 from August to June: Mining Weekly (24 Apr) reported it \"on track to turn on commercially in June\", completing the 520 MW cluster. Eastern Cape per Mining Weekly, NOT Northern Cape as first queued."
-  },
-  {
-   "name": "Koruson 2 \u2014 Mooi Plaats solar PV",
-   "mw": 240,
-   "tech": "solar",
-   "area": "Northern Cape",
-   "cod": "March 2026",
-   "bucket": "private",
-   "developer": "Envusa Energy",
-   "note": "COD CORRECTED 17 Aug 2026. Mining Weekly (24 Apr 2026) reports Umsobomvu reached COD \"just weeks after Mooi Plaats\", placing Mooi Plaats around March/early April - AT OR BEFORE our 31 Mar basis. *** VERIFY BEFORE ROLLFORWARD: this project may ALREADY be in by_source.private, in which case adding it would double count 240 MW. *** Envusa is advancing a further 340 MW tranche."
+   "note": "COD June 2026 per Mining Weekly (\"on track to turn on commercially in June\"), completing the 520 MW Koruson 2 cluster. Eastern Cape per that report. *** AMBIGUOUS COUNTING STATUS: its June COD falls INSIDE the PFL H1 2026 monitor coverage (through 30 June), yet it is NOT in that monitor's project list. Either the June date slipped into H2, or the monitor missed it. NAME-CHECK against the next monitor before adding - do not add on date logic alone. Its two sister projects, Mooi Plaats and Umsobomvu, were both found already counted on 17 Aug 2026."
   },
   {
    "name": "Ilikwa solar PV",
@@ -1872,5 +1852,20 @@
    "label": "Western Cape",
    "why": "plant-side switchyard"
   }
- ]
+ ],
+ "resolved_double_counts": [
+  {
+   "name": "Koruson 2 \u2014 Mooi Plaats solar PV",
+   "mw": 240,
+   "tech": "solar",
+   "resolution": "REMOVED FROM QUEUE 17 Aug 2026 - already counted. The PFL H1 2026 monitor (nodal/pfl_private_h1_2026.json) lists 'Mooi Plaats, 240 MW solar, LIMPOPO, Wheeling, Anglo American Mogalakwena', and it is already inside by_source.private. Queuing it would have overstated pvUtilityMW by 240 MW. NOTE the province: the monitor places it in Limpopo against an Anglo Mogalakwena offtake, not the Northern Cape as the Koruson 2 coverage implied - the cluster name and the plant location are different things."
+  },
+  {
+   "name": "Koruson 2 \u2014 Umsobomvu wind",
+   "mw": 140,
+   "tech": "wind",
+   "resolution": "REMOVED FROM QUEUE 17 Aug 2026 - already counted. The PFL H1 2026 monitor lists 'Umsobomvu, 140 MW wind, NORTHERN CAPE, Wheeling, EDF, Noupoort area', already inside by_source.private as the Northern Cape wind entry. Queuing it would have overstated windMW by 140 MW. Mining Weekly placed it in the Eastern Cape; the monitor says Northern Cape and Noupoort is in the Northern Cape, so the monitor is right."
+  }
+ ],
+ "_basis_note": "CRITICAL: by_source.private is anchored to the PFL H1 2026 monitor, which covers commercial operations through JUNE 2026 - NOT the 31 March REIPPPP basis date in regional_renewable_capacity.json meta.as_at. The two buckets have DIFFERENT effective dates. Anything wheeled with a COD in H1 2026 is probably already counted; check nodal/pfl_private_h1_2026.json projects[] by name before queuing."
 }
