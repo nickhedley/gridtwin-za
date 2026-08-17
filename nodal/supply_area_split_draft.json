@@ -17,6 +17,56 @@
    "municipality": "Siyancuma",
    "area": "Northern Cape",
    "cod": "April 2026"
+  },
+  {
+   "name": "Koruson 2 \u2014 Umsobomvu wind",
+   "mw": 140,
+   "tech": "wind",
+   "area": "Eastern Cape",
+   "cod": "August 2026",
+   "bucket": "private",
+   "developer": "Envusa Energy",
+   "note": "Part of the 520 MW Koruson 2 cluster. Wheeled to Valterra Platinum, Kumba Iron Ore and De Beers through a licensed trader. Confirm the Eastern/Northern Cape split per farm before allocating."
+  },
+  {
+   "name": "Koruson 2 \u2014 Hartebeesthoek wind",
+   "mw": 140,
+   "tech": "wind",
+   "area": "Northern Cape",
+   "cod": "August 2026",
+   "bucket": "private",
+   "developer": "Envusa Energy",
+   "note": "Cluster arithmetic is self-consistent: 520 total less 240 MW Mooi Plaats solar leaves 280 MW across two wind farms."
+  },
+  {
+   "name": "Koruson 2 \u2014 Mooi Plaats solar PV",
+   "mw": 240,
+   "tech": "solar",
+   "area": "Northern Cape",
+   "cod": "August 2026",
+   "bucket": "private",
+   "developer": "Envusa Energy",
+   "note": "Envusa is advancing a further 340 MW tranche \u2014 expect another queue entry."
+  },
+  {
+   "name": "Ilikwa solar PV",
+   "mw": 50,
+   "tech": "solar",
+   "area": "Free State",
+   "cod": "August 2026",
+   "bucket": "private",
+   "developer": "Mainstream Renewable Power",
+   "note": "Near Parys, 101,000 panels, multiple private C&I offtakers. CAUTION: the announced '>140 GWh/yr' implies a 32% capacity factor, which is not credible for Free State solar \u2014 our regional profile gives ~22%, and even single-axis tracking reaches only 26-28%. Use the 50 MW nameplate, NOT the announced energy figure."
+  },
+  {
+   "name": "Ummbila Emoyeni phase 1",
+   "mw": 155,
+   "tech": "wind",
+   "area": "Mpumalanga",
+   "cod": "August 2026",
+   "bucket": "private",
+   "developer": "Seriti Green",
+   "note": "25 turbines implying 6.2 MW machines. Supplies Seriti's own coal operations plus others via traders (NOA, Energy Exchange, Etana). First phase of a 900 MW wind/solar/storage programme, so more will follow. Notable as private renewables landing in the Mpumalanga coal heartland \u2014 the model's Mpumalanga wind is currently zero."
   }
  ],
  "ambiguity_threshold_km": 40.0,
