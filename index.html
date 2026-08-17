@@ -675,7 +675,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 <div style="margin-top:18px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
-        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: EAF &asymp; 68&nbsp;% (calendar year to date, Week&nbsp;32), OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline. Output was calibrated against
+        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: EAF &asymp; 68&nbsp;% (calendar year to date, Week&nbsp;32), OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline. <strong>Transmission and distribution
+        losses are not modelled separately, and should not be:</strong> the demand series is Eskom&rsquo;s
+        transmission-level demand &mdash; what generators must send out &mdash; and is therefore already
+        gross of downstream losses. Our grid demand of 206&nbsp;TWh against Eskom&rsquo;s 183&nbsp;TWh of
+        billed sales implies about 11&nbsp;%, which sits on Eskom&rsquo;s reported 9.1&nbsp;% T&amp;D loss
+        figure. Adding a loss factor on top would double-count it and push coal roughly 11&nbsp;% above
+        its benchmark, having started 2&nbsp;% below. Output was calibrated against
         <strong>Ember's metered generation</strong> (12 months to May 2026) on 16 Aug 2026, which
         found the model overstating non-fossil generation by about 8&nbsp;percentage points. Koeberg's
         capacity factor was corrected from a hardcoded 0.90 to 0.75, and turbine/panel availability
@@ -3383,6 +3389,12 @@ const FIXED = {
   // Defaults to ZERO enrolment: today these are pilots, not a national
   // programme. It is a policy lever, not a description of the present.
   vppEnabled:1, vppEnrolPct:0, vppGeyserPoolMW:4000, vppBattPerGeyserKW:0.35,
+  // WHERE the VPP is. 'National' spreads the enrolled pool across regions by
+  // their share of electricity demand; naming a region concentrates the whole
+  // pool there, which is what a municipal programme like Cape Town's actually
+  // looks like. Only the regional build optimiser can show the difference - the
+  // single-node engine has no geography.
+  vppRegion:'National',
   // ROOFTOP DERATE, corrected 16 Aug 2026 (was 0.94).
   // Rooftop and utility PV previously ran within 1pp of each other - 21.2% vs
   // 22.1% - which is physically wrong. They share the same national profile,
@@ -7437,6 +7449,8 @@ const SLIDERS=[
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
   {id:'vppGeyserPoolMW',label:'Virtual power plant \u2014 controllable pool',min:0,max:12000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(2)+' GW',
    note:'How much behind-the-meter load COULD be aggregated nationally. 4 GW is our estimate for electric geysers: residential is ~17% of consumption and the geyser 40\u201350% of a household bill, averaging ~1.8 GW \u2014 but geyser load is what MAKES the morning and evening peaks, so at a coincidence factor near three it contributes far more into them. Eskom\u2019s old ripple control managed 1\u20132 GW. Raise it above 4 GW to include pool pumps, air conditioning and EV charging as those fleets grow. Nothing happens until you set an enrolment share below.'},
+  {id:'vppRegion',label:'\u2014 where it is sited',select:['National','Western Cape','Gauteng','Kwazulu Natal','Eastern Cape','Northern Cape','Free State','Mpumalanga','Limpopo','North West'],def:'National',ctrlStyle:SUB_CTRL,
+   note:'National spreads the enrolled pool across regions by their share of electricity DEMAND \u2014 not rooftop solar, which would misplace it badly (the Northern Cape is 6.8% of national rooftop but 2.1% of demand). Naming a region concentrates the pool there, capped at what that region plausibly holds. This only changes the answer in the regional build optimiser: the single-node engine has no geography. Cape Town\u2019s municipal VPP is the live example \u2014 the Western Cape is 10% of national demand, so its pool tops out near 400 MW.'},
   {id:'vppEnrolPct',label:'\u2014 share actually enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',ctrlStyle:SUB_CTRL,
    note:'The share of that pool signed up and dispatchable. Aggregates BEHIND-THE-METER assets \u2014 rooftop solar, household batteries and above all controllable electric geysers \u2014 into one plant. Cape Town has an RMI-backed feasibility study for a municipal VPP; eThekwini\u2019s Project Smart Solar with Plentify, funded by AFD and the EU, is connecting residential PV, batteries and geysers into a city-wide VPP. Defaults to ZERO because these are pilots, not a national programme \u2014 this is a policy lever, not a description of today. Watch for diminishing returns: around 50 % enrolment the evening peak stops falling and simply MOVES to the early hours \u2014 you have flattened the curve as far as it will go, and past that point a VPP is buying flexibility and resilience rather than peak reduction.'},
   {id:'drInterruptMW',label:'Interruptible load',min:0,max:4000,step:100,def:FIXED.drInterruptMW,fmt:v=>v+' MW',
@@ -7534,6 +7548,24 @@ SLIDERS.forEach(s=>{
     });
     return;
   }
+  // SELECT controls. Added 17 Aug 2026 for the VPP siting picker - the panel had
+  // only ranges and toggles until then, and a slider is the wrong control for a
+  // list of provinces.
+  if(s.select){
+    state[s.id]=s.def;
+    const d=document.createElement('div');d.className='ctrl';
+    if(s.ctrlStyle)d.style.cssText=s.ctrlStyle;
+    d.innerHTML='<div class="row"><label for="in_'+s.id+'">'+s.label+'</label></div>'
+      +'<select id="in_'+s.id+'" style="width:100%;padding:4px 6px;font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;border:1px solid var(--line2);background:#fff">'
+      +s.select.map(o=>'<option value="'+o+'"'+(o===s.def?' selected':'')+'>'+o+'</option>').join('')
+      +'</select>'+(s.note?'<small>'+s.note+'</small>':'');
+    controlsEl.appendChild(d);
+    d.querySelector('select').addEventListener('change',ev=>{
+      state[s.id]=ev.target.value;
+      setPresetActive(null); scheduleRun();   // same path a slider takes
+    });
+    return;
+  }
   state[s.id]=s.def;
   const d=document.createElement('div');d.className='ctrl';
   // ctrlStyle was previously honoured only in the toggle branch above, so the
@@ -7557,8 +7589,16 @@ SLIDERS.forEach(s=>{
 function applyState(overrides){
   SLIDERS.forEach(s=>{if(s.grp)return; const v=(s.id in overrides)?overrides[s.id]:(s.toggle?(s.def?1:0):s.def);
     state[s.id]=v;
-    if(s.toggle){document.getElementById('in_'+s.id).checked=!!v;}
-    else{document.getElementById('in_'+s.id).value=v; document.getElementById('cv_'+s.id).textContent=s.fmt(v);}
+    const el=document.getElementById('in_'+s.id);
+    if(!el) return;
+    if(s.toggle){ el.checked=!!v; }
+    // SELECT controls have no cv_ readout and no fmt(). Reaching for them threw,
+    // which aborted applyState PART WAY THROUGH - so every preset silently
+    // stopped applying at the first select it met, and the scenarios downstream
+    // of it (crisis EAF, high-renewables) ran on stale values. Caught by
+    // validate_outputs dropping 33 -> 30 the moment the VPP siting picker was added.
+    else if(s.select){ el.value=v; }
+    else{ el.value=v; const cv=document.getElementById('cv_'+s.id); if(cv) cv.textContent=s.fmt(v); }
   });
 }
 const presetsEl=document.getElementById('presets');
@@ -9123,6 +9163,44 @@ function fmtR(n, dec) {
   dec = dec || 0;
   return 'R' + n.toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
+/* ==================== VPP REGIONAL SITING ==================================
+ * Splits the enrolled VPP pool across regions.
+ *
+ * THE SPLIT IS BY ELECTRICITY DEMAND, not by rooftop solar. Rooftop PV tracks
+ * who could afford panels and had a suitable roof; the geyser and household
+ * battery fleet tracks where the electricity is consumed. Using the rooftop
+ * split would misplace the pool badly - the Northern Cape is 6.8% of national
+ * rooftop but only 2.1% of demand, a threefold overstatement, because it has
+ * abundant sun and few people.
+ *
+ * Shares are the model's own regional demand series (nodal/demand_2025_regional.csv),
+ * so they cannot drift from what the optimiser dispatches against.
+ */
+const VPP_DEMAND_SHARE = {
+  'Gauteng': 0.280, 'Kwazulu Natal': 0.192, 'Mpumalanga': 0.119, 'North West': 0.110,
+  'Western Cape': 0.100, 'Limpopo': 0.092, 'Eastern Cape': 0.050, 'Free State': 0.029,
+  'Northern Cape': 0.021, 'Hydra Central': 0.005,
+};
+
+function vppPoolByRegion(){
+  const on = !!(state.vppEnabled ?? 1);
+  const share = on ? Math.max(0, Math.min(100, state.vppEnrolPct ?? 0)) / 100 : 0;
+  const pool = (state.vppGeyserPoolMW ?? 4000) * share;
+  const out = {};
+  if (!(pool > 0)) return out;
+  const reg = state.vppRegion || 'National';
+  if (reg === 'National'){
+    Object.entries(VPP_DEMAND_SHARE).forEach(([r, f]) => { out[r] = pool * f; });
+  } else {
+    // A municipal VPP is concentrated, not spread. The whole enrolled pool sits
+    // in one region - but it CANNOT exceed what that region plausibly has, so it
+    // is capped at the region's own demand share of the national pool.
+    const cap = (state.vppGeyserPoolMW ?? 4000) * (VPP_DEMAND_SHARE[reg] || 0);
+    out[reg] = Math.min(pool, cap);
+  }
+  return out;
+}
+
 /* ==================== SMARTEST NEXT STEP ==================================
  * Ranks household electrification steps by PAYBACK, for South African
  * conditions. Deliberately not a port of the Australian logic: there is
@@ -10682,8 +10760,20 @@ function runMIP(mode) {
   getNodalMIPInputs(
     state.coalEAFPct, state.coalDecomMW,
     alloc.wind || {}, alloc.solar || {}, state.newRooftopMW || 0, state.newBattMW || 0,
-    alloc.coal || {}, alloc.ccgt || {}, alloc.nuclear || {}, alloc.batt || {},
-    state.coalFlexPct || 0, state.newWindMW || 0, state.newPvMW || 0, state.syncMinMW ?? 6000
+    alloc.coal || {}, alloc.ccgt || {}, alloc.nuclear || {},
+    // Enrolled VPP batteries join that region's storage via the SAME hook the
+    // Where To Build tool uses - aggregation turning a scattered household fleet
+    // into one plant is exactly what a VPP is.
+    (() => {
+      const b = { ...(alloc.batt || {}) };
+      const pool = vppPoolByRegion();
+      Object.entries(pool).forEach(([r, mw]) => {
+        b[r] = (b[r] || 0) + mw * (state.vppBattPerGeyserKW ?? 0.35);
+      });
+      return b;
+    })(),
+    state.coalFlexPct || 0, state.newWindMW || 0, state.newPvMW || 0, state.syncMinMW ?? 6000,
+    vppPoolByRegion()
   ).then(inp => {
     mipInputs = inp;
     document.getElementById('mipStatus').textContent = 'Loading HiGHS solver (3.4 MB, cached after first run)…';
