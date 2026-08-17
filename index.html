@@ -3029,6 +3029,40 @@ function printPrefeas() {
     </details>
 
           <div id="rt_result"></div>
+
+          <!-- ── SMARTEST NEXT STEP ────────────────────────────────────────
+               South Africa is not Australia. There is almost no gas to get off:
+               the win here is EFFICIENCY FIRST, because the geyser alone is
+               40-50% of a household's electricity. The cheapest interventions
+               pay back in months and are almost always a better first rand than
+               solar - which is the opposite of the advice most solar quotes
+               give, for obvious reasons. -->
+          <div style="border:1.5px solid var(--ink);margin-top:16px">
+            <div style="background:var(--ink);color:var(--panel);padding:6px 10px;font-size:11px;font-weight:600;letter-spacing:.05em">
+              YOUR SMARTEST NEXT STEP</div>
+            <div style="padding:12px">
+              <p style="font-size:11px;color:var(--ink2);margin:0 0 10px;line-height:1.5">
+                Solar is rarely the first rand you should spend. In a South African home the
+                <strong>geyser is 40&ndash;50&nbsp;% of the bill</strong>, and the cheapest fixes pay
+                back in months. Tell us what you already have and we will rank what is left by
+                payback.</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;margin-bottom:10px">
+                <label style="grid-column:1/-1">Monthly electricity spend
+                  <input type="number" id="ns_spend" value="2200" step="100"
+                    style="width:100%;padding:4px 6px;font-family:'IBM Plex Mono',monospace;border:1px solid var(--line2)"></label>
+                <label style="grid-column:1/-1;color:var(--ink2);font-size:10.5px">Already done &mdash; tick anything you have:</label>
+                <label><input type="checkbox" id="ns_blanket"> Geyser blanket &amp; pipe lagging</label>
+                <label><input type="checkbox" id="ns_timer"> Geyser timer or smart switch</label>
+                <label><input type="checkbox" id="ns_thermo"> Thermostat at 55&ndash;60&nbsp;&deg;C</label>
+                <label><input type="checkbox" id="ns_leds"> All LED lighting</label>
+                <label><input type="checkbox" id="ns_hp"> Heat pump or solar geyser</label>
+                <label><input type="checkbox" id="ns_pv"> Rooftop solar PV</label>
+              </div>
+              <button onclick="rankNextSteps()" style="width:100%;padding:7px;border:1.5px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em">
+                Rank my options</button>
+              <div id="ns_result" style="margin-top:10px"></div>
+            </div>
+          </div>
         </div>
         </div>
       </div>
@@ -8987,6 +9021,94 @@ function fmtR(n, dec) {
   dec = dec || 0;
   return 'R' + n.toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
+/* ==================== SMARTEST NEXT STEP ==================================
+ * Ranks household electrification steps by PAYBACK, for South African
+ * conditions. Deliberately not a port of the Australian logic: there is
+ * almost no domestic gas here, so the sequence is not "get off gas" but
+ * "stop wasting hot water, then generate".
+ *
+ * Shares of the bill are sourced: the electric geyser is 40-50% of household
+ * consumption (SEAD/McNeil water heater study; an Eskom survey put middle
+ * income at 39%), space heating second at ~16%, fridges 10-15%, lighting and
+ * standby 10-15%. Savings and costs below are mid-range South African retail
+ * figures - they are ESTIMATES and the panel says so.
+ *
+ * The ordering matters more than the precision. A geyser blanket and timer
+ * costing about R1,500 together beat a R120,000 solar system on return per
+ * rand, every time, and almost nobody is told that because nobody sells
+ * blankets for R120,000.
+ */
+const NEXT_STEPS = [
+  { id:'thermo', key:'ns_thermo', name:'Turn the geyser thermostat down to 55-60 °C',
+    costR:0, saveShare:0.04,
+    why:'Most geysers leave the factory at 65-70 °C. Every degree above 60 is heat leaking through the tank wall for no benefit, and above 60 also scales the element faster. Free, takes ten minutes, and you will not notice the difference at the tap.' },
+  { id:'blanket', key:'ns_blanket', name:'Geyser blanket and pipe lagging',
+    costR:1200, saveShare:0.06,
+    why:'A geyser sitting in a cold roof space loses heat around the clock, whether or not anyone runs a tap. Insulating the tank and the first few metres of pipe is the highest-return rand in most South African homes.' },
+  { id:'timer', key:'ns_timer', name:'Geyser timer or smart switch',
+    costR:900, saveShare:0.05,
+    why:'Stops the element reheating a full tank through the night and through the working day. Also shifts the load off the evening peak, which helps the grid and helps you on any time-of-use tariff.' },
+  { id:'leds', key:'ns_leds', name:'Replace remaining bulbs with LEDs',
+    costR:1500, saveShare:0.06,
+    why:'Lighting and standby together run 10-15 % of the bill. LEDs use roughly a fifth of what halogens and CFLs do and last years longer.' },
+  { id:'hp', key:'ns_hp', name:'Heat pump water heater',
+    costR:32000, saveShare:0.25,
+    why:'Cuts geyser electricity by about 60 % by moving heat rather than making it. This is the single biggest efficiency step available to a South African household, and it works at night and in winter when solar cannot help.' },
+  { id:'pv', key:'ns_pv', name:'Rooftop solar PV',
+    costR:110000, saveShare:0.35,
+    why:'Worth doing - but AFTER the cheap efficiency steps, because every kWh you stop wasting is a kWh of panels you never have to buy. Size it against your reduced bill, not your current one. Use the calculator above for your roof specifically.' },
+];
+
+function rankNextSteps(){
+  const el = document.getElementById('ns_result');
+  const spend = Math.max(0, parseFloat(document.getElementById('ns_spend').value) || 0);
+  if (!spend){ el.innerHTML = '<p style="font-size:11px;color:var(--alert,#C4785A)">Enter your monthly spend first.</p>'; return; }
+
+  const done = {}, todo = [];
+  NEXT_STEPS.forEach(st => {
+    const box = document.getElementById(st.key);
+    if (box && box.checked) { done[st.id] = true; return; }
+    // Savings interact: once a heat pump or solar geyser is in, the cheap geyser
+    // fixes are worth much less, because they act on a load that is now 60%
+    // smaller. Modelling that honestly avoids promising the same rand twice.
+    let share = st.saveShare;
+    const geyserFix = ['thermo','blanket','timer'].includes(st.id);
+    if (geyserFix && (done.hp || (document.getElementById('ns_hp')||{}).checked)) share *= 0.4;
+    todo.push({ ...st, share, monthlyR: spend * share,
+                paybackMo: st.costR > 0 ? st.costR / Math.max(1, spend*share) : 0 });
+  });
+  if (!todo.length){
+    el.innerHTML = '<p style="font-size:11px;color:var(--ok,#4A8C5C)"><strong>You have done the lot.</strong> '
+      + 'The next gains are behavioural - shorter showers, cold washes, and switching off the second fridge in the garage.</p>';
+    return;
+  }
+  todo.sort((a,b) => a.paybackMo - b.paybackMo);
+
+  const R = v => 'R' + Math.round(v).toLocaleString();
+  const pb = m => m === 0 ? '<strong>immediate</strong>'
+              : m < 12 ? '<strong>' + Math.round(m) + ' months</strong>'
+              : (m/12).toFixed(1) + ' years';
+  const totalMo = todo.reduce((a,b) => a + b.monthlyR, 0);
+
+  el.innerHTML =
+    '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:8px">Ranked by payback, cheapest return first. '
+    + 'Doing all of these would cut about <strong>' + R(totalMo) + '/month</strong> from a ' + R(spend) + ' bill.</div>'
+    + todo.map((t, i) => `
+      <div style="border-left:3px solid ${i===0?'var(--ok,#4A8C5C)':'var(--line2)'};padding:7px 10px;margin-bottom:7px;background:${i===0?'var(--panel2)':'transparent'}">
+        <div style="font-size:11.5px;font-weight:600">${i===0?'START HERE &middot; ':''}${t.name}</div>
+        <div style="font-size:10.5px;font-family:'IBM Plex Mono',monospace;margin:3px 0">
+          ${t.costR ? 'costs ~' + R(t.costR) : 'free'} &middot;
+          saves ~<strong>${R(t.monthlyR)}/month</strong> &middot;
+          pays back in ${pb(t.paybackMo)}</div>
+        <div style="font-size:10px;color:var(--ink2);line-height:1.5">${t.why}</div>
+      </div>`).join('')
+    + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:8px;border-top:1px solid var(--line2);padding-top:6px">'
+    + 'Estimates, not a quote. Savings are shares of a typical South African bill &mdash; the geyser is 40&ndash;50&nbsp;% of '
+    + 'household consumption (SEAD/McNeil water heater study; an Eskom survey put middle-income water heating at 39&nbsp;%), '
+    + 'space heating about 16&nbsp;%. Your own split depends on household size, whether you have a pool pump, and how much '
+    + 'you heat in winter. Costs are mid-range retail and vary widely by installer.</div>';
+}
+
 function rtCalc() {
   const el = document.getElementById('rt_result');
   if(!el) return;
