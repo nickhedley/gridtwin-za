@@ -6364,8 +6364,12 @@ function renderPricePanel(r){
 
   const MON = ['J','F','M','A','M','J','J','A','S','O','N','D'];
   const maxMon = Math.max(...s.monthly, 1);
+  // Styled tooltip, not the native title attribute. `cursor:help` plus `title`
+  // gives a question-mark pointer and the browser's ~1s delayed tooltip, which
+  // on a 12-bar chart reads as "hovering does nothing". Same treatment as the
+  // adequacy chart, so the whole page behaves alike.
   const bars = s.monthly.map((v, i) =>
-    `<div title="${['January','February','March','April','May','June','July','August','September','October','November','December'][i]}: ${R(v)}/MWh average" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;cursor:help">`
+    `<div class="tipbar" data-tip="${['January','February','March','April','May','June','July','August','September','October','November','December'][i]} &middot; <strong>${R(v)}/MWh</strong> average" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;cursor:pointer">`
     + `<div style="width:100%;background:var(--steel,#4A6B7A);height:${Math.max(1, v/maxMon*54)}px"></div>`
     + `<div style="font-size:8px;color:var(--ink2)">${MON[i]}</div></div>`).join('');
 
@@ -7931,7 +7935,7 @@ fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
       const winPct=(100*v.wind_mw/maxMW).toFixed(1);
       const besPct=(100*(v.bess_mw||0)/maxMW).toFixed(1);
       html+=`<div style="display:grid;grid-template-columns:90px 1fr 52px;align-items:center;margin-bottom:3px;gap:4px">
-        <span title="${region}: solar ${v.solar_mw.toFixed(0)} MW · wind ${v.wind_mw.toFixed(0)} MW · BESS ${(v.bess_mw||0).toFixed(0)} MW · total ${v.total_mw.toFixed(0)} MW" style="font-size:10px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help">${region}</span>
+        <span title="${region}: solar ${v.solar_mw.toFixed(0)} MW · wind ${v.wind_mw.toFixed(0)} MW · BESS ${(v.bess_mw||0).toFixed(0)} MW · total ${v.total_mw.toFixed(0)} MW" style="font-size:10px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" class="tipbar" data-tip="${region}">${region}</span>
         <div style="background:var(--bg2);border-radius:2px;height:10px;min-width:0;display:flex">
           <div title="${region} — solar ${v.solar_mw.toFixed(0)} MW" style="width:${solPct}%;background:#F5C518;height:100%;border-radius:2px 0 0 2px"></div>
           <div title="${region} — wind ${v.wind_mw.toFixed(0)} MW" style="width:${winPct}%;background:#3EA055;height:100%"></div>
@@ -8160,6 +8164,39 @@ const MONTH_D=[31,28,31,30,31,30,31,31,30,31,30,31];
 // giving a help cursor and the browser's ~1s delayed tooltip, which reads as
 // "hovering does nothing". This reuses the same instant styled tooltip the
 // canvas charts use, and works on tap as well as hover.
+// One delegated hover handler for EVERY styled tooltip on the page. Elements
+// just need class="tipbar" and a data-tip attribute; because it is delegated
+// from document, it works for content rendered after load without rebinding.
+// This replaced a scattering of native title attributes that each gave a
+// question-mark cursor and the browser's slow tooltip.
+(function(){
+  let bound = false;
+  function bind(){
+    if (bound) return; bound = true;
+    const show = (el, ev) => {
+      const tip = chartTipEl();
+      tip.innerHTML = el.getAttribute('data-tip') || '';
+      tip.style.display = 'block';
+      const tw = tip.offsetWidth, th = tip.offsetHeight;
+      let left = ev.clientX + 14, top = ev.clientY - th - 10;
+      if (left + tw > window.innerWidth - 8) left = ev.clientX - tw - 14;
+      if (top < 8) top = ev.clientY + 16;
+      tip.style.left = left + 'px'; tip.style.top = top + 'px';
+    };
+    const hide = () => { const t = chartTipEl(); if (t) t.style.display = 'none'; };
+    document.addEventListener('mousemove', ev => {
+      const el = ev.target.closest && ev.target.closest('.tipbar');
+      if (el) show(el, ev); else hide();
+    });
+    document.addEventListener('click', ev => {          // touch
+      const el = ev.target.closest && ev.target.closest('.tipbar');
+      if (el) show(el, ev);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+
 function bindAdequacyHover(){
   const host = document.getElementById('adequacyBody');
   if (!host || host.__adqBound) return;
@@ -8350,7 +8387,7 @@ function render(r){
   lcoeRows.sort((a,b)=>a.v-b.v);
   const lcoeMax=Math.max(...lcoeRows.map(r=>r.v))*1.02;
   document.getElementById('lcoe').innerHTML=lcoeRows.map(r=>
-    '<div class="mixrow"'+(r.tip?' title="'+r.tip.replace(/"/g,'&quot;')+'" style="cursor:help"':'')+'><span class="nm">'+r.nm+'</span><span class="barwrap"><span class="bar" style="width:'+(100*r.v/lcoeMax).toFixed(1)+'%;background:'+r.c+'"></span></span><span class="num">R'+(r.v/1000).toFixed(2)+'/kWh</span></div>'
+    '<div'+(r.tip?' class="mixrow tipbar" data-tip="'+r.tip.replace(/"/g,'&quot;')+'" style="cursor:pointer"':' class="mixrow"')+'><span class="nm">'+r.nm+'</span><span class="barwrap"><span class="bar" style="width:'+(100*r.v/lcoeMax).toFixed(1)+'%;background:'+r.c+'"></span></span><span class="num">R'+(r.v/1000).toFixed(2)+'/kWh</span></div>'
   ).join('');
 
   updateMap(r);
