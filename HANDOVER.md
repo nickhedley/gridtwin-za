@@ -425,6 +425,43 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## RESERVE CO-OPTIMISATION: built, correct, and defaults OFF (17 Aug 2026)
+
+Second of three PLEXOS-gap features. Energy and reserve now compete for the same
+capacity in the regional LP - a unit sells its headroom as energy OR holds it as
+standby, never both:
+
+    rc_/rdz_/rb_       reserve from coal, diesel, battery per region-hour
+    cmax_/dmax_/bdmax_ now read gc + rc <= capacity, so the two compete
+    resq_ rows         national requirement per hour: 794 MW contingency
+                       + 2% of load + 5% of VRE
+    dual on resq_      the RESERVE SHADOW PRICE
+
+The VRE term references wind and solar ACTUALLY BUILT AND DISPATCHED, as LP
+variables on the left-hand side rather than a precomputed constant. That matters:
+the optimiser then sees that building more renewables RAISES the reserve
+requirement, which is a real cost of a high-VRE system that a fixed right-hand
+side would hide from it.
+
+THE RESULT, and why it defaults off. The shadow price is ZERO in all 960 modelled
+hours, at every fleet availability tested down to EAF 45%. South Africa has 3.4 GW
+of OCGT sitting idle against a requirement near 1.9 GW, so the constraint is
+always slack and standby capacity is worth nothing at the margin.
+
+That is the SAME conclusion the hourly dispatch engine reached independently on
+16 Aug - 7.1 GW of fast-start against a 1.3 GW need. Two separately written parts
+of the model agreeing is a real check on both.
+
+Keeping it on costs ~50% more solve time (16.4s to 26.3s) for a number that does
+not move, so RESERVE_COOPT = false. With it off the LP is byte-identical to the
+pre-reserve version (14,307,739 chars, R616.0bn, same builds, same corridors) -
+verified, so the feature cannot silently perturb the default answer.
+
+TURN IT ON when peakers retire, when a scenario strips out the OCGT fleet, or if
+an ancillary services market is proposed and someone needs to know what it would
+clear at. The machinery is correct; it is the South African system that makes it
+uninteresting today.
+
 ## TRANSMISSION EXPANSION IS NOW A DECISION VARIABLE (17 Aug 2026)
 
 First of three PLEXOS-gap features. The regional build LP previously took corridor
