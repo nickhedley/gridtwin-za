@@ -425,6 +425,38 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## VPP SITING MOVED INTO WHERE TO BUILD (17 Aug 2026)
+
+The single-select "where it is sited" dropdown was scrapped the same day it was
+built. It let you pick only ONE province, which is wrong for something that
+would realistically run in several municipalities at once - Cape Town and
+eThekwini are both pursuing VPPs right now.
+
+VPP is now a TECHNOLOGY in Where To Build, alongside solar, wind, coal, CCGT,
+nuclear and battery. That tool already does per-region MW allocation with a
+committed portfolio, so multiple simultaneous placements come for free.
+
+TWO THINGS IT NEEDED THAT OTHER TECHNOLOGIES DO NOT:
+
+  1. A VPP CONSUMES NO CONNECTION HEADROOM. Everything else in that tool is new
+     plant asking to connect and drawing down the region's GCCA allowance. A VPP
+     aggregates load ALREADY behind the meter - no new connection, no grid-build
+     charge, and if anything it relieves the network. Running it through the
+     headroom path would have blocked legitimate siting and wrongly billed it.
+     It is instead checked against what the region plausibly holds: its share of
+     national electricity demand times the national pool.
+
+  2. NO NATIONAL SLIDER TO BUMP. Every other technology increments a "new build"
+     slider when sited. A VPP has none, because it is existing load. sliderIdFor
+     returns null for it and the caller guards - defaulting to newPvMW, as the
+     old fallback did, would have added phantom solar on every VPP placement.
+
+The national sliders still work and now mean "a national programme, spread by
+demand share". Sited VPPs add ON TOP, so you can model a national rollout,
+a set of municipal pilots, or both. One bug caught in testing: the pool function
+returned early when national enrolment was zero, silently discarding sited VPPs -
+which is the NORMAL case, since no national programme exists but pilots do.
+
 ## SITE-BASED VPPs, via the live MIP (17 Aug 2026)
 
 A VPP can now be SITED. The national sliders set the size and enrolment; a new
