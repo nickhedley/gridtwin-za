@@ -372,6 +372,37 @@ No spikes, no artefacts.
 DO NOT rescale the demand series to close this gap. The validation panel now
 states the definitional difference instead of implying an error.
 
+## QUEUED: five privately wheeled projects commissioned Aug 2026 (17 Aug)
+
+Koruson 2 (Envusa, 520 MW: Umsobomvu 140 + Hartebeesthoek 140 wind, Mooi Plaats
+240 solar), Ilikwa (Mainstream, 50 MW solar, Free State) and Ummbila Emoyeni
+phase 1 (Seriti Green, 155 MW wind, Mpumalanga). Total 435 MW wind + 290 MW
+solar, ALL privately wheeled rather than REIPPPP.
+
+NOT hand-added, for the same reason as Graspan: the capacity file is anchored to
+the IPP Office Q4 (31 Mar) and PowerFutureLab H1 2026 monitor, and these
+commissioned in August. Queued in supply_area_split_draft.json instead, and
+validate_capacity.js now prints BUCKET-AWARE instructions - private wheeled goes
+to by_source.private and does NOT touch the Eskom Week-32 reconciliation, because
+Eskom does not meter it. The previous single instruction said "add to reipppp"
+for everything, which would have sent the next person to the wrong bucket.
+
+On rollforward these would take windMW 4,612 -> 5,047 and pvUtilityMW 3,151 ->
+3,516 (with Graspan). Note that would WIDEN the gap against Ember's Wind line,
+correctly: Ember counts only NTCSA-contracted plant, so more wheeled capacity
+means the model should read further above it, and the validation note explaining
+that will need its numbers updated.
+
+DATA CAUTION recorded in the queue entry: Ilikwa's announced ">140 GWh/yr" over
+50 MW implies a 32% capacity factor, which is not credible for Free State solar
+(our regional profile gives ~22%, single-axis tracking reaches 26-28%). Use the
+nameplate, not the announced energy.
+
+Also notable for the model's structure: Ummbila Emoyeni puts private wind in
+MPUMALANGA, where regional wind capacity is currently zero - the coal heartland
+is starting to host renewables, and the regional file will need a Mpumalanga
+wind entry it has never had.
+
 ## RESOLVED: wind_nameplate_est in profiles.json (16 Aug 2026)
 
 `profiles.json` normalised Eskom's metered hourly wind output against
