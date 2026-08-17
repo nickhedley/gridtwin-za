@@ -23,30 +23,30 @@
    "mw": 140,
    "tech": "wind",
    "area": "Eastern Cape",
-   "cod": "August 2026",
+   "cod": "April 2026",
    "bucket": "private",
    "developer": "Envusa Energy",
-   "note": "Part of the 520 MW Koruson 2 cluster. Wheeled to Valterra Platinum, Kumba Iron Ore and De Beers through a licensed trader. Confirm the Eastern/Northern Cape split per farm before allocating."
+   "note": "COD CORRECTED 17 Aug 2026 from August to April: Mining Weekly reported it at COD on 24 Apr 2026. Wheeled to Valterra Platinum, Kumba Iron Ore and De Beers via a licensed trader. Eastern Cape per Mining Weekly."
   },
   {
    "name": "Koruson 2 \u2014 Hartebeesthoek wind",
    "mw": 140,
    "tech": "wind",
-   "area": "Northern Cape",
-   "cod": "August 2026",
+   "area": "Eastern Cape",
+   "cod": "June 2026",
    "bucket": "private",
    "developer": "Envusa Energy",
-   "note": "Cluster arithmetic is self-consistent: 520 total less 240 MW Mooi Plaats solar leaves 280 MW across two wind farms."
+   "note": "COD CORRECTED 17 Aug 2026 from August to June: Mining Weekly (24 Apr) reported it \"on track to turn on commercially in June\", completing the 520 MW cluster. Eastern Cape per Mining Weekly, NOT Northern Cape as first queued."
   },
   {
    "name": "Koruson 2 \u2014 Mooi Plaats solar PV",
    "mw": 240,
    "tech": "solar",
    "area": "Northern Cape",
-   "cod": "August 2026",
+   "cod": "March 2026",
    "bucket": "private",
    "developer": "Envusa Energy",
-   "note": "Envusa is advancing a further 340 MW tranche \u2014 expect another queue entry."
+   "note": "COD CORRECTED 17 Aug 2026. Mining Weekly (24 Apr 2026) reports Umsobomvu reached COD \"just weeks after Mooi Plaats\", placing Mooi Plaats around March/early April - AT OR BEFORE our 31 Mar basis. *** VERIFY BEFORE ROLLFORWARD: this project may ALREADY be in by_source.private, in which case adding it would double count 240 MW. *** Envusa is advancing a further 340 MW tranche."
   },
   {
    "name": "Ilikwa solar PV",
@@ -63,10 +63,10 @@
    "mw": 155,
    "tech": "wind",
    "area": "Mpumalanga",
-   "cod": "August 2026",
+   "cod": "July 2026",
    "bucket": "private",
    "developer": "Seriti Green",
-   "note": "25 turbines implying 6.2 MW machines. Supplies Seriti's own coal operations plus others via traders (NOA, Energy Exchange, Etana). First phase of a 900 MW wind/solar/storage programme, so more will follow. Notable as private renewables landing in the Mpumalanga coal heartland \u2014 the model's Mpumalanga wind is currently zero."
+   "note": "COD CORRECTED 17 Aug 2026 from August to July: Engineering News (7 Aug) states the first 25 turbines \"officially entered commercial operation in July 2026\". Announced 480,000 MWh/y over 155 MW = 35.4% CF, which is credible for this site. Part of a 900 MW programme (750 MW wind, 150 MW solar, 800 MWh storage) so more phases will follow. Puts private wind in Mpumalanga, where the regional file currently has zero."
   }
  ],
  "ambiguity_threshold_km": 40.0,
