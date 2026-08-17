@@ -74,6 +74,16 @@ if (!p.cod) problems.push('--cod is required, e.g. "August 2026"');
 if (!['private','reipppp'].includes(p.bucket))
   problems.push('--bucket must be private (wheeled/PPA) or reipppp (public programme)');
 if (!p.source) warnings.push('No --source URL given. Record where this came from.');
+// PowerTracker is our named source for WHEELED commissioning - it carries an
+// explicit "Energy Wheeling" category and alerts on point changes, which is
+// faster than anything else available. Recognise it and note the licence
+// position so the distinction does not get lost later.
+if (p.source && /powertracker\.oxpeckers\.org/i.test(p.source)) {
+  notes.push('Source is Oxpeckers #PowerTracker — our primary alert channel for wheeled ' +
+             'commissioning. NOTE their content is CC BY-SA 4.0 while our data files are ' +
+             'CC BY-NC-ND 4.0: use it to discover and verify, record the underlying FACTS ' +
+             'with attribution, and do not ingest their dataset wholesale.');
+}
 
 // ── 2. THE CAPACITY FACTOR CHECK — the reason this tool exists ──────────────
 if (p.gwh && p.mw > 0 && CF_RANGE[p.tech]) {
