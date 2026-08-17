@@ -28,8 +28,8 @@
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <title>GridTwin ZA — Interactive South African Power System Model</title>
-<meta name="description" content="Interactive digital twin of the South African power system — adjust the fleet, demand and policy, and watch the grid re-dispatch live. Calibrated to 2026 Eskom data.">
+  <title>GridTwin ZA – Interactive South African Power System Model</title>
+<meta name="description" content="Interactive digital twin of the South African power system – adjust the fleet, demand and policy, and watch the grid re-dispatch live. Calibrated to 2026 Eskom data.">
 <!-- Optional local config: API keys. Absent by default; the app works without it. -->
 <script src="config.js" onerror="void 0"></script>
 <meta name="author" content="Nick Hedley">
@@ -37,8 +37,8 @@
 <link rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
 <meta name="dcterms.rights" content="© 2026 Nick Hedley. CC BY-NC-ND 4.0. Commercial use or derivative works require written permission.">
 <meta name="dcterms.license" content="https://creativecommons.org/licenses/by-nc-nd/4.0/">
-<meta property="og:title" content="GridTwin ZA — Interactive SA Grid Model">
-<meta property="og:description" content="An hourly dispatch model of the South African grid: coal EAF, renewables, storage, load shedding stages, cost and CO₂ — re-solved live in your browser.">
+<meta property="og:title" content="GridTwin ZA – Interactive SA Grid Model">
+<meta property="og:description" content="An hourly dispatch model of the South African grid: coal EAF, renewables, storage, load shedding stages, cost and CO₂ – re-solved live in your browser.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nickhedley.github.io/gridtwin-za/">
 <link rel="canonical" href="https://nickhedley.github.io/gridtwin-za/">
@@ -362,7 +362,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <button id="mipCancelBtn" onclick="cancelMIP()" style="display:none;padding:6px 12px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;color:var(--ink2)">Cancel</button>
           <span style="font-size:10.5px;color:var(--ink2);flex:1;min-width:180px">
             Re-solves the whole system as a true mixed-integer programming (MIP) model, where coal, storage and corridor flows are fully optimised across all 10 regions.
-            (The instant model commits coal in 4-hour blocks, so it follows a midday solar trough closely but not hour-by-hour — it's accurate in today's system but becomes less accurate once more solar is added.)
+            (The instant model commits coal in 4-hour blocks, so it follows a midday solar trough closely but not hour-by-hour – it's accurate in today's system but becomes less accurate once more solar is added.)
           </span>
         </div>
 
@@ -419,7 +419,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <strong>Run the full model</strong> (click the orange button near the top of the model) to see real
         flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red
         &ldquo;X% curt.&rdquo; label under a node means curtailment (wasted wind/solar) in that region
-        &mdash; shown as a share of that region&rsquo;s own renewable potential going to waste, not the raw
+        &ndash; shown as a share of that region&rsquo;s own renewable potential going to waste, not the raw
         GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Click on any
         line or label for exact figures.</p>
       <p style="font-size:11px;color:var(--ink2);line-height:1.6">
@@ -450,8 +450,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div style="padding:12px 14px">
         <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
           Given the scenario you have set, this solves for the <strong>least-cost build schedule to
-          2030</strong>: how much of each technology to add, in which year, and &mdash; in regional
-          mode &mdash; where. It uses each coal unit&rsquo;s planned retirement date, technology costs that
+          2030</strong>: how much of each technology to add, in which year, and &ndash; in regional
+          mode &ndash; where. It uses each coal unit&rsquo;s planned retirement date, technology costs that
           change year by year, and a limit on how fast capacity can actually be connected. The answer
           can be loaded straight back into the sliders and tested hour by hour.
         </p>
@@ -460,19 +460,19 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div>
             <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">How fast can we build?</label>
             <select id="bldPace" onchange="bldPaceChanged()" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-              <option value="historical">Historical &mdash; what SA has actually delivered</option>
-              <option value="irp" selected>IRP 2025 pace &mdash; the official plan</option>
-              <option value="masterplan">Masterplan ambition &mdash; ~5 GW/yr renewables</option>
-              <option value="grid">Grid-limited &mdash; all remaining GCCA headroom</option>
-              <option value="none">Unconstrained &mdash; economics only</option>
+              <option value="historical">Historical &ndash; what SA has actually delivered</option>
+              <option value="irp" selected>IRP 2025 pace &ndash; the official plan</option>
+              <option value="masterplan">Masterplan ambition &ndash; ~5 GW/yr renewables</option>
+              <option value="grid">Grid-limited &ndash; all remaining GCCA headroom</option>
+              <option value="none">Unconstrained &ndash; economics only</option>
             </select>
             <div id="bldPaceNote" style="font-size:9.5px;color:var(--ink2);margin-top:3px"></div>
           </div>
           <div>
             <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Decide where to build?</label>
             <select id="bldRegional" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-              <option value="0">National &mdash; how much, and when</option>
-              <option value="1" selected>Regional &mdash; also where, within grid limits</option>
+              <option value="0">National &ndash; how much, and when</option>
+              <option value="1" selected>Regional &ndash; also where, within grid limits</option>
             </select>
             <div style="font-size:9.5px;color:var(--ink2);margin-top:3px">Regional uses each province&rsquo;s own wind and solar profile, its GCCA connection headroom, and real corridor limits between regions.</div>
           </div>
@@ -480,7 +480,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
         <details id="bldAdvanced" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:10px;background:var(--panel)">
           <summary style="padding:7px 11px;cursor:pointer;font-size:11px;font-weight:600">
-            Set build limits per technology <span style="font-weight:400;color:var(--ink2)">&mdash; GW added per year</span>
+            Set build limits per technology <span style="font-weight:400;color:var(--ink2)">&ndash; GW added per year</span>
           </summary>
           <div style="padding:4px 11px 11px">
             <div id="bldRates" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;font-size:11px"></div>
@@ -488,7 +488,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               These caps usually decide the answer rather than the economics: renewables already
               undercut coal on running cost, so the question is how fast they can be connected.
               South Africa&rsquo;s binding constraint is shifting from procurement pace to grid capacity
-              &mdash; GCCA headroom is already zero in the Northern Cape, Hydra Central, and for
+              &ndash; GCCA headroom is already zero in the Northern Cape, Hydra Central, and for
               solar in the Western Cape.
             </div>
           </div>
@@ -507,13 +507,13 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <div id="bldResult" style="margin-top:12px"></div>
         <details style="border:1px solid var(--line2);border-radius:3px;margin-top:12px;background:var(--panel)">
           <summary style="padding:8px 11px;cursor:pointer;font-size:11.5px;font-weight:600">
-            What if the grid build slips? <span style="font-weight:400;color:var(--ink2)">&mdash; cost of delay</span>
+            What if the grid build slips? <span style="font-weight:400;color:var(--ink2)">&ndash; cost of delay</span>
           </summary>
           <div style="padding:4px 11px 11px">
             <p style="font-size:10.5px;color:var(--ink2);margin:0 0 9px;line-height:1.45">
               Everything above assumes the Transmission Development Plan lands on schedule.
               NTCSA itself notes the first five years carry high certainty and beyond 2030 is
-              uncertain &mdash; and 52% of the mapped projects sit in Concept, Pre-Concept or
+              uncertain &ndash; and 52% of the mapped projects sit in Concept, Pre-Concept or
               generic Planned rather than Execution. This slips those and re-solves.
             </p>
             <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
@@ -540,9 +540,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div id="nav-wheretobuild" class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
           <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity — wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it — a corridor-specific alternative to the flat national grid adder used above. All technologies — including CCGT and batteries — carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it — the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the real 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results — only the load-shedding risk panel stays on the national engine.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity – wind, solar, coal, gas CCGT, nuclear, or battery storage. If the local grid has spare headroom on today's real transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it – a corridor-specific alternative to the flat national grid adder used above. All technologies – including CCGT and batteries – carry this charge when they exceed regional headroom, though their lower capacity factors (CCGT ~15%, battery ~15%) mean the R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4; font-style:italic">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it – the underlying dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the real 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results – only the load-shedding risk panel stays on the national engine.</p>
             <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
               <div>
                 <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
@@ -584,7 +584,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
                 <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
               </div>
-              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
+              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet – allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
             </div>
 
           </div>
@@ -625,7 +625,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
             </div>
           </div>
-          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week — hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
+          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week – hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
           <div class="pb" style="padding:10px 10px 4px">
             <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart" aria-describedby="dispatchTableDesc"></canvas>
           </div>
@@ -649,7 +649,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <button id="spS">Summer week</button>
               </div>
             </div>
-            <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &mdash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
+            <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &ndash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
             <div class="pb" style="padding:10px 10px 4px">
               <canvas id="spWeek" height="216" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
             </div>
@@ -693,9 +693,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 <div style="margin-top:18px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
-        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters — EAF, OCGT load factor, rooftop PV, structural demand level — are calibrated to Eskom&rsquo;s weekly system status reports: EAF &asymp; 68&nbsp;% (calendar year to date, Week&nbsp;32), OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline. <strong>Transmission and distribution
+        <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters – EAF, OCGT load factor, rooftop PV, structural demand level – are calibrated to Eskom&rsquo;s weekly system status reports: EAF &asymp; 68&nbsp;% (calendar year to date, Week&nbsp;32), OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline. <strong>Transmission and distribution
         losses are not modelled separately, and should not be:</strong> the demand series is Eskom&rsquo;s
-        transmission-level demand &mdash; what generators must send out &mdash; and is therefore already
+        transmission-level demand &ndash; what generators must send out &ndash; and is therefore already
         gross of downstream losses. Our grid demand of 206&nbsp;TWh against Eskom&rsquo;s 183&nbsp;TWh of
         billed sales implies about 11&nbsp;%, which sits on Eskom&rsquo;s reported 9.1&nbsp;% T&amp;D loss
         figure. Adding a loss factor on top would double-count it and push coal roughly 11&nbsp;% above
@@ -704,11 +704,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         found the model overstating non-fossil generation by about 8&nbsp;percentage points. Koeberg's
         capacity factor was corrected from a hardcoded 0.90 to 0.75, and turbine/panel availability
         availability derates were briefly added to wind and utility PV and then removed
-        as a double count: the national profiles are Eskom&rsquo;s own <em>metered</em> hourly output
+        as a double count: the national profiles are Eskom&rsquo;s own metered hourly output
         (Data Portal ESK19243), so availability, losses and real curtailment are already inside the
         per-unit series, and the regional profiles are Renewables.ninja, whose PV already carries a
         10&nbsp;% system loss. The wind capacity factor was reading high against Ember because of a
-        normalisation error in profiles.json &mdash; metered energy divided by an understated
+        normalisation error in profiles.json &ndash; metered energy divided by an understated
         nameplate of 3,466&nbsp;MW. Re-derived on 16&nbsp;Aug&nbsp;2026 to 4,044&nbsp;MW, which lands
         on the REIPPPP wind fleet independently, so the model now reproduces Ember&rsquo;s 11.6&nbsp;TWh
         exactly for the fleet Eskom meters, plus 1.3&nbsp;TWh from privately wheeled wind that neither
@@ -718,8 +718,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         a rooftop fleet takes whatever orientation the roof has, is shaded, is never cleaned, does not
         track, and sits in Gauteng and the Western Cape rather than the Northern Cape. Its derate moved
         from 0.94 to 0.78, giving ~17.6&nbsp;%. Note also that the 9.1&nbsp;GW rooftop figure is itself
-        an <em>inference</em> &mdash; NTCSA derives it from residual load on sunny versus cloudy days
-        and counts only systems under 100&nbsp;kWp &mdash; and analysts have questioned whether it runs
+        an inference &ndash; NTCSA derives it from residual load on sunny versus cloudy days
+        and counts only systems under 100&nbsp;kWp &ndash; and analysts have questioned whether it runs
         high. The remaining gap is deliberate rather than
         tuned away: Ember reports metered output, already net of the network curtailment Eskom applies
         to Cape wind, and it does not count privately wheeled plant or fully capture behind-the-meter
@@ -729,61 +729,61 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <p style="margin-bottom:8px"><strong>Price formation:</strong> coal sets the marginal price in
         almost every hour of the default scenario, so the shadow price is nearly flat
         (roughly R715&ndash;760) and storage has little to arbitrage. That is a real property of a
-        coal-dominated single-node system, not a bug &mdash; but it means battery revenue, capture-price
+        coal-dominated single-node system, not a bug &ndash; but it means battery revenue, capture-price
         spreads and the value of flexibility are all understated at default settings and only become
         meaningful once enough wind and solar are added to push coal off the margin. The model now carries an explicit
         <strong>operating reserve</strong> (N-1 contingency plus load- and VRE-following terms, all on
-        sliders). At today&rsquo;s fleet it rarely binds &mdash; South Africa has roughly 7&nbsp;GW of
-        fast-start peakers and storage against a reserve need near 1.3&nbsp;GW &mdash; so it is not what
+        sliders). At today&rsquo;s fleet it rarely binds &ndash; South Africa has roughly 7&nbsp;GW of
+        fast-start peakers and storage against a reserve need near 1.3&nbsp;GW &ndash; so it is not what
         keeps prices flat; coal simply sets the price in every hour. It bites once coal is tight: at
         EAF&nbsp;52&nbsp;% with 12&nbsp;% demand growth, switching reserve on moves diesel from 1,843 to
         2,031 running hours. <strong>Unit-level forced outages</strong> are now modelled too: availability
         comes from a two-state Markov process over the 85 individual coal units rather than a flat
         derate, so several units can be out at once and the bad hours are genuinely bad. The EAF
         slider still sets the annual average; what changes is the shape. It matters most where it
-        should &mdash; at EAF&nbsp;55&nbsp;% the model sheds for 207 hours instead of 3, and diesel
+        should &ndash; at EAF&nbsp;55&nbsp;% the model sheds for 207 hours instead of 3, and diesel
         runs 1,402 hours instead of 415. A fixed seed keeps the headline scenario reproducible; the
         risk panel varies it. Still simplified: unit trips are drawn independently, where real ones
         cluster (common-mode failures, coal quality, a stressed fleet), and intra-regional network
-        limits below the ten-region corridor level remain out of scope &mdash; though
+        limits below the ten-region corridor level remain out of scope &ndash; though
         new build from the sliders is now sited against <strong>GCCA connection headroom</strong>
         rather than simply following the existing fleet, so capacity no longer piles into the
         Northern Cape and Hydra Central, which have had zero solar headroom since GCCA&nbsp;2025.
         Beyond about 19.9&nbsp;GW of new solar the model reports that the scenario has outrun
         national connection headroom instead of quietly absorbing it.</p>
         <p style="margin-bottom:8px"><strong>Demand response</strong> is modelled as two separate
-        products, because they behave differently. <em>Interruptible load</em> &mdash; contracted
-        industrial customers Eskom can drop, historically the smelters &mdash; defaults to 1,200&nbsp;MW
+        products, because they behave differently. Interruptible load &ndash; contracted
+        industrial customers Eskom can drop, historically the smelters &ndash; defaults to 1,200&nbsp;MW
         because it genuinely exists, is called before any shedding, and is reported apart from unserved
         energy: a managed reduction under contract is not a blackout. It is not free, and the
-        compensation is booked into system cost. <em>Shiftable load</em> &mdash; water heating,
-        pumping, irrigation and EV charging moved within the day, strictly energy-neutral &mdash;
+        compensation is booked into system cost. Shiftable load &ndash; water heating,
+        pumping, irrigation and EV charging moved within the day, strictly energy-neutral &ndash;
         defaults to ZERO, because at meaningful scale it does not yet exist here. It is a scenario
         lever rather than a description of today, and is worth testing alongside a high-solar build
         since it soaks up midday output.</p>
         <p style="margin-bottom:8px"><strong>Virtual power plants</strong> are modelled separately again, because
-        they aggregate <em>behind-the-meter</em> assets the utility does not own &mdash; rooftop solar, household
+        they aggregate behind-the-meter assets the utility does not own &ndash; rooftop solar, household
         batteries, and above all controllable electric geysers. This is live policy rather than theory: Cape Town
         has an RMI-supported feasibility study for a municipal VPP, and eThekwini&rsquo;s Project Smart Solar with
         Plentify, funded by AFD and the EU, is connecting residential PV, batteries and geysers into a city-wide
-        VPP. The controllable pool is sized at 4&nbsp;GW &mdash; residential is about 17&nbsp;% of consumption and
+        VPP. The controllable pool is sized at 4&nbsp;GW &ndash; residential is about 17&nbsp;% of consumption and
         the geyser 40&ndash;50&nbsp;% of a household bill, averaging ~1.8&nbsp;GW, but geyser load is what
-        <em>makes</em> the morning and evening peaks, so it contributes far more than its average into them.
+        makes the morning and evening peaks, so it contributes far more than its average into them.
         Enrolment defaults to zero. The model shows clear diminishing returns: the evening peak falls about
         2&nbsp;GW by 50&nbsp;% enrolment and then stops falling and simply moves to the early hours, which is what
         happens in any system that shifts load heavily.</p>
         <p style="margin-bottom:8px"><strong>Carbon cap:</strong> the build optimiser can be run
-        <em>subject to</em> an emissions ceiling rather than only reporting against the NDC, which is
+        subject to an emissions ceiling rather than only reporting against the NDC, which is
         how the IRP poses the question. The answer is informative: the least-cost plan already lands
         under about 100&nbsp;Mt, so meeting the sector&rsquo;s 140&nbsp;Mt share costs nothing extra.
         Tighten to 80&nbsp;Mt and the plan costs roughly R25bn more, with a marginal abatement cost
-        near R1,500/tCO&#8322; &mdash; far above today&rsquo;s R46/t effective carbon price, which is
+        near R1,500/tCO&#8322; &ndash; far above today&rsquo;s R46/t effective carbon price, which is
         the point: a price at that level will not on its own deliver a cap that tight.</p>
-        <p style="margin-bottom:8px">The model&rsquo;s own winter peak runs higher than Eskom&rsquo;s reported evening peak (~27&nbsp;GW) because it is driven by the 2025 demand series and includes storage charging &mdash; the System adequacy and validation panels show the gap rather than hiding it.</p>
+        <p style="margin-bottom:8px">The model&rsquo;s own winter peak runs higher than Eskom&rsquo;s reported evening peak (~27&nbsp;GW) because it is driven by the 2025 demand series and includes storage charging &ndash; the System adequacy and validation panels show the gap rather than hiding it.</p>
 
-        <p style="margin-bottom:8px"><strong>How dispatch works:</strong> merit order — rooftop PV nets off demand &rarr; wind / utility PV / CSP &rarr; nuclear, hydro, Cahora Bassa imports &rarr; coal &rarr; pumped storage &amp; batteries &rarr; gas CCGT &rarr; diesel OCGT &rarr; unserved energy. One stage of load shedding &asymp; 1&nbsp;000&nbsp;MW of unserved demand.</p>
+        <p style="margin-bottom:8px"><strong>How dispatch works:</strong> merit order – rooftop PV nets off demand &rarr; wind / utility PV / CSP &rarr; nuclear, hydro, Cahora Bassa imports &rarr; coal &rarr; pumped storage &amp; batteries &rarr; gas CCGT &rarr; diesel OCGT &rarr; unserved energy. One stage of load shedding &asymp; 1&nbsp;000&nbsp;MW of unserved demand.</p>
 
-        <p style="margin-bottom:8px"><strong>Unit commitment:</strong> coal is committed at <strong>individual unit level</strong> — 85 units across 31 stations — in 4-hour blocks, respecting each unit&rsquo;s minimum stable level (0.50&ndash;0.65 of capacity, fleet-weighted 0.563), minimum up and down times, and ramp limits. This is what produces the &ldquo;Buffalo curve&rdquo;: coal that cannot drop far enough at midday to make room for solar while remaining available for the morning and evening peaks. A fully committed fleet has a floor of roughly 23&nbsp;GW that cannot move. The heuristic is benchmarked against the full MIP optimiser and lands within about 1&nbsp;% of optimal for today&rsquo;s system, widening as new solar is added.</p>
+        <p style="margin-bottom:8px"><strong>Unit commitment:</strong> coal is committed at <strong>individual unit level</strong> – 85 units across 31 stations – in 4-hour blocks, respecting each unit&rsquo;s minimum stable level (0.50&ndash;0.65 of capacity, fleet-weighted 0.563), minimum up and down times, and ramp limits. This is what produces the &ldquo;Buffalo curve&rdquo;: coal that cannot drop far enough at midday to make room for solar while remaining available for the morning and evening peaks. A fully committed fleet has a floor of roughly 23&nbsp;GW that cannot move. The heuristic is benchmarked against the full MIP optimiser and lands within about 1&nbsp;% of optimal for today&rsquo;s system, widening as new solar is added.</p>
 
         <table class="mono" style="font-size:11.5px">
           <tr><td>Coal</td><td>R546/MWh fuel (Eskom FY2025 primary energy) &middot; +R80 VOM &middot; 1.04&nbsp;tCO&#8322;/MWh &middot; 42&nbsp;GW installed &middot; real per-unit retirement dates to 2051</td></tr>
@@ -791,17 +791,17 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <tr><td>Gas CCGT</td><td>R1&nbsp;968/MWh fuel &middot; +R35 VOM &middot; 0.37&nbsp;tCO&#8322;/MWh &middot; LNG-fired. FY2026 JKM reference: $18.50/MMBtu delivered &times; R16.21/USD &divide; 52% efficiency. Carbon added separately. Use the Gas running cost slider for spot ($23 &asymp; R2&nbsp;450) or pre-Hormuz consensus ($12 &asymp; R1&nbsp;280)</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; 1&nbsp;150&nbsp;MW @ 85&nbsp;%</td></tr>
           <tr><td>Existing fleet</td><td>Wind 4.6&nbsp;GW (REIPPPP 4.0 + wheeled 0.47 + Eskom Sere 0.1) &middot; Utility PV 3.2&nbsp;GW (REIPPPP 2.66 + wheeled 0.49) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, contracted dispatchable 05:00&ndash;21:30; modelled hourly as 05:00&ndash;22:00) &middot; Rooftop 8.6&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
-          <tr><td>New-build capex</td><td>Wind R21&nbsp;000 &middot; PV R12&nbsp;000 &middot; Rooftop R17&nbsp;000 &middot; Battery&nbsp;(4h) R10&nbsp;500 &middot; CCGT R18&nbsp;000 /kW. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT <em>rises</em>, having hit a record high in 2025</td></tr>
-          <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region &middot; 11 Renewable Energy Development Zones (GN&nbsp;114 / Gazette&nbsp;41445 2018 and GN&nbsp;142/144/145 / Gazette&nbsp;44191 2021), held as centre points and equivalent-area radii rather than gazetted polygons. <em>Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &mdash; they are not published by Eskom or NTCSA.</em></td></tr>
+          <tr><td>New-build capex</td><td>Wind R21&nbsp;000 &middot; PV R12&nbsp;000 &middot; Rooftop R17&nbsp;000 &middot; Battery&nbsp;(4h) R10&nbsp;500 &middot; CCGT R18&nbsp;000 /kW. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT rises, having hit a record high in 2025</td></tr>
+          <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region &middot; 11 Renewable Energy Development Zones (GN&nbsp;114 / Gazette&nbsp;41445 2018 and GN&nbsp;142/144/145 / Gazette&nbsp;44191 2021), held as centre points and equivalent-area radii rather than gazetted polygons. Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &ndash; they are not published by Eskom or NTCSA.</td></tr>
           <tr><td>Planned build</td><td>221 projects from NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034, all nine provinces, each with its published commissioning year and delivery phase</td></tr>
           <tr><td>Renewables vs Non-fossil</td><td>&ldquo;Renewables&rdquo; = wind + utility PV + rooftop PV + CSP + hydro. &ldquo;Non-fossil&rdquo; adds nuclear and (mostly-hydro) imports.</td></tr>
         </table>
 
-        <p style="margin-top:8px"><strong>Risk and variability:</strong> the risk panel dispatches 60 synthetic years, each drawing <em>both</em> an outage path and a real weather year. Coal availability follows a mean-corrected daily AR(1) process around the EAF slider, calibrated to the multi-week swings in Eskom&rsquo;s reported unplanned outages; weather is drawn from ten real years (2014&ndash;2023, Renewables.ninja/MERRA-2 at capacity-weighted REIPPPP plant locations) and cycled so each year is used equally. The two are sampled independently, since unplanned outages track plant condition rather than the weather. This matters most in high-renewable scenarios: varying coal availability alone told you nothing once the coal fleet had retired. Separately, <strong>Show wind &amp; solar extremes</strong> re-solves the scenario against 10 real weather years (2014&ndash;2023, Renewables.ninja / MERRA-2 at capacity-weighted REIPPPP plant locations). South Africa has the most variable solar resource in Africa, and 2022 delivered 17&nbsp;% less wind energy than 2023 from an identical fleet — so a single-year run can materially over- or under-state both adequacy risk and curtailment.</p>
+        <p style="margin-top:8px"><strong>Risk and variability:</strong> the risk panel dispatches 60 synthetic years, each drawing both an outage path and a real weather year. Coal availability follows a mean-corrected daily AR(1) process around the EAF slider, calibrated to the multi-week swings in Eskom&rsquo;s reported unplanned outages; weather is drawn from ten real years (2014&ndash;2023, Renewables.ninja/MERRA-2 at capacity-weighted REIPPPP plant locations) and cycled so each year is used equally. The two are sampled independently, since unplanned outages track plant condition rather than the weather. This matters most in high-renewable scenarios: varying coal availability alone told you nothing once the coal fleet had retired. Separately, <strong>Show wind &amp; solar extremes</strong> re-solves the scenario against 10 real weather years (2014&ndash;2023, Renewables.ninja / MERRA-2 at capacity-weighted REIPPPP plant locations). South Africa has the most variable solar resource in Africa, and 2022 delivered 17&nbsp;% less wind energy than 2023 from an identical fleet – so a single-year run can materially over- or under-state both adequacy risk and curtailment.</p>
 
-        <p style="margin-top:8px"><strong>Capacity expansion:</strong> the build-schedule optimiser is a linear programme solved in-browser with HiGHS. It minimises discounted system cost over 2026&ndash;2030 using representative days rather than all 8&nbsp;760 hours, so it sizes the build rather than proving it — verify any resulting mix with <strong>Run the full model</strong>. In regional mode it also decides <em>where</em>, subject to per-region GCCA headroom, real corridor limits, and a per-region annual build cap of 45% of the national rate (without that last constraint the optimiser concentrated an entire national year of wind into a single province, roughly eleven times what any South African province has sustained).</p>
+        <p style="margin-top:8px"><strong>Capacity expansion:</strong> the build-schedule optimiser is a linear programme solved in-browser with HiGHS. It minimises discounted system cost over 2026&ndash;2030 using representative days rather than all 8&nbsp;760 hours, so it sizes the build rather than proving it – verify any resulting mix with <strong>Run the full model</strong>. In regional mode it also decides where, subject to per-region GCCA headroom, real corridor limits, and a per-region annual build cap of 45% of the national rate (without that last constraint the optimiser concentrated an entire national year of wind into a single province, roughly eleven times what any South African province has sustained).</p>
 
-        <p style="margin-top:8px"><strong>What it is not:</strong> the instant model has no network constraints (the MIP does, across 10 regions) and no operating-reserve co-optimisation. Costs exclude existing-fleet capex, wires and retail. The TDP is a published plan, not an investment commitment. For decision-grade work use <a href="https://github.com/MeridianEconomics/pypsa-rsa" target="_blank" rel="noopener">PyPSA-RSA</a> — this app is the intuition layer in front of it.</p>
+        <p style="margin-top:8px"><strong>What it is not:</strong> the instant model has no network constraints (the MIP does, across 10 regions) and no operating-reserve co-optimisation. Costs exclude existing-fleet capex, wires and retail. The TDP is a published plan, not an investment commitment. For decision-grade work use <a href="https://github.com/MeridianEconomics/pypsa-rsa" target="_blank" rel="noopener">PyPSA-RSA</a> – this app is the intuition layer in front of it.</p>
       </div>
 </details></div>
 <div style="margin-top:18px"><details class="assump" id="validationPanel" style="margin-top:12px">
@@ -1036,7 +1036,7 @@ function initResourceQuery(){
   function renderPanel(lat, lng, solar, windRegion, windCF, windMonthly) {
     const panel = document.getElementById('rpanel_resource');
     const solarPct = (solar.annualCF*100).toFixed(1);
-    const windPct  = windCF ? (windCF*100).toFixed(1) : '—';
+    const windPct  = windCF ? (windCF*100).toFixed(1) : '–';
 
     let html = `
       <div style="font-size:11px;color:var(--ink2);margin-bottom:8px">
@@ -1064,7 +1064,7 @@ function initResourceQuery(){
         Solar: ${solar.source}. Wind: regional MERRA-2 average (${windRegion}).
       </div>
       <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line2)">
-        <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Resource risk &mdash; P50 / P90</div>
+        <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Resource risk &ndash; P50 / P90</div>
         <div id="p90Result"></div>
       </div>`;
     panel.innerHTML = html;
@@ -1379,13 +1379,13 @@ function initResourceQuery(){
         const pill=v=>`<span style="color:${COL[v]};font-weight:600">${TXT[v]}</span>`;
         return `<div style="margin-top:8px;padding:7px 9px;border:1px dashed var(--line2);border-radius:4px;background:var(--panel2)">
           <div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--alert2,#9E5C42);font-weight:700;margin-bottom:3px">
-            GridTwin estimate &mdash; not an Eskom figure</div>
+            GridTwin estimate &ndash; not an Eskom figure</div>
           <div style="font-size:10.5px">Indicative connection capability at this substation:
             solar ${pill(b.solar)} &middot; wind ${pill(b.wind)}
             <span style="color:var(--ink2)">(${b.circuits} transmission circuit${b.circuits===1?'':'s'} at ${b.kv} kV)</span></div>
           <div style="font-size:9px;color:var(--ink2);line-height:1.5;margin-top:4px">
             Eskom publishes connection headroom by region only. We split that published regional figure
-            across substations using network topology &mdash; circuits connected, minus the largest one
+            across substations using network topology &ndash; circuits connected, minus the largest one
             (N-1), minus nearby existing generation. The regional totals stay Eskom&rsquo;s; the split
             within a region is ours. This is a screening rank to decide where to enquire first, not a
             connection allowance, and it is no substitute for a GCCA study and an NTCSA application.</div>
@@ -1393,7 +1393,7 @@ function initResourceQuery(){
       ${(()=>{ const c=(window.__nodalCurtByRegion||{})[sub.area];
         if(c===undefined) return '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Curtailment risk: run the full model (button above the schematic) to compute it for this connection.</div>';
         const col=c>10?'var(--alert,#C4785A)':c>1?'#f5c518':'var(--ok,#4A8C5C)';
-        return `<div style="margin-top:6px;font-size:10.5px">Curtailment risk at this connection: <strong style="color:${col}">${c.toFixed(1)}%</strong> <span style="font-size:9.5px;color:var(--ink2)">of ${sub.area}\u2019s renewable potential spills under the current scenario \u2014 same basis as the schematic labels.</span></div>`; })()}
+        return `<div style="margin-top:6px;font-size:10.5px">Curtailment risk at this connection: <strong style="color:${col}">${c.toFixed(1)}%</strong> <span style="font-size:9.5px;color:var(--ink2)">of ${sub.area}\u2019s renewable potential spills under the current scenario \u2013 same basis as the schematic labels.</span></div>`; })()}
       <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Curtailment risk if you build here</div>
         <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.area); renderNeighbours(sub.area, lat, lng); }catch(e){} }, 0); return ''; })()}
@@ -1402,7 +1402,7 @@ function initResourceQuery(){
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Who else is queuing here</div>
         <div id="neighbourResult"></div>
       </div>
-      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: GCCA 2025 + Oct 2025 update (published Apr 2025). &ldquo;Full&rdquo; means the corridor is fully subscribed — no capacity available to connect. Figures updated annually — verify at <a href='https://www.ntcsa.co.za/gcca/' target='_blank'>ntcsa.co.za/gcca</a>.</div>
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Source: GCCA 2025 + Oct 2025 update (published Apr 2025). &ldquo;Full&rdquo; means the corridor is fully subscribed – no capacity available to connect. Figures updated annually – verify at <a href='https://www.ntcsa.co.za/gcca/' target='_blank'>ntcsa.co.za/gcca</a>.</div>
       ${(h.solar_mw||0)===0 && h.corridor_km ? `<div style="margin-top:8px;padding:8px;background:rgba(196,120,90,0.08);border-radius:4px;border-left:3px solid var(--terra,#C4785A)">
         <div style="font-size:10px;font-weight:600;color:var(--terra,#C4785A);margin-bottom:3px">Corridor upgrade required</div>
         <div style="font-size:10px;color:var(--ink2)">${h.binding_corridor||'Binding corridor'} · ${h.corridor_km} km</div>
@@ -1477,7 +1477,7 @@ function initResourceQuery(){
       <div style="font-size:11px;font-weight:600;margin-bottom:8px">${region} supply area</div>
       <div style="font-size:10px;color:var(--ink2);margin-bottom:8px">
         Average system marginal price: <strong>R${avgSmp}/MWh</strong> ${live
-          ? '&mdash; from your current scenario, so it moves as you change the sliders'
+          ? '&ndash; from your current scenario, so it moves as you change the sliders'
           : '(2026 baseline)'}
       </div>
       <table style="width:100%;font-size:10.5px;border-collapse:collapse">
@@ -1501,13 +1501,13 @@ function initResourceQuery(){
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px">
         Capture price = what a plant actually earns: the generation-weighted average price over the
         hours it runs, not the annual average. Solar earns less because it generates at midday when
-        prices are lowest — and the gap widens as more solar is built. ${live
+        prices are lowest – and the gap widens as more solar is built. ${live
           ? 'The <strong>level</strong> comes from your current scenario\u2019s modelled dispatch, so it moves as you change the sliders; the <strong>regional differences</strong> come from how each area\u2019s wind and solar line up with demand.'
-          : 'Using the 2026 baseline \u2014 run the model to make this scenario-specific.'}
+          : 'Using the 2026 baseline \u2013 run the model to make this scenario-specific.'}
         <br>The average price shown is national: this is a single-node model, so there is one system
         price rather than regional ones. PPA floor = capture price ÷ 0.88 (approximate 12% project
         margin). ${cap.note?'<br>'+cap.note:''}
-        <br>Indicative only — not a bankable estimate. Use Meridian COMPASS for transaction-grade pricing.
+        <br>Indicative only – not a bankable estimate. Use Meridian COMPASS for transaction-grade pricing.
       </div>`;
   }
 
@@ -1579,7 +1579,7 @@ function initResourceQuery(){
       + '</table>'
       + '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
       + `Capacity factor across ten weather years (2014\u20132023) for the ${reg} supply area. `
-      + '<strong>P90</strong> is the level exceeded in nine years out of ten \u2014 the number debt is '
+      + '<strong>P90</strong> is the level exceeded in nine years out of ten \u2013 the number debt is '
       + 'sized against. '
       + rows.map(r => `${r.tech} ran worst in ${r.worst}, best in ${r.best}`).join('; ') + '. '
       + 'Regional averages, not a site measurement: your own P90 depends on terrain and turbine or '
@@ -1666,7 +1666,7 @@ function initResourceQuery(){
     }
     html += '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
       + 'Each project is matched to its nearest substation from the environmental register\u2019s own '
-      + 'polygon centroid \u2014 a proxy for the likely connection point, not a declared one. An '
+      + 'polygon centroid \u2013 a proxy for the likely connection point, not a declared one. An '
       + 'environmental authorisation is not a grid allocation, but under IGCAR no project can hold a '
       + 'budget quote without one, so this is who is ahead of you in the permitting queue. '
       + 'Source: DFFE renewable energy EIA register, 2026 Q1.</div>';
@@ -1703,8 +1703,8 @@ function initResourceQuery(){
     }
     const sitePct = Math.min(60, nat * 100 * mult);
     const band = sitePct >= 15 ? '#C4785A' : sitePct >= 6 ? '#D9A441' : '#7DC47A';
-    const verdict = sitePct >= 15 ? 'High \u2014 model this into your yield'
-                  : sitePct >= 6  ? 'Moderate \u2014 worth a sensitivity'
+    const verdict = sitePct >= 15 ? 'High \u2013 model this into your yield'
+                  : sitePct >= 6  ? 'Moderate \u2013 worth a sensitivity'
                   : 'Low on the current build';
 
     el.innerHTML =
@@ -1716,12 +1716,12 @@ function initResourceQuery(){
       + '<table class="mono" style="width:100%;font-size:10.5px;border-collapse:collapse">'
       + `<tr><td style="padding:2px 0;color:var(--ink2)">National spill rate</td><td style="text-align:right">${(nat*100).toFixed(1)}%</td></tr>`
       + `<tr><td style="padding:2px 0;color:var(--ink2)">${region} queue pressure</td><td style="text-align:right">${
-          pressure === null ? '\u2014' : pressure === Infinity ? 'headroom full' : pressure.toFixed(2)+'\u00d7'}</td></tr>`
+          pressure === null ? '\u2013' : pressure === Infinity ? 'headroom full' : pressure.toFixed(2)+'\u00d7'}</td></tr>`
       + `<tr><td style="padding:2px 0;color:var(--ink2)">Regional multiplier</td><td style="text-align:right">${mult.toFixed(2)}\u00d7</td></tr>`
       + '</table>'
       + '<div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">'
       + 'The modelled national spill rate, scaled by how oversubscribed this supply area is. Move the '
-      + 'build sliders and this moves with them \u2014 your curtailment risk depends on what else gets '
+      + 'build sliders and this moves with them \u2013 your curtailment risk depends on what else gets '
       + 'built, not on your site alone. Run the network model for a corridor-level figure rather than '
       + 'this regional approximation.</div>';
   }
@@ -1849,7 +1849,7 @@ function initResourceQuery(){
       </table>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px">
         Sized by <strong>hour-by-hour matching</strong> against the real generation profiles,
-        not annual energy — a flat 24/7 load needs far more solar than wind for the same
+        not annual energy – a flat 24/7 load needs far more solar than wind for the same
         carbon-free percentage, because solar only generates in daylight. Assumes 4h battery
         storage and the capacity factors shown above.${tech==='hybrid' ? ' Hybrid splits generation 60/40 solar:wind by energy.' :
         tech==='solar' ? ' Adding wind would improve hourly matching.' : ''}
@@ -1912,9 +1912,9 @@ function initResourceQuery(){
       const col = isExact ? vc.col : 'transparent';
       const border = vc.border;
       const h = headroom && headroom.headroom && headroom.headroom[s.area] || {};
-      const solarHr = h.solar_mw !== undefined ? h.solar_mw.toLocaleString()+' MW' : '—';
-      const windHr  = h.wind_mw  !== undefined ? h.wind_mw.toLocaleString()+' MW'  : '—';
-      const battHr  = h.batt_mw  !== undefined ? h.batt_mw.toLocaleString()+' MW'  : '—';
+      const solarHr = h.solar_mw !== undefined ? h.solar_mw.toLocaleString()+' MW' : '–';
+      const windHr  = h.wind_mw  !== undefined ? h.wind_mw.toLocaleString()+' MW'  : '–';
+      const battHr  = h.batt_mw  !== undefined ? h.batt_mw.toLocaleString()+' MW'  : '–';
       const voltLabel = vc.label;   // real voltage, not a hardcoded guess
       const popup = `<div style="font-size:11px;min-width:160px">
         <div style="font-weight:700;font-size:13px;margin-bottom:2px">${s.n}</div>
@@ -1936,13 +1936,13 @@ function initResourceQuery(){
           </div>
         </div>
         <div style="font-size:9px;margin-top:5px;color:${isExact ? '#4A8C5C' : '#C4785A'}">
-          ${s.src === 'dbsa' ? ('\u25cf Exact \u2014 DBSA RFP 008 substation register' + (s.planned ? ' (planned, not yet built)' : ''))
-            : s.src === 'eskom' ? '\u25cf Exact \u2014 Eskom published GPS coordinates'
+          ${s.src === 'dbsa' ? ('\u25cf Exact \u2013 DBSA RFP 008 substation register' + (s.planned ? ' (planned, not yet built)' : ''))
+            : s.src === 'eskom' ? '\u25cf Exact \u2013 Eskom published GPS coordinates'
             : s.src === 'shp' ? '\u25cf Exact NTCSA coordinates'
-            : s.src === 'osm' ? '\u25cf Exact \u2014 OpenStreetMap contributors (ODbL)'
-            : s.src === 'manual' ? '\u25cf Exact \u2014 individually verified'
-            : s.src === 'line-geom' ? '\u25cf Derived \u2014 where its own transmission lines terminate'
-            : '\u25cb Approximate \u2014 supply-zone centroid, may be several km from the actual site'}
+            : s.src === 'osm' ? '\u25cf Exact \u2013 OpenStreetMap contributors (ODbL)'
+            : s.src === 'manual' ? '\u25cf Exact \u2013 individually verified'
+            : s.src === 'line-geom' ? '\u25cf Derived \u2013 where its own transmission lines terminate'
+            : '\u25cb Approximate \u2013 supply-zone centroid, may be several km from the actual site'}
         </div>
         ${tdpPopupBlock(s.n)}
         <div style="font-size:9px;color:#aaa;margin-top:5px">Click map for solar/wind resource</div>
@@ -2184,7 +2184,7 @@ function initResourceQuery(){
         </div>`
       ).join('');
     } catch (err) {
-      resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--alert)">Search failed — check your connection and try again.</div>';
+      resultsEl.innerHTML = '<div style="padding:8px 14px;font-size:10.5px;color:var(--alert)">Search failed – check your connection and try again.</div>';
     }
   }
 
@@ -2252,7 +2252,7 @@ function nersaCategory(kwp) {
   if(kwp <= 1000) return {cat:'\u22641 MWp', nersa:'NERSA registration (no licence)',
     timeline:'4\u20138 weeks', fee:'Registration only',
     notes:'Registration before operation. Municipal/Eskom connection agreement needed before energisation.'};
-  return {cat:'Above 1 MWp \u2014 registration, any size', nersa:'NERSA registration (licence exemption since Jan 2023, no size cap)',
+  return {cat:'Above 1 MWp \u2013 registration, any size', nersa:'NERSA registration (licence exemption since Jan 2023, no size cap)',
     timeline:'2\u20136 months, driven by EIA and grid connection rather than NERSA',
     fee:'Registration only',
     notes:'Environmental authorisation (Basic Assessment or EIA) and an Eskom/NTCSA connection '
@@ -2264,7 +2264,7 @@ function gridPathway(kwp, offtake) {
   if(offtake==='ownuse') {
     if(kwp <= 100) return {authority:'Municipality or Eskom (depending on area)', process:'Small-scale embedded generation (SSEG) application', timeline:'4–12 weeks', docs:['NRS 097 compliant inverter certificate','Single-line diagram','Certificate of Compliance (CoC)','Completed SSEG application form']};
     if(kwp <= 1000) return {authority:'Municipality or Eskom', process:'SSEG or large embedded generation agreement', timeline:'8–16 weeks', docs:['NRS 097 certificate','Protection relay settings','Load flow study','NERSA registration','Environmental authorisation if applicable']};
-    return {authority:'Eskom/NTCSA', process:'Grid connection agreement — GCCA headroom check required', timeline:'3–12 months', docs:['Grid connection application (R15,000 fee)','Environmental Impact Assessment','Power system study','NERSA registration']};
+    return {authority:'Eskom/NTCSA', process:'Grid connection agreement – GCCA headroom check required', timeline:'3–12 months', docs:['Grid connection application (R15,000 fee)','Environmental Impact Assessment','Power system study','NERSA registration']};
   }
   if(offtake==='wheeling') {
     return {authority:'NTCSA (transmission) or municipality (distribution)', process:'Wheeling agreement + connection at generation and offtake points', timeline:'6–18 months', docs:['Grid connection applications at both ends','Wheeling agreement with NTCSA','PPA with offtaker','NERSA registration','EIA if >1MWp']};
@@ -2333,7 +2333,7 @@ async function runPrefeas() {
   if (pfTech === 'hybrid') costRwp = costRwp * 0.6 + 21 * 0.4;
   // Get solar CF — use lastSiteClick if available from Site Resource Query, else use national average
   let solarCF = 0.21; // SA national average fallback
-  let solarSource = 'SA national average (fallback — click the map in Solar & wind tab first for site-specific data)';
+  let solarSource = 'SA national average (fallback – click the map in Solar & wind tab first for site-specific data)';
   let region = 'National';
   let locationText = 'South Africa (national average)';
   if(window._resourceData && window._resourceData.solar) {
@@ -2364,12 +2364,12 @@ async function runPrefeas() {
   const redzHtml = !rz ? '' : `
     <div style="margin:10px 0;padding:8px 10px;border:1px dashed var(--line2);border-radius:4px;background:var(--panel2)">
       <div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--alert2,#9E5C42);font-weight:700;margin-bottom:3px">
-        GridTwin estimate &mdash; approximate boundaries</div>
+        GridTwin estimate &ndash; approximate boundaries</div>
       <div style="font-size:10.5px;line-height:1.55;color:var(--ink2);margin-bottom:5px">
         REDZs are areas the state has already assessed as suitable for utility-scale wind and solar,
         so that development concentrates where the environmental case is settled and the grid is being
-        built. They do two things: <strong>fast-track approval</strong> &mdash; a Basic Assessment
-        instead of a full EIA &mdash; and <strong>steer projects towards planned network capacity</strong>,
+        built. They do two things: <strong>fast-track approval</strong> &ndash; a Basic Assessment
+        instead of a full EIA &ndash; and <strong>steer projects towards planned network capacity</strong>,
         since the zones were gazetted alongside Strategic Transmission Corridors, with a separate
         procedure (Notice&nbsp;145) for grid infrastructure inside them.</div>
       <div style="font-size:10.5px;line-height:1.55">
@@ -2378,11 +2378,11 @@ async function runPrefeas() {
         ${ rz.inside && rz.covered
             ? `<span style="color:var(--ok,#4A8C5C);font-weight:600">Likely inside, and gazetted for ${pfTech==='wind'?'wind':'solar PV'}.</span>
                A large-scale facility here would need only a <strong>Basic Assessment</strong> rather than a
-               full EIA &mdash; roughly 147 days against 300.`
+               full EIA &ndash; roughly 147 days against 300.`
             : rz.inside && !rz.covered
             ? `<span style="color:var(--alert,#C4785A);font-weight:600">Likely inside, but this zone is gazetted for
                ${rz.z.tech.join(' and ')} only.</span> A ${pfTech} project here gets <strong>no</strong> streamlining
-               and still needs a full EIA. Five of the eleven REDZs are solar-only &mdash; the technology matters
+               and still needs a full EIA. Five of the eleven REDZs are solar-only &ndash; the technology matters
                as much as the location.`
             : rz.near
             ? `<span style="color:#C9A227;font-weight:600">Close to the boundary.</span> Worth checking precisely:
@@ -2495,15 +2495,15 @@ async function runPrefeas() {
       <ol style="margin:0 0 0 16px;padding:0;color:var(--ink2)">
         <li style="margin-bottom:3px">Commission a <strong>PVSyst energy report</strong> from a registered engineer for bankable yield estimates</li>
         <li style="margin-bottom:3px">Submit <strong>NERSA registration</strong> (${nersa.timeline})</li>
-        <li style="margin-bottom:3px">Apply for <strong>grid connection</strong> to ${grid.authority} — use the Grid Connection tab above to check GCCA headroom first</li>
+        <li style="margin-bottom:3px">Apply for <strong>grid connection</strong> to ${grid.authority} – use the Grid Connection tab above to check GCCA headroom first</li>
         ${offtake==='wheeling'?'<li style="margin-bottom:3px">Obtain NTCSA <strong>wheeling agreement</strong> and negotiate TUoS tariff</li>':
           offtake==='grid'?'<li style="margin-bottom:3px">Negotiate <strong>PPA with offtaker</strong> or prepare REIPPPP bid</li>':''}
-        <li>Get <strong>3 EPC quotes</strong> — SA market range ${costRwp-1}–${costRwp+1} R/Wp for this system size</li>
+        <li>Get <strong>3 EPC quotes</strong> – SA market range ${costRwp-1}–${costRwp+1} R/Wp for this system size</li>
       </ol>
     </div>
 
     <div style="margin-top:12px;font-size:9px;color:var(--ink2);text-align:center">
-      Generated by GridTwin ZA &nbsp;·&nbsp; nickhedley.github.io/gridtwin-za &nbsp;·&nbsp; ${new Date().toISOString().slice(0,10)} &nbsp;·&nbsp; Indicative only — not a bankable study
+      Generated by GridTwin ZA &nbsp;·&nbsp; nickhedley.github.io/gridtwin-za &nbsp;·&nbsp; ${new Date().toISOString().slice(0,10)} &nbsp;·&nbsp; Indicative only – not a bankable study
     </div>
     </div><!-- /padding -->
   </div><!-- /report -->
@@ -2634,7 +2634,7 @@ function printPrefeas() {
         'Off-taker must be on a time-of-use tariff',
         'Generator may sit inside or outside the City network',
         'Surplus above the off-taker\u2019s use is credited up to 5 MVA',
-        'Pooling (many-to-many) is still a pilot \u2014 rules may change',
+        'Pooling (many-to-many) is still a pilot \u2013 rules may change',
       ],
       doc: 'Electricity Wheeling in Cape Town (May 2025) + consumptive tariff schedule',
       url: 'https://resource.capetown.gov.za/documentcentre/Documents/Procedures,%20guidelines%20and%20regulations/Electricity%20Wheeling%20in%20CT_Final.pdf',
@@ -2645,14 +2645,14 @@ function printPrefeas() {
       rules: [
         'Off-taker must be on Tariff D or J, connected at \u2265\u00a06.6\u00a0kV, with notified maximum demand \u2265\u00a01\u00a0MVA',
         'Tariff G use-of-system charges apply on top of the normal account',
-        '<strong>No banking of energy</strong> \u2014 unlike Cape Town, surplus cannot be carried forward',
+        '<strong>No banking of energy</strong> \u2013 unlike Cape Town, surplus cannot be carried forward',
         '<strong>Credits are capped at actual consumption</strong> in the period; the excess is simply lost',
-        'No credit for network capacity or demand \u2014 network charges are paid in full regardless',
+        'No credit for network capacity or demand \u2013 network charges are paid in full regardless',
         'An embedded generator wheeling surplus needs \u2265\u00a02\u00a0MW above its own use, and then cannot also use the feed-in credit tariff',
         'Drop below 1\u00a0MVA and you keep paying the 1\u00a0MVA minimum to stay eligible',
-        'No firm supply guarantee \u2014 load shedding still applies',
+        'No firm supply guarantee \u2013 load shedding still applies',
       ],
-      doc: 'Annexure E24 \u2014 Policy for the Wheeling of Electricity (revised, 2026/27)',
+      doc: 'Annexure E24 \u2013 Policy for the Wheeling of Electricity (revised, 2026/27)',
       url: 'https://www.ekurhuleni.gov.za/wp-content/uploads/2026/07/Annexure-E24-Policy-for-the-Wheeling-of-Electricity-revised.pdf',
     }],
     'Kwazulu Natal': [{
@@ -2664,7 +2664,7 @@ function printPrefeas() {
         'A generator on the Eskom grid credits the off-taker at the Eskom rate',
         'Subject to NERSA and Council approval',
       ],
-      doc: 'Annexure A \u2014 proposed energy tariffs 2026/27',
+      doc: 'Annexure A \u2013 proposed energy tariffs 2026/27',
       url: 'https://www.durban.gov.za/uploads/0000/13/2026/05/08/annexure-a-proposed-energy-tariffs-2026-2027.pdf',
     }],
     'Eastern Cape': [{
@@ -2673,7 +2673,7 @@ function printPrefeas() {
       rules: [
         'Wheeled energy must be offset and balanced every half hour',
         'Balances roll into the TOU registers on the monthly billing cycle',
-        '<strong>Credits above the month\u2019s consumption in any register are forfeited</strong> \u2014 oversizing against the off-taker\u2019s load loses value outright',
+        '<strong>Credits above the month\u2019s consumption in any register are forfeited</strong> \u2013 oversizing against the off-taker\u2019s load loses value outright',
       ],
       doc: 'NMBM electricity tariff book, Annexure D',
       url: 'https://nelsonmandelabay.gov.za/DataRepository/Documents/nmbm-electricty-tariff-book-2023-2024_1Em12.pdf',
@@ -2687,7 +2687,7 @@ function printPrefeas() {
   // moves faster than any list held here.
   const MUNI_FOOTER = '<div style="margin-top:7px;font-size:9.5px;color:var(--ink2);line-height:1.5">'
     + 'Only municipalities with a published framework are listed. Others are at pilot or '
-    + 'framework stage and adoption changes often \u2014 SALGA\u2019s '
+    + 'framework stage and adoption changes often \u2013 SALGA\u2019s '
     + '<a href="https://www.sseg.org.za/wp-content/uploads/2023/07/SALGA-Status-of-Wheeling-Report-July-2023.pdf" '
     + 'target="_blank" rel="noopener" style="color:var(--alert,#C4785A)">Status of Wheeling report</a> '
     + 'surveys progress across the municipal distributors.</div>';
@@ -2697,7 +2697,7 @@ function printPrefeas() {
     if (!list || !list.length){
       return '<div style="margin-top:8px;font-size:9.5px;color:var(--ink2)">'
         + 'No published municipal wheeling framework on file for this supply area. '
-        + 'Check the relevant metro\u2019s tariff schedule \u2014 several have introduced one recently.'
+        + 'Check the relevant metro\u2019s tariff schedule \u2013 several have introduced one recently.'
         + MUNI_FOOTER + '</div>';
     }
     return list.map(m => `<div style="margin-top:8px;padding:8px 10px;border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);font-size:10px;line-height:1.5">
@@ -2722,7 +2722,7 @@ function printPrefeas() {
     const el = document.getElementById('wheelResult');
     if(!el) return;
     if(gen===cons){
-      el.innerHTML='<p style="font-size:11px;color:var(--ink2)">Generation and consumption regions are the same — no wheeling needed.</p>';
+      el.innerHTML='<p style="font-size:11px;color:var(--ink2)">Generation and consumption regions are the same – no wheeling needed.</p>';
       return;
     }
     const distKm = corridorKm(gen, cons);
@@ -2782,13 +2782,13 @@ function printPrefeas() {
         Annual energy: ${(loadMW*8760/1000).toFixed(0)} GWh assuming a flat 24/7 load · TUoS from
         NTCSA wheeling framework (2024) · losses estimated at ${lossPct.toFixed(1)}% for ${distKm} km.
         Capture prices ${c.live ? 'from your current scenario (same basis as the Capture price tab)'
-                                : 'are the 2026 baseline — run the model to make them scenario-specific'}.
+                                : 'are the 2026 baseline – run the model to make them scenario-specific'}.
         “vs local” = building the same plant in the consumption region instead.
       </div>
       <div style="margin-top:6px;padding:7px 9px;background:rgba(196,120,90,0.07);border-left:3px solid var(--alert,#C4785A);font-size:9.5px;line-height:1.5;color:var(--ink2)">
         <strong>This is transmission only.</strong> It covers NTCSA use-of-system and network
         losses between two supply areas. It excludes distribution use-of-system, the municipal
-        charge in the consumption area, and the trader or aggregator margin — which together
+        charge in the consumption area, and the trader or aggregator margin – which together
         often exceed the transmission charge shown here. Treat it as a floor on wheeling cost,
         not the delivered price.
       </div>
@@ -2797,7 +2797,7 @@ function printPrefeas() {
         No metro publishes a flat wheeling rate, because none charges one. The off-taker is
         billed on their normal time-of-use tariff for <em>all</em> energy consumed, then credited
         for the wheeled portion. Your wheeling cost is the gap between those two, so it depends
-        on tariff category, time of use, season and connection voltage — which is why the number
+        on tariff category, time of use, season and connection voltage – which is why the number
         above stops at the transmission boundary.
       </div>
       ${muniWheelingHtml(cons)}`;
@@ -2849,7 +2849,7 @@ function printPrefeas() {
       <button class="rtab" onclick="switchTab('rooftop')" id="tab_rooftop">Rooftop solar</button>
     </div>
     <div style="padding:8px 14px;border-bottom:1px solid var(--line2);display:flex;gap:6px;align-items:center;background:var(--panel)">
-      <input id="mainSearch" type="text" placeholder="Search address, suburb, town, landmark — or paste GPS coordinates"
+      <input id="mainSearch" type="text" placeholder="Search address, suburb, town, landmark – or paste GPS coordinates"
              style="flex:1;padding:5px 9px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"
              onkeydown="if(event.key==='Enter'){event.preventDefault();mainGeocode();}">
       <button onclick="mainGeocode()" style="font-size:10px;padding:5px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
@@ -2861,7 +2861,7 @@ function printPrefeas() {
       <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#C4785A;border:1px solid #8f4f34;vertical-align:middle"></span> 400&ndash;533&nbsp;kV</span>
       <span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#517180;border:1px solid #3a5668;vertical-align:middle"></span> 220&ndash;275&nbsp;kV</span>
       <span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#9AA69B;border:1px solid #7a8a85;vertical-align:middle"></span> 132&nbsp;kV</span>
-      <span style="color:var(--ink2)">&nbsp;&mdash;&nbsp;filled dots are the <strong>existing</strong> network</span>
+      <span style="color:var(--ink2)">&nbsp;&ndash;&nbsp;filled dots are the <strong>existing</strong> network</span>
       <button id="tdpToggleBtn" onclick="toggleTdp()" style="display:none;margin-left:auto;padding:3px 10px;border:1.5px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:11px;font-weight:600;border-radius:2px;white-space:nowrap">Show planned build (TDP)</button>
     </div>
     <div id="tdpYearRow" style="display:none;gap:9px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:var(--ink2);padding:0 14px 8px">
@@ -2893,7 +2893,7 @@ function printPrefeas() {
             </div></div>
           <div id="dcResult" style="margin-top:12px"></div></div>
         <div id="rpanel_capture" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to see capture price estimates for the nearest supply area.</p><div id="captureResult" style="margin-top:10px"></div></div>
-        <div id="rpanel_grid" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to find the nearest Eskom substation and GCCA headroom.</p><p style="font-size:9.5px;color:var(--ink2);margin:4px 0 0;padding:4px 8px;background:rgba(196,120,90,0.08);border-left:2px solid var(--terra,#C4785A)">Headroom figures from GCCA 2025 (published Apr 2025) with Oct 2025 curtailment update. Updated annually — check <a href="https://www.ntcsa.co.za/gcca/" target="_blank" style="color:var(--steel,#4A6B7A)">ntcsa.co.za/gcca</a> for the latest release.</p><div id="gridResult" style="margin-top:10px"></div></div>
+        <div id="rpanel_grid" style="padding:14px;display:none"><p style="color:var(--ink2);font-size:11px;margin:0">Click the map to find the nearest Eskom substation and GCCA headroom.</p><p style="font-size:9.5px;color:var(--ink2);margin:4px 0 0;padding:4px 8px;background:rgba(196,120,90,0.08);border-left:2px solid var(--terra,#C4785A)">Headroom figures from GCCA 2025 (published Apr 2025) with Oct 2025 curtailment update. Updated annually – check <a href="https://www.ntcsa.co.za/gcca/" target="_blank" style="color:var(--steel,#4A6B7A)">ntcsa.co.za/gcca</a> for the latest release.</p><div id="gridResult" style="margin-top:10px"></div></div>
         <div id="rpanel_wheeling" style="padding:14px;display:none">
           <p style="color:var(--ink2);font-size:11px;margin:0 0 10px">Estimate the delivered cost of wheeling renewable energy from a generation region to a consumption region via Eskom's transmission network.</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;font-size:11px">
@@ -2958,9 +2958,9 @@ function printPrefeas() {
             <div>
               <label style="font-weight:600;display:block;margin-bottom:3px">Installed cost</label>
               <select id="pf_cost_preset" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-                <option value="7">Rooftop &lt;100kWp — R7/Wp</option>
-                <option value="6" selected>Mid C&amp;I 100–1,000kWp — R6/Wp</option>
-                <option value="5">Ground-mount &gt;1MWp — R5/Wp</option>
+                <option value="7">Rooftop &lt;100kWp – R7/Wp</option>
+                <option value="6" selected>Mid C&amp;I 100–1,000kWp – R6/Wp</option>
+                <option value="5">Ground-mount &gt;1MWp – R5/Wp</option>
               </select>
             </div>
             <div>
@@ -2992,12 +2992,12 @@ function printPrefeas() {
                 <button onclick="rtGeocode()" style="font-size:11px;padding:7px 16px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
               </div>
               <div id="rt_status" style="font-size:10.5px;color:var(--ink2);margin-top:6px">
-                Search an address, then <strong>click your building on the map</strong> &mdash; we measure that roof from satellite imagery: its size and which way each face points. South African address data rarely resolves to house level, so clicking is usually more reliable than searching.
+                Search an address, then <strong>click your building on the map</strong> &ndash; we measure that roof from satellite imagery: its size and which way each face points. South African address data rarely resolves to house level, so clicking is usually more reliable than searching.
               </div>
             </div>
             <div id="rtSearchResults" style="display:none;max-height:150px;overflow-y:auto;background:var(--panel);border-top:1px solid var(--line2)"></div>
             <div id="rtMap" style="height:300px;background:var(--bg2,#eee);border-top:1px solid var(--line2)"></div>
-            <div id="rtMapHint" style="display:none;padding:6px 10px;background:rgba(196,120,90,0.07);border-top:1px solid var(--line2);font-size:10px;color:var(--ink2)">Showing Johannesburg by default — search an address above, paste GPS coordinates, or pan and zoom to your own roof, then trace it.</div>
+            <div id="rtMapHint" style="display:none;padding:6px 10px;background:rgba(196,120,90,0.07);border-top:1px solid var(--line2);font-size:10px;color:var(--ink2)">Showing Johannesburg by default – search an address above, paste GPS coordinates, or pan and zoom to your own roof, then trace it.</div>
             <div style="padding:6px 10px;background:var(--panel);border-top:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
               <span id="rtTraceInfo" style="font-size:10px;color:var(--ink2);flex:1;min-width:180px">
                 Search an address, then click your building on the map. Use <strong>Trace manually</strong> only if the automatic measurement is unavailable or looks wrong.
@@ -3036,12 +3036,12 @@ function printPrefeas() {
           <!-- Everything Google or our defaults already handle -->
           <details id="rt_advanced" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:14px;background:var(--panel)">
             <summary style="padding:8px 12px;cursor:pointer;font-size:11px;font-weight:600">
-              Adjust roof assumptions <span style="font-weight:400;color:var(--ink2)">&mdash; measured automatically, override if needed</span>
+              Adjust roof assumptions <span style="font-weight:400;color:var(--ink2)">&ndash; measured automatically, override if needed</span>
             </summary>
             <div style="padding:4px 12px 12px">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:11px">
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof area (m2)</label><input id="rt_area" type="number" value="2000" min="10" max="100000" step="100" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box" oninput="rtCalc()"><div id="rt_area_note" style="font-size:9.5px;color:var(--ink2);margin-top:2px">Large C&amp;I: ~170Wp/m2 effective</div></div>
-                <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof orientation</label><select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Flat roof - 100%</option><option value="1.05" selected>15deg north-facing - 105%</option><option value="1.08">25deg north (optimal) - 108%</option><option value="0.92">East/west-facing - 92%</option><option value="0.78">South-facing - 78%</option><option value="0.95">Mixed / multiple orientations - 95%</option></select><div style="font-size:9.5px;color:var(--ink2);margin-top:2px">Pick the direction your panels will actually face, not the shape of the whole roof — installers typically concentrate panels on the best-facing section rather than spreading them evenly, so most homes should use a single-orientation option even on a geometrically complex roof. Only choose “Mixed” if panels will genuinely be split across clearly different directions (e.g. a deliberate east+west array).</div></div>
+                <div><label style="font-weight:600;display:block;margin-bottom:3px">Roof orientation</label><select id="rt_tilt" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="1.0">Flat roof - 100%</option><option value="1.05" selected>15deg north-facing - 105%</option><option value="1.08">25deg north (optimal) - 108%</option><option value="0.92">East/west-facing - 92%</option><option value="0.78">South-facing - 78%</option><option value="0.95">Mixed / multiple orientations - 95%</option></select><div style="font-size:9.5px;color:var(--ink2);margin-top:2px">Pick the direction your panels will actually face, not the shape of the whole roof – installers typically concentrate panels on the best-facing section rather than spreading them evenly, so most homes should use a single-orientation option even on a geometrically complex roof. Only choose “Mixed” if panels will genuinely be split across clearly different directions (e.g. a deliberate east+west array).</div></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Shading &amp; losses</label><select id="rt_shading" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.85">Minimal - 85%</option><option value="0.80" selected>Moderate - 80%</option><option value="0.70">Heavy - 70%</option></select></div>
                 <div><label style="font-weight:600;display:block;margin-bottom:3px">Tariff escalation</label><select id="rt_escal" onchange="rtCalc()" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"><option value="0.03">3% conservative</option><option value="0.05" selected>5% Eskom historical</option><option value="0.08">8% high scenario</option></select></div>
               </div>
@@ -3050,11 +3050,11 @@ function printPrefeas() {
 
           <details id="rt_appliance_details" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:14px;background:var(--panel)">
       <summary style="padding:8px 12px;cursor:pointer;font-size:11.5px;font-weight:600">
-        Refine with your appliances <span style="font-weight:400;color:var(--ink2)">&mdash; optional, improves accuracy</span>
+        Refine with your appliances <span style="font-weight:400;color:var(--ink2)">&ndash; optional, improves accuracy</span>
       </summary>
       <div style="padding:4px 12px 12px">
         <p style="font-size:10px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
-          Your bill tells us <em>how much</em> you use, but not <em>when</em> &mdash; and self-consumption depends almost
+          Your bill tells us how much you use, but not when &ndash; and self-consumption depends almost
           entirely on timing. Tick what you have to replace our generic assumption with a load profile based on your
           actual appliances. Your bill above still sets total consumption; this only changes how it is spread across the day.
         </p>
@@ -3074,20 +3074,20 @@ function printPrefeas() {
                give, for obvious reasons. -->
           <div style="border:1.5px solid var(--ink);margin-top:16px">
             <div style="background:var(--ink);color:var(--panel);padding:6px 10px;font-size:11px;font-weight:600;letter-spacing:.05em">
-              YOUR SMARTEST NEXT STEP</div>
+              Your smartest next step</div>
             <div style="padding:12px">
               <p style="font-size:11px;color:var(--ink2);margin:0 0 10px;line-height:1.5">
                 Solar is rarely the first rand you should spend. In a South African home the
                 <strong>geyser is 40&ndash;50&nbsp;% of the bill</strong>, and the cheapest fixes pay
                 back in months. Tell us what you already have and we will rank what is left by
-                payback. The fuller version of this &mdash; including commercial and industrial
-                electrification &mdash; lives at
+                payback. The fuller version of this &ndash; including commercial and industrial
+                electrification &ndash; lives at
                 <a href="https://nickhedley.github.io/rewiring-sa/" target="_blank" rel="noopener">Rewiring South Africa</a>.</p>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;margin-bottom:10px">
                 <label style="grid-column:1/-1">Monthly electricity spend
                   <input type="number" id="ns_spend" value="2200" step="100"
                     style="width:100%;padding:4px 6px;font-family:'IBM Plex Mono',monospace;border:1px solid var(--line2)"></label>
-                <label style="grid-column:1/-1;color:var(--ink2);font-size:10.5px">Already done &mdash; tick anything you have:</label>
+                <label style="grid-column:1/-1;color:var(--ink2);font-size:10.5px">Already done &ndash; tick anything you have:</label>
                 <label><input type="checkbox" id="ns_blanket"> Geyser blanket &amp; pipe lagging</label>
                 <label><input type="checkbox" id="ns_timer"> Geyser timer or smart switch</label>
                 <label><input type="checkbox" id="ns_thermo"> Thermostat at 55&ndash;60&nbsp;&deg;C</label>
@@ -3113,7 +3113,7 @@ function printPrefeas() {
   <div style="max-width:1380px;margin:0 auto">
     Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African
     system (calibrated to Eskom weekly system status reports, June&ndash;July 2026).
-    <strong>All outputs are indicative &mdash; not planning or investment advice.</strong>
+    <strong>All outputs are indicative &ndash; not planning or investment advice.</strong>
 
     <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
       <strong>Data sources:</strong>
@@ -3140,7 +3140,7 @@ function printPrefeas() {
     </div>
 
     <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
-      &copy; 2026 Nick Hedley. GridTwin ZA &mdash; model, code, calibration and presentation.
+      &copy; 2026 Nick Hedley. GridTwin ZA &ndash; model, code, calibration and presentation.
       Licensed under
       <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">CC BY-NC-ND 4.0</a>:
       you may share it with attribution, but not use it commercially or distribute modified versions.
@@ -5119,7 +5119,7 @@ async function runBuildOpt(){
     st.textContent = 'Loading regional data\u2026';
     const ok = await bldLoadRegionalData();
     if (!ok){
-      st.textContent = 'Regional data unavailable \u2014 falling back to the national model.';
+      st.textContent = 'Regional data unavailable \u2013 falling back to the national model.';
       built = bldBuildLP(opts);
     } else {
       built = bldBuildRegionalLP(opts);
@@ -5167,7 +5167,7 @@ function renderBuildResult(res, rate, opts){
     macNote = mac > 1
       ? `<div style="margin:8px 0;padding:7px 9px;border-left:3px solid var(--alert,#C4785A);background:var(--panel2);font-size:10.5px;line-height:1.5">
            <strong>Carbon cap binds at ${cap}&nbsp;Mt.</strong> Marginal abatement cost
-           <strong>R${Math.round(mac).toLocaleString()}/tCO&#8322;</strong> &mdash; what it costs to avoid the
+           <strong>R${Math.round(mac).toLocaleString()}/tCO&#8322;</strong> &ndash; what it costs to avoid the
            last tonne. Today&rsquo;s effective carbon price is R${state.carbonTaxRPerT ?? FIXED.carbonTaxRPerT}/t, so a
            price at that level would not on its own deliver this cap.</div>`
       : `<div style="margin:8px 0;padding:7px 9px;border-left:3px solid var(--ok,#4A8C5C);background:var(--panel2);font-size:10.5px;line-height:1.5">
@@ -5214,17 +5214,17 @@ function renderBuildResult(res, rate, opts){
     html += '<div style="border-left:3px solid var(--alert,#C4785A);padding:6px 9px;background:rgba(196,120,90,0.07);margin-bottom:6px">'
       + '<strong>Limited by build rate, not economics:</strong> '
       + limited.map(t => BLD_LABEL[t].toLowerCase() + ' (' + bound[t] + ' of 5 years at the cap)').join(', ')
-      + '. The model would build more if it could &mdash; raise the pace to see how much.</div>';
+      + '. The model would build more if it could &ndash; raise the pace to see how much.</div>';
   }
   if (free.length){
     html += '<div style="border-left:3px solid var(--ok,#4A8C5C);padding:6px 9px;background:rgba(74,140,92,0.07);margin-bottom:6px">'
       + '<strong>Chosen on economics:</strong> ' + free.map(t => BLD_LABEL[t].toLowerCase()).join(', ')
-      + ' &mdash; built below the cap, so this is what least cost actually wants.</div>';
+      + ' &ndash; built below the cap, so this is what least cost actually wants.</div>';
   }
   if (none.length){
     html += '<div style="border-left:3px solid var(--line2);padding:6px 9px;margin-bottom:6px">'
       + '<strong>Not built:</strong> ' + none.map(t => BLD_LABEL[t].toLowerCase()).join(', ')
-      + ' &mdash; not least-cost under these assumptions.</div>';
+      + ' &ndash; not least-cost under these assumptions.</div>';
   }
   html += '<div style="color:var(--ink2);margin-top:6px">'
     + 'Discounted total system cost over the period: <strong>R'
@@ -5565,7 +5565,7 @@ function renderBuildRegional(res, rate, opts){
   if (filled.length){
     html += '<div style="border-left:3px solid #F5C518;padding:6px 9px;background:rgba(245,197,24,0.07);margin-bottom:6px">'
       + '<strong>Headroom exhausted:</strong> ' + filled.map(x => x.R).join(', ')
-      + ' &mdash; every remaining MW of connection capacity is used. Further build here needs '
+      + ' &ndash; every remaining MW of connection capacity is used. Further build here needs '
       + 'transmission investment, not just generation.</div>';
   }
   // Where is grid capacity worth most? Rank by the dual, which is exactly the
@@ -5582,7 +5582,7 @@ function renderBuildRegional(res, rate, opts){
     html += '<div style="border-left:3px solid var(--steel,#4A6B7A);padding:7px 10px;'
       + 'background:rgba(74,107,122,0.06);margin-bottom:6px">'
       + '<strong>Where new grid capacity is worth most</strong> '
-      + '<span style="color:var(--ink2)">\u2014 annual system saving per extra MW of connection capacity</span>'
+      + '<span style="color:var(--ink2)">\u2013 annual system saving per extra MW of connection capacity</span>'
       + '<table style="width:100%;margin-top:5px;border-collapse:collapse;font-size:10.5px">'
       + ranked.map(x =>
           '<tr><td style="padding:2px 0">' + x.R + '</td>'
@@ -5592,7 +5592,7 @@ function renderBuildRegional(res, rate, opts){
       + '</table>'
       + '<div style="margin-top:5px;color:var(--ink2)">'
       + 'These are the solver\u2019s own shadow prices. A high value means the region combines good '
-      + 'resource with a binding connection limit \u2014 relieving it there buys more than anywhere else. '
+      + 'resource with a binding connection limit \u2013 relieving it there buys more than anywhere else. '
       + 'The spread across regions is large, so <em>where</em> transmission is reinforced matters as '
       + 'much as how much.</div></div>';
   }
@@ -5603,7 +5603,7 @@ function renderBuildRegional(res, rate, opts){
       + '<strong>Building as fast as one province can:</strong> '
       + rateLimited.map(x => x.R).join(', ')
       + ' hit the per-region annual limit of ' + Math.round(regionCapMW).toLocaleString()
-      + '\u00a0MW/yr. The resource and the grid headroom are there \u2014 the constraint is how '
+      + '\u00a0MW/yr. The resource and the grid headroom are there \u2013 the constraint is how '
       + 'much one province can physically deliver in a year. For scale, no South African province '
       + 'has sustained much above 200\u00a0MW/yr of wind.</div>';
   }
@@ -5654,7 +5654,7 @@ function bldApplyToSliders(){
     if (el){ el.value = String(Math.round(mw)); el.dispatchEvent(new Event('input', {bubbles:true})); }
   }
   const st = document.getElementById('bldStatus');
-  if (st) st.textContent = 'Loaded into the sliders above \u2014 the dispatch model has re-solved.';
+  if (st) st.textContent = 'Loaded into the sliders above \u2013 the dispatch model has re-solved.';
   document.getElementById('kpis').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
@@ -5702,7 +5702,7 @@ async function loadWeatherYears(){
     }
     bldWeatherYears = d;
     console.info('[GridTwin] Weather years loaded: ' + d.meta.years.join(', ')
-      + (d.meta.warning ? ' — ' + d.meta.warning : ''));
+      + (d.meta.warning ? ' – ' + d.meta.warning : ''));
     return d;
   } catch (e) { bldWeatherYears = false; return false; }
 }
@@ -5752,7 +5752,7 @@ async function runWeatherSpread(){
   const host = document.getElementById('wxResult');
   const d = await loadWeatherYears();
   if (!d){
-    st.textContent = 'No multi-year weather data found — run fetch_weather_years.py and upload nodal/profiles_regional_multiyear.json.';
+    st.textContent = 'No multi-year weather data found – run fetch_weather_years.py and upload nodal/profiles_regional_multiyear.json.';
     return;
   }
   btn.disabled = true; btn.style.opacity = 0.6;
@@ -5842,7 +5842,7 @@ function renderWeatherSpread(runs, d){
         ? 'Sheds <strong>' + worstShed.shedGWh.toFixed(0) + '\u00a0GWh</strong> over '
           + worstShed.shedHrs + '\u00a0hours, reaching <strong>stage ' + worstShed.maxStage + '</strong>. '
           + 'The system is adequate on an average year but not on a poor one.'
-        : 'Still adequate \u2014 no material shedding even in the weakest wind and solar year on record.')
+        : 'Still adequate \u2013 no material shedding even in the weakest wind and solar year on record.')
     + '</div>';
 
   // Good renewable year -> curtailment risk
@@ -5852,8 +5852,8 @@ function renderWeatherSpread(runs, d){
     + (spilly
         ? 'Spills <strong>' + worstCurt.curtPct.toFixed(1) + '%</strong> of everything wind and solar '
           + 'could generate (' + worstCurt.curtTWh.toFixed(1) + '\u00a0TWh). A good resource year is not '
-          + 'free upside \u2014 without more storage or transmission, the surplus is wasted.'
-        : 'Curtailment stays below 10% even in the strongest year \u2014 the system absorbs what it builds.')
+          + 'free upside \u2013 without more storage or transmission, the surplus is wasted.'
+        : 'Curtailment stays below 10% even in the strongest year \u2013 the system absorbs what it builds.')
     + '</div></div>';
 
   html += '<div style="font-size:10px;color:var(--ink2);margin-top:6px;line-height:1.45">'
@@ -6001,7 +6001,7 @@ function renderCarbonBudget(res){
   const verdict = meets
     ? 'Within the electricity sector\u2019s share of the NDC'
     : close
-      ? `${gap.toFixed(0)}\u00a0Mt above the sector target \u2014 close, but short`
+      ? `${gap.toFixed(0)}\u00a0Mt above the sector target \u2013 close, but short`
       : `${gap.toFixed(0)}\u00a0Mt above the sector target`;
 
   // Scale bar: today's ~200 Mt at one end, the 140 Mt target marked on it.
@@ -6022,7 +6022,7 @@ function renderCarbonBudget(res){
     + `<span>0</span><span style="margin-left:auto">NDC sector target ${target} Mt &nbsp;\u00b7&nbsp; today \u2248 ${NDC.powerToday} Mt</span></div>`
     + `<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.45">`
     + `This scenario runs at <strong>${pctOfTarget.toFixed(0)}%</strong> of the electricity sector\u2019s `
-    + `2030 allowance. ${NDC.source} Figures are annual, not a cumulative budget \u2014 the model `
+    + `2030 allowance. ${NDC.source} Figures are annual, not a cumulative budget \u2013 the model `
     + `solves one year at a time.</div>`;
 }
 
@@ -6154,10 +6154,10 @@ function renderDelay(out, slip){
           + `(${pct.toFixed(1)}% more) over 2026\u201330`
           + (dRe < -0.05 ? `, and ${Math.abs(dRe).toFixed(1)}\u00a0GW less renewable capacity gets built` : '')
           + '. Grid capacity arrives later, so the least-cost build cannot land where it wanted to.'
-        : 'No material cost difference \u2014 at this build pace the binding constraint is not grid timing.')
+        : 'No material cost difference \u2013 at this build pace the binding constraint is not grid timing.')
     + '<div style="color:var(--ink2);margin-top:5px">Projects in <strong>Execution</strong> and '
     + '<strong>Definition</strong> are held on schedule; only Concept, Pre-Concept and generic Planned '
-    + 'projects slip \u2014 that is 52% of the 221 mapped projects. Headroom released per project is '
+    + 'projects slip \u2013 that is 52% of the 221 mapped projects. Headroom released per project is '
     + 'indicative; what the comparison measures is the effect of <em>timing</em>, not the absolute figure.</div></div>';
 
   function row(k, x, y, d, bad){
@@ -6355,13 +6355,13 @@ function renderValidation(){
     + '<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);'
     + 'padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">'
     + '<strong>Why dispatch is not compared the same way</strong><br>'
-    + 'This model dispatches on merit order \u2014 cheapest plant first. Eskom does not since South '
+    + 'This model dispatches on merit order \u2013 cheapest plant first. Eskom does not since South '
     + 'Africa does not yet have an independent system operator and competitive market. In February '
     + 'and March 2026 it spent about <strong>R93 million running IPP diesel turbines to meet '
     + 'contractual minimum load factors while holding excess coal capacity in cold reserve</strong>. '
     + 'A least-cost model would never do that.'
     + '<div style="margin-top:6px;color:var(--ink2)">So where the model burns less diesel or runs a '
-    + 'different mix than Eskom reports, that gap is not necessarily model error \u2014 it is partly a '
+    + 'different mix than Eskom reports, that gap is not necessarily model error \u2013 it is partly a '
     + 'measure of what the current market structure costs.</div></div>'
     + `<div style="font-size:9.5px;color:var(--ink2);margin-top:7px">Source: ${A.source}. `
     + `Update these figures when Eskom publishes; the comparison is only as current as the date above.</div>`;
@@ -6426,7 +6426,7 @@ function renderPricePanel(r){
           + `contributing ${(s.scarcityShare*100).toFixed(0)}% of the average.</strong> `
           + 'Those are hours the system had nothing left to dispatch, priced at what an hour without '
           + 'power costs the economy rather than what generation costs. They say the system ran '
-          + `<em>short</em>, not that electricity became expensive to make \u2014 strip them out and the `
+          + `<em>short</em>, not that electricity became expensive to make \u2013 strip them out and the `
           + `cost of generation is ${R(s.avgExScarcity)}/MWh against the ${R(s.avg)} headline. `
           + 'Read the first number for the cost of the mix and the second for the cost of the shortfall.</div>'
         : '')
@@ -6447,7 +6447,7 @@ function renderPricePanel(r){
     + `<div style="display:flex;justify-content:space-between;font-size:8px;color:var(--ink2)"><span>0%</span><span>hours of the year</span><span>100%</span></div></div>`
     + `</div>`
 
-    + `<div style="font-size:10px;font-weight:600;color:var(--ink2);margin:12px 0 3px">Capture price \u2014 what each technology actually earns</div>`
+    + `<div style="font-size:10px;font-weight:600;color:var(--ink2);margin:12px 0 3px">Capture price \u2013 what each technology actually earns</div>`
     + `<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">`
     + `<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 6px">Technology</th>`
     + `<th style="text-align:right;padding:4px 6px">Capture price</th>`
@@ -6459,8 +6459,8 @@ function renderPricePanel(r){
 
     + (capPct('pv') < 70
         ? `<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);padding:7px 10px;margin-top:9px;font-size:10.5px;line-height:1.5">`
-          + `<strong>Solar is cannibalising its own price.</strong> It earns ${R(s.capture.pv)}/MWh \u2014 `
-          + `just ${capPct('pv').toFixed(0)}% of the ${R(s.avg)} average \u2014 because it generates in the `
+          + `<strong>Solar is cannibalising its own price.</strong> It earns ${R(s.capture.pv)}/MWh \u2013 `
+          + `just ${capPct('pv').toFixed(0)}% of the ${R(s.avg)} average \u2013 because it generates in the `
           + `hours when solar sets the price, and prices are at zero for ${s.zeroHours.toLocaleString()} `
           + `hours a year. Each additional GW earns less than the last. Storage, demand shifting or `
           + `transmission to other regions are what break the effect.</div>`
@@ -6539,13 +6539,13 @@ function renderBess(r){
   host.innerHTML =
       '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
     + 'What a battery would have earned arbitraging this scenario\u2019s prices, per MW of power '
-    + 'capacity. <strong>Arbitrage only</strong> \u2014 South Africa has no ancillary services or '
+    + 'capacity. <strong>Arbitrage only</strong> \u2013 South Africa has no ancillary services or '
     + 'capacity market with published prices, so the streams worth roughly 40% of a battery\u2019s '
     + 'income in some other markets do not exist here yet.'
     + (spread < 60
         ? ' <strong>This scenario shows almost nothing to arbitrage:</strong> coal sets the price in '
           + 'nearly every hour, so the shadow price barely moves and a battery has no spread to trade. '
-          + 'That is a real result for a coal-dominated system, not a modelling failure \u2014 add wind '
+          + 'That is a real result for a coal-dominated system, not a modelling failure \u2013 add wind '
           + 'and solar (try 20 GW PV and 15 GW wind) and the spread, and this number, open up.'
         : '')
     + '</div>'
@@ -6569,7 +6569,7 @@ function renderBess(r){
     + (best.h >= 4
         ? 'Longer duration pays because deep midday solar creates a wide, sustained trough to charge '
           + 'from.'
-        : 'Short duration is enough here because the price spread is narrow and brief \u2014 coal sets '
+        : 'Short duration is enough here because the price spread is narrow and brief \u2013 coal sets '
           + 'the price in most hours, so there is little to arbitrage. Build solar and this flips: at '
           + '20\u201340 GW the four-hour asset earns several times what it does today.')
     + '</div>'
@@ -6582,7 +6582,7 @@ function renderBess(r){
           + 'This is because coal sets the price in almost every hour, and the spread across the coal '
           + 'merit order is only a few percent. A round trip at 88% efficiency needs a 13.6% price '
           + 'uplift just to break even, so coal-to-coal arbitrage never clears. Effectively all the '
-          + 'revenue comes from the handful of evening peaks when diesel runs \u2014 Eskom\u2019s OCGT '
+          + 'revenue comes from the handful of evening peaks when diesel runs \u2013 Eskom\u2019s OCGT '
           + 'load factor is about 1.2%, implying roughly 100 hours a year.'
           + '<div style="color:var(--ink2);margin-top:5px">(This is why South African batteries are '
           + 'procured on contract rather than merchant: there is barely any merchant revenue to earn. '
@@ -6593,14 +6593,14 @@ function renderBess(r){
     + '<strong>Method:</strong> Perfect-foresight daily arbitrage, one cycle a day, charging in the '
     + 'cheapest hours and discharging in the most expensive, at 88% round-trip efficiency. Perfect '
     + 'foresight is a ceiling, not a forecast. Spread is averaged over every day of the year, '
-    + 'including the days it is not worth cycling \u2014 so spread \u00d7 365 \u00d7 duration gives the '
+    + 'including the days it is not worth cycling \u2013 so spread \u00d7 365 \u00d7 duration gives the '
     + 'revenue beside it.'
     + '<br><br>SAWEM, South Africa\u2019s first wholesale '
     + 'market, is due to open in Q3 2026. Until it does there are no published prices to benchmark, so '
     + 'this shows what a battery would have earned had the market existed. Once SAWEM prices '
     + 'publish, this becomes testable against them.'
-    + '<br><br>Under Phase 1 of SAWEM, market participation is deliberately limited \u2014 mostly '
-    + 'Eskom generators at first \u2014 so day-ahead liquidity will be thin. Grid-charging then '
+    + '<br><br>Under Phase 1 of SAWEM, market participation is deliberately limited \u2013 mostly '
+    + 'Eskom generators at first \u2013 so day-ahead liquidity will be thin. Grid-charging then '
     + 're-exporting also attracts network charges at both ends. So for the time being, direct '
     + 'contracts or co-location are the most feasible routes for battery operators.</div>';
 }
@@ -6893,21 +6893,21 @@ function drawShadowPriceWeek(r){
   if (note) note.innerHTML =
       'What a competitive market would clear at, hour by hour, across the '
     + (spWeekMode === 'S' ? 'summer' : 'winter') + ' week. Each bar is coloured by the '
-    + 'technology on the margin \u2014 the most expensive unit running in that hour, which is '
+    + 'technology on the margin \u2013 the most expensive unit running in that hour, which is '
     + 'what sets the price for everyone. '
     + (top ? '<strong>' + SP_TECH_LABEL[top] + '</strong> sets the price most often here ('
              + agg[top].n + ' of 168 hours). ' : '')
-    + (zero ? 'Green hours price at zero \u2014 renewables are spilling and nothing scarce is on '
+    + (zero ? 'Green hours price at zero \u2013 renewables are spilling and nothing scarce is on '
               + 'the margin (' + zero + ' this week). ' : '')
     + (agg.coalneg ? 'Bars below the line are NEGATIVE prices: renewables curtailed because must-run '
-              + 'coal cannot back down, so inflexible plant pays to stay on rather than restart \u2014 '
+              + 'coal cannot back down, so inflexible plant pays to stay on rather than restart \u2013 '
               + 'depth is the avoided startup cost spread over the surplus spell (' + agg.coalneg.n
               + ' hours, mean R' + Math.round(agg.coalneg.sum/agg.coalneg.n) + '). ' : '')
     + (over ? 'Bars with a dark cap run past the top of the axis (' + over + ' hours), clipped so '
               + 'one scarcity hour does not flatten the rest. ' : '')
     + (srmcOff.length ? srmcOff.map(ln =>
           '<strong>' + ln.label.replace(' \u00b7 ', ' (') + ')</strong> is R'
-          + Math.round(ln.val).toLocaleString() + '/MWh \u2014 above this chart\u2019s range, so gas is '
+          + Math.round(ln.val).toLocaleString() + '/MWh \u2013 above this chart\u2019s range, so gas is '
           + 'out of the money in every hour shown. ').join('')
         : 'Dashed lines mark gas SRMC: hours above a line are hours gas would profitably run. ')
     + ((agg.batt || agg.ps) ? 'Storage bids its opportunity cost, not its fuel cost: the value of the best '
@@ -6978,7 +6978,7 @@ function drawBessWeek(r){
   attachChartHover(c);
 
   const note = document.getElementById('bessWeekNote');
-  if (note) note.textContent = 'When a four-hour battery would charge and discharge over the same week \u2014 '
+  if (note) note.textContent = 'When a four-hour battery would charge and discharge over the same week \u2013 '
     + cycled + ' of 7 days worth cycling. Blank days are ones where the spread never covers the round trip.';
 }
 
@@ -7078,7 +7078,7 @@ function reeaAgeHtml(){
     + 'padding:8px 11px;margin-top:9px;font-size:10.5px;line-height:1.55">'
     + `<strong>${stale.n.toLocaleString()} projects holding ${(stale.mw/1000).toFixed(0)} GW have been `
     + `environmentally approved for five years or more.</strong> That is ${(stale.mw/totMW*100).toFixed(0)}% `
-    + 'of authorised capacity, cleared to build and not built. Not all of them hold grid allocations \u2014 '
+    + 'of authorised capacity, cleared to build and not built. Not all of them hold grid allocations \u2013 '
     + 'but under IGCAR none could hold one without this approval first.'
     + '<div style="margin-top:5px;color:var(--ink2)">Environmental authorisations lapse if unused, '
     + 'typically after five years. A project still listed as Approved from 2016 has either been renewed '
@@ -7086,7 +7086,7 @@ function reeaAgeHtml(){
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.5">'
     + `Source: DFFE Renewable Energy EIA Application Database, ${queueREEA.meta.source_file || 'quarterly release'}. `
     + 'An EA is not a grid allocation, and declared capacity may differ from what is finally built. '
-    + 'This measures how long projects have been permitted, not how long they have held grid capacity \u2014 '
+    + 'This measures how long projects have been permitted, not how long they have held grid capacity \u2013 '
     + 'which is not published anywhere.</div></div>';
 }
 
@@ -7119,8 +7119,8 @@ function bqSlipHtml(){
     + '</table>'
     + '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
     + 'padding:8px 11px;margin-top:9px;font-size:10.5px;line-height:1.55">'
-    + `<strong>${late.length} of ${ed.projects.length} projects holding active budget quotes \u2014 `
-    + `${lateMW.toLocaleString()} MW of ${totMW.toLocaleString()} \u2014 are past the year they were expected `
+    + `<strong>${late.length} of ${ed.projects.length} projects holding active budget quotes \u2013 `
+    + `${lateMW.toLocaleString()} MW of ${totMW.toLocaleString()} \u2013 are past the year they were expected `
     + 'to commission.</strong> They still hold their grid allocation. In supply areas already at zero '
     + 'headroom, that capacity is not available to anyone else.'
     + '<div style="margin-top:5px;color:var(--ink2)">Eskom\u2019s Interim Grid Capacity Allocation Rules '
@@ -7130,7 +7130,7 @@ function bqSlipHtml(){
     + 'is rare.</div></div>'
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.5">'
     + '<strong>This is a slip measure, not a queue age.</strong> The GCCA tables are anonymised and '
-    + 'give expected commissioning year only \u2014 the date a budget quote was issued is not published, '
+    + 'give expected commissioning year only \u2013 the date a budget quote was issued is not published, '
     + 'so how long a project has held its allocation cannot be derived from public sources. A missed '
     + 'year is also not proof of hoarding: upstream transmission delay would produce the same signal, '
     + 'and that is not the developer\u2019s doing.</div></div>';
@@ -7165,7 +7165,7 @@ function renderQueuePressure(){
   host.innerHTML =
       '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
     + 'Capacity already registered with NERSA against the connection headroom NTCSA publishes for each '
-    + 'supply area. A region above 100% has more projects queued than grid to take them \u2014 not every '
+    + 'supply area. A region above 100% has more projects queued than grid to take them \u2013 not every '
     + 'registration reaches financial close, but the ordering shows where the competition is.</div>'
     + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)">'
@@ -7179,7 +7179,7 @@ function renderQueuePressure(){
         return '<tr style="border-bottom:1px solid var(--line2)">'
           + `<td style="padding:4px 6px">${x.area}</td>`
           + `<td style="text-align:right;padding:4px 6px">${x.mw.toLocaleString()} MW</td>`
-          + `<td style="text-align:right;padding:4px 6px;color:var(--ink2)">${x.avail ? x.avail.toLocaleString()+' MW' : '\u2014'}</td>`
+          + `<td style="text-align:right;padding:4px 6px;color:var(--ink2)">${x.avail ? x.avail.toLocaleString()+' MW' : '\u2013'}</td>`
           + `<td style="text-align:right;padding:4px 6px">`
           + `<span style="display:inline-block;width:52px;height:7px;background:var(--line2);vertical-align:middle;margin-right:5px">`
           + `<span style="display:block;width:${barW}%;height:7px;background:${b.c}"></span></span>`
@@ -7189,14 +7189,14 @@ function renderQueuePressure(){
     + `<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">`
     + `<strong>${rows.filter(x => x.ratio >= 1).length} of ${rows.length} supply areas are oversubscribed`
     + `</strong>, while ${rows[rows.length-1].area} sits at ${(rows[rows.length-1].ratio*100).toFixed(0)}% of its headroom. `
-    + `Nationally ${totR.toLocaleString()} MW is registered against ${totH.toLocaleString()} MW of headroom \u2014 `
+    + `Nationally ${totR.toLocaleString()} MW is registered against ${totH.toLocaleString()} MW of headroom \u2013 `
     + `close to balanced in total, but badly matched in place. The grid, not the resource, is what decides `
     + `where the next project can go.</div>`
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
     + 'Registered capacity is cumulative since the registration regime began in 2018; it is not a '
     + 'measure of what has been built, and a registration is not a grid connection. '
-    + '<strong>93% of it is projects of 10 MW or more</strong> \u2014 filtering the SAPVIA dashboard to '
-    + '10 MW and above takes the total from 19,677 MW to 18,356 MW \u2014 so these figures are '
+    + '<strong>93% of it is projects of 10 MW or more</strong> \u2013 filtering the SAPVIA dashboard to '
+    + '10 MW and above takes the total from 19,677 MW to 18,356 MW \u2013 so these figures are '
     + 'substantially the utility-scale capacity that competes for transmission headroom, not rooftop. '
     + 'Headroom is the GCCA figure for the larger of solar or wind, which the two share. '
     + 'Sources: SAPVIA\u2019s collation of NERSA statements, and NTCSA\u2019s GCCA.</div>'
@@ -7284,14 +7284,14 @@ function renderCaptureForecast(){
     + `<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">`
     + `<strong>Solar capture falls ${drop('pv').toFixed(0)}% by ${last.yr}; wind falls ${drop('wind').toFixed(0)}%.</strong> `
     + 'Every GW of solar built lowers the price in exactly the hours the next solar plant will generate. '
-    + 'Wind holds up better because it blows when solar does not \u2014 which is why a PPA signed on today\u2019s '
+    + 'Wind holds up better because it blows when solar does not \u2013 which is why a PPA signed on today\u2019s '
     + 'capture price, escalating at CPI, can still be underwater in real terms by 2030.'
     + '</div>'
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
     + 'Adds this scenario\u2019s build rates cumulatively and re-runs the full dispatch for each year, with '
     + 'demand growing 3.1% a year. The forecast uses the same engine as everything else on this page, so '
     + 'it cannot disagree with the dispatch it came from. It assumes the build actually happens at the '
-    + 'rate set \u2014 change the build sliders and re-run to test a different path. Not a substitute for '
+    + 'rate set \u2013 change the build sliders and re-run to test a different path. Not a substitute for '
     + 'a transaction-grade forecast.</div>';
 }
 
@@ -7330,7 +7330,7 @@ function renderCCS(r){
     + `background:${on ? 'rgba(74,107,122,0.08)' : 'transparent'};padding:7px 10px;margin-bottom:11px;`
     + 'font-size:10.5px;line-height:1.5">'
     + (on
-        ? '<strong>\u2018Clean coal\u2019 is applied.</strong> Every panel on this page reflects it \u2014 '
+        ? '<strong>\u2018Clean coal\u2019 is applied.</strong> Every panel on this page reflects it \u2013 '
           + 'dispatch, load shedding, cost, emissions, the wholesale price and the battery benchmark.'
         : 'To apply \u2018clean coal\u2019, check the box in the <strong>Set the scenario</strong> box in the '
           + 'left column. The figures below show what it would do; ticking the box applies it to the '
@@ -7352,7 +7352,7 @@ function renderCCS(r){
     + `<td style="text-align:right;padding:4px 5px">${(fleetMW/1000).toFixed(1)} GW</td>`
     + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">${(fleetMW*keep/1000).toFixed(1)} GW</td></tr>`
     + `<tr><td style="padding:4px 5px">Net emissions cut</td>`
-    + `<td style="text-align:right;padding:4px 5px">\u2014</td>`
+    + `<td style="text-align:right;padding:4px 5px">\u2013</td>`
     + `<td style="text-align:right;padding:4px 5px;font-weight:700">${(netCut*100).toFixed(0)}%</td></tr>`
     + '</table>'
 
@@ -7372,10 +7372,10 @@ function renderCCS(r){
               .reduce((s,[,v]) => s+v, 0)) / 1e6 : 200;
         const cPerKwh = annualBn * 1e9 / (salesTWh * 1e9) * 100;
         return '<div style="margin-top:13px;padding-top:11px;border-top:1.5px solid var(--ink)">'
-          + '<div style="font-size:11px;font-weight:700;margin-bottom:3px">Capital recovery \u2014 the tariff side</div>'
+          + '<div style="font-size:11px;font-weight:700;margin-bottom:3px">Capital recovery \u2013 the tariff side</div>'
           + '<div style="font-size:9.5px;color:var(--ink2);margin-bottom:8px;line-height:1.5">'
           + 'Running cost is only half of it. The retrofit enters the Regulatory Asset Base and flows '
-          + 'into Eskom\u2019s revenue requirement as return plus depreciation \u2014 for decades, and '
+          + 'into Eskom\u2019s revenue requirement as return plus depreciation \u2013 for decades, and '
           + 'whether or not the plant runs.</div>'
           + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
           + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">Programme capital<br><span style="font-size:9px;color:var(--ink2)">R${(rKw/1000).toFixed(0)}k/kW \u00d7 ${gw.toFixed(1)} GW</span></td>`
@@ -7388,8 +7388,8 @@ function renderCCS(r){
           + '<div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">'
           + 'This is on top of the running cost above, not instead of it. Note the compounding: the '
           + 'energy penalty cuts the sales volume the capital is recovered over, so the same rand of '
-          + 'capex lands harder per kWh. For scale, Medupi cost about R145bn for 4.8 GW \u2014 roughly '
-          + 'R30m/MW \u2014 so a capture retrofit at R38m/MW is the same order as building the station '
+          + 'capex lands harder per kWh. For scale, Medupi cost about R145bn for 4.8 GW \u2013 roughly '
+          + 'R30m/MW \u2013 so a capture retrofit at R38m/MW is the same order as building the station '
           + 'again. A real submission would model each unit\u2019s remaining life, phasing and financing '
           + 'separately; this is a transparent approximation, not a tariff application.</div>'
           + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px">'
@@ -7410,19 +7410,19 @@ function renderCCS(r){
     + '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
     + 'padding:8px 11px;margin-top:11px;font-size:10.5px;line-height:1.55">'
     + `<strong>A ${(cap*100).toFixed(0)}% capture rate delivers a ${(netCut*100).toFixed(0)}% net emissions cut, not 90%.</strong> `
-    + 'The capture plant runs off the host station, so more coal is burned per MWh sold \u2014 and that '
+    + 'The capture plant runs off the host station, so more coal is burned per MWh sold \u2013 and that '
     + `extra coal is only ${(cap*100).toFixed(0)}% captured too. This is <strong>combustion emissions only</strong>. `
     + 'The published integrated assessment of CCS in South Africa\u2019s power sector puts the '
     + '<em>lifecycle</em> reduction lower still, at 67\u201372%, once upstream coal mining and methane '
-    + 'are counted \u2014 which this model does not track.'
+    + 'are counted \u2013 which this model does not track.'
     + `<div style="margin-top:5px;color:var(--ink2)">The energy penalty also removes <strong>${lostGW.toFixed(1)} GW</strong> `
-    + 'of saleable capacity from the fleet before a rand of capital is spent. The plant is not retired \u2014 '
-    + 'it still burns the same coal \u2014 but a quarter of its output now runs the capture equipment '
+    + 'of saleable capacity from the fleet before a rand of capital is spent. The plant is not retired \u2013 '
+    + 'it still burns the same coal \u2013 but a quarter of its output now runs the capture equipment '
     + 'instead of reaching customers. On a system whose peak is already near its available capacity, '
     + 'that is enough to bring load shedding back.'
     + '<div style="margin-top:5px">This model applies capture to today\'s fleet and changes nothing '
     + 'else, so the lost capacity shows up as shortage. A real policy would have to build roughly '
-    + `<strong>${lostGW.toFixed(1)} GW</strong> of replacement plant first \u2014 which is a cost this panel does not `
+    + `<strong>${lostGW.toFixed(1)} GW</strong> of replacement plant first \u2013 which is a cost this panel does not `
     + 'show. Watch the wholesale price panel: it now separates the cost of generation from the cost '
     + 'of the shortfall, and the two answer different questions.</div></div></div>'
 
@@ -7430,16 +7430,16 @@ function renderCCS(r){
     + '<strong>Note on the scarcity effect.</strong> A 600 MW coal station today sells 600 MW to the '
     + 'grid. Once it is retrofitted to capture CO\u2082 out of the flue gas and compress it, this '
     + 'consumes energy from the station itself. This means the same coal burned results in only about '
-    + '450 MW now reaching the grid \u2014 the other 150 MW runs the capture equipment.</div>'
+    + '450 MW now reaching the grid \u2013 the other 150 MW runs the capture equipment.</div>'
 
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">'
     + '<strong>The South African constraint is where the CO\u2082 goes.</strong> The Council for Geoscience '
-    + 'atlas puts national storage at 149.9 Gt, but <strong>98.5% of it is offshore</strong> \u2014 and the '
+    + 'atlas puts national storage at 149.9 Gt, but <strong>98.5% of it is offshore</strong> \u2013 and the '
     + 'coal fleet is inland on the Highveld. The Leandra pilot in Mpumalanga has drilled an 1,800 m '
     + 'characterisation borehole and is entering its injection phase; no CO\u2082 has been stored yet. The '
     + 'pilot was moved there from the Zululand basin partly for proximity to emitters and partly '
     + 'because of seismicity and possible fault reactivation. Transport and storage cost here is a '
-    + 'placeholder for infrastructure that does not exist \u2014 treat it as the most uncertain input on '
+    + 'placeholder for infrastructure that does not exist \u2013 treat it as the most uncertain input on '
     + 'this page.</div>';
 
   function ci(id, label, unit, val, step){
@@ -7467,9 +7467,9 @@ const SLIDERS=[
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
   {id:'vppGeyserPoolMW',label:'Virtual power plants \u2013 national potential',min:0,max:12000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(2)+' GW',
    note:'How much behind-the-meter load could be aggregated nationally. 4 GW is our estimate for electric geysers, which contribute significantly to morning and evening peaks. Raise the slider above 4 GW to include pool pumps, air conditioning and EV charging as those fleets grow. Nothing happens until you set an enrolment share below.'},
-  {id:'vppRegion',label:'\u2014 where it is sited',select:['National','Western Cape','Gauteng','Kwazulu Natal','Eastern Cape','Northern Cape','Free State','Mpumalanga','Limpopo','North West'],def:'National',ctrlStyle:SUB_CTRL,
-   note:'National spreads the enrolled pool across regions by their share of electricity DEMAND \u2014 not rooftop solar, which would misplace it badly (the Northern Cape is 6.8% of national rooftop but 2.1% of demand). Naming a region concentrates the pool there, capped at what that region plausibly holds. This only changes the answer in the regional build optimiser: the single-node engine has no geography. Cape Town\u2019s municipal VPP is the live example \u2014 the Western Cape is 10% of national demand, so its pool tops out near 400 MW.'},
-  {id:'vppEnrolPct',label:'\u2014 share actually enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',ctrlStyle:SUB_CTRL,
+  {id:'vppRegion',label:'\u2013 where it is sited',select:['National','Western Cape','Gauteng','Kwazulu Natal','Eastern Cape','Northern Cape','Free State','Mpumalanga','Limpopo','North West'],def:'National',ctrlStyle:SUB_CTRL,
+   note:'National spreads the enrolled pool across regions by their share of electricity DEMAND \u2013 not rooftop solar, which would misplace it badly (the Northern Cape is 6.8% of national rooftop but 2.1% of demand). Naming a region concentrates the pool there, capped at what that region plausibly holds. This only changes the answer in the regional build optimiser: the single-node engine has no geography. Cape Town\u2019s municipal VPP is the live example \u2013 the Western Cape is 10% of national demand, so its pool tops out near 400 MW.'},
+  {id:'vppEnrolPct',label:'\u2013 share actually enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',ctrlStyle:SUB_CTRL,
    note:'The share of that pool signed up and dispatchable. Aggregates behind-the-meter assets into one plant. Both Cape Town and eThekwini are working to implement city-wide VPPs. The slider defaults to zero because these are pilots. Watch for diminishing returns: at around 50% enrolment, the evening peak stops falling and moves to the early hours because the curve has flattened. Past that point, a VPP is buying flexibility and resilience rather than peak reduction.'},
   {id:'drInterruptMW',label:'Large interruptible load/demand flexibility',min:0,max:4000,step:100,def:FIXED.drInterruptMW,fmt:v=>v+' MW',
    note:'Contracted large industrial load that Eskom can drop in a shortage (for a fee) \u2013 historically the aluminium smelters and other energy-intensive users. Called before anything is shed, because the customer is compensated at far less than the cost of a blackout. Reported separately from unserved energy: a managed reduction under contract is not load shedding.'},
@@ -7488,13 +7488,13 @@ const SLIDERS=[
   {id:'outageMttrH',label:'Mean time to repair',min:8,max:400,step:8,def:FIXED.outageMttrH,fmt:v=>v+' h',
    note:'How long a forced outage lasts on average. Shorter repairs mean more frequent, shallower events; longer ones mean rarer but deeper troughs for the same annual EAF.'},
   {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
-   note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output. At today\u2019s fleet this rarely binds \u2014 South Africa has ~7 GW of fast-start peakers and storage against a reserve need near 1.3 GW \u2014 but it bites hard once coal is tight or peakers retire.'},
+   note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output. At today\u2019s fleet this rarely binds \u2013 South Africa has ~7 GW of fast-start peakers and storage against a reserve need near 1.3 GW \u2013 but it bites hard once coal is tight or peakers retire.'},
   {id:'reserveContingencyMW',label:'N-1 contingency reserve',min:0,max:1600,step:20,def:FIXED.reserveContingencyMW,fmt:v=>v+' MW',
    ctrlStyle:SUB_CTRL,note:'Cover for the largest single unit tripping. 794 MW is a Medupi/Kusile set, the biggest on the system.'},
   {id:'reserveRegulatingPct',label:'Regulating reserve',min:0,max:8,step:0.5,def:FIXED.reserveRegulatingPct,fmt:v=>v+' % of load',
    ctrlStyle:SUB_CTRL,note:'Cover for demand forecast error and normal minute-to-minute variability.'},
   {id:'reserveVrePct',label:'Wind & solar following reserve',min:0,max:25,step:1,def:FIXED.reserveVrePct,fmt:v=>v+' % of VRE output',
-   ctrlStyle:SUB_CTRL,note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2014 which is why reserve costs rise with a high-renewables fleet.'},
+   ctrlStyle:SUB_CTRL,note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2013 which is why reserve costs rise with a high-renewables fleet.'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:68,fmt:v=>v+' %',note:'FY2026 to date = 68% · 2023 crisis = 50–55% · target 70%'},
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'Multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
@@ -7504,19 +7504,19 @@ const SLIDERS=[
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.6 GW existing, behind the meter (Eskom estimates 9.1 GW; 0.49 GW of that is ground-mounted wheeled plant, modelled as utility supply instead)'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance and rarely dispatched when storage is ample (except when IRP artificial load factor is applied)'},
-  {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:SUB_CTRL,note:'When ticked, gas runs as must-run at 50% of installed capacity every hour — matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only.'},
+  {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:SUB_CTRL,note:'When ticked, gas runs as must-run at 50% of installed capacity every hour – matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only.'},
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'Modern supercritical, same fuel cost as existing fleet'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
   {id:'ccsEnabled',toggle:true,def:false,label:'Apply \u2018clean coal\u2019 (CCS) technologies to the model',note:'Existing coal plants are retrofitted with CCS technology and new-build plants include CCS. See the \u2018Clean coal\u2019 (CCS) panel on the right to gauge the impact on outputs'},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit cost R223/kW/yr (based on Weisweiler, Germany project) · today\u2019s SA fleet ramps ~24%/hr (Agora 2017). Once fully flexibilised, ~100%/hr (IRENA post-retrofit range) · applies to the remaining (non-decommissioned) fleet'},
-  {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. When switched on, the result is +20% capacity (based on DOE/utility deployments showing +10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2014 not a blanket national boost, since enhancing an already-idle corridor would be wasteful. Costs R1.55m/km \u2014 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2014 the single-node engine has no corridors to enhance.'},
+  {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. When switched on, the result is +20% capacity (based on DOE/utility deployments showing +10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2013 not a blanket national boost, since enhancing an already-idle corridor would be wasteful. Costs R1.55m/km \u2013 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2013 the single-node engine has no corridors to enhance.'},
   {grp:'Policy'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr gross; R600 default nets off the share already committed · rooftop avoids it'},
-  {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. Baseline is 6 GW, or roughly 15% of SA peak demand — consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
-  {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder — up to the MW of coal retired.'},
-  {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+v+'/t',note:'Default R46/t is the effective rate on generation — the R308/t Phase 2 headline less allowances of up to 85%. Try R308 (headline), R462 (2030) or R640 (carbon-budget breach). Feeds dispatch, wholesale prices and the build optimiser — but does not change which plants dispatch.'},
+  {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. Baseline is 6 GW, or roughly 15% of SA peak demand – consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
+  {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar & batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder – up to the MW of coal retired.'},
+  {id:'carbonTaxRPerT',label:'Effective carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+v+'/t',note:'Default R46/t is the effective rate on generation – the R308/t Phase 2 headline less allowances of up to 85%. Try R308 (headline), R462 (2030) or R640 (carbon-budget breach). Feeds dispatch, wholesale prices and the build optimiser – but does not change which plants dispatch.'},
   {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'Fuel-only SRMC of gas power - NOT the build cost (that is the Gas CCGT slider under new-build costs). Default R1,968 = $18.50/MMBtu delivered LNG (FY2026 JKM reference: realised Jan-Aug ~$15.5 blended with elevated Q4 forwards, +$2 regas) \u00d7 R16.21/USD \u00f7 52% CCGT efficiency. Each $1/MMBtu \u2248 R106/MWh: try ~R2,450 for the Aug 2026 Hormuz spot ($23) or ~R1,280 for the pre-spike analyst consensus ($12). Carbon is added separately. Gas matches coal\u2019s running cost only near $5\u20136/MMBtu delivered; IRP 2025 planned on $10. Feeds dispatch, prices and the build optimiser.'},
-  {grp:'LCOE assumptions (R/kWh) — full lifecycle build cost'},
+  {grp:'LCOE assumptions (R/kWh) – full lifecycle build cost'},
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
   {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 wind bids > solar; anchor R0.75'},
   {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
@@ -7525,7 +7525,7 @@ const SLIDERS=[
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'LNG-fired BUILD cost, not running cost - the fuel is the Gas running cost slider (R1,968/MWh). At that fuel cost this R2.50 implies a 30-50% capacity factor. IRP 2025 assumed $10/MMBtu, roughly half the FY2026 reference of $18.50 delivered.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Wide range; SMRs higher'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2)},
-  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Peaker LCOE is high by default given how little it runs. R9.00 assumes a 5% capacity factor; at 2% it is R13.20 and at 10% it is R7.60. Its floor is diesel\u2019s own running cost of ~R6.2/kWh \u2014 LCOE can never sit below SRMC.'},
+  {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Peaker LCOE is high by default given how little it runs. R9.00 assumes a 5% capacity factor; at 2% it is R13.20 and at 10% it is R7.60. Its floor is diesel\u2019s own running cost of ~R6.2/kWh \u2013 LCOE can never sit below SRMC.'},
 ];
 const PRESETS={
   'Today 2026':{},
@@ -7995,9 +7995,9 @@ fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
       html+=`<div style="display:grid;grid-template-columns:90px 1fr 52px;align-items:center;margin-bottom:3px;gap:4px">
         <span title="${region}: solar ${v.solar_mw.toFixed(0)} MW · wind ${v.wind_mw.toFixed(0)} MW · BESS ${(v.bess_mw||0).toFixed(0)} MW · total ${v.total_mw.toFixed(0)} MW" style="font-size:10px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${region}</span>
         <div style="background:var(--bg2);border-radius:2px;height:10px;min-width:0;display:flex">
-          <div title="${region} — solar ${v.solar_mw.toFixed(0)} MW" style="width:${solPct}%;background:#F5C518;height:100%;border-radius:2px 0 0 2px"></div>
-          <div title="${region} — wind ${v.wind_mw.toFixed(0)} MW" style="width:${winPct}%;background:#3EA055;height:100%"></div>
-          <div title="${region} — BESS ${(v.bess_mw||0).toFixed(0)} MW" style="width:${besPct}%;background:#7EC8E3;height:100%;border-radius:0 2px 2px 0"></div>
+          <div title="${region} – solar ${v.solar_mw.toFixed(0)} MW" style="width:${solPct}%;background:#F5C518;height:100%;border-radius:2px 0 0 2px"></div>
+          <div title="${region} – wind ${v.wind_mw.toFixed(0)} MW" style="width:${winPct}%;background:#3EA055;height:100%"></div>
+          <div title="${region} – BESS ${(v.bess_mw||0).toFixed(0)} MW" style="width:${besPct}%;background:#7EC8E3;height:100%;border-radius:0 2px 2px 0"></div>
         </div>
         <span style="text-align:right;font-size:10px;white-space:nowrap">${(v.total_mw/1000).toFixed(1)}GW</span></div>`;
     });
@@ -8304,18 +8304,18 @@ function renderAdequacy(r){
       ${(r.E && r.E.dr > 1) ? 'Interruptible load called: <strong>'
         + (r.E.dr/1000).toFixed(0) + '&nbsp;GWh</strong> over '
         + (()=>{let n=0;for(let h=0;h<8760;h++) if(r.drMW && r.drMW[h]>1) n++; return n;})()
-        + ' hours &mdash; contracted industrial customers paid to reduce, called before any shedding. '
+        + ' hours &ndash; contracted industrial customers paid to reduce, called before any shedding. '
         + 'LOLE and EUE above count only genuine unserved energy, not this.<br>' : ''}
       ${(r.reserveMW && r.reserveMW.length) ? 'Operating reserve carried: <strong>'
         + Math.round(Array.from(r.reserveMW).reduce((a,b)=>a+b,0)/r.reserveMW.length).toLocaleString()
         + '&nbsp;MW</strong> average, '
         + Math.round(Math.max.apply(null, Array.from(r.reserveMW))).toLocaleString()
-        + '&nbsp;MW at most &mdash; capacity held back, not dispatched, so the system can cover a unit '
+        + '&nbsp;MW at most &ndash; capacity held back, not dispatched, so the system can cover a unit '
         + 'tripping or a forecast error. Peakers and storage can supply nearly all of it today, so it '
         + 'rarely forces extra coal to run.<br>' : ''}
       Firm capacity ${(firm/1000).toFixed(1)} GW is what can be relied on at peak: coal after EAF
       losses, plus nuclear, hydro, imports, peakers, storage and hybrid. Wind and solar do not count as
-      firm &mdash; instead they lower the load that firm plant has to meet, which is how Eskom&rsquo;s
+      firm &ndash; instead they lower the load that firm plant has to meet, which is how Eskom&rsquo;s
       weekly report treats them.
       Planning norms typically target LOLE in the low tens of hours; the IRP frames adequacy in EUE terms.
     </div>`;
@@ -8558,7 +8558,7 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
       + '<div class="v" style="color:var(--veld);font-size:1.1em">'
       + (nodalUnservedGwh < 1 ? '0 GWh' : Math.round(nodalUnservedGwh).toLocaleString() + ' GWh')
       + '</div>'
-      + '<div style="font-size:10.5px;color:var(--ink2);margin-top:2px">From the full-year nodal run — real 10-region network, corridor limits, real plant siting. More accurate than the national MC below for a deterministic typical year, but a single year only.</div>'
+      + '<div style="font-size:10.5px;color:var(--ink2);margin-top:2px">From the full-year nodal run – real 10-region network, corridor limits, real plant siting. More accurate than the national MC below for a deterministic typical year, but a single year only.</div>'
       + '</div>'
     : '';
   // State what the simulation actually varies. Previously this claimed EAF only,
@@ -8576,7 +8576,7 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
     } else {
       noteEl.innerHTML = 'Bars: probability the year reaches at least stage S, across ' + N
         + ' simulated outage-years at your average EAF \u00b1 volatility. '
-        + '<strong>Weather is held fixed</strong> \u2014 add nodal/profiles_regional_multiyear.json '
+        + '<strong>Weather is held fixed</strong> \u2013 add nodal/profiles_regional_multiyear.json '
         + 'to vary it, which matters most once coal retires.';
     }
   }
@@ -8657,7 +8657,7 @@ fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=
   const badge=document.getElementById('bdData');
   if(badge){badge.textContent=((data.meta&&data.meta.year)?data.meta.year:'real')+' Eskom'; badge.style.color='#8FD08A';}
   const foot=document.querySelector('.foot');
-  if(foot&&data.meta)foot.innerHTML='Driven by actual Eskom hourly system data ('+data.meta.year+', Eskom Data Portal). Demand, wind and solar profiles are real; fleet mix, costs and outage volatility are modelled. All outputs indicative — educational tool, not planning advice.';
+  if(foot&&data.meta)foot.innerHTML='Driven by actual Eskom hourly system data ('+data.meta.year+', Eskom Data Portal). Demand, wind and solar profiles are real; fleet mix, costs and outage volatility are modelled. All outputs indicative – educational tool, not planning advice.';
   run();
 }).catch(()=>{});
 
@@ -8680,7 +8680,7 @@ function downloadDispatchCSV() {
   // Header
   const usingNodal = !!(nodalActiveRes && nodalUnservedGwh !== null);
   const sourceNote = usingNodal
-    ? '# Source: GridTwin ZA national engine (nodal run active — KPI banner shows network-aware unserved energy)'
+    ? '# Source: GridTwin ZA national engine (nodal run active – KPI banner shows network-aware unserved energy)'
     : '# Source: GridTwin ZA national dispatch engine';
   const rows = [sourceNote, 'hour,date_approx,demand_mw,storage_charging_mw,curtailed_mw,' +
     carriers.map(k=>names[k]).join(',')];
@@ -8744,7 +8744,7 @@ function renderComparison() {
 
   function delta(a, b, decimals, unit, lowerBetter) {
     const d = b - a;
-    if(Math.abs(d) < 0.005) return {text:'—', col:'var(--ink2)'};
+    if(Math.abs(d) < 0.005) return {text:'–', col:'var(--ink2)'};
     const sign = d > 0 ? '+' : '';
     const col = lowerBetter ? (d < 0 ? 'var(--ok,#4A8C5C)' : 'var(--alert,#C4785A)')
                              : (d > 0 ? 'var(--ok,#4A8C5C)' : 'var(--alert,#C4785A)');
@@ -8869,10 +8869,10 @@ function renderResult(r){
   const out=document.getElementById('siteResult');
   let html='<strong>'+region+' · '+siteTechName(tech)+' · '+mw+' MW</strong><br>';
   if(!r.gridBuildNeeded && !r.getNeeded){
-    html+='<span style="color:var(--ok)">✓ Fits within remaining grid headroom</span> — no new transmission needed, generation cost only.';
+    html+='<span style="color:var(--ok)">✓ Fits within remaining grid headroom</span> – no new transmission needed, generation cost only.';
   } else if(!r.gridBuildNeeded && r.getNeeded){
     html+='<span style="color:var(--ok)">✓ Fits with grid-enhancing technologies</span> ('+r.getPortionMw.toFixed(0)+' MW beyond existing headroom, unlocked by +20% capacity on '+r.bindingCorridor+').<br>';
-    html+='Adds <strong>R'+r.gridBuildChargeRPerMWh.toFixed(1)+'/MWh</strong> to that portion — ~R'+(r.getCapexR/1e6).toFixed(1)+'m, well below the R'+(r.corridorLengthKm*31).toFixed(0)+'m a full new line would cost.';
+    html+='Adds <strong>R'+r.gridBuildChargeRPerMWh.toFixed(1)+'/MWh</strong> to that portion – ~R'+(r.getCapexR/1e6).toFixed(1)+'m, well below the R'+(r.corridorLengthKm*31).toFixed(0)+'m a full new line would cost.';
   } else {
     html+='<span style="color:var(--alert)">⚠ Exceeds '+(r.getNeeded?'even grid-enhancing-technology ':'')+'headroom</span> on '+r.bindingCorridor+'.<br>';
     if(r.getNeeded) html+=r.getPortionMw.toFixed(0)+' MW via GETs (R'+r.getChargeRPerMWh.toFixed(1)+'/MWh) + ';
@@ -8886,7 +8886,7 @@ let siteNextId=1; // stable id per portfolio row, for deletion
 function renderPortfolio(){
   const el=document.getElementById('sitePortfolio');
   if(sitePortfolio.length===0){
-    el.innerHTML='Nothing allocated yet — allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.';
+    el.innerHTML='Nothing allocated yet – allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.';
     return;
   }
   let totalMw=0, totalWithCharge=0, totalGetOnly=0;
@@ -8935,7 +8935,7 @@ document.getElementById('siteCheckBtn').addEventListener('click', async ()=>{
     const r=await evaluateAgainstRemaining(region,tech,mw);
     renderResult(r);
   } catch(e){
-    out.textContent='Could not evaluate this region/technology — data may be missing.';
+    out.textContent='Could not evaluate this region/technology – data may be missing.';
     console.error(e);
   }
 });
@@ -8959,7 +8959,7 @@ document.getElementById('siteAllocateBtn').addEventListener('click', async ()=>{
     siteSliderContribution[sliderId]+=mw;
     bumpSlider(sliderId, mw);
   } catch(e){
-    out.textContent='Could not allocate — data may be missing.';
+    out.textContent='Could not allocate – data may be missing.';
     console.error(e);
   }
 });
@@ -9175,7 +9175,7 @@ function _rtUpdateBatteryNote(battKwh, annualDemandKwh) {
   }
   const hours = daily > 0 ? (battKwh / daily) * 24 : 0;
   note.textContent = battKwh.toFixed(1) + ' kWh \u2248 ' + hours.toFixed(0) +
-    'h of your average demand (' + daily.toFixed(1) + ' kWh/day) \u2014 ' +
+    'h of your average demand (' + daily.toFixed(1) + ' kWh/day) \u2013 ' +
     _rtBattDescriptor(battKwh, annualDemandKwh);
 }
 
@@ -9295,7 +9295,7 @@ function rankNextSteps(){
     + 'Doing all of these would cut about <strong>' + R(totalMo) + '/month</strong> from a ' + R(spend) + ' bill.</div>'
     + todo.map((t, i) => `
       <div style="border-left:3px solid ${i===0?'var(--ok,#4A8C5C)':'var(--line2)'};padding:7px 10px;margin-bottom:7px;background:${i===0?'var(--panel2)':'transparent'}">
-        <div style="font-size:11.5px;font-weight:600">${i===0?'START HERE &middot; ':''}${t.name}</div>
+        <div style="font-size:11.5px;font-weight:600">${i===0?'Start here &ndash; ':''}${t.name}</div>
         <div style="font-size:10.5px;font-family:'IBM Plex Mono',monospace;margin:3px 0">
           ${t.costR ? 'costs ~' + R(t.costR) : 'free'} &middot;
           saves ~<strong>${R(t.monthlyR)}/month</strong> &middot;
@@ -9303,7 +9303,7 @@ function rankNextSteps(){
         <div style="font-size:10px;color:var(--ink2);line-height:1.5">${t.why}</div>
       </div>`).join('')
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:8px;border-top:1px solid var(--line2);padding-top:6px">'
-    + 'Estimates, not a quote. Savings are shares of a typical South African bill &mdash; the geyser is 40&ndash;50&nbsp;% of '
+    + 'Estimates, not a quote. Savings are shares of a typical South African bill &ndash; the geyser is 40&ndash;50&nbsp;% of '
     + 'household consumption (SEAD/McNeil water heater study; an Eskom survey put middle-income water heating at 39&nbsp;%), '
     + 'space heating about 16&nbsp;%. Your own split depends on household size, whether you have a pool pump, and how much '
     + 'you heat in winter. Costs are mid-range retail and vary widely by installer.</div>';
@@ -9348,7 +9348,7 @@ function rtCalc() {
     if (sl)  sl.max  = String(cap);
     const hint = document.getElementById('rt_batt_note');
     if (hint) hint.textContent = 'Evening and overnight demand is about '
-      + Math.round(eveningKwh).toLocaleString() + ' kWh a day here \u2014 that is what a '
+      + Math.round(eveningKwh).toLocaleString() + ' kWh a day here \u2013 that is what a '
       + 'battery has to cover to lift self-consumption. Slider goes to '
       + cap.toLocaleString() + ' kWh (three days of it).';
   })();
@@ -9514,7 +9514,7 @@ function rtCalc() {
   const profSummary = document.getElementById('rt_profile_summary');
   if (profSummary) {
     if (!applianceProfile) {
-      profSummary.innerHTML = 'Nothing ticked \u2014 using the generic ' + (t.selfConsumeNoStorage*100).toFixed(0) +
+      profSummary.innerHTML = 'Nothing ticked \u2013 using the generic ' + (t.selfConsumeNoStorage*100).toFixed(0) +
         '% daytime-use assumption for a ' + t.label.toLowerCase() + '.';
     } else {
       const gain = shiftedCoverage !== null ? shiftedCoverage - solarCoverage : 0;
@@ -9526,7 +9526,7 @@ function rtCalc() {
           ? '<br><br><strong style="color:var(--ok,#4A8C5C)">\u26A1 Load-shifting opportunity: moving your ' +
             (shiftNames.length ? shiftNames.slice(0,3).join(', ') : 'flexible loads') +
             ' to run around midday would lift coverage from ' + Math.round(solarCoverage) + '% to ' +
-            Math.round(shiftedCoverage) + '%</strong> \u2014 that is ' + applianceProfile.shiftableKwhDay.toFixed(1) +
+            Math.round(shiftedCoverage) + '%</strong> \u2013 that is ' + applianceProfile.shiftableKwhDay.toFixed(1) +
             ' kWh/day of flexible load, and a plug-in timer is usually all it takes.'
           : '');
     }
@@ -9577,7 +9577,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by inferred bracket: home R17/Wp, small C&I R13/Wp, large C&I R11/Wp, industrial R9.5/Wp (2026 SA installer rates, excluding battery). O&M at 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The last few percent of demand falls in runs of consecutive dull winter days; covering those needs several days of autonomy rather than one night\'s storage, which is where a grid-connected system becomes a true off-grid one and costs step up sharply. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2014 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' — the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2014 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by inferred bracket: home R17/Wp, small C&I R13/Wp, large C&I R11/Wp, industrial R9.5/Wp (2026 SA installer rates, excluding battery). O&M at 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The last few percent of demand falls in runs of consecutive dull winter days; covering those needs several days of autonomy rather than one night\'s storage, which is where a grid-connected system becomes a true off-grid one and costs step up sharply. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2013 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' – the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2013 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
 
 
@@ -9784,7 +9784,7 @@ function rtFinishTrace() {
   const usableM2 = Math.round(areaM2 * usableFactor);
 
   document.getElementById('rt_area').value = usableM2;
-  const traceMsg = `<strong>Traced area: ${Math.round(areaM2).toLocaleString()} m\u00b2</strong> \u00b7 usable after setbacks &amp; obstructions (72%): <strong>${usableM2.toLocaleString()} m\u00b2</strong> \u2014 applied to the calculator below.`;
+  const traceMsg = `<strong>Traced area: ${Math.round(areaM2).toLocaleString()} m\u00b2</strong> \u00b7 usable after setbacks &amp; obstructions (72%): <strong>${usableM2.toLocaleString()} m\u00b2</strong> \u2013 applied to the calculator below.`;
 
   const centLat = rtPoints.reduce((s, p) => s + p[0], 0) / rtPoints.length;
   const centLng = rtPoints.reduce((s, p) => s + p[1], 0) / rtPoints.length;
@@ -9912,7 +9912,7 @@ async function _rtAutocompleteOSM(q) {
                           : (rr.display_name || '').split(',')[0];
       const sub = (rr.display_name || '').split(',').slice(1, 4).join(',').trim();
       const note = exact ? '' :
-        '<span style="color:var(--alert,#C4785A);font-weight:600">street-level</span> \u2014 ';
+        '<span style="color:var(--alert,#C4785A);font-weight:600">street-level</span> \u2013 ';
       return `<div onclick="rtGoTo(${rr.lat},${rr.lon},${exact})"
             style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
             onmouseover="this.style.background='var(--bg2,#eee)'"
@@ -10154,7 +10154,7 @@ async function rtGeocode() {
             const exact = r.geometry && r.geometry.location_type === 'ROOFTOP';
             const parts = (r.formatted_address || '').split(',');
             const note = exact ? '' :
-              '<span style="color:var(--alert,#C4785A);font-weight:600">approximate</span> \u2014 ';
+              '<span style="color:var(--alert,#C4785A);font-weight:600">approximate</span> \u2013 ';
             return `<div onclick="rtGoTo(${lat},${lng},${!!exact})"
                   style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
                   onmouseover="this.style.background='var(--bg2,#eee)'"
@@ -10195,7 +10195,7 @@ async function rtGeocode() {
         ? (addr.house_number + ' ' + (addr.road || '')).trim()
         : (r.display_name || '').split(',')[0];
       const subtitle = (r.display_name || '').split(',').slice(hasHouseNumber ? 1 : 1, hasHouseNumber ? 4 : 4).join(',').trim();
-      const precisionNote = hasHouseNumber ? '' : '<span style="color:var(--alert,#C4785A);font-weight:600">street-level match</span> — ';
+      const precisionNote = hasHouseNumber ? '' : '<span style="color:var(--alert,#C4785A);font-weight:600">street-level match</span> – ';
       return `<div onclick="rtGoTo(${r.lat},${r.lon},${hasHouseNumber})"
             style="padding:7px 10px;font-size:10.5px;cursor:pointer;border-bottom:1px solid var(--line2)"
             onmouseover="this.style.background='var(--bg2,#eee)'"
@@ -10205,7 +10205,7 @@ async function rtGeocode() {
       </div>`;
     }).join('');
   } catch (err) {
-    resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--alert)">Search failed — check your connection and try again.</div>';
+    resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--alert)">Search failed – check your connection and try again.</div>';
   }
 }
 
@@ -10385,7 +10385,7 @@ function _rtApplyGoogleSolar(res) {
     // No coverage at this building - point the user at the manual tracer instead.
     const s = document.getElementById('rt_status');
     if (s && _rtSolarKey()) {
-      s.innerHTML = 'No satellite roof measurement available for this building \u2014 '
+      s.innerHTML = 'No satellite roof measurement available for this building \u2013 '
         + 'use <strong>Trace manually</strong> below to outline it yourself.';
     }
     return;
@@ -10401,7 +10401,7 @@ function _rtApplyGoogleSolar(res) {
       sel.insertBefore(opt, sel.firstChild);
     }
     opt.value = res.blendedMult.toFixed(4);
-    opt.textContent = 'Measured from your roof \u2014 ' + Math.round(res.blendedMult*100) + '%';
+    opt.textContent = 'Measured from your roof \u2013 ' + Math.round(res.blendedMult*100) + '%';
     sel.value = opt.value;
   }
 
@@ -10444,7 +10444,7 @@ function _rtApplyGoogleSolar(res) {
       + 'the area-weighted average of those faces.'
       + (res.imageryDate ? ' Imagery ' + res.imageryDate + '.' : '')
       + (res.quality ? ' Quality: ' + res.quality + '.' : '')
-      + ' Google models roofs from imagery, so treat it as an estimate \u2014 '
+      + ' Google models roofs from imagery, so treat it as an estimate \u2013 '
       + 'override it in \u201cAdjust roof assumptions\u201d if it looks wrong. '
       + '<strong>Wrong building? Click the right one on the map.</strong>'
       + '</div></div>';
@@ -10517,7 +10517,7 @@ function rtMeasureAt(lat, lng) {
   _rtFetchGoogleSolar(lat, lng).then(res => {
     _rtApplyGoogleSolar(res);
     if (!res && s) {
-      s.innerHTML = 'No satellite roof measurement for that building \u2014 '
+      s.innerHTML = 'No satellite roof measurement for that building \u2013 '
         + 'try clicking nearer its centre, or use <strong>Trace manually</strong>.';
     }
   }).catch(() => {});
@@ -10997,10 +10997,10 @@ function showMIPBanner() {
                                   : '52 representative days, one per week';
   banner.style.display = 'block';
   banner.innerHTML =
-    '<strong>These KPIs, the energy mix and the dispatch chart are the optimal network-aware solution</strong> — '
+    '<strong>These KPIs, the energy mix and the dispatch chart are the optimal network-aware solution</strong> – '
     + 'coal unit commitment, storage scheduling and corridor flows across all 10 regions solved together '
     + 'as a mixed-integer program over ' + label + ' with HiGHS in ' + a.elapsed.toFixed(0) + 's. '
-    + 'Moving any slider returns to the instant heuristic — press Run the full model to bring this back.';
+    + 'Moving any slider returns to the instant heuristic – press Run the full model to bring this back.';
 }
 
 function renderMIPSummary() {
