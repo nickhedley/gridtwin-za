@@ -566,6 +566,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                   <option value="wind">Wind</option>
                   <option value="coal">Coal</option>
                   <option value="ccgt">Gas CCGT</option>
+                   <option value="vpp">Virtual power plant</option>
                   <option value="nuclear">Nuclear</option>
                   <option value="batt">Battery (4h)</option>
                 </select>
@@ -7467,10 +7468,8 @@ const SLIDERS=[
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
   {id:'vppGeyserPoolMW',label:'Virtual power plants \u2013 national potential',min:0,max:12000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(2)+' GW',
    note:'How much behind-the-meter load could be aggregated nationally. 4 GW is our estimate for electric geysers, which contribute significantly to morning and evening peaks. Raise the slider above 4 GW to include pool pumps, air conditioning and EV charging as those fleets grow. Nothing happens until you set an enrolment share below.'},
-  {id:'vppRegion',label:'\u2013 where it is sited',select:['National','Western Cape','Gauteng','Kwazulu Natal','Eastern Cape','Northern Cape','Free State','Mpumalanga','Limpopo','North West'],def:'National',ctrlStyle:SUB_CTRL,
-   note:'National spreads the enrolled pool across regions by their share of electricity DEMAND \u2013 not rooftop solar, which would misplace it badly (the Northern Cape is 6.8% of national rooftop but 2.1% of demand). Naming a region concentrates the pool there, capped at what that region plausibly holds. This only changes the answer in the regional build optimiser: the single-node engine has no geography. Cape Town\u2019s municipal VPP is the live example \u2013 the Western Cape is 10% of national demand, so its pool tops out near 400 MW.'},
   {id:'vppEnrolPct',label:'\u2013 share actually enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',ctrlStyle:SUB_CTRL,
-   note:'The share of that pool signed up and dispatchable. Aggregates behind-the-meter assets into one plant. Both Cape Town and eThekwini are working to implement city-wide VPPs. The slider defaults to zero because these are pilots. Watch for diminishing returns: at around 50% enrolment, the evening peak stops falling and moves to the early hours because the curve has flattened. Past that point, a VPP is buying flexibility and resilience rather than peak reduction.'},
+   note:'The share of that national pool signed up and dispatchable, spread across regions by their share of electricity demand. To place a VPP in a specific municipality instead, use Where To Build below and pick Virtual power plant \u2013 you can site several at once, and they add on top of whatever is set here. Aggregates behind-the-meter assets into one plant. Both Cape Town and eThekwini are working to implement city-wide VPPs. The slider defaults to zero because these are pilots. Watch for diminishing returns: at around 50% enrolment, the evening peak stops falling and moves to the early hours because the curve has flattened. Past that point, a VPP is buying flexibility and resilience rather than peak reduction.'},
   {id:'drInterruptMW',label:'Large interruptible load/demand flexibility',min:0,max:4000,step:100,def:FIXED.drInterruptMW,fmt:v=>v+' MW',
    note:'Contracted large industrial load that Eskom can drop in a shortage (for a fee) \u2013 historically the aluminium smelters and other energy-intensive users. Called before anything is shed, because the customer is compensated at far less than the cost of a blackout. Reported separately from unserved energy: a managed reduction under contract is not load shedding.'},
   {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString()+'/MWh',ctrlStyle:SUB_CTRL,
@@ -8777,11 +8776,15 @@ function renderComparison() {
 }
 
 function sliderIdFor(tech){
-  const map={wind:'newWindMW', solar:'newPvMW', coal:'newCoalMW', ccgt:'newCcgtMW', nuclear:'newNuclearMW', batt:'newBattMW'};
-  return map[tech]||'newPvMW';
+  // VPP deliberately maps to nothing: it aggregates EXISTING behind-the-meter
+  // load, so there is no national 'new build' slider to bump. Callers must
+  // handle null rather than defaulting to newPvMW, which would silently add
+  // phantom solar every time a VPP was sited.
+  const map={wind:'newWindMW', solar:'newPvMW', coal:'newCoalMW', ccgt:'newCcgtMW', nuclear:'newNuclearMW', batt:'newBattMW', vpp:null};
+  return tech in map ? map[tech] : 'newPvMW';
 }
 function siteTechName(tech){
-  const map={wind:'Wind', solar:'Solar PV', coal:'Coal', ccgt:'Gas CCGT', nuclear:'Nuclear', batt:'Battery'};
+  const map={wind:'Wind', solar:'Solar PV', coal:'Coal', ccgt:'Gas CCGT', nuclear:'Nuclear', batt:'Battery', vpp:'Virtual power plant'};
   return map[tech]||tech;
 }
 
@@ -8807,6 +8810,35 @@ const GET_LIFETIME_YEARS=15; // shorter than a 45yr new line - GETs are hardware
 // inside a function.
 
 async function evaluateAgainstRemaining(region,tech,mw){
+  // A VPP DOES NOT CONSUME CONNECTION HEADROOM. Everything else on this tool is
+  // new plant asking to connect, and draws down the region's GCCA allowance. A
+  // VPP aggregates load that is ALREADY connected behind the meter - no new
+  // connection, no grid-build charge, and if anything it relieves the network by
+  // moving demand off peak. Running it through the headroom path would both
+  // block legitimate siting and wrongly bill it for grid build.
+  if (tech === 'vpp'){
+    const pool = state.vppGeyserPoolMW ?? 4000;
+    const cap  = pool * (VPP_DEMAND_SHARE[region] || 0);
+    const already = (typeof sitePortfolio !== 'undefined' ? sitePortfolio : [])
+      .filter(r => r.tech === 'vpp' && r.region === region)
+      .reduce((a,b) => a + (b.mw||0), 0);
+    const room = Math.max(0, cap - already);
+    return {
+      region, tech, requestedMw: mw, gridBuildNeeded:false, getNeeded:false,
+      shortfallMw:0, getPortionMw:0, gridBuildChargeRPerMWh:0, mw,
+      note: mw <= room
+        ? 'No connection capacity used &ndash; a VPP aggregates load already behind the meter, so it '
+          + 'draws no GCCA headroom and pays no grid-build charge. ' + region + ' can plausibly support '
+          + Math.round(cap).toLocaleString() + '&nbsp;MW of controllable load in total ('
+          + Math.round(room).toLocaleString() + '&nbsp;MW still unallocated), based on its '
+          + ((VPP_DEMAND_SHARE[region]||0)*100).toFixed(1) + '&nbsp;% share of national electricity demand.'
+        : 'Exceeds what ' + region + ' plausibly holds. Its share of national demand implies about '
+          + Math.round(cap).toLocaleString() + '&nbsp;MW of controllable load, of which '
+          + Math.round(room).toLocaleString() + '&nbsp;MW is unallocated. Allocated anyway &ndash; but '
+          + 'treat it as an upper bound rather than a realistic programme.',
+    };
+  }
+
   // BUGFIX: this previously always called loadHeadroomLookup() (wind/solar only) regardless of
   // tech, so siting coal/CCGT/nuclear/battery here would throw (lookup[region][tech] undefined)
   // despite firm_headroom_lookup.json and loadFirmHeadroomLookup() existing and being correct -
@@ -8956,8 +8988,10 @@ document.getElementById('siteAllocateBtn').addEventListener('click', async ()=>{
     sitePortfolio.push(r);
     renderPortfolio();
     const sliderId=sliderIdFor(tech);
-    siteSliderContribution[sliderId]+=mw;
-    bumpSlider(sliderId, mw);
+    if (sliderId){                      // VPP has none - it aggregates existing load
+      siteSliderContribution[sliderId]+=mw;
+      bumpSlider(sliderId, mw);
+    }
   } catch(e){
     out.textContent='Could not allocate – data may be missing.';
     console.error(e);
@@ -9202,22 +9236,35 @@ const VPP_DEMAND_SHARE = {
   'Northern Cape': 0.021, 'Hydra Central': 0.005,
 };
 
+// VPPs sited through Where To Build. Read from the committed portfolio, so a
+// VPP can be placed in several municipalities at once - which is how this would
+// actually roll out, and why the single-region dropdown that preceded this was
+// the wrong control.
+function vppSitedByRegion(){
+  const out = {};
+  (typeof sitePortfolio !== 'undefined' ? sitePortfolio : [])
+    .filter(r => r.tech === 'vpp')
+    .forEach(r => { out[r.region] = (out[r.region] || 0) + (r.mw || 0); });
+  return out;
+}
+
 function vppPoolByRegion(){
   const on = !!(state.vppEnabled ?? 1);
   const share = on ? Math.max(0, Math.min(100, state.vppEnrolPct ?? 0)) / 100 : 0;
   const pool = (state.vppGeyserPoolMW ?? 4000) * share;
   const out = {};
-  if (!(pool > 0)) return out;
-  const reg = state.vppRegion || 'National';
-  if (reg === 'National'){
-    Object.entries(VPP_DEMAND_SHARE).forEach(([r, f]) => { out[r] = pool * f; });
-  } else {
-    // A municipal VPP is concentrated, not spread. The whole enrolled pool sits
-    // in one region - but it CANNOT exceed what that region plausibly has, so it
-    // is capped at the region's own demand share of the national pool.
-    const cap = (state.vppGeyserPoolMW ?? 4000) * (VPP_DEMAND_SHARE[reg] || 0);
-    out[reg] = Math.min(pool, cap);
-  }
+  // NOTE the early return was removed. Explicitly sited VPPs are a deliberate
+  // placement and must count even when the national enrolment slider is at
+  // zero - which is the normal case, since a national programme does not exist
+  // and municipal pilots do. Returning early on pool<=0 silently discarded them.
+  const sited = vppSitedByRegion();
+  if (!(pool > 0) && !Object.keys(sited).length) return out;
+  // The national sliders spread the enrolled pool across regions by their share
+  // of electricity DEMAND. Anything sited explicitly in Where To Build is added
+  // on top of that, so you can model a national programme, a set of municipal
+  // pilots, or both.
+  Object.entries(VPP_DEMAND_SHARE).forEach(([r, f]) => { out[r] = pool * f; });
+  Object.entries(sited).forEach(([r, mw]) => { out[r] = (out[r] || 0) + mw; });
   return out;
 }
 
