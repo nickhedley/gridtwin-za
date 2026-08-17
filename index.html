@@ -8160,21 +8160,24 @@ const fmtTWh=v=>(v/1e6).toFixed(1);
 // side as reduced residual load, matching how Eskom's weekly report frames OR.
 const MONTH_N=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_D=[31,28,31,30,31,30,31,31,30,31,30,31];
-// Hover for the monthly reserve-margin bars. The native title attribute was
-// giving a help cursor and the browser's ~1s delayed tooltip, which reads as
-// "hovering does nothing". This reuses the same instant styled tooltip the
-// canvas charts use, and works on tap as well as hover.
-// One delegated hover handler for EVERY styled tooltip on the page. Elements
-// just need class="tipbar" and a data-tip attribute; because it is delegated
-// from document, it works for content rendered after load without rebinding.
-// This replaced a scattering of native title attributes that each gave a
-// question-mark cursor and the browser's slow tooltip.
+// ── SHARED TOOLTIP DELEGATION ───────────────────────────────────────────────
+// One handler for every styled tooltip on the page. An element just needs
+// class="tipbar" and a data-tip attribute; because this is delegated from
+// document it also covers content rendered after load, with no rebinding.
+//
+// OWNERSHIP MATTERS. The tooltip element is SHARED with the canvas charts,
+// which drive it from their own mousemove handlers. A first version of this
+// hid the tooltip on any mousemove that was not over a .tipbar - which fires
+// constantly while the pointer crosses a canvas, hiding the chart's tooltip
+// the instant the chart showed it, so the dispatch chart appeared to have no
+// hover at all. This version only hides what it actually showed.
 (function(){
-  let bound = false;
   function bind(){
-    if (bound) return; bound = true;
+    if (document.__tipbarBound) return;
+    document.__tipbarBound = true;
     const show = (el, ev) => {
       const tip = chartTipEl();
+      if (!tip) return;
       tip.innerHTML = el.getAttribute('data-tip') || '';
       tip.style.display = 'block';
       const tw = tip.offsetWidth, th = tip.offsetHeight;
@@ -8184,44 +8187,24 @@ const MONTH_D=[31,28,31,30,31,30,31,31,30,31,30,31];
       tip.style.left = left + 'px'; tip.style.top = top + 'px';
     };
     const hide = () => { const t = chartTipEl(); if (t) t.style.display = 'none'; };
+    let owned = false;
     document.addEventListener('mousemove', ev => {
-      const el = ev.target.closest && ev.target.closest('.tipbar');
-      if (el) show(el, ev); else hide();
+      const el = ev.target && ev.target.closest && ev.target.closest('.tipbar');
+      if (el) { show(el, ev); owned = true; }
+      else if (owned) { hide(); owned = false; }
     });
-    document.addEventListener('click', ev => {          // touch
-      const el = ev.target.closest && ev.target.closest('.tipbar');
-      if (el) show(el, ev);
+    document.addEventListener('click', ev => {            // touch devices
+      const el = ev.target && ev.target.closest && ev.target.closest('.tipbar');
+      if (el) { show(el, ev); owned = true; }
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
 })();
 
-function bindAdequacyHover(){
-  const host = document.getElementById('adequacyBody');
-  if (!host || host.__adqBound) return;
-  host.__adqBound = true;
-  const show = (el, ev) => {
-    const tip = chartTipEl();
-    tip.innerHTML = el.getAttribute('data-tip') || '';
-    tip.style.display = 'block';
-    const tw = tip.offsetWidth, th = tip.offsetHeight;
-    let left = ev.clientX + 14, top = ev.clientY - th - 10;
-    if (left + tw > window.innerWidth - 8) left = ev.clientX - tw - 14;
-    if (top < 8) top = ev.clientY + 16;
-    tip.style.left = left + 'px'; tip.style.top = top + 'px';
-  };
-  const hide = () => { chartTipEl().style.display = 'none'; };
-  host.addEventListener('mousemove', ev => {
-    const el = ev.target.closest('.adqbar');
-    if (el) show(el, ev); else hide();
-  });
-  host.addEventListener('mouseleave', hide);
-  host.addEventListener('click', ev => {
-    const el = ev.target.closest('.adqbar');
-    if (el) show(el, ev); else hide();
-  });
-}
+// The monthly reserve-margin bars use the shared .tipbar delegation above.
+// They had a bespoke binder until 17 Aug 2026; two handlers on one shared
+// tooltip element fought each other, so the bars only responded to a click.
 
 function renderAdequacy(r){
   const el=document.getElementById('adequacyBody');
@@ -8256,7 +8239,7 @@ function renderAdequacy(r){
     </div>
     <div style="font-size:9.5px;color:var(--ink2);margin-bottom:3px">Reserve margin by month (firm capacity vs monthly peak)</div>
     <div style="display:flex;gap:2px;align-items:flex-end;height:52px">
-      ${rm.map((v,i)=>`<div class="adqbar" data-tip="${MONTH_N[i]} &middot; reserve margin <strong>${v.toFixed(1)}%</strong><br>firm ${(firm/1000).toFixed(1)} GW vs peak ${(mPeak[i]/1000).toFixed(1)} GW<br><span style='opacity:.75'>spare ${((firm-mPeak[i])/1000).toFixed(1)} GW</span>" style="flex:1;cursor:pointer;background:${rmCol(v)};height:${Math.max(2,Math.min(100,v*2.4))}%;border-radius:1px;position:relative"></div>`).join('')}
+      ${rm.map((v,i)=>`<div class="tipbar" data-tip="${MONTH_N[i]} &middot; reserve margin <strong>${v.toFixed(1)}%</strong><br>firm ${(firm/1000).toFixed(1)} GW vs peak ${(mPeak[i]/1000).toFixed(1)} GW<br><span style='opacity:.75'>spare ${((firm-mPeak[i])/1000).toFixed(1)} GW</span>" style="flex:1;cursor:pointer;background:${rmCol(v)};height:${Math.max(2,Math.min(100,v*2.4))}%;border-radius:1px;position:relative"></div>`).join('')}
     </div>
     <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--ink2)"><span>Jan</span><span>Dec</span></div>
     <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.5">
@@ -8276,7 +8259,6 @@ function renderAdequacy(r){
       the firm fleet must meet, which is how Eskom&rsquo;s weekly report frames operating reserve.
       Planning norms typically target LOLE in the low tens of hours; the IRP frames adequacy in EUE terms.
     </div>`;
-  bindAdequacyHover();
 }
 
 function render(r){
