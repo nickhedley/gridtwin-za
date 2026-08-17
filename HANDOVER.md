@@ -425,6 +425,41 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## TRANSMISSION EXPANSION IS NOW A DECISION VARIABLE (17 Aug 2026)
+
+First of three PLEXOS-gap features. The regional build LP previously took corridor
+transfer limits as FIXED and priced transmission with one flat national adder
+(txRPerKWyr) - it could say what the grid cost, never where it should go. Now:
+
+    tx_<corridor>_<year>   MW of extra transfer capacity, a decision variable
+    txa_/txb_ constraints  flow <= existing rating + everything built to date
+    objective              annuitised at R10,000/MW-km over 40 years, so a line
+                           competes with a wind farm on the same basis
+
+20 corridors x 5 years = 100 variables, 38,400 linking constraints. Solves
+Optimal in 17.5s.
+
+THE RESULT IS A CHECK ON THE METHOD. At default settings it reinforces exactly
+two corridors:
+
+    Eastern Cape - Kwazulu Natal   339 MW built on an 813 MW existing rating
+    Hydra Central - Western Cape   291 MW built on a 2,377 MW rating
+    total about R1.4bn of network capex
+
+Those are the two corridors GCCA independently reports as binding - the Eastern
+Cape is the best wind region with 400 MW of wind headroom and ZERO solar, and
+Hydra/Western Cape both have zero solar headroom. Nothing about GCCA headroom is
+fed into this LP, so the agreement is evidence the corridor topology and costs
+are behaving.
+
+CAVEATS BUILT IN. TX_MAX_MW_PER_CORRIDOR caps the build at 4,000 MW per corridor
+per year: without it the LP buys tens of gigawatts of line to avoid a little
+curtailment, which is arithmetically optimal and physically absurd given real
+permitting and construction times. Corridor lengths use GCCA binding-corridor
+distances where they exist and straight-line proxies elsewhere, and the panel
+says which. R10,000/MW-km comes from NTCSA TDP-scale figures for 400 kV double
+circuit (~R12-18m/km carrying ~1,400 MW).
+
 ## VPP SITING MOVED INTO WHERE TO BUILD (17 Aug 2026)
 
 The single-select "where it is sited" dropdown was scrapped the same day it was
