@@ -142,6 +142,11 @@ function probe(){
      // the controllable geyser pool only matters if anyone is enrolled in it,
      // which is correct: at zero enrolment the pool size is irrelevant.
      vppGeyserPoolMW: {vppEnrolPct: 50},
+     // vppRegion changes WHERE the pool sits, which only the regional build
+     // optimiser can see - the single-node engine this sweep exercises has no
+     // geography, so siting cannot move its outputs. Correct behaviour, not a
+     // dead control. Its effect is tested directly against vppPoolByRegion().
+     vppRegion: null,
      drInterruptMW:   {coalEAFPct: 55},
      drInterruptCostR:{coalEAFPct: 55},
      txRPerKWyr:    {newWindMW: 5000},
@@ -165,7 +170,7 @@ function probe(){
    //     slack above ~100 Mt and binds below, lifting the objective from
    //     R334bn to R359bn at 80 Mt with a R1,477/t shadow price.
    const EXEMPT = new Set(['outVolPct','getsEnabled','lcoeCcgt','lcoeDiesel','costCcgt',
-                           'carbonCapEnabled','carbonCapMt']);
+                           'carbonCapEnabled','carbonCapMt','vppRegion']);
    const cache = {};
    const baseFor = ctx => { const key = JSON.stringify(ctx||{});
      if(!cache[key]) cache[key]=metrics(sim(ctx||{})); return cache[key]; };
