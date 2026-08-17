@@ -737,6 +737,17 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         defaults to ZERO, because at meaningful scale it does not yet exist here. It is a scenario
         lever rather than a description of today, and is worth testing alongside a high-solar build
         since it soaks up midday output.</p>
+        <p style="margin-bottom:8px"><strong>Virtual power plants</strong> are modelled separately again, because
+        they aggregate <em>behind-the-meter</em> assets the utility does not own &mdash; rooftop solar, household
+        batteries, and above all controllable electric geysers. This is live policy rather than theory: Cape Town
+        has an RMI-supported feasibility study for a municipal VPP, and eThekwini&rsquo;s Project Smart Solar with
+        Plentify, funded by AFD and the EU, is connecting residential PV, batteries and geysers into a city-wide
+        VPP. The controllable pool is sized at 4&nbsp;GW &mdash; residential is about 17&nbsp;% of consumption and
+        the geyser 40&ndash;50&nbsp;% of a household bill, averaging ~1.8&nbsp;GW, but geyser load is what
+        <em>makes</em> the morning and evening peaks, so it contributes far more than its average into them.
+        Enrolment defaults to zero. The model shows clear diminishing returns: the evening peak falls about
+        2&nbsp;GW by 50&nbsp;% enrolment and then stops falling and simply moves to the early hours, which is what
+        happens in any system that shifts load heavily.</p>
         <p style="margin-bottom:8px"><strong>Carbon cap:</strong> the build optimiser can be run
         <em>subject to</em> an emissions ceiling rather than only reporting against the NDC, which is
         how the IRP poses the question. The answer is informative: the least-cost plan already lands
@@ -3350,6 +3361,28 @@ const FIXED = {
   // hours. At meaningful scale this barely exists in South Africa yet, so it
   // defaults to ZERO and is a scenario lever rather than a description of today.
   drInterruptMW:1200, drInterruptCostR:4000, drShiftPct:0,
+  // ── VIRTUAL POWER PLANT ──────────────────────────────────────────────────
+  // Distinct from the demand response above, which is large industrial load
+  // under contract. A VPP aggregates BEHIND-THE-METER assets the utility does
+  // not own - rooftop solar, household batteries and, in South Africa above
+  // all, electric geysers - and dispatches them as one resource.
+  //
+  // This is live policy, not theory. Cape Town has an RMI-supported feasibility
+  // study for a municipal VPP; eThekwini's Project Smart Solar with Plentify,
+  // backed by AFD and the EU, is connecting residential PV, batteries and
+  // CONTROLLABLE ELECTRIC WATER HEATERS into a city-wide VPP.
+  //
+  // Sizing. Residential is roughly 17% of South African consumption and the
+  // geyser is 40-50% of a household bill, giving a fleet averaging about
+  // 1,800 MW. But geyser load is extremely peaky - it is what makes the morning
+  // and evening peaks - so at a coincidence factor around three it contributes
+  // roughly 5 GW into peak. Eskom's old ripple control managed 1,000-2,000 MW
+  // of it. A national controllable pool of 4,000 MW is therefore defensible,
+  // and vppEnrolPct is the share of that pool actually signed up.
+  //
+  // Defaults to ZERO enrolment: today these are pilots, not a national
+  // programme. It is a policy lever, not a description of the present.
+  vppEnabled:1, vppEnrolPct:0, vppGeyserPoolMW:4000, vppBattPerGeyserKW:0.35,
   // ROOFTOP DERATE, corrected 16 Aug 2026 (was 0.94).
   // Rooftop and utility PV previously ran within 1pp of each other - 21.2% vs
   // 22.1% - which is physically wrong. They share the same national profile,
@@ -3793,7 +3826,13 @@ function simulate(u, prof, outPath){
   const coalInstRem=(Math.max(0,p.coalInstalledMW-p.coalDecomMW)+p.newCoalMW)*ccsKeep;
   const coalAvail=coalInstRem*p.coalEAFPct/100;
   const windCap=p.windMW+p.newWindMW, pvCap=p.pvUtilityMW+p.newPvMW, rooftopCap=p.rooftopMW+p.newRooftopMW;
-  const battPower=p.battPowerMW+p.newBattMW, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours;
+  // Enrolled VPP batteries join the dispatchable fleet - turning a scattered
+  // household fleet into one plant is exactly what a VPP is for. Sized at 4h,
+  // the usual residential configuration.
+  const _vppB = (p.vppEnabled ?? 1) ? (p.vppGeyserPoolMW ?? 4000)
+                * (Math.max(0, Math.min(100, p.vppEnrolPct ?? 0))/100)
+                * (p.vppBattPerGeyserKW ?? 0.35) : 0;
+  const battPower=p.battPowerMW+p.newBattMW+_vppB, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours+_vppB*4;
   const ccgtCap=p.ccgtMW+p.newCcgtMW;
   const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
   // Coal ramp-rate limit: how much coal generation can change hour-to-hour, blended between
@@ -3885,10 +3924,22 @@ function simulate(u, prof, outPath){
   // moves a share of load out of the highest NET-load hours (after wind and
   // solar) into the lowest, which is what a price signal would do. Strictly
   // energy-neutral per day: what comes off the peak goes back into the trough.
+  // VPP enrolment. Two effects, both real and both distinct from industrial DR:
+  //   1. Controllable geysers move out of the peak hours into the trough. Unlike
+  //      industrial shiftable load this is a HOUSEHOLD resource, and it is the
+  //      one South Africa has most of.
+  //   2. Enrolled household batteries become dispatchable capacity the system
+  //      can call on - the aggregation is precisely what turns a scattered
+  //      fleet into a plant.
+  const vppOn    = !!(p.vppEnabled ?? 1);
+  const vppShare = vppOn ? Math.max(0, Math.min(100, p.vppEnrolPct ?? 0)) / 100 : 0;
+  const vppGeyserMW = (p.vppGeyserPoolMW ?? 4000) * vppShare;
+  const vppBattMW   = vppGeyserMW * (p.vppBattPerGeyserKW ?? 0.35);
+
   const drShift = Math.max(0, Math.min(30, p.drShiftPct ?? 0)) / 100;
   const demandDR = new Float64Array(HOURS);
   for (let h = 0; h < HOURS; h++) demandDR[h] = demand[h];
-  if (drShift > 0){
+  if (drShift > 0 || vppGeyserMW > 0){
     const vreCap = { w: windCap, p: pvCap };
     for (let d = 0; d < 365; d++){
       const h0 = d*24; if (h0+24 > HOURS) break;
@@ -3901,11 +3952,35 @@ function simulate(u, prof, outPath){
       const nMove = 6;                                  // top and bottom six hours
       let moved = 0;
       for (let k = 0; k < nMove; k++){
-        const take = demand[idx[k].h] * drShift;
-        demandDR[idx[k].h] -= take; moved += take;
+        // Industrial shiftable load is a share of that hour's demand; the VPP
+        // geyser pool is a fixed MW block, because it is a physical fleet of
+        // elements being switched rather than a proportion of anything.
+        const take = demand[idx[k].h] * drShift + vppGeyserMW;
+        const cap  = Math.max(0, demandDR[idx[k].h] * 0.45);   // never strip a whole hour
+        const t    = Math.min(take, cap);
+        demandDR[idx[k].h] -= t; moved += t;
       }
-      const per = moved / nMove;
-      for (let k = 0; k < nMove; k++) demandDR[idx[23-k].h] += per;
+      // WATER-FILL the shifted load into the trough rather than dumping it in
+      // six equal blocks. Dumping created an artificial rebound spike - at full
+      // VPP enrolment the evening peak fell but a NEW peak appeared at 05:00
+      // where the returning geyser load collided with storage charging. That
+      // rebound is a real phenomenon (Eskom's ripple control had exactly this
+      // problem when every element switched back on together) but a controller
+      // that staggers avoids it, and a VPP is precisely a controller.
+      //
+      // Fill the lowest hours up toward a common level, so the trough rises
+      // evenly instead of six hours spiking.
+      const cand = idx.slice().sort((a,b) => a.net - b.net).slice(0, 12);
+      let left = moved;
+      for (let pass = 0; pass < 24 && left > 1e-6; pass++){
+        const lvl = Math.min(...cand.map(c => demandDR[c.h]));
+        const at  = cand.filter(c => demandDR[c.h] <= lvl + 1e-6);
+        const next = Math.min(...cand.map(c => demandDR[c.h] > lvl + 1e-6 ? demandDR[c.h] : Infinity));
+        const room = (next === Infinity ? Infinity : (next - lvl) * at.length);
+        const put  = Math.min(left, room === Infinity ? left : room);
+        at.forEach(c => demandDR[c.h] += put / at.length);
+        left -= put;
+      }
     }
   }
 
@@ -7356,6 +7431,10 @@ const SUB_CTRL = 'padding-left:16px;border-left:3px solid var(--alert2,#9E5C42);
 const SLIDERS=[
   {grp:'Demand & existing fleet'},
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
+  {id:'vppEnrolPct',label:'Virtual power plant enrolment',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',
+   note:'Aggregates BEHIND-THE-METER assets \u2014 rooftop solar, household batteries and above all controllable electric geysers \u2014 and dispatches them as one plant. Cape Town has an RMI-backed feasibility study for a municipal VPP; eThekwini\u2019s Project Smart Solar with Plentify, funded by AFD and the EU, is connecting residential PV, batteries and geysers into a city-wide VPP. Defaults to ZERO because these are pilots, not a national programme \u2014 this is a policy lever, not a description of today. Watch for diminishing returns: around 50 % enrolment the evening peak stops falling and simply MOVES to the early hours \u2014 you have flattened the curve as far as it will go, and past that point a VPP is buying flexibility and resilience rather than peak reduction.'},
+  {id:'vppGeyserPoolMW',label:'Controllable geyser pool',min:0,max:8000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(1)+' GW',ctrlStyle:SUB_CTRL,
+   note:'The national fleet that COULD be controlled. Residential is ~17 % of consumption and the geyser 40\u201350 % of a household bill, averaging ~1.8 GW \u2014 but geyser load is what MAKES the morning and evening peaks, so at a coincidence factor near three it contributes about 5 GW into peak. Eskom\u2019s old ripple control managed 1\u20132 GW of it.'},
   {id:'drInterruptMW',label:'Interruptible load',min:0,max:4000,step:100,def:FIXED.drInterruptMW,fmt:v=>v+' MW',
    note:'Contracted large industrial load Eskom can drop in a shortage \u2014 historically the aluminium smelters and other energy-intensive users, through Demand Market Participation and instantaneous interruptible contracts. Called BEFORE anything is shed, because the customer is compensated at far less than the cost of a blackout. Reported separately from unserved energy: a managed reduction under contract is not load shedding.'},
   {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString()+'/MWh',
