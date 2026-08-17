@@ -189,6 +189,71 @@ console.log('\nFingerprints');
   }
 }
 
+// ---- DATA FRESHNESS - is this file out of date? -----------------------------
+// Ad-hoc spotting of project announcements is a lottery. This turns "am I
+// stale?" into something the tooling answers on every run.
+//
+// The two anchor sources refresh on different cycles, and they behave very
+// differently:
+//
+//   IPP Office IPPPP Quarterly Report - REIPPPP capacity online. Published
+//   roughly 2-3 months after quarter end. This is the authoritative source and
+//   it is the one to wait for.
+//
+//   PowerFutureLab (Alao & Kruger) IPP monitor - privately wheeled capacity.
+//   HALF-YEARLY. This is the exposure: wheeled plant is the fastest-growing
+//   category in South Africa and its only systematic source refreshes twice a
+//   year, so this file can be six months behind on the very segment that is
+//   moving quickest.
+//
+// See the SOURCE CALENDAR printed below for what to check and when.
+{
+  const asAt = new Date((cap.meta && cap.meta.as_at) || '2026-03-31');
+  const now = new Date();
+  const days = Math.floor((now - asAt) / 86400000);
+  console.log(`\nData freshness - capacity file as at ${asAt.toISOString().slice(0,10)}, ${days} days ago`);
+
+  // A quarterly report lands ~75 days after its quarter ends. If more than one
+  // quarter-end has passed plus that lag, a newer edition should exist.
+  const qEnds = [ '2026-06-30', '2026-09-30', '2026-12-31', '2027-03-31' ].map(d => new Date(d));
+  const due = qEnds.filter(q => q > asAt && (now - q) / 86400000 > 75);
+  if (due.length) {
+    const q = due[due.length - 1].toISOString().slice(0,10);
+    console.log(`  STALE  A newer IPP Office quarterly should be out: the ${q} edition is ~${Math.floor((now-due[due.length-1])/86400000)} days past its quarter end.`);
+    console.log('         Check https://www.ipp-projects.co.za for the current IPPPP Quarterly Report.');
+  } else {
+    console.log('  ok     No newer IPP Office quarterly is due yet.');
+  }
+
+  // The private monitor is the weak link and deserves a louder warning.
+  const privCov = (cap.meta && cap.meta.private_coverage) || 'unknown';
+  if (days > 180) {
+    console.log(`  STALE  Private/wheeled coverage is "${privCov}" and this file is ${days} days old.`);
+    console.log('         Wheeled capacity is the fastest-moving category and its only systematic');
+    console.log('         source is HALF-YEARLY, so assume this understates it. See SOURCE CALENDAR.');
+  } else if (days > 120) {
+    console.log(`  WATCH  Private/wheeled coverage is "${privCov}", ${days} days old. Wheeled plant`);
+    console.log('         commissioned since then will NOT be in this file - queue anything you see.');
+  }
+
+  // Known pipeline: plant already financed that WILL commission.
+  const ic = cap.reconciliation && cap.reconciliation.in_construction_mw;
+  if (ic > 0)
+    console.log(`  NOTE   ${ic} MW of REIPPPP capacity was in construction at the file date and will`);
+    console.log('         commission into a future quarterly. That is expected, not missing data.');
+
+  console.log('\n  SOURCE CALENDAR');
+  console.log('    IPP Office IPPPP Quarterly    quarterly, ~75d lag   ipp-projects.co.za        REIPPPP online capacity');
+  console.log('    Eskom Weekly System Status    WEEKLY                eskom.co.za              totals by technology - see drift note');
+  console.log('    PowerFutureLab IPP monitor    half-yearly           gsb.uct.ac.za/powerfuturelab   privately wheeled plant');
+  console.log('    NERSA registrations           ~quarterly            nersa.org.za             registered private generation');
+  console.log('\n  DRIFT DETECTOR. Eskom\'s weekly report publishes installed totals by technology, so a');
+  console.log('  jump in its Wind or PV line means something commissioned. BUT it counts only');
+  console.log('  NTCSA-CONTRACTED plant - privately wheeled projects never appear in it. For wheeled');
+  console.log('  capacity there is NO weekly source, which is why trade press is genuinely the');
+  console.log('  fastest signal available and worth queuing from as it appears.');
+}
+
 // ---- PENDING ADDITIONS - print, never pass silently -------------------------
 // Known-future capacity lives in the split file's pending_next_quarterly, not in
 // the capacity file, because the capacity file must match its published source
@@ -201,10 +266,25 @@ try {
   const q = split.pending_next_quarterly || [];
   if (q.length) {
     console.log('\nPending next quarterly rollforward (IPP Office Q1 2026/27, 30 Jun basis):');
-    for (const x of q)
-      console.log(`  QUEUED  ${x.name} - ${x.mw} MW ${x.tech}, ${x.area} (COD ${x.cod}). ` +
-                  'On rollforward: add to reipppp, re-derive pvUtilityMW, and re-anchor the ' +
-                  'Eskom Week-32 reconciliation comments, which currently use this project as a bridge.');
+    for (const x of q) {
+      // The instruction differs by BUCKET. REIPPPP additions land in by_source.reipppp
+      // and feed the Eskom reconciliation; privately wheeled plant lands in
+      // by_source.private and does NOT, because Eskom does not meter it. Printing
+      // one instruction for both was wrong and would have sent the next person to
+      // the wrong bucket.
+      const priv = x.bucket === 'private';
+      console.log(`  QUEUED  ${x.name} - ${x.mw} MW ${x.tech}, ${x.area} (COD ${x.cod})` +
+                  (x.developer ? `, ${x.developer}` : '') + '.');
+      console.log('            ' + (priv
+        ? 'PRIVATE WHEELED: add to by_source.private, then re-derive ' +
+          (x.tech === 'wind' ? 'FIXED.windMW' : 'FIXED.pvUtilityMW') +
+          '. Eskom does not meter this plant, so the Week-32 reconciliation is UNAFFECTED - ' +
+          'but the validation panel note explaining why we read above Ember will need its number updated.'
+        : 'REIPPPP: add to by_source.reipppp, re-derive ' +
+          (x.tech === 'wind' ? 'FIXED.windMW' : 'FIXED.pvUtilityMW') +
+          ', and re-anchor the Eskom Week-32 reconciliation comments, which use this project as a bridge.'));
+      if (x.note) console.log('            NOTE: ' + x.note);
+    }
   }
 } catch (e) { /* split file optional in older checkouts */ }
 
