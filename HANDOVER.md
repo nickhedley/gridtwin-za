@@ -372,6 +372,56 @@ No spikes, no artefacts.
 DO NOT rescale the demand series to close this gap. The validation panel now
 states the definitional difference instead of implying an error.
 
+## DOUBLE-COUNT GUARD, and the REPLACE-never-ADD rule (17 Aug 2026)
+
+THE RULE. When a new PowerFutureLab monitor or IPP Office quarterly lands, it
+ALREADY CONTAINS the projects sitting in our queue - that is what a later
+reporting date means. So the update is REPLACE, never ADD:
+
+    1. Replace by_source.private (or .reipppp) wholesale from the new edition
+    2. Re-derive FIXED.windMW / FIXED.pvUtilityMW from the rebuilt file
+    3. THEN delete the queue entries the new edition now covers
+
+Adding queued megawatts on top of a refreshed source counts them twice. Not
+hypothetical: FIXED.pvUtilityMW carried 1,823 phantom MW until 15 Aug 2026
+because 488 MW of wheeled plant sat in the utility AND rooftop buckets at once.
+
+validate_capacity.js now enforces this. It compares each queued project's COD
+against the capacity file's as_at date and prints a DOUBLE-COUNT RISK block
+listing any project the file should already contain. Tested by simulating a
+Sep-2026 file with the August projects still queued - all six were correctly
+flagged. When nothing is at risk it states the rule instead, so the next person
+reads it before they need it rather than after.
+
+## STAYING CURRENT: the structural problem, and what tooling can do
+
+Asked how we avoid missing project commissionings. The honest answer is that the
+two categories behave completely differently:
+
+REIPPPP is well covered. The IPP Office quarterly is authoritative, and Eskom's
+WEEKLY system status report gives installed totals by technology - so a jump in
+its Wind or PV line is a same-week signal that something commissioned. The
+validation panel already compares against it.
+
+PRIVATELY WHEELED IS NOT COVERED, and this is the real exposure. It is the
+fastest-growing category in South Africa, and:
+  * Eskom's weekly report does NOT include it - only NTCSA-contracted plant
+    appears there, so no amount of watching Eskom will reveal a wheeled project
+  * its only systematic source, the PowerFutureLab monitor, is HALF-YEARLY
+  * so the file can be six months behind on the segment moving quickest
+
+That means trade press is not a poor substitute for a proper source - for
+wheeled capacity it is genuinely the FASTEST signal available. Queuing from it,
+as done on 17 Aug for Koruson 2, Ilikwa and Ummbila Emoyeni, is the right
+workflow rather than a workaround.
+
+validate_capacity.js now prints a DATA FRESHNESS block on every run: how old the
+file is, whether a newer IPP Office quarterly should exist (quarter end + 75
+days), a louder warning once private coverage passes 180 days, the MW already in
+construction, and a SOURCE CALENDAR with what to check and how often. It also
+states the drift-detector limitation above, so the next person does not assume
+Eskom's weekly covers everything.
+
 ## QUEUED: five privately wheeled projects commissioned Aug 2026 (17 Aug)
 
 Koruson 2 (Envusa, 520 MW: Umsobomvu 140 + Hartebeesthoek 140 wind, Mooi Plaats
