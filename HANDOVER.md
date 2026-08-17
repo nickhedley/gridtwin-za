@@ -425,6 +425,56 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## CHRONOLOGICAL STORAGE, and what it revealed (17 Aug 2026)
+
+Storage in the regional expansion LP balanced WITHIN each representative day, so
+it could never bank energy from a windy day for a still one. Now linked: state of
+charge carries between representative days, weighted by how many real days each
+stands for, bounded by built energy capacity.
+
+    e_<region>_<year>_<day>   stored level at the end of that representative day
+    soc_ rows                 e_k = e_(k-1) + weight x (0.88 x charge - discharge)
+    ecap_ rows                e_k <= 4 x built capacity + existing
+    bldRepDays                now returns days in CALENDAR order with prevD
+
+Default case unchanged within noise: R615.9bn vs R616.0bn, batt 2.8 vs 2.7 GW,
+and slightly faster at 14.7s. So the feature does not perturb today's answer.
+
+IT MADE NO DIFFERENCE TO THE COAL-RETIRED CASE, AND THE REASON MATTERS MORE THAN
+THE FEATURE. With 30 GW of coal retired and build caps lifted, both the within-day
+and the chronological model build 21.5 GW wind, 19.9 GW solar and 0.4 GW storage.
+Peak stored level reaches 1.4 GWh against a 1.7 GWh capacity, so the linking is
+active and binding - it simply does not change the decision.
+
+The cause: THE ONLY STORAGE IN THE BUILD SET IS A 4-HOUR BATTERY. Its energy
+capacity is 4x its power rating. Linking days lets it carry charge across
+midnight, but four hours of energy cannot ride out a multi-day wind drought
+however it is scheduled. The optimiser was not being short-sighted; it was
+correctly declining to buy a technology that cannot do the job.
+
+SO THE REAL GAP IS THE TECHNOLOGY SET, NOT THE CHRONOLOGY. A coal-retired South
+African system needs LONG-DURATION storage - pumped hydro (8-20h, and SA already
+runs 2.9 GW of it), compressed air, thermal, or hydrogen for anything seasonal.
+The build set offers wind, pv and batt only. Adding a long-duration option is the
+next thing worth doing, and the chronological linking built here is a PREREQUISITE
+for it: without day-to-day carry, a 20-hour store would look no better than a
+4-hour one.
+
+## A REAL BUG FOUND BY THIS TEST: bldCoalByRegion ignored coalDecomMW
+
+The regional build optimiser retired coal ONLY on each unit's published
+decommissioning date and ignored the "Coal decommissioned" slider entirely - while
+the panel above it printed "using the scenario set above ... X GW retired". The
+display and the model disagreed.
+
+Caught by running a 30 GW-retired scenario and getting byte-identical builds and
+an identical R616bn objective to the base case. Anyone testing a coal-retirement
+scenario in the regional optimiser had been getting the base case back.
+
+Fixed: extra retirement beyond published dates now comes off OLDEST FIRST, which
+matches how a real programme would run and how the national engine treats it. The
+same scenario now costs R4,335bn rate-capped, or R2,903bn with caps lifted.
+
 ## PART-LOAD HEAT RATE (17 Aug 2026)
 
 Third of three PLEXOS-gap features. Coal was costed at a flat R546/MWh whatever
