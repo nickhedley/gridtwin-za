@@ -425,6 +425,124 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## SITE-BASED VPPs, via the live MIP (17 Aug 2026)
+
+A VPP can now be SITED. The national sliders set the size and enrolment; a new
+"where it is sited" selector places it either nationally or in one region.
+
+WHY THE MIP AND NOT A NODAL DISPATCH. The regional build optimiser is the live
+regional machinery - runNodalYear was never wired (see above). getNodalMIPInputs
+already carries per-region load and corridors, so a sited VPP enters exactly
+where the optimiser can see it, and the question becomes the one a municipality
+actually has: does a VPP here change what the least-cost plan builds, and where?
+
+TWO EFFECTS, both regional:
+  1. Controllable geysers move WITHIN each day out of that region's highest
+     net-load hours into its lowest, water-filled (dumping rebuilds the peak in
+     the small hours - the rebound that dogged Eskom's ripple control). Strictly
+     energy-neutral per region per day.
+  2. Enrolled household batteries join that region's storage through the same
+     extraBattByRegion hook the Where To Build tool uses.
+  Applied to a COPY of regionLoad - the engine caches it, and mutating it would
+  contaminate every later run.
+
+THE SPLIT IS BY ELECTRICITY DEMAND, NOT ROOFTOP PV. Rooftop tracks who could
+afford panels; the geyser and home-battery fleet tracks where power is consumed.
+The Northern Cape is 6.8% of national rooftop but 2.1% of demand - a threefold
+overstatement - because it has sun and few people. Shares come from the model's
+own demand_2025_regional.csv so they cannot drift from what the optimiser
+dispatches against.
+
+At 75% enrolment of a 4 GW pool: National spreads 2,994 MW over ten regions;
+Western Cape concentrates 400 MW; Gauteng 1,120 MW; Northern Cape only 84 MW.
+Cape Town's municipal VPP is therefore a governance and market-design pioneer
+rather than a system-scale intervention - Gauteng is where the megawatts are.
+
+TWO BUGS FOUND WHILE BUILDING IT:
+  * The control panel had no SELECT type at all - only ranges and toggles. Added.
+  * applyState() assumed every control has a cv_ readout and an fmt(). A select
+    has neither, so it THREW and aborted applyState PART WAY THROUGH - every
+    preset silently stopped applying at the first select it met, and scenarios
+    downstream ran on stale values. Caught by validate_outputs dropping 33 -> 30
+    the moment the picker was added. That harness earned its keep.
+
+## T&D LOSSES: correctly ABSENT, do not add them (17 Aug 2026)
+
+Agreed to add transmission and distribution losses to the national engine, then
+checked before implementing. It would have been an ERROR.
+
+The demand series is Eskom's TRANSMISSION-LEVEL demand - what generators must
+send out - and is therefore already gross of downstream losses:
+
+    our grid demand           205.66 TWh
+    Eskom FY2024 billed sales 183.31 TWh
+    implied gap                22.35 TWh = 10.9%,  against Eskom's reported 9.1%
+
+Adding a 9% loss factor would have taken generation from 218.91 to 239.25 TWh
+against an Ember-equivalent of 218.82 - and since coal is the swing producer the
+entire 20 TWh lands on it, moving coal from 2% BELOW its benchmark to 11% ABOVE.
+
+The 0.02% Ember reconciliation established the same morning is the proof: it only
+holds because generation equals demand, which is correct at this model boundary.
+Recorded in the site's caveats so the absence reads as a decision, not an
+oversight.
+
+## RETIRED: runNodalYear() (17 Aug 2026)
+
+Never called from index.html. Defined in nodal_dispatch.js, referenced only in
+comments - 13.7 KB, 61% of that file, parsed on every load and never executed.
+The live "nodal" capability is getNodalMIPInputs() feeding the regional build
+optimiser, which works over representative days rather than 8,760 hours.
+
+Not deleted, but given an unmissable header saying it is unwired and why:
+cost (8,760h x 10 regions with per-hour Dijkstra, doubled for the GET pass),
+duplication (a second engine answering the same questions as simulate(), with no
+reconciliation test between them), and scope (hourly corridor congestion is an
+operations question; this is a planning tool). Its one real advantage was
+transmission losses - and that turned out to be a non-issue, see above.
+
+If an hourly nodal view is ever wanted, treat it as its own project and start
+with a reconciliation test against simulate().
+
+## RESOLVED: 380 MW double count caught before rollforward (17 Aug 2026)
+
+Investigated the Mooi Plaats flag. BOTH it and Umsobomvu were already counted.
+
+    nodal/pfl_private_h1_2026.json projects[] contains:
+      Mooi Plaats   240 MW solar  LIMPOPO        Anglo American Mogalakwena
+      Umsobomvu     140 MW wind   NORTHERN CAPE  EDF, Noupoort
+
+Both were already inside by_source.private. Rolling the queue forward as written
+would have overstated pvUtilityMW by 240 MW and windMW by 140 MW - 380 MW of
+phantom capacity, the identical failure mode to the original pvUtilityMW bug.
+Both entries removed from the queue; the resolution is recorded in
+resolved_double_counts[] so the finding survives the deletion.
+
+TWO PROVINCE ERRORS ALSO CORRECTED. The trade coverage of the Koruson 2 cluster
+led me to place Mooi Plaats in the Northern Cape; the monitor puts it in LIMPOPO
+against an Anglo Mogalakwena offtake. A cluster's name and a plant's location are
+different things. Umsobomvu I had moved to the Eastern Cape on Mining Weekly's
+say-so; the monitor says Northern Cape, and Noupoort is in the Northern Cape, so
+the monitor is right.
+
+THE ROOT CAUSE, now fixed in tooling. The two buckets have DIFFERENT EFFECTIVE
+DATES and the guard was comparing everything to one of them:
+
+    reipppp   anchored to meta.as_at              31 Mar 2026
+    private   anchored to the PFL H1 monitor      30 JUN 2026  <- three months later
+
+Comparing a wheeled COD against 31 March clears anything from April-June as "not
+yet counted" when the monitor almost certainly has it. validate_capacity.js now
+derives the private basis from meta.private_coverage ("h1-2026-only" -> 30 Jun),
+applies the right basis per bucket, AND name-matches the queue against
+pfl_private_h1_2026.json projects[] - a name match being definitive where date
+arithmetic is only indicative.
+
+STILL AMBIGUOUS: Hartebeesthoek (140 MW wind, June 2026). Its COD is inside the
+monitor's coverage but it is NOT in the project list - either the June date
+slipped into H2, or the monitor missed it. Queued with an explicit instruction to
+NAME-CHECK against the next monitor rather than add on date logic.
+
 ## THE QUEUE IS NOT A COMPLETE RECORD (17 Aug 2026)
 
 Flagged by the user: alerts only started being shared today, so commissionings
