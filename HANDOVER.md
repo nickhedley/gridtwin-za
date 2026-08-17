@@ -425,6 +425,46 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## THE QUEUE IS NOT A COMPLETE RECORD (17 Aug 2026)
+
+Flagged by the user: alerts only started being shared today, so commissionings
+between the 31 Mar basis and now were captured only by chance. Coverage by month:
+
+    April   Graspan, Umsobomvu          May   NOTHING - unchecked
+    June    Hartebeesthoek              July  Ummbila Emoyeni
+    August  Ilikwa                            (all found retrospectively)
+
+MAY IS BLANK and other months are probably incomplete. Treat the queue as "what
+we happened to see", never as an exhaustive list.
+
+WHY THIS MATTERS LESS THAN IT LOOKS. The gap self-heals on rollforward: the next
+IPP Office quarterly and PowerFutureLab monitor contain EVERYTHING, including
+what we missed, and the update procedure REPLACES the bucket wholesale rather
+than adding queued items. So the queue only needs to be good enough to know
+roughly where we stand in the interim - it is not the system of record.
+
+WHAT IT DOES AFFECT: reading the model TODAY. The live fleet understates reality
+by at least the 800 MW queued, and by an unknown amount more.
+
+CODs CORRECTED THE SAME DAY, and worth learning from. All five newsletter
+projects were queued as "August 2026" because the piece said the Koruson 2
+cluster was "now fully operational". That was the completion of the LAST unit,
+not the COD of all three. Primary sources give:
+    Mooi Plaats solar 240 MW    ~March 2026   (Mining Weekly, 24 Apr)
+    Umsobomvu wind 140 MW        April 2026   (Mining Weekly, 24 Apr)
+    Hartebeesthoek wind 140 MW   June 2026    (Mining Weekly: "on track for June")
+    Ummbila Emoyeni ph1 155 MW   July 2026    (Engineering News, 7 Aug)
+Hartebeesthoek was also moved from Northern Cape to EASTERN Cape per the source.
+
+MOOI PLAATS IS NOW FLAGGED AS A DOUBLE-COUNT RISK: at ~March 2026 its COD is at
+or before the 31 Mar basis, so it may ALREADY be in by_source.private. Verify
+before rollforward - adding it would double count 240 MW. The guard catches this
+automatically now that the COD is right, which is precisely why COD accuracy in
+the queue matters more than it appears.
+
+LESSON: a commissioning announcement dates the ANNOUNCEMENT, not the COD. Always
+chase the primary trade report for the actual date.
+
 ## PRIMARY SOURCE FOUND for wheeled commissioning: #PowerTracker (17 Aug 2026)
 
 CORRECTION to the note below, which said no systematic source existed for
