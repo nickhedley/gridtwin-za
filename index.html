@@ -1245,19 +1245,19 @@ function initResourceQuery(){
 
   // ── Load external data for features 3 & 4 ────────────────────────────────
   let substationData = null, headroomData = null;
-  fetch('nodal/substations_compact.json').then(r=>r.json()).then(d=>{substationData=d; maybeAddSubLayer();}).catch(()=>{});
-  fetch('nodal/headroom_summary.json').then(r=>r.json()).then(d=>{headroomData=d; maybeAddSubLayer();}).catch(()=>{});
+  fetch('nodal/substations_compact.json?v=' + (window.DATA_V || '7')).then(r=>r.json()).then(d=>{substationData=d; maybeAddSubLayer();}).catch(()=>{});
+  fetch('nodal/headroom_summary.json?v=' + (window.DATA_V || '7')).then(r=>r.json()).then(d=>{headroomData=d; maybeAddSubLayer();}).catch(()=>{});
   // Indicative per-substation connection-capability bands. OUR ESTIMATE, not an
   // Eskom figure - see the meta block in the file and the banner in the grid tab.
   let subBands = null;
-  fetch('nodal/substation_bands.json').then(r=>r.json()).then(d=>{subBands=d;}).catch(()=>{});
+  fetch('nodal/substation_bands.json?v=' + (window.DATA_V || '7')).then(r=>r.json()).then(d=>{subBands=d;}).catch(()=>{});
   // Renewable Energy Development Zones. Inside one, a large-scale wind or solar
   // PV facility needs only a Basic Assessment rather than a full EIA - roughly
   // 147 days against 300, which is the single biggest programme difference
   // between two otherwise identical sites.
   
 let redzData = null;
-  fetch('nodal/redz.json').then(r=>r.json()).then(d=>{redzData=d;}).catch(()=>{});
+  fetch('nodal/redz.json?v=' + (window.DATA_V || '7')).then(r=>r.json()).then(d=>{redzData=d;}).catch(()=>{});
 
   // Nearest REDZ to a point, with a plain-language verdict. Deliberately
   // conservative: we hold centre points and equivalent-area radii, NOT the
@@ -1582,7 +1582,7 @@ let redzData = null;
   // rule-of-thumb haircut on a single year, which is what most desktop studies
   // still use.
   let p90Data = null;
-  fetch('nodal/profiles_regional_multiyear.json')
+  fetch('nodal/profiles_regional_multiyear.json?v=' + (window.DATA_V || '7'))
     .then(r => r.ok ? r.json() : null)
     .then(d => { p90Data = d; if (typeof renderP90 === 'function') renderP90(); })
     .catch(() => {});
@@ -1664,7 +1664,7 @@ let redzData = null;
   // empty section. Scope stays coarser than district: the register carries a
   // district but no coordinates, so a clicked point cannot be resolved to one.
   let reeaSite = null;
-  fetch('nodal/reea_projects.json').then(r => r.ok ? r.json() : null)
+  fetch('nodal/reea_projects.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
     .then(d => { reeaSite = d; }).catch(() => {});
 
   function renderNeighbours(area, lat, lng){
@@ -2124,7 +2124,7 @@ let redzData = null;
   window.renderGrid = renderGrid;          // used by the map click handler and tests
   window.exportTdpProjects = exportTdpProjects;
 
-  fetch('nodal/tdp_projects.json')
+  fetch('nodal/tdp_projects.json?v=' + (window.DATA_V || '7'))
     .then(r => r.ok ? r.json() : null)
     .then(d => { if (d && d.projects) { tdpData = d;
       newSiteMap = new Set();
@@ -5711,7 +5711,7 @@ async function bldLoadRegionalData(){
   try {
     const [p, h] = await Promise.all([
       fetch('nodal/profiles_regional.json').then(r => r.ok ? r.json() : null),
-      fetch('nodal/headroom_summary.json').then(r => r.ok ? r.json() : null),
+      fetch('nodal/headroom_summary.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null),
     ]);
     if (!p || !h) return false;
     bldRegProfiles = p; bldHeadroom = h.headroom || h;
@@ -6618,7 +6618,7 @@ let bldWeatherYears = null;
 async function loadWeatherYears(){
   if (bldWeatherYears !== null) return bldWeatherYears;
   try {
-    const r = await fetch('nodal/profiles_regional_multiyear.json');
+    const r = await fetch('nodal/profiles_regional_multiyear.json?v=' + (window.DATA_V || '7'));
     if (!r.ok) { bldWeatherYears = false; return false; }
     const d = await r.json();
     if (!d || !d.meta || !Array.isArray(d.meta.years) || !d.meta.years.length){
@@ -6875,7 +6875,7 @@ let exportTdp = null;   // TDP data for the exporter's own use - the map's tdpDa
 async function exportTdpProjects(){
   if (!exportTdp){
     try {
-      const r = await fetch('nodal/tdp_projects.json');
+      const r = await fetch('nodal/tdp_projects.json?v=' + (window.DATA_V || '7'));
       exportTdp = r.ok ? await r.json() : null;
     } catch (e) { exportTdp = null; }
   }
@@ -6976,7 +6976,7 @@ let bldTdp = null;   // TDP projects, loaded for the build optimiser's own use
 async function bldLoadTdp(){
   if (bldTdp !== null) return bldTdp;
   try {
-    const r = await fetch('nodal/tdp_projects.json');
+    const r = await fetch('nodal/tdp_projects.json?v=' + (window.DATA_V || '7'));
     bldTdp = r.ok ? await r.json() : false;
   } catch (e) { bldTdp = false; }
   return bldTdp;
@@ -7917,10 +7917,10 @@ function drawBessWeek(r){
 let queueNersa = null, queueHeadroom = null;
 let queueBQ = null, queueREEA = null;
 Promise.all([
-  fetch('nodal/nersa_registrations.json').then(r => r.ok ? r.json() : null).catch(() => null),
-  fetch('nodal/headroom_summary.json').then(r => r.ok ? r.json() : null).catch(() => null),
-  fetch('nodal/bq_queue.json').then(r => r.ok ? r.json() : null).catch(() => null),
-  fetch('nodal/reea_projects.json').then(r => r.ok ? r.json() : null).catch(() => null),
+  fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null).catch(() => null),
+  fetch('nodal/headroom_summary.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null).catch(() => null),
+  fetch('nodal/bq_queue.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null).catch(() => null),
+  fetch('nodal/reea_projects.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null).catch(() => null),
 ]).then(([n, h, b, e]) => {
   queueNersa = n; queueHeadroom = h; queueBQ = b; queueREEA = e;
   renderQueuePressure();
@@ -8524,7 +8524,7 @@ const NAMES={hybrid:'Hybrid (RMIPPPP)',nuclear:'Nuclear',hydro:'Hydro',imports:'
 // utilisation — the natural home is the network schematic panel, alongside the
 // transport-model flows, so the two can be compared.
 let dcNet = null;
-fetch('nodal/corridor_electrical.json').then(r=>r.json()).then(d=>{ dcNet = buildPTDF(d); })
+fetch('nodal/corridor_electrical.json?v=' + (window.DATA_V || '7')).then(r=>r.json()).then(d=>{ dcNet = buildPTDF(d); })
   .catch(()=>{ dcNet = null; });
 
 function buildPTDF(d){
@@ -9108,7 +9108,7 @@ window.resetMapCurtailment = resetMapCurtailment;
 
 // ── Pipeline overlay ─────────────────────────────────────────────────────────
 let pipelineData=null, pipelineVisible=false;
-fetch('nodal/ipp_pipeline.json').then(r=>r.json()).then(d=>{pipelineData=d;console.log('pipeline loaded:',Object.keys(d.by_region||{}).length,'regions');}).catch(e=>console.warn('pipeline fetch failed:',e.message));
+fetch('nodal/ipp_pipeline.json?v=' + (window.DATA_V || '7')).then(r=>r.json()).then(d=>{pipelineData=d;console.log('pipeline loaded:',Object.keys(d.by_region||{}).length,'regions');}).catch(e=>console.warn('pipeline fetch failed:',e.message));
 
 function togglePipeline(){
   pipelineVisible=!pipelineVisible;
@@ -9202,7 +9202,7 @@ function drawPipeline(){
 }
 
 // ── NERSA registrations panel ─────────────────────────────────────────────────
-fetch('nodal/nersa_registrations.json').then(r=>r.json()).then(data=>{
+fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r=>r.json()).then(data=>{
   const panel=document.getElementById('nersaPanel');
   const body=document.getElementById('nersaBody');
   const tag=document.getElementById('nersaTag');
