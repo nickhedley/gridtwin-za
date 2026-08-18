@@ -671,6 +671,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="priceBody"></div>
           </div>
 
+          <div id="nav-capture" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Capture rate by region</h2><span class="tag">what a project earns vs the average MWh</span></div>
+            <div class="pb" id="captureBody"></div>
+          </div>
+
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Price-setting technology by hour</h2>
               <div class="wkbtns">
@@ -6253,6 +6258,87 @@ function bldStressTest(){
     </div>`;
 }
 
+function renderRegionalCapture(res){
+  const host = document.getElementById('captureBody');
+  if (!host) return;
+  if (!regionalProfiles){ host.innerHTML = '<div class="muted">Regional profiles still loading.</div>'; return; }
+  const r = res || lastRes;
+  if (!r) return;
+
+  const REG = ['Northern Cape','Hydra Central','Eastern Cape','Western Cape','Free State',
+               'North West','Mpumalanga','Limpopo','Kwazulu Natal','Gauteng'];
+  const rows = [];
+  for (const tech of ['wind','solar'])
+    for (const g of REG){ const c = captureRate(tech, g, r); if (c) rows.push(c); }
+  if (!rows.length){ host.innerHTML = '<div class="muted">No capture data.</div>'; return; }
+
+  const mean = rows[0].meanPrice;
+  const fmt = v => v.toFixed(0) + '%';
+  const bar = (pct, col) => {
+    const w = Math.max(0, Math.min(100, pct));
+    return '<div style="background:var(--line2);height:9px;border-radius:1px;position:relative">'
+         + '<div style="background:' + col + ';width:' + w + '%;height:100%;border-radius:1px"></div></div>';
+  };
+
+  const section = (tech, col) => {
+    const rs = rows.filter(x => x.tech === tech).sort((a,b) => b.capturedPct - a.capturedPct);
+    return '<div style="font-family:\'Saira Condensed\',sans-serif;font-size:11.5px;font-weight:600;'
+      + 'letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:10px 0 5px">'
+      + (tech === 'wind' ? 'Wind' : 'Solar PV') + '</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
+      + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
+      + '<th style="text-align:left;padding:3px 4px">Region</th>'
+      + '<th style="text-align:right;padding:3px 4px">CF</th>'
+      + '<th style="text-align:right;padding:3px 4px">Curtailed</th>'
+      + '<th style="text-align:right;padding:3px 4px">Captured</th>'
+      + '<th style="width:34%;padding:3px 4px"></th>'
+      + '<th style="text-align:right;padding:3px 4px">R/MWh</th></tr>'
+      + rs.map(c => '<tr>'
+          + '<td style="padding:3px 4px">' + c.region + '</td>'
+          + '<td class="mono" style="text-align:right;padding:3px 4px">' + c.cfPct.toFixed(0) + '%</td>'
+          + '<td class="mono" style="text-align:right;padding:3px 4px;color:'
+            + (c.curtailedSharePct > 20 ? 'var(--alert,#C4785A)' : 'var(--ink2)') + '">'
+            + c.curtailedSharePct.toFixed(0) + '%</td>'
+          + '<td class="mono" style="text-align:right;padding:3px 4px;font-weight:600">'
+            + fmt(c.capturedPct) + '</td>'
+          + '<td style="padding:3px 6px">' + bar(c.capturedPct, col) + '</td>'
+          + '<td class="mono" style="text-align:right;padding:3px 4px">R'
+            + c.achievedPrice.toFixed(0) + '</td></tr>').join('')
+      + '</table>';
+  };
+
+  // The spread between the best and worst region is the developer-facing number:
+  // it says whether siting changes revenue, or whether the technology's timing
+  // dominates regardless of where you build.
+  const spread = t => { const rs = rows.filter(x => x.tech === t).map(x => x.capturedPct);
+                        return Math.max(...rs) - Math.min(...rs); };
+
+  host.innerHTML =
+      '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:2px">'
+    + 'Capture rate is what a plant actually earns as a share of what the average MWh earns, '
+    + 'weighting each hour by how much it generates. At 100&#37; a plant earns the average price. '
+    + 'Solar sits below it because all solar generates in the same hours and depresses the price in '
+    + 'exactly those hours \u2013 the self-cannibalisation that decides whether a project is financeable, '
+    + 'and which a capacity factor cannot show. Average price in this scenario is R'
+    + mean.toFixed(0) + '/MWh.</p>'
+    + section('wind', 'var(--wind,#3EA055)')
+    + section('solar', '#F5C518')
+    + '<div style="font-size:10.5px;line-height:1.6;margin-top:9px;padding:7px 10px;'
+    + 'background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
+    + '<strong>Siting matters for wind, barely for solar.</strong> Wind capture spans '
+    + spread('wind').toFixed(0) + ' points across regions here; solar spans only '
+    + spread('solar').toFixed(0) + '. Wind regimes differ enough that where you build changes what '
+    + 'you earn. Solar generates at much the same hours everywhere, so it cannibalises itself '
+    + 'wherever it sits.</div>'
+    + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
+    + 'Regional generation profiles combined with the national hourly price, because the instant '
+    + 'engine is single-node. That measures WHEN a region generates relative to the national price, '
+    + 'which is the dominant effect \u2013 but it does not capture locational price differences from '
+    + 'congestion. Run the full model for prices resolved by region. Curtailment applies the '
+    + 'system-wide spill share hour by hour, so a plant generating in surplus hours is curtailed '
+    + 'more.</div>';
+}
+
 function bldApplyToSliders(){
   if (!bldLastTotals){
     const st0 = document.getElementById('bldStatus');
@@ -8302,6 +8388,72 @@ function dcFlows(injByRegion){
   });
 }
 
+/* ==================== CAPTURE RATE BY REGION ================================
+ * What a project actually earns, as against what the average MWh earns.
+ *
+ *   capture rate = revenue-weighted price / time-weighted average price
+ *                = sum(gen_h x price_h) / (sum(gen_h) x mean(price))
+ *
+ * At 100% a plant earns the average price. Solar characteristically sits BELOW
+ * it, because it all generates in the same hours and depresses the price in
+ * exactly those hours - the self-cannibalisation that decides whether a project
+ * is financeable, and which no amount of capacity-factor analysis reveals.
+ *
+ * WHY THIS IS THE THING TO BUILD. Interconnection-analytics tools elsewhere
+ * (Nira, Pearl Street, GridUnity) answer "where can I connect" from network
+ * data. They have no dispatch model, so they cannot answer "what will the energy
+ * be worth once I am connected". This model can, and the machinery was almost
+ * entirely present already: hourly shadow prices from the dispatch engine, and
+ * 8,760 per-unit values per region per technology in profiles_regional.json.
+ *
+ * METHOD AND ITS LIMIT. Regional GENERATION profiles are combined with the
+ * NATIONAL hourly price, because the instant engine is single-node. That is a
+ * real approximation and it is the right one for a first cut: the effect being
+ * measured is WHEN a region generates relative to the national price, which is
+ * what separates Northern Cape solar from Eastern Cape wind. It does NOT capture
+ * locational price differences from congestion - for that, run the full MIP,
+ * which prices each region separately.
+ */
+let regionalProfiles = null;
+fetch('nodal/profiles_regional.json').then(r => r.json()).then(d => { regionalProfiles = d; })
+  .catch(() => { regionalProfiles = null; });
+
+function captureRate(tech, region, res){
+  if (!regionalProfiles || !res || !res.marginalP) return null;
+  const key = tech === 'wind' ? 'wind_pu' : 'solar_pu';
+  const pu = regionalProfiles[key] && regionalProfiles[key][region];
+  if (!pu || pu.length < 8760) return null;
+
+  const price = res.marginalP;
+  let gen = 0, rev = 0, priceSum = 0;
+  // Hours where the plant is curtailed earn nothing, so curtailment and capture
+  // are the same question asked twice. The national curtailment share is applied
+  // as a proxy: in an hour where the system spills x% of its VRE, this plant is
+  // assumed to spill the same share.
+  let curtGen = 0, curtRev = 0;
+  for (let h = 0; h < 8760; h++){
+    const g = pu[h];
+    gen += g; rev += g * price[h]; priceSum += price[h];
+    const avail = (res.caps && (res.caps.windCap + res.caps.pvCap)) || 0;
+    const vre = avail > 0 ? ((res.stack.wind[h] || 0) + (res.stack.pv[h] || 0)) : 0;
+    const spill = res.curtailMW ? (res.curtailMW[h] || 0) : 0;
+    const share = (vre + spill) > 1 ? spill / (vre + spill) : 0;
+    curtGen += g * (1 - share);
+    curtRev += g * (1 - share) * price[h];
+  }
+  const meanPrice = priceSum / 8760;
+  if (gen <= 0 || meanPrice <= 0) return null;
+  return {
+    tech, region,
+    capturePct:  100 * (rev / gen) / meanPrice,          // before curtailment
+    capturedPct: 100 * (curtRev / Math.max(1e-9, gen)) / meanPrice,  // after curtailment
+    curtailedSharePct: 100 * (1 - curtGen / gen),
+    achievedPrice: rev / gen,
+    meanPrice,
+    cfPct: 100 * gen / 8760,
+  };
+}
+
 /* ==================== BUILD CONTROLS ==================== */
 const state={};
 const controlsEl=document.getElementById('controls');
@@ -9533,7 +9685,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
