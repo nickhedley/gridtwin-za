@@ -1,3 +1,82 @@
+## REVISED ELECTRICITY PRICING POLICY - ASSESSED, NOT YET ACTED ON (18 Aug 2026)
+
+Source: DEE Media Briefing, Energy Pricing Policy Update, Dr Kgosientsho Ramokgopa,
+18 August 2026. It is a DRAFT out for consultation - public comments, then NEDLAC,
+then Cabinet, then gazetting - so the recommendation is to wait for gazetting
+rather than build to something that will move.
+
+TESTED AND NOT MATERIAL:
+
+  ITEM 7, price caps and volatility smoothing. This looked most likely to bite
+  and does not. Our shadow price bottoms at -R225 and never exceeds R804 in the
+  Future electricity mix, so an UPPER cap never binds. Applying a zero FLOOR moves
+  capture rates by only 1-2 points and the mean price from R282 to R292. Our
+  negative prices are shallow because coal's must-run floor sets them, not a
+  deep-negative subsidy chase.
+
+  ITEM 8, net-billing with exports credited at avoided cost rather than retail.
+  Neither tool is exposed. GridTwin models rooftop as REDUCING DEMAND -
+  self-consumption - and Rewiring SA also values self-consumption only, with no
+  export credit assumed anywhere (its only "export" references are CBAM). So
+  neither overstates household returns, and a policy crediting exports below
+  retail does not invalidate either.
+
+QUEUED AS EXPLICIT TASKS (18 Aug 2026), with scoping so they can be picked up cold:
+
+  TASK A - WHEELING NETWORK CONTRIBUTION
+    Add a cost per MWh on wheeled generation, covering network maintenance and the
+    social-subsidy contribution. Falls on the PRIVATE bucket only - 470 MW wind and
+    488 MW solar today, and 1,046 MW of new private capacity reached commercial
+    operation in H1 2026 alone, so the base is growing fast.
+    WHERE IT LANDS: reduces the achieved price in the capture-rate panel for
+    private/wheeled projects, so the panel needs to distinguish wheeled from
+    grid-supply projects rather than treating a region uniformly. That is a
+    structural change to captureRate(), not just a constant.
+    BLOCKED ON: the actual charge. The EPP states the principle; the number will
+    come from NERSA's tariff methodology. Do not invent one - a made-up charge
+    would silently reprice every private project in the model.
+
+  TASK B - CAPACITY PAYMENT
+    Add revenue for firm capacity held available but not dispatched. We currently
+    pay nothing for it, so peakers and storage are understated.
+    WHY IT MATTERS BEYOND THE ARITHMETIC: it bears directly on the gas-versus-coal
+    conclusion of 17 Aug. That analysis found coal retention beat 9 GW of CCGT
+    partly because the CCGT generates only 0.5 TWh a year and earns almost nothing
+    for existing. A capacity payment changes exactly that: idle firm capacity
+    becomes financeable, and the comparison may invert. The conclusion should be
+    re-run, not assumed to hold.
+    WHERE IT LANDS: the cost/revenue side of simulate(), and the LCOE comparison
+    in the build optimiser. Also the adequacy panel, which currently frames firm
+    capacity as a physical fact rather than something anyone is paid to provide.
+    BLOCKED ON: the mechanism. Capacity charge on consumers, or capacity payment
+    to generators, or both - the briefing says charges are "necessary" without
+    specifying the design.
+
+MATERIAL AND GENUINELY UNMODELLED - the two to act on once gazetted:
+
+  EQUITABLE CONTRIBUTION FROM WHEELING. "Wheeling customers and independent
+  traders must contribute fairly to network maintenance and social subsidies."
+  That is a new cost falling on exactly the private wheeled projects now running
+  at 1,046 MW a half-year, and nothing in the model charges it. It would reduce
+  wheeled project returns, which bears directly on the capture-rate panel.
+
+  CAPACITY CHARGES. "Capacity charges are necessary to incentivize and ensure
+  reliable generation infrastructure." We have no capacity payment at all, so we
+  UNDERSTATE revenue for peakers and storage - the assets adequacy depends on.
+  This bears on the gas-versus-coal question settled on 17 Aug: a capacity payment
+  changes whether idle firm capacity is financeable, and our conclusion assumed it
+  is not paid for.
+
+OPPORTUNITY: NERSA to publish a 10-year electricity price forecast ANNUALLY. That
+becomes an official benchmark to validate the cost panel against, replacing our
+own derivation. Watch for the first publication.
+
+ALIGNMENT CHECK WORTH DOING: the policy defines total cost of supply as wholesale
+energy + generation capacity/standby + transmission/distribution +
+ancillary/balancing + legacy/subsidy. Our cost panel splits differently, and the
+labels should map onto that decomposition so figures are comparable to whatever
+NERSA publishes.
+
 ## CURTAILMENT FORECAST - BUILT (18 Aug 2026)
 
 curtailmentForecast() + renderCurtailmentForecast(), panel below Capture rate.
