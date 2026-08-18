@@ -2258,7 +2258,53 @@ let redzData = null;
       // Fire the same handler as a map click so every tab updates
       map.fire('click', { latlng: L.latLng(lat, lng) });
     }
+    try { showSiteRevenue(lat, lng); } catch (e) { console.error('site revenue:', e); }
   }
+
+  // REVENUE ANSWER FOR A SEARCHED SITE.
+  //
+  // The search box already resolves an address to coordinates and the map already
+  // reports resource quality there. What it could not say is the question a
+  // developer is actually financing against: what that resource is WORTH, and how
+  // much of it gets thrown away as the queue fills up.
+  //
+  // Both numbers exist elsewhere in the model; this puts them where someone is
+  // already asking about a specific site.
+  function showSiteRevenue(lat, lng) {
+    const host = document.getElementById('siteRevenue');
+    if (!host) return;
+    const region = (typeof nearestRegion === 'function') ? nearestRegion(lat, lng) : null;
+    if (!region || !lastRes || typeof captureRate !== 'function'){ host.style.display = 'none'; return; }
+
+    const rows = ['wind','solar'].map(t => captureRate(t, region, lastRes)).filter(Boolean);
+    if (!rows.length){ host.style.display = 'none'; return; }
+
+    const line = c => {
+      const col = c.capturedPct >= 80 ? 'var(--ok,#4A8C5C)'
+                : c.capturedPct >= 50 ? '#C9A227' : 'var(--alert,#C4785A)';
+      return '<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0">'
+        + '<span>' + (c.tech === 'wind' ? 'Wind' : 'Solar PV') + '</span>'
+        + '<span class="mono" style="color:var(--ink2)">' + c.cfPct.toFixed(0) + '&#37; CF</span>'
+        + '<span class="mono" style="color:var(--ink2)">' + c.curtailedSharePct.toFixed(0) + '&#37; curtailed</span>'
+        + '<span class="mono" style="font-weight:600;color:' + col + '">'
+        + c.capturedPct.toFixed(0) + '&#37; captured</span>'
+        + '<span class="mono">R' + c.achievedPrice.toFixed(0) + '/MWh</span></div>';
+    };
+
+    host.style.display = '';
+    host.innerHTML =
+        '<div style="font-family:\'Saira Condensed\',sans-serif;font-size:11px;letter-spacing:.08em;'
+      + 'text-transform:uppercase;color:var(--ink2);margin-bottom:4px">Revenue at this site &ndash; '
+      + region + '</div>'
+      + rows.map(line).join('')
+      + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:5px">'
+      + 'Capture rate is what a plant earns as a share of what the average MWh earns, under the '
+      + 'scenario currently set. South Africa\u2019s day-ahead market clears to a single national '
+      + 'price, so the energy price does not vary by location \u2013 what varies is how much output '
+      + 'is curtailed, and when the plant generates relative to that national price. '
+      + 'Move the coal, storage and build sliders to see how this site\u2019s numbers change.</div>';
+  }
+  window.showSiteRevenue = showSiteRevenue;
 
   // Expose switchTab globally
   window.switchTab = switchTab;
@@ -2916,6 +2962,7 @@ function printPrefeas() {
       <button onclick="mainGeocode()" style="font-size:10px;padding:5px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--panel);cursor:pointer;border-radius:2px;white-space:nowrap;font-weight:600">Search</button>
     </div>
     <div id="mainSearchResults" style="display:none;max-height:160px;overflow-y:auto;background:var(--panel);border-bottom:1px solid var(--line2)"></div>
+      <div id="siteRevenue" style="display:none;padding:8px 14px;border-bottom:1px solid var(--line2);font-size:10.5px;line-height:1.6;background:var(--panel2)"></div>
     <div id="subVoltageLegend" style="padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--line2);font-size:9.5px;color:var(--ink2);display:flex;gap:12px;flex-wrap:wrap;align-items:center">
       <strong style="color:var(--ink)">Substations by voltage:</strong>
       <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#C8A028;border:1px solid #8a6d15;vertical-align:middle"></span> 765&nbsp;kV</span>
@@ -6373,11 +6420,16 @@ function renderCurtailmentForecast(){
       + '<div style="font-size:10.5px;line-height:1.6;margin-top:9px;padding:7px 10px;'
       + 'background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
       + '<strong>' + (spread < 3
-          ? 'Siting does not help here.</strong> Every region lands within ' + spread.toFixed(0)
+          ? 'Timing dominates, and that is the market design.</strong> Every region lands within ' + spread.toFixed(0)
             + ' points of the others at +' + last.extraGW + ' GW ('
             + Math.min(...endVals).toFixed(0) + '\u2013' + Math.max(...endVals).toFixed(0)
             + '&#37;), because this technology generates at much the same hours wherever it sits. '
-            + 'What matters is WHEN you connect, not where.'
+            + 'And under SAWEM that is the whole story for the ENERGY price: the day-ahead '
+            + 'market clears to a single national System Marginal Price, so a plant in a '
+            + 'saturated region earns the same rand per MWh as one in an empty region. '
+            + 'Where siting bites instead is CURTAILMENT, in the table above, and network '
+            + 'charges. Locational energy pricing remains an option for a later iteration '
+            + 'of the market code, not part of it today.'
           : 'Siting is worth ' + spread.toFixed(0) + ' points of output.</strong> At +'
             + last.extraGW + ' GW, ' + best + ' loses ' + Math.min(...endVals).toFixed(0)
             + '&#37; against ' + worst + ' at ' + Math.max(...endVals).toFixed(0) + '&#37;.')
@@ -6469,8 +6521,13 @@ function renderRegionalCapture(res){
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
     + 'Regional generation profiles combined with the national hourly price, because the instant '
     + 'engine is single-node. That measures WHEN a region generates relative to the national price, '
-    + 'which is the dominant effect \u2013 but it does not capture locational price differences from '
-    + 'congestion. Run the full model for prices resolved by region. Curtailment applies the '
+    + 'which is what determines revenue under SAWEM. '
+      + 'The market\u2019s day-ahead auction clears to a SINGLE NATIONAL System Marginal Price, so '
+      + 'one national price is the correct basis here rather than a simplification \u2013 a plant '
+      + 'in a congested region earns the same rand per MWh as one in an empty region. The locational '
+      + 'signal in South Africa lands on CURTAILMENT and on transmission charges instead, which is '
+      + 'why the forecast below resolves curtailment by region. Locational energy pricing is flagged '
+      + 'as an option for a future iteration of the market code, not part of it today. Curtailment applies the '
     + 'system-wide spill share hour by hour, so a plant generating in surplus hours is curtailed '
     + 'more.</div>';
 }
