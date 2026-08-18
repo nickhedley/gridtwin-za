@@ -8021,14 +8021,14 @@ const SLIDERS=[
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
   {grp:'Existing coal fleet'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:68,fmt:v=>v+' %',note:'FY2026 to date = 68% · 2023 crisis = 50–55% · target 70%'},
-  {id:'coalPartLoadK',label:'Part-load heat rate penalty',min:0,max:0.25,step:0.01,def:FIXED.coalPartLoadK,fmt:v=>v===0?'off':'+'+(v*100).toFixed(0)+'% at half load',
-   note:'A coal unit burns more fuel per MWh the further it is backed off, because auxiliaries, mills, fans and boiler losses are largely fixed and spread over less output. Set to zero and every coal MWh costs the same whatever the load factor, which flatters part-load running \u2013 and part-load running is exactly what more solar produces. At the default the penalty averages 1.5% today but 3.6% with 20 GW of extra solar, and it raises CO\u2082 as well as cost, because emissions follow fuel burned rather than energy sold.'},
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
    ctrlStyle:SUB_CTRL,note:'When turned on, individual units trip and must be taken out for repairs (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Means the bad hours are more extreme. At an EAF of 55%, for example, this moves shedding from 3 hours to 207 hours.'},
   {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
    ctrlStyle:SUB_CTRL,note:'How much of the EAF gap is unplanned trips rather than scheduled maintenance. Eskom\u2019s UCLF currently runs at about 47%. Planned outages are smooth and pushed into the low-demand months, the way real maintenance is scheduled.'},
   {id:'outageMttrH',label:'Mean time to repair',min:8,max:400,step:8,def:FIXED.outageMttrH,fmt:v=>v+' h',
    ctrlStyle:SUB_CTRL,note:'How long a forced outage lasts on average. Shorter repairs mean more frequent, shallower events; longer ones mean rarer but deeper troughs for the same annual EAF.'},
+  {id:'coalPartLoadK',label:'Part-load heat rate penalty',min:0,max:0.25,step:0.01,def:FIXED.coalPartLoadK,fmt:v=>v===0?'off':'+'+(v*100).toFixed(0)+'% at half load',
+   note:'A coal unit burns more fuel per MWh the further it is backed off, because auxiliaries, mills, fans and boiler losses are largely fixed and spread over less output. Set to zero and every coal MWh costs the same whatever the load factor, which flatters part-load running \u2013 and part-load running is exactly what more solar produces. At the default the penalty averages 1.5% today but 3.6% with 20 GW of extra solar, and it raises CO\u2082 as well as cost, because emissions follow fuel burned rather than energy sold.'},
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'Multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit cost R223/kW/yr (based on Weisweiler, Germany project) · today\u2019s SA fleet ramps ~24%/hr (Agora 2017). Once fully flexibilised, ~100%/hr (IRENA post-retrofit range) · applies to the remaining (non-decommissioned) fleet'},
@@ -9392,10 +9392,27 @@ function renderComparison() {
   const panel = document.getElementById('comparePanel');
   const body  = document.getElementById('compareBody');
   panel.style.display = '';
+  // The CURRENT column must not borrow the pinned scenario's name. Reading the
+  // active preset button gives the right answer only while a preset is still
+  // exactly loaded; the moment a slider moves, the button stays highlighted and
+  // both columns end up captioned identically. The panel then looks as though it
+  // is comparing a scenario with itself, even though the numbers differ — which
+  // is exactly how this was reported on 17 Aug.
+  //
+  // If nothing has changed since the pin, say so plainly instead of pretending
+  // to compare.
   const active = document.querySelector('#presets button.active');
-  const currentLabel = active ? active.textContent : 'Current';
+  const activeName = active ? active.textContent.trim() : null;
+  const identical = Math.abs(pinnedResult.totalCost - lastRes.totalCost) < 1
+                 && Math.abs(pinnedResult.co2 - lastRes.co2) < 0.01;
+  const currentLabel = identical ? pinnedLabel
+                     : (activeName && activeName !== pinnedLabel) ? activeName
+                     : 'Current scenario';
   const p = pinnedResult, r = lastRes;
   const pE = p.E, rE = r.E;
+  const sameNote = identical
+    ? '<div style="font-size:10.5px;color:var(--ink2);padding:6px 14px 0">Nothing has changed since you pinned this. Move a slider or pick another preset to compare.</div>'
+    : '';
 
   function delta(a, b, decimals, unit, lowerBetter) {
     const d = b - a;
@@ -9415,7 +9432,7 @@ function renderComparison() {
     {label:'Expected shed',    a:(p.shedMWh/1000).toFixed(0),    b:(r.shedMWh/1000).toFixed(0),    d:delta(p.shedMWh/1000,   r.shedMWh/1000,   0,' GWh', true), unit:'GWh/yr'},
   ];
 
-  body.innerHTML = `
+  body.innerHTML = sameNote + `
     <div style="display:grid;grid-template-columns:140px 1fr 1fr 90px;gap:4px;align-items:center;font-size:10.5px">
       <div></div>
       <div style="font-weight:600;color:var(--ink2)">📌 ${pinnedLabel}</div>
