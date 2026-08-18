@@ -146,6 +146,10 @@ function probe(){
      // technology exists. Correct behaviour, not a dead control.
      lcoeVrfb:    {newVrfbMW: 5000},
      lcoeIronAir: {newIronAirMW: 5000},
+     // The export price only bites once there is capacity to export through,
+     // and export capacity only bites when there is a surplus to sell.
+     exportPriceR: {exportCapMW: 3000, newWindMW: 45000, newPvMW: 52000},
+     exportCapMW:  {newWindMW: 45000, newPvMW: 52000},
      // vppRegion changes WHERE the pool sits, which only the regional build
      // optimiser can see - the single-node engine this sweep exercises has no
      // geography, so siting cannot move its outputs. Correct behaviour, not a
