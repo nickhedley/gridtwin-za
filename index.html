@@ -1200,7 +1200,8 @@ function initResourceQuery(){
   // PV facility needs only a Basic Assessment rather than a full EIA - roughly
   // 147 days against 300, which is the single biggest programme difference
   // between two otherwise identical sites.
-  let redzData = null;
+  
+let redzData = null;
   fetch('nodal/redz.json').then(r=>r.json()).then(d=>{redzData=d;}).catch(()=>{});
 
   // Nearest REDZ to a point, with a plain-language verdict. Deliberately
@@ -1793,7 +1794,7 @@ function initResourceQuery(){
         let need = loadMW;
         const direct = Math.min(gen, need); need -= direct; served += direct;
         const surplus = gen - direct;
-        if (surplus > 0) soc = Math.min(battEnergyMWh, soc + Math.min(surplus, battPower, battEnergyMWh - soc) * 0.88);
+        if (surplus > 0) soc = Math.min(battEnergyMWh, soc + Math.min(surplus, battPower, battEnergyMWh - soc) * battEffMix);
         if (need > 0){ const dis = Math.min(need, battPower, soc); soc -= dis; served += dis; }
       }
       return served / (loadMW * N);
@@ -3424,6 +3425,21 @@ const FIXED = {
   //
   // Defaults to ZERO enrolment: today these are pilots, not a national
   // programme. It is a policy lever, not a description of the present.
+  // GRID BEYOND GCCA. Scales every region's connection headroom, so you can ask
+  // "what if we built more network than currently planned?" - the question the
+  // model could not previously answer, because it stopped at GCCA headroom and
+  // had no way to explore past it.
+  //
+  // GCCA headroom is NOT Eskom ignoring transmission: it is Eskom's own
+  // assessment of what can connect given the network they intend to build. So 0%
+  // here means "the planned grid", not "no grid". Raising it means building more
+  // than plan, and the transmission adder already prices that.
+  //
+  // This replaces a much heavier idea - coupling headroom row-by-row to the tx_
+  // expansion variables - which was implemented on 17 Aug 2026 and made the LP
+  // intractable (45s to over 850s without converging). One multiplier gets most
+  // of the policy answer for none of the solve cost.
+  gridBeyondGccaPct:0,
   vppEnabled:1, vppEnrolPct:0, vppGeyserPoolMW:4000, vppBattPerGeyserKW:0.35,
   // WHERE the VPP is. 'National' spreads the enrolled pool across regions by
   // their share of electricity demand; naming a region concentrates the whole
@@ -3458,6 +3474,38 @@ const FIXED = {
   // Tariff side: retrofit capital, allowed return and asset life.
   ccsCapexRkW:38000, ccsWaccPct:9, ccsLifeYrs:20,
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
+  // ── LONG-DURATION STORAGE ────────────────────────────────────────────────
+  // Four-hour lithium cannot ride out a multi-day wind lull however it is
+  // scheduled, which is why the coal-retired scenario built almost none of it.
+  // These three are the options that can, each with a real South African case.
+  //
+  // PUMPED STORAGE. SA already runs four schemes - Ingula 1,330 MW, Drakensberg
+  // 1,000, Palmiet 400, Steenbras 180 - and Eskom's Tubatse project is 1,500 MW
+  // with 21 GWh, i.e. FOURTEEN HOURS. EU/AFD grant funding is in place and a
+  // feasibility study was due Q1 2026. Duration and round trip here follow
+  // Tubatse's published spec and typical PSH performance.
+  //
+  // CAPPED AT 6 GW, and the reason is siting rather than water. Pumped storage is
+  // closed-loop, so it consumes evaporation and an initial fill, not a continuous
+  // draw. What limits it is needing two reservoirs several hundred metres apart
+  // vertically AND the water to fill them. South Africa has managed four schemes
+  // in a century; single-digit GW is the honest ceiling, not tens.
+  newPsMW:0, newPsHours:14, newPsEff:0.78, newPsMaxMW:6000,
+  //
+  // VANADIUM REDOX FLOW. The industrial-policy case is stronger than the pure
+  // cost case: Bushveld Minerals runs Vametco in Brits and Vanchem in
+  // Mpumalanga, built an electrolyte plant in East London, and deployed Eskom's
+  // first utility-scale VRFB at Rosherville. Domestic resource, domestic
+  // manufacture. Near-unlimited cycle life, no calendar degradation.
+  newVrfbMW:0, newVrfbHours:8, newVrfbEff:0.70,
+  //
+  // IRON-AIR. The only genuinely multi-day option: 100 hours at under $20/kWh,
+  // roughly a tenth of lithium per unit energy, and geology-independent, which
+  // matters where CAES is ruled out. The catch is a 45% round trip - it charges
+  // on energy that would otherwise be curtailed and accepts the loss, because the
+  // alternative is unserved load. Early commercial, so lenders price it as
+  // unproven, and there is no South African presence yet.
+  newIronAirMW:0, newIronAirHours:100, newIronAirEff:0.45,
   // pvUtilityMW is DERIVED, corrected 4,974 -> 3,151 on 15 Aug 2026:
   //   2,663 MW REIPPPP online at 31 Mar 2026 (IPP Office Q4 2025/26)
   // +   488 MW privately wheeled, ground-mounted (PFL H1 2026 monitor)
@@ -3621,7 +3669,15 @@ const FIXED = {
   //                    fuel cost (which implied R3,217-3,460) - doing the gas
   //                    derivation properly fixed this reference by side effect.
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
-  lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600, lcoeCsp:2000, lcoeCcgt:2500, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1400, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
+  lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600,
+  // Long-duration LCOE, R/MWh discharged. Pumped storage has high capex but a
+  // 60-100 year life and cheap ENERGY capacity - a bigger reservoir, not more
+  // cells - so per MWh it undercuts lithium at long duration. Vanadium sits
+  // higher on capex but never degrades and cycles indefinitely. Iron-air is by
+  // far the cheapest per unit of energy stored and the worst on round-trip
+  // losses, which is precisely the trade it exists to make.
+  lcoeVrfb:2100, lcoeIronAir:1750,
+  lcoeCsp:2000, lcoeCcgt:2500, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1400, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
@@ -3880,7 +3936,30 @@ function simulate(u, prof, outPath){
   const _vppB = (p.vppEnabled ?? 1) ? (p.vppGeyserPoolMW ?? 4000)
                 * (Math.max(0, Math.min(100, p.vppEnrolPct ?? 0))/100)
                 * (p.vppBattPerGeyserKW ?? 0.35) : 0;
-  const battPower=p.battPowerMW+p.newBattMW+_vppB, battEnergy=p.battPowerMW*p.battHours+p.newBattMW*p.newBattHours+_vppB*4;
+  // Storage aggregates. Pumped storage additions join the PS fleet, being the
+  // same technology. Vanadium and iron-air join the battery-class aggregate,
+  // which then carries an ENERGY-WEIGHTED duration and round-trip efficiency -
+  // a simplification, but an honest one: a fleet that is mostly iron-air really
+  // does behave less efficiently than one that is mostly lithium, and averaging
+  // captures that where a single hardcoded 0.88 could not.
+  const _vrfb = Math.max(0, p.newVrfbMW || 0), _fe = Math.max(0, p.newIronAirMW || 0);
+  const battPower = p.battPowerMW + p.newBattMW + _vppB + _vrfb + _fe;
+  const battEnergy = p.battPowerMW*p.battHours + p.newBattMW*p.newBattHours + _vppB*4
+                   + _vrfb*(p.newVrfbHours ?? 8) + _fe*(p.newIronAirHours ?? 100);
+  // New pumped storage joins the existing PS fleet - same technology, same
+  // behaviour - with an energy-weighted round trip so a Tubatse-class addition
+  // does not silently inherit the old fleet's efficiency.
+  const _newPs = Math.max(0, Math.min(p.newPsMaxMW ?? 6000, p.newPsMW || 0));
+  const psPowerTot  = p.psPowerMW + _newPs;
+  const psEnergyTot = p.psEnergyMWh + _newPs*(p.newPsHours ?? 14);
+  const psEffTot = (psEnergyTot > 0)
+    ? (p.psEnergyMWh*p.psEff + _newPs*(p.newPsHours ?? 14)*(p.newPsEff ?? 0.78)) / psEnergyTot
+    : p.psEff;
+  const _liE = p.battPowerMW*p.battHours + p.newBattMW*p.newBattHours + _vppB*4;
+  const _vrE = _vrfb*(p.newVrfbHours ?? 8), _feE = _fe*(p.newIronAirHours ?? 100);
+  const battEffMix = (battEnergy > 0)
+    ? (_liE*(p.battEff ?? 0.88) + _vrE*(p.newVrfbEff ?? 0.70) + _feE*(p.newIronAirEff ?? 0.45)) / battEnergy
+    : (p.battEff ?? 0.88);
   const ccgtCap=p.ccgtMW+p.newCcgtMW;
   const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
   // Coal ramp-rate limit: how much coal generation can change hour-to-hour, blended between
@@ -3906,7 +3985,7 @@ function simulate(u, prof, outPath){
   // Hours of its own rating a pumped-storage scheme aims to hold for the evening
   // peak. Eskom's schemes are built around roughly a 4-6 hour evening discharge.
   const PS_PEAK_HOURS = 4;
-  let psSoc=p.psEnergyMWh*0.7, battSoc=battEnergy*0.5;
+  let psSoc=psEnergyTot*0.7, battSoc=battEnergy*0.5;
   // Cost basis of the energy currently in store, R per MWh OF STORED ENERGY.
   // Efficiency loss is applied on the way in (soc += w*eff), so the basis already
   // carries it: charging 100 MWh at R0 into an 88% battery stores 88 MWh at R0/MWh;
@@ -3923,7 +4002,7 @@ function simulate(u, prof, outPath){
   const addCharge=(hr,which,mw,costR)=>{
     if(mw<=0) return;
     basisLog.push({t:'chg', h:hr, which, mw, soc:(which==='ps'?psSoc:battSoc), cost:costR});
-    if(which==='ps'){ const e=mw*p.psEff; psBasis=(psSoc*psBasis+mw*costR)/Math.max(1e-9,psSoc+e); }
+    if(which==='ps'){ const e=mw*psEffTot; psBasis=(psSoc*psBasis+mw*costR)/Math.max(1e-9,psSoc+e); }
     else { const e=mw*p.battEff; battBasis=(battSoc*battBasis+mw*costR)/Math.max(1e-9,battSoc+e); }
   };
   // Which resource was genuinely ON THE MARGIN each hour. A resource sitting at its
@@ -4169,7 +4248,7 @@ function simulate(u, prof, outPath){
     // Withholding it is what forces peakers on in tight hours and lifts the
     // price above coal SRMC - without this the system prices flat all year.
     const reserveNeed = reserveMWAt(h);
-    const fastStart   = p.ocgtDieselMW + (p.ccgtMW||0) + battPower + p.psPowerMW;
+    const fastStart   = p.ocgtDieselMW + (p.ccgtMW||0) + battPower + psPowerTot;
     const reserveOnCoal = Math.max(0, reserveNeed - fastStart);
     reserveMWArr[h] = reserveNeed;
     const cAvail = Math.max(ucMSLraw(h), cAvailRaw - reserveOnCoal);
@@ -4272,7 +4351,7 @@ function simulate(u, prof, outPath){
       // This is the real mechanism behind "inflexible coal causes additional curtailment".
       const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
-      const psChg=Math.min(surplus,p.psPowerMW,p.psEnergyMWh-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*p.psEff; surplus-=psChg;
+      const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
       const btChg=Math.min(surplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*p.battEff; surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       curtailMW[h]+=surplus; E.curtailed+=surplus;
@@ -4324,7 +4403,7 @@ function simulate(u, prof, outPath){
       residual-=coalGen;
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
-        const psChg=Math.min(forcedSurplus,p.psPowerMW,p.psEnergyMWh-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*p.psEff; forcedSurplus-=psChg;
+        const psChg=Math.min(forcedSurplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; forcedSurplus-=psChg;
         const btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*p.battEff; forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
@@ -4355,7 +4434,7 @@ function simulate(u, prof, outPath){
       // A resource is MARGINAL only if it is the last one dispatched AND it still had
       // room to give more. Storage at its power or energy limit is constrained, not
       // marginal, and the next unit up sets the price. `slack` captures that.
-      const psLim=Math.min(p.psPowerMW,psSoc), btLim=Math.min(battPower,battSoc);
+      const psLim=Math.min(psPowerTot,psSoc), btLim=Math.min(battPower,battSoc);
       if(isExpensiveHour){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
@@ -4415,12 +4494,12 @@ function simulate(u, prof, outPath){
         // rating through a typical evening peak - while the anticipatedShortfall
         // term still lifts the target higher when genuine stress is coming, which
         // was the original and correct purpose of that mechanism.
-        const psDailyFloor  = Math.min(p.psEnergyMWh*0.60, p.psPowerMW*PS_PEAK_HOURS);
+        const psDailyFloor  = Math.min(psEnergyTot*0.60, psPowerTot*PS_PEAK_HOURS);
         const battDailyFloor= Math.min(battEnergy*0.60, battPower*p.battHours*0.75);
-        const psTargetCeiling=Math.min(p.psEnergyMWh*0.85, Math.max(anticipatedShortfall[h], psDailyFloor));
+        const psTargetCeiling=Math.min(psEnergyTot*0.85, Math.max(anticipatedShortfall[h], psDailyFloor));
         const battTargetCeiling=Math.min(battEnergy*0.8, Math.max(anticipatedShortfall[h], battDailyFloor));
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
-        if(head>0&&psSoc<psTargetCeiling){const w=Math.min(p.psPowerMW*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*p.psEff; head-=w; chargeMW[h]+=w;}
+        if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
         if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; addCharge(h,'batt',w,chgC); battSoc+=w*p.battEff; chargeMW[h]+=w;}
       }
       // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
@@ -4580,7 +4659,7 @@ function simulate(u, prof, outPath){
         // marginal cost for a deliberate coal-fill).
         const cost = (marginalTech[ev.h] === 'coalneg') ? marginalP[ev.h] : ev.cost;
         if (ev.which === 'ps') {
-          const e = ev.mw * p.psEff;
+          const e = ev.mw * psEffTot;
           psB = (ev.soc * psB + ev.mw * cost) / Math.max(1e-9, ev.soc + e);
         } else {
           const e = ev.mw * p.battEff;
@@ -4620,7 +4699,7 @@ function simulate(u, prof, outPath){
    */
   {
     const battD = Math.max(1, Math.min(24, Math.round(p.battHours ?? 4)));
-    const psD   = Math.max(1, Math.min(24, Math.round((p.psEnergyMWh / Math.max(1, p.psPowerMW)) || 8)));
+    const psD   = Math.max(1, Math.min(24, Math.round((psEnergyTot / Math.max(1, psPowerTot)) || 8)));
     for (let d0 = 0; d0 < HOURS; d0 += 24) {
       const day = [];
       for (let k = 0; k < 24 && d0 + k < HOURS; k++) day.push(thermalP[d0 + k]);
@@ -4676,7 +4755,22 @@ function simulate(u, prof, outPath){
   // used only as a replacement-cost weight for its 1.77 TWh - not a dispatch cost.
   const lcoeOf={coal:p.lcoeCoalNew, ccgt:p.lcoeCcgt, diesel:p.lcoeDiesel, nuclear:p.lcoeNuclear,
     hydro:p.lcoeHydro, imports:p.lcoeImports, wind:p.lcoeWind, pv:p.lcoePv, csp:p.lcoeCsp,
-    rooftop:p.lcoeRooftop, ps:p.lcoePs, batt:p.lcoeBatt, hybrid:1900};
+    rooftop:p.lcoeRooftop, ps:p.lcoePs, batt:p.lcoeBatt, hybrid:1900,
+    // Vanadium and iron-air discharge through the battery-class aggregate, so
+    // their energy shows up under E.batt. Their LCOE is therefore blended into
+    // the battery figure below in proportion to the energy each holds - without
+    // this the sliders would be inert, which the deep harness duly flagged.
+    };
+  // Blend the battery-class LCOE by the energy share of each technology, so a
+  // fleet that is mostly iron-air is costed as iron-air rather than as lithium.
+  {
+    const _vE = (p.newVrfbMW||0)*(p.newVrfbHours ?? 8);
+    const _fE = (p.newIronAirMW||0)*(p.newIronAirHours ?? 100);
+    const _lE = p.battPowerMW*p.battHours + (p.newBattMW||0)*(p.newBattHours ?? 4);
+    const _tot = _vE + _fE + _lE;
+    if (_tot > 0) lcoeOf.batt = (_lE*p.lcoeBatt + _vE*(p.lcoeVrfb ?? 2100)
+                           + _fE*(p.lcoeIronAir ?? 1750)) / _tot;
+  }
   let replTotal=0;
   for(const k in lcoeOf) replTotal += E[k]*lcoeOf[k];
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
@@ -5626,8 +5720,39 @@ function bldBuildRegionalLP(opts){
       const hr = bldHeadroom[R] || {};
       // Capacity NOT yet released in this year because its project slipped.
       const held = rel && rel[R] ? (rel[R][y] || 0) : 0;
-      const wcap = Math.max(0, (hr.wind_mw||0) - held);
-      const pcap = Math.max(0, (hr.solar_mw||0) - held);
+      // Scale headroom by the grid-beyond-GCCA lever before the slip deduction,
+      // so extra network releases extra capacity but a slipped project still
+      // withholds what it was going to release.
+      const gx = 1 + Math.max(0, Math.min(200, S.gridBeyondGccaPct ?? 0))/100;
+      const wcap = Math.max(0, (hr.wind_mw||0)*gx - held);
+      const pcap = Math.max(0, (hr.solar_mw||0)*gx - held);
+      // KNOWN LIMITATION, and it is the reason the optimiser builds no
+      // transmission at high renewables. GCCA headroom is a HARD CAP here, set
+      // from headroom_summary.json and unrelated to the tx_ expansion variables.
+      // The optimiser therefore builds exactly to national headroom (21.52 GW
+      // wind, 19.94 GW solar) and stops - it never reaches a corridor limit, so
+      // reinforcing a corridor can never pay for itself.
+      //
+      // That is incoherent: GCCA headroom IS a network constraint, so building
+      // the binding corridor should raise it. The fix was implemented and
+      // reverted on 17 Aug 2026 because coupling headroom to tx_ made the LP
+      // intractable in a browser - solve time went from ~45s to over 850s
+      // without converging. A tool nobody can run is worse than one with a
+      // documented limitation.
+      //
+      // WHAT THIS MEANS FOR RESULTS: transmission expansion is real and works
+      // where corridors bind BEFORE headroom does - it correctly reinforced the
+      // Eastern Cape-KZN and Hydra-Western Cape corridors at default settings.
+      // In high-renewables scenarios headroom binds first and the transmission
+      // answer should be read as "no corridor is the binding constraint here",
+      // NOT as "no network investment is needed". The GCCA headroom itself
+      // already embeds the network build required to release it.
+      // RESTORED 17 Aug 2026. These two rows were DELETED by accident: the revert
+      // of the headroom-transmission coupling replaced everything from the
+      // comment above down to the hb_ row, taking the actual constraints with it
+      // and leaving only the prose describing them. Wind and solar headroom went
+      // unenforced until an LP audit found no hw_ or hp_ rows at all, while
+      // hb_ survived. Caught by counting constraint families in the emitted LP.
       L.push(' hw_'+ri+'_'+y+': ' + cum('wind',ri,y).join(' + ') + ' <= ' + wcap.toFixed(1));
       L.push(' hp_'+ri+'_'+y+': ' + cum('pv',ri,y).join(' + ')   + ' <= ' + pcap.toFixed(1));
       L.push(' hb_'+ri+'_'+y+': ' + cum('batt',ri,y).join(' + ') + ' <= ' + (hr.batt_mw||0));
@@ -7877,6 +8002,12 @@ const SLIDERS=[
   {id:'newPvMW',label:'New utility solar PV',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.2 GW existing (2.7 GW from REIPPPP + 488 MW wheeled; H1 2026 added 974 MW)'},
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.6 GW existing, behind the meter (Eskom estimates 9.1 GW; 0.49 GW of that is ground-mounted wheeled plant, modelled as utility supply instead)'},
   {id:'newBattMW',label:'New batteries (4 h)',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing'},
+  {id:'newPsMW',label:'New pumped storage',min:0,max:6000,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
+   note:'14-hour storage, the duration of Eskom\u2019s planned 1,500 MW / 21 GWh Tubatse scheme in Limpopo, which has EU/AFD grant funding and a feasibility study from Q1 2026. South Africa already runs four schemes \u2013 Ingula, Drakensberg, Palmiet and Steenbras \u2013 totalling 2.9 GW. Capped at 6 GW because siting, not water, is the limit: pumped storage is closed-loop, but it needs two reservoirs several hundred metres apart vertically and the water to fill them. Four schemes in a century suggests single-digit GW is the honest ceiling.'},
+  {id:'newVrfbMW',label:'New vanadium flow batteries',min:0,max:20000,step:500,def:FIXED.newVrfbMW,fmt:v=>v===0?'none':(v/1000).toFixed(1)+' GW',
+   note:'8-hour storage at about 70&#37; round trip. The South African case is industrial rather than purely economic: Bushveld Minerals runs Vametco in Brits and Vanchem in Mpumalanga, built an electrolyte plant in East London, and deployed Eskom\u2019s first utility-scale flow battery at Rosherville. Domestic resource, domestic manufacture. Cycles essentially indefinitely with no calendar degradation, so it suits daily deep cycling where lithium would wear out.'},
+  {id:'newIronAirMW',label:'New iron-air storage',min:0,max:20000,step:500,def:FIXED.newIronAirMW,fmt:v=>v===0?'none':(v/1000).toFixed(1)+' GW',
+   note:'100-HOUR storage \u2013 the only option here that can ride out a multi-day wind lull. Under $20/kWh, roughly a tenth of lithium per unit of energy, and geology-independent, which matters where compressed air is ruled out. The catch is a 45&#37; round trip: it charges on energy that would otherwise be curtailed and accepts the loss, because the alternative is unserved load. Early commercial, no South African presence yet, and lenders price it as unproven.'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup/insurance and rarely dispatched when storage is ample (except when IRP artificial load factor is applied)'},
   {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:SUB_CTRL,note:'When ticked, gas runs as must-run at 50% of installed capacity every hour – matching the IRP 2025’s assumed annual load factor. When unticked, gas dispatches on merit order only.'},
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'Modern supercritical, same fuel cost as existing fleet'},
@@ -7903,6 +8034,8 @@ const SLIDERS=[
    ctrlStyle:SUB_CTRL,note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2013 which is why reserve costs rise with a high-renewables fleet.'},
   {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Minimum synchronous (thermal/hydro) plant online at all times for grid inertia, voltage stability and fault current. Baseline is 6 GW, or roughly 15% of SA peak demand – consistent with Eskom’s historical practice. Slide to 0 to model a fully grid-forming-capable future where batteries and inverters substitute for spinning mass. Applies to both engines.'},
   {grp:'Grid'},
+  {id:'gridBeyondGccaPct',label:'Grid built beyond current plan',min:0,max:150,step:10,def:FIXED.gridBeyondGccaPct,fmt:v=>v===0?'GCCA plan only':'+'+v+'% headroom',
+   note:'Scales every region\u2019s connection headroom in the build optimiser. Zero means the network Eskom currently plans to build \u2013 GCCA headroom is their own assessment of what can connect given that plan, not an assumption of no grid investment. Raise it to ask what a larger build programme would unlock; the transmission cost slider below already prices the network. Without this the optimiser simply stops at GCCA headroom, which is why it builds no new corridors in high-renewables scenarios.'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr gross; R600 default nets off the share already committed · rooftop avoids it'},
   {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. When switched on, the result is +20% capacity (based on DOE/utility deployments showing +10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2013 not a blanket national boost, since enhancing an already-idle corridor would be wasteful. Costs R1.55m/km \u2013 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2013 the single-node engine has no corridors to enhance.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar &amp; batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder \u2013 up to the MW of coal retired.'},
@@ -7918,6 +8051,9 @@ const SLIDERS=[
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
   {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 wind bids > solar; anchor R0.75'},
   {id:'lcoeRooftop',label:'Rooftop PV',min:400,max:2000,step:10,def:FIXED.lcoeRooftop,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
+  {id:'lcoePs',label:'Pumped storage',min:400,max:3000,step:50,def:FIXED.lcoePs,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
+  {id:'lcoeVrfb',label:'Vanadium flow',min:800,max:4500,step:50,def:FIXED.lcoeVrfb,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
+  {id:'lcoeIronAir',label:'Iron-air',min:600,max:4000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
   {id:'lcoeBatt',label:'Battery (4h)',min:600,max:3500,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'LNG-fired BUILD cost, not running cost - the fuel is the Gas running cost slider (R1,968/MWh). At that fuel cost this R2.50 implies a 30-50% capacity factor. IRP 2025 assumed $10/MMBtu, roughly half the FY2026 reference of $18.50 delivered.'},
@@ -7939,13 +8075,89 @@ const PRESETS={
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
   'Latest IRP\'s 2030 targets':{demandGrowthPct:16,coalEAFPct:68,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
-  'Future electricity mix':{demandGrowthPct:5,coalDecomMW:21000,newWindMW:28500,newPvMW:42500,newRooftopMW:15000,newBattMW:20000},
+  'Future electricity mix':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:52000,newRooftopMW:20000,newBattMW:30000,newCcgtMW:0},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
 // next to a correctly-coloured swatch - which is exactly what happened when
 // hybrid was added to DISP_ORDER and COLORS but not here.
 const NAMES={hybrid:'Hybrid (RMIPPPP)',nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Battery',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV',curtailment:'Curtailed (wasted)'};
+
+/* ==================== DC POWER FLOW DIAGNOSTIC =============================
+ * The regional model is a TRANSPORT model: it routes power down whichever
+ * corridor is cheapest, subject to an MW limit. Real networks do not work that
+ * way. Power splits across every parallel path in inverse proportion to
+ * reactance, whether or not that path is on a sensible route - which is why a
+ * transport model can be materially wrong about WHICH corridor loads up.
+ *
+ * This does not constrain the optimiser. Coupling network physics into the LP
+ * was tried for the headroom-transmission link on 17 Aug 2026 and made it
+ * intractable, so this instead TAKES the dispatch answer and asks what the
+ * physics implies - reporting where a real network would overload even though
+ * the transport model saw no problem.
+ *
+ * Parameters come from nodal/corridor_electrical.json: line lengths computed
+ * from real geometry, reactance ASSIGNED from voltage class using standard
+ * overhead-line values. That is the method PyPSA and PyPSA-Eur use; it is not
+ * measured impedance, and the file says so.
+ */
+let dcNet = null;
+fetch('nodal/corridor_electrical.json').then(r=>r.json()).then(d=>{ dcNet = buildPTDF(d); })
+  .catch(()=>{ dcNet = null; });
+
+function buildPTDF(d){
+  const R = ['Eastern Cape','Limpopo','Mpumalanga','Gauteng','Western Cape',
+             'Northern Cape','Hydra Central','Kwazulu Natal','North West','Free State'];
+  const idx = {}; R.forEach((r,i)=>idx[r]=i);
+  const corr = Object.entries(d.corridors).map(([k,v])=>{
+    const [a,b] = k.split('|'); return { a, b, b_pu: v.b_pu, mva: v.mva, km: v.km, lines: v.lines };
+  });
+  const N = R.length, L = corr.length;
+  const B = Array.from({length:N},()=>new Float64Array(N));
+  const A = Array.from({length:L},()=>new Float64Array(N));
+  corr.forEach((c,li)=>{
+    const i = idx[c.a], j = idx[c.b];
+    B[i][i]+=c.b_pu; B[j][j]+=c.b_pu; B[i][j]-=c.b_pu; B[j][i]-=c.b_pu;
+    A[li][i]=c.b_pu; A[li][j]=-c.b_pu;
+  });
+  // invert B with region 0 as slack (Gauss-Jordan on a 9x9 - trivially small)
+  const keep = []; for (let i=1;i<N;i++) keep.push(i);
+  const n = keep.length;
+  const M = Array.from({length:n},(_,r)=>{
+    const row = new Float64Array(2*n);
+    for (let c=0;c<n;c++) row[c] = B[keep[r]][keep[c]];
+    row[n+r] = 1; return row;
+  });
+  for (let c=0;c<n;c++){
+    let piv=c; for (let r=c+1;r<n;r++) if (Math.abs(M[r][c])>Math.abs(M[piv][c])) piv=r;
+    if (Math.abs(M[piv][c])<1e-12) return null;
+    [M[c],M[piv]]=[M[piv],M[c]];
+    const d0=M[c][c]; for (let k=0;k<2*n;k++) M[c][k]/=d0;
+    for (let r=0;r<n;r++){ if(r===c) continue; const f=M[r][c];
+      if (!f) continue; for (let k=0;k<2*n;k++) M[r][k]-=f*M[c][k]; }
+  }
+  const PTDF = Array.from({length:L},()=>new Float64Array(N));
+  for (let li=0; li<L; li++)
+    for (let cj=0; cj<n; cj++){
+      let v=0; for (let ck=0; ck<n; ck++) v += A[li][keep[ck]] * M[ck][n+cj];
+      PTDF[li][keep[cj]] = v;
+    }
+  return { R, corr, PTDF };
+}
+
+// injections: {region: MW net injection}. Positive = generating more than it uses.
+function dcFlows(injByRegion){
+  if (!dcNet) return null;
+  const { R, corr, PTDF } = dcNet;
+  const inj = R.map(r => injByRegion[r] || 0);
+  // a DC flow needs balanced injections; spread any residual by load share
+  const resid = inj.reduce((a,b)=>a+b,0);
+  if (Math.abs(resid) > 1) for (let i=0;i<inj.length;i++) inj[i] -= resid/inj.length;
+  return corr.map((c,li)=>{
+    let f=0; for (let k=0;k<R.length;k++) f += PTDF[li][k]*inj[k];
+    return { ...c, mw: f, util: Math.abs(f)/c.mva };
+  });
+}
 
 /* ==================== BUILD CONTROLS ==================== */
 const state={};
