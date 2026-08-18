@@ -179,7 +179,10 @@ function probe(){
                            // The single-node dispatch engine this sweep exercises has
                            // no headroom concept, so it cannot move. Its effect is
                            // tested directly in validate_lp.js instead.
-                           'gridBeyondGccaPct']);
+                           'gridBeyondGccaPct',
+                           // A READOUT is not a control: it renders a live summary and
+                           // writes nothing to state, so it cannot perturb anything.
+                           'vppTotalReadout']);
    const cache = {};
    const baseFor = ctx => { const key = JSON.stringify(ctx||{});
      if(!cache[key]) cache[key]=metrics(sim(ctx||{})); return cache[key]; };
