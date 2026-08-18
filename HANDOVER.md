@@ -1,3 +1,61 @@
+## DOORNHOEK ADDED - and why it passed where Graspan failed (18 Aug 2026)
+
+Engineering News, 22 May 2026: AMEA Power commissioned the 120 MW Doornhoek solar
+PV plant near Klerksdorp, North West - the FIRST Bid Window 6 project to reach
+commercial operation. Added to by_source.reipppp solar, North West.
+
+THE TEST IT PASSED, stated as a rule for next time. Three independent sources
+agreeing on capacity, province AND timing, plus the in_construction decomposition
+NAMING the project:
+
+    ipp_pipeline.json   status 'construction' at 31 Mar 2026, 120 MW, BW6, North West
+    Engineering News    commissioned, dated 22 May 2026 - after the cutoff
+    PFL H1 2026         Table 1, among the 17 H1 CODs
+
+Graspan had none of that. Its 75 MW was absent from the 444 MW construction
+decomposition, and our own coverage note recorded ~73 MW of unattributed BW5
+SOLAR already inside the online total. Same report, same day, opposite answer -
+the difference is whether the source data can NAME the capacity as not yet online
+at the cutoff.
+
+CASCADE, all updated together:
+    reipppp solar North West   225 -> 345 MW
+    online_actual              7,355 -> 7,475 MW
+    in_construction            444 -> 324 MW   (Virginia 240 + BW5 EC wind 84 remain)
+    FIXED.pvUtilityMW          3,151 -> 3,271 MW
+    fingerprints               regional_renewable_capacity + ipp_pipeline recomputed
+    ipp_pipeline               Doornhoek status construction -> online, COD recorded
+    stress_deep H2             pinned display figure 3.2 -> 3.3 GW
+
+Utility PV generation 6.21 -> 6.45 TWh, capacity factor unchanged at 22.5%.
+
+CAPACITY-FACTOR CAUTION RESOLVED, not merely noted. The quoted 325 GWh/y on 120 MW
+implies 30.9%, which looked like an over-claim against a 21-24% fixed-tilt band.
+It is not: Doornhoek uses SINGLE-AXIS TRACKING (developer-sourced; ~200 ha,
+81,000+ panels), and the SA range for tracking is 26-31%. So 30.9% sits at the top
+of a plausible band rather than outside one. This is DISTINCT from the Ilikwa flag,
+where 32% is asserted for a Free State plant with no stated mechanism - there the
+number has no explanation, here it does.
+
+MWp vs MWac, checked because it would have changed the answer: the press
+consistently says 120 MWp while PFL Table 1 records 120 MWac for both contracted
+and installed. PFL flags that distinction explicitly in footnote 2 for Mulilo Total
+Hydra and did NOT flag Doornhoek, so 120 MWac is deliberate. It also reconciles -
+325 GWh on ~100 MWac (if 120 were MWp) would imply 37%, which is not achievable.
+
+MODELLING NOTE: our solar profile yields 22.5% fleet-average, so the model
+generates about 236 GWh here against the claimed 325. That is the correct
+treatment for one plant inside a fleet-average profile, but the FLEET capacity
+factor should drift upward as tracking becomes standard - worth revisiting when
+enough of the fleet is tracked to move the national profile.
+
+REMAINING GAP IS NOW SMALL. Of the 444 MW in construction at 31 March, only
+Doornhoek appears in PFL's H1 COD list. Virginia Solar Park (240) and the BW5
+Eastern Cape wind (84) did not commission. The other H1 public CODs - Phezukomoya,
+Coleskop, Grootspruit - were therefore already online at 31 March, which is
+consistent with their earlier financial close years. The public H1 reconciliation
+is effectively closed.
+
 ## POWER FUTURES LAB H1 2026 MONITOR INGESTED (18 Aug 2026)
 
 Alao & Kruger, South African IPPs: Financial Close & COD Monitor, H1 2026 update,
