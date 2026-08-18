@@ -161,6 +161,41 @@ function check(label, ok, detail) {
     }
   }
 
+  // ---- CONSTRAINT FAMILIES MUST BE PRESENT ---------------------------------
+  // Added 17 Aug 2026 after a whole constraint family went missing unnoticed.
+  // A revert of the headroom-transmission coupling replaced everything from a
+  // comment down to the hb_ row, deleting the hw_ and hp_ headroom constraints
+  // and leaving only the prose describing them. Wind and solar connection limits
+  // were unenforced, and NOTHING caught it: the LP still solved, still returned
+  // Optimal, and every other check passed. Only counting constraint families in
+  // the emitted LP found it.
+  //
+  // A silently missing constraint is the worst failure mode this model has -
+  // the answer looks entirely normal and is simply wrong.
+  {
+    const REQUIRED = {
+      bal_:   'energy balance',
+      cmax_:  'coal capacity',
+      hw_:    'wind connection headroom',
+      hp_:    'solar connection headroom',
+      hb_:    'battery connection headroom',
+      rate_:  'national build rate',
+      dur_:   'storage duration',
+      soc_:   'storage state of charge',
+      txa_:   'corridor flow limit',
+    };
+    const lp = await runProbe(w, `return bldBuildRegionalLP({growth:0.0146,eaf:0.68,rate:bldRates(),state}).lp;`);
+    if (typeof lp === 'string') {
+      for (const [fam, desc] of Object.entries(REQUIRED)) {
+        const n = (lp.match(new RegExp(' ' + fam, 'g')) || []).length;
+        check(`regional LP emits ${fam} (${desc})`, n > 0,
+              n > 0 ? `${n} rows` : 'NO ROWS - constraint family is missing entirely');
+      }
+    } else {
+      check('regional LP available for constraint-family audit', false, String(lp).slice(0,120));
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} checks passed`);
   process.exit(fail ? 1 : 0);
 })();
