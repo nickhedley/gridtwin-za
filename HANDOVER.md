@@ -1,3 +1,30 @@
+## COLLAPSIBLE SLIDER GROUPS (17 Aug 2026)
+
+The scenario panel reached 51 controls and ran well past the bottom of the result
+columns, so the last two groups sat below the fold and were effectively hidden
+anyway. Each of the eight groups is now a native <details>, which brings keyboard
+support and screen-reader semantics for free.
+
+    open    Demand, Existing coal fleet, New build, Demand-side & flexibility,
+            System operation, Grid
+    closed  Policy & prices (5), LCOE assumptions (12)
+
+The two closed are the ones that sit below the other columns and are least often
+touched. Everything above stays open so the panel still reads as a scenario at a
+glance.
+
+A COLLAPSED GROUP DECLARES ITSELF, and this is the part that matters. Hiding
+controls is only safe if the user can still see that something inside has been
+changed - otherwise a scenario silently carries a setting nobody remembers making,
+which is a worse failure than a long panel. Closed groups show "5 settings", and
+if any differ from their default, "5 settings · 1 changed" in the alert colour.
+Verified: changing the carbon price and the wind LCOE lights both badges.
+
+Implementation note: controls are appended to the CURRENT GROUP rather than to
+the panel, tracked by a `currentGroup` variable set when each header is created.
+All 51 still render and validate_structure's inventory check still passes, since
+it uses a descendant selector.
+
 ## BUG: "PEAK DEMAND" WAS DEMAND PLUS STORAGE CHARGING (17 Aug 2026)
 
 Found by the user querying why the Future electricity mix preset reported 50.5 GW
