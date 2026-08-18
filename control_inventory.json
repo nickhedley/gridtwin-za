@@ -14,8 +14,11 @@
   "drInterruptCostR",
   "drInterruptMW",
   "drShiftPct",
+  "exportCapMW",
+  "exportPriceR",
   "getsEnabled",
   "gridBeyondGccaPct",
+  "importsMW",
   "lcoeBatt",
   "lcoeCcgt",
   "lcoeCoalNew",
@@ -52,5 +55,5 @@
   "vppEnrolPct",
   "vppGeyserPoolMW"
  ],
- "count": 51
+ "count": 54
 }
