@@ -4509,7 +4509,7 @@ function simulate(u, prof, outPath){
         // 100-hour iron-air has an average duration of about 21 h, and sizing its
         // daily target on p.battHours = 4 left it filling to 14% of capacity and
         // stopping - 987 GWh idle while 116 TWh was curtailed.
-        const battFleetHours = battPower > 0 ? battEnergy / battPower : (p.battHours || 4);
+        const battFleetHours = battPower > 0 ? battEnergy / battPower : (p.battHours ?? 4);
         const battDailyFloor= Math.min(battEnergy*0.60, battPower*battFleetHours*0.75);
         const psTargetCeiling=Math.min(psEnergyTot*0.85, Math.max(anticipatedShortfall[h], psDailyFloor));
         const battTargetCeiling=Math.min(battEnergy*0.8, Math.max(anticipatedShortfall[h], battDailyFloor));
@@ -8116,6 +8116,16 @@ const NAMES={hybrid:'Hybrid (RMIPPPP)',nuclear:'Nuclear',hydro:'Hydro',imports:'
  * overhead-line values. That is the method PyPSA and PyPSA-Eur use; it is not
  * measured impedance, and the file says so.
  */
+// NOT YET WIRED TO A PANEL. Built 17 Aug 2026 and verified against a Python
+// prototype to the megawatt, but nothing on screen calls dcFlows() yet — the
+// structural audit the same day caught it as orphaned, which is exactly the
+// runNodalYear trap: code that reads as live and is not.
+//
+// It is kept rather than deleted because it is correct, cheap and the data file
+// it needs (nodal/corridor_electrical.json) ships with the site. To use it, call
+// dcFlows({region: netInjectionMW}) and render the returned corridor flows and
+// utilisation — the natural home is the network schematic panel, alongside the
+// transport-model flows, so the two can be compared.
 let dcNet = null;
 fetch('nodal/corridor_electrical.json').then(r=>r.json()).then(d=>{ dcNet = buildPTDF(d); })
   .catch(()=>{ dcNet = null; });
