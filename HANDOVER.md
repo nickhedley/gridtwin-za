@@ -1,3 +1,53 @@
+## BUG HUNT SESSION 1: PHYSICAL INVARIANTS (17 Aug 2026)
+
+validate_invariants.js. Asserts what must be true in every one of 8,760 hours,
+across 11 scenarios including every corner - everything off, everything maxed, a
+fleet that cannot meet load, and a system drowning in surplus. 145/147 passing.
+
+Checks: supply equals demand hourly; nothing negative; nothing exceeds capacity;
+curtailment cannot exceed available VRE; part-load multiplier >= 1 when coal runs
+and exactly 1 when idle; discharge within power rating; round-trip physical;
+CO2 at or above coal energy x emission factor; costs non-negative; peak sane; and
+each storage fleet cycling a plausible number of times a year.
+
+IT FOUND A REAL BUG, which is the point.
+
+  LONG-DURATION STORAGE SITS IDLE IN A HIGH-VRE SYSTEM
+    scenario  +50 GW wind, +50 GW PV, +30 GW batt, +5 GW PS, +8 GW VRFB, +8 GW Fe-air
+    battery-class capacity   987 GWh
+    battery-class discharge  0.023 TWh  =  0.0 cycles/yr
+    pumped storage           6.209 TWh  = 41   cycles/yr  (healthy)
+    CURTAILED                116.1 TWh
+
+  987 GWh idle while 116 TWh is thrown away is not physically sensible. Pumped
+  storage cycles fine, so the psDailyFloor fix of 16 Aug repaired the PS path
+  ONLY - the battery-class path appears to have the same ceiling collapse that
+  pumped storage had. At 987 GWh against 46.8 GW of power the fleet needs 21
+  hours at full power to fill, and the charging target looks to be sized on a
+  daily cycle that cannot reach it. NOT YET FIXED - first task next session.
+
+THREE ITERATIONS TO GET THE CHECK RIGHT, each worth recording:
+  * v1 keyed the storage check on CURTAILMENT being present. The default scenario
+    curtails nothing, so it never ran - the reintroduced storage bug passed
+    132/132.
+  * v2 measured cycles but SUMMED pumped storage and batteries. The reintroduced
+    bug passed at 11.8 cycles/yr because PS collapsed to 0.7 while the battery
+    rose from 0.27 to 0.70 TWh and covered for it. Aggregating hid the very bug
+    the check exists to find.
+  * v3 checks each fleet separately. Verified by reintroducing the 16 Aug storage
+    bug: pumped storage drops to 0.7 cycles/yr and three scenarios fail.
+
+  A check that has never been shown to fail on a known bug is not evidence of
+  anything. Reintroducing the bug to prove the guard fires is the step that
+  matters, and it caught two bad versions of my own check.
+
+TWO EARLY FAILURES WERE THE CHECK'S FAULT, NOT THE MODEL'S:
+  * round-trip 44.99 in a coal-retired scenario - the system was short 8,063 of
+    8,760 hours, so there was nothing to charge from and storage simply drained
+    its opening state. Ratio now only evaluated when charging is material.
+  * CO2 below the coal floor with CCS on - capture legitimately breaks that
+    identity. Floor now applies only with capture off.
+
 # GridTwin ZA — handover
 
 **Live site:** https://nickhedley.github.io/gridtwin-za/
