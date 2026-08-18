@@ -8383,7 +8383,17 @@ SLIDERS.forEach(s=>{
     (s.note?'<small>'+s.note+'</small>':'');
   (currentGroup || controlsEl).appendChild(d);
   const inp = d.querySelector('input');
-  function updateTrack(el){ const pct=100*(el.value-el.min)/(el.max-el.min); el.style.setProperty('--val',pct+'%'); }
+  // Defined inside the render closure, so applyState could not reach it - which
+  // is why the orange fill lagged the thumb whenever a value was set
+  // PROGRAMMATICALLY rather than dragged: a URL parameter, a preset, or "load
+  // this build into the model". The thumb moved, the fill stayed where it was.
+  //
+  // Most visible on demand growth, because it is the only slider with a NEGATIVE
+  // minimum: rendered at its default of 0 the fill sits at 7.7% of a -10..120
+  // track, so a URL setting +5 left a grey gap between the track start and the
+  // orange. Every other slider had the same bug, just with the two positions
+  // closer together.
+  function updateTrack(el){ updateSliderFill(el); }
   updateTrack(inp);
   inp.addEventListener('input',e=>{
     state[s.id]=+e.target.value;
@@ -8457,6 +8467,17 @@ function updateGroupBadges(){
   });
 }
 
+// Redraw a range input's fill from its own value. A function declaration rather
+// than an assignment, because the slider renderer runs before this point in the
+// file and an assignment would not yet exist when it calls this.
+function updateSliderFill(el){
+  if (!el || el.type !== 'range') return;
+  const min = parseFloat(el.min), max = parseFloat(el.max), v = parseFloat(el.value);
+  if (!isFinite(min) || !isFinite(max) || max === min) return;
+  const pct = 100 * (v - min) / (max - min);
+  el.style.setProperty('--val', Math.max(0, Math.min(100, pct)) + '%');
+}
+
 function applyState(overrides){
   SLIDERS.forEach(s=>{if(s.grp)return; const v=(s.id in overrides)?overrides[s.id]:(s.toggle?(s.def?1:0):s.def);
     state[s.id]=v;
@@ -8469,7 +8490,8 @@ function applyState(overrides){
     // of it (crisis EAF, high-renewables) ran on stale values. Caught by
     // validate_outputs dropping 33 -> 30 the moment the VPP siting picker was added.
     else if(s.select){ el.value=v; }
-    else{ el.value=v; const cv=document.getElementById('cv_'+s.id); if(cv) cv.textContent=s.fmt(v); }
+    else{ el.value=v; updateSliderFill(el);
+          const cv=document.getElementById('cv_'+s.id); if(cv) cv.textContent=s.fmt(v); }
   });
   updateGroupBadges(); if(typeof updateVppTotal==='function') updateVppTotal();
 }
