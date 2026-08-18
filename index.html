@@ -154,6 +154,24 @@ input[type=range]::-moz-range-progress{background:var(--terra); border-radius:3p
 input[type=range]::-webkit-slider-thumb{margin-top:-6px; border:none; box-shadow:none}
 input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var(--terra)}
 .grp{border-top:1.5px dashed var(--line2); margin:16px -14px 12px; padding:10px 14px 0}
+.grp summary{list-style:none; cursor:pointer; display:flex; align-items:baseline; gap:8px;
+             margin-bottom:8px; user-select:none}
+.grp summary::-webkit-details-marker{display:none}
+/* Disclosure triangle drawn rather than inherited, so it matches the type and
+   rotates with the open state. */
+.grp summary::before{content:''; width:0; height:0; flex:none;
+  border-left:5px solid var(--veld,#4A6B7A); border-top:4px solid transparent;
+  border-bottom:4px solid transparent; transform:translateY(-1px);
+  transition:transform .12s ease}
+.grp[open] summary::before{transform:rotate(90deg) translateX(-1px)}
+.grp summary h3{margin-bottom:0}
+.grp summary:hover h3{color:var(--ink)}
+/* When a group is CLOSED, say how many settings it holds and whether any have
+   been changed - otherwise a collapsed group can silently carry a setting the
+   user has forgotten, which is worse than a long panel. */
+.grpcount{font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--ink2);
+          letter-spacing:.02em}
+.grpcount.changed{color:var(--alert,#C4785A); font-weight:600}
 /* Scenario-control group headers. Bumped from 13.5px/600/ink2 to 16px/700 in
    the scheme's dark blue so the four sections of the control panel read as
    headings rather than as another slider label. */
@@ -8207,14 +8225,36 @@ function dcFlows(injByRegion){
 /* ==================== BUILD CONTROLS ==================== */
 const state={};
 const controlsEl=document.getElementById('controls');
+// The <details> currently being filled. Controls are appended to it rather
+// than to the panel, so collapsing a group hides its contents.
+let currentGroup=null;
 SLIDERS.forEach(s=>{
-  if(s.grp){const g=document.createElement('div');g.className='grp';g.innerHTML='<h3>'+s.grp+'</h3>';controlsEl.appendChild(g);return;}
+  if(s.grp){
+    // COLLAPSIBLE GROUPS. The panel reached 51 controls and ran far past the
+    // bottom of the result columns, so the last two groups were effectively
+    // hidden below the fold anyway. Native <details> gives keyboard support and
+    // screen-reader semantics for free.
+    //
+    // The last two default CLOSED because they are the ones that sit below the
+    // other columns and are least often touched: Policy & prices, and the LCOE
+    // assumptions. Everything above stays open so the panel still reads as a
+    // scenario at a glance.
+    const CLOSED_BY_DEFAULT = ['Policy', 'LCOE'];
+    const g=document.createElement('details');
+    g.className='grp';
+    g.open = !CLOSED_BY_DEFAULT.some(k => s.grp.indexOf(k) === 0);
+    g.innerHTML='<summary><h3>'+s.grp+'</h3><span class="grpcount"></span></summary>';
+    controlsEl.appendChild(g);
+    g.addEventListener('toggle', () => { try { updateGroupBadges(); } catch(e){} });
+    currentGroup = g;
+    return;
+  }
   if(s.toggle){
     state[s.id]=s.def?1:0;
     const d=document.createElement('div');d.className='ctrl';
     if(s.ctrlStyle)d.style.cssText=s.ctrlStyle;
     d.innerHTML='<label class="tog"><input type="checkbox" id="in_'+s.id+'"'+(s.def?' checked':'')+'><span>'+s.label+'</span></label>'+(s.note?'<small>'+s.note+'</small>':'');
-    controlsEl.appendChild(d);
+    (currentGroup || controlsEl).appendChild(d);
     d.querySelector('input').addEventListener('change',e=>{
       state[s.id]=e.target.checked?1:0;
       setPresetActive(null); scheduleRun();
@@ -8232,7 +8272,7 @@ SLIDERS.forEach(s=>{
       +'<select id="in_'+s.id+'" style="width:100%;padding:4px 6px;font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;border:1px solid var(--line2);background:#fff">'
       +s.select.map(o=>'<option value="'+o+'"'+(o===s.def?' selected':'')+'>'+o+'</option>').join('')
       +'</select>'+(s.note?'<small>'+s.note+'</small>':'');
-    controlsEl.appendChild(d);
+    (currentGroup || controlsEl).appendChild(d);
     d.querySelector('select').addEventListener('change',ev=>{
       state[s.id]=ev.target.value;
       setPresetActive(null); scheduleRun();   // same path a slider takes
@@ -8248,7 +8288,7 @@ SLIDERS.forEach(s=>{
   d.innerHTML='<div class="row"><label for="in_'+s.id+'">'+s.label+'</label><span class="cv" id="cv_'+s.id+'">'+s.fmt(s.def)+'</span></div>'+
     '<input type="range" id="in_'+s.id+'" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+s.def+'" aria-label="'+s.label+'">'+
     (s.note?'<small>'+s.note+'</small>':'');
-  controlsEl.appendChild(d);
+  (currentGroup || controlsEl).appendChild(d);
   const inp = d.querySelector('input');
   function updateTrack(el){ const pct=100*(el.value-el.min)/(el.max-el.min); el.style.setProperty('--val',pct+'%'); }
   updateTrack(inp);
@@ -8259,6 +8299,34 @@ SLIDERS.forEach(s=>{
     setPresetActive(null); scheduleRun();
   });
 });
+// A COLLAPSED GROUP MUST DECLARE ITSELF. Hiding controls is only safe if the
+// user can still see that something inside has been changed - otherwise a
+// scenario carries a setting nobody remembers making, which is a worse failure
+// than a long panel. Closed groups show "n settings", and if any differ from
+// their default, "n settings · 2 changed" in the alert colour.
+function updateGroupBadges(){
+  document.querySelectorAll('#controls details.grp').forEach(g => {
+    const ctrls = g.querySelectorAll('.ctrl');
+    let changed = 0;
+    ctrls.forEach(c => {
+      const el = c.querySelector('input,select');
+      if (!el) return;
+      const id = el.id.replace(/^in_/, '');
+      const def = SLIDERS.find(x => x.id === id);
+      if (!def) return;
+      const now = state[id];
+      const base = def.toggle ? (def.def ? 1 : 0) : def.def;
+      if (String(now) !== String(base)) changed++;
+    });
+    const badge = g.querySelector('.grpcount');
+    if (!badge) return;
+    if (g.open) { badge.textContent = ''; badge.classList.remove('changed'); return; }
+    badge.textContent = ctrls.length + ' setting' + (ctrls.length === 1 ? '' : 's')
+                      + (changed ? ' \u00b7 ' + changed + ' changed' : '');
+    badge.classList.toggle('changed', changed > 0);
+  });
+}
+
 function applyState(overrides){
   SLIDERS.forEach(s=>{if(s.grp)return; const v=(s.id in overrides)?overrides[s.id]:(s.toggle?(s.def?1:0):s.def);
     state[s.id]=v;
@@ -8273,6 +8341,7 @@ function applyState(overrides){
     else if(s.select){ el.value=v; }
     else{ el.value=v; const cv=document.getElementById('cv_'+s.id); if(cv) cv.textContent=s.fmt(v); }
   });
+  updateGroupBadges();
 }
 const presetsEl=document.getElementById('presets');
 Object.keys(PRESETS).forEach((name,i)=>{
