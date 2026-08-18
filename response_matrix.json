@@ -1,0 +1,594 @@
+{
+ "base": {
+  "coalTWh": 160.984,
+  "co2": 169.899,
+  "avgCost": 568.7,
+  "replAvg": 1394.86,
+  "avgPrice": 754.67,
+  "rePct": 18.458,
+  "curtTWh": 0,
+  "loleHrs": 0
+ },
+ "summary": {
+  "ccsCaptureRatePct": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "ccsPenaltyPct": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "ccsOpexR": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "coalInstalledMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "battHours": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "emisCoal": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "psEff": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "demandGrowthPct": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "coalEAFPct": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "coalPartLoadK": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "outageUnitLevel": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "outageForcedSharePct": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "outageMttrH": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "outVolPct": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "coalDecomMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "coalFlexPct": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "newWindMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": true,
+   "loleHrs": false
+  },
+  "newPvMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": true,
+   "loleHrs": false
+  },
+  "newRooftopMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": true,
+   "loleHrs": false
+  },
+  "newBattMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "newPsMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "newVrfbMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "newIronAirMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "newCcgtMW": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "ccgtForceLoad": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "newCoalMW": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "newNuclearMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "drInterruptMW": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "drInterruptCostR": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "drShiftPct": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": true,
+   "loleHrs": false
+  },
+  "vppGeyserPoolMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "vppEnrolPct": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "reserveEnabled": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "reserveContingencyMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "reserveRegulatingPct": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "reserveVrePct": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": true,
+   "loleHrs": false
+  },
+  "syncMinMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": true,
+   "loleHrs": false
+  },
+  "gridBeyondGccaPct": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "txRPerKWyr": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "getsEnabled": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "repurpose": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "carbonTaxRPerT": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "carbonCapEnabled": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "carbonCapMt": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "ccsEnabled": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "costCcgt": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoePv": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeWind": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeRooftop": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoePs": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeVrfb": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeIronAir": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeBatt": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeCsp": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeCcgt": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeNuclear": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeCoalNew": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "lcoeDiesel": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": false,
+   "replAvg": true,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  }
+ }
+}
