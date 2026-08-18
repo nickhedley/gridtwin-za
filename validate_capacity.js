@@ -113,7 +113,9 @@ console.log('\nIdentity 3 - regional operational sums to the national constant, 
   // windMW: the constant and the file are one number in two places, so assert it.
   {
     const rt = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/rooftop_mw_by_region.json'), 'utf8'));
-    const rtSum = Math.round(Object.values(rt).reduce((a, b) => a + b, 0) * 10) / 10;
+    const rtSum = Math.round(Object.values(rt)
+      .filter(v => typeof v === 'number')          // skip the meta block
+      .reduce((a, b) => a + b, 0) * 10) / 10;
     const rm = html.match(/rooftopMW\s*:\s*([0-9.]+)/);
     const rConst = rm ? parseFloat(rm[1]) : null;
     // The constant is the Eskom table MINUS wheeled ground-mounted solar: Eskom's
