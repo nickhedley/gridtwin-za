@@ -61,6 +61,19 @@ const live = stripComments(src);
   }
 }
 
+// ── 1b. DUPLICATE FUNCTION DECLARATIONS ─────────────────────────────────────
+// Same silent-override trap as a duplicate FIXED key: the later declaration wins
+// and nothing warns. Found 18 Aug when a new renderCapture() replaced an existing
+// one of the same name, and the new panel rendered the old panel's numbers while
+// looking entirely healthy.
+{
+  const names = [...live.matchAll(/(?:^|\n)\s*(?:async\s+)?function\s+([A-Za-z_]\w*)/g)].map(m => m[1]);
+  const seen = {}, dupes = [];
+  for (const n of names){ if (seen[n] && !dupes.includes(n)) dupes.push(n); seen[n] = 1; }
+  check('no duplicate function declarations', dupes.length === 0,
+        dupes.length ? `${dupes.join(', ')} — the LATER declaration wins silently` : '');
+}
+
 // ── 2. FALSY-ZERO RISK: `||` ON A NUMERIC PARAMETER ─────────────────────────
 // `p.x || N` substitutes N when x is 0, which is a legitimate value for most of
 // these. Twelve such sites were converted to `??` on 15 Aug after seven CCS
