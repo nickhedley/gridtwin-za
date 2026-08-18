@@ -676,6 +676,28 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="captureBody"></div>
           </div>
 
+          <div id="nav-curtforecast" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Curtailment forecast</h2>
+              <span class="tag">what happens as the queue ahead of you builds</span></div>
+            <div class="pb">
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+                <select id="cfTech" onchange="renderCurtailmentForecast()"
+                        style="padding:4px 8px;font-size:11px;font-family:inherit;
+                               border:1px solid var(--line2);background:var(--panel);color:var(--ink)">
+                  <option value="solar">Solar PV</option>
+                  <option value="wind">Wind</option>
+                </select>
+                <button onclick="renderCurtailmentForecast()"
+                        style="padding:5px 12px;background:var(--ink);color:var(--panel);border:none;
+                               cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;
+                               font-weight:600;letter-spacing:.04em;border-radius:2px">Run forecast</button>
+                <span style="font-size:10px;color:var(--ink2)">six dispatch solves, about half a second</span>
+              </div>
+              <div id="curtForecastBody"><div class="muted" style="font-size:11px">
+                Press <strong>Run forecast</strong> to project curtailment against build-out.</div></div>
+            </div>
+          </div>
+
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Price-setting technology by hour</h2>
               <div class="wkbtns">
@@ -6256,6 +6278,120 @@ function bldStressTest(){
         dispatch engine, with unit commitment, lumpy forced outages and operating reserve. A plan can look
         adequate on a sample and still fail on a sustained event the sample never contained.</div>
     </div>`;
+}
+
+/* ==================== CURTAILMENT FORECAST =================================
+ * The panel above answers "what would I earn today". This answers the question a
+ * developer is actually financing against: WHAT HAPPENS TO ME AS THE QUEUE AHEAD
+ * OF ME BUILDS OUT.
+ *
+ * A project reaching commercial operation in 2029 does not face today's system.
+ * It faces one with whatever cleared the queue first, and curtailment is not
+ * linear in that: it stays near zero while surplus is absorbable, then rises
+ * sharply once midday supply routinely exceeds what load and storage can take.
+ * Knowing WHERE that knee sits is worth more than knowing today's number.
+ *
+ * Runs the dispatch engine at a ladder of national VRE build levels, holding
+ * everything else at the current scenario, and reports curtailment and capture
+ * for each region at each level. About 60ms per level, so a six-point curve
+ * costs under half a second - cheap enough to compute on demand rather than
+ * precompute and let go stale.
+ */
+let curtForecastCache = null;
+
+function curtailmentForecast(techFilter){
+  if (!regionalProfiles) return null;
+  const REG = ['Northern Cape','Hydra Central','Eastern Cape','Western Cape','Free State',
+               'North West','Mpumalanga','Limpopo','Kwazulu Natal','Gauteng'];
+  // Extra VRE ON TOP of whatever the current scenario already builds, split
+  // 55:45 solar:wind - roughly the mix the build optimiser chooses once
+  // transmission is priced, so the ladder reflects a plausible queue rather than
+  // an arbitrary one.
+  const LEVELS = [0, 10000, 20000, 35000, 50000, 70000];
+  const out = [];
+  for (const extra of LEVELS){
+    const st = { ...state,
+      newPvMW:   (state.newPvMW   || 0) + extra * 0.55,
+      newWindMW: (state.newWindMW || 0) + extra * 0.45 };
+    const r = simulate(st, PROFILES);
+    const row = { extraGW: extra/1000, curtTWh: r.E.curtailed/1e6,
+                  meanPrice: 0, regions: {} };
+    for (const g of REG){
+      const c = captureRate(techFilter, g, r);
+      if (c){ row.regions[g] = { curt: c.curtailedSharePct, capture: c.capturedPct };
+              row.meanPrice = c.meanPrice; }
+    }
+    out.push(row);
+  }
+  return out;
+}
+
+function renderCurtailmentForecast(){
+  const host = document.getElementById('curtForecastBody');
+  if (!host) return;
+  const tech = (document.getElementById('cfTech') || {}).value || 'solar';
+  host.innerHTML = '<div class="muted">Running the ladder…</div>';
+  // Deferred so the "running" message paints before the six solves block the thread.
+  setTimeout(() => {
+    const rows = curtailmentForecast(tech);
+    if (!rows){ host.innerHTML = '<div class="muted">Regional profiles unavailable.</div>'; return; }
+    const REG = Object.keys(rows[0].regions);
+    const head = '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
+      + '<th style="text-align:left;padding:3px 4px">Region</th>'
+      + rows.map(r => '<th style="text-align:right;padding:3px 5px">'
+          + (r.extraGW === 0 ? 'now' : '+' + r.extraGW) + '</th>').join('') + '</tr>';
+
+    // Colour by severity rather than by value, so the knee is visible at a glance.
+    const cell = v => {
+      const col = v >= 50 ? 'var(--alert,#C4785A)' : v >= 25 ? '#C9A227' : 'var(--ink2)';
+      const wt  = v >= 50 ? '600' : '400';
+      return '<td class="mono" style="text-align:right;padding:3px 5px;color:' + col
+           + ';font-weight:' + wt + '">' + v.toFixed(0) + '%</td>';
+    };
+    const body = REG.map(g => '<tr><td style="padding:3px 4px">' + g + '</td>'
+      + rows.map(r => cell(r.regions[g].curt)).join('') + '</tr>').join('');
+
+    // Where does curtailment first pass a quarter of output? That is the knee,
+    // and it is the number a developer needs against their COD date.
+    const knee = REG.map(g => {
+      const hit = rows.find(r => r.regions[g].curt >= 25);
+      return { g, at: hit ? hit.extraGW : null };
+    }).filter(x => x.at !== null).sort((a,b) => a.at - b.at);
+    const last = rows[rows.length - 1];
+    const endVals = REG.map(g => last.regions[g].curt);
+    const spread = Math.max(...endVals) - Math.min(...endVals);
+    const worst = REG[endVals.indexOf(Math.max(...endVals))];
+    const best  = REG[endVals.indexOf(Math.min(...endVals))];
+
+    host.innerHTML =
+        '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:6px">'
+      + 'A project reaching commercial operation in 2029 does not face today\u2019s system \u2013 it faces '
+      + 'one with whatever cleared the queue first. This runs the dispatch engine at a ladder of '
+      + 'national build levels on top of the current scenario, split 55:45 solar to wind, and shows '
+      + 'the share of each region\u2019s output that would be curtailed. Columns are GW of extra VRE.</p>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">' + head + body + '</table>'
+      + '<div style="font-size:10.5px;line-height:1.6;margin-top:9px;padding:7px 10px;'
+      + 'background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
+      + '<strong>' + (spread < 3
+          ? 'Siting does not help here.</strong> Every region lands within ' + spread.toFixed(0)
+            + ' points of the others at +' + last.extraGW + ' GW ('
+            + Math.min(...endVals).toFixed(0) + '\u2013' + Math.max(...endVals).toFixed(0)
+            + '&#37;), because this technology generates at much the same hours wherever it sits. '
+            + 'What matters is WHEN you connect, not where.'
+          : 'Siting is worth ' + spread.toFixed(0) + ' points of output.</strong> At +'
+            + last.extraGW + ' GW, ' + best + ' loses ' + Math.min(...endVals).toFixed(0)
+            + '&#37; against ' + worst + ' at ' + Math.max(...endVals).toFixed(0) + '&#37;.')
+      + ' ' + (knee.length
+          ? 'Curtailment first passes 25&#37; of output in ' + knee[0].g + ' at +' + knee[0].at + ' GW.'
+          : 'No region passes 25&#37; of output within this range \u2013 the highest is '
+            + worst + ' at ' + Math.max(...endVals).toFixed(0) + '&#37;.')
+      + '</div>'
+      + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
+      + 'Curtailment is not linear in build: it stays near zero while surplus is absorbable, then '
+      + 'rises sharply once midday supply routinely exceeds what load and storage can take. Where '
+      + 'that knee sits matters more than today\u2019s number. Holds storage, coal retirement and '
+      + 'demand at the current scenario \u2013 move those sliders and re-run to see how they shift it.</div>';
+  }, 30);
 }
 
 function renderRegionalCapture(res){
