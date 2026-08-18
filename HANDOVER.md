@@ -1,3 +1,46 @@
+## BUG HUNT SESSION 3: CROSS-PANEL CONSISTENCY (17 Aug 2026)
+
+validate_consistency.js. 13/13. Unlike sessions 1 and 2 this reads the RENDERED
+DOM, because the bug class is specifically "the engine is right but the panel
+shows something else".
+
+VERIFIED AGAINST THE BUG IT EXISTS FOR. Reverting the psDailyFloor fix makes it
+report: "at the peak hour storage delivers 0 MW while being counted as firm
+capacity". That is exactly the contradiction that stood undetected for weeks -
+the adequacy panel counted 2.9 GW of pumped storage as firm while dispatch
+produced 0.04 TWh, both numbers on screen, nothing comparing them.
+
+Checks: KPI panel against the engine for energy, renewables, curtailment, average
+cost and replacement cost; every peak-demand figure on the page agreeing; storage
+counted as firm actually discharging over the year AND present at the annual peak;
+regional wind and solar summing to the national constants; regional rooftop net of
+wheeled solar summing to FIXED.rooftopMW; the VPP pool reaching the optimiser
+matching the sliders; and the mix totalling sensibly.
+
+FOUR FIRST-RUN FAILURES, ALL MY CHECK RATHER THAN THE MODEL — and each one is a
+definitional trap worth recording:
+
+  * "Energy supplied" INCLUDES IMPORTS. It is everything delivered to the system,
+    not domestic generation. I compared against the domestic total and reported a
+    9 TWh discrepancy that did not exist.
+  * Renewables prints as a WHOLE PERCENT. 18 against 18.458 is display rounding.
+    Compare at the precision actually shown.
+  * A loose peak-demand regex matched "firm capacity 39.2 GW" because the word
+    peak appeared within forty characters. Then, once anchored, it matched prose
+    that DELIBERATELY contrasts the model with Eskom's reported ~27 GW - which is
+    the caveat explaining the definitional gap, not a contradiction. Now excludes
+    passages naming Eskom.
+  * ROOFTOP IS DELIBERATELY NOT A DIRECT SUM. rooftop_mw_by_region.json is kept
+    VERBATIM ESKOM so the source stays traceable, and nodal_dispatch.js subtracts
+    privately wheeled solar per region at load time - otherwise that plant is
+    counted once as supply and again inside the rooftop netting. The 488 MW gap I
+    flagged is exactly by_source.private.solar_mw, i.e. the subtraction working.
+    The identity to assert is file MINUS wheeled == FIXED, which now passes.
+
+That last one is the most instructive: a 5.7% discrepancy in a capacity constant
+looked exactly like the phantom-MW bug of 15 Aug, and was in fact the FIX for it
+working correctly. Reading the code before believing the check mattered.
+
 ## BUG HUNT SESSION 2: PARAMETER RESPONSE MATRIX (17 Aug 2026)
 
 validate_response.js + response_matrix.json. Sweeps every control at six points
