@@ -1,3 +1,45 @@
+## LICENCE GAPS CLOSED ACROSS THE DATA FILES (18 Aug 2026)
+
+Nine of seventeen JSON files under nodal/ carried no licence at all - including
+corridor_electrical.json, created the previous day. A copier taking only the
+unlicensed files had a much easier argument, so every file now carries the same
+notice, matching the existing string verbatim:
+
+    licence      CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/
+    attribution  GridTwin ZA - nickhedley.github.io/gridtwin-za
+    licence_note Licence covers this COMPILATION - the assembly, correction and
+                 structuring of the underlying data. Source data remains under its
+                 own terms; see the source field.
+
+That last line matters and is not boilerplate: what is licensed is the compilation
+work, not Eskom's or NERSA's underlying data. Saying so is both accurate and
+stronger than a bare notice, because it states precisely what a copier would be
+taking. meta is written FIRST in each file so the terms are visible before the
+data rather than several thousand numbers down.
+
+TWO REAL BREAKAGES, both from the same cause and both worth recording. Three files
+had NO meta block at all, so adding one introduced a non-numeric key into objects
+that code iterates:
+
+  * nodal_dispatch.js line 83 iterated every key of rooftop_mw_by_region to
+    subtract wheeled private solar. It would have applied arithmetic to the meta
+    block and turned the object into NaN.
+  * validate_capacity.js summed Object.values() of the same file and produced
+    "NaN - 488 = NaN vs 8619.4".
+
+The VALIDATOR caught the second one, which is the system working: a metadata
+change with no modelling intent silently corrupted a capacity identity, and the
+suite refused to pass. Both fixed by FILTERING ON TYPE rather than excluding
+'meta' by name, so the next non-numeric key added does not break them the same
+way.
+
+CONTEXT, from the user asking whether the site could simply be cloned: it can, and
+trivially - it is a static site with no backend, so view-source, a repo fork or a
+curl of the JSON is all it takes. Nothing technical will change that. Licensing
+makes infringement unambiguous rather than arguable; the real protection is the
+UPDATE CADENCE, since a clone is a snapshot and goes visibly stale the moment a
+capacity figure is corrected or a project queued.
+
 ## REGIONAL TRADE: SAPP PLANNED LINKS, IMPORTS AND EXPORTS (17 Aug 2026)
 
 Source: SAPP Generation-Transmission Master Plan Update, Public Presentation of
