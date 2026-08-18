@@ -8107,6 +8107,7 @@ const SLIDERS=[
    note:'How much behind-the-meter load could be aggregated nationally. 4 GW is our estimate for electric geysers, which contribute significantly to morning and evening peaks. Raise the slider above 4 GW to include pool pumps, air conditioning and EV charging as those fleets grow. Nothing happens until you set an enrolment share below. To place VPPs in specific municipalities rather than nationally, use the Where To Build panel and pick Virtual power plant as the technology \u2013 you can site several at once.'},
   {id:'vppEnrolPct',label:'\u2013 share actually enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',ctrlStyle:SUB_CTRL,
    note:'The share of that national pool signed up and dispatchable, spread across regions by their share of electricity demand. For specific municipalities instead, site them in the Where To Build panel \u2013 those add on top of whatever is set here. Aggregates behind-the-meter assets into one plant. Both Cape Town and eThekwini are working to implement city-wide VPPs. The slider defaults to zero because these are pilots. Watch for diminishing returns: at around 50% enrolment, the evening peak stops falling and moves to the early hours because the curve has flattened. Past that point, a VPP is buying flexibility and resilience rather than peak reduction.'},
+  {id:'vppTotalReadout',readout:true,ctrlStyle:SUB_CTRL},
   {grp:'System operation'},
   {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
    note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output. At today\u2019s fleet this rarely binds \u2013 South Africa has ~7 GW of fast-start peakers and storage against a reserve need near 1.3 GW \u2013 but it bites hard once coal is tight or peakers retire.'},
@@ -8260,6 +8261,19 @@ const controlsEl=document.getElementById('controls');
 // than to the panel, so collapsing a group hides its contents.
 let currentGroup=null;
 SLIDERS.forEach(s=>{
+  // A READOUT is not a control: it renders a live summary line in the panel and
+  // writes nothing to state. Used for the VPP total, where the number that
+  // matters is the SUM of a national slider and any sited placements, and neither
+  // one alone tells the user what is actually in the model.
+  if(s.readout){
+    const d=document.createElement('div');
+    d.className='ctrl';
+    if(s.ctrlStyle)d.style.cssText=s.ctrlStyle;
+    d.innerHTML='<small id="'+s.id.replace('Readout','')+'" style="display:block;line-height:1.5">'
+               +'</small>';
+    (currentGroup || controlsEl).appendChild(d);
+    return;
+  }
   if(s.grp){
     // COLLAPSIBLE GROUPS. The panel reached 51 controls and ran far past the
     // bottom of the result columns, so the last two groups were effectively
@@ -8335,6 +8349,43 @@ SLIDERS.forEach(s=>{
 // scenario carries a setting nobody remembers making, which is a worse failure
 // than a long panel. Closed groups show "n settings", and if any differ from
 // their default, "n settings · 2 changed" in the alert colour.
+// VPP RUNNING TOTAL. The national enrolment slider and the Where To Build
+// placements are ADDITIVE: the slider means "a national programme, spread by
+// demand share", siting means "these specific municipalities on top". That is
+// deliberate, but nothing on screen said so - site 850 MW across two provinces,
+// look at a slider reading 0%, and it is entirely reasonable to conclude the
+// siting did nothing. Reported 17 Aug 2026.
+//
+// So the slider now carries a live total of what actually reaches the optimiser,
+// broken into its national and sited parts.
+function updateVppTotal(){
+  const host = document.getElementById('vppTotal');
+  if (!host) return;
+  const on    = !!(state.vppEnabled ?? 1);
+  const share = on ? Math.max(0, Math.min(100, state.vppEnrolPct ?? 0))/100 : 0;
+  const national = (state.vppGeyserPoolMW ?? 4000) * share;
+  const sited = (typeof vppSitedByRegion === 'function') ? vppSitedByRegion() : {};
+  const sitedTot = Object.values(sited).reduce((a,b) => a+b, 0);
+  const total = national + sitedTot;
+
+  if (total < 1){
+    host.innerHTML = '<span style="color:var(--ink2)">No VPP capacity in the model. '
+      + 'Raise the enrolment share above, or site one in Where To Build.</span>';
+    return;
+  }
+  const regions = Object.entries(sited).filter(([,mw]) => mw > 1)
+    .sort((a,b) => b[1]-a[1])
+    .map(([r,mw]) => r + ' ' + Math.round(mw).toLocaleString() + ' MW');
+  host.innerHTML =
+    '<strong>' + Math.round(total).toLocaleString() + ' MW</strong> of controllable load in the model'
+    + (sitedTot > 1
+        ? ' &ndash; ' + Math.round(national).toLocaleString() + ' MW from the national programme above, plus '
+          + '<strong>' + Math.round(sitedTot).toLocaleString() + ' MW sited</strong> in Where To Build ('
+          + regions.join(', ') + ')'
+        : ' &ndash; all from the national programme, spread by regional demand share')
+    + '.';
+}
+
 function updateGroupBadges(){
   document.querySelectorAll('#controls details.grp').forEach(g => {
     const ctrls = g.querySelectorAll('.ctrl');
@@ -8372,7 +8423,7 @@ function applyState(overrides){
     else if(s.select){ el.value=v; }
     else{ el.value=v; const cv=document.getElementById('cv_'+s.id); if(cv) cv.textContent=s.fmt(v); }
   });
-  updateGroupBadges();
+  updateGroupBadges(); if(typeof updateVppTotal==='function') updateVppTotal();
 }
 const presetsEl=document.getElementById('presets');
 Object.keys(PRESETS).forEach((name,i)=>{
@@ -9774,6 +9825,7 @@ document.getElementById('siteAllocateBtn').addEventListener('click', async ()=>{
     r.id=siteNextId++;
     sitePortfolio.push(r);
     renderPortfolio();
+    if(typeof updateVppTotal==='function') updateVppTotal();
     const sliderId=sliderIdFor(tech);
     if (sliderId){                      // VPP has none - it aggregates existing load
       siteSliderContribution[sliderId]+=mw;
