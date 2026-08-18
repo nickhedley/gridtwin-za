@@ -4362,7 +4362,7 @@ function simulate(u, prof, outPath){
       const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
-      const btChg=Math.min(surplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*p.battEff; surplus-=btChg;
+      const btChg=Math.min(surplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*battEffMix; surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       curtailMW[h]+=surplus; E.curtailed+=surplus;
       const vre=windGen+pvGen;
@@ -4414,7 +4414,7 @@ function simulate(u, prof, outPath){
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
         const psChg=Math.min(forcedSurplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; forcedSurplus-=psChg;
-        const btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*p.battEff; forcedSurplus-=btChg;
+        const btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*battEffMix; forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
         // off instantly), then coal trips if the oversupply still exceeds all renewable output.
@@ -4505,7 +4505,12 @@ function simulate(u, prof, outPath){
         // term still lifts the target higher when genuine stress is coming, which
         // was the original and correct purpose of that mechanism.
         const psDailyFloor  = Math.min(psEnergyTot*0.60, psPowerTot*PS_PEAK_HOURS);
-        const battDailyFloor= Math.min(battEnergy*0.60, battPower*p.battHours*0.75);
+        // Fleet duration, not the lithium constant. A battery-class fleet containing
+        // 100-hour iron-air has an average duration of about 21 h, and sizing its
+        // daily target on p.battHours = 4 left it filling to 14% of capacity and
+        // stopping - 987 GWh idle while 116 TWh was curtailed.
+        const battFleetHours = battPower > 0 ? battEnergy / battPower : (p.battHours || 4);
+        const battDailyFloor= Math.min(battEnergy*0.60, battPower*battFleetHours*0.75);
         const psTargetCeiling=Math.min(psEnergyTot*0.85, Math.max(anticipatedShortfall[h], psDailyFloor));
         const battTargetCeiling=Math.min(battEnergy*0.8, Math.max(anticipatedShortfall[h], battDailyFloor));
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
