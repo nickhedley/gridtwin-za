@@ -1,3 +1,184 @@
+## CURTAILMENT FORECAST - BUILT (18 Aug 2026)
+
+curtailmentForecast() + renderCurtailmentForecast(), panel below Capture rate.
+The capture panel answers "what would I earn today". This answers what a
+developer is actually financing against: WHAT HAPPENS AS THE QUEUE AHEAD OF ME
+BUILDS OUT.
+
+Runs the dispatch engine at a ladder of national VRE build levels on top of the
+current scenario, split 55:45 solar to wind - roughly the mix the build optimiser
+chooses once transmission is priced. About 60ms per level, so six points cost
+under half a second: computed on demand rather than precomputed and left to go
+stale.
+
+FROM TODAY 2026, share of each region's output curtailed:
+
+    extra VRE      now   +10   +20   +35   +50   +70 GW
+    solar, all      0%    0%    1%   12%   29%   45-46%
+    wind, best      0%    0%    0%    3%    8%   15%   (Limpopo)
+    wind, worst     0%    0%    1%    7%   14%   24%   (Eastern Cape)
+
+THE KNEE IS THE POINT. Curtailment is flat to +20 GW and then rises sharply -
+nothing, nothing, 12%, 29%, 45%. Where that knee sits matters far more than
+today's number, and a project reaching COD in 2029 faces the system on the far
+side of it.
+
+AND THE TWO TECHNOLOGIES BEHAVE COMPLETELY DIFFERENTLY:
+  SOLAR - every region lands within 1 point of every other (45-46% at +70 GW).
+    Siting does not help. Solar generates at the same hours wherever it sits, so
+    the curve is national: what matters is WHEN you connect, not where.
+  WIND - a 9-point spread, Limpopo 15% against Eastern Cape 24%. Siting is worth
+    real money, and the ranking mirrors the capture-rate finding: the best wind
+    resource areas curtail MOST, because that is where the wind fleet already is.
+
+Together with the capture panel this is the developer-facing answer nothing else
+in the market gives, because it needs a dispatch model to produce and the
+interconnection-analytics tools do not have one.
+
+ONE BUG WORTH RECORDING: the summary line originally reported "curtailment passes
+25% first in X, last in Y". For SOLAR every region ties, so it read "first in
+Northern Cape at +50, last in Gauteng at +50" - which looks like a bug and buries
+the actual finding, that siting is irrelevant. For WIND nothing crosses 25% at
+all (top is 24%), so it fell through to "no region passes 25%" and threw away the
+9-point spread entirely. Technically true, completely useless. Restructured so
+the SPREAD always reports and the threshold is a secondary clause.
+
+## CAPTURE RATE BY REGION - BUILT (18 Aug 2026)
+
+captureRate() + renderRegionalCapture(), new panel below Wholesale shadow price.
+Roadmap item 1, and the machinery was indeed nine-tenths present: hourly shadow
+prices from the dispatch engine, 8,760 per-unit values per region per technology
+in profiles_regional.json.
+
+    capture rate = revenue-weighted price / time-weighted average price
+                 = sum(gen_h x price_h) / (sum(gen_h) x mean(price))
+
+At 100% a plant earns the average price. FUTURE ELECTRICITY MIX, mean R282/MWh:
+
+    WIND                              SOLAR
+    Limpopo        109%  R305         Mpumalanga      18%  R38
+    North West     104%  R288         Limpopo         17%  R37
+    Gauteng        100%  R279         Gauteng         17%  R35
+    Mpumalanga      94%  R260         North West      16%  R33
+    Free State      92%  R254         Kwazulu Natal   16%  R32
+    Northern Cape   87%  R241         Free State      16%  R32
+    Hydra Central   73%  R202         Eastern Cape    15%  R30
+    Eastern Cape    71%  R195         Hydra Central   14%  R28
+    Western Cape    66%  R183         Western Cape    13%  R25
+
+THE HEADLINE: SITING MATTERS FOR WIND, BARELY FOR SOLAR. Wind capture spans 43
+points across regions; solar spans 4. Wind regimes differ enough that where you
+build changes what you earn. Solar generates at much the same hours everywhere,
+so it cannibalises itself wherever it sits - and at 72 GW it captures 13-18% of
+the average price while being curtailed 67% of the time.
+
+Note the inversion within wind: the WORST capture rates are in the best wind
+resource areas (Western Cape 66%, Eastern Cape 71%), because that is where the
+wind fleet is concentrated and therefore where wind depresses its own price. The
+best are in Limpopo and North West, which have modest wind but almost no
+competing wind nearby. That is a genuinely useful developer signal and the exact
+thing a capacity-factor map hides.
+
+METHOD AND ITS LIMIT, stated in the panel: regional GENERATION profiles combined
+with the NATIONAL hourly price, because the instant engine is single-node. That
+measures WHEN a region generates relative to the national price, which is the
+dominant effect. It does NOT capture locational price differences from
+congestion - the full MIP prices each region separately. Curtailment applies the
+system-wide spill share hour by hour, so a plant generating in surplus hours is
+curtailed more.
+
+BUG FOUND AND FIXED WHILE BUILDING IT, and it is one we have now seen twice:
+renderCapture() ALREADY EXISTED, for the captureResult panel. Declaring a second
+function of the same name silently overrode it - the later declaration wins, and
+nothing warns. The new panel rendered with the OLD panel's numbers while looking
+entirely healthy, showing 100% capture across every region in a scenario where
+the real answer was 13-18%.
+
+It took four wrong hypotheses to find: stale lastRes, a debounced re-render, hook
+placement in the render chain, and only then the name collision. The tell was
+that captureRate() called DIRECTLY returned 10% while renderCapture() rendered
+100% from the same object.
+
+GUARD ADDED: validate_structure.js now checks for DUPLICATE FUNCTION DECLARATIONS
+as well as duplicate FIXED keys. It already caught the constant case (lcoePs) and
+had exactly the same blind spot for functions. Mine renamed to
+renderRegionalCapture; the incumbent left alone.
+
+## STRATEGIC ROADMAP - two long-term builds (18 Aug 2026)
+
+Added after reviewing what interconnection-analytics firms are building elsewhere
+(Nira Energy, Pearl Street/SUGAR, GridUnity, Paces, Pivvot; and Atomic Canyon's
+NIVA in nuclear). NONE of them operate in South Africa. These are the two things
+worth owning here, in order.
+
+### 1. CAPTURE-RATE AND CURTAILMENT FORECAST BY CONNECTION POINT
+
+The question that decides whether a project is financeable, and the one the
+international tools STRUCTURALLY cannot answer. Nira sells "where can I connect"
+from ISO data; it has no dispatch model, so it cannot say what the energy is
+worth once connected. We have the dispatch model. That is the wedge.
+
+Curtailment is not hypothetical: the PFL H1 2026 monitor names grid access and
+"increasing curtailment of renewables" as the significant risks to the current
+build rate, and the Future electricity mix preset already produces 121 TWh of it.
+
+ALREADY BUILT, nine of the ten pieces needed:
+    hourly shadow price          marginalP
+    curtailment by hour          curtailMW
+    per-region curtailment       applyCurtailmentToMap
+    regional dispatch MIP        getNodalMIPInputs
+    GCCA headroom by region      bldHeadroom
+    Where To Build siting        sitePortfolio
+    DC power flow diagnostic     dcFlows (built, not yet wired to a panel)
+    REDZ permitting overlay      redzData
+    BESS revenue benchmark       bessBenchmark - the pattern to copy
+    substation register          substations_compact.json, 185 sites with regions
+
+MISSING: a captureRate() that combines them. For a given technology at a given
+connection point, over a given scenario:
+    capture rate = sum(generation x hourly price) / (sum(generation) x mean price)
+plus expected curtailment share, plus the sensitivity of both to coal retirement
+and to how much VRE arrives nearby first.
+
+FIRST STEP: capture rate at REGION level for wind and solar under each preset.
+That is a small addition to the existing engine and immediately useful - a
+developer wants to know whether Northern Cape solar captures 70% or 45% of the
+average price in 2030. Connection-point granularity comes after, and needs the
+substation-to-region mapping we already have.
+
+THE HONEST GAP: Nira's moat is ISO-accurate power flow - real impedances, study
+replication. Ours are ASSIGNED from voltage class, with no N-1. For "will my
+project pass the cost-allocation study" that difference is decisive, and closing
+it needs data NTCSA does not publish. Do not claim study-grade accuracy.
+
+### 2. DOCUMENT ASSISTANT - grid code, connection process, bid window rules
+
+The Atomic Canyon pattern: one industry's fragmented documentary knowledge, made
+navigable, VALIDATED BY THE INDUSTRY'S OWN BODIES. NIVA's moat is not the model,
+it is that INPO, EPRI and NEI ran the solicitation - which is what made operators
+trust it.
+
+The South African corpus is scattered across hundreds of PDFs that every
+developer re-reads badly: the Grid Code, Eskom/NTCSA connection process, IPP
+Office bid window requirements, NERSA registration rules, EIA and REDZ
+requirements.
+
+THE LESSON TO TAKE, and it is about sequencing not technology: credibility comes
+from partnering with SAWEA, SAPVIA or the IPP Office rather than building it
+alone and hoping. Approach them before building, not after.
+
+### WHY THIS ORDER
+
+Capture rate first because the machinery is nine-tenths built, it answers a
+question nothing else can, and it needs no partner to be useful. The document
+assistant is higher value but gated on a relationship, so start that conversation
+in parallel and build while it develops.
+
+MARKET CONSTRAINT WORTH REMEMBERING: South Africa builds roughly 4 GW a year
+against a US pipeline in the hundreds. That argues for a tool a developer pays
+for because it answers a question nothing else can - not one competing on
+breadth.
+
 ## DOORNHOEK ADDED - and why it passed where Graspan failed (18 Aug 2026)
 
 Engineering News, 22 May 2026: AMEA Power commissioned the 120 MW Doornhoek solar
