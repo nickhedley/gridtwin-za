@@ -160,9 +160,13 @@ const live = stripComments(src);
 
   const el = d.createElement('script');
   el.textContent = `window.__st = (() => { try {
-    const defs = SLIDERS.filter(s => !s.grp && s.id);
+    // Readouts render a live summary line and write nothing to state. They are
+    // not controls, so they are excluded from the inventory and the note check
+    // rather than exempted case by case.
+    const defs = SLIDERS.filter(s => !s.grp && s.id && !s.readout);
     return {
       defCount: defs.length,
+      readoutCount: SLIDERS.filter(x => x && x.readout).length,
       ids: defs.map(s => s.id),
       // note:'' is deliberate — the LCOE group has one shared explanation
       // rather than nine near-identical ones. A MISSING property is the gap.
@@ -188,7 +192,7 @@ const live = stripComments(src);
   // 5a. every defined control actually renders. A reorder silently dropped the
   // `repurpose` toggle on 17 Aug — 42 rendered where 43 were defined, and no
   // test noticed because the model still ran on its default.
-  const rendered = d.querySelectorAll('#controls .ctrl').length;
+  const rendered = d.querySelectorAll('#controls .ctrl').length - S.readoutCount;
   check('every defined control renders', rendered === S.defCount,
         `${S.defCount} defined, ${rendered} rendered — a control has been dropped`);
 
