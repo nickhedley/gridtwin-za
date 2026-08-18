@@ -425,6 +425,91 @@ Sep-2026 file with the August projects still queued - all six were correctly
 flagged. When nothing is at risk it states the rule instead, so the next person
 reads it before they need it rather than after.
 
+## "FUTURE ELECTRICITY MIX" PRESET REBUILT (17 Aug 2026)
+
+The old preset was a hand-set guess. Replaced after a systematic sweep.
+
+    OLD  decom 21 GW, wind 28.5, pv 42.5, rooftop 15, batt 20, no flex
+         67.0% RE, 67 Mt CO2, R1,033/MWh, LOLE 0 (3h stressed)
+
+    NEW  decom 27 GW + FLEXIBILISED, wind 45, pv 52, rooftop 20, batt 30, no gas
+         78.5% RE, 87.4% non-fossil, 41 Mt CO2, R1,339/MWh, LOLE 0 (0h stressed)
+
+CO2 down 39%, renewables up 11.5 points, and PERFECTLY RELIABLE - zero unserved
+hours even with coal 10 points below plan, which no other option managed.
+
+FIVE FINDINGS DROVE IT.
+
+1. THE OLD SPLIT WAS BACKWARDS. Holding total VRE constant and shifting from
+   solar-heavy to wind-heavy bought decarbonisation almost free: 28.5/42.5 gave
+   67% RE and 67 Mt; 50/21 gave 75.4% and 48 Mt for R6/MWh more. South Africa
+   peaks on winter EVENINGS when solar is zero.
+
+2. BATTERIES WERE OVER-BUILT AND UNDER-WORKED at shallow coal retirement. With
+   only 21 GW retired, 10/20/30/40 GW of battery gave IDENTICAL renewables, CO2
+   and curtailment while cost rose R976 to R1,204. They only earn their keep once
+   the system is genuinely tight.
+
+3. GAS WAS REJECTED, on the user's argument about LNG price exposure. Quantified
+   first: a 5x LNG shock costs only R20/MWh, 1.6% of system cost, because 9 GW of
+   CCGT generates 0.5 TWh a year - a 0.6% capacity factor, insurance rather than
+   energy. So the PRICE risk is small. But average price still moves 10% because
+   gas sets the marginal price in exactly the scarcity hours it runs, and the
+   SUPPLY risk is the real one: given the gas cliff, stranded firm capacity is
+   worse than expensive firm capacity. Coal retention has no equivalent failure
+   mode.
+
+4. RETAINED COAL + FLEXIBILISATION BEATS GAS ON RELIABILITY at similar cost:
+   LOLE 0 (0 stressed) against 5 (6 stressed), R1,288 vs R1,275. It costs 12 Mt
+   more CO2 and about 4 points of renewables share. Flexibilisation itself is
+   excellent value - +1.8pp RE and -4 Mt for R2/MWh, by letting coal get out of
+   the way of wind and solar rather than blocking them.
+
+5. SOLAR-LEANING IS DEFENSIBLE DESPITE COSTING EMISSIONS, on the user's point
+   that wind corridors need transmission upgrades while solar sites almost
+   anywhere. The GCCA data agrees - Eastern Cape wind headroom is 400 MW while
+   KZN and Gauteng hold thousands of MW of solar headroom. Decisive evidence:
+   the transmission-aware regional optimiser, asked what mix IT wants now that
+   corridors are priced, chose 52:48 wind:solar and built NO new transmission,
+   siting within existing headroom instead. The national model's uniform
+   R600/kW/yr adder understates wind's real network cost, so its wind-heavy
+   optimum is biased.
+
+THE AMBITION LADDER, for anyone wanting to move the preset up or down. All rungs
+use coal+flex and a solar-leaning mix; marginal abatement cost is the cost of
+moving up one rung.
+
+    decom 18 / W35 PV40 b22    71.8% RE   57 Mt   R1,113   LOLE 0 (0)
+    decom 22 / W40 PV46 b26    75.1% RE   49 Mt   R1,228   LOLE 0 (0)   R2,947/t
+    decom 27 / W45 PV52 b30    78.5% RE   41 Mt   R1,339   LOLE 0 (0)   R2,844/t  <- CHOSEN
+    decom 31 / W50 PV58 b34    81.4% RE   33 Mt   R1,462   LOLE 0 (3)   R3,152/t
+    decom 35 / W55 PV64 b38    84.6% RE   25 Mt   R1,585   LOLE 3 (5)   R3,152/t
+
+THE MAC IS FLAT at R2,800-3,200/tCO2 across the whole ladder, so there is no
+natural knee - the choice is a judgement about ambition, not an optimisation
+result. The 27 GW rung was chosen as the last one that is PERFECTLY reliable:
+zero unserved hours both as planned and with coal 10 points below plan. Above it
+the stressed case starts to shed.
+
+TWO REALITY CHECKS WORTH KEEPING. R1,339/MWh system cost sits BELOW current Eskom
+retail tariffs of roughly R1,500-2,000/MWh, though the measures differ - system
+cost excludes distribution, retail margin and debt service. And R2,900/tCO2 is far
+above the SA carbon tax (R236 headline, ~R46 effective) and above EU CBAM
+(~R1,550), so this abatement is NOT justified by carbon pricing. It is justified
+by replacing a fleet that is retiring anyway, which is why coal decommissioning
+rather than carbon price is the driver in this preset.
+
+ALSO TESTED AND REJECTED: shifting utility PV to rooftop. Rooftop needs no
+transmission at all, so it should have been favoured by the same logic as
+solar-over-wind - but it moved neither emissions nor renewables share and cost
+R18/MWh more, because rooftop LCOE is higher in the model. The transmission
+advantage is real but the model's uniform R600/kW/yr adder cannot express it,
+the same bias that affects wind.
+
+CURTAILMENT reaches 121 TWh, which the brief explicitly de-prioritised. It is the
+honest cost of a VRE-led system without long-duration storage, and the relevant
+panels show it.
+
 ## EXTREME-EVENT HANDLING (17 Aug 2026)
 
 The expansion optimiser works over 12 representative days. Two changes, because a
@@ -586,6 +671,279 @@ TURN IT ON when peakers retire, when a scenario strips out the OCGT fleet, or if
 an ancillary services market is proposed and someone needs to know what it would
 clear at. The machinery is correct; it is the South African system that makes it
 uninteresting today.
+
+## DC POWER FLOW - BUILT (17 Aug 2026)
+
+nodal/corridor_electrical.json + a PTDF engine in index.html. All 439 lines
+mapped, none unmapped: 97 inter-regional across 19 corridors, 321 intra-regional
+(correctly ignored at this resolution).
+
+METHOD. Line LENGTH computed from real geometry in transmission_lines.geojson.
+REACTANCE assigned from voltage class using standard overhead-line values
+(0.40 ohm/km at 220-275 kV, 0.30 at 400, 0.28 at 533-765), converted to per-unit
+on a 100 MVA base; parallel lines add susceptance. This is exactly how PyPSA and
+PyPSA-Eur do it - impedance is not measured anywhere, it is assigned from voltage
+class and scaled by length. Endpoints resolved to regions via
+substations_compact.json, falling back to nearest substation.
+
+WHAT IT SHOWS. 1,000 MW from the Northern Cape to Gauteng produces 2,884 MW of
+total absolute flow across FOURTEEN corridors - including Eastern Cape-KZN, which
+is nowhere near any sensible route. A transport model routes all 1,000 MW down
+the cheapest path and sees none of this. That gap is the loop flow, and it is why
+a transport model can be wrong about WHICH corridor loads up.
+
+DELIBERATELY A DIAGNOSTIC, NOT A CONSTRAINT. Coupling network physics into the LP
+is the "correct" move, but the headroom-transmission coupling attempted the same
+day made the LP intractable (45s to 850s+ without converging). So dcFlows() takes
+regional net injections and returns physical flows and corridor utilisation,
+answering "what would really happen" without touching solve time. The in-browser
+PTDF was verified against a Python prototype - identical to the megawatt.
+
+CAVEATS, also in the JSON meta: assigned rather than measured reactance; no
+conductor bundling, circuit-count-per-tower or series compensation; no N-1. Good
+enough to show flows follow physics rather than economics; not a load-flow study.
+
+BUG FOUND AND FIXED THE SAME DAY: the three 533 kV circuits were being treated as
+AC lines. They are the Apollo-Cahora Bassa HVDC link, and HVDC does NOT obey DC
+power flow - its flow is set by converter controls, not impedance. Including it
+let the PTDF route loop flow through a link that physically cannot carry any, and
+it also corrupted the Gauteng-Limpopo corridor, which appeared as 1,384 km when
+the real AC distance is 351 km, because a 1,000 km line to Mozambique was being
+counted into it. Now excluded; the import is already represented as
+FIXED.importsMW.
+
+ON PyPSA-RSA, AND A CORRECTION. I suggested its parameters could replace ours
+with "measured values". That was overstated. PyPSA-RSA descends from
+PyPSA-Eur/PyPSA-Earth, which ASSIGN reactance from voltage class and length -
+the same method used here. Adopting their file would mainly buy a better
+line-type mapping, not measured impedance, which is not public for Eskom's
+network.
+
+SERIES COMPENSATION - NOW MODELLED (17 Aug 2026). This was the largest remaining
+error and it has been fixed. Eskom has series-compensated its 400 and 765 kV
+lines since 1975; the Cape Corridor alone has six capacitors at four sites, rated
+450 to over 1,300 Mvar. A series capacitor CANCELS part of the line's inductive
+reactance, so a compensated line is electrically SHORTER than its length implies
+and carries MORE flow. Modelling it as uncompensated made the long Cape corridors
+look high-reactance and under-used - the exact opposite of why the capacitors
+were installed.
+
+Applied as 50% on 765 kV and 40% on 400 kV lines over 250 km; none on short
+lines, where there is no economic case. These are the standard published degrees
+(historically to 50%, modern schemes to 80%), NOT per-scheme Eskom settings,
+which are not public. The JSON meta says so.
+
+Effect on corridor susceptance, higher meaning electrically shorter:
+
+    Free State - Hydra Central      228.8 -> 438.7   +92%
+    Eastern Cape - Hydra Central    152.1 -> 292.1   +92%
+    Free State - Mpumalanga         201.4 -> 383.9   +91%
+    Hydra Central - Western Cape    121.0 -> 177.0   +46%
+    Gauteng - Mpumalanga            564.7 -> 564.7    +0%  (short, uncompensated)
+
+THRESHOLD AUDIT, prompted by "are capacitors modelled everywhere they exist?".
+The answer was NO, and the 250 km cut-off was excluding the very lines it should
+have caught: the three DROERIVIER-HYDRA circuits at 247 km and BACCHUS-PROTEUS at
+249 km. Droerivier, Bacchus and Proteus are all Western Cape substations on the
+main Cape supply corridor - the arbitrary threshold was missing the case
+compensation exists for, by three kilometres. Moved to 200 km; Hydra Central -
+Western Cape susceptance went 177.0 to 220.4.
+
+SENSITIVITY WAS THEN TESTED rather than assumed, across thresholds of 150, 200,
+250 and 300 km. Corridor susceptance moves 0-16%, most corridors under 10%. So the
+arbitrariness is BOUNDED and does not drive the answer - but it is arbitrary.
+Eskom does not publish which individual lines carry series capacitors or at what
+degree, so this remains a heuristic and the JSON meta says so. Anyone quoting a
+specific corridor's number should know it rests on an assumed compensation rule.
+
+The pattern is right: compensation strengthens precisely the corridors where
+distance was limiting transfer, and leaves short ones untouched. A 1,500 MW
+Northern Cape to Western Cape transfer - the solar export case - now flows mostly
+down the compensated Hydra-Western Cape backbone, which is what it was built for.
+
+REMAINING, in order:
+  1. Conductor bundling and circuit count per tower. Parallel circuits ARE
+     captured (they appear as separate geojson features, e.g. "... 1" and
+     "... 2"), but bundling within a circuit is not.
+  2. N-1 screening, which is a load flow per outage per hour and is not a browser
+     workload at all.
+  3. Per-scheme compensation degrees, if Eskom ever publishes them - the 50/40%
+     used here are standard values, not measured settings.
+
+## SERIOUS BUG: hw_/hp_ HEADROOM CONSTRAINTS WERE SILENTLY MISSING (17 Aug 2026)
+
+While reverting the headroom-transmission coupling earlier the same day, the
+revert replaced everything from a comment down to the hb_ row - DELETING the hw_
+and hp_ constraints and leaving only the prose describing them. Wind and solar
+connection headroom went completely unenforced.
+
+NOTHING CAUGHT IT. The LP still built, still solved, still returned Optimal, and
+all 290 stress checks, 44 deep checks and 33 output checks still passed. It was
+found only by counting constraint families in the emitted LP and noticing hb_ was
+present while hw_ and hp_ were not.
+
+A silently missing constraint is the worst failure mode this model has: the answer
+looks entirely normal and is simply wrong. Every "the optimiser builds exactly to
+headroom" statement made after the revert was drawing on a run where headroom was
+not enforced.
+
+GUARD ADDED. validate_lp.js now audits the emitted LP for required constraint
+families - bal_, cmax_, hw_, hp_, hb_, rate_, dur_, soc_, txa_ - and fails loudly
+if any family has zero rows. 40/40 checks pass. This class of bug cannot recur
+silently.
+
+## GRID BEYOND GCCA - a one-slider answer to "should we build more grid?"
+
+state.gridBeyondGccaPct, 0-150%, in the Grid section. Scales every region's
+connection headroom in the build optimiser. Verified: total 2030 wind headroom
+goes 21,520 MW at 0% to 34,432 MW at +60%, exactly 1.60x.
+
+WHY A MULTIPLIER RATHER THAN THE PROPER COUPLING. Coupling headroom row-by-row to
+the tx_ variables is the correct model and made the LP intractable (45s to 850s+).
+This gets most of the policy answer - "what would a bigger build programme
+unlock?" - for no solve cost at all. What it cannot do is say WHICH corridors to
+build; the transmission expansion variables and the DC flow diagnostic already
+address that.
+
+WORTH KNOWING: at DEFAULT build rates the multiplier changes nothing, because the
+build RATE caps bind long before headroom does - 11 GW of wind over five years
+against 21.5 GW of headroom. Headroom only becomes the binding constraint in
+high-ambition scenarios where build rates are also lifted. That is itself a useful
+finding: for realistic build programmes, GCCA headroom is not what limits South
+Africa - the rate at which projects can be delivered is.
+
+## LONG-DURATION STORAGE: three technologies added (17 Aug 2026)
+
+Four-hour lithium cannot ride out a multi-day lull however it is scheduled, which
+is why the coal-retired test built almost none of it. Three options that can:
+
+    PUMPED STORAGE   14 h, 78% RTE, capped 6 GW    newPsMW
+    VANADIUM FLOW     8 h, 70% RTE, uncapped       newVrfbMW
+    IRON-AIR        100 h, 45% RTE, uncapped       newIronAirMW
+
+PUMPED STORAGE follows Eskom's Tubatse spec - 1,500 MW / 21 GWh, i.e. 14 hours -
+which has EU/AFD grant funding and a Q1 2026 feasibility study. SA already runs
+Ingula 1,330, Drakensberg 1,000, Palmiet 400 and Steenbras 180 MW. CAPPED AT 6 GW
+because SITING, not water, is the constraint: pumped storage is closed-loop, so it
+consumes evaporation and an initial fill rather than a continuous draw. What limits
+it is needing two reservoirs several hundred metres apart vertically AND the water
+to fill them. Four schemes in a century says single-digit GW, not tens.
+
+VANADIUM's case is industrial rather than purely economic: Bushveld Minerals runs
+Vametco (Brits) and Vanchem (Mpumalanga), built an electrolyte plant in East
+London, and deployed Eskom's first utility-scale VRFB at Rosherville.
+
+IRON-AIR is the only genuinely multi-day option - 100 hours, under $20/kWh,
+geology-independent. The 45% round trip is the trade: it charges on energy that
+would otherwise be curtailed and accepts the loss.
+
+INTEGRATION. New pumped storage joins the PS fleet (same technology). Vanadium and
+iron-air join the battery-class aggregate, which now carries an ENERGY-WEIGHTED
+duration and round-trip efficiency instead of a hardcoded 0.88 - a fleet that is
+mostly iron-air genuinely does behave less efficiently. Replacement-cost LCOE is
+blended the same way. The chronological storage linking built earlier the same day
+was the prerequisite: without day-to-day carry a 100-hour store looks no better
+than a 4-hour one.
+
+THREE BUGS FOUND WHILE BUILDING IT:
+  * A regex swapping p.psPowerMW to the new totals also rewrote the INSIDE of the
+    new declarations, so psPowerTot was defined as psPowerTot + newPs. Caught by a
+    "cannot access before initialization" error on first run.
+  * lcoePs ALREADY EXISTED at 1400 further down, used by the replacement-cost KPI.
+    Defining it a second time at 1150 silently let the later one win. Removed;
+    single-sourced now.
+  * The new LCOE sliders were inert until the blended battery cost was wired -
+    flagged by the deep harness as dead controls, which is exactly its job.
+
+## SCOPED, NOT YET BUILT: power flow, and long-duration storage (17 Aug 2026)
+
+### 1. DC POWER FLOW - the data gap I claimed does NOT exist
+
+I said earlier we could not do power flow because the line data lacks length and
+impedance. The length half was WRONG. Line length is computable from our own
+geometry: nodal/transmission_lines.geojson has 439 LineStrings with coordinates
+and voltage, giving 41,844 km:
+
+    400 kV   252 lines   26,885 km      765 kV    14 lines    4,579 km
+    275 kV   155 lines    7,884 km      533 kV     3 lines    1,049 km
+    220 kV    15 lines    1,446 km
+
+And impedance does not need to be measured. PyPSA derives r, x and b by mapping
+each line to a STANDARD LINE TYPE LIBRARY keyed on voltage, then scaling by
+length and circuit count - the same method PyPSA-Eur uses for Europe and
+PyPSA-Earth for Africa, both validated against TSO reference models.
+
+BETTER STILL, PyPSA-RSA already exists and is open source
+(github.com/MeridianEconomics/pypsa-rsa, maintained by Meridian Economics,
+originally CSIR). It models South Africa at 1, 10, 27, 34 and 159 nodes - and its
+10-node resolution uses the GCCA 2025 Eskom Transmission Supply Regions, THE SAME
+TEN REGIONS THIS MODEL USES. It also solves with HiGHS, as we do. So its network
+parameters may be directly transferable rather than needing derivation.
+
+REMAINING QUESTION is computational, not data: a DC load flow per hour is
+tractable, but N-1 contingency screening is a load flow per outage per hour and
+is not a browser workload. Scope it as DC flow without N-1 first.
+
+### 2. LONG-DURATION STORAGE - enough cost data exists, with real caveats
+
+IRON-AIR (Form Energy) is the strongest candidate for South Africa:
+    system cost   under $20/kWh, roughly a tenth of lithium
+    duration      100 hours
+    RTE           40-50% - the catch, and it is a big one
+    status        early commercial; first gigafactory (West Virginia) shipping,
+                  75+ GWh under agreement, but limited operating experience, so
+                  lenders price it as unproven
+    SA fit        GEOLOGY-INDEPENDENT, which matters here
+
+CAES needs salt caverns or similar formations, which South Africa largely lacks -
+that alone probably rules it out domestically. For reference: ~$1,500-2,300/kW on
+the power side, $50-90/kWh on energy depending on whether the reservoir is cavern
+or vessel, RTE 45-70%.
+
+MODELLING NOTE, and it is the important one: our storage assumes 0.88 round-trip.
+Iron-air at 0.45 is a fundamentally different asset - it would charge on otherwise
+curtailed energy (of which the new preset has 121 TWh) and accept the loss,
+because the alternative is unserved load. The chronological storage linking built
+on 17 Aug is a PREREQUISITE: without day-to-day carry a 100-hour store looks no
+better than a 4-hour one, which is exactly why the coal-retired test built almost
+no storage.
+
+The user has noted long-duration is not currently on South Africa's radar - no
+pipeline, no credible domestic options - so this is scoped rather than queued.
+
+## WHY THE OPTIMISER BUILDS NO TRANSMISSION AT HIGH RENEWABLES (17 Aug 2026)
+
+Asked why a 41 GW renewable build reinforced ZERO corridors. It is not a bug in
+the transmission code, but it IS an inconsistency worth knowing about.
+
+The optimiser built 21.5 GW wind and 19.9 GW solar. National GCCA headroom is
+21.52 GW wind and 19.94 GW solar. It built EXACTLY to headroom and stopped - so
+it never reached a corridor limit, and reinforcing a corridor could never pay for
+itself. Transmission expansion was a decision variable that could not earn its
+keep at high VRE.
+
+That is incoherent, because GCCA headroom IS a network constraint: it exists
+because the corridor cannot take more, so building that corridor should raise it.
+
+FIX IMPLEMENTED AND REVERTED. Coupling hw_/hp_ to the tx_ variables on each
+region's binding_corridor is the right model, and it was written and tested. It
+made the LP INTRACTABLE - solve time went from ~45s to over 850s without
+converging, twice. A tool nobody can run is worse than one with a documented
+limitation, so it was reverted and the reasoning left in the code at the point
+where the constraint is built.
+
+HOW TO READ TRANSMISSION RESULTS. Expansion is real and works where corridors
+bind BEFORE headroom does - at default settings it correctly reinforces the
+Eastern Cape-KZN and Hydra-Western Cape corridors, the two GCCA independently
+reports as binding. In high-renewables scenarios headroom binds first, and a
+"no transmission built" result means "no corridor is the binding constraint
+here", NOT "no network investment is needed". The GCCA headroom figure already
+embeds the network build required to release it.
+
+IF SOMEONE WANTS TO FIX IT PROPERLY: the likely route is not tighter coupling but
+fewer coupled rows - e.g. one headroom-transmission link per region per HORIZON
+rather than per year, or solving transmission in an outer loop around a
+headroom-fixed inner LP.
 
 ## TRANSMISSION EXPANSION IS NOW A DECISION VARIABLE (17 Aug 2026)
 
