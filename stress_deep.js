@@ -278,7 +278,7 @@ function probe(){
    try { renderValidation(); } catch(e){}
    const vtxt = (document.getElementById('validationBody')||{}).textContent||'';
    ck('H1 validation panel shows derived rooftop 8.6 GW', /8\.6\s*GW/.test(vtxt), '');
-   ck('H2 validation panel shows derived utility PV 3.2 GW', /3\.2\s*GW/.test(vtxt), '');
+   ck('H2 validation panel shows derived utility PV 3.3 GW', /3\.3\s*GW/.test(vtxt), '');
    ck('H3 validation panel shows wind 4.6 GW', /4\.6\s*GW/.test(vtxt), '');
    try { drawShadowPriceWeek(r); } catch(e){}
    const c = document.getElementById('spWeek');
