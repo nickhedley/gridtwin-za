@@ -1,3 +1,59 @@
+## REGIONAL TRADE: SAPP PLANNED LINKS, IMPORTS AND EXPORTS (17 Aug 2026)
+
+Source: SAPP Generation-Transmission Master Plan Update, Public Presentation of
+Draft Key Results, 28 July 2026 (user-supplied PDF; sapp.co.zw blocks automated
+fetching).
+
+THE KEY EXTRACTION, and it is not in the headline slides: COMMISSIONING YEARS ARE
+READABLE FROM THE TRANSMISSION UTILISATION TABLES. An interface with blank cells
+until a year and figures thereafter is a link that does not exist until then -
+more reliable than press announcements, because it is what the plan's own model
+assumed.
+
+    2026  Mozambique-Malawi          2030  Angola-Namibia, Angola-Zambia
+    2028  Zambia-Tanzania            2030  ZIMBABWE-SOUTH AFRICA
+    2029  Namibia-Botswana                 Malawi-Tanzania, Mozambique-Tanzania
+          Zambia-Malawi              2032  Zambia-Botswana
+          Zambia-Mozambique
+
+ZIMBABWE-SOUTH AFRICA IS THE ONLY NEW DIRECT LINK TO THE COUNTRY IN THE ENTIRE
+PLAN, and it runs at 92-98% utilisation from the year it opens, in every
+scenario. A corridor that congested on day one is a planning signal in itself.
+Benchmark commissions it 2030; Full Regional Integration and Renewable Energy
+both delay it to 2035.
+
+3D MAP LAYER. Eight planned interconnectors added to transmission_lines.geojson,
+drawn in amber and DIMMER than anything energised so the map never implies a line
+exists when it does not. The direct-to-SA link is brighter and thicker than the
+regional legs. Routes are INDICATIVE - the plan gives interfaces and utilisation,
+not alignments - and the legend says so.
+
+IMPORTS SLIDER, 0-8 GW, default at today's interconnection. The note leads with
+the honest point: THE WIRE IS NOT THE BINDING CONSTRAINT. SAPP has a regional
+supply deficit, and the plan's own benchmark requires every member to hold firm
+capacity of 100% of its peak and generate 80% of its annual energy internally -
+so there is limited surplus to buy, by design as much as by shortage.
+
+EXPORTS, and this is the more interesting lever. Storage charges FIRST, because
+stored energy fetches more in the domestic evening peak than the regional pool
+pays; only what storage cannot absorb is exported; only what cannot be exported
+is curtailed. Revenue offsets the system bill directly - the energy was going to
+be spilled, so every rand is incremental.
+
+    no exports     0 TWh exported            121 TWh curtailed   R1,339/MWh
+    2 GW export    9.0 TWh over 4,657 h      112 TWh curtailed   R1,257/MWh
+    5 GW export   21.3 TWh over 4,657 h      100 TWh curtailed   R1,157/MWh
+
+R9.6bn of revenue at 5 GW, and R182/MWh off system cost. That is a bigger move
+than any capex assumption argued over this week.
+
+THE CAVEAT IS IN THE SLIDER NOTE, not buried: total SAPP demand outside South
+Africa is roughly 40-50 TWh a year, so a surplus in the tens of TWh cannot all
+find a home. Worse, the plan shows cross-border flows FALLING as regional
+renewables rise - 3% lower under Full Regional Integration, 8% lower under
+Renewable Energy - because everyone's surplus arrives in the same hours. The
+export case is real but bounded, and the bound is demand rather than wires.
+
 ## VPP RUNNING TOTAL, and four visual-sweep fixes (17 Aug 2026)
 
 From the user's session-6 sweep.
