@@ -262,14 +262,26 @@ const SCENARIOS = {
       // 17 Aug 2026 — the dispatch only discharges storage to meet a DEFICIT,
       // never to DISPLACE coal, so in a high-VRE system where coal cannot turn
       // down the fleet fills once and stops. See HANDOVER.
-      if (R.battEnergyMWh > 1000 && R.curtailedTWh > 5 && R.coalTWh > 5) {
-        const c = R.battOut / R.battEnergyMWh;
-        check(`[${label}] storage displaces coal rather than sitting idle`,
-              c > 2,
-              `${c.toFixed(1)} cycles/yr on ${(R.battEnergyMWh/1000).toFixed(1)} GWh while ` +
-              `${R.curtailedTWh.toFixed(0)} TWh is curtailed and coal runs ${R.coalTWh.toFixed(0)} TWh — ` +
-              `KNOWN LIMITATION: storage only discharges into a deficit, never against coal`);
-      }
+      // NO BATTERY-FLEET CYCLING CHECK, and the reason matters.
+      //
+      // Investigated fully on 17 Aug 2026. A 987 GWh fleet doing 0.02 TWh while
+      // 116 TWh was curtailed looked damning, and two plausible-sounding fixes
+      // were written before the diagnosis was actually correct. The truth:
+      //
+      //   5,744 hours had coal generating 18 TWh while 116 TWh was curtailed
+      //   SIMULTANEOUSLY. Coal was at its MUST-RUN floor - minimum stable level,
+      //   ramp-readiness for the next peak, and the synchronous floor - so it
+      //   was already serving the load. There was no deficit for storage to
+      //   discharge into, and storage cannot displace plant that cannot turn
+      //   down.
+      //
+      // Retire 35 GW of that coal and the same fleet does 3.4 TWh over 883
+      // hours. Storage was never broken; coal was in the way.
+      //
+      // So idle storage is NOT a reliable bug signal - it is often the correct
+      // answer, and asserting otherwise would have driven a wrong "fix" into the
+      // dispatch. The pumped-storage check above stays, because PS has an
+      // explicit daily cycling discipline and its collapse WAS a real bug.
     }
 
     check(`[${label}] unserved energy is non-negative`, R.unserved >= 0, String(R.unserved));
