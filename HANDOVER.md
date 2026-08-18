@@ -1,3 +1,52 @@
+## BUG HUNT SESSION 5: STRUCTURAL AND CODE AUDIT (17 Aug 2026)
+
+validate_structure.js + control_inventory.json. 8/8. Static analysis plus a DOM
+pass, hunting things the code no longer does, does twice, or does in a way that
+swallows a legitimate value. None of these produce a wrong-LOOKING number, which
+is exactly why they survive.
+
+VERIFIED AGAINST ALL THREE BUG CLASSES IT EXISTS FOR:
+  * duplicate FIXED key (the lcoePs bug)   -> caught: "the LATER definition wins"
+  * falsy-zero x || N (the CCS bug)        -> caught: "use ?? so 0 is honoured"
+  * a control disappearing (the reorder)   -> caught, but only after a fix, below
+
+THE CONTROL-COUNT CHECK WAS NOT ENOUGH ON ITS OWN, and finding that out mattered.
+Comparing definitions against rendered controls passes when a DEFINITION is
+deleted, because both counts drop together. The 17 Aug reorder bug was that shape:
+a script rebuilt SLIDERS, placed everything it recognised and silently lost the
+one id it did not, so the repurpose toggle vanished while state.repurpose was
+still read by the dispatch engine - the model ran permanently on its default with
+no way to change it. The inventory is now pinned to control_inventory.json, so
+losing a control fails loudly while adding one is a deliberate baseline update.
+
+CHECKS: duplicate keys in FIXED; `param || nonZeroDefault` anywhere in live code;
+orphaned functions; every fetch() target existing on disk; every defined control
+rendering; the inventory baseline; every slider carrying a note; every PRESET key
+mapping to something real.
+
+ONE REAL FIX: `p.battHours || 4` in my own battFleetHours fallback from earlier
+the same day. Low impact — it is only reached when battPower is zero — but it is
+the exact pattern that caused seven CCS bugs, and consistency matters more than
+the individual case.
+
+FIVE ORPHANED FUNCTIONS FOUND, now documented rather than silently dead:
+dcFlows (the DC power flow engine built the same day and never wired to a panel —
+precisely the runNodalYear trap repeating), plus subLookupArea, resolveColor,
+mixHex and setTooltip, small helpers left from earlier iterations. Kept and
+labelled, because the distinction that matters is whether the next person can
+tell live code from dead.
+
+THREE OVER-STRICT CHECKS CORRECTED, each a false-positive class worth naming:
+  * Orphan detection counted only `fn(`. Functions passed as CALLBACKS or wired
+    through an onclick attribute carry no parentheses, so twelve live functions
+    were reported dead. Then, once fixed, functions defined in nodal/ files were
+    still miscounted because the raw sources were not searched.
+  * Requiring a note on every slider flagged the LCOE group, which deliberately
+    shares one explanation rather than repeating it nine times.
+  * Comment-stripping is essential before any of this: this codebase contains
+    long comments explaining these very bugs, so a raw scan reports the
+    documentation as the defect.
+
 ## BUG HUNT SESSION 4: PER-CARRIER BENCHMARKS (17 Aug 2026)
 
 validate_benchmarks.js. 18/18. Reconciles EVERY CARRIER against published data,
