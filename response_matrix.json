@@ -100,16 +100,6 @@
    "curtTWh": false,
    "loleHrs": true
   },
-  "coalPartLoadK": {
-   "coalTWh": false,
-   "co2": true,
-   "avgCost": true,
-   "replAvg": false,
-   "avgPrice": true,
-   "rePct": false,
-   "curtTWh": false,
-   "loleHrs": false
-  },
   "outageUnitLevel": {
    "coalTWh": false,
    "co2": true,
@@ -139,6 +129,16 @@
    "rePct": true,
    "curtTWh": false,
    "loleHrs": true
+  },
+  "coalPartLoadK": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
   },
   "outVolPct": {
    "coalTWh": false,
@@ -378,6 +378,36 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": true,
+   "loleHrs": false
+  },
+  "importsMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
+  "exportCapMW": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": true,
+   "loleHrs": false
+  },
+  "exportPriceR": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
    "loleHrs": false
   },
   "gridBeyondGccaPct": {
