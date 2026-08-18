@@ -186,6 +186,26 @@ const num = t => {
         `at the peak hour storage delivers ${(E.psAtPeakMW + E.battAtPeakMW).toFixed(0)} MW ` +
         `while being counted as firm capacity`);
 
+  // ── 3b. peak demand must track the demand-growth slider ───────────────────
+  // Added after "peak demand" was found to include storage charging: at 5%
+  // growth the Future mix preset reported 50.5 GW against a true 33.2 GW. Every
+  // panel AGREED with every other, because they all read the same mislabelled
+  // quantity - so panel-versus-panel checks passed while the figure was wrong.
+  // Agreement is not correctness when the shared source is misnamed.
+  const growth = run(`
+    const a = simulate({ ...state, demandGrowthPct: 0,  newBattMW: 30000 }, PROFILES);
+    const b = simulate({ ...state, demandGrowthPct: 20, newBattMW: 30000 }, PROFILES);
+    return { p0: a.peak/1000, p20: b.peak/1000 };
+  `);
+  if (growth && !growth.err) {
+    const implied = 100 * (growth.p20 / growth.p0 - 1);
+    check('peak demand scales with the demand-growth slider, not with storage',
+          Math.abs(implied - 20) < 4,
+          `+20% demand growth moved peak by ${implied.toFixed(1)}% ` +
+          `(${growth.p0.toFixed(1)} -> ${growth.p20.toFixed(1)} GW) — if this is far off, ` +
+          `the reported peak is picking up something other than demand`);
+  }
+
   // ── 4. regional capacity must sum to the national constants ───────────────
   const cap = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/regional_renewable_capacity.json'), 'utf8'));
   const sumWind = Object.values(cap.wind_mw).reduce((a, b) => a + b, 0);
