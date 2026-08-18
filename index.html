@@ -8394,7 +8394,7 @@ const SLIDERS=[
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
    ctrlStyle:SUB_CTRL,note:'When turned on, individual units trip and must be taken out for repairs (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Means the bad hours are more extreme. At an EAF of 55%, for example, this moves shedding from 3 hours to 207 hours.'},
   {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
-   ctrlStyle:SUB_CTRL,note:'How much of the EAF gap is unplanned trips rather than scheduled maintenance. Eskom\u2019s UCLF currently runs at about 47%. Planned outages are smooth and pushed into the low-demand months, the way real maintenance is scheduled.'},
+   ctrlStyle:SUB_CTRL,note:'How much of the EAF gap is unplanned trips rather than scheduled maintenance. Eskom\u2019s UCLF currently runs at about 47%. Planned outages in the model are smooth and pushed into the low-demand months, the way real maintenance is scheduled \u2013 three times as much planned work in midsummer as at the June-July peak.'},
   {id:'outageMttrH',label:'Mean time to repair',min:8,max:400,step:8,def:FIXED.outageMttrH,fmt:v=>v+' h',
    ctrlStyle:SUB_CTRL,note:'How long a forced outage lasts on average. Shorter repairs mean more frequent, shallower events; longer ones mean rarer but deeper troughs for the same annual EAF.'},
   {id:'coalPartLoadK',label:'Part-load heat rate penalty',min:0,max:0.25,step:0.01,def:FIXED.coalPartLoadK,fmt:v=>v===0?'off':'+'+(v*100).toFixed(0)+'% fuel at half load',
