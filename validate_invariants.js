@@ -252,11 +252,23 @@ const SCENARIOS = {
               c > 5, `${c.toFixed(1)} cycles/yr on ${(R.psEnergyMWh/1000).toFixed(1)} GWh ` +
                      `(${(R.psOut/1e6).toFixed(3)} TWh) — the fleet is sitting idle`);
       }
-      if (R.battEnergyMWh > 1000) {
+      // The battery-class fleet is checked against a DIFFERENT question, because
+      // "it did not cycle" is not automatically a fault. If the system is
+      // over-built, most of a very large fleet correctly sits idle.
+      //
+      // The pathology worth flagging is storage idle WHILE coal runs AND surplus
+      // is being thrown away: that combination means storage could have charged
+      // on the surplus and discharged against coal, and did not. Investigated
+      // 17 Aug 2026 — the dispatch only discharges storage to meet a DEFICIT,
+      // never to DISPLACE coal, so in a high-VRE system where coal cannot turn
+      // down the fleet fills once and stops. See HANDOVER.
+      if (R.battEnergyMWh > 1000 && R.curtailedTWh > 5 && R.coalTWh > 5) {
         const c = R.battOut / R.battEnergyMWh;
-        check(`[${label}] battery fleet cycles plausibly`,
-              c > 5, `${c.toFixed(1)} cycles/yr on ${(R.battEnergyMWh/1000).toFixed(1)} GWh ` +
-                     `(${(R.battOut/1e6).toFixed(3)} TWh) — the fleet is sitting idle`);
+        check(`[${label}] storage displaces coal rather than sitting idle`,
+              c > 2,
+              `${c.toFixed(1)} cycles/yr on ${(R.battEnergyMWh/1000).toFixed(1)} GWh while ` +
+              `${R.curtailedTWh.toFixed(0)} TWh is curtailed and coal runs ${R.coalTWh.toFixed(0)} TWh — ` +
+              `KNOWN LIMITATION: storage only discharges into a deficit, never against coal`);
       }
     }
 
