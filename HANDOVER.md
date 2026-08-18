@@ -1,3 +1,48 @@
+## VPP RUNNING TOTAL, and four visual-sweep fixes (17 Aug 2026)
+
+From the user's session-6 sweep.
+
+VPP TOTAL. The national enrolment slider and Where To Build placements are
+ADDITIVE - the slider means "a national programme spread by demand share", siting
+means "these specific municipalities on top". Deliberate, but nothing said so:
+site 850 MW across two provinces, look at a slider reading 0%, and concluding the
+siting did nothing is entirely reasonable. A live readout now sits under the
+slider:
+
+    850 MW of controllable load in the model - 0 MW from the national programme
+    above, plus 850 MW sited in Where To Build (Kwazulu Natal 500 MW, Western
+    Cape 350 MW).
+
+This introduced a new SLIDERS entry type, `readout:true`: renders a live summary
+line, writes nothing to state. Both stress_deep and validate_structure had to
+learn the distinction - a readout cannot perturb an output and is not a control,
+so it is excluded rather than exempted case by case.
+
+SCHEMATIC CLICKS. The panel text promises "click any line or label for exact
+figures". The implementation used native SVG <title> elements - the browser's slow
+delayed tooltip, hover only, the exact behaviour removed from every other panel.
+setTooltip (which the structural audit had flagged as orphaned, written for this
+and never wired in) now also adds .tipbar and data-tip, so schematic elements
+route through the shared delegated handler: instant, pointer cursor, responds to a
+tap. Figures still only populate after Run the full model, because flows come from
+the MIP.
+
+APPLY-BUILD FEEDBACK. "Load this build into the model" scrolled to the KPI row and
+left its confirmation behind at the build panel, out of sight - so it appeared to
+do nothing but move the page. A banner now appears AT THE DESTINATION naming what
+changed, and clears after 12 seconds so it cannot linger describing a scenario
+that has since moved on.
+
+EAF SLIDER ORDER. The part-load heat-rate slider, added earlier the same day, was
+anchored in the wrong place and landed between EAF and its three indented outage
+settings - so those appeared to belong to part-load. Moved below them.
+
+COMPARISON PANEL. Values were always correct; both columns were CAPTIONED
+identically, because the current column re-read the active preset button which
+stays highlighted after a slider moves. It now reads "Current scenario" when it
+differs, and says plainly when nothing has changed rather than pretending to
+compare.
+
 ## COLLAPSIBLE SLIDER GROUPS (17 Aug 2026)
 
 The scenario panel reached 51 controls and ran well past the bottom of the result
