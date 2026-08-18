@@ -1,3 +1,57 @@
+## BUG HUNT SESSION 2: PARAMETER RESPONSE MATRIX (17 Aug 2026)
+
+validate_response.js + response_matrix.json. Sweeps every control at six points
+across its range and records which of eight outputs move and in which direction.
+72/72 across 58 controls x 8 outputs. Baseline committed - a future change that
+alters the matrix without explanation is a regression, and diffing it is a much
+faster review than reading a diff.
+
+VERIFIED AGAINST A REAL BUG. The CCS falsy-zero of 15 Aug was reintroduced
+(p.ccsCaptureRatePct ?? 90 back to || 90) and the detector caught it exactly:
+
+    capture   0%  ->  co2  23.97 Mt   <- identical to 90%, the tell
+    capture  45%  ->  co2 123.58 Mt
+    capture  90%  ->  co2  23.97 Mt
+
+FIVE ITERATIONS, and every wrong version is worth recording because each was
+plausible:
+
+  1. NO ENABLING CONTEXTS. Eight controls reported dead because the thing they
+     govern was off - interruptible load with no shortage, VPP pool at zero
+     enrolment, gas cost with no gas running. Same discipline stress_deep uses:
+     every exemption carries its reason.
+  2. ZERO-CHECK COMPARED AGAINST A CONTEXTLESS BASE, so every context-dependent
+     parameter looked identical at zero. Twenty lines of noise.
+  3. NO MONOTONICITY GATE. The falsy-zero signature is "zero sits on the wrong
+     side of the trend", which says nothing when there is no trend. The VPP
+     controls are legitimately non-monotonic - peak falls to about 50% enrolment,
+     then relocates to the small hours and rises - and produced eleven false
+     positives.
+  4. NO MATERIALITY THRESHOLD. Sub-0.5% dispatch wiggles from a marginal unit
+     changing order were being reported alongside real findings. A genuine
+     falsy-zero bug is a STEP - 23.97 against 123.58 - so anything under 1% of
+     base is noise.
+  5. IT ONLY ITERATED SLIDERS. Several meaningful-zero constants live in FIXED
+     and are reachable only by URL - including every CCS parameter. The
+     reintroduced bug passed 65/65 because the harness never touched it. An
+     EXTRA block now sweeps them explicitly.
+
+  Plus one self-inflicted: a comment containing backticks inside a template
+  literal terminated the literal and broke the file.
+
+TWO CONTROLS CORRECTLY EXEMPTED, both with reasons in the code:
+  * outVolPct drives runMC() - the Monte Carlo risk panel - and nothing in
+    simulate(). It is the VOLATILITY of the outage distribution, which only means
+    anything across repeated draws.
+  * battHours governs the EXISTING fleet duration; newBattHours governs new
+    build. Sweeping it with 10 GW of new battery swamped an 800 MW fleet and the
+    control looked dead at a 0.3% response.
+
+REMAINING NOTES ARE NOT BUGS: drShiftPct and vppGeyserPoolMW trip the trend test
+because both have genuinely non-monotonic responses that the monotonicity gate
+does not fully filter at the margin. Left visible rather than suppressed - they
+are cheap to re-check and suppressing them risks hiding a real one later.
+
 ## BUG HUNT SESSION 1: PHYSICAL INVARIANTS (17 Aug 2026)
 
 validate_invariants.js. Asserts what must be true in every one of 8,760 hours,
