@@ -26,6 +26,52 @@ IT FOUND A REAL BUG, which is the point.
   hours at full power to fill, and the charging target looks to be sized on a
   daily cycle that cannot reach it. NOT YET FIXED - first task next session.
 
+RESOLVED, AND THE MODEL WAS RIGHT ALL ALONG. The idle-storage finding was
+investigated to the end. It is NOT a bug, and two plausible-sounding fixes were
+written before the diagnosis was correct.
+
+    5,744 hours had coal generating 18 TWh WHILE 116 TWh was curtailed
+    simultaneously.
+
+Coal was at its MUST-RUN floor - minimum stable level, ramp-readiness for the
+next peak, and the synchronous generation floor - so it was already serving the
+load. There was no deficit for storage to discharge into, and storage cannot
+displace plant that physically cannot turn down. The battery charged, filled, and
+correctly stopped.
+
+    retire 0 GW coal    battery 0.02 TWh over  37 hours
+    retire 20 GW coal   battery 0.04 TWh over  32 hours
+    retire 35 GW coal   battery 3.40 TWh over 883 hours, curtailment -22 TWh,
+                                              CO2 -20 Mt
+
+Storage was never broken. Coal was in the way.
+
+THE RESULT IS WORTH KNOWING IN ITS OWN RIGHT: at very high VRE the binding
+constraint is COAL MUST-RUN, not storage. Building large amounts of storage
+without retiring coal achieves almost nothing. That is a real planning insight and
+the model produced it correctly.
+
+WHAT I ALMOST BROKE: I was one step from adding an "economic displacement" pass to
+make storage discharge against coal. It would have let storage push coal below its
+minimum stable level and synchronous floor - physically impossible, and it would
+have quietly improved every high-VRE result by breaking the constraint that makes
+those results honest.
+
+TWO GENUINE FIXES WERE MADE ALONG THE WAY, both real bugs even though neither was
+the cause:
+  * Charging credited p.battEff (lithium, 0.88) to EVERY technology. battEffMix
+    was introduced on 17 Aug for exactly this and then used in only one of the
+    three places that add to battSoc, so an iron-air fleet at 45% round trip was
+    charged as though it were lithium.
+  * battDailyFloor sized the fleet on p.battHours - the lithium duration - even
+    when the fleet averages 21 h.
+
+THE CHECK WAS REMOVED, not retargeted. Idle storage is not a reliable bug signal:
+it is frequently the correct answer, and asserting otherwise would have driven a
+wrong fix into the dispatch. The pumped-storage cycling check STAYS, because PS
+has an explicit daily cycling discipline and its collapse was a genuine bug.
+138/138.
+
 THREE ITERATIONS TO GET THE CHECK RIGHT, each worth recording:
   * v1 keyed the storage check on CURTAILMENT being present. The default scenario
     curtails nothing, so it never ran - the reintroduced storage bug passed
