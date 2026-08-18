@@ -48,7 +48,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://nickhedley.github.io/gridtwin-za/og-card.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box}
 
@@ -172,9 +172,12 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 @media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow); padding:9px 12px 8px; position:relative}
 .kpi .k{font-family:'Saira Condensed'; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink2)}
-.kpi .v{font-family:'IBM Plex Mono'; font-size:21px; font-weight:600; margin-top:1px}
-.kpi .u{font-size:11px; color:var(--ink2); font-family:'IBM Plex Mono'}
-.kpi .d{position:absolute; top:9px; right:10px; font-family:'IBM Plex Mono'; font-size:10.5px}
+.kpi .v{font-family:'Archivo',sans-serif; font-size:22px; font-weight:700; margin-top:1px;
+        font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum' 1,'lnum' 1;
+        letter-spacing:-.01em}
+.kpi .u{font-size:11.5px; color:var(--ink2); font-family:'Archivo',sans-serif; font-weight:600}
+.kpi .d{position:absolute; top:9px; right:10px; font-family:'Archivo',sans-serif; font-size:10.5px;
+        font-weight:600; font-variant-numeric:tabular-nums; font-feature-settings:'tnum' 1}
 .d.up{color:var(--alert)}.d.dn{color:var(--veld)}
 
 /* map + charts area */
