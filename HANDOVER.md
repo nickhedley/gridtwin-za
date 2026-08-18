@@ -1,3 +1,67 @@
+## POWER FUTURES LAB H1 2026 MONITOR INGESTED (18 Aug 2026)
+
+Alao & Kruger, South African IPPs: Financial Close & COD Monitor, H1 2026 update,
+UCT GSB Power Futures Lab, 17 Aug 2026. This is the report the queue was waiting
+for, and it resolves every pending entry.
+
+OUR PRIVATE FILE MATCHED THE REPORT EXACTLY - all 10 privately-procured H1
+projects, 1,046 MW, name for name. The double-count work of 17 Aug is also
+vindicated: Mooi Plaats (240 MW) and Umsobomvu (140 MW) are confirmed as H1 CODs,
+so removing them from the queue was right.
+
+QUEUE RESOLVED:
+  GRASPAN PV 75 MW - ADDED, THEN REVERSED THE SAME DAY. It was ALREADY COUNTED.
+    PFL confirms COD in H1 2026 and the queue file recorded April 2026, which
+    looked safely post-cutoff, so I added it. Two independent checks say
+    otherwise:
+      1. in_construction 444 MW at 31 March decomposes EXACTLY to Doornhoek 120 +
+         Virginia Solar Park 240 + BW5 Eastern Cape wind 84 (ipp_pipeline.json).
+         Graspan is not among them. Being inside procured and not in
+         construction, it must have been online.
+      2. The queue file's OWN coverage note already recorded ~73 MW of
+         unattributed BW5 SOLAR inside the online total, identified as either
+         Graspan or Du Plessis Dam PV 1. Graspan is 75 MW of BW5 solar.
+    The second point is the one that stings: our own file said this before I
+    touched it, in the same note I read to get the April COD date. I took the
+    part that supported adding and did not weigh the part that did not.
+  HARTEBEESTHOEK 140 MW - NOT operational. Our June 2026 COD was WRONG. The
+    report lists "Anglo's Hartebeesthoek (140 MW)" among the 21 private projects
+    EXPECTED in H2 2026. Held, re-dated.
+  UMMBILA EMOYENI 155 MW - NOT operational. "Seriti's Ummbila Emoyeni" also
+    appears in the H2 expected list. Held.
+  ILIKWA 50 MW - H2, awaiting the H2 monitor. Commissioned 3 August 2026 (user),
+    which is after the 30 June H1 cutoff, so its absence from the H1 report is
+    EXPECTED. I initially flagged it as uncorroborated because PFL did not
+    mention it - that reasoning was WRONG. The report names only the LARGEST of
+    the 21 private H2 projects, so a 50 MW project would never have appeared in
+    that list. Absence from a named subset is not evidence of absence, and I
+    should not have treated it as such.
+
+ADDING 75 MW BROKE THREE IDENTITIES AT ONCE, and the validator caught all three
+(all since reversed, but the mechanism is worth keeping):
+    sum(provincial online) = published national online   7431 vs 7355
+    FIXED.pvUtilityMW = reipppp solar + private solar    3226 vs 3151
+    file fingerprint matches body
+
+All three had to move together. online_actual rose 75 and in_construction FELL 75
+- Graspan was under construction at 31 March and commissioned in April, so a
+committed project delivered; procured_mw is unchanged because nothing new was
+procured. FIXED.pvUtilityMW 3151 -> 3226. Fingerprint recomputed.
+
+That cascade is the point of those checks: a single number added to one province
+must reconcile against the national total, the engine-facing constant and the
+file's own hash, or the model dispatches less solar than the regions hold. It is
+the same identity that caught the phantom-MW bug originally.
+
+WHAT WE STILL CANNOT DO: the other six public H1 CODs (799 MW - Mulilo Total
+Hydra, Phezukomoya, Coleskop, Doornhoek, Umoyilanga 2, Grootspruit) cannot be
+added, because the report gives H1 as a whole rather than month by month and the
+reipppp bucket already covers everything to 31 March. Adding all of them would
+double-count whatever commissioned in Q1. The in_construction figure bounds it:
+at most 470 MW of the 874 MW public H1 total commissioned after March, so roughly
+404 MW is already in the bucket. Per-project COD dates are needed, and the IPP
+Office Q1 2026/27 quarterly (due ~September) will supply them.
+
 ## SLIDER FILL LAGGED THE THUMB ON ANY PROGRAMMATIC CHANGE (18 Aug 2026)
 
 Spotted by the user from a screenshot: a grey gap between the left end of the
