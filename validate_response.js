@@ -96,6 +96,9 @@ const CONTEXT = {
   ccsCaptureRatePct:{ ccsEnabled: 1 }, ccsPenaltyPct: { ccsEnabled: 1 },
   ccsOpexR: { ccsEnabled: 1 }, ccsCapexR: { ccsEnabled: 1 }, ccsTsR: { ccsEnabled: 1 },
   coalRampFlexPct:  { coalFlexPct: 1 },
+  // Nothing to export without a surplus, and no price effect without capacity.
+  exportCapMW:  { newWindMW: 45000, newPvMW: 52000, coalDecomMW: 27000 },
+  exportPriceR: { exportCapMW: 3000, newWindMW: 45000, newPvMW: 52000, coalDecomMW: 27000 },
 };
 
 const BUILD_ONLY = {
@@ -194,7 +197,10 @@ const BUILD_ONLY = {
     }
 
     for (const sl of SLIDERS) {
-      if (sl.grp || !sl.id) continue;
+      // Readouts render a live summary line and write nothing to state, so they
+      // cannot move an output. Excluded rather than exempted by name, so the
+      // next readout does not fail the same way.
+      if (sl.grp || !sl.id || sl.readout) continue;
       const id = sl.id;
       let pts;
       if (sl.toggle)      pts = [0, 1];
