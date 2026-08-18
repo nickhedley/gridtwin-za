@@ -1,3 +1,47 @@
+## BUG: "PEAK DEMAND" WAS DEMAND PLUS STORAGE CHARGING (17 Aug 2026)
+
+Found by the user querying why the Future electricity mix preset reported 50.5 GW
+of peak demand on 5% demand growth. It should have been about 33 GW, and the
+demand model was right - the LABEL was wrong.
+
+    reported "peak demand"        50.46 GW   at 09:00
+      of which storage charging   29.64 GW   <- the entire discrepancy
+      actual demand that hour     20.82 GW
+    TRUE peak demand              33.17 GW
+    expected from 5% growth       33.18 GW   <- matches exactly
+
+peak was taken from loadS, which INCLUDES charging. Charging is a real draw on the
+network but it is not demand: it is the system buying energy to sell back later,
+and it is discretionary in a way demand is not. The peak hour was 09:00 - mid
+morning, when 30 GW of new batteries charge off surplus solar. A charging peak,
+reported as a demand peak.
+
+WHY IT MATTERED MORE THAN IT LOOKS: it misled in exactly the scenarios storage
+exists for. Someone reading 5% demand growth against a 60% jump in peak would
+reasonably conclude the demand model was broken, and could have "fixed" a demand
+series that was correct. It also silently inflated every peak-related figure in
+high-storage scenarios.
+
+FIX: simulate() now returns THREE figures and every label says which it means.
+  peak           demand only, charging excluded - what "peak demand" claims to be
+  peakGridLoad   the maximum the network actually carries, charging included
+  peakChargeMW   the largest charging draw in any hour
+
+The mix panel shows the second and third only when charging is material, so
+today's view stays uncluttered while a storage-heavy scenario explains itself:
+"Peak demand: 33.2 GW, peak grid load 50.5 GW including up to 33.7 GW of storage
+charging."
+
+Today's default is unchanged at 31.6 GW, because charging there peaks at 2.8 GW
+and never coincides with the evening demand peak. That is why the bug survived:
+it is invisible until storage is large.
+
+NOTE FOR SESSION 3: the cross-panel consistency checker did NOT catch this. It
+verified that every panel agreed with the engine - and they did, because they all
+read the same wrong quantity. Agreement between panels is not correctness when
+the shared source is mislabelled. Worth adding a check that peak demand moves
+roughly in proportion to the demand-growth slider.
+
 ## BUG HUNT SESSION 5: STRUCTURAL AND CODE AUDIT (17 Aug 2026)
 
 validate_structure.js + control_inventory.json. 8/8. Static analysis plus a DOM
