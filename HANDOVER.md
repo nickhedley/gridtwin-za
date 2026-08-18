@@ -1,3 +1,32 @@
+## SLIDER FILL LAGGED THE THUMB ON ANY PROGRAMMATIC CHANGE (18 Aug 2026)
+
+Spotted by the user from a screenshot: a grey gap between the left end of the
+demand-growth track and where the orange fill started.
+
+The fill is a CSS gradient driven by a --val custom property, and the formula
+computing it was correct. The bug was that updateTrack() was only ever called on
+RENDER and on USER DRAG. applyState() - which is what a URL parameter, a preset,
+or "load this build into the model" goes through - set el.value and never
+refreshed the fill. The thumb moved; the paint stayed put.
+
+WHY DEMAND GROWTH SHOWED IT AND NOTHING ELSE DID: it is the only slider with a
+NEGATIVE minimum. Rendered at its default of 0 on a -10..120 track, the fill sits
+at 7.7%; a URL setting +5 moves the thumb to 11.5% and leaves 3.8% of track
+mispainted. Every other slider had the identical bug, but starts at zero, so the
+stale fill and the new thumb were usually close enough to be invisible.
+
+FIX: updateSliderFill(el) as a standalone function, called from applyState as
+well as the drag handler. Declared as a FUNCTION DECLARATION rather than assigned
+to window - the slider renderer runs earlier in the file, and an assignment would
+not exist yet when it calls this. The first attempt did exactly that and threw.
+
+Verified 46/46 sliders paint correctly on load, after a preset, and at a negative
+value.
+
+WORTH NOTING FOR THE HARNESSES: nothing automated could have caught this. jsdom
+computes no layout and the value was always right - only the paint was wrong. It
+belongs squarely in the session-6 visual class, and it took a screenshot.
+
 ## LICENCE GAPS CLOSED ACROSS THE DATA FILES (18 Aug 2026)
 
 Nine of seventeen JSON files under nodal/ carried no licence at all - including
