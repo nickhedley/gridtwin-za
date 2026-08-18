@@ -80,7 +80,10 @@ async function loadNodalData() {
   // sourced number the capacity identities use - the rooftop file itself stays
   // verbatim Eskom.
   const _priv = (cap.by_source && cap.by_source.private && cap.by_source.private.solar_mw) || {};
-  Object.keys(rooftopMw).forEach(r => { rooftopMw[r] = Math.max(0, rooftopMw[r] - (_priv[r] || 0)); });
+  Object.keys(rooftopMw).forEach(r => {
+    if (typeof rooftopMw[r] !== 'number') return;   // skip the meta block
+    rooftopMw[r] = Math.max(0, rooftopMw[r] - (_priv[r] || 0));
+  });
 
   nodalDataCache = { demandByRegion, windPu, solarPu, windMw: cap.wind_mw, solarMw: cap.solar_mw, rooftopMw, fleet, cspPu };
   return nodalDataCache;
