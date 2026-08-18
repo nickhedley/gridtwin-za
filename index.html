@@ -4789,8 +4789,28 @@ function simulate(u, prof, outPath){
   let replTotal=0;
   for(const k in lcoeOf) replTotal += E[k]*lcoeOf[k];
   const replAvg=replTotal/Math.max(1,gridServed); // R/MWh, all-new basis
-  let peak=0; for(let h=0;h<HOURS;h++) if(loadS[h]>peak)peak=loadS[h];
-  return {E,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,coalAvail,
+  // PEAK DEMAND vs PEAK GRID LOAD. loadS includes storage CHARGING, which is a
+  // real draw on the system but is NOT demand - it is the system buying energy
+  // to sell back later, and it is discretionary in a way demand is not.
+  //
+  // Reporting the combined figure as "peak demand" was badly misleading in
+  // exactly the scenarios storage exists for: the Future electricity mix preset
+  // showed 50.5 GW against a true peak of 33.2 GW, because 30 GW of new
+  // batteries charge off surplus solar at 09:00. A user reasonably read 5% demand
+  // growth and a 60% jump in peak and concluded the demand model was broken.
+  //
+  // Both numbers are useful and both are now returned. peak is DEMAND, which is
+  // what the label says; peakGridLoad is the maximum the network actually carries
+  // including charging, which is what a transmission planner needs.
+  let peak=0, peakGridLoad=0, peakChargeMW=0;
+  for(let h=0;h<HOURS;h++){
+    const chg = chargeMW[h] || 0;
+    const dem = loadS[h] - chg;
+    if(dem > peak) peak = dem;
+    if(loadS[h] > peakGridLoad) peakGridLoad = loadS[h];
+    if(chg > peakChargeMW) peakChargeMW = chg;
+  }
+  return {E,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -9075,7 +9095,7 @@ function render(r){
       +[['Coal',E.coal],['Nuclear',E.nuclear],['Wind',E.wind],['Solar PV',E.pv+(E.rooftop||0)],['CSP',E.csp],
         ['Hydro / Imports',E.hydro+E.imports],['Storage',E.ps+E.batt],['Gas / Diesel',E.ccgt+E.diesel],['Unserved',E.unserved]]
        .filter(([,v])=>v>1e4).map(([n,v])=>'<tr><td>'+n+'</td><td>'+(v/1e6).toFixed(1)+'</td><td>'+(100*v/(tot*1e6)).toFixed(1)+'%</td></tr>').join('')
-      +'</tbody></table><p>Peak demand: '+(r.peak/1000).toFixed(1)+' GW. Load shedding: '+(E.unserved>1e4?(E.unserved/1e6).toFixed(2)+' TWh/yr.':'none.')+'</p>';}
+      +'</tbody></table><p>Peak demand: '+(r.peak/1000).toFixed(1)+' GW'+((r.peakGridLoad-r.peak)>1000 ? ', peak grid load '+(r.peakGridLoad/1000).toFixed(1)+' GW including up to '+(r.peakChargeMW/1000).toFixed(1)+' GW of storage charging' : '')+'. Load shedding: '+(E.unserved>1e4?(E.unserved/1e6).toFixed(2)+' TWh/yr.':'none.')+'</p>';}
 }
 
 /* ==================== RUN LOOP ==================== */
