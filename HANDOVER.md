@@ -1,3 +1,45 @@
+## BUG HUNT SESSION 4: PER-CARRIER BENCHMARKS (17 Aug 2026)
+
+validate_benchmarks.js. 18/18. Reconciles EVERY CARRIER against published data,
+not just the national total - a total can match while two carriers are wrong in
+opposite directions, which is exactly how the wind nameplate and the nuclear
+basis error survived for months.
+
+    carrier          model    bench     gap    band
+    coal            160.98   164.00    -1.8%   ±6%
+    nuclear          11.41    10.95    +4.2%   ±8%
+    wind             12.92    11.60   +11.3%   ±15%
+    solarUtility      6.21     6.50    -4.4%   ±20%
+    hydro             2.89     2.90    -0.3%   ±25%
+    imports           8.56     8.56    +0.0%   ±5%
+    co2             169.90   175.00    -2.9%   ±12%
+
+Every entry carries BOTH a tolerance and the reason a gap exists. The rule: a gap
+with a documented reason is fine; a gap without one is a bug not yet found. A wide
+band with a vague reason is how a real error hides, so each wide band justifies
+itself in the file.
+
+Basis handled per carrier: the model is SENT-OUT, Ember publishes GROSS, and the
+conversion uses each carrier's own auxiliary rate - coal 7.7%, nuclear 5%,
+renewables nil. Applying one national factor is what made coal look 11% short on
+16 Aug.
+
+CAPACITY FACTORS ARE CHECKED SEPARATELY, and the reason is the point of the whole
+session: energy and CF errors CANCEL. Verified by reintroducing the wind nameplate
+bug (wind_pu inflated 1.1668x, the original error):
+
+    wind energy   15.07 TWh vs 11.60 benchmark   +29.9%   CAUGHT, band ±15%
+    wind CF       37.3%                          INSIDE the 28-38% band
+
+The capacity-factor test alone would have missed it entirely. It took the energy
+reconciliation to catch it, and the original bug survived precisely because the
+energy total matched Ember to 0.2% while the nameplate was 578 MW light.
+
+One directional assertion beyond the bands: WIND MUST READ ABOVE the
+NTCSA-metered benchmark, because the model counts privately wheeled plant that
+Ember excludes. A model figure BELOW it would mean capacity is missing, and a
+symmetric tolerance would not catch that.
+
 ## BUG HUNT SESSION 3: CROSS-PANEL CONSISTENCY (17 Aug 2026)
 
 validate_consistency.js. 13/13. Unlike sessions 1 and 2 this reads the RENDERED
