@@ -6227,6 +6227,37 @@ function bldApplyToSliders(){
   }
   const st = document.getElementById('bldStatus');
   if (st) st.textContent = 'Loaded into the sliders above \u2013 the dispatch model has re-solved.';
+
+  // CONFIRM AT THE DESTINATION, not at the origin. This scrolls to the KPI row,
+  // so a status line left behind at the build panel is invisible by the time the
+  // scroll finishes - the button appeared to do nothing but move the page.
+  {
+    const parts = [];
+    for (const [t, id] of Object.entries(map)) {
+      const mw = bldLastTotals[t];
+      if (mw > 1) parts.push(({ wind:'wind', pv:'solar', rooftop:'rooftop',
+                                batt:'battery', ccgt:'gas' })[t] + ' ' + (mw/1000).toFixed(1) + ' GW');
+    }
+    const host = document.getElementById('kpis');
+    if (host && host.parentNode){
+      let banner = document.getElementById('bldAppliedBanner');
+      if (!banner){
+        banner = document.createElement('div');
+        banner.id = 'bldAppliedBanner';
+        banner.style.cssText = 'margin:0 0 10px;padding:8px 12px;border-left:3px solid var(--ok,#4A8C5C);'
+          + 'background:var(--panel2);font-size:11.5px;line-height:1.5';
+        host.parentNode.insertBefore(banner, host);
+      }
+      banner.innerHTML = '<strong>Build loaded into the model.</strong> '
+        + (parts.length ? 'Added ' + parts.join(', ') + '. ' : '')
+        + 'The figures below are now this build, dispatched hour by hour.';
+      banner.style.display = '';
+      // Clear it as soon as the user changes anything, so it cannot linger and
+      // describe a scenario that is no longer on screen.
+      clearTimeout(window.__bldBannerTimer);
+      window.__bldBannerTimer = setTimeout(() => { banner.style.display = 'none'; }, 12000);
+    }
+  }
   document.getElementById('kpis').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
@@ -8416,6 +8447,21 @@ function setTooltip(el,text){
   let t=el.querySelector('title');
   if(!t){ t=document.createElementNS('http://www.w3.org/2000/svg','title'); el.appendChild(t); }
   t.textContent=text;
+  // ALSO drive the shared styled tooltip. The native <title> stays as a fallback,
+  // but on screen it gives the browser's slow delayed popup - the behaviour
+  // removed from every other panel on 17 Aug. Adding .tipbar and data-tip routes
+  // schematic elements through the same delegated handler, which fires instantly
+  // on hover AND on tap, so the panel text promising "click any line or label"
+  // becomes true rather than aspirational.
+  if(text){
+    el.classList.add('tipbar');
+    el.setAttribute('data-tip', String(text));
+    el.style.cursor='pointer';
+  } else {
+    el.classList.remove('tipbar');
+    el.removeAttribute('data-tip');
+    el.style.cursor='';
+  }
 }
 
 
@@ -8503,11 +8549,10 @@ function applyCorridorFlowsToMap(corridorFlow, corridorHrsAtLimit, corridors, re
     el.setAttribute('stroke-dasharray', 'none');
     el.setAttribute('opacity', (0.55 + utilisation * 0.4).toFixed(2));
 
-    const title = el.querySelector('title');
-    if (title) {
-      title.textContent = regionA + ' \u2013 ' + regionB + ': ' +
+    {
+      setTooltip(el, regionA + ' \u2013 ' + regionB + ': ' +
         (annualFlowMWh/1e6).toFixed(2) + ' TWh/yr, limit ' + cd.limit.toLocaleString() + ' MW, ' +
-        annualHrsAtLimit.toLocaleString() + ' h/yr at limit (' + (utilisation*100).toFixed(0) + '% avg loading)';
+        annualHrsAtLimit.toLocaleString() + ' h/yr at limit (' + (utilisation*100).toFixed(0) + '% avg loading)');
     }
   });
 }
