@@ -3286,6 +3286,7 @@ function printPrefeas() {
   </div>
 </footer>
 
+
 <script src="nodal/capacity_siting.js?v=5"></script>
 
 <script>
@@ -8593,8 +8594,8 @@ function renderCCS(r){
           + 'energy penalty cuts the sales volume the capital is recovered over. '
           + 'For context, Medupi cost about R145bn for 4.8 GW \u2013 roughly '
           + 'R30m/MW \u2013 so a carbon capture retrofit at R38m/MW is the same order as building the station '
-          + 'again. A real submission would model each unit\u2019s remaining life, phasing and financing '
-          + 'separately; this is a transparent approximation, not a tariff application.</div>'
+          + 'again. A more accurate submission would model each unit\u2019s remaining life, phasing and financing '
+          + 'separately; this is a transparent approximation.</div>'
           + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px">'
           + ci('ccsCapexRkW', 'Retrofit capital', 'R/kW', rKw, 1000)
           + ci('ccsWaccPct', 'Return (WACC)', '%', state.ccsWaccPct ?? 9, 0.5)
@@ -8621,8 +8622,8 @@ function renderCCS(r){
     + `<div style="margin-top:5px;color:var(--ink2)">The energy penalty also removes <strong>${lostGW.toFixed(1)} GW</strong> `
     + 'of saleable capacity from the fleet. This is because a quarter of each plant\u2019s output now runs '
     + 'the capture equipment instead of reaching customers.'
-    + '<div style="margin-top:5px">This model applies capture to today\'s fleet and changes nothing '
-    + 'else, so the lost capacity shows up as shortage. In other words, the replacement capacity costs '
+    + ' This model applies capture to today\'s fleet and changes nothing '
+    + 'else, so the lost capacity shows up as a shortage. In other words, the replacement capacity costs '
     + 'are not included in this panel.</div></div>';
 
   function ci(id, label, unit, val, step){
@@ -8716,7 +8717,7 @@ const SLIDERS=[
    note:'Paid for inertia, which \u003cb\u003eSouth Africa does not procure at all today\u003c/b\u003e. The Market Code lists synchronous condensers but never inertia as a service, while Eskom\u2019s 2026\u20132030 adequacy outlook flags rising frequency instability as inverter-based generation grows. Britain holds a 120 GVAs minimum and Ireland 23 GWs, both with procurement behind them. Earned only by plant that can actually provide it \u2013 synchronous machines inherently, grid-forming batteries synthetically. Wind and solar earn nothing. Use it against the synchronous floor slider to ask what price makes batteries displace spinning mass.'},
   {id:'capacityPaymentRkWyr',label:'Capacity payment',min:0,max:600,step:10,def:FIXED.capacityPaymentRkWyr,
    fmt:v=>v===0?'none':'R'+v+'/kW/yr',
-   note:'Paid for firm capacity being AVAILABLE, whether or not it runs. The revised Electricity Pricing Policy (August 2026) states that capacity charges are necessary to incentivise reliable generation; this models one. Paid on \u003cb\u003ede-rated MW\u003c/b\u003e following Ireland\u2019s all-island market, the closest structural analogue to SAWEM \u2013 single national price, one system operator. De-rating credits a 4-hour battery at 25&#37; of nameplate and a 100-hour store at 90&#37;, because what matters is capacity you can rely on through a long event, not nameplate. Defaults to zero: South Africa has no such mechanism today. Without it, long-duration storage earns nothing for existing, which is why iron-air and vanadium look pointless in this model.'},
+   note:'Paid for firm capacity being available, whether or not it runs. The revised Electricity Pricing Policy (August 2026) states that capacity charges are necessary to incentivise reliable generation; this models one. Paid on de-rated MW following Ireland\u2019s all-island market, the closest structural analogue to SAWEM \u2013 single national price, one system operator. De-rating credits a 4-hour battery at 25&#37; of nameplate and a 100-hour store at 90&#37;, because what matters is capacity you can rely on through a long event, not nameplate. Defaults to zero: South Africa has no such mechanism today. Without it, long-duration storage earns nothing for existing, which is why iron-air and vanadium look pointless in this model.'},
   {id:'importsMW',label:'Regional imports',min:0,max:8000,step:250,def:FIXED.importsMW,fmt:v=>(v/1000).toFixed(2)+' GW',
    note:'Firm import capacity from the Southern African Power Pool, dispatched must-take at 85&#37; availability. The default is today\u2019s interconnection \u2013 mainly the 1,920 MW Cahora Bassa HVDC plus the Mozambique and Botswana 400 kV links. The SAPP draft Master Plan Update adds one new direct link to South Africa (a connection to Zimbabwe from 2030, which will run at 92\u201398&#37; utilisation).'},
   {id:'exportCapMW',label:'Export capacity',min:0,max:5000,step:250,def:FIXED.exportCapMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
