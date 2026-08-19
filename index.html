@@ -121,6 +121,9 @@ header{border-bottom:2px solid #3a5668; background:#517180; box-shadow:var(--sha
    following a sibling gets it automatically, whatever the source order. */
 .panel + .panel, .panel + section > .panel:first-child,
 section + section > .panel:first-child{margin-top:18px}
+/* The FIRST block in each grid column must sit flush with the column top, or
+   the two columns start at different heights. */
+.main2 > div > *:first-child{margin-top:0}
 .panel{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow)}
 /* Header-bar controls. A <button> and an <a> do not agree on box height by
    default, and .ph is a flex row with align-items:baseline, so each child sizes
@@ -456,6 +459,26 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="pb" id="mix"></div>
         </div>
 
+          <div id="nav-results" class="panel">
+  <div class="ph"><h2>System adequacy</h2><span class="tag">reserve margin &middot; LOLE &middot; EUE</span></div>
+  <div class="pb" id="adequacyBody" style="padding:12px 14px"><p style="font-size:11px;color:var(--ink2);margin:0">Run the model to compute adequacy statistics.</p></div>
+</div>
+
+          <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
+            <div class="pb">
+              <div class="riskhead" id="riskHead"></div>
+              <div class="shedbars" id="shed"></div>
+              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
+              <p class="risknote" id="riskNote">Bars: probability the year reaches at least stage S, across 60 simulated years.</p>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
+            <div class="pb" id="carbonBudget"></div>
+          </div>
+
           <div class="panel mapbox">
         <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
@@ -492,51 +515,49 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
       </div>
 
-          <div id="nav-results" class="panel">
-  <div class="ph"><h2>System adequacy</h2><span class="tag">reserve margin &middot; LOLE &middot; EUE</span></div>
-  <div class="pb" id="adequacyBody" style="padding:12px 14px"><p style="font-size:11px;color:var(--ink2);margin:0">Run the model to compute adequacy statistics.</p></div>
-</div>
+          <div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
+          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
+          <div style="padding:0 14px 12px">
+            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
+              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
+              Includes all technologies.
+            </p>
+            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
+          </div>
+        </div>
 
-          <div id="nav-prices" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">what a market would clear at</span></div>
-            <div class="pb" id="priceBody"></div>
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Grid queue pressure</h2><span class="tag">pipeline vs headroom</span></div>
+            <div class="pb" id="queueBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Price-setting technology by hour</h2>
-              <div class="wkbtns">
-                <button id="spW" class="active">Winter week</button>
-                <button id="spS">Summer week</button>
-              </div>
-            </div>
-            <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &ndash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
-            <div class="pb" style="padding:10px 10px 4px">
-              <canvas id="spWeek" height="216" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
-            </div>
-            <p id="spWeekDesc" class="sr-only">Hourly shadow price for a representative 168-hour week, each bar coloured by the technology setting the price in that hour.</p>
-            <div class="pb" id="spWeekLegend" style="padding:0 12px 4px"></div>
-            <div class="pb" id="spWeekNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.45"></div>
-          </div>
-
-          <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
-            <div class="pb">
-              <div class="riskhead" id="riskHead"></div>
-              <div class="shedbars" id="shed"></div>
-              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
-              <p class="risknote" id="riskNote">Bars: probability the year reaches at least stage S, across 60 simulated years.</p>
-            </div>
-          </div>
-
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
-            <div class="pb" id="carbonBudget"></div>
+            <div class="ph"><h2>Permitted but not built</h2><span class="tag">environmental approvals</span></div>
+            <div class="pb" id="reeaBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
           <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
           <div class="pb" id="lcoe"></div>
         </div>
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
 
 
 
@@ -611,9 +632,25 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         
 </div>
       <div>
-          <div id="nav-capture" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capture rate by region</h2><span class="tag">what a project earns vs the average MWh</span></div>
-            <div class="pb" id="captureBody"></div>
+          <div id="nav-prices" class="panel" style="">
+            <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">what a market would clear at</span></div>
+            <div class="pb" id="priceBody"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Price-setting technology by hour</h2>
+              <div class="wkbtns">
+                <button id="spW" class="active">Winter week</button>
+                <button id="spS">Summer week</button>
+              </div>
+            </div>
+            <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &ndash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
+            <div class="pb" style="padding:10px 10px 4px">
+              <canvas id="spWeek" height="216" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
+            </div>
+            <p id="spWeekDesc" class="sr-only">Hourly shadow price for a representative 168-hour week, each bar coloured by the technology setting the price in that hour.</p>
+            <div class="pb" id="spWeekLegend" style="padding:0 12px 4px"></div>
+            <div class="pb" id="spWeekNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.45"></div>
           </div>
 
           <div id="nav-curtforecast" class="panel" style="margin-top:18px">
@@ -652,6 +689,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
             <div class="pb" id="capFcBody"></div>
+          </div>
+
+          <div id="nav-capture" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Capture rate by region</h2><span class="tag">what a project earns vs the average MWh</span></div>
+            <div class="pb" id="captureBody"></div>
           </div>
 
           <div id="nav-cappay" class="panel" style="margin-top:18px">
@@ -822,59 +864,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
         </div>
 
-          <div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
-          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
-          <div style="padding:0 14px 12px">
-            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
-              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
-              Includes all technologies.
-            </p>
-            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
-          </div>
-        </div>
-
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Grid queue pressure</h2><span class="tag">pipeline vs headroom</span></div>
-            <div class="pb" id="queueBody"></div>
-          </div>
-
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Permitted but not built</h2><span class="tag">environmental approvals</span></div>
-            <div class="pb" id="reeaBody"></div>
-          </div>
-
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>&lsquo;Clean coal&rsquo; (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
             <div class="pb" id="ccsBody"></div>
           </div>
 
-<section>
-        
-
-        
-
-        
-
-        
-          
-
-          
-
-          
-
-          
-
-          
-
-          
-          
-
-
-
-
-          
-          
-<div style="margin-top:18px"><details class="assump">
+          <div style="margin-top:18px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
         <p style="margin-bottom:8px"><strong>What this is:</strong> a national-level digital twin of the South African power system. Hourly demand, wind and solar profiles come from <strong>2025 Eskom data</strong>. Fleet parameters – EAF, OCGT load factor, rooftop PV, structural demand level – are calibrated to Eskom&rsquo;s weekly system status reports: EAF &asymp; 68&nbsp;% (calendar year to date, Week&nbsp;32), OCGT load factor &asymp; 1.3&nbsp;%, <strong>8.6&nbsp;GW</strong> behind-the-meter rooftop PV (NTCSA estimates 9.1&nbsp;GW at June 2026, of which 0.49&nbsp;GW is ground-mounted wheeled plant this model counts as utility supply), post-2023 structural demand decline. <strong>Transmission and distribution
@@ -992,10 +987,64 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <p style="margin-top:8px"><strong>What it is not:</strong> the instant model has no network constraints (the MIP does, across 10 regions) and no operating-reserve co-optimisation. Costs exclude existing-fleet capex, wires and retail. The TDP is a published plan, not an investment commitment. For decision-grade work use <a href="https://github.com/MeridianEconomics/pypsa-rsa" target="_blank" rel="noopener">PyPSA-RSA</a> – this app is the intuition layer in front of it.</p>
       </div>
 </details></div>
-<div style="margin-top:18px"><details class="assump" id="validationPanel" style="margin-top:12px">
+
+          <div style="margin-top:18px"><details class="assump" id="validationPanel" style="margin-top:12px">
       <summary>How the model compares to Eskom&rsquo;s published figures</summary>
       <div class="pb" id="validationBody"></div>
 </details></div>
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+<section>
+        
+
+        
+
+        
+
+        
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+
+
+
+          
+          
+
+
           
         
 
