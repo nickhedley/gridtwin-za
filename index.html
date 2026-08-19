@@ -166,6 +166,20 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 .grp[open] summary::before{transform:rotate(90deg) translateX(-1px)}
 .grp summary h3{margin-bottom:0}
 .grp summary:hover h3{color:var(--ink)}
+
+/* Nested disclosure for a cluster of sub-settings. Indented so it reads as
+   belonging to the control above, with room beneath so it does not crowd the
+   next setting down. */
+.subgrp{margin:4px 0 20px 26px; border-left:2px solid var(--line2); padding-left:12px}
+.subgrp summary{list-style:none; cursor:pointer; user-select:none; font-family:'Saira Condensed',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink2); padding:4px 0 7px}
+.subgrp summary::-webkit-details-marker{display:none}
+.subgrp summary::before{content:''; width:0; height:0; display:inline-block; margin-right:6px;
+  border-left:4px solid var(--veld,#4A6B7A); border-top:3.5px solid transparent;
+  border-bottom:3.5px solid transparent; transform:translateY(-1px);
+  transition:transform .12s ease}
+.subgrp[open] summary::before{transform:rotate(90deg) translateX(-1px)}
+.subgrp summary:hover{color:var(--ink)}
+.subgrp[open]{padding-bottom:6px}
 /* When a group is CLOSED, say how many settings it holds and whether any have
    been changed - otherwise a collapsed group can silently carry a setting the
    user has forgotten, which is worse than a long panel. */
@@ -8651,7 +8665,7 @@ const SLIDERS=[
   {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
   {grp:'Existing coal fleet'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:68,fmt:v=>v+' %',note:'FY2026 to date = 68% · 2023 crisis = 50–55% · target 70%'},
-  {subgrp:'Outage detail'},
+  {subgrp:'Outage settings'},
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
    ctrlStyle:SUB_CTRL,note:'When turned on, individual units trip and must be taken out for repairs (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Means the bad hours are more extreme. At an EAF of 55%, for example, this moves shedding from 3 hours to 207 hours.'},
   {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
@@ -8694,7 +8708,7 @@ const SLIDERS=[
   {grp:'System operation'},
   {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
    note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output. At today\u2019s fleet this rarely binds \u2013 South Africa has ~7 GW of fast-start peakers and storage against a reserve need near 1.3 GW \u2013 but it bites hard once coal is tight or peakers retire.'},
-  {subgrp:'Reserve detail'},
+  {subgrp:'Reserve settings'},
   {id:'reserveContingencyMW',label:'N-1 contingency reserve',min:0,max:1600,step:20,def:FIXED.reserveContingencyMW,fmt:v=>v+' MW',
    ctrlStyle:SUB_CTRL,note:'Cover for the largest single unit tripping. 794 MW is a Medupi/Kusile set, the biggest on the system.'},
   {id:'reserveRegulatingPct',label:'Regulating reserve',min:0,max:8,step:0.5,def:FIXED.reserveRegulatingPct,fmt:v=>v+' % of load',
