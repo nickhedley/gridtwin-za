@@ -443,6 +443,113 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="ph"><h2>Annual electricity mix</h2><span class="tag" id="mixTotal"></span></div>
           <div class="pb" id="mix"></div>
         </div>
+
+          <div class="panel" aria-label="Weekly dispatch">
+          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="wkbtns">
+                <button id="wkW" class="active">Winter week</button>
+                <button id="wkS">Summer week</button>
+              </div>
+              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
+            </div>
+          </div>
+          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week – hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
+          <div class="pb" style="padding:10px 10px 4px">
+            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart" aria-describedby="dispatchTableDesc"></canvas>
+          </div>
+          <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
+        </div>
+
+          <div id="nav-prices" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">what a market would clear at</span></div>
+            <div class="pb" id="priceBody"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Price-setting technology by hour</h2>
+              <div class="wkbtns">
+                <button id="spW" class="active">Winter week</button>
+                <button id="spS">Summer week</button>
+              </div>
+            </div>
+            <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &ndash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
+            <div class="pb" style="padding:10px 10px 4px">
+              <canvas id="spWeek" height="216" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
+            </div>
+            <p id="spWeekDesc" class="sr-only">Hourly shadow price for a representative 168-hour week, each bar coloured by the technology setting the price in that hour.</p>
+            <div class="pb" id="spWeekLegend" style="padding:0 12px 4px"></div>
+            <div class="pb" id="spWeekNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.45"></div>
+          </div>
+
+          <div id="nav-capture" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Capture rate by region</h2><span class="tag">what a project earns vs the average MWh</span></div>
+            <div class="pb" id="captureBody"></div>
+          </div>
+
+          <div id="nav-curtforecast" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Curtailment forecast</h2>
+              <span class="tag">what happens as the queue ahead of you builds</span></div>
+            <div class="pb">
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+                <select id="cfTech" onchange="renderCurtailmentForecast()"
+                        style="padding:4px 8px;font-size:11px;font-family:inherit;
+                               border:1px solid var(--line2);background:var(--panel);color:var(--ink)">
+                  <option value="solar">Solar PV</option>
+                  <option value="wind">Wind</option>
+                </select>
+                <button onclick="renderCurtailmentForecast()"
+                        style="padding:5px 12px;background:var(--ink);color:var(--panel);border:none;
+                               cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;
+                               font-weight:600;letter-spacing:.04em;border-radius:2px">Run forecast</button>
+                <span style="font-size:10px;color:var(--ink2)">six dispatch solves, about half a second</span>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;
+                          padding-top:8px;border-top:1px solid var(--line2)">
+                <button id="curtAuditBtn" onclick="runCurtailmentAudit()"
+                        style="padding:5px 12px;background:var(--alert,#C4785A);color:#fff;border:none;
+                               cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;
+                               font-weight:600;letter-spacing:.04em;border-radius:2px">Full network audit</button>
+                <span style="font-size:10px;color:var(--ink2)">
+                  six network solves &middot; <strong>takes several minutes</strong> &middot;
+                  the only curtailment figure here that includes corridor congestion</span>
+              </div>
+              <div id="curtAuditBody"></div>
+              <div id="curtForecastBody"><div class="muted" style="font-size:11px">
+                Press <strong>Run forecast</strong> to project curtailment against build-out.</div></div>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
+            <div class="pb" id="capFcBody"></div>
+          </div>
+
+          <div id="nav-cappay" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Capacity payment</h2>
+              <span class="tag">what firm capacity earns for existing</span></div>
+            <div class="pb" id="capPayBody"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Battery revenue benchmark</h2><span class="tag">lithium-ion 4h &middot; what a BESS would earn</span></div>
+            <div class="pb" id="bessBody"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Where a battery earns most</h2><span class="tag">lithium-ion 4h &middot; nodal &middot; needs full model run</span></div>
+            <div class="pb" id="bessLocBody"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
+            <div class="pb" id="carbonBudget"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
+          <div class="pb" id="lcoe"></div>
+        </div>
 <section id="nav-network" aria-label="Network map and capacity siting" style="display:block;margin-top:18px">
       <div class="panel mapbox">
         <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
@@ -642,14 +749,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           
 
           
-<div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
-            <div class="pb" id="carbonBudget"></div>
-          </div>
-          <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
-          <div class="pb" id="lcoe"></div>
-        </div>
+
+          
 <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>&lsquo;Clean coal&rsquo; (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
             <div class="pb" id="ccsBody"></div>
@@ -661,110 +762,31 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 </div>
       <div>
 <section>
-        <div class="panel" aria-label="Weekly dispatch">
-          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="wkbtns">
-                <button id="wkW" class="active">Winter week</button>
-                <button id="wkS">Summer week</button>
-              </div>
-              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
-            </div>
-          </div>
-          <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week – hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
-          <div class="pb" style="padding:10px 10px 4px">
-            <canvas id="dispatch" height="240" aria-label="Stacked hourly dispatch chart" aria-describedby="dispatchTableDesc"></canvas>
-          </div>
-          <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
-        </div>
+        
 
         
 
         
 
         
-          <div id="nav-prices" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">what a market would clear at</span></div>
-            <div class="pb" id="priceBody"></div>
-          </div>
+          
 
-          <div id="nav-cappay" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capacity payment</h2>
-              <span class="tag">what firm capacity earns for existing</span></div>
-            <div class="pb" id="capPayBody"></div>
-          </div>
+          
 
-          <div id="nav-capture" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capture rate by region</h2><span class="tag">what a project earns vs the average MWh</span></div>
-            <div class="pb" id="captureBody"></div>
-          </div>
+          
 
-          <div id="nav-curtforecast" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Curtailment forecast</h2>
-              <span class="tag">what happens as the queue ahead of you builds</span></div>
-            <div class="pb">
-              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
-                <select id="cfTech" onchange="renderCurtailmentForecast()"
-                        style="padding:4px 8px;font-size:11px;font-family:inherit;
-                               border:1px solid var(--line2);background:var(--panel);color:var(--ink)">
-                  <option value="solar">Solar PV</option>
-                  <option value="wind">Wind</option>
-                </select>
-                <button onclick="renderCurtailmentForecast()"
-                        style="padding:5px 12px;background:var(--ink);color:var(--panel);border:none;
-                               cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;
-                               font-weight:600;letter-spacing:.04em;border-radius:2px">Run forecast</button>
-                <span style="font-size:10px;color:var(--ink2)">six dispatch solves, about half a second</span>
-              </div>
-              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;
-                          padding-top:8px;border-top:1px solid var(--line2)">
-                <button id="curtAuditBtn" onclick="runCurtailmentAudit()"
-                        style="padding:5px 12px;background:var(--alert,#C4785A);color:#fff;border:none;
-                               cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;
-                               font-weight:600;letter-spacing:.04em;border-radius:2px">Full network audit</button>
-                <span style="font-size:10px;color:var(--ink2)">
-                  six network solves &middot; <strong>takes several minutes</strong> &middot;
-                  the only curtailment figure here that includes corridor congestion</span>
-              </div>
-              <div id="curtAuditBody"></div>
-              <div id="curtForecastBody"><div class="muted" style="font-size:11px">
-                Press <strong>Run forecast</strong> to project curtailment against build-out.</div></div>
-            </div>
-          </div>
+          
 
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Price-setting technology by hour</h2>
-              <div class="wkbtns">
-                <button id="spW" class="active">Winter week</button>
-                <button id="spS">Summer week</button>
-              </div>
-            </div>
-            <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &ndash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
-            <div class="pb" style="padding:10px 10px 4px">
-              <canvas id="spWeek" height="216" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
-            </div>
-            <p id="spWeekDesc" class="sr-only">Hourly shadow price for a representative 168-hour week, each bar coloured by the technology setting the price in that hour.</p>
-            <div class="pb" id="spWeekLegend" style="padding:0 12px 4px"></div>
-            <div class="pb" id="spWeekNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.45"></div>
-          </div>
+          
 
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Battery revenue benchmark</h2><span class="tag">lithium-ion 4h &middot; what a BESS would earn</span></div>
-            <div class="pb" id="bessBody"></div>
-          </div>
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Where a battery earns most</h2><span class="tag">lithium-ion 4h &middot; nodal &middot; needs full model run</span></div>
-            <div class="pb" id="bessLocBody"></div>
-          </div>
+          
+          
 
 
 
 
           
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
-            <div class="pb" id="capFcBody"></div>
-          </div><div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
+          <div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
           <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
           <div style="padding:0 14px 12px">
             <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
