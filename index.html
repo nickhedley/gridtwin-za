@@ -6826,11 +6826,8 @@ function renderRegionalCapture(res){
     + section('solar', '#F5C518')
     + '<div style="font-size:10.5px;line-height:1.6;margin-top:9px;padding:7px 10px;'
     + 'background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
-    + '<strong>Siting matters for wind, barely for solar.</strong> Wind capture spans '
-    + spread('wind').toFixed(0) + ' points across regions here; solar spans only '
-    + spread('solar').toFixed(0) + '. Wind regimes differ enough that where you build changes what '
-    + 'you earn. Solar generates at much the same hours everywhere, so it cannibalises itself '
-    + 'wherever it sits.</div>'
+    + '<strong>Siting matters more for wind than solar</strong>, which generates at much the same '
+    + 'hours everywhere and therefore cannibalises itself.</div>'
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
     + 'Regional generation profiles combined with the national hourly price, because the instant '
     + 'engine is single-node. That measures WHEN a region generates relative to the national price, '
