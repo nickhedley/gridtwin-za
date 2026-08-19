@@ -2366,6 +2366,20 @@ let redzData = null;
 
   // Expose switchTab globally
   window.switchTab = switchTab;
+
+  // Open a specific resource tab from the URL hash, so other sites can link
+  // straight to a tool rather than to the top of the page. Runs on load and on
+  // hash change, so a link clicked while already here still works.
+  function openTabFromHash(){
+    const h = (location.hash || '').replace('#','');
+    const VALID = ['solar','datacentre','capture','grid','wheeling','prefeas','rooftop'];
+    if (!VALID.includes(h)) return;
+    try { switchTab(h); } catch(e){ return; }
+    const sec = document.getElementById('resourceSection');
+    if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+  window.addEventListener('hashchange', openTabFromHash);
+  setTimeout(openTabFromHash, 400);   // after the tabs have rendered
   window.mainGeocode = mainGeocode;
   window.mainGoTo = mainGoTo;
   window.fetchSolar = fetchSolar;
