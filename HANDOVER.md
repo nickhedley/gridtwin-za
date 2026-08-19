@@ -1,3 +1,34 @@
+## NAV LINKS WERE JUMPING TO THE WRONG PLACE - FIXED (19 Aug 2026)
+
+Reported by the user after the panel reorder: clicking Network landed somewhere
+unrelated on the page.
+
+TWO SEPARATE BUGS, found in sequence:
+
+1. #nav-network lived on a <section> wrapper. The reorder pulled the panel OUT
+   of that section, leaving an empty shell behind. Clicking Network correctly
+   jumped to the anchor - which now pointed at a zero-height empty element
+   wherever the reorder had left it. Fixed by moving the id onto the panel
+   itself and removing four empty section shells the moves left behind.
+
+2. EVEN WITH THE RIGHT ANCHOR, plain #links were still landing wrong. Panels
+   above the target are still growing while the browser scrolls - charts
+   drawing, tables filling, the Leaflet map loading - so by the time a native
+   anchor jump finishes, the target has moved down the page and you land
+   somewhere else. scroll-margin-top on the anchors does not help, because it
+   only offsets a jump that is already correct; it cannot fix one aimed at a
+   moving target.
+
+FIX: intercept nav clicks, scroll to the target manually (accounting for the
+60px sticky bar), then correct TWICE more as the layout settles - once after
+350ms (smooth scroll duration) and once after 900ms (late-rendering panels).
+
+VERIFIED with a simulated real layout (target at y=2400): expected scroll
+position 2400 - 60 = 2340, actual scrollTo() call matched exactly.
+
+290/290 · 46/46 · 138/138 · 14/14 · 9/9 · 77/77 · 40/40 · 16/16 · 18/18 · 33/33 ·
+29/29 · 6/6.
+
 ## PRICE GAP MEASURED, AND THE TASK RENAMED (18 Aug 2026)
 
 The backlog carried "regional shadow prices - fix the MIP integers, re-solve as

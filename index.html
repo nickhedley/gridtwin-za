@@ -2448,6 +2448,27 @@ let redzData = null;
   // Expose switchTab globally
   window.switchTab = switchTab;
 
+  // JUMP LINKS. Plain #anchors land in the wrong place because panels above the
+  // target are still growing while the browser scrolls - charts drawing, tables
+  // filling, the map loading. Scroll, then correct twice as the layout settles.
+  (function fixJumpLinks(){
+    const NAVBAR = 60;
+    const goTo = (el) => {
+      const y = el.getBoundingClientRect().top + window.pageYOffset - NAVBAR;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    };
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest && e.target.closest('#jumpNav a[href^="#"]');
+      if (!a) return;
+      const el = document.getElementById(a.getAttribute('href').slice(1));
+      if (!el) return;
+      e.preventDefault();
+      goTo(el);
+      setTimeout(() => goTo(el), 350);   // after the smooth scroll finishes
+      setTimeout(() => goTo(el), 900);   // after any late-rendering panel settles
+    });
+  })();
+
   // Open a specific resource tab from the URL hash, so other sites can link
   // straight to a tool rather than to the top of the page. Runs on load and on
   // hash change, so a link clicked while already here still works.
