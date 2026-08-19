@@ -171,14 +171,14 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
    belonging to the control above, with room beneath so it does not crowd the
    next setting down. */
 .subgrp{margin:4px 0 20px 4px; border-left:2px solid var(--line2); padding-left:9px}
-.subgrp summary{list-style:none; cursor:pointer; user-select:none; font-family:'Saira Condensed',sans-serif; font-size:14.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink2); padding:4px 0 7px}
+.subgrp summary{list-style:none; cursor:pointer; user-select:none; font-family:'Saira Condensed',sans-serif; font-size:14.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); padding:1px 0 1px}
 .subgrp summary::-webkit-details-marker{display:none}
 .subgrp summary::before{content:''; width:0; height:0; display:inline-block; margin-right:6px;
   border-left:4px solid var(--veld,#4A6B7A); border-top:3.5px solid transparent;
   border-bottom:3.5px solid transparent; transform:translateY(-1px);
   transition:transform .12s ease}
 .subgrp[open] summary::before{transform:rotate(90deg) translateX(-1px)}
-.subgrp summary:hover{color:var(--ink)}
+.subgrp summary:hover{opacity:.7}
 .subgrp[open]{padding-bottom:6px}
 /* When a group is CLOSED, say how many settings it holds and whether any have
    been changed - otherwise a collapsed group can silently carry a setting the
