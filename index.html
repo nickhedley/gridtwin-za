@@ -434,24 +434,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div class="main2" style="align-items:start">
       <div>
-
-
-<div id="nav-results" class="panel">
-  <div class="ph"><h2>System adequacy</h2><span class="tag">reserve margin &middot; LOLE &middot; EUE</span></div>
-  <div class="pb" id="adequacyBody" style="padding:12px 14px"><p style="font-size:11px;color:var(--ink2);margin:0">Run the model to compute adequacy statistics.</p></div>
-</div><div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
-            <div class="pb">
-              <div class="riskhead" id="riskHead"></div>
-              <div class="shedbars" id="shed"></div>
-              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
-              <p class="risknote" id="riskNote">Bars: probability the year reaches at least stage S, across 60 simulated years.</p>
-            </div>
-          </div><div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Annual electricity mix</h2><span class="tag" id="mixTotal"></span></div>
-          <div class="pb" id="mix"></div>
-        </div>
-
           <div class="panel" aria-label="Weekly dispatch">
           <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
             <div style="display:flex;align-items:center;gap:10px">
@@ -469,17 +451,166 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <p id="dispatchTableDesc" class="sr-only">Hourly dispatch chart: generation by carrier for a representative 168-hour week. Tabular summary below.</p><div id="dispatchA11yTable" aria-live="polite" class="sr-only">Simulation not yet run.</div><div class="legend" id="dispLegend"></div>
         </div>
 
+          <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Annual electricity mix</h2><span class="tag" id="mixTotal"></span></div>
+          <div class="pb" id="mix"></div>
+        </div>
+
+          <div class="panel mapbox">
+        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
+        <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
+        <div class="legend">
+          <span><i style="background:#4A3120"></i>Coal</span>
+          <span><i style="background:#E4322B"></i>Nuclear</span>
+          <span><i style="background:#3EA055"></i>Wind</span>
+          <span><i style="background:#F5C518"></i>Solar</span>
+          <span><i style="background:#1F4E79"></i>Storage / hydro</span>
+          <span><i style="background:var(--alert)"></i>Peakers</span>
+        </div>
+        <div style="padding:2px 14px 14px">
+        <p style="font-size:11px;color:var(--ink2);line-height:1.6">
+        <strong>Run the full model</strong> (click the orange button near the top of the model) to see real
+        flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red
+        &ldquo;X% curt.&rdquo; label under a node means curtailment (wasted wind/solar) in that region
+        &ndash; shown as a share of that region&rsquo;s own renewable potential going to waste, not the raw
+        GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Click on any
+        line or label for exact figures.</p>
+      <p style="font-size:11px;color:var(--ink2);line-height:1.6">
+        This schematic is deliberately simplified. For the real thing, the
+        <a href="gridtwin-3d.html">3D network map</a> plots every transmission line at 220&nbsp;kV and
+        above, plus all 185 substations.</p>
+      <p style="font-size:11px;color:var(--ink2);line-height:1.6">
+        <strong>Note:</strong> Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points
+        sharing the Upington corridor area. Click on each for region-specific figures.</p>
+      <p style="font-size:11px;color:var(--ink2);line-height:1.6">
+        The <strong>REIPPPP project pipeline</strong> button overlays dashed rings showing
+        government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) &ndash; not the private/C&amp;I
+        registrations shown in the NERSA registrations panel. Ring size scales with total capacity and
+        ring colour shows the status holding the most capacity in that region. Click on a ring for the
+        split by technology and by status &ndash; preferred bidder, financial close, or under
+        construction.</p>
+        </div>
+      </div>
+
+          <div id="nav-results" class="panel">
+  <div class="ph"><h2>System adequacy</h2><span class="tag">reserve margin &middot; LOLE &middot; EUE</span></div>
+  <div class="pb" id="adequacyBody" style="padding:12px 14px"><p style="font-size:11px;color:var(--ink2);margin:0">Run the model to compute adequacy statistics.</p></div>
+</div>
+
           <div id="nav-prices" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">what a market would clear at</span></div>
             <div class="pb" id="priceBody"></div>
           </div>
 
-          <div id="nav-cappay" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capacity payment</h2>
-              <span class="tag">what firm capacity earns for existing</span></div>
-            <div class="pb" id="capPayBody"></div>
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Price-setting technology by hour</h2>
+              <div class="wkbtns">
+                <button id="spW" class="active">Winter week</button>
+                <button id="spS">Summer week</button>
+              </div>
+            </div>
+            <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &ndash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
+            <div class="pb" style="padding:10px 10px 4px">
+              <canvas id="spWeek" height="216" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
+            </div>
+            <p id="spWeekDesc" class="sr-only">Hourly shadow price for a representative 168-hour week, each bar coloured by the technology setting the price in that hour.</p>
+            <div class="pb" id="spWeekLegend" style="padding:0 12px 4px"></div>
+            <div class="pb" id="spWeekNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.45"></div>
           </div>
 
+          <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
+            <div class="pb">
+              <div class="riskhead" id="riskHead"></div>
+              <div class="shedbars" id="shed"></div>
+              <div style="display:flex; gap:6px; padding:2px 4px 0" id="shedNums"></div>
+              <p class="risknote" id="riskNote">Bars: probability the year reaches at least stage S, across 60 simulated years.</p>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
+            <div class="pb" id="carbonBudget"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
+          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
+          <div class="pb" id="lcoe"></div>
+        </div>
+
+
+
+
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+<section id="nav-network" aria-label="Network map and capacity siting" style="display:block;margin-top:18px">
+      
+      </section>
+
+
+
+      
+
+
+          
+
+          
+
+          
+<section aria-label="Capacity siting tool">
+      
+      </section>
+
+
+
+          
+
+          
+
+          
+
+
+
+
+        
+</div>
+      <div>
           <div id="nav-capture" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Capture rate by region</h2><span class="tag">what a project earns vs the average MWh</span></div>
             <div class="pb" id="captureBody"></div>
@@ -519,19 +650,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Price-setting technology by hour</h2>
-              <div class="wkbtns">
-                <button id="spW" class="active">Winter week</button>
-                <button id="spS">Summer week</button>
-              </div>
-            </div>
-            <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week &ndash; hourly shadow price from the same merit-order dispatch, coloured by the technology on the margin</span></div>
-            <div class="pb" style="padding:10px 10px 4px">
-              <canvas id="spWeek" height="216" aria-label="Hourly wholesale shadow price, coloured by the technology setting the price" aria-describedby="spWeekDesc"></canvas>
-            </div>
-            <p id="spWeekDesc" class="sr-only">Hourly shadow price for a representative 168-hour week, each bar coloured by the technology setting the price in that hour.</p>
-            <div class="pb" id="spWeekLegend" style="padding:0 12px 4px"></div>
-            <div class="pb" id="spWeekNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.45"></div>
+            <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
+            <div class="pb" id="capFcBody"></div>
+          </div>
+
+          <div id="nav-cappay" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Capacity payment</h2>
+              <span class="tag">what firm capacity earns for existing</span></div>
+            <div class="pb" id="capPayBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
@@ -544,72 +670,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="bessLocBody"></div>
           </div>
 
-          <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
-            <div class="pb" id="capFcBody"></div>
-          </div>
-
-          
-
-          
-
-          
-
-          
-
-          
-
-          
-
-          
-
-          
-
-          
-
-          
-<section id="nav-network" aria-label="Network map and capacity siting" style="display:block;margin-top:18px">
-      <div class="panel mapbox">
-        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
-        <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
-        <div class="legend">
-          <span><i style="background:#4A3120"></i>Coal</span>
-          <span><i style="background:#E4322B"></i>Nuclear</span>
-          <span><i style="background:#3EA055"></i>Wind</span>
-          <span><i style="background:#F5C518"></i>Solar</span>
-          <span><i style="background:#1F4E79"></i>Storage / hydro</span>
-          <span><i style="background:var(--alert)"></i>Peakers</span>
-        </div>
-        <div style="padding:2px 14px 14px">
-        <p style="font-size:11px;color:var(--ink2);line-height:1.6">
-        <strong>Run the full model</strong> (click the orange button near the top of the model) to see real
-        flows: thicker, more solid, redder lines mean a corridor is closer to its transfer limit. A red
-        &ldquo;X% curt.&rdquo; label under a node means curtailment (wasted wind/solar) in that region
-        &ndash; shown as a share of that region&rsquo;s own renewable potential going to waste, not the raw
-        GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Click on any
-        line or label for exact figures.</p>
-      <p style="font-size:11px;color:var(--ink2);line-height:1.6">
-        This schematic is deliberately simplified. For the real thing, the
-        <a href="gridtwin-3d.html">3D network map</a> plots every transmission line at 220&nbsp;kV and
-        above, plus all 185 substations.</p>
-      <p style="font-size:11px;color:var(--ink2);line-height:1.6">
-        <strong>Note:</strong> Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points
-        sharing the Upington corridor area. Click on each for region-specific figures.</p>
-      <p style="font-size:11px;color:var(--ink2);line-height:1.6">
-        The <strong>REIPPPP project pipeline</strong> button overlays dashed rings showing
-        government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) &ndash; not the private/C&amp;I
-        registrations shown in the NERSA registrations panel. Ring size scales with total capacity and
-        ring colour shows the status holding the most capacity in that region. Click on a ring for the
-        split by technology and by status &ndash; preferred bidder, financial close, or under
-        construction.</p>
-        </div>
-      </div>
-      </section>
-
-
-
-      
-<div class="panel" id="buildSection" style="margin-top:18px;margin-bottom:18px"><span id="nav-buildrates" style="display:block;height:0"></span>
+          <div class="panel" id="buildSection" style="margin-top:18px;margin-bottom:18px"><span id="nav-buildrates" style="display:block;height:0"></span>
       <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
         <h2>Generation capacity build rates</h2>
         <span class="tag">capacity expansion &middot; least-cost schedule to 2030</span>
@@ -761,36 +822,32 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
         </div>
 
+          <div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
+          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
+          <div style="padding:0 14px 12px">
+            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
+              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
+              Includes all technologies.
+            </p>
+            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
+          </div>
+        </div>
+
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
-            <div class="pb" id="carbonBudget"></div>
+            <div class="ph"><h2>Grid queue pressure</h2><span class="tag">pipeline vs headroom</span></div>
+            <div class="pb" id="queueBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
-          <div class="pb" id="lcoe"></div>
-        </div>
-<section aria-label="Capacity siting tool">
-      
-      </section>
+            <div class="ph"><h2>Permitted but not built</h2><span class="tag">environmental approvals</span></div>
+            <div class="pb" id="reeaBody"></div>
+          </div>
 
-
-
-          
-
-          
-
-          
-<div class="panel" style="margin-top:18px">
+          <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>&lsquo;Clean coal&rsquo; (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
             <div class="pb" id="ccsBody"></div>
           </div>
 
-
-
-        
-</div>
-      <div>
 <section>
         
 
@@ -816,22 +873,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
 
           
-          <div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
-          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
-          <div style="padding:0 14px 12px">
-            <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
-              Private &amp; embedded generation registered this quarter. Source: NERSA media statements.
-              Includes all technologies.
-            </p>
-            <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
-          </div>
-        </div><div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Grid queue pressure</h2><span class="tag">pipeline vs headroom</span></div>
-            <div class="pb" id="queueBody"></div>
-          </div><div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Permitted but not built</h2><span class="tag">environmental approvals</span></div>
-            <div class="pb" id="reeaBody"></div>
-          </div>
+          
 <div style="margin-top:18px"><details class="assump">
       <summary>Model assumptions &amp; caveats</summary>
       <div class="pb">
