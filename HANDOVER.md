@@ -1,3 +1,46 @@
+## PER-TECHNOLOGY STORAGE TRACKING: ATTEMPTED AND REVERTED (18 Aug 2026)
+
+Prompted by the user asking how we would know whether iron-air was ever deployed,
+given all three battery-class technologies share one aggregate.
+
+THE INVESTIGATION FOUND A REAL PROBLEM. Adding 10 GW of iron-air to the Future mix:
+
+    charged      14.71 -> 21.61 TWh   (+6.90)
+    discharged   12.02 -> 12.02 TWh   ( 0.00)
+    curtailed      100 ->  92.9 TWh   (-7.10)
+
+6.9 TWh goes in and NOTHING comes out. At 45% round trip it stores 3.1 TWh into a
+fleet holding 1.2 TWh, so it cycles - but the system never needs the output,
+because coal must-run already covers every deficit hour. Same mechanism as the
+17 Aug storage-idle finding, now hidden inside an aggregate.
+
+THE REPORTING CONSEQUENCE: curtailment is reported 7.1 TWh LOWER, as though that
+energy was put to use. It was absorbed and lost. Economically harmless - the
+energy was free - but a developer reading "curtailment fell" would conclude their
+project spills less, when nothing was delivered.
+
+THE FIX WAS ATTEMPTED AND REVERTED. Splitting battSoc into per-technology tiers,
+each with its own SOC and efficiency, charging and discharging in round-trip
+order. It worked for the cases it was built for - iron-air discharge became
+visible at 0.42 TWh with coal retired to 36 GW, and the tier totals reconciled
+against E.batt - but it BROKE THE DEFAULT CASE: battery discharge collapsed from
+0.272 TWh to 0.002. The tiers were never charged at default, and I could not find
+why within a reasonable time. Reverted rather than left in.
+
+    after revert: battery 0.272 TWh, PS 3.45 TWh, cost R568 - all restored
+    290/290 · 44/44 · 138/138 · 14/14 · 18/18 · 9/9 · 76/76 · 33/33 · 29/29 · 16/16
+
+WHAT TO DO DIFFERENTLY NEXT TIME. The change touched eight call sites of a scalar
+that the engine threads through charging, discharging, cost basis and the
+marginal-price logic. It should be done by first introducing tiers ALONGSIDE the
+existing battSoc, asserting the two agree hour by hour across every scenario, and
+only then removing the scalar. Attempting the swap in one pass gave no way to see
+which of the eight sites diverged.
+
+THE UNDERLYING GAP REMAINS: vanadium and iron-air are invisible in the mix,
+dispatch and price panels, and a blended round-trip efficiency is still applied to
+lithium charging when lithium should charge at 88%.
+
 ## REVISED ELECTRICITY PRICING POLICY - ASSESSED, NOT YET ACTED ON (18 Aug 2026)
 
 Source: DEE Media Briefing, Energy Pricing Policy Update, Dr Kgosientsho Ramokgopa,
