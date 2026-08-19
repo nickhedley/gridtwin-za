@@ -1,3 +1,51 @@
+## GAS VERSUS COAL RE-RUN WITH CAPACITY PAYMENTS (18 Aug 2026)
+
+Run as an end-to-end test that the capacity payment, the build-LP wiring and the
+storage tiers all work together. Two findings, and the first was not expected.
+
+### THE CONCLUSION HAD ALREADY CHANGED, BEFORE ANY CAPACITY PAYMENT
+
+Same comparison as 17 Aug - identical renewables, storage and demand, the only
+difference being whether the last coal tranche is RETAINED and flexibilised or
+RETIRED and replaced with 9 GW of CCGT:
+
+    scenario              cost   CO2 Mt    RE%   CCGT TWh   coal TWh   LOLE
+    coal, no payment      1339     40.6   78.5       0         36.8      0
+    gas,  no payment      1305     24.9   84.4       0.51      23.3      2
+
+GAS IS NOW CHEAPER AND CLEANER: R34/MWh less, 15.7 Mt less CO2, 5.9 points more
+renewables. On 17 Aug coal won. The reversal is NOT the capacity payment - it is
+zero in both rows. It comes from the work done since: per-technology storage
+tiers, the export lever, and the corrected utility PV capacity.
+
+WHAT COAL STILL WINS ON IS RELIABILITY: LOLE 0 against 2 hours. So the trade is
+now R34/MWh and 15.7 Mt against two hours of shedding a year - a genuinely
+different question from the one settled on 17 Aug, and one where reasonable people
+would differ. The old conclusion should not be quoted without this correction.
+
+### THE CAPACITY PAYMENT ACTS WHERE IT SHOULD, AND ONLY THERE
+
+Dispatch cost is IDENTICAL at every payment level, which is correct: a capacity
+payment is a transfer from consumers to generators, not a resource cost. What it
+changes is the revenue split - gas collects R5.48bn at R300/kW/yr against coal's
+R3.05bn, because 9 GW of CCGT de-rates at 90% while storage de-rates far lower.
+
+And it changes what the BUILD LP would choose:
+
+    payment        wind      pv   rooftop    batt    ccgt
+    none           1752     959      1359    1079    1731
+    R300/kW/yr     1752     959      1359    1004    1461
+    R600/kW/yr     1752     959      1359     929    1191
+
+CCGT falls 31%, battery 14%, wind and solar UNCHANGED - energy-limited plant earns
+nothing, as in every real scheme. At R600/kW/yr CCGT undercuts wind for the first
+time, which is exactly the outcome a capacity mechanism is designed to produce and
+exactly the risk it carries.
+
+VERDICT ON THE EXPERIMENT: everything works. The payment is inert where it should
+be inert (dispatch), live where it should be live (build), and blind to wind and
+solar as designed.
+
 ## CAPACITY PAYMENTS AND ANCILLARY SERVICES - BUILT (18 Aug 2026)
 
 Three new controls, all defaulting to ZERO so nothing changes until deliberately
