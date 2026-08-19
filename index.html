@@ -674,6 +674,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="priceBody"></div>
           </div>
 
+          <div id="nav-cappay" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Capacity payment</h2>
+              <span class="tag">what firm capacity earns for existing</span></div>
+            <div class="pb" id="capPayBody"></div>
+          </div>
+
           <div id="nav-capture" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Capture rate by region</h2><span class="tag">what a project earns vs the average MWh</span></div>
             <div class="pb" id="captureBody"></div>
@@ -3618,6 +3624,52 @@ const FIXED = {
   // - 3% lower under Full Regional Integration, 8% lower under Renewable Energy -
   // because everyone's surplus arrives in the same hours.
   exportCapMW:0, exportPriceR:450, exportMaxMW:5000,
+  // ── CAPACITY PAYMENT ─────────────────────────────────────────────────────
+  // The revised Electricity Pricing Policy (DEE, 18 Aug 2026) states that
+  // "capacity charges are necessary to incentivize and ensure reliable
+  // generation infrastructure". Without one, plant that exists to be available
+  // earns nothing for existing - which is why iron-air and vanadium look
+  // pointless in this model, and part of why coal beat CCGT on 17 Aug.
+  //
+  // Structure follows IRELAND'S SEM, the closest structural analogue: SAWEM
+  // clears to a single national price with one system operator, as the all-island
+  // market does. SEM pays on DE-RATED MW, with factors per technology class set
+  // from availability, unit size AND ENERGY LIMITS - so a 4-hour battery is
+  // credited far below nameplate and a long-duration store far above it. Great
+  // Britain moved storage onto an equivalent-firm-capacity basis in 2024 for the
+  // same reason.
+  //
+  // The honest limitation, and it applies to every operating scheme: storage
+  // reliability is INTERTEMPORAL. Whether a store can serve load in a given hour
+  // depends on its whole prior state-of-charge trajectory, so a scalar de-rating
+  // factor is an approximation.
+  capacityPaymentRkWyr: 0,      // default 0 - nothing changes until turned on
+  // ── ANCILLARY SERVICES ───────────────────────────────────────────────────
+  // Eskom already procures these. The Grid Code sets a minimum per reserve
+  // category, revised annually, and the categories are EXCLUSIVE - capacity
+  // reserved for one cannot count toward another. That exclusivity is the
+  // modelling point: a MW selling reserve is not also selling energy, and
+  // ignoring it is the classic error in battery business cases.
+  //
+  // Two components, because they are procured differently and only some plant
+  // can provide each:
+  //   RESERVE   instantaneous, regulating, ten-minute. Any storage can bid, and
+  //             1,014 MW of demand response already does, responding in six
+  //             seconds.
+  //   INERTIA   NOT procured in South Africa at all today. The Market Code lists
+  //             synchronous condensers but never inertia as a service, while
+  //             Eskom's 2026-2030 adequacy outlook flags rising frequency
+  //             instability as inverter-based generation grows. The UK holds
+  //             120 GVAs and Ireland 23 GWs as explicit minimums with
+  //             procurement behind them; South Africa has neither.
+  asReserveRMWh: 0,             // R/MWh on reserve capacity held
+  asInertiaRkWyr: 0,            // R/kW/yr, grid-forming and synchronous only
+  asReserveShare: 0.15,         // share of storage power held back for reserve
+  capPayPs: 1,                  // include pumped storage in the payment
+  // De-rating factors. Indicative, and to be replaced with NTCSA figures when a
+  // methodology is published.
+  derateCcgt: 0.90, derateBattLi: 0.25, derateVrfb: 0.45,
+  derateIronAir: 0.90, derateePs: 0.85,
   //
   // VANADIUM REDOX FLOW. The industrial-policy case is stronger than the pure
   // cost case: Bushveld Minerals runs Vametco in Brits and Vanchem in
@@ -4117,6 +4169,10 @@ function simulate(u, prof, outPath){
 
   // Charge across tiers, best round trip first. Returns MW actually taken, which
   // the caller uses so the scalar and the tiers stay in step.
+  // Share of each tier's power reserved for ancillary services, unavailable for
+  // energy. Zero unless a reserve price is set.
+  const _asHold = (p.asReserveRMWh || 0) > 0
+    ? Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15)) : 0;
   const tierCharge = (mw) => {
     let got = 0;
     for (const t of battTiers){
@@ -4129,7 +4185,10 @@ function simulate(u, prof, outPath){
   const tierDischarge = (mw) => {
     let got = 0;
     for (const t of battTiers){
-      const give = Math.min(mw - got, t.mw, t.soc);
+      // Power held back AND energy held behind it: reserve you cannot deliver is
+      // not reserve. The SOC floor is what makes the trade-off bite.
+      const floor = t.mwh * _asHold;
+      const give = Math.min(mw - got, t.mw * (1 - _asHold), Math.max(0, t.soc - floor));
       if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give; }
       if (got >= mw - 1e-9) break;
     }
@@ -4633,7 +4692,8 @@ function simulate(u, prof, outPath){
       // A resource is MARGINAL only if it is the last one dispatched AND it still had
       // room to give more. Storage at its power or energy limit is constrained, not
       // marginal, and the next unit up sets the price. `slack` captures that.
-      const psLim=Math.min(psPowerTot,psSoc), btLim=Math.min(battPower,battSoc);
+      const psLim=Math.min(psPowerTot*(1-_asHold),Math.max(0,psSoc-psEnergyTot*_asHold)),
+            btLim=Math.min(battPower*(1-_asHold),Math.max(0,battSoc-battEnergy*_asHold));
       if(isExpensiveHour){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
@@ -4949,6 +5009,39 @@ function simulate(u, prof, outPath){
   // which is the whole point of the lever: it is what turns curtailment from a
   // pure loss into a capture-rate question.
   const exportRevenueR = E.exported * (p.exportPriceR ?? 450);
+
+  // Capacity payment on DE-RATED MW. Paid for being available, whether or not the
+  // plant runs - which is the entire point, and why it changes the economics of
+  // assets that exist for rare hours.
+  const _capR = Math.max(0, p.capacityPaymentRkWyr || 0);
+  const deratedMW =
+      (p.newCcgtMW || 0) * (p.derateCcgt ?? 0.90)
+    + (p.battPowerMW + (p.newBattMW || 0)) * (p.derateBattLi ?? 0.25)
+    + (p.newVrfbMW || 0) * (p.derateVrfb ?? 0.45)
+    + (p.newIronAirMW || 0) * (p.derateIronAir ?? 0.90)
+    + ((p.capPayPs ? 1 : 0) * (p.psPowerMW + (p.newPsMW || 0))) * (p.derateePs ?? 0.85);
+  const capacityRevenueR = deratedMW * 1000 * _capR;   // R/kW/yr on kW
+
+  // ANCILLARY SERVICES. Reserve is paid on capacity HELD, and that capacity is
+  // exclusive - it cannot simultaneously sell energy. The share held back is
+  // therefore removed from what storage can discharge, which is why this reduces
+  // arbitrage revenue even as it adds reserve revenue. Modelling it any other way
+  // double-counts.
+  const _asRes = Math.max(0, p.asReserveRMWh || 0);
+  const _asIn  = Math.max(0, p.asInertiaRkWyr || 0);
+  const _resShare = Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15));
+  const reserveHeldMW = _asRes > 0
+    ? (battPower + psPowerTot) * _resShare
+    : 0;
+  const asReserveRevenueR = reserveHeldMW * 8760 * _asRes;
+  // Inertia: only plant that can actually provide it. Synchronous machines
+  // inherently, grid-forming batteries synthetically. Solar and wind cannot.
+  const inertiaCapableMW = (p.syncMinMW ?? 0) + battPower * 0.5;
+  const asInertiaRevenueR = inertiaCapableMW * 1000 * _asIn;
+  const asRevenueR = asReserveRevenueR + asInertiaRevenueR;
+  // A capacity payment is a TRANSFER from consumers to generators, not a resource
+  // cost, so it does NOT reduce the whole-economy total. It changes who pays and
+  // therefore what gets built, which is exactly what we want to model.
   const totalCost=fuelCost+carbonCost+newCapexR+drCostR-exportRevenueR;  // whole-economy view
   const gridCost=fuelCost+carbonCost+gridCapexR+drCostR;  // what the grid bears
   // drCostR included: compensation paid to interruptible customers is part of
@@ -5004,7 +5097,7 @@ function simulate(u, prof, outPath){
     if(loadS[h] > peakGridLoad) peakGridLoad = loadS[h];
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
-  return {E,tierDis,tierChg,tierDrift,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,reserveHeldMW,inertiaCapableMW,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -5243,6 +5336,18 @@ function bldAnnuity(capexPerKW, life){
   const r = BLD_DISC;
   return capexPerKW * r / (1 - Math.pow(1+r, -life));
 }
+// A capacity payment does not change how an EXISTING fleet dispatches - it is paid
+// for availability, not energy. What it changes is WHAT GETS BUILT, by offsetting
+// the annuity on eligible firm capacity. That is where it belongs in the model.
+//
+// Wind and solar get NOTHING: they are energy-limited and weather-driven, and no
+// capacity mechanism credits them at anything close to nameplate.
+const BLD_DERATE = { wind:0, pv:0, rooftop:0, batt:0.25, ccgt:0.90 };
+function bldNetAnnuity(tech, year){
+  const gross = bldAnnuity(bldCapex(tech, year), BLD_LIFE[tech]);
+  const pay = Math.max(0, (typeof state !== 'undefined' ? state.capacityPaymentRkWyr : 0) || 0);
+  return Math.max(0, gross - pay * (BLD_DERATE[tech] ?? 0));
+}
 function bldCapex(tech, year){
   return BLD_COST[tech].c2026 * Math.pow(1 - BLD_COST[tech].decl, year - 2026);
 }
@@ -5389,7 +5494,7 @@ function bldBuildLP(opts){
   for (const t of T) for (const y of Y){
     let cost = 0;
     for (const yy of Y) if (yy >= y)
-      cost += bldAnnuity(bldCapex(t,y), BLD_LIFE[t]) / Math.pow(1+BLD_DISC, yy-2026);
+      cost += bldNetAnnuity(t, y) / Math.pow(1+BLD_DISC, yy-2026);
     obj.push(cost.toFixed(3) + ' b_' + t + '_' + y);
   }
   for (const y of Y){
@@ -5827,7 +5932,7 @@ function bldBuildRegionalLP(opts){
   for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y){
     let c = 0;
     for (const yy of Y) if (yy >= y)
-      c += bldAnnuity(bldCapex(t,y), BLD_LIFE[t]) / Math.pow(1+BLD_DISC, yy-2026);
+      c += bldNetAnnuity(t, y) / Math.pow(1+BLD_DISC, yy-2026);
     obj.push(c.toFixed(3) + ' b_' + t + '_' + ri + '_' + y);
   }
   // Transmission expansion, annuitised the same way generation capex is, so the
@@ -6502,6 +6607,77 @@ function renderCurtailmentForecast(){
       + 'that knee sits matters more than today\u2019s number. Holds storage, coal retirement and '
       + 'demand at the current scenario \u2013 move those sliders and re-run to see how they shift it.</div>';
   }, 30);
+}
+
+// What a capacity payment is worth to each technology, expressed in R/MWh so it
+// can be set against LCOE. The point of the panel: a payment per kW is worth far
+// more per MWh to an asset that rarely runs, which is precisely the asset the
+// energy market underpays.
+function renderCapacityPayment(res){
+  const host = document.getElementById('capPayBody');
+  if (!host) return;
+  const r = res || lastRes;
+  if (!r) return;
+  const pay = Math.max(0, state.capacityPaymentRkWyr || 0);
+
+  const rows = [
+    { nm:'Gas CCGT',            mw: state.newCcgtMW || 0,    der: FIXED.derateCcgt,
+      mwh: (r.E.ccgt || 0) },
+    { nm:'Lithium-ion (4h)',    mw: FIXED.battPowerMW + (state.newBattMW || 0), der: FIXED.derateBattLi,
+      mwh: (r.tierDis ? r.tierDis.li : 0) },
+    { nm:'Vanadium flow (8h)',  mw: state.newVrfbMW || 0,    der: FIXED.derateVrfb,
+      mwh: (r.tierDis ? r.tierDis.vrfb : 0) },
+    { nm:'Iron-air (100h)',     mw: state.newIronAirMW || 0, der: FIXED.derateIronAir,
+      mwh: (r.tierDis ? r.tierDis.fe : 0) },
+    { nm:'Pumped storage (14h)',mw: (FIXED.psPowerMW + (state.newPsMW || 0)) * ((state.capPayPs ?? FIXED.capPayPs) ? 1 : 0),
+      der: FIXED.derateePs, mwh: (r.E.ps || 0) },
+  ].filter(x => x.mw > 0);
+
+  if (!rows.length){ host.innerHTML = '<div class="muted" style="font-size:11px">'
+    + 'No eligible capacity built. Add gas or storage to see what a capacity payment would be worth.</div>'; return; }
+
+  const body = rows.map(x => {
+    const revR = x.mw * 1000 * pay;
+    const perMWh = x.mwh > 1 ? revR / x.mwh : null;
+    return '<tr>'
+      + '<td style="padding:3px 5px">' + x.nm + '</td>'
+      + '<td class="mono" style="text-align:right;padding:3px 5px">' + (x.mw/1000).toFixed(1) + '</td>'
+      + '<td class="mono" style="text-align:right;padding:3px 5px;color:var(--ink2)">' + (x.der*100).toFixed(0) + '&#37;</td>'
+      + '<td class="mono" style="text-align:right;padding:3px 5px">' + (x.mw*x.der/1000).toFixed(1) + '</td>'
+      + '<td class="mono" style="text-align:right;padding:3px 5px">R' + (revR/1e9).toFixed(2) + 'bn</td>'
+      + '<td class="mono" style="text-align:right;padding:3px 5px;font-weight:600">'
+        + (perMWh === null ? '<span style="color:var(--alert,#C4785A)">paid, never runs</span>'
+                           : 'R' + perMWh.toFixed(0)) + '</td></tr>';
+  }).join('');
+
+  host.innerHTML =
+      '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:7px">'
+    + (pay === 0
+        ? 'No capacity payment is set, so nothing here earns anything for being available. '
+        : 'At R' + pay + '/kW/yr, paid on de-rated MW. ')
+    + 'The last column is what that payment is worth per MWh actually delivered \u2013 set it against the '
+    + 'levelised cost above. A payment per kW is worth far more per MWh to an asset that rarely runs, '
+    + 'which is exactly the asset an energy-only market underpays.</p>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
+    + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
+    + '<th style="text-align:left;padding:3px 5px">Technology</th>'
+    + '<th style="text-align:right;padding:3px 5px">GW</th>'
+    + '<th style="text-align:right;padding:3px 5px">de-rate</th>'
+    + '<th style="text-align:right;padding:3px 5px">firm GW</th>'
+    + '<th style="text-align:right;padding:3px 5px">revenue</th>'
+    + '<th style="text-align:right;padding:3px 5px">R/MWh</th></tr>'
+    + body + '</table>'
+    + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:7px">'
+    + 'De-rating follows Ireland\u2019s all-island market, which pays on de-rated MW using factors set '
+    + 'from availability, unit size and energy limits. A 4-hour battery is credited at 25&#37; because '
+    + 'it cannot sustain output through a long evening event; a 100-hour store at 90&#37; because it '
+    + 'can. Factors here are indicative and would come from NTCSA. '
+    + 'A capacity payment is a TRANSFER from consumers to generators, not a resource cost, so it does '
+    + 'not change the system cost above \u2013 it changes who pays, and therefore what gets built. '
+    + '\u003cb\u003ePaid, never runs\u003c/b\u003e is a result, not an error: an asset can collect a '
+    + 'capacity payment across a whole year and deliver no energy at all, because the system never '
+    + 'reaches the conditions it exists for. That is the central policy risk of any capacity '
+    + 'mechanism, and it is what the de-rating factor is trying to price.</div>';
 }
 
 function renderRegionalCapture(res){
@@ -8500,6 +8676,15 @@ const SLIDERS=[
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr gross; R600 default nets off the share already committed · rooftop avoids it'},
   {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. When switched on, the result is +20% capacity (based on DOE/utility deployments showing +10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2013 not a blanket national boost, since enhancing an already-idle corridor would be wasteful. Costs R1.55m/km \u2013 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2013 the single-node engine has no corridors to enhance.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar &amp; batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder \u2013 up to the MW of coal retired.'},
+  {id:'asReserveRMWh',label:'Reserve price',min:0,max:400,step:10,def:FIXED.asReserveRMWh,
+   fmt:v=>v===0?'none':'R'+v+'/MWh held',
+   note:'What the system operator pays for reserve capacity HELD BACK, not dispatched. Eskom already procures instantaneous, regulating and ten-minute reserves, and 1,014 MW of demand response already responds within six seconds. \u003cb\u003eThe Grid Code makes reserve categories exclusive\u003c/b\u003e \u2013 capacity held for one cannot count toward another, and cannot simultaneously sell energy. This model enforces that: raising the price holds storage power back from arbitrage, so reserve revenue rises and energy revenue falls. Ignoring that exclusivity is the classic error in battery business cases.'},
+  {id:'asInertiaRkWyr',label:'Inertia payment',min:0,max:400,step:10,def:FIXED.asInertiaRkWyr,
+   fmt:v=>v===0?'none':'R'+v+'/kW/yr',
+   note:'Paid for inertia, which \u003cb\u003eSouth Africa does not procure at all today\u003c/b\u003e. The Market Code lists synchronous condensers but never inertia as a service, while Eskom\u2019s 2026\u20132030 adequacy outlook flags rising frequency instability as inverter-based generation grows. Britain holds a 120 GVAs minimum and Ireland 23 GWs, both with procurement behind them. Earned only by plant that can actually provide it \u2013 synchronous machines inherently, grid-forming batteries synthetically. Wind and solar earn nothing. Use it against the synchronous floor slider to ask what price makes batteries displace spinning mass.'},
+  {id:'capacityPaymentRkWyr',label:'Capacity payment',min:0,max:600,step:10,def:FIXED.capacityPaymentRkWyr,
+   fmt:v=>v===0?'none':'R'+v+'/kW/yr',
+   note:'Paid for firm capacity being AVAILABLE, whether or not it runs. The revised Electricity Pricing Policy (August 2026) states that capacity charges are necessary to incentivise reliable generation; this models one. Paid on \u003cb\u003ede-rated MW\u003c/b\u003e following Ireland\u2019s all-island market, the closest structural analogue to SAWEM \u2013 single national price, one system operator. De-rating credits a 4-hour battery at 25&#37; of nameplate and a 100-hour store at 90&#37;, because what matters is capacity you can rely on through a long event, not nameplate. Defaults to zero: South Africa has no such mechanism today. Without it, long-duration storage earns nothing for existing, which is why iron-air and vanadium look pointless in this model.'},
   {id:'importsMW',label:'Regional imports',min:0,max:8000,step:250,def:FIXED.importsMW,fmt:v=>(v/1000).toFixed(2)+' GW',
    note:'Firm import capacity from the Southern African Power Pool, dispatched must-take at 85&#37; availability. The default is today\u2019s interconnection \u2013 mainly the 1,920 MW Cahora Bassa HVDC plus the Mozambique and Botswana 400 kV links. The SAPP draft Master Plan Update adds one new direct link to South Africa (a connection to Zimbabwe from 2030, which will run at 92\u201398&#37; utilisation).'},
   {id:'exportCapMW',label:'Export capacity',min:0,max:5000,step:250,def:FIXED.exportCapMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
@@ -9935,7 +10120,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();

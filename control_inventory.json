@@ -1,5 +1,8 @@
 {
  "ids": [
+  "asInertiaRkWyr",
+  "asReserveRMWh",
+  "capacityPaymentRkWyr",
   "carbonCapEnabled",
   "carbonCapMt",
   "carbonTaxRPerT",
@@ -55,5 +58,5 @@
   "vppEnrolPct",
   "vppGeyserPoolMW"
  ],
- "count": 54
+ "count": 57
 }

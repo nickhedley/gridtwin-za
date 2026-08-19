@@ -98,6 +98,11 @@ const CONTEXT = {
   coalRampFlexPct:  { coalFlexPct: 1 },
   // Nothing to export without a surplus, and no price effect without capacity.
   exportCapMW:  { newWindMW: 45000, newPvMW: 52000, coalDecomMW: 27000 },
+  // Paid for AVAILABILITY, not energy - acts on the build LP via bldNetAnnuity(),
+  // so a dispatch sweep cannot see it. Verified in stress_deep F1b/F1c instead.
+  capacityPaymentRkWyr: { __skip: true },
+  // Revenue stream, not a dispatch signal - see stress_deep for the same note.
+  asInertiaRkWyr: { __skip: true },
   exportPriceR: { exportCapMW: 3000, newWindMW: 45000, newPvMW: 52000, coalDecomMW: 27000 },
 };
 
@@ -201,6 +206,7 @@ const BUILD_ONLY = {
       // cannot move an output. Excluded rather than exempted by name, so the
       // next readout does not fail the same way.
       if (sl.grp || !sl.id || sl.readout) continue;
+      if ((CONTEXT[sl.id]||{}).__skip) continue;   // build-LP only; see note above
       const id = sl.id;
       let pts;
       if (sl.toggle)      pts = [0, 1];

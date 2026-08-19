@@ -186,7 +186,16 @@ function probe(){
                            'gridBeyondGccaPct',
                            // A READOUT is not a control: it renders a live summary and
                            // writes nothing to state, so it cannot perturb anything.
-                           'vppTotalReadout']);
+                           'vppTotalReadout',
+              // Paid for AVAILABILITY, not energy, so by design it moves nothing in a
+              // dispatch sweep. It acts on the BUILD LP via bldNetAnnuity(), offsetting
+              // the annuity on firm capacity - verified there, not here.
+              'capacityPaymentRkWyr',
+              // Inertia is paid per kW of CAPABILITY held available. Like the capacity
+              // payment it is a revenue stream, not a dispatch signal, so it moves nothing
+              // in an energy sweep. Its effect is on what gets built and on whether
+              // batteries can displace synchronous plant - not on this hour's dispatch.
+              'asInertiaRkWyr']);
    const cache = {};
    const baseFor = ctx => { const key = JSON.stringify(ctx||{});
      if(!cache[key]) cache[key]=metrics(sim(ctx||{})); return cache[key]; };
@@ -205,6 +214,18 @@ function probe(){
      if (!moved) dead.push(sl.id);
    }
    ck('F1 every slider (in its enabling context) perturbs an output', dead.length===0, dead.length? 'DEAD: '+dead.join(', ') : 'all live');
+   // A capacity payment must still move SOMETHING, or exempting it above would hide
+   // a dead control. It acts on the build LP, so assert it there.
+   { const a = bldNetAnnuity('batt', 2030), c0 = bldNetAnnuity('ccgt', 2030);
+     const save = state.capacityPaymentRkWyr;
+     state.capacityPaymentRkWyr = 400;
+     const b = bldNetAnnuity('batt', 2030), c1 = bldNetAnnuity('ccgt', 2030);
+     const w0 = bldNetAnnuity('wind', 2030);
+     state.capacityPaymentRkWyr = save;
+     ck('F1b capacity payment lowers the build annuity on firm capacity',
+        b < a - 1 && c1 < c0 - 1, `batt ${a.toFixed(0)}->${b.toFixed(0)}, ccgt ${c0.toFixed(0)}->${c1.toFixed(0)}`);
+     ck('F1c capacity payment does NOT credit wind',
+        Math.abs(bldNetAnnuity('wind', 2030) - w0) < 1e-6, ''); }
    const c0=sim({}), c1=sim({ccsEnabled:1});
    ck('F2 CCS toggle changes cost or emissions', Math.abs(c1.avgCost-c0.avgCost)>0.01 || Math.abs(c1.co2-c0.co2)>1e-6, 'dCost '+(c1.avgCost-c0.avgCost).toFixed(1)+' dCO2 '+((c1.co2-c0.co2)/1e6).toFixed(2)+'Mt');
  }

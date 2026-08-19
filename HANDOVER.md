@@ -1,3 +1,92 @@
+## CAPACITY PAYMENTS AND ANCILLARY SERVICES - BUILT (18 Aug 2026)
+
+Three new controls, all defaulting to ZERO so nothing changes until deliberately
+turned on. South Africa has none of these mechanisms today.
+
+### CAPACITY PAYMENT (capacityPaymentRkWyr, R/kW/yr)
+
+Paid on DE-RATED MW, following Ireland's all-island market - the closest
+structural analogue to SAWEM, being a single national price with one system
+operator. De-rating credits a 4-hour battery at 25% of nameplate and a 100-hour
+store at 90%, because what matters is capacity you can rely on through a long
+event.
+
+WHERE IT ACTS, and this took a false start to get right: NOT on dispatch. A
+capacity payment is paid for availability, so it cannot move an energy sweep - the
+deep harness correctly flagged it DEAD. It acts on the BUILD LP via
+bldNetAnnuity(), offsetting the annuity on eligible firm capacity, which is
+exactly how a developer sees it:
+
+    net annuity R/kW/yr in 2030    battery    CCGT    wind
+      no payment                      1079    1731    1752
+      R300/kW/yr                      1004    1461    1752
+      R600/kW/yr                       929    1191    1752
+
+Wind is untouched - energy-limited plant earns nothing, as in every real scheme.
+
+THE PANEL SHOWS THE FINDING THAT MATTERS. At R300/kW/yr on a high-VRE fleet:
+
+    Gas CCGT          3.0 GW   90%   2.7 firm   R0.90bn   paid, never runs
+    Lithium-ion 4h   30.8 GW   25%   7.7 firm   R9.24bn   R1,118/MWh
+    Vanadium 8h       5.0 GW   45%   2.3 firm   R1.50bn   paid, never runs
+    Iron-air 100h    10.0 GW   90%   9.0 firm   R3.00bn   paid, never runs
+    Pumped storage    2.9 GW   85%   2.5 firm   R0.87bn   R148/MWh
+
+"Paid, never runs" is a RESULT, not an error, and the panel says so: an asset can
+collect a capacity payment across a whole year and deliver no energy, because the
+system never reaches the conditions it exists for. That is the central policy risk
+of any capacity mechanism and it is what de-rating tries to price.
+
+### ANCILLARY SERVICES (asReserveRMWh, asInertiaRkWyr)
+
+RESERVE, paid on capacity HELD. The Grid Code makes reserve categories exclusive -
+capacity held for one cannot count toward another, and cannot simultaneously sell
+energy. THE MODEL ENFORCES THAT, and getting it right needed two passes:
+
+  First attempt capped POWER only. Storage discharge went UP, because a lower
+  power cap spread discharge over more hours. A real effect, but not what reserve
+  means.
+  Fix: reserve requires ENERGY standing behind the power too - an SOC floor of
+  the same fraction. Reserve you cannot deliver is not reserve.
+
+    today 2026, storage 3.7 GW      storage TWh
+      no reserve price                    3.72
+      R200/MWh at 15% held                1.51
+      R200/MWh at 40% held                0.25
+
+  On a high-VRE fleet with 30 GW of battery the same setting barely moves total
+  storage output - it shifts between pumped storage and battery instead. That is
+  a genuine finding: at that scale storage is oversized for its arbitrage role,
+  so reserve provision is nearly free.
+
+INERTIA, paid per kW of capability. South Africa does NOT procure this at all -
+the Market Code lists synchronous condensers but never inertia as a service, while
+Eskom's 2026-2030 adequacy outlook flags rising frequency instability as
+inverter-based generation grows. Britain holds 120 GVAs as a minimum, Ireland 23
+GWs, both with procurement behind them. Earned only by synchronous plant and
+grid-forming batteries; wind and solar earn nothing. Pairs with the synchronous
+floor slider to ask what price makes batteries displace spinning mass.
+
+### HARNESS CHANGES
+
+capacityPaymentRkWyr and asInertiaRkWyr are EXEMPT from the dispatch sweeps in
+stress_deep and validate_response, with the reason stated at the exemption: both
+are revenue streams, not dispatch signals. But an exemption that only silences a
+check is worthless, so stress_deep gained two POSITIVE checks in its place:
+
+    F1b capacity payment lowers the build annuity on firm capacity
+    F1c capacity payment does NOT credit wind
+
+46/46 deep · 290/290 stress · 138/138 invariants · 14/14 consistency ·
+18/18 benchmarks · 8/8 structural · 77/77 response · 40/40 LP · 16/16 capacity ·
+33/33 outputs · 29/29 audit · 6/6 monotonicity. Control inventory re-baselined at
+57; response matrix re-baselined.
+
+STILL OUTSTANDING: re-run the gas-versus-coal comparison of 17 Aug. That analysis
+found coal retention beat 9 GW of CCGT partly because the CCGT generates 0.5 TWh a
+year and earns almost nothing for existing. A capacity payment changes exactly
+that, and the comparison may now invert.
+
 ## TWO QUEUED ITEMS (18 Aug 2026)
 
 ### A. CURTAILMENT FORECAST SHOWS ZERO TODAY, BUT ESKOM IS ALREADY CURTAILING
