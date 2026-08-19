@@ -702,6 +702,17 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                                font-weight:600;letter-spacing:.04em;border-radius:2px">Run forecast</button>
                 <span style="font-size:10px;color:var(--ink2)">six dispatch solves, about half a second</span>
               </div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;
+                          padding-top:8px;border-top:1px solid var(--line2)">
+                <button id="curtAuditBtn" onclick="runCurtailmentAudit()"
+                        style="padding:5px 12px;background:var(--alert,#C4785A);color:#fff;border:none;
+                               cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;
+                               font-weight:600;letter-spacing:.04em;border-radius:2px">Full network audit</button>
+                <span style="font-size:10px;color:var(--ink2)">
+                  six network solves &middot; <strong>takes several minutes</strong> &middot;
+                  the only curtailment figure here that includes corridor congestion</span>
+              </div>
+              <div id="curtAuditBody"></div>
               <div id="curtForecastBody"><div class="muted" style="font-size:11px">
                 Press <strong>Run forecast</strong> to project curtailment against build-out.</div></div>
             </div>
@@ -6602,6 +6613,10 @@ function renderCurtailmentForecast(){
       + '</div>'
       + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
       + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Why this shows no curtailment today, when Eskom is already curtailing.</strong> This forecast runs on the instant engine, which treats South Africa as a single node. It can therefore only see NATIONAL oversupply \u2013 hours when the whole country generates more than it can use, which today never happens. Curtailment happening now is network-driven and LOCAL, concentrated in Cape corridors that a single-node model has no way to represent. Run the full model for that picture: on the same scenario it finds real curtailment, with Eastern Cape\u2013Kwazulu Natal at its transfer limit for thousands of hours a year. Read this panel as the answer to a different question \u2013 at what national build level does surplus become unavoidable everywhere.</div>'
+      + (mipNetworkOffsetTWh > 0.1
+          ? '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--ok,#4A8C5C)"><strong>Calibrated to your last full model run.</strong> That solve found '
+            + mipNetworkOffsetTWh.toFixed(1) + ' TWh of curtailment the single-node engine cannot see, because it is caused by corridors filling rather than by national oversupply. Add roughly that much to every column above \u2013 it is a floor that exists today and grows as build concentrates in the same regions.</div>'
+          : '')
       + 'Curtailment is not linear in build: it stays near zero while surplus is absorbable, then '
       + 'rises sharply once midday supply routinely exceeds what load and storage can take. Where '
       + 'that knee sits matters more than today\u2019s number. Holds storage, coal retirement and '
@@ -6780,7 +6795,12 @@ function renderRegionalCapture(res){
       + 'why the forecast below resolves curtailment by region. Locational energy pricing is flagged '
       + 'as an option for a future iteration of the market code, not part of it today. Curtailment applies the '
     + 'system-wide spill share hour by hour, so a plant generating in surplus hours is curtailed '
-    + 'more.</div>';
+    + 'more. '
+    + (r.pricesFromInstant ? '\u003cb\u003eNote: these prices come from the instant engine even '
+       + 'after a full model run.\u003c/b\u003e A mixed-integer solve produces no shadow prices, so '
+       + 'there are no full-model hourly prices to substitute \u2013 the energy figures elsewhere '
+       + 'switch to the full model, these prices do not.' : '')
+    + '</div>';
 }
 
 function bldApplyToSliders(){
@@ -12091,6 +12111,7 @@ document.addEventListener('DOMContentLoaded', rtCalc);
 // main model so the KPIs, energy mix and dispatch chart show the optimum.
 const MIP_FLEET = [{"name":"Arnot*","cap":1050.0,"n":3,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":146236.9340034813,"marginal_cost":664.1402453697383},{"name":"Arnot**","cap":1050.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":146236.9340034813,"marginal_cost":675.4804253697383},{"name":"Camden*","cap":570.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":56320.930887372,"marginal_cost":702.0914453697383},{"name":"Camden**","cap":911.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":93868.21814561999,"marginal_cost":733.5367253697383},{"name":"Duvha*","cap":1150.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":183388.7508532424,"marginal_cost":633.5082053697383},{"name":"Duvha**","cap":1725.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":275083.12627986365,"marginal_cost":633.5082053697383},{"name":"Grootvlei*","cap":380.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":47428.2396745848,"marginal_cost":711.3985253697383},{"name":"Grootvlei**","cap":190.0,"n":1,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":23714.1198372924,"marginal_cost":664.1402453697383},{"name":"Hendrina*","cap":760.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":60075.6596131968,"marginal_cost":687.7242053697383},{"name":"Hendrina**","cap":338.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":30037.8298065984,"marginal_cost":733.5367253697383},{"name":"Kelvin","cap":160.0,"n":2,"msl":0.65,"min_up":8,"min_dn":8,"startup_cost":450165.44254835,"marginal_cost":658.5346505574515},{"name":"Kendal*","cap":1920.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383},{"name":"Kendal**","cap":1920.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383},{"name":"Komati","cap":114.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":8782.97661497838,"marginal_cost":771.6234653697383},{"name":"Kriel*","cap":1215.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383},{"name":"Kriel**","cap":1425.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383},{"name":"Kusile*","cap":2880.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":348234.678785074,"marginal_cost":587.550320932878},{"name":"Kusile**","cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878},{"name":"Kusile***","cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878},{"name":"Lethabo*","cap":1779.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":585.4818653697383},{"name":"Lethabo**","cap":1779.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":608.7947453697383},{"name":"Majuba*","cap":1818.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":482186.41170716693,"marginal_cost":620.6770853697383},{"name":"Majuba**","cap":1989.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":529614.236756997,"marginal_cost":586.7920853697383},{"name":"Matimba*","cap":1845.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":616.1590853697384},{"name":"Matimba**","cap":1845.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":608.7947453697383},{"name":"Matla*","cap":1725.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383},{"name":"Matla**","cap":1725.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383},{"name":"Medupi*","cap":3600.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":435293.3484813425,"marginal_cost":587.550320932878},{"name":"Medupi**","cap":717.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878},{"name":"Tutuka*","cap":1755.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383},{"name":"Tutuka**","cap":1755.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383}];
 
+let mipNetworkOffsetTWh = 0;   // set by the last full model run
 let mipWorker = null, mipRunning = false;
 let mipActiveRes = null;   // set once an optimal solution has been applied
 let mipInputs = null;      // regional system handed to the optimiser
@@ -12306,6 +12327,102 @@ self.onmessage = async (e) => {
 };
 `;
 
+/* ==================== FULL CURTAILMENT AUDIT =================================
+ * The forecast panel above runs six solves on the single-node instant engine,
+ * which by construction cannot see network-driven curtailment - the kind Eskom
+ * is doing today. This runs the SAME six build levels through the network MIP
+ * instead, so every figure includes corridor congestion.
+ *
+ * It is slow: six mixed-integer solves, roughly a minute at 52 representative
+ * days and several minutes over a full year. That is why it is a button rather
+ * than something that recalculates on a slider. For a developer sizing a project
+ * against a specific connection point, the wait buys the only curtailment number
+ * in the tool that accounts for the network.
+ *
+ * Runs strictly SEQUENTIALLY. Six concurrent workers would contend for the same
+ * cores and finish no sooner while making progress unreportable.
+ */
+let curtAuditRunning = false;
+let curtAuditRows = [];
+
+function runCurtailmentAudit(){
+  if (curtAuditRunning || mipRunning){ return; }
+  const LEVELS = [0, 10000, 20000, 35000, 50000, 70000];
+  const saved = { pv: state.newPvMW, wind: state.newWindMW };
+  curtAuditRunning = true; curtAuditRows = [];
+  const host = document.getElementById('curtAuditBody');
+  const btn  = document.getElementById('curtAuditBtn');
+  if (btn) btn.disabled = true;
+
+  const paint = (msg) => { if (host) host.innerHTML =
+      '<div style="font-size:11px;line-height:1.6">' + msg + '</div>'; };
+
+  const step = (i) => {
+    if (i >= LEVELS.length){
+      state.newPvMW = saved.pv; state.newWindMW = saved.wind;
+      curtAuditRunning = false; if (btn) btn.disabled = false;
+      renderCurtailmentAudit();
+      return;
+    }
+    const extra = LEVELS[i];
+    state.newPvMW   = (saved.pv   || 0) + extra * 0.55;
+    state.newWindMW = (saved.wind || 0) + extra * 0.45;
+    paint('Solving level ' + (i+1) + ' of ' + LEVELS.length
+      + ' &mdash; +' + (extra/1000) + '&nbsp;GW of extra VRE. '
+      + '<span style="color:var(--ink2)">Each level is a full network solve; this takes a few minutes.</span>');
+    // Reuse the existing MIP path, then read what it produced.
+    runMIPForAudit(() => {
+      const r = (typeof mipActiveRes !== 'undefined' && mipActiveRes) ? mipActiveRes : null;
+      curtAuditRows.push({
+        extraGW: extra/1000,
+        networkTWh: r ? (r.curtailedTWh || 0) : null,
+        nationalTWh: r ? (r.heurCurtailedTWh || 0) : null,
+      });
+      step(i+1);
+    });
+  };
+  step(0);
+}
+
+// Wraps runMIP so the audit can await each solve. Uses the representative-day
+// mode: six full-year solves would run past any reasonable patience, and the
+// curtailment ratio is what matters here rather than the last decimal.
+function runMIPForAudit(done){
+  const prev = window.__mipDoneHook;
+  window.__mipDoneHook = () => { window.__mipDoneHook = prev; done(); };
+  runMIP('rep');
+}
+
+function renderCurtailmentAudit(){
+  const host = document.getElementById('curtAuditBody');
+  if (!host) return;
+  if (!curtAuditRows.length){ host.innerHTML = ''; return; }
+  const rows = curtAuditRows.map(x =>
+      '<tr><td style="padding:3px 5px">' + (x.extraGW === 0 ? 'today' : '+' + x.extraGW + ' GW') + '</td>'
+    + '<td class="mono" style="text-align:right;padding:3px 5px;color:var(--ink2)">'
+      + (x.nationalTWh === null ? '?' : x.nationalTWh.toFixed(1)) + '</td>'
+    + '<td class="mono" style="text-align:right;padding:3px 5px;font-weight:600">'
+      + (x.networkTWh === null ? '?' : x.networkTWh.toFixed(1)) + '</td>'
+    + '<td class="mono" style="text-align:right;padding:3px 5px;color:var(--alert,#C4785A)">'
+      + (x.networkTWh === null || x.nationalTWh === null ? '?'
+         : '+' + (x.networkTWh - x.nationalTWh).toFixed(1)) + '</td></tr>').join('');
+  host.innerHTML =
+      '<table style="width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px">'
+    + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
+    + '<th style="text-align:left;padding:3px 5px">Build level</th>'
+    + '<th style="text-align:right;padding:3px 5px">national only</th>'
+    + '<th style="text-align:right;padding:3px 5px">with network</th>'
+    + '<th style="text-align:right;padding:3px 5px">difference</th></tr>'
+    + rows + '</table>'
+    + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
+    + 'TWh of renewable output curtailed. <strong>National only</strong> is the single-node view shown '
+    + 'in the forecast above \u2013 it sees oversupply but no congestion. <strong>With network</strong> '
+    + 'is the full 10-region solve with real corridor transfer limits. The difference is what the grid '
+    + 'itself costs a project, and it is the number a developer is actually exposed to. '
+    + 'Solved over 52 representative days rather than 8,760 hours, so treat the last decimal as '
+    + 'indicative.</div>';
+}
+
 function runMIP(mode) {
   if (mipRunning) return;
   mipRunning = true;
@@ -12361,6 +12478,8 @@ function runMIP(mode) {
       } else if (m.type === 'done') {
         applyMIPResult(m, mode);
         finishMIP();
+        // Lets the curtailment audit await this solve before starting the next.
+        if (typeof window.__mipDoneHook === 'function') window.__mipDoneHook();
       } else if (m.type === 'error') {
         document.getElementById('mipResult').innerHTML =
           '<p style="font-size:11px;color:var(--alert)">' + m.message + '</p>';
@@ -12478,7 +12597,18 @@ function applyMIPResult(m, mode) {
   const co2 = (E.coal*p.emisCoal + E.ccgt*p.emisCcgt + E.diesel*p.emisDiesel) / 1e6;
 
   const mipRes = { ...lastRes, E, stack, fuelCost, carbonCost, totalCost, co2,
-                   avgCost: totalCost / Math.max(1, gridServed), shedMWh: unservedMWh };
+                   avgCost: totalCost / Math.max(1, gridServed), shedMWh: unservedMWh,
+                   // FLAG: marginalP and curtailMW are INHERITED from the instant run by the
+                   // spread above. A MIP has no duals, so there are no MIP hourly prices to
+                   // put here. Panels that read them must say which engine they are showing,
+                   // or they will present instant-engine prices beside MIP energy as though
+                   // both came from the same solve.
+                   pricesFromInstant: true,
+                   mipCurtailedTWh: curtMWh / 1e6 };
+  // The gap between what the MIP curtails and what the single-node engine does is
+  // the NETWORK-driven component. Recorded so the curtailment forecast, which
+  // cannot practically run the MIP six times, can at least show it as a floor.
+  mipNetworkOffsetTWh = Math.max(0, (curtMWh/1e6) - ((lastRes.E.curtailed||0)/1e6));
 
   // Corridor congestion summary
   const cors = (mipInputs && mipInputs.corridors) || [];
