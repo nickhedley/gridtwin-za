@@ -8441,10 +8441,7 @@ function renderQueuePressure(){
     + '</table>'
     + `<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">`
     + `<strong>${rows.filter(x => x.ratio >= 1).length} of ${rows.length} supply areas are oversubscribed`
-    + `</strong>, while ${rows[rows.length-1].area} sits at ${(rows[rows.length-1].ratio*100).toFixed(0)}% of its headroom. `
-    + `Nationally ${totR.toLocaleString()} MW is registered against ${totH.toLocaleString()} MW of headroom \u2013 `
-    + `close to balanced in total, but badly matched in place. The grid, not the resource, is what decides `
-    + `where the next project can go.</div>`
+    + `</strong>, while ${rows[rows.length-1].area} sits at ${(rows[rows.length-1].ratio*100).toFixed(0)}% of its headroom.</div>`
     + '<div style="font-size:9.5px;color:var(--ink2);margin-top:9px;line-height:1.5">'
     + 'Registered capacity is cumulative since the registration regime began in 2018; it is not a '
     + 'measure of what has been built, and a registration is not a grid connection. '
