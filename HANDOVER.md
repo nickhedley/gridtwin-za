@@ -1,3 +1,52 @@
+## PRICE GAP MEASURED, AND THE TASK RENAMED (18 Aug 2026)
+
+The backlog carried "regional shadow prices - fix the MIP integers, re-solve as
+an LP". The user challenged whether it is needed at all, given South Africa has
+no locational pricing. HALF THE TASK WAS WRONG AND IS NOW RENAMED.
+
+NOT NEEDED: regional prices. SAWEM clears to a SINGLE NATIONAL System Marginal
+Price. Locational pricing is explicitly an option for a future iteration of the
+market code, not part of it. Building region-by-region prices would model a market
+that does not exist.
+
+STILL REAL: a NETWORK-AWARE NATIONAL price. The capture panel uses instant-engine
+prices even after a full model run, because a MIP has no duals. Those prices miss
+congestion: when a corridor fills, dearer plant runs and the true marginal cost
+rises.
+
+### THE MEASUREMENT
+
+Congestion means less VRE reaches load, so derating delivered VRE brackets what a
+network-aware price would do:
+
+    VRE derate   mean price   solar capture   wind capture   curtailed   cost
+      0%              R268           19%            67%       100 TWh   R1208
+      5%              R290           22%            69%        90 TWh   R1166
+     10%              R323           25%            71%        79 TWh   R1124
+     15%              R370           27%            71%        69 TWh   R1085
+     20%              R428           29%            70%        59 TWh   R1044
+
+SOLAR CAPTURE MOVES 19% -> 25% AT A 10% DERATE. Six points, which on a 19% base is
+a THIRD of the value. Wind moves 67% -> 71%, so the effect is materially larger for
+solar - which is also the technology whose capture rate is low enough to decide
+financeability.
+
+For scale on a plausible derate: at TODAY's build the MIP finds 13.46 TWh of
+network curtailment the single-node engine misses, and the full network audit
+shows that difference widening as build grows.
+
+### VERDICT
+
+MATERIAL, BUT NOT URGENT, and the reason is the DIRECTION. Congestion RAISES
+capture rates here, because it removes surplus that was depressing midday prices.
+So the current panel is CONSERVATIVE for solar - it understates what a project
+earns. Being wrong in the safe direction on a developer-facing number is the
+right way round, and it means the fix can wait behind work that is wrong in the
+dangerous direction.
+
+Keep it on the list, renamed, with this measurement attached so the next session
+does not have to re-derive whether it is worth the doubled solve time.
+
 ## GAS VERSUS COAL RE-RUN WITH CAPACITY PAYMENTS (18 Aug 2026)
 
 Run as an end-to-end test that the capacity payment, the build-LP wiring and the
