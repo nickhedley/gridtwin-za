@@ -9008,6 +9008,7 @@ SLIDERS.forEach(s=>{
   function updateTrack(el){ updateSliderFill(el); }
   updateTrack(inp);
   inp.addEventListener('input',e=>{
+    if(typeof releaseStrandedAudit==='function') releaseStrandedAudit();
     state[s.id]=+e.target.value;
     document.getElementById('cv_'+s.id).textContent=s.fmt(state[s.id]);
     updateTrack(e.target);
@@ -12352,12 +12353,47 @@ self.onmessage = async (e) => {
  */
 let curtAuditRunning = false;
 let curtAuditRows = [];
+let curtAuditRestore = null;   // teardown, callable from ANY exit path
+
+// Put the sliders back, release the button, and say what happened. Safe to call
+// more than once - the first call clears the handle.
+// Backstop for the case no handler catches: a worker killed by a backgrounded
+// tab fires nothing at all. If the user moves any slider while an audit is
+// stranded, release it rather than leaving the button dead until a reload.
+function releaseStrandedAudit(){
+  if (curtAuditRestore && !mipRunning) abortCurtailmentAudit('The solve did not complete.');
+}
+function abortCurtailmentAudit(reason){
+  if (!curtAuditRestore) return;
+  const t = curtAuditRestore; curtAuditRestore = null;
+  state.newPvMW = t.pv; state.newWindMW = t.wind;
+  if (typeof updateSliderFill === 'function'){
+    ['newPvMW','newWindMW'].forEach(id => {
+      const el = document.getElementById('in_' + id);
+      if (el){ el.value = state[id]; updateSliderFill(el);
+               const cv = document.getElementById('cv_' + id);
+               const sl = SLIDERS.find(x => x.id === id);
+               if (cv && sl) cv.textContent = sl.fmt(state[id]); }
+    });
+  }
+  curtAuditRunning = false;
+  const btn = document.getElementById('curtAuditBtn'); if (btn) btn.disabled = false;
+  const host = document.getElementById('curtAuditBody');
+  if (host && reason){
+    host.innerHTML = '<div style="font-size:11px;line-height:1.6;padding:7px 10px;'
+      + 'background:var(--panel2);border-left:3px solid var(--alert,#C4785A)">'
+      + '<strong>Audit stopped after ' + curtAuditRows.length + ' of 6 levels.</strong> ' + reason
+      + ' Your build sliders have been put back where they were.</div>';
+  }
+  if (typeof run === 'function') run();   // repaint every panel from the restored scenario
+}
 
 function runCurtailmentAudit(){
   if (curtAuditRunning || mipRunning){ return; }
   const LEVELS = [0, 10000, 20000, 35000, 50000, 70000];
   const saved = { pv: state.newPvMW, wind: state.newWindMW };
   curtAuditRunning = true; curtAuditRows = [];
+  curtAuditRestore = { pv: saved.pv, wind: saved.wind };   // armed for the whole run
   const host = document.getElementById('curtAuditBody');
   const btn  = document.getElementById('curtAuditBtn');
   if (btn) btn.disabled = true;
@@ -12367,9 +12403,11 @@ function runCurtailmentAudit(){
 
   const step = (i) => {
     if (i >= LEVELS.length){
+      curtAuditRestore = null;                       // completed; nothing to abort
       state.newPvMW = saved.pv; state.newWindMW = saved.wind;
       curtAuditRunning = false; if (btn) btn.disabled = false;
       renderCurtailmentAudit();
+      if (typeof run === 'function') run();
       return;
     }
     const extra = LEVELS[i];
@@ -12491,12 +12529,14 @@ function runMIP(mode) {
       } else if (m.type === 'error') {
         document.getElementById('mipResult').innerHTML =
           '<p style="font-size:11px;color:var(--alert)">' + m.message + '</p>';
+        abortCurtailmentAudit('The solver reported an error.');
         finishMIP();
       }
     };
     mipWorker.onerror = (err) => {
       document.getElementById('mipResult').innerHTML =
         '<p style="font-size:11px;color:var(--alert)">Solver error: ' + err.message + '</p>';
+      abortCurtailmentAudit('The solver stopped unexpectedly.');
       finishMIP();
     };
 
@@ -12509,6 +12549,7 @@ function runMIP(mode) {
     document.getElementById('mipResult').innerHTML =
       '<p style="font-size:11px;color:var(--alert)">Could not load regional network data: ' + err.message +
       '. The nodal data files must be present in nodal/.</p>';
+    abortCurtailmentAudit('The regional network data could not be loaded.');
     finishMIP();
   });
 }
@@ -12516,6 +12557,7 @@ function runMIP(mode) {
 function cancelMIP() {
   if (mipWorker) { mipWorker.terminate(); mipWorker = null; }
   document.getElementById('mipStatus').textContent = 'Cancelled.';
+  abortCurtailmentAudit('You cancelled the solve.');
   finishMIP();
 }
 
