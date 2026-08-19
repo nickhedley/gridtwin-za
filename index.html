@@ -4085,6 +4085,57 @@ function simulate(u, prof, outPath){
   const psEffTot = (psEnergyTot > 0)
     ? (p.psEnergyMWh*p.psEff + _newPs*(p.newPsHours ?? 14)*(p.newPsEff ?? 0.78)) / psEnergyTot
     : p.psEff;
+  // ── STORAGE TIERS ─────────────────────────────────────────────────────────
+  // Lithium, vanadium and iron-air previously shared ONE state of charge and one
+  // blended efficiency. That hid which technology did anything - adding 10 GW of
+  // iron-air changed charging by 6.9 TWh and discharge by nothing, invisibly -
+  // and it applied a blended round trip to LITHIUM charging, which should stay
+  // at 88%.
+  //
+  // Each technology now keeps its own SOC. Charge and discharge run in
+  // ROUND-TRIP ORDER, best first, so lithium does the daily cycling and iron-air
+  // only fills once lithium is full. That is what actually happens, and why a
+  // 100-hour store is a seasonal asset rather than a daily one.
+  //
+  // SHADOW MODE. The scalar battSoc is still maintained in parallel and the two
+  // are asserted to agree every hour. A first attempt on 18 Aug swapped the
+  // scalar out in one pass and missed a THIRD charging path - coal pre-charging
+  // storage for the evening peak, the only route by which the battery charges at
+  // default settings - so the default case silently collapsed from 0.272 TWh to
+  // 0.002 while high-VRE cases looked fine. Shadow mode makes that impossible to
+  // miss: any divergence trips tierDrift.
+  const battTiers = [
+    { k:'li',   mw: p.battPowerMW + p.newBattMW + _vppB,
+      mwh: p.battPowerMW*p.battHours + p.newBattMW*p.newBattHours + _vppB*4,
+      eff: p.battEff ?? 0.88 },
+    { k:'vrfb', mw: _vrfb, mwh: _vrfb*(p.newVrfbHours ?? 8), eff: p.newVrfbEff ?? 0.70 },
+    { k:'fe',   mw: _fe,   mwh: _fe*(p.newIronAirHours ?? 100), eff: p.newIronAirEff ?? 0.45 },
+  ].filter(t => t.mw > 0).sort((a,b) => b.eff - a.eff);
+  const tierDis = { li:0, vrfb:0, fe:0 };
+  const tierChg = { li:0, vrfb:0, fe:0 };
+  let tierDrift = 0;                 // worst |sum(tier soc) - battSoc| seen
+
+  // Charge across tiers, best round trip first. Returns MW actually taken, which
+  // the caller uses so the scalar and the tiers stay in step.
+  const tierCharge = (mw) => {
+    let got = 0;
+    for (const t of battTiers){
+      const take = Math.min(mw - got, t.mw, t.mwh - t.soc);
+      if (take > 0){ t.soc += take * t.eff; tierChg[t.k] += take; got += take; }
+      if (got >= mw - 1e-9) break;
+    }
+    return got;
+  };
+  const tierDischarge = (mw) => {
+    let got = 0;
+    for (const t of battTiers){
+      const give = Math.min(mw - got, t.mw, t.soc);
+      if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give; }
+      if (got >= mw - 1e-9) break;
+    }
+    return got;
+  };
+
   const _liE = p.battPowerMW*p.battHours + p.newBattMW*p.newBattHours + _vppB*4;
   const _vrE = _vrfb*(p.newVrfbHours ?? 8), _feE = _fe*(p.newIronAirHours ?? 100);
   const battEffMix = (battEnergy > 0)
@@ -4116,6 +4167,9 @@ function simulate(u, prof, outPath){
   // peak. Eskom's schemes are built around roughly a 4-6 hour evening discharge.
   const PS_PEAK_HOURS = 4;
   let psSoc=psEnergyTot*0.7, battSoc=battEnergy*0.5;
+  battTiers.forEach(t => { t.soc = t.mwh * 0.5; });   // same starting fraction, per tier
+  const syncBattSoc = () => { battSoc = battTiers.reduce((a,t)=>a+t.soc,0); };
+  syncBattSoc();
   // Cost basis of the energy currently in store, R per MWh OF STORED ENERGY.
   // Efficiency loss is applied on the way in (soc += w*eff), so the basis already
   // carries it: charging 100 MWh at R0 into an 88% battery stores 88 MWh at R0/MWh;
@@ -4358,6 +4412,9 @@ function simulate(u, prof, outPath){
 
   for(let h=0;h<HOURS;h++){
     if(h===3264||h===7848) socAtWeekStart[h]={ps:psSoc,batt:battSoc};
+    // Shadow assertion: tier SOC must track the scalar every hour.
+    { const ts=battTiers.reduce((a,t)=>a+t.soc,0); const d=Math.abs(ts-battSoc);
+      if(d>tierDrift) tierDrift=d; }   // zero by construction; guards future edits
     const hour=h%24;
     // UC-derived committed capacity and minimum stable load for this hour
     // ucAvail already accounts for EAF (via availFactor in buildUCSchedule)
@@ -4482,7 +4539,7 @@ function simulate(u, prof, outPath){
       const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
-      const btChg=Math.min(surplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*battEffMix; surplus-=btChg;
+      let btChg=Math.min(surplus,battPower,battEnergy-battSoc); btChg=tierCharge(btChg); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       // EXPORT BEFORE CURTAILING, but AFTER storage. Stored energy can be sold
       // into the domestic evening peak at more than the regional pool pays, so
@@ -4539,7 +4596,7 @@ function simulate(u, prof, outPath){
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
         const psChg=Math.min(forcedSurplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; forcedSurplus-=psChg;
-        const btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); addCharge(h,'batt',btChg,0); battSoc+=btChg*battEffMix; forcedSurplus-=btChg;
+        let btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); btChg=tierCharge(btChg); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
         // off instantly), then coal trips if the oversupply still exceeds all renewable output.
@@ -4581,7 +4638,7 @@ function simulate(u, prof, outPath){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const btDis=Math.min(residual,btLim); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const btDis=tierDischarge(Math.min(residual,btLim)); syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
         // storage discharged ahead of coal here, so coal is above it in this hour's order
         if(topUp<=1){
@@ -4591,7 +4648,7 @@ function simulate(u, prof, outPath){
       } else {
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const btDis=Math.min(residual,btLim); battSoc-=btDis; residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const btDis=tierDischarge(Math.min(residual,btLim)); syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
         if(btDis>1&&btDis<btLim-1) storageMarginal[h]='batt';
         else if(psDis>1&&psDis<psLim-1) storageMarginal[h]='ps';
       }
@@ -4647,7 +4704,7 @@ function simulate(u, prof, outPath){
         const battTargetCeiling=Math.min(battEnergy*0.8, Math.max(anticipatedShortfall[h], battDailyFloor));
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
-        if(head>0&&battSoc<battTargetCeiling){const w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); coalGen+=w; addCharge(h,'batt',w,chgC); battSoc+=w*p.battEff; chargeMW[h]+=w;}
+        if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierCharge(w); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
       }
       // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
       // INTERRUPTIBLE LOAD, called before anything is shed. Contracted industrial
@@ -4947,7 +5004,7 @@ function simulate(u, prof, outPath){
     if(loadS[h] > peakGridLoad) peakGridLoad = loadS[h];
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
-  return {E,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,tierDis,tierChg,tierDrift,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -6439,6 +6496,7 @@ function renderCurtailmentForecast(){
             + worst + ' at ' + Math.max(...endVals).toFixed(0) + '&#37;.')
       + '</div>'
       + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
+      + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Why this shows no curtailment today, when Eskom is already curtailing.</strong> This forecast runs on the instant engine, which treats South Africa as a single node. It can therefore only see NATIONAL oversupply \u2013 hours when the whole country generates more than it can use, which today never happens. Curtailment happening now is network-driven and LOCAL, concentrated in Cape corridors that a single-node model has no way to represent. Run the full model for that picture: on the same scenario it finds real curtailment, with Eastern Cape\u2013Kwazulu Natal at its transfer limit for thousands of hours a year. Read this panel as the answer to a different question \u2013 at what national build level does surplus become unavoidable everywhere.</div>'
       + 'Curtailment is not linear in build: it stays near zero while surplus is absorbable, then '
       + 'rises sharply once midday supply routinely exceeds what load and storage can take. Where '
       + 'that knee sits matters more than today\u2019s number. Holds storage, coal retirement and '

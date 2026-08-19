@@ -1,4 +1,207 @@
-## PER-TECHNOLOGY STORAGE TRACKING: ATTEMPTED AND REVERTED (18 Aug 2026)
+## TWO QUEUED ITEMS (18 Aug 2026)
+
+### A. CURTAILMENT FORECAST SHOWS ZERO TODAY, BUT ESKOM IS ALREADY CURTAILING
+
+Raised by the user, and the concern is right: an industry reader will assume the
+box is broken. It is not, and OUR OWN MIP PROVES IT - the same scenario the
+instant engine reports as 0 TWh curtailed, the full model reports as 13.46 TWh,
+with Eastern Cape-KZN at its limit 3,418 hours a year.
+
+THE CAUSE: the curtailment forecast runs on the INSTANT engine, which is
+single-node. With no corridors there is nothing to congest, so surplus only
+arises when NATIONAL supply exceeds NATIONAL demand - which today it never does.
+Real South African curtailment is overwhelmingly NETWORK-driven and local,
+concentrated in exactly the Cape corridors the single-node engine cannot see.
+
+So the forecast is measuring a different thing: the point at which the country as
+a whole has more renewable energy than it can absorb, which is a 2030s question.
+Eskom's present curtailment is a 2026 question about specific corridors.
+
+FIX NEEDED, and it is a NOTE not a model change: the panel must say plainly that
+it forecasts NATIONAL energy-balance curtailment and does not include the
+network-driven curtailment already happening today, pointing readers at the full
+model for the corridor picture. Without that, the panel reads as broken to
+precisely the audience whose trust matters most.
+
+### A-DONE. The curtailment note was written into the panel on 18 Aug. It states
+that the forecast runs on the single-node instant engine, sees only NATIONAL
+oversupply, and does not include the network-driven curtailment happening today -
+pointing readers at the full model, which finds real curtailment on the same
+scenario with Eastern Cape-Kwazulu Natal at its limit for thousands of hours.
+
+### C. ANCILLARY SERVICES - RESEARCH (18 Aug 2026)
+
+Asked alongside capacity payments, and the two are closely linked: in most
+markets storage earns MORE from ancillary services than from capacity, at least
+until the AS market saturates.
+
+SOUTH AFRICA ALREADY HAS A DEFINED AS FRAMEWORK. Eskom publishes Ancillary
+Services Technical Requirements on a rolling five-year basis (current document
+covers 2023-2027), and the Grid Code sets a minimum requirement per reserve
+category, revised annually. Categories are EXCLUSIVE - capacity reserved for one
+cannot count toward another, which matters for modelling because a battery cannot
+sell the same MW twice:
+
+    INSTANTANEOUS     arrests frequency after a trip; must sustain 10 minutes;
+                      responds within 10 seconds
+    REGULATING        up and down, continuous second-by-second balancing
+    TEN-MINUTE        replaces instantaneous once deployed
+    SUPPLEMENTAL      slower replacement
+    EMERGENCY         interruptible load, generator emergency capacity, gas turbines
+
+The Market Code splits procurement two ways, which maps neatly onto how we would
+model it:
+    LONG-TERM AUCTION   system restoration (black start, islanding), reactive
+                        power, synchronous condenser operation, emergency and
+                        supplemental reserves
+    DYNAMIC MARKET      constrained generation, regulating reserve, instantaneous
+                        reserves, ten-minute reserves
+
+DEMAND RESPONSE ALREADY PARTICIPATES: up to 1,014 MW of instantaneous DR
+responding within SIX SECONDS, plus 364 MW supplemental on 30 minutes' notice and
+62 MW of critical-peak reserve. That is directly relevant to our shiftable-load
+and VPP sliders, which currently earn nothing for providing this.
+
+THE GAP THAT IS COMING, and it is the interesting one for the model: INERTIA IS
+NOT PROCURED AT ALL. The Market Code list above mentions synchronous condensers
+but never inertia as a service. Meanwhile Eskom's own Medium-Term System Adequacy
+Outlook 2026-2030 flags rising frequency instability as inverter-based generation
+grows, unless synchronous condensers or synthetic inertia from grid-forming
+batteries are added.
+
+Comparators, useful because our synchronous floor slider models exactly this:
+    UK (NESO)        RoCoF limit 1 Hz/s over 500 ms; minimum inertia 120 GVAs,
+                     reducing to 102; procured via long-term contracts plus
+                     market adjustments
+    Ireland (EirGrid) RoCoF 1 Hz/s over 500 ms; minimum inertia 23 GWs; DS3
+                     system services framework
+    South Africa      no minimum inertia requirement, no procurement mechanism
+
+The recommended path in the SA literature is three steps: define inertia
+explicitly in the System Operations Grid Code, set a minimum inertia requirement
+as a regulated value with a transparent methodology, then develop a procurement
+mechanism.
+
+IMPLICATION FOR THE MODEL. Our synchronous generation floor slider already
+represents the PHYSICAL constraint (6 GW baseline, ~15% of peak). What it does
+not represent is that nobody is PAID to provide it. Adding an AS revenue stream
+would let the model answer a question it currently cannot: at what price does a
+grid-forming battery displace a synchronous condenser, and does that change the
+economics of retiring coal.
+
+SUGGESTED SEQUENCING: capacity payment first, since it is simpler and the EPP
+explicitly signals it. Then AS revenue as a second slider, split into a reserve
+component any storage can earn and an inertia component only grid-forming assets
+and synchronous plant can earn. Keep the exclusivity rule - a MW selling reserve
+is not also selling energy - or the model will double-count storage revenue,
+which is the classic error in BESS business cases.
+
+### B. CAPACITY PAYMENTS - RESEARCH AND PROPOSED DESIGN
+
+Motivation: without a capacity payment, iron-air and vanadium earn nothing for
+existing, so the model cannot represent why anyone would build them. Same gap
+affects CCGT, and it bears on the 17 Aug gas-versus-coal conclusion.
+
+WHAT OTHER MARKETS DO - four archetypes:
+  CENTRAL-BUYER AUCTION     PJM, New York, New England, GB, Ireland/SEM.
+    An administrator estimates the capacity needed and auctions it years ahead.
+  DECENTRALISED OBLIGATION  CAISO resource adequacy, SPP, Australia's Retailer
+    Reliability Obligation. Retailers must contract to cover forecast peak plus
+    a reserve margin.
+  STRATEGIC RESERVE         Germany, Belgium, Sweden, and the NEM. Capacity
+    contracted outside the market, run only in scarcity.
+  PRICE-DRIVEN / ENERGY-ONLY  ERCOT, Australia's NEM, New Zealand, Singapore,
+    Alberta. No capacity payment; a high price cap does the work. ERCOT uses a
+    $5,000/MWh cap plus scarcity adders.
+
+THE MECHANISM THAT MATTERS FOR STORAGE IS DE-RATING. Ireland's SEM pays on
+DE-RATED MW, with factors set per technology class from historical availability,
+unit size AND ENERGY LIMITS - so a 4-hour battery is credited with far less firm
+capacity than its nameplate, and a long-duration store with more. GB moved
+storage onto a Scaled Equivalent Firm Capacity method in 2024 for the same
+reason.
+
+The hard part, well documented in the literature: storage reliability is
+INTERTEMPORAL. Whether a store can serve load in a given hour depends on its
+entire prior state-of-charge trajectory, so a scalar de-rating factor
+misrepresents it. That is a known limitation of every operating scheme, not a
+reason to avoid the design.
+
+WHICH FITS SOUTH AFRICA: the central-buyer auction. SAWEM clears to a single
+national price with one system operator (NTCSA) and a single historical buyer, so
+the Irish SEM is the closest structural analogue - all-island, single price,
+de-rated MW, auction-cleared.
+
+PROPOSED IMPLEMENTATION, smallest useful version:
+  - one slider, capacityPaymentRkWyr, R/kW/yr, default 0 so nothing changes until
+    deliberately turned on
+  - de-rating factors by technology, duration-aware, as Ireland does:
+      CCGT              ~90%  (availability-limited, not energy-limited)
+      lithium 4h        ~25%
+      vanadium 8h       ~45%
+      iron-air 100h     ~90%
+      pumped storage    ~85%
+    Figures indicative and to be sourced properly before use.
+  - revenue = derated MW x payment, offsetting system cost the way exportRevenueR
+    already does
+  - RE-RUN THE GAS-VERSUS-COAL COMPARISON afterwards. That conclusion assumed
+    idle firm capacity earns nothing, which is exactly what this changes.
+
+ON PUMPED STORAGE, which the user asked about: it IS firm capacity and on the
+merits should be paid. The argument for excluding it is that Eskom owns the
+fleet, so a payment is a transfer within Eskom rather than an investment signal.
+Suggest INCLUDING it with a toggle, since the model is used to ask what NEW build
+is worth and the comparison against a 14-hour Tubatse-class scheme is exactly the
+interesting one.
+
+## PER-TECHNOLOGY STORAGE TRACKING - DONE (18 Aug 2026, second attempt)
+
+Each of lithium, vanadium and iron-air now keeps its OWN state of charge and its
+own round-trip efficiency. Charge and discharge run in efficiency order, best
+first, so lithium does the daily cycling and iron-air fills only once lithium is
+full - which is what physically happens, and why a 100-hour store is a seasonal
+asset rather than a daily one.
+
+WHAT THE FIRST ATTEMPT MISSED, and how the second found it: there is a THIRD
+charging path. Beyond the surplus branch and the coal-forced surplus branch,
+storage is also pre-charged FROM COAL ahead of the evening peak
+(`if(head>0 && battSoc<battTargetCeiling)`). At default settings there is zero
+curtailment, so that is the ONLY route by which the battery ever charges. Missing
+it collapsed the default case from 0.272 TWh to 0.002 while every high-VRE case
+looked fine.
+
+THE METHOD THAT WORKED - shadow mode:
+  1. Add tiers ALONGSIDE the scalar, mirroring every operation, changing nothing.
+  2. Assert hour by hour that the tier sum tracks the scalar, recording the worst
+     divergence as tierDrift.
+  3. Only then let the tiers govern the amounts.
+Step 2 is what made the difference. It showed drift of exactly ZERO with lithium
+alone and hundreds of GWh once multiple tiers existed - and that drift WAS the
+error the blended scalar had been making all along.
+
+ONE MORE BUG CAUGHT IN STEP 3. With the tiers governing, adding iron-air first
+made E.batt FALL from 6.685 to 3.074 TWh and cost RISE. Cause: battSoc kept its
+own running total credited at the BLENDED efficiency, so it understated stored
+energy, and since btLim = min(battPower, battSoc) that throttled discharge.
+Adding storage reduced output, which is nonsense. Fixed by DERIVING battSoc from
+the tier sum - one source of truth - via syncBattSoc().
+
+RESULT, all reconciling and drift zero everywhere:
+
+    case              E.batt   li     vrfb    fe    feChg   curt   cost
+    default           0.2725   0.272  0      0      0         0     568
+    futuremix         6.6854   6.685  0      0      0       100    1208
+    +10 GW iron-air   6.6854   6.685  0      0      1.111    98.7  1201
+    coal 36 retired  13.5355  13.119  0      0.417  2.037    84.7  1111
+
+Iron-air charges 1.111 TWh and discharges NOTHING until coal is retired to 36 GW,
+at which point it delivers 0.417 TWh. That is the honest picture and it is now
+visible per technology rather than hidden in an aggregate.
+
+RESPONSE MATRIX: one cell changed, newVrfbMW -> avgCost, from inert to
+responsive. Vanadium previously had no effect on cost at all. Re-baselined.
+
+## PER-TECHNOLOGY STORAGE TRACKING: FIRST ATTEMPT, REVERTED (18 Aug 2026)
 
 Prompted by the user asking how we would know whether iron-air was ever deployed,
 given all three battery-class technologies share one aggregate.
