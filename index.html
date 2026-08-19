@@ -3239,11 +3239,11 @@ function printPrefeas() {
 
 <footer class="foot">
   <div style="max-width:1380px;margin:0 auto">
-    Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African
+    <span id="footDataLine">Built as a demonstrator in the spirit of PyPSA-CA. Fleet capacities and profiles approximate the 2026 South African
     system (calibrated to Eskom weekly system status reports, June&ndash;July 2026).
     <strong>All outputs are indicative &ndash; not planning or investment advice.</strong>
 
-    <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
+    </span><div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
       <strong>Data sources:</strong>
       Eskom weekly system status reports and annual results (fleet capacity, EAF, primary energy cost) &middot;
       NTCSA Grid Connection Capacity Assessment 2025 and transmission shapefiles (corridors, substations, headroom) &middot;
@@ -10163,7 +10163,11 @@ fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=
   const badge=document.getElementById('bdData');
   if(badge){badge.textContent=((data.meta&&data.meta.year)?data.meta.year:'real')+' Eskom'; badge.style.color='#8FD08A';}
   const foot=document.querySelector('.foot');
-  if(foot&&data.meta)foot.innerHTML='Driven by actual Eskom hourly system data ('+data.meta.year+', Eskom Data Portal). Demand, wind and solar profiles are real; fleet mix, costs and outage volatility are modelled. All outputs indicative – educational tool, not planning advice.';
+    // Writes ONLY its own sentence. This previously replaced the whole footer's
+  // innerHTML, which silently wiped the licence block and the author credit the
+  // moment profile data loaded.
+  const footLead=document.getElementById('footDataLine');
+  if(footLead&&data.meta)footLead.innerHTML='Driven by actual Eskom hourly system data ('+data.meta.year+', Eskom Data Portal). Demand, wind and solar profiles are real; fleet mix, costs and outage volatility are modelled. All outputs indicative – educational tool, not planning advice.';
   run();
 }).catch(()=>{});
 
