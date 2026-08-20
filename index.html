@@ -1996,7 +1996,9 @@ let redzData = null;
         let need = loadMW;
         const direct = Math.min(gen, need); need -= direct; served += direct;
         const surplus = gen - direct;
-        if (surplus > 0) soc = Math.min(battEnergyMWh, soc + Math.min(surplus, battPower, battEnergyMWh - soc) * battEffMix);
+        // 4-hour lithium here (battPower = energy/4), so the lithium round trip applies.
+        const rte = (typeof FIXED !== 'undefined' ? (FIXED.battEff ?? 0.88) : 0.88);
+        if (surplus > 0) soc = Math.min(battEnergyMWh, soc + Math.min(surplus, battPower, battEnergyMWh - soc) * rte);
         if (need > 0){ const dis = Math.min(need, battPower, soc); soc -= dis; served += dis; }
       }
       return served / (loadMW * N);
