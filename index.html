@@ -1002,6 +1002,82 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div class="pb" id="externalBody"></div>
 </details></div>
 
+          <div style="margin-top:18px"><details class="assump" id="methodPanel" style="margin-top:12px">
+      <summary>How the model works</summary>
+      <div class="pb" style="font-size:10.5px;line-height:1.65;color:var(--ink2)">
+
+        <p style="margin-bottom:9px">Two engines answer two different questions. The
+        <strong>instant engine</strong> re-dispatches the whole system in about half a second and
+        treats South Africa as a single node &ndash; fast enough to move a slider and watch the
+        result, but blind to where power physically flows. The <strong>full model</strong> is a
+        mixed-integer unit-commitment solve across the ten GCCA supply areas, run on 52
+        representative days with a 2&#37; optimality gap, or over a full year if you ask for it.
+        Both use the same fleet, the same profiles and the same costs, so where they disagree the
+        disagreement is about the network, not the inputs.</p>
+
+        <div style="font-weight:700;color:var(--ink);margin-top:11px">Dispatch and commitment</div>
+        <p>Unit commitment is modelled per station rather than per technology: minimum stable
+        levels, minimum up and down times, and start-up costs, with per-unit parameters taken from
+        <a href="https://github.com/MeridianEconomics/pypsa-rsa" target="_blank" rel="noopener"
+           style="color:inherit;text-decoration:underline">PyPSA-RSA</a>. Coal carries a part-load
+        heat rate penalty, so backing a unit off raises its fuel burn per MWh and its emissions
+        with it. Storage dispatches on opportunity cost rather than fuel cost, and each technology
+        keeps its own state of charge and round-trip efficiency. Solver is
+        <a href="https://highs.dev/" target="_blank" rel="noopener"
+           style="color:inherit;text-decoration:underline">HiGHS</a>, compiled to WebAssembly and
+        running in your browser &ndash; nothing is sent to a server.</p>
+
+        <div style="font-weight:700;color:var(--ink);margin-top:11px">Network</div>
+        <p>Corridors between supply areas are represented by a DC power flow, not a transport
+        model. Susceptances are derived from the real line geometry in NTCSA&rsquo;s published
+        transmission shapefiles: length is computed from the routes, and reactance is assigned from
+        voltage class using standard overhead-line values, which is the method PyPSA and PyPSA-Eur
+        use. Parallel circuits add susceptance. Series compensation is applied to the long
+        high-voltage lines, because Eskom has compensated its backbone since 1975 and ignoring it
+        makes those lines look electrically longer than they are; the thresholds were tested for
+        sensitivity rather than assumed. The HVDC circuits to Cahora Bassa are excluded from the
+        power flow entirely and treated as a fixed import, since HVDC flow is set by converter
+        controls rather than by impedance.</p>
+        <p style="margin-top:5px">The distinction from a transport model matters: a transport model
+        will route power around a constraint in a way the physics will not allow, which flatters
+        every congestion result. Reactance here is assigned rather than measured, and conductor
+        bundling and per-scheme compensation settings are not public, so this is good enough to
+        show that flows follow physics rather than economics &ndash; not a substitute for a load-flow
+        study.</p>
+
+        <div style="font-weight:700;color:var(--ink);margin-top:11px">Prices</div>
+        <p>Every price here is a <strong>shadow price</strong>: the marginal cost of serving the
+        next MWh in that hour. South Africa has no wholesale market yet, so there is nothing to
+        compare against &ndash; these are what the system would pay if dispatch were priced rather
+        than administered. When SAWEM publishes, they become testable. The market is designed to
+        clear to a single national price, so a single-node price is the correct basis rather than a
+        simplification; the locational signal lands on curtailment and network charges instead.</p>
+
+        <div style="font-weight:700;color:var(--ink);margin-top:11px">Resource and demand</div>
+        <p>Hourly wind and solar profiles are per supply area, from ERA5 via Open-Meteo, PVGIS and
+        NASA MERRA-2, across ten weather years so a scenario can be tested against a bad wind year
+        rather than an average one. Demand uses Eskom&rsquo;s actual hourly system profile, scaled
+        by the growth slider.</p>
+
+        <div style="font-weight:700;color:var(--ink);margin-top:11px">How it is checked</div>
+        <p>Every change runs a test suite before it ships: per-carrier reconciliation against
+        Eskom&rsquo;s published outturn, capacity factors checked separately so that energy and CF
+        errors cannot cancel and hide each other, hour-by-hour energy balance invariants across
+        eleven scenarios, cross-panel consistency so two panels cannot report different numbers for
+        the same thing, and a sweep asserting that every control still moves something. The two
+        panels above show the reconciliations themselves.</p>
+
+        <div style="font-weight:700;color:var(--ink);margin-top:11px">What is not here</div>
+        <p>The parameter tables &ndash; per-corridor susceptances, the compensation settings, the
+        assembled regional capacity and queue data &ndash; are not published. They are the part that
+        took the work, and they are licensed CC BY-NC-ND. The method above is not secret and was
+        never the hard part; if you are building something similar, the NTCSA shapefiles and the
+        GCCA headroom tables are the public pieces worth having. Get in touch if it would help to
+        compare notes.</p>
+
+      </div>
+</details></div>
+
           
 
           
