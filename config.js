@@ -28,4 +28,4 @@
 // (create a new one, restrict it, delete the old one) if it was ever exposed
 // without restrictions in place.
 
-window.GOOGLE_SOLAR_KEY = '';
+window.GOOGLE_SOLAR_KEY = 'AIzaSyDdK8pxmVjZ2qZiLkfGrv7AXuQZuDe5J2o';
