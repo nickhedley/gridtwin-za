@@ -3891,8 +3891,29 @@ const FIXED = {
   // default, so moving any CCS slider to zero changed nothing at all. Same
   // class of bug as the coalEAFPct one found on 15 Aug.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
+  // ccsTsR IS THE WEAK ASSUMPTION HERE. At ~0.9 tCO2 captured per MWh, R120/MWh
+  // is about R133/tCO2, roughly $8/t - a short-pipeline, good-geology figure.
+  // South Africa is neither. The Council for Geoscience atlas puts 98% of the
+  // country's ~150 Gt theoretical storage OFFSHORE, while the coal fleet sits
+  // inland in Mpumalanga and Limpopo. The nearest sink is roughly 400 km away
+  // (onshore Zululand), and that basin is excluded outright in the conservative
+  // storage scenario for low compressibility and over-pressurisation risk.
+  // A 400-600 km pipeline to offshore injection is a different cost class.
+  // TREAT R120/MWh AS OPTIMISTIC until it is properly sourced.
   ccsOpexR:180, ccsCapexR:260, ccsTsR:120,
   // Tariff side: retrofit capital, allowed return and asset life.
+  //
+  // ccsCapexRkW SOURCED 20 Aug 2026. Two independent routes converge:
+  //   IEAGHG 2024 benchmarking has supercritical PC going from GBP3,668/kW to
+  //   GBP4,530/kW with 90% capture - an increment of about R20,300/kW; and
+  //   NETL's 2022 Cost and Performance Baseline puts the uplift for adding
+  //   capture to supercritical PC at 64-66% of total overnight cost, which on
+  //   Medupi's own build cost gives R19,600-R31,700/kW depending on whether you
+  //   take R145bn or the higher independent estimates near R234bn.
+  // Retrofit costs MORE than greenfield - site constraints, tie-ins, and the
+  // derate spreading capital over less saleable output - so 38,000 sits at the
+  // TOP of that band rather than outside it. First-of-a-kind in South Africa
+  // would plausibly be higher still.
   ccsCapexRkW:38000, ccsWaccPct:9, ccsLifeYrs:20,
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
   // ── LONG-DURATION STORAGE ────────────────────────────────────────────────
@@ -5603,9 +5624,10 @@ function genOutagePath(meanFrac, volFrac, seed){
 // and the optimiser builds without limit.
 
 const BLD_YEARS = [2026, 2027, 2028, 2029, 2030];
-const BLD_TECHS = ['wind', 'pv', 'rooftop', 'batt', 'ccgt'];
+const BLD_TECHS = ['wind', 'pv', 'rooftop', 'batt', 'vrfb', 'ironair', 'ccgt'];
 const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distributed',
-                    batt:'Battery (4h)', ccgt:'Gas CCGT' };
+                    batt:'Battery (4h)', vrfb:'Vanadium flow (8h)',
+                    ironair:'Iron-air (100h)', ccgt:'Gas CCGT' };
 
 // Overnight capex in 2026 (R/kW) and annual real change thereafter.
 // Renewables and storage decline per BNEF's 2035 forecasts (-30% solar, -25%
@@ -5623,22 +5645,42 @@ const BLD_COST = {
   pv:      { c2026: 12000, decl:  0.0389 },
   rooftop: { c2026: 17000, decl:  0.0389 },
   batt:    { c2026: 10500, decl:  0.0315 },
+  // LONG-DURATION STORAGE, added Aug 2026. Both are priced per kW of POWER at
+  // their own duration, like the lithium line above (R10,500/kW = 4h).
+  //
+  // VANADIUM FLOW, 8h. Installed VRFB systems ran $400-500/kWh for utility-scale
+  // 4h+ in Q1 2026, against $230-280/kWh for LFP. Our lithium anchor is already
+  // below market LFP, so the VRFB figure is scaled by that same ratio rather than
+  // taken raw - otherwise the two lines would sit on different cost bases and the
+  // optimiser would be comparing a market price against an in-house one.
+  // ~$286/kWh x 8h x R16.21 = R37,000/kW.
+  vrfb:    { c2026: 37000, decl:  0.0300 },
+  // IRON-AIR, 100h. Form Energy targets under $20/kWh for the energy portion;
+  // at 100 hours that is $2,000/kW, plus roughly $400/kW of power conversion.
+  // ~$2,400/kW x R16.21 = R39,000/kW. Note it lands NEAR vanadium per kW while
+  // storing twelve times as long - which is the entire argument for it.
+  // Faster decline than the others: it is the least mature, with the first
+  // gigafactory only shipping in 2026.
+  ironair: { c2026: 39000, decl:  0.0600 },
   ccgt:    { c2026: 18000, decl: -0.0200 },
 };
-const BLD_LIFE = { wind:25, pv:25, rooftop:25, batt:15, ccgt:30 };
+// VRFB gets 25 years: 20,000-30,000 cycles and a 25-30 year calendar life, with
+// no depth-of-discharge limit, so it outlives lithium by a decade. Iron-air at 20
+// is a judgement - no fleet has run long enough to know.
+const BLD_LIFE = { wind:25, pv:25, rooftop:25, batt:15, vrfb:25, ironair:20, ccgt:30 };
 const BLD_DISC = 0.08;
 
 // Build-rate presets, each grounded in something real rather than assumed.
 const BLD_PACE = {
-  historical:  { wind: 250, pv: 300, rooftop:1500, batt: 100, ccgt: 200,
+  historical:  { wind: 250, pv: 300, rooftop:1500, batt: 100, vrfb: 0, ironair: 0, ccgt: 200,
     note:'REIPPPP delivered ~3.6 GW wind and ~4 GW solar in about 15 years.' },
-  irp:         { wind:2200, pv:1500, rooftop: 500, batt: 550, ccgt:1200,
+  irp:         { wind:2200, pv:1500, rooftop: 500, batt: 550, vrfb: 0, ironair: 0, ccgt:1200,
     note:'Implied by IRP 2025: 34 GW wind and 25 GW solar by 2039.' },
-  masterplan:  { wind:2500, pv:2000, rooftop:1000, batt:1000, ccgt:1200,
+  masterplan:  { wind:2500, pv:2000, rooftop:1000, batt:1000, vrfb: 100, ironair: 50, ccgt:1200,
     note:'Renewable Energy Masterplan ambition of roughly 5 GW a year.' },
-  grid:        { wind:4300, pv:4000, rooftop:2000, batt:4000, ccgt:2000,
+  grid:        { wind:4300, pv:4000, rooftop:2000, batt:4000, vrfb: 500, ironair: 300, ccgt:2000,
     note:'All remaining GCCA headroom (21.5 GW wind, 19.9 GW solar) spread to 2030. Zero headroom remains in the Northern Cape, Hydra Central, or for Western Cape solar.' },
-  none:        { wind:99000, pv:99000, rooftop:99000, batt:99000, ccgt:99000,
+  none:        { wind:99000, pv:99000, rooftop:99000, batt:99000, vrfb:99000, ironair:99000, ccgt:99000,
     note:'No build limit - shows what pure economics would choose, which is not physically deliverable.' },
 };
 
@@ -5652,7 +5694,25 @@ function bldAnnuity(capexPerKW, life){
 //
 // Wind and solar get NOTHING: they are energy-limited and weather-driven, and no
 // capacity mechanism credits them at anything close to nameplate.
-const BLD_DERATE = { wind:0, pv:0, rooftop:0, batt:0.25, ccgt:0.90 };
+// Matches the dispatch-side de-rating: duration decides how much firm capacity a
+// store can actually be credited with through a long event.
+const BLD_DERATE = { wind:0, pv:0, rooftop:0, batt:0.25, vrfb:0.45, ironair:0.90, ccgt:0.90 };
+
+// STORAGE IN THE BUILD LP. Each technology gets its own charge/discharge
+// variables, its own round trip and its own duration, so the optimiser can
+// choose between them on economics rather than being handed one 4-hour proxy.
+//
+// The prefixes are what the LP rows are named after: bdis_/bchg_ stay lithium so
+// every existing constraint keeps working untouched.
+//
+// `ex` is the EXISTING fleet in MW. Vanadium and iron-air are both zero in South
+// Africa today, which is the point: this is what it would take for either to be
+// worth building.
+const BLD_STORE = [
+  { t:'batt',    dis:'bdis', chg:'bchg', eff:0.88, hours:4,   ex:(EX) => EX.batt },
+  { t:'vrfb',    dis:'vdis', chg:'vchg', eff:0.70, hours:8,   ex:()   => 0 },
+  { t:'ironair', dis:'idis', chg:'ichg', eff:0.45, hours:100, ex:()   => 0 },
+];
 function bldNetAnnuity(tech, year){
   const gross = bldAnnuity(bldCapex(tech, year), BLD_LIFE[tech]);
   const pay = Math.max(0, (typeof state !== 'undefined' ? state.capacityPaymentRkWyr : 0) || 0);
@@ -5830,7 +5890,16 @@ function bldBuildLP(opts){
       // IDENTICAL at default build rates (all cap-bound); at 4x rates, higher
       // wear trims PV ~5% and rooftop ~33% and cuts cycling ~5% - so if build
       // rates are ever relaxed as a headline scenario, revisit.
-      obj.push((S.lpBattDischargeCostR*r.weight*df).toFixed(3) + ' bdis_' + k);
+      // Cycling wear, per technology. Lithium carries the tuned figure above.
+      // Vanadium and iron-air get a FRACTION of it: vanadium is rated for 20,000-
+      // 30,000 full-depth cycles against lithium's 4,000-7,000, and iron-air is
+      // built for slow seasonal cycling rather than daily wear. Charging them is
+      // still costed through the energy they consume in the balance row.
+      const WEAR = { batt: 1.0, vrfb: 0.25, ironair: 0.15 };
+      for (const S2 of BLD_STORE){
+        obj.push((S.lpBattDischargeCostR*WEAR[S2.t]*r.weight*df).toFixed(3)
+          + ' ' + S2.dis + '_' + k);
+      }
     }
   }
   L.push('  ' + obj.join(' + '));
@@ -5848,7 +5917,8 @@ function bldBuildLP(opts){
       const fixed = EX.nuclear*0.9 + EX.hydro*0.5 + EX.imports*0.9
                   + EX.wind*wp + (EX.pv + EX.rooftop)*sp + EX.csp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k
-        + ' + u_' + k + ' - crt_' + k + ' + bdis_' + k + ' - bchg_' + k
+        + ' + u_' + k + ' - crt_' + k
+        + BLD_STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
         + ' + ' + cum('wind',y).map(v => wp.toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('pv',y).map(v => sp.toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => sp.toFixed(4)+' '+v).join(' + ')
@@ -5858,6 +5928,15 @@ function bldBuildLP(opts){
       L.push(' dmax_' + k + ': gd_' + k + ' <= ' + EX.diesel);
       L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
+      // Same power limits for vanadium and iron-air: neither can charge or
+      // discharge faster than what has been built.
+      for (const S2 of BLD_STORE){
+        if (S2.t === 'batt') continue;
+        L.push(' ' + S2.dis + 'max_' + k + ': ' + S2.dis + '_' + k + ' - '
+          + cum(S2.t,y).join(' - ') + ' <= ' + S2.ex(EX));
+        L.push(' ' + S2.chg + 'max_' + k + ': ' + S2.chg + '_' + k + ' - '
+          + cum(S2.t,y).join(' - ') + ' <= ' + S2.ex(EX));
+      }
     }
     // ── CARBON CAP ────────────────────────────────────────────────────────
     // Emissions this year must not exceed the cap. Representative days carry a
@@ -5878,12 +5957,23 @@ function bldBuildLP(opts){
 
     // Storage must balance over each representative day at 88% round-trip, and
     // cannot discharge more than its 4-hour duration allows.
+    // Each storage technology balances over the representative day at its OWN
+    // round trip, and cannot discharge more than its OWN duration allows. Iron-air
+    // at 100 hours is not duration-limited within a single day - the constraint is
+    // still written, so a shorter representative period would bind correctly.
     for (const r of rd){
-      const dis = [], chg = [];
-      for (let h = 0; h < 24; h++){ dis.push('bdis_'+y+'_'+r.d+'_'+h); chg.push('bchg_'+y+'_'+r.d+'_'+h); }
-      L.push(' soc_'+y+'_'+r.d+': ' + dis.join(' + ') + ' - ' + chg.map(v=>'0.88 '+v).join(' - ') + ' <= 0');
-      L.push(' dur_'+y+'_'+r.d+': ' + dis.join(' + ') + ' - ' + cum('batt',y).map(v=>'4 '+v).join(' - ')
-        + ' <= ' + (EX.batt*4));
+      for (const S2 of BLD_STORE){
+        const dis = [], chg = [];
+        for (let h = 0; h < 24; h++){
+          dis.push(S2.dis+'_'+y+'_'+r.d+'_'+h);
+          chg.push(S2.chg+'_'+y+'_'+r.d+'_'+h);
+        }
+        L.push(' soc'+S2.t+'_'+y+'_'+r.d+': ' + dis.join(' + ') + ' - '
+          + chg.map(v=>S2.eff.toFixed(2)+' '+v).join(' - ') + ' <= 0');
+        L.push(' dur'+S2.t+'_'+y+'_'+r.d+': ' + dis.join(' + ') + ' - '
+          + cum(S2.t,y).map(v=>S2.hours+' '+v).join(' - ')
+          + ' <= ' + (S2.ex(EX)*S2.hours));
+      }
     }
     // Firm-capacity reserve margin at the annual peak. Wind and solar get no
     // capacity credit: South Africa's system peak is a winter evening, when
@@ -5892,7 +5982,14 @@ function bldBuildLP(opts){
     for (const r of rd) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[r.d*24+h]*dg);
     const firm = coalCap + EX.nuclear*0.9 + EX.hydro*0.5 + EX.imports*0.9
                + EX.ps + EX.diesel + EX.batt;
-    L.push(' res_' + y + ': ' + cum('batt',y).join(' + ') + ' + ' + cum('ccgt',y).join(' + ')
+    // Long-duration storage counts toward firm capacity at its de-rated value:
+    // a 100-hour store can be relied on through a long event in a way a 4-hour
+    // one cannot. Energy arbitrage for vrfb/ironair is not yet in this LP - see
+    // the note in BLD_COST - so this understates them rather than flattering them.
+    L.push(' res_' + y + ': ' + cum('batt',y).join(' + ')
+      + ' + ' + cum('vrfb',y).map(v => (BLD_DERATE.vrfb / BLD_DERATE.batt).toFixed(2) + ' ' + v).join(' + ')
+      + ' + ' + cum('ironair',y).map(v => (BLD_DERATE.ironair / BLD_DERATE.batt).toFixed(2) + ' ' + v).join(' + ')
+      + ' + ' + cum('ccgt',y).join(' + ')
       + ' >= ' + Math.max(0, peak*1.10 - firm).toFixed(1));
   }
 
@@ -5903,7 +6000,13 @@ function bldBuildLP(opts){
     L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
     L.push(' 0 <= gd_'+k+' <= ' + EX.diesel); L.push(' 0 <= u_'+k+' <= 100000');
     L.push(' 0 <= crt_'+k+' <= 200000');
-    L.push(' 0 <= bdis_'+k+' <= 100000'); L.push(' 0 <= bchg_'+k+' <= 100000');
+    // Every storage technology needs bounds, or its variables are unbounded and
+    // the solve fails. The real limits are the power constraints above; these are
+    // just a ceiling.
+    for (const S2 of BLD_STORE){
+      L.push(' 0 <= ' + S2.dis + '_' + k + ' <= 100000');
+      L.push(' 0 <= ' + S2.chg + '_' + k + ' <= 100000');
+    }
   }
   L.push('End');
   return { lp: L.join('\n'), rate: RATE };
@@ -6049,7 +6152,9 @@ function renderBuildResult(res, rate, opts){
   html += '<div style="color:var(--ink2);margin-top:5px;font-style:italic">'
     + 'Dispatch is approximated over 12 representative days rather than all 8,760 hours, '
     + 'so this sizes the build; use <strong>Run the full model</strong> above to test a '
-    + 'resulting mix hour by hour.</div>';
+    + 'resulting mix hour by hour.'
+    + '<div style="margin-top:5px;font-style:normal"><strong>Long-duration storage is under-valued here.</strong> The optimiser balances storage within each representative day, so a 100-hour iron-air store behaves as a 24-hour one and cannot charge ahead of a multi-day wind drought to discharge through it. The dispatch engines model that correctly across 8,760 chronological hours \u2013 so vanadium and iron-air will look worse here than they are.</div>'
+    + '</div>';
   html += '</div>';
   html += bldApplyButton();
   html += '<div id="bldStress"></div>';
@@ -6697,7 +6802,9 @@ function renderBuildRegional(res, rate, opts){
     + 'connection headroom, and real corridor transfer limits between regions.</div>'
     + '<div style="color:var(--ink2);margin-top:5px;font-style:italic">'
     + 'Dispatch is approximated over 8 representative days; use <strong>Run the full model</strong> '
-    + 'above to test a resulting mix hour by hour.</div></div>';
+    + 'above to test a resulting mix hour by hour.'
+    + '<div style="margin-top:5px;font-style:normal"><strong>Long-duration storage is under-valued here.</strong> The optimiser balances storage within each representative day, so a 100-hour iron-air store behaves as a 24-hour one and cannot charge ahead of a multi-day wind drought to discharge through it. The dispatch engines model that correctly across 8,760 chronological hours \u2013 so vanadium and iron-air will look worse here than they are.</div>'
+    + '</div></div>';
   html += bldApplyButton();
   html += '<div id="bldStress"></div>';
   host.innerHTML = txHtml + html;
@@ -9002,6 +9109,8 @@ function renderCCS(r){
           + 'R30m/MW \u2013 so a carbon capture retrofit at R38m/MW is the same order as building the station '
           + 'again. A more accurate submission would model each unit\u2019s remaining life, phasing and financing '
           + 'separately; this is a transparent approximation.</div>'
+          + '<div style="margin-top:7px;padding:7px 10px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A);font-size:10px;line-height:1.55">'
+          + '<strong>Eskom has costed this, and its number is far higher.</strong> The February 2026 Medupi benefit-cost study puts carbon capture, utilisation and storage at <strong>R1,811bn to R13,837bn</strong> for Medupi alone. Read that carefully before comparing: it is a SULPHUR DIOXIDE study \u2013 Eskom sought exemption from the SO\u2082 standards, and CCUS was assessed as one of six alternatives to flue-gas desulphurisation, costed in nominal rands over the station\u2019s life to 2071. This panel uses overnight capex in 2026 money for CO\u2082 capture, which is not the same quantity. Even so, the gap is wide enough to matter: it is the only South African utility-scale CCUS costing in the public domain, and it sits well above the figure used here. Treat this panel as the optimistic end of a very wide range.</div>'
           + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px">'
           + ci('ccsCapexRkW', 'Retrofit capital', 'R/kW', rKw, 1000)
           + ci('ccsWaccPct', 'Return (WACC)', '%', state.ccsWaccPct ?? 9, 0.5)
