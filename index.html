@@ -997,6 +997,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div class="pb" id="validationBody"></div>
 </details></div>
 
+          <div style="margin-top:18px"><details class="assump" id="externalPanel" style="margin-top:12px">
+      <summary>How the model compares to other published models</summary>
+      <div class="pb" id="externalBody"></div>
+</details></div>
+
           
 
           
@@ -6778,6 +6783,88 @@ function renderCurtailmentForecast(){
 // can be set against LCOE. The point of the panel: a payment per kW is worth far
 // more per MWh to an asset that rarely runs, which is precisely the asset the
 // energy market underpays.
+/* ==================== COMPARISON WITH OTHER PUBLISHED MODELS ==============
+ * The Eskom panel above validates against OUTTURN - what the system actually
+ * did. This does something weaker and separate: it runs the model at another
+ * study's own published assumptions and reports how close it lands.
+ *
+ * It is deliberately a bracket, not a validation, and the text says so. Nobody
+ * has run GridTwin and PLEXOS on identical inputs line by line. What it shows
+ * is that an independently built model using different data and a different
+ * solver arrives near a published result when asked the same question.
+ *
+ * Mirrors validate_external.js, which asserts the same comparison on every
+ * change - so the panel cannot drift away from the harness silently.
+ */
+function renderExternalComparison(){
+  const host = document.getElementById('externalBody');
+  if (!host || typeof simulate !== 'function') return;
+
+  // CSIR Least-cost 2030, at CSIR's OWN assumptions - Table 1 of the report:
+  // 285 TWh demand, 65% EAF, and the low end of their reported capacity range.
+  const sc = { ...state,
+    newPvMW: 15000 - 3271, newWindMW: 20000 - 4612,
+    demandGrowthPct: 30, coalEAFPct: 65 };
+  let r;
+  try { r = simulate(sc, PROFILES); } catch(e){ return; }
+  const dom_ = r.E.coal + r.E.nuclear + r.E.hydro + r.E.wind + r.E.pv + r.E.csp
+             + (r.E.hybrid || 0) + r.E.rooftop + r.E.ccgt + r.E.diesel + r.E.ps + r.E.batt;
+  const coalShare = 100 * r.E.coal / dom_;
+  const reShare = 100 * (r.E.wind + r.E.pv + r.E.csp + (r.E.hybrid || 0)
+                       + r.E.rooftop + r.E.hydro) / dom_;
+
+  const ROWS = [
+    { name: 'Coal share, 2030',  model: coalShare, pub: 55, band: 6 },
+    { name: 'Renewable share',   model: reShare,   pub: 40, band: 8 },
+  ];
+
+  const rows = ROWS.map(x => {
+    const gap = x.model - x.pub;
+    const ok = Math.abs(gap) <= x.band;
+    return '<tr style="border-bottom:1px solid var(--line2)">'
+      + '<td style="padding:4px 6px">' + x.name + '</td>'
+      + '<td class="mono" style="text-align:right;padding:4px 6px">' + x.model.toFixed(1) + '&#37;</td>'
+      + '<td class="mono" style="text-align:right;padding:4px 6px;color:var(--ink2)">' + x.pub + '&#37;</td>'
+      + '<td class="mono" style="text-align:right;padding:4px 6px;font-weight:700;color:'
+        + (ok ? 'var(--ok,#4A8C5C)' : 'var(--alert,#C4785A)') + '">'
+        + (gap >= 0 ? '+' : '') + gap.toFixed(1) + '</td>'
+      + '<td class="mono" style="text-align:right;padding:4px 6px;color:var(--ink2)">&plusmn;' + x.band + '</td></tr>';
+  }).join('');
+
+  host.innerHTML =
+      '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:8px">'
+    + 'Run against the CSIR\u2019s least-cost scenario for 2030, at the CSIR\u2019s own '
+    + 'assumptions: 285 TWh demand, 65&#37; coal fleet EAF, and 15 GW solar with 20 GW wind '
+    + 'installed \u2013 the low end of the range they report. Source: '
+    + '<em>Systems analysis to support increasingly ambitious CO\u2082 emissions scenarios in the '
+    + 'South African electricity system</em>, CSIR for Meridian Economics, July 2020, Table 1.</p>'
+    + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
+    + '<th style="text-align:left;padding:4px 6px">Metric</th>'
+    + '<th style="text-align:right;padding:4px 6px">Model</th>'
+    + '<th style="text-align:right;padding:4px 6px">Published</th>'
+    + '<th style="text-align:right;padding:4px 6px">Gap</th>'
+    + '<th style="text-align:right;padding:4px 6px">Band</th></tr>'
+    + rows + '</table>'
+    + '<div style="font-size:10.5px;color:var(--ink2);line-height:1.6;margin-top:9px;'
+      + 'padding:7px 10px;background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
+    + '<strong>This is a bracket, not a validation.</strong> Nobody has run GridTwin and PLEXOS '
+    + 'on identical inputs and compared line by line. What this shows is that an independently '
+    + 'built model, using different data and a different solver, lands close to a published study '
+    + 'when asked the same question at the same assumptions. A model falling far outside would '
+    + 'have a problem worth finding. One landing inside has not been proved right.</div>'
+    + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:7px">'
+    + 'The assumptions matter more than the model here. Coal share moves about 0.45 points per '
+    + '1&#37; of demand, so running this at today\u2019s demand rather than the CSIR\u2019s would show an '
+    + '8-point gap that says nothing about either model. The retirement schedule and technology '
+    + 'costs are not fully recoverable from what the CSIR published, which is why the bands are '
+    + '&plusmn;6 and &plusmn;8 rather than tighter.'
+    + '<div style="margin-top:5px">There is no cost comparison here. PyPSA-ZA reports a 95&#37; '
+    + 'CO\u2082 reduction costing about 20&#37; more, but it co-optimises investment and operation '
+    + '\u2013 it picks the cheapest mix. GridTwin dispatches a build you specify. Those are '
+    + 'different questions and comparing them would mislead.</div></div>';
+}
+
 function renderCapacityPayment(res){
   const host = document.getElementById('capPayBody');
   if (!host) return;
@@ -10375,7 +10462,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
@@ -11693,7 +11780,13 @@ async function _rtAutocomplete() {
         });
         return;
       }
-    } catch (e) { /* fall through to OSM */ }
+    } catch (e) {
+      console.warn('[GridTwin] Google Places autocomplete failed, using OpenStreetMap: '
+        + (e && e.message ? e.message : e));
+    }
+  } else {
+    console.info('[GridTwin] No Google key in config.js \u2013 address search is using '
+      + 'OpenStreetMap, which rarely resolves South African house numbers.');
   }
   _rtAutocompleteOSM(q);
 }
@@ -11706,10 +11799,26 @@ async function _rtAutocompleteOSM(q) {
     const url = 'https://nominatim.openstreetmap.org/search'
       + '?format=json&limit=6&countrycodes=za&addressdetails=1&q=' + encodeURIComponent(q);
     const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!r.ok){
+      console.warn('[GridTwin] Address search: OpenStreetMap returned ' + r.status
+        + (r.status === 429 ? ' (rate limited - Nominatim allows ~1 request/second)' : '')
+        + (r.status === 403 ? ' (blocked - check the referrer policy for this domain)' : ''));
+      box.style.display = '';
+      box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">'
+        + 'Address lookup unavailable right now. '
+        + '<strong>Click your building on the map below</strong>, or paste GPS coordinates.</div>';
+      return;
+    }
     const results = await r.json();
     const inp = document.getElementById('rtSearch');
     if (!inp || inp.value.trim() !== _rtLastQuery) return;   // stale response
-    if (!results || !results.length) { box.style.display = 'none'; return; }
+    if (!results || !results.length) {
+      box.style.display = '';
+      box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">'
+        + 'No match for that address. South African address data is patchy \u2013 '
+        + '<strong>click your building on the map below</strong> instead.</div>';
+      return;
+    }
     box.style.display = '';
     box.innerHTML = results.map(rr => {
       const a = rr.address || {};
@@ -11727,7 +11836,14 @@ async function _rtAutocompleteOSM(q) {
           <div style="color:var(--ink2);font-size:9.5px;margin-top:1px">${note}${sub}</div>
         </div>`;
     }).join('');
-  } catch (e) { box.style.display = 'none'; }
+  } catch (e) {
+    // Network failure, CORS block or bad JSON. Say so rather than vanishing.
+    console.warn('[GridTwin] Address search failed: ' + (e && e.message ? e.message : e));
+    box.style.display = '';
+    box.innerHTML = '<div style="padding:8px 10px;font-size:10.5px;color:var(--ink2)">'
+      + 'Address lookup unavailable. <strong>Click your building on the map below</strong>, '
+      + 'or paste GPS coordinates from Google Maps.</div>';
+  }
 }
 
 // Resolve a chosen prediction to coordinates. Places gives us a place_id rather
