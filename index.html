@@ -2058,10 +2058,9 @@ let redzData = null;
         </tbody>
       </table>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px">
-        Sized by <strong>hour-by-hour matching</strong> against the real generation profiles,
-        not annual energy – a flat 24/7 load needs far more solar than wind for the same
-        carbon-free percentage, because solar only generates in daylight. Assumes 4h battery
-        storage and the capacity factors shown above.${tech==='hybrid' ? ' Hybrid splits generation 60/40 solar:wind by energy.' :
+        Sized by <strong>hour-by-hour matching</strong> against actual generation profiles,
+        not annual energy. Assumes 4h battery storage and the capacity factors shown
+        above.${tech==='hybrid' ? ' Hybrid splits generation 60/40 solar:wind by energy.' :
         tech==='solar' ? ' Adding wind would improve hourly matching.' : ''}
         Use a dedicated tool (e.g. REopt, System Advisor Model) for project-grade sizing.
       </div>`;
@@ -3122,7 +3121,7 @@ function printPrefeas() {
 <div style="max-width:1380px;margin:0 auto;padding:0 20px">
   <div id="nav-project" style="margin:22px 0 10px;padding:9px 14px;background:var(--alert,#C4785A);border:1.5px solid var(--ink);text-align:center">
     <div style="font-family:'Saira Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:.04em;color:#fff">Project planning</div>
-    <div style="font-size:10.5px;color:rgba(255,255,255,0.88);margin-top:2px">Query any specific site rather than the whole country. (This does not depend on the system scenario above.)</div>
+    <div style="font-size:10.5px;color:rgba(255,255,255,0.88);margin-top:2px">Query any specific site rather than the whole country. Some tabs build on the system scenario above; others stand alone.</div>
   </div>
 </div>
 <div class="projwrap" style="max-width:1380px;margin:0 auto;padding:0 20px 20px">
