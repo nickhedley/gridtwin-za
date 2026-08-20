@@ -11893,7 +11893,7 @@ async function rtGeocode() {
   const coords = _rtParseCoords(q);
   if (coords) {
     resultsEl.style.display = 'none';
-    rtGoTo(coords.lat, coords.lng);
+    rtGoTo(coords.lat, coords.lng, true);   // pasted coordinates ARE house-level
     return;
   }
 
@@ -12308,10 +12308,14 @@ function rtGoTo(lat, lng, exact) {
   if (exact === true || exact === 'true') {
     _rtFetchSiteData(lat, lng, '');
   } else {
-    _rtFetchSiteData(lat, lng, '', true);   // skipRoof = true
+    // Measure the nearest building anyway. findClosest may pick a neighbour on a
+    // street-level match, so the wording says so - but refusing outright meant
+    // the roof analysis never ran for most South African addresses.
+    _rtFetchSiteData(lat, lng, '');
     const s = document.getElementById('rt_status');
-    if (s) s.innerHTML = '<strong style="color:var(--alert,#C4785A)">Street-level match only.</strong> '
-      + 'Click your building on the map below and we will measure that roof.';
+    if (s) s.innerHTML = '<strong style="color:var(--alert,#C4785A)">Street-level match.</strong> '
+      + 'We have measured the nearest building to that point \u2013 if it is not yours, '
+      + 'click the right one on the map below.';
   }
 }
 
