@@ -2831,7 +2831,7 @@ async function runPrefeas() {
         <tr><td style="padding:3px 0;color:var(--ink2)">${pfTech==='solar' ? 'Peak sun hours' : 'Equivalent full-load hours'}</td><td>${pfTech==='solar' ? (solarCF*24).toFixed(1)+' h/day average' : Math.round(cf*8760).toLocaleString()+' h/yr'}</td></tr>
         <tr><td style="padding:3px 0;color:var(--ink2)">Data source</td><td>${solarSource}</td></tr>
         <tr><td style="padding:3px 0;color:var(--ink2)">Array assumption</td><td>Fixed tilt at optimal angle, equator-facing. A real roof at a poorer pitch or azimuth typically yields 5&ndash;15% less.</td></tr>
-        ${battHours>0?`<tr><td style="padding:3px 0;color:var(--ink2)">Battery storage</td><td>${battHours}h · ${(battKwhours).toFixed(0)} kWh · charges from solar surplus</td></tr>`:''}
+        ${battHours>0?`<tr><td style="padding:3px 0;color:var(--ink2)">Battery storage</td><td>${battHours}h · ${(kwp * battHours).toFixed(0)} kWh · charges from solar surplus</td></tr>`:''}
       </table>
     </div>
 
@@ -11706,6 +11706,21 @@ function rtMapClick(e) {
     rtPolyline = L.polyline(rtPoints, { color: '#F5C518', weight: 2.5, dashArray: '5 4' }).addTo(rtMap);
   }
   rtUpdateTraceInfo();
+}
+
+function rtUpdateTraceInfo() {
+  const info = document.getElementById('rtTraceInfo');
+  if (!info) return;
+  const n = rtPoints.length;
+  if (n === 0) {
+    info.innerHTML = 'Click each corner of your roof.';
+  } else if (n < 3) {
+    info.innerHTML = '<strong>' + n + ' corner' + (n > 1 ? 's' : '') + '</strong> marked. '
+      + 'Keep going \u2013 a roof needs at least three.';
+  } else {
+    info.innerHTML = '<strong>' + n + ' corners</strong> marked. '
+      + 'Click the <strong>first point</strong> again to close the shape, or press Enter.';
+  }
 }
 
 function rtUndoPoint() {
