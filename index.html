@@ -2324,6 +2324,13 @@ let redzData = null;
       renderGrid(lat, lng);
       renderCapture(region, solar.annualCF, windCF);
       runDC();
+      // Mirror the clicked region into the wheeling tab, so the generation end
+      // follows the map instead of keeping a stale selection.
+      const wg = document.getElementById('wheelGenRegion');
+      if (wg && [...wg.options].some(o => o.value === region)){
+        wg.value = region;
+        if (typeof calcWheeling === 'function') calcWheeling();
+      }
     } catch(err) {
       panel.innerHTML = `<p style="color:var(--alert);font-size:11px">Error: ${err.message}<br>
         <span style="color:var(--ink2)">Open-Meteo may be temporarily unavailable. Try again shortly.</span></p>`;
@@ -3093,7 +3100,7 @@ function printPrefeas() {
       <div style="margin-top:10px;font-size:10.5px;font-weight:600">Municipal framework at the consumption end</div>
       <div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:2px">
         No metro publishes a flat wheeling rate, because none charges one. The off-taker is
-        billed on their normal time-of-use tariff for <em>all</em> energy consumed, then credited
+        billed on their normal time-of-use tariff for all energy consumed, then credited
         for the wheeled portion. Your wheeling cost is the gap between those two, so it depends
         on tariff category, time of use, season and connection voltage – which is why the number
         above stops at the transmission boundary.
