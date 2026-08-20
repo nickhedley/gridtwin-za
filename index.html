@@ -2578,45 +2578,37 @@ let redzData = null;
   // straight to a tool rather than to the top of the page. Runs on load and on
   // hash change, so a link clicked while already here still works.
   function openTabFromHash(){
+    // Accept either ?tab=rooftop (preferred - lets the URL carry a real anchor
+    // too) or the older #rooftop form, which is already out in shared links.
+    const q = new URLSearchParams(location.search).get('tab');
     const h = (location.hash || '').replace('#','');
     // 'datacenter' is the actual tab id; 'datacentre' accepted so a British
     // spelling in a shared link still works.
     const ALIAS = { datacentre: 'datacenter' };
-    const key = ALIAS[h] || h;
+    const raw = q || h;
+    const key = ALIAS[raw] || raw;
     const VALID = ['solar','datacenter','capture','grid','wheeling','prefeas','rooftop'];
     if (!VALID.includes(key)) return;
     try { switchTab(key); } catch(e){ return; }
-    const sec = document.getElementById('resourceSection');
-    if (!sec) return;
-    // Scroll manually and correct as the page settles. A single scrollIntoView
-    // fires while charts are still drawing, so the target moves out from under
-    // it and the reader ends up back at the top of the page.
-    const NAVBAR = 60;
-    // offsetTop walked up the offset parents gives the ABSOLUTE document
-    // position. getBoundingClientRect() is viewport-relative and therefore
-    // depends on both the current scroll position and on layout having settled,
-    // which is what made this land at the top of the page.
-    const absTop = (el) => {
-      let y = 0, n = el;
-      while (n) { y += n.offsetTop || 0; n = n.offsetParent; }
-      return y;
-    };
-    let tries = 0;
-    const goTo = () => {
-      const y = absTop(sec) - NAVBAR;
-      // A zero position means the element has not been laid out yet. Scrolling
-      // to 0 would BE the bug, so wait and try again instead.
-      if (y <= 0 && tries < 12) { tries++; setTimeout(goTo, 250); return; }
-      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-    };
-    goTo();
-    setTimeout(goTo, 600);
-    setTimeout(goTo, 1600);
+
+    // Hand the scrolling to the BROWSER rather than computing it. Three attempts
+    // at timing this in JavaScript all landed at the top of the page: the
+    // section's position is not stable while charts are still drawing, so any
+    // figure read early is wrong and any figure read late is read after the
+    // reader has given up. Native anchor navigation happens after layout, and
+    // #nav-project already sits just above the resource section and already
+    // carries scroll-margin-top for the sticky bar.
+    const anchor = document.getElementById('nav-project');
+    if (!anchor) return;
+    const jump = () => { location.hash = 'nav-project'; };
+    jump();
+    // Once more after the heavy panels settle, since the page grows underneath.
+    setTimeout(jump, 1500);
   }
   window.addEventListener('hashchange', openTabFromHash);
-  // 400ms was too early: the tabs had not always rendered and the page was still
-  // growing. 1200ms clears the initial data load on a cold visit.
-  setTimeout(openTabFromHash, 1200);
+  // Runs once the tabs exist. The scroll itself is the browser's job now, so
+  // this only needs to be late enough for switchTab to be defined.
+  setTimeout(openTabFromHash, 900);
   window.mainGeocode = mainGeocode;
   window.mainGoTo = mainGoTo;
   window.fetchSolar = fetchSolar;
