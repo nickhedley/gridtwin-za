@@ -386,16 +386,19 @@ function hexToRgb(hex) {
 function buildLayers(subs) {
   const layers = [];
 
-  // 1. Terrain — uses MapTiler terrain tiles (free, no token for basic use)
+  // 1. Terrain — AWS Terrain Tiles (Registry of Open Data). No key, no account.
+  //    Terrarium encoding, which is what elevationDecoder below already expects.
+  //    Replaces MapLibre's demo endpoint, which 404s for every tile over
+  //    South Africa. Open data with no SLA, so terrain stays a toggle, not a
+  //    default – the map must not depend on it to be useful.
   if(showTerrain) {
     layers.push(new deck.TerrainLayer({
       id: 'terrain',
-      minZoom: 0, maxZoom: 14,
-      elevationDecoder: { rScaler: 256*256, gScaler: 256, bScaler: 1, offset: -32768 },
-      elevationData: 'https://demotiles.maplibre.org/terrain-tiles/{z}/{x}/{y}.png',
+      minZoom: 0, maxZoom: 12,
+      elevationDecoder: { rScaler: 256, gScaler: 1, bScaler: 1/256, offset: -32768 },
+      elevationData: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
       texture: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-      elevationScale: 60,
-      bounds: [16, -35, 33, -22],
+      elevationScale: 1.5,
     }));
   }
 
