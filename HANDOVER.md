@@ -1,3 +1,86 @@
+## SCOPE-LEAK BUG IN THE SITE RESOURCE QUERY - FIXED (20 Aug 2026)
+
+Reported by the user: clicking the map in the site resource query returned
+"Error: battEffMix is not defined / Open-Meteo may be temporarily unavailable."
+
+NOT a network problem. battEffMix is a const declared inside simulate(). It was
+referenced from hourlyMatch(), nested in initResourceQuery(), which sits roughly
+156,000 characters EARLIER in the file - a different scope entirely, so the name
+could never resolve. The caller's catch block then blamed Open-Meteo, which made
+a hard code fault look transient.
+
+FIX: hourlyMatch sizes a 24/7-matched build with a 4-hour battery
+(battPower = battEnergyMWh / 4), so it is lithium. It now reads the lithium round
+trip directly - FIXED.battEff ?? 0.88 - rather than a blended figure that has no
+meaning in that function. Checked the same function for other simulate-locals:
+battPower is properly declared there, so battEffMix was the only leak.
+
+WHY NOTHING CAUGHT IT. The engine harnesses never call the resource query, and
+the structural audit checks DECLARATIONS, not uses.
+
+ATTEMPTED A STRUCTURAL CHECK AND REVERTED IT. Three iterations of a regex to
+find simulate()-local names used outside simulate() all failed: the first flagged
+names legitimately declared in other functions, the second flagged result-object
+properties (r.tierDis), the third flagged mentions inside comments, and the final
+version STILL did not catch battEffMix when reintroduced - the "declared outside"
+pattern matched `battEffMix)` as though the closing paren made it a parameter.
+A check that both false-positives and misses the real bug is worse than none.
+
+THE RIGHT TOOL IS A LINTER, not a regex. eslint's no-undef would catch this class
+outright. Worth doing if this recurs; noted rather than half-built.
+
+## BATTERY REVENUE SPLIT PANEL (20 Aug 2026)
+
+New panel showing what share of a four-hour battery's income comes from each of
+the three streams every BESS benchmark reports. Requested after reviewing how
+Modo Energy and others present it.
+
+THE INDUSTRY CONVENTION, confirmed across Modo's ME BESS indices for GB, ERCOT,
+Germany and PJM - all report the same three, and call the combination
+"revenue stacking":
+
+    ENERGY ARBITRAGE     charge cheap, discharge dear
+    ANCILLARY SERVICES   paid for capacity HELD, not energy delivered
+    CAPACITY PAYMENTS    paid for being available, whether or not it runs
+
+WHY THE SPLIT IS THE NUMBER PEOPLE WATCH: ancillary markets are small and
+SATURATE as fleets grow, pushing revenue into arbitrage. Published figures used
+in the panel note:
+    ERCOT   84% ancillary in 2023 -> 35% by 2025, fleet grew ~7x (2.0 -> 14.4 GW)
+    Germany 55% ancillary in 2026, forecast 95% wholesale by 2030
+    GB      wholesale + Balancing Mechanism ~60% of the stack
+
+SOUTH AFRICA SITS BEFORE THE START OF THAT CURVE - further back than any of
+them, because it has NEITHER market. Both sliders default to zero, so the split
+reads 100% arbitrage until they are turned on. The panel says so explicitly
+rather than showing two empty rows without explanation.
+
+RESULTS, 4h battery on the Future mix with 20 GW of new battery (R k/MW/yr):
+
+    scenario                     arb    anc    cap   total   A/N/C %
+    today, no markets            1352      0      0    1352   100/0/0
+    + capacity R300/kW/yr        1352      0     75    1427    95/0/5
+    + reserve R200 (15% held)    1882    263      0    2144    88/12/0
+    + reserve R200 (35% held)    3444    613      0    4058    85/15/0
+    all three on                 1882    338     75    2294    82/15/3
+
+EXCLUSIVITY IS ENFORCED, and this needed a second pass. The first version
+reported the FULL arbitrage benchmark alongside reserve revenue on the same MW -
+exactly the double-count the benchmark panel already warns about as "the classic
+error in battery business cases". Arbitrage is now scaled by (1 - held share),
+matching the Grid Code rule the dispatch engine enforces.
+
+Note the counterintuitive but correct result: raising the held share RAISES
+arbitrage revenue per remaining MW. Holding storage back leaves prices less
+smoothed, so the spread widens for whatever is still trading.
+
+De-rating for the capacity stream matches the capacity payment panel - a 4-hour
+battery credited at 25% of nameplate. Inertia counts a battery at half its
+power, matching inertiaCapableMW in the engine.
+
+290/290 - 46/46 - 138/138 - 14/14 - 18/18 - 9/9 - 77/77 - 40/40 - 16/16 -
+33/33 - 29/29.
+
 ## NAV LINKS WERE JUMPING TO THE WRONG PLACE - FIXED (19 Aug 2026)
 
 Reported by the user after the panel reorder: clicking Network landed somewhere
