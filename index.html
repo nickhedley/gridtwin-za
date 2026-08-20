@@ -855,6 +855,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Battery revenue split</h2><span class="tag">lithium-ion 4h &middot; arbitrage vs ancillary vs capacity</span></div>
+            <div class="pb" id="bessStackBody"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Where a battery earns most</h2><span class="tag">lithium-ion 4h &middot; nodal &middot; needs full model run</span></div>
             <div class="pb" id="bessLocBody"></div>
           </div>
@@ -7825,6 +7830,128 @@ function bessBenchmark(price, hours, eff){
   return { revPerMW: rev, cycles, mwh, avgSpread: days ? spreadSum/days : 0 };
 }
 
+/* ==================== BATTERY REVENUE STACK ===============================
+ * Share of revenue by stream, following the convention every BESS benchmark
+ * uses - Modo's ME BESS indices, ERCOT, Germany, GB all report the same three:
+ *
+ *   ENERGY ARBITRAGE     charge cheap, discharge dear
+ *   ANCILLARY SERVICES   paid for capacity HELD, not energy delivered
+ *   CAPACITY PAYMENTS    paid for being available, whether or not it runs
+ *
+ * "Revenue stacking" is the term of art, and the share between the three is
+ * the number developers and lenders actually look at.
+ *
+ * The reason it matters is a pattern visible in every market that has been
+ * through it: ancillary markets are SMALL and SATURATE as fleets grow, pushing
+ * revenue into arbitrage. ERCOT went from 84% ancillary in 2023 to 35% by 2025
+ * as its fleet grew sevenfold; Germany sits at 55% ancillary in 2026 and is
+ * forecast to reach 95% wholesale by 2030.
+ *
+ * SOUTH AFRICA IS AT THE START OF THAT CURVE - and further back than any of
+ * them, because it has neither market. Both sliders default to zero, so the
+ * split reads 100% arbitrage until they are turned on. That is not a gap in
+ * the model; it is the finding.
+ */
+function bessRevenueStack(r, hours){
+  hours = hours || 4;
+  const _resR  = Math.max(0, state.asReserveRMWh || 0);
+  const _held  = _resR > 0 ? Math.min(0.5, Math.max(0, state.asReserveShare ?? 0.15)) : 0;
+  const arb = bessBenchmark(r.marginalP, hours).revPerMW * (1 - _held);   // R/MW/yr
+
+  // Capacity payment per MW of battery, on the same de-rating the capacity
+  // panel uses - a 4-hour battery is credited at 25% of nameplate.
+  const pay = Math.max(0, state.capacityPaymentRkWyr || 0);
+  const cap = pay * 1000 * (FIXED.derateBattLi ?? 0.25);    // R/MW/yr
+
+  // Ancillary: reserve is paid on capacity HELD, so it accrues per MW of the
+  // share held back, every hour of the year. Inertia is paid per kW of
+  // capability; a battery counts at half, matching the engine's inertiaCapableMW.
+  const reserve = _resR * _held * 8760;                      // R/MW/yr
+  const inertia = Math.max(0, state.asInertiaRkWyr || 0) * 1000 * 0.5;
+  const anc = reserve + inertia;
+
+  const tot = arb + anc + cap;
+  return { arb, anc, cap, tot, hours,
+           pct: t => tot > 0 ? 100 * t / tot : 0 };
+}
+
+function renderBessStack(r){
+  const host = document.getElementById('bessStackBody');
+  if (!host || !r || !r.marginalP) return;
+  const st = bessRevenueStack(r, 4);
+  const R = v => 'R' + Math.round(v/1000).toLocaleString() + 'k';
+
+  if (st.tot < 1000){
+    host.innerHTML = '<div style="font-size:10.5px;color:var(--ink2);line-height:1.6">'
+      + 'No revenue in any stream under this scenario. Coal sets the price in nearly every hour, so '
+      + 'there is no spread to arbitrage, and neither a capacity payment nor a reserve price is set.</div>';
+    return;
+  }
+
+  const STREAMS = [
+    { k:'Energy arbitrage',   v: st.arb, c:'#F5C518',
+      note:'Charging cheap and discharging dear, against this scenario\u2019s own prices.' },
+    { k:'Ancillary services', v: st.anc, c:'var(--veld,#4A6B7A)',
+      note:'Paid for capacity held in reserve, plus inertia. Set by the two sliders in System operation.' },
+    { k:'Capacity payments',  v: st.cap, c:'var(--alert,#C4785A)',
+      note:'Paid for being available, de-rated to 25&#37; for a 4-hour battery.' },
+  ];
+
+  const bar = STREAMS.filter(x => x.v > 0).map(x =>
+      '<span style="display:block;float:left;height:100%;width:' + st.pct(x.v).toFixed(1) + '%;'
+      + 'background:' + x.c + '"></span>').join('');
+
+  const rows = STREAMS.map(x =>
+      '<tr style="border-bottom:1px solid var(--line2)">'
+    + '<td style="padding:4px 5px"><span style="display:inline-block;width:9px;height:9px;'
+      + 'background:' + x.c + ';margin-right:6px;vertical-align:middle"></span>' + x.k + '</td>'
+    + '<td class="mono" style="text-align:right;padding:4px 5px">' + R(x.v) + '/MW/yr</td>'
+    + '<td class="mono" style="text-align:right;padding:4px 5px;font-weight:700">'
+      + st.pct(x.v).toFixed(0) + '&#37;</td></tr>').join('');
+
+  const zero = STREAMS.filter(x => x.v <= 0).map(x => x.k.toLowerCase());
+
+  host.innerHTML =
+      '<div style="font-size:10.5px;color:var(--ink2);line-height:1.6;margin-bottom:8px">'
+    + 'How a four-hour battery\u2019s income splits across the three streams every BESS benchmark '
+    + 'reports. Revenue stacking is what makes a project financeable \u2013 no single stream usually '
+    + 'covers the capex on its own.</div>'
+    + '<div style="height:14px;width:100%;background:var(--line2);overflow:hidden;margin-bottom:9px">'
+      + bar + '</div>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:11px">'
+    + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2);font-size:10px">'
+    + '<th style="text-align:left;padding:3px 5px">Stream</th>'
+    + '<th style="text-align:right;padding:3px 5px">Revenue</th>'
+    + '<th style="text-align:right;padding:3px 5px">Share</th></tr>'
+    + rows
+    + '<tr><td style="padding:5px;font-weight:700">Total</td>'
+    + '<td class="mono" style="text-align:right;padding:5px;font-weight:700">' + R(st.tot) + '/MW/yr</td>'
+    + '<td class="mono" style="text-align:right;padding:5px;font-weight:700">100&#37;</td></tr>'
+    + '</table>'
+    + (zero.length
+        ? '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:8px;padding:6px 9px;'
+          + 'background:var(--panel2);border-left:3px solid var(--alert,#C4785A)">'
+          + '<strong>South Africa has no ' + zero.join(' or ') + ' market</strong>, so '
+          + (zero.length > 1 ? 'those streams earn' : 'that stream earns') + ' nothing here. '
+          + 'Set a capacity payment or a reserve price in the control panel to see what they would be '
+          + 'worth. Every market that has built a battery fleet pays at least two of these three.</div>'
+        : '')
+    + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:7px">'
+    + 'Ancillary markets are small and saturate as fleets grow, which pushes revenue toward '
+    + 'arbitrage over time. Every market that has built a fleet has followed the same path: '
+    + 'ancillary-dominated, then saturation, then arbitrage-led. '
+    + '<strong>ERCOT</strong> batteries earned 76&#37; of revenue from energy arbitrage in June '
+    + '2025, up from 25&#37; a year earlier. <strong>Great Britain</strong> took 87&#37; from '
+    + 'frequency response across 2020\u201322 and now takes about a third; a two-hour GB battery '
+    + 'averaged \u00a373,000/MW/yr in the year to April 2026, roughly 60&#37; of it wholesale and '
+    + 'balancing. '
+    + 'The third stream matters where it exists: <strong>Ireland</strong>\u2019s T-4 capacity '
+    + 'auction cleared near \u20ac150,000/MW for 2028/29, and a <strong>CAISO</strong> battery '
+    + 'holding a resource-adequacy contract earned over four times a merchant-only one. '
+    + 'South Africa sits before the start of that curve, with neither market open. '
+    + 'Comparators from Modo Energy\u2019s published benchmarks.</div>';
+}
+
 function renderBess(r){
   const host = document.getElementById('bessBody');
   if (!host || !r || !r.marginalP) return;
@@ -10233,7 +10360,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
