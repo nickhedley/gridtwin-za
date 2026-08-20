@@ -394,10 +394,10 @@ function buildLayers(subs) {
   if(showTerrain) {
     layers.push(new deck.TerrainLayer({
       id: 'terrain',
-      minZoom: 0, maxZoom: 12,
+      minZoom: 0, maxZoom: 14,
       elevationDecoder: { rScaler: 256, gScaler: 1, bScaler: 1/256, offset: -32768 },
       elevationData: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
-      texture: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+      texture: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
       elevationScale: 1.5,
     }));
   }
