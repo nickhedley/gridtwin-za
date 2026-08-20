@@ -699,7 +699,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div id="nav-cappay" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capacity payment</h2>
+            <div class="ph"><h2>Capacity payments</h2>
               <span class="tag">what firm capacity earns for existing</span></div>
             <div class="pb" id="capPayBody"></div>
           </div>
@@ -6804,9 +6804,7 @@ function renderCapacityPayment(res){
     + (pay === 0
         ? 'No capacity payment is set, so nothing here earns anything for being available. '
         : 'At R' + pay + '/kW/yr, paid on de-rated MW. ')
-    + 'The last column is what that payment is worth per MWh actually delivered \u2013 set it against the '
-    + 'levelised cost above. A payment per kW is worth far more per MWh to an asset that rarely runs, '
-    + 'which is exactly the asset an energy-only market underpays.</p>'
+    + 'The last column is what that payment is worth per MWh actually delivered.</p>'
     + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
     + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
     + '<th style="text-align:left;padding:3px 5px">Technology</th>'
@@ -6819,14 +6817,10 @@ function renderCapacityPayment(res){
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:7px">'
     + 'De-rating follows Ireland\u2019s all-island market, which pays on de-rated MW using factors set '
     + 'from availability, unit size and energy limits. A 4-hour battery is credited at 25&#37; because '
-    + 'it cannot sustain output through a long evening event; a 100-hour store at 90&#37; because it '
-    + 'can. Factors here are indicative and would come from NTCSA. '
-    + 'A capacity payment is a TRANSFER from consumers to generators, not a resource cost, so it does '
-    + 'not change the system cost above \u2013 it changes who pays, and therefore what gets built. '
-    + '\u003cb\u003ePaid, never runs\u003c/b\u003e is a result, not an error: an asset can collect a '
-    + 'capacity payment across a whole year and deliver no energy at all, because the system never '
-    + 'reaches the conditions it exists for. That is the central policy risk of any capacity '
-    + 'mechanism, and it is what the de-rating factor is trying to price.</div>';
+    + 'it cannot sustain output through a long evening event; a 100-hour storage unit is credited at '
+    + '90&#37;. Factors here are indicative and would ultimately be set by NTCSA. '
+    + 'A capacity payment is a transfer from consumers to generators, not a resource cost, so it does '
+    + 'not change the system cost above.</div>';
 }
 
 function renderRegionalCapture(res){
@@ -7852,15 +7846,13 @@ function renderBess(r){
 
   host.innerHTML =
       '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-bottom:7px">Four-hour lithium-ion only, as the dominant technology and the one that arbitrages a daily price spread. Pumped storage, vanadium flow and iron-air have different durations and cycling patterns \u2013 iron-air in particular charges on surplus across days rather than within one \u2013 so this benchmark does not describe them.</div>' + '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
-    + 'What a battery would have earned arbitraging this scenario\u2019s prices, per MW of power '
-    + 'capacity. <strong>Arbitrage only</strong> \u2013 South Africa has no ancillary services or '
-    + 'capacity market with published prices, so the streams worth roughly 40% of a battery\u2019s '
-    + 'income in some other markets do not exist here yet.'
+    + 'The results below show what a battery would have earned arbitraging this scenario\u2019s prices, '
+    + 'per MW of power capacity. <strong>Shows arbitrage only</strong> \u2013 South Africa has no '
+    + 'ancillary services or capacity market with published prices, so the streams worth roughly 40% '
+    + 'of a battery\u2019s income in some other markets do not exist here yet.'
     + (spread < 60
         ? ' <strong>This scenario shows almost nothing to arbitrage:</strong> coal sets the price in '
-          + 'nearly every hour, so the shadow price barely moves and a battery has no spread to trade. '
-          + 'That is a real result for a coal-dominated system, not a modelling failure \u2013 add wind '
-          + 'and solar (try 20 GW PV and 15 GW wind) and the spread, and this number, open up.'
+          + 'nearly every hour, so the shadow price barely moves and a battery has no spread to trade.'
         : '')
     + '</div>'
     + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
@@ -7911,8 +7903,7 @@ function renderBess(r){
     + 'revenue beside it.'
     + '<br><br>SAWEM, South Africa\u2019s first wholesale '
     + 'market, is due to open in Q3 2026. Until it does there are no published prices to benchmark, so '
-    + 'this shows what a battery would have earned had the market existed. Once SAWEM prices '
-    + 'publish, this becomes testable against them.'
+    + 'this shows what a battery would have earned had the market existed.'
     + '<br><br>Under Phase 1 of SAWEM, market participation is deliberately limited \u2013 mostly '
     + 'Eskom generators at first \u2013 so day-ahead liquidity will be thin. Grid-charging then '
     + 're-exporting also attracts network charges at both ends. So for the time being, direct '
