@@ -676,6 +676,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                   six network solves &middot; <strong>takes several minutes</strong> &middot;
                   the only curtailment figure here that includes corridor congestion</span>
               </div>
+              <div id="curtAuditProgress" style="display:none;margin:10px 0 4px">
+                <div style="background:var(--bg2,#eee);height:6px;border-radius:3px;overflow:hidden">
+                  <div id="curtAuditBar" style="width:0%;height:100%;background:var(--alert,#C4785A);transition:width .25s"></div>
+                </div>
+                <div id="curtAuditStatus" style="font-size:10.5px;color:var(--ink2);margin-top:5px;font-family:'IBM Plex Mono',monospace"></div>
+              </div>
               <div id="curtAuditBody"></div>
               <div id="curtForecastBody"><div class="muted" style="font-size:11px">
                 Press <strong>Run forecast</strong> to project curtailment against build-out.</div></div>
@@ -6748,10 +6754,10 @@ function renderCurtailmentForecast(){
 
     host.innerHTML =
         '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:6px">'
-      + 'A project reaching commercial operation in 2029 does not face today\u2019s system \u2013 it faces '
-      + 'one with whatever cleared the queue first. This runs the dispatch engine at a ladder of '
-      + 'national build levels on top of the current scenario, split 55:45 solar to wind, and shows '
-      + 'the share of each region\u2019s output that would be curtailed. Columns are GW of extra VRE.</p>'
+      + 'The table below shows the results of a dispatch engine run at a ladder of national build levels '
+      + 'on top of the current scenario, split 55:45 solar to wind. It shows the share of each '
+      + 'region\u2019s output that would be curtailed under different new-build levels. Columns are GW '
+      + 'of extra VRE.</p>'
       + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">' + head + body + '</table>'
       + '<div style="font-size:10.5px;line-height:1.6;margin-top:9px;padding:7px 10px;'
       + 'background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
@@ -12524,6 +12530,8 @@ function abortCurtailmentAudit(reason){
   }
   curtAuditRunning = false;
   const btn = document.getElementById('curtAuditBtn'); if (btn) btn.disabled = false;
+  const pr = document.getElementById('curtAuditProgress'); if (pr) pr.style.display = 'none';
+  window.__curtAuditProg = null; window.__curtAuditLevel = null;
   const host = document.getElementById('curtAuditBody');
   if (host && reason){
     host.innerHTML = '<div style="font-size:11px;line-height:1.6;padding:7px 10px;'
@@ -12544,6 +12552,27 @@ function runCurtailmentAudit(){
   const btn  = document.getElementById('curtAuditBtn');
   if (btn) btn.disabled = true;
 
+  const prog = document.getElementById('curtAuditProgress');
+  const bar  = document.getElementById('curtAuditBar');
+  const stat = document.getElementById('curtAuditStatus');
+  if (prog) prog.style.display = '';
+  if (host) host.innerHTML = '';
+  const t0 = Date.now();
+  // Progress across the WHOLE audit, not just the current solve. Each level
+  // contributes an equal share, and the inner solve's own progress fills that
+  // share - so the bar advances continuously rather than sitting still for a
+  // minute at a time and looking hung.
+  const setProg = (i, innerFrac) => {
+    const frac = (i + Math.max(0, Math.min(1, innerFrac || 0))) / LEVELS.length;
+    if (bar) bar.style.width = (100 * frac).toFixed(1) + '%';
+    const el = (Date.now() - t0) / 1000;
+    const eta = frac > 0.02 ? (el / frac) - el : null;
+    if (stat) stat.textContent = 'Level ' + (i + 1) + ' of ' + LEVELS.length
+      + '  \u00b7  +' + (LEVELS[Math.min(i, LEVELS.length-1)]/1000) + ' GW extra VRE'
+      + '  \u00b7  ' + el.toFixed(0) + 's elapsed'
+      + (eta !== null ? '  \u00b7  ~' + eta.toFixed(0) + 's remaining' : '');
+  };
+  window.__curtAuditProg = setProg;   // the MIP progress handler feeds this
   const paint = (msg) => { if (host) host.innerHTML =
       '<div style="font-size:11px;line-height:1.6">' + msg + '</div>'; };
 
@@ -12552,6 +12581,8 @@ function runCurtailmentAudit(){
       curtAuditRestore = null;                       // completed; nothing to abort
       state.newPvMW = saved.pv; state.newWindMW = saved.wind;
       curtAuditRunning = false; if (btn) btn.disabled = false;
+      if (prog) prog.style.display = 'none';
+      window.__curtAuditProg = null; window.__curtAuditLevel = null;
       renderCurtailmentAudit();
       if (typeof run === 'function') run();
       return;
@@ -12559,9 +12590,8 @@ function runCurtailmentAudit(){
     const extra = LEVELS[i];
     state.newPvMW   = (saved.pv   || 0) + extra * 0.55;
     state.newWindMW = (saved.wind || 0) + extra * 0.45;
-    paint('Solving level ' + (i+1) + ' of ' + LEVELS.length
-      + ' &mdash; +' + (extra/1000) + '&nbsp;GW of extra VRE. '
-      + '<span style="color:var(--ink2)">Each level is a full network solve; this takes a few minutes.</span>');
+    window.__curtAuditLevel = i;
+    setProg(i, 0);
     // Reuse the existing MIP path, then read what it produced.
     runMIPForAudit(() => {
       const r = (typeof mipActiveRes !== 'undefined' && mipActiveRes) ? mipActiveRes : null;
@@ -12607,12 +12637,11 @@ function renderCurtailmentAudit(){
     + '<th style="text-align:right;padding:3px 5px">difference</th></tr>'
     + rows + '</table>'
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
-    + 'TWh of renewable output curtailed. <strong>National only</strong> is the single-node view shown '
-    + 'in the forecast above \u2013 it sees oversupply but no congestion. <strong>With network</strong> '
-    + 'is the full 10-region solve with real corridor transfer limits. The difference is what the grid '
-    + 'itself costs a project, and it is the number a developer is actually exposed to. '
-    + 'Solved over 52 representative days rather than 8,760 hours, so treat the last decimal as '
-    + 'indicative.</div>';
+    + 'Shows TWh of renewable output curtailed. <strong>National only</strong> is the single-node view '
+    + 'shown in the forecast above \u2013 it sees oversupply but no congestion. <strong>With network'
+    + '</strong> is the full 10-region solve with real corridor transfer limits. The difference is '
+    + 'what the grid itself costs a project. Solved over 52 representative days rather than '
+    + '8,760 hours.</div>';
 }
 
 function runMIP(mode) {
@@ -12663,12 +12692,22 @@ function runMIP(mode) {
       } else if (m.type === 'progress') {
         const pct = 100 * m.done / m.total;
         document.getElementById('mipBar').style.width = pct.toFixed(1) + '%';
+        // Mirror into the curtailment audit bar so it advances smoothly through each
+        // solve rather than stepping once per level and looking hung in between.
+        if (curtAuditRunning && typeof window.__curtAuditProg === 'function'
+            && window.__curtAuditLevel !== null && window.__curtAuditLevel !== undefined) {
+          window.__curtAuditProg(window.__curtAuditLevel, m.done / Math.max(1, m.total));
+        }
         const rate = m.done / Math.max(0.1, m.elapsed);
         const eta = (m.total - m.done) / Math.max(0.01, rate);
         document.getElementById('mipStatus').textContent =
           'Day ' + m.done + ' of ' + m.total + '  ·  ' + m.elapsed.toFixed(0) + 's elapsed  ·  ~' + eta.toFixed(0) + 's remaining';
       } else if (m.type === 'done') {
-        applyMIPResult(m, mode);
+        // During a curtailment audit, collect the numbers WITHOUT repainting the
+        // main panels - otherwise six intermediate scenarios flash past and the
+        // dispatch chart tears. mipActiveRes is still set, which is all the audit reads.
+        if (curtAuditRunning) { applyMIPResult(m, mode, true); }
+        else { applyMIPResult(m, mode); }
         finishMIP();
         // Lets the curtailment audit await this solve before starting the next.
         if (typeof window.__mipDoneHook === 'function') window.__mipDoneHook();
@@ -12717,7 +12756,7 @@ function finishMIP() {
 }
 
 // ── Apply the optimal network-aware solution back into the model ────────────
-function applyMIPResult(m, mode) {
+function applyMIPResult(m, mode, quiet) {
   if (!lastRes) return;
   const p = { ...FIXED, ...state };
   const coal = m.coalProfile, chg = m.chgProfile, dis = m.disProfile, uns = m.unservProfile;
@@ -12829,14 +12868,16 @@ function applyMIPResult(m, mode) {
                    heurUnservedGWh: (lastRes.shedMWh||0)/1e3,
                    congested };
 
-  render(mipRes);
-  draw(mipRes);
-  showMIPBanner();
-  renderMIPSummary();
-  if (window.applyCorridorFlowsToMap) {
+  if (!quiet) {
+    render(mipRes);
+    draw(mipRes);
+    showMIPBanner();
+    renderMIPSummary();
+  }
+  if (!quiet && window.applyCorridorFlowsToMap) {
     window.applyCorridorFlowsToMap(m.corridorFlow, m.corridorHrsAtLimit, mipInputs.corridors, mipInputs.regions, m.daysCount);
   }
-  if (window.applyCurtailmentToMap && curt && nRegions > 0) {
+  if (!quiet && window.applyCurtailmentToMap && curt && nRegions > 0) {
     // Annual curtailment per region (MWh), scaled the same way every other MIP
     // profile is - representative-day mode already forward-filled curt above, so
     // this is a straight sum over the full 8760-hour year, not an extra scale factor.
