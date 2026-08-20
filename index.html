@@ -3891,16 +3891,26 @@ const FIXED = {
   // default, so moving any CCS slider to zero changed nothing at all. Same
   // class of bug as the coalEAFPct one found on 15 Aug.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
-  // ccsTsR IS THE WEAK ASSUMPTION HERE. At ~0.9 tCO2 captured per MWh, R120/MWh
-  // is about R133/tCO2, roughly $8/t - a short-pipeline, good-geology figure.
-  // South Africa is neither. The Council for Geoscience atlas puts 98% of the
-  // country's ~150 Gt theoretical storage OFFSHORE, while the coal fleet sits
-  // inland in Mpumalanga and Limpopo. The nearest sink is roughly 400 km away
-  // (onshore Zululand), and that basin is excluded outright in the conservative
-  // storage scenario for low compressibility and over-pressurisation risk.
-  // A 400-600 km pipeline to offshore injection is a different cost class.
-  // TREAT R120/MWh AS OPTIMISTIC until it is properly sourced.
-  ccsOpexR:180, ccsCapexR:260, ccsTsR:120,
+  // ccsTsR SOURCED AND CORRECTED 20 Aug 2026. It was R120/MWh, unsourced, and
+  // roughly FIVE TIMES below the lowest published figure anywhere:
+  //   Northern Lights (ship + offshore injection)  EUR 30-55/tCO2
+  //   CATF EU study, pipelines allowed, median     EUR 38/t
+  //   CATF EU study, no pipelines, median          EUR 106/t (range 34-209)
+  // At ~0.9 tCO2 captured per MWh and R20/EUR, even EUR30/t is R540/MWh.
+  // R120/MWh implied EUR6.7/t, which no project anywhere has achieved.
+  //
+  // South Africa is HARDER than any of those comparators. The Council for
+  // Geoscience atlas puts 98% of storage offshore; the coal fleet is 400+ km
+  // inland in Mpumalanga and Limpopo; and the one near-ish onshore basin
+  // (Zululand) is excluded in the conservative storage scenario for low
+  // compressibility and over-pressurisation risk. Northern Lights has short
+  // North Sea distances and existing offshore infrastructure. We have neither.
+  //
+  // R900/MWh = EUR50/t, the upper half of the Northern Lights band, as a
+  // first-of-a-kind figure for a long inland pipeline to offshore injection.
+  // Still arguably optimistic. THIS IS NOW THE DOMINANT CCS COST, which is
+  // the honest result for South African geology.
+  ccsOpexR:180, ccsCapexR:260, ccsTsR:900,
   // Tariff side: retrofit capital, allowed return and asset life.
   //
   // ccsCapexRkW SOURCED 20 Aug 2026. Two independent routes converge:
