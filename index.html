@@ -6740,17 +6740,6 @@ function renderCurtailmentForecast(){
     const body = REG.map(g => '<tr><td style="padding:3px 4px">' + g + '</td>'
       + rows.map(r => cell(r.regions[g].curt)).join('') + '</tr>').join('');
 
-    // Where does curtailment first pass a quarter of output? That is the knee,
-    // and it is the number a developer needs against their COD date.
-    const knee = REG.map(g => {
-      const hit = rows.find(r => r.regions[g].curt >= 25);
-      return { g, at: hit ? hit.extraGW : null };
-    }).filter(x => x.at !== null).sort((a,b) => a.at - b.at);
-    const last = rows[rows.length - 1];
-    const endVals = REG.map(g => last.regions[g].curt);
-    const spread = Math.max(...endVals) - Math.min(...endVals);
-    const worst = REG[endVals.indexOf(Math.max(...endVals))];
-    const best  = REG[endVals.indexOf(Math.min(...endVals))];
 
     host.innerHTML =
         '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:6px">'
@@ -6759,37 +6748,13 @@ function renderCurtailmentForecast(){
       + 'region\u2019s output that would be curtailed under different new-build levels. Columns are GW '
       + 'of extra VRE.</p>'
       + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">' + head + body + '</table>'
-      + '<div style="font-size:10.5px;line-height:1.6;margin-top:9px;padding:7px 10px;'
-      + 'background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
-      + '<strong>' + (spread < 3
-          ? 'Timing dominates, and that is the market design.</strong> Every region lands within ' + spread.toFixed(0)
-            + ' points of the others at +' + last.extraGW + ' GW ('
-            + Math.min(...endVals).toFixed(0) + '\u2013' + Math.max(...endVals).toFixed(0)
-            + '&#37;), because this technology generates at much the same hours wherever it sits. '
-            + 'And under SAWEM that is the whole story for the ENERGY price: the day-ahead '
-            + 'market clears to a single national System Marginal Price, so a plant in a '
-            + 'saturated region earns the same rand per MWh as one in an empty region. '
-            + 'Where siting bites instead is CURTAILMENT, in the table above, and network '
-            + 'charges. Locational energy pricing remains an option for a later iteration '
-            + 'of the market code, not part of it today.'
-          : 'Siting is worth ' + spread.toFixed(0) + ' points of output.</strong> At +'
-            + last.extraGW + ' GW, ' + best + ' loses ' + Math.min(...endVals).toFixed(0)
-            + '&#37; against ' + worst + ' at ' + Math.max(...endVals).toFixed(0) + '&#37;.')
-      + ' ' + (knee.length
-          ? 'Curtailment first passes 25&#37; of output in ' + knee[0].g + ' at +' + knee[0].at + ' GW.'
-          : 'No region passes 25&#37; of output within this range \u2013 the highest is '
-            + worst + ' at ' + Math.max(...endVals).toFixed(0) + '&#37;.')
-      + '</div>'
       + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
-      + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Why this shows no curtailment today, when Eskom is already curtailing.</strong> This forecast runs on the instant engine, which treats South Africa as a single node. It can therefore only see NATIONAL oversupply \u2013 hours when the whole country generates more than it can use, which today never happens. Curtailment happening now is network-driven and LOCAL, concentrated in Cape corridors that a single-node model has no way to represent. Run the full model for that picture: on the same scenario it finds real curtailment, with Eastern Cape\u2013Kwazulu Natal at its transfer limit for thousands of hours a year. Read this panel as the answer to a different question \u2013 at what national build level does surplus become unavoidable everywhere.</div>'
+      + '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A)"><strong>Why this shows no curtailment today, when Eskom is already curtailing:</strong> This forecast runs on the instant engine, which treats South Africa as a single node. It can therefore only see national oversupply \u2013 hours when the whole country generates more than it can use. Curtailment happening now is network-driven and local, concentrated in Cape corridors that a single-node model has no way to represent. Run the full model for to see the full picture.</div>'
       + (mipNetworkOffsetTWh > 0.1
           ? '<div style="margin-top:6px;padding:6px 9px;background:var(--panel2);border-left:3px solid var(--ok,#4A8C5C)"><strong>Calibrated to your last full model run.</strong> That solve found '
             + mipNetworkOffsetTWh.toFixed(1) + ' TWh of curtailment the single-node engine cannot see, because it is caused by corridors filling rather than by national oversupply. Add roughly that much to every column above \u2013 it is a floor that exists today and grows as build concentrates in the same regions.</div>'
           : '')
-      + 'Curtailment is not linear in build: it stays near zero while surplus is absorbable, then '
-      + 'rises sharply once midday supply routinely exceeds what load and storage can take. Where '
-      + 'that knee sits matters more than today\u2019s number. Holds storage, coal retirement and '
-      + 'demand at the current scenario \u2013 move those sliders and re-run to see how they shift it.</div>';
+      + '</div>';
   }, 30);
 }
 
