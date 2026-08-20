@@ -516,6 +516,151 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
       </div>
 
+          <div id="nav-wheretobuild" class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
+          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
+          <div class="pb">
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity. If the local grid has spare headroom on today's transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it – a corridor-specific alternative to the flat national grid adder used above. All technologies carry this charge when they exceed regional headroom, though the lower capacity factors of CCGT and storage mean their R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it – the instant dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice. Three parts of the model do read siting properly: virtual power plants, which stay regional and never touch a national slider; Run the full model below, which solves all 10 regions; and the capture rate and curtailment forecast panels, which use each region's own hourly profile.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results – only the load-shedding risk panel stays on the national engine.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
+                <select id="siteRegion" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:150px">
+                  <option value="Eastern Cape">Eastern Cape</option>
+                  <option value="Free State">Free State</option>
+                  <option value="Gauteng">Gauteng</option>
+                  <option value="Hydra Central">Hydra Central</option>
+                  <option value="Kwazulu Natal">KwaZulu-Natal</option>
+                  <option value="Limpopo">Limpopo</option>
+                  <option value="Mpumalanga">Mpumalanga</option>
+                  <option value="North West">North West</option>
+                  <option value="Northern Cape" selected>Northern Cape</option>
+                  <option value="Western Cape">Western Cape</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Technology</label>
+                <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
+                  <option value="solar">Solar PV</option>
+                  <option value="wind">Wind</option>
+                  <option value="coal">Coal</option>
+                  <option value="ccgt">Gas CCGT</option>
+                   <option value="vpp">Virtual power plant</option>
+                  <option value="nuclear">Nuclear</option>
+                  <option value="batt">Lithium-ion battery (4h)</option>
+                  <option value="ps">Pumped storage (14h)</option>
+                  <option value="vrfb">Vanadium flow (8h)</option>
+                  <option value="ironair">Iron-air (100h)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">New capacity (MW)</label>
+                <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
+              </div>
+              <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
+              <button id="siteAllocateBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px; background:var(--ink); color:var(--panel)">Allocate to model</button>
+            </div>
+            <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
+
+            <div style="margin-top:14px">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
+                <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
+                <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
+              </div>
+              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet – allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
+            </div>
+
+          </div>
+        </div>
+
+          <div class="panel" id="buildSection" style="margin-top:18px;margin-bottom:18px"><span id="nav-buildrates" style="display:block;height:0"></span>
+      <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
+        <h2>Generation capacity build rates</h2>
+        <span class="tag">capacity expansion &middot; least-cost schedule to 2030</span>
+      </div>
+      <div style="padding:12px 14px">
+        <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
+          Given the scenario you have set, this solves for the <strong>least-cost build schedule to
+          2030</strong>: how much of each technology to add, in which year, and &ndash; in regional
+          mode &ndash; where. It uses each coal unit&rsquo;s planned retirement date, technology costs that
+          change year by year, and a limit on how fast capacity can actually be connected. The answer
+          can be loaded straight back into the sliders and tested hour by hour.
+        </p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:10px">
+          <div>
+            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Build speed?</label>
+            <select id="bldPace" onchange="bldPaceChanged()" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <option value="historical">Historical &ndash; what SA has actually delivered</option>
+              <option value="irp" selected>IRP 2025 pace &ndash; the official plan</option>
+              <option value="masterplan">Masterplan ambition &ndash; ~5 GW/yr renewables</option>
+              <option value="grid">Grid-limited &ndash; all remaining GCCA headroom</option>
+              <option value="none">Unconstrained &ndash; economics only</option>
+            </select>
+            <div id="bldPaceNote" style="font-size:9.5px;color:var(--ink2);margin-top:3px"></div>
+          </div>
+          <div>
+            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Where to build?</label>
+            <select id="bldRegional" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <option value="0">National &ndash; how much, and when</option>
+              <option value="1" selected>Regional &ndash; also where, within grid limits</option>
+            </select>
+            <div style="font-size:9.5px;color:var(--ink2);margin-top:3px">Regional uses each province&rsquo;s own wind and solar profile, its GCCA connection headroom, and real corridor limits between regions.</div>
+          </div>
+        </div>
+
+        <details id="bldAdvanced" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:10px;background:var(--panel)">
+          <summary style="padding:7px 11px;cursor:pointer;font-size:11px;font-weight:600">
+            Set build limits per technology <span style="font-weight:400;color:var(--ink2)">&ndash; GW added per year</span>
+          </summary>
+          <div style="padding:4px 11px 11px">
+            <div id="bldRates" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;font-size:11px"></div>
+          </div>
+        </details>
+
+        <div id="bldInherit" style="font-size:10.5px;color:var(--ink2);background:var(--panel2,rgba(0,0,0,0.03));border-left:3px solid var(--line2);padding:6px 9px;margin-bottom:10px"></div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button id="bldRunBtn" onclick="runBuildOpt()"
+                  style="padding:6px 14px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;border-radius:2px">
+            Solve the build schedule
+          </button>
+          <span id="bldStatus" style="font-size:10.5px;color:var(--ink2)"></span>
+        </div>
+
+        <div id="bldResult" style="margin-top:12px"></div>
+        <details style="border:1px solid var(--line2);border-radius:3px;margin-top:12px;background:var(--panel)">
+          <summary style="padding:8px 11px;cursor:pointer;font-size:11.5px;font-weight:600">
+            What happens if the grid build lags? <span style="font-weight:400;color:var(--ink2)">&ndash; cost of delay</span>
+          </summary>
+          <div style="padding:4px 11px 11px">
+            <p style="font-size:10.5px;color:var(--ink2);margin:0 0 9px;line-height:1.45">
+              Everything above assumes the Transmission Development Plan lands on schedule.
+              NTCSA itself notes the first five years carry high certainty and beyond 2030 is
+              uncertain &ndash; and 52% of the mapped projects sit in Concept, Pre-Concept or
+              generic Planned rather than Execution. This slips those and re-solves.
+            </p>
+            <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+              <label style="font-size:11px;font-weight:600">Slip uncommitted projects by
+                <select id="delaySlip" style="margin-left:5px;padding:4px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
+                  <option value="1">1 year</option>
+                  <option value="2">2 years</option>
+                  <option value="3" selected>3 years</option>
+                  <option value="5">5 years</option>
+                </select>
+              </label>
+              <button id="delayRunBtn" onclick="runDelayAnalysis()"
+                      style="padding:5px 12px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.04em;border-radius:2px">
+                Compare
+              </button>
+              <span id="delayStatus" style="font-size:10.5px;color:var(--ink2)"></span>
+            </div>
+            <div id="delayResult" style="margin-top:10px"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+
           <div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
           <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
           <div style="padding:0 14px 12px">
@@ -714,157 +859,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="bessLocBody"></div>
           </div>
 
-          <div class="panel" id="buildSection" style="margin-top:18px;margin-bottom:18px"><span id="nav-buildrates" style="display:block;height:0"></span>
-      <div class="ph" style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
-        <h2>Generation capacity build rates</h2>
-        <span class="tag">capacity expansion &middot; least-cost schedule to 2030</span>
-      </div>
-      <div style="padding:12px 14px">
-        <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
-          Given the scenario you have set, this solves for the <strong>least-cost build schedule to
-          2030</strong>: how much of each technology to add, in which year, and &ndash; in regional
-          mode &ndash; where. It uses each coal unit&rsquo;s planned retirement date, technology costs that
-          change year by year, and a limit on how fast capacity can actually be connected. The answer
-          can be loaded straight back into the sliders and tested hour by hour.
-        </p>
+          
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:10px">
-          <div>
-            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Build speed?</label>
-            <select id="bldPace" onchange="bldPaceChanged()" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-              <option value="historical">Historical &ndash; what SA has actually delivered</option>
-              <option value="irp" selected>IRP 2025 pace &ndash; the official plan</option>
-              <option value="masterplan">Masterplan ambition &ndash; ~5 GW/yr renewables</option>
-              <option value="grid">Grid-limited &ndash; all remaining GCCA headroom</option>
-              <option value="none">Unconstrained &ndash; economics only</option>
-            </select>
-            <div id="bldPaceNote" style="font-size:9.5px;color:var(--ink2);margin-top:3px"></div>
-          </div>
-          <div>
-            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Where to build?</label>
-            <select id="bldRegional" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
-              <option value="0">National &ndash; how much, and when</option>
-              <option value="1" selected>Regional &ndash; also where, within grid limits</option>
-            </select>
-            <div style="font-size:9.5px;color:var(--ink2);margin-top:3px">Regional uses each province&rsquo;s own wind and solar profile, its GCCA connection headroom, and real corridor limits between regions.</div>
-          </div>
-        </div>
-
-        <details id="bldAdvanced" style="border:1px solid var(--line2);border-radius:3px;margin-bottom:10px;background:var(--panel)">
-          <summary style="padding:7px 11px;cursor:pointer;font-size:11px;font-weight:600">
-            Set build limits per technology <span style="font-weight:400;color:var(--ink2)">&ndash; GW added per year</span>
-          </summary>
-          <div style="padding:4px 11px 11px">
-            <div id="bldRates" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;font-size:11px"></div>
-            <div style="font-size:9.5px;color:var(--ink2);margin-top:7px">
-              These caps usually decide the answer rather than the economics: renewables already
-              undercut coal on running cost, so the question is how fast they can be connected.
-              South Africa&rsquo;s binding constraint is shifting from procurement pace to grid capacity
-              &ndash; GCCA headroom is already zero in the Northern Cape, Hydra Central, and for
-              solar in the Western Cape.
-            </div>
-          </div>
-        </details>
-
-        <div id="bldInherit" style="font-size:10.5px;color:var(--ink2);background:var(--panel2,rgba(0,0,0,0.03));border-left:3px solid var(--line2);padding:6px 9px;margin-bottom:10px"></div>
-
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <button id="bldRunBtn" onclick="runBuildOpt()"
-                  style="padding:6px 14px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;border-radius:2px">
-            Solve the build schedule
-          </button>
-          <span id="bldStatus" style="font-size:10.5px;color:var(--ink2)"></span>
-        </div>
-
-        <div id="bldResult" style="margin-top:12px"></div>
-        <details style="border:1px solid var(--line2);border-radius:3px;margin-top:12px;background:var(--panel)">
-          <summary style="padding:8px 11px;cursor:pointer;font-size:11.5px;font-weight:600">
-            What happens if the grid build lags? <span style="font-weight:400;color:var(--ink2)">&ndash; cost of delay</span>
-          </summary>
-          <div style="padding:4px 11px 11px">
-            <p style="font-size:10.5px;color:var(--ink2);margin:0 0 9px;line-height:1.45">
-              Everything above assumes the Transmission Development Plan lands on schedule.
-              NTCSA itself notes the first five years carry high certainty and beyond 2030 is
-              uncertain &ndash; and 52% of the mapped projects sit in Concept, Pre-Concept or
-              generic Planned rather than Execution. This slips those and re-solves.
-            </p>
-            <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
-              <label style="font-size:11px;font-weight:600">Slip uncommitted projects by
-                <select id="delaySlip" style="margin-left:5px;padding:4px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
-                  <option value="1">1 year</option>
-                  <option value="2">2 years</option>
-                  <option value="3" selected>3 years</option>
-                  <option value="5">5 years</option>
-                </select>
-              </label>
-              <button id="delayRunBtn" onclick="runDelayAnalysis()"
-                      style="padding:5px 12px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.04em;border-radius:2px">
-                Compare
-              </button>
-              <span id="delayStatus" style="font-size:10.5px;color:var(--ink2)"></span>
-            </div>
-            <div id="delayResult" style="margin-top:10px"></div>
-          </div>
-        </details>
-      </div>
-    </div>
-
-          <div id="nav-wheretobuild" class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
-          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
-          <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity. If the local grid has spare headroom on today's transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it – a corridor-specific alternative to the flat national grid adder used above. All technologies carry this charge when they exceed regional headroom, though the lower capacity factors of CCGT and storage mean their R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">Note on the map above: your allocated region gets a visible bump (radius + a small solar/wind dot). But because allocations feed the same national sliders the rest of the app uses, nodes like PE and EC will also keep growing with the national wind total regardless of where you actually sited it – the instant dispatch engine is single-node and has no notion of "this MW is physically in region X". Only the dot and the node's own bump reflect your real siting choice. Three parts of the model do read siting properly: virtual power plants, which stay regional and never touch a national slider; Run the full model below, which solves all 10 regions; and the capture rate and curtailment forecast panels, which use each region's own hourly profile.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results – only the load-shedding risk panel stays on the national engine.</p>
-            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
-                <select id="siteRegion" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:150px">
-                  <option value="Eastern Cape">Eastern Cape</option>
-                  <option value="Free State">Free State</option>
-                  <option value="Gauteng">Gauteng</option>
-                  <option value="Hydra Central">Hydra Central</option>
-                  <option value="Kwazulu Natal">KwaZulu-Natal</option>
-                  <option value="Limpopo">Limpopo</option>
-                  <option value="Mpumalanga">Mpumalanga</option>
-                  <option value="North West">North West</option>
-                  <option value="Northern Cape" selected>Northern Cape</option>
-                  <option value="Western Cape">Western Cape</option>
-                </select>
-              </div>
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Technology</label>
-                <select id="siteTech" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; min-width:110px">
-                  <option value="solar">Solar PV</option>
-                  <option value="wind">Wind</option>
-                  <option value="coal">Coal</option>
-                  <option value="ccgt">Gas CCGT</option>
-                   <option value="vpp">Virtual power plant</option>
-                  <option value="nuclear">Nuclear</option>
-                  <option value="batt">Lithium-ion battery (4h)</option>
-                  <option value="ps">Pumped storage (14h)</option>
-                  <option value="vrfb">Vanadium flow (8h)</option>
-                  <option value="ironair">Iron-air (100h)</option>
-                </select>
-              </div>
-              <div>
-                <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">New capacity (MW)</label>
-                <input id="siteMw" type="number" value="500" min="0" step="50" class="mono" style="border:1px solid var(--line2); background:var(--panel); padding:6px 8px; font-size:12.5px; width:110px">
-              </div>
-              <button id="siteCheckBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px">Check grid capacity</button>
-              <button id="siteAllocateBtn" type="button" class="sharebtn" style="width:auto; margin-bottom:0; padding:7px 16px 6px; background:var(--ink); color:var(--panel)">Allocate to model</button>
-            </div>
-            <div id="siteResult" class="mono" style="font-size:12.5px; padding:10px 12px; border:1.5px solid var(--line2); background:var(--panel2); min-height:20px; line-height:1.5">Select a region and technology, then click Check.</div>
-
-            <div style="margin-top:14px">
-              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
-                <h3 style="font-size:13.5px; color:var(--ink2); font-weight:600">Allocated portfolio</h3>
-                <button id="siteResetBtn" type="button" style="background:none; border:none; text-decoration:underline; font-size:11px; color:var(--ink2); padding:0">Reset allocations</button>
-              </div>
-              <div id="sitePortfolio" class="mono" style="font-size:11.5px; color:var(--ink2)">Nothing allocated yet – allocations here feed directly into the "New wind" / "New utility solar PV" sliders on the left.</div>
-            </div>
-
-          </div>
-        </div>
+          
 
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>&lsquo;Clean coal&rsquo; (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
@@ -6564,9 +6561,7 @@ function renderBuildRegional(res, rate, opts){
   html += '<div style="color:var(--ink2);margin-top:6px">'
     + 'Discounted total system cost: <strong>R' + (res.ObjectiveValue/1e9).toFixed(0) + ' bn</strong>. '
     + 'Each region uses its own hourly wind and solar profile (PVGIS and Renewables.ninja), its GCCA '
-    + 'connection headroom, and real corridor transfer limits between regions. Wind capacity factor '
-    + 'varies almost twofold across South Africa, so where capacity lands changes materially how much '
-    + 'energy it delivers.</div>'
+    + 'connection headroom, and real corridor transfer limits between regions.</div>'
     + '<div style="color:var(--ink2);margin-top:5px;font-style:italic">'
     + 'Dispatch is approximated over 8 representative days; use <strong>Run the full model</strong> '
     + 'above to test a resulting mix hour by hour.</div></div>';
@@ -6588,7 +6583,7 @@ function bldShowInherit(){
   el.innerHTML = '<strong>Using the scenario set above:</strong> demand '
     + (g >= 0 ? '+' : '') + g + '% to 2030, coal availability ' + e + '%'
     + (dec > 0 ? ', ' + (dec/1000).toFixed(1) + ' GW of coal retired' : '')
-    + '. Change the sliders to ask a different question.';
+    + '.';
 }
 
 // Take the optimiser's answer and load it into the sliders, so the schedule can
@@ -7974,9 +7969,9 @@ function renderLocationalBess(){
 
   host.innerHTML =
       '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
-    + 'What a <strong>sited</strong> four-hour battery earns, by supply area. The national figure above '
-    + 'assumes one asset can reach every scarcity hour in the country; a real battery only captures '
-    + 'what happens where it stands.</div>'
+    + 'What a four-hour battery earns, by supply area. The national figure above assumes one asset '
+    + 'can reach every scarcity hour in the country, whereas a real battery only captures what '
+    + 'happens in its region.</div>'
     + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)">'
     + '<th style="text-align:left;padding:4px 6px">Supply area</th>'
