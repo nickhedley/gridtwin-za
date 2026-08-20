@@ -292,7 +292,6 @@
 
 <!-- Controls -->
 <div id="controls">
-  <button class="ctrl-btn active" id="btn3d" onclick="toggleTerrain()">⛰ 3D terrain OFF</button>
   <button class="ctrl-btn" id="btnCorr" onclick="toggleCorridors()">⚡ Corridors ON</button>
   <button class="ctrl-btn active" id="btnTDP" onclick="toggleTDP()">🔨 Planned build ON</button>
   <button class="ctrl-btn" onclick="resetView()">⌂ Reset view</button>
@@ -359,7 +358,7 @@ const HEADROOM = {
 };
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let deckgl, showTerrain = false, showCorridors = true;   // terrain off: the demo tile source 404s
+let deckgl, showCorridors = true;
 let substations = [];
 
 // ── Initial view ──────────────────────────────────────────────────────────────
@@ -385,22 +384,6 @@ function hexToRgb(hex) {
 // ── Build layers ──────────────────────────────────────────────────────────────
 function buildLayers(subs) {
   const layers = [];
-
-  // 1. Terrain — AWS Terrain Tiles (Registry of Open Data). No key, no account.
-  //    Terrarium encoding, which is what elevationDecoder below already expects.
-  //    Replaces MapLibre's demo endpoint, which 404s for every tile over
-  //    South Africa. Open data with no SLA, so terrain stays a toggle, not a
-  //    default – the map must not depend on it to be useful.
-  if(showTerrain) {
-    layers.push(new deck.TerrainLayer({
-      id: 'terrain',
-      minZoom: 0, maxZoom: 14,
-      elevationDecoder: { rScaler: 256, gScaler: 1, bScaler: 1/256, offset: -32768 },
-      elevationData: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
-      texture: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-      elevationScale: 1.5,
-    }));
-  }
 
   // 2. Real Eskom transmission lines
   if(showCorridors) {
@@ -712,14 +695,6 @@ function showTooltip(obj, x, y) {
 }
 
 // ── Controls ─────────────────────────────────────────────────────────────────
-function toggleTerrain() {
-  showTerrain = !showTerrain;
-  const btn = document.getElementById('btn3d');
-  btn.textContent = `⛰ 3D terrain ${showTerrain ? 'ON' : 'OFF'}`;
-  btn.classList.toggle('active', showTerrain);
-  deckgl.setProps({ layers: buildLayers(substations) });
-}
-
 function toggleCorridors() {
   showCorridors = !showCorridors;
   const btn = document.getElementById('btnCorr');
