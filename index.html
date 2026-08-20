@@ -651,7 +651,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
           <div id="nav-curtforecast" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Curtailment forecast</h2>
-              <span class="tag">what happens as the queue ahead of you builds</span></div>
+              <span class="tag">what happens as the queue builds</span></div>
             <div class="pb">
               <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
                 <select id="cfTech" onchange="renderCurtailmentForecast()"
@@ -8252,26 +8252,11 @@ function drawShadowPriceWeek(r){
     + 'what sets the price for everyone. '
     + (top ? '<strong>' + SP_TECH_LABEL[top] + '</strong> sets the price most often here ('
              + agg[top].n + ' of 168 hours). ' : '')
-    + (zero ? 'Green hours price at zero \u2013 renewables are spilling and nothing scarce is on '
-              + 'the margin (' + zero + ' this week). ' : '')
-    + (agg.coalneg ? 'Bars below the line are NEGATIVE prices: renewables curtailed because must-run '
-              + 'coal cannot back down, so inflexible plant pays to stay on rather than restart \u2013 '
-              + 'depth is the avoided startup cost spread over the surplus spell (' + agg.coalneg.n
-              + ' hours, mean R' + Math.round(agg.coalneg.sum/agg.coalneg.n) + '). ' : '')
-    + (over ? 'Bars with a dark cap run past the top of the axis (' + over + ' hours), clipped so '
-              + 'one scarcity hour does not flatten the rest. ' : '')
-    + (srmcOff.length ? srmcOff.map(ln =>
-          '<strong>' + ln.label.replace(' \u00b7 ', ' (') + ')</strong> is R'
-          + Math.round(ln.val).toLocaleString() + '/MWh \u2013 above this chart\u2019s range, so gas is '
-          + 'out of the money in every hour shown. ').join('')
-        : 'Dashed lines mark gas SRMC: hours above a line are hours gas would profitably run. ')
-    + ((agg.batt || agg.ps) ? 'Storage bids its opportunity cost, not its fuel cost: the value of the best '
-        + 'remaining hour it could have served instead (CAISO-style, the D-th highest thermal price of the '
-        + 'day for D-hour storage), floored at its charging basis plus cycling wear and capped at the '
-        + 'alternative it displaced. Storage at its power or energy limit is constrained, not marginal, '
-        + 'and the unit above it prices the hour. ' : '')
+    + (over ? 'Bars with a dark cap run past the top of the axis (' + over + ' hours in this '
+              + 'scenario), clipped so one scarcity hour does not flatten the rest. ' : '')
     + '<strong>These are shadow prices, not observed ones.</strong> South Africa has no wholesale '
-    + 'market, so this is what the system would pay if dispatch were priced rather than administered.';
+    + 'market (yet), so this is what the system would pay if dispatch was priced rather than '
+    + 'administered.';
 }
 
 function drawBessWeek(r){

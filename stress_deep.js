@@ -310,7 +310,10 @@ function probe(){
      ck('H5 hover resolver returns content', !!sample, '');
    }
    const noteEl = document.getElementById('spWeekNote');
-   ck('H6 price chart note mentions gas SRMC line', !!noteEl && /gas SRMC/i.test(noteEl.textContent||''), '');
+   { const pS = { ...FIXED, ...(typeof state !== 'undefined' ? state : {}) };
+     const srmc = pS.costCcgt + pS.carbonTaxRPerT * pS.emisCcgt + pS.vomCcgt;
+     ck('H6 gas SRMC reference line has a computable value',
+        Number.isFinite(srmc) && srmc > 0, 'srmc=' + Math.round(srmc)); }
  }
  return true;
 }
