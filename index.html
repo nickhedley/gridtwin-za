@@ -2592,13 +2592,26 @@ let redzData = null;
     // fires while charts are still drawing, so the target moves out from under
     // it and the reader ends up back at the top of the page.
     const NAVBAR = 60;
+    // offsetTop walked up the offset parents gives the ABSOLUTE document
+    // position. getBoundingClientRect() is viewport-relative and therefore
+    // depends on both the current scroll position and on layout having settled,
+    // which is what made this land at the top of the page.
+    const absTop = (el) => {
+      let y = 0, n = el;
+      while (n) { y += n.offsetTop || 0; n = n.offsetParent; }
+      return y;
+    };
+    let tries = 0;
     const goTo = () => {
-      const y = sec.getBoundingClientRect().top + window.pageYOffset - NAVBAR;
+      const y = absTop(sec) - NAVBAR;
+      // A zero position means the element has not been laid out yet. Scrolling
+      // to 0 would BE the bug, so wait and try again instead.
+      if (y <= 0 && tries < 12) { tries++; setTimeout(goTo, 250); return; }
       window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
     };
     goTo();
-    setTimeout(goTo, 500);
-    setTimeout(goTo, 1400);
+    setTimeout(goTo, 600);
+    setTimeout(goTo, 1600);
   }
   window.addEventListener('hashchange', openTabFromHash);
   // 400ms was too early: the tabs had not always rendered and the page was still
