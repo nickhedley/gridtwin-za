@@ -2591,24 +2591,33 @@ let redzData = null;
     if (!VALID.includes(key)) return;
     try { switchTab(key); } catch(e){ return; }
 
-    // Hand the scrolling to the BROWSER rather than computing it. Three attempts
-    // at timing this in JavaScript all landed at the top of the page: the
-    // section's position is not stable while charts are still drawing, so any
-    // figure read early is wrong and any figure read late is read after the
-    // reader has given up. Native anchor navigation happens after layout, and
-    // #nav-project already sits just above the resource section and already
-    // carries scroll-margin-top for the sticky bar.
+    // Scroll the ELEMENT rather than touching location.hash: assigning the hash
+    // the URL already has is a no-op, fires nothing, and scrolls nowhere.
+    //
+    // Repeated because the page GROWS underneath. The browser scrolls to the
+    // anchor while the page is still short, then the data loads and panels
+    // expand, pushing the target far down. A single scroll is aimed at a
+    // position that no longer exists a second later.
     const anchor = document.getElementById('nav-project');
     if (!anchor) return;
-    const jump = () => { location.hash = 'nav-project'; };
-    jump();
-    // Once more after the heavy panels settle, since the page grows underneath.
-    setTimeout(jump, 1500);
+    let last = -1, settled = 0, n = 0;
+    const settle = () => {
+      const y = anchor.getBoundingClientRect().top;
+      // Stop once the target has stopped moving - two stable readings is enough,
+      // and it avoids yanking a reader who has scrolled away on purpose.
+      if (Math.abs(y - last) < 4) { settled++; } else { settled = 0; }
+      last = y;
+      if (settled < 2 && n < 20) {
+        anchor.scrollIntoView({ behavior: n === 0 ? 'auto' : 'smooth', block: 'start' });
+        n++;
+        setTimeout(settle, 300);
+      }
+    };
+    settle();
   }
   window.addEventListener('hashchange', openTabFromHash);
-  // Runs once the tabs exist. The scroll itself is the browser's job now, so
-  // this only needs to be late enough for switchTab to be defined.
-  setTimeout(openTabFromHash, 900);
+  // Late enough for switchTab to exist; the settling loop handles the rest.
+  setTimeout(openTabFromHash, 700);
   window.mainGeocode = mainGeocode;
   window.mainGoTo = mainGoTo;
   window.fetchSolar = fetchSolar;
