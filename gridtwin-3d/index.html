@@ -292,7 +292,7 @@
 
 <!-- Controls -->
 <div id="controls">
-  <button class="ctrl-btn active" id="btn3d" onclick="toggleTerrain()">⛰ 3D terrain ON</button>
+  <button class="ctrl-btn active" id="btn3d" onclick="toggleTerrain()">⛰ 3D terrain OFF</button>
   <button class="ctrl-btn" id="btnCorr" onclick="toggleCorridors()">⚡ Corridors ON</button>
   <button class="ctrl-btn active" id="btnTDP" onclick="toggleTDP()">🔨 Planned build ON</button>
   <button class="ctrl-btn" onclick="resetView()">⌂ Reset view</button>
@@ -359,7 +359,7 @@ const HEADROOM = {
 };
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let deckgl, showTerrain = true, showCorridors = true;
+let deckgl, showTerrain = false, showCorridors = true;   // terrain off: the demo tile source 404s
 let substations = [];
 
 // ── Initial view ──────────────────────────────────────────────────────────────
@@ -846,7 +846,7 @@ let selectedSub = null;   // substation whose name is currently shown
 async function init() {
   // Load substation data
   try {
-    const resp = await fetch('nodal/substations_compact.json');
+    const resp = await fetch('/nodal/substations_compact.json');
     const data = await resp.json();
     substations = data.subs || [];
   } catch(e) {
@@ -856,7 +856,7 @@ async function init() {
   // For a developer this is the question the existing-network view cannot answer:
   // my region is full - when does that change, and where?
   try {
-    const respT = await fetch('nodal/tdp_projects.json');
+    const respT = await fetch('/nodal/tdp_projects.json');
     const dataT = await respT.json();
     tdpProjects = (dataT && dataT.projects) || [];
     tdpMeta = (dataT && dataT.meta) || null;
@@ -866,7 +866,7 @@ async function init() {
   }
   // Load real Eskom transmission lines
   try {
-    const resp2 = await fetch('nodal/transmission_lines.geojson');
+    const resp2 = await fetch('/nodal/transmission_lines.geojson');
     const data2 = await resp2.json();
     transmissionLines = data2.features || [];
     console.log('Loaded', transmissionLines.length, 'transmission lines');
