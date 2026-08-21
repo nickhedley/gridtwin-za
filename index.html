@@ -6568,6 +6568,14 @@ function bldBuildRegionalLP(opts){
       obj.push((MCdiesel*r.weight*df).toFixed(3) + ' gd_' + k);
       obj.push((VOLL*r.weight*df).toFixed(3) + ' u_' + k);
       obj.push((S.lpCurtailCostR*r.weight*df).toFixed(3) + ' crt_' + k);
+      // Cycling wear per technology. The regional LP previously priced NONE,
+      // so discharging was free - which removed the only marginal cost
+      // distinguishing an 88%-efficient store from a 45%-efficient one.
+      const WEAR_R = { batt: 1.0, vrfb: 0.25, ironair: 0.15 };
+      for (const S2 of BLD_STORE){
+        obj.push((S.lpBattDischargeCostR*WEAR_R[S2.t]*r.weight*df).toFixed(3)
+          + ' ' + S2.dis + '_' + k);
+      }
     }
   }
   L.push('  ' + obj.join(' + ')); L.push('Subject To');
@@ -6594,7 +6602,7 @@ function bldBuildRegionalLP(opts){
         // 2.75 GW on the identical scenario. Two modes of the same tool gave
         // contradictory answers to the same question.
         L.push(' bal_'+k+': gc_'+k+' + gd_'+k+' + u_'+k+' - crt_'+k
-          + ' + bdis_'+k+' - bchg_'+k
+          + BLD_STORE.map(S2 => ' + ' + S2.dis+'_'+k + ' - ' + S2.chg+'_'+k).join('')
           + ' + ' + cum('wind',ri,y).map(v => wp.toFixed(4)+' '+v).join(' + ')
           + ' + ' + cum('pv',ri,y).map(v => sp.toFixed(4)+' '+v).join(' + ')
           + ' ' + flows.join(' ')
@@ -6608,27 +6616,38 @@ function bldBuildRegionalLP(opts){
         if (RESERVE_COOPT) L.push(' dmax_'+k+': gd_'+k+' + rdz_'+k+' <= 4000');
         // Power rating: cannot discharge or charge faster than what is built
         // (plus what already exists in the region).
-        L.push(' bdmax_'+k+': bdis_'+k + (RESERVE_COOPT ? ' + rb_'+k : '') + ' - ' + cum('batt',ri,y).join(' - ')
-          + ' <= ' + ((BLD_EX_BATT&&BLD_EX_BATT[R])||0).toFixed(1));
-        L.push(' bcmax_'+k+': bchg_'+k+' - ' + cum('batt',ri,y).join(' - ')
-          + ' <= ' + ((BLD_EX_BATT&&BLD_EX_BATT[R])||0).toFixed(1));
+        // Power rating per technology. Lithium keeps the reserve co-optimisation
+        // term (rb_) because it is the only one currently offered into reserve;
+        // vanadium and iron-air are energy-shifting here, not reserve providers.
+        for (const S2 of BLD_STORE){
+          const exMW = S2.t === 'batt' ? ((BLD_EX_BATT&&BLD_EX_BATT[R])||0) : 0;
+          L.push(' '+S2.dis+'max_'+k+': '+S2.dis+'_'+k
+            + ((RESERVE_COOPT && S2.t === 'batt') ? ' + rb_'+k : '')
+            + ' - ' + cum(S2.t,ri,y).join(' - ') + ' <= ' + exMW.toFixed(1));
+          L.push(' '+S2.chg+'max_'+k+': '+S2.chg+'_'+k
+            + ' - ' + cum(S2.t,ri,y).join(' - ') + ' <= ' + exMW.toFixed(1));
+        }
       }
     }
     // Storage must balance over each representative day at 88% round-trip, and
     // cannot discharge more than its 4-hour duration allows. Same formulation as
     // the national LP, applied per region.
-    for (const r of rd) for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+    for (const r of rd) for (let ri = 0; ri < BLD_REGIONS.length; ri++)
+    for (const S2 of BLD_STORE){
       const R = BLD_REGIONS[ri], dis = [], chg = [];
       for (let h = 0; h < 24; h++){
-        dis.push('bdis_'+ri+'_'+y+'_'+r.d+'_'+h);
-        chg.push('bchg_'+ri+'_'+y+'_'+r.d+'_'+h);
+        dis.push(S2.dis+'_'+ri+'_'+y+'_'+r.d+'_'+h);
+        chg.push(S2.chg+'_'+ri+'_'+y+'_'+r.d+'_'+h);
       }
-      const ex = ((BLD_EX_BATT&&BLD_EX_BATT[R])||0);
+      // Only lithium has an existing fleet in any region. Vanadium and iron-air
+      // are both zero in South Africa today, which is the point of modelling them.
+      const ex = S2.t === 'batt' ? ((BLD_EX_BATT&&BLD_EX_BATT[R])||0) : 0;
+      const EFF = S2.eff, HRS = S2.hours;
       if (!STORAGE_CHRONO){
         // WITHIN-DAY ONLY. Each representative day must end where it started, so
         // storage can shift within a day but never between days.
-        L.push(' soc_'+ri+'_'+y+'_'+r.d+': ' + dis.join(' + ')
-          + ' - ' + chg.map(v=>'0.88 '+v).join(' - ') + ' <= 0');
+        L.push(' soc_'+S2.t+'_'+ri+'_'+y+'_'+r.d+': ' + dis.join(' + ')
+          + ' - ' + chg.map(v=>EFF.toFixed(2)+' '+v).join(' - ') + ' <= 0');
       } else {
         // CHRONOLOGICAL LINKING. State of charge carries from one representative
         // day to the next, so storage can bank energy on a windy day and spend it
@@ -6641,19 +6660,19 @@ function bldBuildRegionalLP(opts){
         //
         //   e_<k> = e_<k-1> + weight x (0.88 x charge - discharge)
         //   0 <= e_<k> <= energy capacity
-        const kk = ri+'_'+y+'_'+r.d;
-        const prev = (r.prevD !== undefined) ? (' - e_'+ri+'_'+y+'_'+r.prevD) : '';
+        const kk = S2.t+'_'+ri+'_'+y+'_'+r.d;
+        const prev = (r.prevD !== undefined) ? (' - e_'+S2.t+'_'+ri+'_'+y+'_'+r.prevD) : '';
         L.push(' soc_'+kk+': e_'+kk + prev
-          + ' - ' + chg.map(v=>(0.88*r.weight).toFixed(4)+' '+v).join(' - ')
+          + ' - ' + chg.map(v=>(EFF*r.weight).toFixed(4)+' '+v).join(' - ')
           + ' + ' + dis.map(v=>r.weight.toFixed(4)+' '+v).join(' + ')
-          + ' = ' + (r.prevD === undefined ? (ex*4*0.5).toFixed(1) : '0'));
+          + ' = ' + (r.prevD === undefined ? (ex*HRS*0.5).toFixed(1) : '0'));
         // stored energy cannot exceed what is built plus what already exists
         L.push(' ecap_'+kk+': e_'+kk
-          + ' - ' + cum('batt',ri,y).map(v=>'4 '+v).join(' - ')
-          + ' <= ' + (ex*4).toFixed(1));
+          + ' - ' + cum(S2.t,ri,y).map(v=>HRS+' '+v).join(' - ')
+          + ' <= ' + (ex*HRS).toFixed(1));
       }
-      L.push(' dur_'+ri+'_'+y+'_'+r.d+': ' + dis.join(' + ')
-        + ' - ' + cum('batt',ri,y).map(v=>'4 '+v).join(' - ') + ' <= ' + (ex*4).toFixed(1));
+      L.push(' dur_'+S2.t+'_'+ri+'_'+y+'_'+r.d+': ' + dis.join(' + ')
+        + ' - ' + cum(S2.t,ri,y).map(v=>HRS+' '+v).join(' - ') + ' <= ' + (ex*HRS).toFixed(1));
     }
 
     // PER-REGION GRID HEADROOM - the constraint the national model lacks.
@@ -6793,7 +6812,10 @@ function bldBuildRegionalLP(opts){
       const k = ri+'_'+y+'_'+r.d+'_'+h;
       L.push(' 0 <= gc_'+k+' <= 60000'); L.push(' 0 <= gd_'+k+' <= 4000');
       L.push(' 0 <= u_'+k+' <= 60000');  L.push(' 0 <= crt_'+k+' <= 60000');
-      L.push(' 0 <= bdis_'+k+' <= 60000'); L.push(' 0 <= bchg_'+k+' <= 60000');
+      for (const S2 of BLD_STORE){
+        L.push(' 0 <= '+S2.dis+'_'+k+' <= 60000');
+        L.push(' 0 <= '+S2.chg+'_'+k+' <= 60000');
+      }
       if (RESERVE_COOPT){
         L.push(' 0 <= rc_'+k+' <= 60000');   L.push(' 0 <= rdz_'+k+' <= 4000');
         L.push(' 0 <= rb_'+k+' <= 60000');
@@ -6810,7 +6832,8 @@ function bldBuildRegionalLP(opts){
   // Stored energy level at the end of each representative day.
   if (STORAGE_CHRONO)
     for (const y of Y) for (const r of rd) for (let ri = 0; ri < BLD_REGIONS.length; ri++)
-      L.push(' 0 <= e_'+ri+'_'+y+'_'+r.d+' <= 2000000');
+    for (const S2 of BLD_STORE)
+      L.push(' 0 <= e_'+S2.t+'_'+ri+'_'+y+'_'+r.d+' <= 2000000');
   L.push('End');
   return { lp: L.join('\n'), rate: RATE, regional: true };
 }
