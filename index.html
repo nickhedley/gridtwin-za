@@ -4278,7 +4278,7 @@ const FIXED = {
   // far the cheapest per unit of energy stored and the worst on round-trip
   // losses, which is precisely the trade it exists to make.
   lcoeVrfb:2100, lcoeIronAir:1750,
-  lcoeCsp:2000, lcoeCcgt:2500, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1400, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
+  lcoeCsp:2000, lcoeCcgt:3340, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1400, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
@@ -5753,7 +5753,7 @@ const BLD_COST = {
   // Faster decline than the others: it is the least mature, with the first
   // gigafactory only shipping in 2026.
   ironair: { c2026: 39000, decl:  0.0600 },
-  ccgt:    { c2026: 18000, decl: -0.0200 },
+  ccgt:    { c2026: 34965, decl: -0.0200 },
 };
 // VRFB gets 25 years: 20,000-30,000 cycles and a 25-30 year calendar life, with
 // no depth-of-discharge limit, so it outlives lithium by a decade. Iron-air at 20
