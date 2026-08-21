@@ -103,6 +103,14 @@ const CONTEXT = {
   capacityPaymentRkWyr: { __skip: true },
   // Revenue stream, not a dispatch signal - see stress_deep for the same note.
   asInertiaRkWyr: { __skip: true },
+  // GATED BY TOGGLES (added 20 Aug 2026). All three market-design levers default
+  // OFF, since South Africa procures none of them today. The slider cannot move
+  // anything until its toggle is on, so the sweep must enable it first.
+  asReserveRMWh: { asReserveOn: true, newBattMW: 4000, newWindMW: 30000 },
+  // The toggles themselves are revenue/build levers, not dispatch signals - same
+  // reason their sliders are skipped above.
+  asInertiaOn:       { __skip: true },
+  capacityPaymentOn: { __skip: true },
   exportPriceR: { exportCapMW: 3000, newWindMW: 45000, newPvMW: 52000, coalDecomMW: 27000 },
 };
 

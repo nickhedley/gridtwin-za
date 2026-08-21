@@ -191,6 +191,11 @@ function probe(){
               // dispatch sweep. It acts on the BUILD LP via bldNetAnnuity(), offsetting
               // the annuity on firm capacity - verified there, not here.
               'capacityPaymentRkWyr',
+              // GATED BY TOGGLES (20 Aug 2026). asReserveRMWh only bites when
+              // asReserveOn is set, and the toggles are revenue/build levers rather
+              // than dispatch signals - same reason as their sliders. F1b/F1c cover
+              // the capacity payment; the revenue stack panel covers the rest.
+              'asReserveRMWh', 'asReserveOn', 'asInertiaOn', 'capacityPaymentOn',
               // Inertia is paid per kW of CAPABILITY held available. Like the capacity
               // payment it is a revenue stream, not a dispatch signal, so it moves nothing
               // in an energy sweep. Its effect is on what gets built and on whether
@@ -217,11 +222,12 @@ function probe(){
    // A capacity payment must still move SOMETHING, or exempting it above would hide
    // a dead control. It acts on the build LP, so assert it there.
    { const a = bldNetAnnuity('batt', 2030), c0 = bldNetAnnuity('ccgt', 2030);
-     const save = state.capacityPaymentRkWyr;
+     const save = state.capacityPaymentRkWyr, saveOn = state.capacityPaymentOn;
+     state.capacityPaymentOn = true;   // gated since 20 Aug 2026 - toggle must be on
      state.capacityPaymentRkWyr = 400;
      const b = bldNetAnnuity('batt', 2030), c1 = bldNetAnnuity('ccgt', 2030);
      const w0 = bldNetAnnuity('wind', 2030);
-     state.capacityPaymentRkWyr = save;
+     state.capacityPaymentRkWyr = save; state.capacityPaymentOn = saveOn;
      ck('F1b capacity payment lowers the build annuity on firm capacity',
         b < a - 1 && c1 < c0 - 1, `batt ${a.toFixed(0)}->${b.toFixed(0)}, ccgt ${c0.toFixed(0)}->${c1.toFixed(0)}`);
      ck('F1c capacity payment does NOT credit wind',

@@ -3143,8 +3143,30 @@ function printPrefeas() {
       return;
     }
     const distKm = corridorKm(gen, cons);
-    // TUoS tariff scales with distance (NTCSA postage stamp + distance component)
-    const tuos = Math.min(0.23, 0.10 + distKm * 0.00019); // R/kWh
+    // PUBLISHED ZONAL TARIFF, not a distance formula. Eskom's generator
+    // transmission charge is zonal and deliberately zero in the renewable-rich
+    // zones - Table 25, Schedule of Standard Prices FY2027, R/kW/month on
+    // maximum export capacity, excl VAT. The previous distance approximation had
+    // the wrong shape entirely: this is a siting signal, not a haulage charge.
+    const GEN_TUOS_ZONE = {
+      'Northern Cape': { zone:'Karoo',         rkWmo: 0.00 },
+      'Hydra Central': { zone:'Karoo',         rkWmo: 0.00 },
+      'Western Cape':  { zone:'Cape',          rkWmo: 0.00 },
+      'Eastern Cape':  { zone:'Cape',          rkWmo: 0.00 },
+      'Free State':    { zone:'Vaal',          rkWmo:16.88 },
+      'North West':    { zone:'Vaal',          rkWmo:16.88 },
+      'Limpopo':       { zone:'Waterberg',     rkWmo:21.62 },
+      'Mpumalanga':    { zone:'Mpumalanga',    rkWmo:20.06 },
+    };
+    const gz = GEN_TUOS_ZONE[gen] || { zone:'Vaal', rkWmo:16.88 };
+    // R/kW/month -> R/kWh needs a capacity factor: the charge is on MEC, so a
+    // plant running at 35% spreads it over roughly a third of the hours a
+    // baseload plant would. Wind at 35% is the reference here.
+    const genCF = 0.35;
+    const tuos = (gz.rkWmo * 12) / (8760 * genCF);   // R/kWh
+    // Ancillary service charge, Table 26: 0.37 c/kWh for Transmission-connected
+    // generators, excl VAT.
+    const ancRkWh = 0.0037;
     // Losses: ~2% base + 0.002% per km
     const lossPct = Math.min(6, 2 + distKm * 0.003);
     const lossMultiplier = 1 / (1 - lossPct/100);
@@ -3208,6 +3230,23 @@ function printPrefeas() {
         charge in the consumption area, and the trader or aggregator margin – which together
         often exceed the transmission charge shown here. Treat it as a floor on wheeling cost,
         not the delivered price.
+      </div>
+      <div style="margin-top:10px;padding:7px 10px;background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A);font-size:10px;line-height:1.55"><strong>${gen} is in Eskom&rsquo;s ${gz.zone} transmission zone: R${gz.rkWmo.toFixed(2)}/kW/month.</strong> ${gz.rkWmo === 0 ? 'Zero &ndash; the renewable-rich zones pay no generator transmission network charge at all, which is a deliberate siting signal.' : 'The Cape and Karoo zones pay R0.00, so siting here costs a project money that a Northern or Western Cape site would not pay.'} Source: Table 25, Eskom Schedule of Standard Prices FY2027, charged on maximum export capacity. Converted at a 35&#37; capacity factor. Ancillary services add 0.37 c/kWh (Table 26).</div>
+      <div style="margin-top:10px;font-size:10.5px;font-weight:600">What this figure leaves out</div>
+      <div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:2px">
+        NERSA approved the Regulatory Rules on Network Charges for Third-Party Transportation of
+        Energy in March 2025, so the components are now defined even though their rates are not in
+        this model yet. A wheeling generator pays <strong>DUoS charges</strong> &ndash; a network
+        capacity charge on maximum export capacity, a losses charge, an ancillary service charge,
+        and service and administration charges &ndash; on top of the transmission figure above.
+        <div style="margin-top:5px"><strong>And the credit is smaller than it looks.</strong> Wheeled
+        energy is credited at the WEPS rate <em>excluding</em> losses and excluding the portion of
+        the Generation Capacity Charge embedded in the energy rate. The GCC is only charged
+        separately at 30&#37; in FY2027; the other 70&#37; sits inside the energy charge and is
+        <strong>not</strong> credited back. That is a real cost of wheeling that never appears as a
+        network charge, because it is a deduction from the credit rather than an addition to the
+        bill. The FY2026 removal of the affordability subsidy credit for wheeled energy works the
+        same way.</div>
       </div>
       <div style="margin-top:10px;font-size:10.5px;font-weight:600">Municipal framework at the consumption end</div>
       <div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:2px">
@@ -3984,7 +4023,7 @@ const FIXED = {
   // reliability is INTERTEMPORAL. Whether a store can serve load in a given hour
   // depends on its whole prior state-of-charge trajectory, so a scalar de-rating
   // factor is an approximation.
-  capacityPaymentRkWyr: 0,      // default 0 - nothing changes until turned on
+  capacityPaymentRkWyr: 300,    // default 0 - nothing changes until turned on
   // ── ANCILLARY SERVICES ───────────────────────────────────────────────────
   // Eskom already procures these. The Grid Code sets a minimum per reserve
   // category, revised annually, and the categories are EXCLUSIVE - capacity
@@ -4003,8 +4042,19 @@ const FIXED = {
   //             instability as inverter-based generation grows. The UK holds
   //             120 GVAs and Ireland 23 GWs as explicit minimums with
   //             procurement behind them; South Africa has neither.
-  asReserveRMWh: 0,             // R/MWh on reserve capacity held
-  asInertiaRkWyr: 0,            // R/kW/yr, grid-forming and synchronous only
+  // GATING. Each of the three market-design levers has its own toggle, all
+  // OFF by default - South Africa procures none of these today, so the model
+  // opens on the market as it is. The slider values below are what each opens
+  // at once switched on, anchored to a published reference:
+  //   reserve  150 R/MWh   - broadly where GB and Irish reserve products clear
+  //   inertia  100 R/kW/yr - no market prices inertia this way; a round number
+  //                          for testing, explicitly not a forecast
+  //   capacity 300 R/kW/yr - Ireland's T-4 cleared near EUR150,000/MW for
+  //                          2028/29, roughly R3,000/kW/yr on de-rated capacity.
+  //                          300 is a deliberately conservative tenth of that.
+  asReserveOn: false, asInertiaOn: false, capacityPaymentOn: false,
+  asReserveRMWh: 150,           // R/MWh on reserve capacity held
+  asInertiaRkWyr: 100,          // R/kW/yr, grid-forming and synchronous only
   asReserveShare: 0.15,         // share of storage power held back for reserve
   capPayPs: 1,                  // include pumped storage in the payment
   // De-rating factors. Indicative, and to be replaced with NTCSA figures when a
@@ -4512,7 +4562,7 @@ function simulate(u, prof, outPath){
   // the caller uses so the scalar and the tiers stay in step.
   // Share of each tier's power reserved for ancillary services, unavailable for
   // energy. Zero unless a reserve price is set.
-  const _asHold = (p.asReserveRMWh || 0) > 0
+  const _asHold = (p.asReserveOn ? (p.asReserveOn ? (p.asReserveRMWh || 0) : 0) : 0) > 0
     ? Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15)) : 0;
   const tierCharge = (mw) => {
     let got = 0;
@@ -5354,7 +5404,7 @@ function simulate(u, prof, outPath){
   // Capacity payment on DE-RATED MW. Paid for being available, whether or not the
   // plant runs - which is the entire point, and why it changes the economics of
   // assets that exist for rare hours.
-  const _capR = Math.max(0, p.capacityPaymentRkWyr || 0);
+  const _capR = Math.max(0, p.capacityPaymentOn ? (p.capacityPaymentRkWyr || 0) : 0);
   const deratedMW =
       (p.newCcgtMW || 0) * (p.derateCcgt ?? 0.90)
     + (p.battPowerMW + (p.newBattMW || 0)) * (p.derateBattLi ?? 0.25)
@@ -5368,8 +5418,8 @@ function simulate(u, prof, outPath){
   // therefore removed from what storage can discharge, which is why this reduces
   // arbitrage revenue even as it adds reserve revenue. Modelling it any other way
   // double-counts.
-  const _asRes = Math.max(0, p.asReserveRMWh || 0);
-  const _asIn  = Math.max(0, p.asInertiaRkWyr || 0);
+  const _asRes = Math.max(0, p.asReserveOn ? (p.asReserveRMWh || 0) : 0);
+  const _asIn  = Math.max(0, p.asInertiaOn ? (p.asInertiaRkWyr || 0) : 0);
   const _resShare = Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15));
   const reserveHeldMW = _asRes > 0
     ? (battPower + psPowerTot) * _resShare
@@ -5725,7 +5775,7 @@ const BLD_STORE = [
 ];
 function bldNetAnnuity(tech, year){
   const gross = bldAnnuity(bldCapex(tech, year), BLD_LIFE[tech]);
-  const pay = Math.max(0, (typeof state !== 'undefined' ? state.capacityPaymentRkWyr : 0) || 0);
+  const pay = Math.max(0, (typeof state !== 'undefined' ? (state.capacityPaymentOn ? state.capacityPaymentRkWyr : 0) : 0) || 0);
   return Math.max(0, gross - pay * (BLD_DERATE[tech] ?? 0));
 }
 function bldCapex(tech, year){
@@ -5967,10 +6017,22 @@ function bldBuildLP(opts){
 
     // Storage must balance over each representative day at 88% round-trip, and
     // cannot discharge more than its 4-hour duration allows.
-    // Each storage technology balances over the representative day at its OWN
-    // round trip, and cannot discharge more than its OWN duration allows. Iron-air
-    // at 100 hours is not duration-limited within a single day - the constraint is
-    // still written, so a shorter representative period would bind correctly.
+    // CHRONOLOGICAL LINKING. State of charge carries from one representative day
+    // to the next, so a store can bank energy on a windy day and spend it on a
+    // still one. Without this, each day balanced alone and a 100-hour store
+    // behaved as a 24-hour one, which made long-duration storage pointless to
+    // build. Same pattern the regional LP already uses, now per technology.
+    //
+    //   e_<tech>_<year>_<day> = e_<prev> + weight x (eff x charge - discharge)
+    //   0 <= e <= built energy capacity
+    //
+    // The weight matters: each representative day stands for r.weight real days,
+    // so its net movement is scaled before it shifts the stored level. Otherwise
+    // one modelled day quietly stands in for a month of sustained imbalance.
+    //
+    // bldRepDays already picks the worst 3-day rolling net load and the worst
+    // 3-day wind lull, and returns prevD in calendar order - so the drought these
+    // stores exist for is in the sample and reachable.
     for (const r of rd){
       for (const S2 of BLD_STORE){
         const dis = [], chg = [];
@@ -5978,11 +6040,22 @@ function bldBuildLP(opts){
           dis.push(S2.dis+'_'+y+'_'+r.d+'_'+h);
           chg.push(S2.chg+'_'+y+'_'+r.d+'_'+h);
         }
-        L.push(' soc'+S2.t+'_'+y+'_'+r.d+': ' + dis.join(' + ') + ' - '
-          + chg.map(v=>S2.eff.toFixed(2)+' '+v).join(' - ') + ' <= 0');
-        L.push(' dur'+S2.t+'_'+y+'_'+r.d+': ' + dis.join(' + ') + ' - '
+        const kk = S2.t+'_'+y+'_'+r.d;
+        const ex = S2.ex(EX);
+        const prev = (r.prevD !== undefined) ? (' - e_'+S2.t+'_'+y+'_'+r.prevD) : '';
+        // Opening level on the first day is half full, matching the regional LP.
+        L.push(' soc_'+kk+': e_'+kk + prev
+          + ' - ' + chg.map(v=>(S2.eff*r.weight).toFixed(4)+' '+v).join(' - ')
+          + ' + ' + dis.map(v=>r.weight.toFixed(4)+' '+v).join(' + ')
+          + ' = ' + (r.prevD === undefined ? (ex*S2.hours*0.5).toFixed(1) : '0'));
+        // Stored energy cannot exceed what is built plus what already exists.
+        L.push(' ecap_'+kk+': e_'+kk
+          + ' - ' + cum(S2.t,y).map(v=>S2.hours+' '+v).join(' - ')
+          + ' <= ' + (ex*S2.hours).toFixed(1));
+        // Within-day discharge still cannot exceed the duration.
+        L.push(' dur_'+kk+': ' + dis.join(' + ') + ' - '
           + cum(S2.t,y).map(v=>S2.hours+' '+v).join(' - ')
-          + ' <= ' + (S2.ex(EX)*S2.hours));
+          + ' <= ' + (ex*S2.hours));
       }
     }
     // Firm-capacity reserve margin at the annual peak. Wind and solar get no
@@ -6018,6 +6091,11 @@ function bldBuildLP(opts){
       L.push(' 0 <= ' + S2.chg + '_' + k + ' <= 100000');
     }
   }
+  // Stored energy level at the end of each representative day - one per
+  // technology per day, so it sits outside the hourly loop above. The binding
+  // limit is the ecap_ constraint; this is just a ceiling.
+  for (const y of Y) for (const r of rd) for (const S2 of BLD_STORE)
+    L.push(' 0 <= e_' + S2.t + '_' + y + '_' + r.d + ' <= 2000000');
   L.push('End');
   return { lp: L.join('\n'), rate: RATE };
 }
@@ -6163,7 +6241,7 @@ function renderBuildResult(res, rate, opts){
     + 'Dispatch is approximated over 12 representative days rather than all 8,760 hours, '
     + 'so this sizes the build; use <strong>Run the full model</strong> above to test a '
     + 'resulting mix hour by hour.'
-    + '<div style="margin-top:5px;font-style:normal"><strong>Long-duration storage is under-valued here.</strong> The optimiser balances storage within each representative day, so a 100-hour iron-air store behaves as a 24-hour one and cannot charge ahead of a multi-day wind drought to discharge through it. The dispatch engines model that correctly across 8,760 chronological hours \u2013 so vanadium and iron-air will look worse here than they are.</div>'
+    + '<div style="margin-top:5px;font-style:normal">Storage now carries its charge <strong>between</strong> representative days, so a long-duration store can bank energy ahead of a wind drought and spend it through one. The sample deliberately includes the worst three-day net-load window and the worst three-day wind lull of the year. It is still a sample of days rather than all 8,760 hours \u2013 use <strong>Run the full model</strong> to test a resulting mix chronologically.</div>'
     + '</div>';
   html += '</div>';
   html += bldApplyButton();
@@ -6813,7 +6891,7 @@ function renderBuildRegional(res, rate, opts){
     + '<div style="color:var(--ink2);margin-top:5px;font-style:italic">'
     + 'Dispatch is approximated over 8 representative days; use <strong>Run the full model</strong> '
     + 'above to test a resulting mix hour by hour.'
-    + '<div style="margin-top:5px;font-style:normal"><strong>Long-duration storage is under-valued here.</strong> The optimiser balances storage within each representative day, so a 100-hour iron-air store behaves as a 24-hour one and cannot charge ahead of a multi-day wind drought to discharge through it. The dispatch engines model that correctly across 8,760 chronological hours \u2013 so vanadium and iron-air will look worse here than they are.</div>'
+    + '<div style="margin-top:5px;font-style:normal">Storage now carries its charge <strong>between</strong> representative days, so a long-duration store can bank energy ahead of a wind drought and spend it through one. The sample deliberately includes the worst three-day net-load window and the worst three-day wind lull of the year. It is still a sample of days rather than all 8,760 hours \u2013 use <strong>Run the full model</strong> to test a resulting mix chronologically.</div>'
     + '</div></div>';
   html += bldApplyButton();
   html += '<div id="bldStress"></div>';
@@ -7094,7 +7172,7 @@ function renderCapacityPayment(res){
   if (!host) return;
   const r = res || lastRes;
   if (!r) return;
-  const pay = Math.max(0, state.capacityPaymentRkWyr || 0);
+  const pay = Math.max(0, state.capacityPaymentOn ? (state.capacityPaymentRkWyr || 0) : 0);
 
   const rows = [
     { nm:'Gas CCGT',            mw: state.newCcgtMW || 0,    der: FIXED.derateCcgt,
@@ -8181,20 +8259,20 @@ function bessBenchmark(price, hours, eff){
  */
 function bessRevenueStack(r, hours){
   hours = hours || 4;
-  const _resR  = Math.max(0, state.asReserveRMWh || 0);
+  const _resR  = Math.max(0, state.asReserveOn ? (state.asReserveRMWh || 0) : 0);
   const _held  = _resR > 0 ? Math.min(0.5, Math.max(0, state.asReserveShare ?? 0.15)) : 0;
   const arb = bessBenchmark(r.marginalP, hours).revPerMW * (1 - _held);   // R/MW/yr
 
   // Capacity payment per MW of battery, on the same de-rating the capacity
   // panel uses - a 4-hour battery is credited at 25% of nameplate.
-  const pay = Math.max(0, state.capacityPaymentRkWyr || 0);
+  const pay = Math.max(0, state.capacityPaymentOn ? (state.capacityPaymentRkWyr || 0) : 0);
   const cap = pay * 1000 * (FIXED.derateBattLi ?? 0.25);    // R/MW/yr
 
   // Ancillary: reserve is paid on capacity HELD, so it accrues per MW of the
   // share held back, every hour of the year. Inertia is paid per kW of
   // capability; a battery counts at half, matching the engine's inertiaCapableMW.
   const reserve = _resR * _held * 8760;                      // R/MW/yr
-  const inertia = Math.max(0, state.asInertiaRkWyr || 0) * 1000 * 0.5;
+  const inertia = Math.max(0, state.asInertiaOn ? (state.asInertiaRkWyr || 0) : 0) * 1000 * 0.5;
   const anc = reserve + inertia;
 
   const tot = arb + anc + cap;
@@ -8218,8 +8296,8 @@ function renderBessStack(r){
   const STREAMS = [
     { k:'Energy arbitrage',   v: st.arb, c:'#F5C518',
       note:'Charging cheap and discharging dear, against this scenario\u2019s own prices.' },
-    { k:'Ancillary services', v: st.anc, c:'var(--veld,#4A6B7A)',
-      note:'Paid for capacity held in reserve, plus inertia. Set by the two sliders in System operation.' },
+    { k:'Reserve &amp; inertia services', v: st.anc, c:'var(--veld,#4A6B7A)',
+      note:'Paid for capacity held in reserve, plus inertia. Set by the two sliders in System operation. Reserve is modelled as one aggregate product; Eskom procures several separately, and neither reactive power nor black start is priced here.' },
     { k:'Capacity payments',  v: st.cap, c:'var(--alert,#C4785A)',
       note:'Paid for being available, de-rated to 25&#37; for a 4-hour battery.' },
   ];
@@ -9234,12 +9312,18 @@ const SLIDERS=[
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr gross; R600 default nets off the share already committed. Rooftop solar avoids the need for new grid.'},
   {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Deploys grid-enhancing technologies (dynamic line rating, advanced power flow control) to free up unused capacity on congested corridors before investing in new grid infrastructure. When switched on, the result is +20% capacity (based on DOE/utility deployments showing +10-30% range) on corridors found to be \u226530% utilised in a real baseline run \u2013 not a blanket national boost, since enhancing an already-idle corridor would be wasteful. Costs R1.55m/km \u2013 about 1/20th of a full new line\u2019s cost (DOE 2024). Roughly doubles Nodal Simulation runtime (a real baseline pass finds the congested corridors first). Nodal simulation only \u2013 the single-node engine has no corridors to enhance.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar &amp; batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder \u2013 up to the MW of coal retired.'},
+  {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
+   note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. Switch on to see what a priced reserve market would be worth to storage.'},
   {id:'asReserveRMWh',label:'Reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,
    fmt:v=>v===0?'none':'R'+v+'/MWh held',
    note:'What the system operator pays for reserve capacity held back. Eskom already procures instantaneous, regulating and ten-minute reserves, and 1,014 MW of demand response already responds within six seconds. The Grid Code makes reserve categories exclusive \u2013 capacity held for one cannot count toward another, and cannot simultaneously sell energy. This model enforces that: raising the price holds storage power back from arbitrage, so reserve revenue rises and energy revenue falls.'},
+  {id:'asInertiaOn',toggle:true,def:false,label:'Price inertia',
+   note:'Off by default: South Africa does not procure inertia at all yet. Switch on to test what price would make batteries displace spinning mass.'},
   {id:'asInertiaRkWyr',label:'Inertia pricing',min:0,max:400,step:10,def:FIXED.asInertiaRkWyr,
    fmt:v=>v===0?'none':'R'+v+'/kW/yr',
    note:'Paid-for inertia, a service that South Africa does not yet procure but will need to as inverter-based generation grows. Earned only by plants that can actually provide it \u2013 synchronous machines inherently, grid-forming batteries synthetically. Use it against the synchronous floor slider to determine what price makes batteries displace spinning mass.'},
+  {id:'capacityPaymentOn',toggle:true,def:false,label:'Pay for firm capacity',
+   note:'Off by default: South Africa has no capacity mechanism. The August 2026 Electricity Pricing Policy says capacity charges are needed; switch on to model one.'},
   {id:'capacityPaymentRkWyr',label:'Capacity payments',min:0,max:600,step:10,def:FIXED.capacityPaymentRkWyr,
    fmt:v=>v===0?'none':'R'+v+'/kW/yr',
    note:'Paid-for firm capacity being available, whether or not it runs. SA\u2019s revised Electricity Pricing Policy (August 2026) states that capacity charges are necessary to incentivise reliable generation; this models one. In this model, capacity payments are based on Ireland\u2019s de-rated MW approach. De-rating credits a 4-hour battery at 25&#37; of nameplate capacity and a 100-hour store at 90&#37; (since what matters is capacity the grid operator can rely on through a long event, not nameplate capacity). Defaults to zero: South Africa has no such mechanism today. Capacity payments boost the viability of long-duration storage options.'},

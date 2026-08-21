@@ -1,11 +1,11 @@
 {
  "base": {
-  "coalTWh": 160.747,
-  "co2": 169.663,
-  "avgCost": 567.97,
-  "replAvg": 1393.87,
-  "avgPrice": 754.63,
-  "rePct": 18.57,
+  "coalTWh": 160.984,
+  "co2": 169.899,
+  "avgCost": 568.7,
+  "replAvg": 1394.86,
+  "avgPrice": 754.67,
+  "rePct": 18.458,
   "curtTWh": 0,
   "loleHrs": 0
  },
@@ -100,6 +100,16 @@
    "curtTWh": false,
    "loleHrs": true
   },
+  "coalPartLoadK": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": true,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
   "outageUnitLevel": {
    "coalTWh": false,
    "co2": true,
@@ -129,16 +139,6 @@
    "rePct": true,
    "curtTWh": false,
    "loleHrs": true
-  },
-  "coalPartLoadK": {
-   "coalTWh": false,
-   "co2": true,
-   "avgCost": true,
-   "replAvg": false,
-   "avgPrice": true,
-   "rePct": false,
-   "curtTWh": false,
-   "loleHrs": false
   },
   "outVolPct": {
    "coalTWh": false,
@@ -223,7 +223,7 @@
   "newVrfbMW": {
    "coalTWh": true,
    "co2": true,
-   "avgCost": true,
+   "avgCost": false,
    "replAvg": true,
    "avgPrice": true,
    "rePct": true,
@@ -414,46 +414,6 @@
    "coalTWh": false,
    "co2": false,
    "avgCost": false,
-   "replAvg": false,
-   "avgPrice": false,
-   "rePct": false,
-   "curtTWh": false,
-   "loleHrs": false
-  },
-  "asReserveRMWh": {
-   "coalTWh": true,
-   "co2": true,
-   "avgCost": true,
-   "replAvg": true,
-   "avgPrice": true,
-   "rePct": true,
-   "curtTWh": false,
-   "loleHrs": false
-  },
-  "importsMW": {
-   "coalTWh": true,
-   "co2": true,
-   "avgCost": true,
-   "replAvg": true,
-   "avgPrice": true,
-   "rePct": true,
-   "curtTWh": false,
-   "loleHrs": false
-  },
-  "exportCapMW": {
-   "coalTWh": false,
-   "co2": false,
-   "avgCost": true,
-   "replAvg": true,
-   "avgPrice": true,
-   "rePct": true,
-   "curtTWh": true,
-   "loleHrs": false
-  },
-  "exportPriceR": {
-   "coalTWh": false,
-   "co2": false,
-   "avgCost": true,
    "replAvg": false,
    "avgPrice": false,
    "rePct": false,
