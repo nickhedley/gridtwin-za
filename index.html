@@ -3177,10 +3177,21 @@ function printPrefeas() {
     // voltage columns: the credit is uniform nationally while the generator
     // transmission charge is strongly zonal, so ALL the locational signal sits on
     // the cost side.
-    const WHEEL_CREDIT = {                 // c/kWh excl VAT
+    const WHEEL_CREDIT_NONLOCAL = {        // Table 7, c/kWh excl VAT
       high: { peak: 586.91, std: 146.72, off: 97.82 },   // Jun-Aug
       low:  { peak: 243.57, std: 136.95, off: 97.82 },   // Sep-May
     };
+    // Table 11, municipal bulk supplies. A uniform 1.8% above the non-local rate
+    // at every period, so wheeling INTO a metro earns slightly more per MWh.
+    const WHEEL_CREDIT_LOCAL = {           // c/kWh excl VAT
+      high: { peak: 597.44, std: 149.35, off: 99.58 },
+      low:  { peak: 247.93, std: 139.40, off: 99.58 },
+    };
+    // The off-taker's account type decides which applies. Metro consumption ends
+    // are local-authority supplies; everything else is Eskom-direct.
+    const METROS = ['Western Cape', 'Eastern Cape', 'Mpumalanga'];
+    const WHEEL_CREDIT = METROS.indexOf(cons) >= 0
+      ? WHEEL_CREDIT_LOCAL : WHEEL_CREDIT_NONLOCAL;
     // Load-weighted annual average, on Eskom's TOU period split (roughly 3/9/12
     // hours peak/standard/off-peak on a weekday) and a 3-month high season.
     const _wc = (s2, w) => (WHEEL_CREDIT[s2].peak*3 + WHEEL_CREDIT[s2].std*9
@@ -5724,7 +5735,7 @@ const BLD_COST = {
   wind:    { c2026: 21000, decl:  0.0286 },
   pv:      { c2026: 12000, decl:  0.0389 },
   rooftop: { c2026: 17000, decl:  0.0389 },
-  batt:    { c2026: 10500, decl:  0.0315 },
+  batt:    { c2026:  8105, decl:  0.0500 },
   // LONG-DURATION STORAGE, added Aug 2026. Both are priced per kW of POWER at
   // their own duration, like the lithium line above (R10,500/kW = 4h).
   //
