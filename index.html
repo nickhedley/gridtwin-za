@@ -6722,23 +6722,19 @@ function bldBuildRegionalLP(opts){
       // hb_ survived. Caught by counting constraint families in the emitted LP.
       L.push(' hw_'+ri+'_'+y+': ' + cum('wind',ri,y).join(' + ') + ' <= ' + wcap.toFixed(1));
       L.push(' hp_'+ri+'_'+y+': ' + cum('pv',ri,y).join(' + ')   + ' <= ' + pcap.toFixed(1));
-      // STORAGE HEADROOM, on its own rule - see the note below on why the
-      // published batt_mw (a copy of solar_mw) is the wrong basis.
+      // LITHIUM ONLY - and this is deliberate, after two failures.
       //
-      // A battery in an export-constrained region charges from local surplus and
-      // discharges to local load: no net export, and it RELIEVES the corridor.
-      // Northern Cape has zero headroom precisely because it already generates
-      // more than the corridor carries - which is exactly where storage helps.
+      // Vanadium and iron-air face NO grid constraint here, which lets vanadium
+      // reach 81 GW against a 32 GW national peak under no-build-limit. That is a
+      // known artefact.
       //
-      // Cap: the published headroom, or the region's own peak demand, whichever
-      // is larger. The second term is the physically meaningful floor, and it
-      // cannot run away - no region usefully holds more storage power than its
-      // own peak. All three technologies share it, since they share a connection.
-      const _regPeak = (S.peakMW ?? 32000) * (BLD_LOAD_SHARE[R] || 0);
-      const _storeCap = Math.max(hr.batt_mw || 0, _regPeak);
-      L.push(' hb_'+ri+'_'+y+': '
-        + BLD_STORE.map(S2 => cum(S2.t,ri,y).join(' + ')).join(' + ')
-        + ' <= ' + _storeCap.toFixed(1));
+      // Two fixes were tried on 21 Aug 2026 and both broke the solve:
+      //   summing all storage at the published headroom      -> solver hung
+      //   summing all storage at max(published, region peak) -> did not solve
+      // The BLD_STORE port itself is fine; only the headroom change breaks it.
+      // Root cause not yet found - a local HiGHS harness could not reproduce the
+      // browser's loaded data state, so this needs diagnosis with a real solve.
+      L.push(' hb_'+ri+'_'+y+': ' + cum('batt',ri,y).join(' + ') + ' <= ' + (hr.batt_mw||0));
     }
     // BUILD RATE, NATIONAL AND PER REGION.
     // The national cap alone let the optimiser put an entire year's build into
