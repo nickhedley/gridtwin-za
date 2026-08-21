@@ -5745,13 +5745,18 @@ const BLD_COST = {
   // taken raw - otherwise the two lines would sit on different cost bases and the
   // optimiser would be comparing a market price against an in-house one.
   // ~$286/kWh x 8h x R16.21 = R37,000/kW.
-  vrfb:    { c2026: 37000, decl:  0.0300 },
+  vrfb:    { c2026: 51872, decl:  0.0300 },
   // IRON-AIR, 100h. Form Energy targets under $20/kWh for the energy portion;
   // at 100 hours that is $2,000/kW, plus roughly $400/kW of power conversion.
   // ~$2,400/kW x R16.21 = R39,000/kW. Note it lands NEAR vanadium per kW while
   // storing twelve times as long - which is the entire argument for it.
   // Faster decline than the others: it is the least mature, with the first
   // gigafactory only shipping in 2026.
+  // LEAST RELIABLE FIGURE HERE: based on Form Energy's stated $20/kWh TARGET,
+  // not a realised installed price. No independent installed cost for a
+  // commercial iron-air project was findable as of 21 Aug 2026 - the first
+  // gigafactory only began shipping this year. If iron-air starts winning in
+  // the optimiser, check this number before believing the result.
   ironair: { c2026: 39000, decl:  0.0600 },
   ccgt:    { c2026: 34965, decl: -0.0200 },
 };
