@@ -3167,6 +3167,25 @@ function printPrefeas() {
     // Ancillary service charge, Table 26: 0.37 c/kWh for Transmission-connected
     // generators, excl VAT.
     const ancRkWh = 0.0037;
+    // WHEELING CREDIT, Table 7 FY2027: 'Active energy charge excluding losses and
+    // portion of Generation Capacity Charge', c/kWh excl VAT. This is the exact
+    // basis on which wheeled energy is credited to the off-taker.
+    //
+    // Note what the numbers say. The credit is ~18.5% BELOW the retail energy
+    // rate at every period - that is the losses and GCC exclusion, a real cost of
+    // wheeling that appears nowhere as a charge. And the table has no zone or
+    // voltage columns: the credit is uniform nationally while the generator
+    // transmission charge is strongly zonal, so ALL the locational signal sits on
+    // the cost side.
+    const WHEEL_CREDIT = {                 // c/kWh excl VAT
+      high: { peak: 586.91, std: 146.72, off: 97.82 },   // Jun-Aug
+      low:  { peak: 243.57, std: 136.95, off: 97.82 },   // Sep-May
+    };
+    // Load-weighted annual average, on Eskom's TOU period split (roughly 3/9/12
+    // hours peak/standard/off-peak on a weekday) and a 3-month high season.
+    const _wc = (s2, w) => (WHEEL_CREDIT[s2].peak*3 + WHEEL_CREDIT[s2].std*9
+                          + WHEEL_CREDIT[s2].off*12) / 24 * w;
+    const creditRMWh = (_wc('high', 0.25) + _wc('low', 0.75)) * 10;  // c/kWh -> R/MWh
     // Losses: ~2% base + 0.002% per km
     const lossPct = Math.min(6, 2 + distKm * 0.003);
     const lossMultiplier = 1 / (1 - lossPct/100);
@@ -3232,6 +3251,7 @@ function printPrefeas() {
         not the delivered price.
       </div>
       <div style="margin-top:10px;padding:7px 10px;background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A);font-size:10px;line-height:1.55"><strong>${gen} is in Eskom&rsquo;s ${gz.zone} transmission zone: R${gz.rkWmo.toFixed(2)}/kW/month.</strong> ${gz.rkWmo === 0 ? 'Zero &ndash; the renewable-rich zones pay no generator transmission network charge at all, which is a deliberate siting signal.' : 'The Cape and Karoo zones pay R0.00, so siting here costs a project money that a Northern or Western Cape site would not pay.'} Source: Table 25, Eskom Schedule of Standard Prices FY2027, charged on maximum export capacity. Converted at a 35&#37; capacity factor. Ancillary services add 0.37 c/kWh (Table 26).</div>
+      <div style="margin-top:10px;padding:7px 10px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A);font-size:10px;line-height:1.55"><strong>The credit side.</strong> Wheeled energy is credited to the off-taker at R${creditRMWh.toFixed(0)}/MWh on a load-weighted annual average &ndash; R5,869/MWh in a winter peak hour, R978 off-peak. <strong>That is about 18.5&#37; below the retail energy rate</strong>, because the credit excludes losses and the 70&#37; of the Generation Capacity Charge buried in the energy rate. A real cost of wheeling that never appears as a charge. Note too that the credit table has no zone or voltage columns: the credit is uniform nationally while the generator transmission charge is strongly zonal, so the entire locational signal sits on the cost side. Source: Table 7, Eskom Schedule of Standard Prices FY2027, excl VAT.</div>
       <div style="margin-top:10px;font-size:10.5px;font-weight:600">What this figure leaves out</div>
       <div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:2px">
         NERSA approved the Regulatory Rules on Network Charges for Third-Party Transportation of
