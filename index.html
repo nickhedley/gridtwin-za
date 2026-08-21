@@ -6883,9 +6883,10 @@ function renderBuildRegional(res, rate, opts){
         since the arithmetic will otherwise buy far more line than could be permitted and built.</div>
     </div>`;
 
-  const T = ['wind','pv','batt'], LBL = { wind:'Wind', pv:'Solar', batt:'Battery' };
+  const T = ['wind','pv','batt','vrfb','ironair'];
+  const LBL = { wind:'Wind', pv:'Solar', batt:'Battery', vrfb:'Vanadium', ironair:'Iron-air' };
   const rows = [];
-  const tot = { wind:0, pv:0, batt:0 };
+  const tot = { wind:0, pv:0, batt:0, vrfb:0, ironair:0 };
   for (let ri = 0; ri < BLD_REGIONS.length; ri++){
     const R = BLD_REGIONS[ri], hr = bldHeadroom[R] || {};
     const got = {};
@@ -6899,7 +6900,8 @@ function renderBuildRegional(res, rate, opts){
     const scf = sp.reduce((a,b)=>a+b,0)/sp.length, wcf = wp.reduce((a,b)=>a+b,0)/wp.length;
     rows.push({ R, got, hr, scf, wcf });
   }
-  bldLastTotals = { wind:tot.wind, pv:tot.pv, batt:tot.batt };
+  bldLastTotals = { wind:tot.wind, pv:tot.pv, batt:tot.batt,
+                    vrfb:tot.vrfb, ironair:tot.ironair };
 
   // SHADOW PRICES. The solver already computes a dual on every constraint; the
   // dual on a headroom constraint is the annual system saving from one more MW
@@ -6920,7 +6922,7 @@ function renderBuildRegional(res, rate, opts){
     x.dualSolar = p ? Math.abs(p.Dual || 0) : 0;
   });
 
-  const built = rows.filter(x => x.got.wind + x.got.pv + x.got.batt > 1);
+  const built = rows.filter(x => T.reduce((a,t) => a + (x.got[t]||0), 0) > 1);
   const blocked = rows.filter(x => (x.hr.wind_mw||0) + (x.hr.solar_mw||0) < 1);
 
   let html = '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
@@ -6928,8 +6930,9 @@ function renderBuildRegional(res, rate, opts){
     + '<th style="text-align:left;padding:4px 6px">Region</th>'
     + '<th style="text-align:right;padding:4px 6px">Wind GW</th>'
     + '<th style="text-align:right;padding:4px 6px">Solar GW</th>'
-    + '<th style="text-align:right;padding:4px 6px">Wind CF</th>'
-    + '<th style="text-align:right;padding:4px 6px">Solar CF</th>'
+    + '<th style="text-align:right;padding:4px 6px">Battery GW</th>'
+    + '<th style="text-align:right;padding:4px 6px">Vanadium GW</th>'
+    + '<th style="text-align:right;padding:4px 6px">Iron-air GW</th>'
     + '<th style="text-align:right;padding:4px 6px">Headroom used</th></tr>';
   for (const x of built.sort((a,b) => (b.got.wind+b.got.pv)-(a.got.wind+a.got.pv))){
     const hw = x.hr.wind_mw||0, hp = x.hr.solar_mw||0;
@@ -6940,15 +6943,19 @@ function renderBuildRegional(res, rate, opts){
       + '<td style="padding:4px 6px">' + x.R + '</td>'
       + '<td style="text-align:right;padding:4px 6px">' + (x.got.wind>1?(x.got.wind/1000).toFixed(2):'–') + '</td>'
       + '<td style="text-align:right;padding:4px 6px">' + (x.got.pv>1?(x.got.pv/1000).toFixed(2):'–') + '</td>'
-      + '<td style="text-align:right;padding:4px 6px;color:var(--ink2)">' + (x.wcf*100).toFixed(0) + '%</td>'
-      + '<td style="text-align:right;padding:4px 6px;color:var(--ink2)">' + (x.scf*100).toFixed(0) + '%</td>'
+      + '<td style="text-align:right;padding:4px 6px">' + (x.got.batt>1?(x.got.batt/1000).toFixed(2):'\u2013') + '</td>'
+      + '<td style="text-align:right;padding:4px 6px">' + (x.got.vrfb>1?(x.got.vrfb/1000).toFixed(2):'\u2013') + '</td>'
+      + '<td style="text-align:right;padding:4px 6px">' + (x.got.ironair>1?(x.got.ironair/1000).toFixed(2):'\u2013') + '</td>'
       + '<td style="text-align:right;padding:4px 6px' + (full?';color:var(--alert,#C4785A);font-weight:700':'') + '">'
       + [useW!==null?useW+'% w':null, useP!==null?useP+'% s':null].filter(Boolean).join(' · ') + '</td></tr>';
   }
   html += '<tr style="border-top:2px solid var(--ink)"><td style="padding:4px 6px;font-weight:700">TOTAL</td>'
     + '<td style="text-align:right;padding:4px 6px;font-weight:700">' + (tot.wind/1000).toFixed(2) + '</td>'
     + '<td style="text-align:right;padding:4px 6px;font-weight:700">' + (tot.pv/1000).toFixed(2) + '</td>'
-    + '<td colspan="3"></td></tr></table>';
+    + '<td style="text-align:right;padding:4px 6px;font-weight:700">' + (tot.batt>1?(tot.batt/1000).toFixed(2):'\u2013') + '</td>'
+    + '<td style="text-align:right;padding:4px 6px;font-weight:700">' + (tot.vrfb>1?(tot.vrfb/1000).toFixed(2):'\u2013') + '</td>'
+    + '<td style="text-align:right;padding:4px 6px;font-weight:700">' + (tot.ironair>1?(tot.ironair/1000).toFixed(2):'\u2013') + '</td>'
+    + '<td></td></tr></table>';
 
   // The headline finding: the best resource is unreachable.
   html += '<div style="margin-top:10px;font-size:10.5px;line-height:1.5">';
