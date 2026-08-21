@@ -9321,7 +9321,7 @@ const SLIDERS=[
    note:'Off by default: South Africa does not procure inertia at all yet. Switch on to test what price would make batteries displace spinning mass.'},
   {id:'asInertiaRkWyr',label:'Inertia pricing',min:0,max:400,step:10,def:FIXED.asInertiaRkWyr,
    fmt:v=>v===0?'none':'R'+v+'/kW/yr',
-   note:'Paid-for inertia, a service that South Africa does not yet procure but will need to as inverter-based generation grows. Earned only by plants that can actually provide it \u2013 synchronous machines inherently, grid-forming batteries synthetically. Use it against the synchronous floor slider to determine what price makes batteries displace spinning mass.'},
+   note:'Paid-for inertia, a service that South Africa does not yet procure but will need to as inverter-based generation grows. Earned only by plants that can actually provide it \u2013 synchronous machines inherently, grid-forming batteries synthetically. Use it against the synchronous floor slider to determine what price makes batteries displace spinning mass. Note the unit is a simplification: real markets tender for GVA\u00b7seconds rather than paying per kW. GB\u2019s stability pathfinders paid batteries \u00a35\u201325k/MW/yr.'},
   {id:'capacityPaymentOn',toggle:true,def:false,label:'Pay for firm capacity',
    note:'Off by default: South Africa has no capacity mechanism. The August 2026 Electricity Pricing Policy says capacity charges are needed; switch on to model one.'},
   {id:'capacityPaymentRkWyr',label:'Capacity payments',min:0,max:600,step:10,def:FIXED.capacityPaymentRkWyr,
