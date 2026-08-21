@@ -6722,13 +6722,17 @@ function bldBuildRegionalLP(opts){
       // hb_ survived. Caught by counting constraint families in the emitted LP.
       L.push(' hw_'+ri+'_'+y+': ' + cum('wind',ri,y).join(' + ') + ' <= ' + wcap.toFixed(1));
       L.push(' hp_'+ri+'_'+y+': ' + cum('pv',ri,y).join(' + ')   + ' <= ' + pcap.toFixed(1));
-      // ALL storage competes for the SAME connection headroom - a flow battery
-      // needs a grid connection exactly as a lithium one does. Applying this to
-      // lithium alone let vanadium and iron-air build without any grid limit,
-      // and vanadium ran to 81 GW against a 32 GW national peak.
-      L.push(' hb_'+ri+'_'+y+': '
-        + BLD_STORE.map(S2 => cum(S2.t,ri,y).join(' + ')).join(' + ')
-        + ' <= ' + (hr.batt_mw||0));
+      // NOTE: this caps LITHIUM only. Vanadium and iron-air currently face no
+      // grid connection constraint, which lets them build without limit -
+      // vanadium reached 81 GW against a 32 GW national peak in testing.
+      //
+      // Summing all three into this one row was tried on 21 Aug 2026 and made
+      // the solve hang: batt_mw is ZERO in Northern Cape, Hydra Central, Eastern
+      // Cape and Western Cape - exactly the high-VRE regions - so forcing all
+      // storage to zero there removes the only way to absorb surplus where most
+      // of it is generated. Needs storage-specific headroom data, or an
+      // explanation of why batt_mw is zero where wind_mw is not.
+      L.push(' hb_'+ri+'_'+y+': ' + cum('batt',ri,y).join(' + ') + ' <= ' + (hr.batt_mw||0));
     }
     // BUILD RATE, NATIONAL AND PER REGION.
     // The national cap alone let the optimiser put an entire year's build into
