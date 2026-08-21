@@ -1,3 +1,41 @@
+## REGIONAL BUILD LP IS CURRENTLY INFEASIBLE - OPEN (21 Aug 2026)
+
+The build box does not solve. `validate_solve.js` reproduces it locally:
+Infeasible on every pace, with the Future electricity mix preset applied.
+
+WHAT IS KNOWN
+  - The hb_ headroom line is byte-identical to its original form; the two
+    headroom experiments were reverted cleanly and left nothing behind.
+  - So the cause is the BLD_STORE port into bldBuildRegionalLP, not the
+    headroom work that followed it.
+  - Earlier runs on the ported version DID solve and produced 81 GW of
+    vanadium under no-build-limit, so something between those runs and now
+    is the trigger. Not yet identified.
+
+HOW TO BISECT, now that a solve harness exists
+  node validate_solve.js testroot --pace=none --verbose
+
+  Remove one constraint family at a time from the emitted LP and re-solve.
+  The families the port added or changed:
+    soc_<tech>_<region>_<year>_<day>    state of charge, EQUALITY row
+    ecap_<tech>_...                     stored energy <= built capacity
+    dur_<tech>_...                      within-day discharge <= duration
+    <dis|chg>max_<region>_<year>_<day>  per-hour power limits
+
+  The soc_ row is an EQUALITY and therefore the most likely culprit: an
+  equality with a wrong constant or a missing prev-day term makes the model
+  infeasible outright, where an inequality would merely be slack.
+
+  Start with iron-air. HRS=100 in a 24-hour representative day means the
+  duration constraint can never bind, and the first-day opening level is
+  ex*HRS*0.5 with ex=0 - worth checking that combination first.
+
+THE HARNESS ITSELF
+  validate_solve.js is new and is the first harness that actually SOLVES the
+  model rather than checking its shape. Every other harness passed throughout
+  this failure. It calls the page's own bldLoadRegionalData() so the data state
+  matches the browser, which an earlier hand-injected attempt did not.
+
 ## SCOPE-LEAK BUG IN THE SITE RESOURCE QUERY - FIXED (20 Aug 2026)
 
 Reported by the user: clicking the map in the site resource query returned
