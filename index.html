@@ -6267,6 +6267,7 @@ async function runBuildOpt(){
 
 function renderBuildResult(res, rate, opts){
   bldLastResult = { res, rate, opts, regional: false };
+  window.bldLastResult = bldLastResult;   // for console inspection
   const host = document.getElementById('bldResult');
   if (!res || !res.Columns){
     host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
@@ -6817,6 +6818,7 @@ function bldBuildRegionalLP(opts){
 
 function renderBuildRegional(res, rate, opts){
   bldLastResult = { res, rate, opts, regional: true };
+  window.bldLastResult = bldLastResult;
   const host = document.getElementById('bldResult');
   if (!res || !res.Columns){
     host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
