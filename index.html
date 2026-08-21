@@ -6032,7 +6032,10 @@ function bldBuildLP(opts){
     let cost = 0;
     for (const yy of Y) if (yy >= y)
       cost += bldNetAnnuity(t, y) / Math.pow(1+BLD_DISC, yy-2026);
-    obj.push(cost.toFixed(3) + ' b_' + t + '_' + y);
+    // x1000: bldNetAnnuity is R/kW/yr and b_ is in MW. Without this the whole
+    // capex side is 1000x too cheap against the fuel terms, building is
+    // effectively free, and the optimiser just overbuilds VRE and spills.
+    obj.push((cost * 1000).toFixed(3) + ' b_' + t + '_' + y);
   }
   for (const y of Y){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
@@ -6543,7 +6546,8 @@ function bldBuildRegionalLP(opts){
     let c = 0;
     for (const yy of Y) if (yy >= y)
       c += bldNetAnnuity(t, y) / Math.pow(1+BLD_DISC, yy-2026);
-    obj.push(c.toFixed(3) + ' b_' + t + '_' + ri + '_' + y);
+    // x1000: R/kW/yr against a variable in MW. See the note in bldBuildLP.
+    obj.push((c * 1000).toFixed(3) + ' b_' + t + '_' + ri + '_' + y);
   }
   // Transmission expansion, annuitised the same way generation capex is, so the
   // optimiser trades a line against a wind farm on equal terms.
