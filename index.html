@@ -3187,11 +3187,15 @@ function printPrefeas() {
       high: { peak: 597.44, std: 149.35, off: 99.58 },
       low:  { peak: 247.93, std: 139.40, off: 99.58 },
     };
-    // The off-taker's account type decides which applies. Metro consumption ends
-    // are local-authority supplies; everything else is Eskom-direct.
-    const METROS = ['Western Cape', 'Eastern Cape', 'Mpumalanga'];
-    const WHEEL_CREDIT = METROS.indexOf(cons) >= 0
-      ? WHEEL_CREDIT_LOCAL : WHEEL_CREDIT_NONLOCAL;
+    // ASKED, not guessed. A province mapping cannot work: every one of them
+    // contains both kinds of off-taker - Gauteng has City Power, Tshwane and
+    // Ekurhuleni alongside Eskom-direct industrials, Mpumalanga is mostly
+    // Eskom-direct heavy industry with municipal distributors in the towns. The
+    // account type belongs to the OFF-TAKER, and the developer knows which
+    // theirs is.
+    const acctEl = document.getElementById('wheelAcct');
+    const isLocal = acctEl && acctEl.value === 'local';
+    const WHEEL_CREDIT = isLocal ? WHEEL_CREDIT_LOCAL : WHEEL_CREDIT_NONLOCAL;
     // Load-weighted annual average, on Eskom's TOU period split (roughly 3/9/12
     // hours peak/standard/off-peak on a weekday) and a 3-month high season.
     const _wc = (s2, w) => (WHEEL_CREDIT[s2].peak*3 + WHEEL_CREDIT[s2].std*9
@@ -3293,6 +3297,7 @@ function printPrefeas() {
   // Wire up dropdowns
   document.getElementById('wheelGenRegion').addEventListener('change', calcWheeling);
   document.getElementById('wheelConsRegion').addEventListener('change', calcWheeling);
+  document.getElementById('wheelAcct').addEventListener('change', calcWheeling);
   calcWheeling();   // render on load, not only after the user touches a control
 }
 
@@ -3408,6 +3413,15 @@ function printPrefeas() {
                 <option value="Mpumalanga">Mpumalanga</option>
                 <option value="Limpopo">Limpopo</option>
               </select>
+            </div>
+            <div>
+              <label style="font-weight:600;display:block;margin-bottom:3px">Off-taker account</label>
+              <select id="wheelAcct" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
+                <option value="nonlocal">Eskom-direct customer</option>
+                <option value="local">Municipal supply</option>
+              </select>
+              <div style="font-size:9px;color:var(--ink2);margin-top:2px">Municipal supplies are
+                credited about 1.8&#37; more per MWh. Your customer knows which they are.</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:11px">
@@ -5456,10 +5470,29 @@ function simulate(u, prof, outPath){
     ? (battPower + psPowerTot) * _resShare
     : 0;
   const asReserveRevenueR = reserveHeldMW * 8760 * _asRes;
-  // Inertia: only plant that can actually provide it. Synchronous machines
-  // inherently, grid-forming batteries synthetically. Solar and wind cannot.
+  // INERTIA, priced in GVA-SECONDS rather than per kW. Real markets tender for a
+  // QUANTITY of stored rotational energy: GB's Stability Pathfinder 1 bought
+  // 12.5 GVAs for GBP328m. Paying per kW ignores what is actually being bought -
+  // a 100 MW steam set and a 100 MW battery are not equivalent providers.
+  //
+  // Stored energy = H x rated MVA, H being the inertia constant in seconds.
+  // Standard machine values: large steam sets carry more than hydro, and
+  // inverters carry none at all unless grid-forming.
+  const H_CONST = { coal: 3.5, nuclear: 5.0, ccgt: 5.0, hydro: 3.0 };
+  // The synchronous floor is what is actually spinning. Weight H across the
+  // machine types that hold it, on roughly the South African thermal mix.
+  const _thermalH = 0.70 * H_CONST.coal + 0.12 * H_CONST.nuclear
+                  + 0.10 * H_CONST.ccgt + 0.08 * H_CONST.hydro;
+  // Grid-forming batteries provide SYNTHETIC inertia, credited at half the
+  // effective H of a steam set: the response is faster, but it is emulated from
+  // a control loop and a finite reservoir rather than stored in a rotor.
   const inertiaCapableMW = (p.syncMinMW ?? 0) + battPower * 0.5;
-  const asInertiaRevenueR = inertiaCapableMW * 1000 * _asIn;
+  const inertiaGVAs = ((p.syncMinMW ?? 0) * _thermalH
+                     + battPower * 0.5 * _thermalH * 0.5) / 1000;
+  // asInertiaRkWyr is now read as R per MVA-second per year. GB's pathfinder
+  // implies roughly R100,000 per MVAs per year, so the slider's 0-400 range
+  // covers a plausible fraction of that.
+  const asInertiaRevenueR = inertiaGVAs * 1000 * _asIn * 1000;
   const asRevenueR = asReserveRevenueR + asInertiaRevenueR;
   // A capacity payment is a TRANSFER from consumers to generators, not a resource
   // cost, so it does NOT reduce the whole-economy total. It changes who pays and
@@ -5519,7 +5552,7 @@ function simulate(u, prof, outPath){
     if(loadS[h] > peakGridLoad) peakGridLoad = loadS[h];
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
-  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,reserveHeldMW,inertiaCapableMW,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,reserveHeldMW,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -9356,8 +9389,8 @@ const SLIDERS=[
   {id:'asInertiaOn',toggle:true,def:false,label:'Price inertia',
    note:'Off by default: South Africa does not procure inertia at all yet. Switch on to test what price would make batteries displace spinning mass.'},
   {id:'asInertiaRkWyr',label:'Inertia pricing',min:0,max:400,step:10,def:FIXED.asInertiaRkWyr,
-   fmt:v=>v===0?'none':'R'+v+'/kW/yr',
-   note:'Paid-for inertia, a service that South Africa does not yet procure but will need to as inverter-based generation grows. Earned only by plants that can actually provide it \u2013 synchronous machines inherently, grid-forming batteries synthetically. Use it against the synchronous floor slider to determine what price makes batteries displace spinning mass. Note the unit is a simplification: real markets tender for GVA\u00b7seconds rather than paying per kW. GB\u2019s stability pathfinders paid batteries \u00a35\u201325k/MW/yr.'},
+   fmt:v=>v===0?'none':'R'+v+'k/GVA\u00b7s/yr',
+   note:'Paid-for inertia, a service that South Africa does not yet procure but will need to as inverter-based generation grows. Earned only by plants that can actually provide it \u2013 synchronous machines inherently, grid-forming batteries synthetically. Use it against the synchronous floor slider to determine what price makes batteries displace spinning mass. Priced in GVA\u00b7seconds, as real markets are \u2013 a quantity of stored rotational energy, not of capacity. Stored energy is H \u00d7 rated MVA, so a steam set carries far more than a battery of the same MW. Grid-forming batteries are credited at half a steam set\u2019s effective H: the response is faster, but emulated from a control loop rather than stored in a rotor. For scale, GB\u2019s Stability Pathfinder 1 bought 12.5 GVA\u00b7s for \u00a3328m; this scenario holds about 52 GVA\u00b7s.'},
   {id:'capacityPaymentOn',toggle:true,def:false,label:'Pay for firm capacity',
    note:'Off by default: South Africa has no capacity mechanism. The August 2026 Electricity Pricing Policy says capacity charges are needed; switch on to model one.'},
   {id:'capacityPaymentRkWyr',label:'Capacity payments',min:0,max:600,step:10,def:FIXED.capacityPaymentRkWyr,
