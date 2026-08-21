@@ -5466,10 +5466,48 @@ function simulate(u, prof, outPath){
   const _asRes = Math.max(0, p.asReserveOn ? (p.asReserveRMWh || 0) : 0);
   const _asIn  = Math.max(0, p.asInertiaOn ? (p.asInertiaRkWyr || 0) : 0);
   const _resShare = Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15));
+  // RESERVE PRODUCTS. Every market runs the same ladder by response speed, and
+  // batteries are not equally placed on each rung. Eskom's own categories:
+  //
+  //   product        speed      battery suitability
+  //   Regulating     seconds    excellent - CAISO batteries held ~84% of all
+  //                             regulation in 2024
+  //   Instantaneous  seconds    excellent - inverter response beats any machine
+  //   Ten-minute     10 min     good
+  //   Supplemental   30 min+    poor - a 4h store competes with plant that can
+  //                             simply stay on, and earns little for the duration
+  //
+  // Shares are Eskom's approximate procurement split. Price differentials are
+  // from the observed pattern across ERCOT, CAISO and GB: the fast products
+  // clear well above the slow ones because they are scarce and hard to serve.
+  const AS_PRODUCTS = [
+    { k:'reg',   label:'Regulating',    share:0.20, priceMult:1.60, battFit:1.00 },
+    { k:'inst',  label:'Instantaneous', share:0.30, priceMult:1.30, battFit:1.00 },
+    { k:'ten',   label:'Ten-minute',    share:0.30, priceMult:0.85, battFit:0.70 },
+    { k:'supp',  label:'Supplemental',  share:0.20, priceMult:0.45, battFit:0.25 },
+  ];
+  // SATURATION. The fast products are small, so a growing fleet crushes their
+  // price - the defining dynamic of storage economics everywhere it has been
+  // tried. ERCOT's ancillary prices fell ~90% in two years as the fleet went from
+  // 0.2 to 12 GW; GB's frequency response share fell from 87% to 33%.
+  //
+  // Modelled as a simple depth: once storage power exceeds the reserve
+  // requirement it can serve, the marginal MW earns progressively less.
+  const _fleetMW = battPower + psPowerTot;
+  const _resReqMW = Math.max(1, (p.peakMW ?? 32000) * 0.06);   // ~6% of peak
+  const _satur = Math.min(1, _resReqMW / Math.max(_resReqMW, _fleetMW * 0.5));
   const reserveHeldMW = _asRes > 0
     ? (battPower + psPowerTot) * _resShare
     : 0;
-  const asReserveRevenueR = reserveHeldMW * 8760 * _asRes;
+  // Revenue is the sum across products, each at its own price and each limited
+  // by how well a battery can actually serve it.
+  const asProductRevenue = {};
+  let asReserveRevenueR = 0;
+  for (const q of AS_PRODUCTS){
+    const r = reserveHeldMW * q.share * q.battFit * 8760 * _asRes * q.priceMult * _satur;
+    asProductRevenue[q.k] = r;
+    asReserveRevenueR += r;
+  }
   // INERTIA, priced in GVA-SECONDS rather than per kW. Real markets tender for a
   // QUANTITY of stored rotational energy: GB's Stability Pathfinder 1 bought
   // 12.5 GVAs for GBP328m. Paying per kW ignores what is actually being bought -
@@ -5552,7 +5590,7 @@ function simulate(u, prof, outPath){
     if(loadS[h] > peakGridLoad) peakGridLoad = loadS[h];
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
-  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,reserveHeldMW,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,reserveHeldMW,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
