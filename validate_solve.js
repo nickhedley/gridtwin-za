@@ -92,7 +92,7 @@ const check = (name, ok, detail) => {
     if (typeof PRESETS !== 'undefined' && PRESETS[${JSON.stringify(process.env.PRESET || 'Future electricity mix')}])
       applyState(PRESETS[${JSON.stringify(process.env.PRESET || 'Future electricity mix')}]);
     const rate = BLD_PACE[${JSON.stringify(PACE)}] || BLD_PACE.masterplan;
-    const built = bldBuildRegionalLP({ growth:5, eaf:65, rate, carbonCap:null, state:state });
+    const built = bldBuildRegionalLP({ growth:0.05, eaf:65, rate, carbonCap:null, state:state });
     window.__lp = built.lp;
     window.__built = JSON.stringify({ chars: built.lp.length, rows: built.lp.split(String.fromCharCode(10)).length });
   } catch(e) { window.__buildErr = String(e).slice(0,200); }`);

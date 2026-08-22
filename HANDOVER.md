@@ -1,40 +1,38 @@
-## REGIONAL BUILD LP IS CURRENTLY INFEASIBLE - OPEN (21 Aug 2026)
+## BUILD LP - RESOLVED (21 Aug 2026). IT WAS NEVER BROKEN.
 
-The build box does not solve. `validate_solve.js` reproduces it locally:
-Infeasible on every pace, with the Future electricity mix preset applied.
+The build optimiser solves. The "infeasibility" was entirely in my diagnostic
+harness, which passed demand growth as a PERCENTAGE where the code expects a
+FRACTION:
 
-WHAT IS KNOWN
-  - The hb_ headroom line is byte-identical to its original form; the two
-    headroom experiments were reverted cleanly and left nothing behind.
-  - So the cause is the BLD_STORE port into bldBuildRegionalLP, not the
-    headroom work that followed it.
-  - Earlier runs on the ported version DID solve and produced 81 GW of
-    vanadium under no-build-limit, so something between those runs and now
-    is the trigger. Not yet identified.
+    const dg = Math.pow(1 + growth, y - 2026);
+    growth:5    ->  demand x 1,296 by 2030,  x10,077,696 by 2035
+    growth:0.05 ->  demand x 1.2 by 2030
 
-HOW TO BISECT, now that a solve harness exists
-  node validate_solve.js testroot --pace=none --verbose
+Unserved energy is bounded at 60,000 MW per region-hour, so serving 1,296x
+demand is impossible and the solver said so. The feasibility "boundary" I mapped
+between 0% and 2% growth was 1^n versus 3^n - an artefact of my own units error,
+not a property of the model.
 
-  Remove one constraint family at a time from the emitted LP and re-solve.
-  The families the port added or changed:
-    soc_<tech>_<region>_<year>_<day>    state of charge, EQUALITY row
-    ecap_<tech>_...                     stored energy <= built capacity
-    dur_<tech>_...                      within-day discharge <= duration
-    <dis|chg>max_<region>_<year>_<day>  per-hour power limits
+TWO EARLIER HEADROOM FIXES WERE REVERTED ON THIS BAD EVIDENCE. Both were fine.
 
-  The soc_ row is an EQUALITY and therefore the most likely culprit: an
-  equality with a wrong constant or a missing prev-day term makes the model
-  infeasible outright, where an inequality would merely be slack.
+WHAT IS NOW FIXED. All storage shares the region's connection headroom, floored
+at the region's own peak demand. Verified with a real solve before shipping:
 
-  Start with iron-air. HRS=100 in a 24-hour representative day means the
-  duration constraint can never bind, and the first-day opening level is
-  ex*HRS*0.5 with ex=0 - worth checking that combination first.
+    vanadium   62.70 GW  ->  19.74 GW      headroom now binds
+    solves     yes, 164s on the masterplan pace, 6/6 solve checks
 
-THE HARNESS ITSELF
-  validate_solve.js is new and is the first harness that actually SOLVES the
-  model rather than checking its shape. Every other harness passed throughout
-  this failure. It calls the page's own bldLoadRegionalData() so the data state
-  matches the browser, which an earlier hand-injected attempt did not.
+STILL OPEN: lithium is chosen at ZERO while vanadium takes all the headroom,
+despite lithium being 3.2x cheaper per kWh (R2,026 vs R6,484) and more efficient
+(88% vs 70%). Vanadium's only advantage is duration - 8h against 4h - which
+doubles the energy per MW of scarce headroom at 5.6x the cost per kW. That does
+not obviously pay, so either the duration value under chronological carry-over is
+larger than it looks, or something in the per-technology cost path is wrong.
+Reproduce with:  node validate_solve.js testroot --pace=masterplan --verbose
+
+LESSON. Every other harness passed throughout. A harness that checks SHAPE
+cannot catch a model that will not solve, and a solve harness with a units bug
+is worse than none - it looks like evidence. Check the harness against a known-
+good case before trusting it to condemn the model.
 
 ## SCOPE-LEAK BUG IN THE SITE RESOURCE QUERY - FIXED (20 Aug 2026)
 
