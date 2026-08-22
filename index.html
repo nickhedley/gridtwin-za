@@ -6531,7 +6531,12 @@ function bldCoalByRegion(year, extraDecomMW){
 }
 
 function bldBuildRegionalLP(opts){
-  const Y = BLD_YEARS, T = ['wind','pv','batt'];
+  const Y = BLD_YEARS;
+  // Was hardcoded to ['wind','pv','batt'], so vanadium and iron-air received
+  // capex in the objective but NO rate_ or rrate_ build-rate constraints - they
+  // ignored the pace presets entirely, which is how vanadium reached 62 GW.
+  // Storage is taken from BLD_STORE so the two lists cannot drift apart.
+  const T = ['wind','pv'].concat(BLD_STORE.map(S2 => S2.t));
   const rd = bldRepDays(8);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   const S = { ...FIXED, ...(opts.state || {}) };
@@ -6760,8 +6765,9 @@ function bldBuildRegionalLP(opts){
     for (const t of T){
       const terms = [];
       for (let ri = 0; ri < BLD_REGIONS.length; ri++) terms.push('b_'+t+'_'+ri+'_'+y);
-      L.push(' rate_'+t+'_'+y+': ' + terms.join(' + ') + ' <= ' + RATE[t].toFixed(1));
-      const cap = RATE[t] * REGION_SHARE;
+      const rt = (RATE[t] != null) ? RATE[t] : 0;   // no stated rate = no pipeline
+      L.push(' rate_'+t+'_'+y+': ' + terms.join(' + ') + ' <= ' + rt.toFixed(1));
+      const cap = rt * REGION_SHARE;
       for (let ri = 0; ri < BLD_REGIONS.length; ri++){
         L.push(' rrate_'+t+'_'+ri+'_'+y+': b_'+t+'_'+ri+'_'+y+' <= ' + cap.toFixed(1));
       }
@@ -7049,7 +7055,25 @@ function renderBuildRegional(res, rate, opts){
   html += '<div style="color:var(--ink2);margin-top:6px">'
     + 'Discounted total system cost: <strong>R' + (res.ObjectiveValue/1e9).toFixed(0) + ' bn</strong>. '
     + 'Each region uses its own hourly wind and solar profile (PVGIS and Renewables.ninja), its GCCA '
-    + 'connection headroom, and real corridor transfer limits between regions.</div>'
+    + 'connection headroom, and real corridor transfer limits between regions.</div>';
+
+  // Storage at zero usually means INDIFFERENT, not uneconomic - every storage
+  // build variable comes back with a reduced cost of zero, i.e. exactly
+  // break-even. Say so, because a bare dash reads as "not worth building".
+  const _storeGW = (tot.batt + tot.vrfb + tot.ironair) / 1000;
+  if (_storeGW < 0.01){
+    html += '<div style="margin-top:7px;padding:7px 10px;background:var(--panel2);'
+      + 'border-left:3px solid var(--veld,#4A6B7A);font-size:10px;line-height:1.55">'
+      + '<strong>No storage does not mean storage is uneconomic.</strong> At these costs every '
+      + 'storage option comes back exactly <strong>break-even</strong>: building a MW changes the '
+      + 'total system cost by nothing, so a plan with several GW of storage costs the same '
+      + 'R' + (res.ObjectiveValue/1e9).toFixed(0) + ' bn as this one. The optimiser is indifferent, '
+      + 'and returns whichever answer it reaches first.'
+      + '<div style="margin-top:5px">That is a real finding about South African storage economics, '
+      + 'not a limitation: the case sits on a knife edge. Cheaper cells, a deeper price spread, a '
+      + 'capacity payment or a priced reserve market would all tip it, and each is a slider above. '
+      + 'The same behaviour appears in PyPSA\u2019s own capacity-expansion examples.</div></div>';
+  }
     + '<div style="color:var(--ink2);margin-top:5px;font-style:italic">'
     + 'Dispatch is approximated over 8 representative days; use <strong>Run the full model</strong> '
     + 'above to test a resulting mix hour by hour.'
