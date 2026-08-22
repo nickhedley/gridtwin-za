@@ -21,13 +21,49 @@ at the region's own peak demand. Verified with a real solve before shipping:
     vanadium   62.70 GW  ->  19.74 GW      headroom now binds
     solves     yes, 164s on the masterplan pace, 6/6 solve checks
 
-STILL OPEN: lithium is chosen at ZERO while vanadium takes all the headroom,
-despite lithium being 3.2x cheaper per kWh (R2,026 vs R6,484) and more efficient
-(88% vs 70%). Vanadium's only advantage is duration - 8h against 4h - which
-doubles the energy per MW of scarce headroom at 5.6x the cost per kW. That does
-not obviously pay, so either the duration value under chronological carry-over is
-larger than it looks, or something in the per-technology cost path is wrong.
-Reproduce with:  node validate_solve.js testroot --pace=masterplan --verbose
+LITHIUM AT ZERO - SOLVED. IT IS A DEGENERATE OPTIMUM, NOT A DEFEAT.
+
+The reduced costs settle it (reduced_cost_test.js):
+
+    b_batt      primal 0.0   reduced cost           0
+    b_vrfb      primal 0.0   reduced cost           0    built in other regions
+    b_ironair   primal 0.0   reduced cost           0
+    b_wind      primal 0.0   reduced cost   3,775,890    genuinely uneconomic
+
+A variable at zero with a reduced cost of ZERO is EXACTLY break-even: one more MW
+changes the objective by nothing. Compare wind in the same region, 3.8m per MW
+short of being worth building - that is what losing actually looks like.
+
+So lithium is not losing to vanadium. Storage sits on a FLAT surface where many
+different mixes cost the same, and the simplex lands on whichever vertex it
+reaches first. The 19.74 GW vanadium / 0 GW lithium split is one arbitrary point
+on that surface, not a finding.
+
+WHAT THIS MEANS FOR THE PANEL. The storage TOTAL is meaningful; the MIX is not.
+Presenting a technology split as a model result would be misleading, and small
+parameter changes will flip it for no economic reason. Either report storage as a
+single total, or add a tie-break that makes the choice deterministic and say what
+it is.
+
+THEORIES TESTED AND REFUTED ALONG THE WAY, so they are not retried:
+  - out-competed by vanadium   no: lithium alone still builds 0.00
+  - duration step change       no: lithium at 8h still builds 0.00
+  - existing fleet satisfies   no: BLD_EX_BATT is only 800 MW nationally
+  - the rb_ reserve asymmetry  never needed testing once the duals were read
+
+SEPARATE REAL BUG FOUND. vrfb and ironair have NO rate_ or rrate_ build-rate
+constraints and no explicit variable bounds, where wind, pv and batt all do:
+
+    wind     rate_ 5   rrate_ 50
+    pv       rate_ 5   rrate_ 50
+    batt     rate_ 5   rrate_ 50
+    vrfb     rate_ 0   rrate_ 0
+    ironair  rate_ 0   rrate_ 0
+
+So the two new technologies ignore the build-rate pace entirely - the masterplan
+and grid presets do not constrain them. That is why vanadium could reach 62 GW
+before the headroom fix. FIX THIS: add vrfb and ironair to whatever emits rate_
+and rrate_.
 
 LESSON. Every other harness passed throughout. A harness that checks SHAPE
 cannot catch a model that will not solve, and a solve harness with a units bug
