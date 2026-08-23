@@ -869,7 +869,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>&lsquo;Clean coal&rsquo; (CCS)</h2><span class="tag">policy test &middot; changes every output</span></div>
+            <div class="ph"><h2>Carbon capture &amp; storage retrofits for the coal fleet</h2><span class="tag">policy test &middot; changes every output</span></div>
             <div class="pb" id="ccsBody"></div>
           </div>
 
@@ -9456,7 +9456,7 @@ function renderCCS(r){
           + 'A more accurate submission would model each unit\u2019s remaining life, phasing and financing '
           + 'separately; this is a transparent approximation.</div>'
           + '<div style="margin-top:7px;padding:7px 10px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A);font-size:10px;line-height:1.55">'
-          + '<strong>Eskom has costed this, and its number is far higher.</strong> The February 2026 Medupi benefit-cost study puts carbon capture, utilisation and storage at <strong>R1,811bn to R13,837bn</strong> for Medupi alone. Read that carefully before comparing: it is a SULPHUR DIOXIDE study \u2013 Eskom sought exemption from the SO\u2082 standards, and CCUS was assessed as one of six alternatives to flue-gas desulphurisation, costed in nominal rands over the station\u2019s life to 2071. This panel uses overnight capex in 2026 money for CO\u2082 capture, which is not the same quantity. Even so, the gap is wide enough to matter: it is the only South African utility-scale CCUS costing in the public domain, and it sits well above the figure used here. Treat this panel as the optimistic end of a very wide range.</div>'
+          + '<strong>Eskom has costed this, and its number is far higher.</strong> The February 2026 Medupi benefit-cost study puts carbon capture, utilisation and storage at <strong>R1,811bn to R13,837bn</strong> for Medupi alone. Read that carefully before comparing: it is a sulphur dioxide study \u2013 Eskom sought exemption from the SO\u2082 standards, and CCUS was assessed as one of six alternatives to flue-gas desulphurisation, costed in nominal rands over the station\u2019s life to 2071. This panel uses overnight capex in 2026 money for CO\u2082 capture, which is not the same quantity. Even so, the gap is wide enough to matter: it is the only South African utility-scale CCUS costing in the public domain, and it sits well above the figure used here. Treat this panel as the optimistic end of a very wide range.</div>'
           + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px">'
           + ci('ccsCapexRkW', 'Retrofit capital', 'R/kW', rKw, 1000)
           + ci('ccsWaccPct', 'Return (WACC)', '%', state.ccsWaccPct ?? 9, 0.5)
@@ -9597,7 +9597,7 @@ const SLIDERS=[
    note:'Make the build optimiser meet an emissions ceiling in 2030, rather than only reporting whether it does. When turned on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
    ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that.'},
-  {id:'ccsEnabled',toggle:true,def:false,label:'Apply \u2018clean coal\u2019 (CCS) technologies to the model',note:'Existing coal plants are retrofitted with CCS technology and new-build plants include CCS. See the \u2018Clean coal\u2019 (CCS) panel on the right to gauge the impact on outputs'},
+  {id:'ccsEnabled',toggle:true,def:false,label:'Apply carbon capture &amp; storage to the coal fleet',note:'Existing coal plants are retrofitted with carbon capture and new-build plants include it. See the carbon capture &amp; storage panel on the right to gauge the impact on outputs'},
   {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'Fuel-only SRMC of gas power, not the build cost (see the Gas CCGT slider below). Default of R1,968 = $18.50/MMBtu delivered LNG (FY2026 JKM reference: realised Jan-Aug ~$15.5 blended with elevated Q4 forwards, +$2 regasification) \u00d7 R16.21/USD \u00f7 52&#37; CCGT efficiency. Each $1/MMBtu \u2248 R106/MWh. Try ~R2,450 for the August 2026 Hormuz spot ($23) or ~R1,280 for the pre-spike analyst consensus ($12). Carbon is added separately. Gas matches coal\u2019s running cost only near $5\u20136/MMBtu delivered; IRP 2025 planned on $10. Feeds dispatch, prices and the build optimiser.'},
   {grp:'LCOE assumptions (R/kWh) \u2013 full lifecycle build cost'},
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
