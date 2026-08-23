@@ -2600,20 +2600,25 @@ let redzData = null;
     // position that no longer exists a second later.
     const anchor = document.getElementById('nav-project');
     if (!anchor) return;
-    let last = -1, settled = 0, n = 0;
-    const settle = () => {
+    const NAVBAR = 60;
+    let userScrolled = false;
+    // If the reader scrolls, stop. Fighting them is worse than a missed anchor.
+    const onUser = () => { userScrolled = true; };
+    window.addEventListener('wheel', onUser, { passive: true, once: true });
+    window.addEventListener('touchstart', onUser, { passive: true, once: true });
+    window.addEventListener('keydown', onUser, { once: true });
+
+    // Watch for a fixed window rather than stopping once the target looks
+    // stable: the page keeps growing for several seconds while data loads, so a
+    // scroll that landed correctly at 900ms is far off by 3s.
+    const until = Date.now() + 6000;
+    const hold = () => {
+      if (userScrolled) return;
       const y = anchor.getBoundingClientRect().top;
-      // Stop once the target has stopped moving - two stable readings is enough,
-      // and it avoids yanking a reader who has scrolled away on purpose.
-      if (Math.abs(y - last) < 4) { settled++; } else { settled = 0; }
-      last = y;
-      if (settled < 2 && n < 20) {
-        anchor.scrollIntoView({ behavior: n === 0 ? 'auto' : 'smooth', block: 'start' });
-        n++;
-        setTimeout(settle, 300);
-      }
+      if (Math.abs(y - NAVBAR) > 60) anchor.scrollIntoView({ behavior: 'auto', block: 'start' });
+      if (Date.now() < until) setTimeout(hold, 250);
     };
-    settle();
+    hold();
   }
   window.addEventListener('hashchange', openTabFromHash);
   // Late enough for switchTab to exist; the settling loop handles the rest.
