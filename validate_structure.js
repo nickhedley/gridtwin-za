@@ -72,6 +72,48 @@ const live = stripComments(src);
   for (const n of names){ if (seen[n] && !dupes.includes(n)) dupes.push(n); seen[n] = 1; }
   check('no duplicate function declarations', dupes.length === 0,
         dupes.length ? `${dupes.join(', ')} — the LATER declaration wins silently` : '');
+
+// ── FALLBACKS THAT DISAGREE WITH THEIR CONSTANT ─────────────────────────────
+// Panels read `state.X ?? literal`; the engine reads `p.X` from
+// {...FIXED, ...state}. When X is NOT a slider it is absent from state, so the
+// panel uses its literal and the engine uses FIXED. If those two disagree, the
+// panel and the engine silently report different numbers from the same input.
+//
+// That is not hypothetical: ccsTsR was corrected from 120 to 900 on 20 Aug but
+// its six fallbacks still said 120, so the CCS panel showed R1.29/kWh while the
+// engine ran on R2.07/kWh. Cross-panel consistency did not catch it, because it
+// compares panels with each other rather than with the engine.
+{
+  // Extract the FIXED block for this check - the duplicate-key check above keeps
+  // its own copy inside its own scope.
+  let fixedBlock = '';
+  {
+    const fm = live.match(/const FIXED\s*=\s*\{/);
+    if (fm){
+      let d = 0, k = fm.index + fm[0].length - 1;
+      for (; k < live.length; k++){
+        if (live[k] === '{') d++;
+        else if (live[k] === '}'){ d--; if (d === 0){ k++; break; } }
+      }
+      fixedBlock = live.slice(fm.index, k);
+    }
+  }
+  const bad = [];
+  const seen = new Set();
+  for (const m of src.matchAll(/(\w+)\s*\?\?\s*([\d.]+)/g)){
+    const [, key, lit] = m;
+    if (seen.has(key + lit)) continue;
+    seen.add(key + lit);
+    // Look ONLY inside the FIXED block. Searching the whole file also matches
+    // scenario objects - `coalEAFPct: 65` inside the CSIR comparison scenario is
+    // a scenario value, not a constant, and comparing against it is meaningless.
+    const c = fixedBlock.match(new RegExp('\\b' + key + '\\s*:\\s*([\\d.]+)\\s*[,}]'));
+    if (c && c[1] !== lit) bad.push(key + ': fallback ' + lit + ' vs constant ' + c[1]);
+  }
+  check('every ?? fallback matches its constant', bad.length === 0,
+    bad.length ? bad.slice(0, 6).join('; ') : '');
+}
+
 }
 
 // ── 2. FALSY-ZERO RISK: `||` ON A NUMERIC PARAMETER ─────────────────────────
