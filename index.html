@@ -10976,8 +10976,18 @@ function syncURL(){
   const q=new URLSearchParams();
   SLIDERS.forEach(s=>{if(s.grp)return; const def=s.toggle?(s.def?1:0):s.def; if(state[s.id]!==def)q.set(s.id,state[s.id]);});
   if(document.body.classList.contains('embed'))q.set('embed','1');
-  const qs=q.toString();
-  history.replaceState(null,'',qs?('?'+qs):location.pathname);
+  // PRESERVE what does not belong to the scenario. This used to replace the
+  // whole URL with location.pathname whenever the scenario was at defaults,
+  // which destroyed both the ?tab= deep link and the #hash - so every deep-link
+  // form failed, and it looked like a server-side redirect because the URL
+  // really had become the bare domain.
+  //
+  // The hash identifies a PLACE on the page and the tab identifies a PANEL;
+  // neither is scenario state, so neither should be rewritten here.
+  const tabParam = new URLSearchParams(location.search).get('tab');
+  if (tabParam) q.set('tab', tabParam);
+  const qs2 = q.toString();
+  history.replaceState(null,'',(qs2?('?'+qs2):location.pathname) + (location.hash||''));
 }
 document.getElementById('shareBtn').addEventListener('click',()=>{
   const btn=document.getElementById('shareBtn');
