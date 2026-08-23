@@ -8457,12 +8457,32 @@ function bessRevenueStack(r, hours){
   // Ancillary: reserve is paid on capacity HELD, so it accrues per MW of the
   // share held back, every hour of the year. Inertia is paid per kW of
   // capability; a battery counts at half, matching the engine's inertiaCapableMW.
-  const reserve = _resR * _held * 8760;                      // R/MW/yr
+  const reserveTot = _resR * _held * 8760;                   // R/MW/yr, all products
+  // Split across Eskom's own reserve categories. Batteries dominate the fast end
+  // - CAISO batteries held ~84% of all regulation in 2024 - and are poorly
+  // placed at the slow end, where a 4-hour store competes with plant that can
+  // simply stay on. Mirrors AS_PRODUCTS in the dispatch engine.
+  const AS_SPLIT = [
+    { k:'reg',  label:'Regulating',    share:0.20, mult:1.60, fit:1.00 },
+    { k:'inst', label:'Instantaneous', share:0.30, mult:1.30, fit:1.00 },
+    { k:'ten',  label:'Ten-minute',    share:0.30, mult:0.85, fit:0.70 },
+    { k:'supp', label:'Supplemental',  share:0.20, mult:0.45, fit:0.25 },
+  ];
+  const _w = AS_SPLIT.reduce((a,q) => a + q.share * q.mult * q.fit, 0);
+  const products = {};
+  let reserve = 0;
+  for (const q of AS_SPLIT){
+    // Normalised by _w so the product split REDISTRIBUTES the reserve revenue
+    // rather than inflating it - the total still matches the slider.
+    const v = _w > 0 ? reserveTot * (q.share * q.mult * q.fit) / _w : 0;
+    products[q.k] = { label: q.label, v };
+    reserve += v;
+  }
   const inertia = Math.max(0, state.asInertiaOn ? (state.asInertiaRkWyr || 0) : 0) * 1000 * 0.5;
   const anc = reserve + inertia;
 
   const tot = arb + anc + cap;
-  return { arb, anc, cap, tot, hours,
+  return { arb, anc, cap, tot, hours, products, reserve, inertia,
            pct: t => tot > 0 ? 100 * t / tot : 0 };
 }
 
@@ -8483,7 +8503,7 @@ function renderBessStack(r){
     { k:'Energy arbitrage',   v: st.arb, c:'#F5C518',
       note:'Charging cheap and discharging dear, against this scenario\u2019s own prices.' },
     { k:'Reserve &amp; inertia services', v: st.anc, c:'var(--veld,#4A6B7A)',
-      note:'Paid for capacity held in reserve, plus inertia. Set by the two sliders in System operation. Reserve is modelled as one aggregate product; Eskom procures several separately, and neither reactive power nor black start is priced here.' },
+      note:'Paid for capacity held in reserve, plus inertia. Set by the two sliders in System operation. Split across Eskom\u2019s reserve categories below: batteries earn most on the fast products, where an inverter beats any machine, and little on the slow ones, where a 4-hour store competes with plant that can simply stay on. The fast products are also the smallest, so they saturate first \u2013 ERCOT\u2019s ancillary prices fell about 90&#37; in two years as its fleet grew. Reactive power and black start are not priced here.' },
     { k:'Capacity payments',  v: st.cap, c:'var(--alert,#C4785A)',
       note:'Paid for being available, de-rated to 25&#37; for a 4-hour battery.' },
   ];
@@ -8492,13 +8512,33 @@ function renderBessStack(r){
       '<span style="display:block;float:left;height:100%;width:' + st.pct(x.v).toFixed(1) + '%;'
       + 'background:' + x.c + '"></span>').join('');
 
+  const sub = (x) => {
+    if (x.k.indexOf('Reserve') < 0 || !st.products) return '';
+    const parts = Object.values(st.products).filter(q => q.v > 0);
+    if (!parts.length) return '';
+    return parts.map(q =>
+        '<tr><td style="padding:2px 5px 2px 21px;font-size:10px;color:var(--ink2)">'
+        + q.label + '</td>'
+      + '<td class="mono" style="text-align:right;padding:2px 5px;font-size:10px;color:var(--ink2)">'
+        + R(q.v) + '</td>'
+      + '<td class="mono" style="text-align:right;padding:2px 5px;font-size:10px;color:var(--ink2)">'
+        + st.pct(q.v).toFixed(0) + '&#37;</td></tr>').join('')
+      + (st.inertia > 0
+          ? '<tr><td style="padding:2px 5px 2px 21px;font-size:10px;color:var(--ink2)">Inertia</td>'
+            + '<td class="mono" style="text-align:right;padding:2px 5px;font-size:10px;color:var(--ink2)">'
+            + R(st.inertia) + '</td>'
+            + '<td class="mono" style="text-align:right;padding:2px 5px;font-size:10px;color:var(--ink2)">'
+            + st.pct(st.inertia).toFixed(0) + '&#37;</td></tr>'
+          : '');
+  };
   const rows = STREAMS.map(x =>
       '<tr style="border-bottom:1px solid var(--line2)">'
     + '<td style="padding:4px 5px"><span style="display:inline-block;width:9px;height:9px;'
       + 'background:' + x.c + ';margin-right:6px;vertical-align:middle"></span>' + x.k + '</td>'
     + '<td class="mono" style="text-align:right;padding:4px 5px">' + R(x.v) + '/MW/yr</td>'
     + '<td class="mono" style="text-align:right;padding:4px 5px;font-weight:700">'
-      + st.pct(x.v).toFixed(0) + '&#37;</td></tr>').join('');
+      + st.pct(x.v).toFixed(0) + '&#37;</td></tr>'
+    + sub(x)).join('');
 
   const zero = STREAMS.filter(x => x.v <= 0).map(x => x.k.toLowerCase());
 
