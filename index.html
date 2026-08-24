@@ -9380,11 +9380,12 @@ function renderCCS(r){
     + `background:${on ? 'rgba(74,107,122,0.08)' : 'transparent'};padding:7px 10px;margin-bottom:11px;`
     + 'font-size:10.5px;line-height:1.5">'
     + (on
-        ? '<strong>\u2018Clean coal\u2019 is applied.</strong> Every panel on this page reflects it \u2013 '
-          + 'dispatch, load shedding, cost, emissions, the wholesale price and the battery benchmark.'
-        : 'To apply \u2018clean coal\u2019, check the box in the <strong>Set the scenario</strong> box in the '
-          + 'left column. The figures below show what it would do; ticking the box applies it to the '
-          + 'whole model.')
+        ? '<strong>Carbon capture &amp; storage is applied.</strong> Every panel on this page reflects '
+          + 'it \u2013 dispatch, load shedding, cost, emissions, the wholesale price and the battery '
+          + 'benchmark.'
+        : 'To model the addition of carbon capture &amp; storage technologies to the coal fleet, check '
+          + 'the box in the <strong>Set the scenario</strong> box in the left column. The figures below '
+          + 'show what it would do; ticking the box applies it to the whole model.')
     + '</div>'
 
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-bottom:9px;'
