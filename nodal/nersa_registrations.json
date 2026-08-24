@@ -1,75 +1,80 @@
 {
-  "meta": {
-    "description": "Cumulative NERSA-registered generation capacity in South Africa since 2018. Source: SAPVIA NERSA Registered Plants Dashboard (lookerstudio.google.com/reporting/a7de0801-10c7-4610-8689-3a281e823ac1). Data collated by SAPVIA Grid Access Working Group from NERSA quarterly media statements.",
-    "source": "SAPVIA",
-    "total_mw": 19677,
-    "total_projects": 2503,
-    "note": "Cumulative total since registration regime began in 2018. Includes all registered technologies."
+ "meta": {
+  "description": "Cumulative NERSA-registered generation capacity in South Africa since 2018. Source: SAPVIA NERSA Registered Plants Dashboard (lookerstudio.google.com/reporting/a7de0801-10c7-4610-8689-3a281e823ac1). Data collated by SAPVIA Grid Access Working Group from NERSA quarterly media statements.",
+  "source": "SAPVIA",
+  "total_mw": 20131,
+  "total_projects": 2619,
+  "note": "Cumulative total since registration regime began in 2018. Updated to Q1 2026/27 (Apr-Jun 2026): NERSA registered 124 facilities totalling 804 MW, of which 122 solar PV at 236 MW and 2 wind at 568 MW. Cumulative since 2018 is 2,619 facilities and 20,131 MW, about R409bn invested. Average investment cost in the quarter was R25,099/kW. Northern Cape took the largest share at R11.934bn for 440 MW.",
+  "licence": "CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "attribution": "GridTwin ZA - nickhedley.github.io/gridtwin-za",
+  "licence_note": "Licence covers this compilation - the assembly, correction and structuring of the underlying data. Source data remains under its own terms; see the source field.",
+  "last_quarter": "Q1 2026/27",
+  "last_updated": "2026-08-24"
+ },
+ "cumulative_by_region": {
+  "Free State": {
+   "total_mw": 3406,
+   "solar_mw": 3401,
+   "wind_mw": 0,
+   "bess_mw": 0,
+   "coloc_mw": 0
   },
-  "cumulative_by_region": {
-    "Free State": {
-      "total_mw": 3406,
-      "solar_mw": 3401,
-      "wind_mw": 0,
-      "bess_mw": 0,
-      "coloc_mw": 0
-    },
-    "Limpopo": {
-      "total_mw": 3144,
-      "solar_mw": 3034,
-      "wind_mw": 0,
-      "bess_mw": 110,
-      "coloc_mw": 0
-    },
-    "Western Cape": {
-      "total_mw": 2988,
-      "solar_mw": 525,
-      "wind_mw": 2452,
-      "bess_mw": 1,
-      "coloc_mw": 0
-    },
-    "Northern Cape": {
-      "total_mw": 2970,
-      "solar_mw": 1132,
-      "wind_mw": 1333,
-      "bess_mw": 0,
-      "coloc_mw": 505
-    },
-    "Gauteng": {
-      "total_mw": 2569,
-      "solar_mw": 2512,
-      "wind_mw": 0,
-      "bess_mw": 2,
-      "coloc_mw": 0
-    },
-    "North West": {
-      "total_mw": 1937,
-      "solar_mw": 1937,
-      "wind_mw": 0,
-      "bess_mw": 0,
-      "coloc_mw": 0
-    },
-    "Mpumalanga": {
-      "total_mw": 1284,
-      "solar_mw": 618,
-      "wind_mw": 510,
-      "bess_mw": 0,
-      "coloc_mw": 0
-    },
-    "Eastern Cape": {
-      "total_mw": 921,
-      "solar_mw": 99,
-      "wind_mw": 822,
-      "bess_mw": 0,
-      "coloc_mw": 0
-    },
-    "Kwazulu Natal": {
-      "total_mw": 457,
-      "solar_mw": 130,
-      "wind_mw": 240,
-      "bess_mw": 0,
-      "coloc_mw": 0
-    }
+  "Limpopo": {
+   "total_mw": 3144,
+   "solar_mw": 3034,
+   "wind_mw": 0,
+   "bess_mw": 110,
+   "coloc_mw": 0
   },
-  "quarters": []
+  "Western Cape": {
+   "total_mw": 2988,
+   "solar_mw": 525,
+   "wind_mw": 2452,
+   "bess_mw": 1,
+   "coloc_mw": 0
+  },
+  "Northern Cape": {
+   "total_mw": 3410,
+   "solar_mw": 1132,
+   "wind_mw": 1773,
+   "bess_mw": 0,
+   "coloc_mw": 505
+  },
+  "Gauteng": {
+   "total_mw": 2569,
+   "solar_mw": 2512,
+   "wind_mw": 0,
+   "bess_mw": 2,
+   "coloc_mw": 0
+  },
+  "North West": {
+   "total_mw": 1937,
+   "solar_mw": 1937,
+   "wind_mw": 0,
+   "bess_mw": 0,
+   "coloc_mw": 0
+  },
+  "Mpumalanga": {
+   "total_mw": 1284,
+   "solar_mw": 618,
+   "wind_mw": 510,
+   "bess_mw": 0,
+   "coloc_mw": 0
+  },
+  "Eastern Cape": {
+   "total_mw": 921,
+   "solar_mw": 99,
+   "wind_mw": 822,
+   "bess_mw": 0,
+   "coloc_mw": 0
+  },
+  "Kwazulu Natal": {
+   "total_mw": 457,
+   "solar_mw": 130,
+   "wind_mw": 240,
+   "bess_mw": 0,
+   "coloc_mw": 0
+  }
+ },
+ "quarters": []
 }
