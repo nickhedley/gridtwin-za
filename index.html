@@ -3980,26 +3980,34 @@ const FIXED = {
   // default, so moving any CCS slider to zero changed nothing at all. Same
   // class of bug as the coalEAFPct one found on 15 Aug.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
-  // ccsTsR SOURCED AND CORRECTED 20 Aug 2026. It was R120/MWh, unsourced, and
-  // roughly FIVE TIMES below the lowest published figure anywhere:
-  //   Northern Lights (ship + offshore injection)  EUR 30-55/tCO2
-  //   CATF EU study, pipelines allowed, median     EUR 38/t
-  //   CATF EU study, no pipelines, median          EUR 106/t (range 34-209)
-  // At ~0.9 tCO2 captured per MWh and R20/EUR, even EUR30/t is R540/MWh.
-  // R120/MWh implied EUR6.7/t, which no project anywhere has achieved.
+  // ccsTsR REVISED DOWNWARD 23 Aug 2026 on the Leandra pilot. The previous 900
+  // assumed offshore storage 400 km+ from the fleet, resting on the CGS atlas
+  // finding that 98% of South African capacity is offshore. That atlas did not
+  // adequately assess BASALTIC rocks or shales - and Leandra is basalt.
   //
-  // South Africa is HARDER than any of those comparators. The Council for
-  // Geoscience atlas puts 98% of storage offshore; the coal fleet is 400+ km
-  // inland in Mpumalanga and Limpopo; and the one near-ish onshore basin
-  // (Zululand) is excluded in the conservative storage scenario for low
-  // compressibility and over-pressurisation risk. Northern Lights has short
-  // North Sea distances and existing offshore infrastructure. We have neither.
+  //   Leandra, Govan Mbeki Municipality, Mpumalanga
+  //   Characterised capacity   34 Gt CO2 (CGS, Sept 2024)
+  //   Target                   Ventersdorp Supergroup basalt at 1,200 m
+  //   Mechanism                mineral trapping - plagioclase and orthopyroxenes
+  //                            carbonate the CO2 in situ, cutting leakage risk
+  //   Phase 1                  complete: 3D seismic, 1,800 m core borehole
+  //   Phase 2 pilot injection  10,000-50,000 t/yr
   //
-  // R900/MWh = EUR50/t, the upper half of the Northern Lights band, as a
-  // first-of-a-kind figure for a long inland pipeline to offshore injection.
-  // Still arguably optimistic. THIS IS NOW THE DOMINANT CCS COST, which is
-  // the honest result for South African geology.
-  ccsOpexR:180, ccsCapexR:260, ccsTsR:900,
+  // 34 Gt against a fleet capturing ~153 Mt/yr is over 200 years of storage, and
+  // it sits IN the coalfields: ~30 km from Secunda, ~80 km from Kusile. Around
+  // 80% of coal capacity is within 100 km; only the Waterberg plants are ~350 km
+  // out. Capacity-weighted mean haul is roughly 130 km, not 400+.
+  //
+  // So the anchor is the CATF EU median WITH pipelines, EUR38/t - not the
+  // ship-to-offshore Northern Lights band (EUR30-55) used before. EUR45/t =
+  // R810/MWh, the premium covering a first-of-a-kind scale-up: Phase 2 injects
+  // 10-50 kt/yr and the fleet would need 153 Mt/yr, a factor of about three
+  // thousand, on a mechanism nobody has run at that rate anywhere.
+  //
+  // STILL THE LEAST CERTAIN NUMBER IN THIS BLOCK. If Leandra's Phase 2 injection
+  // works, this is too high. If basalt trapping does not scale, offshore returns
+  // and 900 or more is right.
+  ccsOpexR:180, ccsCapexR:260, ccsTsR:810,
   // Tariff side: retrofit capital, allowed return and asset life.
   //
   // ccsCapexRkW SOURCED 20 Aug 2026. Two independent routes converge:
@@ -4540,7 +4548,7 @@ function simulate(u, prof, outPath){
     p.costCoal = p.costCoal / keep                          // more fuel per MWh sold
                + (p.ccsOpexR ?? 180)                        // solvent, compression
                + (p.ccsCapexR ?? 260)                       // annualised retrofit
-               + (p.ccsTsR ?? 900);                         // transport and storage
+               + (p.ccsTsR ?? 810);                         // transport and storage
     p.emisCoal = p.emisCoal * (1 - cap) / keep;             // net of the penalty
   }
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
@@ -4721,7 +4729,7 @@ function simulate(u, prof, outPath){
   // unit's own fuel cost, so the energy penalty scales it and the capture costs
   // add on top - the same build-up p.costCoal gets, applied per unit.
   const ccsCostMult = p.ccsEnabled ? 1/Math.max(0.4, 1-(p.ccsPenaltyPct ?? 25)/100) : 1;
-  const ccsCostAdd  = p.ccsEnabled ? ((p.ccsOpexR ?? 180)+(p.ccsCapexR ?? 260)+(p.ccsTsR ?? 900)) : 0; // TOTAL coal generation per hour, including any off-peak
+  const ccsCostAdd  = p.ccsEnabled ? ((p.ccsOpexR ?? 180)+(p.ccsCapexR ?? 260)+(p.ccsTsR ?? 810)) : 0; // TOTAL coal generation per hour, including any off-peak
   // charging bonus - unlike stack.coal (load-serving only, for the chart), this is what real fuel
   // cost/emissions and any external cost comparison (e.g. an LP solve) should use
   const loadS=new Float64Array(HOURS);
@@ -9357,7 +9365,7 @@ function renderCCS(r){
   const cap = (state.ccsCaptureRatePct ?? 90) / 100;
   const keep = Math.max(0.4, 1 - pen);
   const base = FIXED.costCoal;
-  const withCcs = base/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 900);
+  const withCcs = base/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 810);
   const netCut = 1 - (1 - cap)/keep;
   // Use the scenario's actual fleet, not the nameplate constant, so the panel
   // tracks the decommissioning and new-build sliders.
@@ -9381,16 +9389,18 @@ function renderCCS(r){
 
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-bottom:9px;'
       + 'padding:7px 10px;background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
-      + '<strong>\u201cClean coal\u201d means two different technologies in South African policy. '
-      + 'This panel models one of them.</strong> Here it is CO\u2082 capture. The programme the energy '
-      + 'minister referred to in August 2026 is <strong>HELE-CFB</strong>: a different way of burning '
-      + 'coal, in a circulating bed of sand and limestone at 800\u2013900\u00b0C, which cuts sulphur '
-      + 'dioxide and nitrogen oxides at source rather than capturing carbon. The CSIR draws the same '
-      + 'distinction \u2013 HELE-CFB is about combustion, the Council for Geoscience\u2019s Leandra '
-      + 'project is about storage. A 500 kW HELE-CFB test facility is planned at Eskom\u2019s '
-      + 'Rosherville site, but only its detailed engineering is funded, it will not feed the grid, and '
-      + 'locally validated results are not expected before 2029. Its design allows carbon capture to be '
-      + 'added later, which is where this panel would apply.</div>'
+      + '<strong>\u201cClean coal\u201d is an umbrella term for at least six different '
+      + 'technologies. This panel models one.</strong> Here it is CO\u2082 capture. IRP 2019\u2019s '
+      + 'preference for high-efficiency low-emission coal covered underground coal gasification, '
+      + 'integrated gasification combined cycle, capture and storage, supercritical and '
+      + 'ultra-supercritical boilers. The programme announced in August 2026 adds a seventh: '
+      + '<strong>circulating fluidised bed</strong>, which burns coal in a bed of sand and limestone '
+      + 'at 800\u2013900\u00b0C to cut sulphur dioxide and nitrogen oxides at source \u2013 not carbon. '
+      + 'The CSIR draws the same line: that programme is about combustion, the Council for '
+      + 'Geoscience\u2019s Leandra project is about storage. Its 500 kW test facility at Rosherville has '
+      + 'only its detailed engineering funded, will not feed the grid, and is not expected to produce '
+      + 'locally validated results before 2029. The design allows capture to be added later, which is '
+      + 'where this panel would apply.</div>'
 
     + '<table class="mono" style="width:100%;font-size:11.5px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:4px 5px"></th>'
@@ -9401,7 +9411,7 @@ function renderCCS(r){
     + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">R${c2(withCcs)}/kWh</td></tr>`
     + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">New build, lifecycle</td>`
     + `<td style="text-align:right;padding:4px 5px">R${c2(state.lcoeCoalNew ?? 1550)}/kWh</td>`
-    + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">R${c2((state.lcoeCoalNew ?? 1550)/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 900))}/kWh</td></tr>`
+    + `<td style="text-align:right;padding:4px 5px;font-weight:700;color:var(--alert,#C4785A)">R${c2((state.lcoeCoalNew ?? 1550)/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 810))}/kWh</td></tr>`
     + `<tr style="border-bottom:1px solid var(--line2)"><td style="padding:4px 5px">Saleable capacity`
     + `<br><span style="font-size:9px;color:var(--ink2)">after this scenario\u2019s retirements and new build</span></td>`
     + `<td style="text-align:right;padding:4px 5px">${(fleetMW/1000).toFixed(1)} GW</td>`
@@ -9446,13 +9456,15 @@ function renderCCS(r){
           + 'For context, Medupi cost about R145bn for 4.8 GW \u2013 roughly '
           + 'R30m/MW \u2013 so a carbon capture retrofit at R38m/MW is the same order as building the station '
           + 'again. '
-          + '<strong>Note that capture is no longer the largest cost.</strong> At R900/MWh, moving and '
-          + 'storing the CO\u2082 costs more than capturing it: South Africa\u2019s coal fleet sits 400 km or '
-          + 'more from any viable sink, and 98&#37; of the country\u2019s storage capacity is offshore. '
-          + '<em>That could change.</em> The Council for Geoscience\u2019s Leandra pilot is in Mpumalanga, in '
-          + 'the coalfields themselves: geological characterisation is complete with results the CGS calls '
-          + 'highly promising, and pilot well construction with CO\u2082 injection is expected within the '
-          + 'year. If storage works there, the transport figure used here is too high. '
+          + '<strong>Note that capture is no longer the largest cost.</strong> At R810/MWh, moving and '
+          + 'storing the CO\u2082 costs more than capturing it. That figure now assumes storage at '
+          + '<strong>Leandra</strong> in Mpumalanga rather than offshore: the Council for Geoscience has '
+          + 'characterised 34 Gt of capacity there in Ventersdorp basalt at 1,200 m, which is over 200 '
+          + 'years of the fleet\u2019s captured output, roughly 30 km from Secunda and 80 km from Kusile. '
+          + 'Around 80&#37; of coal capacity sits within 100 km of it; only the Waterberg plants are far. '
+          + 'The older figure of 98&#37; offshore comes from an atlas that did not assess basalt. '
+          + 'The remaining risk is scale, not geology: Phase 2 injects 10\u201350 kt a year and the fleet '
+          + 'would need 153 Mt \u2013 a factor of three thousand, on a mechanism nobody has run that hard. '
           + 'A more accurate submission would model each unit\u2019s remaining life, phasing and financing '
           + 'separately; this is a transparent approximation.</div>'
           + '<div style="margin-top:7px;padding:7px 10px;background:var(--panel2);border-left:3px solid var(--alert,#C4785A);font-size:10px;line-height:1.55">'
@@ -9469,7 +9481,7 @@ function renderCCS(r){
     + ci('ccsCaptureRatePct', 'Capture rate', '%', state.ccsCaptureRatePct ?? 90, 1)
     + ci('ccsOpexR', 'Capture opex', 'R/MWh', state.ccsOpexR ?? 180, 10)
     + ci('ccsCapexR', 'Retrofit capital', 'R/MWh', state.ccsCapexR ?? 260, 10)
-    + ci('ccsTsR', 'Transport + storage', 'R/MWh', state.ccsTsR ?? 900, 10)
+    + ci('ccsTsR', 'Transport + storage', 'R/MWh', state.ccsTsR ?? 810, 10)
     + '</div>'
 
     + '<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);'
@@ -10802,7 +10814,7 @@ function render(r){
     const g = k => (state[k] !== undefined ? state[k] : FIXED[k]);
     const keep = Math.max(0.4, 1 - (g('ccsPenaltyPct') || 25) / 100);
     const base = g('lcoeCoalNew');
-    const add  = (g('ccsOpexR') || 180) + (g('ccsCapexR') || 260) + (g('ccsTsR') || 900);
+    const add  = (g('ccsOpexR') || 180) + (g('ccsCapexR') || 260) + (g('ccsTsR') || 810);
     const v    = base / keep + add;
     lcoeRows.push({ k:'lcoeCoalCcs', nm:'New coal + CCS', c:'#8A5A2B', v,
       tip:'Derived from the Clean coal (CCS) panel, using the same build-up the dispatch '
