@@ -4290,9 +4290,7 @@ const FIXED = {
   //                    The previous 2,500 was consistent with the OLD R18,000/kW
   //                    capex - both were about half the market, and they moved
   //                    together, which is exactly why cross-panel consistency
-  //                    never flagged it. Consistency is not accuracy. It was NOT consistent with the old R2,800
-  //                    fuel cost (which implied R3,217-3,460) - doing the gas
-  //                    derivation properly fixed this reference by side effect.
+  //                    never flagged it. Consistency is not accuracy.
   // LCOE anchors (R/MWh) — full lifecycle cost, for the comparison chart & build economics
   lcoePv:550, lcoeWind:750, lcoeRooftop:900, lcoeBatt:1600,
   // Long-duration LCOE, R/MWh discharged. Pumped storage has high capex but a
@@ -4302,6 +4300,17 @@ const FIXED = {
   // far the cheapest per unit of energy stored and the worst on round-trip
   // losses, which is precisely the trade it exists to make.
   lcoeVrfb:2100, lcoeIronAir:1750,
+    // lcoeCoalNew 1550: escalated from the Coal Baseload IPP Programme, bid window 1
+  // (Oct 2016). Thabametsi bid 79c/kWh and Khanyisa 80c against an 82c ceiling, on
+  // 30-year PPAs with CPI escalation. CPI to 2026 gives R1,287; the bid assumed
+  // R11.47/USD against R16.21 now and roughly half the tariff is dollar-linked
+  // capital, which brings it to R1,553. Connection was a further 31c/kWh, correctly
+  // excluded here because grid is priced separately via the transmission slider.
+  //
+  // NEITHER PROJECT WAS EVER BUILT. Both were abandoned, so this is a price nobody
+  // has actually delivered at - and Yelland notes IRP 2019 claimed the programme
+  // showed a business case for 300 and 600 MW plants while ignoring that. Treat it
+  // as the best available anchor rather than a demonstrated cost.
   lcoeCsp:2000, lcoeCcgt:3340, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1550, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
@@ -9613,7 +9622,7 @@ const SLIDERS=[
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'LNG-fired build cost, not running cost - the fuel is the Gas running cost slider (defaults to R1,968/MWh). At that fuel cost this R2.50 default implies a 30-50&#37; capacity factor. IRP 2025 assumed $10/MMBtu, roughly half the FY2026 reference of $18.50 delivered.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Wide range; SMRs higher'},
-  {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2)},
+  {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Escalated from the 2016 Coal Baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Neither was built, so this is the best anchor available rather than a demonstrated cost.'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'Peaker LCOE is high by default given how little it runs. R9.00 assumes a 5% capacity factor; at 2% it is R13.20 and at 10% it is R7.60. Its floor is diesel\u2019s own running cost of ~R6.2/kWh \u2013 LCOE can never sit below SRMC.'}
 ];
 const PRESETS={
