@@ -689,6 +689,26 @@ OPPORTUNITY: NERSA to publish a 10-year electricity price forecast ANNUALLY. Tha
 becomes an official benchmark to validate the cost panel against, replacing our
 own derivation. Watch for the first publication.
 
+  DO NOT EXTRAPOLATE RECENT INCREASES. NERSA got Eskom's regulatory asset base
+  wrong by R54.7bn and is recovering the error over three years:
+
+      2026/27     R12.0bn
+      2027/28     R23.0bn
+      thereafter  R19.7bn
+
+  FY2027 increases were 8.76% Eskom-direct and 9.01% municipal. Strip the
+  clawback and they would have been 5.36% and 6.19%. So roughly 3.4 percentage
+  points of this year's increase is a one-off correction, and it is FRONT-LOADED
+  - the 2027/28 tranche is nearly double this year's.
+
+  A forecast fitted to recent increases therefore over-projects, because it
+  treats a three-year correction as permanent escalation. Model the clawback as
+  a separate, time-limited component rather than folding it into a smooth rate.
+
+  Figures are from press coverage of the NERSA decision, not the decision
+  documents. Verify against NERSA's own publication before using them in
+  anything that goes out.
+
 ALIGNMENT CHECK WORTH DOING: the policy defines total cost of supply as wholesale
 energy + generation capacity/standby + transmission/distribution +
 ancillary/balancing + legacy/subsidy. Our cost panel splits differently, and the
