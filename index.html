@@ -661,6 +661,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
     </div>
 
+          <div class="panel" id="provMixPanel" style="margin-top:18px">
+          <div class="ph"><h2>Where the fleet actually sits</h2><span class="tag">installed capacity by province</span></div>
+          <div class="pb" id="provMixBody"></div>
+          </div>
+
           <div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
           <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
           <div style="padding:0 14px 12px">
@@ -2623,6 +2628,9 @@ let redzData = null;
   window.addEventListener('hashchange', openTabFromHash);
   // Late enough for switchTab to exist; the settling loop handles the rest.
   setTimeout(openTabFromHash, 700);
+  // Provincial capacity mix draws once - the fleet register is static, so
+  // re-rendering it on every slider change would be wasted work.
+  setTimeout(() => { try { renderProvMix(); } catch(e){} }, 300);
   window.mainGeocode = mainGeocode;
   window.mainGoTo = mainGoTo;
   window.fetchSolar = fetchSolar;
@@ -6027,6 +6035,157 @@ self.onmessage = async (e) => {
 `;
 
 let bldWorker = null, bldRunning = false;
+
+/* Provincial capacity mix. Ember-style stacked bars, sorted by total, so the
+ * concentration is the first thing you see rather than something you work out.
+ *
+ * CAPACITY, NOT GENERATION. Stated on the panel because the two are routinely
+ * confused, and the error is large: Mpumalanga's 30 GW of coal runs at a far
+ * higher capacity factor than the Northern Cape's 2 GW of solar, so the energy
+ * gap is wider than the megawatt gap, not narrower. */
+let provMixData = null;
+
+async function loadProvMix(){
+  if (provMixData) return provMixData;
+  try {
+    const r = await fetch('/nodal/provincial_mix.json');
+    provMixData = await r.json();
+  } catch(e){ provMixData = null; }
+  return provMixData;
+}
+
+const PROV_SRC = [
+  { k:'coal',    label:'Coal',        c:'#4A4442' },
+  { k:'nuclear', label:'Nuclear',     c:'#7B5EA7' },
+  { k:'hydro',   label:'Hydro',       c:'#3E7D8C' },
+  { k:'gas',     label:'Gas & diesel', c:'#C4785A' },
+  { k:'wind',    label:'Wind',        c:'#4A6B7A' },
+  { k:'solar',   label:'Utility solar', c:'#D9A441' },
+  { k:'rooftop', label:'Rooftop',     c:'#E8C87A' },
+];
+
+let provMixView = 'capacity';
+
+function setProvMixView(v){ provMixView = v; renderProvMix(); }
+
+async function renderProvMix(){
+  const host = document.getElementById('provMixBody');
+  if (!host) return;
+  const d = await loadProvMix();
+  if (!d || !d.capacity_mw){ host.innerHTML = '<div style="font-size:10.5px;color:var(--ink2)">Provincial data unavailable.</div>'; return; }
+
+  const V = provMixView;
+  const tabs = [['capacity','Installed capacity'],['generation','Generation'],['clean','Clean vs demand']];
+  let html = '<div style="display:flex;gap:5px;margin-bottom:10px">'
+    + tabs.map(([k,l]) => '<button onclick="setProvMixView(\'' + k + '\')" style="flex:1;padding:5px 8px;'
+      + 'font-size:10px;border:1px solid var(--line2);cursor:pointer;'
+      + (V===k ? 'background:var(--ink);color:#fff;font-weight:600' : 'background:var(--panel);color:var(--ink2)')
+      + '">' + l + '</button>').join('') + '</div>';
+
+  // ── CLEAN VS DEMAND ──────────────────────────────────────────────────────
+  // The one view that is not a mix. It asks a different question: could this
+  // province run on what it generates cleanly? Two can, on paper. The rest
+  // cannot, and Mpumalanga - which generates more than anywhere else - is last.
+  if (V === 'clean'){
+    const rows = Object.keys(d.demand_twh).map(prov => {
+      const g = d.generation_twh[prov] || {};
+      const clean = (g.wind||0)+(g.solar||0)+(g.nuclear||0)+(g.hydro||0);
+      const dem = d.demand_twh[prov] || 0;
+      return { prov, clean, dem, pct: dem ? 100*clean/dem : 0 };
+    }).sort((a,b) => b.pct - a.pct);
+
+    html += '<div style="font-size:10.5px;color:var(--ink2);line-height:1.55;margin-bottom:10px">'
+      + 'Local clean generation as a share of local demand. Above 100&#37; means a province '
+      + 'produces more clean electricity than it uses \u2013 on paper, over a year, ignoring '
+      + 'when it is produced and whether the grid can move it.</div>';
+
+    html += rows.map(r => {
+      const w = Math.min(100, r.pct);
+      const over = r.pct > 100;
+      return '<div style="margin-bottom:6px">'
+        + '<div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px">'
+          + '<span>' + r.prov + '</span>'
+          + '<span class="mono" style="color:' + (over?'var(--veld,#4A6B7A)':'var(--ink2)') + '">'
+          + r.pct.toFixed(0) + '&#37;</span></div>'
+        + '<div style="height:15px;background:var(--panel2);position:relative">'
+          + '<div style="width:' + w.toFixed(1) + '%;height:100%;background:'
+          + (over ? 'var(--veld,#4A6B7A)' : '#D9A441') + '"></div>'
+          + (over ? '<div style="position:absolute;right:3px;top:1px;font-size:9px;color:#fff">'
+                    + '\u00d7' + (r.pct/100).toFixed(1) + '</div>' : '')
+        + '</div></div>';
+    }).join('');
+
+    const natC = rows.reduce((a,r)=>a+r.clean,0), natD = rows.reduce((a,r)=>a+r.dem,0);
+    html += '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:9px;'
+      + 'padding-top:7px;border-top:1px solid var(--line2)">'
+      + 'Nationally ' + (100*natC/natD).toFixed(0) + '&#37;. The two provinces above 100&#37; hold '
+      + 'less than 2&#37; of demand between them, so their surplus is small in absolute terms '
+      + 'and stranded behind corridors that are already full. Mpumalanga generates more '
+      + 'electricity than any other province and is last on this measure.</div>';
+    host.innerHTML = html; return;
+  }
+
+  // ── CAPACITY OR GENERATION ───────────────────────────────────────────────
+  const isGen = V === 'generation';
+  const src = isGen ? d.generation_twh : d.capacity_mw;
+  const keys = isGen
+    ? [{k:'coal',label:'Coal',c:'#4A4442'},{k:'nuclear',label:'Nuclear',c:'#7B5EA7'},
+       {k:'hydro',label:'Hydro',c:'#3E7D8C'},{k:'gas',label:'Gas & diesel',c:'#C4785A'},
+       {k:'wind',label:'Wind',c:'#4A6B7A'},{k:'solar',label:'Solar',c:'#D9A441'}]
+    : PROV_SRC;
+
+  const rows = Object.entries(src).map(([prov, v]) => ({
+    prov, v, total: keys.reduce((a,s2) => a + (v[s2.k]||0), 0)
+  })).filter(r => r.total > (isGen ? 0.05 : 1)).sort((a,b) => b.total - a.total);
+
+  const max = rows[0].total;
+  const nat = {};
+  keys.forEach(s2 => nat[s2.k] = rows.reduce((a,r) => a + (r.v[s2.k]||0), 0));
+  const natTot = Object.values(nat).reduce((a,b) => a+b, 0);
+  const fmt = isGen
+    ? (v => v >= 1 ? v.toFixed(1) + ' TWh' : (v*1000).toFixed(0) + ' GWh')
+    : (v => v >= 1000 ? (v/1000).toFixed(1) + ' GW' : Math.round(v) + ' MW');
+
+  html += '<div style="font-size:10.5px;color:var(--ink2);line-height:1.55;margin-bottom:10px">'
+    + (isGen
+        ? 'Modelled annual output. Wind and solar use each province\u2019s own hourly resource, '
+          + 'so a Hydra Central wind MW is credited at 42.5&#37; and a Kwazulu Natal one at 21.6&#37;.'
+        : 'Installed capacity, not generation. Mpumalanga\u2019s coal runs at a far higher capacity '
+          + 'factor than Northern Cape solar, so the energy gap is wider than the megawatt gap.')
+    + '</div>';
+
+  html += '<div style="display:flex;flex-wrap:wrap;gap:9px;margin-bottom:11px;font-size:9.5px">'
+    + keys.map(s2 => '<span><span style="display:inline-block;width:9px;height:9px;'
+        + 'background:' + s2.c + ';margin-right:4px;vertical-align:middle"></span>' + s2.label
+        + ' <span style="color:var(--ink2)">' + fmt(nat[s2.k]) + '</span></span>').join('')
+    + '</div>';
+
+  html += rows.map(r => {
+    const bars = keys.filter(s2 => (r.v[s2.k]||0) > 0).map(s2 => {
+      const w = 100 * (r.v[s2.k]||0) / max;
+      return '<div title="' + s2.label + ' ' + fmt(r.v[s2.k]) + '" style="width:' + w.toFixed(2)
+        + '%;background:' + s2.c + '"></div>';
+    }).join('');
+    return '<div style="margin-bottom:6px">'
+      + '<div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px">'
+        + '<span>' + r.prov + '</span>'
+        + '<span class="mono" style="color:var(--ink2)">' + fmt(r.total) + '</span></div>'
+      + '<div style="display:flex;height:15px;background:var(--panel2)">' + bars + '</div></div>';
+  }).join('');
+
+  html += '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:9px;'
+    + 'padding-top:7px;border-top:1px solid var(--line2)">'
+    + 'National total <strong>' + fmt(natTot) + '</strong>. '
+    + 'Mpumalanga alone holds ' + (100*rows[0].total/natTot).toFixed(0) + '&#37; of it, almost all coal. '
+    + (isGen
+        ? 'Modelled, not measured: thermal factors are derived from the engine\u2019s own base-case '
+          + 'dispatch, and the national total reconciles to 98&#37; of demand.'
+        : 'Thermal from the station-level fleet register, renewables from the regional capacity '
+          + 'compilation, rooftop from the distributed PV estimate.')
+    + '</div>';
+
+  host.innerHTML = html;
+}
 
 function bldBuildLP(opts){
   const Y = BLD_YEARS, T = BLD_TECHS;
