@@ -662,7 +662,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
 
           <div class="panel" id="provMixPanel" style="margin-top:18px">
-          <div class="ph"><h2>Where the fleet actually sits</h2><span class="tag">installed capacity by province</span></div>
+          <div class="ph"><h2>Provincial electricity mix</h2></div>
           <div class="pb" id="provMixBody"></div>
           </div>
 
@@ -6094,11 +6094,6 @@ async function renderProvMix(){
       return { prov, clean, dem, pct: dem ? 100*clean/dem : 0 };
     }).sort((a,b) => b.pct - a.pct);
 
-    html += '<div style="font-size:10.5px;color:var(--ink2);line-height:1.55;margin-bottom:10px">'
-      + 'Local clean generation as a share of local demand. Above 100&#37; means a province '
-      + 'produces more clean electricity than it uses \u2013 on paper, over a year, ignoring '
-      + 'when it is produced and whether the grid can move it.</div>';
-
     html += rows.map(r => {
       const w = Math.min(100, r.pct);
       const over = r.pct > 100;
@@ -6145,14 +6140,6 @@ async function renderProvMix(){
   const fmt = isGen
     ? (v => v >= 1 ? v.toFixed(1) + ' TWh' : (v*1000).toFixed(0) + ' GWh')
     : (v => v >= 1000 ? (v/1000).toFixed(1) + ' GW' : Math.round(v) + ' MW');
-
-  html += '<div style="font-size:10.5px;color:var(--ink2);line-height:1.55;margin-bottom:10px">'
-    + (isGen
-        ? 'Modelled annual output. Wind and solar use each province\u2019s own hourly resource, '
-          + 'so a Hydra Central wind MW is credited at 42.5&#37; and a Kwazulu Natal one at 21.6&#37;.'
-        : 'Installed capacity, not generation. Mpumalanga\u2019s coal runs at a far higher capacity '
-          + 'factor than Northern Cape solar, so the energy gap is wider than the megawatt gap.')
-    + '</div>';
 
   html += '<div style="display:flex;flex-wrap:wrap;gap:9px;margin-bottom:11px;font-size:9.5px">'
     + keys.map(s2 => '<span><span style="display:inline-block;width:9px;height:9px;'
