@@ -709,11 +709,42 @@ own derivation. Watch for the first publication.
   documents. Verify against NERSA's own publication before using them in
   anything that goes out.
 
-ALIGNMENT CHECK WORTH DOING: the policy defines total cost of supply as wholesale
-energy + generation capacity/standby + transmission/distribution +
-ancillary/balancing + legacy/subsidy. Our cost panel splits differently, and the
-labels should map onto that decomposition so figures are comparable to whatever
-NERSA publishes.
+COST DECOMPOSITION - BIGGER THAN IT LOOKS. Filed originally as "map the cost
+panel labels onto the EPP decomposition". Investigated 26 Aug 2026: it is not a
+labelling task and should not be attempted as one.
+
+  The policy defines total cost of supply as five components:
+      wholesale energy
+      generation capacity / standby
+      transmission / distribution
+      ancillary / balancing
+      legacy / subsidy
+
+  THERE IS NOTHING TO RELABEL. avgCost is a single number:
+
+      avgCost = (fuelCost - curtailFuelCost + carbonCost + gridCapexR
+                 + drCostR - exportRevenueR) / gridServed
+
+  The components exist inside simulate() but no panel displays them separately.
+  So the work is BUILDING a breakdown panel, not renaming rows on one.
+
+  TWO THINGS TO FIX FIRST, or the panel will be worse than none:
+
+  1. gridCapexR IS MISNAMED. It is newCapexR minus btmCapexR - grid-side
+     GENERATION capex, not transmission. Under the EPP that belongs in
+     "generation capacity", not "transmission/distribution". A panel built on
+     the current naming would file it under the wrong heading and look
+     authoritative while doing so.
+
+  2. TWO CATEGORIES ARE NOT MODELLED. Transmission and distribution costs are
+     absent from avgCost entirely, and legacy/subsidy appears nowhere. A
+     five-row panel with two rows reading zero misrepresents the model rather
+     than clarifying it.
+
+  So the real question is whether to model network costs at all - which is a
+  scope decision, not a formatting one. Read the EPP's own definitions before
+  starting; the five-way split above is a summary and the boundaries between
+  categories are where the difficulty will be.
 
 ## CURTAILMENT FORECAST - BUILT (18 Aug 2026)
 
