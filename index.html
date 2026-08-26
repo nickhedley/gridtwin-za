@@ -10526,7 +10526,26 @@ fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r=>r.js
     const solarMW=Object.values(cum).reduce((s,v)=>s+v.solar_mw,0);
     const windMW=Object.values(cum).reduce((s,v)=>s+v.wind_mw,0);
     const bessMW=Object.values(cum).reduce((s,v)=>s+v.bess_mw,0);
-    let html=`<div style="margin-bottom:6px;font-size:11px"><strong>${totalProj.toLocaleString()} facilities · ${(totalMW/1000).toFixed(1)} GW total registered</strong></div>`;
+    // Latest quarter first. The panel is called "new project registrations" and
+    // showed only the running total, so the actual news was invisible.
+    let html = '';
+    const q = (data.quarters && data.quarters.length)
+      ? data.quarters[data.quarters.length-1] : null;
+    if (q){
+      const big = (q.by_tech||[]).slice().sort((a,b)=>b.mw-a.mw)[0];
+      html += '<div style="padding:8px 10px;margin-bottom:9px;background:var(--panel2);'
+        + 'border-left:3px solid var(--alert,#C4785A)">'
+        + `<div style="font-size:11px;font-weight:700">${q.quarter} \u00b7 `
+        + `${q.facilities} facilities \u00b7 ${q.total_mw} MW</div>`
+        + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:3px">'
+        + (q.by_tech||[]).map(t =>
+            `${t.facilities} ${t.tech} at ${t.mw}\u00a0MW`).join(' \u00b7 ')
+        + (big ? ` \u2013 <strong>${big.tech} took ${(100*big.mw/q.total_mw).toFixed(0)}&#37; `
+                 + `of the capacity from ${big.facilities} of ${q.facilities} projects</strong>` : '')
+        + `. R${q.investment_bn}bn invested, R${q.avg_cost_r_per_kw.toLocaleString()}/kW average.`
+        + '</div></div>';
+    }
+    html += `<div style="margin-bottom:6px;font-size:11px"><strong>${totalProj.toLocaleString()} facilities \u00b7 ${(totalMW/1000).toFixed(1)} GW total registered</strong></div>`;
     html+='<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px">';
     if(solarMW) html+=`<span style="background:#F5C518;color:#fff;border-radius:3px;padding:1px 5px;font-size:9.5px">Solar ${(solarMW/1000).toFixed(1)}GW</span>`;
     if(windMW)  html+=`<span style="background:#3EA055;color:#fff;border-radius:3px;padding:1px 5px;font-size:9.5px">Wind ${(windMW/1000).toFixed(1)}GW</span>`;

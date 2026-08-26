@@ -76,5 +76,28 @@
    "coloc_mw": 0
   }
  },
- "quarters": []
+ "quarters": [
+  {
+   "quarter": "Q1 2026/27",
+   "period": "Apr-Jun 2026",
+   "facilities": 124,
+   "total_mw": 804,
+   "investment_bn": 20.18,
+   "avg_cost_r_per_kw": 25099,
+   "by_tech": [
+    {
+     "tech": "solar",
+     "facilities": 122,
+     "mw": 236
+    },
+    {
+     "tech": "wind",
+     "facilities": 2,
+     "mw": 568
+    }
+   ],
+   "note": "Two wind projects carried 71% of the capacity across 124 registrations. Northern Cape took the largest investment share at R11.934bn for 440 MW.",
+   "source": "NERSA media statement, 20 August 2026"
+  }
+ ]
 }
