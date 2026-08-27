@@ -395,7 +395,18 @@ try {
 // installed: Mulilo's 216 is MWp of solar behind a 75 MW dispatchable output,
 // and counting the larger figure would treble Northern Cape solar.
 try {
-  const cod = JSON.parse(fs.readFileSync(P('pfl_cod_h1_2026.json'), 'utf8'));
+  // EVERY register, not one file. When an H2 register lands, the natural move
+  // is to repoint this at the newer file - which would silently drop H1
+  // coverage and any unresolved H1 gap with it. That is how Mulilo went missing
+  // in the first place, so this accumulates rather than replaces.
+  const regs = fs.readdirSync(path.join(ROOT, 'nodal'))
+    .filter(f => /^pfl_cod_.*\.json$/.test(f)).sort();
+  if (!regs.length) throw Object.assign(new Error('no registers'), { code: 'ENOENT' });
+  const cod = { projects: [], sources: regs };
+  for (const f of regs){
+    const j = JSON.parse(fs.readFileSync(P(f), 'utf8'));
+    for (const pr of (j.projects || [])) cod.projects.push({ ...pr, register: f });
+  }
 
   // Everything named anywhere in either file. Names vary slightly between
   // sources, so match on a normalised form and accept a containment match.
@@ -424,7 +435,7 @@ try {
     if (!found) missing.push(pr);
   }
 
-  check('every H1 2026 commissioned project appears in capacity or pipeline',
+  check('every commissioned project in every register is accounted for',
         missing.length === 0,
         missing.length
           ? missing.map(m => `${m.name} (${m.mw_contracted} MW contracted)`).join('; ')
@@ -449,11 +460,15 @@ try {
 
   // The register must also reconcile to PFL's own published subtotals, or the
   // transcription is wrong and every check above it is measuring the wrong list.
-  const sum = (r) => cod.projects.filter(x => x.route === r)
-                                 .reduce((a, x) => a + x.mw_installed, 0);
-  check('COD register reconciles to PFL subtotals',
-        sum('private') === 1046 && sum('public') === 874,
-        `private ${sum('private')} (1046), public ${sum('public')} (874)`);
+  // Scoped to the H1 register, whose published subtotals these are. An H2
+  // register brings its own, and would need its own assertion.
+  const h1 = cod.projects.filter(x => x.register === 'pfl_cod_h1_2026.json');
+  const sum = (r) => h1.filter(x => x.route === r)
+                       .reduce((a, x) => a + x.mw_installed, 0);
+  if (h1.length)
+    check('H1 2026 register reconciles to PFL subtotals',
+          sum('private') === 1046 && sum('public') === 874,
+          `private ${sum('private')} (1046), public ${sum('public')} (874)`);
 } catch (e) {
   if (e.code !== 'ENOENT') throw e;
   // Register absent in older checkouts - not a failure.
