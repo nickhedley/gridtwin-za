@@ -1,3 +1,92 @@
+## COD RECONCILIATION - BUILT (27 Aug 2026)
+
+WHY. Mulilo Total Hydra Storage reached commercial operation in H1 2026 and is
+counted NOWHERE - not in regional_renewable_capacity.json, not in
+ipp_pipeline.json. It was found only because someone read a PFL briefing PDF.
+Doornhoek hit the same gap earlier and was caught by hand. Projects fall between
+an IPP Office cutoff and the next compile, and nothing was watching.
+
+NEW FILE: nodal/pfl_cod_h1_2026.json
+  All 17 projects from PFL Table 1, with mw_installed AND mw_contracted. The two
+  differ for storage and hybrids: Mulilo's 216 is MWp of solar behind a 75 MW
+  dispatchable contract, and Umoyilanga's 108 sits behind 55 MW. Using the
+  installed figure would treble Northern Cape solar.
+  13 of 17 now carry a verified COD with a named source. Only ARM Platinum is
+  undated; the three captive plants are excluded by design.
+
+NEW CHECK in validate_capacity.js
+  Every commissioned project must appear in the capacity file or the pipeline
+  file. Reports 17/18 and names Mulilo. THAT FAILURE IS BY DESIGN - a standing
+  flag for a real data gap, not a broken test. It goes green when the project is
+  added. Do not "fix" it by relaxing the check.
+
+THREE THINGS THE CHECK LEARNED THE HARD WAY
+  1. It first flagged EIGHT projects, most wrongly. Projects commissioned before
+     the cutoff sit inside IPP Office provincial aggregates and never appear by
+     name, so absence is correct for them. Only projects with a verified COD
+     AFTER the cutoff must be named.
+  2. THE CUTOFF DIFFERS BY ROUTE. Public capacity is IPP Office at 31 Mar 2026;
+     private is the PFL monitor, running to 30 Jun. A private project
+     commissioned in April is covered; a public one on the same date is not.
+     Umsobomvu exposed this - COD April 2026, private, wrongly flagged.
+  3. It reads EVERY pfl_cod_*.json, not one filename. Pointing it at a newer H2
+     register would silently drop H1 coverage and any unresolved H1 gap with it -
+     exactly how Mulilo went missing. Tested with a stub H2 file: both flagged.
+
+MULILO, UNRESOLVED. PFL places it in H1 2026 (to 30 June). Engineering News
+reports it "officially inaugurated and brought into operation on July 16, 2026".
+Both are after both cutoffs so it is uncounted either way, but the month decides
+whether it belongs in 2026 H1 or H2. The PFL IPP Knowledge Hub publishes CODs
+and is the source for their Table 1 - that would settle it.
+
+ALSO FIXED: validate_consistency denominator. It excluded imports while the KPI
+panel included them; the gap sat inside tolerance until congestion curtailment
+widened it. Imports ARE generation delivered to the grid. Fixing it exposed a
+second fault - the energy check added importsTWh on top of a dom_ that now
+included them, double-counting by exactly E.imports. The rule, stated once:
+dom_ is EVERYTHING DELIVERED TO THE GRID, imports in, storage out. Compare
+directly, never add a component back. This has caused a false failure twice, in
+opposite directions.
+
+## CONGESTION CURTAILMENT - BUILT (27 Aug 2026), plus one open disagreement
+
+WORKS NOW. The 26 Aug attempt failed because it wrote into curtailMW, which the
+price engine reads as its oversupply signal:
+
+    ((curtailMW[h]||0) > 1) ? 0 : ...        sets the marginal price to zero
+
+Writing there every hour zeroed the whole series - average price fell from
+R755/MWh to -0.03. This version uses its OWN accumulator, congestMW, which is
+reported and charted but never consulted by the price engine. Congestion
+curtailment does not mean national surplus: one corridor is full while other
+regions still import, so it must not zero the national price.
+
+    off          0 TWh   wind 12.92   pv 6.45   price R755
+    4% (NERSA)   1.55    wind 12.40   pv 6.19   price R756
+    8%           3.10    wind 11.88   pv 5.93   price R757
+
+Defaults ON at 4%, NERSA's approved ceiling from September 2025.
+
+TRAP FOR NEXT TIME: there are TWO windGen declaration sites. The block must go
+on the one whose loop accumulates E.wind, or the energy totals do not move while
+congestMW does. I put it on the wrong one first and the numbers looked plausible.
+
+OPEN: KPI "Renewables" now reads 17% against the harness's 18.2%. The two use
+different DENOMINATORS and always have - the gap was just under tolerance before
+curtailment widened it:
+
+    panel     genTWh includes imports, excludes pumped storage and batteries
+    harness   dom_   excludes imports, excludes storage
+
+The PANEL looks right. Imports are generation delivered to the grid and belong
+in the denominator; storage output is energy already counted once at generation
+and would be double-counted.
+
+DO NOT simply relax the harness to make this pass. Decide which definition is
+correct, apply it in both places, and write down why. This is also the question
+behind "is our renewable share higher than Ember's" - same definitional problem,
+and worth settling once.
+
 ## MONTEL / MODO-STYLE ADDITIONS (27 Aug 2026)
 
 Four candidates. The first is being built now; the rest are queued.
@@ -1831,25 +1920,131 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ---
 
-## Validation — all must pass
+## Validation — all must pass (verified 27 Aug 2026)
+
+Thirteen harnesses, 677 checks. Last full run: 676/677.
 
 ```
-node stress_suite.js            290/290
-python3 audit.py <index.html>    29/29
-node validate_outputs.js         26/26
-node eng5.js                       6/6   monotonicity
-node jsdom_local2.js            renders without error
-node validate_capacity.js        14/14   (+1 pending — see identity 3)
-node validate_lp.js              18/18
+node stress_suite.js                290/290
+node validate_invariants.js .       138/138
+node validate_response.js .           79/79
+node validate_lp.js .                 40/40
+node validate_outputs.js              33/33
+python3 audit.py index.html           29/29
+node validate_benchmarks.js .         18/18
+node validate_capacity.js .           17/18   one standing flag, by design
+node validate_consistency.js .        14/14
+node validate_structure.js .            9/9
+node validate_solve.js .                6/6
+node validate_external.js .             2/2
+node validate_lint.js .                 1/1
 ```
 
-Scripts expect a `testroot/` containing `index.html` and a `nodal/` folder, or take the
-root as `argv[2]`. `jsdom_local2.js` reports two `ctx.createPattern is not a function`
-errors — that is jsdom lacking canvas, not a regression.
+### The 17/18 is correct. Do not "fix" it.
 
-### Why the last two exist
+`validate_capacity` flags Mulilo Total Hydra Storage as commissioned and counted
+in neither `ipp_pipeline.json` nor the capacity file. That is a standing data
+flag, not a broken test. It closes when the project is sourced, not by relaxing
+the check.
 
-The first five returned a **full pass against the old, provably wrong capacity file**.
+  75 MW contracted, 216 MW installed. USE THE CONTRACTED FIGURE.
+
+  COD unresolved, leaning H1. PFL places it in H1 2026, so on or before 30 June.
+  Engineering News reports it inaugurated and brought into operation on 16 July
+  2026. These are not necessarily in conflict: inauguration is a ceremony and
+  usually FOLLOWS commercial operation by weeks. PFL is also the better source
+  for a COD. But the H1 monitor's own cutoff makes its placement partly
+  circular, so the PFL IPP Knowledge Hub COD table is what settles it. That
+  decides H1 versus H2 2026, and nothing else.
+
+### How to invoke them — this bites
+
+Ten harnesses take the root as `argv[2]` and default to `.`. Two default to
+`testroot`. Two ignore the argument entirely:
+
+  stress_suite.js      NO root variable. Hardcodes `nodal/...` and `index.html`
+                       as paths relative to the WORKING DIRECTORY. Passing
+                       `testroot` does nothing — the argument is discarded and
+                       the run silently uses cwd. It therefore appears to work
+                       from the repo root and fails from anywhere else with
+                       MODULE_NOT_FOUND on ./nodal/nodal_engine.js.
+  validate_outputs.js  Hardcodes path.resolve('testroot'). Run it from the
+                       PARENT of testroot, not from inside it.
+  validate_capacity.js, validate_lp.js   default to 'testroot' if no argument.
+
+So there is no single working directory that runs all thirteen. Run
+`validate_outputs` from the parent; run the rest from the root that holds
+`index.html` and `nodal/`.
+
+### profiles.json is load-bearing for two thirds of the suite
+
+`index.html:11378` fetches `profiles.json` from the REPO ROOT — not from
+`nodal/` — and falls back to synthetic profiles when it is absent. The fallback
+is silent everywhere except `validate_outputs`, which detects it and refuses to
+score rather than reporting invalid benchmarks.
+
+Running the suite without it produces ELEVEN false failures across FIVE
+harnesses, every one of which looks like a separate bug:
+
+```
+                        synthetic        real
+validate_benchmarks       11/18         18/18
+validate_invariants      127/138       138/138
+validate_response         76/79         79/79
+validate_structure          8/9           9/9
+validate_external           1/2           2/2
+```
+
+What they looked like: total energy 193.3 TWh against an Ember-equivalent
+218.8; CO2 137.6 Mt against 175, a 21% shortfall; solar CF 27.8% and rooftop
+22.6%, both above their plausible bands; CSP below its; PV at 3,561 MW against
+a 3,271 MW cap; and a peak-demand disagreement of 27.7 GW against 33.2 GW that
+looked exactly like the 17 Aug storage-charging bug. All one cause: a synthetic
+solar shape that is too generous, and a demand series that peaks in a different
+hour.
+
+THE RULE: before investigating any failure below the top four lines, confirm
+`profiles.json` is at the repo root. A run without it is not evidence.
+
+### Data the suite needs
+
+`nodal/` plus `profiles.json` at the root. `validate_capacity` additionally
+reads `nodal/regional_renewable_capacity.json`, which `index.html` never
+fetches — it is a harness input, not a page dependency.
+
+### Corrections to the previous version of this block
+
+- It listed SEVEN scripts. There are thirteen. The six unlisted were the bug-hunt
+  session harnesses plus validate_solve.
+- `validate_lp` was recorded at 18/18. It is 40/40; the harness grew and the
+  count was never updated.
+- `validate_capacity` was recorded at 14/14 with one pending. It is 17/18.
+- `eng5.js` (6/6 monotonicity) and `jsdom_local2.js` were listed and are not
+  present in the current harness set. Monotonicity is now covered inside
+  validate_response. Confirm before reinstating either.
+- Open item 6 said `sa_solar_grid.json` does not exist. It does — see below.
+
+### sa_solar_grid.json is an ORPHAN, not a missing dependency
+
+The file is present at `nodal/sa_solar_grid.json`, 23 KB, and it is real data:
+PVGIS SARAH2 v5.2, a 0.5-degree grid over 16–33°E and 22–35°S, 739 valid points
+of annual capacity factor, nulls for ocean and outside-coverage.
+
+Nothing fetches it. The only reference anywhere in the repo is the comment at
+index.html:1291, which states the file has never existed and that the PVGIS path
+is "worth reviving IF the grid is ever built".
+
+The grid HAS been built. So this is not a dead branch to delete — it is a
+completed input whose consumer was removed on 14 Aug 2026. Reconnecting it would
+replace the Open-Meteo ERA5 fallback that the code's own comment says
+overestimates by 10–15%, with satellite-observed irradiance at roughly 5%.
+
+Two things to do, in order: correct the comment, which is now false; then decide
+whether to reconnect. Do not delete the file.
+
+### Why validate_capacity and validate_lp exist
+
+The five harnesses that predated them returned a **full pass against the old, provably wrong capacity file**.
 Nothing tested the capacity data or the LP build path, so those bugs could have sat
 there indefinitely. Run any new check against the *previous* state as well as the new
 one: a validator that cannot fail proves nothing. `validate_capacity.js` scores 3/8
@@ -3274,9 +3469,10 @@ benchmark work and sits high - see open items.
    names. The annual *"An Overview of the IPPPP"* on the same publications page
    historically carries project-level tables and is the route to named entries and the
    Hydra Central split.
-6. **`sa_solar_grid.json`** is fetched at index.html:798 and does not exist; the page
-   degrades to the Open-Meteo ERA5 fallback. Probably obsolete — remove the fetch or
-   restore the file.
+6. **`sa_solar_grid.json` is an orphan, not a missing file.** Resolved 27 Aug 2026 —
+   the file exists and is real PVGIS SARAH2 data, but nothing fetches it and the
+   comment at index.html:1291 wrongly states it never existed. See the validation
+   section for what to do. Do not delete the file.
 
 ---
 
