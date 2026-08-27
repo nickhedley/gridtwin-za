@@ -1,3 +1,76 @@
+## SATURATION CURVE - BUILT AND VERIFIED (27 Aug 2026)
+
+Battery revenue per MW as the national fleet grows, 0.5 to 10 GW. Built in
+`bessSaturationCurve()` and `renderBessSaturation()`, wired into `run()`.
+
+WHAT IT SHOWS, measured with reserve pricing switched on:
+
+```
+  fleet      ancillary R/MW/yr      total R/MW/yr
+  0.5 GW            197,100              304,165
+  3   GW            197,100              304,165
+  4   GW            189,216              296,281
+  6   GW            126,144              233,209
+ 10   GW             75,686              182,751
+```
+
+Ancillary falls 61.6% between 0.5 and 10 GW. That understates against ERCOT's
+~90%, and the panel says why: arbitrage is held flat because modelling its
+saturation needs a dispatch re-run at every fleet size.
+
+THE KNEE IS THE FINDING, not the percentage. Revenue is FLAT to about 3.8 GW,
+then falls. The saturation factor caps at 1 until the fleet's contribution
+exceeds the reserve requirement, which at 6% of a 32 GW peak is 1,920 MW,
+reached when the fleet passes ~3.8 GW. South Africa's fleet is 3,700 MW. The
+country is sitting almost exactly at the knee - the last point at which a new
+battery earns the full ancillary rate. That is the story worth telling.
+
+IT SHOWS NOTHING AT DEFAULTS, BY DESIGN. `asReserveOn` and `asInertiaOn` default
+false, per the 17 Aug decision that South Africa procures no ancillary services
+today. That decision is correct and the global defaults must NOT change - they
+would move dispatch across the whole model. Instead the panel explains itself:
+with ancillary off it states that the line is flat and shows arbitrage only, and
+names the toggle to enable. Verified: no NaN in the rendered HTML.
+
+### FOUR BAD READS OF KEYS THAT DO NOT EXIST
+
+`FIXED.psMW` and `FIXED.battMW` are not keys of FIXED. The real keys are
+`psPowerMW` (2,900) and `battPowerMW` (800). Both were read at TWO sites:
+
+    8687  bessRevenueStack     the saturation factor itself
+    8751  bessSaturationCurve  the "about here today" marker
+
+All four resolved to `undefined`, fell through `|| 0`, and produced a fleet of
+ZERO. The marker pointed at the 0.5 GW row against a real 3,700 MW fleet, and
+more consequentially the revenue panel computed its saturation factor against an
+empty fleet from the day it was added. Both fixed; the marker now lands on 4 GW.
+
+THE `X || <literal>` RULE NEEDS SHARPENING. As written it covers a fallback that
+DISAGREES with a constant. This was a fallback for a key that DOES NOT EXIST -
+different failure, identical signature, and the structural check cannot catch it
+because there is no constant to compare against. A fallback of `0` produces a
+plausible chart rather than a crash, which is why 683 checks passed over it.
+
+PROPOSED HARNESS CHECK: extract every `FIXED.<identifier>` read from the inline
+scripts and assert each names a real key of FIXED. It belongs in
+`validate_lint.js`, which already does the one-rule job of finding identifiers
+that resolve nowhere - this is the same fault one level down, on properties
+rather than names. Score it against the pre-fix file first: it must report
+exactly four failures at 8687 and 8751. A check that cannot fail proves nothing.
+
+### GOTCHA: these two functions read the GLOBAL state
+
+`bessRevenueStack` and `bessSaturationCurve` read `state` directly rather than
+taking it as an argument. A test that overrides state by passing an object to
+`simulate()` will silently measure the DEFAULT scenario. This cost a false bug
+report during verification: the curve looked broken with ancillary "on" because
+the toggle had been set on a copy. Mutate the global, or the test lies.
+
+ALSO IN THIS PASS: `state.asReserveShare` defaults to 0.15 and `_resReqMW` is
+hardcoded as 6% of peak in the panel. Both mirror the engine. If either moves in
+the engine, this panel silently disagrees - a second copy of a constant, which is
+the thing the no-constant-appears-twice rule exists to prevent.
+
 ## COD RECONCILIATION - BUILT (27 Aug 2026)
 
 WHY. Mulilo Total Hydra Storage reached commercial operation in H1 2026 and is
@@ -89,13 +162,13 @@ and worth settling once.
 
 ## MONTEL / MODO-STYLE ADDITIONS (27 Aug 2026)
 
-Four candidates. The first is being built now; the rest are queued.
+Four candidates. The first is BUILT (see the entry above); the rest are queued.
 
 1. SATURATION CURVE - battery revenue per MW as the fleet grows, 0.5 to 10 GW.
    Modo's signature chart. The machinery exists: the ancillary panel already
    models the reserve pot as fixed with per-MW revenue falling as the fleet
    grows, calibrated against ERCOT's ~90% fall and GB's 87% to 33%. It computes
-   one point and discards the curve. IN PROGRESS.
+   one point and discards the curve. BUILT AND VERIFIED 27 Aug 2026.
 
 2. REVENUE TRAJECTORY BY YEAR - 2026 to 2035. Heavier: needs the build
    optimiser's capacity path feeding the dispatch engine year by year.
