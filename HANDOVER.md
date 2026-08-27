@@ -1,3 +1,24 @@
+## MONTEL / MODO-STYLE ADDITIONS (27 Aug 2026)
+
+Four candidates. The first is being built now; the rest are queued.
+
+1. SATURATION CURVE - battery revenue per MW as the fleet grows, 0.5 to 10 GW.
+   Modo's signature chart. The machinery exists: the ancillary panel already
+   models the reserve pot as fixed with per-MW revenue falling as the fleet
+   grows, calibrated against ERCOT's ~90% fall and GB's 87% to 33%. It computes
+   one point and discards the curve. IN PROGRESS.
+
+2. REVENUE TRAJECTORY BY YEAR - 2026 to 2035. Heavier: needs the build
+   optimiser's capacity path feeding the dispatch engine year by year.
+
+3. NEGATIVE AND ZERO PRICE HOURS - priceStats.zeroHours already exists. It is
+   the leading indicator of curtailment risk, which matters given curtailment
+   jumped an order of magnitude in H1 2026. Small.
+
+4. CAPTURE RATE BY TECHNOLOGY OVER TIME - the cannibalisation story. Capture
+   prices per technology already exist; showing solar's erode as penetration
+   rises is something nobody publishes for South Africa.
+
 ## PPA TOOLKIT - DESIGNED, NOT BUILT (27 Aug 2026)
 
 Prompted by pypsa-ppa.streamlit.app, which optimises a renewable portfolio

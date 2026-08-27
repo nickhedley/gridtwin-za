@@ -865,6 +865,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="bessStackBody"></div>
           </div>
 
+          <div class="panel" id="bessSatPanel" style="margin-top:18px">
+          <div class="ph"><h2>What happens as the fleet grows</h2><span class="tag">revenue per MW</span></div>
+          <div class="pb" id="bessSatBody"></div>
+          </div>
+
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Where a battery earns most</h2><span class="tag">lithium-ion 4h &middot; nodal &middot; needs full model run</span></div>
             <div class="pb" id="bessLocBody"></div>
@@ -8614,8 +8619,10 @@ function bessBenchmark(price, hours, eff){
 // Pluralise a count without a singular/plural bug at each call site.
 function nHours(n){ return n + (n === 1 ? ' hour' : ' hours'); }
 
-function bessRevenueStack(r, hours){
+function bessRevenueStack(r, hours, fleetOverrideMW){
   hours = hours || 4;
+  // fleetOverrideMW lets the saturation curve walk the fleet without touching
+  // state. Undefined means use the scenario, so existing callers are unaffected.
   const _resR  = Math.max(0, state.asReserveOn ? (state.asReserveRMWh || 0) : 0);
   const _held  = _resR > 0 ? Math.min(0.5, Math.max(0, state.asReserveShare ?? 0.15)) : 0;
   const arb = bessBenchmark(r.marginalP, hours).revPerMW * (1 - _held);   // R/MW/yr
@@ -8628,7 +8635,16 @@ function bessRevenueStack(r, hours){
   // Ancillary: reserve is paid on capacity HELD, so it accrues per MW of the
   // share held back, every hour of the year. Inertia is paid per kW of
   // capability; a battery counts at half, matching the engine's inertiaCapableMW.
-  const reserveTot = _resR * _held * 8760;                   // R/MW/yr, all products
+  // SATURATION. The reserve pot is fixed by system need, not by how many
+  // batteries want to serve it, so per-MW revenue falls as the fleet grows.
+  // This was missing here while the dispatch engine applied it, so the panel
+  // overstated ancillary revenue at any fleet above the reserve requirement.
+  // Same formula as the engine, so the two now agree.
+  const _fleetMW = (fleetOverrideMW != null) ? fleetOverrideMW
+    : ((state.newBattMW || 0) + (FIXED.psMW || 0) + (FIXED.battMW || 0));
+  const _resReqMW = Math.max(1, (state.peakMW ?? FIXED.peakMW ?? 32000) * 0.06);
+  const _satur = Math.min(1, _resReqMW / Math.max(_resReqMW, _fleetMW * 0.5));
+  const reserveTot = _resR * _held * 8760 * _satur;          // R/MW/yr, all products
   // Split across Eskom's own reserve categories. Batteries dominate the fast end
   // - CAISO batteries held ~84% of all regulation in 2024 - and are poorly
   // placed at the slow end, where a 4-hour store competes with plant that can
@@ -8655,6 +8671,92 @@ function bessRevenueStack(r, hours){
   const tot = arb + anc + cap;
   return { arb, anc, cap, tot, hours, products, reserve, inertia,
            pct: t => tot > 0 ? 100 * t / tot : 0 };
+}
+
+/* SATURATION CURVE
+ * ---------------------------------------------------------------------------
+ * What a battery earns per MW as the fleet grows, from today to 10 GW.
+ *
+ * WHY THIS IS THE CHART THAT MATTERS. Every storage developer asks the same
+ * question - when does the business case break? - and nobody publishes the
+ * answer for South Africa. The reserve pot is fixed by system need, not by how
+ * many batteries want to serve it, so each new MW earns less than the last.
+ * ERCOT batteries saw ancillary prices fall about 90% as the fleet grew from
+ * 0.2 to 12 GW; GB frequency response went from 87% of revenue to about a third.
+ *
+ * The model already contains this. bessRevenueStack applies a saturation factor
+ * from the current fleet size, computes one point, and throws the curve away.
+ * This walks the fleet and keeps it.
+ *
+ * The arbitrage side saturates too, and harder in some ways - batteries buy in
+ * the trough and sell in the peak, which narrows the spread they are trading.
+ * That is NOT modelled here: the dispatch engine would have to re-run at each
+ * fleet size, which is far too slow for a chart that redraws on every slider.
+ * So the arbitrage line is held flat and the panel says so. The curve
+ * understates how fast revenue falls.
+ */
+function bessSaturationCurve(r){
+  if (!r || !r.marginalP) return null;
+  const pts = [];
+  const base = state.newBattMW || 0;
+  // Walk total fleet from 500 MW to 10 GW. Existing pumped storage counts
+  // toward saturation, so it is carried at each step rather than added to it.
+  for (const mw of [500, 1000, 2000, 3000, 4000, 6000, 8000, 10000]){
+    const st = bessRevenueStack(r, 4, mw);
+    if (st) pts.push({ mw, arb: st.arb, anc: st.anc, cap: st.cap, tot: st.tot });
+  }
+  const nowMW = base + (FIXED.psMW || 0) + (FIXED.battMW || 0);
+  let nearest = pts.length ? pts[0].mw : 0, bd = Infinity;
+  for (const p of pts){ const d = Math.abs(p.mw - nowMW); if (d < bd){ bd = d; nearest = p.mw; } }
+  return { pts, current: base, nowMW, nearest };
+}
+
+function renderBessSaturation(r){
+  const host = document.getElementById('bessSatBody');
+  if (!host) return;
+  const c = bessSaturationCurve(r);
+  if (!c || !c.pts.length){ host.innerHTML = ''; return; }
+
+  const max = Math.max(...c.pts.map(p => p.tot)) || 1;
+  const R = v => 'R' + Math.round(v/1000) + 'k';
+
+  let html = '<div style="font-size:10.5px;color:var(--ink2);line-height:1.55;margin-bottom:9px">'
+    + 'What one MW of battery earns as the national fleet grows. The reserve pot is '
+    + 'fixed by system need, not by how many batteries want to serve it, so each new '
+    + 'MW earns less than the last.</div>';
+
+  html += c.pts.map(p => {
+    const w = 100 * p.tot / max;
+    const here = (p.mw === c.nearest);
+    return '<div style="margin-bottom:5px">'
+      + '<div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px">'
+        + '<span>' + (p.mw/1000).toFixed(1) + ' GW fleet' + (here ? ' \u2190 about here today' : '') + '</span>'
+        + '<span class="mono" style="color:var(--ink2)">' + R(p.tot) + '/MW/yr</span></div>'
+      + '<div style="display:flex;height:13px;background:var(--panel2)">'
+        + '<div title="Arbitrage" style="width:' + (100*p.arb/max).toFixed(1) + '%;background:#4A6B7A"></div>'
+        + '<div title="Ancillary" style="width:' + (100*p.anc/max).toFixed(1) + '%;background:#D9A441"></div>'
+        + '<div title="Capacity" style="width:' + (100*p.cap/max).toFixed(1) + '%;background:#C4785A"></div>'
+      + '</div></div>';
+  }).join('');
+
+  const first = c.pts[0], last = c.pts[c.pts.length-1];
+  const fall = first.anc > 0 ? 100 * (1 - last.anc/first.anc) : 0;
+  html += '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:9px;'
+    + 'padding-top:7px;border-top:1px solid var(--line2)">'
+    + '<span style="display:inline-block;width:9px;height:9px;background:#4A6B7A;margin-right:4px"></span>Arbitrage '
+    + '<span style="display:inline-block;width:9px;height:9px;background:#D9A441;margin:0 4px 0 9px"></span>Ancillary '
+    + '<span style="display:inline-block;width:9px;height:9px;background:#C4785A;margin:0 4px 0 9px"></span>Capacity'
+    + '<div style="margin-top:5px">Ancillary revenue per MW falls <strong>'
+      + fall.toFixed(0) + '&#37;</strong> between 0.5 and 10&#160;GW. ERCOT saw about 90&#37; as its '
+      + 'fleet went from 0.2 to 12&#160;GW, and Great Britain\u2019s frequency response went from '
+      + '87&#37; of battery revenue to roughly a third.</div>'
+    + '<div style="margin-top:5px">The arbitrage line is held flat here, which '
+      + '<strong>understates the fall</strong>. Arbitrage saturates too, because batteries buy in '
+      + 'the trough and sell in the peak and so narrow the spread they trade. Modelling that '
+      + 'needs a full dispatch re-run at each fleet size, which is too slow for a panel that '
+      + 'redraws on every slider.</div></div>';
+
+  host.innerHTML = html;
 }
 
 function renderBessStack(r){
@@ -11219,7 +11321,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
@@ -11283,8 +11385,8 @@ function exportPpaTimeseries(){
   const _sel = document.getElementById('siteRegion');
   const _def = (_sel && _sel.value) ? _sel.value : 'Northern Cape';
   const reg = prompt('Which region\u2019s wind and solar profiles?\n\n'
-    + 'The PRICE series is national - the instant engine is single-node, so there\n'
-    + 'is one shadow price for the whole country. Only the profiles are regional.\n\n'
+    + 'The price series is national. The instant engine is single-node, so there is '
+    + 'one shadow price for the whole country. Only the profiles are regional.\n\n'
     + 'Options: ' + (typeof BLD_REGIONS !== 'undefined' ? BLD_REGIONS.join(', ') : _def),
     _def);
   if (!reg) return;
@@ -11295,12 +11397,12 @@ function exportPpaTimeseries(){
   const rows = [];
   rows.push('# GridTwin ZA - hourly series for PPA modelling');
   rows.push('# generated,' + new Date().toISOString().slice(0,16).replace('T',' '));
-  rows.push('# price series,NATIONAL - single-node engine, one price for the country');
+  rows.push('# price series,national - single-node engine, one price for the country');
   rows.push('# wind and solar profiles,' + reg);
   rows.push('# scenario,demand growth ' + (state.demandGrowthPct||0) + '%, EAF '
             + (state.coalEAFPct||0) + '%');
   rows.push('#');
-  rows.push('# price_r_per_mwh is a SHADOW PRICE, not a market price. South Africa');
+  rows.push('# price_r_per_mwh is a shadow price, not a market price. South Africa');
   rows.push('# has no day-ahead market, so nothing clears at these numbers and no');
   rows.push('# one has bid into them. It is the marginal cost of the most expensive');
   rows.push('# unit running in each hour - what a price would settle at if dispatch');
