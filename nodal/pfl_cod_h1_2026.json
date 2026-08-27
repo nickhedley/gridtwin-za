@@ -13,7 +13,9 @@
    "mw_installed": 240,
    "mw_contracted": 240,
    "route": "private",
-   "method": "wheeling"
+   "method": "wheeling",
+   "cod": "2026-03",
+   "cod_source": "Envusa Energy release, 8 April 2026, via Business Report and Mining Weekly"
   },
   {
    "name": "Umsobomvu",
@@ -21,7 +23,9 @@
    "mw_installed": 140,
    "mw_contracted": 140,
    "route": "private",
-   "method": "wheeling"
+   "method": "wheeling",
+   "cod": "2026-04",
+   "cod_source": "Envusa Energy release, 8 April 2026, via Business Report and Mining Weekly"
   },
   {
    "name": "Bolobedu",
@@ -29,7 +33,9 @@
    "mw_installed": 148,
    "mw_contracted": 148,
    "route": "private",
-   "method": "wheeling"
+   "method": "wheeling",
+   "cod": "2026-01",
+   "cod_source": "Voltalia commissioning release; first grid connection announced 7 January 2026"
   },
   {
    "name": "ARM Platinum Mining",
@@ -45,7 +51,9 @@
    "mw_installed": 110,
    "mw_contracted": 110,
    "route": "private",
-   "method": "wheeling"
+   "method": "wheeling",
+   "cod": "2026-05",
+   "cod_source": "Enel Green Power statement 2 June 2026, via Ecofin Agency"
   },
   {
    "name": "Impofu East",
@@ -53,7 +61,9 @@
    "mw_installed": 110,
    "mw_contracted": 110,
    "route": "private",
-   "method": "wheeling"
+   "method": "wheeling",
+   "cod": "2026-05",
+   "cod_source": "Enel Green Power RSA release 30 June 2026, via Sasol media centre"
   },
   {
    "name": "Impofu West",
@@ -61,7 +71,9 @@
    "mw_installed": 110,
    "mw_contracted": 110,
    "route": "private",
-   "method": "wheeling"
+   "method": "wheeling",
+   "cod": "2026-06",
+   "cod_source": "Enel Green Power RSA release 30 June 2026, via Sasol media centre"
   },
   {
    "name": "Lephalale 1",

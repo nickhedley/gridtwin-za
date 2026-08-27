@@ -413,7 +413,16 @@ try {
   const norm = t => String(t).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const haystack = norm(JSON.stringify(cap) + ' ' + JSON.stringify(pipe));
 
-  const asAt = (cap.meta && cap.meta.as_at) || '2026-03-31';
+  // THE CUTOFF DIFFERS BY ROUTE. Public capacity comes from the IPP Office
+  // quarterly at 31 March 2026; private comes from the PFL monitor, which runs
+  // to 30 June. So a private project commissioned in April is inside its
+  // aggregate while a public one on the same date is not.
+  //
+  // Umsobomvu made this visible: COD April 2026, private. A single 31 March
+  // cutoff would have flagged it as missing when it is properly covered.
+  const asAtPublic  = (cap.meta && cap.meta.as_at) || '2026-03-31';
+  const asAtPrivate = (cap.meta && cap.meta.private_coverage === 'h1-2026-only')
+    ? '2026-06-30' : asAtPublic;
 
   const missing = [], captive = [], aggregated = [], undated = [];
   for (const pr of cod.projects) {
@@ -428,7 +437,8 @@ try {
 
     // Commissioned before the cutoff: inside the provincial aggregate, and it
     // will never appear by name. Absence is expected.
-    if (pr.cod < asAt.slice(0, 7)) { aggregated.push(pr.name); continue; }
+    const cutoff = (pr.route === 'private' ? asAtPrivate : asAtPublic).slice(0, 7);
+    if (pr.cod <= cutoff) { aggregated.push(pr.name); continue; }
 
     const key = norm(pr.name).split(' ').filter(w => w.length > 3);
     const found = key.length && key.every(w => haystack.includes(w));
