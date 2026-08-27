@@ -1922,7 +1922,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Thirteen harnesses, 677 checks. Last full run: 676/677.
+Fifteen harnesses, 683 checks. Last full run: 682/683.
 
 ```
 node stress_suite.js                290/290
@@ -1936,9 +1936,19 @@ node validate_capacity.js .           17/18   one standing flag, by design
 node validate_consistency.js .        14/14
 node validate_structure.js .            9/9
 node validate_solve.js .                6/6
+node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
 node validate_lint.js .                 1/1
+node jsdom_local2.js                renders without error
 ```
+
+`jsdom_local2.js` reports two `ctx.createPattern is not a function` errors at
+index.html:7210 — that is jsdom lacking canvas, not a regression. It is a
+diagnostic dump rather than an assertion suite: it prints box character counts
+and exits 0 regardless, so read its output, do not just check the exit code. It
+also reports `shed` at 0 chars and `state` as undefined on the window while
+`lastRes` is a proper object. Unverified whether that is normal for this
+harness; nothing asserts on it either way.
 
 ### The 17/18 is correct. Do not "fix" it.
 
@@ -1960,7 +1970,7 @@ the check.
 ### How to invoke them — this bites
 
 Ten harnesses take the root as `argv[2]` and default to `.`. Two default to
-`testroot`. Two ignore the argument entirely:
+`testroot`. Three ignore the argument entirely:
 
   stress_suite.js      NO root variable. Hardcodes `nodal/...` and `index.html`
                        as paths relative to the WORKING DIRECTORY. Passing
@@ -1968,13 +1978,16 @@ Ten harnesses take the root as `argv[2]` and default to `.`. Two default to
                        the run silently uses cwd. It therefore appears to work
                        from the repo root and fails from anywhere else with
                        MODULE_NOT_FOUND on ./nodal/nodal_engine.js.
+  eng5.js              Hardcodes `testroot/index.html`. Run from the PARENT.
+  jsdom_local2.js      Hardcodes `testroot/index.html`. Run from the PARENT.
   validate_outputs.js  Hardcodes path.resolve('testroot'). Run it from the
                        PARENT of testroot, not from inside it.
   validate_capacity.js, validate_lp.js   default to 'testroot' if no argument.
 
-So there is no single working directory that runs all thirteen. Run
-`validate_outputs` from the parent; run the rest from the root that holds
-`index.html` and `nodal/`.
+So there is no single working directory that runs all fifteen. Run
+`validate_outputs`, `eng5` and `jsdom_local2` from the parent; run
+`stress_suite` from the root that holds `index.html` and `nodal/`; the rest take
+that root as an argument from either place.
 
 ### profiles.json is load-bearing for two thirds of the suite
 
@@ -2014,15 +2027,33 @@ fetches — it is a harness input, not a page dependency.
 
 ### Corrections to the previous version of this block
 
-- It listed SEVEN scripts. There are thirteen. The six unlisted were the bug-hunt
-  session harnesses plus validate_solve.
+- It listed SEVEN scripts. There are fifteen. The eight unlisted were the
+  bug-hunt session harnesses plus validate_solve.
 - `validate_lp` was recorded at 18/18. It is 40/40; the harness grew and the
   count was never updated.
 - `validate_capacity` was recorded at 14/14 with one pending. It is 17/18.
-- `eng5.js` (6/6 monotonicity) and `jsdom_local2.js` were listed and are not
-  present in the current harness set. Monotonicity is now covered inside
-  validate_response. Confirm before reinstating either.
 - Open item 6 said `sa_solar_grid.json` does not exist. It does — see below.
+
+### DO NOT RETIRE eng5.js. validate_response does not replace it.
+
+Checked 27 Aug 2026, because an earlier draft of this block assumed it was
+redundant and it is not.
+
+`validate_response`'s SIGN_RULES cover four of eng5's six checks — VRE against
+coal, demand against coal, EAF against LOLE — and add carbon-tax and
+decommissioning rules eng5 lacks. But `newBattMW` appears nowhere in SIGN_RULES,
+so TWO of eng5's checks have no equivalent anywhere in the suite:
+
+    5. more storage must not increase curtailment
+    6. more storage must not increase unserved energy
+
+Retiring eng5 would silently drop storage monotonicity. That is the exact
+failure mode validate_lp's own header warns about — a check that disappears
+while everything still passes.
+
+The durable fix is to add `newBattMW: { curtTWh: -1, unservedTWh: -1 }` to
+SIGN_RULES so the two suites OVERLAP rather than depend on each other. Until
+then both must run.
 
 ### sa_solar_grid.json is an ORPHAN, not a missing dependency
 
