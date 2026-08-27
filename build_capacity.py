@@ -155,8 +155,82 @@ for _tech, _key in (("solar", "solar_mw"), ("wind", "wind_mw")):
 eskom_online = {"solar_mw": blank(), "wind_mw": blank()}
 eskom_online["wind_mw"]["Western Cape"] = 100.0
 
+# ---------------------------------------------------------------------------
+# 2d. RMIPPPP - a FOURTH source. Kept in its own bucket rather than folded into
+#     reipppp: different programme, different procurement round, and the report
+#     gives no provincial split for the ~225 MW already operational, so that
+#     capacity is still OUTSIDE this file. Holding RMIPPPP separately means the
+#     225 MW can be added later without disturbing anything, and nobody has to
+#     wonder whether by_source.reipppp silently contains RMIPPPP.
+#
+#     hybrid_mw is a NEW technology key and is deliberately NOT solar_mw. Mulilo
+#     Total Hydra is 216 MWp of solar behind a 75 MW contracted dispatchable
+#     output (PFL Table 1 footnote 2). Counting 216 as solar would treble
+#     Northern Cape solar; counting 75 as solar would describe it wrongly. It is
+#     firm dispatchable capacity and is carried as such, so FIXED.pvUtilityMW is
+#     untouched - which matters, because it is already known to be ~1,823 MW high.
+#
+#     COD: PFL places it in H1 2026; Engineering News reports it inaugurated and
+#     brought into operation 16 July 2026. Inauguration normally FOLLOWS
+#     commercial operation, so these are not necessarily in conflict, but the
+#     recorded COD is 2026-07 pending the PFL Knowledge Hub table. Either way it
+#     is after the 31 March cutoff, so it is genuinely uncounted in p.18.
+# ---------------------------------------------------------------------------
+rmipppp_online = {"hybrid_mw": blank()}
+rmipppp_online["hybrid_mw"]["Northern Cape"] = 75.0
+
 # Engine-facing totals: sum across sources. Utility PV only; CSP is carried
 # separately as FIXED.cspMW in index.html.
+# ---------------------------------------------------------------------------
+# 2c. POST-CUTOFF ADDITIONS. Projects that reached commercial operation AFTER
+#     the 31 March 2026 reporting date, so they are absent from p.18 but are
+#     online today. Added here, after the supply-area split, because the split
+#     file covers BW1-BW4 + the CSP window and cannot carry a BW6 project.
+#
+#     THE BAR, from the Doornhoek/Graspan pair on 18 Aug 2026: three independent
+#     sources agreeing on capacity, province AND timing, PLUS the
+#     in_construction decomposition NAMING the project as not yet online at the
+#     cutoff. Graspan failed that last test and was correctly refused.
+#
+#     p18_online_sum is captured BEFORE these are added: the rounding note is a
+#     statement about the published table, which does not contain them.
+# ---------------------------------------------------------------------------
+p18_online_sum = round(sum(total(v) for v in reipppp_online.values()), 1)
+
+POST_CUTOFF = [
+    dict(name="Doornhoek Solar PV", mw=120.0, tech="solar", region="North West",
+         bw="BW6", cod="22 May 2026",
+         sources=[
+             "ipp_pipeline.json status=construction at 31 Mar 2026",
+             "Engineering News 22 May 2026, AMEA Power commissions 120 MW Doornhoek, "
+             "https://www.engineeringnews.co.za/article/amea-powers-120-mw-solar-plant-achieves-commercial-operation-2026-05-22",
+             "PFL H1 2026 monitor Table 1",
+             "Single-axis tracking confirmed via developer-sourced project description; "
+             "~200 ha, 81,000+ panels for 120 MW.",
+         ],
+         note=(
+             "CAPACITY FACTOR RESOLVED. The quoted 325 GWh/y on 120 MW implies 30.9%, "
+             "which looked like an over-claim against a 21-24% fixed-tilt band. It is not: "
+             "the plant uses SINGLE-AXIS TRACKING, whose SA range is 26-31%, so 30.9% sits "
+             "at the top of a plausible band rather than outside one. Distinct from the "
+             "Ilikwa flag, where 32% is asserted with no stated mechanism. MWp vs MWac: the "
+             "press consistently says 120 MWp while PFL Table 1 records 120 MWac for both "
+             "contracted and installed. PFL flags that distinction explicitly in footnote 2 "
+             "for Mulilo Total Hydra and did NOT flag Doornhoek, so 120 MWac is deliberate - "
+             "and it reconciles, since 325 GWh on ~100 MWac would imply 37%, which is not "
+             "achievable. MODELLING NOTE: our solar profile yields 22.5% fleet-average, so "
+             "the model generates about 236 GWh here against the claimed 325. That is the "
+             "right treatment for one plant inside a fleet-average profile, but the fleet CF "
+             "should drift upward as tracking becomes standard."
+         )),
+]
+
+for _p in POST_CUTOFF:
+    reipppp_online[_p["tech"] + "_mw"][_p["region"]] = round(
+        reipppp_online[_p["tech"] + "_mw"][_p["region"]] + _p["mw"], 1)
+
+_post_cutoff_mw = round(sum(p["mw"] for p in POST_CUTOFF), 1)
+
 solar_total = {r: reipppp_online["solar_mw"][r] + private_online["solar_mw"][r]
                   + eskom_online["solar_mw"][r] for r in REGIONS}
 wind_total = {r: reipppp_online["wind_mw"][r] + private_online["wind_mw"][r]
@@ -172,29 +246,46 @@ regional = {
         "reipppp": reipppp_online,
         "private": private_online,
         "eskom": eskom_online,
+        "rmipppp": rmipppp_online,
     },
     "reconciliation": {
         "universe": "REIPPPP BW1-BW6, projects that reached financial close",
         "identity": "procured = online_actual + under_delivery + in_construction",
         "procured_mw": 7825.0,
-        "online_actual_mw": 7355.0,
+        # Post-cutoff additions move capacity from in_construction to online, so
+        # both sides shift and the identity still holds. Derived, never typed.
+        "online_actual_mw": round(7355.0 + _post_cutoff_mw, 1),
         "under_delivery_mw": 26.0,
-        "in_construction_mw": 444.0,
-        "identity_holds": 7355.0 + 26.0 + 444.0 == 7825.0,
+        "in_construction_mw": round(444.0 - _post_cutoff_mw, 1),
+        "identity_holds": round(7355.0 + _post_cutoff_mw, 1) + 26.0
+                          + round(444.0 - _post_cutoff_mw, 1) == 7825.0,
         "provincial_online_sum_mw": prov_online_sum,
         "rounding_note": (
             "Summing the per-province, per-technology figures on p.18 gives "
-            f"{prov_online_sum} MW against the headline 7355 MW. The 1 MW gap is rounding "
+            f"{p18_online_sum} MW against the headline 7355 MW. The 1 MW gap is rounding "
             "in the published table and has NOT been adjusted away."
         ),
         "totals_by_technology_mw": {k: total(v) for k, v in reipppp_online.items()},
+        "construction_decomposition": (
+            "in_construction_mw was 444 at 31 Mar 2026, decomposing exactly to Doornhoek "
+            "Solar PV 120 (BW6), Virginia Solar Park 240 (BW6) and BW5 wind Eastern Cape 84. "
+            "Doornhoek was moved to online on 18 Aug 2026 on confirmation it reached COD "
+            "22 May 2026, leaving 324 in construction. That decomposition is also how the "
+            "same-day attempt to add Graspan was caught: Graspan was not in it, and being "
+            "inside procured it was therefore already online."
+        ),
+        "post_cutoff_additions": POST_CUTOFF,
     },
     "meta": {
         "description": (
             "Operational renewable capacity by GridTwin ZA nodal region. Rebuilt from "
             "commissioned-plant figures, not bid-window awards."
         ),
-        "source_reipppp": SRC + ", p.18 (Capacity Online by province and technology)",
+        "source_reipppp": SRC + ", p.18 (Capacity Online by province and technology)."
+        " PLUS Doornhoek Solar PV (120 MW, North West, BW6, AMEA Power), which reached"
+        " commercial operation 22 May 2026 - after the 31 March cutoff - confirmed by"
+        " Engineering News and the PFL H1 2026 monitor, and listed as in-construction at"
+        " the cutoff in ipp_pipeline.json.",
         "source_private": "Alao, O. & Kruger, W. (2026), South African IPPs: financial close and commercial operations monitor, H1 2026 update, Power Futures Lab, UCT GSB (see nodal/pfl_private_h1_2026.json)",
         "private_coverage": "h1-2026-only",
         "as_at": "2026-03-31",
@@ -255,7 +346,21 @@ prov_projects = [
     # REIPPPP in construction - report p.18 (In Construction by province) and p.19
     # (BW6: 2 projects / 360 MW in construction; BW5: 1 project / 84 MW).
     dict(name="Doornhoek Solar PV", region="North West", tech="solar", mw=120.0,
-         status="construction", bw="BW6", province_confidence="published"),
+         status="online", bw="BW6", province_confidence="published",
+         cod="22 May 2026",
+         status_note="Moved from construction to online 18 Aug 2026. Commissioned "
+                     "22 May 2026 per Engineering News; first BW6 project to reach COD."),
+    dict(name="Mulilo Total Hydra Storage", region="Northern Cape", tech="hybrid", mw=75.0,
+         status="online", bw="RMIPPPP", province_confidence="published",
+         cod="2026-07",
+         status_note="Added 27 Aug 2026. 216 MWp of solar behind a 75 MW contracted "
+                     "dispatchable output (PFL Table 1 footnote 2); the CONTRACTED figure "
+                     "is carried, since 216 would treble Northern Cape solar. Reached "
+                     "commercial operation after the 31 Mar 2026 cutoff, so it is absent "
+                     "from p.29. PFL places it in H1 2026; Engineering News reports "
+                     "inauguration 16 July 2026 - inauguration normally follows COD, so "
+                     "these need not conflict. Confirm against the PFL Knowledge Hub COD "
+                     "table. Counted in by_source.rmipppp.hybrid_mw, NOT in solar."),
     dict(name="Virginia Solar Park", region="Free State", tech="solar", mw=240.0,
          status="construction", bw="BW6", province_confidence="published"),
     dict(name="BW5 wind, Eastern Cape (1 project)", region="Eastern Cape", tech="wind", mw=84.0,
