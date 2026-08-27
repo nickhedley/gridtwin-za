@@ -445,7 +445,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <button id="wkW" class="active">Winter week</button>
                 <button id="wkS">Summer week</button>
               </div>
-              <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
+              <button onclick="exportPpaTimeseries()" title="Hourly shadow prices and regional wind and solar profiles, for PPA modelling" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap;margin-right:4px">↓ PPA series</button>
+                <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
             </div>
           </div>
           <div class="pb" style="padding:2px 12px 0"><span class="tag" style="font-size:10.5px; color:var(--ink2); font-family:'IBM Plex Mono'">A representative week – hourly demand &amp; renewable profiles from 2025 Eskom data, fleet assumptions calibrated to June–July 2026 system reports</span></div>
@@ -11247,6 +11248,76 @@ fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=
 let sitePortfolio=[];
 // siteAllocated is declared earlier (near nodeColor) so the map can use it on first render too
 let siteSliderContribution={newWindMW:0, newPvMW:0}; // how much of the national slider WE added, for clean reset
+
+/* PPA TOOLKIT EXPORT
+ * ---------------------------------------------------------------------------
+ * Emits the two series a PPA optimiser needs, in the shape pypsa-ppa.streamlit.app
+ * accepts through its "Import custom timeseries" feature.
+ *
+ * WHY THIS EXISTS. That toolkit runs on ENTSO-E day-ahead prices and states
+ * plainly that it supports Europe only. South Africa has no day-ahead market -
+ * SAWEM is still being designed - so there is no price series to import.
+ *
+ * GridTwin's hourly shadow price is the closest thing the country has: the
+ * marginal cost of the most expensive unit running in each hour, which is what
+ * a day-ahead price would settle at if dispatch were priced rather than
+ * administered. Paired with the regional wind and solar profiles, that is
+ * enough to run a South African PPA optimisation.
+ *
+ * WHAT IT IS NOT. A shadow price is not a market price. There is no market, so
+ * nothing clears at these numbers, and nobody has bid into them. The header
+ * says so, because a file that travels into someone else's model must carry
+ * its own caveats - the person running it will not have read this comment.
+ */
+function exportPpaTimeseries(){
+  if (!lastRes){ alert('Run the model first.'); return; }
+  const r = lastRes;
+  const mp = r.marginalP || [];
+  if (!mp.length){ alert('No price series available.'); return; }
+
+  // Region defaults to whatever the site query is set to, so the export matches
+  // what the user was just looking at rather than an arbitrary choice.
+  const _sel = document.getElementById('siteRegion');
+  const reg = (_sel && _sel.value) ? _sel.value : 'Northern Cape';
+  const P = (typeof bldRegProfiles !== 'undefined' && bldRegProfiles) ? bldRegProfiles : null;
+  const wind = P && P.wind_pu && P.wind_pu[reg] ? P.wind_pu[reg] : null;
+  const solar = P && P.solar_pu && P.solar_pu[reg] ? P.solar_pu[reg] : null;
+
+  const rows = [];
+  rows.push('# GridTwin ZA - hourly series for PPA modelling');
+  rows.push('# generated,' + new Date().toISOString().slice(0,16).replace('T',' '));
+  rows.push('# region,' + reg);
+  rows.push('# scenario,demand growth ' + (state.demandGrowthPct||0) + '%, EAF '
+            + (state.coalEAFPct||0) + '%');
+  rows.push('#');
+  rows.push('# price_r_per_mwh is a SHADOW PRICE, not a market price. South Africa');
+  rows.push('# has no day-ahead market, so nothing clears at these numbers and no');
+  rows.push('# one has bid into them. It is the marginal cost of the most expensive');
+  rows.push('# unit running in each hour - what a price would settle at if dispatch');
+  rows.push('# were priced rather than administered. Treat it as an indication of');
+  rows.push('# when power is scarce, not as a traded curve.');
+  rows.push('#');
+  rows.push('# wind_pu and solar_pu are per-unit hourly output for this region,');
+  rows.push('# from PVGIS and Renewables.ninja. Multiply by installed MW.');
+  rows.push('#');
+  rows.push('# Source: gridtwinza.org - CC BY-NC-ND 4.0');
+  rows.push('hour,price_r_per_mwh' + (wind ? ',wind_pu' : '') + (solar ? ',solar_pu' : ''));
+
+  const N = Math.min(8760, mp.length);
+  for (let h = 0; h < N; h++){
+    let line = h + ',' + (isFinite(mp[h]) ? mp[h].toFixed(2) : '');
+    if (wind)  line += ',' + (wind[h]  != null ? wind[h].toFixed(4)  : '');
+    if (solar) line += ',' + (solar[h] != null ? solar[h].toFixed(4) : '');
+    rows.push(line);
+  }
+
+  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'gridtwin_ppa_' + reg.toLowerCase().replace(/\s+/g,'_') + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 function downloadDispatchCSV() {
   if(!lastRes) return;
