@@ -4116,6 +4116,10 @@ const FIXED = {
   //   capacity 300 R/kW/yr - Ireland's T-4 cleared near EUR150,000/MW for
   //                          2028/29, roughly R3,000/kW/yr on de-rated capacity.
   //                          300 is a deliberately conservative tenth of that.
+  // Congestion curtailment. 4% is NERSA's approved ceiling from September 2025,
+  // not a fitted value. Defaults ON: it is happening now and at scale, unlike
+  // the market-design levers below which model things South Africa does not do.
+  congestionCurtailOn: true, congestionCurtailPct: 4,
   asReserveOn: false, asInertiaOn: false, capacityPaymentOn: false,
   asReserveRMWh: 150,           // R/MWh on reserve capacity held
   asInertiaRkWyr: 100,          // R/kW/yr, grid-forming and synchronous only
@@ -4730,7 +4734,11 @@ function simulate(u, prof, outPath){
   const stackKeys=['nuclear','hydro','imports','hybrid','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
   const stack={}; stackKeys.forEach(k=>stack[k]=new Float64Array(HOURS));
   const chargeMW=new Float64Array(HOURS);   // storage charging per hour
-  const curtailMW=new Float64Array(HOURS);  // wasted renewable potential per hour - REAL load on the system.
+  const curtailMW=new Float64Array(HOURS);
+  // Congestion curtailment, kept apart from curtailMW so the price engine
+  // never mistakes it for national oversupply. See the note at the hour loop.
+  const congestMW=new Float64Array(HOURS);
+  let congestTot=0;  // wasted renewable potential per hour - REAL load on the system.
   // Previously untracked, so charging was invisible: the demand line ignored it and the stack
   // deliberately excluded the generation serving it. A battery-heavy scenario therefore couldn't
   // show the thing that actually matters about it - that storage CREATES midday load, which is
@@ -4827,7 +4835,23 @@ function simulate(u, prof, outPath){
     const rawDemand=demandDR[h]*growth;
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen;
-    const windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
+    let windGen=windCap*wind[h], pvGen=pvCap*solar[h];
+    const cspGen=p.cspMW*csp[h];
+    // CONGESTION CURTAILMENT. Its OWN accumulator, deliberately - the price
+    // engine reads curtailMW as an oversupply signal and zeroes the marginal
+    // price wherever it is non-zero. Writing there collapsed the entire series
+    // on 26 Aug. Congestion curtailment does NOT mean national surplus: it means
+    // one corridor is full while other regions still import, so it must not
+    // zero the national price.
+    //
+    // NERSA approved a 4% ceiling in September 2025, expected to unlock 1,180 MW
+    // of Western Cape wind. Published, not fitted.
+    const _cgp = p.congestionCurtailOn ? Math.max(0, (p.congestionCurtailPct ?? 4)) / 100 : 0;
+    if (_cgp > 0){
+      const _lost = (windGen + pvGen) * _cgp;
+      windGen *= (1 - _cgp); pvGen *= (1 - _cgp);
+      congestMW[h] = _lost; congestTot += _lost;
+    };
     // DISPATCH ORDER IS DELIBERATE, NOT A SHORTCUT (settled 14 Aug 2026).
     // Nuclear, hydro and imports are FIXED INFEEDS, not dispatched: Cahora Bassa
     // is a take-or-pay contract - the energy arrives regardless of price - and
@@ -4975,6 +4999,15 @@ function simulate(u, prof, outPath){
     const load=rawDemand-rooftopGen;
     E.rooftop+=rooftopGen; loadS[h]=load;
     let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
+    // CONGESTION CURTAILMENT. Own accumulator, deliberately - see the note at
+    // the other declaration. The price engine reads curtailMW as an oversupply
+    // signal and zeroes the marginal price wherever it is non-zero.
+    const _cgp2 = p.congestionCurtailOn ? Math.max(0, (p.congestionCurtailPct ?? 4)) / 100 : 0;
+    if (_cgp2 > 0){
+      const _lost2 = (windGen + pvGen) * _cgp2;
+      windGen *= (1 - _cgp2); pvGen *= (1 - _cgp2);
+      congestMW[h] = _lost2; congestTot += _lost2;
+    }
     const nuc=(p.nuclearMW+p.newNuclearMW)*(p.nuclearCF??0.70), hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
     // RMIPPPP hybrid: AVAILABLE inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
@@ -5623,7 +5656,7 @@ function simulate(u, prof, outPath){
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
   return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,reserveHeldMW,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
-          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
+          netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
 
@@ -8494,14 +8527,7 @@ function renderPricePanel(r){
           + 'border-left:3px solid var(--alert,#C4785A);font-size:10.5px;line-height:1.55">'
           + '<strong>' + s.negHours.toLocaleString() + ' hours below zero.</strong> '
           + 'A negative price means generators are paying to keep running rather than '
-          + 'shutting down: must-run coal that cannot come off in time, meeting wind and '
-          + 'solar that will not stop. The floor here is \u2013R225/MWh, roughly what it '
-          + 'costs a coal unit to cycle rather than ride through.'
-          + '<div style="margin-top:5px">This is the clearest early warning of curtailment. '
-          + 'Where prices go negative, someone is about to be told to switch off \u2013 and '
-          + 'in the first half of 2026 South African curtailment ran roughly an order of '
-          + 'magnitude above all of 2025, with IPPs reporting revenues about 9&#37; below '
-          + 'budget.</div></div>'
+          + 'shutting down.</div>'
         : '')
     + (s.scarcityHours > 0
         ? kpi('Cost of generation', R(s.avgExScarcity), 'excluding shortage hours')
@@ -9848,6 +9874,10 @@ const SLIDERS=[
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind & utility PV · TDP: ±R390bn / 56 GW ≈ R700/kW·yr gross; R600 default nets off the share already committed. Rooftop solar avoids the need for new grid.'},
   {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Dynamic line rating and power flow control, freeing capacity on congested corridors before building new lines. Adds 20% to corridors found at least 30% utilised in a baseline run, at R1.55m/km \u2013 about a twentieth of a new line (DOE 2024). Nodal simulation only; the single-node engine has no corridors to enhance.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar &amp; batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder \u2013 up to the MW of coal retired.'},
+  {id:'congestionCurtailOn',toggle:true,def:true,label:'Congestion curtailment',
+   note:'On by default because it is happening now. Curtailment in the first half of 2026 ran roughly an order of magnitude above all of 2025, and IPPs report revenues about 9&#37; below budget. Turn off to see what the fleet would produce on an unconstrained network.'},
+  {id:'congestionCurtailPct',label:'Curtailment ceiling',min:0,max:15,step:0.5,def:FIXED.congestionCurtailPct,fmt:v=>v+'&#37; of wind and solar',
+   note:'NERSA approved 4&#37; congestion curtailment in September 2025, expected to unlock 1,180&#160;MW of Western Cape wind. Compensation runs only to 2028 under the pilot. The single-node engine applies it nationally rather than to the corridors that actually bind.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. Switch on to see what a priced reserve market would be worth to storage.'},
   {id:'asReserveRMWh',label:'Reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,
