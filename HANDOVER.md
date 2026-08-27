@@ -1,3 +1,117 @@
+## PPA TOOLKIT - DESIGNED, NOT BUILT (27 Aug 2026)
+
+Prompted by pypsa-ppa.streamlit.app, which optimises a renewable portfolio
+against PPA contract terms. Open source, forkable, same solver as GridTwin
+(HiGHS) and same profile source (renewables.ninja).
+
+WHY IT IS WORTH BUILDING HERE. Their data note says it plainly: "Currently
+supported locations are in Europe only." It runs on ENTSO-E day-ahead prices,
+and South Africa has no day-ahead market - SAWEM is still being designed.
+
+GridTwin already produces the missing input. The hourly shadow price series is
+the closest thing the country has to a day-ahead curve, and the regional
+profiles and wheeling costs sit alongside it. So this is not a port. It is a
+thing only GridTwin currently has the inputs for.
+
+WHAT THE WHEELING TAB LACKS
+  It prices the network charges - Gen-DUoS, WEPS credit, the GCC exclusion -
+  and ignores the CONTRACT, which is what decides whether a portfolio works:
+      delivery obligation      the share of load the portfolio must cover
+      shortfall cap            how much may be bought from the market
+      penalty multiplier       what an uncovered MWh costs
+      bid-offer spread         what market cover actually costs
+  And it prices one arrangement rather than optimising across arrangements.
+
+THE ONE NUMBER TO BUILD FIRST
+  BREAKEVEN PPA PRICE. Given a load profile, a candidate portfolio and a
+  region, what price clears? It uses the shadow prices, regional profiles and
+  wheeling costs that already exist, and it is the number a developer and an
+  off-taker actually negotiate over. Everything else on their feature list is a
+  refinement of it.
+
+STEAL THE FRAMING. Their case studies are posed as QUESTIONS, not parameter
+sets: "Can a wind-dominant portfolio with no storage hit a 70% delivery
+obligation against this weekday-heavy industrial demand?" That is better design
+than a scenario dropdown and it costs nothing to adopt.
+
+  South African equivalents worth writing:
+    Smelter on Ruraflex     can a Northern Cape wind PPA beat the megaflex
+                            tariff once wheeling and the GCC exclusion are paid?
+    Mine with a flat load   what does 90% delivery cost against a 24/7 profile
+                            when the corridor is already congested?
+    Data centre             near-flat load, premium price, near-zero market
+                            cover - the case Teraco and others are signing now
+    Green hydrogen          flexible demand that follows solar, which is the
+                            one South African load that genuinely helps
+
+DECIDED 27 Aug: BUILD IT AS AN ADJACENT SITE, NOT INSIDE GRIDTWIN.
+
+  Fork their repo rather than writing the LP. They have a Fork button and an
+  "Import custom timeseries" feature that accepts your own data for any weather
+  year, so PyPSA does the optimisation and GridTwin supplies South African
+  inputs:
+      hourly shadow prices  ->  their spot price series
+      regional profiles     ->  their wind and solar series
+
+  Deploy on Streamlit Community Cloud, free. Point a subdomain at it -
+  ppa.gridtwinza.org - or give it its own domain if it is to stand alone
+  commercially.
+
+  WHY SEPARATE. GridTwin's 290-check suite stays untouched; a bolted-on feature
+  is how the price series got broken on 26 Aug. Different audience too:
+  GridTwin serves journalists and planners, this serves developers and
+  off-takers. Python is fine because the two share DATA, not code.
+
+  FIRST PIECE OF WORK: an exporter that emits GridTwin's shadow prices and
+  regional profiles in their CSV template. Contained and testable. Do it at the
+  start of a session, not the end of one.
+
+SCOPE WARNING. Their stack is Python, PyPSA, Streamlit, server-side HiGHS.
+GridTwin is one HTML file with HiGHS as WASM in the browser. A fork means
+maintaining a second stack; building it in means a new LP with contract
+constraints plus a levered finance model for IRR and NPV. Multi-session work.
+
+WHO WANTS IT. EIUG's 25 members are industrial off-takers facing tariff
+escalation and CBAM exposure, and none of them can currently answer "should I
+contract Northern Cape wind or Free State solar, and how much". Their October
+conference covers tariff escalation, CBAM and market reform.
+
+## CONGESTION CURTAILMENT - ATTEMPTED AND REVERTED (26 Aug 2026)
+
+WHY IT IS WANTED. Curtailment in H1 2026 ran roughly an order of magnitude above
+all of 2025, and IPPs report revenues about 9% below budget. The instant engine
+reports ZERO curtailment in the base case because it is single-node and has no
+corridors to congest, so the "today" view says something is not happening that
+very much is.
+
+THE PARAMETER IS PUBLISHED. NERSA approved a 4% congestion curtailment ceiling in
+September 2025, expected to unlock 1,180 MW of Western Cape wind. Compensation
+runs only to 2028 under the pilot. That is citable, not fitted.
+
+WHY THE ATTEMPT FAILED - the trap for whoever tries next:
+
+  curtailMW[h] CARRIES TWO MEANINGS. It records curtailed energy, and it is also
+  the price engine's signal for oversupply. Writing into it every hour told the
+  engine the system was in surplus in all 8,760 hours. The average price
+  collapsed from R755/MWh to -0.03 and every capture price went with it.
+
+  The physical reasoning was right: congestion curtailment happens regardless of
+  national surplus, so it belongs before residual is computed. The implementation
+  reused a variable whose second meaning was never checked.
+
+  A first attempt put the block INSIDE the `if(residual<0)` branch, which meant
+  it only fired in hours the country already had too much power - precisely the
+  assumption it exists to correct. That version had no effect at all.
+
+WHAT TO DO DIFFERENTLY
+  Track congestion curtailment in a SEPARATE accumulator, not curtailMW. Add it
+  to reported totals at the end, and leave the price engine's surplus signal
+  alone. Check every consumer of curtailMW before touching it.
+
+ALSO NOTE: the two windGen declarations differ. The instant engine uses `let`
+because its surplus block reassigns windGen and pvGen; the other site uses
+`const`. Forcing both to const throws "Assignment to constant variable".
+
 ## BUILD LP - RESOLVED (21 Aug 2026). IT WAS NEVER BROKEN.
 
 The build optimiser solves. The "infeasibility" was entirely in my diagnostic
