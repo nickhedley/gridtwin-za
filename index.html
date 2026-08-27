@@ -5662,7 +5662,7 @@ function coalMarginalCost(outputMW){
 
 function priceStatsOf(mp, stack, E){
   const H = mp.length;
-  let sum = 0, zero = 0, diesel = 0;
+  let sum = 0, zero = 0, diesel = 0, neg = 0;
   // Scarcity hours are those priced at the value of lost load - the system had
   // nothing left to dispatch. They measure a shortage, not a generation cost.
   let scarcity = 0, sumEx = 0, nEx = 0;
@@ -5670,7 +5670,8 @@ function priceStatsOf(mp, stack, E){
   const sorted = new Float64Array(mp);
   for (let h = 0; h < H; h++){
     sum += mp[h];
-    if (mp[h] < 1) zero++;
+    if (mp[h] < 0) neg++;
+    if (mp[h] < 1) zero++;               // includes negatives, kept for continuity
     if (mp[h] > 5000) diesel++;
     if (mp[h] >= SCARCITY_FLOOR) scarcity++;
     else { sumEx += mp[h]; nEx++; }
@@ -5694,7 +5695,7 @@ function priceStatsOf(mp, stack, E){
   }
   return {
     avg, median: pct(0.5), p95: pct(0.95), max: sorted[H-1],
-    zeroHours: zero, dieselHours: diesel, monthly,
+    zeroHours: zero, negHours: neg, dieselHours: diesel, monthly,
     scarcityHours: scarcity,
     avgExScarcity: nEx ? sumEx / nEx : 0,
     scarcityShare: (avg > 0 && H) ? (scarcity * 87000 / H) / avg : 0,
@@ -8484,7 +8485,24 @@ function renderPricePanel(r){
     + kpi('Average', R(s.avg), '/MWh')
     + kpi('Median', R(s.median), '/MWh')
     + kpi('95th percentile', R(s.p95), '/MWh')
-    + kpi('Hours at zero', s.zeroHours.toLocaleString(), (s.zeroHours/87.6).toFixed(0) + '% of year')
+    + kpi('Hours at or below zero', s.zeroHours.toLocaleString(), (s.zeroHours/87.6).toFixed(0) + '% of year')
+    + (s.negHours > 0
+        ? kpi('Hours below zero', s.negHours.toLocaleString(), 'generators paying to run')
+        : '')
+    + (s.negHours > 0
+        ? '<div style="margin-top:9px;padding:8px 11px;background:var(--panel2);'
+          + 'border-left:3px solid var(--alert,#C4785A);font-size:10.5px;line-height:1.55">'
+          + '<strong>' + s.negHours.toLocaleString() + ' hours below zero.</strong> '
+          + 'A negative price means generators are paying to keep running rather than '
+          + 'shutting down: must-run coal that cannot come off in time, meeting wind and '
+          + 'solar that will not stop. The floor here is \u2013R225/MWh, roughly what it '
+          + 'costs a coal unit to cycle rather than ride through.'
+          + '<div style="margin-top:5px">This is the clearest early warning of curtailment. '
+          + 'Where prices go negative, someone is about to be told to switch off \u2013 and '
+          + 'in the first half of 2026 South African curtailment ran roughly an order of '
+          + 'magnitude above all of 2025, with IPPs reporting revenues about 9&#37; below '
+          + 'budget.</div></div>'
+        : '')
     + (s.scarcityHours > 0
         ? kpi('Cost of generation', R(s.avgExScarcity), 'excluding shortage hours')
         : '')
