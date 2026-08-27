@@ -8684,7 +8684,7 @@ function bessRevenueStack(r, hours, fleetOverrideMW){
   // overstated ancillary revenue at any fleet above the reserve requirement.
   // Same formula as the engine, so the two now agree.
   const _fleetMW = (fleetOverrideMW != null) ? fleetOverrideMW
-    : ((state.newBattMW || 0) + (FIXED.psMW || 0) + (FIXED.battMW || 0));
+    : ((state.newBattMW || 0) + (FIXED.psPowerMW || 0) + (FIXED.battPowerMW || 0));
   const _resReqMW = Math.max(1, (state.peakMW ?? FIXED.peakMW ?? 32000) * 0.06);
   const _satur = Math.min(1, _resReqMW / Math.max(_resReqMW, _fleetMW * 0.5));
   const reserveTot = _resR * _held * 8760 * _satur;          // R/MW/yr, all products
@@ -8748,7 +8748,7 @@ function bessSaturationCurve(r){
     const st = bessRevenueStack(r, 4, mw);
     if (st) pts.push({ mw, arb: st.arb, anc: st.anc, cap: st.cap, tot: st.tot });
   }
-  const nowMW = base + (FIXED.psMW || 0) + (FIXED.battMW || 0);
+  const nowMW = base + (FIXED.psPowerMW || 0) + (FIXED.battPowerMW || 0);
   let nearest = pts.length ? pts[0].mw : 0, bd = Infinity;
   for (const p of pts){ const d = Math.abs(p.mw - nowMW); if (d < bd){ bd = d; nearest = p.mw; } }
   return { pts, current: base, nowMW, nearest };
@@ -8783,16 +8783,27 @@ function renderBessSaturation(r){
   }).join('');
 
   const first = c.pts[0], last = c.pts[c.pts.length-1];
-  const fall = first.anc > 0 ? 100 * (1 - last.anc/first.anc) : 0;
+  // Ancillary pricing is OFF by default - the reserve and inertia toggles gate
+  // it - so first.anc is often zero and the decline is undefined. Say so rather
+  // than dividing by zero and printing NaN, which is what this did.
+  const hasAnc = first.anc > 0;
+  const fall = hasAnc ? 100 * (1 - last.anc/first.anc) : 0;
   html += '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:9px;'
     + 'padding-top:7px;border-top:1px solid var(--line2)">'
     + '<span style="display:inline-block;width:9px;height:9px;background:#4A6B7A;margin-right:4px"></span>Arbitrage '
     + '<span style="display:inline-block;width:9px;height:9px;background:#D9A441;margin:0 4px 0 9px"></span>Ancillary '
     + '<span style="display:inline-block;width:9px;height:9px;background:#C4785A;margin:0 4px 0 9px"></span>Capacity'
-    + '<div style="margin-top:5px">Ancillary revenue per MW falls <strong>'
-      + fall.toFixed(0) + '&#37;</strong> between 0.5 and 10&#160;GW. ERCOT saw about 90&#37; as its '
-      + 'fleet went from 0.2 to 12&#160;GW, and Great Britain\u2019s frequency response went from '
-      + '87&#37; of battery revenue to roughly a third.</div>'
+    + (hasAnc
+        ? '<div style="margin-top:5px">Ancillary revenue per MW falls <strong>'
+          + fall.toFixed(0) + '&#37;</strong> between 0.5 and 10&#160;GW. ERCOT saw about 90&#37; as its '
+          + 'fleet went from 0.2 to 12&#160;GW, and Great Britain\u2019s frequency response went from '
+          + '87&#37; of battery revenue to roughly a third.</div>'
+        : '<div style="margin-top:5px">This chart is about ancillary saturation, and South Africa '
+          + 'prices no ancillary services today \u2013 so the line is flat and shows arbitrage only. '
+          + 'Switch on <strong>price reserve capacity</strong> in System operation to see the decline. '
+          + 'ERCOT\u2019s ancillary prices fell about 90&#37; as its battery fleet went from 0.2 to '
+          + '12&#160;GW, and Great Britain\u2019s frequency response went from 87&#37; of battery '
+          + 'revenue to roughly a third.</div>')
     + '<div style="margin-top:5px">The arbitrage line is held flat here, which '
       + '<strong>understates the fall</strong>. Arbitrage saturates too, because batteries buy in '
       + 'the trough and sell in the peak and so narrow the spread they trade. Modelling that '
