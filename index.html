@@ -11277,8 +11277,17 @@ function exportPpaTimeseries(){
 
   // Region defaults to whatever the site query is set to, so the export matches
   // what the user was just looking at rather than an arbitrary choice.
+  // ASK for the region rather than inheriting it from the site resource query
+  // panel, which is elsewhere on the page and may never have been touched. The
+  // silent inherit produced files named for regions nobody had chosen.
   const _sel = document.getElementById('siteRegion');
-  const reg = (_sel && _sel.value) ? _sel.value : 'Northern Cape';
+  const _def = (_sel && _sel.value) ? _sel.value : 'Northern Cape';
+  const reg = prompt('Which region\u2019s wind and solar profiles?\n\n'
+    + 'The PRICE series is national - the instant engine is single-node, so there\n'
+    + 'is one shadow price for the whole country. Only the profiles are regional.\n\n'
+    + 'Options: ' + (typeof BLD_REGIONS !== 'undefined' ? BLD_REGIONS.join(', ') : _def),
+    _def);
+  if (!reg) return;
   const P = (typeof bldRegProfiles !== 'undefined' && bldRegProfiles) ? bldRegProfiles : null;
   const wind = P && P.wind_pu && P.wind_pu[reg] ? P.wind_pu[reg] : null;
   const solar = P && P.solar_pu && P.solar_pu[reg] ? P.solar_pu[reg] : null;
@@ -11286,7 +11295,8 @@ function exportPpaTimeseries(){
   const rows = [];
   rows.push('# GridTwin ZA - hourly series for PPA modelling');
   rows.push('# generated,' + new Date().toISOString().slice(0,16).replace('T',' '));
-  rows.push('# region,' + reg);
+  rows.push('# price series,NATIONAL - single-node engine, one price for the country');
+  rows.push('# wind and solar profiles,' + reg);
   rows.push('# scenario,demand growth ' + (state.demandGrowthPct||0) + '%, EAF '
             + (state.coalEAFPct||0) + '%');
   rows.push('#');
@@ -11314,7 +11324,8 @@ function exportPpaTimeseries(){
   const blob = new Blob([rows.join('\n')], {type:'text/csv'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'gridtwin_ppa_' + reg.toLowerCase().replace(/\s+/g,'_') + '.csv';
+  a.download = 'gridtwin_ppa_national_prices_'
+    + reg.toLowerCase().replace(/\s+/g,'_') + '_profiles.csv';
   a.click();
   URL.revokeObjectURL(a.href);
 }
