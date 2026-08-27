@@ -90,7 +90,21 @@ const num = t => {
     let peak = 0, peakH = 0;
     for (let h = 0; h < 8760; h++) if (r.loadS[h] > peak) { peak = r.loadS[h]; peakH = h; }
     const E = r.E;
-    const dom_ = E.coal+E.nuclear+E.hydro+E.wind+E.pv+E.csp+(E.hybrid||0)+E.rooftop+E.ccgt+E.diesel;
+    // Denominator = GENERATION delivered to the grid.
+    //
+    // IMPORTS ARE INCLUDED. Cahora Bassa power serves South African load exactly
+    // as a domestic unit does, so excluding it understated the denominator and
+    // overstated every share computed from it. This harness excluded imports
+    // while the KPI panel included them; the gap sat just inside tolerance until
+    // congestion curtailment widened it on 27 Aug 2026.
+    //
+    // STORAGE STAYS OUT of both. Pumped storage and battery output is energy
+    // already counted once when it was generated; counting it again on discharge
+    // would double-count.
+    //
+    // The panel was right and this check was wrong. Fixed here rather than
+    // relaxing the tolerance, which would have hidden a real definitional split.
+    const dom_ = E.coal+E.nuclear+E.hydro+E.imports+E.wind+E.pv+E.csp+(E.hybrid||0)+E.rooftop+E.ccgt+E.diesel;
     // firm capacity, computed exactly as the adequacy panel does
     const firm = (FIXED.coalInstalledMW - (state.coalDecomMW||0)) * (state.coalEAFPct/100)
                + FIXED.nuclearMW*0.9 + FIXED.hydroMW*0.5 + FIXED.importsMW*0.9
@@ -120,14 +134,18 @@ const num = t => {
   };
 
   // ── 1. KPI panel vs the engine ────────────────────────────────────────────
-  // "Energy supplied" INCLUDES IMPORTS — it is everything delivered to the
-  // system, not domestic generation. The first version of this compared it to
-  // the domestic total and reported a 9 TWh discrepancy that was purely my
-  // definition being wrong.
+  // dom_ IS EVERYTHING DELIVERED TO THE GRID - imports included, storage
+  // excluded. Compare against it directly and never add a component back.
+  //
+  // This has now caused a false failure twice, in opposite directions. First
+  // dom_ excluded imports and this check added them, which was right then. On
+  // 27 Aug imports were added to dom_ (correctly - they serve load exactly as a
+  // domestic unit does), and this line then counted them twice: 228.6 against
+  // the panel's 220, the difference being E.imports precisely.
   const kEnergy = kpi('energy supplied');
   check('KPI "Energy supplied" matches the engine',
-        agrees(kEnergy, E.energyTWh + E.importsTWh),
-        `panel ${kEnergy} vs engine ${(E.energyTWh + E.importsTWh).toFixed(1)} TWh (domestic + imports)`);
+        agrees(kEnergy, E.energyTWh),
+        `panel ${kEnergy} vs engine ${E.energyTWh.toFixed(1)} TWh (all delivered, imports included)`);
 
   // The panel prints whole percentages, so 18 against 18.458 is display
   // rounding, not disagreement. Compare at the precision actually shown.

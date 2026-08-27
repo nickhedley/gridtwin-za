@@ -1,0 +1,164 @@
+{
+ "meta": {
+  "description": "Projects reaching commercial operation in H1 2026, from PFL Table 1. Input to validate_capacity.js, which checks each one appears in either regional_renewable_capacity.json or ipp_pipeline.json.",
+  "source": "Alao, O. & Kruger, W. (2026, August). South African IPPs: financial close and commercial operations monitor, H1 2026 update. Power Futures Lab, UCT GSB. Table 1, 17 projects, 1 January to 30 June 2026.",
+  "capacity_basis": "mw_installed is MWac. mw_contracted is firm dispatchable capacity and differs for storage and hybrid projects - see PFL footnote 2.",
+  "compiled": "2026-08-27",
+  "cod_note": "cod is present only where a date was verified from a named source. Projects commissioned BEFORE the IPP Office as_at date sit inside provincial aggregates and will never appear by name, so absence from the named files is expected. Only projects with a cod AFTER as_at must be named somewhere."
+ },
+ "projects": [
+  {
+   "name": "Mooi Plaats",
+   "tech": "solar",
+   "mw_installed": 240,
+   "mw_contracted": 240,
+   "route": "private",
+   "method": "wheeling"
+  },
+  {
+   "name": "Umsobomvu",
+   "tech": "wind",
+   "mw_installed": 140,
+   "mw_contracted": 140,
+   "route": "private",
+   "method": "wheeling"
+  },
+  {
+   "name": "Bolobedu",
+   "tech": "solar",
+   "mw_installed": 148,
+   "mw_contracted": 148,
+   "route": "private",
+   "method": "wheeling"
+  },
+  {
+   "name": "ARM Platinum Mining",
+   "tech": "solar",
+   "mw_installed": 100,
+   "mw_contracted": 100,
+   "route": "private",
+   "method": "wheeling"
+  },
+  {
+   "name": "Impofu North",
+   "tech": "wind",
+   "mw_installed": 110,
+   "mw_contracted": 110,
+   "route": "private",
+   "method": "wheeling"
+  },
+  {
+   "name": "Impofu East",
+   "tech": "wind",
+   "mw_installed": 110,
+   "mw_contracted": 110,
+   "route": "private",
+   "method": "wheeling"
+  },
+  {
+   "name": "Impofu West",
+   "tech": "wind",
+   "mw_installed": 110,
+   "mw_contracted": 110,
+   "route": "private",
+   "method": "wheeling"
+  },
+  {
+   "name": "Lephalale 1",
+   "tech": "solar",
+   "mw_installed": 68,
+   "mw_contracted": 68,
+   "route": "private",
+   "method": "captive"
+  },
+  {
+   "name": "PPC Slurry",
+   "tech": "solar",
+   "mw_installed": 10,
+   "mw_contracted": 10,
+   "route": "private",
+   "method": "captive"
+  },
+  {
+   "name": "PPC Dwaalboom",
+   "tech": "solar",
+   "mw_installed": 10,
+   "mw_contracted": 10,
+   "route": "private",
+   "method": "captive"
+  },
+  {
+   "name": "Mulilo Total Hydra Storage",
+   "tech": "solar+bess",
+   "mw_installed": 216,
+   "mw_contracted": 75,
+   "route": "public",
+   "programme": "RMIPPPP",
+   "method": "grid supply",
+   "note": "216 is MWp of solar behind a 75 MW contracted dispatchable output (PFL footnote 2). Sources disagree on COD: PFL places it in H1 2026, Engineering News reports it inaugurated and brought into operation 16 July 2026. Both are after the 31 March IPP Office cutoff.",
+   "cod": "2026-07"
+  },
+  {
+   "name": "Phezukomoya",
+   "tech": "wind",
+   "mw_installed": 140,
+   "mw_contracted": 140,
+   "route": "public",
+   "programme": "REI4P BW5",
+   "method": "grid supply",
+   "cod": "2026-02"
+  },
+  {
+   "name": "Coleskop",
+   "tech": "wind",
+   "mw_installed": 140,
+   "mw_contracted": 140,
+   "route": "public",
+   "programme": "REI4P BW5",
+   "method": "grid supply",
+   "note": "Commissioned February 2026 as part of the 420 MW Koruson 1 cluster.",
+   "cod": "2026-02"
+  },
+  {
+   "name": "Doornhoek PV",
+   "tech": "solar",
+   "mw_installed": 120,
+   "mw_contracted": 120,
+   "route": "public",
+   "programme": "REI4P BW6",
+   "method": "grid supply",
+   "cod": "2026-05"
+  },
+  {
+   "name": "Umoyilanga 2 (Dassiesridge)",
+   "tech": "wind+bess",
+   "mw_installed": 108,
+   "mw_contracted": 55,
+   "route": "public",
+   "programme": "RMIPPPP",
+   "method": "grid supply",
+   "note": "Provisional COD 5 December 2025. Full COD depends on the Avondale component (115 MW solar, 30 MW/90 MWh battery).",
+   "cod": "2025-12"
+  },
+  {
+   "name": "Grootspruit PV",
+   "tech": "solar",
+   "mw_installed": 75,
+   "mw_contracted": 75,
+   "route": "public",
+   "programme": "REI4P BW5",
+   "method": "grid supply",
+   "cod": "2026-02"
+  },
+  {
+   "name": "Graspan PV",
+   "tech": "solar",
+   "mw_installed": 75,
+   "mw_contracted": 75,
+   "route": "public",
+   "programme": "REI4P BW5",
+   "method": "grid supply",
+   "cod": "2026-02"
+  }
+ ]
+}

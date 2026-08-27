@@ -379,5 +379,85 @@ try {
   }
 } catch (e) { /* split file optional in older checkouts */ }
 
+
+// ── EVERY COMMISSIONED PROJECT IS ACCOUNTED FOR SOMEWHERE ───────────────────
+// A project that reached commercial operation must appear in EITHER the
+// operational capacity file OR the pipeline file marked online. Appearing in
+// neither means it was silently dropped between an IPP Office cutoff and the
+// next compile.
+//
+// This is not hypothetical. Mulilo Total Hydra Storage reached commercial
+// operation in H1 2026, is in neither file, and was found only because someone
+// happened to read a PDF on 27 Aug 2026. Doornhoek hit the same gap and was
+// caught by hand. This makes the catch automatic.
+//
+// Storage and hybrid projects are checked on CONTRACTED capacity, not
+// installed: Mulilo's 216 is MWp of solar behind a 75 MW dispatchable output,
+// and counting the larger figure would treble Northern Cape solar.
+try {
+  const cod = JSON.parse(fs.readFileSync(P('pfl_cod_h1_2026.json'), 'utf8'));
+
+  // Everything named anywhere in either file. Names vary slightly between
+  // sources, so match on a normalised form and accept a containment match.
+  const norm = t => String(t).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const haystack = norm(JSON.stringify(cap) + ' ' + JSON.stringify(pipe));
+
+  const asAt = (cap.meta && cap.meta.as_at) || '2026-03-31';
+
+  const missing = [], captive = [], aggregated = [], undated = [];
+  for (const pr of cod.projects) {
+    // Captive plant is deliberately excluded from supply totals - it suppresses
+    // demand rather than adding generation - so absence is correct, not a gap.
+    if (pr.method === 'captive') { captive.push(pr.name); continue; }
+
+    // No verified COD means we cannot say which side of the cutoff it falls,
+    // so it is reported rather than judged. Better an honest gap in the check
+    // than a confident wrong answer.
+    if (!pr.cod) { undated.push(pr.name); continue; }
+
+    // Commissioned before the cutoff: inside the provincial aggregate, and it
+    // will never appear by name. Absence is expected.
+    if (pr.cod < asAt.slice(0, 7)) { aggregated.push(pr.name); continue; }
+
+    const key = norm(pr.name).split(' ').filter(w => w.length > 3);
+    const found = key.length && key.every(w => haystack.includes(w));
+    if (!found) missing.push(pr);
+  }
+
+  check('every H1 2026 commissioned project appears in capacity or pipeline',
+        missing.length === 0,
+        missing.length
+          ? missing.map(m => `${m.name} (${m.mw_contracted} MW contracted)`).join('; ')
+          : `${aggregated.length} inside aggregates, ${captive.length} captive, `
+            + `${undated.length} undated, rest named`);
+
+  if (missing.length) {
+    console.log('\n      MISSING FROM BOTH FILES - each of these reached commercial');
+    console.log('      operation but is counted nowhere:');
+    for (const m of missing) {
+      console.log(`        ${m.name}  ${m.mw_contracted} MW contracted`
+                  + (m.mw_installed !== m.mw_contracted
+                      ? `, ${m.mw_installed} MW installed - USE THE CONTRACTED FIGURE` : ''));
+      if (m.note) console.log(`          ${m.note}`);
+    }
+    console.log('      Add to ipp_pipeline.json with status "online" and a cod date,');
+    console.log('      as Doornhoek was, or to by_source in the capacity file.');
+  }
+  if (undated.length)
+    console.log('      NO VERIFIED COD, so not checked: ' + undated.join(', ')
+                + '. Find the dates and this check gets stronger.');
+
+  // The register must also reconcile to PFL's own published subtotals, or the
+  // transcription is wrong and every check above it is measuring the wrong list.
+  const sum = (r) => cod.projects.filter(x => x.route === r)
+                                 .reduce((a, x) => a + x.mw_installed, 0);
+  check('COD register reconciles to PFL subtotals',
+        sum('private') === 1046 && sum('public') === 874,
+        `private ${sum('private')} (1046), public ${sum('public')} (874)`);
+} catch (e) {
+  if (e.code !== 'ENOENT') throw e;
+  // Register absent in older checkouts - not a failure.
+}
+
 console.log(`\n${pass}/${pass + fail} checks passed` + (pending ? `, ${pending} pending` : ''));
 if (fail) process.exit(1);
