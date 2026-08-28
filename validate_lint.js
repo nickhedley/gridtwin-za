@@ -24,8 +24,10 @@
  * version still missed the bug it was written for. The lesson is in the file
  * name: use the tool built for the job.
  *
- * ONE RULE ONLY. This is not a style audit. no-undef, nothing else, so it never
- * becomes noise that gets ignored.
+ * TWO CHECKS, both of the same shape: a name that resolves to nothing.
+ *   1. no-undef on the inline scripts (eslint).
+ *   2. every FIXED.<key> read names a real key of FIXED.
+ * Not a style audit. Nothing else goes in here, so it never becomes noise.
  *
  *   node validate_lint.js [root]
  */
@@ -95,20 +97,86 @@ try {
   const kb = (fs.statSync(TMP_JS).size / 1024).toFixed(0);
   console.log(`\nUNDEFINED IDENTIFIERS  (${blocks.length} inline blocks, ${kb} KB of JS)`);
 
-  if (!findings.length) {
-    console.log('\n1/1 lint checks passed  —  no undefined identifiers');
-    cleanup();
-    process.exit(0);
+  if (findings.length) {
+    console.log('\nFAILURES:');
+    findings.forEach(f => console.log('  ' + f));
+    console.log('\n  Each of these is a name used but declared nowhere. If it is legitimately');
+    console.log('  defined in an external file, add it to EXTERNAL at the top of this script');
+    console.log('  — do not widen the rule.');
+  } else {
+    console.log('  no undefined identifiers');
   }
 
-  console.log('\nFAILURES:');
-  findings.forEach(f => console.log('  ' + f));
-  console.log('\n  Each of these is a name used but declared nowhere. If it is legitimately');
-  console.log('  defined in an external file, add it to EXTERNAL at the top of this script');
-  console.log('  — do not widen the rule.');
-  console.log(`\n0/1 lint checks passed  —  ${findings.length} undefined identifier(s)`);
+  // ── CHECK 2: every FIXED.<key> read must name a real key of FIXED ─────────
+  // Added 28 Aug 2026. eslint's no-undef finds identifiers that resolve
+  // nowhere; it CANNOT see a property read on an object that does exist. That
+  // is a second, quieter version of the same fault:
+  //
+  //   FIXED.psMW   and   FIXED.battMW   are not keys. The real ones are
+  //   psPowerMW and battPowerMW. Four reads across bessRevenueStack (8687) and
+  //   bessSaturationCurve (8751) resolved to undefined, fell through `|| 0`,
+  //   and produced a national storage fleet of ZERO in both. The saturation
+  //   marker pointed at 0.5 GW against a real 3,700 MW, and the revenue panel
+  //   computed its saturation factor against an empty fleet from the day it
+  //   shipped. 683 checks passed over it, because a fallback of 0 makes a
+  //   plausible chart rather than a crash.
+  //
+  // FIXED is extracted by brace-matching from source rather than executed, so
+  // this stays a static check with no jsdom dependency.
+  const fixedStart = html.search(/(?:const|let|var)\s+FIXED\s*=\s*\{/);
+  if (fixedStart === -1) {
+    console.log('\n  FIXED not found in source — cannot run the key check');
+    cleanup();
+    process.exit(1);
+  }
+  let depth = 0, i = html.indexOf('{', fixedStart), end = -1;
+  for (let j = i; j < html.length; j++) {
+    if (html[j] === '{') depth++;
+    else if (html[j] === '}') { depth--; if (!depth) { end = j; break; } }
+  }
+  const fixedSrc = html.slice(i, end + 1);
+  // Keys at depth 1 only: `name:` or `'name':` at the start of an entry.
+  const fixedKeys = new Set();
+  {
+    let d = 0;
+    const re = /(\{|\}|(?:^|[,{\n])\s*['"]?([A-Za-z_$][\w$]*)['"]?\s*:)/g;
+    let m;
+    while ((m = re.exec(fixedSrc))) {
+      if (m[1] === '{') { d++; continue; }
+      if (m[1] === '}') { d--; continue; }
+      if (d === 1 && m[2]) fixedKeys.add(m[2]);
+    }
+  }
+
+  // Reads of the form FIXED.<name>, excluding comments.
+  const codeOnly = blocks.join('\n;\n')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+  const bad = new Map();
+  const readRe = /\bFIXED\.([A-Za-z_$][\w$]*)/g;
+  let r;
+  while ((r = readRe.exec(codeOnly))) {
+    const key = r[1];
+    if (fixedKeys.has(key)) continue;
+    if (['hasOwnProperty','toString','constructor'].includes(key)) continue;
+    bad.set(key, (bad.get(key) || 0) + 1);
+  }
+
+  console.log(`\nFIXED KEY READS  (${fixedKeys.size} keys defined)`);
+  if (!bad.size) {
+    console.log('  every FIXED.<key> read names a real key');
+  } else {
+    console.log('\nFAILURES:');
+    for (const [k, n] of bad)
+      console.log(`  FIXED.${k}  read ${n}x  —  NOT A KEY. Resolves to undefined; if it is`
+                + ` followed by \`|| <literal>\` the fallback silently wins.`);
+    console.log('\n  Do NOT add these to FIXED to make the check pass. Find the real key name.');
+  }
+
+  const checks = 2, failed = (findings.length ? 1 : 0) + (bad.size ? 1 : 0);
+  console.log(`\n${checks - failed}/${checks} lint checks passed`);
   cleanup();
-  process.exit(1);
+  process.exit(failed ? 1 : 0);
 
 } catch (err) {
   console.error('lint harness error:', err.message);

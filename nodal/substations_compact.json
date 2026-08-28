@@ -17,7 +17,7 @@
   "licence": "CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/",
   "terms": "This dataset is original compilation work. You may view, share and link to it with attribution. You may NOT use it commercially, distribute modified versions, or incorporate it into another product. Underlying public sources retain their own licences and are credited in the source field.",
   "commercial": "Commercial licensing: https://github.com/nickhedley/gridtwin-za",
-  "fingerprint": "gtza-3353b6750cbc1a0d",
+  "fingerprint": "gtza-d76783f127763e7a",
   "compiled": "2026-08-13",
   "juno_correction": "Juno was labelled Northern Cape. It sits at -31.608, 18.444 in Matzikama Local Municipality, West Coast District, WESTERN CAPE - Eskom's own Juno-Gromis project documents describe Gromis as Northern Cape near Kleinsee and Juno as Western Cape near Vredendal, and Juno's only two lines run to Aurora and Helios on the Cape network. Corrected 14 Aug 2026.",
   "field_rename": "The per-substation region field was renamed r -> area on 14 Aug 2026. It holds an Eskom TRANSMISSION SUPPLY AREA, not a province: the ten values include Hydra Central, which is a Karoo supply area spanning the Northern Cape / Eastern Cape provincial boundary and is not a province at all. headroom_summary.json and tdp_projects.json meta.line_km_by_province are keyed the same way (both carry Hydra Central); reea_projects.json 'province' is genuinely provincial (nine values, no Hydra Central) and must NOT be matched against this field.",
