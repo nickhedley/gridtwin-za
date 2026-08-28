@@ -4,7 +4,7 @@ WHAT IS TRUE RIGHT NOW. Rewritten in place, never appended to. If a fact here
 disagrees with LOG.md, this file wins. If it disagrees with a data file, STOP -
 that is the failure mode that cost most of 27 Aug 2026.
 
-Last verified: 28 Aug 2026.
+Last verified: 28 Aug 2026, end of session.
 
 ---
 
@@ -41,16 +41,42 @@ the wind figure and must not be hand-edited. The private block covers
 listed in the source and deliberately excluded: it suppresses demand rather than adding
 supply.
 
-Hydra Central is **zero for every technology**. See "Known distortions" below.
+Hydra Central is **NOT zero**. It carries 669 MW wind and 459.5 MW solar from the
+supply-area split, applied 14 Aug 2026 by `build_capacity.py` step 1b reading
+`nodal/supply_area_split_draft.json`. The old text here said zero, and the data file's
+own `HYDRA_CENTRAL_ZERO` note still says zero — both were stale, and following them
+would have meant regenerating with the wrong script and destroying the split. See
+"Known distortions" for what remains genuinely unresolved.
 
-### Pipeline — 6,971 MW
+### Pipeline — 7,046 MW
 
 ```
-provincially allocated  1,457 MW
+provincially allocated  1,532 MW   includes Mulilo Total Hydra 75 (added 28 Aug)
 unallocated             5,514 MW   BW7 (3,940), BESIPPPP BW2/BW3 (1,231),
                                    RMIPPPP construction (203), BW6 sixth project (140)
 terminated              1,424 MW   BW5 cancellations, outside the identity
 ```
+
+Was 6,971 before Mulilo. NOTE: an ONLINE project sits in this file too (Doornhoek,
+Mulilo), so "pipeline" is a register of projects and stages, not a not-yet-built total.
+
+### Fingerprints, as at 28 Aug 2026
+
+```
+regional_renewable_capacity.json   gtza-4ec9bc7cc8d3285d
+ipp_pipeline.json                  gtza-06192db1e33eb439
+substations_compact.json           gtza-d76783f127763e7a
+pfl_cod_h1_2026.json               NONE — should have one, see open items
+```
+
+Method, verified by reproduction: `sha256` over the body EXCLUDING `meta`,
+canonicalised as `json.dumps(sort_keys=True, separators=(',',':'))`, prefixed `gtza-`,
+truncated to 16 hex characters.
+
+`by_source` now has FOUR buckets: `reipppp`, `private`, `eskom`, `rmipppp`. The last
+was added 28 Aug to hold Mulilo Total Hydra at 75 MW under a new `hybrid_mw` key —
+NOT `solar_mw`, because the plant is 216 MWp of solar behind a 75 MW contracted
+dispatchable output. `FIXED.pvUtilityMW` is untouched at 3,271 MW as a result.
 
 ---
 
@@ -117,23 +143,23 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Fifteen harnesses, 683 checks. Last full run: 682/683.
+Fifteen harnesses, 695 checks. Last full run: 695/695.
 
 ```
 node stress_suite.js                290/290
 node validate_invariants.js .       138/138
-node validate_response.js .           79/79
-node validate_lp.js .                 40/40
+node validate_response.js .           80/80
+node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           29/29
 node validate_benchmarks.js .         18/18
-node validate_capacity.js .           17/18   one standing flag, by design
+node validate_capacity.js .           18/18   Mulilo added 28 Aug, flag closed
 node validate_consistency.js .        14/14
 node validate_structure.js .            9/9
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
-node validate_lint.js .                 1/1
+node validate_lint.js .                 2/2
 node jsdom_local2.js                renders without error
 ```
 
@@ -145,12 +171,20 @@ also reports `shed` at 0 chars and `state` as undefined on the window while
 `lastRes` is a proper object. Unverified whether that is normal for this
 harness; nothing asserts on it either way.
 
-### The 17/18 is correct. Do not "fix" it.
+### The 17/18 CLOSED on 28 Aug 2026 — correctly, not by relaxing anything
 
-`validate_capacity` flags Mulilo Total Hydra Storage as commissioned and counted
-in neither `ipp_pipeline.json` nor the capacity file. That is a standing data
-flag, not a broken test. It closes when the project is sourced, not by relaxing
-the check.
+`validate_capacity` flagged Mulilo Total Hydra Storage as commissioned and counted
+in neither file. It was added properly: 75 MW CONTRACTED (not the 216 MWp installed,
+which would treble Northern Cape solar) into a new `by_source.rmipppp` bucket under a
+new `hybrid_mw` key, Northern Cape, plus an `ipp_pipeline.json` entry with
+`status: online` and `cod: 2026-07`. Both through the GENERATOR, not by hand.
+
+TRAP AVOIDED, worth knowing: the harness offers two routes, the pipeline or
+`by_source`. Only `by_source` adds capacity. Adding to the pipeline alone would have
+scored 18/18 with the 75 MW still uncounted — a green check on an unchanged number,
+worse than the honest 17/18.
+
+COD remains 2026-07 pending the PFL Knowledge Hub table.
 
   75 MW contracted, 216 MW installed. USE THE CONTRACTED FIGURE.
 
@@ -228,6 +262,10 @@ fetches — it is a harness input, not a page dependency.
   count was never updated.
 - `validate_capacity` was recorded at 14/14 with one pending. It is 17/18.
 - Open item 6 said `sa_solar_grid.json` does not exist. It does — see below.
+- The suite is now FIFTEEN harnesses and 691 checks, all passing. `validate_lp` grew
+  40 -> 50 with a capex-coverage check; `validate_lint` grew 1 -> 2 with a check that
+  every `FIXED.<key>` read names a real key. Both were scored against the pre-fix files
+  first and fail there, as rule 2 requires.
 
 ### DO NOT RETIRE eng5.js. validate_response does not replace it.
 
@@ -344,5 +382,27 @@ and is not here.
    the file exists and is real PVGIS SARAH2 data, but nothing fetches it and the
    comment at index.html:1291 wrongly states it never existed. See the validation
    section for what to do. Do not delete the file.
+7. **The nearest-substation heuristic is FALSIFIED.** `reea_projects.json` derives
+   `sub`/`subkm` by nearest substation. For the Impofu wind farms it returns Grassridge
+   at 106.9 km. The line Red Cap actually built runs 116 km to **Chatty**, which sits
+   93.3 km away — NEARER. The heuristic did not weigh Chatty and reject it; Chatty was
+   absent from `substations_compact.json` entirely. The method is only as good as the
+   register. Chatty is now entry 186, tagged `src: pluscode` and NOT independently
+   corroborated. **Before reusing this method for the Hydra Central split, establish
+   that the register is COMPLETE for the Karoo — not merely that the matching is sound.**
+   `sub`/`subkm` have not been re-derived; Impofu should reassign once they are.
+8. **`pfl_cod_h1_2026.json` carries no fingerprint** while the other three data files
+   do. It is now a file people edit. Add one.
+9. **Reserve is sized as a flat share of annual peak.** `sysReserveShare` 0.06,
+   calibrated to Eskom's ~2,200 MW against a ~32 GW peak. Professional practice uses
+   the largest single contingency plus a VRE-scaled component, resolved hourly. The
+   current form is blind to renewable build and biases the battery saturation knee
+   earlier under a large one. Rebuilding it changes every ancillary figure in
+   RESULTS.md, so it needs its own before-and-after run.
+10. **Long-duration capex is single-source.** `acapVrfb` 5,565 rests on one USD 450/kWh
+   estimate; NREL ATB covers lithium only and cannot corroborate it. `acapIronAir`
+   12,940 comes from one transaction, pre-incentive. Both scale linearly with duration,
+   which overstates long durations against NREL's finding that cost per kWh falls as
+   duration rises. FX is pinned at R16.50/USD, the 180-day average to 26 Aug 2026.
 
 ---

@@ -28,6 +28,19 @@ const ROOT = process.argv[2] || 'testroot';
 // LPs previously fell through to a hardcoded 550 that no slider could change,
 // while the hourly dispatch used the slider - two halves of the model on
 // different carbon prices. These two entries are what catches that recurring.
+// EVERY BUILDABLE TECHNOLOGY MUST APPEAR IN THE CAPEX FORMULA.
+// Added 28 Aug 2026. Vanadium, iron-air and pumped storage were absent from
+// newCapexR entirely, so 20 GW of 100-hour iron-air showed a capital cost of
+// ZERO and slightly LOWERED average cost. Nothing caught it: newCapexR is not
+// an LP input, so the perturbation tests below never touched it, and a missing
+// addend produces a plausible number rather than a crash.
+const BUILDABLE_CAPEX = {
+  newWindMW: 'acapWind', newPvMW: 'acapPv', newRooftopMW: 'acapRooftop',
+  newBattMW: 'acapBatt4h', newCcgtMW: 'acapCcgt', newNuclearMW: 'acapNuclear',
+  newCoalMW: 'acapCoal', newVrfbMW: 'acapVrfb', newIronAirMW: 'acapIronAir',
+  newPsMW: 'acapPs',
+};
+
 const NATIONAL_FIELDS = {
   windMW: 9999, pvUtilityMW: 9999, rooftopMW: 9999, cspMW: 9999, battPowerMW: 9999,
   costCoal: 1234, costCcgt: 4321, costDiesel: 7777, emisCoal: 2.5, emisCcgt: 1.5,
@@ -193,6 +206,24 @@ function check(label, ok, detail) {
       }
     } else {
       check('regional LP available for constraint-family audit', false, String(lp).slice(0,120));
+    }
+  }
+
+  // ---- CAPEX COVERAGE -------------------------------------------------------
+  {
+    const cov = await runProbe(w, `
+      const WANT = ${JSON.stringify(BUILDABLE_CAPEX)};
+      const base = simulate(state, PROFILES).newCapexR;
+      const out = {};
+      for (const [mwKey, acapKey] of Object.entries(WANT)) {
+        if (!(acapKey in FIXED)) { out[mwKey] = 'NO SUCH CONSTANT: ' + acapKey; continue; }
+        const r = simulate({ ...state, [mwKey]: 5000 }, PROFILES).newCapexR;
+        out[mwKey] = (r !== base) ? 'ok' : 'newCapexR DID NOT MOVE';
+      }
+      return out;`);
+    for (const k of Object.keys(BUILDABLE_CAPEX)) {
+      const v = cov && cov[k];
+      check(`${k} is costed in newCapexR`, v === 'ok', v === 'ok' ? '' : String(v));
     }
   }
 

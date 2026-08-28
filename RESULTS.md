@@ -92,13 +92,20 @@ Their conclusion is that the deficit needs firm wind or SEASONAL STORAGE. Tested
 directly. July gas energy, Seriti scenario:
 
 ```
-lithium 20 GW / 10h                 2,815 GWh    19.6 GW peak
-+ vanadium 10 GW / 8h               2,815 GWh    19.6 GW peak
-+ iron-air 5 GW / 100h              2,815 GWh    19.6 GW peak
-+ iron-air 10 GW / 100h             2,815 GWh    19.6 GW peak
-+ iron-air 20 GW / 100h             2,815 GWh    19.6 GW peak
-iron-air 20 GW, no lithium          3,015 GWh    19.6 GW peak
+                              July gas   peak    annual gas   new capex   avg cost
+lithium 20 GW / 10h          2,815 GWh   19.6      30.7 TWh      R166bn   R1.30/kWh
++ vanadium 10 GW / 8h        2,815 GWh   19.6      30.6 TWh      R222bn   R1.56/kWh
++ iron-air 5 GW / 100h       2,815 GWh   19.6      30.5 TWh      R231bn   R1.61/kWh
++ iron-air 10 GW / 100h      2,815 GWh   19.6      30.2 TWh      R296bn   R1.92/kWh
++ iron-air 20 GW / 100h      2,815 GWh   19.6      29.7 TWh      R425bn   R2.54/kWh
+iron-air 20 GW, no lithium   3,015 GWh   19.6      32.6 TWh      R350bn   R2.18/kWh
 ```
+
+PRICED 28 Aug 2026. Before that, vanadium, iron-air and pumped storage were ABSENT
+from `newCapexR`, so this table showed all six rows at R166bn and iron-air appeared
+to LOWER average cost. It does the opposite. Twenty gigawatts of iron-air adds
+R259bn and takes average cost from R1.30 to R2.54/kWh - nearly double - to buy a
+3% annual gas reduction and NOTHING in July. On price it is the worst option here.
 
 Twenty gigawatts of 100-hour iron-air is two TERAWATT-hours of storage and it
 changes July by NOTHING, to three significant figures. Iron-air alone makes it
@@ -129,8 +136,9 @@ duration    gas TWh    curtailment TWh    new capex R bn
 CONSISTENCY CHECK, unplanned: 20 GW at 10h gives 30.735891678 TWh, IDENTICAL to
 50 GW at 4h. Same stored energy, same answer, two routes.
 
-CAVEAT: the capex column covers lithium only. Vanadium, iron-air and pumped
-storage are ABSENT from `newCapexR` - see STATE.md open items.
+The capex column is lithium only because this scenario builds only lithium.
+Vanadium, iron-air and pumped storage are now in `newCapexR` as well (28 Aug 2026);
+before that they were absent and showed as free.
 
 ---
 
@@ -206,12 +214,13 @@ The country sits almost exactly at the knee.
 fleet      ancillary R/MW/yr      total R/MW/yr
 0.5 GW            197,100              304,165
 3   GW            197,100              304,165
-4   GW            189,216              296,281
-6   GW            126,144              233,209
-10  GW             75,686              182,751
+4   GW            186,822              293,887
+6   GW            124,548              231,613
+8   GW             93,411              200,476
+10  GW             74,729              181,794
 ```
 
-Ancillary falls 61.6% between 0.5 and 10 GW. Revenue is FLAT to about 3.8 GW,
+Ancillary falls 62.1% between 0.5 and 10 GW. Revenue is FLAT to about 3.8 GW,
 where the fleet's contribution first exceeds the reserve requirement (6% of a
 32 GW peak = 1,920 MW). The existing fleet is 3,700 MW. The last point at which a
 new battery earns the full ancillary rate.
@@ -220,3 +229,19 @@ Understates against ERCOT's ~90% because arbitrage is held flat in this model.
 
 REQUIRES `asReserveOn`. At defaults the panel shows a flat line and says so,
 because South Africa prices no ancillary services today.
+
+RECOMPUTED 28 Aug 2026. The reserve requirement previously read a hardcoded
+32,000 MW through `FIXED.peakMW`, which is not a key - it resolved to undefined
+and fell through. It now reads the model's own peak (31,595 MW at default, and
+46,193 MW at 50% demand growth, where the old code would still have said 32,000).
+The ancillary fall moved 61.6% to 62.1% and the 10 GW figure R75,686 to R74,729.
+The KNEE DID NOT MOVE and the conclusion is unchanged - which is the reassuring
+outcome, since a 1.3% input correction producing a large swing would have meant
+something else was wrong.
+
+CAVEAT ON THE WHOLE PANEL: reserve is sized as a flat share of annual peak
+(`sysReserveShare` 0.06, calibrated to Eskom's ~2,200 MW). Professional practice
+sizes it as the largest single contingency plus a VRE-scaled component, resolved
+hourly. The current form is BLIND TO RENEWABLE BUILD, so under a large build it
+understates how much the reserve pot grows and biases the knee EARLIER. Do not
+quote the knee for a high-VRE scenario until that is rebuilt.

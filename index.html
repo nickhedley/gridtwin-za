@@ -4276,6 +4276,38 @@ const FIXED = {
   // its ATB VOM (~$4) is omitted rather than carried dead.
   vomCoal:80, vomCcgt:35, vomDiesel:70, vomNuclear:45,
   acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
+  // LONG-DURATION STORAGE CAPEX, added 28 Aug 2026. Until then vanadium, iron-air and
+  // pumped storage appeared in newCapexR NOWHERE, so the model showed 20 GW of 100-hour
+  // iron-air as costing ZERO and slightly REDUCING average cost. Same annuity method as
+  // every other acap*: overnight R/kW, annuitised at 8% over asset life.
+  //
+  // FX IS PINNED: R16.50/USD, the 180-day trailing average to 26 Aug 2026 (range 15.90
+  // to 17.25; spot on 28 Aug was 15.97). A period average, not spot - a capital constant
+  // must not move 8% on a currency tick. Supersedes the R16.21 and R16.80 used elsewhere.
+  //
+  //   acapVrfb     8h at USD 450/kWh = USD 3,600/kW = R59,400/kW, 25-yr life (electrolyte
+  //                does not degrade; stacks are replaced), annuity 0.09368 -> R5,565.
+  //                SINGLE-SOURCE ESTIMATE. NREL ATB covers lithium ONLY and has no flow
+  //                battery line, so this could not be corroborated there. Western turnkey
+  //                quotes run 450-750/kWh, Chinese GWh-scale with electrolyte leasing
+  //                300-450. Vanadium price swings alone moved systems by 45-120/kWh over
+  //                2025-26, so treat +/-20% as the honest band.
+  //   acapIronAir  100h at USD 77/kWh = USD 7,700/kW = R127,050/kW, 20-yr life, annuity
+  //                0.10185 -> R12,940. From the Form Energy / Google / Xcel 30 GWh deal:
+  //                ~33/kWh AFTER US tax credits, ~77 before. South Africa gets no 45X
+  //                credit, so the pre-incentive figure is the right one. Company target
+  //                is 20/kWh. Looks enormous per kW and is: iron-air is the cheapest
+  //                storage per kWh and among the dearest per kW. R129/kWh-yr against
+  //                lithium's R375 - three times cheaper on ENERGY.
+  //   acapPs       Tubatse, 1.5 GW / 21 GWh, R35.9bn in 2022 rands (JET plan; nearly double
+  //                the original R19.6bn). Escalated four years at SA CPI ~ R29,200/kW.
+  //                60-yr life for civil works, annuity 0.08080 -> R2,360.
+  //
+  // KNOWN SIMPLIFICATION: each scales linearly with its duration constant. NREL's own
+  // finding is that installed cost per kWh FALLS with duration while cost per kW RISES,
+  // so a linear scale overstates cost at long durations. Acceptable while the duration
+  // constants are fixed; revisit if they ever become sliders.
+  acapVrfb:5565, acapIronAir:12940, acapPs:2360,
   // New coal/nuclear capex: global capex benchmarks ($3,600/kW coal w/ emissions controls,
   // $7,500/kW nuclear - mid of published $3,000-4,200 and $6,000-9,000/kW ranges respectively)
   // converted at ~R16.8/$ and annualised over a 40yr asset life at ~8% - same annuity method
@@ -5506,7 +5538,7 @@ function simulate(u, prof, outPath){
     const pvExempt=Math.min(u.newPvMW, inheritable);
     pvAdderMW=u.newPvMW-pvExempt;
   }
-  const newCapexR=(u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
+  const newCapexR=(u.newVrfbMW*p.acapVrfb+u.newIronAirMW*p.acapIronAir+u.newPsMW*p.acapPs+u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
   // 'hybrid' added 15 Aug 2026: it serves the grid, so excluding it from the
     // denominator while its costs sat in the numerator overstated avgCost ~0.9%.
     const genKeys=['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
