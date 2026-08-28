@@ -484,5 +484,151 @@ try {
   // Register absent in older checkouts - not a failure.
 }
 
+// ---------------------------------------------------------------------------
+// DERIVED ROLLUPS MUST MATCH THE THINGS THEY ARE DERIVED FROM.
+//
+// Added 28 Aug 2026. The handover claimed this file already asserted it. It did
+// not, and two rollups were found stale on the same day:
+//
+//   regional_renewable_capacity.json
+//     reconciliation.totals_by_technology_mw.solar_mw read 2663 while the
+//     by_source.reipppp.solar_mw regions summed to 2783 - a 120 MW gap, exactly
+//     Doornhoek.
+//   ipp_pipeline.json
+//     Doornhoek's own entry read status "online" while the derived by_status
+//     block still counted it under construction.
+//
+// Both were the signature of a hand edit: the named value updated, the rollup
+// not. Neither is caught by a fingerprint, because the fingerprint is recomputed
+// over whatever the file happens to contain.
+// ---------------------------------------------------------------------------
+{
+  const rec = cap.reconciliation || {};
+  const tb = rec.totals_by_technology_mw;
+  const src = (cap.by_source || {}).reipppp;
+  if (tb && src) {
+    for (const k of Object.keys(tb)) {
+      if (!src[k]) continue;
+      const derived = sum(src[k]);
+      const ok = Math.abs(derived - tb[k]) <= TOL;
+      check(`reconciliation.totals_by_technology_mw.${k} matches by_source.reipppp`, ok,
+            ok ? '' : `rollup says ${tb[k]}, regions sum to ${derived} - the rollup is stale, `
+            + `which is what a hand edit looks like. Recompute, do not adjust the rollup.`);
+    }
+  } else {
+    check('reconciliation.totals_by_technology_mw is present', false,
+          'absent - it is the only cross-check on the by_source regional split');
+  }
+}
+
+{
+  // by_status in the pipeline must be derivable from the project list itself.
+  let bad = [];
+  for (const [region, v] of Object.entries(pipe.by_region || {})) {
+    if (!v.by_status || !Array.isArray(v.projects)) continue;
+    const recount = {};
+    for (const pr of v.projects) {
+      const st = pr.status || 'unknown';
+      recount[st] = recount[st] || { mw: 0, n: 0 };
+      recount[st].mw += pr.mw; recount[st].n += 1;
+    }
+    for (const st of new Set([...Object.keys(v.by_status), ...Object.keys(recount)])) {
+      const a = v.by_status[st] || { mw: 0, n: 0 }, b = recount[st] || { mw: 0, n: 0 };
+      if (Math.abs((a.mw || 0) - b.mw) > TOL || (a.n || 0) !== b.n)
+        bad.push(`${region}/${st}: file ${a.mw || 0} MW n=${a.n || 0}, projects ${b.mw} MW n=${b.n}`);
+    }
+  }
+  check('ipp_pipeline by_status matches the project lists', bad.length === 0, bad.join('; '));
+}
+
+// ---------------------------------------------------------------------------
+// A PROJECT WITH A PUBLISHED PROVINCE MUST NOT SIT IN unallocated.
+//
+// Added 28 Aug 2026 after Mulilo Total Hydra was very nearly committed to the
+// unallocated list while carrying province_confidence "published". Every identity
+// still held - by_region + unallocated = total either way - so nothing would have
+// flagged it. Only the allocated subtotal failing to move gave it away.
+//
+// unallocated is for capacity with NO published provincial split. Putting a
+// sourced project there quietly discards the source.
+// ---------------------------------------------------------------------------
+{
+  // unallocated is an OBJECT with an items[] array, not a bare array.
+  const unalloc = Array.isArray(pipe.unallocated) ? pipe.unallocated
+                : ((pipe.unallocated || {}).items || []);
+  const bad = unalloc
+    .filter(pr => pr.region || pr.province_confidence === 'published')
+    .map(pr => `${pr.name} (${pr.mw} MW${pr.region ? ', region ' + pr.region : ''}`
+             + `${pr.province_confidence ? ', confidence ' + pr.province_confidence : ''})`);
+  check('no project with a published province sits in unallocated', bad.length === 0,
+        bad.length ? bad.join('; ') + '  - move it into by_region, or drop the province claim' : '');
+}
+
+// ---------------------------------------------------------------------------
+// THE GENERATOR MUST REPRODUCE THE COMMITTED FILES.
+//
+// Added 28 Aug 2026. On 27 Aug a stale copy of build_capacity.py destroyed the
+// Hydra Central split and dropped the eskom bucket, then rewrote its own
+// fingerprint so the damage looked consistent. Separately, the ROOT generator was
+// one edit behind the data for ten days because Doornhoek was applied by hand.
+//
+// "Recompute, never hand-edit" is only a safe rule while the generator actually
+// reproduces what is committed. This asserts that. Runs in a TEMPORARY COPY, so
+// it can never touch the real files.
+//
+// Skipped, not failed, when the generator or python3 is unavailable - this file
+// must still be runnable in a checkout without them.
+// ---------------------------------------------------------------------------
+{
+  const { execFileSync } = require('child_process');
+  const os = require('os');
+  const gen = path.join(ROOT, 'build_capacity.py');
+  if (!fs.existsSync(gen)) {
+    pending++;
+    console.log('  PEND  generator reproduction   build_capacity.py not found at the repo root - '
+      + 'this check is the only thing standing between you and a silent regeneration');
+  } else {
+    let tmp = null;
+    try {
+      tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gtza-gen-'));
+      fs.cpSync(path.join(ROOT, 'nodal'), path.join(tmp, 'nodal'), { recursive: true });
+      fs.copyFileSync(gen, path.join(tmp, 'build_capacity.py'));
+      execFileSync('python3', ['build_capacity.py'], { cwd: tmp, stdio: 'ignore' });
+      for (const f of ['regional_renewable_capacity.json', 'ipp_pipeline.json']) {
+        const before = JSON.parse(fs.readFileSync(P(f), 'utf8'));
+        const after = JSON.parse(fs.readFileSync(path.join(tmp, 'nodal', f), 'utf8'));
+        // Compare the BODY, excluding meta. The fingerprint is recomputed over
+        // whatever the file contains, so two files can differ in substance while
+        // both carry a self-consistent fingerprint - which is exactly how the
+        // stale-rollup faults hid. Report the first differing path, not the
+        // fingerprints, because identical fingerprints alongside "mismatch" reads
+        // as a broken harness.
+        const body = o => { const c = { ...o }; delete c.meta; return c; };
+        const firstDiff = (a, b, p = '') => {
+          if (a === b) return null;
+          if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null)
+            return `${p || '(root)'}: committed ${JSON.stringify(a)}, regenerated ${JSON.stringify(b)}`;
+          for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+            const d = firstDiff(a[k], b[k], p ? p + '.' + k : k);
+            if (d) return d;
+          }
+          return null;
+        };
+        const diff = firstDiff(body(before), body(after));
+        check(`build_capacity.py reproduces ${f}`, diff === null,
+              diff === null ? '' : `first difference at ${diff}. Either the generator is behind the `
+                + `data (a hand edit was never written back) or the data is behind the generator. `
+                + `DIFF BEFORE REGENERATING - running it blind is how the Hydra Central split was `
+                + `destroyed on 27 Aug.`);
+      }
+    } catch (e) {
+      pending++;
+      console.log('  PEND  generator reproduction   could not run: ' + String(e.message).slice(0, 120));
+    } finally {
+      if (tmp) { try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (_) {} }
+    }
+  }
+}
+
 console.log(`\n${pass}/${pass + fail} checks passed` + (pending ? `, ${pending} pending` : ''));
 if (fail) process.exit(1);

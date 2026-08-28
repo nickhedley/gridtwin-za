@@ -143,7 +143,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Sixteen harnesses, 743 checks. Last full run: 743/743.
+Sixteen harnesses, 753 checks. Last full run: 753/753.
 
 ```
 node stress_suite.js                290/290
@@ -153,7 +153,7 @@ node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           29/29
 node validate_benchmarks.js .         18/18
-node validate_capacity.js .           18/18   Mulilo added 28 Aug, flag closed
+node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .        14/14
 node validate_structure.js .            9/9
@@ -393,7 +393,10 @@ and is not here.
    that the register is COMPLETE for the Karoo — not merely that the matching is sound.**
    `sub`/`subkm` have not been re-derived; Impofu should reassign once they are.
 8. **`pfl_cod_h1_2026.json` carries no fingerprint** while the other three data files
-   do. It is now a file people edit. Add one.
+   do. It is now a file people edit. Add one. NOTE a fingerprint would NOT have caught
+   the stale rollups found on 28 Aug — it is recomputed over whatever the file contains,
+   so a hand edit produces a self-consistent fingerprint on wrong data. The rollup and
+   generator-reproduction checks added to `validate_capacity.js` are what catch that.
 9. **Reserve is sized as a flat share of annual peak.** `sysReserveShare` 0.06,
    calibrated to Eskom's ~2,200 MW against a ~32 GW peak. Professional practice uses
    the largest single contingency plus a VRE-scaled component, resolved hourly. The
