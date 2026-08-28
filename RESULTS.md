@@ -307,3 +307,55 @@ sizes it as the largest single contingency plus a VRE-scaled component, resolved
 hourly. The current form is BLIND TO RENEWABLE BUILD, so under a large build it
 understates how much the reserve pot grows and biases the knee EARLIER. Do not
 quote the knee for a high-VRE scenario until that is rebuilt.
+
+---
+
+## Locational transmission signal, measured
+
+Directly relevant to the Revised Electricity Pricing Policy (Gazette 55257,
+28 Aug 2026). Policy Position 20 instructs the transmission licence holder, DEE and
+NERSA to "investigate different options and adopt the most appropriate method for
+allocating costs between generators", noting that the current methodology recognises
+only peak security and does not reflect the costs different generator types impose.
+
+The regional build LP answers that question directly. Solved to Optimal, default
+scenario, masterplan build rate. Shadow prices are summed over the whole horizon from
+the `hw_` and `hp_` connection-headroom constraints, and row names were recovered from
+the LP text because HiGHS returns rows index-keyed (119,225 rows parsed, 119,225
+returned - the counts match, which is the check).
+
+```
+region            built wind GW   built PV GW    wind headroom dual   PV headroom dual
+Eastern Cape             0.40          0.00              11,046,170            253,733
+Hydra Central            0.00          0.00               9,386,271          2,323,075
+Western Cape             1.18          0.00               7,774,490          2,300,515
+Northern Cape            0.00          0.00               5,188,020          6,984,540
+North West               1.66          1.66               2,432,688          1,501,832
+Free State               1.42          1.42                 582,177            854,859
+Mpumalanga               3.32          0.00                 228,814                  0
+Limpopo                  0.54          2.02                       0                  0
+Gauteng                  0.00          2.40                       0                  0
+Kwazulu Natal            2.48          0.00                       0                  0
+```
+
+THE FINDING: the optimiser builds the MOST wind where the resource is WORST.
+Mpumalanga takes 3.32 GW at a 25.5% capacity factor and KwaZulu-Natal 2.48 GW at
+21.6%, while Hydra Central (42.5%) and the Northern Cape (37.9%) get NOTHING. The
+Eastern Cape stops at 0.40 GW.
+
+The reason is in the second column. Headroom binds hardest in exactly the regions
+with the best wind - Eastern Cape, Hydra Central, Western Cape, Northern Cape - and
+does not bind at all in Limpopo, Gauteng and KwaZulu-Natal. Connection capacity, not
+wind speed, is deciding where the fleet goes.
+
+That is the locational signal the policy asks to be quantified, and it is large:
+roughly a fiftyfold spread between the most and least constrained regions.
+
+UNITS CAVEAT: these are sums of hourly duals over the full LP horizon, so treat them
+as a RANKING and a relative magnitude, not as a R/MW tariff. Converting them into a
+charge would need the horizon normalised and the socialised portion separated, which
+is the design question Policy Position 20 leaves open.
+
+CAVEAT: one build scenario, default settings, single weather year. The ranking is
+driven by the headroom data in `nodal/headroom_summary.json`, so it inherits whatever
+that file gets wrong. Re-run across weather years before quoting externally.
