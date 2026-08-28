@@ -224,9 +224,50 @@ cancelling, not corroboration - the first was one favourable year, this is the w
 of ten. Cite this one.
 
 THE PRICE IS CURTAILMENT. At 50 GW wind / 60 GW solar the system throws away
-94.7 TWh a year, more than 40% of demand. Building for the worst week and wasting
-the output the rest of the year. Gas is almost certainly cheaper - but that
-comparison needs the storage capex fix first.
+75.7 TWh a year on the worst weather year. Building for the worst week and wasting
+the output the rest of the year.
+
+### COSTED, 28 Aug 2026 - and gas is NOT cheaper
+
+An earlier version of this file said "gas is almost certainly cheaper, but that
+comparison needs the storage capex fix first". The fix is in. The claim was wrong.
+
+Worst weather year (2022), annual costs in R bn. Capex is annualised and INCLUDES
+grid expansion at R600/kW-yr on new wind and utility PV - about R66 bn a year in the
+110 GW cases, so the transmission build to connect it is not being hidden.
+
+```
+scenario                        GW W+S  unserved  curt TWh  capex  fuel  carbon  TOTAL  R/kWh
+Seriti as published, 25 GW gas      45         0       0.0    166   116       3    285   1.37
+no gas, same build                  45    19,664       0.0    135   135       3    293   1.60
+no gas, 40W/80S                    120         0      92.3    264    31       2    297   1.41
+no gas, 50W/60S                    110         0      75.7    254    29       2    285   1.36
+no gas, 60W/60S                    120         0      96.4    276    28       2    305   1.46
+no gas, 80W/40S                    120         0     101.8    288    25       1    315   1.51
+no gas, 50W/80S                    130         0     112.5    287    29       2    318   1.51
+```
+
+REMOVING GAS IS COST-NEUTRAL AT THE RIGHT BUILD. 50 GW wind with 60 GW solar and no
+gas at all costs R285 bn a year - the SAME as the 25 GW gas scenario, and marginally
+cheaper per kWh at R1.36 against R1.37. The trade is R88 bn more capex against R87 bn
+less fuel.
+
+But it is only cost-neutral at ONE point on the frontier. Every other no-gas build
+tested costs 4% to 12% more, and the wrong mix is expensive: 80 GW wind with 40 GW
+solar costs R315 bn for the same job. So this is not "gas is unnecessary", it is
+"there exists a build where gas is unnecessary and it is not the obvious one".
+
+### THE CAVEAT THAT MATTERS MOST
+
+This costing uses the NATIONAL dispatch model, which has no network. Our own
+locational result (below) shows connection headroom binding hardest in exactly the
+four best-wind regions. So a 110 GW build assumes all of it can connect where the
+resource is, and our own evidence says it cannot. The R285 bn is therefore a FLOOR
+for the no-gas case and the gap to gas is understated. Re-run through the regional
+LP before this is quoted externally.
+
+Also unpriced here: land, and the 75.7 TWh of curtailed energy has no compensation
+mechanism in this model - under REIPPPP some of it would be paid for.
 
 ---
 

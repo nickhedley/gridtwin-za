@@ -447,7 +447,12 @@ and is not here.
    conservative one. Long-duration storage, lithium duration and coal flexibilisation
    have not been re-run. The flexibilisation result is the weakest: its 1,128 GWh
    effect sits inside a 4,600 GWh weather spread and could reverse in some years.
-11. **Long-duration capex is single-source.** `acapVrfb` 5,565 rests on one USD 450/kWh
+11. **The no-gas frontier is costed but on the NATIONAL model, which has no network.**
+   50W/60S with no gas comes out at R285 bn/yr against R285 bn for the 25 GW gas
+   scenario — cost-neutral. But the locational result shows headroom binding hardest in
+   the best-wind regions, so a 110 GW build assumes connections our own evidence says are
+   not available. Treat R285 bn as a FLOOR. Re-run through the regional LP before quoting.
+12. **Long-duration capex is single-source.** `acapVrfb` 5,565 rests on one USD 450/kWh
    estimate; NREL ATB covers lithium only and cannot corroborate it. `acapIronAir`
    12,940 comes from one transaction, pre-incentive. Both scale linearly with duration,
    which overstates long durations against NREL's finding that cost per kWh falls as
