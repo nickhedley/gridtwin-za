@@ -4,7 +4,8 @@
   "source": "Alao, O. & Kruger, W. (2026, August). South African IPPs: financial close and commercial operations monitor, H1 2026 update. Power Futures Lab, UCT GSB. Table 1, 17 projects, 1 January to 30 June 2026.",
   "capacity_basis": "mw_installed is MWac. mw_contracted is firm dispatchable capacity and differs for storage and hybrid projects - see PFL footnote 2.",
   "compiled": "2026-08-27",
-  "cod_note": "cod is present only where a date was verified from a named source. Projects commissioned BEFORE the IPP Office as_at date sit inside provincial aggregates and will never appear by name, so absence from the named files is expected. Only projects with a cod AFTER as_at must be named somewhere."
+  "cod_note": "cod is present only where a date was verified from a named source. Projects commissioned BEFORE the IPP Office as_at date sit inside provincial aggregates and will never appear by name, so absence from the named files is expected. Only projects with a cod AFTER as_at must be named somewhere.",
+  "connection_note": "A 'connection' object records a VERIFIED grid connection where one is published. It never overwrites derived fields; reea_projects.json keeps its computed sub/subkm so a wrong heuristic stays visible rather than being silently corrected."
  },
  "projects": [
   {
@@ -53,7 +54,17 @@
    "route": "private",
    "method": "wheeling",
    "cod": "2026-05",
-   "cod_source": "Enel Green Power statement 2 June 2026, via Ecofin Agency"
+   "cod_source": "Enel Green Power statement 2 June 2026, via Ecofin Agency",
+   "connection": {
+    "substation": "Chatty",
+    "voltage_kv": 132,
+    "route_km": 116,
+    "built_by": "Red Cap Energy, developed with Enel Green Power (SA)",
+    "shared": "Impofu North, East and West - one line serves all three farms",
+    "source": "Red Cap Energy, LinkedIn, 28 Aug 2026, quoting CEO Mark Tanton. Route Impofu - Thornhill - Chatty. Described as SA's longest privately permitted renewable power line. Voltage and approximate length corroborated by the Impofu East micro-siting report (132 kV step-up) and the Impofu complex description (~120 km of 132 kV overhead line, eight HV substations).",
+    "heuristic_falsified": "CORRECTED 28 Aug 2026, after Chatty's coordinate was sourced. The first version of this note claimed the developer chose a FURTHER substation than the nearest, and that route choice follows servitudes rather than distance. That was WRONG. Chatty is 93.3 km from Impofu North against Grassridge at 106.9 km - it is NEARER. reea_projects.json derives sub='Grassridge' not because the heuristic weighed Chatty and rejected it, but because Chatty was ABSENT from substations_compact.json. The heuristic could not see the right answer. THE LESSON IS DIFFERENT AND WORSE: nearest-substation assignment is only as good as the substation register, and that register was missing the connection point for 330 MW of operating wind. Improving the matching method would not have helped. Before reusing this method for the Hydra Central split, establish that the register is COMPLETE for the area being split - not merely that the matching is sound.",
+    "not_in_register": "Chatty was absent from substations_compact.json (185 entries; only Dedisa and Grassridge lay in this region). ADDED 28 Aug 2026 from a plus code supplied by the user, 5G7F+J6 Ibhayi, recovered to 4GR75G7F+J6 = -33.835938, 25.523063. Cross-checks: 16.3 km from Grassridge, 16.2 km from Gqeberha centre, consistent with Ibhayi; 93.3 km straight-line to Impofu North against a 116 km built route, a 1.24 ratio that is normal for an overhead line following servitudes."
+   }
   },
   {
    "name": "Impofu East",
@@ -63,7 +74,17 @@
    "route": "private",
    "method": "wheeling",
    "cod": "2026-05",
-   "cod_source": "Enel Green Power RSA release 30 June 2026, via Sasol media centre"
+   "cod_source": "Enel Green Power RSA release 30 June 2026, via Sasol media centre",
+   "connection": {
+    "substation": "Chatty",
+    "voltage_kv": 132,
+    "route_km": 116,
+    "built_by": "Red Cap Energy, developed with Enel Green Power (SA)",
+    "shared": "Impofu North, East and West - one line serves all three farms",
+    "source": "Red Cap Energy, LinkedIn, 28 Aug 2026, quoting CEO Mark Tanton. Route Impofu - Thornhill - Chatty. Described as SA's longest privately permitted renewable power line. Voltage and approximate length corroborated by the Impofu East micro-siting report (132 kV step-up) and the Impofu complex description (~120 km of 132 kV overhead line, eight HV substations).",
+    "heuristic_falsified": "CORRECTED 28 Aug 2026, after Chatty's coordinate was sourced. The first version of this note claimed the developer chose a FURTHER substation than the nearest, and that route choice follows servitudes rather than distance. That was WRONG. Chatty is 93.3 km from Impofu North against Grassridge at 106.9 km - it is NEARER. reea_projects.json derives sub='Grassridge' not because the heuristic weighed Chatty and rejected it, but because Chatty was ABSENT from substations_compact.json. The heuristic could not see the right answer. THE LESSON IS DIFFERENT AND WORSE: nearest-substation assignment is only as good as the substation register, and that register was missing the connection point for 330 MW of operating wind. Improving the matching method would not have helped. Before reusing this method for the Hydra Central split, establish that the register is COMPLETE for the area being split - not merely that the matching is sound.",
+    "not_in_register": "Chatty was absent from substations_compact.json (185 entries; only Dedisa and Grassridge lay in this region). ADDED 28 Aug 2026 from a plus code supplied by the user, 5G7F+J6 Ibhayi, recovered to 4GR75G7F+J6 = -33.835938, 25.523063. Cross-checks: 16.3 km from Grassridge, 16.2 km from Gqeberha centre, consistent with Ibhayi; 93.3 km straight-line to Impofu North against a 116 km built route, a 1.24 ratio that is normal for an overhead line following servitudes."
+   }
   },
   {
    "name": "Impofu West",
@@ -73,7 +94,17 @@
    "route": "private",
    "method": "wheeling",
    "cod": "2026-06",
-   "cod_source": "Enel Green Power RSA release 30 June 2026, via Sasol media centre"
+   "cod_source": "Enel Green Power RSA release 30 June 2026, via Sasol media centre",
+   "connection": {
+    "substation": "Chatty",
+    "voltage_kv": 132,
+    "route_km": 116,
+    "built_by": "Red Cap Energy, developed with Enel Green Power (SA)",
+    "shared": "Impofu North, East and West - one line serves all three farms",
+    "source": "Red Cap Energy, LinkedIn, 28 Aug 2026, quoting CEO Mark Tanton. Route Impofu - Thornhill - Chatty. Described as SA's longest privately permitted renewable power line. Voltage and approximate length corroborated by the Impofu East micro-siting report (132 kV step-up) and the Impofu complex description (~120 km of 132 kV overhead line, eight HV substations).",
+    "heuristic_falsified": "CORRECTED 28 Aug 2026, after Chatty's coordinate was sourced. The first version of this note claimed the developer chose a FURTHER substation than the nearest, and that route choice follows servitudes rather than distance. That was WRONG. Chatty is 93.3 km from Impofu North against Grassridge at 106.9 km - it is NEARER. reea_projects.json derives sub='Grassridge' not because the heuristic weighed Chatty and rejected it, but because Chatty was ABSENT from substations_compact.json. The heuristic could not see the right answer. THE LESSON IS DIFFERENT AND WORSE: nearest-substation assignment is only as good as the substation register, and that register was missing the connection point for 330 MW of operating wind. Improving the matching method would not have helped. Before reusing this method for the Hydra Central split, establish that the register is COMPLETE for the area being split - not merely that the matching is sound.",
+    "not_in_register": "Chatty was absent from substations_compact.json (185 entries; only Dedisa and Grassridge lay in this region). ADDED 28 Aug 2026 from a plus code supplied by the user, 5G7F+J6 Ibhayi, recovered to 4GR75G7F+J6 = -33.835938, 25.523063. Cross-checks: 16.3 km from Grassridge, 16.2 km from Gqeberha centre, consistent with Ibhayi; 93.3 km straight-line to Impofu North against a 116 km built route, a 1.24 ratio that is normal for an overhead line following servitudes."
+   }
   },
   {
    "name": "Lephalale 1",

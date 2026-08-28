@@ -1,1 +1,1533 @@
-{"meta":{"source":"DBSA RFP 008 Appendix A transmission substation register (national, existing and planned), NTCSA GCCA 2025 GIS and Existing_Substations.shp, Eskom published GPS coordinates, OpenStreetMap (ODbL), manual verification.","dbsa_count":49,"eskom_count":5,"exact_count":17,"osm_count":104,"manual_count":10,"centroid_count":1,"note":"src='dbsa' = DBSA RFP 008 published GPS coordinates. src='eskom' = Eskom published coordinates. src='shp' = NTCSA point coordinate. src='osm' = OpenStreetMap contributors. src='manual' = individually verified. All are cross-checked against the real Eskom transmission network; the DBSA register independently agreed with 129 of 130 previously-verified entries to within 1km. src='centroid' = GCCA supply-zone polygon centroid, which marks the supply area rather than the physical site. planned=true marks substations not yet built. Voltages come from the DBSA register where listed; the remaining eight were derived individually and are marked kv_src='derived' - six from transmission lines named for the substation itself terminating at it, two from Eskom EIA documents.","attribution":"Locations marked src='osm' © OpenStreetMap contributors, ODbL. https://www.openstreetmap.org/copyright","src_legend":{"line-geom":"Position taken from where its own transmission lines terminate. Rabbit appears in no coordinate source (shapefile, OSM, Eskom GPS, DBSA register) but the two INVUBU-RABBIT 275 kV circuits both end at the same point, 9.7 km east of Invubu, agreeing to within 23 m. That convergence is the substation."},"copyright":"Copyright (c) 2026 Nick Hedley. All rights reserved.","licence":"CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/","terms":"This dataset is original compilation work. You may view, share and link to it with attribution. You may NOT use it commercially, distribute modified versions, or incorporate it into another product. Underlying public sources retain their own licences and are credited in the source field.","commercial":"Commercial licensing: https://github.com/nickhedley/gridtwin-za","fingerprint":"gtza-3353b6750cbc1a0d","compiled":"2026-08-13","juno_correction":"Juno was labelled Northern Cape. It sits at -31.608, 18.444 in Matzikama Local Municipality, West Coast District, WESTERN CAPE - Eskom's own Juno-Gromis project documents describe Gromis as Northern Cape near Kleinsee and Juno as Western Cape near Vredendal, and Juno's only two lines run to Aurora and Helios on the Cape network. Corrected 14 Aug 2026.","field_rename":"The per-substation region field was renamed r -> area on 14 Aug 2026. It holds an Eskom TRANSMISSION SUPPLY AREA, not a province: the ten values include Hydra Central, which is a Karoo supply area spanning the Northern Cape / Eastern Cape provincial boundary and is not a province at all. headroom_summary.json and tdp_projects.json meta.line_km_by_province are keyed the same way (both carry Hydra Central); reea_projects.json 'province' is genuinely provincial (nine values, no Hydra Central) and must NOT be matched against this field."},"subs":[{"n":"Acacia","lat":-33.88352,"lng":18.53541,"src":"dbsa","kv":400,"area":"Western Cape"},{"n":"Acornhoek","lat":-24.59822,"lng":31.05371,"src":"osm","kv":275,"area":"Limpopo"},{"n":"Aggeneis","lat":-29.29758,"lng":18.80338,"src":"shp","kv":400,"area":"Northern Cape"},{"n":"Agulhas","lat":-34.1278,"lng":20.33857,"src":"dbsa","kv":400,"planned":true,"area":"Western Cape"},{"n":"Alpha","lat":-26.80541,"lng":29.39713,"src":"osm","kv":765,"area":"Mpumalanga"},{"n":"Apollo","lat":-25.91944,"lng":28.27609,"src":"dbsa","kv":533,"area":"Gauteng"},{"n":"Aquila","lat":-30.88,"lng":24.29,"src":"dbsa","kv":400,"planned":true,"area":"Hydra Central"},{"n":"Ararat","lat":-25.56296,"lng":27.18693,"src":"osm","kv":275,"area":"North West"},{"n":"Ariadne","lat":-29.73017,"lng":30.38981,"src":"osm","kv":400,"area":"Kwazulu Natal"},{"n":"Aries","lat":-29.4944,"lng":20.79392,"src":"shp","kv":400,"area":"Northern Cape"},{"n":"Arnot","lat":-25.94361,"lng":29.78791,"src":"osm","kv":400,"area":"Mpumalanga"},{"n":"Artemis","lat":-28.6782,"lng":25.71746,"src":"dbsa","kv":400,"planned":true,"area":"Free State"},{"n":"Athene","lat":-28.75898,"lng":31.92705,"src":"osm","kv":400,"area":"Kwazulu Natal"},{"n":"Aurora","lat":-33.01006,"lng":18.23056,"src":"manual","kv":400,"area":"Western Cape"},{"n":"Avon","lat":-29.41718,"lng":31.16075,"src":"osm","kv":275,"area":"Kwazulu Natal"},{"n":"Bacchus","lat":-33.81426,"lng":19.40482,"src":"osm","kv":400,"area":"Western Cape"},{"n":"Benburg","lat":-26.10817,"lng":28.35506,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Bernina","lat":-26.44786,"lng":27.66166,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Bighorn","lat":-25.68241,"lng":27.50835,"src":"osm","kv":400,"area":"North West"},{"n":"Bloedrivier","lat":-27.89549,"lng":30.57599,"src":"osm","kv":275,"area":"Kwazulu Natal"},{"n":"Bloukrans","lat":-28.76034,"lng":29.8517,"src":"osm","kv":275,"area":"Kwazulu Natal"},{"n":"Borutho","lat":-23.90204,"lng":28.97654,"src":"osm","kv":400,"area":"Limpopo"},{"n":"Boundary","lat":-28.72396,"lng":24.8801,"src":"shp","kv":275,"area":"Northern Cape"},{"n":"Brenner","lat":-26.27704,"lng":28.27789,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Camden","lat":-26.61888,"lng":30.09056,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Carmel","lat":-26.42318,"lng":27.30586,"src":"osm","kv":275,"area":"North West"},{"n":"Chivelston","lat":-27.83895,"lng":29.99108,"src":"osm","kv":400,"area":"Kwazulu Natal"},{"n":"Craighall","lat":-26.09415,"lng":28.01553,"src":"dbsa","kv":275,"area":"Gauteng"},{"n":"Croydon","lat":-26.14058,"lng":28.19491,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Danskraal","lat":-28.56655,"lng":29.83392,"src":"osm","kv":275,"area":"Kwazulu Natal"},{"n":"Dedisa","lat":-33.74199,"lng":25.67729,"src":"osm","kv":400,"area":"Eastern Cape"},{"n":"Delphi","lat":-32.01233,"lng":26.80649,"src":"osm","kv":400,"area":"Eastern Cape"},{"n":"Dinaledi","lat":-25.57957,"lng":27.85381,"src":"osm","kv":400,"area":"Gauteng"},{"n":"Diphororo","lat":-25.56317,"lng":28.10025,"src":"dbsa","kv":275,"planned":true,"area":"Gauteng"},{"n":"Droerivier","lat":-32.40894,"lng":22.53356,"src":"manual","kv":400,"area":"Western Cape"},{"n":"Eiger","lat":-26.30776,"lng":28.11601,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Emkhiweni","lat":-25.876,"lng":29.403,"src":"dbsa","kv":400,"planned":true,"area":"Mpumalanga"},{"n":"Eros","lat":-30.60819,"lng":29.90706,"src":"manual","kv":132,"area":"Eastern Cape"},{"n":"Esselen","lat":-26.00556,"lng":28.2686,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Etna","lat":-26.38503,"lng":27.87585,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Everest","lat":-27.99226,"lng":26.90036,"src":"osm","kv":275,"area":"Free State"},{"n":"Ferrum","lat":-27.72931,"lng":23.05694,"src":"manual","kv":275,"area":"Northern Cape"},{"n":"Fordsburg","lat":-26.20785,"lng":28.02624,"src":"osm","kv":275,"kv_src":"derived","area":"Gauteng"},{"n":"Foskor","lat":-24.0281,"lng":31.12658,"src":"osm","kv":275,"area":"Limpopo"},{"n":"Galenia","lat":-32.93434,"lng":22.5583,"src":"manual","kv":400,"area":"Western Cape"},{"n":"Gamma","lat":-31.67829,"lng":23.41007,"src":"osm","kv":765,"area":"Hydra Central"},{"n":"Garona","lat":-28.73922,"lng":21.99521,"src":"shp","kv":275,"area":"Northern Cape"},{"n":"Georgedale","lat":-29.78273,"lng":30.61341,"src":"osm","kv":275,"area":"Kwazulu Natal"},{"n":"Glockner","lat":-26.60455,"lng":27.98683,"src":"osm","kv":400,"area":"Gauteng"},{"n":"Grassridge","lat":-33.72031,"lng":25.63156,"src":"manual","kv":400,"area":"Eastern Cape"},{"n":"Groeipunt","lat":-29.51646,"lng":18.26848,"src":"osm","kv":220,"area":"Northern Cape"},{"n":"Gromis","lat":-29.59969,"lng":17.18046,"src":"shp","kv":220,"area":"Northern Cape"},{"n":"Grootvlei","lat":-26.77036,"lng":28.49462,"src":"osm","kv":400,"area":"Mpumalanga"},{"n":"Gumeni","lat":-25.7508,"lng":30.23098,"src":"osm","kv":400,"area":"Mpumalanga"},{"n":"Harvard","lat":-29.10385,"lng":26.1058,"src":"shp","kv":275,"area":"Free State"},{"n":"Hector","lat":-29.77773,"lng":30.66118,"src":"osm","kv":400,"area":"Kwazulu Natal"},{"n":"Helios","lat":-30.49961,"lng":19.56037,"src":"shp","kv":400,"area":"Northern Cape"},{"n":"Hendrina","lat":-26.03151,"lng":29.59832,"src":"osm","kv":400,"area":"Mpumalanga"},{"n":"Hermes","lat":-26.90206,"lng":26.78439,"src":"shp","kv":400,"area":"North West"},{"n":"Hydra","lat":-30.71438,"lng":24.08685,"src":"osm","kv":400,"area":"Hydra Central"},{"n":"Illovo","lat":-30.07577,"lng":30.8334,"src":"osm","kv":275,"area":"Kwazulu Natal"},{"n":"Impala","lat":-28.76681,"lng":31.94706,"src":"manual","kv":275,"area":"Kwazulu Natal"},{"n":"Incandu","lat":-27.72057,"lng":29.97832,"src":"osm","kv":400,"area":"Kwazulu Natal"},{"n":"Ingagane","lat":-27.84628,"lng":29.98503,"src":"osm","kv":275,"area":"Kwazulu Natal"},{"n":"Invubu","lat":-28.68883,"lng":32.03629,"src":"dbsa","kv":400,"area":"Kwazulu Natal"},{"n":"Juno","lat":-31.608,"lng":18.44423,"src":"shp","kv":400,"area":"Western Cape"},{"n":"Jupiter","lat":-26.22956,"lng":28.11476,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Kappa","lat":-33.1072,"lng":20.01026,"src":"osm","kv":400,"area":"Western Cape"},{"n":"Kestrel","lat":-30.68656,"lng":24.11451,"src":"dbsa","kv":400,"planned":true,"area":"Hydra Central"},{"n":"Khanyazwe","lat":-25.50235,"lng":31.52815,"src":"dbsa","kv":275,"area":"Mpumalanga"},{"n":"Klaarwater","lat":-29.8593,"lng":30.86346,"src":"osm","kv":275,"kv_src":"derived","area":"Kwazulu Natal"},{"n":"Koeberg","lat":-33.67368,"lng":18.43224,"src":"dbsa","kv":400,"area":"Western Cape"},{"n":"Komati","lat":-26.09291,"lng":29.47323,"src":"dbsa","kv":275,"area":"Mpumalanga"},{"n":"Komatipoort","lat":-25.43369,"lng":31.94479,"src":"osm","kv":275,"area":"Mpumalanga"},{"n":"Komsberg","lat":-32.93367,"lng":20.59464,"src":"osm","kv":400,"kv_src":"derived","area":"Western Cape"},{"n":"Kookfontein","lat":-26.5879,"lng":27.98756,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Koring","lat":-32.71225,"lng":21.25975,"src":"dbsa","kv":400,"planned":true,"area":"Western Cape"},{"n":"Koruson","lat":-31.3545,"lng":24.82183,"src":"dbsa","kv":400,"planned":true,"area":"Hydra Central"},{"n":"Kronos","lat":-30.02251,"lng":22.3383,"src":"shp","kv":400,"area":"Northern Cape"},{"n":"Kruispunt","lat":-26.20993,"lng":29.09253,"src":"osm","kv":275,"area":"Mpumalanga"},{"n":"Kwagga","lat":-25.75752,"lng":28.10554,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Leander","lat":-27.94486,"lng":26.79991,"src":"dbsa","kv":400,"area":"Free State"},{"n":"Lepini","lat":-26.0323,"lng":28.17963,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Leseding","lat":-24.4395,"lng":30.01711,"src":"osm","kv":400,"area":"Limpopo"},{"n":"Lewensaar","lat":-28.2119,"lng":22.59514,"src":"osm","kv":275,"area":"Northern Cape"},{"n":"Lomond","lat":-25.80234,"lng":27.93927,"src":"osm","kv":275,"area":"North West"},{"n":"Lulamisa","lat":-25.96522,"lng":28.01099,"src":"osm","kv":400,"area":"Gauteng"},{"n":"Majuba","lat":-27.09809,"lng":29.76827,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Makalu","lat":-26.82351,"lng":27.9097,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Manogeng","lat":-25.10858,"lng":29.82662,"src":"osm","kv":400,"kv_src":"derived","area":"Mpumalanga"},{"n":"Marang","lat":-25.61307,"lng":27.33478,"src":"osm","kv":400,"area":"North West"},{"n":"Marathon","lat":-25.40976,"lng":30.92249,"src":"osm","kv":275,"area":"Mpumalanga"},{"n":"Matimba","lat":-23.66816,"lng":27.61525,"src":"osm","kv":400,"area":"Limpopo"},{"n":"Medupi","lat":-23.70306,"lng":27.56714,"src":"osm","kv":400,"area":"Limpopo"},{"n":"Merapi","lat":-28.94307,"lng":27.08419,"src":"osm","kv":275,"area":"Free State"},{"n":"Mercury","lat":-27.00431,"lng":26.82019,"src":"manual","kv":400,"area":"North West"},{"n":"Merensky","lat":-24.71952,"lng":30.2216,"src":"osm","kv":400,"area":"Limpopo"},{"n":"Mersey","lat":-29.39342,"lng":30.4775,"src":"dbsa","kv":400,"area":"Kwazulu Natal"},{"n":"Midas","lat":-26.3871,"lng":27.5279,"src":"osm","kv":400,"area":"North West"},{"n":"Minerva","lat":-25.92158,"lng":28.08017,"src":"osm","kv":400,"area":"Gauteng"},{"n":"Mookodi","lat":-27.01285,"lng":24.74965,"src":"shp","kv":400,"area":"North West"},{"n":"Muldersvlei","lat":-33.81813,"lng":18.80559,"src":"osm","kv":400,"area":"Western Cape"},{"n":"Nama","lat":-29.63235,"lng":17.88402,"src":"shp","kv":220,"area":"Northern Cape"},{"n":"Neptune","lat":-32.90242,"lng":27.8577,"src":"dbsa","kv":400,"area":"Eastern Cape"},{"n":"Nevis","lat":-26.24278,"lng":28.53833,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Ngwedi","lat":-25.40638,"lng":27.08693,"src":"osm","kv":400,"area":"North West"},{"n":"Nieuwehoop","lat":-29.15027,"lng":21.33842,"src":"manual","kv":400,"area":"Northern Cape"},{"n":"Njala","lat":-25.84829,"lng":28.29052,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Normandie","lat":-27.16131,"lng":30.87738,"src":"osm","kv":400,"area":"Mpumalanga"},{"n":"Olien","lat":-28.33209,"lng":23.62378,"src":"shp","kv":275,"area":"Northern Cape"},{"n":"Olympus","lat":-26.66584,"lng":27.80596,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Oranjemond","lat":-28.54608,"lng":16.60008,"src":"osm","kv":220,"area":"Northern Cape"},{"n":"Paulputs","lat":-28.877308,"lng":19.565376,"src":"eskom","kv":220,"area":"Northern Cape"},{"n":"Pegasus","lat":-28.24891,"lng":30.32829,"src":"osm","kv":400,"area":"Kwazulu Natal"},{"n":"Pelly","lat":-25.41557,"lng":28.2922,"src":"osm","kv":275,"area":"Limpopo"},{"n":"Pembroke","lat":-32.88385,"lng":27.52365,"src":"osm","kv":220,"area":"Eastern Cape"},{"n":"Perseus","lat":-28.63794,"lng":25.74316,"src":"osm","kv":400,"area":"Free State"},{"n":"Philippi","lat":-33.98921,"lng":18.53715,"src":"osm","kv":400,"area":"Western Cape"},{"n":"Pieterboth","lat":-26.32061,"lng":28.45966,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Pinotage","lat":-34.04738,"lng":18.77891,"src":"osm","kv":400,"area":"Western Cape"},{"n":"Pluto","lat":-26.21775,"lng":27.45465,"src":"osm","kv":400,"area":"North West"},{"n":"Poseidon","lat":-32.74267,"lng":25.92485,"src":"dbsa","kv":400,"area":"Eastern Cape"},{"n":"Prairie","lat":-25.71757,"lng":30.22903,"src":"osm","kv":275,"area":"Mpumalanga"},{"n":"Princess","lat":-26.17301,"lng":27.8451,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Prospect","lat":-26.22346,"lng":28.09526,"src":"osm","kv":275,"kv_src":"derived","area":"Gauteng"},{"n":"Proteus","lat":-34.10403,"lng":21.88055,"src":"shp","kv":400,"area":"Western Cape"},{"n":"Rabbit","lat":-28.6807,"lng":32.13515,"src":"line-geom","kv":275,"kv_src":"derived","area":"Kwazulu Natal"},{"n":"Rigi","lat":-26.6797,"lng":27.85717,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Rockdale","lat":-25.8106,"lng":29.50632,"src":"osm","kv":275,"area":"Mpumalanga"},{"n":"Roodekuil","lat":-29.99891,"lng":24.7068,"src":"osm","kv":220,"area":"Hydra Central"},{"n":"Ruigtevallei","lat":-30.640428,"lng":25.504027,"src":"eskom","kv":220,"area":"Hydra Central"},{"n":"Scafell","lat":-26.81231,"lng":27.63782,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Sebenza","lat":-26.11572,"lng":28.19054,"src":"dbsa","kv":400,"planned":true,"area":"Gauteng"},{"n":"Senakangwedi","lat":-24.81351,"lng":30.11671,"src":"osm","kv":275,"area":"Limpopo"},{"n":"Silimela","lat":-25.08626,"lng":29.29761,"src":"osm","kv":400,"kv_src":"derived","area":"Mpumalanga"},{"n":"Simplon","lat":-25.23498,"lng":30.05136,"src":"osm","kv":275,"area":"Mpumalanga"},{"n":"Snowdon","lat":-26.53187,"lng":28.15026,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Sol","lat":-26.53879,"lng":29.11757,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Sorata","lat":-28.30135,"lng":28.91116,"src":"shp","kv":132,"area":"Kwazulu Natal"},{"n":"Spencer","lat":-23.48839,"lng":30.38071,"src":"osm","kv":275,"area":"Limpopo"},{"n":"Spitskop","lat":-24.96802,"lng":27.22746,"src":"osm","kv":400,"area":"Limpopo"},{"n":"Sterrekus","lat":-33.70216,"lng":18.5122,"src":"dbsa","kv":765,"area":"Western Cape"},{"n":"Stikland","lat":-33.90496,"lng":18.68631,"src":"osm","kv":400,"area":"Western Cape"},{"n":"Tabor","lat":-23.37402,"lng":29.78274,"src":"osm","kv":275,"area":"Limpopo"},{"n":"Taunus","lat":-26.26849,"lng":27.7793,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Theseus","lat":-28.15978,"lng":26.8289,"src":"osm","kv":400,"area":"Free State"},{"n":"Thuso","lat":-25.89486,"lng":28.24569,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Trident","lat":-25.63494,"lng":27.18344,"src":"osm","kv":275,"area":"North West"},{"n":"Tugela","lat":-28.58033,"lng":29.32163,"src":"osm","kv":275,"area":"Kwazulu Natal"},{"n":"Umfolozi","lat":-28.21595,"lng":31.18752,"src":"osm","kv":400,"area":"Kwazulu Natal"},{"n":"Upington","lat":-28.544716,"lng":21.138104,"src":"eskom","kv":400,"area":"Northern Cape"},{"n":"Venus","lat":-28.93868,"lng":29.84619,"src":"osm","kv":400,"area":"Kwazulu Natal"},{"n":"Vulcan","lat":-25.82959,"lng":29.1102,"src":"osm","kv":400,"area":"Mpumalanga"},{"n":"Vuyani","lat":-31.6419,"lng":28.81351,"src":"shp","kv":400,"area":"Eastern Cape"},{"n":"Warmbad","lat":-24.89051,"lng":28.32557,"src":"osm","kv":275,"area":"Limpopo"},{"n":"Watershed","lat":-26.08994,"lng":26.14494,"src":"manual","kv":275,"area":"North West"},{"n":"Westgate","lat":-26.14836,"lng":27.75477,"src":"osm","kv":275,"area":"Gauteng"},{"n":"Wildebees","lat":-25.74848,"lng":28.41554,"src":"dbsa","kv":400,"planned":true,"area":"Gauteng"},{"n":"Witkop","lat":-24.04393,"lng":29.35668,"src":"osm","kv":400,"area":"Limpopo"},{"n":"Gariep","lat":-30.623961,"lng":25.504032,"src":"eskom","kv":132,"area":"Free State"},{"n":"Van der Kloof","lat":-29.993235,"lng":24.731309,"src":"eskom","kv":220,"area":"Northern Cape"},{"n":"Buffalo","lat":-32.98747,"lng":27.80723,"src":"dbsa","kv":132,"area":"Eastern Cape"},{"n":"Port Rex","lat":-33.02852,"lng":27.88148,"src":"dbsa","kv":132,"area":"Eastern Cape"},{"n":"Beta","lat":-28.7219,"lng":25.70316,"src":"dbsa","kv":765,"area":"Free State"},{"n":"Highveld","lat":-26.91893,"lng":27.8929,"src":"dbsa","kv":275,"area":"Free State"},{"n":"Lethabo","lat":-26.73911,"lng":27.97573,"src":"dbsa","kv":275,"area":"Free State"},{"n":"Verdun","lat":-26.63998,"lng":27.95193,"src":"dbsa","kv":275,"area":"Gauteng"},{"n":"Hera","lat":-26.44746,"lng":27.6619,"src":"dbsa","kv":400,"area":"Gauteng"},{"n":"Ingula","lat":-28.27854,"lng":29.58713,"src":"dbsa","kv":400,"area":"Kwazulu Natal"},{"n":"Hillside","lat":-28.76888,"lng":32.02583,"src":"dbsa","kv":132,"area":"Kwazulu Natal"},{"n":"Drakensberg","lat":-28.56602,"lng":29.0832,"src":"dbsa","kv":400,"area":"Kwazulu Natal"},{"n":"Dwaalboom","lat":-24.81212,"lng":26.83741,"src":"dbsa","kv":132,"area":"Limpopo"},{"n":"Dwarsberg","lat":-24.90779,"lng":26.767,"src":"dbsa","kv":400,"area":"North West"},{"n":"Atlas","lat":-26.75995,"lng":28.11719,"src":"dbsa","kv":400,"area":"Gauteng"},{"n":"Duvha","lat":-25.96006,"lng":29.33649,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Zeus","lat":-26.69454,"lng":29.08881,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Kendal","lat":-26.08644,"lng":28.97014,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Matla","lat":-26.28276,"lng":29.13905,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Kriel","lat":-26.2562,"lng":29.17632,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Tutuka","lat":-26.77382,"lng":29.352,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Kusile","lat":-25.9135,"lng":28.9138,"src":"dbsa","kv":400,"area":"Mpumalanga"},{"n":"Anderson","lat":-25.80237,"lng":27.94837,"src":"dbsa","kv":275,"area":"North West"},{"n":"Palmiet","lat":-34.19856,"lng":18.97305,"src":"dbsa","kv":400,"area":"Western Cape"},{"n":"Gourikwa","lat":-34.16521,"lng":21.96069,"src":"dbsa","kv":400,"area":"Western Cape"},{"n":"Ankerlig","lat":-33.67368,"lng":18.46069,"src":"dbsa","kv":400,"area":"Western Cape"}]}
+{
+ "meta": {
+  "source": "DBSA RFP 008 Appendix A transmission substation register (national, existing and planned), NTCSA GCCA 2025 GIS and Existing_Substations.shp, Eskom published GPS coordinates, OpenStreetMap (ODbL), manual verification.",
+  "dbsa_count": 49,
+  "eskom_count": 5,
+  "exact_count": 17,
+  "osm_count": 104,
+  "manual_count": 10,
+  "centroid_count": 1,
+  "note": "src='dbsa' = DBSA RFP 008 published GPS coordinates. src='eskom' = Eskom published coordinates. src='shp' = NTCSA point coordinate. src='osm' = OpenStreetMap contributors. src='manual' = individually verified. All are cross-checked against the real Eskom transmission network; the DBSA register independently agreed with 129 of 130 previously-verified entries to within 1km. src='centroid' = GCCA supply-zone polygon centroid, which marks the supply area rather than the physical site. planned=true marks substations not yet built. Voltages come from the DBSA register where listed; the remaining eight were derived individually and are marked kv_src='derived' - six from transmission lines named for the substation itself terminating at it, two from Eskom EIA documents.",
+  "attribution": "Locations marked src='osm' © OpenStreetMap contributors, ODbL. https://www.openstreetmap.org/copyright",
+  "src_legend": {
+   "line-geom": "Position taken from where its own transmission lines terminate. Rabbit appears in no coordinate source (shapefile, OSM, Eskom GPS, DBSA register) but the two INVUBU-RABBIT 275 kV circuits both end at the same point, 9.7 km east of Invubu, agreeing to within 23 m. That convergence is the substation.",
+   "pluscode": "Position decoded from a Google plus code supplied by the maintainer, not from a published coordinate source. Accurate to ~14 m at the point given, but NOT independently corroborated. One entry: Chatty (5G7F+J6 Ibhayi -> 4GR75G7F+J6 -> -33.835938, 25.523063), added 28 Aug 2026. It is the connection point for the 330 MW Impofu wind farms; its absence was making the nearest-substation heuristic return Grassridge at 106.9 km when Chatty sits at 93.3 km. Cross-checks: 16.3 km from Grassridge, 16.2 km from Gqeberha centre, consistent with Ibhayi. See pfl_cod_h1_2026.json for the full record."
+  },
+  "copyright": "Copyright (c) 2026 Nick Hedley. All rights reserved.",
+  "licence": "CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "terms": "This dataset is original compilation work. You may view, share and link to it with attribution. You may NOT use it commercially, distribute modified versions, or incorporate it into another product. Underlying public sources retain their own licences and are credited in the source field.",
+  "commercial": "Commercial licensing: https://github.com/nickhedley/gridtwin-za",
+  "fingerprint": "gtza-3353b6750cbc1a0d",
+  "compiled": "2026-08-13",
+  "juno_correction": "Juno was labelled Northern Cape. It sits at -31.608, 18.444 in Matzikama Local Municipality, West Coast District, WESTERN CAPE - Eskom's own Juno-Gromis project documents describe Gromis as Northern Cape near Kleinsee and Juno as Western Cape near Vredendal, and Juno's only two lines run to Aurora and Helios on the Cape network. Corrected 14 Aug 2026.",
+  "field_rename": "The per-substation region field was renamed r -> area on 14 Aug 2026. It holds an Eskom TRANSMISSION SUPPLY AREA, not a province: the ten values include Hydra Central, which is a Karoo supply area spanning the Northern Cape / Eastern Cape provincial boundary and is not a province at all. headroom_summary.json and tdp_projects.json meta.line_km_by_province are keyed the same way (both carry Hydra Central); reea_projects.json 'province' is genuinely provincial (nine values, no Hydra Central) and must NOT be matched against this field.",
+  "pluscode_count": 1
+ },
+ "subs": [
+  {
+   "n": "Acacia",
+   "lat": -33.88352,
+   "lng": 18.53541,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Acornhoek",
+   "lat": -24.59822,
+   "lng": 31.05371,
+   "src": "osm",
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Aggeneis",
+   "lat": -29.29758,
+   "lng": 18.80338,
+   "src": "shp",
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Agulhas",
+   "lat": -34.1278,
+   "lng": 20.33857,
+   "src": "dbsa",
+   "kv": 400,
+   "planned": true,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Alpha",
+   "lat": -26.80541,
+   "lng": 29.39713,
+   "src": "osm",
+   "kv": 765,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Anderson",
+   "lat": -25.80237,
+   "lng": 27.94837,
+   "src": "dbsa",
+   "kv": 275,
+   "area": "North West"
+  },
+  {
+   "n": "Ankerlig",
+   "lat": -33.67368,
+   "lng": 18.46069,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Apollo",
+   "lat": -25.91944,
+   "lng": 28.27609,
+   "src": "dbsa",
+   "kv": 533,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Aquila",
+   "lat": -30.88,
+   "lng": 24.29,
+   "src": "dbsa",
+   "kv": 400,
+   "planned": true,
+   "area": "Hydra Central"
+  },
+  {
+   "n": "Ararat",
+   "lat": -25.56296,
+   "lng": 27.18693,
+   "src": "osm",
+   "kv": 275,
+   "area": "North West"
+  },
+  {
+   "n": "Ariadne",
+   "lat": -29.73017,
+   "lng": 30.38981,
+   "src": "osm",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Aries",
+   "lat": -29.4944,
+   "lng": 20.79392,
+   "src": "shp",
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Arnot",
+   "lat": -25.94361,
+   "lng": 29.78791,
+   "src": "osm",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Artemis",
+   "lat": -28.6782,
+   "lng": 25.71746,
+   "src": "dbsa",
+   "kv": 400,
+   "planned": true,
+   "area": "Free State"
+  },
+  {
+   "n": "Athene",
+   "lat": -28.75898,
+   "lng": 31.92705,
+   "src": "osm",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Atlas",
+   "lat": -26.75995,
+   "lng": 28.11719,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Aurora",
+   "lat": -33.01006,
+   "lng": 18.23056,
+   "src": "manual",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Avon",
+   "lat": -29.41718,
+   "lng": 31.16075,
+   "src": "osm",
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Bacchus",
+   "lat": -33.81426,
+   "lng": 19.40482,
+   "src": "osm",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Benburg",
+   "lat": -26.10817,
+   "lng": 28.35506,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Bernina",
+   "lat": -26.44786,
+   "lng": 27.66166,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Beta",
+   "lat": -28.7219,
+   "lng": 25.70316,
+   "src": "dbsa",
+   "kv": 765,
+   "area": "Free State"
+  },
+  {
+   "n": "Bighorn",
+   "lat": -25.68241,
+   "lng": 27.50835,
+   "src": "osm",
+   "kv": 400,
+   "area": "North West"
+  },
+  {
+   "n": "Bloedrivier",
+   "lat": -27.89549,
+   "lng": 30.57599,
+   "src": "osm",
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Bloukrans",
+   "lat": -28.76034,
+   "lng": 29.8517,
+   "src": "osm",
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Borutho",
+   "lat": -23.90204,
+   "lng": 28.97654,
+   "src": "osm",
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Boundary",
+   "lat": -28.72396,
+   "lng": 24.8801,
+   "src": "shp",
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Brenner",
+   "lat": -26.27704,
+   "lng": 28.27789,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Buffalo",
+   "lat": -32.98747,
+   "lng": 27.80723,
+   "src": "dbsa",
+   "kv": 132,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Camden",
+   "lat": -26.61888,
+   "lng": 30.09056,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Carmel",
+   "lat": -26.42318,
+   "lng": 27.30586,
+   "src": "osm",
+   "kv": 275,
+   "area": "North West"
+  },
+  {
+   "n": "Chatty",
+   "lat": -33.835938,
+   "lng": 25.523063,
+   "src": "pluscode",
+   "kv": 132,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Chivelston",
+   "lat": -27.83895,
+   "lng": 29.99108,
+   "src": "osm",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Craighall",
+   "lat": -26.09415,
+   "lng": 28.01553,
+   "src": "dbsa",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Croydon",
+   "lat": -26.14058,
+   "lng": 28.19491,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Danskraal",
+   "lat": -28.56655,
+   "lng": 29.83392,
+   "src": "osm",
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Dedisa",
+   "lat": -33.74199,
+   "lng": 25.67729,
+   "src": "osm",
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Delphi",
+   "lat": -32.01233,
+   "lng": 26.80649,
+   "src": "osm",
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Dinaledi",
+   "lat": -25.57957,
+   "lng": 27.85381,
+   "src": "osm",
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Diphororo",
+   "lat": -25.56317,
+   "lng": 28.10025,
+   "src": "dbsa",
+   "kv": 275,
+   "planned": true,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Drakensberg",
+   "lat": -28.56602,
+   "lng": 29.0832,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Droerivier",
+   "lat": -32.40894,
+   "lng": 22.53356,
+   "src": "manual",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Duvha",
+   "lat": -25.96006,
+   "lng": 29.33649,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Dwaalboom",
+   "lat": -24.81212,
+   "lng": 26.83741,
+   "src": "dbsa",
+   "kv": 132,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Dwarsberg",
+   "lat": -24.90779,
+   "lng": 26.767,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "North West"
+  },
+  {
+   "n": "Eiger",
+   "lat": -26.30776,
+   "lng": 28.11601,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Emkhiweni",
+   "lat": -25.876,
+   "lng": 29.403,
+   "src": "dbsa",
+   "kv": 400,
+   "planned": true,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Eros",
+   "lat": -30.60819,
+   "lng": 29.90706,
+   "src": "manual",
+   "kv": 132,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Esselen",
+   "lat": -26.00556,
+   "lng": 28.2686,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Etna",
+   "lat": -26.38503,
+   "lng": 27.87585,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Everest",
+   "lat": -27.99226,
+   "lng": 26.90036,
+   "src": "osm",
+   "kv": 275,
+   "area": "Free State"
+  },
+  {
+   "n": "Ferrum",
+   "lat": -27.72931,
+   "lng": 23.05694,
+   "src": "manual",
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Fordsburg",
+   "lat": -26.20785,
+   "lng": 28.02624,
+   "src": "osm",
+   "kv": 275,
+   "kv_src": "derived",
+   "area": "Gauteng"
+  },
+  {
+   "n": "Foskor",
+   "lat": -24.0281,
+   "lng": 31.12658,
+   "src": "osm",
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Galenia",
+   "lat": -32.93434,
+   "lng": 22.5583,
+   "src": "manual",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Gamma",
+   "lat": -31.67829,
+   "lng": 23.41007,
+   "src": "osm",
+   "kv": 765,
+   "area": "Hydra Central"
+  },
+  {
+   "n": "Gariep",
+   "lat": -30.623961,
+   "lng": 25.504032,
+   "src": "eskom",
+   "kv": 132,
+   "area": "Free State"
+  },
+  {
+   "n": "Garona",
+   "lat": -28.73922,
+   "lng": 21.99521,
+   "src": "shp",
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Georgedale",
+   "lat": -29.78273,
+   "lng": 30.61341,
+   "src": "osm",
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Glockner",
+   "lat": -26.60455,
+   "lng": 27.98683,
+   "src": "osm",
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Gourikwa",
+   "lat": -34.16521,
+   "lng": 21.96069,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Grassridge",
+   "lat": -33.72031,
+   "lng": 25.63156,
+   "src": "manual",
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Groeipunt",
+   "lat": -29.51646,
+   "lng": 18.26848,
+   "src": "osm",
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Gromis",
+   "lat": -29.59969,
+   "lng": 17.18046,
+   "src": "shp",
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Grootvlei",
+   "lat": -26.77036,
+   "lng": 28.49462,
+   "src": "osm",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Gumeni",
+   "lat": -25.7508,
+   "lng": 30.23098,
+   "src": "osm",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Harvard",
+   "lat": -29.10385,
+   "lng": 26.1058,
+   "src": "shp",
+   "kv": 275,
+   "area": "Free State"
+  },
+  {
+   "n": "Hector",
+   "lat": -29.77773,
+   "lng": 30.66118,
+   "src": "osm",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Helios",
+   "lat": -30.49961,
+   "lng": 19.56037,
+   "src": "shp",
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Hendrina",
+   "lat": -26.03151,
+   "lng": 29.59832,
+   "src": "osm",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Hera",
+   "lat": -26.44746,
+   "lng": 27.6619,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Hermes",
+   "lat": -26.90206,
+   "lng": 26.78439,
+   "src": "shp",
+   "kv": 400,
+   "area": "North West"
+  },
+  {
+   "n": "Highveld",
+   "lat": -26.91893,
+   "lng": 27.8929,
+   "src": "dbsa",
+   "kv": 275,
+   "area": "Free State"
+  },
+  {
+   "n": "Hillside",
+   "lat": -28.76888,
+   "lng": 32.02583,
+   "src": "dbsa",
+   "kv": 132,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Hydra",
+   "lat": -30.71438,
+   "lng": 24.08685,
+   "src": "osm",
+   "kv": 400,
+   "area": "Hydra Central"
+  },
+  {
+   "n": "Illovo",
+   "lat": -30.07577,
+   "lng": 30.8334,
+   "src": "osm",
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Impala",
+   "lat": -28.76681,
+   "lng": 31.94706,
+   "src": "manual",
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Incandu",
+   "lat": -27.72057,
+   "lng": 29.97832,
+   "src": "osm",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Ingagane",
+   "lat": -27.84628,
+   "lng": 29.98503,
+   "src": "osm",
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Ingula",
+   "lat": -28.27854,
+   "lng": 29.58713,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Invubu",
+   "lat": -28.68883,
+   "lng": 32.03629,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Juno",
+   "lat": -31.608,
+   "lng": 18.44423,
+   "src": "shp",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Jupiter",
+   "lat": -26.22956,
+   "lng": 28.11476,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Kappa",
+   "lat": -33.1072,
+   "lng": 20.01026,
+   "src": "osm",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Kendal",
+   "lat": -26.08644,
+   "lng": 28.97014,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Kestrel",
+   "lat": -30.68656,
+   "lng": 24.11451,
+   "src": "dbsa",
+   "kv": 400,
+   "planned": true,
+   "area": "Hydra Central"
+  },
+  {
+   "n": "Khanyazwe",
+   "lat": -25.50235,
+   "lng": 31.52815,
+   "src": "dbsa",
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Klaarwater",
+   "lat": -29.8593,
+   "lng": 30.86346,
+   "src": "osm",
+   "kv": 275,
+   "kv_src": "derived",
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Koeberg",
+   "lat": -33.67368,
+   "lng": 18.43224,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Komati",
+   "lat": -26.09291,
+   "lng": 29.47323,
+   "src": "dbsa",
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Komatipoort",
+   "lat": -25.43369,
+   "lng": 31.94479,
+   "src": "osm",
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Komsberg",
+   "lat": -32.93367,
+   "lng": 20.59464,
+   "src": "osm",
+   "kv": 400,
+   "kv_src": "derived",
+   "area": "Western Cape"
+  },
+  {
+   "n": "Kookfontein",
+   "lat": -26.5879,
+   "lng": 27.98756,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Koring",
+   "lat": -32.71225,
+   "lng": 21.25975,
+   "src": "dbsa",
+   "kv": 400,
+   "planned": true,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Koruson",
+   "lat": -31.3545,
+   "lng": 24.82183,
+   "src": "dbsa",
+   "kv": 400,
+   "planned": true,
+   "area": "Hydra Central"
+  },
+  {
+   "n": "Kriel",
+   "lat": -26.2562,
+   "lng": 29.17632,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Kronos",
+   "lat": -30.02251,
+   "lng": 22.3383,
+   "src": "shp",
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Kruispunt",
+   "lat": -26.20993,
+   "lng": 29.09253,
+   "src": "osm",
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Kusile",
+   "lat": -25.9135,
+   "lng": 28.9138,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Kwagga",
+   "lat": -25.75752,
+   "lng": 28.10554,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Leander",
+   "lat": -27.94486,
+   "lng": 26.79991,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Free State"
+  },
+  {
+   "n": "Lepini",
+   "lat": -26.0323,
+   "lng": 28.17963,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Leseding",
+   "lat": -24.4395,
+   "lng": 30.01711,
+   "src": "osm",
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Lethabo",
+   "lat": -26.73911,
+   "lng": 27.97573,
+   "src": "dbsa",
+   "kv": 275,
+   "area": "Free State"
+  },
+  {
+   "n": "Lewensaar",
+   "lat": -28.2119,
+   "lng": 22.59514,
+   "src": "osm",
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Lomond",
+   "lat": -25.80234,
+   "lng": 27.93927,
+   "src": "osm",
+   "kv": 275,
+   "area": "North West"
+  },
+  {
+   "n": "Lulamisa",
+   "lat": -25.96522,
+   "lng": 28.01099,
+   "src": "osm",
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Majuba",
+   "lat": -27.09809,
+   "lng": 29.76827,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Makalu",
+   "lat": -26.82351,
+   "lng": 27.9097,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Manogeng",
+   "lat": -25.10858,
+   "lng": 29.82662,
+   "src": "osm",
+   "kv": 400,
+   "kv_src": "derived",
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Marang",
+   "lat": -25.61307,
+   "lng": 27.33478,
+   "src": "osm",
+   "kv": 400,
+   "area": "North West"
+  },
+  {
+   "n": "Marathon",
+   "lat": -25.40976,
+   "lng": 30.92249,
+   "src": "osm",
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Matimba",
+   "lat": -23.66816,
+   "lng": 27.61525,
+   "src": "osm",
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Matla",
+   "lat": -26.28276,
+   "lng": 29.13905,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Medupi",
+   "lat": -23.70306,
+   "lng": 27.56714,
+   "src": "osm",
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Merapi",
+   "lat": -28.94307,
+   "lng": 27.08419,
+   "src": "osm",
+   "kv": 275,
+   "area": "Free State"
+  },
+  {
+   "n": "Mercury",
+   "lat": -27.00431,
+   "lng": 26.82019,
+   "src": "manual",
+   "kv": 400,
+   "area": "North West"
+  },
+  {
+   "n": "Merensky",
+   "lat": -24.71952,
+   "lng": 30.2216,
+   "src": "osm",
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Mersey",
+   "lat": -29.39342,
+   "lng": 30.4775,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Midas",
+   "lat": -26.3871,
+   "lng": 27.5279,
+   "src": "osm",
+   "kv": 400,
+   "area": "North West"
+  },
+  {
+   "n": "Minerva",
+   "lat": -25.92158,
+   "lng": 28.08017,
+   "src": "osm",
+   "kv": 400,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Mookodi",
+   "lat": -27.01285,
+   "lng": 24.74965,
+   "src": "shp",
+   "kv": 400,
+   "area": "North West"
+  },
+  {
+   "n": "Muldersvlei",
+   "lat": -33.81813,
+   "lng": 18.80559,
+   "src": "osm",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Nama",
+   "lat": -29.63235,
+   "lng": 17.88402,
+   "src": "shp",
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Neptune",
+   "lat": -32.90242,
+   "lng": 27.8577,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Nevis",
+   "lat": -26.24278,
+   "lng": 28.53833,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Ngwedi",
+   "lat": -25.40638,
+   "lng": 27.08693,
+   "src": "osm",
+   "kv": 400,
+   "area": "North West"
+  },
+  {
+   "n": "Nieuwehoop",
+   "lat": -29.15027,
+   "lng": 21.33842,
+   "src": "manual",
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Njala",
+   "lat": -25.84829,
+   "lng": 28.29052,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Normandie",
+   "lat": -27.16131,
+   "lng": 30.87738,
+   "src": "osm",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Olien",
+   "lat": -28.33209,
+   "lng": 23.62378,
+   "src": "shp",
+   "kv": 275,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Olympus",
+   "lat": -26.66584,
+   "lng": 27.80596,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Oranjemond",
+   "lat": -28.54608,
+   "lng": 16.60008,
+   "src": "osm",
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Palmiet",
+   "lat": -34.19856,
+   "lng": 18.97305,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Paulputs",
+   "lat": -28.877308,
+   "lng": 19.565376,
+   "src": "eskom",
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Pegasus",
+   "lat": -28.24891,
+   "lng": 30.32829,
+   "src": "osm",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Pelly",
+   "lat": -25.41557,
+   "lng": 28.2922,
+   "src": "osm",
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Pembroke",
+   "lat": -32.88385,
+   "lng": 27.52365,
+   "src": "osm",
+   "kv": 220,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Perseus",
+   "lat": -28.63794,
+   "lng": 25.74316,
+   "src": "osm",
+   "kv": 400,
+   "area": "Free State"
+  },
+  {
+   "n": "Philippi",
+   "lat": -33.98921,
+   "lng": 18.53715,
+   "src": "osm",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Pieterboth",
+   "lat": -26.32061,
+   "lng": 28.45966,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Pinotage",
+   "lat": -34.04738,
+   "lng": 18.77891,
+   "src": "osm",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Pluto",
+   "lat": -26.21775,
+   "lng": 27.45465,
+   "src": "osm",
+   "kv": 400,
+   "area": "North West"
+  },
+  {
+   "n": "Port Rex",
+   "lat": -33.02852,
+   "lng": 27.88148,
+   "src": "dbsa",
+   "kv": 132,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Poseidon",
+   "lat": -32.74267,
+   "lng": 25.92485,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Prairie",
+   "lat": -25.71757,
+   "lng": 30.22903,
+   "src": "osm",
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Princess",
+   "lat": -26.17301,
+   "lng": 27.8451,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Prospect",
+   "lat": -26.22346,
+   "lng": 28.09526,
+   "src": "osm",
+   "kv": 275,
+   "kv_src": "derived",
+   "area": "Gauteng"
+  },
+  {
+   "n": "Proteus",
+   "lat": -34.10403,
+   "lng": 21.88055,
+   "src": "shp",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Rabbit",
+   "lat": -28.6807,
+   "lng": 32.13515,
+   "src": "line-geom",
+   "kv": 275,
+   "kv_src": "derived",
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Rigi",
+   "lat": -26.6797,
+   "lng": 27.85717,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Rockdale",
+   "lat": -25.8106,
+   "lng": 29.50632,
+   "src": "osm",
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Roodekuil",
+   "lat": -29.99891,
+   "lng": 24.7068,
+   "src": "osm",
+   "kv": 220,
+   "area": "Hydra Central"
+  },
+  {
+   "n": "Ruigtevallei",
+   "lat": -30.640428,
+   "lng": 25.504027,
+   "src": "eskom",
+   "kv": 220,
+   "area": "Hydra Central"
+  },
+  {
+   "n": "Scafell",
+   "lat": -26.81231,
+   "lng": 27.63782,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Sebenza",
+   "lat": -26.11572,
+   "lng": 28.19054,
+   "src": "dbsa",
+   "kv": 400,
+   "planned": true,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Senakangwedi",
+   "lat": -24.81351,
+   "lng": 30.11671,
+   "src": "osm",
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Silimela",
+   "lat": -25.08626,
+   "lng": 29.29761,
+   "src": "osm",
+   "kv": 400,
+   "kv_src": "derived",
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Simplon",
+   "lat": -25.23498,
+   "lng": 30.05136,
+   "src": "osm",
+   "kv": 275,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Snowdon",
+   "lat": -26.53187,
+   "lng": 28.15026,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Sol",
+   "lat": -26.53879,
+   "lng": 29.11757,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Sorata",
+   "lat": -28.30135,
+   "lng": 28.91116,
+   "src": "shp",
+   "kv": 132,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Spencer",
+   "lat": -23.48839,
+   "lng": 30.38071,
+   "src": "osm",
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Spitskop",
+   "lat": -24.96802,
+   "lng": 27.22746,
+   "src": "osm",
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Sterrekus",
+   "lat": -33.70216,
+   "lng": 18.5122,
+   "src": "dbsa",
+   "kv": 765,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Stikland",
+   "lat": -33.90496,
+   "lng": 18.68631,
+   "src": "osm",
+   "kv": 400,
+   "area": "Western Cape"
+  },
+  {
+   "n": "Tabor",
+   "lat": -23.37402,
+   "lng": 29.78274,
+   "src": "osm",
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Taunus",
+   "lat": -26.26849,
+   "lng": 27.7793,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Theseus",
+   "lat": -28.15978,
+   "lng": 26.8289,
+   "src": "osm",
+   "kv": 400,
+   "area": "Free State"
+  },
+  {
+   "n": "Thuso",
+   "lat": -25.89486,
+   "lng": 28.24569,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Trident",
+   "lat": -25.63494,
+   "lng": 27.18344,
+   "src": "osm",
+   "kv": 275,
+   "area": "North West"
+  },
+  {
+   "n": "Tugela",
+   "lat": -28.58033,
+   "lng": 29.32163,
+   "src": "osm",
+   "kv": 275,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Tutuka",
+   "lat": -26.77382,
+   "lng": 29.352,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Umfolozi",
+   "lat": -28.21595,
+   "lng": 31.18752,
+   "src": "osm",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Upington",
+   "lat": -28.544716,
+   "lng": 21.138104,
+   "src": "eskom",
+   "kv": 400,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Van der Kloof",
+   "lat": -29.993235,
+   "lng": 24.731309,
+   "src": "eskom",
+   "kv": 220,
+   "area": "Northern Cape"
+  },
+  {
+   "n": "Venus",
+   "lat": -28.93868,
+   "lng": 29.84619,
+   "src": "osm",
+   "kv": 400,
+   "area": "Kwazulu Natal"
+  },
+  {
+   "n": "Verdun",
+   "lat": -26.63998,
+   "lng": 27.95193,
+   "src": "dbsa",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Vulcan",
+   "lat": -25.82959,
+   "lng": 29.1102,
+   "src": "osm",
+   "kv": 400,
+   "area": "Mpumalanga"
+  },
+  {
+   "n": "Vuyani",
+   "lat": -31.6419,
+   "lng": 28.81351,
+   "src": "shp",
+   "kv": 400,
+   "area": "Eastern Cape"
+  },
+  {
+   "n": "Warmbad",
+   "lat": -24.89051,
+   "lng": 28.32557,
+   "src": "osm",
+   "kv": 275,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Watershed",
+   "lat": -26.08994,
+   "lng": 26.14494,
+   "src": "manual",
+   "kv": 275,
+   "area": "North West"
+  },
+  {
+   "n": "Westgate",
+   "lat": -26.14836,
+   "lng": 27.75477,
+   "src": "osm",
+   "kv": 275,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Wildebees",
+   "lat": -25.74848,
+   "lng": 28.41554,
+   "src": "dbsa",
+   "kv": 400,
+   "planned": true,
+   "area": "Gauteng"
+  },
+  {
+   "n": "Witkop",
+   "lat": -24.04393,
+   "lng": 29.35668,
+   "src": "osm",
+   "kv": 400,
+   "area": "Limpopo"
+  },
+  {
+   "n": "Zeus",
+   "lat": -26.69454,
+   "lng": 29.08881,
+   "src": "dbsa",
+   "kv": 400,
+   "area": "Mpumalanga"
+  }
+ ]
+}
