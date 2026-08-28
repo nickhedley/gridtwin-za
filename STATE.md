@@ -434,7 +434,14 @@ and is not here.
    reserve holdback is binary on price > 0 and does not scale with price. All six are now
    ANNOTATED in `validate_response.js` rather than suppressed — the suspect still prints,
    because the day one changes shape is the day something broke.
-14. **Three results in RESULTS.md are still on ONE weather year (2023, the dashboard).** The
+14. ~~Three results in RESULTS.md are still on one weather year.~~ RE-RUN 28 Aug 2026
+   across all ten. All three HOLD, and two are stronger than the single-year run showed.
+   Iron-air changes July gas by exactly zero in all ten years. Lithium 4h-to-10h buys
+   under 1% of gas in every year, tighter than the 1.7% first reported, which was the
+   most favourable year. Coal flexibilisation worsens adequacy in TEN years out of ten,
+   by +1,057 to +1,223 GWh — a 166 GWh range against a 4,200 GWh spread in the underlying
+   unserved energy, so the penalty is nearly independent of weather. It was flagged as the
+   weakest result in the file; it is now among the best evidenced. The
    ten-year run on 28 Aug showed the synthetic year understates gas energy by ~35%
    and unserved energy by about a third — it is a FLATTERING simplification, not a
    conservative one. Long-duration storage, lithium duration and coal flexibilisation

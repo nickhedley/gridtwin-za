@@ -4,8 +4,9 @@ Findings fit to quote externally, each with the scenario that produced it. A
 number without its scenario is not a result. Every entry states the weather year
 and the period, because an annual figure and a July figure are not comparable.
 
-WEATHER BASIS, settled 28 Aug 2026 after THREE attempts. Read this before quoting
-anything.
+WEATHER BASIS, settled 28 Aug 2026 after THREE attempts. EVERY result in this file is
+now on ten real weather years, 2014-2023, except where a line says otherwise. Read this
+before quoting anything.
 
 The dashboard is NOT a synthetic or average year. `profiles.json` carries Eskom
 hourly demand for 2025 and a METERED wind series at 31.97% CF. The label
@@ -121,10 +122,15 @@ Eskom-owned plant.
 
 ## Long-duration storage does not solve a winter wind drought
 
-STILL ONE SYNTHETIC YEAR. The DIRECTION is safe - storage cannot fill a deficit
-when there is no surplus to store, and that does not change with weather. The
-absolute GWh below are understated by roughly a third; re-run on 2022 before
-quoting any number here.
+CONFIRMED ACROSS TEN WEATHER YEARS, 28 Aug 2026. Adding 20 GW of 100-hour iron-air
+to the Seriti scenario changes July gas by EXACTLY ZERO in all ten years - not
+approximately, not to three significant figures, but to the last digit printed in
+every year from 2014 to 2023. July gas itself ranges 1,605 to 3,968 GWh across those
+years, so the invariance is not an artefact of a quiet month.
+
+The annual effect is consistent and small: gas falls by about 1.0 TWh in every year,
+which is where the value of long-duration storage actually sits. It is a
+shoulder-season and spring-curtailment technology, not a winter-drought one.
 
 
 Their conclusion is that the deficit needs firm wind or SEASONAL STORAGE. Tested
@@ -159,9 +165,13 @@ curtailment to zero.
 
 ## Lithium duration: the wall, priced
 
-STILL ONE SYNTHETIC YEAR. Gas figures understated by ~35%. The SHAPE - gas falls
-1.7% while capex rises 37% between 4h and 10h - is a ratio and survives; the levels
-do not.
+CONFIRMED ACROSS TEN WEATHER YEARS, 28 Aug 2026. Going 4h to 10h cuts annual gas by
+between 0.55% and 1.63%, mean 0.93%, in every year. It also removes curtailment
+almost entirely - 0.167-0.539 TWh at 4h falls to 0.000-0.129 TWh at 10h.
+
+The wall is real and it is tighter than the single-year run suggested: the earlier
+1.7% figure was the most favourable year. Under 1% of gas for a 37% capex increase,
+in every year tested.
 
 
 Seriti scenario, varying `newBattHours`:
@@ -222,10 +232,31 @@ comparison needs the storage capex fix first.
 
 ## Flexibilising the coal fleet does NOT improve adequacy
 
-STILL ONE SYNTHETIC YEAR. Re-run across ten years before this is quoted anywhere:
-the effect is 1,128 GWh on a base that moves by 4,600 GWh between weather years, so
-it is well inside the weather spread and could plausibly reverse in some years.
-THIS IS THE WEAKEST RESULT IN THIS FILE.
+CONFIRMED ACROSS TEN WEATHER YEARS, 28 Aug 2026. It does NOT reverse in any year.
+This was flagged as the weakest result in this file and it is no longer weak.
+
+```
+year     rigid   flexible    delta    coal rigid  coal flex   batt rigid  batt flex
+2014     14,921    16,083   +1,162       50.2       47.4         5.79       4.54
+2015     17,718    18,775   +1,057       51.1       48.5         5.19       3.94
+2016     15,151    16,238   +1,087       50.6       47.8         5.91       4.62
+2017     15,377    16,521   +1,144       50.5       47.7         6.35       5.00
+2018     15,578    16,693   +1,116       50.6       47.9         6.35       4.97
+2019     14,805    15,962   +1,157       50.0       47.2         6.58       5.34
+2020     14,413    15,565   +1,152       50.2       47.4         6.92       5.55
+2021     15,954    17,178   +1,223       50.5       47.7         6.46       5.07
+2022     18,560    19,664   +1,104       50.9       48.4         4.93       3.81
+2023     14,381    15,542   +1,161       50.0       47.1         6.41       5.08
+```
+
+TEN YEARS OUT OF TEN, and the effect is remarkably STABLE: +1,057 to +1,223 GWh,
+a range of 166 GWh, while the underlying unserved energy moves by 4,200 GWh between
+best and worst year. So the flexibilisation penalty is nearly INDEPENDENT of weather,
+which is much stronger evidence than the single-year run gave. The concern that it
+sat inside the weather spread was wrong: it is a mechanism, not noise.
+
+The mechanism is visible in the last four columns and is identical every year. Rigid
+coal generates ~2.8 TWh more, and storage delivers ~1.3 TWh more as a result.
 
 
 Requested as a hypothesis; the test returned the opposite. No gas, 10 GW coal:
