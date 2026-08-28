@@ -427,24 +427,47 @@ South Africa's 3,700 MW fleet still sits just below the knee. That conclusion ha
 survived three separate corrections to how the reserve is computed, which is the main
 reason to trust it.
 
-KNOWN DEVIATION, and it is a caveat rather than a choice. The STRUCTURE follows
-practice; the VRE term does not. It uses POST-CURTAILMENT output where PLEXOS, PyPSA,
-ERCOT and ENTSO-E drive it off AVAILABLE or FORECAST output - forecast error is a
-property of what a plant could have produced, not of what was accepted.
+CORRECTED 28 Aug 2026, and the correction produced the most important storage finding
+in this file.
 
-Curtailed plant does reduce the net requirement, but professionally that sits on the
-SUPPLY side: ERCOT, EirGrid and AEMO all let curtailed renewables sell reserve.
-Shrinking the requirement instead reaches a similar number by the wrong route, and it
-hides something a developer needs: if curtailed VRE supplies reserve, batteries face a
-near-zero-marginal-cost COMPETITOR in exactly the high-renewable hours they hoped to
-earn in.
+The requirement is now split into three, as professional practice does:
+  GROSS        the uncertainty to be covered, driven by AVAILABLE VRE - dispatched
+               PLUS curtailed - because forecast error is a property of what a plant
+               could have produced.
+  VRE-PROVIDED curtailed plant can ramp back up, so it is an eligible upward-reserve
+               provider. ERCOT, EirGrid and AEMO all permit this. Counted at 50% of
+               curtailed output, since it must be fast, telemetered and controllable.
+  NET          what storage and thermal actually compete for.
 
-DIRECTION OF THE ERROR: in high-curtailment scenarios the requirement is UNDERSTATED,
-so the knee above sits further out than it should. It is also why the frontier scenario
-shows a lower MAXIMUM than the Seriti one despite more capacity.
+```
+scenario              gross    VRE provides    NET   curtailment TWh
+today, ~5 GW VRE      1,768               0   1,768        0.0
+Seriti, 45 GW VRE     2,273               4   2,268        0.2
+frontier, 110 GW      3,096           2,098     998      115.3
+```
 
-Do not describe this model's reserve treatment as following established practice. The
-shares (0.03 of load, 0.05 of VRE output) are uncertain; the VRE basis is wrong.
+### THE ANCILLARY MARKET FOR STORAGE SHRINKS AS RENEWABLES GROW
+
+At 110 GW of wind and solar the gross requirement rises to 3,096 MW, as expected. But
+curtailed renewables supply 2,098 MW of it, and the NET pot left for storage collapses
+to 998 MW - SMALLER THAN TODAY'S 1,768 MW, in a system more than twice the size.
+
+This inverts the usual assumption that storage ancillary revenue grows with renewable
+penetration. It grows only while curtailment stays low. Past the point where the system
+routinely spills wind and solar, the spilled plant becomes the cheapest reserve provider
+on the system and storage is competing against a near-zero-marginal-cost incumbent.
+
+The turning point is curtailment, not capacity: the Seriti 45 GW case curtails only
+0.2 TWh and the effect is invisible there. It appears between 45 and 110 GW.
+
+WHAT THIS DOES NOT SAY: whether South Africa will permit curtailed renewables to sell
+reserve. That is a market-design decision, not a physical one, and it is exactly the
+kind of thing the Revised Electricity Pricing Policy is deciding now. If the answer is
+yes, the storage business case at high penetration is materially worse than any
+published South African analysis assumes.
+
+The shares (0.03 of load, 0.05 of available VRE, 50% of curtailed VRE counting as a
+provider) are the uncertain part. The structure now follows practice.
 
 ---
 

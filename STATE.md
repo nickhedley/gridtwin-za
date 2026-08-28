@@ -407,19 +407,17 @@ and is not here.
    GROWS with renewable build. Ancillary fall deepened 62.1% to 64.8%; the knee moved
    out slightly and the 3,700 MW fleet still sits just below it. The panel now reads the
    engine's figure rather than recomputing its own, which is how it came to reference
-   `FIXED.peakMW`, a key that never existed. OPEN AND MORE SERIOUS THAN FIRST RECORDED: the VRE term uses POST-CURTAILMENT output,
-   where professional practice uses AVAILABLE or FORECAST output. Curtailed plant reducing
-   the net need belongs on the SUPPLY side — ERCOT, EirGrid and AEMO all let curtailed
-   renewables sell reserve — not by shrinking the requirement. Consequence: in
-   high-curtailment scenarios the requirement is UNDERSTATED and the saturation knee sits
-   too far out; and the model cannot show batteries competing against curtailed VRE for
-   the same pot, which is the thing a storage developer most needs to see.
-   **THE FIX NEEDS A PRE-CURTAILMENT VRE SERIES**, which the engine does not retain:
-   `stack.wind` is written after curtailment and `curtailMW` mixes VRE spill with forced
-   coal surplus, so available VRE cannot be reconstructed. Retaining one would let the
-   requirement follow available output and credit curtailed VRE separately as a provider.
-   Changes every ancillary figure again. DO NOT describe the reserve treatment as
-   following established practice until this is done.
+   `FIXED.peakMW`, a key that never existed. CORRECTED AGAIN 28 Aug 2026, same session:
+   the requirement now uses AVAILABLE VRE (dispatched + curtailed) and credits curtailed
+   VRE as a reserve PROVIDER at 50%, giving gross / provided / net. `vreCurtMW` is tracked
+   separately from `curtailMW`, which mixes VRE spill with forced coal surplus and could
+   not be used. FINDING: at 110 GW of wind and solar the gross requirement rises to
+   3,096 MW but curtailed VRE supplies 2,098 MW, so the NET pot for storage collapses to
+   998 MW — BELOW today's 1,768 MW. Storage's ancillary market SHRINKS as renewables grow,
+   once curtailment begins. Invisible at 45 GW (0.2 TWh curtailed); it appears between 45
+   and 110 GW. Whether it is real depends on whether South Africa lets curtailed renewables
+   sell reserve — a market-design decision the EPP is taking now. Remaining uncertainty is
+   in the three shares, not the structure.
 10. **`weatherYearNational` was weighting by DEMAND, fixed 28 Aug 2026.** It used
    `BLD_LOAD_SHARE` — Gauteng 31.5%, Northern Cape 1.4% — to build a national
    RENEWABLE profile, when all South African wind sits in the Cape provinces and Hydra
