@@ -286,6 +286,18 @@ const SCENARIOS = {
 
     check(`[${label}] unserved energy is non-negative`, R.unserved >= 0, String(R.unserved));
 
+    // Curtailment non-negativity. Added 28 Aug 2026: the annual total was coming out
+    // at -7.3e-12 MWh in high-storage scenarios and rendering as "-0.00 TWh", which
+    // reads as a fault. The cause was float accumulation in tierCharge() returning
+    // marginally more than it was handed; the accumulation site is now clamped, and
+    // that clamp is only defensible because THIS check would still fail on a material
+    // negative. Tolerance is deliberately tight - anything past a microwatt-hour is
+    // arithmetic, not rounding.
+    check(`[${label}] curtailment is non-negative`, R.curtailedTWh >= -1e-12,
+          `${R.curtailedTWh} TWh - a negative here means energy was un-spilled, which `
+          + `is not a thing. Check the clamp at the curtailment accumulation site and `
+          + `whether tierCharge is over-returning.`);
+
     // Emissions must follow FUEL BURNED. This is the identity that was wrong
     // until 17 Aug 2026, when CO2 was computed from energy SOLD and so ignored
     // the part-load heat-rate penalty entirely.

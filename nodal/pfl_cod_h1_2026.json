@@ -5,7 +5,9 @@
   "capacity_basis": "mw_installed is MWac. mw_contracted is firm dispatchable capacity and differs for storage and hybrid projects - see PFL footnote 2.",
   "compiled": "2026-08-27",
   "cod_note": "cod is present only where a date was verified from a named source. Projects commissioned BEFORE the IPP Office as_at date sit inside provincial aggregates and will never appear by name, so absence from the named files is expected. Only projects with a cod AFTER as_at must be named somewhere.",
-  "connection_note": "A 'connection' object records a VERIFIED grid connection where one is published. It never overwrites derived fields; reea_projects.json keeps its computed sub/subkm so a wrong heuristic stays visible rather than being silently corrected."
+  "connection_note": "A 'connection' object records a VERIFIED grid connection where one is published. It never overwrites derived fields; reea_projects.json keeps its computed sub/subkm so a wrong heuristic stays visible rather than being silently corrected.",
+  "fingerprint": "gtza-6b0cfe4c16136faf",
+  "fingerprint_method": "sha256 over the body EXCLUDING meta, canonicalised as json.dumps(sort_keys=True, separators=(',',':')), prefixed gtza-, first 16 hex. Same method as the generated files. NOTE a fingerprint proves the file has not been corrupted; it does NOT prove the contents are right, because it is recomputed over whatever is there."
  },
  "projects": [
   {

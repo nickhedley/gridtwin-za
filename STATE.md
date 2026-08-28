@@ -143,11 +143,11 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Sixteen harnesses, 753 checks. Last full run: 753/753.
+Sixteen harnesses, 764 checks. Last full run: 764/764.
 
 ```
 node stress_suite.js                290/290
-node validate_invariants.js .       138/138
+node validate_invariants.js .       149/149
 node validate_response.js .           80/80
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
@@ -379,10 +379,13 @@ and is not here.
    names. The annual *"An Overview of the IPPPP"* on the same publications page
    historically carries project-level tables and is the route to named entries and the
    Hydra Central split.
-6. **`sa_solar_grid.json` is an orphan, not a missing file.** Resolved 27 Aug 2026 —
-   the file exists and is real PVGIS SARAH2 data, but nothing fetches it and the
-   comment at index.html:1291 wrongly states it never existed. See the validation
-   section for what to do. Do not delete the file.
+6. **`sa_solar_grid.json` is an orphan, not a missing file.** The COMMENT was corrected
+   28 Aug 2026 — index.html:1291 previously asserted the file had never existed, which was
+   false. Still unresolved: whether to RECONNECT it. Doing so replaces the Open-Meteo ERA5
+   fallback (which the code's own comment says overestimates by 10–15%) with satellite-
+   observed irradiance at roughly 5%. It would move every solar figure the model produces,
+   so expect `validate_benchmarks` to shift and run the suite either side. Do not delete
+   the file.
 7. **The nearest-substation heuristic is FALSIFIED.** `reea_projects.json` derives
    `sub`/`subkm` by nearest substation. For the Impofu wind farms it returns Grassridge
    at 106.9 km. The line Red Cap actually built runs 116 km to **Chatty**, which sits
@@ -392,8 +395,8 @@ and is not here.
    corroborated. **Before reusing this method for the Hydra Central split, establish
    that the register is COMPLETE for the Karoo — not merely that the matching is sound.**
    `sub`/`subkm` have not been re-derived; Impofu should reassign once they are.
-8. **`pfl_cod_h1_2026.json` carries no fingerprint** while the other three data files
-   do. It is now a file people edit. Add one. NOTE a fingerprint would NOT have caught
+8. ~~`pfl_cod_h1_2026.json` carries no fingerprint.~~ ADDED 28 Aug 2026,
+   `gtza-6b0cfe4c16136faf`, same method as the generated files. NOTE a fingerprint would NOT have caught
    the stale rollups found on 28 Aug — it is recomputed over whatever the file contains,
    so a hand edit produces a self-consistent fingerprint on wrong data. The rollup and
    generator-reproduction checks added to `validate_capacity.js` are what catch that.

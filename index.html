@@ -1289,17 +1289,27 @@ function initResourceQuery(){
 
   // ── Solar CF: Open-Meteo ERA5 ────────────────────────────────────────────
   // REMOVED 14 Aug 2026: a PVGIS SARAH2 grid path that fetched
-  // nodal/sa_solar_grid.json. That file has never existed in the repo, so the
-  // fetch always 404'd and every solar figure this model has produced came from
-  // the Open-Meteo path below. The dead branch also labelled its output
-  // "PVGIS SARAH2 (satellite, +/-5% accuracy)", a claim that could never be true.
+  // nodal/sa_solar_grid.json.
+  //
+  // CORRECTED 28 Aug 2026. The text here previously said that file "has never
+  // existed in the repo". IT DOES EXIST: nodal/sa_solar_grid.json, 23 KB, real
+  // PVGIS SARAH2 v5.2 data - a 0.5 degree grid over 16-33E and 22-35S, 739 valid
+  // points of annual capacity factor, nulls for ocean. It is an ORPHAN: the file
+  // was built, the consumer was removed, and this comment then asserted the file
+  // was the thing missing. Do not delete it on the strength of the old text.
+  //
+  // What remains TRUE: every solar figure this model produces comes from the
+  // Open-Meteo path below, and the dead branch labelled its output
+  // "PVGIS SARAH2 (satellite, +/-5% accuracy)" while never fetching anything.
   // The rationale for wanting it stands and is worth reviving IF the grid is ever
-  // built: PVGIS SARAH2 is satellite-OBSERVED irradiance rather than modelled from
+  // BUILT ALREADY: PVGIS SARAH2 is satellite-OBSERVED irradiance rather than modelled from
   // atmospheric variables, with roughly half the aerosol bias over South Africa
   // (~5% vs the ~10-15% ERA5 overestimate the fallback warns about in its own
   // source label). Building it needs a few hundred PVGIS API calls on a 0.5 deg
-  // land grid - a one-off offline job, not something to fetch at page load.
-  // Do not re-add the fetch without the file.
+  // land grid - a one-off offline job, not something to fetch at page load. THAT JOB
+  // HAS BEEN DONE. Reconnecting is a live decision, not a blocked one: it would
+  // change every solar figure the model produces, so run the full suite either side
+  // and expect validate_benchmarks to move. See STATE.md open items.
 
   // scaled to match the interpolated annual CF
   const SA_MONTHLY_SHAPE = [0.85,0.87,0.96,1.06,1.07,1.02,1.04,1.10,1.11,1.03,0.93,0.84];
@@ -5153,7 +5163,18 @@ function simulate(u, prof, outPath){
       // export only what storage cannot absorb.
       const exp1=Math.min(surplus, exportCap);
       if(exp1>0){ exportMW[h]+=exp1; E.exported+=exp1; surplus-=exp1; }
-      curtailMW[h]+=surplus; E.curtailed+=surplus;
+      // CLAMP AT ZERO. This branch is guarded by residual < 0, so surplus starts
+      // strictly positive and every subtraction above is a Math.min against it. The
+      // only way it can go negative is tierCharge() returning marginally more than
+      // it was handed, accumulating across three storage tiers. Measured magnitude
+      // is -7.3e-12 MWh over a full year - about 26 microjoules - which surfaced as
+      // a curtailment of "-0.00 TWh" in the panel and looked like a fault.
+      // Clamping is safe HERE precisely because the guard proves a real negative is
+      // impossible; do not copy this pattern to a site without that guarantee.
+      // validate_invariants asserts the annual total is non-negative, so a material
+      // negative would still fail rather than be silently absorbed.
+      const spill = surplus > 0 ? surplus : 0;
+      curtailMW[h]+=spill; E.curtailed+=spill;
       const vre=windGen+pvGen;
       if(vre>0&&surplus>0){const f=Math.max(0,vre-surplus)/vre; windGen*=f; pvGen*=f;}
       // Track coal fuel cost attributable to curtailed generation (coal floor forced but not served)
