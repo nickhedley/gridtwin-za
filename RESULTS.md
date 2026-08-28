@@ -4,9 +4,15 @@ Findings fit to quote externally, each with the scenario that produced it. A
 number without its scenario is not a result. Every entry states the weather year
 and the period, because an annual figure and a July figure are not comparable.
 
-CAVEAT ON EVERYTHING BELOW: all of it is ONE synthetic-normal weather year. The
-ten-year run is outstanding and will move these, probably outward, because a bad
-wind year is exactly what sets a capacity requirement.
+WEATHER BASIS, resolved 28 Aug 2026. Results are now on TEN REAL WEATHER YEARS
+(MERRA-2 2014-2023) unless a line says otherwise. The earlier single
+synthetic-normal year UNDERSTATED gas energy by roughly 35% and unserved energy by
+about a third. It was not a conservative simplification; it was a flattering one.
+
+2022 IS THE DESIGN YEAR. Worst on every measure, and driven by wind: 38.1 TWh of
+wind output against 45.8 TWh in 2023, a 20% spread. Quote the WORST year for
+anything that sizes capacity, and the RANGE for anything else. A mean across years
+is the wrong number for an adequacy question.
 
 ---
 
@@ -24,35 +30,46 @@ coalEAFPct   70
 newCcgtMW    25000                       gas as backup
 ```
 
-### Where the two models agree
+### Peak gas is ROBUST across a decade
 
 ```
-                    GridTwin July      Seriti July
-peak gas               19.6 GW            18 GW
-curtailment                  0                0
-unserved                     0                0
+                       min     mean      max     Seriti
+peak gas, July        17.7     19.0     19.9     18 GW
 ```
 
-### Where they differ, and why
+Their single-year 18 GW sits INSIDE a ten-year range of 17.7 to 19.9. The number
+that sizes the backup fleet does not depend on which year you pick. This is a
+stronger endorsement of their result than a single matching run would be.
+
+### Gas ENERGY: the earlier gap was mostly my synthetic profile
 
 ```
-gas energy            2,815 GWh        5,553 GWh
+July gas GWh      min 3,332   mean 4,016   max 5,050 (2022)   Seriti 5,553
+annual gas TWh    min  38.5   mean  41.6   max  45.8 (2022)
 ```
 
-GridTwin dispatches the retained Medupi and Kusile ON MERIT, running 4,479 GWh in
-July. Seriti scale thermal output to a fixed capacity share (~25%) and let gas
-fill the residual. Most of the gap is that one modelling choice. UNCONFIRMED -
-this reading has not been put to them yet.
+An earlier version of this file recorded 2,815 GWh for July and called it "half
+theirs", attributing the gap to coal dispatch. That was WRONG - it was the
+synthetic weather year. On real years the mean is 4,016 GWh and 2022 reaches
+5,050, close to their 5,553.
+
+The coal-dispatch difference is still real and still worth asking about: GridTwin
+runs the retained Medupi and Kusile ON MERIT, where Seriti scale thermal to a fixed
+capacity share (~25%) and let gas fill the residual. But it does NOT explain a large
+gap, because there is no longer a large gap. Do not lead with it.
 
 ### Their wind-heavy sensitivity replicates, and more strongly
 
-At equal 45 GW total, no gas:
+At equal 45 GW total, no gas, across ten weather years:
 
 ```
-                unserved GWh    RE residual
-20 GW W / 25 S        15,206          56.4%
-25 GW W / 20 S        12,355          58.0%
+                unserved GWh:   worst      mean       best
+20 GW W / 25 S                 23,513    21,082     18,913
+25 GW W / 20 S                 20,797    18,300     16,073
 ```
+
+Wind-heavy wins in EVERY year, by 12 to 15%. 2022 is worst for both. The direction
+holds on real weather, not just on a synthetic year.
 
 They found the same direction on a five-point ERA5 composite. GridTwin finds it
 on regional MERRA-2 profiles at capacity-weighted plant locations. Their
@@ -88,6 +105,12 @@ Eskom-owned plant.
 
 ## Long-duration storage does not solve a winter wind drought
 
+STILL ONE SYNTHETIC YEAR. The DIRECTION is safe - storage cannot fill a deficit
+when there is no surplus to store, and that does not change with weather. The
+absolute GWh below are understated by roughly a third; re-run on 2022 before
+quoting any number here.
+
+
 Their conclusion is that the deficit needs firm wind or SEASONAL STORAGE. Tested
 directly. July gas energy, Seriti scenario:
 
@@ -120,6 +143,11 @@ curtailment to zero.
 
 ## Lithium duration: the wall, priced
 
+STILL ONE SYNTHETIC YEAR. Gas figures understated by ~35%. The SHAPE - gas falls
+1.7% while capex rises 37% between 4h and 10h - is a ratio and survives; the levels
+do not.
+
+
 Seriti scenario, varying `newBattHours`:
 
 ```
@@ -147,19 +175,37 @@ before that they were absent and showed as free.
 Seriti scenario with `newCcgtMW: 0`, 10 GW coal flexibilised, 20 GW / 10h storage.
 Unserved energy, GWh/yr:
 
+WORST of ten weather years - the number that sizes a system:
+
 ```
 wind\solar     25 GW     40 GW     60 GW     80 GW
-   20 GW       15,206     5,775       661        89
-   30 GW        5,804     1,274        95        10
-   40 GW        1,870       251        20         0
-   50 GW          574       108         0         0
-   60 GW          184        35         0         0
-   70 GW          102         0         0         0
-   80 GW           26         0         0         0
+   20 GW       23,513    12,747     2,416       384
+   40 GW        7,454     2,177       167        27
+   50 GW        3,798       781        84         0
+   60 GW        1,655       282        45         0
+   70 GW          663       154         2         0
+   80 GW          320       103         0         0
 ```
 
-The frontier runs 40W/80S through 50W/60S to 70W/40S. So roughly 110 to 120 GW
-combined, against Seriti's 45 GW. Two and a half times the build to remove the gas.
+MEAN across years, for comparison only - do NOT size on this:
+
+```
+wind\solar     25 GW     40 GW     60 GW     80 GW
+   20 GW       21,082    10,819     1,912       246
+   40 GW        6,204     1,813        90         6
+   50 GW        3,084       607        32         0
+   60 GW        1,343       172        11         0
+   70 GW          548        56         0         0
+   80 GW          204        24         0         0
+```
+
+On the worst year the frontier runs 50W/80S through 70W/60S to 80W/60S. So roughly
+130 to 140 GW combined, against Seriti's 45 GW - about three times the build.
+
+An earlier version of this file gave 110 to 120 GW from a single synthetic year.
+That was a FLOOR, not an estimate. The mean-year frontier is close to the old
+figure, which is exactly why a mean is the wrong basis: a system built to the
+average year is short in three years out of ten.
 
 THE PRICE IS CURTAILMENT. At 50 GW wind / 60 GW solar the system throws away
 94.7 TWh a year, more than 40% of demand. Building for the worst week and wasting
@@ -169,6 +215,12 @@ comparison needs the storage capex fix first.
 ---
 
 ## Flexibilising the coal fleet does NOT improve adequacy
+
+STILL ONE SYNTHETIC YEAR. Re-run across ten years before this is quoted anywhere:
+the effect is 1,128 GWh on a base that moves by 4,600 GWh between weather years, so
+it is well inside the weather spread and could plausibly reverse in some years.
+THIS IS THE WEAKEST RESULT IN THIS FILE.
+
 
 Requested as a hypothesis; the test returned the opposite. No gas, 10 GW coal:
 
@@ -207,6 +259,10 @@ of 10 cuts unserved from 15,206 to 768 GWh. Retaining 30 GW takes it to zero.
 ---
 
 ## Battery saturation in South Africa
+
+Weather-independent: driven by the reserve requirement and fleet size, not by wind
+or solar output. But see the reserve caveat at the end of this section.
+
 
 The country sits almost exactly at the knee.
 

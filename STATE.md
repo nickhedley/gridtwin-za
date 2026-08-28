@@ -399,7 +399,13 @@ and is not here.
    current form is blind to renewable build and biases the battery saturation knee
    earlier under a large one. Rebuilding it changes every ancillary figure in
    RESULTS.md, so it needs its own before-and-after run.
-10. **Long-duration capex is single-source.** `acapVrfb` 5,565 rests on one USD 450/kWh
+10. **Three results in RESULTS.md are still on ONE synthetic weather year.** The
+   ten-year run on 28 Aug showed the synthetic year understates gas energy by ~35%
+   and unserved energy by about a third — it is a FLATTERING simplification, not a
+   conservative one. Long-duration storage, lithium duration and coal flexibilisation
+   have not been re-run. The flexibilisation result is the weakest: its 1,128 GWh
+   effect sits inside a 4,600 GWh weather spread and could reverse in some years.
+11. **Long-duration capex is single-source.** `acapVrfb` 5,565 rests on one USD 450/kWh
    estimate; NREL ATB covers lithium only and cannot corroborate it. `acapIronAir`
    12,940 comes from one transaction, pre-incentive. Both scale linearly with duration,
    which overstates long durations against NREL's finding that cost per kWh falls as
