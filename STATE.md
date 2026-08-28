@@ -407,8 +407,19 @@ and is not here.
    GROWS with renewable build. Ancillary fall deepened 62.1% to 64.8%; the knee moved
    out slightly and the 3,700 MW fleet still sits just below it. The panel now reads the
    engine's figure rather than recomputing its own, which is how it came to reference
-   `FIXED.peakMW`, a key that never existed. OPEN: the VRE term uses post-curtailment
-   output, and the two shares are the uncertain part rather than the structure.
+   `FIXED.peakMW`, a key that never existed. OPEN AND MORE SERIOUS THAN FIRST RECORDED: the VRE term uses POST-CURTAILMENT output,
+   where professional practice uses AVAILABLE or FORECAST output. Curtailed plant reducing
+   the net need belongs on the SUPPLY side — ERCOT, EirGrid and AEMO all let curtailed
+   renewables sell reserve — not by shrinking the requirement. Consequence: in
+   high-curtailment scenarios the requirement is UNDERSTATED and the saturation knee sits
+   too far out; and the model cannot show batteries competing against curtailed VRE for
+   the same pot, which is the thing a storage developer most needs to see.
+   **THE FIX NEEDS A PRE-CURTAILMENT VRE SERIES**, which the engine does not retain:
+   `stack.wind` is written after curtailment and `curtailMW` mixes VRE spill with forced
+   coal surplus, so available VRE cannot be reconstructed. Retaining one would let the
+   requirement follow available output and credit curtailed VRE separately as a provider.
+   Changes every ancillary figure again. DO NOT describe the reserve treatment as
+   following established practice until this is done.
 10. **`weatherYearNational` was weighting by DEMAND, fixed 28 Aug 2026.** It used
    `BLD_LOAD_SHARE` — Gauteng 31.5%, Northern Cape 1.4% — to build a national
    RENEWABLE profile, when all South African wind sits in the Cape provinces and Hydra

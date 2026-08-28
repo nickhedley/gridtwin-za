@@ -427,11 +427,24 @@ South Africa's 3,700 MW fleet still sits just below the knee. That conclusion ha
 survived three separate corrections to how the reserve is computed, which is the main
 reason to trust it.
 
-REMAINING CHOICE, not a caveat: the VRE term uses POST-CURTAILMENT output, so heavily
-curtailed hours carry a lower requirement. Defensible - curtailed plant can be ramped
-up and so reduces net forecast exposure - but it is why the frontier scenario shows a
-lower MAXIMUM than the Seriti one despite carrying more capacity. The shares
-(0.03 of load, 0.05 of VRE output) are the uncertain part, not the structure.
+KNOWN DEVIATION, and it is a caveat rather than a choice. The STRUCTURE follows
+practice; the VRE term does not. It uses POST-CURTAILMENT output where PLEXOS, PyPSA,
+ERCOT and ENTSO-E drive it off AVAILABLE or FORECAST output - forecast error is a
+property of what a plant could have produced, not of what was accepted.
+
+Curtailed plant does reduce the net requirement, but professionally that sits on the
+SUPPLY side: ERCOT, EirGrid and AEMO all let curtailed renewables sell reserve.
+Shrinking the requirement instead reaches a similar number by the wrong route, and it
+hides something a developer needs: if curtailed VRE supplies reserve, batteries face a
+near-zero-marginal-cost COMPETITOR in exactly the high-renewable hours they hoped to
+earn in.
+
+DIRECTION OF THE ERROR: in high-curtailment scenarios the requirement is UNDERSTATED,
+so the knee above sits further out than it should. It is also why the frontier scenario
+shows a lower MAXIMUM than the Seriti one despite more capacity.
+
+Do not describe this model's reserve treatment as following established practice. The
+shares (0.03 of load, 0.05 of VRE output) are uncertain; the VRE basis is wrong.
 
 ---
 

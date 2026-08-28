@@ -5628,11 +5628,34 @@ function simulate(u, prof, outPath){
   // 5 GW. Measured effect of the rebuild - mean requirement 1,768 MW today, 2,272 MW
   // in the Seriti 45 GW scenario, 2,438 MW at a 110 GW build.
   //
-  // ONE CHOICE WORTH KNOWING: the VRE term uses POST-CURTAILMENT output, so heavily
-  // curtailed hours carry a lower requirement. That is defensible - curtailed plant
-  // is dispatchable downward and can be ramped up, so it reduces rather than adds
-  // net forecast exposure - but it is a choice, not a given. It is why the frontier
-  // scenario shows a LOWER maximum than the Seriti one despite more capacity.
+  // KNOWN DEVIATION FROM PRACTICE, recorded 28 Aug 2026 rather than buried.
+  //
+  // The STRUCTURE above is standard. The VRE term is NOT: it uses POST-CURTAILMENT
+  // output, where PLEXOS, PyPSA, ERCOT and ENTSO-E all drive it off AVAILABLE or
+  // FORECAST output. Reserve covers forecast error, and forecast error is a property
+  // of what a plant COULD have produced, not of what the operator chose to accept. A
+  // wind farm curtailed to half output carries the same uncertainty either way.
+  //
+  // Curtailed plant DOES reduce the net requirement - but in professional models that
+  // sits on the SUPPLY side, as an eligible reserve provider (ERCOT, EirGrid and AEMO
+  // all allow curtailed renewables to sell reserve). Doing it by shrinking the
+  // requirement reaches a similar number by the wrong route.
+  //
+  // WHY IT MATTERS HERE, beyond tidiness: if curtailed VRE supplies reserve, batteries
+  // face a COMPETITOR with near-zero marginal cost in exactly the high-renewable hours
+  // they hoped to earn in. Shrinking the pot instead makes that competitor invisible.
+  // Both depress battery revenue; only one tells a developer why.
+  //
+  // DIRECTION OF THE ERROR: in high-curtailment scenarios the requirement here is
+  // UNDERSTATED, so the battery saturation knee sits further out than it should. It is
+  // also why the frontier scenario shows a LOWER maximum than the Seriti one despite
+  // carrying more capacity - which would otherwise read as a bug.
+  //
+  // THE FIX, not attempted here: the engine does not retain a pre-curtailment VRE
+  // series (stack.wind is written after curtailment, and curtailMW mixes VRE spill
+  // with forced coal surplus, so available VRE cannot be reconstructed). Retaining one
+  // would let the requirement follow available output and credit curtailed VRE as a
+  // provider separately. That changes every ancillary figure again. See STATE.md.
   // Hourly operating reserve requirement. See the FIXED block for the structure and
   // why a flat share of peak was replaced. Kept as a series so the mean can drive
   // revenue (what a market procures on average) while the max is available for
