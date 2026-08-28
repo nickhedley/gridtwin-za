@@ -359,3 +359,44 @@ is the design question Policy Position 20 leaves open.
 CAVEAT: one build scenario, default settings, single weather year. The ranking is
 driven by the headroom data in `nodal/headroom_summary.json`, so it inherits whatever
 that file gets wrong. Re-run across weather years before quoting externally.
+
+---
+
+## Demand response has an optimum, and past it makes things worse
+
+Found 28 Aug 2026 while investigating a harness warning, not sought. Dashboard
+scenario, sweeping `drShiftPct`:
+
+```
+shift %   avg cost R/MWh   peak GW   coal TWh   diesel TWh   curtailment TWh   CO2 Mt
+  0            570.46       31.60     161.53        0.011           0.000      170.5
+  2.5          569.58       30.81     161.44        0.007           0.000      170.2
+  5            568.91       30.02     161.44        0.005           0.000      170.1
+  7.5          568.44       29.23     161.46        0.005           0.000      170.0
+ 15            568.80       29.13     161.74        0.016           0.000      170.3
+ 30            574.74       29.56     161.84        0.118           0.013      171.2
+```
+
+MODEST SHIFTING WORKS. The evening peak falls from 31.60 to 29.23 GW, diesel halves
+and CO2 falls. The optimum sits near 7.5%.
+
+PAST ABOUT 15% IT REVERSES. The shifted load builds a NEW peak in the valley it was
+moved into: peak rises again to 29.56 GW, coal goes from 161.46 to 161.84 TWh, diesel
+from 0.005 to 0.118, and curtailment appears for the first time. At 30% the system
+costs MORE than with no demand response at all - R574.74/MWh against R570.46.
+
+This is the classic rebound peak, and it matters because demand response is usually
+treated as monotonically beneficial in South African discussion. It is not: it is a
+peak-shaving tool with a saturation point, and the point is closer than most
+programme targets assume.
+
+MECHANISM CHECKED, not inferred. The cost curve is driven by FUEL, not by the demand
+response charge - `drCostR` stays near zero across the whole sweep. So this is a
+dispatch effect, not a cost of procuring the response.
+
+The same shape appears in `vppGeyserPoolMW`, minimum near 6 GW of controllable pool
+and worse than nothing by 12 GW.
+
+CAVEAT: one weather year, dashboard scenario, and the shifting logic is a simple
+within-day reallocation. The DIRECTION and the existence of an optimum are robust;
+the 7.5% figure is not a target.

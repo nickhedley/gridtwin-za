@@ -77,9 +77,39 @@ const SIGN_RULES = {
 // applies to. Each entry says what must be true for the parameter to bite. Same
 // discipline as stress_deep.js: an exemption always carries its reason, so the
 // list cannot quietly become a place to hide dead controls.
+// KNOWN NON-MONOTONIC RESPONSES, investigated 28 Aug 2026.
+//
+// These are ANNOTATED, NOT SUPPRESSED. The suspect line still prints, because the
+// day one of them changes shape is the day something broke. The note only stops the
+// next session re-deriving the same explanation from scratch.
+//
+// A "falsy-zero suspect" is a heuristic: it fires whenever zero does not continue
+// the trend, which catches a fallback silently winning at zero AND a genuine
+// non-monotonic curve. All six current suspects are the second kind. Measured, not
+// assumed - see the numbers in each note.
+const EXPLAINED = {
+  drShiftPct: 'REBOUND PEAK, and it is a real result rather than an artefact. Modest '
+    + 'demand shifting flattens the evening peak: 31.60 GW at 0% falls to 29.23 GW at '
+    + '7.5%, diesel halves and CO2 falls. Beyond about 15% the shifted load builds a NEW '
+    + 'peak in the valley - peak rises again to 29.56 GW at 30%, coal goes from 161.46 to '
+    + '161.84 TWh, diesel from 0.005 to 0.118 TWh, and curtailment appears. At 30% the '
+    + 'system costs MORE than with no demand response at all: R574.74/MWh against R570.46. '
+    + 'The optimum sits near 7.5%. NOTE the cost curve is driven by FUEL, not by drCostR, '
+    + 'which stays near zero throughout - so this is a dispatch effect, not a charge.',
+  vppGeyserPoolMW: 'Same rebound-peak mechanism as drShiftPct: a larger controllable '
+    + 'pool shifts more load, and past roughly 6 GW the shifted load rebuilds the peak it '
+    + 'was moved out of. Minimum near 6 GW, worse than zero by 12 GW.',
+  asReserveRMWh: 'DESIGNED STEP, not a fallback. The share of storage power held back '
+    + 'for reserve is binary on price > 0 and does NOT scale with price: reserveHeldMW is '
+    + '0 at a zero price and 555 MW at every price from 50 to 400 R/MWh. So zero is '
+    + 'qualitatively different by construction. If the holdback is ever made '
+    + 'price-responsive, this note stops being true and the suspect should be re-examined.',
+};
+
 const CONTEXT = {
   drInterruptMW:    { coalEAFPct: 55 },   // interruptible load only fires in a shortage
   drInterruptCostR: { coalEAFPct: 55, drInterruptMW: 2000 },
+  newBattHours:     { newBattMW: 20000 }, // duration is meaningless at zero new lithium
   vppGeyserPoolMW:  { vppEnrolPct: 50 },  // pool size is irrelevant at zero enrolment
   syncMinMW:        { newWindMW: 30000, newPvMW: 30000 }, // only binds when VRE displaces synchronous plant
   costCcgt:         { newCcgtMW: 4000, coalEAFPct: 55 },  // gas must actually run
@@ -322,9 +352,12 @@ const BUILD_ONLY = {
 
         const trendUp = hi > lo;
         const ok = trendUp ? (z <= lo + span * 0.02) : (z >= lo - span * 0.02);
-        if (!ok)
+        if (!ok) {
+          const why = EXPLAINED[`${id}->${o}`] || EXPLAINED[id];
           notes.push(`FALSY-ZERO SUSPECT - ${id} -> ${o}: at 0 the value is ${z}, at ${loK} it is ` +
-                     `${lo} and at ${hiK} it is ${hi}. Zero is not continuing the trend.`);
+                     `${lo} and at ${hiK} it is ${hi}. Zero is not continuing the trend.` +
+                     (why ? `\n      EXPLAINED 28 Aug 2026: ${why}` : ''));
+        }
       }
     }
   }

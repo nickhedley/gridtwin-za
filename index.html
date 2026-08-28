@@ -4683,7 +4683,7 @@ function simulate(u, prof, outPath){
   // the caller uses so the scalar and the tiers stay in step.
   // Share of each tier's power reserved for ancillary services, unavailable for
   // energy. Zero unless a reserve price is set.
-  const _asHold = (p.asReserveOn ? (p.asReserveOn ? (p.asReserveRMWh || 0) : 0) : 0) > 0
+  const _asHold = (p.asReserveOn ? (p.asReserveRMWh || 0) : 0) > 0
     ? Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15)) : 0;
   const tierCharge = (mw) => {
     let got = 0;

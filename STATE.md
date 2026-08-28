@@ -423,7 +423,15 @@ and is not here.
 12. **`profiles.json` metadata was wrong and is corrected.** `wind_source_updated`
    claimed the wind series was a MERRA-2 composite. It is the Eskom metered series.
    Second stale note found inside a data file this session, after `HYDRA_CENTRAL_ZERO`.
-13. **Three results in RESULTS.md are still on ONE weather year (2023, the dashboard).** The
+13. **All six falsy-zero suspects investigated and explained, 28 Aug 2026.** None is a
+   bug. Five are one mechanism: a REBOUND PEAK. Modest demand shifting cuts the peak from
+   31.60 to 29.23 GW, but past ~15% the shifted load rebuilds a peak in the valley and at
+   30% the system costs more than with no demand response at all. Driven by FUEL, not by
+   `drCostR`, which stays near zero. The sixth, `asReserveRMWh`, is a designed step: the
+   reserve holdback is binary on price > 0 and does not scale with price. All six are now
+   ANNOTATED in `validate_response.js` rather than suppressed — the suspect still prints,
+   because the day one changes shape is the day something broke.
+14. **Three results in RESULTS.md are still on ONE weather year (2023, the dashboard).** The
    ten-year run on 28 Aug showed the synthetic year understates gas energy by ~35%
    and unserved energy by about a third — it is a FLATTERING simplification, not a
    conservative one. Long-duration storage, lithium duration and coal flexibilisation
