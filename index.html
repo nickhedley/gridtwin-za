@@ -11234,8 +11234,12 @@ function render(r){
     {k:'Avg energy cost*',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
     {k:'Replacement cost',v:(r.replAvg/1000).toFixed(2),u:'R/kWh'},
     {k:'Carbon intensity',v:Math.round(r.co2>0&&r.E?r.co2*1e9/Math.max(1,Object.values(r.E).reduce((s,v)=>s+v,0)-r.E.curtailed):0).toLocaleString(),u:'gCO₂/kWh',uLong:true},
-    {k:'Renewables, total mix',v:reShare.toFixed(0),u:'%'},
-    {k:'Renewables, residual',v:reShareResid.toFixed(0),u:'%',uLong:true},
+    // ONE tile, BOTH denominators. They are meaningless apart - see the comment above -
+    // and splitting them across two tiles invited someone to read one and quote it.
+    // It also keeps the grid at eight columns; a ninth orphaned curtailment onto its
+    // own row.
+    {k:'Renewables',v:reShare.toFixed(0)+' / '+reShareResid.toFixed(0),
+     u:'% total / residual',uLong:true},
     {k:'Non-fossil',v:nonFossilShare.toFixed(0),u:'%'},
     {k:'Curtailment',v:fmtTWh(r.E.curtailed),u:'TWh/yr'},
   ];
