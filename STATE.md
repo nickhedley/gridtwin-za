@@ -143,7 +143,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Fifteen harnesses, 695 checks. Last full run: 695/695.
+Sixteen harnesses, 743 checks. Last full run: 743/743.
 
 ```
 node stress_suite.js                290/290
@@ -154,6 +154,7 @@ node validate_outputs.js              33/33
 python3 audit.py index.html           29/29
 node validate_benchmarks.js .         18/18
 node validate_capacity.js .           18/18   Mulilo added 28 Aug, flag closed
+node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .        14/14
 node validate_structure.js .            9/9
 node validate_solve.js .                6/6
@@ -406,7 +407,9 @@ and is not here.
    `validate_benchmarks` enforces, and nothing caught it because no harness exercises
    the multi-year path. Now capacity-weighted per technology, and it REFUSES to build a
    profile if `regional_renewable_capacity.json` is missing rather than falling back to
-   the wrong weighting. **Add a harness that runs the multi-year path.**
+   the wrong weighting. **`validate_weather.js` now covers this path** — 48 checks,
+   scored against the pre-fix file first where it fails on three, including the anchor
+   by 14.9%.
 11. **A reanalysis bias correction of 0.848 is applied inside `weatherYearNational`.**
    MERRA-2 models the resource (37.70% capacity-weighted 2023); the metered fleet
    delivers 31.97%. `profiles.json` received this correction on 16 Aug as a 0.8571

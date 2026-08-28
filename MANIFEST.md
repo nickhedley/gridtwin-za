@@ -22,7 +22,7 @@ build_hydra_split.py        Builds the supply-area split draft. Same file as
 build_supply_area_split.py  build_supply_area_split.py - identical MD5, two names.
 ```
 
-The fifteen harnesses also sit at the root.
+The sixteen harnesses also sit at the root.
 
 ## nodal/
 
@@ -87,6 +87,7 @@ node ../validate_external.js .
 node ../validate_solve.js .
 node ../validate_capacity.js .
 node ../validate_lp.js .
+node ../validate_weather.js .
 node ../stress_suite.js              # ignores argv, uses cwd
 python3 ../audit.py index.html
 ```
@@ -116,7 +117,7 @@ nothing runnable can live there. Upload each session:
 index.html
 profiles.json
 a zip of nodal/            directories do not survive upload individually
-the fifteen harnesses
+the sixteen harnesses
 build_capacity.py
 ```
 
