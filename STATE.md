@@ -447,11 +447,14 @@ and is not here.
    conservative one. Long-duration storage, lithium duration and coal flexibilisation
    have not been re-run. The flexibilisation result is the weakest: its 1,128 GWh
    effect sits inside a 4,600 GWh weather spread and could reverse in some years.
-11. **The no-gas frontier is costed but on the NATIONAL model, which has no network.**
-   50W/60S with no gas comes out at R285 bn/yr against R285 bn for the 25 GW gas
-   scenario — cost-neutral. But the locational result shows headroom binding hardest in
-   the best-wind regions, so a 110 GW build assumes connections our own evidence says are
-   not available. Treat R285 bn as a FLOOR. Re-run through the regional LP before quoting.
+11. **The no-gas frontier costs the same as gas, but is NOT BUILDABLE on today's grid.**
+   50W/60S with no gas comes out at R285 bn/yr against R285 bn for the 25 GW gas scenario.
+   Checked against `headroom_summary.json`: national headroom is 21,520 MW wind and
+   19,940 MW solar; the frontier needs 45,388 and 56,729. Shortfall ~61 GW. The four
+   best-wind regions hold 100% of existing wind and 7.3% of national wind headroom, and
+   ZERO solar headroom. Northern Cape and Hydra Central are at zero for everything.
+   R285 bn is a FLOOR. The finding is about SEQUENCING — transmission first — not about
+   whether a no-gas system is affordable.
 12. **Long-duration capex is single-source.** `acapVrfb` 5,565 rests on one USD 450/kWh
    estimate; NREL ATB covers lithium only and cannot corroborate it. `acapIronAir`
    12,940 comes from one transaction, pre-incentive. Both scale linearly with duration,

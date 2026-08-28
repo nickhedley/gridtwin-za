@@ -257,14 +257,50 @@ tested costs 4% to 12% more, and the wrong mix is expensive: 80 GW wind with 40 
 solar costs R315 bn for the same job. So this is not "gas is unnecessary", it is
 "there exists a build where gas is unnecessary and it is not the obvious one".
 
-### THE CAVEAT THAT MATTERS MOST
+### THE FRONTIER IS NOT BUILDABLE ON TODAY'S GRID
 
-This costing uses the NATIONAL dispatch model, which has no network. Our own
-locational result (below) shows connection headroom binding hardest in exactly the
-four best-wind regions. So a 110 GW build assumes all of it can connect where the
-resource is, and our own evidence says it cannot. The R285 bn is therefore a FLOOR
-for the no-gas case and the gap to gas is understated. Re-run through the regional
-LP before this is quoted externally.
+Checked 28 Aug 2026, and this is the finding that governs everything above.
+
+The costing uses the NATIONAL dispatch model, which has no network. Against
+`nodal/headroom_summary.json` (GCCA 2025 plus the Oct 2025 curtailment update),
+national connection headroom is:
+
+```
+region            wind MW   solar MW    binding corridor
+Kwazulu Natal        5,500     5,500     Mpumalanga-Kwazulu Natal
+Gauteng              4,680     4,680     Mpumalanga-Gauteng
+Limpopo              3,360     3,360     Limpopo-Mpumalanga
+Mpumalanga           3,320     3,320     Mpumalanga-Kwazulu Natal
+North West           1,660     1,660     Limpopo-North West
+Free State           1,420     1,420     Free State-Mpumalanga
+Western Cape         1,180         0     Western Cape-Hydra Central
+Eastern Cape           400         0     Eastern Cape-Kwazulu Natal
+Northern Cape            0         0     Northern Cape-Free State
+Hydra Central            0         0     Hydra Central-Western Cape
+TOTAL               21,520    19,940
+```
+
+The 50W/60S frontier needs 45,388 MW of new wind and 56,729 MW of new solar. Available
+headroom is 21,520 and 19,940. **Shortfall: 23,868 MW of wind and 36,789 MW of solar -
+about 61 GW of connections that do not exist.**
+
+THE DISTRIBUTION IS THE POINT. The Eastern Cape, Western Cape, Northern Cape and Hydra
+Central hold **100% of South Africa's existing wind capacity and 7.3% of the national
+room to add more**. For solar those four regions have ZERO headroom between them. The
+Northern Cape and Hydra Central - the two best resources in the country, at 37.9% and
+42.5% capacity factor - are at zero for every technology.
+
+So the R285 bn cost-neutral result is not wrong, it is CONDITIONAL, and the condition
+is not currently met. The R600/kW-yr transmission adder in the cost model is a generic
+per-kW figure; it is not the cost of creating headroom in the Karoo specifically, which
+is where it would have to be created. Treat R285 bn as a FLOOR and the gap to gas as
+understated by an amount this model cannot yet price.
+
+WHAT THIS DOES NOT MEAN: headroom is not fixed. It is what the grid can take TODAY, and
+the whole purpose of the Transmission Development Plan is to expand it. The finding is
+about sequencing, not impossibility - a no-gas system is reachable at roughly the cost
+of a gas one, but only after a transmission build that is itself the binding constraint
+and is not costed here.
 
 Also unpriced here: land, and the 75.7 TWh of curtailed energy has no compensation
 mechanism in this model - under REIPPPP some of it would be paid for.
