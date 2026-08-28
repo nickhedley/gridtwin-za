@@ -214,6 +214,7 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 @media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow); padding:9px 12px 8px; position:relative}
 .kpi .k{font-family:'Saira Condensed'; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink2)}
+.kpi .ksub{font-family:'Saira Condensed'; font-size:12px; letter-spacing:.04em; color:var(--ink2); margin-top:1px; white-space:nowrap}
 .kpi .v{font-family:'Archivo',sans-serif; font-size:22px; font-weight:700; margin-top:1px;
         font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum' 1,'lnum' 1;
         letter-spacing:-.01em}
@@ -11236,14 +11237,15 @@ function render(r){
     {k:'Carbon intensity',v:Math.round(r.co2>0&&r.E?r.co2*1e9/Math.max(1,Object.values(r.E).reduce((s,v)=>s+v,0)-r.E.curtailed):0).toLocaleString(),u:'gCO₂/kWh',uLong:true},
     // ONE tile, BOTH denominators. They are meaningless apart - see the comment above -
     // and splitting them across two tiles invited someone to read one and quote it.
-    // It also keeps the grid at eight columns; a ninth orphaned curtailment onto its
-    // own row.
-    {k:'Renewables',v:reShare.toFixed(0)+' / '+reShareResid.toFixed(0),
-     u:'% total / residual',uLong:true},
+    // It also keeps the grid at eight columns; a ninth orphaned curtailment.
+    // Rendered as a headline plus a sub-line rather than "17 / 12", which wrapped
+    // mid-value in the large font and read as a broken fraction.
+    {k:'Renewables, total',v:reShare.toFixed(0),u:'%',
+     sub:reShareResid.toFixed(0)+'% residual'},
     {k:'Non-fossil',v:nonFossilShare.toFixed(0),u:'%'},
     {k:'Curtailment',v:fmtTWh(r.E.curtailed),u:'TWh/yr'},
   ];
-  document.getElementById('kpis').innerHTML=kpis.map(x=>'<div class="kpi"><div class="k">'+x.k+'</div><div class="v">'+x.v+'<span class="u'+(x.uLong?' long':'')+'"> '+x.u+'</span></div></div>').join('');
+  document.getElementById('kpis').innerHTML=kpis.map(x=>'<div class="kpi"><div class="k">'+x.k+'</div><div class="v">'+x.v+'<span class="u'+(x.uLong?' long':'')+'"> '+x.u+'</span></div>'+(x.sub?'<div class="ksub">'+x.sub+'</div>':'')+'</div>').join('');
 
   // mix — donut chart with legend
   const order=['coal','rooftop','wind','pv','csp','hybrid','nuclear','imports','hydro','ps','batt','ccgt','diesel'];
