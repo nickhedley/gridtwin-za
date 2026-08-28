@@ -399,7 +399,25 @@ and is not here.
    current form is blind to renewable build and biases the battery saturation knee
    earlier under a large one. Rebuilding it changes every ancillary figure in
    RESULTS.md, so it needs its own before-and-after run.
-10. **Three results in RESULTS.md are still on ONE synthetic weather year.** The
+10. **`weatherYearNational` was weighting by DEMAND, fixed 28 Aug 2026.** It used
+   `BLD_LOAD_SHARE` — Gauteng 31.5%, Northern Cape 1.4% — to build a national
+   RENEWABLE profile, when all South African wind sits in the Cape provinces and Hydra
+   Central. Wind CF came out 22.6-27.2% across all ten years, BELOW the 28-38% band
+   `validate_benchmarks` enforces, and nothing caught it because no harness exercises
+   the multi-year path. Now capacity-weighted per technology, and it REFUSES to build a
+   profile if `regional_renewable_capacity.json` is missing rather than falling back to
+   the wrong weighting. **Add a harness that runs the multi-year path.**
+11. **A reanalysis bias correction of 0.848 is applied inside `weatherYearNational`.**
+   MERRA-2 models the resource (37.70% capacity-weighted 2023); the metered fleet
+   delivers 31.97%. `profiles.json` received this correction on 16 Aug as a 0.8571
+   rescale; the regional files never did. The two factors agree to 1.1% from
+   independent derivations, which is the corroboration. Re-derive whenever
+   `profiles.json` or the capacity split changes. Solar is deliberately NOT corrected:
+   22.42% modelled against 22.50% metered is noise.
+12. **`profiles.json` metadata was wrong and is corrected.** `wind_source_updated`
+   claimed the wind series was a MERRA-2 composite. It is the Eskom metered series.
+   Second stale note found inside a data file this session, after `HYDRA_CENTRAL_ZERO`.
+13. **Three results in RESULTS.md are still on ONE weather year (2023, the dashboard).** The
    ten-year run on 28 Aug showed the synthetic year understates gas energy by ~35%
    and unserved energy by about a third — it is a FLATTERING simplification, not a
    conservative one. Long-duration storage, lithium duration and coal flexibilisation

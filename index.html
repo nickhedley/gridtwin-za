@@ -7861,6 +7861,9 @@ function bldApplyButton(){
  * cleanly to the existing single-year behaviour when it is absent.
  */
 let bldWeatherYears = null;
+// Per-technology capacity shares by region, built from regional_renewable_capacity.json
+// at load. Null means the multi-year path is unavailable - deliberately, see below.
+let bldWxWeights = null;
 
 async function loadWeatherYears(){
   if (bldWeatherYears !== null) return bldWeatherYears;
@@ -7872,32 +7875,99 @@ async function loadWeatherYears(){
       bldWeatherYears = false; return false;
     }
     bldWeatherYears = d;
+    // CAPACITY WEIGHTS. Required, not optional - see weatherYearNational below for
+    // why a load-weighted national profile is wrong. Fetched here so the failure is
+    // visible at load rather than silently producing a plausible wrong profile.
+    try {
+      const rc = await fetch('nodal/regional_renewable_capacity.json?v=' + (window.DATA_V || '7'));
+      if (rc.ok) {
+        const cap = await rc.json();
+        const norm = (o) => { const t = Object.values(o || {}).reduce((a, b) => a + b, 0);
+          return t > 0 ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v / t])) : null; };
+        bldWxWeights = { wind: norm(cap.wind_mw), solar: norm(cap.solar_mw) };
+      }
+    } catch (e) { /* handled below */ }
+    if (!bldWxWeights || !bldWxWeights.wind || !bldWxWeights.solar) {
+      bldWxWeights = null;
+      console.warn('[GridTwin] Weather years loaded but nodal/regional_renewable_capacity.json '
+        + 'is missing or empty. Multi-year profiles are DISABLED rather than fall back to a '
+        + 'demand-weighted profile, which understated wind by ~15%.');
+    }
     console.info('[GridTwin] Weather years loaded: ' + d.meta.years.join(', ')
-      + (d.meta.warning ? ' – ' + d.meta.warning : ''));
+      + (d.meta.warning ? ' – ' + d.meta.warning : '')
+      + (bldWxWeights ? ' (capacity-weighted)' : ' (WEIGHTS MISSING - disabled)'));
     return d;
   } catch (e) { bldWeatherYears = false; return false; }
 }
 
-// National per-unit series for one weather year, demand-weighted across regions
-// so it can substitute directly for the single-year national profile.
+// National per-unit series for one weather year, CAPACITY-weighted across regions
+// per technology.
+//
+// THIS WAS DEMAND-WEIGHTED UNTIL 28 Aug 2026 AND THAT WAS WRONG. It used
+// BLD_LOAD_SHARE, which is where demand is: Gauteng 31.5%, Northern Cape 1.4%.
+// Every megawatt of South African wind sits in the Eastern Cape, Western Cape,
+// Northern Cape or Hydra Central, which together carry 17.7% of load. So the
+// national wind profile was built almost entirely from provinces with NO WIND.
+//
+// Measured cost of the error: for calendar 2023 this returned a 27.21% wind
+// capacity factor against 31.97% from the capacity-weighted profiles.json for the
+// same year - a 15% understatement. All ten years came out between 22.6% and
+// 27.2%, BELOW the 28-38% plausible band validate_benchmarks enforces. Nothing
+// caught it because no harness exercises the multi-year path.
+//
+// Weights are per technology because wind and solar are sited differently: wind is
+// Cape-concentrated, solar is Northern Cape and inland. One shared weight would
+// reintroduce a smaller version of the same fault.
 function weatherYearNational(year){
-  if (!bldWeatherYears) return null;
+  if (!bldWeatherYears || !bldWxWeights) return null;
   const wind = new Float64Array(HOURS), solar = new Float64Array(HOURS);
+  // REANALYSIS BIAS CORRECTION. MERRA-2 models the RESOURCE; a real fleet delivers
+  // less after losses, availability, wake effects and curtailment. Capacity-weighted
+  // 2023 from these regional series gives a 37.70% wind CF; the metered fleet in
+  // profiles.json gives 31.97%. Ratio 0.848.
+  //
+  // WHY THIS IS NOT A DOUBLE CORRECTION. profiles.json received this correction on
+  // 16 Aug 2026 (rescale factor 0.8571, derived by requiring the series to reproduce
+  // Ember's 11.6 TWh over the 4,142 MW Eskom actually meters - a solved figure that
+  // landed on the REIPPPP fleet independently, not a fitted one). These regional
+  // files never received it: they carry no nameplate reference and no rescale note,
+  // and are raw Renewables.ninja output (Vestas V90 2000 at 80 m, plant-centroid
+  // coordinates from PyPSA-RSA). So this applies the same correction ONCE, here.
+  //
+  // The two factors agree to 1.1% - 0.8571 then, 0.848 now - from different
+  // derivations four months and one capacity rebuild apart. The 1.1% is the Hydra
+  // Central split moving 669 MW of high-resource Karoo wind (42.49% CF) into its own
+  // bucket. That agreement is the corroboration; neither was fitted to the other.
+  //
+  // SOLAR IS NOT CORRECTED: 22.42% modelled against 22.50% metered, a 0.4% gap that
+  // is noise. Correcting it would be fitting.
+  //
+  // Applied HERE rather than to the file so the raw MERRA-2 stays raw and the
+  // correction is visible, revisable and in exactly one place. Re-derive it whenever
+  // profiles.json or the capacity split changes.
+  const WIND_BIAS = 0.848;
   // Series are stored as integers scaled by meta.scale to keep the file small -
   // at full float precision it was 9 MB, two-thirds of the entire site payload.
   // Older files without a scale are plain per-unit floats, hence the fallback.
   const sc = bldWeatherYears.scale || 1;
-  let tw = 0;
+  // Renormalise over the regions that actually have data for this year, so a missing
+  // region rescales the rest rather than silently deflating the national figure.
+  let tw = 0, ts = 0;
   for (const R of BLD_REGIONS){
-    const share = BLD_LOAD_SHARE[R] || 0;
     const w = bldWeatherYears.wind_pu[R] && bldWeatherYears.wind_pu[R][year];
     const s = bldWeatherYears.solar_pu[R] && bldWeatherYears.solar_pu[R][year];
-    if (!w || !s) continue;
-    tw += share;
-    const f = share / sc;
-    for (let h = 0; h < HOURS; h++){ wind[h] += w[h]*f; solar[h] += s[h]*f; }
+    if (w) tw += (bldWxWeights.wind[R] || 0);
+    if (s) ts += (bldWxWeights.solar[R] || 0);
   }
-  if (!tw) return null;
+  if (!tw || !ts) return null;
+  for (const R of BLD_REGIONS){
+    const w = bldWeatherYears.wind_pu[R] && bldWeatherYears.wind_pu[R][year];
+    const s = bldWeatherYears.solar_pu[R] && bldWeatherYears.solar_pu[R][year];
+    if (w){ const f = (bldWxWeights.wind[R] || 0) / tw / sc * WIND_BIAS;
+      for (let h = 0; h < HOURS; h++) wind[h] += w[h]*f; }
+    if (s){ const f = (bldWxWeights.solar[R] || 0) / ts / sc;
+      for (let h = 0; h < HOURS; h++) solar[h] += s[h]*f; }
+  }
   for (let h = 0; h < HOURS; h++){ wind[h] /= tw; solar[h] /= tw; }
   return { wind, solar };
 }

@@ -4,15 +4,29 @@ Findings fit to quote externally, each with the scenario that produced it. A
 number without its scenario is not a result. Every entry states the weather year
 and the period, because an annual figure and a July figure are not comparable.
 
-WEATHER BASIS, resolved 28 Aug 2026. Results are now on TEN REAL WEATHER YEARS
-(MERRA-2 2014-2023) unless a line says otherwise. The earlier single
-synthetic-normal year UNDERSTATED gas energy by roughly 35% and unserved energy by
-about a third. It was not a conservative simplification; it was a flattering one.
+WEATHER BASIS, settled 28 Aug 2026 after THREE attempts. Read this before quoting
+anything.
 
-2022 IS THE DESIGN YEAR. Worst on every measure, and driven by wind: 38.1 TWh of
-wind output against 45.8 TWh in 2023, a 20% spread. Quote the WORST year for
-anything that sizes capacity, and the RANGE for anything else. A mean across years
-is the wrong number for an adequacy question.
+The dashboard is NOT a synthetic or average year. `profiles.json` carries Eskom
+hourly demand for 2025 and a METERED wind series at 31.97% CF. The label
+"synthetic-normal weather year" used in earlier versions of this file was simply
+wrong.
+
+Multi-year results are on ten MERRA-2 years, 2014-2023, capacity-weighted by
+technology and bias-corrected to the metered basis. `weatherYearNational()`
+previously weighted regions by DEMAND share - Gauteng 31.5%, Northern Cape 1.4% -
+when every megawatt of South African wind is in the Cape provinces and Hydra
+Central. That produced wind capacity factors of 22.6-27.2%, below the 28-38% band
+validate_benchmarks enforces, and no harness caught it because nothing exercised
+the multi-year path. An intermediate version of this file reported gas figures ~35%
+too high on that broken weighting. Those numbers are WITHDRAWN.
+
+Verification that the current basis is right: 2023 through the multi-year path now
+returns 31.97% wind CF, identical to the dashboard for the same year.
+
+2022 IS THE DESIGN YEAR, with 2015 close behind. Wind output 46.0 TWh against
+53.7 TWh in 2023 - a 17% spread. Quote the WORST year for anything that sizes
+capacity and the RANGE for anything else.
 
 ---
 
@@ -34,29 +48,30 @@ newCcgtMW    25000                       gas as backup
 
 ```
                        min     mean      max     Seriti
-peak gas, July        17.7     19.0     19.9     18 GW
+peak gas, July        18.5     19.5     20.6     18 GW
 ```
 
-Their single-year 18 GW sits INSIDE a ten-year range of 17.7 to 19.9. The number
-that sizes the backup fleet does not depend on which year you pick. This is a
-stronger endorsement of their result than a single matching run would be.
+Range of 2.1 GW across a decade, so the number that sizes the backup fleet is not
+very sensitive to which year you pick. Their 18 GW sits just BELOW the ten-year
+minimum, which is what a single-year study should be expected to do.
 
 ### Gas ENERGY: the earlier gap was mostly my synthetic profile
 
 ```
-July gas GWh      min 3,332   mean 4,016   max 5,050 (2022)   Seriti 5,553
-annual gas TWh    min  38.5   mean  41.6   max  45.8 (2022)
+July gas GWh      min 1,605   mean 2,755   max 3,968 (2015)   Seriti 5,553
+annual gas TWh    min  31.1   mean  33.4   max  38.2 (2022)
+dashboard 2023          2,761 GWh July - almost exactly the ten-year mean
 ```
 
-An earlier version of this file recorded 2,815 GWh for July and called it "half
-theirs", attributing the gap to coal dispatch. That was WRONG - it was the
-synthetic weather year. On real years the mean is 4,016 GWh and 2022 reaches
-5,050, close to their 5,553.
+THE GAP IS REAL. Seriti's 5,553 GWh sits ABOVE the worst of ten years. GridTwin
+runs the retained Medupi and Kusile ON MERIT, generating 4,479 GWh in July; Seriti
+scale thermal output to a fixed capacity share (~25%) and let gas fill the residual.
+That modelling choice remains the leading explanation and IS worth putting to them.
 
-The coal-dispatch difference is still real and still worth asking about: GridTwin
-runs the retained Medupi and Kusile ON MERIT, where Seriti scale thermal to a fixed
-capacity share (~25%) and let gas fill the residual. But it does NOT explain a large
-gap, because there is no longer a large gap. Do not lead with it.
+An intermediate version of this file said the opposite - that the gap was an
+artefact and the coal explanation should be dropped. That was the broken weighting.
+2023's July gas is 2,761 GWh, within 2% of the ten-year mean, so the dashboard year
+is not flattering on this measure even though it is the best WIND year.
 
 ### Their wind-heavy sensitivity replicates, and more strongly
 
@@ -64,12 +79,13 @@ At equal 45 GW total, no gas, across ten weather years:
 
 ```
                 unserved GWh:   worst      mean       best
-20 GW W / 25 S                 23,513    21,082     18,913
-25 GW W / 20 S                 20,797    18,300     16,073
+20 GW W / 25 S                 19,664    16,822     15,542
+25 GW W / 20 S                 16,792    13,960     12,566
 ```
 
-Wind-heavy wins in EVERY year, by 12 to 15%. 2022 is worst for both. The direction
-holds on real weather, not just on a synthetic year.
+Wind-heavy wins in EVERY year, by 15 to 19%. 2022 is worst for both. The direction
+holds across a decade of real weather, and the margin is WIDER than the single-year
+run suggested. THIS IS THE STRONGEST RESULT IN THIS FILE.
 
 They found the same direction on a five-point ERA5 composite. GridTwin finds it
 on regional MERRA-2 profiles at capacity-weighted plant locations. Their
@@ -179,33 +195,23 @@ WORST of ten weather years - the number that sizes a system:
 
 ```
 wind\solar     25 GW     40 GW     60 GW     80 GW
-   20 GW       23,513    12,747     2,416       384
-   40 GW        7,454     2,177       167        27
-   50 GW        3,798       781        84         0
-   60 GW        1,655       282        45         0
-   70 GW          663       154         2         0
-   80 GW          320       103         0         0
+   20 GW       19,664     9,289     1,311       298
+   40 GW        4,294       899        77         0
+   50 GW        1,606       262        21         0
+   60 GW          516       134         0         0
+   70 GW          233        51         0         0
+   80 GW          107        12         0         0
 ```
 
-MEAN across years, for comparison only - do NOT size on this:
+On the worst year the frontier runs 40W/80S through 60W/60S to 80W/40S-ish. So
+roughly 110 to 120 GW combined, against Seriti's 45 GW - about two and a half
+times the build.
 
-```
-wind\solar     25 GW     40 GW     60 GW     80 GW
-   20 GW       21,082    10,819     1,912       246
-   40 GW        6,204     1,813        90         6
-   50 GW        3,084       607        32         0
-   60 GW        1,343       172        11         0
-   70 GW          548        56         0         0
-   80 GW          204        24         0         0
-```
-
-On the worst year the frontier runs 50W/80S through 70W/60S to 80W/60S. So roughly
-130 to 140 GW combined, against Seriti's 45 GW - about three times the build.
-
-An earlier version of this file gave 110 to 120 GW from a single synthetic year.
-That was a FLOOR, not an estimate. The mean-year frontier is close to the old
-figure, which is exactly why a mean is the wrong basis: a system built to the
-average year is short in three years out of ten.
+That is where the FIRST single-year estimate landed too. The intermediate 130-140 GW
+figure came from the broken weighting and is withdrawn. The agreement between the
+first estimate and the corrected ten-year run is a coincidence of two errors
+cancelling, not corroboration - the first was one favourable year, this is the worst
+of ten. Cite this one.
 
 THE PRICE IS CURTAILMENT. At 50 GW wind / 60 GW solar the system throws away
 94.7 TWh a year, more than 40% of demand. Building for the worst week and wasting
