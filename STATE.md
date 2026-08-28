@@ -400,12 +400,15 @@ and is not here.
    the stale rollups found on 28 Aug — it is recomputed over whatever the file contains,
    so a hand edit produces a self-consistent fingerprint on wrong data. The rollup and
    generator-reproduction checks added to `validate_capacity.js` are what catch that.
-9. **Reserve is sized as a flat share of annual peak.** `sysReserveShare` 0.06,
-   calibrated to Eskom's ~2,200 MW against a ~32 GW peak. Professional practice uses
-   the largest single contingency plus a VRE-scaled component, resolved hourly. The
-   current form is blind to renewable build and biases the battery saturation knee
-   earlier under a large one. Rebuilding it changes every ancillary figure in
-   RESULTS.md, so it needs its own before-and-after run.
+9. ~~Reserve is sized as a flat share of annual peak.~~ REBUILT 28 Aug 2026 as
+   contingency + demand share + VRE share, resolved hourly. `sysContingencyMW` 930 (a
+   Koeberg unit), `sysResDemandShare` 0.03, `sysResVreShare` 0.05. Mean requirement:
+   1,768 MW today, 2,272 MW under Seriti's 45 GW, 2,438 MW at 110 GW — so the pot now
+   GROWS with renewable build. Ancillary fall deepened 62.1% to 64.8%; the knee moved
+   out slightly and the 3,700 MW fleet still sits just below it. The panel now reads the
+   engine's figure rather than recomputing its own, which is how it came to reference
+   `FIXED.peakMW`, a key that never existed. OPEN: the VRE term uses post-curtailment
+   output, and the two shares are the uncertain part rather than the structure.
 10. **`weatherYearNational` was weighting by DEMAND, fixed 28 Aug 2026.** It used
    `BLD_LOAD_SHARE` — Gauteng 31.5%, Northern Cape 1.4% — to build a national
    RENEWABLE profile, when all South African wind sits in the Cape provinces and Hydra

@@ -384,13 +384,13 @@ The country sits almost exactly at the knee.
 fleet      ancillary R/MW/yr      total R/MW/yr
 0.5 GW            197,100              304,165
 3   GW            197,100              304,165
-4   GW            186,822              293,887
-6   GW            124,548              231,613
-8   GW             93,411              200,476
-10  GW             74,729              181,794
+4   GW            173,262              280,327
+6   GW            115,508              222,573
+8   GW             86,631              193,696
+10  GW             69,305              176,369
 ```
 
-Ancillary falls 62.1% between 0.5 and 10 GW. Revenue is FLAT to about 3.8 GW,
+Ancillary falls 64.8% between 0.5 and 10 GW. Revenue is FLAT to about 3.8 GW,
 where the fleet's contribution first exceeds the reserve requirement (6% of a
 32 GW peak = 1,920 MW). The existing fleet is 3,700 MW. The last point at which a
 new battery earns the full ancillary rate.
@@ -409,12 +409,29 @@ The KNEE DID NOT MOVE and the conclusion is unchanged - which is the reassuring
 outcome, since a 1.3% input correction producing a large swing would have meant
 something else was wrong.
 
-CAVEAT ON THE WHOLE PANEL: reserve is sized as a flat share of annual peak
-(`sysReserveShare` 0.06, calibrated to Eskom's ~2,200 MW). Professional practice
-sizes it as the largest single contingency plus a VRE-scaled component, resolved
-hourly. The current form is BLIND TO RENEWABLE BUILD, so under a large build it
-understates how much the reserve pot grows and biases the knee EARLIER. Do not
-quote the knee for a high-VRE scenario until that is rebuilt.
+RESERVE REBUILT 28 Aug 2026, and this section now reflects it. The requirement is
+contingency + demand share + VRE share, resolved hourly:
+
+```
+scenario                  mean MW   max MW
+today, ~5 GW VRE            1,768     2,062
+Seriti, 45 GW VRE           2,272     3,916
+frontier, 110 GW VRE        2,438     3,465
+```
+
+So the reserve pot GROWS with renewable build - 29% larger under the Seriti scenario
+than today - which the old flat-share-of-peak version could not show at all. The knee
+moves out slightly as a result, and the ancillary fall deepens from 62.1% to 64.8%.
+
+South Africa's 3,700 MW fleet still sits just below the knee. That conclusion has now
+survived three separate corrections to how the reserve is computed, which is the main
+reason to trust it.
+
+REMAINING CHOICE, not a caveat: the VRE term uses POST-CURTAILMENT output, so heavily
+curtailed hours carry a lower requirement. Defensible - curtailed plant can be ramped
+up and so reduces net forecast exposure - but it is why the frontier scenario shows a
+lower MAXIMUM than the Seriti one despite carrying more capacity. The shares
+(0.03 of load, 0.05 of VRE output) are the uncertain part, not the structure.
 
 ---
 
