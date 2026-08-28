@@ -7053,9 +7053,13 @@ function bldBuildRegionalLP(opts){
   // what reserve means.
   //
   // The dual on this row is the RESERVE SHADOW PRICE: what a megawatt of standby
-  // capacity is worth in that hour. South Africa has no ancillary services market,
-  // so the number is informational - but it is what such a market would pay, and
-  // almost nobody here can currently put a figure on it.
+  // capacity is worth in that hour. South Africa has no ancillary services MARKET
+  // yet, so the number is informational - but the Revised Electricity Pricing
+  // Policy (Gazette 55257, 28 Aug 2026, Policy Position 9) proposes exactly this:
+  // generator pricing may consist of capacity, energy AND ancillary service
+  // charges, and customers able to provide ancillary services must be allowed to
+  // sell them on a fair and non-discriminatory basis. So this is what such a
+  // market would pay, and almost nobody here can currently put a figure on it.
   if (RESERVE_COOPT) {
     for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
       const i = r.d*24 + h;
@@ -8751,7 +8755,12 @@ function renderPricePanel(r){
  *
  * ARBITRAGE ONLY. South Africa has no ancillary services market and no capacity
  * market with published clearing prices, so the two revenue streams that make
- * up roughly 40% of a GB battery's income simply do not exist here yet.
+ * up roughly 40% of a GB battery's income do not exist here YET. The Revised
+ * Electricity Pricing Policy (Gazette 55257, 28 Aug 2026) proposes both: Policy
+ * Position 9 puts ancillary service charges in the generator pricing structure,
+ * and the wholesale price components in section 4 include capacity prices,
+ * standby prices, reserve prices and congestion management charges. Published
+ * for comment, not in force - revisit when NERSA implements.
  */
 function bessBenchmark(price, hours, eff){
   eff = eff || 0.88;
@@ -8941,9 +8950,13 @@ function renderBessSaturation(r){
           + fall.toFixed(0) + '&#37;</strong> between 0.5 and 10&#160;GW. ERCOT saw about 90&#37; as its '
           + 'fleet went from 0.2 to 12&#160;GW, and Great Britain\u2019s frequency response went from '
           + '87&#37; of battery revenue to roughly a third.</div>'
-        : '<div style="margin-top:5px">This chart is about ancillary saturation, and South Africa '
-          + 'prices no ancillary services today \u2013 so the line is flat and shows arbitrage only. '
-          + 'Switch on <strong>price reserve capacity</strong> in System operation to see the decline. '
+        : '<div style="margin-top:5px">This chart is about ancillary saturation. South Africa does '
+          + 'not price ancillary services yet, so the line is flat and shows arbitrage only \u2013 but '
+          + 'the Revised Electricity Pricing Policy (Aug 2026) proposes it: Policy Position 9 would put '
+          + 'ancillary service charges in generator pricing and let customers sell those services into '
+          + 'the market. Published for comment, not in force. '
+          + 'Switch on <strong>price reserve capacity</strong> in System operation to see what that '
+          + 'would look like. '
           + 'ERCOT\u2019s ancillary prices fell about 90&#37; as its battery fleet went from 0.2 to '
           + '12&#160;GW, and Great Britain\u2019s frequency response went from 87&#37; of battery '
           + 'revenue to roughly a third.</div>')
