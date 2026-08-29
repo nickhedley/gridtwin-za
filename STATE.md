@@ -567,10 +567,37 @@ So the cause of non-convergence is scenario DIFFICULTY, not problem SIZE. Forcin
 large renewable build with no gas is simply harder to solve, at the same dimensions.
 Do not "optimise the carbon cap formulation" on the strength of the old note.
 
-### OPEN: the envelope is undefined
+### THE ENVELOPE, MEASURED 28 Aug 2026
 
-Baseline scenarios solve inside 120 s. A grid-pace, gas-banned, high-growth build did
-not solve in 300 s and had not solved in 900 s. Somewhere between those is the limit,
-and it is not documented. Until it is, users hit the new guard with no guidance on what
-to change. Establishing it means timing a ladder of scenario sizes — worth doing before
-the tool is presented as professional-grade.
+Six-rung ladder, 240 s solver limit, same machine:
+
+```
+scenario                LP chars     rows   build s   solve s   status              built GW
+historical pace         22,995,110  255,181     2.3      75.2   Optimal                  3.3
+IRP pace                22,995,170  255,181     2.4      86.1   Optimal                 21.2
+masterplan (default)    22,995,170  255,181     2.2      86.2   Optimal                 21.2
+grid pace               22,995,545  255,181     2.1     244.3   Time limit reached       0.0
+grid + growth 5%        22,995,861  255,181     2.1     244.4   Time limit reached       0.0
+grid + 5% + no gas      22,995,861  255,181     2.0     244.6   Time limit reached       0.0
+```
+
+**IT IS A CLIFF, NOT A SLOPE.** Masterplan solves in 86 s. Grid pace does not solve in
+240 s. Once over the edge, demand growth and a gas ban change nothing — all three
+failing rungs behave identically.
+
+**SIZE IS NOT THE VARIABLE.** Every rung builds the same 255,181-row, 23 MB model,
+varying by under 800 characters. Only the difficulty changes. Nothing is gained by
+simplifying the formulation elsewhere, and the earlier carbon-cap theory is doubly dead.
+
+**THE FAILING ROWS RETURN 0.0 GW BUILT.** Before the status guard the interface would
+have rendered that as a plan: build nothing. Not a degraded answer, a confidently wrong
+one — the single best argument for the guard.
+
+THE PRACTICAL ENVELOPE: **Masterplan pace or slower.** The guard now says exactly that,
+citing the measurement rather than guessing.
+
+STILL OPEN: nothing was tested between Masterplan (2,500 MW/yr wind) and Grid
+(4,300 MW/yr), so the true edge sits in that gap. Also untested: whether a longer limit
+rescues Grid pace at all, or whether it is intractable rather than merely slow. That
+answer decides whether the ceiling is a compute problem or a formulation one, and it is
+one long offline run.

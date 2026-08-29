@@ -6680,10 +6680,14 @@ function renderBuildResult(res, rate, opts){
   // and this is the largest single gap between GridTwin and that standard.
   if (res.Status && res.Status !== 'Optimal'){
     const why = res.Status === 'Time limit reached'
-      ? 'The solver ran out of time before proving an optimal answer. This scenario is '
-        + 'larger than the in-browser solver can handle in ' + (BLD_TIME_LIMIT_S) + ' seconds. '
-        + 'Try a slower build pace, fewer years, or switch the carbon cap off - the cap adds '
-        + 'one very large constraint and is the usual cause.'
+      ? 'The solver ran out of time before proving an optimal answer, so there is nothing '
+        + 'reliable to show. Measured 28 Aug 2026: the build pace is what decides this. '
+        + 'Historical, IRP and Masterplan paces all solve in 75\u201386 seconds. The Grid '
+        + 'pace does not solve at all \u2013 it is a cliff, not a gradual slowdown, and '
+        + 'demand growth and a gas ban make no further difference once you are over it. '
+        + '<strong>Drop to Masterplan pace or slower.</strong> Problem SIZE is not the issue: '
+        + 'every scenario builds the same 255,181-row model, so nothing is gained by '
+        + 'simplifying elsewhere.'
       : 'The solver returned "' + res.Status + '". No usable plan was produced.';
     host.innerHTML = '<div style="font-size:11.5px;color:var(--alert,#C4785A);line-height:1.5">'
       + '<strong>No optimal solution \u2013 results withheld.</strong><br>' + why + '</div>';
@@ -7301,10 +7305,14 @@ function renderBuildRegional(res, rate, opts){
   // and this is the largest single gap between GridTwin and that standard.
   if (res.Status && res.Status !== 'Optimal'){
     const why = res.Status === 'Time limit reached'
-      ? 'The solver ran out of time before proving an optimal answer. This scenario is '
-        + 'larger than the in-browser solver can handle in ' + (BLD_TIME_LIMIT_S) + ' seconds. '
-        + 'Try a slower build pace, fewer years, or switch the carbon cap off - the cap adds '
-        + 'one very large constraint and is the usual cause.'
+      ? 'The solver ran out of time before proving an optimal answer, so there is nothing '
+        + 'reliable to show. Measured 28 Aug 2026: the build pace is what decides this. '
+        + 'Historical, IRP and Masterplan paces all solve in 75\u201386 seconds. The Grid '
+        + 'pace does not solve at all \u2013 it is a cliff, not a gradual slowdown, and '
+        + 'demand growth and a gas ban make no further difference once you are over it. '
+        + '<strong>Drop to Masterplan pace or slower.</strong> Problem SIZE is not the issue: '
+        + 'every scenario builds the same 255,181-row model, so nothing is gained by '
+        + 'simplifying elsewhere.'
       : 'The solver returned "' + res.Status + '". No usable plan was produced.';
     host.innerHTML = '<div style="font-size:11.5px;color:var(--alert,#C4785A);line-height:1.5">'
       + '<strong>No optimal solution \u2013 results withheld.</strong><br>' + why + '</div>';
