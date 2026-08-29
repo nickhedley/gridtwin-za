@@ -3860,7 +3860,14 @@ const FIXED = {
   // point, and the reason adding it separates peak from off-peak prices.
   // Hours ahead the coal ramp-aware floor anticipates rising net load. See the loop
   // that consumes it for why this is parameterised rather than hardcoded.
-  coalLookaheadH:4,
+  // Hours ahead the coal ramp-aware floor anticipates rising net load. RAISED 4 -> 12
+  // on 29 Aug 2026. Swept 2-48 h: no effect on any scenario tested EXCEPT the rigid
+  // no-gas case, where 4 h -> 12 h cuts unserved energy from 14,078 to 13,695 GWh, a
+  // 2.7% gain that saturates at 12 and does nothing beyond. With flexible coal the
+  // horizon never binds at all, because at 100%/hr the ramp term swamps it.
+  // Chosen because 12 h is where the benefit saturates and there is no measured cost
+  // to it anywhere else - not because 4 h was wrong.
+  coalLookaheadH:12,
   reserveEnabled:1, reserveContingencyMW:794, reserveRegulatingPct:2.0, reserveVrePct:5.0,
   // Unit-level forced outages. forcedSharePct is the portion of total
   // unavailability that is UNPLANNED - Eskom's UCLF is roughly 15 points of a
@@ -5163,7 +5170,7 @@ function simulate(u, prof, outPath){
     // higher floor forces coal output that incidentally charges storage during surplus hours.
     // See the flexibilisation finding - raising the ramp rate lowers this floor, which in a
     // system with NO dispatchable backup leaves storage emptier going into a wind drought.
-    const lookaheadH=Math.max(1,Math.round(p.coalLookaheadH ?? 4));
+    const lookaheadH=Math.max(1,Math.round(p.coalLookaheadH ?? 12));
     let rampAwareFloor=0;
     for(let k=1;k<=lookaheadH;k++){
       const need=netLoadPre[Math.min(HOURS-1,h+k)]-rampAllowedMW*k;

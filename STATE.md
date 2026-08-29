@@ -362,12 +362,35 @@ and is not here.
    changed to an unsubstantiated figure, and the "Existing fleet" documentation row
    still reads "Utility PV 4 GW" for the same reason. Change both in one commit once
    the earlier private capacity is sourced.
-2. **`carbonPrice` is disconnected.** It is not a key of `FIXED` and not a slider — the
-   nearest is `carbonTaxRPerT`. So `CARBON` is pinned at R550/t in both LPs regardless
-   of what a user sets. Same class of disconnection as the `S` bug, but it needs a
-   decision about intent: whether `carbonTaxRPerT` should feed it, and whether R550
-   should survive at all given the statutory rate is R308 with allowances taking the
-   effective rate far lower.
+2. ~~`carbonPrice` is disconnected, pinned at R550/t.~~ **STALE — CHECKED AND CLOSED
+   29 Aug 2026.** Neither part of this is true any more. Both LPs read
+   `const CARBON = S.carbonTaxRPerT` (lines 6434 and 6981), so the slider does feed
+   them. There is no R550 literal anywhere in the file. `carbonTaxRPerT` is **46**, not
+   550, and its slider already documents why.
+
+   THE R46 IS CORRECT AND WELL SOURCED. Phase 2 headline is R308/t from 1 Jan 2026, up
+   from R236. Electricity generation moved into the carbon tax from that date with up to
+   **85% tax-free allowances**, so R308 x 0.15 = R46/t effective. That matches the
+   slider's own note. Independent corroboration: the effective rate across the economy
+   after allowances is reported at roughly R105/t, and generation sits below that because
+   its allowance is at the top of the range.
+
+   ALIGNMENT WITH PROFESSIONAL PRACTICE — this is the part worth acting on. Models of
+   this kind carry TWO carbon numbers and GridTwin has one:
+     - a COMPLIANCE price, what generators actually pay, which drives dispatch. R46 is
+       right for this and is what the model uses.
+     - a SHADOW or POLICY price, used to test what a decarbonisation target would cost.
+       PLEXOS and PyPSA studies routinely run both. The slider's suggested values —
+       R308 headline, R462 by 2030, R640 for a carbon-budget breach — are exactly the
+       policy-price ladder, so the capability exists; it is just not labelled as a
+       distinct concept.
+   The gap is presentational, not structural. Consider renaming the outputs so a run at
+   R462 is clearly a POLICY scenario rather than a forecast of what generators will pay.
+
+   WATCH: a suspension of the carbon tax was under Cabinet consideration in Feb 2026 and
+   NERSA has disallowed Eskom from recovering carbon tax through tariffs to end-2030. If
+   either holds, the compliance price for generation is arguably ZERO, not R46. Recheck
+   before quoting carbon costs externally.
 3. **`emisCoal || 0.95` at line 5812 disagrees with `FIXED.emisCoal` = 1.04.** Dead
    today, because that site already uses `{ ...FIXED, ...state }`. A latent wrong
    answer if the resolution ever changes.
