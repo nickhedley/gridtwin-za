@@ -613,3 +613,57 @@ smallest step available toward what Policy Position 20 asks for.
 The four remaining absences (standby, legacy, subsidy, distribution) are outside what a
 dispatch and capacity-expansion model should attempt. They belong to tariff design, not
 to system modelling, and the honest position is to say so rather than approximate them.
+
+---
+
+## Congestion, priced from the corridor duals
+
+The first of the two gaps identified in the price-component mapping. The `txa_`/`txb_`
+shadow prices come out of every regional solve and were being discarded. Extracted
+28 Aug 2026, default scenario, masterplan pace.
+
+CONGESTION IS RARE AND CONCENTRATED. Nine binding rows out of 38,400 corridor
+constraints - 0.023%. Every one of them is the same event:
+
+```
+row                    dual R/MW    corridor                        limit MW
+txa_10_2028_159_10       199,872    Hydra Central - Western Cape       2,377
+txa_14_2028_159_10       199,872    North West - Western Cape            233
+txa_15_2028_159_10       199,872    Northern Cape - Western Cape         823
+txa_10_2029_159_12       185,067    (same three corridors)
+txa_14_2029_159_12       185,067
+txa_15_2029_159_12       185,067
+txa_10_2030_159_12       171,358    (same three corridors)
+txa_14_2030_159_12       171,358
+txa_15_2030_159_12       171,358
+```
+
+Day 159 is 8 June - midwinter, midday. Flow is INTO the Western Cape on all three of
+its import corridors simultaneously, in the same hour, in three consecutive years. The
+dual declines 199,872 to 171,358 as transmission is built out.
+
+### THE DUALS ARE IDENTICAL, AND THAT IS NOT AN ERROR
+
+Three corridors with different ratings - 2,377, 823 and 233 MW - carry the same shadow
+price to the rand. Checked, because it looked like a mapping fault. It is structural:
+the Western Cape is fed by exactly these three corridors, and in a transport model with
+one balance per region, relaxing ANY ONE of them admits the same additional megawatt.
+So the marginal value is the same on all three.
+
+**CONSEQUENCE FOR PRICING, and it is the whole point.** You cannot charge each corridor
+its own dual and add them up - that triple-counts a single constraint. The economically
+meaningful quantity is the rent on the WESTERN CAPE IMPORT BOUNDARY, not on any wire.
+Any congestion charge built off these duals has to be defined on boundaries or on
+cutsets, not on individual lines. That is a real design trap and it is invisible until
+you look at which rows bind together.
+
+### WHAT THIS DOES AND DOES NOT SUPPORT
+
+It does NOT support a claim that South Africa's grid is congested in this scenario -
+0.023% of corridor-hours is close to nothing, and this is the default build at the
+masterplan pace, which does not push much energy across the network.
+
+It DOES establish that the machinery works, that the binding boundary is the Western
+Cape in winter, and that the duals are recoverable and economically interpretable.
+Running it on the 110 GW no-gas frontier is the case where congestion should be
+material, and that is the next step.

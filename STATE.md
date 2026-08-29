@@ -493,8 +493,14 @@ ABSENT (6)                standby, legacy cost recovery, subsidy, distribution,
 ```
 
 TWO ACTIONABLE GAPS, in order:
-1. **Price the congestion duals.** `txa_` shadow prices come out of every regional
-   solve and are discarded. Smallest available step toward Policy Position 20.
+1. ~~Price the congestion duals.~~ EXTRACTED 28 Aug 2026. Nine binding rows of 38,400
+   (0.023%), all the same event: the Western Cape import boundary, midday 8 June, three
+   consecutive years, dual declining 199,872 to 171,358 R/MW as transmission is built.
+   **DESIGN TRAP FOUND: the three corridors into the Western Cape carry IDENTICAL duals**,
+   because relaxing any one admits the same megawatt. A congestion charge must therefore
+   be defined on BOUNDARIES or cutsets, not on individual lines — charging each corridor
+   its own dual triple-counts one constraint. STILL TO DO: run it on the 110 GW no-gas
+   frontier, where congestion should actually be material.
 2. **Make the transmission charge locational.** The corridor duals are the raw material
    and already exist.
 
