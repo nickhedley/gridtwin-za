@@ -384,8 +384,19 @@ and is not here.
        R308 headline, R462 by 2030, R640 for a carbon-budget breach — are exactly the
        policy-price ladder, so the capability exists; it is just not labelled as a
        distinct concept.
-   The gap is presentational, not structural. Consider renaming the outputs so a run at
-   R462 is clearly a POLICY scenario rather than a forecast of what generators will pay.
+   ON CHECKING, THE GAP WAS SMALLER THAN FIRST WRITTEN. GridTwin already carries BOTH
+   prices in the correct relationship: the compliance price as an INPUT (R46) and the
+   shadow price as an OUTPUT — the marginal abatement cost from the carbon cap dual,
+   already displayed alongside the compliance price with the comparison spelled out.
+   That IS the professional structure. No restructuring was needed or done.
+
+   FIXED 29 Aug 2026, presentation only: the slider was labelled "Effective carbon
+   price" while offering R308, R462 and R640 as things to try — none of which is an
+   effective rate. A user setting R462 could reasonably read it as what generators will
+   pay in 2030, when at 85% allowances the effective rate would be nearer R69. Label is
+   now "Carbon price" and the note separates the COMPLIANCE price from the POLICY
+   ladder, and points at the carbon cap's marginal abatement cost for the reverse
+   question.
 
    WATCH: a suspension of the carbon tax was under Cabinet consideration in Feb 2026 and
    NERSA has disallowed Eskom from recovering carbon tax through tariffs to end-2030. If
