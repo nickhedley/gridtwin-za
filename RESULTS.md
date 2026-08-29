@@ -667,3 +667,80 @@ It DOES establish that the machinery works, that the binding boundary is the Wes
 Cape in winter, and that the duals are recoverable and economically interpretable.
 Running it on the 110 GW no-gas frontier is the case where congestion should be
 material, and that is the next step.
+
+---
+
+## Locational transmission cost, and the trade-off it exposes
+
+The second gap from the price-component mapping, closed 28 Aug 2026.
+
+`txRPerKWyr` was a FLAT R600/kW-yr on all new wind and utility PV. It priced the grid
+identically whether a plant connected into 5,500 MW of headroom in KwaZulu-Natal or
+into zero in the Northern Cape.
+
+THE LEVEL WAS RIGHT, THE SHAPE WAS NOT. TDP 2025-2034 is 14,500 km and 210 transformers
+for 56 GW at over R390bn - R6,964/kW overnight, which over a 40-year life at 8%
+annuitises to R584/kW-yr. So R600 is a sound national average. It just had no variation.
+
+Now: a shallow component every plant pays (25% of the average) plus a deep component
+scaling with ELECTRICAL distance to the load centre, shortest path through the corridor
+graph to Gauteng. Weighted so the capacity-weighted mean still reproduces R600 exactly -
+this replaces a flat number with a distribution around the same mean.
+
+```
+region              km to load   headroom MW   R/kW/yr
+Gauteng                      0         9,360       150
+North West                  84         3,320       253
+Mpumalanga                 102         6,640       275
+Free State                 202         2,840       397
+Limpopo                    223         6,720       422
+Kwazulu Natal              274        11,000       485
+Northern Cape              292             0       507
+Eastern Cape               441           400       689
+Western Cape               456         1,180       707
+Hydra Central              479             0       735
+```
+
+Nearly a fivefold spread, R150 to R735.
+
+### THE HEADROOM IS WHERE THE COST IS LOW AND THE RESOURCE IS BAD
+
+This is the finding, and it was not obvious before the numbers existed.
+
+```
+capacity-weighted mean distance   368 km   (where the fleet IS)
+headroom-weighted mean distance   163 km   (where it CAN go today)
+```
+
+The 41,460 MW of available connection headroom sits at less than half the electrical
+distance of the existing fleet. Filling it cheapest-first gives an effective rate of
+R349/kW-yr - well BELOW the R600 flat rate. So connecting where there is room today is
+CHEAPER in transmission terms than the average plant already built.
+
+But those are the regions with the worst wind: KwaZulu-Natal at 21.6% capacity factor
+holds 11,000 MW of headroom; Hydra Central at 42.5% holds none.
+
+So the trade-off Policy Position 20 describes is now quantified from both ends. Build
+near load: cheap grid, poor resource. Build in the Karoo: excellent resource, R735/kW-yr
+of grid, and no headroom to connect into at all.
+
+### THE RATE NOW RISES WITH BUILD VOLUME
+
+Regions fill cheapest-first, so a bigger programme costs more per kW - which is true and
+was previously not modelled at all.
+
+```
+new wind + PV       effective R/kW-yr
+     1,000 MW              150
+    10,000 MW              157
+    20,000 MW              217
+    41,460 MW              349    all existing headroom consumed
+    60,000 MW              468
+   102,000 MW              578    the no-gas frontier
+```
+
+Previously 102 GW cost the same per kW as 1 GW.
+
+CAVEAT: electrical distance to a single load centre is a proxy. A full treatment prices
+against the actual network build required, which is what the corridor duals would give
+if the congestion work is carried further. The SHALLOW share of 25% is an assumption.

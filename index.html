@@ -5590,7 +5590,7 @@ function simulate(u, prof, outPath){
     const pvExempt=Math.min(u.newPvMW, inheritable);
     pvAdderMW=u.newPvMW-pvExempt;
   }
-  const newCapexR=(u.newVrfbMW*p.acapVrfb+u.newIronAirMW*p.acapIronAir+u.newPsMW*p.acapPs+u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*p.txRPerKWyr)*1000;
+  const newCapexR=(u.newVrfbMW*p.acapVrfb+u.newIronAirMW*p.acapIronAir+u.newPsMW*p.acapPs+u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*txRateFor(u.newWindMW+pvAdderMW, p.txRPerKWyr))*1000;
   // 'hybrid' added 15 Aug 2026: it serves the grid, so excluding it from the
     // denominator while its costs sat in the numerator overstated avgCost ~0.9%.
     const genKeys=['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
@@ -7989,6 +7989,9 @@ let bldWeatherYears = null;
 // Per-technology capacity shares by region, built from regional_renewable_capacity.json
 // at load. Null means the multi-year path is unavailable - deliberately, see below.
 let bldWxWeights = null;
+// TRANSMISSION SUPPLY CURVE. Built at load from the corridor graph and the headroom
+// data; null until then, in which case the flat txRPerKWyr applies. See buildTxCurve().
+let bldTxCurve = null;
 
 async function loadWeatherYears(){
   if (bldWeatherYears !== null) return bldWeatherYears;
@@ -8012,6 +8015,7 @@ async function loadWeatherYears(){
         bldWxWeights = { wind: norm(cap.wind_mw), solar: norm(cap.solar_mw) };
       }
     } catch (e) { /* handled below */ }
+    try { await buildTxCurve(); } catch (e) { bldTxCurve = null; }
     if (!bldWxWeights || !bldWxWeights.wind || !bldWxWeights.solar) {
       bldWxWeights = null;
       console.warn('[GridTwin] Weather years loaded but nodal/regional_renewable_capacity.json '
@@ -8023,6 +8027,85 @@ async function loadWeatherYears(){
       + (bldWxWeights ? ' (capacity-weighted)' : ' (WEIGHTS MISSING - disabled)'));
     return d;
   } catch (e) { bldWeatherYears = false; return false; }
+}
+
+// ── LOCATIONAL TRANSMISSION COST ────────────────────────────────────────────
+// Built 28 Aug 2026. `txRPerKWyr` is a FLAT R600/kW-yr on all new wind and utility
+// PV, which prices the grid identically whether a plant connects into 5,500 MW of
+// headroom in KwaZulu-Natal or into zero in the Northern Cape. That is the gap the
+// Revised Electricity Pricing Policy's Policy Position 20 asks to be closed.
+//
+// LEVEL IS RIGHT, SHAPE IS NOT. The TDP 2025-2034 is 14,500 km and 210 transformers
+// for 56 GW at over R390bn - R6,964/kW overnight, which over a 40-year life at 8%
+// annuitises to R584/kW-yr. So R600 is a sound NATIONAL AVERAGE. What it lacks is
+// variation.
+//
+// STRUCTURE. A shallow component every plant pays (bay, transformer, short line) plus
+// a deep component that scales with ELECTRICAL DISTANCE to the load centre, computed
+// as the shortest path through the corridor graph to Gauteng, which carries 31.5% of
+// national demand. Distance-weighted so the capacity-weighted mean reproduces the
+// existing R600 exactly - this REPLACES a flat number with a distribution around the
+// same mean, it does not change the national total.
+//
+// Electrical distance, not road distance. The policy notes at section 5.3(a) that load
+// zones are set by distance from Johannesburg in concentric bands and calls that
+// arbitrary. The two measures diverge most in the Karoo, which is where the generation
+// is going.
+//
+// THE CURVE. Regions are filled cheapest-first up to their available headroom, so the
+// effective rate RISES with build volume. Previously 100 GW cost the same per kW as
+// 1 GW, which is the opposite of true.
+async function buildTxCurve(){
+  const [rc, hr] = await Promise.all([
+    fetch('nodal/regional_renewable_capacity.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null),
+    fetch('nodal/headroom_summary.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null),
+  ]);
+  if (!rc || !hr || !hr.headroom) { bldTxCurve = null; return; }
+  // shortest electrical path to the load centre
+  const g = {};
+  for (const [a, b, , km] of CORRIDORS){
+    (g[a] = g[a] || []).push([b, km]); (g[b] = g[b] || []).push([a, km]);
+  }
+  const dist = { Gauteng: 0 }; const seen = {};
+  for (;;){
+    let u = null, best = Infinity;
+    for (const k in dist) if (!seen[k] && dist[k] < best) { best = dist[k]; u = k; }
+    if (!u) break;
+    seen[u] = 1;
+    for (const [v, km] of (g[u] || [])) if (dist[v] === undefined || dist[u] + km < dist[v]) dist[v] = dist[u] + km;
+  }
+  // capacity-weighted mean distance defines the 1.00 multiplier
+  let cw = 0, ct = 0;
+  for (const r in dist){
+    const mw = (rc.wind_mw[r] || 0) + (rc.solar_mw[r] || 0);
+    cw += mw * dist[r]; ct += mw;
+  }
+  const meanKm = ct > 0 ? cw / ct : 1;
+  const SHALLOW = 0.25;   // share of the national average every plant pays regardless
+  const rows = [];
+  for (const r in dist){
+    const h = hr.headroom[r] || {};
+    rows.push({ region: r, km: dist[r],
+                headroomMW: (h.wind_mw || 0) + (h.solar_mw || 0),
+                mult: SHALLOW + (1 - SHALLOW) * (dist[r] / meanKm) });
+  }
+  rows.sort((a, b) => a.mult - b.mult);
+  bldTxCurve = { rows, meanKm, totalHeadroomMW: rows.reduce((a, b) => a + b.headroomMW, 0) };
+}
+
+// Effective R/kW-yr for a given volume of new wind + PV, filling cheapest headroom
+// first. Beyond total available headroom the most expensive regional rate applies,
+// because that capacity requires new corridors rather than spare bays.
+function txRateFor(newMW, baseRate){
+  if (!bldTxCurve || !(newMW > 0)) return baseRate;
+  let left = newMW, cost = 0;
+  for (const r of bldTxCurve.rows){
+    if (left <= 0) break;
+    const take = Math.min(left, r.headroomMW);
+    cost += take * baseRate * r.mult; left -= take;
+  }
+  if (left > 0) cost += left * baseRate * bldTxCurve.rows[bldTxCurve.rows.length - 1].mult;
+  return cost / newMW;
 }
 
 // National per-unit series for one weather year, CAPACITY-weighted across regions

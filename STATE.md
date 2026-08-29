@@ -501,8 +501,16 @@ TWO ACTIONABLE GAPS, in order:
    be defined on BOUNDARIES or cutsets, not on individual lines — charging each corridor
    its own dual triple-counts one constraint. STILL TO DO: run it on the 110 GW no-gas
    frontier, where congestion should actually be material.
-2. **Make the transmission charge locational.** The corridor duals are the raw material
-   and already exist.
+2. ~~Make the transmission charge locational.~~ DONE 28 Aug 2026. `txRateFor()` builds a
+   supply curve from electrical distance to Gauteng plus available headroom, filling
+   cheapest-first. Range R150 (Gauteng) to R735 (Hydra Central), capacity-weighted mean
+   still R600 so the national total is unchanged. Effective rate now RISES with build
+   volume: R150 at 1 GW, R349 at 41 GW (all headroom consumed), R578 at 102 GW.
+   FINDING: headroom-weighted mean distance is 163 km against 368 km for the existing
+   fleet — the room to connect is CLOSER to load than the fleet already built, and in
+   the worst-resource regions. OPEN: distance to a single load centre is a proxy; the
+   SHALLOW share of 25% is an assumption; `bldTxCurve` is null until the data loads, in
+   which case the flat rate applies.
 
 The other four absences are tariff design, not system modelling. Do not approximate
 them — say they are out of scope.
