@@ -6243,6 +6243,12 @@ function bldRepDays(n){
   }));
 }
 
+// Seconds the in-browser solver may spend before giving up. Declared HERE, before the
+// worker template literal, and INTERPOLATED into it - the worker runs in its own
+// context and cannot see page scope, so a bare reference would throw there. Referenced
+// again by the status message below, so the value exists exactly once.
+const BLD_TIME_LIMIT_S = 120;
+
 const BLD_WORKER_SRC = `
 let highs = null;
 self.onmessage = async (e) => {
@@ -6254,7 +6260,7 @@ self.onmessage = async (e) => {
     } catch (err) { self.postMessage({ type:'error', msg: String(err) }); return; }
   }
   try {
-    const res = highs.solve(lp, { time_limit: 120 });
+    const res = highs.solve(lp, { time_limit: ${BLD_TIME_LIMIT_S} });
     self.postMessage({ type:'done', res });
   } catch (err) { self.postMessage({ type:'error', msg: String(err) }); }
 };
@@ -6666,6 +6672,24 @@ function renderBuildResult(res, rate, opts){
     host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
     return;
   }
+  // SOLVER STATUS IS NOT OPTIONAL. Added 28 Aug 2026 after a time-limited solve was
+  // silently presented as an answer. HiGHS returns a populated `Columns` object even
+  // when it stops at the time limit, so `if (!res.Columns)` passes and the numbers
+  // render as a plan. They are not a plan - they are wherever the solver had got to.
+  // A non-converged solve MUST NOT be shown as a result. Professional tools refuse to,
+  // and this is the largest single gap between GridTwin and that standard.
+  if (res.Status && res.Status !== 'Optimal'){
+    const why = res.Status === 'Time limit reached'
+      ? 'The solver ran out of time before proving an optimal answer. This scenario is '
+        + 'larger than the in-browser solver can handle in ' + (BLD_TIME_LIMIT_S) + ' seconds. '
+        + 'Try a slower build pace, fewer years, or switch the carbon cap off - the cap adds '
+        + 'one very large constraint and is the usual cause.'
+      : 'The solver returned "' + res.Status + '". No usable plan was produced.';
+    host.innerHTML = '<div style="font-size:11.5px;color:var(--alert,#C4785A);line-height:1.5">'
+      + '<strong>No optimal solution \u2013 results withheld.</strong><br>' + why + '</div>';
+    return;
+  }
+
   // Marginal abatement cost: the dual on the carbon cap is what the LAST tonne
   // cost to avoid. It is the number a carbon price should be compared against -
   // a price below it will not deliver the cap, a price above it overshoots.
@@ -7269,6 +7293,24 @@ function renderBuildRegional(res, rate, opts){
     host.innerHTML = '<div style="font-size:11px;color:var(--alert,#C4785A)">No solution found.</div>';
     return;
   }
+  // SOLVER STATUS IS NOT OPTIONAL. Added 28 Aug 2026 after a time-limited solve was
+  // silently presented as an answer. HiGHS returns a populated `Columns` object even
+  // when it stops at the time limit, so `if (!res.Columns)` passes and the numbers
+  // render as a plan. They are not a plan - they are wherever the solver had got to.
+  // A non-converged solve MUST NOT be shown as a result. Professional tools refuse to,
+  // and this is the largest single gap between GridTwin and that standard.
+  if (res.Status && res.Status !== 'Optimal'){
+    const why = res.Status === 'Time limit reached'
+      ? 'The solver ran out of time before proving an optimal answer. This scenario is '
+        + 'larger than the in-browser solver can handle in ' + (BLD_TIME_LIMIT_S) + ' seconds. '
+        + 'Try a slower build pace, fewer years, or switch the carbon cap off - the cap adds '
+        + 'one very large constraint and is the usual cause.'
+      : 'The solver returned "' + res.Status + '". No usable plan was produced.';
+    host.innerHTML = '<div style="font-size:11.5px;color:var(--alert,#C4785A);line-height:1.5">'
+      + '<strong>No optimal solution \u2013 results withheld.</strong><br>' + why + '</div>';
+    return;
+  }
+
   // TRANSMISSION BUILT. The optimiser now chooses where to reinforce the network,
   // weighing a line against siting generation somewhere better connected. Worth
   // reporting prominently: transmission access, not investor appetite, is the

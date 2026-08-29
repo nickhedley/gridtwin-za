@@ -519,3 +519,58 @@ STANDING CAUTION: `avgCost` is fuel + carbon + new grid-connected capex over
 grid-served energy. Six of the thirteen enumerated components are not in it, including
 legacy cost recovery and distribution charges, which are a large part of a real bill.
 It is not a tariff and must never be quoted as one.
+
+---
+
+## Solver convergence and the in-browser envelope
+
+Added 28 Aug 2026.
+
+### FIXED: a non-converged solve was presented as an answer
+
+`bldSolve` ran `highs.solve(lp, { time_limit: 120 })` and BOTH result consumers
+checked only `if (!res || !res.Columns)`. HiGHS returns a POPULATED `Columns` object
+when it stops at the time limit, so that guard passes and the numbers render as a
+plan. Nothing anywhere inspected `res.Status`.
+
+Confirmed live: a forced high-renewables solve returned `Time limit reached` with
+zero build and zero binding corridors — output that reads as "no congestion at high
+penetration" and is in fact "the solver had not started".
+
+Both consumers now refuse to display a non-`Optimal` result and say why. The time
+limit is `BLD_TIME_LIMIT_S`, declared once BEFORE the worker template literal and
+INTERPOLATED into it — a bare reference would throw inside the worker, which runs in
+its own context.
+
+**This was the largest single gap between GridTwin and a professional tool.** PLEXOS
+and PyPSA both refuse to return a non-converged solution as a solution.
+
+### CORRECTION: the carbon cap is NOT the cause of slow solves
+
+An earlier note in this session claimed the carbon cap adds a dense row that took the
+LP from ~0.3 MB to 23 MB. MEASURED, and it is wrong:
+
+```
+regional LP            chars        rows
+baseline          22,995,170     255,181
+growth 0.05       22,995,486     255,181
+grid pace         22,995,545     255,181
+carbonCap on      22,995,170     255,181
+all three         22,995,861     255,181
+```
+
+The regional LP is ALREADY 23 MB and 255,181 rows at baseline. The cap changes it by
+316 characters. The "0.3 MB" figure was a misreading of `constraint rows parsed:
+119,225`, which counts only the subject-to section.
+
+So the cause of non-convergence is scenario DIFFICULTY, not problem SIZE. Forcing a
+large renewable build with no gas is simply harder to solve, at the same dimensions.
+Do not "optimise the carbon cap formulation" on the strength of the old note.
+
+### OPEN: the envelope is undefined
+
+Baseline scenarios solve inside 120 s. A grid-pace, gas-banned, high-growth build did
+not solve in 300 s and had not solved in 900 s. Somewhere between those is the limit,
+and it is not documented. Until it is, users hit the new guard with no guidance on what
+to change. Establishing it means timing a ladder of scenario sizes — worth doing before
+the tool is presented as professional-grade.
