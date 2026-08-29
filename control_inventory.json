@@ -1,7 +1,10 @@
 {
  "ids": [
+  "asInertiaOn",
   "asInertiaRkWyr",
+  "asReserveOn",
   "asReserveRMWh",
+  "capacityPaymentOn",
   "capacityPaymentRkWyr",
   "carbonCapEnabled",
   "carbonCapMt",
@@ -12,6 +15,8 @@
   "coalEAFPct",
   "coalFlexPct",
   "coalPartLoadK",
+  "congestionCurtailOn",
+  "congestionCurtailPct",
   "costCcgt",
   "demandGrowthPct",
   "drInterruptCostR",
@@ -34,6 +39,7 @@
   "lcoeRooftop",
   "lcoeVrfb",
   "lcoeWind",
+  "newBattHours",
   "newBattMW",
   "newCcgtMW",
   "newCoalMW",
@@ -58,5 +64,5 @@
   "vppEnrolPct",
   "vppGeyserPoolMW"
  ],
- "count": 57
+ "count": 63
 }

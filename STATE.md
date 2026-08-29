@@ -143,12 +143,12 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Sixteen harnesses, 764 checks. Last full run: 764/764.
+Sixteen harnesses, 766 checks. Last full run: 766/766.
 
 ```
 node stress_suite.js                290/290
 node validate_invariants.js .       149/149
-node validate_response.js .           80/80
+node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           29/29
@@ -156,7 +156,7 @@ node validate_benchmarks.js .         18/18
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .        14/14
-node validate_structure.js .            9/9
+node validate_structure.js .          10/10
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
@@ -474,3 +474,34 @@ and is not here.
    duration rises. FX is pinned at R16.50/USD, the 180-day average to 26 Aug 2026.
 
 ---
+
+---
+
+## Wholesale price components — coverage against the Revised EPP
+
+Mapped 28 Aug 2026 against section 4 of Gazette 55257. Full table in RESULTS.md.
+
+```
+PRODUCED (3)              energy, carbon, congestion duals (unpriced)
+MODELLED, DEFAULTS OFF (3) capacity, ancillary, reserve
+PARTIAL (1)               transmission — flat R600/kW-yr on new wind and PV only,
+                          a BUILD cost rather than a use-of-system charge, and NOT
+                          locational. The model prices the grid identically whether a
+                          plant connects into 5,500 MW of headroom or into zero.
+ABSENT (6)                standby, legacy cost recovery, subsidy, distribution,
+                          balancing, environmental compliance
+```
+
+TWO ACTIONABLE GAPS, in order:
+1. **Price the congestion duals.** `txa_` shadow prices come out of every regional
+   solve and are discarded. Smallest available step toward Policy Position 20.
+2. **Make the transmission charge locational.** The corridor duals are the raw material
+   and already exist.
+
+The other four absences are tariff design, not system modelling. Do not approximate
+them — say they are out of scope.
+
+STANDING CAUTION: `avgCost` is fuel + carbon + new grid-connected capex over
+grid-served energy. Six of the thirteen enumerated components are not in it, including
+legacy cost recovery and distribution charges, which are a large part of a real bill.
+It is not a tariff and must never be quoted as one.

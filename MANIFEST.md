@@ -24,6 +24,18 @@ build_supply_area_split.py  build_supply_area_split.py - identical MD5, two name
 
 The sixteen harnesses also sit at the root.
 
+```
+control_inventory.json      BASELINE for validate_structure. 63 controls. Losing a
+                            control fails loudly; adding one is a deliberate act that
+                            needs --write-baseline. COMMIT THIS FILE.
+response_matrix.json        BASELINE for validate_response. Every control's measured
+                            effect on eight outputs. COMMIT THIS FILE.
+```
+
+Both were unpinned until 28 Aug 2026, which meant those two harnesses compared against
+nothing and could not fail. Re-pin ONLY when a change is intended, never to clear a
+failure.
+
 ## nodal/
 
 Twenty files fetched by `index.html`, plus harness-only inputs.
