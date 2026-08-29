@@ -561,3 +561,55 @@ and worse than nothing by 12 GW.
 CAVEAT: one weather year, dashboard scenario, and the shifting logic is a simple
 within-day reallocation. The DIRECTION and the existence of an optimum are robust;
 the 7.5% figure is not a target.
+
+---
+
+## Wholesale price components: what this model can and cannot produce
+
+Mapped 28 Aug 2026 against the component list in section 4 of the Revised Electricity
+Pricing Policy (Gazette 55257). Recorded here because it bounds what GridTwin can
+honestly say about price, and because the submission argues for published
+disaggregation along exactly this list.
+
+```
+policy component                 GridTwin term                      status
+Energy prices                    fuelCost + startUpCostR            PRODUCED
+Carbon pricing mechanisms        carbonCost                         PRODUCED
+Congestion management charges    corridor duals in the regional LP  PRODUCED, NOT PRICED
+Transmission network charges     txRPerKWyr inside newCapexR        PARTIAL
+Capacity prices                  capacityRevenueR                   MODELLED, DEFAULTS OFF
+Ancillary service charges        asReserveRevenueR, asInertiaRevenueR   MODELLED, DEFAULTS OFF
+Reserve prices                   asReserveRevenueR                  MODELLED, DEFAULTS OFF
+Standby prices                   -                                  ABSENT
+Legacy cost recovery             -                                  ABSENT
+Subsidy charges                  -                                  ABSENT
+Distribution network charges     -                                  ABSENT
+Balancing services               -                                  ABSENT
+Environmental compliance costs   -                                  ABSENT
+```
+
+Three produced, three modelled but switched off because South Africa does not price
+them today, one partial, six absent.
+
+WHAT THIS MEANS FOR ANY PRICE CLAIM. GridTwin's `avgCost` is fuel plus carbon plus new
+grid-connected capex, divided by grid-served energy. It is NOT a tariff and does not
+try to be - the panel says so. Six of the thirteen components the policy enumerates are
+simply not in it, and they are not small: legacy cost recovery and distribution charges
+are a large part of what a South African customer actually pays.
+
+THE TWO WORTH CLOSING, in order.
+
+Transmission is PARTIAL and the gap matters for the locational work. `txRPerKWyr` is a
+flat R600/kW-yr adder on new wind and utility PV. That is a BUILD cost, not a
+use-of-system charge, and it is not locational - so the model prices the grid the same
+way whether a plant connects into 5,500 MW of headroom in KwaZulu-Natal or into zero in
+the Northern Cape. The corridor duals from the regional LP are the raw material for
+fixing that, and they already exist.
+
+Congestion is PRODUCED BUT NOT PRICED. The `txa_` shadow prices come out of every
+regional solve and are discarded. Converting them into a congestion charge is the
+smallest step available toward what Policy Position 20 asks for.
+
+The four remaining absences (standby, legacy, subsidy, distribution) are outside what a
+dispatch and capacity-expansion model should attempt. They belong to tariff design, not
+to system modelling, and the honest position is to say so rather than approximate them.
