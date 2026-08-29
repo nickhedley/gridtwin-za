@@ -6,7 +6,7 @@
   "compiled": "2026-08-27",
   "cod_note": "cod is present only where a date was verified from a named source. Projects commissioned BEFORE the IPP Office as_at date sit inside provincial aggregates and will never appear by name, so absence from the named files is expected. Only projects with a cod AFTER as_at must be named somewhere.",
   "connection_note": "A 'connection' object records a VERIFIED grid connection where one is published. It never overwrites derived fields; reea_projects.json keeps its computed sub/subkm so a wrong heuristic stays visible rather than being silently corrected.",
-  "fingerprint": "gtza-6b0cfe4c16136faf",
+  "fingerprint": "gtza-a4cb23b744a2385b",
   "fingerprint_method": "sha256 over the body EXCLUDING meta, canonicalised as json.dumps(sort_keys=True, separators=(',',':')), prefixed gtza-, first 16 hex. Same method as the generated files. NOTE a fingerprint proves the file has not been corrupted; it does NOT prove the contents are right, because it is recomputed over whatever is there."
  },
  "projects": [
@@ -46,7 +46,8 @@
    "mw_installed": 100,
    "mw_contracted": 100,
    "route": "private",
-   "method": "wheeling"
+   "method": "wheeling",
+   "cod_note": "NO VERIFIED COD. A December 2025 commercial operation date was reported to the maintainer 28 Aug 2026 but is UNSOURCED, so no `cod` field is set. It matters beyond the date: this register covers 1 Jan to 30 Jun 2026 by its own metadata, so a Dec 2025 COD would mean PFL has mis-binned the project and its 100 MW belongs in the pre-2026 private bucket rather than in by_source.private. The MW are counted correctly either way — only the period would move. DO NOT invent a January 2026 date to make it fit the window: `cod` is present only where a date was verified from a named source, and validate_capacity already skips undated projects by design rather than failing."
   },
   {
    "name": "Impofu North",
