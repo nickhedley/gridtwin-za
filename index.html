@@ -6247,7 +6247,14 @@ function bldRepDays(n){
 // worker template literal, and INTERPOLATED into it - the worker runs in its own
 // context and cannot see page scope, so a bare reference would throw there. Referenced
 // again by the status message below, so the value exists exactly once.
-const BLD_TIME_LIMIT_S = 120;
+// Seconds the in-browser solver may spend. Raised from 120 to 900 on 28 Aug 2026 after
+// measuring that the Grid build pace is SLOW, NOT INTRACTABLE: it solves to Optimal in
+// 615 s and builds 45.8 GW. At 120 s it silently returned "build nothing".
+//
+// A long limit is acceptable here ONLY because the solve runs in a Web Worker, so the
+// page stays responsive. Do not raise it further without checking that assumption still
+// holds - a 15-minute block on the main thread would be unusable.
+const BLD_TIME_LIMIT_S = 900;
 
 const BLD_WORKER_SRC = `
 let highs = null;
@@ -6681,13 +6688,13 @@ function renderBuildResult(res, rate, opts){
   if (res.Status && res.Status !== 'Optimal'){
     const why = res.Status === 'Time limit reached'
       ? 'The solver ran out of time before proving an optimal answer, so there is nothing '
-        + 'reliable to show. Measured 28 Aug 2026: the build pace is what decides this. '
-        + 'Historical, IRP and Masterplan paces all solve in 75\u201386 seconds. The Grid '
-        + 'pace does not solve at all \u2013 it is a cliff, not a gradual slowdown, and '
-        + 'demand growth and a gas ban make no further difference once you are over it. '
-        + '<strong>Drop to Masterplan pace or slower.</strong> Problem SIZE is not the issue: '
-        + 'every scenario builds the same 255,181-row model, so nothing is gained by '
-        + 'simplifying elsewhere.'
+        + 'reliable to show \u2013 and nothing here is a partial answer you can lean on. '
+        + 'Measured 28 Aug 2026: the BUILD PACE decides this. Historical, IRP and '
+        + 'Masterplan solve in 75\u201386 seconds. The Grid pace is slow rather than '
+        + 'impossible \u2013 it solves in about 10 minutes, which is why the limit is now '
+        + BLD_TIME_LIMIT_S + ' seconds. If you have hit this anyway, <strong>drop one pace '
+        + 'step</strong>. Problem SIZE is not the issue: every scenario builds the same '
+        + '255,181-row model, so simplifying elsewhere gains nothing.'
       : 'The solver returned "' + res.Status + '". No usable plan was produced.';
     host.innerHTML = '<div style="font-size:11.5px;color:var(--alert,#C4785A);line-height:1.5">'
       + '<strong>No optimal solution \u2013 results withheld.</strong><br>' + why + '</div>';
@@ -7306,13 +7313,13 @@ function renderBuildRegional(res, rate, opts){
   if (res.Status && res.Status !== 'Optimal'){
     const why = res.Status === 'Time limit reached'
       ? 'The solver ran out of time before proving an optimal answer, so there is nothing '
-        + 'reliable to show. Measured 28 Aug 2026: the build pace is what decides this. '
-        + 'Historical, IRP and Masterplan paces all solve in 75\u201386 seconds. The Grid '
-        + 'pace does not solve at all \u2013 it is a cliff, not a gradual slowdown, and '
-        + 'demand growth and a gas ban make no further difference once you are over it. '
-        + '<strong>Drop to Masterplan pace or slower.</strong> Problem SIZE is not the issue: '
-        + 'every scenario builds the same 255,181-row model, so nothing is gained by '
-        + 'simplifying elsewhere.'
+        + 'reliable to show \u2013 and nothing here is a partial answer you can lean on. '
+        + 'Measured 28 Aug 2026: the BUILD PACE decides this. Historical, IRP and '
+        + 'Masterplan solve in 75\u201386 seconds. The Grid pace is slow rather than '
+        + 'impossible \u2013 it solves in about 10 minutes, which is why the limit is now '
+        + BLD_TIME_LIMIT_S + ' seconds. If you have hit this anyway, <strong>drop one pace '
+        + 'step</strong>. Problem SIZE is not the issue: every scenario builds the same '
+        + '255,181-row model, so simplifying elsewhere gains nothing.'
       : 'The solver returned "' + res.Status + '". No usable plan was produced.';
     host.innerHTML = '<div style="font-size:11.5px;color:var(--alert,#C4785A);line-height:1.5">'
       + '<strong>No optimal solution \u2013 results withheld.</strong><br>' + why + '</div>';

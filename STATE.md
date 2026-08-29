@@ -581,9 +581,20 @@ grid + growth 5%        22,995,861  255,181     2.1     244.4   Time limit reach
 grid + 5% + no gas      22,995,861  255,181     2.0     244.6   Time limit reached       0.0
 ```
 
-**IT IS A CLIFF, NOT A SLOPE.** Masterplan solves in 86 s. Grid pace does not solve in
-240 s. Once over the edge, demand growth and a gas ban change nothing — all three
-failing rungs behave identically.
+**NOT A CLIFF — SLOW, NOT INTRACTABLE.** An earlier version of this note called it a
+cliff on the strength of the 240 s rows. That was wrong. Given a 2,400 s limit:
+
+```
+grid pace, long limit   22,995,545  255,181     2.1     614.9   Optimal                  45.8
+```
+
+Grid pace solves cleanly in 615 s and builds 45.8 GW. The 240 s rows were measuring the
+limit, not the model. Demand growth and a gas ban still change nothing once past the
+limit, because all three were being cut off at the same point rather than failing for
+different reasons.
+
+**THE CEILING IS A COMPUTE PROBLEM, NOT A FORMULATION ONE.** That is the better answer:
+nothing needs rearchitecting.
 
 **SIZE IS NOT THE VARIABLE.** Every rung builds the same 255,181-row, 23 MB model,
 varying by under 800 characters. Only the difficulty changes. Nothing is gained by
@@ -593,11 +604,43 @@ simplifying the formulation elsewhere, and the earlier carbon-cap theory is doub
 have rendered that as a plan: build nothing. Not a degraded answer, a confidently wrong
 one — the single best argument for the guard.
 
-THE PRACTICAL ENVELOPE: **Masterplan pace or slower.** The guard now says exactly that,
-citing the measurement rather than guessing.
+THE PRACTICAL ENVELOPE: every pace up to and including Grid solves, but Grid needs
+about ten minutes. `BLD_TIME_LIMIT_S` was raised 120 -> 900 to accommodate it.
 
-STILL OPEN: nothing was tested between Masterplan (2,500 MW/yr wind) and Grid
-(4,300 MW/yr), so the true edge sits in that gap. Also untested: whether a longer limit
-rescues Grid pace at all, or whether it is intractable rather than merely slow. That
-answer decides whether the ceiling is a compute problem or a formulation one, and it is
-one long offline run.
+That limit is only defensible because the solve runs in a WEB WORKER and the page stays
+responsive. Do not raise it further without rechecking that — a 15-minute block on the
+main thread would be unusable.
+
+### THE FULL CURVE, bisected 28-29 Aug 2026
+
+```
+pace, MW/yr wind        solve s   status               built GW
+2,500  masterplan          90.5   Optimal                  21.2
+3,000                     557.3   Optimal                  36.3
+3,500                     720.6   Optimal                  38.1
+4,000                     782.6   Optimal                  41.8
+4,300  grid               614.9   Optimal                  45.8
+8,600  2x grid            906.5   Time limit reached        0.0
+```
+
+THE STEEP PART IS BETWEEN 2,500 AND 3,000. A 20% pace increase makes the solve SIX
+TIMES slower, 90 s to 557 s. After that it flattens and is NOT monotonic — 4,300 solves
+faster than 3,500. So pace is not a clean predictor above 3,000; the solver's path
+matters more than the problem does.
+
+THE ENVELOPE HAS A REAL EDGE, and it is beyond every shipped pace. Everything in
+BLD_PACE solves. Doubling Grid pace does not, at 900 s.
+
+**SO THE GUARD SHOULD ALMOST NEVER FIRE IN NORMAL USE.** A user has to go beyond the
+fastest shipped pace to reach it. That is the right place for a limit: it protects
+against the pathological case without obstructing the intended range.
+
+**AND THE FRONTIER SCENARIOS IN RESULTS.md ARE OUTSIDE IT.** The 110 GW no-gas frontier
+is roughly this scale. It is reachable through the NATIONAL dispatch model, which is how
+RESULTS.md computes it, but NOT through the regional build LP inside 900 s. That is why
+the frontier congestion analysis (open item) remains untested and cannot be closed
+in-browser. State that limitation whenever the frontier is discussed alongside the
+network results — they come from different engines and only one of them scales that far.
+
+STILL OPEN: whether the frontier solves at all given hours rather than minutes. Worth
+one offline run, but it changes nothing about the product envelope.
