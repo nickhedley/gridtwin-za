@@ -1130,3 +1130,39 @@ NOTE FOR FRAMING: iron-air at 100 hours is a FOUR-DAY asset, marketed for multi-
 weather events, not seasonal shifting. Seasonal duty needs thousands of hours. At 45%
 round trip, summer-to-winter shifting discards 55% of the energy. Do not describe
 iron-air as seasonal storage.
+
+---
+
+## Long-duration storage is structurally starved by the dispatch — 30 Aug 2026
+
+Prompted by the question "couldn't iron-air charge in May and discharge in July?". The
+answer required correcting my own reasoning twice.
+
+**FIRST ERROR, mine: conflating surplus with curtailment.** I argued there was nothing
+to charge with because annual curtailment is 0.2 TWh. Storage charges from CHEAP energy,
+not only from spilled energy. Measured: the price floor is R690/MWh in every month, and
+there is 10.2 TWh of spare coal across 7,305 hours. A 45% store charging at R690 delivers
+at ~R1,533 against gas near R1,968 — the arbitrage is in the money.
+
+Also noted: South Africa curtails TODAY at low penetration for localised NETWORK reasons,
+which a single-node national model cannot represent at all.
+
+**FIXED — charging horizon was 25 hours.** `anticipatedShortfall` looked one day ahead to
+set the charge target, which is right for a 4-10 hour battery and useless for a 100-hour
+store. Now scales with the longest storage on the system, capped at 168 hours because
+beyond a week perfect foresight does more work than the storage does. Suite 817/817.
+
+**NOT FIXED, AND IT IS THE BINDING ONE — efficiency merit order.** `tierCharge` fills
+best-round-trip-first: lithium 0.88, vanadium 0.70, iron-air 0.45. Lithium empties daily
+so it always has room, absorbs the cheap charging, and iron-air is never reached. Fixing
+the horizon changed July gas by ZERO for exactly this reason.
+
+Efficiency-first is correct within an hour and wrong across a week. The right rule fills
+the LONG store when a LONG event is coming, accepting worse round trip, because lithium
+cannot hold energy that far. That is a dispatch rewrite, not a tweak.
+
+**CONSEQUENCE FOR A PUBLISHED RESULT.** "Iron-air changes July gas by exactly zero in all
+ten years" was measured on a dispatch that structurally cannot charge it. The finding may
+well survive — 45% round trip is punishing and the July deficit is large — but it has not
+been tested fairly. RESULTS.md now marks it PROVISIONAL. Do not repeat it externally
+until the merit order is addressed.

@@ -5092,10 +5092,27 @@ function simulate(u, prof, outPath){
   // Minimum stable level floor for hour h, used when clamping the reserve
   // withholding so coal is never pushed below what committed units can do.
   const ucMSLraw = h => (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? ucMinStable[h] : 0;
+  // HORIZON SCALES WITH THE LONGEST STORAGE ON THE SYSTEM. Fixed at 25 hours until
+  // 30 Aug 2026, which is right for a 4-10 hour battery and far too short for anything
+  // longer: a 100-hour iron-air store looking one day ahead never sees a reason to
+  // fill, because a single day's anticipated shortfall is trivial against 2 TWh of
+  // capacity. The asset was being dispatched as if it were a daily battery.
+  //
+  // This is the charge-from-COAL path, so it does not need a renewable surplus to
+  // exist - the question is whether cheap energy is available, not whether energy is
+  // being spilled. That distinction matters in a system like South Africa's where the
+  // price floor is coal at ~R690/MWh and gas clears near R1,968: a 45%-efficient store
+  // charging at R690 delivers at ~R1,533, which is in the money against gas.
+  //
+  // Capped at 168 hours (one week). Beyond that the perfect-foresight assumption does
+  // more work than the storage does - no operator knows next month's net load - and a
+  // longer horizon would flatter long-duration assets rather than test them.
+  const _longestStoreH = Math.max(25, Math.min(168,
+    Math.round(battPower > 0 ? (battEnergy / Math.max(1, battPower)) * 1.5 : 25)));
   const anticipatedShortfall=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
     let sum=0;
-    const end=Math.min(HOURS,h+25);
+    const end=Math.min(HOURS,h+_longestStoreH);
     for(let k=h+1;k<end;k++){ const gap=netLoadPre[k]-coalAvail; if(gap>0) sum+=gap; }
     anticipatedShortfall[h]=sum;
   }

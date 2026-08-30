@@ -911,6 +911,52 @@ So seasonal storage needs BOTH a large surplus and a large deficit, and in these
 scenarios they never co-occur. That is a stronger and more general finding than "storage
 does not help in July".
 
+### CORRECTION, 30 Aug 2026: I CONFLATED SURPLUS WITH CURTAILMENT
+
+The paragraph above says a seasonal store "would have nothing to charge with" because
+annual curtailment is 0.2 TWh. **That reasoning is wrong.** Storage charges from CHEAP
+energy, not only from energy that would otherwise be spilled. Measured on the Seriti
+scenario:
+
+```
+price floor            R690/MWh in EVERY month - coal sets it, and it never goes lower
+spare coal capacity    10.2 TWh across 7,305 hours, with 10 GW of coal retained
+```
+
+So there IS cheap energy available all year. A 45%-efficient store charging at R690
+delivers at about R1,533/MWh, against gas clearing near R1,968. **Long-duration
+arbitrage against gas is in the money**, and the model was not doing it.
+
+South Africa also curtails today at low penetration for NETWORK reasons - localised
+Cape constraints - which a single-node national model cannot see at all. That is a real
+limitation of this engine, not evidence that no surplus exists.
+
+### TWO DISPATCH DEFECTS FOUND, ONE FIXED
+
+**FIXED - the charging horizon was 25 hours, fixed.** `anticipatedShortfall` summed the
+next 25 hours to set the charge target. That is right for a 4-10 hour battery and
+useless for a 100-hour store: one day's anticipated shortfall is trivial against 2 TWh,
+so iron-air never saw a reason to fill. It now scales with the longest storage on the
+system, capped at one week - beyond that perfect foresight does more work than the
+storage does.
+
+**NOT FIXED - efficiency merit order starves long-duration storage.** `tierCharge` fills
+BEST ROUND TRIP FIRST: lithium 0.88, then vanadium 0.70, then iron-air 0.45. Lithium
+empties every day, so it always has room, so it absorbs the cheap charging and iron-air
+is never reached. Fixing the horizon changed July gas by nothing at all for exactly this
+reason.
+
+Efficiency-first is right for a single hour and wrong across a week: the correct rule
+fills the LONG store when a LONG event is coming, even at worse round trip, because
+lithium cannot hold energy that far. That is a real dispatch rewrite and has not been
+attempted.
+
+**SO THE HEADLINE RESULT IS NOW PROVISIONAL.** "Iron-air changes July gas by exactly
+zero in all ten years" was measured on a dispatch that structurally cannot charge it.
+The finding may survive - the efficiency penalty is severe and the July deficit is large
+- but it has not been tested against a dispatch that gives long-duration storage a fair
+chance. Do not repeat the claim externally until it has.
+
 ### WHAT A SEASONAL LOOKAHEAD WOULD AND WOULD NOT FIX
 
 The dispatch has NO lookahead of any kind. Tiers are sorted by round-trip efficiency, so
