@@ -941,3 +941,36 @@ Now `href="gridtwin-3d/"` — trailing slash matters, since without it some serv
 redirect and some do not. An `audit.py` check pins it, because **no harness notices a
 broken link**: a page that never loads produces no error anywhere in the suite. Verified
 the check fails on the old form.
+
+---
+
+## SOURCES.md and CALENDAR.md refreshed, 30 Aug 2026
+
+Both were written at the split on 27 Aug and neither had been touched since, while a
+great deal changed. Stale documentation is this project's most persistent failure mode -
+`HYDRA_CENTRAL_ZERO`, the `profiles.json` metadata and the `carbonPrice` open item were
+all wrong for the same reason - so these two files are the ones most likely to mislead
+if left.
+
+CALENDAR: the EPP submission moved from a hard deadline to a done entry with what to
+watch for next. **NERSA Trading Rules, 30 September, is now the nearest binding date and
+nothing has been drafted** - though the locational and congestion work is directly
+reusable, since Trading Rules govern how wheeling actually clears. Added the TDP as a
+rolling source that moves four constants, the carbon-tax suspension watch, the two
+unverified basemaps, and Mulilo's pending COD.
+
+SOURCES: added six loaded sources that had accumulated without being registered - the
+EPP gazette, the regional multi-year profiles, the Form Energy and Tubatse transactions
+behind the storage capex, and the REEA records behind the Impofu and Koruson connectors.
+
+TWO NEW SECTIONS, and they are the useful part:
+
+**Sources used for CONSTANTS, not for data files.** Six numbers in `FIXED` rest on a
+source that populates no JSON - `txRPerKWyr`, `acapIronAir`, `acapVrfb`, `acapPs`,
+`carbonTaxRPerT` and the FX rate. They were invisible to a register organised by file,
+which is exactly how a constant drifts from its source unnoticed.
+
+**Sources CONSULTED AND REJECTED.** NREL ATB cannot corroborate the vanadium constant -
+it covers lithium only. PyPSA-ZA's cost comparison answers a different question because
+it co-optimises investment and operation. Both were investigated at length; recording
+the negative result stops the next session repeating the work.

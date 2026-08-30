@@ -22,7 +22,12 @@ superseded queue entries. Never add the delta. See RULES.md.
 | Eskom weekly system status | weekly | drift detector only | `validate_capacity.js` |
 | NERSA registrations | rolling | as at last ingest | `nersa_registrations.json` |
 | DFFE REEA | rolling | 2,597 authorisations | `reea_projects.json` - permits, not commissioning |
-| Eskom TDP | annual | as at last ingest | `tdp_projects.json` |
+| Eskom TDP | annual | 2025-2034 edition | `tdp_projects.json`; ALSO underpins the storage and transmission capex constants |
+| Revised Electricity Pricing Policy | one-off, for comment | Gazette 55257, GN 7852, 28 Aug 2026 | the price-component mapping in RESULTS.md; submission made 27 Sep |
+| Renewables.ninja / MERRA-2, regional | static | 2014-2023, ten years | `profiles_regional_multiyear.json` via `weatherYearNational()` - CAPACITY-weighted, bias-corrected 0.848 |
+| Form Energy / Google / Xcel transaction | one-off | 30 GWh, ~USD 77/kWh pre-incentive | `acapIronAir` 12,940 R/kW-yr |
+| Eskom Tubatse pumped storage | one-off | R35.9bn, 1.5 GW / 21 GWh, JET plan | `acapPs` 2,360 R/kW-yr |
+| DFFE REEA, Red Cap / Impofu | rolling | as at last ingest | the Impofu and Koruson connector endpoints in `transmission_lines.geojson` |
 
 ## Watched, not yet loaded
 
@@ -35,7 +40,10 @@ superseded queue entries. Never add the delta. See RULES.md.
 | Seriti Green monthly simulation | independent SA grid model, published monthly since Jan 2026 | first read Aug 2026; differential test, NOT a validation set |
 | Oxpeckers | complementary project data | their data is a validation set |
 | #PowerTracker | primary source for wheeled commissioning | identified 17 Aug 2026 |
-| NREL ATB | storage capex cross-check | needed before the vanadium constant is adopted |
+| NREL ATB | storage capex cross-check | CHECKED 28 Aug 2026 and it CANNOT do the job: ATB covers lithium only, with no flow-battery or iron-air line. `acapVrfb` stays single-source |
+| PFL IPP Knowledge Hub COD table | settles Mulilo's COD month | deep links 404; navigate Research > Knowledge Hub |
+| NERSA Trading Rules | governs how wheeling and trading clear | comment due 30 Sep 2026; the locational work is directly reusable |
+| #PowerTracker | primary source for wheeled commissioning | identified 17 Aug 2026, not yet ingested |
 
 ---
 
@@ -96,3 +104,50 @@ or email pflenquiry.gsb@uct.ac.za The extracted H1 2026 table is committed as
 split sums to its own stated total.
 
 ---
+
+---
+
+## Sources used for CONSTANTS, not for data files
+
+These do not populate a JSON file, but a number in `FIXED` rests on each. Changing the
+source means changing the constant, so they belong in this register.
+
+```
+Eskom TDP 2025-2034      14,500 km + 210 transformers for 56 GW at >R390bn
+                         = R6,964/kW overnight, 40-yr life at 8% -> R584/kW-yr.
+                         Validates txRPerKWyr 600 as a national AVERAGE.
+                         The locational spread around it (R150 Gauteng to R735 Hydra
+                         Central) comes from the corridor graph, not from the TDP.
+Form Energy transaction  USD ~77/kWh PRE-INCENTIVE (the ~33 figure is after US 45X
+                         credits, which South Africa does not get) -> acapIronAir.
+Vanadium turnkey range   USD 450/kWh at 8h, 25-yr life -> acapVrfb 5,565.
+                         SINGLE SOURCE. NREL ATB cannot corroborate it. Vanadium price
+                         swings alone moved systems 45-120/kWh over 2025-26, so treat
+                         +/-20% as the honest band.
+Tubatse                  R35.9bn for 1.5 GW (JET plan, 2022 rands), escalated four
+                         years at SA CPI -> R29,200/kW, 60-yr civil life -> acapPs.
+Carbon Tax Act Phase 2   R308/t headline from 1 Jan 2026, generation allowances up to
+                         85% -> carbonTaxRPerT 46. SEE CALENDAR: a suspension was under
+                         consideration and NERSA has disallowed tariff recovery to 2030.
+FX                       R16.50/USD, 180-day trailing average to 26 Aug 2026 (range
+                         15.90-17.25; spot 15.97). A PERIOD AVERAGE, deliberately - a
+                         capital constant must not move 8% on a currency tick.
+                         Supersedes the R16.21 and R16.80 used elsewhere in the file.
+```
+
+## Sources CONSULTED and rejected
+
+Recording these so they are not re-investigated.
+
+```
+NREL ATB                 for vanadium and iron-air: covers LITHIUM ONLY. Its 2024
+                         anchor of USD 334/kWh for 4h lithium in the US is a useful
+                         cross-check on acapBatt4h (~USD 194/kWh implied) - the gap is
+                         plausible, since South Africa buys Chinese rather than
+                         US-installed - but it cannot speak to the other chemistries.
+PyPSA-ZA cost comparison it CO-OPTIMISES investment and operation, so its "+20% for 95%
+                         CO2 reduction" compares two OPTIMISED builds. GridTwin
+                         dispatches a specified build. Not the same question; left out
+                         of validate_external deliberately, with the reasoning in that
+                         file so it is not re-added.
+```
