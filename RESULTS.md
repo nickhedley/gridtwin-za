@@ -1065,6 +1065,56 @@ CAVEATS, and they matter for how the 37% is read:
   system cost.
 - The serveable and chargeable limits are approximations from the pass-one dispatch.
 
+### OPPORTUNITY VALUE, from the duals — a number nobody here publishes
+
+The dual on each SOC balance row is what one more MWh in that store is worth in that
+hour. 35,040 rows parsed, 35,040 returned, so the mapping is sound.
+
+```
+tier      mean      p50      p90      max     R/MWh
+li        1,789    2,020    2,020    2,020
+fe        2,020    2,020    2,020    2,020
+```
+
+Stored energy is worth about R2,020/MWh at the margin - the scarcity ceiling. Iron-air's
+is HIGHER than lithium's because it is rarely the binding store, so its shadow price sits
+at the ceiling rather than being competed down. **That is the storage revenue signal, and
+it is not published for South Africa anywhere.**
+
+### ROLLING HORIZON — and a result that must NOT be read as it looks
+
+A full-year solve sees every hour before deciding anything; no operator does. Production
+cost models solve a window, step forward and carry SOC. Both now run.
+
+```
+                                July displacement    annual discharge   solve
+perfect foresight, full year      1,013 GWh (36.9%)        12.42 TWh    3.0 s
+rolling 168 h window, 24 h step   1,032 GWh (37.6%)        11.26 TWh    6.8 s (365 solves)
+rolling 336 h window, 48 h step   1,100 GWh (40.1%)        11.66 TWh    6.0 s (183 solves)
+```
+
+**LIMITED FORESIGHT APPEARS TO BEAT PERFECT FORESIGHT ON JULY. IT DOES NOT.** That
+combination is impossible for the quantity being optimised, and the explanation is that
+July displacement is NOT the objective. The LP maximises arbitrage VALUE across the whole
+year. Perfect foresight spends storage wherever the price spread is best, which is not
+necessarily July; the myopic runs cannot see those better opportunities and serve July
+more or less by accident. Annual discharge - closer to the actual objective - behaves
+correctly: 12.42 TWh with foresight against 11.26 and 11.66 without.
+
+SO DO NOT QUOTE THE ROLLING JULY FIGURES AS AN IMPROVEMENT. The honest reading is that
+the 37% is robust to foresight assumptions, which is the useful conclusion, and that
+comparing runs on a metric neither is optimising invites exactly this error.
+
+REMAINING GAPS AGAINST PROFESSIONAL PRACTICE, none of them fixed here:
+- The end-of-window floor is crude. A production model carries a VALUE FUNCTION on SOC
+  at the horizon; this requires the store to end where it started, which is conservative
+  but arbitrary.
+- Storage is not CO-OPTIMISED with commitment - coal commitment is fixed from pass one.
+- No self-discharge, which matters over 100 hours.
+- No cycle-life or degradation cost, so the LP cycles freely.
+- Reserve provision is not co-optimised against energy arbitrage, though the ancillary
+  work shows the two compete.
+
 NEXT: the 37% is large enough to justify embedding the LP in the engine rather than
 leaving it as a probe. The dual on the SOC balance is the opportunity value - the number
 the two-pass gate was approximating - and no South African study publishes it.

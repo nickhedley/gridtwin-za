@@ -1267,3 +1267,31 @@ pass one.
 
 NEXT: embed rather than probe. The dual on the SOC balance is the opportunity value the
 two-pass gate was approximating, and no South African study publishes it.
+
+---
+
+## Storage LP, improved toward professional practice — 30 Aug 2026
+
+Added to `storage_lp.js`: SOC DUALS and a ROLLING HORIZON.
+
+**OPPORTUNITY VALUE (duals on the SOC balance).** 35,040 rows parsed, 35,040 returned.
+Lithium mean R1,789/MWh, iron-air R2,020 — the scarcity ceiling. Iron-air's is HIGHER
+because it is rarely the binding store, so its shadow price is never competed down. This
+is the storage revenue signal and is not published for South Africa anywhere.
+
+**ROLLING HORIZON.** 168 h window / 24 h step = 365 solves in 6.8 s; 336/48 = 183 solves
+in 6.0 s. Both Optimal throughout. This is how a PCM limits foresight.
+
+**A TRAP RECORDED RATHER THAN HIDDEN.** The rolling runs show HIGHER July displacement
+than perfect foresight (37.6% and 40.1% vs 36.9%), which is impossible for the quantity
+being optimised. The explanation: July displacement is not the objective — the LP
+maximises annual arbitrage value, and perfect foresight spends storage wherever the
+spread is best, which need not be July. Annual discharge, closer to the real objective,
+behaves correctly (12.42 vs 11.26 / 11.66 TWh). **Do not quote the rolling July figures
+as an improvement.** The honest conclusion is that the 37% is robust to foresight
+assumptions.
+
+REMAINING GAPS, none fixed: crude end-of-window floor rather than a value function on
+SOC; storage not co-optimised with unit commitment; no self-discharge (matters over
+100 h); no cycle-life cost; reserve not co-optimised against arbitrage though the
+ancillary work shows they compete.

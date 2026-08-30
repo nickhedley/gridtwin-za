@@ -140,6 +140,87 @@ function makeDom(){
   console.log(`  LP: ${(lp.length/1e6).toFixed(1)} MB, ${d.tiers.length*N*3} variables`);
 
   const highs = await highsLoader({ locateFile: f => path.join(__dirname, 'node_modules/highs/build', f) });
+
+  // ── ROLLING HORIZON ───────────────────────────────────────────────────────
+  // THE PERFECT-FORESIGHT PROBLEM, and how production cost models handle it.
+  //
+  // The single full-year solve above sees every hour before deciding anything. No
+  // operator does. PCMs solve a WINDOW - typically 1-2 days for day-ahead markets,
+  // longer for storage studies - then step forward, carrying state of charge across.
+  // Foresight is limited to the window, which is the whole point.
+  //
+  // Running both is the useful thing: the full-year solve is an UPPER BOUND on storage
+  // value, the rolling solve is closer to achievable, and the GAP between them is the
+  // value of forecasting. That gap is a result in itself and is rarely reported.
+  //
+  // The window must exceed the longest store's duration or the run is rigged: a
+  // 100-hour asset inside a 48-hour window can never plan a full cycle, which is
+  // exactly the failure the 25-hour heuristic had.
+  const solveRolling = (windowH, stepH) => {
+    const soc = {}; for (const t of d.tiers) soc[t.k] = 0;
+    const sched = {}; for (const t of d.tiers) sched[t.k] = { chg: new Float64Array(N), dis: new Float64Array(N) };
+    let worst = 'Optimal', nSolves = 0;
+    for (let start = 0; start < N; start += stepH){
+      const end = Math.min(N, start + windowH);
+      const M = end - start; if (M < 2) break;
+      const LL = ['Minimize', ' obj:'];
+      const ob = [];
+      for (let i = 0; i < M; i++){
+        const p = d.mc[start + i];
+        for (const t of d.tiers){
+          ob.push(`${p >= 0 ? '+' : '-'} ${Math.abs(p).toFixed(4)} c_${t.k}_${i}`);
+          ob.push(`${p >= 0 ? '-' : '+'} ${Math.abs(p).toFixed(4)} d_${t.k}_${i}`);
+        }
+      }
+      LL.push('  ' + ob.join(' '));
+      LL.push('Subject To');
+      for (const t of d.tiers) for (let i = 0; i < M; i++){
+        if (i === 0)
+          LL.push(` bal_${t.k}_0: s_${t.k}_0 - ${t.eff.toFixed(4)} c_${t.k}_0 + d_${t.k}_0 = ${soc[t.k].toFixed(3)}`);
+        else
+          LL.push(` bal_${t.k}_${i}: s_${t.k}_${i} - s_${t.k}_${i-1} - ${t.eff.toFixed(4)} c_${t.k}_${i} + d_${t.k}_${i} = 0`);
+      }
+      for (let i = 0; i < M; i++){
+        LL.push(` srv_${i}: ` + d.tiers.map(t => `d_${t.k}_${i}`).join(' + ') + ` <= ${Math.max(0, d.serveable[start+i]).toFixed(2)}`);
+        LL.push(` chg_${i}: ` + d.tiers.map(t => `c_${t.k}_${i}`).join(' + ') + ` <= ${Math.max(0, d.chargeable[start+i]).toFixed(2)}`);
+      }
+      // END-OF-WINDOW FLOOR. Without it the last window hours dump everything, because
+      // stored energy has no value past the horizon - the classic rolling-horizon
+      // artefact. Requiring the store to end where it started removes the free lunch.
+      // A production model would use a value function here; this is the crude version
+      // and it is deliberately conservative.
+      for (const t of d.tiers)
+        LL.push(` endfloor_${t.k}: s_${t.k}_${M-1} >= ${Math.min(soc[t.k], t.E * 0.5).toFixed(3)}`);
+      LL.push('Bounds');
+      for (const t of d.tiers) for (let i = 0; i < M; i++){
+        LL.push(` 0 <= c_${t.k}_${i} <= ${t.P}`);
+        LL.push(` 0 <= d_${t.k}_${i} <= ${t.P}`);
+        LL.push(` 0 <= s_${t.k}_${i} <= ${t.E}`);
+      }
+      LL.push('End');
+      const r2 = highs.solve(LL.join('\n'), { time_limit: 60 });
+      nSolves++;
+      if (r2.Status !== 'Optimal'){ worst = r2.Status; continue; }
+      // Keep only the STEP hours, then advance. Keeping the whole window would
+      // double-count the overlap and reintroduce the foresight we are trying to limit.
+      const keep = Math.min(stepH, M);
+      for (const [k, v] of Object.entries(r2.Columns)){
+        const m = k.match(/^([cds])_(\w+)_(\d+)$/); if (!m) continue;
+        const [, kind, tier, is] = m; const i = +is;
+        if (i >= keep || !sched[tier]) continue;
+        if (kind === 'c') sched[tier].chg[start + i] = v.Primal || 0;
+        if (kind === 'd') sched[tier].dis[start + i] = v.Primal || 0;
+      }
+      // Carry SOC forward from the last KEPT hour.
+      for (const t of d.tiers){
+        let sv = soc[t.k];
+        for (let i = 0; i < keep; i++) sv += sched[t.k].chg[start+i] * t.eff - sched[t.k].dis[start+i];
+        soc[t.k] = Math.max(0, Math.min(t.E, sv));
+      }
+    }
+    return { sched, worst, nSolves };
+  };
+
   const t0 = Date.now();
   const res = highs.solve(lp, { time_limit: 600 });
   console.log(`  solved in ${((Date.now()-t0)/1000).toFixed(1)} s · status ${res.Status}`);
@@ -165,6 +246,59 @@ function makeDom(){
   }
   console.log(`\n  July gas that storage could displace: ${julTotal.toFixed(0)} GWh of ${d.julGas.toFixed(0)} GWh`);
   console.log(`  = ${(100*julTotal/Math.max(1,d.julGas)).toFixed(1)}% of July gas`);
-  console.log('\n  PERFECT FORESIGHT: the LP sees the whole year. This is an UPPER BOUND.');
+  // ── DUALS: the opportunity value of stored energy ─────────────────────────
+  // The dual on each SOC balance row is what one more MWh in that store is worth in
+  // that hour. It is the number the two-pass reservation price was approximating, and
+  // the quantity a storage developer actually wants. Rows come back index-keyed, so
+  // names are recovered from the LP text in order - the count match is the check.
+  {
+    const lines = lp.split('\n');
+    const ci = lines.findIndex(l => /^Subject To$/.test(l.trim()));
+    const bi = lines.findIndex((l, i) => i > ci && /^Bounds$/.test(l.trim()));
+    const names = [];
+    for (let i = ci + 1; i < (bi < 0 ? lines.length : bi); i++){
+      const m = lines[i].match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:/);
+      if (m) names.push(m[1]);
+    }
+    const rows = res.Rows || {};
+    console.log(`\n  constraint rows parsed ${names.length} · HiGHS returned ${Object.keys(rows).length}`
+      + (names.length === Object.keys(rows).length ? '  (match)' : '  MISMATCH - duals unreliable'));
+    if (names.length === Object.keys(rows).length){
+      const byTier = {};
+      Object.entries(rows).forEach(([k, v]) => {
+        const n = names[+k]; if (!n) return;
+        const m = n.match(/^bal_(\w+)_(\d+)$/); if (!m) return;
+        (byTier[m[1]] = byTier[m[1]] || []).push(Math.abs(v.Dual || 0));
+      });
+      console.log('\n  OPPORTUNITY VALUE of stored energy, R/MWh');
+      console.log('  tier      mean      p50      p90      max');
+      for (const [k, arr] of Object.entries(byTier)){
+        arr.sort((a,b)=>a-b);
+        const q = f => arr[Math.min(arr.length-1, Math.floor(arr.length*f))];
+        const mean = arr.reduce((a,b)=>a+b,0)/arr.length;
+        console.log(`  ${k.padEnd(6)}${mean.toFixed(0).padStart(10)}${q(0.5).toFixed(0).padStart(9)}`
+          + `${q(0.9).toFixed(0).padStart(9)}${arr[arr.length-1].toFixed(0).padStart(9)}`);
+      }
+    }
+  }
+
+  // ── ROLLING vs PERFECT ────────────────────────────────────────────────────
+  for (const [wH, sH] of [[168, 24], [336, 48]]){
+    const t1 = Date.now();
+    const { sched, worst, nSolves } = solveRolling(wH, sH);
+    let jul = 0, tot = 0;
+    for (const t of d.tiers) for (let h = 0; h < N; h++){
+      tot += sched[t.k].dis[h];
+      if (h >= 4344 && h < 5088) jul += sched[t.k].dis[h];
+    }
+    console.log(`\n  ROLLING ${wH} h window, ${sH} h step · ${nSolves} solves · `
+      + `${((Date.now()-t1)/1000).toFixed(1)} s · worst status ${worst}`);
+    console.log(`    July displacement ${(jul/1000).toFixed(0)} GWh `
+      + `(${(100*jul/1000/Math.max(1,d.julGas)).toFixed(1)}% of July gas) · annual discharge ${(tot/1e6).toFixed(2)} TWh`);
+  }
+
+  console.log('\n  PERFECT FORESIGHT gives the UPPER BOUND. The rolling runs limit');
+  console.log('  foresight to the window, as a production cost model does. The GAP');
+  console.log('  between them is the value of forecasting.');
   process.exit(0);
 })();
