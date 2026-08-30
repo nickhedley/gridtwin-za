@@ -50,6 +50,11 @@ CHECKS = [
     # routes. If this styling is lost, a straight line between two real substations
     # reads as a surveyed route and gets measured off a screenshot.
     ('route_indicative',                                           'indicative connector styling'),
+    # Navigation. The 3D map is at gridtwin-3d/index.html, so the link must point at
+    # the DIRECTORY with a trailing slash. It read "gridtwin-3d.html" until 30 Aug 2026,
+    # which 404s against that layout. No harness notices a broken link - a page that
+    # never loads produces no error anywhere in the suite.
+    ('href="gridtwin-3d/"',                                        '3D map link points at the directory'),
 ]
 
 path = sys.argv[1] if len(sys.argv) > 1 else '/mnt/user-data/outputs/index.html'

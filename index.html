@@ -483,7 +483,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel mapbox" id="nav-network">
-        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><a href="gridtwin-3d.html" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
+        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><!-- The 3D map lives at gridtwin-3d/index.html, NOT gridtwin-3d.html. Link to the
+             DIRECTORY with a trailing slash: without it some servers redirect and some 404.
+             The subfolder is also why that page fetches /nodal/... ABSOLUTE while this one
+             uses relative nodal/... - a page one level down resolving nodal/ relatively
+             would look in /gridtwin-3d/nodal/ and find nothing. Do not "harmonise" them. -->
+        <a href="gridtwin-3d/" target="_blank" rel="noopener" class="hbtn primary" style="margin-left:6px" title="Open the real transmission network in an interactive 3D map (new tab)">3D network map ↗</a></div>
         <div class="pb" style="padding:6px 8px 2px" id="mapholder"></div>
         <div class="legend">
           <span><i style="background:#4A3120"></i>Coal</span>
@@ -503,7 +508,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         line or label for exact figures.</p>
       <p style="font-size:11px;color:var(--ink2);line-height:1.6">
         This schematic is deliberately simplified. For the real thing, the
-        <a href="gridtwin-3d.html">3D network map</a> plots every transmission line at 220&nbsp;kV and
+        <a href="gridtwin-3d/">3D network map</a> plots every transmission line at 220&nbsp;kV and
         above, plus all 185 substations.</p>
       <p style="font-size:11px;color:var(--ink2);line-height:1.6">
         <strong>Note:</strong> Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points
