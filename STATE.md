@@ -780,3 +780,36 @@ fetched here. Confirm they render before treating this as done.
 
 An `audit.py` check now pins `World_Light_Gray_Base` so a revert to a keyless-broken
 provider is loud rather than silent.
+
+---
+
+## Private grid infrastructure on the map, 30 Aug 2026
+
+`transmission_lines.geojson` now carries `owner` and `line_type` on every feature, and
+the Impofu line is in it.
+
+```
+owner       NTCSA 447 · Red Cap Energy 1
+line_type   shared network 447 · single-project connection 1
+```
+
+**THE TAGGING IS A STATEMENT ABOUT THE SOURCE, NOT THE WORLD.** All 447 pre-existing
+features are NTCSA because this file is built from Eskom TDP and SAPP planning data,
+which contains no privately built assets BY CONSTRUCTION. It is not evidence that none
+exist — South Africa's longest privately permitted renewable line was missing from it
+until it was added by hand.
+
+`line_type` matters more than `owner` for the modelling: only a SHARED NETWORK asset
+creates headroom another developer can use. A single-project connection does not.
+Koruson's privately built main transmission substation (1.5 GW, EDF Power Solutions) is
+the shared kind and is still NOT represented.
+
+ADDED: Impofu - Thornhill - Chatty, 116 km, 132 kV, Red Cap Energy with Enel Green
+Power, serving the 330 MW Impofu complex. ROUTE INDICATIVE — three vertices from the
+published route description, not a surveyed centreline, which is the same convention
+the SAPP lines in this file already use.
+
+VERIFICATION NOTE worth keeping: my first check compared old and new features BY LABEL
+and reported a geometry change. The file has 65 DUPLICATE LABELS, so the lookup was
+matching a different feature. Compared positionally instead: zero mismatches across all
+447. Do not key on `label` in this file.
