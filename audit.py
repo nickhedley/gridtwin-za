@@ -41,6 +41,11 @@ CHECKS = [
     ('addSubstationLayer',                                         'substation dots'),
     ('Capture rate as the pipeline fills',                         'capture curve panel'),
     ('scheduleCaptureCurve',                                       'capture curve debounce'),
+    # Basemap. CARTO withdrew keyless access and watermarked every tile "API KEY
+    # REQUIRED" while still SERVING them - a silent degradation no automated check
+    # could see, because the layers on top are our own data. This pins the replacement
+    # so a revert is loud.
+    ('World_Light_Gray_Base',                                      'basemap: Esri light grey, keyless'),
 ]
 
 path = sys.argv[1] if len(sys.argv) > 1 else '/mnt/user-data/outputs/index.html'

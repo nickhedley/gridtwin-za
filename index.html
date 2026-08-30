@@ -1170,9 +1170,29 @@ function initResourceQuery(){
     center: [-29, 25], zoom: 5,
     minZoom: 4, maxZoom: 10,
   });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap contributors',
-    subdomains: 'abcd', maxZoom: 19
+  // BASEMAP SWAPPED 30 Aug 2026, CARTO -> Esri light grey canvas.
+  //
+  // CARTO withdrew keyless access to basemaps.cartocdn.com. The tiles still SERVE,
+  // which is why nothing broke, but every one now carries an "API KEY REQUIRED"
+  // watermark across it. A silent degradation rather than a failure - the map looked
+  // fine in every automated check because the layers on top are our own data.
+  //
+  // Esri chosen over OpenStreetMap raster for three reasons: the light grey canvas is
+  // the closest match to CARTO Positron so nothing else needed restyling; Esri is
+  // ALREADY a provider in this file (the satellite and reference layers in the rooftop
+  // tracer use it), so this adds no new third party; and OSM's tile usage policy
+  // discourages public-facing apps hitting their servers directly.
+  //
+  // Attribution is required and is set below. World_Light_Gray_Base serves to zoom 16;
+  // this map caps at 10, so the ceiling is irrelevant here.
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, HERE, Garmin, '
+      + '&copy; OpenStreetMap contributors',
+    maxZoom: 16
+  }).addTo(map);
+  // Place and road labels ride on top of the grey base as a separate reference layer.
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16, opacity: 0.9
   }).addTo(map);
 
   // SA bounding box rough clamp

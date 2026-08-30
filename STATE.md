@@ -753,3 +753,30 @@ it would not have been.
 
 NOTE ARM itself sits in the accounted-for list, not this queue, so neither change alters
 today's output. Both were tested against injected cases rather than assumed.
+
+---
+
+## Basemap: CARTO -> Esri, 30 Aug 2026
+
+The resource map carried an "API KEY REQUIRED · carto.com/basemaps/apikey" watermark
+across every tile. CARTO has withdrawn keyless access to `basemaps.cartocdn.com`.
+
+**THE FAILURE MODE IS THE INTERESTING PART.** The tiles still SERVE — they just arrive
+watermarked. Nothing threw, no request failed, and every harness passed throughout,
+because the substations, corridors and project dots are our own data drawn on top. Only
+a human looking at the page could see it. Worth remembering when judging what a green
+suite does and does not prove.
+
+REPLACEMENT: Esri `Canvas/World_Light_Gray_Base` plus `World_Light_Gray_Reference` for
+labels. Chosen because the grey canvas is the closest match to CARTO Positron so nothing
+else needed restyling; Esri is ALREADY a provider in this file (the rooftop tracer's
+satellite and reference layers); and OSM's tile policy discourages public-facing apps
+hitting their servers directly. Attribution set as Esri requires. Serves to zoom 16 and
+this map caps at 10.
+
+**NOT VERIFIED IN A BROWSER.** The container's egress proxy blocks
+`server.arcgisonline.com` (`x-deny-reason: host_not_allowed`), so the tiles could not be
+fetched here. Confirm they render before treating this as done.
+
+An `audit.py` check now pins `World_Light_Gray_Base` so a revert to a keyless-broken
+provider is loud rather than silent.
