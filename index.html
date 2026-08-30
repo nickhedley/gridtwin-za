@@ -2454,10 +2454,21 @@ let redzData = null;
       runDC();
       // Mirror the clicked region into the wheeling tab, so the generation end
       // follows the map instead of keeping a stale selection.
+      // FAIL LOUDLY, not silently. Until 30 Aug 2026 this guard just did nothing when
+      // the clicked region was not in the dropdown - and the dropdown was missing
+      // Gauteng and KwaZulu-Natal on the generation side and four regions on the
+      // consumption side. Clicking those provinces appeared to do nothing at all, with
+      // no error. Both lists now carry all ten regions, so the mismatch branch should
+      // be unreachable; it logs rather than passing over in silence if it is not.
       const wg = document.getElementById('wheelGenRegion');
-      if (wg && [...wg.options].some(o => o.value === region)){
-        wg.value = region;
-        if (typeof calcWheeling === 'function') calcWheeling();
+      if (wg){
+        if ([...wg.options].some(o => o.value === region)){
+          wg.value = region;
+          if (typeof calcWheeling === 'function') calcWheeling();
+        } else {
+          console.warn('wheeling: map returned region "' + region + '" which is not an '
+            + 'option in wheelGenRegion. REGION_CENTROIDS and the dropdown have drifted apart.');
+        }
       }
     } catch(err) {
       panel.innerHTML = `<p style="color:var(--alert);font-size:11px">Error: ${err.message}<br>
@@ -3449,17 +3460,23 @@ function printPrefeas() {
                 <option value="North West">North West</option>
                 <option value="Limpopo">Limpopo</option>
                 <option value="Mpumalanga">Mpumalanga</option>
+                <option value="Gauteng">Gauteng</option>
+                <option value="Kwazulu Natal">KwaZulu-Natal</option>
               </select>
             </div>
             <div>
               <label style="font-weight:600;display:block;margin-bottom:3px">Consumption region</label>
               <select id="wheelConsRegion" style="width:100%;padding:4px 6px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px">
+                <option value="Northern Cape">Northern Cape</option>
+                <option value="Hydra Central">Hydra Central</option>
+                <option value="Eastern Cape">Eastern Cape</option>
+                <option value="Western Cape">Western Cape</option>
+                <option value="Free State">Free State</option>
+                <option value="North West">North West</option>
+                <option value="Limpopo">Limpopo</option>
+                <option value="Mpumalanga">Mpumalanga</option>
                 <option value="Gauteng">Gauteng</option>
                 <option value="Kwazulu Natal">KwaZulu-Natal</option>
-                <option value="Western Cape">Western Cape</option>
-                <option value="Eastern Cape">Eastern Cape</option>
-                <option value="Mpumalanga">Mpumalanga</option>
-                <option value="Limpopo">Limpopo</option>
               </select>
             </div>
             <div>

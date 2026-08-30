@@ -813,3 +813,51 @@ VERIFICATION NOTE worth keeping: my first check compared old and new features BY
 and reported a geometry change. The file has 65 DUPLICATE LABELS, so the lookup was
 matching a different feature. Compared positionally instead: zero mismatches across all
 447. Do not key on `label` in this file.
+
+---
+
+## Wheeling region selector, and Koruson — 30 Aug 2026
+
+### BUG FIXED: both wheeling dropdowns were incomplete and the map mirror failed silently
+
+Reported as "won't let me select Mpumalanga and KwaZulu-Natal". The cause was broader:
+
+```
+map click can return   all 10 regions (REGION_CENTROIDS)
+wheelGenRegion had      8 — missing Gauteng, Kwazulu Natal
+wheelConsRegion had     6 — missing Northern Cape, Hydra Central, Free State, North West
+```
+
+Clicking one of the missing provinces hit
+`if (wg && [...wg.options].some(o => o.value === region))`, found nothing, and did
+NOTHING — no error, no message, no console warning. The selector simply appeared dead.
+
+There was no reason for either restriction: generators exist in KwaZulu-Natal and
+consumers exist in the Northern Cape. Both lists now carry all ten regions, and the
+mirror logs a warning if a region ever fails to match, so REGION_CENTROIDS and the
+dropdowns cannot drift apart again in silence.
+
+### KORUSON: substation tagged, NO LINE ADDED
+
+Koruson's main transmission substation was privately constructed by EDF Power Solutions
+to accommodate up to 1.5 GW — the SHARED kind of private asset, built so later projects
+in the region can connect rather than only serving Koruson 1. That distinction is the
+one that matters for modelling: a single-project connection creates no headroom for
+anyone else.
+
+`substations_compact.json` now carries `owner`, `built_by`, `line_type` and
+`headroom_built_mw` on that entry. Fingerprint `gtza-feb8236ccf9035ca`.
+
+**NO LINE WAS ADDED, deliberately.** The sourced fact is a SUBSTATION. I have seen no
+published route or geometry for its connecting lines, and a fabricated centreline would
+be worse than an absent one. The Impofu line was added because its route was described
+in a published source; this is not.
+
+**ALSO FLAGGED, NOT FIXED:** the Koruson entry still carries `planned: true` from the
+DBSA register. The cluster is operating, so the substation is built and the flag is
+probably stale — but that has not been confirmed against a commissioning source, so it
+is left as found rather than flipped on inference. Worth resolving, and worth checking
+whether other `planned` entries have the same problem.
+
+ABSENCE OF AN OWNER TAG IN THIS FILE MEANS UNKNOWN, not NTCSA. The register is sourced
+from DBSA, NTCSA GIS and Eskom, none of which record private ownership.

@@ -17,11 +17,12 @@
   "licence": "CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/",
   "terms": "This dataset is original compilation work. You may view, share and link to it with attribution. You may NOT use it commercially, distribute modified versions, or incorporate it into another product. Underlying public sources retain their own licences and are credited in the source field.",
   "commercial": "Commercial licensing: https://github.com/nickhedley/gridtwin-za",
-  "fingerprint": "gtza-d76783f127763e7a",
+  "fingerprint": "gtza-feb8236ccf9035ca",
   "compiled": "2026-08-13",
   "juno_correction": "Juno was labelled Northern Cape. It sits at -31.608, 18.444 in Matzikama Local Municipality, West Coast District, WESTERN CAPE - Eskom's own Juno-Gromis project documents describe Gromis as Northern Cape near Kleinsee and Juno as Western Cape near Vredendal, and Juno's only two lines run to Aurora and Helios on the Cape network. Corrected 14 Aug 2026.",
   "field_rename": "The per-substation region field was renamed r -> area on 14 Aug 2026. It holds an Eskom TRANSMISSION SUPPLY AREA, not a province: the ten values include Hydra Central, which is a Karoo supply area spanning the Northern Cape / Eastern Cape provincial boundary and is not a province at all. headroom_summary.json and tdp_projects.json meta.line_km_by_province are keyed the same way (both carry Hydra Central); reea_projects.json 'province' is genuinely provincial (nine values, no Hydra Central) and must NOT be matched against this field.",
-  "pluscode_count": 1
+  "pluscode_count": 1,
+  "ownership_note": "owner / built_by / line_type added 30 Aug 2026, currently on one entry. The register is sourced from DBSA, NTCSA GIS and Eskom, none of which record private ownership, so ABSENCE OF A TAG MEANS UNKNOWN, not NTCSA. Koruson is tagged because its private construction is separately documented."
  },
  "subs": [
   {
@@ -793,7 +794,12 @@
    "src": "dbsa",
    "kv": 400,
    "planned": true,
-   "area": "Hydra Central"
+   "area": "Hydra Central",
+   "owner": "EDF Power Solutions",
+   "built_by": "EDF Power Solutions (privately constructed main transmission substation)",
+   "line_type": "shared network",
+   "headroom_built_mw": 1500,
+   "note": "PRIVATELY BUILT, and the SHARED kind - constructed to accommodate up to 1.5 GW so later renewable projects in the region can connect, not merely to serve Koruson 1. That distinction is what matters for modelling: a single-project connection creates no headroom for anyone else, this does. CAUTION: this entry still carries planned=true from the DBSA register. The Koruson cluster is operating, so the substation is built and the flag is probably stale - but it has NOT been confirmed against a published commissioning source, so it is left as found rather than flipped on inference. NO LINE ADDED: the sourced fact is a SUBSTATION. No route or geometry for its connecting lines has been published that I have seen, and a fabricated centreline would be worse than an absent one."
   },
   {
    "n": "Kriel",
