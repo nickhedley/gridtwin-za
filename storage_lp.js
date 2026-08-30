@@ -407,21 +407,27 @@ function makeDom(){
         const m = k.match(/^d_(\w+)_(\d+)$/); if (!m) continue;
         dis[+m[2]] += v.Primal || 0;
       }
-      // Re-dispatch with that schedule imposed, and read the new prices.
+      // Re-dispatch with that schedule imposed TWO-SIDED, and read the new prices.
+      // The cap version could only reduce storage output, so it could never confirm the
+      // LP's claim. This replaces the heuristic's decisions and reports how much of the
+      // schedule the engine could not physically follow.
       const back = probe(`
         const seriti = { newWindMW: 20000-FIXED.windMW, newPvMW: 25000-FIXED.pvUtilityMW,
           newNuclearMW: 0, coalEAFPct: 70, coalDecomMW: 32000, newCcgtMW: 25000,
           newBattMW: 20000, newBattHours: 10, newIronAirMW: 20000 };
         const forced = Float64Array.from(${JSON.stringify(dis.map(x=>Math.round(x*100)/100))});
-        const r = simulate({ ...state, ...seriti, _forcedDischargeMW: forced }, PROFILES);
+        const r = simulate({ ...state, ...seriti,
+          _forceStorageSchedule: { dis: forced, chg: forced } }, PROFILES);
         let jul = 0; for (let h=4344;h<5088;h++) jul += (r.stack.ccgt[h]||0)+(r.stack.diesel[h]||0);
-        return { mc: Array.from(r.marginalP), julGas: jul/1000, batt: r.E.batt/1e6 };
+        return { mc: Array.from(r.marginalP), julGas: jul/1000, batt: r.E.batt/1e6,
+                 clip: r._forceClipped };
       `);
       if (back.error){ console.log('  re-dispatch failed:', back.error.slice(0,120)); break; }
       let dp = 0; for (let h = 0; h < N; h++) dp += Math.abs(back.mc[h] - mc[h]);
       dp /= N;
+      const cl = back.clip ? ` · could not follow ${back.clip.disGWh.toFixed(0)} GWh of the schedule` : '';
       console.log(`  ${String(it).padEnd(6)}${dp.toFixed(1).padStart(16)}${back.julGas.toFixed(0).padStart(15)}`
-        + `${back.batt.toFixed(2).padStart(14)}${(r3.ObjectiveValue/1e9).toFixed(2).padStart(9)}`);
+        + `${back.batt.toFixed(2).padStart(14)}${(r3.ObjectiveValue/1e9).toFixed(2).padStart(9)}${cl}`);
       for (let h = 0; h < N; h++) mc[h] = DAMP * back.mc[h] + (1 - DAMP) * mc[h];
       if (dp < 1){ console.log('  CONVERGED - mean price movement under R1/MWh'); break; }
       prevJul = back.julGas;

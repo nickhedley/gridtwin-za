@@ -4839,6 +4839,25 @@ function simulate(u, prof, outPath){
   // but never more, and no infeasible state can be forced in through this door.
   // Null by default, so every existing path and harness is untouched.
   const _forcedDis = p._forcedDischargeMW || null;
+  // TWO-SIDED OVERRIDE, added 30 Aug 2026 as a DIAGNOSTIC, not a dispatch mode.
+  //
+  // `_forcedDischargeMW` is a CAP - it can only reduce what the heuristic does. That
+  // made the fixed-point test ONE-SIDED and unable to confirm or refute the storage
+  // LP's claim that 37% of July gas is being left on the table: where the LP wanted
+  // MORE discharge, the cap could not deliver it.
+  //
+  // This replaces the heuristic's storage decisions outright. It is deliberately NOT a
+  // dispatch mode: the schedule is optimised against prices from a DIFFERENT dispatch,
+  // so a model running on it is not self-consistent. It exists to answer one question -
+  // does the LP schedule actually reduce July gas when the engine really follows it.
+  //
+  // FEASIBILITY IS STILL ENFORCED. Discharge cannot exceed available state of charge or
+  // rated power; charge cannot exceed headroom in the store. Where the schedule asks for
+  // the impossible the engine does what it can and COUNTS the shortfall, because a test
+  // whose schedule was silently clipped would answer a different question than the one
+  // asked. Read _forceClipped in the result.
+  const _forceTwoSided = p._forceStorageSchedule || null;   // {dis, chg} Float64Arrays
+  let _forceClipDis = 0, _forceClipChg = 0, _forceHours = 0;
   const _resPrice = p._reservationPrice || null;   // {tierKey: Float64Array} or null
   const chargeWorthIt = (t, hr, costNow) => {
     if (!_resPrice || !_resPrice[t.k]) return true;          // inert without a price pass
@@ -5523,7 +5542,7 @@ function simulate(u, prof, outPath){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const btDis=tierDischarge(_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const _want = _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); const btDis=tierDischarge(_forceTwoSided ? _want : _want); if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
         // storage discharged ahead of coal here, so coal is above it in this hour's order
         if(topUp<=1){
@@ -5533,7 +5552,7 @@ function simulate(u, prof, outPath){
       } else {
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const btDis=tierDischarge(_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const _want = _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); const btDis=tierDischarge(_forceTwoSided ? _want : _want); if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
         if(btDis>1&&btDis<btLim-1) storageMarginal[h]='batt';
         else if(psDis>1&&psDis<psLim-1) storageMarginal[h]='ps';
       }
@@ -6059,7 +6078,7 @@ function simulate(u, prof, outPath){
     if(loadS[h] > peakGridLoad) peakGridLoad = loadS[h];
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
-  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,reserveHeldMW,resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }

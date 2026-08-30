@@ -1319,3 +1319,37 @@ FIVE GAPS ADDRESSED 30 Aug 2026 — four closed, one not closeable here.
    until a two-sided imposition exists** — which means replacing the storage dispatch,
    not limiting it.
 6. UNIT COMMITMENT CO-OPTIMISATION — still not closeable in a price-taker LP.
+
+---
+
+## The 37% is withdrawn — 30 Aug 2026
+
+Three rounds of testing, each revealing another layer:
+
+1. **Cap-only override.** July gas 2,751-2,816 against the heuristic's 2,742 — the
+   predicted 1,000 GWh saving did not appear. One-sided: a cap can only reduce.
+2. **Two-sided discharge override**, counting what the engine could not follow: about
+   3,000 GWh of an 11 TWh schedule, close to 30%.
+3. **But CHARGING was never overridden.** The store is still filled by the heuristic, so
+   it cannot discharge to the LP's plan. The clipping largely measures my incomplete
+   override, not the schedule.
+
+**CONCLUSION: retire it, do not chase it.** Every time the schedule is brought closer to
+the real engine the saving fails to appear, and the LP's objective is arbitrage VALUE not
+gas displacement. The 37% is best read as an accounting artefact of the price-taker
+formulation.
+
+Settling it properly needs storage inside the UNIT COMMITMENT — precisely what a
+price-taker LP is defined not to do — which is a model rebuild that should be justified
+by something better than a number that has failed three tests.
+
+**WHAT SURVIVES, and it is most of the value:**
+- Opportunity-value duals (lithium R1,563 mean, iron-air R1,925) — unpublished for SA.
+- The iron-air result, now tested under a heuristic, an LP, and a reserve-constrained LP.
+- Reserve versus arbitrage: iron-air's energy role HALVES when it must also hold reserve.
+- The rolling horizon agreeing with perfect foresight at 36.5%, once the terminal value
+  function replaced the crude floor.
+
+`_forceStorageSchedule` and `_forcedDischargeMW` remain in the engine as DIAGNOSTICS.
+Both default to null and neither is a dispatch mode. If the charge side is ever
+overridden too, the clipping number becomes meaningful and this can be revisited.

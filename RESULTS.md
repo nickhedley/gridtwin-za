@@ -1053,8 +1053,7 @@ round trip is simply punishing enough that the energy is better left in coal. Th
 provisional flag is REMOVED: "long-duration storage does not solve a winter wind drought"
 now holds under an optimal dispatch, not just a heuristic one.
 
-**THE HEURISTIC MAY BE UNDER-USING LITHIUM - BUT SEE THE ITERATION BELOW BEFORE
-QUOTING THIS.** The LP finds 995 GWh of July gas that lithium could displace and the
+**~~THE HEURISTIC MAY BE UNDER-USING LITHIUM~~ - WITHDRAWN 30 Aug 2026, see below.** The LP finds 995 GWh of July gas that lithium could displace and the
 heuristic does not, which would be 37% of July gas by the technology actually deployed.
 IMPOSING THAT SCHEDULE DID NOT REPRODUCE THE SAVING - the fixed-point test returned July
 gas of 2,751-2,816 against the heuristic's 2,742. The claim is UNVERIFIED. Full account
@@ -1195,11 +1194,44 @@ TWO EXPLANATIONS, and they are not equally flattering:
    heuristic gives, the cap cannot deliver it. Storage throughput FELL, 8.42 -> 7.91 TWh,
    which is the signature of a binding cap rather than a better schedule.
 
-So the honest status is UNVERIFIED, not disproved. The 37% claim rests on an accounting
-that the only available test cannot confirm, and that test is itself one-sided. **Do not
-repeat "the heuristic leaves 37% of July gas on the table" until a two-sided imposition
-is built.** That means letting the schedule raise discharge as well as cap it, which
-needs the storage dispatch replaced rather than limited.
+### THE TWO-SIDED TEST, ATTEMPTED - AND WHY I STOPPED
+
+A second override was built to replace the heuristic's discharge outright rather than
+cap it, and to COUNT what the engine could not follow:
+
+```
+round   July gas GWh   schedule the engine could not follow
+  1             2779                            3,843 GWh
+  2             2816                            3,398 GWh
+  3             2779                            2,850 GWh
+  4             2805                            2,847 GWh
+  5             2751                            3,044 GWh
+```
+
+About 3,000 GWh of a roughly 11 TWh schedule is not physically followable - close to
+30% of it.
+
+**BUT THE TEST IS STILL ONE-SIDED, AND I SHOULD NOT PRESENT THE CLIPPING AS A VERDICT.**
+Discharge was overridden; CHARGING was not. The store is still filled by the heuristic,
+so it cannot possibly discharge to the LP's plan - the clipping largely measures my own
+incomplete override, not the schedule's infeasibility.
+
+### RETIRE THE 37%, DO NOT CHASE IT
+
+Three rounds of testing have each revealed another layer, and the direction of travel is
+consistent: every time the schedule is brought closer to the real engine, the predicted
+saving fails to appear. Combined with the fact that the LP's objective is arbitrage value
+rather than gas displacement, the reasonable conclusion is that **the 37% was an
+accounting artefact of the price-taker formulation** and is not a real dispatch gap.
+
+WHAT WOULD SETTLE IT PROPERLY is storage inside the unit commitment - the thing a
+price-taker LP is defined not to do. That is a genuine model rebuild, and it should be
+justified by something better than chasing a number that has failed three tests.
+
+**DO NOT REPEAT "the heuristic leaves 37% of July gas on the table".** It is withdrawn.
+What survives is everything the LP established that did NOT depend on that accounting:
+the opportunity-value duals, the iron-air result, and the reserve-versus-arbitrage
+trade-off.
 
 **6. CO-OPTIMISATION WITH UNIT COMMITMENT. NOT CLOSED, AND NOT CLOSEABLE HERE.** A
 price-taker LP takes prices as GIVEN. Genuine co-optimisation means storage inside the
