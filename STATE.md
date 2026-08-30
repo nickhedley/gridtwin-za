@@ -1792,8 +1792,30 @@ The trim list, longest first:
 compliance-versus-policy distinction is real and belongs SOMEWHERE, but not in a slider
 tooltip.
 
-STILL OUTSTANDING: panel blurbs, the KPI cost note, the About text and the tab
-descriptions have NOT had this pass.
+### DONE: always-visible page prose
+
+```
+before   17 blocks · 5,929 characters
+after    16 blocks · 3,292 characters      44% removed
+
+KPI cost note           927 -> 415   kept what changes the number, cut the rest
+capture-rate blurb    1,257 -> 136   dropped the definition of capture rate
+Run the full model      745 -> 291   dropped the inventory of what it solves
+network map legend      540 -> 186   dropped the click-here instruction
+rooftop intro           544 -> 173   dropped the consumer-facing chattiness
+pipeline button         507 -> 200
+where-to-build blurb    488 -> 163
+build optimiser         488 -> 198
+single-node caveat      285 -> 247   substance kept, throat-clearing cut
+```
+
+**THE COLLAPSED METHODOLOGY WAS LEFT ALONE, deliberately.** About 12,000 characters sit
+behind `<details class="assump">` — "Model assumptions & caveats" — covering price
+formation, unit commitment, DC power flow, the risk model. That is exactly where detailed
+methodology belongs in a serious tool, and it is closed by default. The problem was never
+that the documentation existed; it was that definitions were on the working pages.
+
+STILL OUTSTANDING: the About tab itself and the project-planning tab descriptions.
 
 THE RULE TO APPLY: a note gives the SPEC and points at the tool. It does not pre-state
 outcomes, argue methodology, or carry provenance — those belong in RESULTS.md, STATE.md
@@ -1802,3 +1824,20 @@ for them.
 
 Scope is wider than the sliders: panel blurbs, the KPI cost note and the About text all
 want the same pass.
+
+---
+
+## A regression check that pinned wording rather than substance — 30 Aug 2026
+
+The prose trim fired `audit.py` twice, and both were the check being WRONG rather than
+the edit. It pinned a 79-character phrase — "curtailment payments to wind and solar
+contracted under REIPPPP are excluded" — and the shortened note still states that
+exclusion, in fewer words.
+
+**A regression check on prose should assert the CLAIM survives, not freeze the wording.**
+Otherwise every legitimate edit trips it, and people learn to re-pin without reading —
+which is worse than no check, because it looks like coverage.
+
+Re-pinned on substance: 'REIPPPP curtailment payments are excluded' and 'Neither is a
+tariff' as separate checks, so the not-a-tariff warning cannot be lost independently of
+the exclusion. Same for the pipeline rings. 36 -> 37 checks.

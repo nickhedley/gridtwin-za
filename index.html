@@ -394,7 +394,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote"><strong>Note on the cost figures:</strong> System cost is the annual total of fuel, carbon, generator start-up costs and the capex of newly-built capacity only &ndash; existing plants are treated as sunk, and curtailment payments to wind and solar contracted under REIPPPP are excluded. Avg energy cost is grid-facing: fuel, carbon, start-up costs and the capex of new grid-connected plants, divided by the energy the grid serves. Start-up is in these system-cost measures but not in the shadow price, which recovers it separately. Behind-the-meter rooftop PV is excluded from both sides. Replacement cost instead prices every MWh, from both existing and new plants, at its full lifecycle cost &ndash; i.e., what this mix would cost if built entirely new at today&rsquo;s prices. Neither is a tariff nor the complete picture. Full methodology, data sources and limitations in the <a href="README.md" target="_blank">README</a>.</p>
+    <p class="kpinote"><strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up and NEW-build capex only &ndash; existing plants are sunk, rooftop PV and REIPPPP curtailment payments are excluded. Replacement cost instead prices every MWh at full lifecycle cost, as if the mix were built new today. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
 
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
@@ -500,12 +500,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
         <div style="padding:2px 14px 14px">
         <p style="font-size:11px;color:var(--ink2);line-height:1.6">
-        <strong>Run the full model</strong> (click the orange button near the top of the model) to see real
-        flows: thicker, redder lines mean a corridor is closer to its transfer limit. A red
-        &ldquo;X% curt.&rdquo; label under a node means curtailment (wasted wind/solar) in that region
-        &ndash; shown as a share of that region&rsquo;s own renewable potential going to waste, not the raw
-        GWh (so a small, heavily-overbuilt region shows up just as clearly as a large one). Click on any
-        line or label for exact figures.</p>
+        <strong>Run the full model</strong> for real flows: thicker, redder lines are corridors nearer their transfer limit; a red <em>X% curt.</em> label under a node means wind or solar spilled there.</p>
       <p style="font-size:11px;color:var(--ink2);line-height:1.6">
         This schematic is deliberately simplified. For the real thing, the
         <a href="gridtwin-3d/">3D network map</a> plots every transmission line at 220&nbsp;kV and
@@ -514,21 +509,16 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <strong>Note:</strong> Hydra Central (UPG) and Northern Cape (NCE) are shown as two nearby points
         sharing the Upington corridor area. Click on each for region-specific figures.</p>
       <p style="font-size:11px;color:var(--ink2);line-height:1.6">
-        The <strong>REIPPPP project pipeline</strong> button overlays dashed rings showing
-        government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) &ndash; not the private/C&amp;I
-        registrations shown in the NERSA registrations panel. Ring size scales with total capacity and
-        ring colour shows the status holding the most capacity in that region. Click on a ring for the
-        split by technology and by status &ndash; preferred bidder, financial close, or under
-        construction.</p>
+        <strong>REIPPPP project pipeline</strong> shows government-procured projects only (BW5/6/7, BESIPPPP, RMIPPPP) &ndash; not the private registrations in the NERSA panel. Ring size scales with capacity.</p>
         </div>
       </div>
 
           <div id="nav-wheretobuild" class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
           <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
           <div class="pb">
-            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology for new capacity. If the local grid has spare headroom on today's transmission network, it's free. If not, you'll see the actual grid-build charge needed to unlock it – a corridor-specific alternative to the flat national grid adder used above. All technologies carry this charge when they exceed regional headroom, though the lower capacity factors of CCGT and storage mean their R/MWh figure is higher than for coal or nuclear at equivalent corridor length.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">The instant engine is single-node, so every node grows with the national total regardless of where you site. Only the dot and its own bump show your actual choice. Three things do read siting: virtual power plants, Run the full model below, and the capture rate and curtailment panels.</p>
-            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> (above the KPIs), the optimiser solves the 10-region network for a full 8,760-hour year: real demand, transfer-limited corridors, plant siting (rooftop PV, CSP, Cahora Bassa imports, pumped storage), and every allocation made here. Coal carries real per-region ramp-rate limits, per-unit minimum up/down times and start-up costs. Storage dispatches on real network-wide price arbitrage, holding back capacity for its own region before exporting elsewhere. Grid-enhancing technologies, if enabled, target only congested corridors found via a baseline pass first. On success the KPIs, energy mix and hourly chart above switch to these results – only the load-shedding risk panel stays on the national engine.</p>
+            <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology. Spare headroom on today&rsquo;s network is free; beyond it you see the corridor-specific grid-build charge needed to unlock capacity.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">The instant engine is single-node: nodes grow with the national total regardless of siting. Only the dot and its own bump reflect your choice. Siting IS read by virtual power plants, Run the full model, and the capture-rate and curtailment panels.</p>
+            <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">On <strong>Run the full model</strong> the optimiser solves all 10 regions over 8,760 hours as a MIP: real demand, transfer-limited corridors, siting and unit-level coal commitment. The instant engine commits coal in 4-hour blocks instead, which is accurate today and less so as solar grows.</p>
             <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:12px">
               <div>
                 <label style="display:block; font-size:11px; font-weight:600; margin-bottom:3px">Region</label>
@@ -587,12 +577,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
       <div style="padding:12px 14px">
         <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
-          Given the scenario you have set, this solves for the <strong>least-cost build schedule to
-          2030</strong>: how much of each technology to add, in which year, and &ndash; in regional
-          mode &ndash; where. It uses each coal unit&rsquo;s planned retirement date, technology costs that
-          change year by year, and a limit on how fast capacity can actually be connected. The answer
-          can be loaded straight back into the sliders and tested hour by hour.
-        </p>
+          Least-cost build schedule to 2030 &ndash; how much of each technology, in which year, and in regional mode where. Uses each coal unit&rsquo;s retirement date, technology costs and build-rate limits.</p>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:10px">
           <div>
@@ -3693,12 +3678,7 @@ function printPrefeas() {
               Your smartest next step</div>
             <div style="padding:12px">
               <p style="font-size:11px;color:var(--ink2);margin:0 0 10px;line-height:1.5">
-                Solar is rarely the first rand you should spend. In a South African home the
-                <strong>geyser is 40&ndash;50&nbsp;% of the bill</strong>, and the cheapest fixes pay
-                back in months. Tell us what you already have and we will rank what is left by
-                payback. The fuller version of this &ndash; including commercial and industrial
-                electrification &ndash; lives at
-                <a href="https://nickhedley.github.io/rewiring-sa/" target="_blank" rel="noopener">Rewiring South Africa</a>.</p>
+                In a South African home the geyser is 40&ndash;50&#37; of the bill, so solar is rarely the first rand to spend. Tell us what you have and this ranks what is left by payback.</p>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;margin-bottom:10px">
                 <label style="grid-column:1/-1">Monthly electricity spend
                   <input type="number" id="ns_spend" value="2200" step="100"
@@ -8280,23 +8260,7 @@ function renderRegionalCapture(res){
 
   host.innerHTML =
       '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:2px">'
-    + 'Capture rate is what a plant actually earns as a share of what the average MWh earns, '
-    + 'weighting each hour by how much it generates. At 100&#37; a plant earns the average price. '
-    + 'Solar sits below it because all solar generates in the same hours, placing downward pressure '
-    + 'on the price. Average price in this scenario is R'
-    + mean.toFixed(0) + '/MWh.</p>'
-    + section('wind', 'var(--wind,#3EA055)')
-    + section('solar', '#F5C518')
-    + '<div style="font-size:10.5px;line-height:1.6;margin-top:9px;padding:7px 10px;'
-    + 'background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
-    + '<strong>Siting matters more for wind than solar</strong>, which generates at much the same '
-    + 'hours everywhere and therefore cannibalises itself.</div>'
-    + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
-    + (r.pricesFromInstant ? '\u003cb\u003eNote: these prices come from the instant engine even '
-       + 'after a full model run.\u003c/b\u003e A mixed-integer solve produces no shadow prices, so '
-       + 'there are no full-model hourly prices to substitute \u2013 the energy figures elsewhere '
-       + 'switch to the full model, these prices do not.' : '')
-    + '</div>';
+    + 'Capture rate is earnings per MWh as a share of the average MWh. 100&#37; means no cannibalisation. Weighted by each hour\u2019s output.';
 }
 
 function bldApplyToSliders(){

@@ -9,9 +9,15 @@ CHECKS = [
     ('node size = avg output',                                     'node size label'),
     ('Show REIPPPP project pipeline',                              'REIPPPP button text'),
     ('Click on each for region-specific',                          'click on each (was Hover)'),
-    ('Ring size scales with total capacity',                       'ring colour key rewrite'),
+    ('Ring size scales with capacity',                            'pipeline rings: size means capacity'),
     ('planners and project developers',                            'subtitle'),
-    ('curtailment payments to wind and solar contracted under REIPPPP are excluded', 'cost note trimmed'),
+    # Pin the SUBSTANCE, not the sentence. This previously pinned a 79-character phrase
+    # and fired on 30 Aug when the cost note was shortened - correctly, but for the wrong
+    # reason: the exclusion was still stated, in fewer words. A regression check on prose
+    # should assert the CLAIM survives, not that the wording is frozen, or every edit
+    # trips it and people learn to re-pin without reading.
+    ('REIPPPP curtailment payments are excluded',                   'cost note: REIPPPP exclusion stated'),
+    ('Neither is a tariff',                                        'cost note: not-a-tariff warning'),
     # KPI labels
     ('Carbon intensity',                                           'carbon intensity KPI'),
     ('Avg energy cost',                                            'avg energy cost label'),
