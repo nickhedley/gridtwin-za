@@ -1539,6 +1539,78 @@ New fingerprint `gtza-709b521a1ef8d8ac`. `meta.nearest_substation_caution` now c
 the Impofu falsification in the data file itself, so anyone reading `sub`/`subkm` sees
 that NEAREST IS NOT CONNECTED without having to find it in these notes.
 
-STILL OPEN: the register remains incomplete — Chatty was found by accident, and nothing
-has established completeness for the Karoo, which is where the Hydra Central split would
-use the same method.
+### KAROO COMPLETENESS — TESTED 30 Aug 2026, AND IT PASSES
+
+A CLOSED-LOOP test needing no external data: every transmission line records the
+substation at each end, so any endpoint absent from `substations_compact.json` is a
+missing substation. The two files come from DIFFERENT sources — lines from Eskom TDP and
+SAPP planning data, substations from DBSA, OSM, Eskom and shapefiles — so they do not
+share a blind spot by construction.
+
+```
+lines crossing the Karoo box   49
+distinct endpoints on them     26
+missing from the register       0
+```
+
+Three raw misses were all correctly excluded: KOKERBOOM is the Namibian interconnector
+endpoint, and PHEZUKOMOYA and SAN KRAAL are WIND FARMS named as endpoints on the
+connectors added earlier today — plants, not substations.
+
+**So the register is complete for the Karoo relative to the line register**, which is the
+area the Hydra Central split would use nearest-substation matching over.
+
+NECESSARY, NOT SUFFICIENT, and the check says so in its own output: a substation with no
+line in the line register would not be caught. It finds a specific, common kind of gap —
+the kind Chatty was.
+
+Now a permanent check in `validate_geo.js` (37 -> 38 checks). VERIFIED IT CAN FAIL:
+removing Aggeneis, a genuine Karoo endpoint, produces
+`missing: AGGENEIS` and exit code 1.
+
+**AN HONEST NOTE ON THE FIRST ATTEMPT.** I first tested it by deleting Chatty, and the
+check still passed — which looked like the check being useless. It is not: Chatty sits on
+the Eastern Cape coast at -33.84, outside the Karoo box, so it was never in scope. The
+test was wrong, not the check. Worth recording because the same mistake would look like a
+harness failure to the next person.
+
+**TO DO — NATIONAL REGISTER GAPS.** 8 domestic endpoints are absent from the register — RASSONA
+GARCIA, DURBAN SOUTH, OTTAWA, ZWAVELPOORT EE1, KAPPA (A) among them. Reported, not
+asserted, because the line register names endpoints this project has no obligation to
+hold. Worth a look if the nearest-substation method is ever used outside the Karoo.
+
+---
+
+## Storage split out in the mix view — 30 Aug 2026
+
+The electricity mix showed ONE slice, "Batteries and flow storage", covering lithium,
+vanadium and iron-air together. So there was no way to see whether the long-duration
+tiers ever dispatch — the exact question the storage work of the past few days kept
+running into blind.
+
+Split now, and the answer is stark:
+
+```
+tier          annual TWh   hours active   July GWh   peak MW
+lithium            7.352          1,608      534.0     14,777
+vanadium           0.119             17        0.0     10,000
+iron-air           1.022            131        0.0     13,759
+```
+
+**Vanadium dispatches 17 hours a year. Iron-air 131. NEITHER IN JULY AT ALL.** That is
+the whole long-duration finding, visible at a glance, where previously it took an LP to
+establish.
+
+HOW IT IS BUILT, and the constraint that mattered: `battByTier` holds hourly per-tier
+series and `battTierTWh` the totals, but they are DIAGNOSTIC — deliberately NOT added to
+`stackKeys`. `stack.batt` remains the single carrier the energy balance sums, so
+`validate_invariants` is untouched. Adding them as carriers would double-count storage in
+every balance check: the split must DECOMPOSE the total, never sit beside it. Verified —
+the tiers sum to `stack.batt` with a gap of 0.000 MWh.
+
+The donut splits ONLY when vanadium or iron-air is actually present; with lithium alone
+it still reads "Batteries and flow storage". And the long-duration slices are kept in the
+legend even at a fraction of a percent, because "iron-air 0%" is the answer to a real
+question and dropping it for being small would hide it again.
+
+Two `audit.py` checks pin it (34 -> 36).

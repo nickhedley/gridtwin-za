@@ -4794,6 +4794,16 @@ function simulate(u, prof, outPath){
     { k:'vrfb', mw: _vrfb, mwh: _vrfb*(p.newVrfbHours ?? 8), eff: p.newVrfbEff ?? 0.70 },
     { k:'fe',   mw: _fe,   mwh: _fe*(p.newIronAirHours ?? 100), eff: p.newIronAirEff ?? 0.45 },
   ].filter(t => t.mw > 0).sort((a,b) => b.eff - a.eff);
+  // HOURLY PER-TIER SERIES, added 30 Aug 2026. The stack has always carried a single
+  // `batt` series covering lithium, vanadium and iron-air together, which makes it
+  // impossible to see WHETHER OR WHEN the long-duration tiers ever dispatch - the exact
+  // question the storage work of the last few days kept running into.
+  //
+  // These are DIAGNOSTIC SERIES, deliberately NOT added to stackKeys. `stack.batt`
+  // remains the single carrier the energy balance sums, so validate_invariants is
+  // untouched. Adding them as carriers would double-count storage in every balance
+  // check - the split must decompose the total, never sit alongside it.
+  const tierSeries = { li:null, vrfb:null, fe:null };
   const tierDis = { li:0, vrfb:0, fe:0 };
   const tierChg = { li:0, vrfb:0, fe:0 };
   let tierDrift = 0;                 // worst |sum(tier soc) - battSoc| seen
@@ -4931,6 +4941,10 @@ function simulate(u, prof, outPath){
   // peak and having it empty when a four-day drought arrives is the failure this
   // ordering prevents. So efficiency-first is retained here deliberately - it is only
   // the CHARGING side that was wrong.
+  // `_disHour` is set by the caller so the per-tier series can be written without
+  // changing tierDischarge's signature at every call site. -1 means "do not record",
+  // which is what the pre-loop and any future non-hourly caller should leave it at.
+  let _disHour = -1;
   const tierDischarge = (mw) => {
     let got = 0;
     for (const t of battTiers){
@@ -4938,7 +4952,8 @@ function simulate(u, prof, outPath){
       // not reserve. The SOC floor is what makes the trade-off bite.
       const floor = t.mwh * _asHold;
       const give = Math.min(mw - got, t.mw * (1 - _asHold), Math.max(0, t.soc - floor));
-      if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give; }
+      if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give;
+        if (_disHour >= 0 && tierSeries[t.k]) tierSeries[t.k][_disHour] += give; }
       if (got >= mw - 1e-9) break;
     }
     return got;
@@ -5014,6 +5029,7 @@ function simulate(u, prof, outPath){
   const shedHours=[0,0,0,0,0,0,0,0,0];
   const stackKeys=['nuclear','hydro','imports','hybrid','coal','ps','batt','ccgt','diesel','wind','pv','csp','unserved'];
   const stack={}; stackKeys.forEach(k=>stack[k]=new Float64Array(HOURS));
+  for (const k of Object.keys(tierSeries)) tierSeries[k] = new Float64Array(HOURS);
   const chargeMW=new Float64Array(HOURS);   // storage charging per hour
   const curtailMW=new Float64Array(HOURS);
   // Congestion curtailment, kept apart from curtailMW so the price engine
@@ -5542,7 +5558,7 @@ function simulate(u, prof, outPath){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const _want = _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); const btDis=tierDischarge(_forceTwoSided ? _want : _want); if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const _want = _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); _disHour = h; const btDis=tierDischarge(_forceTwoSided ? _want : _want); _disHour = -1; if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
         // storage discharged ahead of coal here, so coal is above it in this hour's order
         if(topUp<=1){
@@ -5552,7 +5568,7 @@ function simulate(u, prof, outPath){
       } else {
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const _want = _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); const btDis=tierDischarge(_forceTwoSided ? _want : _want); if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const _want = _forceTwoSided ? (_forceTwoSided.dis[h]||0) : (_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); _disHour = h; const btDis=tierDischarge(_forceTwoSided ? _want : _want); _disHour = -1; if(_forceTwoSided){ _forceHours++; _forceClipDis += Math.max(0,_want-btDis); } syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
         if(btDis>1&&btDis<btLim-1) storageMarginal[h]='batt';
         else if(psDis>1&&psDis<psLim-1) storageMarginal[h]='ps';
       }
@@ -6078,7 +6094,7 @@ function simulate(u, prof, outPath){
     if(loadS[h] > peakGridLoad) peakGridLoad = loadS[h];
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
-  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -10777,6 +10793,12 @@ const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3A
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
 // next to a correctly-coloured swatch - which is exactly what happened when
 // hybrid was added to DISP_ORDER and COLORS but not here.
+// Storage split, added 30 Aug 2026. The mix donut showed one 'Batteries and flow
+// storage' slice covering lithium, vanadium and iron-air together, so there was no way
+// to see WHETHER the long-duration tiers ever dispatch. They barely do - vanadium runs
+// 17 hours a year and iron-air 131, neither of them in July - and that was invisible.
+// These keys exist ONLY for the mix legend; the engine's carrier is still `batt`.
+const NAMES_STORAGE={battLi:'Lithium battery',battVrfb:'Vanadium flow',battFe:'Iron-air'};
 const NAMES={hybrid:'Hybrid (RMIPPPP)',nuclear:'Nuclear',hydro:'Hydro',imports:'Imports',coal:'Coal',ps:'Pumped storage',batt:'Batteries and flow storage',ccgt:'Gas CCGT',diesel:'Diesel OCGT',wind:'Wind',pv:'Utility PV',csp:'CSP',unserved:'Unserved (shed)',rooftop:'Rooftop PV',curtailment:'Curtailed (wasted)'};
 
 /* ==================== DC POWER FLOW DIAGNOSTIC =============================
@@ -11928,10 +11950,24 @@ function render(r){
   document.getElementById('kpis').innerHTML=kpis.map(x=>'<div class="kpi"><div class="k">'+x.k+'</div><div class="v">'+x.v+'<span class="u'+(x.uLong?' long':'')+'"> '+x.u+'</span></div>'+(x.sub?'<div class="ksub">'+x.sub+'</div>':'')+'</div>').join('');
 
   // mix — donut chart with legend
-  const order=['coal','rooftop','wind','pv','csp','hybrid','nuclear','imports','hydro','ps','batt','ccgt','diesel'];
-  const tot=order.reduce((s,k)=>s+r.E[k],0);
+  // Storage is decomposed into its three chemistries when more than one is present.
+  // `batt` stays the single carrier everywhere else - the split is presentation only,
+  // and it SUMS to the same total, so no balance or percentage changes.
+  const _tt = r.battTierTWh || null;
+  const _splitStorage = !!_tt && ((_tt.vrfb > 0.0005) || (_tt.fe > 0.0005));
+  const order = _splitStorage
+    ? ['coal','rooftop','wind','pv','csp','hybrid','nuclear','imports','hydro','ps','battLi','battVrfb','battFe','ccgt','diesel']
+    : ['coal','rooftop','wind','pv','csp','hybrid','nuclear','imports','hydro','ps','batt','ccgt','diesel'];
+  const EV = k => k === 'battLi' ? _tt.li*1e6 : k === 'battVrfb' ? _tt.vrfb*1e6 : k === 'battFe' ? _tt.fe*1e6 : r.E[k];
+  const NM = k => NAMES_STORAGE[k] || NAMES[k];
+  const CL = k => k === 'battLi' ? COLORS.batt
+                : k === 'battVrfb' ? '#7FA8B8'
+                : k === 'battFe' ? '#8C6A4A' : COLORS[k];
+  const tot=order.reduce((s,k)=>s+EV(k),0);
   document.getElementById('mixTotal').textContent=fmtTWh(tot)+' TWh incl. rooftop';
-  const mixData=order.map(k=>({k,v:r.E[k],pct:100*r.E[k]/tot})).filter(d=>d.v>tot*0.0005||['coal','wind','pv','ccgt','ps','batt'].includes(d.k));
+  // Long-duration tiers are kept in the legend even at a fraction of a percent -
+  // 'iron-air 0%' is the answer to a real question, and dropping it hides it.
+  const mixData=order.map(k=>({k,v:EV(k),pct:100*EV(k)/tot})).filter(d=>d.v>tot*0.0005||['coal','wind','pv','ccgt','ps','batt','battLi','battVrfb','battFe'].includes(d.k));
   // build donut arcs
   const R=52, r0=30, cx=64, cy=64, C=2*Math.PI;
   let ang=-Math.PI/2; // start at top
@@ -11942,10 +11978,10 @@ function render(r){
     const large=(a1-a0)>Math.PI?1:0;
     return '<path d="M'+x0.toFixed(2)+' '+y0.toFixed(2)+' A'+R+' '+R+' 0 '+large+' 1 '+x1.toFixed(2)+' '+y1.toFixed(2)+
       ' L'+xi1.toFixed(2)+' '+yi1.toFixed(2)+' A'+r0+' '+r0+' 0 '+large+' 0 '+xi0.toFixed(2)+' '+yi0.toFixed(2)+
-      ' Z" fill="'+COLORS[d.k]+'" stroke="var(--panel)" stroke-width="1"><title>'+NAMES[d.k]+': '+fmtTWh(d.v)+' TWh ('+d.pct.toFixed(1)+'%)</title></path>';
+      ' Z" fill="'+CL(d.k)+'" stroke="var(--panel)" stroke-width="1"><title>'+NM(d.k)+': '+fmtTWh(d.v)+' TWh ('+d.pct.toFixed(1)+'%)</title></path>';
   }).join('');
   const legend=mixData.map(d=>
-    '<div class="mixleg"><span class="sw" style="background:'+COLORS[d.k]+'"></span><span class="ln">'+NAMES[d.k]+'</span><span class="lv">'+fmtTWh(d.v)+' TWh</span><span class="lp">'+d.pct.toFixed(0)+'%</span></div>'
+    '<div class="mixleg"><span class="sw" style="background:'+CL(d.k)+'"></span><span class="ln">'+NM(d.k)+'</span><span class="lv">'+fmtTWh(d.v)+' TWh</span><span class="lp">'+d.pct.toFixed(0)+'%</span></div>'
   ).join('');
   document.getElementById('mix').innerHTML=
     '<div class="donutwrap"><svg viewBox="0 0 128 128" class="donut" role="img" aria-label="Energy mix donut chart">'+arcs+

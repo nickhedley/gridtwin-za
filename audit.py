@@ -55,6 +55,11 @@ CHECKS = [
     # which 404s against that layout. No harness notices a broken link - a page that
     # never loads produces no error anywhere in the suite.
     ('href="gridtwin-3d/"',                                        '3D map link points at the directory'),
+    # Storage split in the mix donut. Lumping lithium, vanadium and iron-air into one
+    # slice made it impossible to see whether the long-duration tiers ever dispatch.
+    # They barely do, and that is the finding — losing this styling hides it again.
+    ('NAMES_STORAGE',                                              'mix donut splits storage by chemistry'),
+    ('battByTier',                                                 'per-tier hourly discharge series'),
 ]
 
 path = sys.argv[1] if len(sys.argv) > 1 else '/mnt/user-data/outputs/index.html'
