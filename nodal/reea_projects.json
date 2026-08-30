@@ -2,11 +2,11 @@
  "meta": {
   "description": "Renewable energy Environmental Authorisation applications with polygon centroids from the shapefile release, each matched to its nearest transmission substation. The EA decision date is a lower bound on readiness under Eskom IGCAR criteria.",
   "source": "DFFE Renewable Energy EIA Application Database (SHP + XLSX, 2026 Q1), https://egis.environment.gov.za/renewable_energy",
-  "method": "Centroids read from REEA_OR_2026_Q1.shp and paired to REEA_OR_2026_Q1.xlsx by record order; 99.7% of centroids fall within their stated province, confirming alignment. Nearest substation by great-circle distance to the 185 verified substation positions. RE-DERIVED 30 Aug 2026 against the 186-substation register: Chatty was added on 28 Aug after the Impofu falsification showed the register was incomplete, and every sub/subkm here predated it. Great-circle distance, unchanged method.",
+  "method": "Centroids read from REEA_OR_2026_Q1.shp and paired to REEA_OR_2026_Q1.xlsx by record order; 99.7% of centroids fall within their stated province, confirming alignment. Nearest substation by great-circle distance to the 185 verified substation positions. RE-DERIVED 30 Aug 2026 against the 186-substation register: Chatty was added on 28 Aug after the Impofu falsification showed the register was incomplete, and every sub/subkm here predated it. Great-circle distance, unchanged method. RE-DERIVED 30 Aug 2026 after Chatty, Durban South, Ottawa and Zwavelpoort were added. Only src=\"approx\" entries are excluded from matching - Zwavelpoort, which has no published coordinate. planned=true entries ARE included: that flag reflects what the DBSA register said at ingest, and it is known stale for at least Koruson, whose cluster is operating.",
   "caution": "An EA is not a grid allocation, and nearest substation is a proxy for the likely connection point, not a declared one. Declared capacity may differ from what is built.",
   "licence": "Source data is DFFE's. This compilation: CC BY-NC-ND 4.0, (c) 2026 Nick Hedley.",
   "compiled": "2026-08-14",
-  "fingerprint": "gtza-709b521a1ef8d8ac",
+  "fingerprint": "gtza-9290215d97c7ac0a",
   "nearest_substation_caution": "NEAREST IS NOT CONNECTED. Falsified at Impofu 28 Aug 2026: the method returned Grassridge at 106.9 km when the line actually built runs 116 km to Chatty, which is NEARER at 93.3 km and was simply absent from the register. The method is only as good as the substation list, and the list is known to be incomplete. Treat sub/subkm as a PROXY for the likely connection point, never as a declared one."
  },
  "projects": [
@@ -12145,8 +12145,8 @@
    "decided": "2011-10-24",
    "lng": 31.13412,
    "lat": -29.61772,
-   "sub": "Avon",
-   "subkm": 22.4
+   "sub": "Ottawa",
+   "subkm": 10.7
   },
   {
    "name": "Proposed Ishwati Emoyeni Wind Energy Facility And Supporting Eskom Transmission And Distri",

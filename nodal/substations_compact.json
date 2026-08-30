@@ -17,12 +17,13 @@
   "licence": "CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/",
   "terms": "This dataset is original compilation work. You may view, share and link to it with attribution. You may NOT use it commercially, distribute modified versions, or incorporate it into another product. Underlying public sources retain their own licences and are credited in the source field.",
   "commercial": "Commercial licensing: https://github.com/nickhedley/gridtwin-za",
-  "fingerprint": "gtza-feb8236ccf9035ca",
+  "fingerprint": "gtza-0fcd2922d49db507",
   "compiled": "2026-08-13",
   "juno_correction": "Juno was labelled Northern Cape. It sits at -31.608, 18.444 in Matzikama Local Municipality, West Coast District, WESTERN CAPE - Eskom's own Juno-Gromis project documents describe Gromis as Northern Cape near Kleinsee and Juno as Western Cape near Vredendal, and Juno's only two lines run to Aurora and Helios on the Cape network. Corrected 14 Aug 2026.",
   "field_rename": "The per-substation region field was renamed r -> area on 14 Aug 2026. It holds an Eskom TRANSMISSION SUPPLY AREA, not a province: the ten values include Hydra Central, which is a Karoo supply area spanning the Northern Cape / Eastern Cape provincial boundary and is not a province at all. headroom_summary.json and tdp_projects.json meta.line_km_by_province are keyed the same way (both carry Hydra Central); reea_projects.json 'province' is genuinely provincial (nine values, no Hydra Central) and must NOT be matched against this field.",
   "pluscode_count": 1,
-  "ownership_note": "owner / built_by / line_type added 30 Aug 2026, currently on one entry. The register is sourced from DBSA, NTCSA GIS and Eskom, none of which record private ownership, so ABSENCE OF A TAG MEANS UNKNOWN, not NTCSA. Koruson is tagged because its private construction is separately documented."
+  "ownership_note": "owner / built_by / line_type added 30 Aug 2026, currently on one entry. The register is sourced from DBSA, NTCSA GIS and Eskom, none of which record private ownership, so ABSENCE OF A TAG MEANS UNKNOWN, not NTCSA. Koruson is tagged because its private construction is separately documented.",
+  "nearest_substation_caution": " THREE ENTRIES ADDED 30 Aug 2026 with mixed confidence: Durban South corroborated to 0.1 km against independent line geometry; Ottawa PROVISIONAL, 10.8 km from its line endpoint; Zwavelpoort APPROXIMATE and planned. Check `src` and `note` before relying on any position - they are not equally trustworthy."
  },
  "subs": [
   {
@@ -1534,6 +1535,34 @@
    "src": "dbsa",
    "kv": 400,
    "area": "Mpumalanga"
+  },
+  {
+   "n": "Durban South",
+   "lat": -29.951188,
+   "lng": 30.944438,
+   "src": "pluscode",
+   "kv": 275,
+   "area": "Kwazulu Natal",
+   "note": "Durban South Major Substation. Plus Code 2WXV+GQ Durban, supplied 30 Aug 2026. CORROBORATED: the transmission line naming DURBAN SOUTH as an endpoint terminates 0.1 km from this point, which is independent of the Plus Code."
+  },
+  {
+   "n": "Ottawa",
+   "lat": -29.679313,
+   "lng": 31.049438,
+   "src": "pluscode",
+   "kv": 275,
+   "area": "Kwazulu Natal",
+   "note": "Plus Code 82CX+7Q Blackburn, supplied 30 Aug 2026. DISCREPANCY, recorded rather than smoothed: the line naming OTTAWA as an endpoint terminates 10.8 km away. Either the line geometry is schematic at this point or the Plus Code locates a different feature. Durban South, added from the same source on the same day, matches its line endpoint to 0.1 km - so the method is sound and this case is specifically uncertain. TREAT THE POSITION AS PROVISIONAL and do not use it as a nearest-substation anchor until a published coordinate confirms it."
+  },
+  {
+   "n": "Zwavelpoort",
+   "lat": -25.80944,
+   "lng": 28.37972,
+   "src": "approx",
+   "kv": 400,
+   "planned": true,
+   "area": "Gauteng",
+   "note": "PLANNED substation, no published coordinate. Position supplied 30 Aug 2026 as an APPROXIMATE location, and it sits 16 km from the line endpoint naming it - consistent with an approximation, not a contradiction. src is 'approx', NOT 'pluscode', so it cannot be mistaken for a located point. Excluded from nearest-substation matching until the route is fixed and a coordinate published."
   }
  ]
 }

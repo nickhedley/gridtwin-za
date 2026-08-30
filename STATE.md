@@ -1907,10 +1907,53 @@ TWO FIXES IN `validate_geo.js`: `RESSANO`/`RASSONA` and the country names added 
 foreign filter, and a name normaliser that strips a trailing bracketed unit designator
 and the `EE1`/`MTS`/`DS`/`SS` suffixes before declaring a substation absent.
 
-THE THREE THAT REMAIN ARE REAL and none is in the Karoo, so the Hydra Central split is
-unaffected. They would matter if nearest-substation matching were used nationally —
-which is precisely how Impofu went wrong. Adding them needs verified coordinates, which
-this container cannot fetch.
+THE THREE THAT REMAIN ARE REAL — and were closed the same day when the coordinates were
+supplied. See below. **The register now has zero missing domestic line endpoints.**
 
 The harness now warns if more than three appear: "check whether a naming variant or
 foreign endpoint is being counted as a gap before hunting for coordinates".
+
+---
+
+## The last three substations added — 30 Aug 2026
+
+Coordinates supplied as Plus Codes, decoded with a local Open Location Code
+implementation. **Validated against the known answer first**: Chatty's `5G7F+J6` recovers
+to within 0.1 m of the value derived independently on 28 Aug, so the decoder is sound.
+
+```
+Durban South   2WXV+GQ Durban     -29.951188, 30.944438   275 kV   corroborated
+Ottawa         82CX+7Q Blackburn  -29.679313, 31.049438   275 kV   PROVISIONAL
+Zwavelpoort    approximate        -25.809440, 28.379720   400 kV   planned, unlocated
+```
+
+**THEY ARE NOT EQUALLY TRUSTWORTHY, and the file says so per entry.**
+
+Durban South is CORROBORATED: the transmission line naming it as an endpoint terminates
+0.1 km from the decoded point, which is evidence independent of the Plus Code.
+
+Ottawa is PROVISIONAL: its line endpoint is 10.8 km away. Either the geometry is
+schematic there or the Plus Code locates a different feature. Recorded as a discrepancy
+rather than smoothed — Durban South came from the same source on the same day and matched
+to 0.1 km, so the method is sound and this case is specifically uncertain.
+
+Zwavelpoort is `src:"approx"`, deliberately NOT `"pluscode"`, so it cannot be mistaken for
+a located point. It is excluded from nearest-substation matching entirely.
+
+Register 186 -> 189. `validate_geo` now reports **0 domestic endpoints absent**.
+
+### A MISTAKE I MADE AND CAUGHT IN THE SAME STEP
+
+My first re-derivation excluded every `planned:true` substation from matching, on the
+reasoning that a planned substation is not a connection point. That reassigned **205
+projects**, moving them away from Koruson — 65 km — to Poseidon at 122 km.
+
+But Koruson IS BUILT. Its `planned:true` is the stale DBSA flag that STATE.md already
+records as unresolved. I acted on a flag I had personally documented as wrong, and it
+made the data worse while looking like a principled improvement.
+
+Corrected: only `src:"approx"` is excluded, which is one entry. Net change against the
+original file is **34 projects** — the 33 Chatty reassignments plus one to Ottawa.
+
+THE LESSON: `planned` in this register means "the register said planned at ingest", not
+"does not exist". Do not use it as a filter until the stale flags are resolved.
