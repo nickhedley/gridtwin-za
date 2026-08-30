@@ -728,3 +728,28 @@ every conclusion are unchanged. `vreCurtMW` is still needed for the provider cre
 LESSON: before adding a constant, grep for the quantity, not the name. `sysContingencyMW`
 and `reserveContingencyMW` never collide textually, so no check could catch it — only
 reading the surrounding code would.
+
+---
+
+## Double-count guard, extended 29 Aug 2026
+
+Two changes, both tested by injecting cases into a temporary copy.
+
+**1. Undated queue entries are reported, not skipped.** The guard keys entirely on COD,
+so `if (!x.cod) continue` gave a project with no verified date NO double-count scrutiny
+at all — and passed silently, which invites the reader to infer everything was checked.
+Undated entries are now listed with the instruction not to invent a date to make them
+testable. Not a failure: an undated project is a sourcing gap, not an error.
+
+**2. The name match no longer requires bucket === 'private'.** This is the more
+important of the two. A name match against `pfl_private_h1_2026.json` is definitive
+evidence the megawatts are already counted, whatever bucket the QUEUE entry carries —
+the queue's bucket label is a guess about where a project belongs, not a fact about
+where it is counted. Restricting the match meant a MISLABELLED queue entry bypassed the
+one check that beats date arithmetic entirely.
+
+Verified: ARM Platinum queued under `reipppp` is now caught by name. Under the old code
+it would not have been.
+
+NOTE ARM itself sits in the accounted-for list, not this queue, so neither change alters
+today's output. Both were tested against injected cases rather than assumed.

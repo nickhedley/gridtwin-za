@@ -325,15 +325,37 @@ try {
     (pfl.projects || []).forEach(pr => privNames.add(String(pr.name).toLowerCase().replace(/[^a-z0-9]/g,'')));
   } catch (e) {}
 
-  const risky = [], named = [];
+  const risky = [], named = [], undated = [];
   for (const x of q) {
     const nm = String(x.name).toLowerCase().replace(/[^a-z0-9]/g,'');
     const hit = [...privNames].find(n => n.length > 4 && nm.includes(n));
-    if (hit && x.bucket === 'private') { named.push(x); continue; }
-    if (!x.cod) continue;
+    // BUCKET RESTRICTION REMOVED 29 Aug 2026. A name match against the private
+    // source is definitive evidence the megawatts are already counted, whatever
+    // bucket the QUEUE entry happens to carry - the queue's own bucket label is a
+    // guess about where the project belongs, not a fact about where it is counted.
+    // Restricting the match to bucket==='private' meant a mislabelled queue entry
+    // sailed past the one check that beats date arithmetic.
+    if (hit) { named.push(x); continue; }
+    // UNDATED PROJECTS. Previously skipped in silence by `if (!x.cod) continue`,
+    // which is the guard's blind spot: the whole mechanism keys on COD, so a
+    // project with no verified date gets NO double-count scrutiny at all. That is
+    // exactly the ARM Platinum case - 100 MW, already inside by_source.private,
+    // and invisible to every dated test.
+    // Now collected and reported rather than dropped. Not a failure: an undated
+    // project is a sourcing gap, not an error. But it must be VISIBLE, because the
+    // reader's natural inference from a silent pass is that everything was checked.
+    if (!x.cod) { undated.push(x); continue; }
     const d = new Date(x.cod + (/\d{4}$/.test(x.cod) ? ' 01' : ''));
     const basis = x.bucket === 'private' ? asAtPrivate : asAtReipppp;
     if (!isNaN(d) && d <= basis) risky.push(x);
+  }
+  if (undated.length) {
+    console.log('\n  UNDATED - NOT ASSESSABLE FOR DOUBLE COUNTING');
+    console.log('    The guard keys on COD. These carry none, so no dated test can speak for');
+    console.log('    them. Each is EITHER already inside a source aggregate OR genuinely missing,');
+    console.log('    and only a source can say which. Do NOT invent a date to make one testable.');
+    undated.forEach(x => console.log(`    ${x.name} (${x.mw} MW, bucket ${x.bucket || '?'})`
+      + ` - resolve via the source that lists it, then re-run.`));
   }
   if (named.length) {
     console.log('\n  *** ALREADY IN THE PRIVATE SOURCE - NAME MATCH ***');
