@@ -5852,6 +5852,10 @@ function simulate(u, prof, outPath){
     pvAdderMW=u.newPvMW-pvExempt;
   }
   const newCapexR=(u.newVrfbMW*p.acapVrfb+u.newIronAirMW*p.acapIronAir+u.newPsMW*p.acapPs+u.newWindMW*p.acapWind+u.newPvMW*p.acapPv+u.newRooftopMW*p.acapRooftop+u.newBattMW*(p.acapBatt4h*p.newBattHours/4)+u.newCcgtMW*p.acapCcgt+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*txRateFor(u.newWindMW+pvAdderMW, p.txRPerKWyr))*1000;
+  // The transmission slice of newCapexR, kept separately so the cost decomposition can
+  // report it against NERSA's "transmission network charges" component. It is a BUILD
+  // cost, not a use-of-system charge, which is why the decomposition marks it partial.
+  const _txCapexR = (u.newWindMW+pvAdderMW)*txRateFor(u.newWindMW+pvAdderMW, p.txRPerKWyr)*1000;
   // 'hybrid' added 15 Aug 2026: it serves the grid, so excluding it from the
     // denominator while its costs sat in the numerator overstated avgCost ~0.9%.
     const genKeys=['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
@@ -6044,6 +6048,70 @@ function simulate(u, prof, outPath){
   // drCostR included: compensation paid to interruptible customers is part of
   // what the system costs to run, and omitting it made demand response look free.
   const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+drCostR-exportRevenueR)/Math.max(1,gridServed);
+
+  // ── COST DECOMPOSITION ────────────────────────────────────────────────────
+  // Added 30 Aug 2026, structured against NERSA's OWN wholesale price component list
+  // (Wholesale Electricity Pricing Methodology, May 2026) and the Revised Electricity
+  // Pricing Policy section 4. The submission made on that policy argued for published
+  // disaggregation; this is the same discipline applied to our own number.
+  //
+  // NERSA splits the wholesale price into MARKET costs - things a system model can
+  // produce and anyone can check - and NON-MARKET costs, which are allocation
+  // decisions. GridTwin produces most of the first group and NONE of the second, and
+  // the point of showing the split is that the ABSENCES are as informative as the
+  // figures. Six of thirteen components are missing, including legacy cost recovery and
+  // distribution charges, which are a large part of a real bill.
+  //
+  // THIS IS WHY avgCost IS NOT A TARIFF, shown rather than asserted in a footnote.
+  const _cd = (() => {
+    // gridServed is in MWh and the cost terms are in rand, so rand/MWh is a plain
+    // division. An earlier version multiplied by 1000 and produced figures a thousand
+    // times too large - caught because the components summed to 574,000 against an
+    // avgCost of 570. Summing the parts against the whole is the check that catches
+    // a unit error; a decomposition that is never summed can be wrong indefinitely.
+    const per = v => v / Math.max(1, gridServed);
+    const rows = [
+      { k:'energy',     nersa:'Energy',                    v: per(fuelCost - curtailFuelCost), have:true },
+      // START-UP COST IS COMPUTED AND USED NOWHERE. Found 30 Aug 2026 by summing this
+      // decomposition against avgCost: the gap was R3.54/MWh, exactly startUpCostR.
+      // It is accumulated at line ~5415, exported on the result, and included in
+      // NEITHER avgCost NOR totalCost NOR gridCost. Small today (R3.5/MWh, 0.6%) but
+      // it grows with coal cycling, which is precisely the regime a high-renewables
+      // system pushes coal into - so it will matter more in the scenarios this model
+      // exists to study.
+      // Marked 'excluded' rather than folded in: changing avgCost silently would move
+      // every published cost figure, and that is a decision to take deliberately.
+      { k:'startup',    nersa:'Energy (start-up)',         v: per(startUpCostR),               have:'excluded' },
+      { k:'carbon',     nersa:'Carbon pricing',            v: per(carbonCost),                 have:true },
+      { k:'buildTx',    nersa:'Transmission network',      v: per(_txCapexR),                  have:'partial' },
+      { k:'buildGen',   nersa:'(generation capex)',        v: per(gridCapexR - _txCapexR),     have:'outside' },
+      { k:'dr',         nersa:'Demand response',           v: per(drCostR),                    have:true },
+      { k:'exports',    nersa:'(export revenue, offset)',  v: -per(exportRevenueR),            have:'outside' },
+      { k:'capacity',   nersa:'Capacity prices',           v: 0, have:false, why:'no capacity market in SA' },
+      { k:'ancillary',  nersa:'Ancillary services',        v: 0, have:false, why:'modelled, off by default' },
+      { k:'reserve',    nersa:'Reserve prices',            v: 0, have:false, why:'modelled, off by default' },
+      { k:'balancing',  nersa:'Balancing services',        v: 0, have:false, why:'MODEL IS HOURLY - no intra-hour product' },
+      { k:'congestion', nersa:'Congestion management',     v: 0, have:false, why:'duals exist in the regional LP, never priced' },
+      { k:'standby',    nersa:'Standby prices',            v: 0, have:false, why:'not modelled' },
+      { k:'legacy',     nersa:'Legacy cost recovery',      v: 0, have:false, why:'ALLOCATION DECISION, not a modelling output' },
+      { k:'subsidy',    nersa:'Subsidy / cross-subsidy',   v: 0, have:false, why:'ALLOCATION DECISION, not a modelling output' },
+      { k:'distrib',    nersa:'Distribution network',      v: 0, have:false, why:'model is transmission-level' },
+      { k:'envcomp',    nersa:'Environmental compliance',  v: 0, have:false, why:'no MES/abatement capex layer' },
+    ];
+    // Reconciliation. A decomposition that is never summed against the whole can be
+    // wrong indefinitely - this caught a factor-of-1000 unit error and the start-up
+    // omission within minutes of being written.
+    const inAvg = rows.filter(r => r.have === true || r.have === 'partial' || r.have === 'outside');
+    const sum = inAvg.reduce((a, r) => a + r.v, 0);
+    const covered = rows.filter(r => r.have === true || r.have === 'partial').length;
+    const absent  = rows.filter(r => r.have === false).length;
+    return { rows, covered, absent, totalRPerMWh: avgCost,
+      reconciles: Math.abs(sum - avgCost) < 0.01, sumRPerMWh: sum,
+      note: 'Structured on NERSA\u2019s wholesale price component list. ' + absent
+        + ' components are ABSENT, including legacy cost recovery and distribution '
+        + 'charges, which are a large part of a real bill. avgCost is therefore NOT a '
+        + 'tariff and must never be quoted as one.' };
+  })();
   // Emissions follow FUEL BURNED, not energy sold. coalFuelMWh is coal output
   // scaled by the part-load heat-rate multiplier, so a fleet held at part load
   // emits more per MWh delivered - which is the physical point of the curve.
@@ -6094,7 +6162,7 @@ function simulate(u, prof, outPath){
     if(loadS[h] > peakGridLoad) peakGridLoad = loadS[h];
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
-  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }

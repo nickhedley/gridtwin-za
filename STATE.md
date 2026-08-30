@@ -1614,3 +1614,42 @@ legend even at a fraction of a percent, because "iron-air 0%" is the answer to a
 question and dropping it for being small would hide it again.
 
 Two `audit.py` checks pin it (34 -> 36).
+
+---
+
+## Cost decomposition, structured on NERSA's own list — 30 Aug 2026
+
+`r.costDecomposition`. Seventeen rows built against the Wholesale Electricity Pricing
+Methodology and EPP section 4 — the same disaggregation the submission argued NERSA
+should require, applied to our own number.
+
+```
+today          avgCost  570.46   components sum  570.46   reconciles
+Seriti 45 GW   avgCost 1260.77   components sum 1260.77   reconciles
+covered 5 · absent 10
+```
+
+The ABSENCES are the point: ten of the enumerated components are not in `avgCost`,
+including legacy cost recovery, distribution charges and cross-subsidy. **That is why it
+is not a tariff, now shown rather than asserted in a footnote.**
+
+### TWO DEFECTS CAUGHT BY SUMMING IT — within minutes of writing it
+
+**A factor-of-1000 unit error.** My `per()` helper multiplied by 1000 when the terms were
+already rand over MWh. Components summed to 574,000 against an avgCost of 570.
+
+**`startUpCostR` IS COMPUTED AND USED NOWHERE.** The residual gap was R3.54/MWh — exactly
+the start-up cost. It accumulates at line ~5415, is exported on the result, and appears
+in NEITHER `avgCost` NOR `totalCost` NOR `gridCost`. Small today, 0.6%, but it scales
+with coal CYCLING — precisely the regime a high-renewables system pushes coal into, which
+is what this model exists to study.
+
+Marked `excluded` in the decomposition rather than folded in, because adding it would
+move every published cost figure and that is a decision to take deliberately, not a side
+effect of building a panel. **DECISION NEEDED: should start-up costs enter avgCost?**
+
+### THE CHECK, not just the display
+
+`validate_consistency` now asserts reconciliation across three scenarios (14 -> 17). A
+decomposition that is never summed against the whole can be wrong indefinitely — this one
+caught two faults immediately, which is the argument for the check existing at all.

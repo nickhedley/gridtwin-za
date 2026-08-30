@@ -274,6 +274,29 @@ const num = t => {
           mixSum.sum > 180 && mixSum.sum < 400, `${mixSum.sum.toFixed(1)} TWh`);
 
   // ── report ────────────────────────────────────────────────────────────────
+  // COST DECOMPOSITION MUST RECONCILE TO avgCost.
+  // Added 30 Aug 2026. The decomposition is structured on NERSA's wholesale price
+  // component list, so GridTwin's own number can be checked the way the EPP submission
+  // argued tariffs should be. SUMMING IT AGAINST THE WHOLE is what makes it a check
+  // rather than a display: within minutes of being written it caught a factor-of-1000
+  // unit error AND the fact that startUpCostR is computed but included in no cost total.
+  const cdec = run(`
+    const out = [];
+    for (const [lab, ov] of [['default',{}],
+                             ['high RE',{newWindMW:20000,newPvMW:25000,newBattMW:10000}],
+                             ['no coal',{coalDecomMW:42000,newCcgtMW:30000}]]){
+      const r = simulate({ ...state, ...ov }, PROFILES);
+      const cd = r.costDecomposition;
+      out.push({ lab, ok: !!(cd && cd.reconciles), sum: cd ? cd.sumRPerMWh : null, avg: r.avgCost });
+    }
+    return out;
+  `);
+  if (cdec && !cdec.err) for (const c of cdec)
+    check(`[${c.lab}] cost decomposition reconciles to avgCost`, c.ok === true,
+          c.sum === null ? 'costDecomposition absent'
+            : `components sum to ${c.sum.toFixed(2)} against avgCost ${c.avg.toFixed(2)} `
+              + `- a decomposition that does not sum is not a decomposition`);
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }
