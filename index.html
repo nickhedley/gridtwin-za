@@ -4828,6 +4828,17 @@ function simulate(u, prof, outPath){
   // PERFECT FORESIGHT, and this matters for how the result is read: pass two sees
   // pass one's realised prices. A real operator forecasts. Treat anything this
   // produces as an UPPER BOUND on long-duration storage value, not an estimate.
+  // FORCED STORAGE SCHEDULE, for the fixed-point iteration between the storage LP and
+  // the price series. The LP optimises against prices the heuristic produced; imposing
+  // its schedule changes dispatch, which changes prices, which changes the LP's answer.
+  // Iterating that is the only way to approach co-optimisation without putting storage
+  // inside the commitment problem.
+  //
+  // A CAP, NOT A COMMAND. The forced figure limits discharge; physical limits and the
+  // residual still bind. So the engine can always deliver LESS than the schedule asks
+  // but never more, and no infeasible state can be forced in through this door.
+  // Null by default, so every existing path and harness is untouched.
+  const _forcedDis = p._forcedDischargeMW || null;
   const _resPrice = p._reservationPrice || null;   // {tierKey: Float64Array} or null
   const chargeWorthIt = (t, hr, costNow) => {
     if (!_resPrice || !_resPrice[t.k]) return true;          // inert without a price pass
@@ -5512,7 +5523,7 @@ function simulate(u, prof, outPath){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const btDis=tierDischarge(Math.min(residual,btLim)); syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const btDis=tierDischarge(_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
         // storage discharged ahead of coal here, so coal is above it in this hour's order
         if(topUp<=1){
@@ -5522,7 +5533,7 @@ function simulate(u, prof, outPath){
       } else {
         const topUp=Math.min(residual,Math.max(0,coalCeiling-coalGen)); coalGen+=topUp; residual-=topUp;
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
-        const btDis=tierDischarge(Math.min(residual,btLim)); syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
+        const btDis=tierDischarge(_forcedDis ? Math.min(residual, btLim, _forcedDis[h]||0) : Math.min(residual,btLim)); syncBattSoc(); residual-=btDis; E.batt+=btDis; stack.batt[h]=btDis;
         if(btDis>1&&btDis<btLim-1) storageMarginal[h]='batt';
         else if(psDis>1&&psDis<psLim-1) storageMarginal[h]='ps';
       }

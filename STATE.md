@@ -1304,6 +1304,18 @@ FIVE GAPS ADDRESSED 30 Aug 2026 — four closed, one not closeable here.
    discharge 1.44 -> 0.77 TWh, peak SOC 941,568 -> 242,264 MWh — once it must also hold
    reserve. Its opportunity value rises (p90 2,025 -> 2,377) because energy is scarcer.
    July displacement unchanged at 36.5%; lithium absorbs it.
-5. UNIT COMMITMENT CO-OPTIMISATION — NOT closeable in a price-taker LP, which takes
-   prices as given. That is the difference between this and PLEXOS. Partial answer
-   available: fixed-point iteration on prices. Not done.
+5. FIXED-POINT ITERATION — RUN 30 Aug 2026, DOES NOT CONVERGE. Five rounds, 0.5 damping:
+   mean price movement falls only 352 -> 199 R/MWh and July gas oscillates 2,751-2,816
+   with no trend. Storage flattens the peaks it was built to exploit, removing the spread
+   that justified the schedule. Known failure mode, and it happened.
+
+   **CONSEQUENCE: THE 37% CLAIM IS NOW UNVERIFIED.** Every iterated July figure is at or
+   ABOVE the heuristic's 2,742 GWh — imposing the LP schedule did NOT deliver the
+   predicted 1,000 GWh saving. Either the price-taker objective (arbitrage value, not gas
+   displacement) was never measuring a gas saving, or my test is one-sided:
+   `_forcedDischargeMW` is a CAP by design, so where the LP wants MORE discharge than the
+   heuristic gives it cannot deliver. Storage throughput FELL 8.42 -> 7.91 TWh, the
+   signature of a binding cap. **Do not repeat "the heuristic leaves 37% on the table"
+   until a two-sided imposition exists** — which means replacing the storage dispatch,
+   not limiting it.
+6. UNIT COMMITMENT CO-OPTIMISATION — still not closeable in a price-taker LP.

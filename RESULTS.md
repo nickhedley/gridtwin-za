@@ -1053,10 +1053,12 @@ round trip is simply punishing enough that the energy is better left in coal. Th
 provisional flag is REMOVED: "long-duration storage does not solve a winter wind drought"
 now holds under an optimal dispatch, not just a heuristic one.
 
-**BUT THE HEURISTIC IS UNDER-USING LITHIUM BADLY.** The LP finds 995 GWh of July gas that
-lithium could displace and the heuristic does not - **37% of July gas left on the table**,
-by the technology that is actually deployed. That is a much larger finding than anything
-about iron-air, and it was invisible until the LP was built.
+**THE HEURISTIC MAY BE UNDER-USING LITHIUM - BUT SEE THE ITERATION BELOW BEFORE
+QUOTING THIS.** The LP finds 995 GWh of July gas that lithium could displace and the
+heuristic does not, which would be 37% of July gas by the technology actually deployed.
+IMPOSING THAT SCHEDULE DID NOT REPRODUCE THE SAVING - the fixed-point test returned July
+gas of 2,751-2,816 against the heuristic's 2,742. The claim is UNVERIFIED. Full account
+in "FIXED-POINT ITERATION" below.
 
 CAVEATS, and they matter for how the 37% is read:
 - PERFECT FORESIGHT. The LP sees the whole year; a real operator forecasts. UPPER BOUND.
@@ -1158,7 +1160,48 @@ charge falls by three quarters. Its opportunity value rises correspondingly - p9
 2,025 to 2,377 - because the energy is scarcer. July displacement is unchanged at 36.5%,
 so lithium absorbs the difference.
 
-**5. CO-OPTIMISATION WITH UNIT COMMITMENT. NOT CLOSED, AND NOT CLOSEABLE HERE.** A
+**5. FIXED-POINT ITERATION. RUN, AND IT DOES NOT CONVERGE - which is the finding.**
+
+The LP optimises against prices the heuristic produced. Impose its schedule, re-dispatch,
+take the new prices, re-solve. Five rounds with 0.5 damping:
+
+```
+round   mean |dP| R/MWh   July gas GWh   storage TWh
+  1              352.3           2779          7.91
+  2              265.1           2816          7.91
+  3              239.2           2779          7.63
+  4              216.7           2805          7.84
+  5              198.6           2751          7.91
+```
+
+Price movement falls slowly - 352 to 199 R/MWh - and July gas OSCILLATES between 2,751
+and 2,816 with no trend. Storage flattens the peaks it was built to exploit, which
+removes the spread that justified the schedule. This is the known failure mode and it
+happened.
+
+### AND IT PUTS THE 37% IN DOUBT - read this before quoting it
+
+Every iterated July figure (2,751-2,816 GWh) is at or ABOVE the heuristic's 2,742. The
+LP predicted 1,000 GWh of displacement. **Imposing the schedule did not deliver it.**
+
+TWO EXPLANATIONS, and they are not equally flattering:
+
+1. The price-taker objective is ARBITRAGE VALUE, not gas displacement. Discharging in an
+   hour when gas was running is counted as displacing gas, but the real dispatch
+   re-optimises around the schedule and the gas returns elsewhere. If so, the 37% was
+   never a gas saving - it was a bookkeeping artefact.
+2. MY TEST IS ONE-SIDED. `_forcedDischargeMW` is a CAP, deliberately, so no infeasible
+   state can be forced in. But that means where the LP wants MORE discharge than the
+   heuristic gives, the cap cannot deliver it. Storage throughput FELL, 8.42 -> 7.91 TWh,
+   which is the signature of a binding cap rather than a better schedule.
+
+So the honest status is UNVERIFIED, not disproved. The 37% claim rests on an accounting
+that the only available test cannot confirm, and that test is itself one-sided. **Do not
+repeat "the heuristic leaves 37% of July gas on the table" until a two-sided imposition
+is built.** That means letting the schedule raise discharge as well as cap it, which
+needs the storage dispatch replaced rather than limited.
+
+**6. CO-OPTIMISATION WITH UNIT COMMITMENT. NOT CLOSED, AND NOT CLOSEABLE HERE.** A
 price-taker LP takes prices as GIVEN. Genuine co-optimisation means storage inside the
 commitment problem, which is a different and much larger model - that is the difference
 between this and PLEXOS. The available partial answer is a fixed-point iteration: re-run

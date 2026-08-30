@@ -356,6 +356,78 @@ function makeDom(){
       + `(${(100*jul/1000/Math.max(1,d.julGas)).toFixed(1)}% of July gas) · annual discharge ${(tot/1e6).toFixed(2)} TWh`);
   }
 
+  // ── FIXED-POINT ITERATION ─────────────────────────────────────────────────
+  // The LP optimises against prices the HEURISTIC produced. Impose the LP's schedule
+  // and the dispatch changes, so the prices change, so the LP's answer should change.
+  // Iterating to a fixed point is the closest a price-taker model gets to genuine
+  // co-optimisation, which would need storage inside the commitment problem.
+  //
+  // KNOWN RISK, stated before the result: schedule-price iterations are prone to
+  // OSCILLATION rather than convergence. Storage flattens the peaks it was built to
+  // exploit, which removes the spread that justified the schedule, which produces a
+  // different schedule, and so on. Damping is the usual remedy. Whether this one
+  // converges is the finding, not an assumption - so the loop reports the price
+  // movement every round and does not claim success if it does not settle.
+  if (process.argv.includes('--iterate')){
+    console.log('\n  FIXED-POINT ITERATION (LP schedule -> dispatch -> prices -> LP)');
+    console.log('  round   mean |dP| R/MWh   July gas GWh   storage TWh   LP obj');
+    let mc = d.mc.slice();
+    let prevJul = d.julGas;
+    const DAMP = 0.5;   // new prices are blended with old; undamped oscillates
+    for (let it = 1; it <= 5; it++){
+      // Solve the LP against the current price series.
+      const L2 = ['Minimize', ' obj:'];
+      const o2 = [];
+      for (let h = 0; h < N; h++) for (const t of d.tiers){
+        o2.push(`+ ${mc[h].toFixed(4)} c_${t.k}_${h}`.replace('+ -','- '));
+        o2.push(`- ${(mc[h] - t.cycleCost).toFixed(4)} d_${t.k}_${h}`.replace('- -','+ '));
+      }
+      L2.push('  ' + o2.join(' '));
+      L2.push('Subject To');
+      for (const t of d.tiers) for (let h = 0; h < N; h++){
+        const prev = h === 0 ? `s_${t.k}_${N-1}` : `s_${t.k}_${h-1}`;
+        L2.push(` bal_${t.k}_${h}: s_${t.k}_${h} - ${(1-t.selfDisch).toFixed(6)} ${prev} - ${t.eff.toFixed(4)} c_${t.k}_${h} + d_${t.k}_${h} = 0`);
+      }
+      for (let h = 0; h < N; h++){
+        L2.push(` srv_${h}: ` + d.tiers.map(t=>`d_${t.k}_${h}`).join(' + ') + ` <= ${Math.max(0,d.serveable[h]).toFixed(2)}`);
+        L2.push(` chg_${h}: ` + d.tiers.map(t=>`c_${t.k}_${h}`).join(' + ') + ` <= ${Math.max(0,d.chargeable[h]).toFixed(2)}`);
+      }
+      L2.push('Bounds');
+      for (const t of d.tiers) for (let h = 0; h < N; h++){
+        L2.push(` 0 <= c_${t.k}_${h} <= ${t.P}`);
+        L2.push(` 0 <= d_${t.k}_${h} <= ${t.P}`);
+        L2.push(` 0 <= s_${t.k}_${h} <= ${t.E}`);
+      }
+      L2.push('End');
+      const r3 = highs.solve(L2.join('\n'), { time_limit: 300 });
+      if (r3.Status !== 'Optimal'){ console.log(`  ${it}      solver returned ${r3.Status} - stopping`); break; }
+      // Total discharge per hour, handed to the engine as a CAP.
+      const dis = new Array(N).fill(0);
+      for (const [k, v] of Object.entries(r3.Columns)){
+        const m = k.match(/^d_(\w+)_(\d+)$/); if (!m) continue;
+        dis[+m[2]] += v.Primal || 0;
+      }
+      // Re-dispatch with that schedule imposed, and read the new prices.
+      const back = probe(`
+        const seriti = { newWindMW: 20000-FIXED.windMW, newPvMW: 25000-FIXED.pvUtilityMW,
+          newNuclearMW: 0, coalEAFPct: 70, coalDecomMW: 32000, newCcgtMW: 25000,
+          newBattMW: 20000, newBattHours: 10, newIronAirMW: 20000 };
+        const forced = Float64Array.from(${JSON.stringify(dis.map(x=>Math.round(x*100)/100))});
+        const r = simulate({ ...state, ...seriti, _forcedDischargeMW: forced }, PROFILES);
+        let jul = 0; for (let h=4344;h<5088;h++) jul += (r.stack.ccgt[h]||0)+(r.stack.diesel[h]||0);
+        return { mc: Array.from(r.marginalP), julGas: jul/1000, batt: r.E.batt/1e6 };
+      `);
+      if (back.error){ console.log('  re-dispatch failed:', back.error.slice(0,120)); break; }
+      let dp = 0; for (let h = 0; h < N; h++) dp += Math.abs(back.mc[h] - mc[h]);
+      dp /= N;
+      console.log(`  ${String(it).padEnd(6)}${dp.toFixed(1).padStart(16)}${back.julGas.toFixed(0).padStart(15)}`
+        + `${back.batt.toFixed(2).padStart(14)}${(r3.ObjectiveValue/1e9).toFixed(2).padStart(9)}`);
+      for (let h = 0; h < N; h++) mc[h] = DAMP * back.mc[h] + (1 - DAMP) * mc[h];
+      if (dp < 1){ console.log('  CONVERGED - mean price movement under R1/MWh'); break; }
+      prevJul = back.julGas;
+    }
+  }
+
   console.log('\n  PERFECT FORESIGHT gives the UPPER BOUND. The rolling runs limit');
   console.log('  foresight to the window, as a production cost model does. The GAP');
   console.log('  between them is the value of forecasting.');
