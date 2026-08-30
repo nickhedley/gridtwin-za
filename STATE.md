@@ -143,7 +143,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Sixteen harnesses, 766 checks. Last full run: 766/766.
+Eighteen harnesses, 817 checks. Last full run: 817/817.
 
 ```
 node stress_suite.js                290/290
@@ -151,9 +151,11 @@ node validate_invariants.js .       149/149
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           29/29
+python3 audit.py index.html           34/34
 node validate_benchmarks.js .         18/18
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
+node validate_geo.js .                37/37   SA boundary clamp, added 30 Aug
+python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .        14/14
 node validate_structure.js .          10/10
@@ -974,3 +976,43 @@ which is exactly how a constant drifts from its source unnoticed.
 it covers lithium only. PyPSA-ZA's cost comparison answers a different question because
 it co-optimises investment and operation. Both were investigated at length; recording
 the negative result stops the next session repeating the work.
+
+---
+
+## The SA boundary excluded half the country — fixed 30 Aug 2026
+
+Reported as "parts of Limpopo won't let me click". Measured against 18 real towns,
+**NINE were outside the boundary polygon**:
+
+```
+rejected   Polokwane · Musina · Thohoyandou · Mokopane · Lephalale · Tzaneen
+           Rustenburg · Mahikeng · Gqeberha
+```
+
+`SA_POLY`'s northern edge ran as a SINGLE DIAGONAL from -28.5 at 16.5E to -22.2 at
+32.9E. At 29.5E that capped the country at -25.5 — roughly 180 km south of Polokwane.
+The entire Limpopo salient was outside it, along with the North West and the Gqeberha
+coast.
+
+**IT FAILED IN COMPLETE SILENCE.** The point was rejected before any region was
+resolved, so there was no error, no message, no console warning. The map simply did
+nothing. This is the same shape as the CARTO watermark and the broken 3D link: a whole
+class of defect that every harness passes over because nothing was looking.
+
+REPLACED with a 57-vertex trace: Orange River, the 20E Kgalagadi line, the Molopo, the
+Limpopo up to Beitbridge, then the Zimbabwe, Mozambique and coastal borders. Still a
+ROUGH clamp — it does not cut out Lesotho or Eswatini, which is right for a resource
+query and wrong for anything needing jurisdiction. Noted in the code.
+
+### NEW HARNESS: validate_geo.js — 37 checks, and it runs in a second
+
+Twenty-five real SA locations must be accepted, ten foreign and ocean points must be
+rejected. **Both directions matter**: the easy fix for a too-tight polygon is one that
+lets the ocean in, so a clamp that accepts everything is not a clamp.
+
+Parses `SA_POLY` straight out of the source rather than executing it, so no jsdom.
+
+Scored against the old polygon first, where it fails on the nine towns. The Limpopo
+places are over-represented deliberately, and De Aar, Noupoort, Humansdorp and
+Sutherland are in the list because they matter to this model specifically — Humansdorp
+is the Impofu site, and it was among the nine being rejected.
