@@ -883,3 +883,61 @@ whether other `planned` entries have the same problem.
 
 ABSENCE OF AN OWNER TAG IN THIS FILE MEANS UNKNOWN, not NTCSA. The register is sourced
 from DBSA, NTCSA GIS and Eskom, none of which record private ownership.
+
+---
+
+## gridtwin-3d.html — checked 30 Aug 2026, first time ever
+
+A SECOND PAGE, linked from the Network Schematic panel, with its own map stack
+(deck.gl + MapLibre), its own basemap and its own styling code. **It had no coverage of
+any kind until today** — `audit.py` and `validate_lint` both run against `index.html`
+only. Same blind spot that let the multi-year weather bug live: an unrun code path is
+not "probably fine", it is unmeasured.
+
+### IT READS THE SAME DATA, SO CHANGES LAND ON BOTH PAGES — BUT STYLING DOES NOT
+
+It fetches `nodal/substations_compact.json`, `nodal/transmission_lines.geojson` and
+`nodal/tdp_projects.json`. So the Impofu line and the two Koruson connectors appeared
+here automatically — **rendered exactly like surveyed routes**, because the styling that
+makes them dotted lives in `index.html` and this page had never heard of
+`route_indicative`.
+
+That is the drift mechanism to remember: **data changes propagate, presentation changes
+do not.** Adding a flag to the data without teaching every consumer about it produces a
+page that shows a straight line between two real substations as though it were a
+surveyed route.
+
+FIXED: indicative connectors now render at low alpha and 0.8 width — thinnest on the
+map — with a tooltip reading "The connection is sourced, the route is not. Do not
+measure this line." deck.gl's GeoJsonLayer has no dash support, so alpha and width
+replace the 2D dotted style. Private ownership is surfaced in tooltips too.
+
+### NEW HARNESS: audit3d.py
+
+Nine checks. Scored against the ORIGINAL file first, where it fails on three — the two
+indicative checks and private ownership. Run it as
+`python3 audit3d.py gridtwin-3d.html`.
+
+### TWO THINGS FLAGGED, NOT FIXED
+
+**Basemap.** This page uses CARTO's VECTOR GL style
+(`basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json`), a different product from
+the raster tiles that were watermarked in 2D. It may or may not be affected and **has
+not been verified in a browser** — the container cannot reach either host. If it is
+watermarked or blank, OpenFreeMap serves a keyless dark vector style at
+`https://tiles.openfreemap.org/styles/dark`, a drop-in for `mapStyle`. Esri raster is
+NOT a drop-in here: MapLibre needs a vector style spec.
+
+**Path convention — DO NOT HARMONISE. I was wrong to flag this.** The 3D page fetches
+`/nodal/...` ABSOLUTE while `index.html` uses relative `nodal/...`. That is not drift:
+the 3D page lives at `gridtwin-3d/index.html`, one level down, so a relative `nodal/`
+there would resolve to `/gridtwin-3d/nodal/` and find nothing. The absolute paths are
+REQUIRED by the folder layout and correct as they are. Changing them would break the
+page.
+
+**LINK FIXED 30 Aug 2026.** Both links in `index.html` read `href="gridtwin-3d.html"`,
+a flat file at the root, which 404s against the actual `gridtwin-3d/index.html` layout.
+Now `href="gridtwin-3d/"` — trailing slash matters, since without it some servers
+redirect and some do not. An `audit.py` check pins it, because **no harness notices a
+broken link**: a page that never loads produces no error anywhere in the suite. Verified
+the check fails on the old form.
