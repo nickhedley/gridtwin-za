@@ -441,16 +441,22 @@ The requirement is now split into three, as professional practice does:
 
 ```
 scenario              gross    VRE provides    NET   curtailment TWh
-today, ~5 GW VRE      1,768               0   1,768        0.0
-Seriti, 45 GW VRE     2,273               4   2,268        0.2
-frontier, 110 GW      3,096           2,098     998      115.3
+today, ~5 GW VRE      1,263               0   1,263        0.0
+Seriti, 45 GW VRE     1,567               3   1,564        0.2
+frontier, 110 GW      2,114           1,457     657      115.3
 ```
+
+REVISED 29 Aug 2026 after an audit found this panel had defined its OWN reserve
+constants in parallel with the ones the unit commitment already used - 930 MW versus
+794 MW for the same "largest single credible loss". Now consolidated onto the
+commitment definition, which is older and better sourced. Levels drop ~30%; the SHAPE
+and the conclusion are unchanged.
 
 ### THE ANCILLARY MARKET FOR STORAGE SHRINKS AS RENEWABLES GROW
 
-At 110 GW of wind and solar the gross requirement rises to 3,096 MW, as expected. But
-curtailed renewables supply 2,098 MW of it, and the NET pot left for storage collapses
-to 998 MW - SMALLER THAN TODAY'S 1,768 MW, in a system more than twice the size.
+At 110 GW of wind and solar the gross requirement rises to 2,114 MW, as expected. But
+curtailed renewables supply 1,457 MW of it, and the NET pot left for storage collapses
+to 657 MW - SMALLER THAN TODAY'S 1,263 MW, in a system more than twice the size.
 
 This inverts the usual assumption that storage ancillary revenue grows with renewable
 penetration. It grows only while curtailment stays low. Past the point where the system
@@ -465,6 +471,40 @@ reserve. That is a market-design decision, not a physical one, and it is exactly
 kind of thing the Revised Electricity Pricing Policy is deciding now. If the answer is
 yes, the storage business case at high penetration is materially worse than any
 published South African analysis assumes.
+
+### SENSITIVITY, tested 29 Aug 2026 — the conclusion is BINARY, not gradual
+
+Three parameters sit behind this. Varied one at a time, on the 110 GW case, against
+today's net requirement of 1,263 MW:
+
+```
+VRE-provider share      gross   VRE prov   NET @110GW   shrinks vs today?
+  0    (barred)          2,114          0        2,114   NO - it GROWS
+  0.25                   2,114      1,371          743   yes
+  0.5  (assumed)         2,114      1,457          657   yes
+  0.75                   2,114      1,491          623   yes
+  1.0  (all qualifies)   2,114      1,508          606   yes
+
+reserve VRE pct         2.5 -> 521    5.0 -> 657    7.5 -> 804    10 -> 958   all shrink
+contingency MW          400 -> 486    794 -> 657    930 -> 718   1600 -> 1,018  all shrink
+```
+
+THE ONLY THING THAT MATTERS IS WHETHER CURTAILED VRE MAY SELL RESERVE AT ALL. Bar it
+and the pot grows from 1,263 to 2,114 MW, as intuition expects. Allow even a QUARTER of
+curtailed output to qualify and the pot collapses to 743 MW, below today's. Everything
+from 0.25 to 1.0 lands in a narrow band of 606-743 MW.
+
+So the 0.5 assumption is not load-bearing. The finding is not sensitive to the
+parameter; it is sensitive to a yes/no policy decision, and it flips at a very low
+threshold.
+
+Nor does it depend on the other two. Across a fourfold range of contingency size and a
+fourfold range of the VRE reserve share, the pot at 110 GW is smaller than today's in
+every single case.
+
+THAT IS THE STRONGER VERSION OF THIS RESULT, and the one to put to a regulator: the
+question is not "how much reserve will curtailed plant provide" but "will it be allowed
+to provide any".
 
 The shares (0.03 of load, 0.05 of available VRE, 50% of curtailed VRE counting as a
 provider) are the uncertain part. The structure now follows practice.

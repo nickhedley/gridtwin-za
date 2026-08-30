@@ -678,3 +678,53 @@ network results — they come from different engines and only one of them scales
 
 STILL OPEN: whether the frontier solves at all given hours rather than minutes. Worth
 one offline run, but it changes nothing about the product envelope.
+
+---
+
+## Audit, 29 Aug 2026
+
+Systematic pass over the engine looking for bugs, inconsistencies and strange outputs.
+
+### CLEAN
+
+- **Every control at both extremes.** 76 sliders x min and max = 152 runs. No NaN, no
+  Infinity, no negative energies or costs, no carrier exceeding 1.5x demand.
+- **Hourly energy balance.** Worst error 7.3e-12 MW across all scenarios tested. (A
+  16 GW "error" in a load-shedding case was the probe omitting unserved energy, not a
+  fault.)
+- **Cost identity.** `totalCost` reproduces `fuel + carbon + capex + dr - exports`
+  exactly, to the last digit, in every scenario.
+- **Storage round-trip.** Implied 0.776-0.815, correctly between psEff 0.76 and
+  battEff 0.88 as a blend.
+- **Emissions.** The 1.5-5.3% gap between reported CO2 and a naive fuel calculation
+  tracks `partLoadF` exactly. It is the documented part-load heat-rate penalty, not an
+  error.
+- **Fleet-size claims in slider notes** match their constants (0.8 GW battery, 2.9 GW
+  pumped, 4.6 GW wind).
+
+### FOUND AND FIXED: a duplicated reserve structure, self-inflicted
+
+The battery ancillary panel had defined its OWN operating reserve on 28 Aug 2026 —
+`sysContingencyMW` 930, `sysResDemandShare` 0.03, `sysResVreShare` 0.05 — in parallel
+with the one the unit commitment had used all along at line ~4980:
+`reserveContingencyMW` 794, `reserveRegulatingPct` 2.0, `reserveVrePct` 5.0, via
+`reserveMWAt(h)`.
+
+**TWO CONSTANTS FOR ONE PHYSICAL QUANTITY** — largest single credible loss, 930 MW
+described as a Koeberg unit against 794 MW described as a Medupi unit. Exactly the
+rule-6 violation the project has been policing everywhere else, introduced by the same
+work that documented the rule.
+
+Worse, the 28 Aug note claimed the engine retained no pre-curtailment VRE series and
+built `vreCurtMW` to reconstruct one. `_vreMW` at line 4979 is installed capacity times
+the per-unit profile — available VRE, pre-curtailment — and had been there all along,
+feeding the very reserve structure that was being duplicated.
+
+NOW: gross requirement = the commitment definition, shared. VRE-provided credit stays
+here, because for commitment you correctly want the gross figure. Net = what storage
+competes for. Reserve levels fall about 30% (today 1,768 -> 1,263 MW); the shape and
+every conclusion are unchanged. `vreCurtMW` is still needed for the provider credit.
+
+LESSON: before adding a constant, grep for the quantity, not the name. `sysContingencyMW`
+and `reserveContingencyMW` never collide textually, so no check could catch it — only
+reading the surrounding code would.

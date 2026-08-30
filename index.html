@@ -4145,30 +4145,16 @@ const FIXED = {
   asReserveRMWh: 150,           // R/MWh on reserve capacity held
   asInertiaRkWyr: 100,          // R/kW/yr, grid-forming and synchronous only
   asReserveShare: 0.15,         // share of A BATTERY'S OWN power held back for reserve
-  // OPERATING RESERVE, rebuilt 28 Aug 2026 on the standard three-part structure.
-  // It was a flat 6% of ANNUAL PEAK, which is a screening approximation: constant
-  // through the night, and BLIND TO RENEWABLE BUILD, so a scenario with 45 GW of
-  // wind and solar procured exactly the same reserve as today's system. That biased
-  // the battery saturation knee earlier than it should be under any large build.
+  // OPERATING RESERVE. The requirement itself lives with the unit commitment
+  // (reserveContingencyMW / reserveRegulatingPct / reserveVrePct, ~line 4980) and is
+  // shared - it is one physical quantity and must have one definition.
   //
-  // Professional practice (PLEXOS, PyPSA, ERCOT, ENTSO-E) sizes reserve as:
-  //   CONTINGENCY  the largest single credible loss. Fixed - it does not scale with
-  //                demand or with renewables. For South Africa a Koeberg unit at
-  //                ~930 MW; Medupi and Kusile units are ~800 MW.
-  //   DEMAND       a share of load, covering forecast error and normal variation.
-  //   VRE          a share of INSTANTANEOUS wind and solar output, covering their
-  //                forecast error. This is the term the old model lacked entirely.
-  // Resolved HOURLY, so the requirement falls at night and rises with VRE output.
+  // A duplicate set of constants was introduced here on 28 Aug 2026 and REMOVED
+  // 29 Aug after an audit: sysContingencyMW 930 alongside reserveContingencyMW 794,
+  // both meaning "largest single credible loss". Two numbers for one thing is how
+  // drift starts, and this one shipped for a day.
   //
-  // CALIBRATION. Eskom procures on the order of 2,200 MW of operating reserve. At a
-  // ~32 GW peak with today's ~5 GW of VRE output these shares give
-  // 930 + 0.03*32,000 + 0.05*5,000 = 2,140 MW, which is the right neighbourhood.
-  // The shares are the uncertain part, not the structure - treat them as a band.
-  sysContingencyMW: 930,        // largest single credible loss, a Koeberg unit
-  sysResDemandShare: 0.03,      // share of hourly load
-  sysResVreShare: 0.05,         // share of hourly AVAILABLE wind + solar (dispatched
-                                // + curtailed), because forecast error is a property of
-                                // what a plant could have produced, not what was taken
+  // What remains here is the ONE thing the commitment path deliberately lacks:
   sysResVreProvidesShare: 0.5,  // fraction of CURTAILED VRE that counts as an upward
                                 // reserve provider. Curtailed plant can ramp back up and
                                 // ERCOT, EirGrid and AEMO all permit it to sell reserve.
@@ -5679,37 +5665,28 @@ function simulate(u, prof, outPath){
   // why a flat share of peak was replaced. Kept as a series so the mean can drive
   // revenue (what a market procures on average) while the max is available for
   // adequacy questions.
-  // Two series, because they are two different things and conflating them was the
-  // deviation recorded on 28 Aug and corrected here.
+  // CONSOLIDATED 29 Aug 2026. This block previously defined its OWN reserve structure
+  // - sysContingencyMW 930, sysResDemandShare 0.03, sysResVreShare 0.05 - in parallel
+  // with the one the unit commitment already used at line ~4980: reserveContingencyMW
+  // 794, reserveRegulatingPct 2.0, reserveVrePct 5.0, driven by reserveMWAt(h).
   //
-  //   GROSS REQUIREMENT  the uncertainty to be covered. Driven by AVAILABLE VRE
-  //                      (dispatched + curtailed), because forecast error is a
-  //                      property of what a plant could have produced. This is what
-  //                      PLEXOS, PyPSA, ERCOT and ENTSO-E size against.
-  //   VRE-PROVIDED       curtailed plant can be ramped back up, so it is an eligible
-  //                      upward-reserve provider. ERCOT, EirGrid and AEMO all allow
-  //                      this. It reduces what must be procured from everything else.
+  // Two constants for the same physical quantity (largest single credible loss, 930 vs
+  // 794) and two definitions of the same requirement. Found by audit. The commitment
+  // structure is the older and better-sourced one, and it ALREADY uses available VRE
+  // via _vreMW - installed capacity times the per-unit profile - which is the
+  // pre-curtailment series this block was reconstructing from vreCurtMW.
   //
-  // NET is what storage and thermal actually compete for. The previous version drove
-  // the requirement off post-curtailment output, which reached a similar net number
-  // by the wrong route and made curtailed VRE invisible as a COMPETITOR - the thing a
-  // storage developer most needs to see.
+  // Now: GROSS is the commitment requirement, unchanged and shared. VRE-PROVIDED is
+  // the credit for curtailed plant that can ramp back up, which the commitment path
+  // correctly does NOT apply - for commitment you want the gross figure. NET is what
+  // storage and thermal compete for in an ancillary market.
   const _resReqGross = new Float64Array(HOURS);
   const _resVreProv  = new Float64Array(HOURS);
   const _resReqSeries = new Float64Array(HOURS);
   {
-    const c = Math.max(0, p.sysContingencyMW ?? 930);
-    const dS = Math.min(0.2, Math.max(0, p.sysResDemandShare ?? 0.03));
-    const vS = Math.min(0.5, Math.max(0, p.sysResVreShare ?? 0.05));
-    // Fraction of curtailed VRE that can actually be counted as reserve. Not 1.0:
-    // it must be dispatchable within the response time of the product, telemetered
-    // and controllable. Conservative default; the sensitivity is worth testing.
     const vProv = Math.min(1, Math.max(0, p.sysResVreProvidesShare ?? 0.5));
     for (let h = 0; h < HOURS; h++) {
-      const disp = (stack.wind ? stack.wind[h] : 0) + (stack.pv ? stack.pv[h] : 0)
-                 + (stack.csp ? stack.csp[h] : 0);
-      const avail = disp + vreCurtMW[h];
-      _resReqGross[h] = c + dS * loadS[h] + vS * avail;
+      _resReqGross[h] = reserveMWAt(h);
       _resVreProv[h]  = Math.min(_resReqGross[h], vreCurtMW[h] * vProv);
       _resReqSeries[h] = Math.max(0, _resReqGross[h] - _resVreProv[h]);
     }
