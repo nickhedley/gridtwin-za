@@ -10,12 +10,12 @@ not read. This file exists so that does not happen a third time.
 
 ```
 index.html                  the app, ~14,250 lines, ~1 MB
-profiles.json               LOAD-BEARING. National hourly demand + wind/solar/CSP
+profiles.json               Load-BEARING. National hourly demand + wind/solar/CSP
                             per-unit series, 8760h. index.html:11378 fetches it
-                            from the ROOT, not from nodal/, and falls back
-                            SILENTLY to synthetic profiles if absent.
-build_capacity.py           THE generator. Lives in nodal/ historically but RUNS
-                            FROM THE ROOT and reads nodal/... relative to cwd.
+                            from the root, not from nodal/, and falls back
+                            Silently to synthetic profiles if absent.
+build_capacity.py           THE generator. Lives in nodal/ historically but runs
+                            From THE root and reads nodal/... relative to cwd.
                             421 lines. Has step 1b (the supply-area split) and
                             the eskom bucket.
 build_hydra_split.py        Builds the supply-area split draft. Same file as
@@ -25,15 +25,15 @@ build_supply_area_split.py  build_supply_area_split.py - identical MD5, two name
 The sixteen harnesses also sit at the root.
 
 ```
-control_inventory.json      BASELINE for validate_structure. 63 controls. Losing a
+control_inventory.json      Baseline for validate_structure. 63 controls. Losing a
                             control fails loudly; adding one is a deliberate act that
-                            needs --write-baseline. COMMIT THIS FILE.
-response_matrix.json        BASELINE for validate_response. Every control's measured
-                            effect on eight outputs. COMMIT THIS FILE.
+                            needs --write-baseline. Commit this FILE.
+response_matrix.json        Baseline for validate_response. Every control's measured
+                            effect on eight outputs. Commit this FILE.
 ```
 
 Both were unpinned until 28 Aug 2026, which meant those two harnesses compared against
-nothing and could not fail. Re-pin ONLY when a change is intended, never to clear a
+nothing and could not fail. Re-pin only when a change is intended, never to clear a
 failure.
 
 ## nodal/
@@ -48,7 +48,7 @@ nodal_dispatch.js
 capacity_siting.js
 ipp_pipeline.json           generated
 regional_renewable_capacity.json   generated
-supply_area_split_draft.json       READ BY build_capacity.py
+supply_area_split_draft.json       Read BY build_capacity.py
 provincial_mix.json         headroom_summary.json      corridor_electrical.json
 profiles_regional.json      profiles_regional_multiyear.json
 substations_compact.json    substation_bands.json      nersa_registrations.json
@@ -64,15 +64,15 @@ sa_solar_grid.json          ORPHAN. Real PVGIS SARAH2 data, 739 points, nothing
 Harness-only, not fetched by the page: `regional_renewable_capacity.json` is read
 directly by `validate_capacity.js`.
 
-### KNOWN INCONSISTENCY, unresolved
+### KNOWN inconsistency, unresolved
 
 `build_hydra_split.py` writes to `nodal/hydra_central_split_draft.json`.
 `build_capacity.py` reads `nodal/supply_area_split_draft.json`.
 The file on disk carries the second name. Re-running the split builder today
-would create a SECOND file under the old name and the generator would keep
+would create a second file under the old name and the generator would keep
 reading the stale one. Reconcile before regenerating the split.
 
-### DELETE THIS
+### delete this
 
 `nodal/build_capacity.py` - a 324-line copy with NO step 1b and no eskom bucket.
 Running it destroys the Hydra Central split (669 MW wind, 459.5 MW solar reverting
@@ -84,7 +84,7 @@ consistent. The correct script is at the root.
 ## Running the suite - there is no single working directory
 
 Ten harnesses take the root as `argv[2]` and default to `.`. Two default to
-`testroot`. THREE IGNORE THE ARGUMENT ENTIRELY.
+`testroot`. Three ignore THE argument ENTIRELY.
 
 From the directory holding `index.html` and `nodal/`:
 
@@ -104,7 +104,7 @@ node ../stress_suite.js              # ignores argv, uses cwd
 python3 ../audit.py index.html
 ```
 
-From the PARENT of that directory:
+From the parent of that directory:
 
 ```
 node validate_outputs.js testroot    # hardcodes path.resolve('testroot')
@@ -112,7 +112,7 @@ node eng5.js                         # hardcodes testroot/index.html
 node jsdom_local2.js                 # hardcodes testroot/index.html
 ```
 
-`jsdom_local2.js` exits 0 regardless of what it finds. READ ITS OUTPUT, do not
+`jsdom_local2.js` exits 0 regardless of what it finds. Read ITS output, do not
 check its exit code. Two `ctx.createPattern` errors at index.html:7210 are jsdom
 lacking canvas, not a regression.
 
@@ -122,7 +122,7 @@ Node dependencies: `jsdom`, `highs`. `npx eslint` for validate_lint.
 
 ## Per-session upload set
 
-Project knowledge is injected as TEXT and never reaches the filesystem, so
+Project knowledge is injected as text and never reaches the filesystem, so
 nothing runnable can live there. Upload each session:
 
 ```
@@ -133,5 +133,5 @@ the sixteen harnesses
 build_capacity.py
 ```
 
-Then run the full suite BEFORE any change. That baseline run is what caught the
+Then run the full suite before any change. That baseline run is what caught the
 two stale rollups on 27 Aug.

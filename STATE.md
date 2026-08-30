@@ -1,11 +1,11 @@
 # GridTwin ZA - current state
 
-## FITNESS FOR PURPOSE - read this before quoting anything
+## fitness FOR purpose - read this before quoting anything
 
 Written 30 Aug 2026. What this model can carry, what it cannot, and which published
 numbers depend on which. A reader deciding whether to cite GridTwin should start here.
 
-### SOLID: the engineering identities
+### solid: the engineering identities
 
 ```
 hourly energy balance      worst error 7.3e-12 MW across every scenario tested
@@ -16,16 +16,16 @@ control sweep              76 controls x min and max, no NaN, no negatives, noth
 suite                      18 harnesses, 817 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
-capacity data              reconciles to source through ASSERTED identities; where it does
+capacity data              reconciles to source through asserted identities; where it does
                            not - the 1,823 MW solar gap - the validator refuses to go green
 ```
 
-### DEFENSIBLE IN FRONT OF A HOSTILE REVIEWER
+### defensible IN front OF A hostile reviewer
 
-Findings grounded in DATA rather than in dispatch:
+Findings grounded in data rather than in dispatch:
 
 - **Connection headroom.** The four best-wind regions hold 100% of existing wind and
-  7.3% of national wind headroom, and ZERO solar headroom. Arithmetic on published
+  7.3% of national wind headroom, and zero solar headroom. Arithmetic on published
   figures.
 - **Locational transmission cost**, R150 to R735/kW-yr, from the corridor graph with the
   capacity-weighted mean reproducing the existing R600 exactly.
@@ -36,40 +36,40 @@ Findings grounded in DATA rather than in dispatch:
 - **Coal flexibilisation worsens adequacy in a no-gas system**, ten years out of ten,
   with a 166 GWh spread against a 4,200 GWh weather spread.
 
-### DO NOT QUOTE
+### DO NOT quote
 
 ```
-the 37% storage gap     WITHDRAWN 30 Aug 2026 - a price-taker accounting artefact
+the 37% storage gap     Withdrawn 30 Aug 2026 - a price-taker accounting artefact
 rolling-horizon July    a comparison on a metric neither run optimises
 avgCost as a tariff     six of NERSA's thirteen price components are absent from it,
                         including legacy cost recovery and distribution charges
 ```
 
-### THE HONEST WEAK SPOT: storage dispatch
+### THE honest weak spot: storage dispatch
 
 The heuristic charges best-round-trip-first with no value function on state of charge.
 Which published results lean on it:
 
 ```
-DOES NOT       iron-air / long-duration - survived the LP
-LEANS ON IT    lithium duration wall (4h vs 10h)
-LEANS ON IT    no-gas frontier
-LEANS ON IT    the storage-mitigation half of the capture-rate curve
+does NOT       iron-air / long-duration - survived the LP
+leans ON IT    lithium duration wall (4h vs 10h)
+leans ON IT    no-gas frontier
+leans ON IT    the storage-mitigation half of the capture-rate curve
 ```
 
-Those three are DIRECTIONALLY SOUND and QUANTITATIVELY UNCERTAIN. Every model carries a
+Those three are directionally sound and quantitatively UNCERTAIN. Every model carries a
 dispatch approximation; this one is documented rather than assumed.
 
-### WHERE THIS IS NOT YET PLEXOS OR PyPSA
+### where this IS NOT YET PLEXOS OR PyPSA
 
-- Storage is not CO-OPTIMISED with unit commitment.
-- No intra-hour BALANCING product - the model is hourly, and NERSA's own wholesale
+- Storage is not CO-optimised with unit commitment.
+- No intra-hour balancing product - the model is hourly, and NERSA's own wholesale
   pricing methodology names balancing costs as a component.
-- The national engine is SINGLE-NODE, so the frontier costing cannot see the network its
+- The national engine is single-node, so the frontier costing cannot see the network its
   own locational analysis says is binding. Two engines, and only one scales that far.
 - No stochastic outage or forecast-error representation.
 
-### WHY IT IS NEVERTHELESS DEFENSIBLE
+### WHY IT IS nevertheless defensible
 
 Not because the model is right, but because **every number carries its scenario and its
 caveat, and claims get withdrawn when they fail**. On 30 Aug 2026 alone: a headline
@@ -80,8 +80,8 @@ one that does not.
 ---
 
 
-WHAT IS TRUE RIGHT NOW. Rewritten in place, never appended to. If a fact here
-disagrees with LOG.md, this file wins. If it disagrees with a data file, STOP -
+What IS true right NOW. Rewritten in place, never appended to. If a fact here
+disagrees with LOG.md, this file wins. If it disagrees with a data file, stop -
 that is the failure mode that cost most of 27 Aug 2026.
 
 Last verified: 28 Aug 2026, end of session.
@@ -137,7 +137,7 @@ unallocated             5,514 MW   BW7 (3,940), BESIPPPP BW2/BW3 (1,231),
 terminated              1,424 MW   BW5 cancellations, outside the identity
 ```
 
-Was 6,971 before Mulilo. NOTE: an ONLINE project sits in this file too (Doornhoek,
+Was 6,971 before Mulilo. Note: an online project sits in this file too (Doornhoek,
 Mulilo), so "pipeline" is a register of projects and stages, not a not-yet-built total.
 
 ### Fingerprints, as at 28 Aug 2026
@@ -146,14 +146,14 @@ Mulilo), so "pipeline" is a register of projects and stages, not a not-yet-built
 regional_renewable_capacity.json   gtza-4ec9bc7cc8d3285d
 ipp_pipeline.json                  gtza-06192db1e33eb439
 substations_compact.json           gtza-d76783f127763e7a
-pfl_cod_h1_2026.json               NONE — should have one, see open items
+pfl_cod_h1_2026.json               None — should have one, see open items
 ```
 
-Method, verified by reproduction: `sha256` over the body EXCLUDING `meta`,
+Method, verified by reproduction: `sha256` over the body excluding `meta`,
 canonicalised as `json.dumps(sort_keys=True, separators=(',',':'))`, prefixed `gtza-`,
 truncated to 16 hex characters.
 
-`by_source` now has FOUR buckets: `reipppp`, `private`, `eskom`, `rmipppp`. The last
+`by_source` now has four buckets: `reipppp`, `private`, `eskom`, `rmipppp`. The last
 was added 28 Aug to hold Mulilo Total Hydra at 75 MW under a new `hybrid_mw` key —
 NOT `solar_mw`, because the plant is 216 MWp of solar behind a 75 MW contracted
 dispatchable output. `FIXED.pvUtilityMW` is untouched at 3,271 MW as a result.
@@ -183,7 +183,7 @@ preferred_bidders = reached_FC + pre_FC
            12,405 =      7,825 +  4,580     (BW6 awaiting CC 640 + BW7 3,940)
 ```
 
-**3. National constants, decomposed by source — both PENDING:**
+**3. National constants, decomposed by source — both pending:**
 
 ```
 FIXED.pvUtilityMW = sum(solar tagged reipppp) + sum(solar tagged private)
@@ -195,8 +195,8 @@ allocate by province, the privately procured wheeled capacity. So every regional
 carries a `source` tag and the national constant is the sum of both components.
 
 ```
-wind    4,042 + 470 = 4,512  vs  windMW      4,512   PASS
-solar   2,663 + 488 = 3,151  vs  pvUtilityMW 4,974   gap 1,823 MW, PENDING
+wind    4,042 + 470 = 4,512  vs  windMW      4,512   Pass
+solar   2,663 + 488 = 3,151  vs  pvUtilityMW 4,974   gap 1,823 MW, pending
 ```
 
 **Wind now passes, and `windMW` was corrected to 4,512 as a result.** It previously read
@@ -205,7 +205,7 @@ mixed grid-supply with wheeled capacity — a figure that could not be decompose
 sources are disjoint universes: the IPP Office does not cover private procurement, so
 Umsobomvu and the three Impofu farms appear once, in the private bucket.
 
-Read that PASS for what it is. `windMW` is now **derived** from these components, so the
+Read that pass for what it is. `windMW` is now **derived** from these components, so the
 equality is a consistency check, not independent corroboration — it confirms the constant
 and the file agree, and fails loudly if either is edited alone. It will also fail if
 pre-2026 private **wind** is later found, which is the correct behaviour: the constant
@@ -254,27 +254,27 @@ also reports `shed` at 0 chars and `state` as undefined on the window while
 `lastRes` is a proper object. Unverified whether that is normal for this
 harness; nothing asserts on it either way.
 
-### The 17/18 CLOSED on 28 Aug 2026 — correctly, not by relaxing anything
+### The 17/18 closed on 28 Aug 2026 — correctly, not by relaxing anything
 
 `validate_capacity` flagged Mulilo Total Hydra Storage as commissioned and counted
-in neither file. It was added properly: 75 MW CONTRACTED (not the 216 MWp installed,
+in neither file. It was added properly: 75 MW contracted (not the 216 MWp installed,
 which would treble Northern Cape solar) into a new `by_source.rmipppp` bucket under a
 new `hybrid_mw` key, Northern Cape, plus an `ipp_pipeline.json` entry with
-`status: online` and `cod: 2026-07`. Both through the GENERATOR, not by hand.
+`status: online` and `cod: 2026-07`. Both through the generator, not by hand.
 
-TRAP AVOIDED, worth knowing: the harness offers two routes, the pipeline or
+Trap avoided, worth knowing: the harness offers two routes, the pipeline or
 `by_source`. Only `by_source` adds capacity. Adding to the pipeline alone would have
 scored 18/18 with the 75 MW still uncounted — a green check on an unchanged number,
 worse than the honest 17/18.
 
 COD remains 2026-07 pending the PFL Knowledge Hub table.
 
-  75 MW contracted, 216 MW installed. USE THE CONTRACTED FIGURE.
+  75 MW contracted, 216 MW installed. USE THE contracted FIGURE.
 
   COD unresolved, leaning H1. PFL places it in H1 2026, so on or before 30 June.
   Engineering News reports it inaugurated and brought into operation on 16 July
   2026. These are not necessarily in conflict: inauguration is a ceremony and
-  usually FOLLOWS commercial operation by weeks. PFL is also the better source
+  usually follows commercial operation by weeks. PFL is also the better source
   for a COD. But the H1 monitor's own cutoff makes its placement partly
   circular, so the PFL IPP Knowledge Hub COD table is what settles it. That
   decides H1 versus H2 2026, and nothing else.
@@ -285,7 +285,7 @@ Ten harnesses take the root as `argv[2]` and default to `.`. Two default to
 `testroot`. Three ignore the argument entirely:
 
   stress_suite.js      NO root variable. Hardcodes `nodal/...` and `index.html`
-                       as paths relative to the WORKING DIRECTORY. Passing
+                       as paths relative to the working DIRECTORY. Passing
                        `testroot` does nothing — the argument is discarded and
                        the run silently uses cwd. It therefore appears to work
                        from the repo root and fails from anywhere else with
@@ -293,7 +293,7 @@ Ten harnesses take the root as `argv[2]` and default to `.`. Two default to
   eng5.js              Hardcodes `testroot/index.html`. Run from the PARENT.
   jsdom_local2.js      Hardcodes `testroot/index.html`. Run from the PARENT.
   validate_outputs.js  Hardcodes path.resolve('testroot'). Run it from the
-                       PARENT of testroot, not from inside it.
+                       Parent of testroot, not from inside it.
   validate_capacity.js, validate_lp.js   default to 'testroot' if no argument.
 
 So there is no single working directory that runs all fifteen. Run
@@ -303,12 +303,12 @@ that root as an argument from either place.
 
 ### profiles.json is load-bearing for two thirds of the suite
 
-`index.html:11378` fetches `profiles.json` from the REPO ROOT — not from
+`index.html:11378` fetches `profiles.json` from the repo root — not from
 `nodal/` — and falls back to synthetic profiles when it is absent. The fallback
 is silent everywhere except `validate_outputs`, which detects it and refuses to
 score rather than reporting invalid benchmarks.
 
-Running the suite without it produces ELEVEN false failures across FIVE
+Running the suite without it produces eleven false failures across five
 harnesses, every one of which looks like a separate bug:
 
 ```
@@ -328,7 +328,7 @@ looked exactly like the 17 Aug storage-charging bug. All one cause: a synthetic
 solar shape that is too generous, and a demand series that peaks in a different
 hour.
 
-THE RULE: before investigating any failure below the top four lines, confirm
+THE rule: before investigating any failure below the top four lines, confirm
 `profiles.json` is at the repo root. A run without it is not evidence.
 
 ### Data the suite needs
@@ -339,24 +339,24 @@ fetches — it is a harness input, not a page dependency.
 
 ### Corrections to the previous version of this block
 
-- It listed SEVEN scripts. There are fifteen. The eight unlisted were the
+- It listed seven scripts. There are fifteen. The eight unlisted were the
   bug-hunt session harnesses plus validate_solve.
 - `validate_lp` was recorded at 18/18. It is 40/40; the harness grew and the
   count was never updated.
 - `validate_capacity` was recorded at 14/14 with one pending. It is 17/18.
 - Open item 6 said `sa_solar_grid.json` does not exist. It does — see below.
-- The suite is now FIFTEEN harnesses and 691 checks, all passing. `validate_lp` grew
+- The suite is now fifteen harnesses and 691 checks, all passing. `validate_lp` grew
   40 -> 50 with a capex-coverage check; `validate_lint` grew 1 -> 2 with a check that
   every `FIXED.<key>` read names a real key. Both were scored against the pre-fix files
   first and fail there, as rule 2 requires.
 
-### DO NOT RETIRE eng5.js. validate_response does not replace it.
+### DO NOT retire eng5.js. validate_response does not replace it.
 
 Checked 27 Aug 2026, because an earlier draft of this block assumed it was
 redundant and it is not.
 
 `validate_response`'s SIGN_RULES cover four of eng5's six checks — VRE against
-coal, demand against coal, EAF against LOLE — and add carbon-tax and
+coal, demand against coal, EAF against lole — and add carbon-tax and
 decommissioning rules eng5 lacks. But `newBattMW` appears nowhere in SIGN_RULES,
 so TWO of eng5's checks have no equivalent anywhere in the suite:
 
@@ -368,10 +368,10 @@ failure mode validate_lp's own header warns about — a check that disappears
 while everything still passes.
 
 The durable fix is to add `newBattMW: { curtTWh: -1, unservedTWh: -1 }` to
-SIGN_RULES so the two suites OVERLAP rather than depend on each other. Until
+SIGN_RULES so the two suites overlap rather than depend on each other. Until
 then both must run.
 
-### sa_solar_grid.json is an ORPHAN, not a missing dependency
+### sa_solar_grid.json is an orphan, not a missing dependency
 
 The file is present at `nodal/sa_solar_grid.json`, 23 KB, and it is real data:
 PVGIS SARAH2 v5.2, a 0.5-degree grid over 16–33°E and 22–35°S, 739 valid points
@@ -444,31 +444,31 @@ and is not here.
    changed to an unsubstantiated figure, and the "Existing fleet" documentation row
    still reads "Utility PV 4 GW" for the same reason. Change both in one commit once
    the earlier private capacity is sourced.
-2. ~~`carbonPrice` is disconnected, pinned at R550/t.~~ **STALE — CHECKED AND CLOSED
+2. ~~`carbonPrice` is disconnected, pinned at R550/t.~~ **stale — checked AND closed
    29 Aug 2026.** Neither part of this is true any more. Both LPs read
    `const CARBON = S.carbonTaxRPerT` (lines 6434 and 6981), so the slider does feed
    them. There is no R550 literal anywhere in the file. `carbonTaxRPerT` is **46**, not
    550, and its slider already documents why.
 
-   THE R46 IS CORRECT AND WELL SOURCED. Phase 2 headline is R308/t from 1 Jan 2026, up
+   THE R46 IS correct AND well SOURCED. Phase 2 headline is R308/t from 1 Jan 2026, up
    from R236. Electricity generation moved into the carbon tax from that date with up to
    **85% tax-free allowances**, so R308 x 0.15 = R46/t effective. That matches the
    slider's own note. Independent corroboration: the effective rate across the economy
    after allowances is reported at roughly R105/t, and generation sits below that because
    its allowance is at the top of the range.
 
-   ALIGNMENT WITH PROFESSIONAL PRACTICE — this is the part worth acting on. Models of
+   Alignment with professional practice — this is the part worth acting on. Models of
    this kind carry TWO carbon numbers and GridTwin has one:
-     - a COMPLIANCE price, what generators actually pay, which drives dispatch. R46 is
+     - a compliance price, what generators actually pay, which drives dispatch. R46 is
        right for this and is what the model uses.
-     - a SHADOW or POLICY price, used to test what a decarbonisation target would cost.
+     - a shadow or policy price, used to test what a decarbonisation target would cost.
        PLEXOS and PyPSA studies routinely run both. The slider's suggested values —
        R308 headline, R462 by 2030, R640 for a carbon-budget breach — are exactly the
        policy-price ladder, so the capability exists; it is just not labelled as a
        distinct concept.
-   ON CHECKING, THE GAP WAS SMALLER THAN FIRST WRITTEN. GridTwin already carries BOTH
-   prices in the correct relationship: the compliance price as an INPUT (R46) and the
-   shadow price as an OUTPUT — the marginal abatement cost from the carbon cap dual,
+   ON checking, THE GAP WAS smaller than first WRITTEN. GridTwin already carries both
+   prices in the correct relationship: the compliance price as an input (R46) and the
+   shadow price as an output — the marginal abatement cost from the carbon cap dual,
    already displayed alongside the compliance price with the comparison spelled out.
    That IS the professional structure. No restructuring was needed or done.
 
@@ -476,13 +476,13 @@ and is not here.
    price" while offering R308, R462 and R640 as things to try — none of which is an
    effective rate. A user setting R462 could reasonably read it as what generators will
    pay in 2030, when at 85% allowances the effective rate would be nearer R69. Label is
-   now "Carbon price" and the note separates the COMPLIANCE price from the POLICY
+   now "Carbon price" and the note separates the compliance price from the policy
    ladder, and points at the carbon cap's marginal abatement cost for the reverse
    question.
 
-   WATCH: a suspension of the carbon tax was under Cabinet consideration in Feb 2026 and
+   Watch: a suspension of the carbon tax was under Cabinet consideration in Feb 2026 and
    NERSA has disallowed Eskom from recovering carbon tax through tariffs to end-2030. If
-   either holds, the compliance price for generation is arguably ZERO, not R46. Recheck
+   either holds, the compliance price for generation is arguably zero, not R46. Recheck
    before quoting carbon costs externally.
 3. **`emisCoal || 0.95` at line 5812 disagrees with `FIXED.emisCoal` = 1.04.** Dead
    today, because that site already uses `{ ...FIXED, ...state }`. A latent wrong
@@ -495,9 +495,9 @@ and is not here.
    names. The annual *"An Overview of the IPPPP"* on the same publications page
    historically carries project-level tables and is the route to named entries and the
    Hydra Central split.
-6. **`sa_solar_grid.json` is an orphan, not a missing file.** The COMMENT was corrected
+6. **`sa_solar_grid.json` is an orphan, not a missing file.** The comment was corrected
    28 Aug 2026 — index.html:1291 previously asserted the file had never existed, which was
-   false. Still unresolved: whether to RECONNECT it. Doing so replaces the Open-Meteo ERA5
+   false. Still unresolved: whether to reconnect it. Doing so replaces the Open-Meteo ERA5
    fallback (which the code's own comment says overestimates by 10–15%) with satellite-
    observed irradiance at roughly 5%. It would move every solar figure the model produces,
    so expect `validate_benchmarks` to shift and run the suite either side. Do not delete
@@ -509,37 +509,37 @@ and is not here.
    absent from `substations_compact.json` entirely. The method is only as good as the
    register. Chatty is now entry 186, tagged `src: pluscode` and NOT independently
    corroborated. **Before reusing this method for the Hydra Central split, establish
-   that the register is COMPLETE for the Karoo — not merely that the matching is sound.**
+   that the register is complete for the Karoo — not merely that the matching is sound.**
    `sub`/`subkm` have not been re-derived; Impofu should reassign once they are.
-8. ~~`pfl_cod_h1_2026.json` carries no fingerprint.~~ ADDED 28 Aug 2026,
-   `gtza-6b0cfe4c16136faf`, same method as the generated files. NOTE a fingerprint would NOT have caught
+8. ~~`pfl_cod_h1_2026.json` carries no fingerprint.~~ added 28 Aug 2026,
+   `gtza-6b0cfe4c16136faf`, same method as the generated files. Note a fingerprint would NOT have caught
    the stale rollups found on 28 Aug — it is recomputed over whatever the file contains,
    so a hand edit produces a self-consistent fingerprint on wrong data. The rollup and
    generator-reproduction checks added to `validate_capacity.js` are what catch that.
-9. ~~Reserve is sized as a flat share of annual peak.~~ REBUILT 28 Aug 2026 as
+9. ~~Reserve is sized as a flat share of annual peak.~~ rebuilt 28 Aug 2026 as
    contingency + demand share + VRE share, resolved hourly. `sysContingencyMW` 930 (a
    Koeberg unit), `sysResDemandShare` 0.03, `sysResVreShare` 0.05. Mean requirement:
    1,768 MW today, 2,272 MW under Seriti's 45 GW, 2,438 MW at 110 GW — so the pot now
-   GROWS with renewable build. Ancillary fall deepened 62.1% to 64.8%; the knee moved
+   Grows with renewable build. Ancillary fall deepened 62.1% to 64.8%; the knee moved
    out slightly and the 3,700 MW fleet still sits just below it. The panel now reads the
    engine's figure rather than recomputing its own, which is how it came to reference
-   `FIXED.peakMW`, a key that never existed. CORRECTED AGAIN 28 Aug 2026, same session:
-   the requirement now uses AVAILABLE VRE (dispatched + curtailed) and credits curtailed
-   VRE as a reserve PROVIDER at 50%, giving gross / provided / net. `vreCurtMW` is tracked
+   `FIXED.peakMW`, a key that never existed. Corrected again 28 Aug 2026, same session:
+   the requirement now uses available VRE (dispatched + curtailed) and credits curtailed
+   VRE as a reserve provider at 50%, giving gross / provided / net. `vreCurtMW` is tracked
    separately from `curtailMW`, which mixes VRE spill with forced coal surplus and could
-   not be used. FINDING: at 110 GW of wind and solar the gross requirement rises to
+   not be used. Finding: at 110 GW of wind and solar the gross requirement rises to
    3,096 MW but curtailed VRE supplies 2,098 MW, so the NET pot for storage collapses to
-   998 MW — BELOW today's 1,768 MW. Storage's ancillary market SHRINKS as renewables grow,
+   998 MW — below today's 1,768 MW. Storage's ancillary market shrinks as renewables grow,
    once curtailment begins. Invisible at 45 GW (0.2 TWh curtailed); it appears between 45
    and 110 GW. Whether it is real depends on whether South Africa lets curtailed renewables
    sell reserve — a market-design decision the EPP is taking now. Remaining uncertainty is
    in the three shares, not the structure.
-10. **`weatherYearNational` was weighting by DEMAND, fixed 28 Aug 2026.** It used
+10. **`weatherYearNational` was weighting by demand, fixed 28 Aug 2026.** It used
    `BLD_LOAD_SHARE` — Gauteng 31.5%, Northern Cape 1.4% — to build a national
-   RENEWABLE profile, when all South African wind sits in the Cape provinces and Hydra
-   Central. Wind CF came out 22.6-27.2% across all ten years, BELOW the 28-38% band
+   Renewable profile, when all South African wind sits in the Cape provinces and Hydra
+   Central. Wind CF came out 22.6-27.2% across all ten years, below the 28-38% band
    `validate_benchmarks` enforces, and nothing caught it because no harness exercises
-   the multi-year path. Now capacity-weighted per technology, and it REFUSES to build a
+   the multi-year path. Now capacity-weighted per technology, and it refuses to build a
    profile if `regional_renewable_capacity.json` is missing rather than falling back to
    the wrong weighting. **`validate_weather.js` now covers this path** — 48 checks,
    scored against the pre-fix file first where it fails on three, including the anchor
@@ -555,15 +555,15 @@ and is not here.
    claimed the wind series was a MERRA-2 composite. It is the Eskom metered series.
    Second stale note found inside a data file this session, after `HYDRA_CENTRAL_ZERO`.
 13. **All six falsy-zero suspects investigated and explained, 28 Aug 2026.** None is a
-   bug. Five are one mechanism: a REBOUND PEAK. Modest demand shifting cuts the peak from
+   bug. Five are one mechanism: a rebound PEAK. Modest demand shifting cuts the peak from
    31.60 to 29.23 GW, but past ~15% the shifted load rebuilds a peak in the valley and at
-   30% the system costs more than with no demand response at all. Driven by FUEL, not by
+   30% the system costs more than with no demand response at all. Driven by fuel, not by
    `drCostR`, which stays near zero. The sixth, `asReserveRMWh`, is a designed step: the
    reserve holdback is binary on price > 0 and does not scale with price. All six are now
-   ANNOTATED in `validate_response.js` rather than suppressed — the suspect still prints,
+   Annotated in `validate_response.js` rather than suppressed — the suspect still prints,
    because the day one changes shape is the day something broke.
 14. ~~Three results in RESULTS.md are still on one weather year.~~ RE-RUN 28 Aug 2026
-   across all ten. All three HOLD, and two are stronger than the single-year run showed.
+   across all ten. All three hold, and two are stronger than the single-year run showed.
    Iron-air changes July gas by exactly zero in all ten years. Lithium 4h-to-10h buys
    under 1% of gas in every year, tighter than the 1.7% first reported, which was the
    most favourable year. Coal flexibilisation worsens adequacy in TEN years out of ten,
@@ -571,17 +571,17 @@ and is not here.
    unserved energy, so the penalty is nearly independent of weather. It was flagged as the
    weakest result in the file; it is now among the best evidenced. The
    ten-year run on 28 Aug showed the synthetic year understates gas energy by ~35%
-   and unserved energy by about a third — it is a FLATTERING simplification, not a
+   and unserved energy by about a third — it is a flattering simplification, not a
    conservative one. Long-duration storage, lithium duration and coal flexibilisation
    have not been re-run. The flexibilisation result is the weakest: its 1,128 GWh
    effect sits inside a 4,600 GWh weather spread and could reverse in some years.
-11. **The no-gas frontier costs the same as gas, but is NOT BUILDABLE on today's grid.**
+11. **The no-gas frontier costs the same as gas, but is NOT buildable on today's grid.**
    50W/60S with no gas comes out at R285 bn/yr against R285 bn for the 25 GW gas scenario.
    Checked against `headroom_summary.json`: national headroom is 21,520 MW wind and
    19,940 MW solar; the frontier needs 45,388 and 56,729. Shortfall ~61 GW. The four
    best-wind regions hold 100% of existing wind and 7.3% of national wind headroom, and
-   ZERO solar headroom. Northern Cape and Hydra Central are at zero for everything.
-   R285 bn is a FLOOR. The finding is about SEQUENCING — transmission first — not about
+   Zero solar headroom. Northern Cape and Hydra Central are at zero for everything.
+   R285 bn is a FLOOR. The finding is about sequencing — transmission first — not about
    whether a no-gas system is affordable.
 12. **Long-duration capex is single-source.** `acapVrfb` 5,565 rests on one USD 450/kWh
    estimate; NREL ATB covers lithium only and cannot corroborate it. `acapIronAir`
@@ -598,40 +598,40 @@ and is not here.
 Mapped 28 Aug 2026 against section 4 of Gazette 55257. Full table in RESULTS.md.
 
 ```
-PRODUCED (3)              energy, carbon, congestion duals (unpriced)
-MODELLED, DEFAULTS OFF (3) capacity, ancillary, reserve
-PARTIAL (1)               transmission — flat R600/kW-yr on new wind and PV only,
-                          a BUILD cost rather than a use-of-system charge, and NOT
+produced (3)              energy, carbon, congestion duals (unpriced)
+modelled, defaults OFF (3) capacity, ancillary, reserve
+partial (1)               transmission — flat R600/kW-yr on new wind and PV only,
+                          a build cost rather than a use-of-system charge, and NOT
                           locational. The model prices the grid identically whether a
                           plant connects into 5,500 MW of headroom or into zero.
-ABSENT (6)                standby, legacy cost recovery, subsidy, distribution,
+Absent (6)                standby, legacy cost recovery, subsidy, distribution,
                           balancing, environmental compliance
 ```
 
-TWO ACTIONABLE GAPS, in order:
-1. ~~Price the congestion duals.~~ EXTRACTED 28 Aug 2026. Nine binding rows of 38,400
+TWO actionable gaps, in order:
+1. ~~Price the congestion duals.~~ extracted 28 Aug 2026. Nine binding rows of 38,400
    (0.023%), all the same event: the Western Cape import boundary, midday 8 June, three
    consecutive years, dual declining 199,872 to 171,358 R/MW as transmission is built.
-   **DESIGN TRAP FOUND: the three corridors into the Western Cape carry IDENTICAL duals**,
+   **design trap found: the three corridors into the Western Cape carry identical duals**,
    because relaxing any one admits the same megawatt. A congestion charge must therefore
-   be defined on BOUNDARIES or cutsets, not on individual lines — charging each corridor
-   its own dual triple-counts one constraint. STILL TO DO: run it on the 110 GW no-gas
+   be defined on boundaries or cutsets, not on individual lines — charging each corridor
+   its own dual triple-counts one constraint. Still TO DO: run it on the 110 GW no-gas
    frontier, where congestion should actually be material.
-2. ~~Make the transmission charge locational.~~ DONE 28 Aug 2026. `txRateFor()` builds a
+2. ~~Make the transmission charge locational.~~ done 28 Aug 2026. `txRateFor()` builds a
    supply curve from electrical distance to Gauteng plus available headroom, filling
    cheapest-first. Range R150 (Gauteng) to R735 (Hydra Central), capacity-weighted mean
-   still R600 so the national total is unchanged. Effective rate now RISES with build
+   still R600 so the national total is unchanged. Effective rate now rises with build
    volume: R150 at 1 GW, R349 at 41 GW (all headroom consumed), R578 at 102 GW.
-   FINDING: headroom-weighted mean distance is 163 km against 368 km for the existing
-   fleet — the room to connect is CLOSER to load than the fleet already built, and in
-   the worst-resource regions. OPEN: distance to a single load centre is a proxy; the
-   SHALLOW share of 25% is an assumption; `bldTxCurve` is null until the data loads, in
+   Finding: headroom-weighted mean distance is 163 km against 368 km for the existing
+   fleet — the room to connect is closer to load than the fleet already built, and in
+   the worst-resource regions. Open: distance to a single load centre is a proxy; the
+   Shallow share of 25% is an assumption; `bldTxCurve` is null until the data loads, in
    which case the flat rate applies.
 
 The other four absences are tariff design, not system modelling. Do not approximate
 them — say they are out of scope.
 
-STANDING CAUTION: `avgCost` is fuel + carbon + new grid-connected capex over
+Standing caution: `avgCost` is fuel + carbon + new grid-connected capex over
 grid-served energy. Six of the thirteen enumerated components are not in it, including
 legacy cost recovery and distribution charges, which are a large part of a real bill.
 It is not a tariff and must never be quoted as one.
@@ -644,8 +644,8 @@ Added 28 Aug 2026.
 
 ### FIXED: a non-converged solve was presented as an answer
 
-`bldSolve` ran `highs.solve(lp, { time_limit: 120 })` and BOTH result consumers
-checked only `if (!res || !res.Columns)`. HiGHS returns a POPULATED `Columns` object
+`bldSolve` ran `highs.solve(lp, { time_limit: 120 })` and both result consumers
+checked only `if (!res || !res.Columns)`. HiGHS returns a populated `Columns` object
 when it stops at the time limit, so that guard passes and the numbers render as a
 plan. Nothing anywhere inspected `res.Status`.
 
@@ -654,17 +654,17 @@ zero build and zero binding corridors — output that reads as "no congestion at
 penetration" and is in fact "the solver had not started".
 
 Both consumers now refuse to display a non-`Optimal` result and say why. The time
-limit is `BLD_TIME_LIMIT_S`, declared once BEFORE the worker template literal and
-INTERPOLATED into it — a bare reference would throw inside the worker, which runs in
+limit is `BLD_TIME_LIMIT_S`, declared once before the worker template literal and
+interpolated into it — a bare reference would throw inside the worker, which runs in
 its own context.
 
 **This was the largest single gap between GridTwin and a professional tool.** PLEXOS
 and PyPSA both refuse to return a non-converged solution as a solution.
 
-### CORRECTION: the carbon cap is NOT the cause of slow solves
+### correction: the carbon cap is NOT the cause of slow solves
 
 An earlier note in this session claimed the carbon cap adds a dense row that took the
-LP from ~0.3 MB to 23 MB. MEASURED, and it is wrong:
+LP from ~0.3 MB to 23 MB. Measured, and it is wrong:
 
 ```
 regional LP            chars        rows
@@ -675,15 +675,15 @@ carbonCap on      22,995,170     255,181
 all three         22,995,861     255,181
 ```
 
-The regional LP is ALREADY 23 MB and 255,181 rows at baseline. The cap changes it by
+The regional LP is already 23 MB and 255,181 rows at baseline. The cap changes it by
 316 characters. The "0.3 MB" figure was a misreading of `constraint rows parsed:
 119,225`, which counts only the subject-to section.
 
-So the cause of non-convergence is scenario DIFFICULTY, not problem SIZE. Forcing a
+So the cause of non-convergence is scenario difficulty, not problem SIZE. Forcing a
 large renewable build with no gas is simply harder to solve, at the same dimensions.
 Do not "optimise the carbon cap formulation" on the strength of the old note.
 
-### THE ENVELOPE, MEASURED 28 Aug 2026
+### THE envelope, measured 28 Aug 2026
 
 Six-rung ladder, 240 s solver limit, same machine:
 
@@ -697,7 +697,7 @@ grid + growth 5%        22,995,861  255,181     2.1     244.4   Time limit reach
 grid + 5% + no gas      22,995,861  255,181     2.0     244.6   Time limit reached       0.0
 ```
 
-**NOT A CLIFF — SLOW, NOT INTRACTABLE.** An earlier version of this note called it a
+**NOT A cliff — slow, NOT INTRACTABLE.** An earlier version of this note called it a
 cliff on the strength of the 240 s rows. That was wrong. Given a 2,400 s limit:
 
 ```
@@ -709,25 +709,25 @@ limit, not the model. Demand growth and a gas ban still change nothing once past
 limit, because all three were being cut off at the same point rather than failing for
 different reasons.
 
-**THE CEILING IS A COMPUTE PROBLEM, NOT A FORMULATION ONE.** That is the better answer:
+**THE ceiling IS A compute problem, NOT A formulation ONE.** That is the better answer:
 nothing needs rearchitecting.
 
-**SIZE IS NOT THE VARIABLE.** Every rung builds the same 255,181-row, 23 MB model,
+**size IS NOT THE VARIABLE.** Every rung builds the same 255,181-row, 23 MB model,
 varying by under 800 characters. Only the difficulty changes. Nothing is gained by
 simplifying the formulation elsewhere, and the earlier carbon-cap theory is doubly dead.
 
-**THE FAILING ROWS RETURN 0.0 GW BUILT.** Before the status guard the interface would
+**THE failing rows return 0.0 GW BUILT.** Before the status guard the interface would
 have rendered that as a plan: build nothing. Not a degraded answer, a confidently wrong
 one — the single best argument for the guard.
 
-THE PRACTICAL ENVELOPE: every pace up to and including Grid solves, but Grid needs
+THE practical envelope: every pace up to and including Grid solves, but Grid needs
 about ten minutes. `BLD_TIME_LIMIT_S` was raised 120 -> 900 to accommodate it.
 
-That limit is only defensible because the solve runs in a WEB WORKER and the page stays
+That limit is only defensible because the solve runs in a WEB worker and the page stays
 responsive. Do not raise it further without rechecking that — a 15-minute block on the
 main thread would be unusable.
 
-### THE FULL CURVE, bisected 28-29 Aug 2026
+### THE full curve, bisected 28-29 Aug 2026
 
 ```
 pace, MW/yr wind        solve s   status               built GW
@@ -739,26 +739,26 @@ pace, MW/yr wind        solve s   status               built GW
 8,600  2x grid            906.5   Time limit reached        0.0
 ```
 
-THE STEEP PART IS BETWEEN 2,500 AND 3,000. A 20% pace increase makes the solve SIX
-TIMES slower, 90 s to 557 s. After that it flattens and is NOT monotonic — 4,300 solves
+THE steep part IS between 2,500 AND 3,000. A 20% pace increase makes the solve SIX
+times slower, 90 s to 557 s. After that it flattens and is NOT monotonic — 4,300 solves
 faster than 3,500. So pace is not a clean predictor above 3,000; the solver's path
 matters more than the problem does.
 
-THE ENVELOPE HAS A REAL EDGE, and it is beyond every shipped pace. Everything in
+THE envelope HAS A real edge, and it is beyond every shipped pace. Everything in
 BLD_PACE solves. Doubling Grid pace does not, at 900 s.
 
-**SO THE GUARD SHOULD ALMOST NEVER FIRE IN NORMAL USE.** A user has to go beyond the
+**SO THE guard should almost never fire IN normal USE.** A user has to go beyond the
 fastest shipped pace to reach it. That is the right place for a limit: it protects
 against the pathological case without obstructing the intended range.
 
-**AND THE FRONTIER SCENARIOS IN RESULTS.md ARE OUTSIDE IT.** The 110 GW no-gas frontier
-is roughly this scale. It is reachable through the NATIONAL dispatch model, which is how
+**AND THE frontier scenarios IN RESULTS.md ARE OUTSIDE IT.** The 110 GW no-gas frontier
+is roughly this scale. It is reachable through the national dispatch model, which is how
 RESULTS.md computes it, but NOT through the regional build LP inside 900 s. That is why
 the frontier congestion analysis (open item) remains untested and cannot be closed
 in-browser. State that limitation whenever the frontier is discussed alongside the
 network results — they come from different engines and only one of them scales that far.
 
-STILL OPEN: whether the frontier solves at all given hours rather than minutes. Worth
+Still open: whether the frontier solves at all given hours rather than minutes. Worth
 one offline run, but it changes nothing about the product envelope.
 
 ---
@@ -767,7 +767,7 @@ one offline run, but it changes nothing about the product envelope.
 
 Systematic pass over the engine looking for bugs, inconsistencies and strange outputs.
 
-### CLEAN
+### clean
 
 - **Every control at both extremes.** 76 sliders x min and max = 152 runs. No NaN, no
   Infinity, no negative energies or costs, no carrier exceeding 1.5x demand.
@@ -784,7 +784,7 @@ Systematic pass over the engine looking for bugs, inconsistencies and strange ou
 - **Fleet-size claims in slider notes** match their constants (0.8 GW battery, 2.9 GW
   pumped, 4.6 GW wind).
 
-### FOUND AND FIXED: a duplicated reserve structure, self-inflicted
+### found AND FIXED: a duplicated reserve structure, self-inflicted
 
 The battery ancillary panel had defined its OWN operating reserve on 28 Aug 2026 —
 `sysContingencyMW` 930, `sysResDemandShare` 0.03, `sysResVreShare` 0.05 — in parallel
@@ -792,7 +792,7 @@ with the one the unit commitment had used all along at line ~4980:
 `reserveContingencyMW` 794, `reserveRegulatingPct` 2.0, `reserveVrePct` 5.0, via
 `reserveMWAt(h)`.
 
-**TWO CONSTANTS FOR ONE PHYSICAL QUANTITY** — largest single credible loss, 930 MW
+**TWO constants FOR ONE physical quantity** — largest single credible loss, 930 MW
 described as a Koeberg unit against 794 MW described as a Medupi unit. Exactly the
 rule-6 violation the project has been policing everywhere else, introduced by the same
 work that documented the rule.
@@ -807,7 +807,7 @@ here, because for commitment you correctly want the gross figure. Net = what sto
 competes for. Reserve levels fall about 30% (today 1,768 -> 1,263 MW); the shape and
 every conclusion are unchanged. `vreCurtMW` is still needed for the provider credit.
 
-LESSON: before adding a constant, grep for the quantity, not the name. `sysContingencyMW`
+Lesson: before adding a constant, grep for the quantity, not the name. `sysContingencyMW`
 and `reserveContingencyMW` never collide textually, so no check could catch it — only
 reading the surrounding code would.
 
@@ -825,38 +825,38 @@ testable. Not a failure: an undated project is a sourcing gap, not an error.
 
 **2. The name match no longer requires bucket === 'private'.** This is the more
 important of the two. A name match against `pfl_private_h1_2026.json` is definitive
-evidence the megawatts are already counted, whatever bucket the QUEUE entry carries —
+evidence the megawatts are already counted, whatever bucket the queue entry carries —
 the queue's bucket label is a guess about where a project belongs, not a fact about
-where it is counted. Restricting the match meant a MISLABELLED queue entry bypassed the
+where it is counted. Restricting the match meant a mislabelled queue entry bypassed the
 one check that beats date arithmetic entirely.
 
 Verified: ARM Platinum queued under `reipppp` is now caught by name. Under the old code
 it would not have been.
 
-NOTE ARM itself sits in the accounted-for list, not this queue, so neither change alters
+Note ARM itself sits in the accounted-for list, not this queue, so neither change alters
 today's output. Both were tested against injected cases rather than assumed.
 
 ---
 
 ## Basemap: CARTO -> Esri, 30 Aug 2026
 
-The resource map carried an "API KEY REQUIRED · carto.com/basemaps/apikey" watermark
+The resource map carried an "API KEY required · carto.com/basemaps/apikey" watermark
 across every tile. CARTO has withdrawn keyless access to `basemaps.cartocdn.com`.
 
-**THE FAILURE MODE IS THE INTERESTING PART.** The tiles still SERVE — they just arrive
+**THE failure mode IS THE interesting PART.** The tiles still serve — they just arrive
 watermarked. Nothing threw, no request failed, and every harness passed throughout,
 because the substations, corridors and project dots are our own data drawn on top. Only
 a human looking at the page could see it. Worth remembering when judging what a green
 suite does and does not prove.
 
-REPLACEMENT: Esri `Canvas/World_Light_Gray_Base` plus `World_Light_Gray_Reference` for
+Replacement: Esri `Canvas/World_Light_Gray_Base` plus `World_Light_Gray_Reference` for
 labels. Chosen because the grey canvas is the closest match to CARTO Positron so nothing
-else needed restyling; Esri is ALREADY a provider in this file (the rooftop tracer's
+else needed restyling; Esri is already a provider in this file (the rooftop tracer's
 satellite and reference layers); and OSM's tile policy discourages public-facing apps
 hitting their servers directly. Attribution set as Esri requires. Serves to zoom 16 and
 this map caps at 10.
 
-**NOT VERIFIED IN A BROWSER.** The container's egress proxy blocks
+**NOT verified IN A BROWSER.** The container's egress proxy blocks
 `server.arcgisonline.com` (`x-deny-reason: host_not_allowed`), so the tiles could not be
 fetched here. Confirm they render before treating this as done.
 
@@ -875,24 +875,24 @@ owner       NTCSA 447 · Red Cap Energy 1
 line_type   shared network 447 · single-project connection 1
 ```
 
-**THE TAGGING IS A STATEMENT ABOUT THE SOURCE, NOT THE WORLD.** All 447 pre-existing
+**THE tagging IS A statement about THE source, NOT THE WORLD.** All 447 pre-existing
 features are NTCSA because this file is built from Eskom TDP and SAPP planning data,
 which contains no privately built assets BY CONSTRUCTION. It is not evidence that none
 exist — South Africa's longest privately permitted renewable line was missing from it
 until it was added by hand.
 
-`line_type` matters more than `owner` for the modelling: only a SHARED NETWORK asset
+`line_type` matters more than `owner` for the modelling: only a shared network asset
 creates headroom another developer can use. A single-project connection does not.
 Koruson's privately built main transmission substation (1.5 GW, EDF Power Solutions) is
 the shared kind and is still NOT represented.
 
-ADDED: Impofu - Thornhill - Chatty, 116 km, 132 kV, Red Cap Energy with Enel Green
-Power, serving the 330 MW Impofu complex. ROUTE INDICATIVE — three vertices from the
+Added: Impofu - Thornhill - Chatty, 116 km, 132 kV, Red Cap Energy with Enel Green
+Power, serving the 330 MW Impofu complex. Route indicative — three vertices from the
 published route description, not a surveyed centreline, which is the same convention
 the SAPP lines in this file already use.
 
-VERIFICATION NOTE worth keeping: my first check compared old and new features BY LABEL
-and reported a geometry change. The file has 65 DUPLICATE LABELS, so the lookup was
+Verification note worth keeping: my first check compared old and new features BY label
+and reported a geometry change. The file has 65 duplicate labels, so the lookup was
 matching a different feature. Compared positionally instead: zero mismatches across all
 447. Do not key on `label` in this file.
 
@@ -912,17 +912,17 @@ wheelConsRegion had     6 — missing Northern Cape, Hydra Central, Free State, 
 
 Clicking one of the missing provinces hit
 `if (wg && [...wg.options].some(o => o.value === region))`, found nothing, and did
-NOTHING — no error, no message, no console warning. The selector simply appeared dead.
+nothing — no error, no message, no console warning. The selector simply appeared dead.
 
 There was no reason for either restriction: generators exist in KwaZulu-Natal and
 consumers exist in the Northern Cape. Both lists now carry all ten regions, and the
 mirror logs a warning if a region ever fails to match, so REGION_CENTROIDS and the
 dropdowns cannot drift apart again in silence.
 
-### KORUSON: substation tagged, NO LINE ADDED
+### koruson: substation tagged, NO line added
 
 Koruson's main transmission substation was privately constructed by EDF Power Solutions
-to accommodate up to 1.5 GW — the SHARED kind of private asset, built so later projects
+to accommodate up to 1.5 GW — the shared kind of private asset, built so later projects
 in the region can connect rather than only serving Koruson 1. That distinction is the
 one that matters for modelling: a single-project connection creates no headroom for
 anyone else.
@@ -930,21 +930,21 @@ anyone else.
 `substations_compact.json` now carries `owner`, `built_by`, `line_type` and
 `headroom_built_mw` on that entry. Fingerprint `gtza-feb8236ccf9035ca`.
 
-**LINES ADDED 30 Aug 2026 AS INDICATIVE CONNECTORS**, after establishing that
-`transmission_lines.geojson` is DISPLAY-ONLY — styled and tooltipped, with nothing in the
+**lines added 30 Aug 2026 AS indicative connectors**, after establishing that
+`transmission_lines.geojson` is display-only — styled and tooltipped, with nothing in the
 model computing length or topology from it. That removed the objection: a straight line
 cannot corrupt a calculation here.
 
 Two connectors, Phezukomoya -> Koruson and San Kraal -> Koruson, endpoints from DFFE
-REEA authorisations. The CONNECTION is documented — Koruson 1 is EDF's cluster of exactly
-these two farms, connecting at the privately built MTS — while the ROUTE is not.
+REEA authorisations. The connection is documented — Koruson 1 is EDF's cluster of exactly
+these two farms, connecting at the privately built MTS — while the route is not.
 
-They are marked `route_indicative: true` and rendered as a THIRD visual state:
+They are marked `route_indicative: true` and rendered as a third visual state:
 
 ```
 solid        surveyed route from the source data
 6 4 dashed   planned, route from the TDP
-1 5 dotted   indicative - connection sourced, route not, LENGTH MEANINGLESS
+1 5 dotted   indicative - connection sourced, route not, length meaningless
 ```
 
 The tooltip says so too, not just the file: "the connection is sourced, the route is not.
@@ -952,31 +952,31 @@ Do not measure this line." Someone reading a dotted line off the map has not ope
 geojson, and a straight line between two real substations is exactly what gets measured
 off a screenshot. Tooltips also now surface private ownership.
 
-WHY NOT JUST OMIT THEM: leaving real private assets off the map makes it systematically
-incomplete in ONE DIRECTION — everything Eskom built is shown, everything private is not
+WHY NOT just omit them: leaving real private assets off the map makes it systematically
+incomplete in ONE direction — everything Eskom built is shown, everything private is not
 — which is a worse distortion than a clearly-labelled straight line. An `audit.py` check
 pins the styling so it cannot be lost silently.
 
-**ALSO FLAGGED, NOT FIXED:** the Koruson entry still carries `planned: true` from the
+**also flagged, NOT FIXED:** the Koruson entry still carries `planned: true` from the
 DBSA register. The cluster is operating, so the substation is built and the flag is
 probably stale — but that has not been confirmed against a commissioning source, so it
 is left as found rather than flipped on inference. Worth resolving, and worth checking
 whether other `planned` entries have the same problem.
 
-ABSENCE OF AN OWNER TAG IN THIS FILE MEANS UNKNOWN, not NTCSA. The register is sourced
+Absence OF AN owner TAG IN this file means unknown, not NTCSA. The register is sourced
 from DBSA, NTCSA GIS and Eskom, none of which record private ownership.
 
 ---
 
 ## gridtwin-3d.html — checked 30 Aug 2026, first time ever
 
-A SECOND PAGE, linked from the Network Schematic panel, with its own map stack
+A second page, linked from the Network Schematic panel, with its own map stack
 (deck.gl + MapLibre), its own basemap and its own styling code. **It had no coverage of
 any kind until today** — `audit.py` and `validate_lint` both run against `index.html`
 only. Same blind spot that let the multi-year weather bug live: an unrun code path is
 not "probably fine", it is unmeasured.
 
-### IT READS THE SAME DATA, SO CHANGES LAND ON BOTH PAGES — BUT STYLING DOES NOT
+### IT reads THE same data, SO changes land ON both pages — BUT styling does NOT
 
 It fetches `nodal/substations_compact.json`, `nodal/transmission_lines.geojson` and
 `nodal/tdp_projects.json`. So the Impofu line and the two Koruson connectors appeared
@@ -994,15 +994,15 @@ map — with a tooltip reading "The connection is sourced, the route is not. Do 
 measure this line." deck.gl's GeoJsonLayer has no dash support, so alpha and width
 replace the 2D dotted style. Private ownership is surfaced in tooltips too.
 
-### NEW HARNESS: audit3d.py
+### NEW harness: audit3d.py
 
-Nine checks. Scored against the ORIGINAL file first, where it fails on three — the two
+Nine checks. Scored against the original file first, where it fails on three — the two
 indicative checks and private ownership. Run it as
 `python3 audit3d.py gridtwin-3d.html`.
 
-### TWO THINGS FLAGGED, NOT FIXED
+### TWO things flagged, NOT FIXED
 
-**Basemap.** This page uses CARTO's VECTOR GL style
+**Basemap.** This page uses CARTO's vector GL style
 (`basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json`), a different product from
 the raster tiles that were watermarked in 2D. It may or may not be affected and **has
 not been verified in a browser** — the container cannot reach either host. If it is
@@ -1011,13 +1011,13 @@ watermarked or blank, OpenFreeMap serves a keyless dark vector style at
 NOT a drop-in here: MapLibre needs a vector style spec.
 
 **Path convention — DO NOT HARMONISE. I was wrong to flag this.** The 3D page fetches
-`/nodal/...` ABSOLUTE while `index.html` uses relative `nodal/...`. That is not drift:
+`/nodal/...` absolute while `index.html` uses relative `nodal/...`. That is not drift:
 the 3D page lives at `gridtwin-3d/index.html`, one level down, so a relative `nodal/`
 there would resolve to `/gridtwin-3d/nodal/` and find nothing. The absolute paths are
-REQUIRED by the folder layout and correct as they are. Changing them would break the
+required by the folder layout and correct as they are. Changing them would break the
 page.
 
-**LINK FIXED 30 Aug 2026.** Both links in `index.html` read `href="gridtwin-3d.html"`,
+**link FIXED 30 Aug 2026.** Both links in `index.html` read `href="gridtwin-3d.html"`,
 a flat file at the root, which 404s against the actual `gridtwin-3d/index.html` layout.
 Now `href="gridtwin-3d/"` — trailing slash matters, since without it some servers
 redirect and some do not. An `audit.py` check pins it, because **no harness notices a
@@ -1045,14 +1045,14 @@ SOURCES: added six loaded sources that had accumulated without being registered 
 EPP gazette, the regional multi-year profiles, the Form Energy and Tubatse transactions
 behind the storage capex, and the REEA records behind the Impofu and Koruson connectors.
 
-TWO NEW SECTIONS, and they are the useful part:
+TWO NEW sections, and they are the useful part:
 
-**Sources used for CONSTANTS, not for data files.** Six numbers in `FIXED` rest on a
+**Sources used for constants, not for data files.** Six numbers in `FIXED` rest on a
 source that populates no JSON - `txRPerKWyr`, `acapIronAir`, `acapVrfb`, `acapPs`,
 `carbonTaxRPerT` and the FX rate. They were invisible to a register organised by file,
 which is exactly how a constant drifts from its source unnoticed.
 
-**Sources CONSULTED AND REJECTED.** NREL ATB cannot corroborate the vanadium constant -
+**Sources consulted AND REJECTED.** NREL ATB cannot corroborate the vanadium constant -
 it covers lithium only. PyPSA-ZA's cost comparison answers a different question because
 it co-optimises investment and operation. Both were investigated at length; recording
 the negative result stops the next session repeating the work.
@@ -1062,29 +1062,29 @@ the negative result stops the next session repeating the work.
 ## The SA boundary excluded half the country — fixed 30 Aug 2026
 
 Reported as "parts of Limpopo won't let me click". Measured against 18 real towns,
-**NINE were outside the boundary polygon**:
+**nine were outside the boundary polygon**:
 
 ```
 rejected   Polokwane · Musina · Thohoyandou · Mokopane · Lephalale · Tzaneen
            Rustenburg · Mahikeng · Gqeberha
 ```
 
-`SA_POLY`'s northern edge ran as a SINGLE DIAGONAL from -28.5 at 16.5E to -22.2 at
+`SA_POLY`'s northern edge ran as a single diagonal from -28.5 at 16.5E to -22.2 at
 32.9E. At 29.5E that capped the country at -25.5 — roughly 180 km south of Polokwane.
 The entire Limpopo salient was outside it, along with the North West and the Gqeberha
 coast.
 
-**IT FAILED IN COMPLETE SILENCE.** The point was rejected before any region was
+**IT failed IN complete SILENCE.** The point was rejected before any region was
 resolved, so there was no error, no message, no console warning. The map simply did
 nothing. This is the same shape as the CARTO watermark and the broken 3D link: a whole
 class of defect that every harness passes over because nothing was looking.
 
-REPLACED with a 57-vertex trace: Orange River, the 20E Kgalagadi line, the Molopo, the
+Replaced with a 57-vertex trace: Orange River, the 20E Kgalagadi line, the Molopo, the
 Limpopo up to Beitbridge, then the Zimbabwe, Mozambique and coastal borders. Still a
-ROUGH clamp — it does not cut out Lesotho or Eswatini, which is right for a resource
+rough clamp — it does not cut out Lesotho or Eswatini, which is right for a resource
 query and wrong for anything needing jurisdiction. Noted in the code.
 
-### NEW HARNESS: validate_geo.js — 37 checks, and it runs in a second
+### NEW harness: validate_geo.js — 37 checks, and it runs in a second
 
 Twenty-five real SA locations must be accepted, ten foreign and ocean points must be
 rejected. **Both directions matter**: the easy fix for a too-tight polygon is one that
@@ -1101,15 +1101,15 @@ is the Impofu site, and it was among the nine being rejected.
 
 ## Private grid candidates, 30 Aug 2026 — and a task premise that was wrong
 
-### THERE IS NO TRANSMISSION FILTER TO WIDEN
+### there IS NO transmission filter TO widen
 
 The task "re-extract REEA including transmission and grid-infrastructure categories" rested
 on my assumption that DFFE publishes those as separate categories. **It does not.** REEA is
-the RENEWABLE ENERGY EIA application database. Grid infrastructure appears only inside a
+the renewable energy EIA application database. Grid infrastructure appears only inside a
 generation project's description, which is exactly why the extract shows nine technology
 values, all generation. A re-download would return the same nine.
 
-### THE DATA WAS ALREADY IN HAND
+### THE data WAS already IN hand
 
 161 of the 2,597 records describe a line, substation or grid connection in their own title.
 Parsed into `nodal/private_grid_candidates.json` with applicant, voltage, capacity,
@@ -1122,17 +1122,17 @@ coordinates, asset type, status and decision date.
   5  with a shared-network hint in the title
 ```
 
-Worth a look: the top row is ENERTRAG's "Camden up to 400kV Grid Connection, **Common
+Worth a look: the top row is enertrag's "Camden up to 400kV Grid Connection, **Common
 Collector**" — a title that describes a shared asset. Phinda Power Projects has 450 MW at
 132 kV in KwaZulu-Natal. Mainstream holds nineteen grid-connected applications, and a
 portfolio developer building repeatedly in one area is where shared infrastructure appears.
 
-### THREE CAUTIONS, IN THE FILE
+### three cautions, IN THE file
 
 **An EA is not a built asset.** Status and decision date record what was authorised.
 Cross-check against commissioning before treating any row as infrastructure.
 
-**Coordinates are the GENERATION centroid, not the line.** There is no route geometry.
+**Coordinates are the generation centroid, not the line.** There is no route geometry.
 Do not draw these without a published route.
 
 **`shared_signal` is a weak textual hint, not evidence.** It fires when the title contains
@@ -1141,7 +1141,7 @@ plant, or a stated intention to host third parties — neither is in this data. 
 passes that test and Impofu fails it, and **neither would be distinguishable from this file
 alone.** That is the limit of what REEA can settle.
 
-### WHAT ACTUALLY SETTLES SHARED-VERSUS-SINGLE
+### what actually settles shared-versus-single
 
 NERSA transmission licences and developer statements. Ask
 `Reapplication@dffe.gov.za` — already on the list for the CSIR request — one extra
@@ -1152,8 +1152,8 @@ converts an inference from field names into an answer.
 
 ## The calendar was wrong and it cost a consultation window, 30 Aug 2026
 
-`CALENDAR.md` read "30 Sep 2026 NERSA Trading Rules - comment submission. HARD
-DEADLINE." **Both halves were wrong.** 30 September is when NERSA expects to FINALISE
+`CALENDAR.md` read "30 Sep 2026 NERSA Trading Rules - comment submission. Hard
+DEADLINE." **Both halves were wrong.** 30 September is when NERSA expects to finalise
 the rules. The comment window on Version 3 ran to 27 July, extended to **28 August** -
 which closed two days before anyone looked. The consultation paper states late
 submissions "will not be considered".
@@ -1161,25 +1161,25 @@ submissions "will not be considered".
 The entry predates the 27 Aug split, so it has been wrong for as long as the file has
 existed: a finalisation milestone recorded as an opportunity to participate.
 
-TWO MORE WINDOWS CLOSED UNWATCHED: the Wholesale Electricity Pricing Methodology and
+TWO more windows closed unwatched: the Wholesale Electricity Pricing Methodology and
 the Vesting Contract Framework, comments 4 Aug, hearings 19 Aug. The first is directly
 relevant - it is the document defining the price components this project has been
 mapping.
 
-**THE LESSON IS ABOUT THE FORM OF THE ENTRY, NOT THE DILIGENCE.** "30 Sep - comment
+**THE lesson IS about THE form OF THE entry, NOT THE DILIGENCE.** "30 Sep - comment
 submission" carries no source and no distinction between a milestone and a window. An
-entry that had recorded WHERE THE DATE CAME FROM would have been checkable. Every
-calendar entry should now name its source and say what KIND of date it is.
+entry that had recorded where THE date came from would have been checkable. Every
+calendar entry should now name its source and say what kind of date it is.
 
-### WHAT THE WHOLESALE PRICING METHODOLOGY GIVES THE MODEL
+### what THE wholesale pricing methodology gives THE model
 
-Independently of the EPP, NERSA splits the wholesale price into MARKET costs (energy,
+Independently of the EPP, NERSA splits the wholesale price into market costs (energy,
 transmission, system operation, balancing, market operator, other regulated) and
-NON-MARKET costs (legacy, bad debt, social and cross-subsidy, vesting). **That confirms
+NON-market costs (legacy, bad debt, social and cross-subsidy, vesting). **That confirms
 the two-kinds split already in RESULTS.md, from a regulator rather than from
 inference** - and it is the split the EPP submission argued for.
 
-It also names one gap we had not: **BALANCING COSTS**. That is a modelling quantity and
+It also names one gap we had not: **balancing costs**. That is a modelling quantity and
 GridTwin has none, because the model is hourly and has no intra-hour product. At 45 GW
 of wind and solar that is not a rounding error. System operation and market operator
 charges are also named, but those are institutional costs and correctly absent.
@@ -1192,21 +1192,21 @@ the disaggregation this project has been advocating.
 
 ## Storage dispatch has no lookahead — recorded 30 Aug 2026
 
-Tiers are sorted by round-trip efficiency (lithium 0.88, VRFB 0.70, iron-air 0.45), so
-long-duration storage charges LAST and discharges LAST, purely on whether the current
+Tiers are sorted by round-trip efficiency (lithium 0.88, vrfb 0.70, iron-air 0.45), so
+long-duration storage charges last and discharges last, purely on whether the current
 hour has a surplus or a deficit. There is no lookahead of any kind, seasonal or
 multi-day. Iron-air cannot deliberately hold energy for a coming drought.
 
-**THAT IS A REAL GAP, but it is not why long-duration storage fails to bite.** Measured:
+**that IS A real GAP, but it is not why long-duration storage fails to bite.** Measured:
 at 45 GW of VRE there is a deficit but annual curtailment is only 0.2 TWh, so foresight
 would have nothing to charge with. At 110 GW curtailment is 100 TWh but July gas is
 already zero, so there is nothing to serve. The two conditions never co-occur.
 
-OPEN: the 60-80 GW range is untested, and is where a seasonal lookahead could plausibly
+Open: the 60-80 GW range is untested, and is where a seasonal lookahead could plausibly
 matter - curtailment has begun, the drought is not yet covered. Worth running before any
 dispatch change is contemplated.
 
-NOTE FOR FRAMING: iron-air at 100 hours is a FOUR-DAY asset, marketed for multi-day
+Note FOR framing: iron-air at 100 hours is a four-DAY asset, marketed for multi-day
 weather events, not seasonal shifting. Seasonal duty needs thousands of hours. At 45%
 round trip, summer-to-winter shifting discards 55% of the energy. Do not describe
 iron-air as seasonal storage.
@@ -1218,13 +1218,13 @@ iron-air as seasonal storage.
 Prompted by the question "couldn't iron-air charge in May and discharge in July?". The
 answer required correcting my own reasoning twice.
 
-**FIRST ERROR, mine: conflating surplus with curtailment.** I argued there was nothing
-to charge with because annual curtailment is 0.2 TWh. Storage charges from CHEAP energy,
+**first error, mine: conflating surplus with curtailment.** I argued there was nothing
+to charge with because annual curtailment is 0.2 TWh. Storage charges from cheap energy,
 not only from spilled energy. Measured: the price floor is R690/MWh in every month, and
 there is 10.2 TWh of spare coal across 7,305 hours. A 45% store charging at R690 delivers
 at ~R1,533 against gas near R1,968 — the arbitrage is in the money.
 
-Also noted: South Africa curtails TODAY at low penetration for localised NETWORK reasons,
+Also noted: South Africa curtails today at low penetration for localised network reasons,
 which a single-node national model cannot represent at all.
 
 **FIXED — charging horizon was 25 hours.** `anticipatedShortfall` looked one day ahead to
@@ -1232,16 +1232,16 @@ set the charge target, which is right for a 4-10 hour battery and useless for a 
 store. Now scales with the longest storage on the system, capped at 168 hours because
 beyond a week perfect foresight does more work than the storage does. Suite 817/817.
 
-**NOT FIXED, AND IT IS THE BINDING ONE — efficiency merit order.** `tierCharge` fills
+**NOT FIXED, AND IT IS THE binding ONE — efficiency merit order.** `tierCharge` fills
 best-round-trip-first: lithium 0.88, vanadium 0.70, iron-air 0.45. Lithium empties daily
 so it always has room, absorbs the cheap charging, and iron-air is never reached. Fixing
-the horizon changed July gas by ZERO for exactly this reason.
+the horizon changed July gas by zero for exactly this reason.
 
 Efficiency-first is correct within an hour and wrong across a week. The right rule fills
-the LONG store when a LONG event is coming, accepting worse round trip, because lithium
+the long store when a long event is coming, accepting worse round trip, because lithium
 cannot hold energy that far. That is a dispatch rewrite, not a tweak.
 
-**CONSEQUENCE FOR A PUBLISHED RESULT.** "Iron-air changes July gas by exactly zero in all
+**consequence FOR A published RESULT.** "Iron-air changes July gas by exactly zero in all
 ten years" was measured on a dispatch that structurally cannot charge it. The finding may
 well survive — 45% round trip is punishing and the July deficit is large — but it has not
 been tested fairly. RESULTS.md now marks it PROVISIONAL. Do not repeat it externally
@@ -1253,26 +1253,26 @@ until the merit order is addressed.
 
 Against the long-duration storage literature: PCMs run 1-2 day horizons to match
 day-ahead markets and cannot capture a multi-day store's inter-temporal value; the
-recommended fix is OPPORTUNITY-VALUE dispatch, a reservation price per store, not an
+recommended fix is opportunity-value dispatch, a reservation price per store, not an
 efficiency merit order. Published cost of getting it wrong: 4-14% of operational value,
 14-34% of capacity credit.
 
-**KEPT: per-tier lookahead horizons.** Each store now looks ahead over its own duration
+**kept: per-tier lookahead horizons.** Each store now looks ahead over its own duration
 (capped at 168 h) rather than all sharing one 25-hour window. Correct on its own merits,
 neutral in the scenarios tested.
 
-**REVERTED: unmet-need charge ordering.** Serving tiers by how far they sit below a
-horizon-based target made July gas WORSE, 2,742 -> 2,810 GWh, and cut storage delivery
+**reverted: unmet-need charge ordering.** Serving tiers by how far they sit below a
+horizon-based target made July gas worse, 2,742 -> 2,810 GWh, and cut storage delivery
 8.42 -> 7.44 TWh. Filling a 45%-efficient store ahead of an 88%-efficient one destroys
 more energy than the earlier availability recovers.
 
-**THE LESSON: unmet need is not value.** The heuristic had no test of whether the
+**THE lesson: unmet need is not value.** The heuristic had no test of whether the
 arbitrage was worth making, and an ordering cannot express one. The correct rule charges
 a tier only when current marginal cost is below expected discharge value times round
 trip — a value function on state of charge, which needs an LP. That is why PLEXOS and
 PyPSA co-optimise storage across the horizon rather than ranking it.
 
-So the defect identified yesterday is REAL and remains OPEN. What is now also known is
+So the defect identified yesterday is real and remains OPEN. What is now also known is
 that it cannot be fixed by reordering, which rules out the cheap options. The reverted
 code and the measurement are documented at the `tierCharge` block so this is not
 re-attempted blind.
@@ -1282,39 +1282,39 @@ re-attempted blind.
 ## Two-pass price-taker built; storage LP is the remaining fix — 30 Aug 2026
 
 `simulateTwoPass()` runs simulate twice: pass one yields the hourly marginal price, pass
-two hands each tier a RESERVATION PRICE (90th percentile over its own horizon) and
+two hands each tier a reservation price (90th percentile over its own horizon) and
 charges only when `cost now < reservation x efficiency`. One extra simulate call, ~590 ms.
 Opt-in, not wired into run().
 
-**IT ANSWERS THE ECONOMIC QUESTION: the arbitrage IS in the money.** July reservation
+**IT answers THE economic question: the arbitrage IS in the money.** July reservation
 price R2,020/MWh; iron-air needs 690 < 2020 x 0.45 = 909 and clears easily. The model's
 under-use of long-duration storage is NOT an economic judgement.
 
-**IT DOES NOT BIND, so it changes nothing alone** — every tier passes in July. And
+**IT does NOT bind, so it changes nothing alone** — every tier passes in July. And
 gate+ordering behaved exactly as ordering alone (July gas 2,742 -> 2,810). Ordering
-reverted a SECOND time.
+reverted a second time.
 
-**CONCLUSION, now well evidenced: no ordering heuristic can fix this.** The gate asks "is
-this trade worth making"; the megawatt is decided by a COMPARATIVE question — worth more
+**conclusion, now well evidenced: no ordering heuristic can fix this.** The gate asks "is
+this trade worth making"; the megawatt is decided by a comparative question — worth more
 in the 45% store or the 88% one — which depends on whether the coming event outlasts the
 short store, given both SOCs. That is a value function on state of charge and a ranking
 cannot express one.
 
-### DONE: STORAGE-ONLY LP — `storage_lp.js`, 30 Aug 2026
+### done: storage-only LP — `storage_lp.js`, 30 Aug 2026
 
 Take the non-storage dispatch as given; let HiGHS optimise charge, discharge and SOC over
 all 8,760 hours with the SOC balance as a constraint. ~50,000 variables for three tiers,
-small against the LPs already solved here, and HiGHS is already in the browser. The DUAL
+small against the LPs already solved here, and HiGHS is already in the browser. The dual
 on the SOC constraint is the opportunity value — a publishable output no South African
 study currently reports.
 
 Note the envelope work: the regional build LP takes 90-780 s, so budget accordingly and
 surface solver status (the guard added 29 Aug already does).
 
-CAVEAT TO CARRY: both approaches use perfect foresight of the price series. Results are an
-UPPER BOUND on long-duration storage value, not an estimate.
+Caveat TO carry: both approaches use perfect foresight of the price series. Results are an
+upper bound on long-duration storage value, not an estimate.
 
-`simulateTwoPass` is a DOCUMENTED orphan in validate_structure's KNOWN list — the harness
+`simulateTwoPass` is a documented orphan in validate_structure's KNOWN list — the harness
 caught it as unwired, which was correct. Remove that entry when it gets a panel.
 
 ---
@@ -1330,39 +1330,39 @@ li            12.48            10.98        200,000                  995
 fe             3.20             1.44        941,568                   18
 ```
 
-**1. THE IRON-AIR RESULT SURVIVES.** Under an optimal dispatch with perfect foresight and
+**1. THE iron-AIR result SURVIVES.** Under an optimal dispatch with perfect foresight and
 no merit order to starve it, 20 GW / 2 TWh of iron-air displaces 18 GWh of July gas out of
-2,742. It DOES fill — peak SOC 47% of capacity, which the heuristic never approached — so
+2,742. It does fill — peak SOC 47% of capacity, which the heuristic never approached — so
 this is no longer a dispatch artefact. 45% round trip is punishing enough that the energy
-is better left in coal. **PROVISIONAL FLAG REMOVED from RESULTS.md.**
+is better left in coal. **provisional flag removed from RESULTS.md.**
 
-**2. THE HEURISTIC UNDER-USES LITHIUM BY 37% OF JULY GAS.** The LP finds 995 GWh that
+**2. THE heuristic under-uses lithium BY 37% OF july GAS.** The LP finds 995 GWh that
 lithium could displace and the heuristic does not. That is far larger than anything about
 iron-air, it affects the technology actually being deployed, and it was invisible until
 the LP existed. **This is now the most valuable open item in the model.**
 
-CAVEATS: perfect foresight (upper bound); price-taker objective against a fixed price
+Caveats: perfect foresight (upper bound); price-taker objective against a fixed price
 series, so it does not re-clear the market; serveable/chargeable limits approximated from
 pass one.
 
-NEXT: embed rather than probe. The dual on the SOC balance is the opportunity value the
+Next: embed rather than probe. The dual on the SOC balance is the opportunity value the
 two-pass gate was approximating, and no South African study publishes it.
 
 ---
 
 ## Storage LP, improved toward professional practice — 30 Aug 2026
 
-Added to `storage_lp.js`: SOC DUALS and a ROLLING HORIZON.
+Added to `storage_lp.js`: SOC duals and a rolling HORIZON.
 
-**OPPORTUNITY VALUE (duals on the SOC balance).** 35,040 rows parsed, 35,040 returned.
-Lithium mean R1,789/MWh, iron-air R2,020 — the scarcity ceiling. Iron-air's is HIGHER
+**opportunity value (duals on the SOC balance).** 35,040 rows parsed, 35,040 returned.
+Lithium mean R1,789/MWh, iron-air R2,020 — the scarcity ceiling. Iron-air's is higher
 because it is rarely the binding store, so its shadow price is never competed down. This
 is the storage revenue signal and is not published for South Africa anywhere.
 
-**ROLLING HORIZON.** 168 h window / 24 h step = 365 solves in 6.8 s; 336/48 = 183 solves
+**rolling HORIZON.** 168 h window / 24 h step = 365 solves in 6.8 s; 336/48 = 183 solves
 in 6.0 s. Both Optimal throughout. This is how a PCM limits foresight.
 
-**A TRAP RECORDED RATHER THAN HIDDEN.** The rolling runs show HIGHER July displacement
+**A trap recorded rather than HIDDEN.** The rolling runs show higher July displacement
 than perfect foresight (37.6% and 40.1% vs 36.9%), which is impossible for the quantity
 being optimised. The explanation: July displacement is not the objective — the LP
 maximises annual arbitrage value, and perfect foresight spends storage wherever the
@@ -1371,34 +1371,34 @@ behaves correctly (12.42 vs 11.26 / 11.66 TWh). **Do not quote the rolling July 
 as an improvement.** The honest conclusion is that the 37% is robust to foresight
 assumptions.
 
-FIVE GAPS ADDRESSED 30 Aug 2026 — four closed, one not closeable here.
-1. TERMINAL VALUE FUNCTION replaces the crude floor. **This fixed the foresight
+Five gaps addressed 30 Aug 2026 — four closed, one not closeable here.
+1. Terminal value function replaces the crude floor. **This fixed the foresight
    paradox**: rolling was showing 37.6/40.1% against perfect foresight's 36.9%, which was
    impossible. All three now agree at 36.5%, so the result no longer depends on foresight
    assumptions at all — a stronger finding than the original.
-2. SELF-DISCHARGE, 0.004%/h lithium and 0.05%/h iron-air. ESTIMATES, flagged in code,
+2. Self-discharge, 0.004%/h lithium and 0.05%/h iron-air. Estimates, flagged in code,
    deliberately NOT promoted to FIXED because no SA source gives them.
-3. CYCLE COST, R250/MWh throughput lithium, R50 iron-air. Duals are no longer pinned at
+3. Cycle cost, R250/MWh throughput lithium, R50 iron-air. Duals are no longer pinned at
    the scarcity ceiling: lithium mean R1,563, iron-air R1,925.
-4. RESERVE CO-OPTIMISED (opt-in, `--reserve`). **Iron-air's energy role HALVES** —
+4. RESERVE CO-optimised (opt-in, `--reserve`). **Iron-air's energy role halves** —
    discharge 1.44 -> 0.77 TWh, peak SOC 941,568 -> 242,264 MWh — once it must also hold
    reserve. Its opportunity value rises (p90 2,025 -> 2,377) because energy is scarcer.
    July displacement unchanged at 36.5%; lithium absorbs it.
-5. FIXED-POINT ITERATION — RUN 30 Aug 2026, DOES NOT CONVERGE. Five rounds, 0.5 damping:
+5. FIXED-point iteration — RUN 30 Aug 2026, does NOT CONVERGE. Five rounds, 0.5 damping:
    mean price movement falls only 352 -> 199 R/MWh and July gas oscillates 2,751-2,816
    with no trend. Storage flattens the peaks it was built to exploit, removing the spread
    that justified the schedule. Known failure mode, and it happened.
 
-   **CONSEQUENCE: THE 37% CLAIM IS NOW UNVERIFIED.** Every iterated July figure is at or
-   ABOVE the heuristic's 2,742 GWh — imposing the LP schedule did NOT deliver the
+   **consequence: THE 37% claim IS NOW UNVERIFIED.** Every iterated July figure is at or
+   Above the heuristic's 2,742 GWh — imposing the LP schedule did NOT deliver the
    predicted 1,000 GWh saving. Either the price-taker objective (arbitrage value, not gas
    displacement) was never measuring a gas saving, or my test is one-sided:
-   `_forcedDischargeMW` is a CAP by design, so where the LP wants MORE discharge than the
-   heuristic gives it cannot deliver. Storage throughput FELL 8.42 -> 7.91 TWh, the
+   `_forcedDischargeMW` is a CAP by design, so where the LP wants more discharge than the
+   heuristic gives it cannot deliver. Storage throughput fell 8.42 -> 7.91 TWh, the
    signature of a binding cap. **Do not repeat "the heuristic leaves 37% on the table"
    until a two-sided imposition exists** — which means replacing the storage dispatch,
    not limiting it.
-6. UNIT COMMITMENT CO-OPTIMISATION — still not closeable in a price-taker LP.
+6. Unit commitment CO-optimisation — still not closeable in a price-taker LP.
 
 ---
 
@@ -1410,23 +1410,23 @@ Three rounds of testing, each revealing another layer:
    predicted 1,000 GWh saving did not appear. One-sided: a cap can only reduce.
 2. **Two-sided discharge override**, counting what the engine could not follow: about
    3,000 GWh of an 11 TWh schedule, close to 30%.
-3. **But CHARGING was never overridden.** The store is still filled by the heuristic, so
+3. **But charging was never overridden.** The store is still filled by the heuristic, so
    it cannot discharge to the LP's plan. The clipping largely measures my incomplete
    override, not the schedule.
 
-**CONCLUSION: retire it, do not chase it.** Every time the schedule is brought closer to
-the real engine the saving fails to appear, and the LP's objective is arbitrage VALUE not
+**conclusion: retire it, do not chase it.** Every time the schedule is brought closer to
+the real engine the saving fails to appear, and the LP's objective is arbitrage value not
 gas displacement. The 37% is best read as an accounting artefact of the price-taker
 formulation.
 
-Settling it properly needs storage inside the UNIT COMMITMENT — precisely what a
+Settling it properly needs storage inside the unit commitment — precisely what a
 price-taker LP is defined not to do — which is a model rebuild that should be justified
 by something better than a number that has failed three tests.
 
-**WHAT SURVIVES, and it is most of the value:**
+**what survives, and it is most of the value:**
 - Opportunity-value duals (lithium R1,563 mean, iron-air R1,925) — unpublished for SA.
 - The iron-air result, now tested under a heuristic, an LP, and a reserve-constrained LP.
-- Reserve versus arbitrage: iron-air's energy role HALVES when it must also hold reserve.
+- Reserve versus arbitrage: iron-air's energy role halves when it must also hold reserve.
 - The rolling horizon agreeing with perfect foresight at 36.5%, once the terminal value
   function replaced the crude floor.
 
@@ -1436,12 +1436,12 @@ overridden too, the clipping number becomes meaningful and this can be revisited
 
 ---
 
-## THE FULL FIX — the one-day rebuild, when it is justified
+## THE full FIX — the one-day rebuild, when it is justified
 
 Scoped 30 Aug 2026 so it is not re-derived. This is the single change that closes most
 of the "not yet PLEXOS" list at once, and it is ONE change, not five.
 
-### WHAT IT IS
+### what IT IS
 
 Put storage INSIDE the dispatch optimisation rather than beside it. Today the engine
 dispatches heuristically and storage is fitted afterwards by merit order; the LP built
@@ -1449,7 +1449,7 @@ today optimises storage against prices from that heuristic, which is why it cann
 made self-consistent. The fix is a single co-optimised problem over charge, discharge,
 state of charge AND the thermal dispatch, so prices and storage are solved together.
 
-### WHAT IT CLOSES, all at once
+### what IT closes, all at once
 
 ```
 storage / commitment co-optimisation   the thing a price-taker LP is defined not to do
@@ -1461,12 +1461,12 @@ no-gas frontier                        moves off the heuristic
 capture-rate storage mitigation        moves off the heuristic
 ```
 
-### WHAT IT DOES NOT CLOSE
+### what IT does NOT close
 
 Intra-hour balancing (needs sub-hourly resolution), the single-node limitation of the
 national engine, and stochastic outages. Those are separate.
 
-### WHAT IS ALREADY IN PLACE
+### what IS already IN place
 
 - HiGHS is in the browser and the storage LP solves 8,760 hours in 3 seconds, so the
   compute is not the obstacle.
@@ -1475,7 +1475,7 @@ national engine, and stochastic outages. Those are separate.
 - The solver status guard means a non-converged solve cannot be presented as an answer.
 - The envelope is measured: every shipped build pace solves, 90-780 s.
 
-### THE HARD PART, honestly
+### THE hard part, honestly
 
 The thermal dispatch is not currently an LP. It is a heuristic with unit commitment,
 part-load heat rates, ramp-aware coal floors, synchronous floors and a reserve
@@ -1485,14 +1485,14 @@ badly-calibrated optimum.** `validate_benchmarks` and `validate_external` are th
 the rebuild must reproduce them before it is adopted, and if it cannot, the heuristic was
 better and that is a finding too.
 
-### WHEN IT IS JUSTIFIED
+### when IT IS justified
 
-Not to chase the 37%, which failed three tests. Justified when a result that MATTERS
+Not to chase the 37%, which failed three tests. Justified when a result that matters
 depends on it — the most likely candidate is the no-gas frontier costing, which is the
 number most likely to be quoted at a regulator and which currently rests on heuristic
 storage.
 
-### SEQUENCE, if it is ever started
+### sequence, if it is ever started
 
 1. Pin `validate_benchmarks` and `validate_external` as the acceptance test FIRST.
 2. Build the co-optimised LP alongside the heuristic, not in place of it.
@@ -1514,7 +1514,7 @@ Recomputed by great-circle distance against all 186 substations.
     1  Dedisa     -> Chatty
 ```
 
-**ALL THREE IMPOFU FARMS REASSIGNED, and the numbers match the falsification exactly.**
+**ALL three impofu farms reassigned, and the numbers match the falsification exactly.**
 Impofu North moves Grassridge 106.1 km -> Chatty 92.7 km, against the 93.3 km measured
 independently on 28 Aug from the Plus Code. The register fix has now propagated to the
 derived data.
@@ -1524,11 +1524,11 @@ Tsitsikamma and Oyster Bay all move too. **A single missing substation was disto
 connection picture for 1.4 GW of Eastern Cape wind**, which is the concrete cost of an
 incomplete register.
 
-### THE CHECK THAT MATTERS
+### THE check that matters
 
 ```
 records altered beyond sub/subkm      0
-projects now FURTHER from a substation 0
+projects now further from a substation 0
 ```
 
 Adding a substation cannot increase anyone's nearest distance. Any project ending up
@@ -1537,13 +1537,13 @@ formality. Grassridge falls 65 -> 33 assignments; Chatty takes 33.
 
 New fingerprint `gtza-709b521a1ef8d8ac`. `meta.nearest_substation_caution` now carries
 the Impofu falsification in the data file itself, so anyone reading `sub`/`subkm` sees
-that NEAREST IS NOT CONNECTED without having to find it in these notes.
+that nearest IS NOT connected without having to find it in these notes.
 
-### KAROO COMPLETENESS — TESTED 30 Aug 2026, AND IT PASSES
+### karoo completeness — tested 30 Aug 2026, AND IT passes
 
-A CLOSED-LOOP test needing no external data: every transmission line records the
+A closed-loop test needing no external data: every transmission line records the
 substation at each end, so any endpoint absent from `substations_compact.json` is a
-missing substation. The two files come from DIFFERENT sources — lines from Eskom TDP and
+missing substation. The two files come from different sources — lines from Eskom TDP and
 SAPP planning data, substations from DBSA, OSM, Eskom and shapefiles — so they do not
 share a blind spot by construction.
 
@@ -1553,29 +1553,29 @@ distinct endpoints on them     26
 missing from the register       0
 ```
 
-Three raw misses were all correctly excluded: KOKERBOOM is the Namibian interconnector
-endpoint, and PHEZUKOMOYA and SAN KRAAL are WIND FARMS named as endpoints on the
+Three raw misses were all correctly excluded: kokerboom is the Namibian interconnector
+endpoint, and phezukomoya and SAN kraal are wind farms named as endpoints on the
 connectors added earlier today — plants, not substations.
 
 **So the register is complete for the Karoo relative to the line register**, which is the
 area the Hydra Central split would use nearest-substation matching over.
 
-NECESSARY, NOT SUFFICIENT, and the check says so in its own output: a substation with no
+Necessary, NOT sufficient, and the check says so in its own output: a substation with no
 line in the line register would not be caught. It finds a specific, common kind of gap —
 the kind Chatty was.
 
-Now a permanent check in `validate_geo.js` (37 -> 38 checks). VERIFIED IT CAN FAIL:
+Now a permanent check in `validate_geo.js` (37 -> 38 checks). Verified IT CAN fail:
 removing Aggeneis, a genuine Karoo endpoint, produces
-`missing: AGGENEIS` and exit code 1.
+`missing: aggeneis` and exit code 1.
 
-**AN HONEST NOTE ON THE FIRST ATTEMPT.** I first tested it by deleting Chatty, and the
+**AN honest note ON THE first ATTEMPT.** I first tested it by deleting Chatty, and the
 check still passed — which looked like the check being useless. It is not: Chatty sits on
 the Eastern Cape coast at -33.84, outside the Karoo box, so it was never in scope. The
 test was wrong, not the check. Worth recording because the same mistake would look like a
 harness failure to the next person.
 
-**TO DO — NATIONAL REGISTER GAPS.** 8 domestic endpoints are absent from the register — RASSONA
-GARCIA, DURBAN SOUTH, OTTAWA, ZWAVELPOORT EE1, KAPPA (A) among them. Reported, not
+**TO DO — national register GAPS.** 8 domestic endpoints are absent from the register — rassona
+garcia, durban south, ottawa, zwavelpoort EE1, kappa (A) among them. Reported, not
 asserted, because the line register names endpoints this project has no obligation to
 hold. Worth a look if the nearest-substation method is ever used outside the Karoo.
 
@@ -1597,18 +1597,18 @@ vanadium           0.119             17        0.0     10,000
 iron-air           1.022            131        0.0     13,759
 ```
 
-**Vanadium dispatches 17 hours a year. Iron-air 131. NEITHER IN JULY AT ALL.** That is
+**Vanadium dispatches 17 hours a year. Iron-air 131. Neither IN july AT ALL.** That is
 the whole long-duration finding, visible at a glance, where previously it took an LP to
 establish.
 
-HOW IT IS BUILT, and the constraint that mattered: `battByTier` holds hourly per-tier
-series and `battTierTWh` the totals, but they are DIAGNOSTIC — deliberately NOT added to
+HOW IT IS built, and the constraint that mattered: `battByTier` holds hourly per-tier
+series and `battTierTWh` the totals, but they are diagnostic — deliberately NOT added to
 `stackKeys`. `stack.batt` remains the single carrier the energy balance sums, so
 `validate_invariants` is untouched. Adding them as carriers would double-count storage in
-every balance check: the split must DECOMPOSE the total, never sit beside it. Verified —
+every balance check: the split must decompose the total, never sit beside it. Verified —
 the tiers sum to `stack.batt` with a gap of 0.000 MWh.
 
-The donut splits ONLY when vanadium or iron-air is actually present; with lithium alone
+The donut splits only when vanadium or iron-air is actually present; with lithium alone
 it still reads "Batteries and flow storage". And the long-duration slices are kept in the
 legend even at a fraction of a percent, because "iron-air 0%" is the answer to a real
 question and dropping it for being small would hide it again.
@@ -1629,25 +1629,25 @@ Seriti 45 GW   avgCost 1260.77   components sum 1260.77   reconciles
 covered 5 · absent 10
 ```
 
-The ABSENCES are the point: ten of the enumerated components are not in `avgCost`,
+The absences are the point: ten of the enumerated components are not in `avgCost`,
 including legacy cost recovery, distribution charges and cross-subsidy. **That is why it
 is not a tariff, now shown rather than asserted in a footnote.**
 
-### TWO DEFECTS CAUGHT BY SUMMING IT — within minutes of writing it
+### TWO defects caught BY summing IT — within minutes of writing it
 
 **A factor-of-1000 unit error.** My `per()` helper multiplied by 1000 when the terms were
 already rand over MWh. Components summed to 574,000 against an avgCost of 570.
 
-**`startUpCostR` IS COMPUTED AND USED NOWHERE.** The residual gap was R3.54/MWh — exactly
+**`startUpCostR` IS computed AND used NOWHERE.** The residual gap was R3.54/MWh — exactly
 the start-up cost. It accumulates at line ~5415, is exported on the result, and appears
-in NEITHER `avgCost` NOR `totalCost` NOR `gridCost`. Small today, 0.6%, but it scales
-with coal CYCLING — precisely the regime a high-renewables system pushes coal into, which
+in neither `avgCost` NOR `totalCost` NOR `gridCost`. Small today, 0.6%, but it scales
+with coal cycling — precisely the regime a high-renewables system pushes coal into, which
 is what this model exists to study.
 
-**DECIDED AND FIXED, same day: start-up costs are now INCLUDED** in `avgCost`,
+**decided AND FIXED, same day: start-up costs are now included** in `avgCost`,
 `gridCost` and `totalCost`. See the section below for the reasoning and the measurement.
 
-### THE CHECK, not just the display
+### THE check, not just the display
 
 `validate_consistency` now asserts reconciliation across three scenarios (14 -> 17). A
 decomposition that is never summed against the whole can be wrong indefinitely — this one
@@ -1657,21 +1657,21 @@ caught two faults immediately, which is the argument for the check existing at a
 
 ## Start-up costs now included — 30 Aug 2026
 
-### THE PROFESSIONAL POSITION
+### THE professional position
 
 Every unit commitment model — PLEXOS, PyPSA, any production cost model — carries
 start-up in the objective. It IS the commitment problem: without it units cycle freely,
 which is precisely the behaviour start-up costs exist to penalise.
 
-The nuance is WHERE they land. Start-up is NOT in a marginal energy price — ERCOT, PJM
+The nuance is where they land. Start-up is NOT in a marginal energy price — ERCOT, PJM
 and MISO recover it through uplift or make-whole payments rather than through LMP. So
 excluding it from `marginalP` is correct, and **it stays excluded there**.
 
-But `avgCost`, `gridCost` and `totalCost` are SYSTEM COST measures, not prices. They
+But `avgCost`, `gridCost` and `totalCost` are system cost measures, not prices. They
 already carry carbon and new-build capex, neither of which is marginal energy either.
-Excluding start-up while including capex was an INCONSISTENCY, not a position.
+Excluding start-up while including capex was an inconsistency, not a position.
 
-### THE MEASUREMENT — and why it matters more than 0.6% suggests
+### THE measurement — and why it matters more than 0.6% suggests
 
 ```
 scenario                coal TWh   start-up R bn   R/MWh   % of avgCost
@@ -1682,23 +1682,23 @@ today                      161.5            0.73    3.54          0.62%
 110 GW VRE                  44.5            1.08    5.19          0.40%
 ```
 
-**IT DOES NOT SCALE WITH RENEWABLES — IT SCALES WITH CYCLING**, and the two are not the
-same thing. The peak is at 20 GW of VRE (0.95%), not at 110 GW. At 45 GW it COLLAPSES to
+**IT does NOT scale with renewables — IT scales with cycling**, and the two are not the
+same thing. The peak is at 20 GW of VRE (0.95%), not at 110 GW. At 45 GW it collapses to
 0.11%, because that scenario retains only 10 GW of coal running near baseload; there is
 barely anything left to cycle.
 
 So the intuition "more renewables means more start-ups" is wrong in this model. What
-drives start-up cost is a LARGE coal fleet being pushed around, which happens in the
-MIDDLE of the transition and eases at both ends. That is a more interesting result than
+drives start-up cost is a large coal fleet being pushed around, which happens in the
+middle of the transition and eases at both ends. That is a more interesting result than
 the correction itself.
 
-### EFFECT ON PUBLISHED FIGURES
+### effect ON published figures
 
 avgCost moves 570.46 -> 574.00 today, 1260.77 -> 1262.22 for Seriti. Every cost figure in
 RESULTS.md shifts by under 1%. `validate_benchmarks` still passes 18/18 — the change sits
 well inside the bands, which is itself evidence the correction is modest and sound.
 
-`marginalP` is UNCHANGED, so shadow prices, capture rates and the storage opportunity
+`marginalP` is unchanged, so shadow prices, capture rates and the storage opportunity
 values are all unaffected.
 
 ---
@@ -1707,34 +1707,34 @@ values are all unaffected.
 
 Checked the user-facing blurbs against what the code now does. Four updated.
 
-**COST NOTE (line ~397).** Said system cost was "fuel, carbon and the capex of
+**cost note (line ~397).** Said system cost was "fuel, carbon and the capex of
 newly-built capacity". Start-up costs are now in it. Both the system-cost and
 avg-energy-cost sentences updated, and the note now explains WHY start-up is in a system
 cost but NOT in the shadow price — because a marginal price recovers it separately
 through uplift, as ERCOT and PJM do. That distinction was previously nowhere in the
 interface.
 
-**IRON-AIR SLIDER.** Read "the only option here that can ride out a multi-day renewables
+**iron-AIR SLIDER.** Read "the only option here that can ride out a multi-day renewables
 lull" — untenable after the storage work. I then replaced it with a 400-character
-explanation of hours, efficiency ranking and LP testing, which was WORSE: a slider note
-should give the SPEC and point at the tool, not deliver the conclusion before the reader
+explanation of hours, efficiency ranking and LP testing, which was worse: a slider note
+should give the spec and point at the tool, not deliver the conclusion before the reader
 has looked. Now one line — 100-hour storage at 45% round trip, and the mix splits storage
 by chemistry so you can see when it dispatches.
 
-**VANADIUM SLIDER.** Same overcorrection, same trim. Now the spec plus the one thing the
+**vanadium SLIDER.** Same overcorrection, same trim. Now the spec plus the one thing the
 reader cannot deduce: the electrolyte does not degrade with cycling, an advantage this
 model does not yet price.
 
-**THE PRINCIPLE, worth holding to:** a note states what the control IS and where to look.
+**THE principle, worth holding to:** a note states what the control IS and where to look.
 It does not pre-state what you will find. Findings belong in RESULTS.md.
 
-**HOURLY DISPATCH LEGEND.** Left merged as "Batteries and flow storage", with a comment
+**hourly dispatch LEGEND.** Left merged as "Batteries and flow storage", with a comment
 saying why: that chart draws `stack.batt`, the single carrier the energy balance sums.
 The per-chemistry split belongs in the MIX donut, which decomposes a total rather than
 stacking carriers. Splitting the dispatch chart would need `battByTier` in `stackKeys`
 and would double-count storage in every balance check.
 
-ONE TYPO OF MY OWN, caught by reading the rendered string back: "Seriti 45&#37; GW" — the
+ONE typo OF MY OWN, caught by reading the rendered string back: "Seriti 45&#37; GW" — the
 percent entity applied to the wrong number. Fixed. Worth doing that read-back on any
 blurb containing entities.
 
@@ -1742,9 +1742,9 @@ blurb containing entities.
 
 ## Site text trimmed — 30 Aug 2026 (sliders done, rest outstanding)
 
-### THE DIAGNOSIS: they were teaching, not informing
+### THE diagnosis: they were teaching, not informing
 
-The pattern was consistent. GOOD notes give a CALIBRATION ANCHOR — something a modeller
+The pattern was consistent. Good notes give a calibration anchor — something a modeller
 cannot look up:
 
 ```
@@ -1753,11 +1753,11 @@ lcoePv        BW7 bids averaged R0.46; anchor R0.55
 coalDecomMW   of 42 GW installed
 ```
 
-HEAVY notes opened by DEFINING THE CONCEPT — what synchronous inertia is, what dynamic
+Heavy notes opened by defining THE concept — what synchronous inertia is, what dynamic
 line rating does, what LCOE means — to an audience that already knows. That is what made
 the platform read as a tutorial rather than an instrument.
 
-### DONE: the 28 slider notes
+### done: the 28 slider notes
 
 ```
 before   4,500 characters · mean 160 · 4 over 300 · 2 over 500
@@ -1789,10 +1789,10 @@ The trim list, longest first:
 ```
 
 `carbonTaxRPerT` at 895 characters is the worst and it is mine, written 30 Aug. The
-compliance-versus-policy distinction is real and belongs SOMEWHERE, but not in a slider
+compliance-versus-policy distinction is real and belongs somewhere, but not in a slider
 tooltip.
 
-### DONE: always-visible page prose
+### done: always-visible page prose
 
 ```
 before   17 blocks · 5,929 characters
@@ -1809,15 +1809,15 @@ build optimiser         488 -> 198
 single-node caveat      285 -> 247   substance kept, throat-clearing cut
 ```
 
-**THE COLLAPSED METHODOLOGY WAS LEFT ALONE, deliberately.** About 12,000 characters sit
+**THE collapsed methodology WAS left alone, deliberately.** About 12,000 characters sit
 behind `<details class="assump">` — "Model assumptions & caveats" — covering price
 formation, unit commitment, DC power flow, the risk model. That is exactly where detailed
 methodology belongs in a serious tool, and it is closed by default. The problem was never
 that the documentation existed; it was that definitions were on the working pages.
 
-STILL OUTSTANDING: the About tab itself and the project-planning tab descriptions.
+Still outstanding: the About tab itself and the project-planning tab descriptions.
 
-THE RULE TO APPLY: a note gives the SPEC and points at the tool. It does not pre-state
+THE rule TO apply: a note gives the spec and points at the tool. It does not pre-state
 outcomes, argue methodology, or carry provenance — those belong in RESULTS.md, STATE.md
 and the source comments respectively, all of which already exist and are better places
 for them.
@@ -1829,15 +1829,54 @@ want the same pass.
 
 ## A regression check that pinned wording rather than substance — 30 Aug 2026
 
-The prose trim fired `audit.py` twice, and both were the check being WRONG rather than
+The prose trim fired `audit.py` twice, and both were the check being wrong rather than
 the edit. It pinned a 79-character phrase — "curtailment payments to wind and solar
 contracted under REIPPPP are excluded" — and the shortened note still states that
 exclusion, in fewer words.
 
-**A regression check on prose should assert the CLAIM survives, not freeze the wording.**
+**A regression check on prose should assert the claim survives, not freeze the wording.**
 Otherwise every legitimate edit trips it, and people learn to re-pin without reading —
 which is worse than no check, because it looks like coverage.
 
 Re-pinned on substance: 'REIPPPP curtailment payments are excluded' and 'Neither is a
 tariff' as separate checks, so the not-a-tariff warning cannot be lost independently of
 the exclusion. Same for the pipeline rings. 36 -> 37 checks.
+
+---
+
+## All-caps emphasis removed — 30 Aug 2026
+
+Measured before starting: ~3,000 shouted words, almost all my own emphasis in comments
+and these documents. User-visible page text was already clean — the scan found only a hex
+fragment and "README".
+
+```
+index.html comments   3,753 -> 3,073 capitalised tokens
+RESULTS.md              987 ->   554
+STATE.md              1,205 ->   667
+SOURCES.md              126 ->   101
+CALENDAR.md              85 ->    53
+MANIFEST.md              45 ->    19
+RULES.md                 46 ->    37
+```
+
+What remains is legitimate: acronyms, units and code identifiers.
+
+### The first attempt corrupted index.html, and the suite caught it
+
+A block-comment regex with DOTALL matched CSS comments and regex literals, and rewrote
+code. `validate_lp` fell 50/50 -> 1/17 and `validate_solve` 6/6 -> 0/1 within seconds of
+running it. Reverted from a backup taken before the edit.
+
+The second pass only touches LINE comments, and only lines that are pure comment with no
+backtick, quote or brace — so no line carrying code or a string can be reached. Verified
+by stripping those lines from both versions and confirming the remaining code is BYTE
+IDENTICAL.
+
+`decaps.py` protects a keep-list: code identifiers (`FIXED`, `SLIDERS`, `BLD_PACE`,
+`REGION_CENTROIDS`), document names (`RULES.md`, `STATE.md`) and about 120 acronyms.
+Confirmed intact after the run.
+
+TWO LESSONS. Take a backup before any scripted mass edit — this one needed it inside two
+minutes. And a mass edit is exactly what a test suite is for: nothing else would have
+caught a regex quietly rewriting a solver.

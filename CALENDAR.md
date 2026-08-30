@@ -7,15 +7,15 @@ Last reviewed: 30 Aug 2026.
 
 ---
 
-## MISSED — read this first
+## missed — read this first
 
 ```
-28 Aug 2026    NERSA Trading Rules v3, written comments. CLOSED TWO DAYS BEFORE THIS
-               ENTRY WAS WRITTEN, and this file is why it was missed.
-               THE OLD ENTRY WAS WRONG. It read "30 Sep 2026, comment submission,
-               HARD DEADLINE". 30 September is the date NERSA expects to FINALISE the
+28 Aug 2026    NERSA Trading Rules v3, written comments. Closed TWO days before this
+               Entry WAS written, and this file is why it was missed.
+               THE OLD entry WAS WRONG. It read "30 Sep 2026, comment submission,
+               Hard deadline". 30 September is the date NERSA expects to finalise the
                rules - a milestone, not a window. The real sequence was: v3 published
-               June, comments due 27 July, EXTENDED to 28 August. The consultation
+               June, comments due 27 July, extended to 28 August. The consultation
                paper states late submissions "will not be considered".
                The error predates the 27 Aug split, so it was wrong for as long as
                this file has existed. A finalisation date misread as an opportunity.
@@ -25,9 +25,9 @@ Last reviewed: 30 Aug 2026.
  4 Aug 2026    Transitional Generation Pricing and Vesting Contract Framework. MISSED.
 ```
 
-STILL OPEN ON THESE:
+Still open ON these:
 - Public hearings on Trading Rules v3 were "to be announced after the closing date".
-  No date found. CHECK nersa.org.za/notices/public-hearings - oral representations may
+  No date found. Check nersa.org.za/notices/public-hearings - oral representations may
   still be possible.
 - The rules are not final until 30 September. Material sent to
   `tradingrulesdevelopmentteam@nersa.org.za` marked as late, offered as evidence
@@ -37,11 +37,11 @@ STILL OPEN ON THESE:
 ## Hard deadlines
 
 ```
-10 Sep 2026    NERSA public hearing on SERITI GREEN ENERGY's trading licence
+10 Sep 2026    NERSA public hearing on seriti green energy's trading licence
                application. Different matter, same regulator, and Seriti is already
                an outreach target. Registration to make oral representations closed
                28 Aug; attendance may still be possible. Livestreamed.
-30 Sep 2026    NERSA expects to FINALISE the Trading Rules. NOT a comment deadline -
+30 Sep 2026    NERSA expects to finalise the Trading Rules. NOT a comment deadline -
                see above. The date to watch for the final text, not to submit against.
 Q4 2026        SAWEM trading expected to commence. The Market Code (NTCSA) completed
                written comment in June with a hearing on 1 July.
@@ -56,7 +56,7 @@ Q4 2026        SAWEM trading expected to commence. The Market Code (NTCSA) compl
                (harmonising load and generator zones), Policy Position 9 (ancillary
                services, with the storage-competition finding), section 4 (published
                disaggregation of the price components).
-               WATCH FOR: the Department's summary of comments, and any sign that
+               Watch FOR: the Department's summary of comments, and any sign that
                Policy Position 20 work has begun - that is when GridTwin's locational
                results become directly useful to them, and the submission offered to
                run scenarios.
@@ -67,9 +67,9 @@ Q4 2026        SAWEM trading expected to commence. The Market Code (NTCSA) compl
 ```
 ~Nov 2026      IPP Office Q1 2026/27 quarterly (as at 30 Jun 2026).
                Will contain Mulilo Total Hydra if COD was H1; if COD is 2026-07 it
-               lands in Q2 instead. EITHER WAY the double-count guard fires and the
+               lands in Q2 instead. Either WAY the double-count guard fires and the
                named entry must be REMOVED. See RULES.md rule 5.
-               ALSO gated on this: the Graspan re-check, and possibly the ~73 MW of
+               Also gated on this: the Graspan re-check, and possibly the ~73 MW of
                BW5 solar.
 ~Feb 2027      PFL IPP monitor, H2 2026 update. Replaces by_source.private wholesale.
                Same removal discipline. Will settle Mulilo's COD if the Knowledge Hub
@@ -92,31 +92,31 @@ rolling        Eskom Transmission Development Plan. The 2025-2034 edition (14,50
 UJ conference  EIUG outreach is gated on this. Mike Teke chairs both Seriti Resources
                and the UJ council - one connection, two routes.
 Seriti reply   The outreach email is drafted and ready to send to Peter Venn. Green
-               Building Africa is queued BEHIND it deliberately: arriving with a
+               Building Africa is queued behind it deliberately: arriving with a
                developer already engaged beats arriving as a critique of someone's
                coverage.
-GitHub Pages   retirement DELAYED deliberately. Revisit when the new site ships.
+GitHub Pages   retirement delayed deliberately. Revisit when the new site ships.
 Graspan Solar  75 MW, flagged in supply_area_split_draft pending_next_quarterly.
                Refused on 18 Aug because it was NOT in the in-construction
                decomposition and was therefore already inside the online total.
-               Re-check on the NEXT quarterly, not before.
+               Re-check on the next quarterly, not before.
 ~73 MW BW5     solar still outstanding from the supply-area split coverage. Possibly
                Graspan. Absent from the published location table.
 Carbon tax     A suspension was under Cabinet consideration in Feb 2026, and NERSA has
                disallowed Eskom recovering carbon tax through tariffs to end-2030. If
-               either holds, the COMPLIANCE price for generation is arguably ZERO
+               either holds, the compliance price for generation is arguably zero
                rather than R46/t. Recheck before quoting carbon costs externally.
 Basemaps       CARTO withdrew keyless access. The 2D map moved to Esri on 30 Aug 2026
-               but HAS NOT BEEN VERIFIED IN A BROWSER. The 3D page still uses CARTO's
+               but HAS NOT been verified IN A BROWSER. The 3D page still uses CARTO's
                vector GL style, also unverified. Both need a human to look at them.
 Mulilo COD     Recorded as 2026-07 pending the PFL IPP Knowledge Hub COD table.
-               Expected to be H1: inauguration normally FOLLOWS commercial operation.
+               Expected to be H1: inauguration normally follows commercial operation.
 ```
 
 ## Standing per-session checks
 
 ```
-every session  Run the full suite BEFORE any change. Report counts.
+every session  Run the full suite before any change. Report counts.
 every session  Confirm profiles.json is at the repo root. Without it the suite
                produces eleven false failures across five harnesses.
 every session  Read RULES.md in full. It is short by design.

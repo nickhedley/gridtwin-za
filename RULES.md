@@ -31,11 +31,11 @@ every session. Everything here was learned by getting it wrong at least once.
    entries. See the double-count guard.
 
 6. **No constant appears twice.** A fallback that duplicates a value is how drift
-   starts. A fallback whose value DIFFERS from FIXED is a latent wrong answer.
+   starts. A fallback whose value differs from FIXED is a latent wrong answer.
 
 7. **`X || <literal>` covers two failures, not one.** The known one is a fallback
    that disagrees with a constant. The other, found 27 Aug, is a fallback for a
-   key that DOES NOT EXIST - `FIXED.psMW` and `FIXED.battMW` are not keys; the
+   key that does NOT exist - `FIXED.psMW` and `FIXED.battMW` are not keys; the
    real ones are `psPowerMW` and `battPowerMW`. Four bad reads resolved to
    undefined, fell through `|| 0`, and produced a fleet of zero in two places.
    Nothing caught it because a fallback of 0 makes a plausible chart, not a crash.
@@ -47,13 +47,13 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ## Reporting conventions
 
-**Renewable penetration is reported on BOTH denominators, always, each labelled.**
+**Renewable penetration is reported on both denominators, always, each labelled.**
 Adopted 27 Aug 2026 from the Seriti Green July 2026 simulation, which reports
-53.5% of RESIDUAL demand and 39.7% of TOTAL mix for the same system.
-  TOTAL    - all generation including rooftop PV.
-  RESIDUAL - rooftop removed from numerator AND denominator. Eskom's basis,
+53.5% of residual demand and 39.7% of total mix for the same system.
+  Total    - all generation including rooftop PV.
+  Residual - rooftop removed from numerator AND denominator. Eskom's basis,
              because Eskom sees demand net of rooftop.
-Residual is always the higher while rooftop grows. NEVER compare a residual
+Residual is always the higher while rooftop grows. Never compare a residual
 figure from one source against a total from another. This single ambiguity is
 worth about five points and is the largest source of apparent disagreement
 between South African studies.
