@@ -1016,3 +1016,54 @@ Scored against the old polygon first, where it fails on the nine towns. The Limp
 places are over-represented deliberately, and De Aar, Noupoort, Humansdorp and
 Sutherland are in the list because they matter to this model specifically — Humansdorp
 is the Impofu site, and it was among the nine being rejected.
+
+---
+
+## Private grid candidates, 30 Aug 2026 — and a task premise that was wrong
+
+### THERE IS NO TRANSMISSION FILTER TO WIDEN
+
+The task "re-extract REEA including transmission and grid-infrastructure categories" rested
+on my assumption that DFFE publishes those as separate categories. **It does not.** REEA is
+the RENEWABLE ENERGY EIA application database. Grid infrastructure appears only inside a
+generation project's description, which is exactly why the extract shows nine technology
+values, all generation. A re-download would return the same nine.
+
+### THE DATA WAS ALREADY IN HAND
+
+161 of the 2,597 records describe a line, substation or grid connection in their own title.
+Parsed into `nodal/private_grid_candidates.json` with applicant, voltage, capacity,
+coordinates, asset type, status and decision date.
+
+```
+161  candidates
+ 62  with a stated voltage
+ 50  at 132 kV or above
+  5  with a shared-network hint in the title
+```
+
+Worth a look: the top row is ENERTRAG's "Camden up to 400kV Grid Connection, **Common
+Collector**" — a title that describes a shared asset. Phinda Power Projects has 450 MW at
+132 kV in KwaZulu-Natal. Mainstream holds nineteen grid-connected applications, and a
+portfolio developer building repeatedly in one area is where shared infrastructure appears.
+
+### THREE CAUTIONS, IN THE FILE
+
+**An EA is not a built asset.** Status and decision date record what was authorised.
+Cross-check against commissioning before treating any row as infrastructure.
+
+**Coordinates are the GENERATION centroid, not the line.** There is no route geometry.
+Do not draw these without a published route.
+
+**`shared_signal` is a weak textual hint, not evidence.** It fires when the title contains
+a word like "common" or "cluster". The real test is spare capacity beyond the owner's own
+plant, or a stated intention to host third parties — neither is in this data. Koruson
+passes that test and Impofu fails it, and **neither would be distinguishable from this file
+alone.** That is the limit of what REEA can settle.
+
+### WHAT ACTUALLY SETTLES SHARED-VERSUS-SINGLE
+
+NERSA transmission licences and developer statements. Ask
+`Reapplication@dffe.gov.za` — already on the list for the CSIR request — one extra
+question: whether grid infrastructure is ever published as a separate release. That
+converts an inference from field names into an answer.

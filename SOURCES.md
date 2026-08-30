@@ -22,6 +22,7 @@ superseded queue entries. Never add the delta. See RULES.md.
 | Eskom weekly system status | weekly | drift detector only | `validate_capacity.js` |
 | NERSA registrations | rolling | as at last ingest | `nersa_registrations.json` |
 | DFFE REEA | rolling | 2,597 authorisations | `reea_projects.json` - permits, not commissioning |
+| DFFE REEA, grid-language subset | derived | 161 of 2,597 | `private_grid_candidates.json` - candidate PRIVATE grid assets |
 | Eskom TDP | annual | 2025-2034 edition | `tdp_projects.json`; ALSO underpins the storage and transmission capex constants |
 | Revised Electricity Pricing Policy | one-off, for comment | Gazette 55257, GN 7852, 28 Aug 2026 | the price-component mapping in RESULTS.md; submission made 27 Sep |
 | Renewables.ninja / MERRA-2, regional | static | 2014-2023, ten years | `profiles_regional_multiyear.json` via `weatherYearNational()` - CAPACITY-weighted, bias-corrected 0.848 |
