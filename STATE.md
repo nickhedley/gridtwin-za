@@ -1644,12 +1644,93 @@ in NEITHER `avgCost` NOR `totalCost` NOR `gridCost`. Small today, 0.6%, but it s
 with coal CYCLING — precisely the regime a high-renewables system pushes coal into, which
 is what this model exists to study.
 
-Marked `excluded` in the decomposition rather than folded in, because adding it would
-move every published cost figure and that is a decision to take deliberately, not a side
-effect of building a panel. **DECISION NEEDED: should start-up costs enter avgCost?**
+**DECIDED AND FIXED, same day: start-up costs are now INCLUDED** in `avgCost`,
+`gridCost` and `totalCost`. See the section below for the reasoning and the measurement.
 
 ### THE CHECK, not just the display
 
 `validate_consistency` now asserts reconciliation across three scenarios (14 -> 17). A
 decomposition that is never summed against the whole can be wrong indefinitely — this one
 caught two faults immediately, which is the argument for the check existing at all.
+
+---
+
+## Start-up costs now included — 30 Aug 2026
+
+### THE PROFESSIONAL POSITION
+
+Every unit commitment model — PLEXOS, PyPSA, any production cost model — carries
+start-up in the objective. It IS the commitment problem: without it units cycle freely,
+which is precisely the behaviour start-up costs exist to penalise.
+
+The nuance is WHERE they land. Start-up is NOT in a marginal energy price — ERCOT, PJM
+and MISO recover it through uplift or make-whole payments rather than through LMP. So
+excluding it from `marginalP` is correct, and **it stays excluded there**.
+
+But `avgCost`, `gridCost` and `totalCost` are SYSTEM COST measures, not prices. They
+already carry carbon and new-build capex, neither of which is marginal energy either.
+Excluding start-up while including capex was an INCONSISTENCY, not a position.
+
+### THE MEASUREMENT — and why it matters more than 0.6% suggests
+
+```
+scenario                coal TWh   start-up R bn   R/MWh   % of avgCost
+today                      161.5            0.73    3.54          0.62%
+20 GW VRE                  116.7            1.14    5.52          0.95%
+45 GW VRE (Seriti)          51.2            0.30    1.45          0.11%
+70 GW VRE                   59.3            1.27    6.12          0.66%
+110 GW VRE                  44.5            1.08    5.19          0.40%
+```
+
+**IT DOES NOT SCALE WITH RENEWABLES — IT SCALES WITH CYCLING**, and the two are not the
+same thing. The peak is at 20 GW of VRE (0.95%), not at 110 GW. At 45 GW it COLLAPSES to
+0.11%, because that scenario retains only 10 GW of coal running near baseload; there is
+barely anything left to cycle.
+
+So the intuition "more renewables means more start-ups" is wrong in this model. What
+drives start-up cost is a LARGE coal fleet being pushed around, which happens in the
+MIDDLE of the transition and eases at both ends. That is a more interesting result than
+the correction itself.
+
+### EFFECT ON PUBLISHED FIGURES
+
+avgCost moves 570.46 -> 574.00 today, 1260.77 -> 1262.22 for Seriti. Every cost figure in
+RESULTS.md shifts by under 1%. `validate_benchmarks` still passes 18/18 — the change sits
+well inside the bands, which is itself evidence the correction is modest and sound.
+
+`marginalP` is UNCHANGED, so shadow prices, capture rates and the storage opportunity
+values are all unaffected.
+
+---
+
+## Prose audit after the storage and cost changes — 30 Aug 2026
+
+Checked the user-facing blurbs against what the code now does. Four updated.
+
+**COST NOTE (line ~397).** Said system cost was "fuel, carbon and the capex of
+newly-built capacity". Start-up costs are now in it. Both the system-cost and
+avg-energy-cost sentences updated, and the note now explains WHY start-up is in a system
+cost but NOT in the shadow price — because a marginal price recovers it separately
+through uplift, as ERCOT and PJM do. That distinction was previously nowhere in the
+interface.
+
+**IRON-AIR SLIDER.** Read "the only option here that can ride out a multi-day renewables
+lull" — a claim the last three days of work made untenable. Now says it is the longest
+duration offered and the only one that COULD in principle, then states what actually
+happens: least efficient store on the system, reached last, about 130 hours a year and
+NONE in July. Points the reader at the mix split to check it themselves.
+
+**VANADIUM SLIDER.** Was a bare spec line. Now records that it runs 17 hours a year in
+the Seriti scenario, and that its real advantage is one THIS MODEL DOES NOT YET PRICE —
+the electrolyte does not degrade, so unlike lithium it carries no cycle-life cost. Naming
+an advantage the model cannot represent is more useful than omitting it.
+
+**HOURLY DISPATCH LEGEND.** Left merged as "Batteries and flow storage", with a comment
+saying why: that chart draws `stack.batt`, the single carrier the energy balance sums.
+The per-chemistry split belongs in the MIX donut, which decomposes a total rather than
+stacking carriers. Splitting the dispatch chart would need `battByTier` in `stackKeys`
+and would double-count storage in every balance check.
+
+ONE TYPO OF MY OWN, caught by reading the rendered string back: "Seriti 45&#37; GW" — the
+percent entity applied to the wrong number. Fixed. Worth doing that read-back on any
+blurb containing entities.
