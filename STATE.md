@@ -1291,7 +1291,19 @@ behaves correctly (12.42 vs 11.26 / 11.66 TWh). **Do not quote the rolling July 
 as an improvement.** The honest conclusion is that the 37% is robust to foresight
 assumptions.
 
-REMAINING GAPS, none fixed: crude end-of-window floor rather than a value function on
-SOC; storage not co-optimised with unit commitment; no self-discharge (matters over
-100 h); no cycle-life cost; reserve not co-optimised against arbitrage though the
-ancillary work shows they compete.
+FIVE GAPS ADDRESSED 30 Aug 2026 — four closed, one not closeable here.
+1. TERMINAL VALUE FUNCTION replaces the crude floor. **This fixed the foresight
+   paradox**: rolling was showing 37.6/40.1% against perfect foresight's 36.9%, which was
+   impossible. All three now agree at 36.5%, so the result no longer depends on foresight
+   assumptions at all — a stronger finding than the original.
+2. SELF-DISCHARGE, 0.004%/h lithium and 0.05%/h iron-air. ESTIMATES, flagged in code,
+   deliberately NOT promoted to FIXED because no SA source gives them.
+3. CYCLE COST, R250/MWh throughput lithium, R50 iron-air. Duals are no longer pinned at
+   the scarcity ceiling: lithium mean R1,563, iron-air R1,925.
+4. RESERVE CO-OPTIMISED (opt-in, `--reserve`). **Iron-air's energy role HALVES** —
+   discharge 1.44 -> 0.77 TWh, peak SOC 941,568 -> 242,264 MWh — once it must also hold
+   reserve. Its opportunity value rises (p90 2,025 -> 2,377) because energy is scarcer.
+   July displacement unchanged at 36.5%; lithium absorbs it.
+5. UNIT COMMITMENT CO-OPTIMISATION — NOT closeable in a price-taker LP, which takes
+   prices as given. That is the difference between this and PLEXOS. Partial answer
+   available: fixed-point iteration on prices. Not done.

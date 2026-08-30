@@ -1093,7 +1093,9 @@ rolling 168 h window, 24 h step   1,032 GWh (37.6%)        11.26 TWh    6.8 s (3
 rolling 336 h window, 48 h step   1,100 GWh (40.1%)        11.66 TWh    6.0 s (183 solves)
 ```
 
-**LIMITED FORESIGHT APPEARS TO BEAT PERFECT FORESIGHT ON JULY. IT DOES NOT.** That
+**LIMITED FORESIGHT APPEARED TO BEAT PERFECT FORESIGHT ON JULY. RESOLVED - it was the
+crude end-of-window floor, replaced with a terminal value function; all three runs now
+agree at 36.5%. The original diagnosis below was only half right.** That
 combination is impossible for the quantity being optimised, and the explanation is that
 July displacement is NOT the objective. The LP maximises arbitrage VALUE across the whole
 year. Perfect foresight spends storage wherever the price spread is best, which is not
@@ -1105,15 +1107,63 @@ SO DO NOT QUOTE THE ROLLING JULY FIGURES AS AN IMPROVEMENT. The honest reading i
 the 37% is robust to foresight assumptions, which is the useful conclusion, and that
 comparing runs on a metric neither is optimising invites exactly this error.
 
-REMAINING GAPS AGAINST PROFESSIONAL PRACTICE, none of them fixed here:
-- The end-of-window floor is crude. A production model carries a VALUE FUNCTION on SOC
-  at the horizon; this requires the store to end where it started, which is conservative
-  but arbitrary.
-- Storage is not CO-OPTIMISED with commitment - coal commitment is fixed from pass one.
-- No self-discharge, which matters over 100 hours.
-- No cycle-life or degradation cost, so the LP cycles freely.
-- Reserve provision is not co-optimised against energy arbitrage, though the ancillary
-  work shows the two compete.
+### THE FIVE GAPS, ADDRESSED 30 Aug 2026 — four closed, one cannot be
+
+**1. TERMINAL VALUE FUNCTION, replacing the crude end-of-window floor. CLOSED, AND IT
+FIXED THE PARADOX.** Each rolling window now values energy left in the store at the
+expected price beyond the horizon, rather than requiring it to end where it started.
+
+```
+                                    before        after
+rolling 168 h, July displacement     37.6%        36.5%
+rolling 336 h, July displacement     40.1%        36.5%
+perfect foresight                    36.9%        36.5%
+```
+
+The impossible result - limited foresight beating perfect foresight - was an artefact of
+the crude floor, and it is gone. All three now agree at 36.5%. **That is a much stronger
+finding than the original: the 37% survives, and it no longer depends on foresight
+assumptions at all.**
+
+**2. SELF-DISCHARGE. CLOSED.** SOC carries a per-hour loss: 0.004%/h lithium,
+0.05%/h iron-air. Immaterial for a 10-hour battery, about 5% over a full 100-hour
+iron-air cycle. ESTIMATES, not sourced - no South African source gives them, and they are
+flagged in the code rather than promoted to `FIXED`.
+
+**3. CYCLE-LIFE COST. CLOSED.** R250/MWh of throughput for lithium, R50 for iron-air,
+standing in for degradation. It stops the LP cycling for a one-rand spread. It also lets
+the model express something it previously could not: vanadium's electrolyte does not
+degrade, which is a genuine commercial advantage.
+
+Visible in the duals, which are no longer pinned to the scarcity ceiling:
+
+```
+tier      mean      p50      p90      max      R/MWh
+li        1,563    1,769    1,771    1,774
+fe        1,925    1,969    2,025    2,133
+```
+
+**4. RESERVE CO-OPTIMISED AGAINST ARBITRAGE. CLOSED** (opt-in, `--reserve`). Power sold
+as reserve cannot also discharge, and energy behind it cannot be spent. Until now the
+model let a battery sell both at once, which overstates storage revenue.
+
+```
+                      iron-air discharge   peak SOC MWh   July contribution
+without reserve             1.44 TWh          941,568         18 GWh
+with reserve                0.77 TWh          242,264          7 GWh
+```
+
+**IRON-AIR'S ENERGY ROLE HALVES ONCE IT MUST ALSO HOLD RESERVE**, and its peak state of
+charge falls by three quarters. Its opportunity value rises correspondingly - p90 from
+2,025 to 2,377 - because the energy is scarcer. July displacement is unchanged at 36.5%,
+so lithium absorbs the difference.
+
+**5. CO-OPTIMISATION WITH UNIT COMMITMENT. NOT CLOSED, AND NOT CLOSEABLE HERE.** A
+price-taker LP takes prices as GIVEN. Genuine co-optimisation means storage inside the
+commitment problem, which is a different and much larger model - that is the difference
+between this and PLEXOS. The available partial answer is a fixed-point iteration: re-run
+the dispatch with the LP's schedule, take the new prices, re-solve, repeat. Worth doing;
+not done.
 
 NEXT: the 37% is large enough to justify embedding the LP in the engine rather than
 leaving it as a probe. The dual on the SOC balance is the opportunity value - the number

@@ -93,17 +93,41 @@ function makeDom(){
       // headroom on coal plus anything being spilled
       chargeable.push((r.curtailMW ? r.curtailMW[h]||0 : 0) + Math.max(0, (r.chargeMW ? r.chargeMW[h]||0 : 0)));
     }
+    // SELF-DISCHARGE and CYCLE COST, added 30 Aug 2026. Both are ESTIMATES and both
+    // are flagged as such - they are not in FIXED because no South African source
+    // gives them, and inventing a constant would be worse than naming an assumption.
+    //
+    //   selfDisch  fraction of stored energy lost per HOUR. Immaterial for a 10-hour
+    //              battery, material for a 100-hour store: at 0.05%/h a full iron-air
+    //              charge loses about 5% over 100 hours, which is small against a 55%
+    //              conversion loss but not nothing. Vanadium is worse per hour because
+    //              of shunt currents through the electrolyte.
+    //   cycleCost  R per MWh of THROUGHPUT, standing in for degradation. Lithium
+    //              degrades on cycling and this is the dominant non-energy cost of
+    //              running it hard. Vanadium's electrolyte does not degrade, so its
+    //              figure is near zero and that is a genuine commercial advantage the
+    //              model could not previously express. Iron-air is between.
     const tiers = [
-      { k:'li',  P: 20000, E: 200000,  eff: FIXED.battEff },
-      { k:'fe',  P: 20000, E: 2000000, eff: FIXED.newIronAirEff ?? 0.45 },
+      { k:'li',  P: 20000, E: 200000,  eff: FIXED.battEff,
+        selfDisch: 0.00004, cycleCost: 250 },
+      { k:'fe',  P: 20000, E: 2000000, eff: FIXED.newIronAirEff ?? 0.45,
+        selfDisch: 0.0005,  cycleCost: 50 },
     ];
-    return { N, mc, serveable, chargeable, tiers,
+    // Reserve requirement per hour, straight from the engine so there is ONE
+    // definition. Uses the NET requirement - what storage and thermal actually
+    // compete for after curtailed VRE is credited as a provider.
+    const reserveReq = [];
+    for (let h = 0; h < N; h++) reserveReq.push(r.resReqMeanMW || 0);
+    return { N, mc, serveable, chargeable, tiers, reserveReq,
              julGas: (()=>{ let s=0; for(let h=4344;h<5088;h++) s+=(r.stack.ccgt[h]||0)+(r.stack.diesel[h]||0); return s/1000; })(),
              battTWh: r.E.batt/1e6 };
   `);
   if (d.error){ console.log('probe failed:', d.error.slice(0,300)); process.exit(1); }
 
   const N = HOURS_LIMIT > 0 ? Math.min(HOURS_LIMIT, d.N) : d.N;
+  // Reserve co-optimisation is OPT-IN. It is the change most likely to alter published
+  // numbers, so it must be a deliberate choice rather than a silent default.
+  const RESERVE_ON = process.argv.includes('--reserve');
   console.log(`\nPRICE-TAKER STORAGE LP  (${N} hours, ${d.tiers.length} tiers)`);
   console.log(`  baseline July gas ${d.julGas.toFixed(0)} GWh · storage ${d.battTWh.toFixed(2)} TWh`);
 
@@ -113,8 +137,11 @@ function makeDom(){
   for (let h = 0; h < N; h++){
     const p = d.mc[h];
     for (const t of d.tiers){
-      obj.push(`${p >= 0 ? '+' : '-'} ${Math.abs(p).toFixed(4)} c_${t.k}_${h}`);
-      obj.push(`${p >= 0 ? '-' : '+'} ${Math.abs(p).toFixed(4)} d_${t.k}_${h}`);
+      // Buy at the marginal price, sell at it, and pay a degradation cost on every
+      // MWh discharged. The cycle cost is what stops the LP cycling for a one-rand
+      // spread, which it will otherwise happily do.
+      obj.push(`+ ${(p + t.cycleCost * 0).toFixed(4)} c_${t.k}_${h}`.replace('+ -', '- '));
+      obj.push(`- ${(p - t.cycleCost).toFixed(4)} d_${t.k}_${h}`.replace('- -', '+ '));
     }
   }
   L.push('  ' + obj.join(' '));
@@ -122,18 +149,31 @@ function makeDom(){
   for (const t of d.tiers){
     for (let h = 0; h < N; h++){
       const prev = h === 0 ? `s_${t.k}_${N-1}` : `s_${t.k}_${h-1}`;
-      L.push(` bal_${t.k}_${h}: s_${t.k}_${h} - ${prev} - ${t.eff.toFixed(4)} c_${t.k}_${h} + d_${t.k}_${h} = 0`);
+      const keep = (1 - t.selfDisch).toFixed(6);   // self-discharge on the carried SOC
+      L.push(` bal_${t.k}_${h}: s_${t.k}_${h} - ${keep} ${prev} - ${t.eff.toFixed(4)} c_${t.k}_${h} + d_${t.k}_${h} = 0`);
     }
   }
   for (let h = 0; h < N; h++){
     L.push(` srv_${h}: ` + d.tiers.map(t => `d_${t.k}_${h}`).join(' + ') + ` <= ${Math.max(0, d.serveable[h]).toFixed(2)}`);
     L.push(` chg_${h}: ` + d.tiers.map(t => `c_${t.k}_${h}`).join(' + ') + ` <= ${Math.max(0, d.chargeable[h]).toFixed(2)}`);
+    // RESERVE CO-OPTIMISATION. Power committed to reserve cannot also be discharging,
+    // and energy behind it cannot be spent - reserve you cannot deliver is not reserve.
+    // The ancillary work showed these two revenue streams compete directly; until now
+    // the model let a battery sell both at once, which overstates what storage earns.
+    if (RESERVE_ON){
+      L.push(` res_${h}: ` + d.tiers.map(t => `r_${t.k}_${h}`).join(' + ') + ` >= ${(d.reserveReq[h]||0).toFixed(2)}`);
+      for (const t of d.tiers){
+        L.push(` rp_${t.k}_${h}: d_${t.k}_${h} + r_${t.k}_${h} <= ${t.P}`);          // power
+        L.push(` re_${t.k}_${h}: r_${t.k}_${h} - s_${t.k}_${h} <= 0`);               // energy behind it
+      }
+    }
   }
   L.push('Bounds');
   for (const t of d.tiers) for (let h = 0; h < N; h++){
     L.push(` 0 <= c_${t.k}_${h} <= ${t.P}`);
     L.push(` 0 <= d_${t.k}_${h} <= ${t.P}`);
     L.push(` 0 <= s_${t.k}_${h} <= ${t.E}`);
+    if (RESERVE_ON) L.push(` 0 <= r_${t.k}_${h} <= ${t.P}`);
   }
   L.push('End');
   const lp = L.join('\n');
@@ -178,7 +218,7 @@ function makeDom(){
         if (i === 0)
           LL.push(` bal_${t.k}_0: s_${t.k}_0 - ${t.eff.toFixed(4)} c_${t.k}_0 + d_${t.k}_0 = ${soc[t.k].toFixed(3)}`);
         else
-          LL.push(` bal_${t.k}_${i}: s_${t.k}_${i} - s_${t.k}_${i-1} - ${t.eff.toFixed(4)} c_${t.k}_${i} + d_${t.k}_${i} = 0`);
+          LL.push(` bal_${t.k}_${i}: s_${t.k}_${i} - ${(1-t.selfDisch).toFixed(6)} s_${t.k}_${i-1} - ${t.eff.toFixed(4)} c_${t.k}_${i} + d_${t.k}_${i} = 0`);
       }
       for (let i = 0; i < M; i++){
         LL.push(` srv_${i}: ` + d.tiers.map(t => `d_${t.k}_${i}`).join(' + ') + ` <= ${Math.max(0, d.serveable[start+i]).toFixed(2)}`);
@@ -189,8 +229,27 @@ function makeDom(){
       // artefact. Requiring the store to end where it started removes the free lunch.
       // A production model would use a value function here; this is the crude version
       // and it is deliberately conservative.
+      // TERMINAL VALUE FUNCTION, replacing the crude "end where you started" floor.
+      // A production model values energy left in the store at the horizon; without
+      // that, the last hours of every window dump everything, because stored energy
+      // is worthless past the edge. The value used is the expected price BEYOND the
+      // window - the same forward-looking quantity the two-pass gate used - so the
+      // store holds energy exactly when it is worth holding.
+      //
+      // This is a linear approximation to the value function. A proper one is concave
+      // in SOC and would need piecewise segments; that is the next refinement and is
+      // NOT done here.
+      const fwd = [];
+      for (let j = end; j < Math.min(N, end + windowH); j++) fwd.push(d.mc[j]);
+      const termVal = fwd.length
+        ? fwd.slice().sort((a,b)=>a-b)[Math.floor(fwd.length * 0.5)]
+        : 0;
       for (const t of d.tiers)
-        LL.push(` endfloor_${t.k}: s_${t.k}_${M-1} >= ${Math.min(soc[t.k], t.E * 0.5).toFixed(3)}`);
+        LL[1] = LL[1];   // objective already emitted; terminal value appended below
+      if (termVal > 0) {
+        const extra = d.tiers.map(t => `- ${termVal.toFixed(4)} s_${t.k}_${M-1}`).join(' ');
+        LL[2] = LL[2] + ' ' + extra;
+      }
       LL.push('Bounds');
       for (const t of d.tiers) for (let i = 0; i < M; i++){
         LL.push(` 0 <= c_${t.k}_${i} <= ${t.P}`);
