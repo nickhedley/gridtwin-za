@@ -981,8 +981,49 @@ expected discharge value times the round trip. That is a value function on state
 charge, which needs an LP rather than a merit order - the same reason PLEXOS and PyPSA
 co-optimise storage across the horizon instead of ranking it.
 
-KEPT: the per-tier horizons, which are correct on their own merits and neutral here.
-REVERTED: the ordering.
+### THEN THE PRICE-TAKER GATE - built, and it settles the question
+
+The missing piece was an economic test. Two-pass price-taker: run once to get the hourly
+marginal price, build a RESERVATION PRICE per tier from the 90th percentile over its own
+forward horizon, then re-run charging a tier only when
+
+```
+    cost now  <  reservation price  x  round-trip efficiency
+```
+
+`simulateTwoPass()` in index.html. One extra simulate call, about 590 ms.
+
+**THE GATE SAYS THE ARBITRAGE IS IN THE MONEY.** In early July the reservation price is
+R2,020/MWh. Iron-air at 45% needs 690 < 2020 x 0.45 = 909, which clears comfortably. So
+charging a 100-hour store from R690 coal to displace R1,968 gas is worth doing, and the
+model's failure to do more of it is not an economic judgement.
+
+**BUT THE GATE DOES NOT BIND, so it changes nothing on its own.** Both tiers pass, so
+gate-plus-ordering behaves exactly as ordering alone: July gas 2,742 -> 2,810 GWh with
+20 GW of iron-air, and -> 2,832 with vanadium. Reverted a second time.
+
+### WHY NO ORDERING HEURISTIC CAN FIX THIS
+
+The gate answers "is this trade worth making". The question that decides the megawatt is
+COMPARATIVE - is it worth more in the 45% store or the 88% one - and that depends on
+whether the coming event is longer than the short store can cover, given both states of
+charge. **That is a value function on state of charge, and a ranking cannot express
+one.** Measured twice, not assumed.
+
+Which is exactly why PLEXOS and PyPSA co-optimise storage across the horizon rather than
+ranking it, and why the fix is a storage-only LP: take the non-storage dispatch as given
+and let HiGHS optimise charge, discharge and SOC across all 8,760 hours. About 50,000
+variables for three tiers - small against the LPs this project already solves - and the
+dual on the SOC constraint IS the opportunity value, an output no South African study
+currently publishes.
+
+KEPT: the per-tier horizons and the price-taker gate, both correct on their own merits
+and both neutral in these scenarios. The gate WILL bind where prices are lower - it is
+inert here only because July scarcity makes every trade worthwhile.
+REVERTED: the ordering, twice.
+
+PERFECT FORESIGHT CAVEAT: pass two sees pass one's realised prices. A real operator
+forecasts. Anything from this path is an UPPER BOUND on long-duration storage value.
 
 **SO THE HEADLINE RESULT IS NOW PROVISIONAL.** "Iron-air changes July gas by exactly
 zero in all ten years" was measured on a dispatch that structurally cannot charge it.

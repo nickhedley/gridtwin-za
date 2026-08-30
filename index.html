@@ -4804,6 +4804,37 @@ function simulate(u, prof, outPath){
   // energy. Zero unless a reserve price is set.
   const _asHold = (p.asReserveOn ? (p.asReserveRMWh || 0) : 0) > 0
     ? Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15)) : 0;
+  // ── OPPORTUNITY-VALUE GATE ────────────────────────────────────────────────
+  // TWO-PASS PRICE-TAKER, added 30 Aug 2026. This is the piece the reverted
+  // ordering attempt was missing: a test of whether a charge is WORTH MAKING, not
+  // merely of which store has the most room.
+  //
+  // THE RULE, which is the standard one: charge a tier only when the cost of energy
+  // now is below what that tier expects to earn on discharge, multiplied by its
+  // round trip.
+  //
+  //     charge if   cost_now  <  reservationPrice(tier, hour) * efficiency
+  //
+  // A 45%-efficient store charging at R690/MWh must expect better than R1,533 to
+  // break even; against gas clearing near R1,968 it often will, but now it can
+  // DECLINE the trade when it would not. Efficiency ordering is unchanged - the gate
+  // sits in front of it, so a tier that fails the test is simply skipped.
+  //
+  // The reservation price is the 90th percentile of the marginal price over each
+  // tier's OWN horizon, supplied by the caller from a first pass. Absent a price
+  // series the gate is INERT and behaviour is exactly as before, which is what keeps
+  // the single-pass path and every existing harness unchanged.
+  //
+  // PERFECT FORESIGHT, and this matters for how the result is read: pass two sees
+  // pass one's realised prices. A real operator forecasts. Treat anything this
+  // produces as an UPPER BOUND on long-duration storage value, not an estimate.
+  const _resPrice = p._reservationPrice || null;   // {tierKey: Float64Array} or null
+  const chargeWorthIt = (t, hr, costNow) => {
+    if (!_resPrice || !_resPrice[t.k]) return true;          // inert without a price pass
+    if (!(costNow > 0)) return true;                          // free energy: always take it
+    return costNow < _resPrice[t.k][hr] * t.eff;
+  };
+
   // CHARGE ORDER: BEST ROUND TRIP FIRST, and this is a considered choice, not a
   // leftover. An opportunity-value ordering was implemented and REVERTED on
   // 30 Aug 2026 after measurement - see below.
@@ -4835,7 +4866,36 @@ function simulate(u, prof, outPath){
     }
     return got;
   };
-  const tierChargeAt = (mw, hr) => tierCharge(mw);
+  // Hourly charging with the opportunity-value gate applied. costNow is the price of
+  // the energy being taken; pass 0 for genuine surplus, which always clears the gate.
+  const tierChargeAt = (mw, hr, costNow) => {
+    if (!_resPrice) return tierCharge(mw);
+    // GATE ONLY. Tiers that fail the economic test are skipped; among those that
+    // pass, best round trip still goes first.
+    //
+    // ORDERING WAS TRIED TWICE AND REVERTED TWICE - see the note at tierCharge. The
+    // second attempt added this gate first, on the theory that the earlier failure
+    // was a missing economic test. It was not: the gate does not BIND here. Iron-air
+    // charging at R690/MWh against a R2,020 expected discharge clears 690 < 2020*0.45
+    // comfortably, so both tiers pass and gate+ordering behaves exactly as ordering
+    // alone did - July gas 2,742 -> 2,810 GWh.
+    //
+    // WHY NO ORDERING CAN WORK. The gate answers "is this trade worth making". The
+    // question that actually decides the megawatt is COMPARATIVE - is it worth more
+    // in the 45% store than the 88% one - and that depends on whether the coming
+    // event is longer than the short store can cover, given both states of charge.
+    // That is a value function on SOC, and a ranking cannot express one. Measured,
+    // not assumed: unmet-need ordering costs 68 GWh of July gas at 20 GW of iron-air
+    // and 90 GWh with vanadium.
+    let got = 0;
+    for (const t of battTiers){
+      if (!chargeWorthIt(t, hr, costNow || 0)) continue;
+      const take = Math.min(mw - got, t.mw, t.mwh - t.soc);
+      if (take > 0){ t.soc += take * t.eff; tierChg[t.k] += take; got += take; }
+      if (got >= mw - 1e-9) break;
+    }
+    return got;
+  };
   // DISCHARGE ORDER. Short-duration first, which IS right: lithium can be refilled
   // tomorrow, a 100-hour store cannot. Spending the long store on a normal evening
   // peak and having it empty when a four-day drought arrives is the failure this
@@ -5340,7 +5400,7 @@ function simulate(u, prof, outPath){
       const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
-      let btChg=Math.min(surplus,battPower,battEnergy-battSoc); btChg=tierChargeAt(btChg,h); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
+      let btChg=Math.min(surplus,battPower,battEnergy-battSoc); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       // EXPORT BEFORE CURTAILING, but AFTER storage. Stored energy can be sold
       // into the domestic evening peak at more than the regional pool pays, so
@@ -5409,7 +5469,7 @@ function simulate(u, prof, outPath){
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
         const psChg=Math.min(forcedSurplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; forcedSurplus-=psChg;
-        let btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); btChg=tierChargeAt(btChg,h); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
+        let btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); btChg=tierChargeAt(btChg,h,0); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
         // off instantly), then coal trips if the oversupply still exceeds all renewable output.
@@ -5518,7 +5578,7 @@ function simulate(u, prof, outPath){
         const battTargetCeiling=Math.min(battEnergy*0.8, Math.max(anticipatedShortfall[h], battDailyFloor));
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
-        if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
+        if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h,chgC); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
       }
       // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
       // INTERRUPTIBLE LOAD, called before anything is shed. Contracted industrial
@@ -8309,6 +8369,64 @@ function txRateFor(newMW, baseRate){
   }
   if (left > 0) cost += left * baseRate * bldTxCurve.rows[bldTxCurve.rows.length - 1].mult;
   return cost / newMW;
+}
+
+// ── TWO-PASS PRICE-TAKER DISPATCH ───────────────────────────────────────────
+// Runs simulate() twice. Pass one produces the hourly marginal price with the gate
+// inert, exactly as a normal run. Pass two hands each storage tier a RESERVATION
+// PRICE built from that series, so a store charges only when the energy is cheap
+// enough to be worth converting at its own round-trip efficiency.
+//
+// This is the price-taker method from the long-duration storage literature, and it
+// supplies what the reverted merit-order rewrite could not: a test of whether an
+// arbitrage is WORTH MAKING. Unmet need is not value.
+//
+// RESERVATION PRICE = the 90th percentile of marginal price over each tier's OWN
+// forward horizon. A 10-hour battery looks at tonight, a 100-hour store at the week.
+// The 90th percentile rather than the maximum, because a store cannot count on
+// capturing the single worst hour and sizing against it makes it refuse everything.
+//
+// PERFECT FORESIGHT. Pass two sees pass one's realised prices. A real operator
+// forecasts, so results are an UPPER BOUND on long-duration storage value. Say so
+// wherever they are quoted.
+//
+// COST: one extra simulate() call. Not wired into run() - it is opt-in, because
+// doubling every slider drag to answer a question most users are not asking would be
+// the wrong trade.
+function simulateTwoPass(st, PROF, opts){
+  const pass1 = simulate(st, PROF);
+  if (!pass1 || !pass1.marginalP) return { pass1, pass2: pass1, reservation: null };
+  const P = pass1.marginalP, N = P.length;
+  const pct = (arr, q) => {
+    if (!arr.length) return 0;
+    const a = Float64Array.from(arr); a.sort();
+    return a[Math.min(a.length - 1, Math.floor(a.length * q))];
+  };
+  // Tier durations must match the engine's own definition or the horizons drift.
+  const durH = {
+    li:   Math.max(1, Math.round(((st.battPowerMW ?? FIXED.battPowerMW) * (FIXED.battHours)
+          + (st.newBattMW || 0) * (st.newBattHours ?? FIXED.newBattHours))
+          / Math.max(1, (st.battPowerMW ?? FIXED.battPowerMW) + (st.newBattMW || 0)))),
+    vrfb: st.newVrfbHours ?? FIXED.newVrfbHours ?? 8,
+    fe:   st.newIronAirHours ?? FIXED.newIronAirHours ?? 100,
+  };
+  const q = (opts && opts.quantile) || 0.90;
+  const reservation = {};
+  for (const k of Object.keys(durH)){
+    const H = Math.max(2, Math.min(168, Math.round(durH[k]) + 1));
+    const a = new Float64Array(N);
+    // Rolling forward window. Recomputed per hour rather than incrementally: N is
+    // 8760 and H at most 168, so this is well under a million comparisons.
+    for (let h = 0; h < N; h++){
+      const end = Math.min(N, h + H);
+      const win = [];
+      for (let j = h + 1; j < end; j++) win.push(P[j]);
+      a[h] = win.length ? pct(win, q) : P[h];
+    }
+    reservation[k] = a;
+  }
+  const pass2 = simulate({ ...st, _reservationPrice: reservation }, PROF);
+  return { pass1, pass2, reservation, durH };
 }
 
 // National per-unit series for one weather year, CAPACITY-weighted across regions

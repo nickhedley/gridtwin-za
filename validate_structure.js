@@ -167,6 +167,12 @@ const live = stripComments(src);
     // Small helpers left from earlier iterations. Harmless, but they are dead
     // and the audit should keep saying so until they are used or removed.
     'subLookupArea', 'resolveColor', 'mixHex', 'setTooltip',
+    // Two-pass price-taker dispatch, added 30 Aug 2026. Deliberately NOT wired into
+    // run(): it costs a second simulate() call, and doubling every slider drag to
+    // answer a question most users are not asking would be the wrong trade. It is a
+    // research entry point, called from the console and from probes, with a header
+    // saying so. Wire it to a panel and this entry should be removed.
+    'simulateTwoPass',
   ];
   const unexpected = orphans.filter(o => !KNOWN.includes(o));
   check('no undocumented orphaned functions', unexpected.length === 0,

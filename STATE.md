@@ -1196,3 +1196,43 @@ So the defect identified yesterday is REAL and remains OPEN. What is now also kn
 that it cannot be fixed by reordering, which rules out the cheap options. The reverted
 code and the measurement are documented at the `tierCharge` block so this is not
 re-attempted blind.
+
+---
+
+## Two-pass price-taker built; storage LP is the remaining fix — 30 Aug 2026
+
+`simulateTwoPass()` runs simulate twice: pass one yields the hourly marginal price, pass
+two hands each tier a RESERVATION PRICE (90th percentile over its own horizon) and
+charges only when `cost now < reservation x efficiency`. One extra simulate call, ~590 ms.
+Opt-in, not wired into run().
+
+**IT ANSWERS THE ECONOMIC QUESTION: the arbitrage IS in the money.** July reservation
+price R2,020/MWh; iron-air needs 690 < 2020 x 0.45 = 909 and clears easily. The model's
+under-use of long-duration storage is NOT an economic judgement.
+
+**IT DOES NOT BIND, so it changes nothing alone** — every tier passes in July. And
+gate+ordering behaved exactly as ordering alone (July gas 2,742 -> 2,810). Ordering
+reverted a SECOND time.
+
+**CONCLUSION, now well evidenced: no ordering heuristic can fix this.** The gate asks "is
+this trade worth making"; the megawatt is decided by a COMPARATIVE question — worth more
+in the 45% store or the 88% one — which depends on whether the coming event outlasts the
+short store, given both SOCs. That is a value function on state of charge and a ranking
+cannot express one.
+
+### TO DO: STORAGE-ONLY LP
+
+Take the non-storage dispatch as given; let HiGHS optimise charge, discharge and SOC over
+all 8,760 hours with the SOC balance as a constraint. ~50,000 variables for three tiers,
+small against the LPs already solved here, and HiGHS is already in the browser. The DUAL
+on the SOC constraint is the opportunity value — a publishable output no South African
+study currently reports.
+
+Note the envelope work: the regional build LP takes 90-780 s, so budget accordingly and
+surface solver status (the guard added 29 Aug already does).
+
+CAVEAT TO CARRY: both approaches use perfect foresight of the price series. Results are an
+UPPER BOUND on long-duration storage value, not an estimate.
+
+`simulateTwoPass` is a DOCUMENTED orphan in validate_structure's KNOWN list — the harness
+caught it as unwired, which was correct. Remove that entry when it gets a panel.
