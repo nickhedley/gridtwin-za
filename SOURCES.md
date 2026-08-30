@@ -25,6 +25,8 @@ superseded queue entries. Never add the delta. See RULES.md.
 | DFFE REEA, grid-language subset | derived | 161 of 2,597 | `private_grid_candidates.json` - candidate PRIVATE grid assets |
 | Eskom TDP | annual | 2025-2034 edition | `tdp_projects.json`; ALSO underpins the storage and transmission capex constants |
 | Revised Electricity Pricing Policy | one-off, for comment | Gazette 55257, GN 7852, 28 Aug 2026 | the price-component mapping in RESULTS.md; submission made 27 Sep |
+| NERSA Wholesale Electricity Pricing Methodology | consultation | May 2026 | independent cross-check on the price-component mapping; names BALANCING COSTS, which GridTwin lacks |
+| NERSA Trading Rules | consultation, v3 | June 2026, comments closed 28 Aug | governs wheeling and trading; comment window MISSED - see CALENDAR |
 | Renewables.ninja / MERRA-2, regional | static | 2014-2023, ten years | `profiles_regional_multiyear.json` via `weatherYearNational()` - CAPACITY-weighted, bias-corrected 0.848 |
 | Form Energy / Google / Xcel transaction | one-off | 30 GWh, ~USD 77/kWh pre-incentive | `acapIronAir` 12,940 R/kW-yr |
 | Eskom Tubatse pumped storage | one-off | R35.9bn, 1.5 GW / 21 GWh, JET plan | `acapPs` 2,360 R/kW-yr |

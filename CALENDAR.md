@@ -7,14 +7,44 @@ Last reviewed: 30 Aug 2026.
 
 ---
 
+## MISSED — read this first
+
+```
+28 Aug 2026    NERSA Trading Rules v3, written comments. CLOSED TWO DAYS BEFORE THIS
+               ENTRY WAS WRITTEN, and this file is why it was missed.
+               THE OLD ENTRY WAS WRONG. It read "30 Sep 2026, comment submission,
+               HARD DEADLINE". 30 September is the date NERSA expects to FINALISE the
+               rules - a milestone, not a window. The real sequence was: v3 published
+               June, comments due 27 July, EXTENDED to 28 August. The consultation
+               paper states late submissions "will not be considered".
+               The error predates the 27 Aug split, so it was wrong for as long as
+               this file has existed. A finalisation date misread as an opportunity.
+ 4 Aug 2026    Wholesale Electricity Pricing Methodology - comments. MISSED.
+               Public hearing 19 Aug, also missed. Directly relevant: this is the
+               document that defines the wholesale price components GridTwin maps.
+ 4 Aug 2026    Transitional Generation Pricing and Vesting Contract Framework. MISSED.
+```
+
+STILL OPEN ON THESE:
+- Public hearings on Trading Rules v3 were "to be announced after the closing date".
+  No date found. CHECK nersa.org.za/notices/public-hearings - oral representations may
+  still be possible.
+- The rules are not final until 30 September. Material sent to
+  `tradingrulesdevelopmentteam@nersa.org.za` marked as late, offered as evidence
+  rather than as a formal comment, may still be read. It cannot be worse than silence.
+- Version 3 follows v1 and v2, so a further round is plausible. Watch for v4.
+
 ## Hard deadlines
 
 ```
-30 Sep 2026    NERSA Trading Rules - comment submission. HARD DEADLINE, no extension
-               assumed. NOW THE NEAREST BINDING DATE. Nothing drafted for it yet.
-               The locational and congestion work done for the EPP submission is
-               directly reusable: Trading Rules govern how wheeling and trading
-               actually clear, so the headroom and congestion findings apply.
+10 Sep 2026    NERSA public hearing on SERITI GREEN ENERGY's trading licence
+               application. Different matter, same regulator, and Seriti is already
+               an outreach target. Registration to make oral representations closed
+               28 Aug; attendance may still be possible. Livestreamed.
+30 Sep 2026    NERSA expects to FINALISE the Trading Rules. NOT a comment deadline -
+               see above. The date to watch for the final text, not to submit against.
+Q4 2026        SAWEM trading expected to commence. The Market Code (NTCSA) completed
+               written comment in June with a hearing on 1 July.
 ```
 
 ## Done, kept for the audit trail

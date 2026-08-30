@@ -628,6 +628,44 @@ Balancing services               -                                  ABSENT
 Environmental compliance costs   -                                  ABSENT
 ```
 
+### CROSS-CHECKED AGAINST NERSA'S OWN LIST, 30 Aug 2026
+
+The Wholesale Electricity Pricing Methodology (NERSA consultation, May 2026) enumerates
+the wholesale price build-up independently of the EPP. It splits into two groups, and the
+split is more useful than either list alone:
+
+```
+MARKET COSTS          energy, transmission charges, system operation charges,
+                      balancing costs, market operator charges, other regulated
+                      market costs
+NON-MARKET COSTS      legacy charges, bad debt recovery, social and cross-subsidy
+                      charges, vesting contract obligations
+```
+
+THAT CONFIRMS THE SPLIT ALREADY IN THIS FILE, from a regulator rather than from
+inference. GridTwin produces or can produce every MARKET cost. It produces none of the
+NON-MARKET costs, and should not try: they are allocation decisions, not modelling
+outputs. The methodology's own framing - that the wholesale cost "extends beyond the
+energy price in the day-ahead market" - is the sentence to quote when explaining why
+`avgCost` is not a tariff.
+
+TWO TERMS NERSA NAMES THAT THE EPP LIST DID NOT:
+
+**System operation charges** and **market operator charges**. Neither is in GridTwin and
+neither should be - they are institutional costs, not dispatch outcomes.
+
+**Balancing costs.** This one IS a modelling quantity and GridTwin does not have it. The
+model is hourly, so it has no intra-hour balancing product at all. In a market with
+45 GW of wind and solar, balancing is not a rounding error. Worth knowing that the gap
+is now named by the regulator rather than only by us.
+
+A NOTE ON RISK, from the EIUG's submission on the Market Code: non-market charges risk
+becoming "dumping grounds for unallocated costs". That is the strongest argument for the
+disaggregation this project has been advocating - if the market costs are separately
+published and checkable, whatever is left in the non-market bucket becomes visible.
+
+---
+
 Three produced, three modelled but switched off because South Africa does not price
 them today, one partial, six absent.
 

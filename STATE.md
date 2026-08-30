@@ -1067,3 +1067,43 @@ NERSA transmission licences and developer statements. Ask
 `Reapplication@dffe.gov.za` — already on the list for the CSIR request — one extra
 question: whether grid infrastructure is ever published as a separate release. That
 converts an inference from field names into an answer.
+
+---
+
+## The calendar was wrong and it cost a consultation window, 30 Aug 2026
+
+`CALENDAR.md` read "30 Sep 2026 NERSA Trading Rules - comment submission. HARD
+DEADLINE." **Both halves were wrong.** 30 September is when NERSA expects to FINALISE
+the rules. The comment window on Version 3 ran to 27 July, extended to **28 August** -
+which closed two days before anyone looked. The consultation paper states late
+submissions "will not be considered".
+
+The entry predates the 27 Aug split, so it has been wrong for as long as the file has
+existed: a finalisation milestone recorded as an opportunity to participate.
+
+TWO MORE WINDOWS CLOSED UNWATCHED: the Wholesale Electricity Pricing Methodology and
+the Vesting Contract Framework, comments 4 Aug, hearings 19 Aug. The first is directly
+relevant - it is the document defining the price components this project has been
+mapping.
+
+**THE LESSON IS ABOUT THE FORM OF THE ENTRY, NOT THE DILIGENCE.** "30 Sep - comment
+submission" carries no source and no distinction between a milestone and a window. An
+entry that had recorded WHERE THE DATE CAME FROM would have been checkable. Every
+calendar entry should now name its source and say what KIND of date it is.
+
+### WHAT THE WHOLESALE PRICING METHODOLOGY GIVES THE MODEL
+
+Independently of the EPP, NERSA splits the wholesale price into MARKET costs (energy,
+transmission, system operation, balancing, market operator, other regulated) and
+NON-MARKET costs (legacy, bad debt, social and cross-subsidy, vesting). **That confirms
+the two-kinds split already in RESULTS.md, from a regulator rather than from
+inference** - and it is the split the EPP submission argued for.
+
+It also names one gap we had not: **BALANCING COSTS**. That is a modelling quantity and
+GridTwin has none, because the model is hourly and has no intra-hour product. At 45 GW
+of wind and solar that is not a rounding error. System operation and market operator
+charges are also named, but those are institutional costs and correctly absent.
+
+From the EIUG's Market Code submission, the risk worth quoting: non-market charges
+becoming "dumping grounds for unallocated costs". That is the strongest argument for
+the disaggregation this project has been advocating.
