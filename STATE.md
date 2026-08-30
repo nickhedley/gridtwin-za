@@ -1715,15 +1715,18 @@ through uplift, as ERCOT and PJM do. That distinction was previously nowhere in 
 interface.
 
 **IRON-AIR SLIDER.** Read "the only option here that can ride out a multi-day renewables
-lull" — a claim the last three days of work made untenable. Now says it is the longest
-duration offered and the only one that COULD in principle, then states what actually
-happens: least efficient store on the system, reached last, about 130 hours a year and
-NONE in July. Points the reader at the mix split to check it themselves.
+lull" — untenable after the storage work. I then replaced it with a 400-character
+explanation of hours, efficiency ranking and LP testing, which was WORSE: a slider note
+should give the SPEC and point at the tool, not deliver the conclusion before the reader
+has looked. Now one line — 100-hour storage at 45% round trip, and the mix splits storage
+by chemistry so you can see when it dispatches.
 
-**VANADIUM SLIDER.** Was a bare spec line. Now records that it runs 17 hours a year in
-the Seriti scenario, and that its real advantage is one THIS MODEL DOES NOT YET PRICE —
-the electrolyte does not degrade, so unlike lithium it carries no cycle-life cost. Naming
-an advantage the model cannot represent is more useful than omitting it.
+**VANADIUM SLIDER.** Same overcorrection, same trim. Now the spec plus the one thing the
+reader cannot deduce: the electrolyte does not degrade with cycling, an advantage this
+model does not yet price.
+
+**THE PRINCIPLE, worth holding to:** a note states what the control IS and where to look.
+It does not pre-state what you will find. Findings belong in RESULTS.md.
 
 **HOURLY DISPATCH LEGEND.** Left merged as "Batteries and flow storage", with a comment
 saying why: that chart draws `stack.batt`, the single carrier the energy balance sums.
@@ -1734,3 +1737,38 @@ and would double-count storage in every balance check.
 ONE TYPO OF MY OWN, caught by reading the rendered string back: "Seriti 45&#37; GW" — the
 percent entity applied to the wrong number. Fixed. Worth doing that read-back on any
 blurb containing entities.
+
+---
+
+## TO DO: trim the site text
+
+The notes are too heavy throughout, not only where I made them worse today. Measured:
+
+```
+28 slider notes · 4,500 characters · mean 160
+ 4 notes over 300 characters
+ 2 notes over 500
+```
+
+The trim list, longest first:
+
+```
+895  carbonTaxRPerT   two questions in one note - the policy/compliance split
+560  costCcgt         explains what it is NOT at length
+330  syncMinMW
+313  getsEnabled
+260  lcoeCcgt
+226  coalFlexPct
+```
+
+`carbonTaxRPerT` at 895 characters is the worst and it is mine, written 30 Aug. The
+compliance-versus-policy distinction is real and belongs SOMEWHERE, but not in a slider
+tooltip.
+
+THE RULE TO APPLY: a note gives the SPEC and points at the tool. It does not pre-state
+outcomes, argue methodology, or carry provenance — those belong in RESULTS.md, STATE.md
+and the source comments respectively, all of which already exist and are better places
+for them.
+
+Scope is wider than the sliders: panel blurbs, the KPI cost note and the About text all
+want the same pass.
