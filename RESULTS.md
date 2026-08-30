@@ -1025,7 +1025,51 @@ REVERTED: the ordering, twice.
 PERFECT FORESIGHT CAVEAT: pass two sees pass one's realised prices. A real operator
 forecasts. Anything from this path is an UPPER BOUND on long-duration storage value.
 
-**SO THE HEADLINE RESULT IS NOW PROVISIONAL.** "Iron-air changes July gas by exactly
+### THE STORAGE LP, BUILT AND SOLVED - and it settles both questions
+
+`storage_lp.js`. Price-taker formulation: charge, discharge and state of charge as
+decision variables across all 8,760 hours, SOC balance as a constraint, cyclic so no
+free energy, objective to buy cheap and sell dear against the marginal price series
+from a prior dispatch. This is what PLEXOS and PyPSA do.
+
+```
+52,560 variables · 4.0 MB · solved OPTIMAL in 3.0 seconds
+```
+
+Three seconds, which is worth noting against the regional build LP's 90-780. The
+storage problem is small.
+
+```
+tier    charged TWh   discharged TWh   peak SOC MWh   July discharge GWh
+li            12.48            10.98        200,000                  995
+fe             3.20             1.44        941,568                   18
+```
+
+**THE IRON-AIR RESULT SURVIVES THE FAIR TEST.** Given perfect foresight, an LP, and no
+merit order to starve it, a 20 GW / 2 TWh iron-air fleet displaces **18 GWh of July gas
+out of 2,742**. It does fill - peak state of charge reaches 941,568 MWh, 47% of capacity,
+which the heuristic never approached - so this is no longer a dispatch artefact. The 45%
+round trip is simply punishing enough that the energy is better left in coal. The
+provisional flag is REMOVED: "long-duration storage does not solve a winter wind drought"
+now holds under an optimal dispatch, not just a heuristic one.
+
+**BUT THE HEURISTIC IS UNDER-USING LITHIUM BADLY.** The LP finds 995 GWh of July gas that
+lithium could displace and the heuristic does not - **37% of July gas left on the table**,
+by the technology that is actually deployed. That is a much larger finding than anything
+about iron-air, and it was invisible until the LP was built.
+
+CAVEATS, and they matter for how the 37% is read:
+- PERFECT FORESIGHT. The LP sees the whole year; a real operator forecasts. UPPER BOUND.
+- PRICE-TAKER. The objective uses a FIXED marginal price series and does not re-clear
+  the market, so the displaced gas is an estimate of the opportunity, not a re-solved
+  system cost.
+- The serveable and chargeable limits are approximations from the pass-one dispatch.
+
+NEXT: the 37% is large enough to justify embedding the LP in the engine rather than
+leaving it as a probe. The dual on the SOC balance is the opportunity value - the number
+the two-pass gate was approximating - and no South African study publishes it.
+
+**~~SO THE HEADLINE RESULT IS NOW PROVISIONAL.~~ RESOLVED - see above.** "Iron-air changes July gas by exactly
 zero in all ten years" was measured on a dispatch that structurally cannot charge it.
 The finding may survive - the efficiency penalty is severe and the July deficit is large
 - but it has not been tested against a dispatch that gives long-duration storage a fair

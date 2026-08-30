@@ -1220,7 +1220,7 @@ in the 45% store or the 88% one — which depends on whether the coming event ou
 short store, given both SOCs. That is a value function on state of charge and a ranking
 cannot express one.
 
-### TO DO: STORAGE-ONLY LP
+### DONE: STORAGE-ONLY LP — `storage_lp.js`, 30 Aug 2026
 
 Take the non-storage dispatch as given; let HiGHS optimise charge, discharge and SOC over
 all 8,760 hours with the SOC balance as a constraint. ~50,000 variables for three tiers,
@@ -1236,3 +1236,34 @@ UPPER BOUND on long-duration storage value, not an estimate.
 
 `simulateTwoPass` is a DOCUMENTED orphan in validate_structure's KNOWN list — the harness
 caught it as unwired, which was correct. Remove that entry when it gets a panel.
+
+---
+
+## Storage LP result — 30 Aug 2026
+
+`storage_lp.js` at the repo root. 52,560 variables, 4.0 MB, **Optimal in 3.0 seconds** —
+the storage problem is small next to the regional build LP's 90-780 s.
+
+```
+tier    charged TWh   discharged TWh   peak SOC MWh   July discharge GWh
+li            12.48            10.98        200,000                  995
+fe             3.20             1.44        941,568                   18
+```
+
+**1. THE IRON-AIR RESULT SURVIVES.** Under an optimal dispatch with perfect foresight and
+no merit order to starve it, 20 GW / 2 TWh of iron-air displaces 18 GWh of July gas out of
+2,742. It DOES fill — peak SOC 47% of capacity, which the heuristic never approached — so
+this is no longer a dispatch artefact. 45% round trip is punishing enough that the energy
+is better left in coal. **PROVISIONAL FLAG REMOVED from RESULTS.md.**
+
+**2. THE HEURISTIC UNDER-USES LITHIUM BY 37% OF JULY GAS.** The LP finds 995 GWh that
+lithium could displace and the heuristic does not. That is far larger than anything about
+iron-air, it affects the technology actually being deployed, and it was invisible until
+the LP existed. **This is now the most valuable open item in the model.**
+
+CAVEATS: perfect foresight (upper bound); price-taker objective against a fixed price
+series, so it does not re-clear the market; serveable/chargeable limits approximated from
+pass one.
+
+NEXT: embed rather than probe. The dual on the SOC balance is the opportunity value the
+two-pass gate was approximating, and no South African study publishes it.
