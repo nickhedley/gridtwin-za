@@ -951,6 +951,39 @@ fills the LONG store when a LONG event is coming, even at worse round trip, beca
 lithium cannot hold energy that far. That is a real dispatch rewrite and has not been
 attempted.
 
+### THE REWRITE WAS ATTEMPTED, MEASURED, AND REVERTED - 30 Aug 2026
+
+Against how the literature says this should be done. Production cost models run one- to
+two-day horizons to match day-ahead markets, which cannot capture a multi-day store's
+inter-temporal value; published estimates put the cost of getting it wrong at 4-14% of
+operational value and 14-34% of capacity credit. The recommended treatment is
+OPPORTUNITY-VALUE dispatch - a reservation price per store reflecting expected future
+scarcity - not an efficiency merit order.
+
+TWO CHANGES MADE. Per-tier lookahead horizons, so a 10-hour battery looks at tonight and
+a 100-hour store at the coming week instead of both being asked about the next 25 hours.
+And charging served in order of UNMET NEED against those horizons, efficiency only as a
+tie-break.
+
+```
+                              storage TWh    July gas GWh
+efficiency order (before)            8.42            2742
+unmet-need order (rewrite)           7.44            2810
+```
+
+IT MADE THINGS WORSE, so it was reverted. Filling a 45%-efficient store ahead of an
+88%-efficient one destroys more energy than the earlier availability recovers. **Unmet
+need is not value.** The heuristic had no test of whether the arbitrage was worth making,
+and ordering alone cannot express one.
+
+WHAT WOULD ACTUALLY WORK: charge a tier only when the current marginal cost is below its
+expected discharge value times the round trip. That is a value function on state of
+charge, which needs an LP rather than a merit order - the same reason PLEXOS and PyPSA
+co-optimise storage across the horizon instead of ranking it.
+
+KEPT: the per-tier horizons, which are correct on their own merits and neutral here.
+REVERTED: the ordering.
+
 **SO THE HEADLINE RESULT IS NOW PROVISIONAL.** "Iron-air changes July gas by exactly
 zero in all ten years" was measured on a dispatch that structurally cannot charge it.
 The finding may survive - the efficiency penalty is severe and the July deficit is large

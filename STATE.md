@@ -1166,3 +1166,33 @@ ten years" was measured on a dispatch that structurally cannot charge it. The fi
 well survive — 45% round trip is punishing and the July deficit is large — but it has not
 been tested fairly. RESULTS.md now marks it PROVISIONAL. Do not repeat it externally
 until the merit order is addressed.
+
+---
+
+## Dispatch rewrite attempted and reverted, 30 Aug 2026
+
+Against the long-duration storage literature: PCMs run 1-2 day horizons to match
+day-ahead markets and cannot capture a multi-day store's inter-temporal value; the
+recommended fix is OPPORTUNITY-VALUE dispatch, a reservation price per store, not an
+efficiency merit order. Published cost of getting it wrong: 4-14% of operational value,
+14-34% of capacity credit.
+
+**KEPT: per-tier lookahead horizons.** Each store now looks ahead over its own duration
+(capped at 168 h) rather than all sharing one 25-hour window. Correct on its own merits,
+neutral in the scenarios tested.
+
+**REVERTED: unmet-need charge ordering.** Serving tiers by how far they sit below a
+horizon-based target made July gas WORSE, 2,742 -> 2,810 GWh, and cut storage delivery
+8.42 -> 7.44 TWh. Filling a 45%-efficient store ahead of an 88%-efficient one destroys
+more energy than the earlier availability recovers.
+
+**THE LESSON: unmet need is not value.** The heuristic had no test of whether the
+arbitrage was worth making, and an ordering cannot express one. The correct rule charges
+a tier only when current marginal cost is below expected discharge value times round
+trip — a value function on state of charge, which needs an LP. That is why PLEXOS and
+PyPSA co-optimise storage across the horizon rather than ranking it.
+
+So the defect identified yesterday is REAL and remains OPEN. What is now also known is
+that it cannot be fixed by reordering, which rules out the cheap options. The reverted
+code and the measurement are documented at the `tierCharge` block so this is not
+re-attempted blind.

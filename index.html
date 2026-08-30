@@ -4804,6 +4804,28 @@ function simulate(u, prof, outPath){
   // energy. Zero unless a reserve price is set.
   const _asHold = (p.asReserveOn ? (p.asReserveRMWh || 0) : 0) > 0
     ? Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15)) : 0;
+  // CHARGE ORDER: BEST ROUND TRIP FIRST, and this is a considered choice, not a
+  // leftover. An opportunity-value ordering was implemented and REVERTED on
+  // 30 Aug 2026 after measurement - see below.
+  //
+  // WHAT WAS TRIED. Each tier given its own lookahead horizon (kept - see
+  // _tierShortfall) and then served in order of UNMET NEED against a target set by
+  // the shortfall over that horizon, with efficiency only as a tie-break. The aim was
+  // to stop lithium, which empties daily and so always has room, taking all the cheap
+  // energy and starving a 100-hour store.
+  //
+  // WHAT HAPPENED. It made things WORSE. July gas rose 2,742 -> 2,810 GWh and total
+  // storage delivery fell 8.42 -> 7.44 TWh. The reason is that unmet need is not
+  // value: filling a 45%-efficient store ahead of an 88%-efficient one destroys more
+  // energy than the earlier availability recovers, and the heuristic had no test of
+  // whether the arbitrage was worth making.
+  //
+  // WHAT WOULD ACTUALLY BE NEEDED. A reservation price per tier - charge only when
+  // the current marginal cost is below the expected discharge value TIMES the round
+  // trip. That is the opportunity-value formulation in the literature and it needs a
+  // value function on state of charge, which means an LP rather than a merit order.
+  // Ordering alone cannot express it, which is the lesson: the defect is real, and
+  // this particular fix is not the one.
   const tierCharge = (mw) => {
     let got = 0;
     for (const t of battTiers){
@@ -4813,6 +4835,12 @@ function simulate(u, prof, outPath){
     }
     return got;
   };
+  const tierChargeAt = (mw, hr) => tierCharge(mw);
+  // DISCHARGE ORDER. Short-duration first, which IS right: lithium can be refilled
+  // tomorrow, a 100-hour store cannot. Spending the long store on a normal evening
+  // peak and having it empty when a four-day drought arrives is the failure this
+  // ordering prevents. So efficiency-first is retained here deliberately - it is only
+  // the CHARGING side that was wrong.
   const tierDischarge = (mw) => {
     let got = 0;
     for (const t of battTiers){
@@ -5107,15 +5135,41 @@ function simulate(u, prof, outPath){
   // Capped at 168 hours (one week). Beyond that the perfect-foresight assumption does
   // more work than the storage does - no operator knows next month's net load - and a
   // longer horizon would flatter long-duration assets rather than test them.
-  const _longestStoreH = Math.max(25, Math.min(168,
-    Math.round(battPower > 0 ? (battEnergy / Math.max(1, battPower)) * 1.5 : 25)));
-  const anticipatedShortfall=new Float64Array(HOURS);
-  for(let h=0;h<HOURS;h++){
-    let sum=0;
-    const end=Math.min(HOURS,h+_longestStoreH);
-    for(let k=h+1;k<end;k++){ const gap=netLoadPre[k]-coalAvail; if(gap>0) sum+=gap; }
-    anticipatedShortfall[h]=sum;
+  // PER-TIER HORIZONS. Each store looks ahead over ITS OWN duration, not a single
+  // system-wide window. This is the opportunity-value idea from the long-duration
+  // storage literature, in its simplest usable form: a 10-hour battery should care
+  // about tonight, a 100-hour store about the coming week, and asking both the same
+  // question is what made the long one useless.
+  //
+  // The 25-hour window used until 30 Aug 2026 is the standard production-cost-model
+  // horizon, and the known failure it causes is documented: PCMs run one to two days
+  // to match day-ahead markets, which cannot capture the inter-temporal value of a
+  // multi-day store. Published estimates put the cost of getting this wrong at 4-14%
+  // of operational value and 14-34% of capacity credit.
+  //
+  // Capped at 168 hours. Past a week the perfect foresight in this loop does more work
+  // than the storage does, and the result would flatter long-duration assets rather
+  // than test them.
+  const shortfallOver = (H) => {
+    const a = new Float64Array(HOURS);
+    for (let h = 0; h < HOURS; h++){
+      let sum = 0; const end = Math.min(HOURS, h + H);
+      for (let k = h + 1; k < end; k++){ const gap = netLoadPre[k] - coalAvail; if (gap > 0) sum += gap; }
+      a[h] = sum;
+    }
+    return a;
+  };
+  const _tierHorizonH = {};
+  const _tierShortfall = {};
+  for (const t of battTiers){
+    const dur = t.mw > 0 ? Math.round(t.mwh / t.mw) : 24;
+    const H = Math.max(25, Math.min(168, dur + 1));
+    _tierHorizonH[t.k] = H;
+    _tierShortfall[t.k] = _tierShortfall[H] || (_tierShortfall[H] = shortfallOver(H));
   }
+  // Kept for the scalar path and for panels that still read one number.
+  const _longestStoreH = Math.max(25, ...Object.values(_tierHorizonH));
+  const anticipatedShortfall = shortfallOver(_longestStoreH);
   // DAILY-relative threshold, not a single year-wide one: a real battery doesn't care whether
   // today is worse than winter - it cares whether there's a cheap-to-expensive spread worth
   // capturing TODAY. A year-wide threshold (top 25% of all 8760 hours) is dominated by winter's
@@ -5286,7 +5340,7 @@ function simulate(u, prof, outPath){
       const coalFloor=Math.min(cAvail,Math.max(coalFloorBase,prevCoalGen-rampAllowedMW));
       if(coalFloor>0){ coalGen=coalFloor; surplus+=coalFloor; }
       const psChg=Math.min(surplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; surplus-=psChg;
-      let btChg=Math.min(surplus,battPower,battEnergy-battSoc); btChg=tierCharge(btChg); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
+      let btChg=Math.min(surplus,battPower,battEnergy-battSoc); btChg=tierChargeAt(btChg,h); addCharge(h,'batt',btChg,0); syncBattSoc(); surplus-=btChg;
       chargeMW[h]+=psChg+btChg;
       // EXPORT BEFORE CURTAILING, but AFTER storage. Stored energy can be sold
       // into the domestic evening peak at more than the regional pool pays, so
@@ -5355,7 +5409,7 @@ function simulate(u, prof, outPath){
       if(residual<0){
         let forcedSurplus=-residual; residual=0;
         const psChg=Math.min(forcedSurplus,psPowerTot,psEnergyTot-psSoc); addCharge(h,'ps',psChg,0); psSoc+=psChg*psEffTot; forcedSurplus-=psChg;
-        let btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); btChg=tierCharge(btChg); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
+        let btChg=Math.min(forcedSurplus,battPower,battEnergy-battSoc); btChg=tierChargeAt(btChg,h); addCharge(h,'batt',btChg,0); syncBattSoc(); forcedSurplus-=btChg;
         chargeMW[h]+=psChg+btChg;
         // Whatever storage could not absorb has to be curtailed - renewables first (they can back
         // off instantly), then coal trips if the oversupply still exceeds all renewable output.
@@ -5464,7 +5518,7 @@ function simulate(u, prof, outPath){
         const battTargetCeiling=Math.min(battEnergy*0.8, Math.max(anticipatedShortfall[h], battDailyFloor));
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
-        if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierCharge(w); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
+        if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
       }
       // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
       // INTERRUPTIBLE LOAD, called before anything is shed. Contracted industrial
