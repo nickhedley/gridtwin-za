@@ -1957,3 +1957,44 @@ original file is **34 projects** — the 33 Chatty reassignments plus one to Ott
 
 THE LESSON: `planned` in this register means "the register said planned at ingest", not
 "does not exist". Do not use it as a filter until the stale flags are resolved.
+
+---
+
+## The planned flags, audited — 30 Aug 2026
+
+Prompted by the near-miss above: `planned` almost caused a 205-project reassignment, so
+it was worth establishing what the flag actually means across all eleven entries.
+
+```
+11 planned  ·  10 from DBSA, 1 approx
+ 9 corroborated by the Eskom TDP  — consistent with planned, NOT evidence against it
+ 1 disputed  — Koruson
+ 1 genuinely unbuilt and unlocated — Zwavelpoort
+```
+
+### THE FIRST EVIDENCE I FOUND WAS CIRCULAR
+
+The line register appeared to show Koruson as an endpoint of an EXISTING line, which
+looked like proof it is built. It is not: the only two lines naming Koruson are the
+INDICATIVE CONNECTORS added earlier the same day, marked `existing` because the
+connection is real. **My own data confirming my own conclusion.** Checked before acting
+on it, which is the only reason it did not become a finding.
+
+So the line register offers NO independent evidence on any of the eleven.
+
+### KORUSON IS DISPUTED, NOT RESOLVED
+
+EDF Power Solutions built the main transmission substation for Koruson 1 and that cluster
+is operating, so it is almost certainly built and the TDP entry predates completion. The
+flag is NOT flipped — no commissioning source has been checked — but the entry now carries
+`planned_disputed: true` and the reasoning.
+
+### WHAT THE FLAG MEANS, now in the data file
+
+`planned` records what the DBSA register said AT INGEST. It does not mean the substation
+does not exist. `meta.planned_flag_meaning` says so, names the 205-project error, and
+directs anyone wanting a filter to use `src="approx"` instead — which records whether a
+POSITION is known, a question the data can actually answer.
+
+`validate_geo` (38 -> 39) asserts that documentation exists, so the explanation cannot be
+lost while the flag survives.

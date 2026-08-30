@@ -161,6 +161,21 @@ console.log(`  ${OUTSIDE.length - outFail}/${OUTSIDE.length} foreign and ocean p
         `missing: ${karoo.miss.join(', ')} — the Hydra Central split uses nearest-substation `
         + `matching over exactly this area, and Impofu showed what one absent substation costs`);
 
+  // PLANNED FLAGS. Audited 30 Aug 2026 after an attempt to use `planned` as a matching
+  // filter reassigned 205 REEA projects away from a substation that is almost certainly
+  // built. The flag records what the DBSA register said AT INGEST, not whether the thing
+  // exists. This asserts the meaning is documented, so the next person reads it before
+  // reaching for the filter.
+  {
+    const planned = reg.subs.filter(x => x.planned);
+    const disputed = planned.filter(x => x.planned_disputed);
+    check('the meaning of the planned flag is documented in the data file',
+          !!(reg.meta && reg.meta.planned_flag_meaning),
+          'meta.planned_flag_meaning absent - without it `planned` reads as "does not exist"');
+    console.log(`  planned flags: ${planned.length}, of which ${disputed.length} disputed`
+      + (disputed.length ? ` (${disputed.map(x => x.n).join(', ')})` : ''));
+  }
+
   const all = scan(false);
   // National coverage is reported, not asserted: the line register names endpoints this
   // project has no obligation to hold, and failing on those would be noise.
