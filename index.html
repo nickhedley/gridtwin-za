@@ -1557,11 +1557,20 @@ let redzData = null;
   fetch('nodal/transmission_lines.geojson').then(r=>r.json()).then(data=>{
     function lineStyle(feat) {
       const v = feat.properties.voltage, pl = feat.properties.status==='planned';
+      const ind = !!feat.properties.route_indicative;
       let color;
       if(v>=700) color='#C8A028';
       else if(v>=380) color='#C4785A';
       else if(v>=250) color='#517180';
       else color='#7a8a7a';
+      // THREE STATES, deliberately distinguishable at a glance:
+      //   solid       surveyed route from the source data
+      //   6 4 dashed  planned, route from the TDP
+      //   1 5 dotted  route_indicative - a STRAIGHT connector between two known
+      //               points. The connection is sourced, the route is not, and its
+      //               length is meaningless. Finer and more transparent than the
+      //               planned dash so the two never read as the same claim.
+      if (ind) return {color, weight:1.5, opacity:0.55, dashArray:'1 5', lineCap:'round'};
       return {color, weight: v>=380?2:1.5, opacity: pl?0.45:0.75, dashArray: pl?'6 4':null};
     }
     L.geoJSON(data, {
@@ -1570,8 +1579,17 @@ let redzData = null;
         const p = feat.properties;
         const route = p.start && p.end ? `${p.start} → ${p.end}` : p.label;
         const status = p.status==='planned' ? ' <span style="color:#C4785A">(planned)</span>' : '';
+        // Say it on the tooltip, not only in the file. Someone reading a dotted line off
+        // the map will not have opened the geojson, and a straight line between two real
+        // substations is exactly the kind of thing that gets measured off a screenshot.
+        const ind = p.route_indicative
+          ? '<br><span style="font-size:9.5px;color:#C4785A">Indicative connector \u2013 '
+            + 'the connection is sourced, the route is not. Do not measure this line.</span>'
+          : '';
+        const own = (p.owner && p.owner !== 'NTCSA')
+          ? `<br><span style="font-size:9.5px;color:#666">Privately built \u00b7 ${p.owner}</span>` : '';
         layer.bindTooltip(
-          `<strong>${p.voltage}kV</strong>${status}<br><span style="font-size:10px;color:#666">${route||''}</span>`,
+          `<strong>${p.voltage}kV</strong>${status}<br><span style="font-size:10px;color:#666">${route||''}</span>${own}${ind}`,
           {sticky:true, opacity:0.92}
         );
       }

@@ -46,6 +46,10 @@ CHECKS = [
     # could see, because the layers on top are our own data. This pins the replacement
     # so a revert is loud.
     ('World_Light_Gray_Base',                                      'basemap: Esri light grey, keyless'),
+    # Indicative connectors must stay visually distinct from surveyed and planned
+    # routes. If this styling is lost, a straight line between two real substations
+    # reads as a surveyed route and gets measured off a screenshot.
+    ('route_indicative',                                           'indicative connector styling'),
 ]
 
 path = sys.argv[1] if len(sys.argv) > 1 else '/mnt/user-data/outputs/index.html'

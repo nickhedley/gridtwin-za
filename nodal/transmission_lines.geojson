@@ -224615,12 +224615,73 @@
      ]
     ]
    }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "voltage": 132,
+    "label": "PHEZUKOMOYA - KORUSON (indicative)",
+    "status": "existing",
+    "start": "PHEZUKOMOYA",
+    "end": "KORUSON",
+    "owner": "EDF Power Solutions",
+    "built_by": "EDF Power Solutions",
+    "line_type": "single-project connection",
+    "route_indicative": true,
+    "serves_mw": 140,
+    "source": "Endpoints from DFFE REEA authorisations (reea_projects.json); the Koruson 1 cluster and its privately constructed 1.5 GW main transmission substation are separately documented. Voltage from the REEA record, which describes a 132 kV grid connection.",
+    "note": "ROUTE NOT KNOWN - this is a STRAIGHT INDICATIVE CONNECTOR, not a route. It asserts the CONNECTION, which is documented (EDF Power Solutions' Koruson 1 cluster comprises Phezukomoya and San Kraal, connecting at the privately built Koruson main transmission substation), and says nothing about where the conductor runs. THE GEOMETRY LENGTH IS MEANINGLESS - do not measure it. Drawn straight and dotted precisely so it cannot be mistaken for a surveyed centreline. Contrast the Impofu line in this file, which has a published route description and three vertices."
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      24.9191,
+      -31.2557
+     ],
+     [
+      24.82183,
+      -31.3545
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "voltage": 132,
+    "label": "SAN KRAAL - KORUSON (indicative)",
+    "status": "existing",
+    "start": "SAN KRAAL",
+    "end": "KORUSON",
+    "owner": "EDF Power Solutions",
+    "built_by": "EDF Power Solutions",
+    "line_type": "single-project connection",
+    "route_indicative": true,
+    "serves_mw": 140,
+    "source": "Endpoints from DFFE REEA authorisations (reea_projects.json); the Koruson 1 cluster and its privately constructed 1.5 GW main transmission substation are separately documented. Voltage from the REEA record, which describes a 132 kV grid connection.",
+    "note": "ROUTE NOT KNOWN - this is a STRAIGHT INDICATIVE CONNECTOR, not a route. It asserts the CONNECTION, which is documented (EDF Power Solutions' Koruson 1 cluster comprises Phezukomoya and San Kraal, connecting at the privately built Koruson main transmission substation), and says nothing about where the conductor runs. THE GEOMETRY LENGTH IS MEANINGLESS - do not measure it. Drawn straight and dotted precisely so it cannot be mistaken for a surveyed centreline. Contrast the Impofu line in this file, which has a published route description and three vertices."
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      24.955,
+      -31.2808
+     ],
+     [
+      24.82183,
+      -31.3545
+     ]
+    ]
+   }
   }
  ],
  "metadata": {
   "interconnector_note": "Cross-border circuits are tagged with interconnector/country/sapp_note/crossing. LESOTHO IS ABSENT BY SCOPE, NOT OMISSION: the SA-Lesotho links run at 132 kV (Muela hydro and Eskom into Maputsoe and Mabote substations) and this dataset's lowest voltage is 220 kV. Eskom's TDP lists Lesotho among its interconnections, so any future 132 kV layer should add it."
  },
  "meta": {
-  "ownership_note": "owner / line_type added 30 Aug 2026. Every pre-existing feature is tagged NTCSA / 'shared network' because the source for this file - Eskom TDP plus SAPP planning data - contains no privately built assets BY CONSTRUCTION. That is a statement about the source, not evidence that none exist: SA's longest privately permitted renewable line (Impofu, 116 km, 132 kV) was absent until it was added by hand. line_type distinguishes 'shared network' from 'single-project connection': only the former creates headroom another developer can use. Koruson's privately built main transmission substation (1.5 GW, EDF) is the shared kind and is NOT yet represented here."
+  "ownership_note": "owner / line_type added 30 Aug 2026. Every pre-existing feature is tagged NTCSA / 'shared network' because the source for this file - Eskom TDP plus SAPP planning data - contains no privately built assets BY CONSTRUCTION. That is a statement about the source, not evidence that none exist: SA's longest privately permitted renewable line (Impofu, 116 km, 132 kV) was absent until it was added by hand. line_type distinguishes 'shared network' from 'single-project connection': only the former creates headroom another developer can use. Koruson's privately built main transmission substation (1.5 GW, EDF) is the shared kind and is NOT yet represented here.",
+  "route_indicative_note": "Features with route_indicative=true are STRAIGHT connectors between two known points. They record that A connects to B, which is sourced; they do NOT record where the line runs, which is not. Their geometry length is meaningless and must never be measured. Rendered dotted and distinct from 'planned'. Used where the CONNECTION is documented but no route description exists - the alternative is omitting a real asset entirely, which for private infrastructure would leave the map systematically incomplete in one direction."
  }
 }

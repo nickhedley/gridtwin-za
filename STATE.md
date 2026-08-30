@@ -848,10 +848,32 @@ anyone else.
 `substations_compact.json` now carries `owner`, `built_by`, `line_type` and
 `headroom_built_mw` on that entry. Fingerprint `gtza-feb8236ccf9035ca`.
 
-**NO LINE WAS ADDED, deliberately.** The sourced fact is a SUBSTATION. I have seen no
-published route or geometry for its connecting lines, and a fabricated centreline would
-be worse than an absent one. The Impofu line was added because its route was described
-in a published source; this is not.
+**LINES ADDED 30 Aug 2026 AS INDICATIVE CONNECTORS**, after establishing that
+`transmission_lines.geojson` is DISPLAY-ONLY — styled and tooltipped, with nothing in the
+model computing length or topology from it. That removed the objection: a straight line
+cannot corrupt a calculation here.
+
+Two connectors, Phezukomoya -> Koruson and San Kraal -> Koruson, endpoints from DFFE
+REEA authorisations. The CONNECTION is documented — Koruson 1 is EDF's cluster of exactly
+these two farms, connecting at the privately built MTS — while the ROUTE is not.
+
+They are marked `route_indicative: true` and rendered as a THIRD visual state:
+
+```
+solid        surveyed route from the source data
+6 4 dashed   planned, route from the TDP
+1 5 dotted   indicative - connection sourced, route not, LENGTH MEANINGLESS
+```
+
+The tooltip says so too, not just the file: "the connection is sourced, the route is not.
+Do not measure this line." Someone reading a dotted line off the map has not opened the
+geojson, and a straight line between two real substations is exactly what gets measured
+off a screenshot. Tooltips also now surface private ownership.
+
+WHY NOT JUST OMIT THEM: leaving real private assets off the map makes it systematically
+incomplete in ONE DIRECTION — everything Eskom built is shown, everything private is not
+— which is a worse distortion than a clearly-labelled straight line. An `audit.py` check
+pins the styling so it cannot be lost silently.
 
 **ALSO FLAGGED, NOT FIXED:** the Koruson entry still carries `planned: true` from the
 DBSA register. The cluster is operating, so the substation is built and the flag is
