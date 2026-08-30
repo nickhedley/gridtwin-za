@@ -784,3 +784,62 @@ Previously 102 GW cost the same per kW as 1 GW.
 CAVEAT: electrical distance to a single load centre is a proxy. A full treatment prices
 against the actual network build required, which is what the corridor duals would give
 if the congestion work is carried further. The SHALLOW share of 25% is an assumption.
+
+---
+
+## Capture rates: solar cannibalises itself, wind does not
+
+Measured 29 Aug 2026. Capture rate is the price a technology actually achieves as a
+share of the time-weighted mean price - what a merchant project earns against what the
+market averages. Computed from the model's own hourly shadow price against each
+technology's dispatched output.
+
+```
+wind GW  solar GW  batt GW   mean R/MWh   wind capture   solar capture   solar R/MWh   curt TWh
+    4.6       3.3        0          755         100.2%           98.4%           743        0.0
+   15        15          0          701          96.8%           91.9%           644        0.8
+   20        25          0          544         100.6%           47.7%           260        9.9
+   30        35          0          410         106.2%           14.5%            59       35.2
+   50        60          0          215          95.9%            2.5%             5      113.5
+```
+
+**THE ASYMMETRY IS THE FINDING.** Wind holds 96-106% of the mean price across the whole
+range. Solar falls from 98% to 2.5%. At 50 GW of solar a merchant plant earns R5/MWh
+against wind's R206 - not a discount, an evaporation.
+
+The mechanism is coincidence. Every solar plant in the country produces in the same
+hours, so adding solar drives the price toward zero in precisely the hours solar earns.
+Wind output is diverse across sites and runs at night, so it keeps meeting hours when
+something dispatchable is still setting the price. Zero-price hours go from none to
+6,065 - 69% of the year - across this range.
+
+### STORAGE IS WHAT PROTECTS SOLAR'S REVENUE, and the effect is large
+
+The rows above carry NO storage, which overstates the collapse. Scaling batteries
+alongside the build (6-hour lithium):
+
+```
+wind GW  solar GW  batt GW   mean R/MWh   solar capture   solar R/MWh
+   15        15         5           741          100.1%           742
+   20        25        10           677           89.1%           604
+   30        35        20           484           54.1%           261
+   50        60        40           245           22.6%            55
+```
+
+At 30 GW wind / 35 GW solar, adding 20 GW of storage lifts solar capture from 14.5% to
+54.1% and the achieved price from R59 to R261/MWh - a fourfold improvement in project
+revenue. At the top of the range it is 2.5% to 22.6%, roughly ninefold.
+
+SO THE STORAGE CASE IS NOT PRIMARILY ABOUT ADEQUACY. Elsewhere in this file storage
+does almost nothing for winter security. Here it is worth more than anything else
+tested, because it is the only thing standing between a solar developer and a merchant
+price of R5/MWh. Those two findings are not in tension - they answer different
+questions, and a developer cares about the second.
+
+CAVEATS: single weather year; capture is computed against the model's shadow price,
+which has no price floor, no exports beyond the modelled cap and no bilateral
+contracting - all of which lift real capture rates. Published capture rates in
+high-penetration markets (California, Chile) fall to 40-60% rather than single digits,
+so treat the DIRECTION and the wind/solar ASYMMETRY as the result, not the absolute
+levels at the extreme end. `captureRate()` in index.html already computes this
+per-region for a single build; what is new here is the curve across builds.
