@@ -1880,3 +1880,37 @@ Confirmed intact after the run.
 TWO LESSONS. Take a backup before any scripted mass edit — this one needed it inside two
 minutes. And a mass edit is exactly what a test suite is for: nothing else would have
 caught a regex quietly rewriting a solver.
+
+---
+
+## The national register gap was 8, and 5 of them were not gaps — 30 Aug 2026
+
+Before hunting for coordinates, checked whether the missing names were real. Most were
+not:
+
+```
+KOKERBOOM, HARIB, EDWALENI    foreign, already filtered
+RASSONA GARCIA                 foreign - it is RESSANO GARCIA, the Mozambique border
+                               town, MISSPELLED in the line register
+KAPPA (A)                      a NAMING VARIANT: Kappa is in the register already
+TANZANIA, MALAWI, SOUTH AFRICA country names, not substations
+DURBAN SOUTH, OTTAWA           genuinely absent, KwaZulu-Natal
+ZWAVELPOORT EE1                genuinely absent, east of Pretoria
+```
+
+**A gap list is only as good as the filter in front of it.** A misspelled foreign name
+looks exactly like a missing domestic one, and a suffixed name looks exactly like a
+missing substation when the register holds the short form. Five of eight would have sent
+someone looking for coordinates that were never needed.
+
+TWO FIXES IN `validate_geo.js`: `RESSANO`/`RASSONA` and the country names added to the
+foreign filter, and a name normaliser that strips a trailing bracketed unit designator
+and the `EE1`/`MTS`/`DS`/`SS` suffixes before declaring a substation absent.
+
+THE THREE THAT REMAIN ARE REAL and none is in the Karoo, so the Hydra Central split is
+unaffected. They would matter if nearest-substation matching were used nationally —
+which is precisely how Impofu went wrong. Adding them needs verified coordinates, which
+this container cannot fetch.
+
+The harness now warns if more than three appear: "check whether a naming variant or
+foreign endpoint is being counted as a gap before hunting for coordinates".

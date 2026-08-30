@@ -97,6 +97,88 @@ for (const [n, lng, lat] of OUTSIDE){
 
 console.log(`  ${INSIDE.length - inFail}/${INSIDE.length} real SA locations accepted`);
 console.log(`  ${OUTSIDE.length - outFail}/${OUTSIDE.length} foreign and ocean points rejected`);
+// ── SUBSTATION REGISTER COMPLETENESS ────────────────────────────────────────
+// A CLOSED-LOOP TEST, needing no external data. Every transmission line records the
+// substation at each end. Any endpoint NOT in substations_compact.json is a missing
+// substation, and the two files come from different sources - the lines from Eskom TDP
+// and SAPP planning data, the substations from DBSA, OSM, Eskom and shapefiles - so
+// they do not share a blind spot by construction.
+//
+// WHY THIS EXISTS. On 28 Aug 2026 the nearest-substation method was falsified at
+// Impofu: it returned Grassridge at 106.9 km when the line actually built runs to
+// Chatty, which is NEARER at 93.3 km and was simply absent from the register. One
+// missing substation had distorted the connection picture for 1.4 GW of Eastern Cape
+// wind. The method is only as good as the register, so the register needs a test.
+//
+// WHAT IT PROVES AND DOES NOT. Necessary, not sufficient: a substation with no line in
+// the line register would not be caught. It cannot prove the register is complete - it
+// can only find a specific, common kind of gap, which is what it did for Chatty.
+{
+  const geo = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/transmission_lines.geojson'), 'utf8'));
+  const reg = JSON.parse(fs.readFileSync(path.join(ROOT, 'nodal/substations_compact.json'), 'utf8'));
+  const have = new Set(reg.subs.map(x => String(x.n).toUpperCase().trim()));
+  // Foreign endpoints and country names are correctly absent from a SOUTH AFRICAN
+  // register - SAPP interconnectors stop at the border by design.
+  // Foreign endpoints are correctly absent from a South African register - Sapp
+  // interconnectors stop at the border by design.
+  //
+  // RASSONA GARCIA added 30 Aug 2026. It is Ressano Garcia, the Mozambique border town,
+  // misspelled in the line register. It sat in the "missing substations" list purely
+  // because the filter matched on spelling. A gap list is only as good as the filter in
+  // front of it, and a misspelled foreign name looks exactly like a missing domestic one.
+  const FOREIGN = /ZAMBIA|ZIMBABWE|BOTSWANA|NAMIBIA|MOZAMBIQUE|ANGOLA|LESOTHO|ESWATINI|SWAZILAND|CAHORA|MAPUTO|PHOKOJE|INSUKAMINI|HARIB|KOKERBOOM|EDWALENI|RASSONA|RESSANO|TANZANIA|MALAWI|^SOUTH AFRICA$/;
+  // Generation sites named as an endpoint are plants, not substations.
+  const PLANT = /PHEZUKOMOYA|SAN KRAAL|IMPOFU/;
+  const box = c => c[0] >= 20.5 && c[0] <= 26.5 && c[1] >= -33.5 && c[1] <= -29.0;
+
+  const scan = (filterKaroo) => {
+    const miss = new Set();
+    let nLines = 0;
+    for (const f of geo.features){
+      const g = f.geometry && f.geometry.coordinates; if (!g) continue;
+      if (filterKaroo && !g.some(box)) continue;
+      nLines++;
+      for (const k of ['start', 'end']){
+        const v = String(f.properties[k] || '').toUpperCase().trim();
+        if (!v || FOREIGN.test(v) || PLANT.test(v)) continue;
+        // NAME NORMALISATION. The line register uses suffixes the substation register
+        // does not: "KAPPA (A)" is the Kappa substation, "ZWAVELPOORT EE1" is
+        // Zwavelpoort. Comparing raw strings reported both as missing when one of them
+        // is simply present under a shorter name. Strip a trailing bracketed unit
+        // designator and common suffixes before deciding a substation is absent.
+        const norm = x => x.replace(/\s*\([A-Z0-9]+\)\s*$/, '')
+                           .replace(/\s+(EE\d+|MTS|DS|SS)$/, '').trim();
+        if (!have.has(v) && !have.has(norm(v))) miss.add(v);
+      }
+    }
+    return { miss: [...miss], nLines };
+  };
+
+  const karoo = scan(true);
+  console.log(`\nSUBSTATION REGISTER  (${reg.subs.length} substations, ${geo.features.length} lines)`);
+  console.log(`  Karoo box: ${karoo.nLines} lines crossing it`);
+  check('every Karoo line endpoint is in the substation register', karoo.miss.length === 0,
+        `missing: ${karoo.miss.join(', ')} — the Hydra Central split uses nearest-substation `
+        + `matching over exactly this area, and Impofu showed what one absent substation costs`);
+
+  const all = scan(false);
+  // National coverage is reported, not asserted: the line register names endpoints this
+  // project has no obligation to hold, and failing on those would be noise.
+  // Reported, not asserted: the line register names endpoints this project has no
+  // obligation to hold, and failing on those would be noise. Three remain, all real:
+  // Durban South and Ottawa in KwaZulu-Natal, Zwavelpoort east of Pretoria. They are
+  // outside the Karoo, so they do not affect the Hydra Central split - but they would
+  // matter if nearest-substation matching is used nationally, which is exactly how
+  // Impofu went wrong.
+  console.log(`  national: ${all.miss.length} domestic endpoints absent from the register`
+    + (all.miss.length ? ` — ${all.miss.slice(0, 8).join(', ')}` : ''));
+  if (all.miss.length > 3)
+    console.log('    more than expected — check whether a naming variant or foreign '
+      + 'endpoint is being counted as a gap before hunting for coordinates');
+  console.log(`  Karoo endpoints ${karoo.miss.length === 0 ? 'COMPLETE' : 'INCOMPLETE'} `
+    + `against the line register — necessary, not sufficient`);
+}
+
 console.log(`\n${pass}/${pass + fail} geography checks passed`);
 if (failures.length){ console.log('\nFAILURES:'); failures.forEach(f => console.log(f)); }
 process.exit(fail ? 1 : 0);
