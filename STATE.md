@@ -1,5 +1,85 @@
 # GridTwin ZA - current state
 
+## FITNESS FOR PURPOSE - read this before quoting anything
+
+Written 30 Aug 2026. What this model can carry, what it cannot, and which published
+numbers depend on which. A reader deciding whether to cite GridTwin should start here.
+
+### SOLID: the engineering identities
+
+```
+hourly energy balance      worst error 7.3e-12 MW across every scenario tested
+cost identity              totalCost reproduces its components to the last digit
+storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
+emissions                  track fuel burn plus the documented part-load penalty
+control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
+suite                      18 harnesses, 817 checks
+weather                    ten real years, bias correction confirmed from two independent
+                           derivations agreeing to 1.1%
+capacity data              reconciles to source through ASSERTED identities; where it does
+                           not - the 1,823 MW solar gap - the validator refuses to go green
+```
+
+### DEFENSIBLE IN FRONT OF A HOSTILE REVIEWER
+
+Findings grounded in DATA rather than in dispatch:
+
+- **Connection headroom.** The four best-wind regions hold 100% of existing wind and
+  7.3% of national wind headroom, and ZERO solar headroom. Arithmetic on published
+  figures.
+- **Locational transmission cost**, R150 to R735/kW-yr, from the corridor graph with the
+  capacity-weighted mean reproducing the existing R600 exactly.
+- **Wind versus solar capture asymmetry.** Solar cannibalises itself, wind does not. The
+  mechanism - every solar plant produces in the same hours - is obvious once stated.
+- **Iron-air does not solve a winter wind drought.** Survived a heuristic, an optimal LP,
+  and a reserve-constrained LP. The strongest-tested result in the file.
+- **Coal flexibilisation worsens adequacy in a no-gas system**, ten years out of ten,
+  with a 166 GWh spread against a 4,200 GWh weather spread.
+
+### DO NOT QUOTE
+
+```
+the 37% storage gap     WITHDRAWN 30 Aug 2026 - a price-taker accounting artefact
+rolling-horizon July    a comparison on a metric neither run optimises
+avgCost as a tariff     six of NERSA's thirteen price components are absent from it,
+                        including legacy cost recovery and distribution charges
+```
+
+### THE HONEST WEAK SPOT: storage dispatch
+
+The heuristic charges best-round-trip-first with no value function on state of charge.
+Which published results lean on it:
+
+```
+DOES NOT       iron-air / long-duration - survived the LP
+LEANS ON IT    lithium duration wall (4h vs 10h)
+LEANS ON IT    no-gas frontier
+LEANS ON IT    the storage-mitigation half of the capture-rate curve
+```
+
+Those three are DIRECTIONALLY SOUND and QUANTITATIVELY UNCERTAIN. Every model carries a
+dispatch approximation; this one is documented rather than assumed.
+
+### WHERE THIS IS NOT YET PLEXOS OR PyPSA
+
+- Storage is not CO-OPTIMISED with unit commitment.
+- No intra-hour BALANCING product - the model is hourly, and NERSA's own wholesale
+  pricing methodology names balancing costs as a component.
+- The national engine is SINGLE-NODE, so the frontier costing cannot see the network its
+  own locational analysis says is binding. Two engines, and only one scales that far.
+- No stochastic outage or forecast-error representation.
+
+### WHY IT IS NEVERTHELESS DEFENSIBLE
+
+Not because the model is right, but because **every number carries its scenario and its
+caveat, and claims get withdrawn when they fail**. On 30 Aug 2026 alone: a headline
+claim withdrawn, two of the maintainer's own explanations corrected, and two changes
+reverted after measuring worse. A tool that does that in public is more trustworthy than
+one that does not.
+
+---
+
+
 WHAT IS TRUE RIGHT NOW. Rewritten in place, never appended to. If a fact here
 disagrees with LOG.md, this file wins. If it disagrees with a data file, STOP -
 that is the failure mode that cost most of 27 Aug 2026.
@@ -1353,3 +1433,69 @@ by something better than a number that has failed three tests.
 `_forceStorageSchedule` and `_forcedDischargeMW` remain in the engine as DIAGNOSTICS.
 Both default to null and neither is a dispatch mode. If the charge side is ever
 overridden too, the clipping number becomes meaningful and this can be revisited.
+
+---
+
+## THE FULL FIX — the one-day rebuild, when it is justified
+
+Scoped 30 Aug 2026 so it is not re-derived. This is the single change that closes most
+of the "not yet PLEXOS" list at once, and it is ONE change, not five.
+
+### WHAT IT IS
+
+Put storage INSIDE the dispatch optimisation rather than beside it. Today the engine
+dispatches heuristically and storage is fitted afterwards by merit order; the LP built
+today optimises storage against prices from that heuristic, which is why it cannot be
+made self-consistent. The fix is a single co-optimised problem over charge, discharge,
+state of charge AND the thermal dispatch, so prices and storage are solved together.
+
+### WHAT IT CLOSES, all at once
+
+```
+storage / commitment co-optimisation   the thing a price-taker LP is defined not to do
+the 37% question                       settled properly rather than withdrawn
+the fixed-point non-convergence        disappears - there is nothing to iterate
+opportunity value                      becomes a real dual, not an approximation
+lithium duration wall                  moves off the heuristic
+no-gas frontier                        moves off the heuristic
+capture-rate storage mitigation        moves off the heuristic
+```
+
+### WHAT IT DOES NOT CLOSE
+
+Intra-hour balancing (needs sub-hourly resolution), the single-node limitation of the
+national engine, and stochastic outages. Those are separate.
+
+### WHAT IS ALREADY IN PLACE
+
+- HiGHS is in the browser and the storage LP solves 8,760 hours in 3 seconds, so the
+  compute is not the obstacle.
+- `storage_lp.js` has the formulation, self-discharge, cycle cost, reserve
+  co-optimisation and a terminal value function already written and tested.
+- The solver status guard means a non-converged solve cannot be presented as an answer.
+- The envelope is measured: every shipped build pace solves, 90-780 s.
+
+### THE HARD PART, honestly
+
+The thermal dispatch is not currently an LP. It is a heuristic with unit commitment,
+part-load heat rates, ramp-aware coal floors, synchronous floors and a reserve
+requirement — behaviour that has been tuned against real Eskom outcomes and that a naive
+LP would lose. **Replacing it risks trading a well-calibrated heuristic for a
+badly-calibrated optimum.** `validate_benchmarks` and `validate_external` are the guard:
+the rebuild must reproduce them before it is adopted, and if it cannot, the heuristic was
+better and that is a finding too.
+
+### WHEN IT IS JUSTIFIED
+
+Not to chase the 37%, which failed three tests. Justified when a result that MATTERS
+depends on it — the most likely candidate is the no-gas frontier costing, which is the
+number most likely to be quoted at a regulator and which currently rests on heuristic
+storage.
+
+### SEQUENCE, if it is ever started
+
+1. Pin `validate_benchmarks` and `validate_external` as the acceptance test FIRST.
+2. Build the co-optimised LP alongside the heuristic, not in place of it.
+3. Compare on the benchmarks before switching anything.
+4. Keep both, with the heuristic as the fast path for slider dragging and the LP for
+   published runs — the two-speed pattern the interface already uses for the MIP.
