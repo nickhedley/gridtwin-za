@@ -39,6 +39,8 @@ CHECKS = [
     ('besPct',                                                     'NERSA battery bars'),
     ('transmission_lines.geojson',                                 'transmission lines layer'),
     ('addSubstationLayer',                                         'substation dots'),
+    ('Capture rate as the pipeline fills',                         'capture curve panel'),
+    ('scheduleCaptureCurve',                                       'capture curve debounce'),
 ]
 
 path = sys.argv[1] if len(sys.argv) > 1 else '/mnt/user-data/outputs/index.html'

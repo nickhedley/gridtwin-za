@@ -866,6 +866,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="bessStackBody"></div>
           </div>
 
+          <div class="panel" id="capCurvePanel" style="margin-top:18px">
+          <div class="ph"><h2>Capture rate as the pipeline fills</h2><span class="tag">cannibalisation &middot; wind vs solar</span></div>
+          <div class="pb" id="capCurveBody"></div>
+          </div>
+
           <div class="panel" id="bessSatPanel" style="margin-top:18px">
           <div class="ph"><h2>What happens as the fleet grows</h2><span class="tag">revenue per MW</span></div>
           <div class="pb" id="bessSatBody"></div>
@@ -9152,6 +9157,117 @@ function bessSaturationCurve(r){
   return { pts, current: base, nowMW, nearest };
 }
 
+// ── CAPTURE RATE AS THE PIPELINE FILLS ──────────────────────────────────────
+// The cannibalisation curve. captureRate() above answers "what does a plant at this
+// site earn TODAY"; this answers "what will it earn as the pipeline fills", which is
+// the question a developer signing a 20-year PPA actually has.
+//
+// WHY IT MATTERS: measured 29 Aug 2026, solar capture falls from 98% to 2.5% across
+// the build range while wind holds 96-106%. That asymmetry is the whole finding.
+// Every solar plant in the country produces in the SAME hours, so adding solar drives
+// the price toward zero in precisely the hours solar earns. Wind is diverse across
+// sites and runs at night, so it keeps meeting hours where something dispatchable is
+// still setting the price.
+//
+// STORAGE IS THE MITIGATION and the effect is large - at 30/35 GW, 20 GW of storage
+// lifts solar capture 14.5% -> 54.1%. The walk therefore scales storage with the build
+// unless the user has set their own, so the curve is not needlessly pessimistic.
+//
+// COST: this re-runs simulate() once per point, so it is deliberately short (5 points)
+// and only redraws when the panel is visible.
+function captureCurve(res){
+  const base = { ...state };
+  const wNow = (FIXED.windMW + (state.newWindMW || 0)) / 1000;
+  const sNow = (FIXED.pvUtilityMW + (state.newPvMW || 0)) / 1000;
+  const bNow = (FIXED.battPowerMW + (state.newBattMW || 0)) / 1000;
+  // Walk total installed VRE from today to roughly the no-gas frontier, holding the
+  // user's own wind:solar RATIO so the curve describes THEIR pipeline, not a generic one.
+  const ratio = (wNow + sNow) > 0 ? wNow / (wNow + sNow) : 0.45;
+  const totals = [8, 25, 45, 70, 110];
+  const battPerVre = bNow > 0.9 ? bNow / (wNow + sNow) : 0.35;  // scale storage unless set
+  const pts = [];
+  for (const tot of totals){
+    const w = tot * ratio, sv = tot * (1 - ratio);
+    let r;
+    try {
+      r = simulate({ ...base,
+        newWindMW: Math.max(0, w * 1000 - FIXED.windMW),
+        newPvMW:   Math.max(0, sv * 1000 - FIXED.pvUtilityMW),
+        newBattMW: Math.max(0, battPerVre * tot * 1000 - FIXED.battPowerMW),
+      }, PROFILES);
+    } catch (e) { continue; }
+    const P = r.marginalP; if (!P) continue;
+    const cap = (gen) => {
+      let g = 0, rev = 0, ps = 0;
+      for (let h = 0; h < HOURS; h++){ g += gen[h]; rev += gen[h] * P[h]; ps += P[h]; }
+      const mp = ps / HOURS;
+      return { pct: (g > 0 && mp > 0) ? 100 * (rev / g) / mp : null, achieved: g > 0 ? rev / g : 0 };
+    };
+    const cw = cap(r.stack.wind), cs = cap(r.stack.pv);
+    pts.push({ totGW: tot, windGW: w, solarGW: sv, battGW: battPerVre * tot,
+               windPct: cw.pct, solarPct: cs.pct,
+               windR: cw.achieved, solarR: cs.achieved,
+               curtTWh: (r.E.curtailed || 0) / 1e6 });
+  }
+  return { pts, nowGW: wNow + sNow, ratio, battScaled: bNow <= 0.9 };
+}
+
+// DEBOUNCED. renderCaptureCurve re-runs simulate() five times, so calling it from
+// run() on every slider input would make the whole interface stutter - run() fires on
+// each `input` event, not on release. This defers until the user stops moving things
+// for 400 ms, and skips entirely while the panel is scrolled out of view.
+let _capCurveTimer = null;
+function scheduleCaptureCurve(){
+  if (_capCurveTimer) clearTimeout(_capCurveTimer);
+  _capCurveTimer = setTimeout(() => {
+    _capCurveTimer = null;
+    const host = document.getElementById('capCurveBody');
+    if (!host || !lastRes) return;
+    const panel = document.getElementById('capCurvePanel');
+    if (panel && panel.offsetParent === null) return;   // hidden tab, do not spend the CPU
+    try { renderCaptureCurve(lastRes); }
+    catch (e) { console.error('captureCurve:', e); }
+  }, 400);
+}
+
+function renderCaptureCurve(res){
+  const host = document.getElementById('capCurveBody'); if (!host) return;
+  const c = captureCurve(res);
+  if (!c.pts.length){ host.innerHTML = '<div style="font-size:11px;color:var(--ink2)">Not available.</div>'; return; }
+  const col = v => v >= 80 ? 'var(--ok,#4A8C5C)' : v >= 50 ? '#C9A227' : 'var(--alert,#C4785A)';
+  const bar = (v) => '<span style="display:inline-block;height:7px;width:' + Math.max(1, Math.min(100, v)) + 'px;'
+    + 'background:' + col(v) + ';vertical-align:middle;border-radius:1px"></span>';
+  const rows = c.pts.map(p => {
+    const here = Math.abs(p.totGW - c.nowGW) < 6;
+    return '<tr style="' + (here ? 'font-weight:600' : '') + '">'
+      + '<td class="mono">' + p.totGW + ' GW' + (here ? ' <span style="color:var(--ink2)">&larr; about here</span>' : '') + '</td>'
+      + '<td class="mono" style="text-align:right">' + p.windPct.toFixed(0) + '&#37; ' + bar(p.windPct) + '</td>'
+      + '<td class="mono" style="text-align:right">R' + p.windR.toFixed(0) + '</td>'
+      + '<td class="mono" style="text-align:right">' + p.solarPct.toFixed(0) + '&#37; ' + bar(p.solarPct) + '</td>'
+      + '<td class="mono" style="text-align:right">R' + p.solarR.toFixed(0) + '</td>'
+      + '<td class="mono" style="text-align:right;color:var(--ink2)">' + p.curtTWh.toFixed(0) + '</td></tr>';
+  }).join('');
+  host.innerHTML =
+      '<table style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="font-family:\'Saira Condensed\',sans-serif;font-size:10px;letter-spacing:.06em;'
+    + 'text-transform:uppercase;color:var(--ink2);text-align:right">'
+    + '<th style="text-align:left">wind + solar</th><th colspan="2">wind capture</th>'
+    + '<th colspan="2">solar capture</th><th>curtailed TWh</th></tr>' + rows + '</table>'
+    + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:6px">'
+    + 'Capture rate is what a technology earns per MWh as a share of what the average MWh earns. '
+    + '100&#37; means no cannibalisation. Held at your current wind:solar ratio of '
+    + (100 * c.ratio).toFixed(0) + ':' + (100 * (1 - c.ratio)).toFixed(0) + ', so this is YOUR pipeline scaled up, not a generic one. '
+    + (c.battScaled ? 'Storage is scaled with the build at roughly 0.35&#215; VRE, because it is the main thing protecting solar revenue \u2013 without it solar capture falls several times further. '
+                    : 'Using the storage you have set. ')
+    + 'SOLAR CANNIBALISES ITSELF AND WIND DOES NOT: every solar plant produces in the same hours, '
+    + 'so adding solar drives the price toward zero in exactly the hours solar earns. Wind output '
+    + 'is diverse across sites and runs at night. '
+    + 'CAVEAT: computed against this model\u2019s shadow price, which has no floor, no bilateral '
+    + 'contracting and limited exports \u2013 all of which lift real capture rates. Published figures '
+    + 'in California and Chile fall to 40\u201360&#37;, not single digits. Treat the DIRECTION and the '
+    + 'wind/solar gap as the result, not the absolute level at the top of the range.</div>';
+}
+
 function renderBessSaturation(r){
   const host = document.getElementById('bessSatBody');
   if (!host) return;
@@ -11803,7 +11919,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
