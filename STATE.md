@@ -1740,15 +1740,42 @@ blurb containing entities.
 
 ---
 
-## TO DO: trim the site text
+## Site text trimmed — 30 Aug 2026 (sliders done, rest outstanding)
 
-The notes are too heavy throughout, not only where I made them worse today. Measured:
+### THE DIAGNOSIS: they were teaching, not informing
+
+The pattern was consistent. GOOD notes give a CALIBRATION ANCHOR — something a modeller
+cannot look up:
 
 ```
-28 slider notes · 4,500 characters · mean 160
- 4 notes over 300 characters
- 2 notes over 500
+coalEAFPct    FY2026 to date = 68% · 2023 crisis = 50-55% · target 70%
+lcoePv        BW7 bids averaged R0.46; anchor R0.55
+coalDecomMW   of 42 GW installed
 ```
+
+HEAVY notes opened by DEFINING THE CONCEPT — what synchronous inertia is, what dynamic
+line rating does, what LCOE means — to an audience that already knows. That is what made
+the platform read as a tutorial rather than an instrument.
+
+### DONE: the 28 slider notes
+
+```
+before   4,500 characters · mean 160 · 4 over 300 · 2 over 500
+after    2,504 characters · mean  89 · 0 over 300
+
+syncMinMW        351 -> 120    dropped the definition of inertia
+getsEnabled      325 -> 146    dropped the definition of DLR
+costCcgt         596 -> 164    dropped the cross-reference lecture
+lcoeDiesel       237 -> 121    dropped the explanation of what LCOE is
+carbonTaxRPerT   902 -> 269    kept the compliance/policy split, lost the essay
+ccgtForceLoad    185 ->  92    a toggle needs one clause, not two sentences
+lcoeCcgt         271 -> 139
+coalFlexPct      238 -> 158
+ccsEnabled       171 ->  62    dropped a navigation instruction
+```
+
+**44% of the text removed and no information lost** — every figure, source and caveat
+survives. What went was the definitions.
 
 The trim list, longest first:
 
@@ -1764,6 +1791,9 @@ The trim list, longest first:
 `carbonTaxRPerT` at 895 characters is the worst and it is mine, written 30 Aug. The
 compliance-versus-policy distinction is real and belongs SOMEWHERE, but not in a slider
 tooltip.
+
+STILL OUTSTANDING: panel blurbs, the KPI cost note, the About text and the tab
+descriptions have NOT had this pass.
 
 THE RULE TO APPLY: a note gives the SPEC and points at the tool. It does not pre-state
 outcomes, argue methodology, or carry provenance — those belong in RESULTS.md, STATE.md
