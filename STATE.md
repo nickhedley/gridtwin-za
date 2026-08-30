@@ -1107,3 +1107,26 @@ charges are also named, but those are institutional costs and correctly absent.
 From the EIUG's Market Code submission, the risk worth quoting: non-market charges
 becoming "dumping grounds for unallocated costs". That is the strongest argument for
 the disaggregation this project has been advocating.
+
+---
+
+## Storage dispatch has no lookahead — recorded 30 Aug 2026
+
+Tiers are sorted by round-trip efficiency (lithium 0.88, VRFB 0.70, iron-air 0.45), so
+long-duration storage charges LAST and discharges LAST, purely on whether the current
+hour has a surplus or a deficit. There is no lookahead of any kind, seasonal or
+multi-day. Iron-air cannot deliberately hold energy for a coming drought.
+
+**THAT IS A REAL GAP, but it is not why long-duration storage fails to bite.** Measured:
+at 45 GW of VRE there is a deficit but annual curtailment is only 0.2 TWh, so foresight
+would have nothing to charge with. At 110 GW curtailment is 100 TWh but July gas is
+already zero, so there is nothing to serve. The two conditions never co-occur.
+
+OPEN: the 60-80 GW range is untested, and is where a seasonal lookahead could plausibly
+matter - curtailment has begun, the drought is not yet covered. Worth running before any
+dispatch change is contemplated.
+
+NOTE FOR FRAMING: iron-air at 100 hours is a FOUR-DAY asset, marketed for multi-day
+weather events, not seasonal shifting. Seasonal duty needs thousands of hours. At 45%
+round trip, summer-to-winter shifting discards 55% of the energy. Do not describe
+iron-air as seasonal storage.

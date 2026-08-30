@@ -881,3 +881,58 @@ high-penetration markets (California, Chile) fall to 40-60% rather than single d
 so treat the DIRECTION and the wind/solar ASYMMETRY as the result, not the absolute
 levels at the extreme end. `captureRate()` in index.html already computes this
 per-region for a single build; what is new here is the curve across builds.
+
+---
+
+## Why long-duration storage does not bite: the two conditions never co-occur
+
+Asked 30 Aug 2026: should the dispatch look ahead seasonally, so iron-air charges in
+summer for winter? Tested, and the answer is more interesting than a dispatch fix.
+
+```
+scenario                     storage TWh   Fe full cycles   July gas GWh   curtailed TWh
+45 GW VRE, lithium only             7.36                -           2742             0.2
+45 GW VRE, + iron-air 20 GW         8.43              4.2           2742             0.0
+110 GW VRE, lithium only            7.61                -              0           100.3
+110 GW VRE, + iron-air 20 GW        7.61              3.8              0            98.1
+110 GW VRE, + iron-air 40 GW        7.61              1.9              0            95.8
+```
+
+**AT 45 GW THERE IS A DEFICIT BUT NO SURPLUS.** Annual curtailment is 0.2 TWh. A
+seasonal store needs terawatt-hours of spare energy to fill it; there are 200 GWh in the
+whole year, and the system is still running 50 TWh of coal. Perfect foresight would have
+had nothing to charge with.
+
+**AT 110 GW THERE IS AN ENORMOUS SURPLUS BUT NO DEFICIT.** Curtailment is 100 TWh, and
+July gas is already ZERO because the build itself covers the drought. There is nothing
+left for storage to improve.
+
+So seasonal storage needs BOTH a large surplus and a large deficit, and in these two
+scenarios they never co-occur. That is a stronger and more general finding than "storage
+does not help in July".
+
+### WHAT A SEASONAL LOOKAHEAD WOULD AND WOULD NOT FIX
+
+The dispatch has NO lookahead of any kind. Tiers are sorted by round-trip efficiency, so
+iron-air at 45% charges last and discharges last, purely on whether this hour has a
+surplus or a deficit. It cannot deliberately hold energy for a future event.
+
+But adding foresight would not change either row above, because in one there is nothing
+to store and in the other nothing to serve. **The untested case is in between** - roughly
+60 to 80 GW of VRE, where curtailment has begun but the drought is not yet covered. That
+is where a seasonal lookahead could bite, and it has not been run.
+
+### AND IRON-AIR IS NOT A SEASONAL TECHNOLOGY ANYWAY
+
+100 hours is about FOUR DAYS. Form Energy markets it as multi-day storage, sized for
+extended weather events, not for shifting summer into winter. Seasonal shifting needs
+thousands of hours - large-reservoir pumped hydro, hydrogen, or thermal.
+
+The 45% round trip compounds it: charging in summer to discharge in winter throws away
+55% of the energy on the way. At 20 GW / 2 TWh, absorbing even 2.2 TWh of a 100 TWh
+surplus takes the whole fleet through several cycles. CAPACITY is the binding limit at
+that scale, not dispatch intelligence.
+
+So the honest position: the model does not give seasonal operation a fair test, and
+should say so - but in the scenarios examined the CONDITIONS for it do not arise, and
+iron-air is the wrong technology to test it with.
