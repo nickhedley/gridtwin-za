@@ -1499,3 +1499,46 @@ storage.
 3. Compare on the benchmarks before switching anything.
 4. Keep both, with the heuristic as the fast path for slider dragging and the LP for
    published runs — the two-speed pattern the interface already uses for the MIP.
+
+---
+
+## REEA nearest-substation re-derived — 30 Aug 2026
+
+Every `sub`/`subkm` in `reea_projects.json` was computed before Chatty was added to the
+register on 28 Aug, so all 2,597 were stale against a register known to be incomplete.
+Recomputed by great-circle distance against all 186 substations.
+
+```
+33 projects reassigned · 1,442 MW
+   32  Grassridge -> Chatty
+    1  Dedisa     -> Chatty
+```
+
+**ALL THREE IMPOFU FARMS REASSIGNED, and the numbers match the falsification exactly.**
+Impofu North moves Grassridge 106.1 km -> Chatty 92.7 km, against the 93.3 km measured
+independently on 28 Aug from the Plus Code. The register fix has now propagated to the
+derived data.
+
+The reassignments are not only Impofu: Jeffreys Bay, Kouga, Ubuntu, Deep River,
+Tsitsikamma and Oyster Bay all move too. **A single missing substation was distorting the
+connection picture for 1.4 GW of Eastern Cape wind**, which is the concrete cost of an
+incomplete register.
+
+### THE CHECK THAT MATTERS
+
+```
+records altered beyond sub/subkm      0
+projects now FURTHER from a substation 0
+```
+
+Adding a substation cannot increase anyone's nearest distance. Any project ending up
+further away would have proved the recomputation wrong, so that count is the test, not a
+formality. Grassridge falls 65 -> 33 assignments; Chatty takes 33.
+
+New fingerprint `gtza-709b521a1ef8d8ac`. `meta.nearest_substation_caution` now carries
+the Impofu falsification in the data file itself, so anyone reading `sub`/`subkm` sees
+that NEAREST IS NOT CONNECTED without having to find it in these notes.
+
+STILL OPEN: the register remains incomplete — Chatty was found by accident, and nothing
+has established completeness for the Karoo, which is where the Hydra Central split would
+use the same method.
