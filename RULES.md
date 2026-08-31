@@ -5,7 +5,7 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
-## The eight rules
+## The nine rules
 
 1. **Always run the full validation suite after any change to index.html, and
    report the counts.** Before and after, so the baseline is measured rather than
@@ -40,7 +40,15 @@ every session. Everything here was learned by getting it wrong at least once.
    undefined, fell through `|| 0`, and produced a fleet of zero in two places.
    Nothing caught it because a fallback of 0 makes a plausible chart, not a crash.
 
-8. **Say where each file goes.** Repo root or nodal/. Two copies of
+8. **Assume every tracked file is already public.** Six of these documents have been
+   on GitHub since 27 August. Git keeps history and GitHub keeps forks, so removing
+   something later does not unpublish it — on 30 Aug two named outreach contacts were
+   found in CALENDAR.md and a redacted public edition was briefly created, then dropped:
+   it protected nothing and added a step where the wrong file gets pushed. Write nothing
+   in a tracked file you would mind being read. Genuinely private material goes in
+   LOG.md, which is gitignored, or outside the repo. A second copy is not a control.
+
+9. **Say where each file goes.** Repo root or nodal/. Two copies of
    build_capacity.py under the same name cost an hour on 27 Aug.
 
 ---
