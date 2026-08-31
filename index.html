@@ -12488,6 +12488,14 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
   // barely moved expected shed. 100 GWh is roughly 25 evenings of Stage 1 - noticeable, well
   // short of a crisis year (2022-23 ran to 11-15 TWh) - and far enough from zero that the answer
   // is stable. The label states the threshold so it isn't read as "any shedding whatsoever".
+  // ONE formatter for every shed figure on the page. Fixing the board's rounding on
+  // 31 Aug 2026 without fixing this one immediately produced a NEW contradiction - the
+  // board read 0.1 GWh while the risk panel beneath it read 0. Rule 6 applies to display
+  // logic as much as to constants: a number formatted two ways in two places will
+  // eventually disagree.
+  const _shedFmt = v => v < 0.05 ? '0'
+                      : v < 10   ? v.toFixed(1)
+                      : Math.round(v).toLocaleString();
   const SHED_THRESHOLD_MWH=100000;
   const pAny=adjRuns.filter(r=>r.shed>SHED_THRESHOLD_MWH).length/N;
   const meanShed=adjRuns.reduce((s,r)=>s+r.shed,0)/N/1000;
@@ -12533,8 +12541,8 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
   }
   document.getElementById('riskHead').innerHTML= nodalCallout +
     '<div class="rk"><div class="k">P(shed &gt;100 GWh)</div><div class="v" style="color:'+(pAny>0.5?'var(--alert)':pAny>0.05?'var(--coal2)':'var(--veld)')+'">'+Math.round(pAny*100)+'%</div></div>'+
-    '<div class="rk"><div class="k">Expected shed</div><div class="v">'+(meanShed<1?'0':Math.round(meanShed).toLocaleString())+' GWh</div></div>'+
-    '<div class="rk"><div class="k">P90 shed</div><div class="v">'+(p90<1?'0':Math.round(p90).toLocaleString())+' GWh</div></div>'+
+    '<div class="rk"><div class="k">Expected shed</div><div class="v">'+_shedFmt(meanShed)+' GWh</div></div>'+
+    '<div class="rk"><div class="k">P90 shed</div><div class="v">'+_shedFmt(p90)+' GWh</div></div>'+
     '<div class="rk"><div class="k">E[diesel]</div><div class="v">'+meanDiesel.toFixed(1)+' TWh</div></div>';
   document.getElementById('shed').innerHTML=exceed.map((p,i)=>'<div class="sb"><div class="sbv" style="height:'+(100*p).toFixed(1)+'%"></div><div class="sbl">S'+(i+1)+'</div></div>').join('');
   document.getElementById('shedNums').innerHTML=exceed.map(p=>'<div class="shednum" style="flex:1;text-align:center">'+(p>0?Math.round(p*100)+'%':'')+'</div>').join('');
@@ -12543,10 +12551,21 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
   // The shortage was real and tiny - 5.5 GWh across 5 hours of 8,760, which is 0.003% of
   // demand and SIX TIMES BETTER than Eskom's audited FY2026 outturn of 36 GWh. Rounding a
   // real number to zero to keep the board tidy is how a contradiction gets shipped.
-  document.getElementById('bdShed').textContent =
-      meanShed < 0.05 ? '0 GWh'
-    : meanShed < 10   ? meanShed.toFixed(1) + ' GWh'
-    : Math.round(meanShed).toLocaleString() + ' GWh';
+  document.getElementById('bdShed').textContent = _shedFmt(meanShed) + ' GWh';
+  // THESE TWO CELLS RUN ON DIFFERENT WEATHER, and the board does not otherwise say so.
+  // The lamps and status word come from the DETERMINISTIC run on the default profile;
+  // this cell is the mean of 60 Monte Carlo years that substitute REAL weather years for
+  // wind and solar. Measured 31 Aug 2026: deterministic 5.5 GWh, ensemble mean 0.1 GWh -
+  // a fiftyfold gap that is weather basis, not risk. The default wind series is the
+  // Eskom metered feed rescaled; the ensemble draws MERRA-2 based years, and STATE.md
+  // records a documented bias between them.
+  //
+  // Stated in the tooltip rather than reconciled, because changing which weather the
+  // ensemble uses would move every figure in the risk panel and is a decision, not a fix.
+  document.getElementById('bdShed').title =
+      `Mean of ${N} simulated years drawing REAL weather years and an outage path. `
+    + `The deterministic run beside it uses the default profile, so the two are not the `
+    + `same weather basis - on the default scenario they differ roughly fiftyfold.`;
   // status word: deterministic stage, upgraded by risk
   const sw=document.getElementById('statusWord');
   if(detStage===0){

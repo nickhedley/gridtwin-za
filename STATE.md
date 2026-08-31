@@ -3370,6 +3370,51 @@ calibration work that exposed it.
 
 ---
 
+## Board audit: my own fix created the next contradiction — 31 Aug 2026
+
+Auditing the rest of the headline cells after the Stage 3 fault found two more things.
+
+### 1. I FIXED THE ROUNDING IN ONE PLACE OF THREE
+
+The board cell now read **0.1 GWh** while the risk panel beneath it still read **0 GWh** —
+a new contradiction, created by the fix for the old one, within the hour.
+
+Cause: `meanShed < 1 ? '0' : ...` appeared THREE times with two different roundings. Now
+one `_shedFmt` used at all three sites. **Rule 6 applies to display logic as much as to
+constants:** a number formatted two ways in two places will eventually disagree, and the
+first fix is what exposes it.
+
+### 2. THE BOARD MIXES TWO WEATHER BASES, AND SAID NOTHING
+
+```
+deterministic run (lamps, status word)     5.5 GWh unserved
+Monte Carlo ensemble mean (expected shed)  0.1 GWh
+```
+
+**Fiftyfold apart, and it is not risk — it is weather basis.** The deterministic run uses
+the default profile, whose wind series is the Eskom metered feed rescaled. The ensemble
+substitutes REAL weather years drawing MERRA-2 based wind, and STATE.md already records a
+documented bias between the two.
+
+So the two cells are legitimately different quantities, sitting side by side with nothing
+saying so. **That is the same fault as Stage 3 beside 0 GWh** — not a wrong number, but
+two right numbers presented as though comparable.
+
+STATED, NOT RECONCILED. Changing which weather the ensemble draws would move every figure
+in the risk panel, and that is a decision rather than a fix. The cell now carries a
+tooltip naming the difference and its rough size.
+
+**TO DO:** decide whether the deterministic run and the risk ensemble should share a
+weather basis. If they should, the deterministic run is the one to change — the ensemble's
+ten real years are better evidence than one rescaled series.
+
+### CURTAILMENT IS HONESTLY ZERO
+
+Checked, because it was the obvious next candidate for a rounding artefact: the underlying
+value is 0.0000 TWh, so "0.0 TWh/yr" is accurate rather than rounded-down.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
