@@ -190,6 +190,53 @@ console.log(`  ${OUTSIDE.length - outFail}/${OUTSIDE.length} foreign and ocean p
   if (all.miss.length > 3)
     console.log('    more than expected — check whether a naming variant or foreign '
       + 'endpoint is being counted as a gap before hunting for coordinates');
+  // ── REGISTER COMPLETENESS AGAINST THE TDP ─────────────────────────────────
+  // The Karoo endpoint check above is necessary but NOT sufficient, and says so: it can
+  // only find substations that already have a line in transmission_lines.geojson. Chatty
+  // was missed for exactly that reason - absent from the register AND unreferenced.
+  //
+  // tdp_projects.json is an independent source with 221 planned projects carrying NAMED,
+  // COORDINATED endpoints. Comparing the register against it finds gaps the line file
+  // cannot. Audited 31 Aug 2026: seven TDP endpoints have no register entry within 5 km.
+  //
+  // This is a STANDING FLAG, not a failure. The seven are planned substations, several
+  // dated 2032, so their absence from a register of existing infrastructure is correct.
+  // What the check guards is the NUMBER: if it grows, the TDP has named something new and
+  // the register should be reviewed rather than silently diverging.
+  {
+    const tdpPath = path.join(ROOT, 'nodal', 'tdp_projects.json');
+    if (fs.existsSync(tdpPath)){
+      const tdp = JSON.parse(fs.readFileSync(tdpPath, 'utf8'));
+      const arr = Array.isArray(tdp) ? tdp : (tdp.projects || []);
+      const norm = x => String(x).toLowerCase()
+        .replace(/\b(mts|ss|ds|substation|sub)\b/g, '').replace(/[^a-z0-9]/g, '');
+      const hav = (a, b, c, d) => {
+        const R = 6371, p = Math.PI / 180;
+        return 2 * R * Math.asin(Math.sqrt(
+          Math.sin((c - a) * p / 2) ** 2 +
+          Math.cos(a * p) * Math.cos(c * p) * Math.sin((d - b) * p / 2) ** 2));
+      };
+      const regNames = new Set(reg.subs.map(s => norm(s.n)));
+      const seen = new Map();
+      for (const pr of arr) for (const q of (pr.pts || [])){
+        if (q.lat == null) continue;
+        seen.set(norm(q.n), { n: q.n, lat: q.lat, lng: q.lng });
+      }
+      const absent = [];
+      for (const [k, v] of seen){
+        if (regNames.has(k)) continue;
+        const near = Math.min(...reg.subs.map(s => hav(v.lat, v.lng, s.lat, s.lng)));
+        if (near > 5) absent.push(v.n);
+      }
+      check('TDP endpoints absent from the substation register stay at seven',
+            absent.length <= 7,
+            absent.length + ' absent (was 7 on 31 Aug 2026): ' + absent.join(', ')
+            + ' - all planned, several dated 2032, so absence is expected. A RISE means '
+            + 'the TDP named something the register has not caught up with.');
+      console.log('  TDP endpoints checked: ' + seen.size + ', absent from register: ' + absent.length);
+    }
+  }
+
   console.log(`  Karoo endpoints ${karoo.miss.length === 0 ? 'COMPLETE' : 'INCOMPLETE'} `
     + `against the line register — necessary, not sufficient`);
 }

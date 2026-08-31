@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 887 checks
+suite                      19 harnesses, 888 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 887 checks. Last full run: 887/887.
+Nineteen harnesses, 888 checks. Last full run: 888/888.
 
 ```
 node stress_suite.js                290/290
@@ -259,7 +259,7 @@ node validate_outputs.js              33/33
 python3 audit.py index.html           58/58
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
-node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
+node validate_geo.js .               40/40   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
@@ -530,15 +530,25 @@ and is not here.
    observed irradiance at roughly 5%. It would move every solar figure the model produces,
    so expect `validate_benchmarks` to shift and run the suite either side. Do not delete
    the file.
-7. **The nearest-substation heuristic is FALSIFIED.** `reea_projects.json` derives
-   `sub`/`subkm` by nearest substation. For the Impofu wind farms it returns Grassridge
-   at 106.9 km. The line Red Cap actually built runs 116 km to **Chatty**, which sits
-   93.3 km away — NEARER. The heuristic did not weigh Chatty and reject it; Chatty was
-   absent from `substations_compact.json` entirely. The method is only as good as the
-   register. Chatty is now entry 186, tagged `src: pluscode` and NOT independently
-   corroborated. **Before reusing this method for the Hydra Central split, establish
-   that the register is complete for the Karoo — not merely that the matching is sound.**
-   `sub`/`subkm` have not been re-derived; Impofu should reassign once they are.
+7. **The nearest-substation heuristic is FALSIFIED — and 31 Aug 2026 CONFIRMED it
+   decisively.** Two thirds of this item are already closed: Chatty is
+   `pluscode-corroborated` in the register, and Impofu's `sub`/`subkm` were re-derived and
+   now assign to Chatty at 88-93 km rather than Grassridge at 106.9.
+
+   The remaining question was register completeness. Answered against `tdp_projects.json`,
+   an independent file of 221 planned projects with named, coordinated endpoints: **seven
+   TDP endpoints have no register entry within 5 km.** All are planned, several dated 2032,
+   so their absence from a register of EXISTING infrastructure is correct - but the count
+   is now asserted, so a rise means the TDP has named something the register has not caught.
+
+   **AND ONE OF THE SEVEN SETTLES THE ORIGINAL QUESTION.** Hlaziya sits 13.8 km from the
+   Impofu wind farms. Chatty, which Red Cap ACTUALLY connected to, is 72.6 km away, and
+   they built 116 km of line to reach it. So the nearest substation was not merely a
+   different substation - it was five times nearer, and the developer still did not use it.
+   Hlaziya is planned for 2032, which is the reason: **connection choice is driven by when
+   capacity exists, not by distance.** No heuristic over a register of coordinates can
+   recover that. Before reusing this method for the Hydra Central split, treat it as a
+   prior to be corroborated per project, never as an answer.
 8. ~~`pfl_cod_h1_2026.json` carries no fingerprint.~~ added 28 Aug 2026,
    `gtza-a4cb23b744a2385b`, same method as the generated files. Note a fingerprint would NOT have caught
    the stale rollups found on 28 Aug — it is recomputed over whatever the file contains,
