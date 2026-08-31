@@ -11,8 +11,9 @@ choosing what to say in public.
 
 **Connection headroom is the binding constraint, not wind speed.** The four best-wind
 regions hold 100% of South Africa's existing wind and 7.3% of the national room to add
-more. For solar they have ZERO headroom between them. The Northern Cape and Hydra
-Central, at 37.9% and 42.5% capacity factor, are at zero for every technology.
+more. For solar they have ZERO headroom between them. Quantified 31 Aug 2026 across ten
+weather years: **the correlation between wind capacity factor and connection headroom is
+-0.91**, and the four WORST-resource regions hold 78.3% of the room.
 → "The no-gas frontier", "Locational transmission signal"
 
 **The no-gas frontier is not buildable on today's grid.** It needs 45,388 MW of new wind

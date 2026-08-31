@@ -4127,6 +4127,91 @@ year" in Tier 3 should be read as work not yet done, not as a property of the fi
 
 ---
 
+## TO DO: publish findings to media and LinkedIn
+
+ADDED 31 Aug 2026. The Seriti Green and Wind Pioneers differential tests both landed well,
+which suggests the model's findings travel when attached to something a reader already
+cares about. The task is to run publishable scenarios and pitch them.
+
+### THE RULE FOR THIS WORK
+
+**Publish from Tier 1 and Tier 2 only.** Everything below has an evidential tier and a
+known weakness; a finding that is retracted in public costs more than one never published.
+Every claim needs its scenario attached - RESULTS.md's first line exists for exactly this,
+and three near-misses today came from ignoring it.
+
+### RANKED FOR PUBLICATION - strength first, not interest
+
+**1. THE GRID, NOT THE WIND, IS THE CONSTRAINT.** The four best-wind regions hold 100% of
+South Africa's existing wind and 7.3% of the national room to add more. Northern Cape and
+Hydra Central - the two best resources measured - are at ZERO headroom for every
+technology.
+  WHY IT TRAVELS: it is arithmetic on published figures, so there is nothing to dispute
+  but the source. It reframes a debate the public thinks is about resource and cost.
+  RISK: low. Tier 1.
+
+**2. LONG-DURATION STORAGE DOES NOT SOLVE A WINTER WIND DROUGHT.** 20 GW of 100-hour
+iron-air - two terawatt-hours - changes July gas by nothing to three significant figures.
+  WHY IT TRAVELS: contrarian against a widely repeated assumption, and it is the
+  most-tested result in the file. Survived a heuristic, an optimal LP, a
+  reserve-constrained LP, and a full recalibration.
+  RISK: low, but state the mechanism - the deficit is an ENERGY shortage, not a shifting
+  problem - or it reads as anti-storage, which it is not.
+
+**3. THE GAS BUILD CARRIES SEVEN TIMES THE COST VARIANCE.** Same expected annual cost as
+a 110 GW renewable build, but R275-289 bn across ten weather years against R277-279 bn.
+  WHY IT TRAVELS: tariff volatility is a live public issue, and this prices the overbuild
+  as insurance rather than waste. Genuinely new, found 31 Aug.
+  RISK: medium. Excludes gas PRICE risk (which strengthens it) and assumes connections
+  that do not exist (which weakens it). Both must be said.
+
+**4. SOLAR ALREADY EARNS A QUARTER BELOW THE MARKET AVERAGE, TODAY.** Before any
+cannibalisation from new build. Wind holds 96-107% of the mean across the whole range;
+solar falls to 2.7% at 60 GW.
+  WHY IT TRAVELS: directly commercial. Every solar developer and offtaker in the country
+  is pricing against an average their asset does not earn.
+  RISK: low-medium. The mechanism - every solar plant produces in the same hours - is
+  obvious once stated, which is what makes it publishable.
+
+**5. FLEXIBILISING COAL MAKES A NO-GAS SYSTEM WORSE**, ten years out of ten.
+  WHY IT TRAVELS: it is the opposite of the intuition and was found by testing a
+  hypothesis that returned the reverse of what was wanted.
+  RISK: medium. Only true with NO dispatchable backup. Quoted without that scope it is
+  simply wrong, and it is an easy caveat to lose in a headline.
+
+**6. CONNECTION HEADROOM IS WORTH 66 TIMES MORE IN THE BEST REGION THAN THE WORST.**
+  WHY IT TRAVELS: it answers "where should grid investment go" with a number, and it is
+  in a filed regulatory submission.
+  RISK: low on the ratio, higher on the levels - they moved threefold with recalibration
+  while the ratio held. Publish the RATIO.
+
+### DO NOT PUBLISH YET
+
+```
+the 4-point EAF gap      Reproducing Eskom's outturn needs ~61% against an audited 65.2%.
+                         Interesting and probably real, but untested against maintenance
+                         treatment or outage tail thickness, and it reads as criticism of
+                         Eskom. Needs work before it is safe.
+anything Tier 3          Single weather year or heuristic-dependent. Promote it first.
+adequacy figures         Only as LOLE and EUE with the standard error. Never a draw.
+```
+
+### NEXT STEPS
+
+1. ~~Pick one finding and write it properly.~~ DONE 31 Aug 2026 - `post_headroom.md`,
+   drafted on finding 1. Verified from source before writing: 4,612 MW is exactly 100% of
+   national wind, 1,580 of 21,520 MW is 7.34%, and solar headroom across the four is zero.
+   The piece also carries a NEW number found while checking - **the correlation between
+   wind capacity factor and connection headroom is -0.91**, and the four worst-resource
+   regions hold 78.3% of the room. That inverse relationship is the strongest version of
+   this finding and did not exist before today.
+2. Attach each to something topical - the Seriti Green and Wind Pioneers posts both worked
+   because they engaged with someone else's published work rather than announcing ours.
+3. The Price and Tariff Rule consultation, expected October, is the natural hook for
+   findings 1 and 6.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
