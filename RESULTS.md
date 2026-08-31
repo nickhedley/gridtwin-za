@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Nineteen sections follow. This index exists because the file passed 1,400 lines and the
+Twenty sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by EVIDENTIAL STRENGTH, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -48,6 +48,13 @@ exactly (119,225 both ways). The EPP submission described a fiftyfold spread; it
 sixty-six-fold. Levels moved with the recalibration, ratios did not.
 → "Locational transmission signal"
 
+**Northern Cape wind peaks at NIGHT; Eastern Cape and Hydra Central by DAY.** A 25% swing
+between day and night in the Northern Cape. Independently confirms two of three published
+Wind Pioneers observations; Western Cape is flat rather than day-peaking. Adds that Hydra
+Central has the best wind in the country AND the worst wind-solar correlation, so it is
+the wrong place for a hybrid.
+→ "Wind Pioneers' diurnal observation"
+
 ### Tier 3 — single weather year, or dependent on the storage heuristic.
 
 **Removing gas is cost-neutral at ONE point on the frontier** - R274 vs R277 bn/yr,
@@ -73,6 +80,14 @@ the wrong conclusion.**
 → "Demand response has an optimum"
 
 ### Withdrawn — kept deliberately
+
+**~~OCGT: no flat availability factor reproduces both.~~** Withdrawn 31 Aug 2026, hours
+after being written. I read `coalAvail` as the hourly dispatch limit when the binding one
+is `cAvail`, capped by a stochastic outage path that was active all along - and I swept
+single draws on a distribution where nine draws carry a 75% standard error. Re-run as
+means, 61% availability reproduces both. **The second finding this file has withdrawn,
+and the first written and withdrawn on the same day.**
+→ "Validated against Eskom's audited FY2026 generation"
 
 **~~The heuristic leaves 37% of July gas on the table.~~** Failed three successive tests
 and was withdrawn the same day. A findings file that shows what did not survive is more
@@ -1622,63 +1637,51 @@ in this file.
 
 ### TWO GAPS THAT ARE REAL, NOT ROUNDING
 
-**OCGT: the model runs 0.39 TWh, Eskom ran 1.079.** Diagnosed 31 Aug 2026, and the cause
-is more interesting than "not tight enough". Sweeping the flat availability factor:
+**~~OCGT: no flat availability factor reproduces both peaking and unserved energy.~~
+WITHDRAWN 31 Aug 2026, the same day it was written.** Two errors, both mine.
+
+**ERROR 1 - I read the wrong variable.** The diagnosis rested on `coalAvail` being a flat
+derate. It is, but it is NOT the hourly dispatch limit: it feeds initial conditions, the
+ramp basis and the shortfall lookahead. The binding limit is `cAvail`, which is capped by
+`unitOutage` - a seeded unit-level Markov outage path that is **on by default**. The model
+has had stochastic availability all along, and I claimed it did not.
+
+**ERROR 2 - I swept single draws.** Each point was one outage seed. Today's later work
+established that a single draw on this distribution is close to meaningless: the standard
+error at nine draws is 75% of the mean.
+
+Re-run properly, as means over 24 outage draws:
 
 ```
-flat EAF   coal TWh   OCGT TWh   unserved GWh
-     65%      165.5       0.39            5.5
-     62%      164.6       1.16           41.9
-     60%      163.6       1.96          122.3
-     55%      158.8       5.48          619.5
+              coal TWh   OCGT TWh   unserved GWh
+EAF 65           165.7      0.217            0.8
+EAF 63           165.4      0.513            8.1
+EAF 61           164.8      1.026           26.0     <- matches Eskom on both
+EAF 60           164.3      1.412           44.2
+EAF 58           163.0      2.462          116.1
 
-Eskom          165.4       1.08          0.036
+Eskom FY2026     165.4      1.079           36.0
 ```
 
-**NO FLAT AVAILABILITY FACTOR REPRODUCES BOTH.** Matching Eskom's peaker energy needs
-about 62%, which overshoots unserved energy by roughly a THOUSAND times. Matching
-unserved needs 65% or better, which halves the peaking.
+**A SINGLE VALUE DOES REPRODUCE BOTH**, at about 60-61%, which is exactly what the
+withdrawn finding said was impossible. The outage process also works as intended: turning
+it off drops OCGT from 0.217 to 0.057 TWh, so stochastic availability lifts peaker use
+roughly fourfold over a smooth derate.
 
-The reason is that `coalAvail` is a FLAT DERATE - the same megawatts available in every
-one of 8,760 hours. A real fleet has the same MEAN and a distribution around it: peakers
-cover the bad weeks, and the good weeks have surplus. **A flat derate conflates the mean
-with the distribution, and cannot produce "runs peakers often, sheds almost never".**
+### WHAT SURVIVES, AND IT IS MORE INTERESTING THAN THE CLAIM IT REPLACES
 
-The engine already knows this. `outVolPct` drives a 60-year Monte Carlo over outage paths
-- but only in the RISK PANEL. The main dispatch sees a perfectly steady fleet.
+Reproducing Eskom's actual peaking and shedding needs about **four points LOWER
+availability than the audited 65.2% EAF**. At the audited figure the model under-runs
+peakers fivefold and under-sheds forty-fold.
 
-CONSEQUENCE: peaking cost and emissions are understated in the base case, and the
-understatement is worst in exactly the tight hours adequacy turns on. Direction matters -
-reality is dirtier and dearer than the model, not cleaner.
+That gap is worth understanding rather than tuning away. EAF is an ENERGY availability
+factor over the year and includes planned maintenance; what a dispatch model needs is the
+capacity actually available in each hour, and the two are not the same quantity. Whether
+the residual is the maintenance treatment, the outage process having too thin a tail, or
+Eskom running peakers for network reasons the merit order never prices, is untested.
 
-**Imports: the model runs 8.6 TWh, Eskom reports 4,090 GWh.** More than double. The
-model's `importsMW` and its capacity factor need re-deriving against this table - and
-the audited series shows imports FALLING sharply, 9,150 -> 7,570 -> 4,090 GWh over three
-years, which no constant in the model reflects.
-
-### WHAT THE ENERGY BALANCE ALSO SETTLES
-
-```
-technical and other losses    23,921 GWh   11.6% of energy available
-pumping by pumped storage      5,762 GWh   the charging leg, reported separately
-IPP generation                19,596 GWh
-wheeling                       3,103 GWh   moved for international customers
-loadshedding                      36 GWh   0.02% of demand, against 13,215 GWh in FY2024
-```
-
-LOSSES ARE ALREADY IN THE MODEL, and it took this table to establish it. `profiles.json`
-is built on `gross grid demand + est rooftop`, which is Eskom's ENERGY AVAILABLE FOR
-DISTRIBUTION basis - before distribution losses. Model grid generation excluding rooftop
-is 208.5 TWh against Eskom's 206.0, a 1.2% match.
-
-**SO NEVER COMPARE THE MODEL'S SERVED ENERGY AGAINST A NATIONAL SALES FIGURE.** Sales are
-178.0 TWh; the model reads 17.1% higher, and correctly so, because 23,921 GWh is lost
-between the two. Adding a loss term to the model would double-count that and break a
-calibration which is currently within 1.2%.
-
-CAVEAT ON THE COMPARISON: Eskom's figures are ESKOM's fleet plus IPPs it purchases from.
-GridTwin models the national system. The two universes are close but not identical, which
-is why the deltas above should be read as a sanity check rather than an error bar.
+**DO NOT tune `coalEAFPct` to 61 to close it.** The 65.2% is audited and belongs in the
+model; the gap is a finding about what EAF measures, not a parameter to fit.
 
 ---
 
@@ -1755,3 +1758,64 @@ Now a benchmark check, band 1.8-4.0 GW, deliberately spanning the definitions ra
 picking the flattering one. **It is the first check on the adequacy side against a
 published national figure**: if the model ever calls the system comfortable while Eskom
 calls it tight, that is where it will show.
+
+---
+
+## Wind Pioneers' diurnal observation, tested independently
+
+Wind Pioneers published a South African prospecting study in Aug 2026 arguing that wind
+prospecting should answer "is the wind right for our project?" rather than "where is the
+wind?" - because two sites with equal mean speed can generate at very different hours.
+Their stated observation: Western and Eastern Cape peak in DAYTIME, Northern Cape at NIGHT.
+
+Tested on GridTwin's regional profiles - MERRA-2 via Renewables.ninja, Vestas V90 at 80 m,
+capacity-weighted to actual plant locations. Different derivation from theirs.
+
+```
+region           wind CF   peak SAST   day/mean   night/mean   verdict
+Northern Cape      0.379       21:00      0.889        1.110   NIGHT - confirms
+Eastern Cape       0.367       18:00      1.044        0.929   DAY - confirms
+Western Cape       0.365       20:00      1.003        0.991   FLAT - does not
+Hydra Central      0.425       14:00      1.058        0.950   strongly DAY
+North West         0.332       05:00      0.818        1.173   strongly NIGHT
+```
+
+day = 08-17 SAST, night = 20-05 SAST, each against that region's own mean.
+
+**TWO OF THEIR THREE REPLICATE, AND THE NORTHERN CAPE ONE IS STRONG** - a 25% swing
+between day and night. Western Cape does not: it is flat to within 1%, not day-peaking.
+
+### THEIR HYBRID CLAIM ALSO HOLDS, AND WE CAN ADD TO IT
+
+They argue Northern Cape suits wind-plus-solar hybrids because night wind complements day
+solar, reducing the battery needed. Measured as the hourly correlation between wind and
+solar within each region:
+
+```
+region           corr    hours below 10% of nameplate, 50/50 mix   wind alone
+North West     -0.155                     1,736                       2,337
+Northern Cape  -0.103                     1,434                       1,844
+Free State     -0.054                     2,439                       3,095
+Western Cape    0.011                     1,817                       2,074
+Eastern Cape    0.028                     2,161                       2,219
+Hydra Central   0.082                     1,483                       1,608
+```
+
+Northern Cape confirms: a 50/50 mix cuts near-zero hours by 22% against wind alone.
+
+**TWO THINGS THEY DID NOT SAY.** North West has the BEST complementarity at -0.155 despite
+mediocre wind - the strongest hybrid case in the country on this measure. And **Hydra
+Central, which has the BEST wind resource at 0.425, has POSITIVE wind-solar correlation**
+and is therefore the worst place to build a hybrid. Best wind and worst hybrid, in the
+same supply area.
+
+### THE DIMENSION MISSING FROM THE FRAMING
+
+They map wind in space and time and ask whether it fits the project. On GridTwin's
+headroom data the binding constraint is neither: **the four best-wind regions hold 100% of
+existing wind and 7.3% of the national room to add more, and Northern Cape and Hydra
+Central - the two best resources here - are at ZERO headroom for every technology.**
+
+A perfect diurnal match at a site with no connection is not a project. That is the
+complement to their work rather than a criticism of it: they answer whether the wind fits
+the offtaker, and the unanswered question is whether the grid will take it.

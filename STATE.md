@@ -2577,23 +2577,19 @@ measured change, which is the only reason to re-pin.
 
 ### Model gaps the audited data exposed
 
-1. **OCGT under-runs — DIAGNOSED 31 Aug 2026, and it is a structural cause, not a
-   parameter.** The model now runs 0.39 TWh against Eskom's 1.079 (it was 0.02 before the
-   coal capacity correction). Sweeping the availability factor shows NO FLAT VALUE
-   reproduces both peaking and unserved energy: matching OCGT needs ~62% EAF, which
-   overshoots unserved by ~1,000x; matching unserved needs 65%, which halves the peaking.
+1. **OCGT under-runs. The 31 Aug diagnosis was WITHDRAWN the same day** - it rested on
+   reading `coalAvail` (initial conditions and lookahead) as though it were `cAvail` (the
+   hourly limit, capped by a stochastic unit-level outage path that is on by default), and
+   on sweeping single draws where the standard error is 75% of the mean.
 
-   `coalAvail` is a FLAT DERATE — identical megawatts in all 8,760 hours. A real fleet
-   has the same mean with a distribution around it, so peakers cover bad weeks while good
-   weeks run surplus. **A flat derate conflates the mean with the distribution.**
-
-   THE FIX IS STOCHASTIC AVAILABILITY IN THE MAIN DISPATCH, and the engine already has
-   the machinery: `outVolPct` drives a 60-year Monte Carlo over outage paths in the RISK
-   PANEL. It is not wired to dispatch. Sequence: apply an outage path to `coalAvail`,
-   check OCGT and unserved move toward the audited pair together, then decide whether the
-   default run is one path or a mean of several — a single path makes every output
-   stochastic, which is a large change to how the tool behaves. Full evidence in
+   Re-run as means over 24 draws, **a single availability value DOES reproduce both**:
+   at 61% the model gives OCGT 1.026 TWh and 26.0 GWh unserved against Eskom's 1.079 and
+   36.0. What survives is more interesting - matching the audited outturn needs about FOUR
+   POINTS LOWER availability than the audited 65.2% EAF. EAF is an energy availability
+   factor including planned maintenance; a dispatch model needs hourly available capacity,
+   and they are not the same quantity. **Do not tune `coalEAFPct` to close it.** See
    RESULTS.md.
+
 2. ~~Technical and other losses not modelled.~~ **I WAS WRONG — CHECKED 31 Aug 2026.**
    They are ALREADY inside the demand series. `profiles.json` states its basis:
    `demand = underlying(gross grid demand + est rooftop)`, which is Eskom's
@@ -3986,6 +3982,57 @@ work to what GridTwin models, and the Market Surveillance Framework.
 The dashboard is now in SOURCES.md and in CALENDAR.md's per-session checks. It is the
 single best input to that file, and one reading corrected a date and added four
 consultations.
+
+---
+
+## A finding written and withdrawn on the same day — 31 Aug 2026
+
+This morning's OCGT diagnosis contradicted this afternoon's discovery that `unitOutage` is
+active by default. Both could not be true. **The morning was wrong, twice over.**
+
+```
+CLAIMED   coalAvail is a flat derate, so the model has no stochastic availability,
+          and no single availability value can reproduce both peaking and shedding.
+
+ERROR 1   coalAvail is NOT the hourly dispatch limit. It feeds initial conditions, the
+          ramp basis and the shortfall lookahead. The limit is cAvail, capped by a
+          seeded unit-level Markov outage path that is ON BY DEFAULT.
+
+ERROR 2   every point in the sweep was ONE outage draw. Today's own convergence work
+          put the standard error at nine draws at 75% of the mean.
+```
+
+Re-run as means over 24 draws:
+
+```
+              OCGT TWh   unserved GWh
+EAF 65           0.217            0.8
+EAF 61           1.026           26.0     <- matches Eskom on both
+EAF 60           1.412           44.2
+Eskom            1.079           36.0
+```
+
+**A single value reproduces both, at about 60-61%** - exactly what the withdrawn claim
+said was impossible.
+
+### WHAT REPLACES IT IS BETTER
+
+Matching Eskom's actual peaking and shedding needs about four points LOWER availability
+than the audited 65.2% EAF. EAF is an ENERGY availability factor across the year and
+includes planned maintenance; a dispatch model needs hourly available capacity. They are
+not the same quantity, and the four points are a finding about that gap rather than a
+parameter to fit. **Do not tune coalEAFPct to 61.**
+
+### WHY IT HAPPENED, AND WHY IT WAS CAUGHT
+
+Both errors are ones this project already had rules against. Rule 3 - check the input
+before building on it - would have caught reading the wrong variable. The single-draw
+sweep was made BEFORE the ensemble work that established how noisy single draws are, so
+the morning could not have known; but the afternoon could have gone back, and only did
+because the two entries visibly contradicted each other.
+
+**Keeping both findings in the same file is what exposed it.** A findings file that
+records what did not survive is not just more honest - it is the mechanism.
 
 ---
 
