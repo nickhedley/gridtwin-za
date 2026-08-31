@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 878 checks
+suite                      19 harnesses, 880 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 878 checks. Last full run: 878/878.
+Nineteen harnesses, 880 checks. Last full run: 880/880.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           56/56
+python3 audit.py index.html           58/58
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -3751,6 +3751,43 @@ the lamps           the label said "max stage in a year" and quietly became "acr
 
 **Adding uncertainty to a number does not automatically fix the label above it.** That is
 the lesson worth keeping.
+
+---
+
+## Label audit: fixing the number is only half the job — 31 Aug 2026
+
+Having just written that "adding uncertainty to a number does not fix the label above it",
+the next task was to check I had not left the same fault behind. **I had.**
+
+```
+before                              after
+Load shedding · max stage           Load shedding · typical year
+Expected shed                       Expected shed · per year
+```
+
+The lamps now show the MEDIAN draw, so "max stage" was wrong in the opposite direction
+from before - it read as the worst outcome while showing the typical one. And "Expected
+shed" gave no period, on a board where every other figure is annual.
+
+### THE KPIs ARE ON A DIFFERENT BASIS, AND THAT IS FINE
+
+The eight KPI cells come from the single deterministic run, not the ensemble. Checked
+rather than assumed: coal varies 0.2% across seeds, CO2 0.1%, avgCost 1.2%. Those are
+seed-insensitive, so a single draw is the right and cheap choice. Only ADEQUACY needed
+the ensemble, which is what it got.
+
+### A LOOSE END FROM THE EARLIER AUDIT, RESOLVED - AND IT WAS MY ERROR
+
+The board reads "Energy supplied 220 TWh" where I had measured 223.66 and flagged a
+possible discrepancy. `genTWh` correctly EXCLUDES pumped storage and batteries, because
+storage is shifted energy rather than generation and counting it would double-count.
+
+```
+223.66 total - 3.40 pumped - 0.25 battery = 220.01 TWh
+```
+
+Exact. The KPI was right and my measurement was the loose one. Worth recording because I
+raised it as a suspected fault and it was not.
 
 ---
 

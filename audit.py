@@ -102,6 +102,10 @@ CHECKS = [
     # 1-in-48 tail back on the masthead as though it were the state of the country.
     ('i < e.medStage',                                             'lamps show the typical year'),
     ('typical year reaches stage',                                 'tooltip states typical vs worst'),
+    # The board LABELS must match what the cells now compute. "max stage" described a
+    # single deterministic year; the lamps show the median of 48 draws.
+    ('Load shedding &middot; typical year',                        'lamp label matches the median'),
+    ('Expected shed &middot; per year',                            'shed label states it is per year'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices
     # beside MIP energy with nothing saying so.
