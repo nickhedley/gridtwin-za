@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 857 checks
+suite                      19 harnesses, 864 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 857 checks. Last full run: 857/857.
+Nineteen harnesses, 864 checks. Last full run: 864/864.
 
 ```
 node stress_suite.js                290/290
@@ -237,6 +237,7 @@ node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity c
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       18/18   the documents, added 30 Aug
+node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       17/17
 node validate_structure.js .          10/10
@@ -3240,6 +3241,48 @@ match was exact to the rand.
 measured in nearly produced a false correction. The pattern is now unmistakable: reproduce
 the ORIGINAL scenario and the ORIGINAL metric, and check the ratio before believing a
 level shift.
+
+---
+
+## validate_findings.js — the findings, re-run against their own scenarios
+
+Built 31 Aug 2026 after THREE near-miss false corrections in one session, every one from
+re-testing a published result in a scenario other than the one it was measured in:
+
+```
+demand response     swept in a no-gas system measuring UNSERVED; published on the
+                    dashboard measuring AVERAGE COST. Looked broken. Was not.
+battery saturation  run at an arbitrary reserve price of 60 against a published default
+                    of 150. Showed a 60% error. Was exactly the ratio.
+capture asymmetry   run WITH storage against a published run with none.
+```
+
+RESULTS.md opens with "a number without its scenario is not a result". **That rule lived
+in prose, and prose does not run.** This encodes the scenario next to the number, so a
+re-check cannot silently test something else.
+
+Four findings, seven checks, all passing:
+
+```
+iron-air       July gas 3,964 -> 3,964 GWh with 20 GW of iron-air
+demand resp.   R585 at 0% · R580 at 7.5% · R613 at 30%
+capture        wind 97% · solar 2.7%, NO STORAGE
+ancillary      knee ~3.0 GW against a 3.7 GW fleet, reserve price R150/MWh
+```
+
+TOLERANT BY DESIGN. The point is not to freeze values — the calibration work moved
+several legitimately today — but to catch a finding whose DIRECTION or SHAPE has changed
+without anyone noticing.
+
+### VERIFIED IT CAN FAIL, twice
+
+Neutralising `drShiftPct` gives 5/7 with both demand-response checks failing and the
+scenario named in the message.
+
+Setting iron-air round-trip efficiency to 95% did NOT break its check — a 0.9% change
+against a 1% tolerance. That is not the check being loose: **even a 95%-efficient
+long-duration store barely touches July gas**, which is the finding being more robust
+than its own headline claims.
 
 ---
 
