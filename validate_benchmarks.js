@@ -87,6 +87,17 @@ const BENCH = {
 // while the nameplate was 578 MW light and the CF correspondingly overstated.
 const CF_BENCH = {
   cfWind:    { lo: 28, hi: 38, why: 'SA fleet averages ~32-35%; Eastern Cape sites reach the low 40s' },
+  // RENEWABLE SHARE, added 31 Aug 2026 from Eskom's FY2026 annual results: renewables
+  // at 11.7% of power supplied. Checked on the RESIDUAL basis - rooftop removed from
+  // numerator AND denominator - because Eskom cannot see behind-the-meter generation,
+  // so 'power supplied' is a residual figure by construction. The model returns 12.0%.
+  //
+  // Band is +/-2 points rather than tight: Eskom's exact treatment of hydro, imports
+  // and IPP output is not stated in the results presentation, and any of those would
+  // move it by a point. It is a SANITY CHECK against a published national figure, not
+  // a precision test - but it is the closest external corroboration this model has for
+  // its headline mix.
+  reShareResid: { lo: 9.7, hi: 13.7, why: 'Eskom FY2026 annual results: renewables 11.7% of power supplied' },
   cfPv:      { lo: 19, hi: 27, why: 'SA fixed-tilt utility PV, 21-24% typical; tracking reaches 26-28%' },
   cfRooftop: { lo: 14, hi: 22, why: 'Below utility PV: mixed orientation, shading, no tracking, urban siting' },
   cfNuclear: { lo: 60, hi: 85, why: 'Koeberg between refuelling outages; sent-out basis, not gross' },
@@ -134,6 +145,14 @@ const check = (name, ok, detail) => {
       ps: E.ps/1e6, batt: E.batt/1e6, ccgt: E.ccgt/1e6, diesel: E.diesel/1e6,
       co2: r.co2,
       cfWind: cf(E.wind/1e6, FIXED.windMW), cfPv: cf(E.pv/1e6, FIXED.pvUtilityMW),
+      // Residual basis: rooftop out of numerator and denominator, matching how Eskom
+      // reports 'power supplied' - it cannot meter behind the customer's meter.
+      reShareResid: (() => {
+        const gen = E.wind + E.pv + E.csp + (E.hybrid || 0) + E.rooftop + E.hydro;
+        const tot = Object.keys(E).filter(k => !['curtailed','unserved','exported'].includes(k))
+                          .reduce((a, k) => a + E[k], 0);
+        return 100 * (gen - E.rooftop) / Math.max(1, tot - E.rooftop);
+      })(),
       cfRooftop: cf(E.rooftop/1e6, FIXED.rooftopMW),
       cfNuclear: cf(E.nuclear/1e6, FIXED.nuclearMW),
       cfCoal: cf(E.coal/1e6, FIXED.coalInstalledMW),

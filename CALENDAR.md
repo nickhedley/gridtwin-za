@@ -74,6 +74,9 @@ Q4 2026        SAWEM trading expected to commence. The Market Code (NTCSA) compl
 ~Feb 2027      PFL IPP monitor, H2 2026 update. Replaces by_source.private wholesale.
                Same removal discipline. Will settle Mulilo's COD if the Knowledge Hub
                has not already.
+annual         Eskom annual results, published late August. FY2026 landed 31 Aug 2026
+               and carries the audited EAF and the renewable-share benchmark the model
+               is now checked against. Source: eskom.co.za/investors/integrated-results
 annual         IPP Office "An Overview of the IPPPP" - the named-project layer. The
                only published route to a fuller Hydra Central split.
 monthly        Seriti Green grid simulation. Published since Jan 2026; the August

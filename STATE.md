@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 847 checks
+suite                      18 harnesses, 848 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 847 checks. Last full run: 847/847.
+Eighteen harnesses, 848 checks. Last full run: 848/848.
 
 ```
 node stress_suite.js                290/290
@@ -232,7 +232,7 @@ node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           41/41
-node validate_benchmarks.js .         18/18
+node validate_benchmarks.js .        19/19
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
@@ -2365,6 +2365,130 @@ first external corroboration of that number this project has had.
   press report — but it is the best lead yet on that gap.
 - Koeberg fully offline 27 Aug (both units). An outage, not a structural change;
   `nuclearMW` is unaffected.
+
+---
+
+## TO DO — two priorities from the 31 Aug newsletter
+
+### A. RECONCILE THE NERSA CUMULATIVE, 1,769 MW SHORT
+
+```
+SAPVIA collation (loaded)  2,619 facilities · 20,131 MW · ~R409bn
+NERSA Q1 2026/27 statement 2,692 facilities · 21.9 GW  ·  R452.9bn
+gap                           73 facilities ·  1,769 MW
+```
+
+The quarterly figures agree EXACTLY, so the divergence is in accumulated history. Both
+are currently shown in the panel with neither presented as correct.
+
+ROUTES, in order of likely yield:
+1. Read a NERSA quarterly media statement directly rather than through SAPVIA's
+   collation — the primary source settles which is which.
+2. Ask SAPVIA how deregistered or superseded facilities are treated. A collation that
+   nets off withdrawals against a regulator that does not would produce exactly this
+   shape: fewer facilities AND less capacity, growing over time.
+3. Compare an OLDER quarter from both. If the gap is roughly constant it is a one-off
+   reclassification; if it grows it is a treatment difference.
+
+DO NOT average them, and do not switch source silently — the whole point of carrying two
+is that a reader can see they disagree.
+
+### B. TRACK WHAT ACTUALLY GETS BUILT — the opportunity NERSA has named
+
+NERSA states it has no mechanism to monitor which registered projects reach operation,
+and no deadline compels a developer to build. **That is a gap in the national data that
+this project is unusually well placed to fill**, because it already holds all three
+stages: REEA permits (2,597), NERSA registrations (2,619), and commissioning records.
+
+A first pass is COMPUTABLE TODAY from data on disk — registered against commissioned by
+region — and it immediately shows why the naive version must not be published:
+
+```
+region            registered MW   commissioned MW   built %
+Eastern Cape              921             1,896      206%
+Free State              3,406               169        5%
+Gauteng                 2,569                50        2%
+TOTAL                  20,116             6,754       34%
+```
+
+**206% IS NOT A FINDING, IT IS A UNIVERSE MISMATCH.** NERSA registrations cover PRIVATE
+and embedded generation above 100 kW. REIPPPP plant is licensed under a different regime
+and never appears in them — so the Eastern Cape's REIPPPP wind is in the commissioned
+column with no counterpart in the registered one. Comparing the two mixes universes,
+which is the error this project keeps catching in other people's numbers.
+
+THE CORRECT COMPARISON is NERSA-registered against PRIVATE commissioned only. The blocker
+is that `by_source.private` holds H1 2026 alone (958 MW) — the same gap as open item
+"pre-2026 private capacity", and #PowerTracker is the identified source for it.
+
+SO THE SEQUENCE IS:
+1. Ingest #PowerTracker for private commissioning history. This unblocks BOTH this and
+   the 1,823 MW unexplained solar in identity 3.
+2. Then reconcile registered against private-commissioned, by region.
+3. Then project-level matching — but note `reea_projects.json` has 652 duplicate names,
+   so match on coordinates and capacity, never on name (rule 9).
+4. Satellite verification is the only method that scales to confirming a plant EXISTS,
+   and is already on the list.
+
+WHY IT MATTERS: a 20 GW pipeline that nobody can convert into a build forecast is exactly
+the uncertainty the headroom and merchant-value work runs into. And a credible
+registered-to-built conversion rate would be a genuinely novel public output — the
+regulator has said plainly that it does not have one.
+
+---
+
+## Eskom FY2026 annual results, 31 Aug 2026 — read for model impact
+
+### THE BEST EXTERNAL CHECK THIS MODEL HAS: renewable share
+
+Eskom reports **renewables at 11.7% of power supplied in FY2026**. The model returns
+**12.0% on the residual basis** — rooftop removed from numerator and denominator, which
+is what "power supplied" means for a utility that cannot meter behind the customer's
+meter.
+
+**0.3 points apart.** Now a benchmark check (`reShareResid`, band 9.7-13.7%), taking
+`validate_benchmarks` 18 -> 19. The band is deliberately +/-2 points rather than tight:
+Eskom does not state its treatment of hydro, imports or IPP output, and any of those
+would move it by a point. A sanity check against a published national figure, not a
+precision test.
+
+This also vindicates the dual-denominator convention in RULES.md. On the TOTAL basis the
+model reads 17.2%, which would have looked like a 47% overstatement against Eskom's
+number. Same model, same year, five points apart — exactly the ambiguity the convention
+exists to prevent, now demonstrated against a real published figure.
+
+### EAF: the constant was right, the NOTE was stale
+
+`FIXED.coalEAFPct` is 65 against an audited FY2026 of **65.16%** — essentially exact. But
+the slider note read "FY2026 to date = 68%", a part-year figure now superseded. Replaced
+with the audited series: FY2024 54.6%, FY2025 60.6%, FY2026 65.2%, Eskom target 70%.
+
+Three years of audited outturn is a better calibration anchor than one part-year number,
+and it shows the trend the model's own scenarios turn on.
+
+### NOTED, NOT ACTED ON — each needs a decision
+
+- **Kusile Unit 6, 799 MW synchronised.** `coalInstalledMW` is 42,000. Check whether it
+  is already inside that figure before adding.
+- **Sales 178 TWh, down 6.2%**, with industrial down 9.7 TWh (22.5%) on ferrochrome
+  smelter hardship. A STRUCTURAL demand change, not a cycle. The model's demand growth
+  slider starts at 0; the real trend is negative.
+- **2-3 GW surplus capacity for the first time in over a decade.** Bears directly on the
+  adequacy results.
+- **13.1 TWh lost to theft** — about 6% of supply, and not represented in the model at
+  all.
+- **Grid: 8,362 km of line and 82,425 MVA by FY2031**, out of R343bn capex with 46% to
+  NTCSA. Cross-check against the TDP-derived R584/kW-yr behind `txRPerKWyr`. Different
+  period and scope, so not a like-for-like, but worth reconciling.
+- **Eskom Green: 6 GW carbon-free by FY2030, 32 GW renewables and storage by FY2040,
+  1,500 MW gas by FY2029 ramping to 3,000 MW by FY2031.** This is a fourth named build
+  pathway alongside historical, IRP, masterplan and grid — and it is Eskom's OWN plan,
+  which none of the existing four are. Strong candidate for a preset.
+- **OCGT utilisation more than halved, R10.6bn saved.** Corroborates the merit-order
+  dispatch the model assumes.
+- Municipal arrear debt R111.6bn, heading to R358bn by FY2031 if unabated. Outside the
+  model's scope but it is the largest single risk to the tariff path everything here
+  prices against.
 
 ---
 
