@@ -154,3 +154,9 @@ PyPSA-ZA cost comparison it CO-optimises investment and operation, so its "+20% 
                          of validate_external deliberately, with the reasoning in that
                          file so it is not re-added.
 ```
+
+---
+
+*GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
+Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
+the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

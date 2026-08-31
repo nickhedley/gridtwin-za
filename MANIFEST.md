@@ -135,3 +135,9 @@ build_capacity.py
 
 Then run the full suite before any change. That baseline run is what caught the
 two stale rollups on 27 Aug.
+
+---
+
+*GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
+Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
+the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
