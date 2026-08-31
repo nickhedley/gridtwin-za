@@ -1,11 +1,11 @@
 {
  "base": {
-  "coalTWh": 161.525,
-  "co2": 170.459,
-  "avgCost": 570.46,
-  "replAvg": 1513.85,
-  "avgPrice": 756.08,
-  "rePct": 18.203,
+  "coalTWh": 165.96,
+  "co2": 175.055,
+  "avgCost": 576.82,
+  "replAvg": 1535.88,
+  "avgPrice": 764.86,
+  "rePct": 17.828,
   "curtTWh": 0,
   "loleHrs": 0
  },
@@ -101,7 +101,7 @@
    "loleHrs": true
   },
   "outageUnitLevel": {
-   "coalTWh": false,
+   "coalTWh": true,
    "co2": true,
    "avgCost": true,
    "replAvg": true,
@@ -205,7 +205,7 @@
    "co2": true,
    "avgCost": true,
    "replAvg": true,
-   "avgPrice": false,
+   "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
    "loleHrs": false
@@ -271,7 +271,7 @@
    "loleHrs": false
   },
   "newCoalMW": {
-   "coalTWh": false,
+   "coalTWh": true,
    "co2": true,
    "avgCost": true,
    "replAvg": true,
@@ -318,7 +318,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": true,
-   "loleHrs": false
+   "loleHrs": true
   },
   "vppGeyserPoolMW": {
    "coalTWh": true,

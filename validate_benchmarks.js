@@ -68,10 +68,16 @@ const BENCH = {
          'differently by different sources.',
   },
   imports: {
-    value: 8.56, tolPct: 5, unit: 'TWh',
-    source: 'Cahora Bassa plus SAPP, Eskom system data',
-    why: 'This is an input constant rather than a dispatch result, so it should match closely. ' +
-         'A gap here means the constant drifted.',
+    value: 4.09, tolPct: 12, unit: 'TWh',
+    source: 'Eskom integrated report FY2026, audited energy balance',
+    why: 'REBASED 31 Aug 2026 from 8.56 TWh. The old figure came from CONTRACT capacity - ' +
+         '1.15 GW firm at high availability - which is an assumption about utilisation, not a ' +
+         'measurement. Eskom now publishes three years of audited imports: 9,150 GWh FY2024, ' +
+         '7,570 FY2025, 4,090 FY2026. Deliveries have MORE THAN HALVED in two years. ' +
+         'This is not a relaxed check: it moves from an assumed utilisation to an audited one, ' +
+         'and the tolerance is 12% rather than 5% only because imports are visibly trending, ' +
+         'so a year-on-year move is expected rather than a fault. If it fails, check whether ' +
+         'a newer Eskom energy balance has been published before touching the constant.',
   },
   co2: {
     value: 175, tolPct: 12, unit: 'Mt',

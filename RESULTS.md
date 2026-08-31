@@ -1504,3 +1504,56 @@ of the three and the most punishing; at IRP pace the 2035 uplift would be far sm
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
+
+---
+
+## Validated against Eskom's audited FY2026 generation
+
+The integrated report publishes generation by technology and a full energy balance. This
+is the first time the model has been checked technology by technology against audited
+national data rather than against a benchmark band.
+
+```
+technology       Eskom FY2026   GridTwin    delta
+coal                   165.4       161.5    -2.4%
+nuclear                 11.6        11.4    -1.8%
+wind                    11.6        12.4    +6.7%
+solar PV                 6.8         6.2    -8.7%
+CO2                    184.5       170.5    -7.6%
+```
+
+**Four of five technologies inside 9%, coal and nuclear inside 3%.** For a model built
+from public data with no access to Eskom's dispatch, that is the strongest corroboration
+in this file.
+
+### TWO GAPS THAT ARE REAL, NOT ROUNDING
+
+**OCGT: the model runs ZERO, Eskom ran 1,079 GWh.** At today's demand and a 65% energy
+availability factor the model never needs a peaker, because it dispatches on economics
+alone. Eskom runs them anyway - for reserve, ramping and network support, none of which
+the merit order prices. So the model UNDERSTATES peaking, and it will understate it
+worst in exactly the tight hours that matter. Note the direction: reality is dirtier and
+more expensive than the model, not cleaner.
+
+**Imports: the model runs 8.6 TWh, Eskom reports 4,090 GWh.** More than double. The
+model's `importsMW` and its capacity factor need re-deriving against this table - and
+the audited series shows imports FALLING sharply, 9,150 -> 7,570 -> 4,090 GWh over three
+years, which no constant in the model reflects.
+
+### WHAT THE ENERGY BALANCE ALSO SETTLES
+
+```
+technical and other losses    23,921 GWh   11.6% of energy available
+pumping by pumped storage      5,762 GWh   the charging leg, reported separately
+IPP generation                19,596 GWh
+wheeling                       3,103 GWh   moved for international customers
+loadshedding                      36 GWh   0.02% of demand, against 13,215 GWh in FY2024
+```
+
+Losses at 11.6% are not in the model at all, and they are larger than every renewable
+technology except coal. Anything comparing the model's energy served against a national
+sales figure has to account for them.
+
+CAVEAT ON THE COMPARISON: Eskom's figures are ESKOM's fleet plus IPPs it purchases from.
+GridTwin models the national system. The two universes are close but not identical, which
+is why the deltas above should be read as a sanity check rather than an error bar.

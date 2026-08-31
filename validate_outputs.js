@@ -222,10 +222,18 @@ function readKpis(doc) {
   checkRange('Nuclear output vs Koeberg capacity', nuclearTwh, 11, 16,
     'Koeberg 1.86 GW at 75-95% CF = 12.2-15.5 TWh/yr', 'TWh/yr');
 
-  // Imports: Cahora Bassa supplies ~1.15 GW under contract to at least Mar 2030.
+  // Imports. REBASED 31 Aug 2026 against Eskom's audited energy balance.
+  // The old band of 6-11 TWh came from the Cahora Bassa CONTRACT - 1.15 GW firm at high
+  // availability - and the contract is still 1.15 GW to at least March 2030. But
+  // DELIVERY has collapsed: 9,150 GWh FY2024, 7,570 FY2025, 4,090 FY2026.
+  //
+  // Testing against a contract tests what is permitted, not what happens. The band is
+  // now built on three years of audited outturn, wide enough to hold the whole trend
+  // so it does not fail on a normal year-on-year move.
   const importsTwh = mix['Imports'] ? mix['Imports'].twh : 0;
-  checkRange('Imports vs Cahora Bassa contract', importsTwh, 6, 11,
-    'Cahora Bassa 1.15 GW firm (Eskom MTSAO) = ~8-10 TWh/yr at high availability', 'TWh/yr');
+  checkRange('Imports vs Eskom audited energy balance', importsTwh, 3.5, 9.5,
+    'audited: 4.09 TWh FY2026, 7.57 FY2025, 9.15 FY2024 - contract capacity is 1.15 GW '
+    + 'but deliveries have more than halved in two years', 'TWh/yr');
 
   // Coal implied capacity factor must be physically possible.
   // Fleet ~42 GW nameplate; EAF baseline 64%.

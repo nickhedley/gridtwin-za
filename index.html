@@ -3825,7 +3825,18 @@ function buildProfiles(real){
 const SYNC_MIN_MW = 6000;
 // IMPORTS_CF = 0.85 is defined in nodal_engine.js (loaded first)
 const FIXED = {
-  coalInstalledMW:42000, nuclearMW:1860, hydroMW:600, importsMW:1150,
+  coalInstalledMW:42000, nuclearMW:1860, hydroMW:600,   importsMW:1150,
+  // Import utilisation, added 31 Aug 2026 from Eskom's audited energy balance. Was the
+  // literal 0.85 hardcoded at FOUR sites and duplicated as IMPORTS_CF in
+  // nodal_engine.js - a rule 6 violation and a stale value at the same time.
+  //
+  //   FY2024  9,150 GWh -> 0.91      FY2025  7,570 -> 0.75      FY2026  4,090 -> 0.41
+  //
+  // 0.85 was roughly right for FY2024 and is now DOUBLE the reality. Cahora Bassa
+  // deliveries have more than halved in two years. Set to the FY2026 outturn.
+  // If this is ever changed, change nodal_engine.js IMPORTS_CF with it - or better,
+  // make that read this.
+  importsCF:0.41,
   psPowerMW:2900, psEnergyMWh:60000, psEff:0.76,
   // windMW is derived from regional_renewable_capacity.json, not set by hand:
   //   4,042 MW REIPPPP (IPP Office Q4 2025/26, capacity online at 31 Mar 2026)
@@ -5142,7 +5153,7 @@ function simulate(u, prof, outPath){
     // constraints - with them in place it converges to this ordering. Note the
     // economics anyway: contracted imports (R550) now undercut marginal coal
     // (R674 with VOM and carbon) - true, and no code change follows from it.
-    const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
+    const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*(p.importsCF??0.41);
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -5329,7 +5340,7 @@ function simulate(u, prof, outPath){
       windGen *= (1 - _cgp2); pvGen *= (1 - _cgp2);
       congestMW[h] = _lost2; congestTot += _lost2;
     }
-    const nuc=(p.nuclearMW+p.newNuclearMW)*(p.nuclearCF??0.70), hyd=p.hydroMW*0.55, imp=p.importsMW*0.85;
+    const nuc=(p.nuclearMW+p.newNuclearMW)*(p.nuclearCF??0.70), hyd=p.hydroMW*0.55, imp=p.importsMW*(p.importsCF??0.41);
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -11993,7 +12004,7 @@ function renderAdequacy(r){
   if(!el||!r||!r.stack) return;
   const p={...FIXED,...state};
   const firm=(p.coalInstalledMW-(p.coalDecomMW||0))*((p.coalEAFPct??68)/100)
-    +(p.nuclearMW+(p.newNuclearMW||0))*0.90+p.hydroMW+p.importsMW*0.85
+    +(p.nuclearMW+(p.newNuclearMW||0))*0.90+p.hydroMW+p.importsMW*(p.importsCF??0.41)
     +p.ocgtDieselMW+(p.ccgtMW||0)+(p.newCcgtMW||0)
     +p.psPowerMW+p.battPowerMW+(p.newBattMW||0)
     +p.hybridMW*p.hybridCF;

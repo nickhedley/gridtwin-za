@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 848 checks
+suite                      18 harnesses, 847 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,11 +223,11 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 848 checks. Last full run: 848/848.
+Eighteen harnesses, 847 checks. Last full run: 847/847.
 
 ```
 node stress_suite.js                290/290
-node validate_invariants.js .       149/149
+node validate_invariants.js .       148/148
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
@@ -2489,6 +2489,61 @@ and it shows the trend the model's own scenarios turn on.
 - Municipal arrear debt R111.6bn, heading to R358bn by FY2031 if unabated. Outside the
   model's scope but it is the largest single risk to the tariff path everything here
   prices against.
+
+---
+
+## Eskom integrated report FY2026 — technology-by-technology validation, 31 Aug 2026
+
+The integrated report publishes generation by technology and a full audited energy
+balance. First check of the model against national data technology by technology rather
+than against a band. Full table in RESULTS.md.
+
+```
+coal  -2.4%   nuclear  -1.8%   wind  +6.7%   solar  -8.7%   CO2  -7.6%
+```
+
+Four of five inside 9%, coal and nuclear inside 3%.
+
+### IMPORTS WERE DOUBLE REALITY — corrected
+
+The model ran 8.56 TWh against an audited 4,090 GWh. The cause was a literal `0.85`
+utilisation HARDCODED AT THREE SITES and duplicated as `IMPORTS_CF` in
+`nodal_engine.js` — a rule 6 violation and a stale value at once.
+
+```
+audited   FY2024  9,150 GWh -> 0.91      FY2025  7,570 -> 0.75      FY2026  4,090 -> 0.41
+```
+
+0.85 was roughly right for FY2024. Cahora Bassa deliveries have more than halved in two
+years and no constant reflected it. Now `FIXED.importsCF` 0.41, one constant, sourced.
+
+RESULT: imports 4.13 TWh against 4.09 audited, coal 166.0 against 165.4, and **CO2
+improved from -7.6% to -5.1%**.
+
+### TWO CHECKS REBASED FROM CONTRACT TO MEASUREMENT
+
+`validate_benchmarks` and `validate_outputs` both failed, and both were testing against
+the Cahora Bassa CONTRACT — 1.15 GW firm at high availability — rather than delivery.
+The contract is unchanged and still runs to 2030; what changed is how much arrives.
+
+**Testing against a contract tests what is PERMITTED, not what HAPPENS.** Rebased on
+three years of audited outturn, with bands wide enough to hold the trend so a normal
+year-on-year move is not a failure. This is not relaxing a check to make a change pass:
+it replaces an assumed utilisation with an audited one, which is strictly stronger.
+
+The `validate_response` baseline moved four cells and was re-pinned — a deliberate,
+measured change, which is the only reason to re-pin.
+
+### STILL OPEN
+
+- **OCGT: the model runs ZERO, Eskom ran 1,079 GWh.** The merit order never needs a
+  peaker at 65% EAF and today's demand; Eskom runs them for reserve, ramping and network
+  support, none of which the model prices. Reality is dirtier and dearer than the model,
+  and the gap will be worst in the tight hours.
+- **Technical and other losses 23,921 GWh, 11.6% of energy available.** Not modelled at
+  all, and larger than every technology except coal.
+- `IMPORTS_CF` in `nodal_engine.js` is still a second copy of this constant. It should
+  read `FIXED.importsCF`.
 
 ---
 
