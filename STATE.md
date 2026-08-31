@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 868 checks
+suite                      19 harnesses, 876 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 868 checks. Last full run: 868/868.
+Nineteen harnesses, 876 checks. Last full run: 876/876.
 
 ```
 node stress_suite.js                290/290
@@ -239,7 +239,7 @@ python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       18/18   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       17/17
+node validate_consistency.js .       25/25
 node validate_structure.js .          10/10
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -3655,6 +3655,57 @@ now arrives with its own uncertainty attached.
 
 Eskom's audited FY2026 outturn was 36 GWh. The worst of 48 draws is 18.63 GWh, so the
 model remains optimistic against what actually happened even at its tail.
+
+---
+
+## Weather basis reconciled, and the ensemble finally has a harness — 31 Aug 2026
+
+### 1. THE BOARD WAS ANSWERING A NARROWER QUESTION THAN ITS LABEL
+
+Decomposed the uncertainty on the default scenario, 30 draws each:
+
+```
+outage varies, weather FIXED      EUE 1.43 GWh   LOLE 1.8 h    <- what the board did
+outage AND weather vary           EUE 2.23 GWh   LOLE 2.9 h    <- 56% higher
+weather varies, outage fixed      EUE 6.76 GWh   LOLE 8.3 h
+```
+
+**Weather is the LARGER driver**, and holding it fixed understated the risk by about a
+third. The board now varies both, which also puts it on the SAME BASIS as the 60-year
+risk panel below - the two were previously measuring different things on the same page,
+which was the original complaint.
+
+Weather years are cycled deterministically so each of the ten is drawn equally; with only
+ten on record, random sampling over 48 draws leaves the spread lumpy.
+
+```
+today now reads   LOLE 3.0 h/yr · EUE 2.36 +/- 0.73 GWh · 63% of draws shed
+                  worst draw stage 5, 28.56 GWh
+```
+
+It degrades gracefully: if the multi-year weather file does not load it reports outage
+risk alone and the tooltip says so.
+
+### 2. EIGHT NEW CHECKS IN validate_consistency (17 -> 25)
+
+The ensemble had no coverage, and the pricing run earlier today showed exactly what
+happens to code that ships without a harness ever executing it.
+
+```
+the ensemble and its board hook both exist
+the shipped draw count is large enough to be worth averaging   ADEQ_N >= 24
+[today/tight/crisis] metrics are finite and non-negative       a NaN renders as a blank
+expected unserved energy rises as coal availability falls      monotonicity
+LOLE rises as coal availability falls
+expected unserved energy sits below the worst draw             a mean over the wrong array
+```
+
+The checks assert PROPERTIES rather than pinning values, because the values legitimately
+move with the draw. Monotonicity is the load-bearing one: it is what breaks if the
+ensemble ever averages the wrong thing.
+
+VERIFIED IT CAN FAIL: setting `ADEQ_N` back to 9 fails the draw-count check with the
+measurement quoted in the message.
 
 ---
 

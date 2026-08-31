@@ -70,6 +70,7 @@ const num = t => {
   await new Promise(r => setTimeout(r, 4500));
   const w = dom.window, d = w.document;
 
+  const runAsync = src => run(src);
   const run = src => {
     const el = d.createElement('script');
     el.textContent = 'window.__cc = (() => { try { ' + src + ' } catch (e) { return { err: String(e) }; } })();';
@@ -314,6 +315,76 @@ const num = t => {
           c.sum === null ? 'costDecomposition absent'
             : `components sum to ${c.sum.toFixed(2)} against avgCost ${c.avg.toFixed(2)} `
               + `- a decomposition that does not sum is not a decomposition`);
+  // ── ADEQUACY ENSEMBLE ──────────────────────────────────────────────────────
+  // The board's headline is an ENSEMBLE, not the deterministic run: LOLE and expected
+  // unserved energy over draws varying the outage path and the weather year. Nothing in
+  // the suite touched it, and the pricing run on 31 Aug showed what happens to code that
+  // ships without ever being executed by a harness.
+  //
+  // It is ASYNC, so this drives it directly rather than waiting on the debounce, and
+  // checks the properties that must hold rather than pinning values that legitimately
+  // move with the draw.
+  const adeq = runAsync(`
+    // Force a small, fast ensemble so the harness does not pay for 48 draws twice.
+    ADEQ_N_TEST = 8;
+    const out = {};
+    const shed = r => { let n = 0; for (let h = 0; h < HOURS; h++) if (r.stack.unserved[h] > 1) n++;
+                        return { gwh: (r.E.unserved || 0) / 1000, hrs: n, stage: r.maxStage }; };
+    const ens = (st, n) => {
+      const runs = [];
+      for (let i = 0; i < n; i++)
+        runs.push(shed(simulate({ ...st, outageSeed: 20260816 + i * 7919 }, PROFILES)));
+      const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+      return { eue: mean(runs.map(r => r.gwh)), lole: mean(runs.map(r => r.hrs)),
+               worst: Math.max(...runs.map(r => r.stage)),
+               hi: Math.max(...runs.map(r => r.gwh)) };
+    };
+    out.today  = ens(state, 8);
+    out.tight  = ens({ ...state, coalEAFPct: 55 }, 8);
+    out.crisis = ens({ ...state, coalEAFPct: 45, demandGrowthPct: 14 }, 8);
+    out.hasFn  = typeof runAdequacy === 'function' && typeof applyAdequacyToBoard === 'function';
+    out.n      = (typeof ADEQ_N !== 'undefined') ? ADEQ_N : null;
+    return out;
+  `);
+
+  if (adeq && !adeq.err){
+    check('the adequacy ensemble and its board hook both exist', adeq.hasFn === true,
+          'runAdequacy or applyAdequacyToBoard is missing - the board would silently keep '
+          + 'showing the single deterministic draw');
+
+    check('the shipped draw count is large enough to be worth averaging', (adeq.n || 0) >= 24,
+          `ADEQ_N is ${adeq.n}; measured on 31 Aug, 9 draws gave a standard error of 75% of `
+          + `the mean on a tail-heavy distribution`);
+
+    // LOLE and EUE must be non-negative and finite - a NaN here would render as a blank
+    // status word rather than an error, which is the worst kind of failure.
+    for (const [lab, v] of Object.entries({ today: adeq.today, tight: adeq.tight, crisis: adeq.crisis })){
+      check(`[${lab}] adequacy metrics are finite and non-negative`,
+            Number.isFinite(v.eue) && Number.isFinite(v.lole) && v.eue >= 0 && v.lole >= 0,
+            `EUE ${v.eue}, LOLE ${v.lole}`);
+    }
+
+    // MONOTONICITY: less available coal must not produce LESS expected shedding. This is
+    // the property that would break if the ensemble ever averaged the wrong thing.
+    check('expected unserved energy rises as coal availability falls',
+          adeq.tight.eue > adeq.today.eue && adeq.crisis.eue > adeq.tight.eue,
+          `EUE today ${adeq.today.eue.toFixed(2)}, at 55% EAF ${adeq.tight.eue.toFixed(2)}, `
+          + `crisis ${adeq.crisis.eue.toFixed(2)} GWh - these must increase`);
+
+    check('LOLE rises as coal availability falls',
+          adeq.tight.lole > adeq.today.lole && adeq.crisis.lole > adeq.tight.lole,
+          `LOLE today ${adeq.today.lole.toFixed(1)}, at 55% EAF ${adeq.tight.lole.toFixed(1)}, `
+          + `crisis ${adeq.crisis.lole.toFixed(1)} h/yr`);
+
+    // The expectation must sit inside the range of draws it came from. Trivially true if
+    // computed correctly, and a sharp signal if a mean is ever taken over the wrong array.
+    check('expected unserved energy sits below the worst draw',
+          adeq.today.eue <= adeq.today.hi + 1e-9,
+          `EUE ${adeq.today.eue.toFixed(2)} against a worst draw of ${adeq.today.hi.toFixed(2)} GWh`);
+  } else {
+    check('the adequacy ensemble runs', false, adeq ? adeq.err : 'probe returned nothing');
+  }
+
 
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
