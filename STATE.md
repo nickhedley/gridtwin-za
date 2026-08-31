@@ -145,7 +145,7 @@ Mulilo), so "pipeline" is a register of projects and stages, not a not-yet-built
 ```
 regional_renewable_capacity.json   gtza-4ec9bc7cc8d3285d
 ipp_pipeline.json                  gtza-06192db1e33eb439
-substations_compact.json           gtza-d76783f127763e7a
+substations_compact.json           gtza-32905a0c750e8a10
 pfl_cod_h1_2026.json               None — should have one, see open items
 ```
 
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 817 checks. Last full run: 817/817.
+Seventeen harnesses, 826 checks. Last full run: 826/826.
 
 ```
 node stress_suite.js                290/290
@@ -231,13 +231,13 @@ node validate_invariants.js .       149/149
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           34/34
+python3 audit.py index.html           38/38
 node validate_benchmarks.js .         18/18
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
-node validate_geo.js .                37/37   SA boundary clamp, added 30 Aug
+node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .        14/14
+node validate_consistency.js .        17/17
 node validate_structure.js .          10/10
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -512,7 +512,7 @@ and is not here.
    that the register is complete for the Karoo — not merely that the matching is sound.**
    `sub`/`subkm` have not been re-derived; Impofu should reassign once they are.
 8. ~~`pfl_cod_h1_2026.json` carries no fingerprint.~~ added 28 Aug 2026,
-   `gtza-6b0cfe4c16136faf`, same method as the generated files. Note a fingerprint would NOT have caught
+   `gtza-a4cb23b744a2385b`, same method as the generated files. Note a fingerprint would NOT have caught
    the stale rollups found on 28 Aug — it is recomputed over whatever the file contains,
    so a hand edit produces a self-consistent fingerprint on wrong data. The rollup and
    generator-reproduction checks added to `validate_capacity.js` are what catch that.
@@ -928,7 +928,7 @@ one that matters for modelling: a single-project connection creates no headroom 
 anyone else.
 
 `substations_compact.json` now carries `owner`, `built_by`, `line_type` and
-`headroom_built_mw` on that entry. Fingerprint `gtza-feb8236ccf9035ca`.
+`headroom_built_mw` on that entry. Fingerprint `gtza-32905a0c750e8a10`.
 
 **lines added 30 Aug 2026 AS indicative connectors**, after establishing that
 `transmission_lines.geojson` is display-only — styled and tooltipped, with nothing in the
@@ -1535,7 +1535,7 @@ Adding a substation cannot increase anyone's nearest distance. Any project endin
 further away would have proved the recomputation wrong, so that count is the test, not a
 formality. Grassridge falls 65 -> 33 assignments; Chatty takes 33.
 
-New fingerprint `gtza-709b521a1ef8d8ac`. `meta.nearest_substation_caution` now carries
+New fingerprint `gtza-9290215d97c7ac0a`. `meta.nearest_substation_caution` now carries
 the Impofu falsification in the data file itself, so anyone reading `sub`/`subkm` sees
 that nearest IS NOT connected without having to find it in these notes.
 
@@ -2110,6 +2110,38 @@ it does so while looking busy.
 
 After the fix, +3% at today's build against the LP's +2-6%. `audit.py` pins the column
 (37 -> 38).
+
+---
+
+## Consolidation pass — 30 Aug 2026
+
+Everything today was verified in isolation. This checked the delivered set TOGETHER, and
+found three inconsistencies that no individual change would have shown.
+
+**1. FOUR STALE FINGERPRINTS IN STATE.md.** Each was correct when written and superseded
+when the same file changed again later the same day — `substations_compact.json` changed
+three times, `reea_projects.json` twice. All ten data files verify against their own
+content; it was the DOCUMENTATION that had drifted. Corrected, and re-verified to zero.
+
+**2. THE SUITE TABLE WAS WRONG BY NINE CHECKS AND ONE HARNESS.** It claimed eighteen
+harnesses and 817 checks. A full run gives SEVENTEEN harnesses and 826 checks — I had
+been incrementing a running tally rather than measuring, and the tally drifted in both
+directions at once. Rebuilt from the actual run.
+
+```
+stress_suite 290 · invariants 149 · response 81 · lp 50 · weather 48 · geo 39
+audit 38 · outputs 33 · capacity 28 · benchmarks 18 · consistency 17
+structure 10 · audit3d 9 · solve 6 · eng5 6 · external 2 · lint 2
+```
+
+**3. .gitignore had HANDOVER.md still ignored**, from when it was the 3,622-line
+original. It is now a STUB pointing at the seven documents that replaced it, so it must
+be TRACKED — an ignored stub helps nobody holding an old link. Written with `!HANDOVER.md`
+and a comment explaining why, so it is not "tidied" back.
+
+THE LESSON: a running count is not a measurement. Every individual change today was
+checked and the aggregate was still wrong, in a document whose entire purpose is to say
+what is true right now.
 
 ---
 

@@ -1,6 +1,17 @@
+# GridTwin ZA
+
+# Session archaeology. Rough thinking, superseded reasoning, and the only place
+# genuinely private material belongs — see RULES.md rule 8, which assumes every
+# TRACKED file is already public. Never authoritative: if LOG.md disagrees with
+# STATE.md, STATE.md wins.
 LOG.md
-HANDOVER.md
-testroot/
-.DS_Store
+
+# HANDOVER.md was ignored while it was the 3,622-line original. It is now a STUB
+# pointing at the seven documents that replaced it, so it must be TRACKED — an
+# ignored stub helps nobody holding an old link.
+!HANDOVER.md
+
+# Local scratch
 node_modules/
 *.log
+.DS_Store
