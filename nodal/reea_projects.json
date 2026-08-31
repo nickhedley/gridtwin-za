@@ -6,7 +6,7 @@
   "caution": "An EA is not a grid allocation, and nearest substation is a proxy for the likely connection point, not a declared one. Declared capacity may differ from what is built.",
   "licence": "Source data is DFFE's. This compilation: CC BY-NC-ND 4.0, (c) 2026 Nick Hedley.",
   "compiled": "2026-08-14",
-  "fingerprint": "gtza-9290215d97c7ac0a",
+  "fingerprint": "gtza-7f4d8068c08bbb07",
   "nearest_substation_caution": "NEAREST IS NOT CONNECTED. Falsified at Impofu 28 Aug 2026: the method returned Grassridge at 106.9 km when the line actually built runs 116 km to Chatty, which is NEARER at 93.3 km and was simply absent from the register. The method is only as good as the substation list, and the list is known to be incomplete. Treat sub/subkm as a PROXY for the likely connection point, never as a declared one."
  },
  "projects": [
@@ -3508,7 +3508,7 @@
    "lng": 24.54985,
    "lat": -34.06395,
    "sub": "Chatty",
-   "subkm": 93.3
+   "subkm": 93.1
   },
   {
    "name": "The proposed establishment of battery energy storage systems for the impofu wind farms (ea",
@@ -3522,7 +3522,7 @@
    "lng": 24.62146,
    "lat": -34.1065,
    "sub": "Chatty",
-   "subkm": 88.4
+   "subkm": 88.3
   },
   {
    "name": "The proposed Sun Garden PV Facility, Eastern Cape Province.",
@@ -5426,7 +5426,7 @@
    "lng": 24.63975,
    "lat": -34.12401,
    "sub": "Chatty",
-   "subkm": 87.5
+   "subkm": 87.4
   },
   {
    "name": "Establishment of a wind energy facility and ssociated infrastructure on a site near Oyster",
@@ -5440,7 +5440,7 @@
    "lng": 24.63975,
    "lat": -34.12401,
    "sub": "Chatty",
-   "subkm": 87.5
+   "subkm": 87.4
   },
   {
    "name": "Establishment of a wind energy facility and ssociated infrastructure on a site near Oyster",
@@ -5454,7 +5454,7 @@
    "lng": 24.63975,
    "lat": -34.12401,
    "sub": "Chatty",
-   "subkm": 87.5
+   "subkm": 87.4
   },
   {
    "name": "Establishment of a wind energy facility and ssociated infrastructure on a site near Oyster",
@@ -5468,7 +5468,7 @@
    "lng": 24.65099,
    "lat": -34.11979,
    "sub": "Chatty",
-   "subkm": 86.4
+   "subkm": 86.2
   },
   {
    "name": "Proposed wind generation facility, Namaqualand, Western Cape",
@@ -5636,7 +5636,7 @@
    "lng": 24.853,
    "lat": -34.02003,
    "sub": "Chatty",
-   "subkm": 65.1
+   "subkm": 65.0
   },
   {
    "name": "Proposed Construction of Electrawinds Wind Energy Project at the Coega Industrial Developm",
@@ -5902,7 +5902,7 @@
    "lng": 24.91617,
    "lat": -33.94341,
    "sub": "Chatty",
-   "subkm": 57.3
+   "subkm": 57.1
   },
   {
    "name": "Proposed Amakhala Emoyeni wind (Phase 1) energy facility and associated infrastructure, Ea",
@@ -6028,7 +6028,7 @@
    "lng": 24.77325,
    "lat": -34.13503,
    "sub": "Chatty",
-   "subkm": 76.7
+   "subkm": 76.6
   },
   {
    "name": "The Kouga Wind Farm In The Kouga Local Municipality, Eastern Cape Province",
@@ -6042,7 +6042,7 @@
    "lng": 24.72361,
    "lat": -34.14727,
    "sub": "Chatty",
-   "subkm": 81.4
+   "subkm": 81.3
   },
   {
    "name": "The Kouga Wind Farm In The Kouga Local Municipality, Eastern Cape Province",
@@ -6056,7 +6056,7 @@
    "lng": 24.72885,
    "lat": -34.14471,
    "sub": "Chatty",
-   "subkm": 80.9
+   "subkm": 80.7
   },
   {
    "name": "Red Cap Kouga Wind Farm - Oyster Bay",
@@ -6070,7 +6070,7 @@
    "lng": 24.53339,
    "lat": -34.16043,
    "sub": "Chatty",
-   "subkm": 98.1
+   "subkm": 98.0
   },
   {
    "name": "Proposed construction of a wind energy farm and its associated infrastructure on a site ne",
@@ -7246,7 +7246,7 @@
    "lng": 24.66782,
    "lat": -33.99105,
    "sub": "Chatty",
-   "subkm": 80.8
+   "subkm": 80.6
   },
   {
    "name": "Happy Valley wind energy facility on a site near Humansdorp",
@@ -7260,7 +7260,7 @@
    "lng": 24.66782,
    "lat": -33.99105,
    "sub": "Chatty",
-   "subkm": 80.8
+   "subkm": 80.6
   },
   {
    "name": "Proposed  establishment of the Wag 'n Bietjiespan Solar Farm on Portions 3 and 4 of Wag 'n",
@@ -7288,7 +7288,7 @@
    "lng": 24.56062,
    "lat": -34.02924,
    "sub": "Chatty",
-   "subkm": 91.4
+   "subkm": 91.2
   },
   {
    "name": "Proposed Development of an Energy Recovery Plant at the Samancor Chrome Middelburg Ferroch",
@@ -9262,7 +9262,7 @@
    "lng": 25.61322,
    "lat": -33.95448,
    "sub": "Chatty",
-   "subkm": 15.6
+   "subkm": 15.7
   },
   {
    "name": "Proposed Construction Of A Photovoltaic Solar Project Proposed By New Symphony Energy On T",
@@ -10256,7 +10256,7 @@
    "lng": 24.50087,
    "lat": -34.06668,
    "sub": "Chatty",
-   "subkm": 97.7
+   "subkm": 97.6
   },
   {
    "name": "Proposed Construction Of The 2.5 MW Photovoltaic (Pv) Solar Facility On Portion 0054 Of Th",
@@ -10536,7 +10536,7 @@
    "lng": 24.78759,
    "lat": -34.06074,
    "sub": "Chatty",
-   "subkm": 72.3
+   "subkm": 72.2
   },
   {
    "name": "The Proposed Construction Of A Solar Energy Facility in The Emthanjeni Local Municipality ",
@@ -11474,7 +11474,7 @@
    "lng": 24.77858,
    "lat": -34.0606,
    "sub": "Chatty",
-   "subkm": 73.1
+   "subkm": 72.9
   },
   {
    "name": "The Banna ba Pifhu 30.0 MW wind energy facility on the Broadlands farm near Humansdorp in ",
@@ -11488,7 +11488,7 @@
    "lng": 24.77858,
    "lat": -34.0606,
    "sub": "Chatty",
-   "subkm": 73.1
+   "subkm": 72.9
   },
   {
    "name": "Proposed Establishment Of The Cookhouse Ii Wind Energy Facility And Associated Infrastruct",
@@ -16430,7 +16430,7 @@
    "lng": 25.37859,
    "lat": -33.65723,
    "sub": "Chatty",
-   "subkm": 23.9
+   "subkm": 23.8
   },
   {
    "name": "Proposed Construction of up to a 132kV power line and associated infrastructure for the Ro",
@@ -18768,7 +18768,7 @@
    "lng": 24.62146,
    "lat": -34.1065,
    "sub": "Chatty",
-   "subkm": 88.4
+   "subkm": 88.3
   },
   {
    "name": "Proposed establishment and operation of a battery energy storage system and associated inf",
@@ -18782,7 +18782,7 @@
    "lng": 24.56335,
    "lat": -34.07398,
    "sub": "Chatty",
-   "subkm": 92.4
+   "subkm": 92.2
   },
   {
    "name": "Proposed establishment and operation of a battery energy storage system and associated inf",
@@ -18796,7 +18796,7 @@
    "lng": 24.54985,
    "lat": -34.06395,
    "sub": "Chatty",
-   "subkm": 93.3
+   "subkm": 93.1
   },
   {
    "name": "The proposed Du Plessis Dam Solar PV1 Grid Connection: Switching Station and 132kV Powerli",
@@ -20700,7 +20700,7 @@
    "lng": 24.54085,
    "lat": -34.02557,
    "sub": "Chatty",
-   "subkm": 93.0
+   "subkm": 92.9
   },
   {
    "name": "Proposed small scale Hydroelectric Scheme on Mzimkhulu River, Ubuhlebezwe Local Municipali",
@@ -20994,7 +20994,7 @@
    "lng": 25.03962,
    "lat": -33.86997,
    "sub": "Chatty",
-   "subkm": 44.8
+   "subkm": 44.6
   },
   {
    "name": "Proposed PV Plant on portion 2 of the farm Zandriverspoort 851 LS within Molemole Local Mu",
@@ -21736,7 +21736,7 @@
    "lng": 24.54844,
    "lat": -34.03892,
    "sub": "Chatty",
-   "subkm": 92.7
+   "subkm": 92.5
   },
   {
    "name": "The 182MW Impofu North wind farm and its associated infrastructure near Oyster Bay within ",
@@ -21750,7 +21750,7 @@
    "lng": 24.54829,
    "lat": -34.03892,
    "sub": "Chatty",
-   "subkm": 92.7
+   "subkm": 92.6
   },
   {
    "name": "Impofu West Wind Farm and Associated Infrastructure, Oyster Bay, Eastern Cape Province",
@@ -21764,7 +21764,7 @@
    "lng": 24.53056,
    "lat": -34.10777,
    "sub": "Chatty",
-   "subkm": 96.4
+   "subkm": 96.2
   },
   {
    "name": "Impofu East Wind Farm and Associated Infrastructure, Oyster Bay, Eastern Cape Province",
@@ -21778,7 +21778,7 @@
    "lng": 24.61397,
    "lat": -34.13785,
    "sub": "Chatty",
-   "subkm": 90.3
+   "subkm": 90.1
   },
   {
    "name": "The 189MW Impofu East wind farm and its associated infrastructure near Oyster Bay within t",
@@ -21792,7 +21792,7 @@
    "lng": 24.6136,
    "lat": -34.13771,
    "sub": "Chatty",
-   "subkm": 90.3
+   "subkm": 90.2
   },
   {
    "name": "Proposed construction of Allepas one. 100MW photovoltaic solar energy generation facility ",
@@ -27252,7 +27252,7 @@
    "lng": 24.38567,
    "lat": -33.94872,
    "sub": "Chatty",
-   "subkm": 105.7
+   "subkm": 105.6
   },
   {
    "name": "Proposed Moletsi Solar Energy Plant on Farm Locatie Van Malietzie 606 LS",

@@ -5,7 +5,7 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
-## The nine rules
+## The ten rules
 
 1. **Always run the full validation suite after any change to index.html, and
    report the counts.** Before and after, so the baseline is measured rather than
@@ -48,7 +48,14 @@ every session. Everything here was learned by getting it wrong at least once.
    in a tracked file you would mind being read. Genuinely private material goes in
    LOG.md, which is gitignored, or outside the repo. A second copy is not a control.
 
-9. **Say where each file goes.** Repo root or nodal/. Two copies of
+9. **Compare positionally, never by name.** `reea_projects.json` has 652 duplicate
+   names in 2,597 records and `transmission_lines.geojson` has 65 duplicate labels. A
+   before-and-after keyed on a name silently compares different rows: on 31 Aug this
+   reported 46 reassignments and an 87 km shift from a 178 m coordinate change. It was
+   caught only because the number was absurd — the same fault producing a plausible
+   figure would have been believed and published.
+
+10. **Say where each file goes.** Repo root or nodal/. Two copies of
    build_capacity.py under the same name cost an hour on 27 Aug.
 
 ---

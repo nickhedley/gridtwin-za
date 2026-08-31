@@ -17,7 +17,7 @@
   "licence": "CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/",
   "terms": "This dataset is original compilation work. You may view, share and link to it with attribution. You may NOT use it commercially, distribute modified versions, or incorporate it into another product. Underlying public sources retain their own licences and are credited in the source field.",
   "commercial": "Commercial licensing: https://github.com/nickhedley/gridtwin-za",
-  "fingerprint": "gtza-32905a0c750e8a10",
+  "fingerprint": "gtza-06b9065dfb679b62",
   "compiled": "2026-08-13",
   "juno_correction": "Juno was labelled Northern Cape. It sits at -31.608, 18.444 in Matzikama Local Municipality, West Coast District, WESTERN CAPE - Eskom's own Juno-Gromis project documents describe Gromis as Northern Cape near Kleinsee and Juno as Western Cape near Vredendal, and Juno's only two lines run to Aurora and Helios on the Cape network. Corrected 14 Aug 2026.",
   "field_rename": "The per-substation region field was renamed r -> area on 14 Aug 2026. It holds an Eskom TRANSMISSION SUPPLY AREA, not a province: the ten values include Hydra Central, which is a Karoo supply area spanning the Northern Cape / Eastern Cape provincial boundary and is not a province at all. headroom_summary.json and tdp_projects.json meta.line_km_by_province are keyed the same way (both carry Hydra Central); reea_projects.json 'province' is genuinely provincial (nine values, no Hydra Central) and must NOT be matched against this field.",
@@ -280,11 +280,12 @@
   },
   {
    "n": "Chatty",
-   "lat": -33.835938,
-   "lng": 25.523063,
-   "src": "pluscode",
+   "lat": -33.835563,
+   "lng": 25.521188,
+   "src": "pluscode-corroborated",
    "kv": 132,
-   "area": "Eastern Cape"
+   "area": "Eastern Cape",
+   "note": "Plus Code 5G7C+QF Ibhayi, supplied 31 Aug 2026. CORROBORATES an independently sourced 5G7F+J6 used since 28 Aug: the two decode 178 m apart, which is inside the resolution of a substation footprint. The later code is used as the more precise of the two. Distances to the three Impofu farms move by at most 0.2 km, so nothing that depends on this changes - the falsification of nearest-substation matching at Impofu holds either way (Chatty 93.1 km against Grassridge 106.9 km)."
   },
   {
    "n": "Chivelston",

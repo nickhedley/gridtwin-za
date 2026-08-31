@@ -145,7 +145,7 @@ Mulilo), so "pipeline" is a register of projects and stages, not a not-yet-built
 ```
 regional_renewable_capacity.json   gtza-4ec9bc7cc8d3285d
 ipp_pipeline.json                  gtza-06192db1e33eb439
-substations_compact.json           gtza-32905a0c750e8a10
+substations_compact.json           gtza-06b9065dfb679b62
 pfl_cod_h1_2026.json               None — should have one, see open items
 ```
 
@@ -929,7 +929,7 @@ one that matters for modelling: a single-project connection creates no headroom 
 anyone else.
 
 `substations_compact.json` now carries `owner`, `built_by`, `line_type` and
-`headroom_built_mw` on that entry. Fingerprint `gtza-32905a0c750e8a10`.
+`headroom_built_mw` on that entry. Fingerprint `gtza-06b9065dfb679b62`.
 
 **lines added 30 Aug 2026 AS indicative connectors**, after establishing that
 `transmission_lines.geojson` is display-only — styled and tooltipped, with nothing in the
@@ -1536,7 +1536,7 @@ Adding a substation cannot increase anyone's nearest distance. Any project endin
 further away would have proved the recomputation wrong, so that count is the test, not a
 formality. Grassridge falls 65 -> 33 assignments; Chatty takes 33.
 
-New fingerprint `gtza-9290215d97c7ac0a`. `meta.nearest_substation_caution` now carries
+New fingerprint `gtza-7f4d8068c08bbb07`. `meta.nearest_substation_caution` now carries
 the Impofu falsification in the data file itself, so anyone reading `sub`/`subkm` sees
 that nearest IS NOT connected without having to find it in these notes.
 
@@ -2234,6 +2234,42 @@ as two rows rather than one — different cadence, different scope.
 
 THE PATTERN: an attribution that covers a panel rather than a figure will eventually
 cover something it did not come from. Attribute at the point of use.
+
+---
+
+## Chatty corroborated — 31 Aug 2026
+
+A second Plus Code was supplied: `5G7C+QF Ibhayi`, against `5G7F+J6` in the register
+since 28 Aug. **They are different codes.** Decoded, they fall 178 m apart — inside the
+footprint of a substation, so this is CORROBORATION from an independent code rather than
+a correction.
+
+The later, more precise code is now used. `src` upgraded `pluscode` ->
+`pluscode-corroborated`. Distances to the three Impofu farms move by at most 0.2 km, and
+the finding that started all of this holds unchanged: Chatty at 93.1 km against
+Grassridge at 106.9 km.
+
+Nothing downstream moved: **zero substation reassignments across 2,597 REEA projects**,
+maximum distance change 0.20 km.
+
+### I FELL INTO A TRAP I HAD DOCUMENTED THIS MORNING
+
+My first measurement reported **46 reassignments and an 87 km maximum change** — from a
+178 m shift, which is impossible. The cause: I compared the before and after states by
+keying on project NAME, and `reea_projects.json` has **652 DUPLICATE NAMES** among 2,597
+records. Most projects were being compared against a different project's row.
+
+This is the same fault, in the same session, as the 65 duplicate labels in
+`transmission_lines.geojson` — where I caught it, wrote it up, and recorded "do not key
+on `label` in this file". The lesson did not generalise because I had written it as a
+fact about one file rather than as a habit.
+
+**COMPARE POSITIONALLY, ALWAYS.** Re-measured by index: 0 reassignments, 0.20 km. And
+note the failure was LOUD only because the number was absurd — a duplicate-key comparison
+that produced a plausible figure would have been believed.
+
+`validate_docs.py`, written this morning, caught the resulting stale fingerprints
+immediately.
 
 ---
 
