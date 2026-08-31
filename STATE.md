@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 881 checks
+suite                      19 harnesses, 883 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 881 checks. Last full run: 881/881.
+Nineteen harnesses, 883 checks. Last full run: 883/883.
 
 ```
 node stress_suite.js                290/290
@@ -261,7 +261,7 @@ node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
-python3 validate_docs.py . nodal       19/19   the documents, added 30 Aug
+python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
@@ -3893,6 +3893,50 @@ version had no-gas marginally CHEAPER; it is now marginally DEARER in total and 
 per kWh. A 1% gap either way is below what this model resolves, so the claim is
 **cost-neutral** - which is how it should have been worded originally rather than
 "marginally cheaper".
+
+---
+
+## Session review, and rule 11 — 31 Aug 2026
+
+CALENDAR.md mandates a review every session and today's had not happened.
+
+### THE CALENDAR
+
+Standing checks verified rather than assumed: `profiles.json` is at the repo root
+(356 KB - without it the suite produces eleven false failures across five harnesses), and
+RULES.md read in full.
+
+**Nearest actionable date is 10 Sep, ten days out**: the NERSA public hearing on Seriti
+Green's trading licence. Registration for oral representations closed 28 Aug; attendance
+and the livestream remain.
+
+**The EPP submission entry now records that today's re-verification STRENGTHENED two of
+its four arguments.** Policy Position 20 was filed as a "fiftyfold" spread and is
+sixty-six-fold; Policy Position 9 was filed as approaching the ancillary knee when South
+Africa is already past it. Nothing filed needs correcting - both are understated, and a
+line each would strengthen any follow-up.
+
+### RULE 11: COMPUTE THE BOUND BEFORE BELIEVING THE NUMBER
+
+Today produced one lesson general enough to be durable. For anything that MOVES a
+quantity - a battery, a corridor, a store, a transfer - work out what it can physically
+do, then check the answer against that.
+
+The co-location heuristic returned R199/MWh of uplift where the battery could move
+200 MWh across a R1,840 spread, capping it at R153. **Nothing else would have caught it.**
+The suite passed, the number was plausible, and it had already been "validated" against an
+LP and recorded as agreeing within 4.5%. Reading the code did not reveal it; one line of
+arithmetic did.
+
+### AND THE COUNT DRIFTED AGAIN, IMMEDIATELY
+
+Adding an eleventh rule made the RULES.md heading and the CALENDAR.md standing check both
+wrong - the same fault as the RESULTS.md section count fixed an hour earlier. Both are now
+asserted by `validate_docs.py`, which fails with `heading says "ten" (10), file has 11`.
+
+**Three hand-written counts have drifted in one day.** The lesson is not to count more
+carefully; it is that any number written in prose about the file it sits in needs a check,
+because prose does not recompute.
 
 ---
 

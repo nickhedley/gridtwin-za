@@ -123,6 +123,28 @@ if _res:
     # because breaking a heading fired BOTH. Rule 6 applies to harnesses too: two checks
     # of the same thing drift apart and the weaker one starts passing.
 
+# ── RULES.md count ────────────────────────────────────────────────────────────
+# The heading states how many rules follow, and CALENDAR.md repeats it as a standing
+# per-session check. Both are hand-written and both drifted on 31 Aug when an eleventh
+# rule was added. Same fault as the RESULTS.md section count, so it gets the same check.
+_rules = read('RULES.md')
+if _rules:
+    _n = len(re.findall(r'^\d+\. \*\*', _rules, re.M))
+    _w = {'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'thirteen':13}
+    _hm = re.search(r'## The ([a-z-]+) rules', _rules)
+    _hs = _w.get(_hm.group(1).lower()) if _hm else None
+    check('RULES.md heading states the right number of rules',
+          _hs == _n, 'heading says "%s" (%s), file has %d numbered rules'
+                     % (_hm.group(1) if _hm else 'nothing', _hs, _n))
+
+    _cal = read('CALENDAR.md')
+    if _cal and 'rules as at' in _cal.lower():
+        _cm = re.search(r'([A-Za-z-]+) rules as at', _cal, re.I)
+        _cs = _w.get(_cm.group(1).lower()) if _cm else None
+        check('CALENDAR.md standing check agrees with the rule count',
+              _cs == _n, 'calendar says "%s" (%s), RULES.md has %d'
+                         % (_cm.group(1) if _cm else 'nothing', _cs, _n))
+
 print(f'\n{npass}/{npass + nfail} documentation checks passed')
 if fails:
     print('\nFAILURES:')

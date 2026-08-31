@@ -3,7 +3,7 @@
 Things that expire. Checked at the start of every session; anything past its date
 either moves to LOG.md as done or gets a new date and a reason.
 
-Last reviewed: 30 Aug 2026.
+Last reviewed: 31 Aug 2026.
 
 ---
 
@@ -37,7 +37,8 @@ Still open ON these:
 ## Hard deadlines
 
 ```
-10 Sep 2026    NERSA public hearing on seriti green energy's trading licence
+10 Sep 2026    NEAREST ACTIONABLE DATE - ten days out as at 31 Aug.
+               NERSA public hearing on seriti green energy's trading licence
                application. Different matter, same regulator, and Seriti is already
                an outreach target. Registration to make oral representations closed
                28 Aug; attendance may still be possible. Livestreamed.
@@ -56,6 +57,16 @@ Q4 2026        SAWEM trading expected to commence. The Market Code (NTCSA) compl
                (harmonising load and generator zones), Policy Position 9 (ancillary
                services, with the storage-competition finding), section 4 (published
                disaggregation of the price components).
+               RE-VERIFIED 31 Aug 2026 after recalibration. BOTH quantitative
+               arguments are UNDERSTATED in what was filed, not wrong:
+                 PP20  the spread is 66-FOLD, filed as "fiftyfold". Row counts
+                       reproduce exactly (119,225 both ways); levels fell threefold
+                       with the recalibration but the RATIO is the claim and held.
+                 PP9   South Africa is already PAST the ancillary knee - it sits near
+                       2.5 GW against a 3.7 GW fleet, so a battery built today already
+                       earns a reduced rate. Filed as approaching the knee.
+               Nothing filed needs correcting. If there is follow-up correspondence,
+               both can be strengthened with a line.
                Watch FOR: the Department's summary of comments, and any sign that
                Policy Position 20 work has begun - that is when GridTwin's locational
                results become directly useful to them, and the submission offered to
@@ -122,6 +133,7 @@ Mulilo COD     Recorded as 2026-07 pending the PFL IPP Knowledge Hub COD table.
 every session  Run the full suite before any change. Report counts.
 every session  Confirm profiles.json is at the repo root. Without it the suite
                produces eleven false failures across five harnesses.
-every session  Read RULES.md in full. It is short by design.
+every session  Read RULES.md in full. It is short by design. ELEVEN rules as at
+               31 Aug 2026.
 every session  Check this file. Anything past its date moves or gets a new one.
 ```

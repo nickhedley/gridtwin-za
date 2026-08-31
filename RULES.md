@@ -5,7 +5,7 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
-## The ten rules
+## The eleven rules
 
 1. **Always run the full validation suite after any change to index.html, and
    report the counts.** Before and after, so the baseline is measured rather than
@@ -57,6 +57,19 @@ every session. Everything here was learned by getting it wrong at least once.
 
 10. **Say where each file goes.** Repo root or nodal/. Two copies of
    build_capacity.py under the same name cost an hour on 27 Aug.
+
+11. **Compute the bound before believing the number.** For anything that moves a
+    quantity - a battery, a corridor, a store, a transfer - work out what it can
+    PHYSICALLY do, then check the answer against that. On 31 Aug a co-location
+    heuristic returned R199/MWh of uplift where the battery could move 200 MWh across a
+    R1,840 spread, capping it at R153. The fault was a state-of-charge variable that
+    returned to its starting value after every matched pair, so the capacity limit never
+    bound and the battery cycled without end inside a day.
+
+    **Nothing else would have caught it.** The suite passed. The number was plausible.
+    It had already been "validated" against an LP and recorded as agreeing within 4.5%.
+    Reading the code did not reveal it; asking what the asset could physically move did,
+    in one line of arithmetic.
 
 ---
 
