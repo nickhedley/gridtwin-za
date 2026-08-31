@@ -237,6 +237,30 @@ console.log(`  ${OUTSIDE.length - outFail}/${OUTSIDE.length} foreign and ocean p
     }
   }
 
+  // ── sa_solar_grid.json is no longer an orphan ─────────────────────────────
+  // It was fetched by nothing for two weeks. It is NOT a solar data source - the model
+  // already uses PVGIS SARAH2 at ten times this resolution, and this file carries annual
+  // CF only. It is a PLAUSIBILITY REFERENCE for the site tool's live Open-Meteo call.
+  {
+    const gp = path.join(ROOT, 'nodal', 'sa_solar_grid.json');
+    if (fs.existsSync(gp)){
+      const gj = JSON.parse(fs.readFileSync(gp, 'utf8'));
+      const cf = gj.cf || {};
+      const vals = Object.values(cf).filter(v => v != null);
+      check('sa_solar_grid.json holds its stated point count',
+            vals.length === (gj.meta && gj.meta.n_points),
+            `${vals.length} valid points against a stated ${gj.meta && gj.meta.n_points}`);
+      const bad = vals.filter(v => !(v > 0.05 && v < 0.40));
+      check('every solar capacity factor is physically plausible',
+            bad.length === 0,
+            bad.length ? `${bad.length} outside 5-40%` : '');
+      const src = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+      check('the solar grid is consumed rather than orphaned',
+            /sa_solar_grid\.json/.test(src) && /solarCrossCheck/.test(src),
+            'the file must be fetched AND its cross-check wired in, or it is an orphan again');
+    }
+  }
+
   console.log(`  Karoo endpoints ${karoo.miss.length === 0 ? 'COMPLETE' : 'INCOMPLETE'} `
     + `against the line register — necessary, not sufficient`);
 }

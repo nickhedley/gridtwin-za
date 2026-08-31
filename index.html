@@ -1382,15 +1382,79 @@ function initResourceQuery(){
     return { annualCF, monthly, hourly: pv, source: 'Open-Meteo ERA5 (may overestimate by 5–15%)' };
   }
 
+  // ── PVGIS SARAH2 cross-check ──────────────────────────────────────────────
+  // `nodal/sa_solar_grid.json` was an orphan for two weeks - real PVGIS SARAH2 v5.2 data,
+  // 739 land points on a 0.5 degree grid, fetched by nothing. The obvious move was to
+  // reconnect it as the solar source. AUDITED 31 Aug 2026, and that is the WRONG move,
+  // for three reasons:
+  //
+  //   1. The national model ALREADY uses PVGIS SARAH2, at 0.05 degrees - ten times finer
+  //      than this grid. Substituting the coarse file anywhere would be a downgrade.
+  //   2. This file holds ANNUAL capacity factor only. `fetchSolar` needs an hourly series
+  //      to build a profile, so the grid cannot replace it even in principle.
+  //   3. At 0.5 degrees a cell averages roughly 55 km. Measured against the in-use
+  //      regional series it reads 5.0% LOWER on average - because real plants are sited
+  //      at better-than-average points within their region, and a cell average is not.
+  //      For SITE assessment, where the user has chosen a specific point, that bias runs
+  //      the wrong way.
+  //
+  // So it is not a data source. What it IS good for is a PLAUSIBILITY BAND. `fetchSolar`
+  // calls a live third-party API over the network; if Open-Meteo changes units, returns a
+  // different variable, or silently degrades, nothing downstream notices - the number just
+  // moves. A satellite-derived value for the same cell catches that.
+  //
+  // Band is deliberately WIDE. The expected gap is around 5% from siting plus the ERA5
+  // overestimate the source label already warns about, so anything inside 25% is normal
+  // and only a gross departure should speak up.
+  let SARAH_GRID = null;
+  fetch('nodal/sa_solar_grid.json').then(r => r.ok ? r.json() : null)
+    .then(d => { SARAH_GRID = d && d.cf ? d.cf : null; }).catch(() => {});
+
+  function sarahCFAt(lat, lng){
+    if (!SARAH_GRID) return null;
+    // Nearest valid cell on the 0.5 degree lattice, searching outward one step.
+    const rl = Math.round(lat * 2) / 2, rg = Math.round(lng * 2) / 2;
+    let best = null;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++){
+      const k = (rl + dy * 0.5).toFixed(1) + ',' + (rg + dx * 0.5).toFixed(1);
+      const v = SARAH_GRID[k];
+      if (v == null) continue;
+      const d = dy * dy + dx * dx;
+      if (!best || d < best.d) best = { d, v };
+    }
+    return best ? best.v : null;
+  }
+
+  // Returns null when there is nothing to say - no grid, no valid cell, or agreement
+  // within the band. Only speaks when the live feed has departed from the satellite.
+  function solarCrossCheck(lat, lng, annualCF){
+    const ref = sarahCFAt(lat, lng);
+    if (ref == null || !(annualCF > 0)) return null;
+    const diffPct = 100 * (annualCF - ref) / ref;
+    if (Math.abs(diffPct) <= 25) return null;
+    return { ref, diffPct,
+      msg: 'Open-Meteo returns ' + (annualCF * 100).toFixed(1) + '% here against '
+         + (ref * 100).toFixed(1) + '% from PVGIS SARAH2 satellite data for the same cell, '
+         + 'a difference of ' + (diffPct > 0 ? '+' : '') + diffPct.toFixed(0) + '%. '
+         + 'Treat this site figure with caution and check the live feed.' };
+  }
+
   // ── Chart rendering ───────────────────────────────────────────────────────
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   function renderPanel(lat, lng, solar, windRegion, windCF, windMonthly) {
     const panel = document.getElementById('rpanel_resource');
     const solarPct = (solar.annualCF*100).toFixed(1);
+    // Speaks only when the live feed departs from the satellite reference by more than
+    // 25%. Silent the rest of the time, which is almost always.
+    const _xc = (typeof solarCrossCheck === 'function') ? solarCrossCheck(lat, lng, solar.annualCF) : null;
     const windPct  = windCF ? (windCF*100).toFixed(1) : '–';
 
-    let html = `
+    let html = (_xc ? `
+      <div style="font-size:10.5px;padding:6px 9px;margin-bottom:8px;background:var(--panel2);
+                  border-left:3px solid var(--alert,#C4785A);line-height:1.5">
+        <strong>Cross-check:</strong> ${_xc.msg}
+      </div>` : '') + `
       <div style="font-size:11px;color:var(--ink2);margin-bottom:8px">
         ${lat.toFixed(3)}°, ${lng.toFixed(3)}° &nbsp;·&nbsp; ${windRegion} supply area
       </div>
@@ -2722,6 +2786,11 @@ let redzData = null;
   window.mainGeocode = mainGeocode;
   window.mainGoTo = mainGoTo;
   window.fetchSolar = fetchSolar;
+  // Exposed alongside fetchSolar for the same reason: it lives in this closure but needs
+  // to be reachable by a harness. An unreachable check is one nobody ever proves works -
+  // the pricing run on 31 Aug shipped untested for exactly that reason.
+  window.solarCrossCheck = solarCrossCheck;
+  window.sarahCFAt = sarahCFAt;
   window.nearestRegion = nearestRegion;
   window.windCFForRegion = windCFForRegion;
   window.windMonthlyForRegion = windMonthlyForRegion;

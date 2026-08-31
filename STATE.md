@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 888 checks
+suite                      19 harnesses, 891 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 888 checks. Last full run: 888/888.
+Nineteen harnesses, 891 checks. Last full run: 891/891.
 
 ```
 node stress_suite.js                290/290
@@ -259,7 +259,7 @@ node validate_outputs.js              33/33
 python3 audit.py index.html           58/58
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
-node validate_geo.js .               40/40   SA boundary clamp, added 30 Aug
+node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
@@ -4304,6 +4304,56 @@ explaining it, so the first version failed on its own comment. Same trap as the 
 that broke the worker block this morning. **A check that greps source must exclude the
 prose about the source.** Now strips comment lines first; 14/14, and it fails on exactly
 the one fault when reintroduced.
+
+---
+
+## sa_solar_grid.json: not reconnected, and that is the finding — 31 Aug 2026
+
+The open item asked whether to reconnect the orphaned PVGIS grid as a solar source. The
+obvious answer was yes - satellite data at ~5% accuracy against an ERA5 path the code's own
+label admits may overestimate by 5-15%. **The obvious answer is wrong, for three reasons
+found by looking rather than assuming.**
+
+```
+1. The national model ALREADY uses PVGIS SARAH2, at 0.05 degrees - TEN TIMES FINER
+   than this 0.5 degree grid. Substituting it anywhere would be a downgrade.
+2. This file carries ANNUAL capacity factor only. fetchSolar needs an hourly series
+   to build a profile, so it cannot replace that path even in principle.
+3. Measured against the in-use regional series it reads 5.0% LOWER on average
+   (-1.3% to -11.3% by region).
+```
+
+**Point 3 is the interesting one.** The gap is not error - it is SITING. The regional
+series is capacity-weighted to real plant locations, and developers choose
+better-than-average points. A 0.5 degree cell averages roughly 55 km including the ground
+nobody would build on. So for SITE assessment, where the user has picked a specific point,
+the coarse grid is biased the wrong way.
+
+### WHAT IT IS ACTUALLY FOR
+
+A plausibility band. `fetchSolar` calls a live third-party API; if Open-Meteo changes units,
+returns a different variable, or silently degrades, nothing downstream notices - the number
+just moves. A satellite value for the same cell catches that.
+
+The band is deliberately WIDE at 25%, because ~5% from siting plus the acknowledged ERA5
+overestimate are both expected. Tested: silent at the reference and at 20% high, flags at
++63% and -52%, silent over ocean where there is no cell.
+
+```
+PVGIS reference at Upington   0.227
+plausible / 20% high          silent
+60% high / half               FLAGGED
+```
+
+### PINNED SO IT CANNOT DRIFT BACK
+
+`validate_geo` 40 -> 43: the file holds its stated 739 points, every capacity factor is
+physically plausible, and **the grid is fetched AND its cross-check wired in**. Renaming
+the function fails the third with "or it is an orphan again".
+
+`solarCrossCheck` and `sarahCFAt` are exposed on `window` beside `fetchSolar` - an
+unreachable check is one nobody proves works, which is how the pricing run shipped untested
+this morning.
 
 ---
 
