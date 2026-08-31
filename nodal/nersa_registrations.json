@@ -9,7 +9,10 @@
   "attribution": "GridTwin ZA - nickhedley.github.io/gridtwin-za",
   "licence_note": "Licence covers this compilation - the assembly, correction and structuring of the underlying data. Source data remains under its own terms; see the source field.",
   "last_quarter": "Q1 2026/27",
-  "last_updated": "2026-08-24"
+  "last_updated": "2026-08-24",
+  "cumulative_discrepancy": "TWO CUMULATIVE TOTALS EXIST AND THEY DISAGREE. This file carries SAPVIA's collation: 2,619 facilities, 20,131 MW, ~R409bn. NERSA's own Q1 2026/27 statement gives 2,692 facilities, 21.9 GW and R452.9bn — a gap of 73 facilities and about 1,769 MW. The QUARTERLY figures agree exactly (124 facilities, 804 MW, R20.2bn), so the divergence is in the accumulated history, not the latest period. NOT RECONCILED. Do not average them and do not silently switch: quote the SAPVIA figure with its source, or NERSA's with its own, and say which. The likeliest explanation is a different treatment of deregistered or superseded facilities, but that is inference. Ask SAPVIA or check a NERSA quarterly directly.",
+  "tracking_caveat": "NERSA HAS NO MECHANISM TO TRACK WHICH REGISTERED PROJECTS GET BUILT, and no legislated deadline requires a developer to build a registered plant (NERSA, Q1 2026/27). So this is a PIPELINE OF INTENT, not a build record. Separately, embedded generation under 100 kW needs no NERSA registration at all and most of it is registered with neither Eskom Distribution nor municipalities, so the total is an UNDERCOUNT of small plant and an OVERCOUNT of what will exist.",
+  "fingerprint": "gtza-e16f5f9c0037da41"
  },
  "cumulative_by_region": {
   "Free State": {

@@ -33,6 +33,9 @@ superseded queue entries. Never add the delta. See RULES.md.
 | Eskom Tubatse pumped storage | one-off | R35.9bn, 1.5 GW / 21 GWh, JET plan | `acapPs` 2,360 R/kW-yr |
 | DFFE REEA, Red Cap / Impofu | rolling | as at last ingest | the Impofu and Koruson connector endpoints in `transmission_lines.geojson` |
 
+| SolarAfrica SunCentral | one-off | 342 MW energised of a planned 1 GW | candidate against the 1,823 MW unexplained solar in identity 3 — NOT loaded, press report only |
+| Aurora Energy Research | occasional | 2060 outlook, Aug 2026 | independent corroboration of the no-gas frontier: >120 GW new capacity |
+
 ## Watched, not yet loaded
 
 | source | why it matters | status |

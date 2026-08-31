@@ -145,7 +145,7 @@ Mulilo), so "pipeline" is a register of projects and stages, not a not-yet-built
 ```
 regional_renewable_capacity.json   gtza-4ec9bc7cc8d3285d
 ipp_pipeline.json                  gtza-06192db1e33eb439
-substations_compact.json           gtza-06b9065dfb679b62
+substations_compact.json           gtza-0fe0a41096f9685a
 pfl_cod_h1_2026.json               None — should have one, see open items
 ```
 
@@ -929,7 +929,7 @@ one that matters for modelling: a single-project connection creates no headroom 
 anyone else.
 
 `substations_compact.json` now carries `owner`, `built_by`, `line_type` and
-`headroom_built_mw` on that entry. Fingerprint `gtza-06b9065dfb679b62`.
+`headroom_built_mw` on that entry. Fingerprint `gtza-0fe0a41096f9685a`.
 
 **lines added 30 Aug 2026 AS indicative connectors**, after establishing that
 `transmission_lines.geojson` is display-only — styled and tooltipped, with nothing in the
@@ -2304,6 +2304,67 @@ convention (40 -> 41).
 `audit.py` also caught the Network Schematic edit mid-change: it pinned "node size = avg
 output" and I had written "modelled output". Correct behaviour — that phrase is a claim
 about what the node size MEANS, not decoration.
+
+---
+
+## Yelland newsletter, 31 Aug 2026 — four items acted on
+
+### 1. AQUILA IS BUILT, AND PRIVATELY BUILT — a planned flag resolved by SOURCE
+
+The R1.35bn Aquila Main Transmission Substation was built in a partnership led by
+SolarAfrica with Proconics NewFields, serving the SunCentral wheeling hub between Hanover
+and De Aar, and HANDED OVER to Eskom and NTCSA.
+
+`planned` removed. **This is the first of the eleven planned flags resolved by a
+published source rather than inference**, and it resolved the way the Koruson case
+suggested the others might — the DBSA register is stale, not wrong about the world.
+
+**SECOND CONFIRMED PRIVATE SHARED-NETWORK ASSET**, after Koruson. Both follow the same
+pattern: a developer builds a substation sized for multiple customers, then transfers it
+to the utility. That is how private capital is adding SHARED headroom — the only kind
+that helps anyone but the builder — and it is worth tracking as a category rather than
+case by case.
+
+### 2. TWO CUMULATIVE NERSA TOTALS THAT DISAGREE BY 1,769 MW
+
+```
+SAPVIA collation (ours)   2,619 facilities · 20,131 MW · ~R409bn
+NERSA's own statement     2,692 facilities · 21.9 GW  ·  R452.9bn
+```
+
+The QUARTERLY figures agree exactly — 124 facilities, 804 MW, R20.2bn — so the divergence
+is in accumulated history, not the current period. NOT RECONCILED and deliberately not
+averaged. The panel now shows the SAPVIA figure and states NERSA's alongside it.
+
+Likeliest explanation is different treatment of deregistered or superseded facilities,
+but that is inference. Ask SAPVIA, or read a NERSA quarterly directly.
+
+### 3. NERSA CANNOT TRACK WHAT GETS BUILT — from the regulator itself
+
+NERSA has no mechanism to monitor which registered projects reach operation, and no
+legislated deadline requires a developer to build a registered plant. Sub-100 kW
+generation needs no registration at all and mostly is not recorded by Eskom Distribution
+or municipalities either.
+
+So the 20 GW is **an overcount of what will exist and an undercount of small plant**. Now
+stated in the panel and in the data file: this is a pipeline of INTENT.
+
+### 4. AURORA CORROBORATES THE FRONTIER, INDEPENDENTLY
+
+Aurora Energy Research forecasts renewables at 88% of supply by 2060, needing **more than
+120 GW of new capacity** as over 30 GW of coal retires. Our own no-gas frontier lands at
+110-120 GW combined. Different method, different horizon, same order of magnitude — the
+first external corroboration of that number this project has had.
+
+### NOTED, NOT ACTED ON
+
+- Voltalia Bolobedu (148 MW, Limpopo, wheeled to RBM) and Envusa are ALREADY in
+  `pfl_private_h1_2026.json`. Good — the H1 monitor caught them.
+- **SunCentral is NOT.** 342 MW energised near Hanover/De Aar, of a planned 1 GW. A named
+  candidate against the 1,823 MW of unexplained solar in identity 3. Do not add it on a
+  press report — but it is the best lead yet on that gap.
+- Koeberg fully offline 27 Aug (both units). An outage, not a structural change;
+  `nuclearMW` is unaffected.
 
 ---
 

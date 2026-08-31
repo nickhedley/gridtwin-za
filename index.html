@@ -11701,7 +11701,7 @@ fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r=>r.js
         // data file's own meta: the CUMULATIVE series is SAPVIA's dashboard, the
         // QUARTERLY figures come from NERSA's media statement. Each is now labelled at
         // the point it appears, and the header claims neither.
-        + ' <span style="opacity:.75">Source: NERSA media statement.</span>'
+        + ' <span style="opacity:.75">Source: NERSA media statement. NERSA has no mechanism to track which registered projects are built, and no deadline requires a developer to build one \u2013 this is a pipeline of intent.</span>'
         + '</div></div>';
     }
     html += '<div id="nersaCum">';
@@ -11724,7 +11724,7 @@ fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r=>r.js
         </div>
         <span style="text-align:right;font-size:10px;white-space:nowrap">${(v.total_mw/1000).toFixed(1)}GW</span></div>`;
     });
-    html+=`<div style="margin-top:6px;font-size:9px;color:var(--ink2)"><span style="display:inline-block;width:8px;height:8px;background:#F5C518;border-radius:1px;margin-right:3px"></span>Solar &nbsp;<span style="display:inline-block;width:8px;height:8px;background:#3EA055;border-radius:1px;margin-right:3px"></span>Wind &nbsp;Cumulative: SAPVIA NERSA Registered Plants Dashboard</div>`;
+    html+=`<div style="margin-top:6px;font-size:9px;color:var(--ink2)"><span style="display:inline-block;width:8px;height:8px;background:#F5C518;border-radius:1px;margin-right:3px"></span>Solar &nbsp;<span style="display:inline-block;width:8px;height:8px;background:#3EA055;border-radius:1px;margin-right:3px"></span>Wind &nbsp;Cumulative: SAPVIA NERSA Registered Plants Dashboard. NERSA&rsquo;s own Q1 2026/27 statement gives a higher figure \u2013 2,692 facilities and 21.9&nbsp;GW \u2013 unreconciled; the quarterly numbers agree exactly.</div>`;
     html+='</div>';   // close #nersaCum
     body.innerHTML=html;
     return;
