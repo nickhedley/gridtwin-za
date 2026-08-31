@@ -12461,11 +12461,27 @@ function applyAdequacyToBoard(){
     + `LOLE ${e.lole.toFixed(1)} hours/year, EUE ${e.eueGWh.toFixed(2)} GWh. `
     + `${Math.round(100*e.pShed)}% of draws shed something; worst draw reached stage `
     + `${e.worstStage} and ${e.hi.toFixed(2)} GWh. `
+    + `A typical year reaches stage ${e.medStage} and ${Math.round(100*e.cleanShare)}% of draws `
+    + `are entirely clean - the lamps show the TYPICAL year, not the worst. `
+    + `For scale, Eskom's audited FY2026 outturn was 36 GWh unserved, so this scenario `
+    + `models a system materially better than the one that actually ran. `
     + `EUE standard error +/- ${e.seGWh.toFixed(2)} GWh - the distribution is tail-heavy, `
     + `so treat the expectation as indicative rather than precise. `
     + `Expectations, not a median - half the draws being clean does not make the year clean.`;
   // Lamps show the WORST draw, matching their label ("max stage"), not the expectation.
-  document.querySelectorAll('.lamp').forEach((l,i)=>l.classList.toggle('on', i < e.worstStage));
+  // LAMPS SHOW THE TYPICAL YEAR, NOT THE WORST DRAW. Corrected 31 Aug 2026 after the
+  // board lit five lamps under Today, reading as a country in stage 5 during the best
+  // run of supply in a decade.
+  //
+  // The label "max stage" always meant the worst HOUR within a year, and with one
+  // deterministic year that is what the lamps showed. The 48-draw ensemble silently
+  // changed it to the worst hour across 48 SIMULATED YEARS - a 1-in-48 tail displayed as
+  // the system's state - and the label never changed to say so.
+  //
+  // Measured on the default scenario: 18 draws reach stage 0, 17 stage 1, 9 stage 2,
+  // 2 stage 3, 2 stage 5. The MEDIAN year reaches stage 1. Lighting five reported a freak.
+  // The tail is not hidden, it is in the tooltip where a number can carry its caveat.
+  document.querySelectorAll('.lamp').forEach((l,i)=>l.classList.toggle('on', i < e.medStage));
   if (shedEl){
     shedEl.textContent = (e.eueGWh < 0.05 ? '0'
       : e.eueGWh < 10 ? e.eueGWh.toFixed(1)
@@ -12547,6 +12563,11 @@ async function runAdequacy(){
     pShed: runs.filter(r => r.hrs > 0).length / runs.length,
     worstStage: Math.max(...runs.map(r => r.stage)),
     medStage: med(runs.map(r => r.stage)),
+    // p90 across draws, and the share of draws that are entirely clean. Reported so the
+    // tooltip can show the SHAPE of the distribution rather than one point from it.
+    p90Stage: (() => { const a = runs.map(r => r.stage).sort((x, y) => x - y);
+                       return a[Math.min(a.length - 1, Math.floor(0.9 * (a.length - 1)))]; })(),
+    cleanShare: runs.filter(r => r.hrs === 0).length / runs.length,
     lo: Math.min(...g), hi: Math.max(...g), n: ADEQ_N,
     weatherVaried: !!wxYears,
     // Standard error of the mean. On a tail-heavy distribution this is large and saying

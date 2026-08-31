@@ -98,6 +98,10 @@ CHECKS = [
     ('adequacyEnsemble',                                           'adequacy ensemble'),
     ('LOLE ',                                                      'board reports LOLE'),
     ('EUE ',                                                       'board reports expected unserved energy'),
+    # Lamps show the TYPICAL year, not the worst of 48 draws. Reverting this puts a
+    # 1-in-48 tail back on the masthead as though it were the state of the country.
+    ('i < e.medStage',                                             'lamps show the typical year'),
+    ('typical year reaches stage',                                 'tooltip states typical vs worst'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices
     # beside MIP energy with nothing saying so.

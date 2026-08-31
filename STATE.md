@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 876 checks
+suite                      19 harnesses, 878 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 876 checks. Last full run: 876/876.
+Nineteen harnesses, 878 checks. Last full run: 878/878.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           54/54
+python3 audit.py index.html           56/56
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -3706,6 +3706,51 @@ ensemble ever averages the wrong thing.
 
 VERIFIED IT CAN FAIL: setting `ADEQ_N` back to 9 fails the draw-count check with the
 measurement quoted in the message.
+
+---
+
+## Five lamps under Today: my ensemble broke the label — 31 Aug 2026
+
+Reported from South Africa: the board looked jarring during the best run of supply in a
+decade. **The numbers were right and the display was not.**
+
+```
+GridTwin, 48 draws        LOLE 3.0 h/yr · EUE 2.36 GWh · 38% of draws entirely clean
+Eskom FY2026 audited      36 GWh unserved · 365 consecutive loadshedding-free days
+
+the model is 15x MORE OPTIMISTIC than the year that actually ran
+```
+
+### THE LAMPS CHANGED MEANING WHEN I ADDED THE ENSEMBLE
+
+"Load shedding · max stage" always meant the worst HOUR within a year. With one
+deterministic year the lamps showed exactly that. **The 48-draw ensemble silently
+redefined it as the worst hour across 48 SIMULATED YEARS** - and the label never changed.
+
+```
+max stage by draw:  stage 0: 18 · stage 1: 17 · stage 2: 9 · stage 3: 2 · stage 5: 2
+median year reaches stage 1 · p90 stage 2 · worst 5
+```
+
+Five lamps was a 1-in-48 tail on the masthead. **They now show the MEDIAN draw**: one lamp
+under Today, five at 58% availability, eight in the 2023 crisis. The tail is not hidden -
+the tooltip gives the worst draw, the share of clean years, and Eskom's actual outturn for
+scale.
+
+### THE PATTERN, FOR THE FOURTH TIME TODAY
+
+Every fault in this sequence has been the same shape: a single number standing in for a
+distribution, and a label that stopped matching what the number meant.
+
+```
+one seeded draw     overstated - a tail draw shown as the answer
+the median          understated - hid that half the draws shed
+the mean            better, but a point estimate until the standard error was added
+the lamps           the label said "max stage in a year" and quietly became "across 48 years"
+```
+
+**Adding uncertainty to a number does not automatically fix the label above it.** That is
+the lesson worth keeping.
 
 ---
 
