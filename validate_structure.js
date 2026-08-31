@@ -329,6 +329,17 @@ const live = stripComments(src);
           eafLbl.length === 0,
           eafLbl.length ? 'coalEAFPct || 0 found ' + eafLbl.length + ' times - use ?? FIXED.coalEAFPct' : '');
 
+    // ONE weather-profile builder. Audited 31 Aug 2026: runMC and runAdequacy each
+    // carried their own copy of loadWeatherYears + wxCache + profileFor. Rule 6 applied
+    // to behaviour, and not hypothetical - the board and the risk panel had already
+    // diverged fiftyfold that morning because only one of them was updated.
+    const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
+    const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
+    check('there is one shared weather-profile builder',
+          wxFactory.length === 1 && wxCopies.length === 0,
+          `factory defined ${wxFactory.length} times, ${wxCopies.length} private wxCache `
+          + `copies - both ensembles must build weather years the same way`);
+
     const lits = (src.match(/importsCF\s*\?\?\s*[0-9.]+/g) || []);
     check('no numeric fallback duplicates the imports capacity factor',
           lits.length === 0,

@@ -12525,6 +12525,41 @@ let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a succe
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
 let nodalNationalShedGwh=null; // national engine shed at same scenario — used to compute corridor correction factor
 
+/* --- Shared weather-year profile builder --- */
+// ONE definition, used by BOTH ensembles. Extracted 31 Aug 2026 after an audit found
+// runMC and runAdequacy each carrying their own copy of loadWeatherYears,
+// weatherYearNational, the wxCache and profileFor - identical logic, two places.
+//
+// This is rule 6 applied to behaviour rather than constants, and its failure mode is not
+// hypothetical: earlier the same day the board and the risk panel WERE on different
+// weather bases and disagreed fiftyfold, because only one of them had been updated.
+// Two copies of "how to build a weather year" is how that happens again.
+//
+// Caches per year because building a national profile walks ten regions x 8,760 hours,
+// and both callers draw the same handful of years repeatedly.
+async function weatherProfileFactory(){
+  let years = null;
+  try {
+    const wx = await loadWeatherYears();
+    years = wx && wx.meta && wx.meta.years ? wx.meta.years : null;
+  } catch (e) { years = null; }
+  const cache = new Map();
+  return {
+    years,
+    // y === null returns the default profile, which is what both callers want when the
+    // multi-year file is unavailable. They then report outage risk only and say so.
+    profileFor(y){
+      if (y == null) return PROFILES;
+      if (!cache.has(y)){
+        const nat = weatherYearNational(String(y));
+        cache.set(y, nat ? { demand: PROFILES.demand, solar: nat.solar,
+                             wind: nat.wind, csp: PROFILES.csp, real: true } : PROFILES);
+      }
+      return cache.get(y);
+    },
+  };
+}
+
 /* --- Adequacy ensemble: the board headline, over outage draws --- */
 // WHY. The base run carries ONE seeded unit-level outage path (outageSeed 20260816).
 // Measured 31 Aug 2026 across ten seeds, that single draw turned out to sit at the TAIL,
@@ -12635,20 +12670,8 @@ async function runAdequacy(){
   const runs = [];
   // Weather years, if the multi-year file loaded. Degrades to the default profile alone,
   // in which case this reports outage risk only and the tooltip still holds.
-  let wxYears = null, wxCache = new Map();
-  try {
-    const wx = await loadWeatherYears();
-    wxYears = wx && wx.meta && wx.meta.years ? wx.meta.years : null;
-  } catch (e) { wxYears = null; }
-  const profileFor = (y) => {
-    if (y == null) return PROFILES;
-    if (!wxCache.has(y)){
-      const nat = weatherYearNational(String(y));
-      wxCache.set(y, nat ? { demand: PROFILES.demand, solar: nat.solar,
-                             wind: nat.wind, csp: PROFILES.csp } : PROFILES);
-    }
-    return wxCache.get(y);
-  };
+  const _wx = await weatherProfileFactory();
+  const wxYears = _wx.years, profileFor = _wx.profileFor;
   for (let i = 0; i < ADEQ_N; i++){
     if (token !== adeqToken) return;                    // a newer scenario superseded this
     // Seeds spaced by a large odd stride so consecutive draws are not correlated.
@@ -12719,20 +12742,13 @@ async function runMC(){
   // sampled independently, which is the right assumption here: Eskom's unplanned
   // outages are driven by plant condition and maintenance, not by whether it was
   // a windy year.
-  const wx = await loadWeatherYears();
-  const wxYears = wx && wx.meta && wx.meta.years ? wx.meta.years : null;
+  // Shared with runAdequacy - see weatherProfileFactory. Both ensembles MUST build
+  // weather years the same way or the board and this panel report different systems.
+  const _wx = await weatherProfileFactory();
+  const wxYears = _wx.years;
   // Cache the national profile per weather year - building it walks 10 regions
   // x 8760 hours, and MC_N draws would otherwise rebuild the same few repeatedly.
-  const wxCache = new Map();
-  const profileFor = (y) => {
-    if (!wxYears) return PROFILES;
-    if (!wxCache.has(y)) {
-      const nat = weatherYearNational(String(y));
-      wxCache.set(y, nat ? { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind,
-                             csp: PROFILES.csp, real: true } : PROFILES);
-    }
-    return wxCache.get(y);
-  };
+  const profileFor = _wx.profileFor;
 
   for(let i=0;i<MC_N;i+=12){
     if(token!==mcToken)return;

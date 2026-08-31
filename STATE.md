@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 892 checks
+suite                      19 harnesses, 893 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 892 checks. Last full run: 892/892.
+Nineteen harnesses, 893 checks. Last full run: 893/893.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
-node validate_structure.js .         14/14
+node validate_structure.js .         15/15
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
@@ -4554,6 +4554,53 @@ Every wrong turn today came from reasoning about the model instead of measuring 
 every correction came from a file already in the repository. The EAF gap, the seasonal
 inversion, the winter assumption - three diagnoses built on intuition, all falsified by
 data nobody had to go and fetch.
+
+---
+
+## Full audit after the day's changes — 31 Aug 2026
+
+Asked to scour everything as both modeller and coder after a day of large changes.
+
+### WHAT CHECKED OUT
+
+```
+hourly energy balance      0.00e+00 MW worst error, and exact in all ten
+                           extreme scenarios tested including zero coal and 200 GW VRE
+constants                  coalInstalledMW 39,692 · coalEAFPct 65 · importsCF 0.41
+                           matching IMPORTS_CF exactly
+slider drift               none - every slider default equals its FIXED counterpart
+storage round trip         0.776, inside the documented 0.776-0.815 band
+series integrity           no negative or NaN value in any stack series
+marginal technology        8,398 coal · 327 diesel · 30 ps · 5 unserved = 8,760 exactly,
+                           and no hour names a plant that is not generating
+today's additions          all eleven reachable, no leftover instrumentation
+```
+
+### TWO THINGS I CHASED THAT WERE NOT BUGS
+
+**A 2,800 MW balance error** at hour 8333 - my check double-counted, because `loadS`
+already includes storage charging. Caught by noticing supply equalled `loadS` exactly.
+
+**A price floor of R715 where coal SRMC computes to R594.** Neither part-load (median
+1.012, too small) nor an error: `coalMarginalCost` walks a within-fleet merit curve, so
+the MARGINAL coal unit legitimately costs more than the R546 fleet average. The model is
+more sophisticated than my expectation of it.
+
+### ONE REAL FINDING: TWO COPIES OF THE WEATHER BUILDER
+
+`runMC` and `runAdequacy` each carried their own `loadWeatherYears`, `wxCache` and
+`profileFor` - identical logic, two places. **Rule 6 applied to behaviour, and its failure
+mode is not hypothetical: the board and the risk panel had already diverged fiftyfold that
+same morning because only one of them was on real weather years.**
+
+Extracted to `weatherProfileFactory()`. Results byte-identical either side - LOLE 3.0,
+EUE 2.36 - so the refactor is behaviour-preserving. `validate_structure` 14 -> 15 asserts
+one factory and zero private caches.
+
+### THE HONEST SUMMARY
+
+Nothing in the model's outputs is wrong. The one defect found was structural, and it was
+the specific structure that had already produced a real bug hours earlier.
 
 ---
 
