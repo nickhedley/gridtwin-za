@@ -2588,18 +2588,25 @@ measured change, which is the only reason to re-pin.
 
 ### Model gaps the audited data exposed
 
-1. **OCGT under-runs. The 31 Aug diagnosis was WITHDRAWN the same day** - it rested on
-   reading `coalAvail` (initial conditions and lookahead) as though it were `cAvail` (the
-   hourly limit, capped by a stochastic unit-level outage path that is on by default), and
-   on sweeping single draws where the standard error is 75% of the mean.
+1. **THE MODEL SHEDS IN THE WRONG SEASON.** Supersedes both the withdrawn OCGT diagnosis
+   and the four-point EAF gap, which is a symptom of this. Mean of 24 outage draws:
 
-   Re-run as means over 24 draws, **a single availability value DOES reproduce both**:
-   at 61% the model gives OCGT 1.026 TWh and 26.0 GWh unserved against Eskom's 1.079 and
-   36.0. What survives is more interesting - matching the audited outturn needs about FOUR
-   POINTS LOWER availability than the audited 65.2% EAF. EAF is an energy availability
-   factor including planned maintenance; a dispatch model needs hourly available capacity,
-   and they are not the same quantity. **Do not tune `coalEAFPct` to close it.** See
-   RESULTS.md.
+   ```
+   summer Dec-Feb  0.44 GWh          winter Jun-Aug  0.00 GWh
+   ```
+
+   **South African load shedding is a WINTER phenomenon. This model never sheds in
+   winter.** `genUnitOutagePath` shifts planned maintenance out of winter on a `SEASON`
+   array running 3:1, putting winter availability at 74.6% against an annual 65% - nearly
+   ten points of extra margin exactly when the system is tightest.
+
+   Flattening the season was TESTED and makes it better not worse. Two things are missing
+   together: winter availability closer to the annual mean, AND a forced-outage rate that
+   RISES in winter when units run hardest, which `forcedSharePct` does not model at all.
+
+   **Do not publish the EAF gap and do not tune `coalEAFPct`.** Next step is a
+   winter-weighted forced-outage rate calibrated against Eskom's published UCLF by month -
+   a data question before a modelling one. Full working below.
 
 2. ~~Technical and other losses not modelled.~~ **I WAS WRONG — CHECKED 31 Aug 2026.**
    They are ALREADY inside the demand series. `profiles.json` states its basis:
@@ -4200,6 +4207,8 @@ solar falls to 2.7% at 60 GW.
 
 ```
 the 4-point EAF gap      Reproducing Eskom's outturn needs ~61% against an audited 65.2%.
+                         SUPERSEDED 31 Aug: it is a symptom of the model shedding in
+                         SUMMER when South Africa sheds in WINTER.
                          Interesting and probably real, but untested against maintenance
                          treatment or outage tail thickness, and it reads as criticism of
                          Eskom. Needs work before it is safe.
@@ -4354,6 +4363,59 @@ the function fails the third with "or it is an orphan again".
 `solarCrossCheck` and `sarahCFAt` are exposed on `window` beside `fetchSolar` - an
 unreachable check is one nobody proves works, which is how the pricing run shipped untested
 this morning.
+
+---
+
+## The model sheds in summer. South Africa sheds in winter. — 31 Aug 2026
+
+Investigating the four-point EAF gap found something larger and made that gap a symptom.
+
+```
+WHEN the model sheds, mean of 24 outage draws
+  Jan 0.30 GWh · Feb 0.14 · Mar 0.25 · Nov 0.06 · all other months ~0
+  summer Dec-Feb  0.44 GWh          winter Jun-Aug  0.00 GWh
+```
+
+**Every South African knows load shedding is a winter problem. This model never sheds in
+winter at all.**
+
+### THE MECHANISM
+
+`genUnitOutagePath` shifts planned maintenance out of the winter peak on a `SEASON` array
+running 3:1 - 0.45 in June and July against 1.35 in December to February. Real utilities do
+schedule this way, so the direction is right. The MAGNITUDE is not:
+
+```
+annual EAF set to          65.0%
+model winter availability  74.6%
+model summer availability  58.9%
+seasonal swing            +15.7 points
+```
+
+Nearly ten points of extra availability exactly when the system is tightest. The model
+sails through the winter peak and manufactures scarcity in January instead.
+
+### THE OBVIOUS FIX IS WRONG, TESTED
+
+Flattening the season to 1.45:1 should have moved shedding into winter. It did the
+opposite - OCGT fell 0.217 to 0.132 TWh and unserved went to zero. Less summer maintenance
+removes the summer scarcity without creating winter scarcity, because winter has ample
+margin either way.
+
+**So this is not a parameter to tune.** Two things are missing together: winter
+availability should sit closer to the annual mean, AND unplanned outages should RISE in
+winter when units run hardest. The process models the second not at all - `forcedSharePct`
+is flat across the year.
+
+### WHAT THIS DOES TO THE EAF FINDING
+
+The four-point gap - needing 61% to reproduce Eskom's outturn against an audited 65.2% - is
+a SYMPTOM of this, not a separate result. Lowering annual availability is compensating for
+a seasonal shape that is too generous where it matters. **It stays out of anything
+published**, and `coalEAFPct` stays at the audited value.
+
+NEXT STEP: a winter-weighted forced-outage rate, calibrated against Eskom's published UCLF
+by month rather than assumed. That is a data question before it is a modelling one.
 
 ---
 
