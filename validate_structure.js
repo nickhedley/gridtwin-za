@@ -333,6 +333,31 @@ const live = stripComments(src);
     // carried their own copy of loadWeatherYears + wxCache + profileFor. Rule 6 applied
     // to behaviour, and not hypothetical - the board and the risk panel had already
     // diverged fiftyfold that morning because only one of them was updated.
+    // THE WORKER SOURCE MUST PARSE AFTER TEMPLATE-LITERAL EVALUATION.
+    // MIP_WORKER_SRC is a template literal, so every backslash in it is collapsed once
+    // before the worker sees it. On 31 Aug a pricing-run edit wrote `split('\\n')` where
+    // it needed `split('\\\\n')`; that collapsed to a literal newline inside a string and
+    // the full-year run died with "Uncaught SyntaxError: Invalid or unexpected token".
+    //
+    // NOTHING IN THE SUITE CAUGHT IT. Lint passes because the FILE is valid JavaScript -
+    // the fault only exists in the string the browser builds at runtime. So build that
+    // string the way the browser does, and parse it.
+    {
+      const wi = src.indexOf('const MIP_WORKER_SRC = `');
+      if (wi >= 0){
+        const a = src.indexOf('`', wi), b = src.indexOf('`', a + 1);
+        let evaluated = null, err = null;
+        try { evaluated = eval(src.slice(a, b + 1)); }
+        catch (e) { err = 'template literal itself failed: ' + e.message; }
+        if (evaluated != null){
+          try { new Function(evaluated); }
+          catch (e) { err = e.message; }
+        }
+        check('the MIP worker source parses after template evaluation',
+              !err, err + ' - a backslash in MIP_WORKER_SRC must be DOUBLED to survive');
+      }
+    }
+
     const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
     const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
     check('there is one shared weather-profile builder',

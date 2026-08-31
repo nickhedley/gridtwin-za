@@ -15262,11 +15262,11 @@ self.onmessage = async (e) => {
             // emits them, so the balance rows are recovered by name from the LP text -
             // the same technique storage_lp.js uses.
             const names = [];
-            const lines = lpFixed.split('\n');
+            const lines = lpFixed.split('\\n');
             const ci = lines.findIndex(l => /^Subject To$/.test(l.trim()));
             const bi = lines.findIndex((l, ix) => ix > ci && /^Bounds$/.test(l.trim()));
             for (let ix = ci + 1; ix < (bi < 0 ? lines.length : bi); ix++){
-              const m = lines[ix].match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:/);
+              const m = lines[ix].match(/^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*:/);
               if (m) names.push(m[1]);
             }
             if (names.length === Object.keys(rp.Rows).length){

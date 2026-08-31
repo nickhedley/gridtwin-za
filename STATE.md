@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 893 checks
+suite                      19 harnesses, 894 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 893 checks. Last full run: 893/893.
+Nineteen harnesses, 894 checks. Last full run: 894/894.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
-node validate_structure.js .         15/15
+node validate_structure.js .         16/16
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
@@ -4601,6 +4601,54 @@ one factory and zero private caches.
 
 Nothing in the model's outputs is wrong. The one defect found was structural, and it was
 the specific structure that had already produced a real bug hours earlier.
+
+---
+
+## The full-year run was BROKEN and the whole suite passed — 31 Aug 2026
+
+Reported from the browser: **"Solver error: Uncaught SyntaxError: Invalid or unexpected
+token"** on Run the full model. My pricing-run edit had broken it, and 893 checks said
+everything was fine.
+
+### THE FAULT
+
+`MIP_WORKER_SRC` is a template literal, so every backslash in it is collapsed ONCE before
+the worker sees the string. The existing code knows this and writes four backslashes where
+the worker needs one escape. My code wrote two:
+
+```
+in the file      what the worker receives
+\\\\n   (existing)   \\n        correct - a newline escape
+\\n     (mine)       an actual newline inside a single-quoted string  -> SyntaxError
+```
+
+`const lines = lpFixed.split('\\n')` became `split('` followed by a real line break.
+
+### WHY NOTHING CAUGHT IT
+
+**The file is valid JavaScript.** Lint passes, `node --check` passes, every harness passes,
+because the fault does not exist in the source - it exists only in the string the browser
+BUILDS from the source at runtime. The worker also never runs under jsdom, which stubs
+`Worker` out entirely.
+
+Three separate defences all missed it for the same reason: they all inspect the file.
+
+### THE CHECK NOW BUILDS WHAT THE BROWSER BUILDS
+
+`validate_structure` 15 -> 16. It slices out the template literal, evaluates it exactly as
+the browser does, and parses the result with `new Function`. Verified against the broken
+copy: reports "Invalid or unexpected token - a backslash in MIP_WORKER_SRC must be
+DOUBLED".
+
+Pricing run re-verified end to end afterwards: 283 rows parsed and matched, R608 against a
+R600 marginal cost.
+
+### THE THIRD ESCAPING TRAP IN ONE DAY
+
+A backtick in a worker comment broke the page this morning. A regex in a check matched its
+own documentation this afternoon. Now a backslash. **The worker block is not ordinary
+source and cannot be edited as though it were** - and until today nothing verified that.
+Rules 6 and 7 are about constants appearing twice; this is the same disease in escaping.
 
 ---
 
