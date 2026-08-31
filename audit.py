@@ -83,6 +83,9 @@ CHECKS = [
     # Peak reservation for pumped storage. Without it the store empties before the annual
     # peak and diesel covers the worst hour while adequacy counts the storage as firm.
     ('psPeakFloor',                                                'pumped storage peak reservation'),
+    # Project-planning tools framed by DECISION rather than topic. Each tab carries the
+    # question it answers, and the row is introduced as a project's lifecycle.
+    ('These follow a project',                                     'project tools framed as a lifecycle'),
     ('one builder',                                                'Eskom Green floor-not-forecast caveat'),
 ]
 

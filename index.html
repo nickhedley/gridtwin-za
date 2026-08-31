@@ -3426,14 +3426,15 @@ function printPrefeas() {
       Annual capacity factor shown alongside a monthly chart and CSV download.
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:0;row-gap:2px;border-bottom:1.5px solid var(--ink);padding:0 14px;margin-top:10px">
-      <button class="rtab active" onclick="switchTab('resource')" id="tab_resource">Grid-scale solar &amp; wind</button>
-      <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter">Data centre captive power</button>
-      <button class="rtab" onclick="switchTab('capture')" id="tab_capture">Capture price</button>
-      <button class="rtab" onclick="switchTab('grid')" id="tab_grid">Grid connection</button>
-      <button class="rtab" onclick="switchTab('wheeling')" id="tab_wheeling">Wheeling</button>
-      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas">Project pre-feasibility</button>
-      <button class="rtab" onclick="switchTab('rooftop')" id="tab_rooftop">Rooftop solar</button>
+      <button class="rtab active" onclick="switchTab('resource')" id="tab_resource" title="Is the wind and sun good enough at this site?">Grid-scale solar &amp; wind</button>
+      <button class="rtab" onclick="switchTab('datacenter')" id="tab_datacenter" title="Can I power a large load behind the meter, and what does it cost?">Data centre captive power</button>
+      <button class="rtab" onclick="switchTab('capture')" id="tab_capture" title="What will a project actually earn per MWh, not what the average is">Capture price</button>
+      <button class="rtab" onclick="switchTab('grid')" id="tab_grid" title="Can I connect here, and what does the connection cost?">Grid connection</button>
+      <button class="rtab" onclick="switchTab('wheeling')" id="tab_wheeling" title="What does it cost to move power from my plant to my customer?">Wheeling</button>
+      <button class="rtab" onclick="switchTab('prefeas')" id="tab_prefeas" title="Does the whole project stack up at this site?">Project pre-feasibility</button>
+      <button class="rtab" onclick="switchTab('rooftop')" id="tab_rooftop" title="Which household or business measure pays back first?">Rooftop solar</button>
     </div>
+      <p style="font-size:9.5px;color:var(--ink2);margin:5px 14px 0;line-height:1.5">These follow a project's life: <strong>resource</strong> at the site, then <strong>grid connection</strong>, then what it <strong>earns</strong>, then how the power <strong>reaches a customer</strong>, then whether the whole thing <strong>stacks up</strong>. Hover any tab for the question it answers.</p>
     <div style="padding:8px 14px;border-bottom:1px solid var(--line2);display:flex;gap:6px;align-items:center;background:var(--panel)">
       <input id="mainSearch" type="text" placeholder="Search address, suburb, town, landmark – or paste GPS coordinates"
              style="flex:1;padding:5px 9px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box"

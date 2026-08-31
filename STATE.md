@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 851 checks
+suite                      18 harnesses, 852 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 851 checks. Last full run: 851/851.
+Eighteen harnesses, 852 checks. Last full run: 852/852.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           44/44
+python3 audit.py index.html           45/45
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -2640,13 +2640,20 @@ instinct. But the project side is a row of TOOLS rather than a framed decision, 
 strongest developer-facing work of the past two days — merchant value, capture rates,
 hybrid uplift — is not presented as answering a developer's question even though it does.
 
-**1. RE-FRAME THE PROJECT PLANNING TAB AROUND THE ASSET LIFECYCLE.** Siting, valuation,
-PPA, connection. The existing tools map onto those almost one-to-one; this is labelling
-and grouping, not new modelling.
+**1 & 2. ~~Re-frame the project tools by decision.~~ DONE 31 Aug 2026.** Each of the
+seven tabs now carries the QUESTION it answers as a tooltip — "Can I connect here, and
+what does the connection cost?" rather than "Grid connection" — and the row is introduced
+as a project's lifecycle: resource at the site, then grid connection, then what it earns,
+then how the power reaches a customer, then whether it stacks up.
 
-**2. A "WHAT IS THIS FOR" LINE ON EACH TOOL.** One sentence naming the decision it
-supports. The panels now say `modelled` or name a source; they do not say what question
-they answer.
+Deliberately a tooltip plus ONE visible line rather than seven visible subtitles: the
+text trim earlier the same day removed 44% of the page prose, and seven new lines would
+have put much of it straight back. The lifecycle sentence carries the framing; the
+per-tool detail is one hover away.
+
+Verified the line sits as a SIBLING of the tab row rather than inside a panel, and that
+tab switching still works — placement is the thing that would break silently. `audit.py`
+pins it (44 -> 45).
 
 ### FLEXPLORER IS THE CLOSEST ANALOGUE TO SOMETHING HALF-BUILT HERE
 
