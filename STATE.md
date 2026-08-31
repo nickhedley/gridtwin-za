@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 847 checks
+suite                      18 harnesses, 848 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 847 checks. Last full run: 847/847.
+Eighteen harnesses, 848 checks. Last full run: 848/848.
 
 ```
 node stress_suite.js                290/290
@@ -232,7 +232,7 @@ node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           41/41
-node validate_benchmarks.js .        19/19
+node validate_benchmarks.js .        20/20
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
@@ -2557,11 +2557,26 @@ measured change, which is the only reason to re-pin.
    model, and the gap will be worst in exactly the tight hours the adequacy work turns
    on. Options: a minimum-run constraint, or pricing the services that actually call
    them.
-2. **Technical and other losses: 23,921 GWh, 11.6% of energy available.** Not modelled
-   at all, and larger than every technology except coal. Anything comparing the model's
-   served energy against a national sales figure is out by this much.
-3. **`IMPORTS_CF` in `nodal_engine.js` is still a second copy** of `FIXED.importsCF`.
-   Make it read the constant. Rule 6.
+2. ~~Technical and other losses not modelled.~~ **I WAS WRONG — CHECKED 31 Aug 2026.**
+   They are ALREADY inside the demand series. `profiles.json` states its basis:
+   `demand = underlying(gross grid demand + est rooftop)`, which is Eskom's
+   ENERGY-AVAILABLE-FOR-DISTRIBUTION basis, i.e. BEFORE distribution losses. Measured:
+
+   ```
+   model grid generation, excl rooftop        208.5 TWh
+   Eskom energy available for distribution    206.0 TWh   +1.2%
+   Eskom local and international SALES        178.0 TWh  +17.1%
+   ```
+
+   The model tracks the available-for-distribution figure to within 1.2%. Adding a loss
+   term would have DOUBLE-COUNTED 24 TWh and broken a calibration that is currently very
+   good. **The real requirement is a caveat, not a model change**: never compare the
+   model's served energy against a national SALES figure — it is 17% higher by
+   construction, and correctly so.
+3. ~~`IMPORTS_CF` in nodal_engine.js is a second copy.~~ CORRECTED 31 Aug 2026 to 0.41,
+   with a comment at both constants saying the other exists. It stays a literal because
+   the file is loaded as a plain script by four harnesses with no access to `FIXED`.
+   NOTE both read 0.85 and drifted in NEITHER, which was luck rather than design.
 4. **Kusile Unit 6, 799 MW synchronised.** Check whether it is already inside
    `coalInstalledMW` 42,000 before adding. Eskom reports nominal capacity 47,378 MW
    (2025: 46,866) across the whole fleet, so reconcile against that rather than guessing.
@@ -2650,6 +2665,47 @@ for a tool anyone can inspect.
 no-gas frontier at 110-120 GW. Different method, different horizon, same order of
 magnitude. That corroboration is a reason for them to take an approach from this
 project seriously. Queue behind Seriti.
+
+---
+
+## The losses task was wrong — 31 Aug 2026
+
+I listed "technical losses 23,921 GWh not modelled" as a gap. **Checking it first showed
+the opposite**, and acting on it would have broken a good calibration.
+
+```
+model grid generation, excl rooftop        208.5 TWh
+Eskom energy available for distribution    206.0 TWh   +1.2%
+Eskom local and international SALES        178.0 TWh  +17.1%
+```
+
+`profiles.json` states its own basis: `demand = gross grid demand + est rooftop`, which
+is the AVAILABLE-FOR-DISTRIBUTION figure, before losses. The model tracks it to 1.2%.
+Adding a loss term would have double-counted 24 TWh.
+
+**THE REQUIREMENT WAS A CAVEAT, NOT A MODEL CHANGE.** Never compare the model's served
+energy against a national SALES figure — it reads 17% higher by construction, and
+correctly so.
+
+### Pinned as a check, because this is a mistake someone will repeat
+
+`gridGenTWh`, band 190-222 TWh (`validate_benchmarks` 19 -> 20). Fails high by ~17% if
+someone compares against sales; fails low by ~12% if someone adds a loss term that
+double-counts. The band's `why` names both failure modes.
+
+### AND THE CHECK IMMEDIATELY EXPOSED A DISPLAY BUG
+
+The band printer assumed every range was a percentage, so a TWh band rendered as
+"210.2%    190-222%". Harmless to the assertion, misleading to read — and the FIRST band
+in another unit was the one asserting a demand BASIS, where a wrong unit is exactly the
+confusion it exists to prevent. Printer is now unit-aware.
+
+### ALSO DONE
+
+`IMPORTS_CF` in `nodal_engine.js` corrected 0.85 -> 0.41, matching `FIXED.importsCF`.
+It stays a literal because that file is loaded as a plain script by four harnesses with
+no access to `FIXED`, but both constants now carry a comment naming the other. They read
+0.85 and drifted in NEITHER place, which was luck rather than design.
 
 ---
 

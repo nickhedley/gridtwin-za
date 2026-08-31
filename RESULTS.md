@@ -1550,9 +1550,15 @@ wheeling                       3,103 GWh   moved for international customers
 loadshedding                      36 GWh   0.02% of demand, against 13,215 GWh in FY2024
 ```
 
-Losses at 11.6% are not in the model at all, and they are larger than every renewable
-technology except coal. Anything comparing the model's energy served against a national
-sales figure has to account for them.
+LOSSES ARE ALREADY IN THE MODEL, and it took this table to establish it. `profiles.json`
+is built on `gross grid demand + est rooftop`, which is Eskom's ENERGY AVAILABLE FOR
+DISTRIBUTION basis - before distribution losses. Model grid generation excluding rooftop
+is 208.5 TWh against Eskom's 206.0, a 1.2% match.
+
+**SO NEVER COMPARE THE MODEL'S SERVED ENERGY AGAINST A NATIONAL SALES FIGURE.** Sales are
+178.0 TWh; the model reads 17.1% higher, and correctly so, because 23,921 GWh is lost
+between the two. Adding a loss term to the model would double-count that and break a
+calibration which is currently within 1.2%.
 
 CAVEAT ON THE COMPARISON: Eskom's figures are ESKOM's fleet plus IPPs it purchases from.
 GridTwin models the national system. The two universes are close but not identical, which

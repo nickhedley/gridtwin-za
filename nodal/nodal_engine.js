@@ -207,7 +207,16 @@ const CSP_MW_BY_REGION = { 'Northern Cape': 450, 'Hydra Central': 50 };
 // Imports (Cahora Bassa HVDC) enter the grid at Apollo converter station, Ekurhuleni - Gauteng.
 const IMPORTS_REGION = 'Gauteng';
 const IMPORTS_MW = 1150;      // matches the single-node app's assumption
-const IMPORTS_CF = 0.85;
+// IMPORT UTILISATION. Corrected 0.85 -> 0.41 on 31 Aug 2026 from Eskom's audited energy
+// balance: deliveries were 9,150 GWh FY2024, 7,570 FY2025, 4,090 FY2026. Cahora Bassa
+// has more than halved in two years while the contract stayed at 1.15 GW firm.
+//
+// THIS IS A SECOND COPY of FIXED.importsCF in index.html and that is a rule 6 violation.
+// It stays a literal only because this file is loaded as a plain script by four harnesses
+// with no access to FIXED. It was 0.85 in BOTH places and drifted in NEITHER, which is
+// luck rather than design - the two must be changed together, and index.html says the
+// same thing at its own constant.
+const IMPORTS_CF = 0.41;
 const IMPORTS_COST = 550;     // R/MWh, matches the single-node app's costImports
 
 // CSP has thermal storage in reality; like the single-node engine, treat its output as

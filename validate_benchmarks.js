@@ -104,6 +104,17 @@ const CF_BENCH = {
   // a precision test - but it is the closest external corroboration this model has for
   // its headline mix.
   reShareResid: { lo: 9.7, hi: 13.7, why: 'Eskom FY2026 annual results: renewables 11.7% of power supplied' },
+  // DEMAND BASIS. Added 31 Aug 2026 after nearly adding a distribution-loss term the
+  // model did not need. profiles.json is built on `gross grid demand + est rooftop`,
+  // which is Eskom's ENERGY AVAILABLE FOR DISTRIBUTION - before the 23,921 GWh of
+  // technical losses. So the model's grid generation should track 206.0 TWh, NOT the
+  // 178.0 TWh of sales.
+  //
+  // This check exists to stop the basis being changed by accident. If it fails high by
+  // roughly 17%, someone has compared against sales; if it drops by roughly 12%,
+  // someone has added a loss term that double-counts what is already in the demand.
+  gridGenTWh: { lo: 190, hi: 222, unit: 'TWh', why: 'Eskom FY2026 audited: energy available for distribution '
+    + '206.0 TWh. NOT sales, which are 178.0 TWh - losses of 23.9 TWh sit between them' },
   cfPv:      { lo: 19, hi: 27, why: 'SA fixed-tilt utility PV, 21-24% typical; tracking reaches 26-28%' },
   cfRooftop: { lo: 14, hi: 22, why: 'Below utility PV: mixed orientation, shading, no tracking, urban siting' },
   cfNuclear: { lo: 60, hi: 85, why: 'Koeberg between refuelling outages; sent-out basis, not gross' },
@@ -153,6 +164,10 @@ const check = (name, ok, detail) => {
       cfWind: cf(E.wind/1e6, FIXED.windMW), cfPv: cf(E.pv/1e6, FIXED.pvUtilityMW),
       // Residual basis: rooftop out of numerator and denominator, matching how Eskom
       // reports 'power supplied' - it cannot meter behind the customer's meter.
+      // Grid generation excluding rooftop, which is behind the meter and never reaches
+      // the distribution network. Compare against energy AVAILABLE, not sales.
+      gridGenTWh: (E.coal + E.nuclear + E.ccgt + E.diesel + E.hydro + E.ps + E.wind
+                   + E.pv + E.csp + (E.hybrid || 0) + E.imports) / 1e6,
       reShareResid: (() => {
         const gen = E.wind + E.pv + E.csp + (E.hybrid || 0) + E.rooftop + E.hydro;
         const tot = Object.keys(E).filter(k => !['curtailed','unserved','exported'].includes(k))
@@ -198,8 +213,13 @@ const check = (name, ok, detail) => {
   for (const [k, b] of Object.entries(CF_BENCH)) {
     const v = M[k];
     const ok = v >= b.lo && v <= b.hi;
-    console.log(`  ${k.padEnd(14)} ${v.toFixed(1).padStart(7)}%    ${b.lo}–${b.hi}%${ok ? '' : '   <-- OUTSIDE'}`);
-    check(`${k} is physically plausible`, ok, ok ? '' : `${v.toFixed(1)}% outside ${b.lo}-${b.hi}%. ${b.why}`);
+    // Unit-aware. This block assumed every RANGE band was a percentage, so a TWh band
+    // printed as "210.2%    190-222%". Harmless to the check, misleading to read - and
+    // the first band added in another unit was the one asserting a DEMAND BASIS, where
+    // a wrong unit is exactly the confusion it exists to prevent.
+    const u = b.unit || '%';
+    console.log(`  ${k.padEnd(14)} ${v.toFixed(1).padStart(7)} ${u}   ${b.lo}–${b.hi} ${u}${ok ? '' : '   <-- OUTSIDE'}`);
+    check(`${k} is physically plausible`, ok, ok ? '' : `${v.toFixed(1)} ${u} outside ${b.lo}-${b.hi} ${u}. ${b.why}`);
   }
 
   // The national identity that closed the Ember reconciliation on 16 Aug. If this
