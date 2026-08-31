@@ -1998,3 +1998,121 @@ POSITION is known, a question the data can actually answer.
 
 `validate_geo` (38 -> 39) asserts that documentation exists, so the explanation cannot be
 lost while the flag survives.
+
+---
+
+## Hybrid co-location tested — 30 Aug 2026
+
+`hybrid.js` at the repo root. Project-level price-taker LP, battery behind the meter so
+it charges only from its own plant.
+
+```
+solar uplift    2026 +2-6%    2030 +4-8%    2035 +166-408%
+wind uplift     2026 +1-4%    2030 +3-7%    2035  +39-82%
+```
+
+**The value of co-location is not a constant, it is a function of penetration.** At
+today's build a battery is a marginal financing decision. At grid pace by 2035 it is the
+difference between R133/MWh and R674 for solar — a project that works and one that does
+not.
+
+Solar with a full-capacity battery recovers 91% of its 2026 revenue in a market where
+unstored solar has lost 82%.
+
+WIND GAINS FAR LESS (39-82%) for the same reason as every capture result here: solar is
+coincident and needs shifting, wind is diverse and already runs at night. But solar with
+storage OVERTAKES wind in absolute terms — R674 against R568 — because it has more energy
+in fewer hours and a battery is the right tool for exactly that.
+
+CAVEATS: perfect foresight (upper bound), NO CAPEX netted off, single weather year, grid
+pace is the harshest of the three.
+
+---
+
+## Repo housekeeping — 30 Aug 2026
+
+### Licence lines added
+
+`RESULTS.md`, `STATE.md`, `SOURCES.md`, `MANIFEST.md` — `RULES.md` already had one.
+Uniform wording, and it says the three things that matter: CC BY-NC-ND 4.0, that DATA
+files carry their own terms, and that **nothing here is a tariff, a forecast, or
+investment advice**. Worth stating explicitly now that the file contains merchant-value
+and hybrid revenue figures.
+
+### RESULTS.md is publishable — checked, not assumed
+
+Scanned for email addresses, named individuals, unsourced claims and unconfirmed
+allegations. Clean on all four. The withdrawn claims stay in, marked as withdrawn: a
+findings file that shows what failed is more credible than one that shows only successes.
+
+### CALENDAR.md names two people — AND HAS BEEN PUBLIC SINCE 27 AUGUST
+
+A redacted `CALENDAR.public.md` was created and then DROPPED the same day. The reasoning
+that killed it: only `HANDOVER.md` and `LOG.md` were ever gitignored, so `CALENDAR.md`
+has been tracked and pushed since the split. **Removing the names now does not unpublish
+them** — git keeps history and GitHub keeps forks. A second edition would have added a
+step (remember which file to edit, remember which to push) for no protection, and a
+process that provides no benefit gets skipped until the wrong file is published.
+
+What is actually exposed is mild: both roles are published by the organisations
+themselves, neither person is private, and the entries say nothing objectionable.
+
+FULL AUDIT of the tracked documents afterwards — personal emails, phone numbers,
+negotiating positions, unverified allegations, commercial terms. **All clean.** The two
+"unverified claim" hits in STATE.md are this paragraph describing the scan.
+
+The institutional email addresses in `SOURCES.md` are published contacts on their own
+organisations' websites.
+
+**RULES.md rule 8 now states the position:** assume every tracked file is already public.
+A second copy is not a control.
+
+### HANDOVER.md replaced with a stub
+
+Not deleted, so an old copy or an old link lands somewhere useful rather than on stale
+content. It says where each of the seven documents went and what each is for, and points
+a new reader at `RULES.md` and the fitness-for-purpose section first.
+
+---
+
+## Hybrid uplift surfaced in the interface — 30 Aug 2026
+
+`hybridUplift()` and a new column in the capture-rate panel: what a co-located battery
+at half the plant's capacity, four hours, charging only from its own output, adds to
+achieved revenue.
+
+```
+tot GW   solar bare   solar + battery   uplift
+     8          743               764      +3%
+    25          746               746       0%
+    45          640               744     +16%
+    70          277               696    +152%
+   110           56               549    +877%
+```
+
+**GREEDY, NOT AN LP, AND VALIDATED BEFORE SHIPPING.** Checked against the full-year
+price-taker LP in `hybrid.js` across three build levels and two technologies: the greedy
+lands within 4.5% and is CONSERVATIVE in eleven of twelve cases. It runs in 1-5 ms
+against the LP's seconds, which is what makes a panel possible at all. A day at a time is
+also closer to how a plant is actually operated than perfect foresight of the year.
+
+### THE FIRST VERSION LOST MONEY, AND THAT IS THE INTERESTING BIT
+
+It charged to full every day and discharged regardless of price. The panel showed **-1%
+and -4% uplift at low penetration**, while the LP showed +2% to +6%. The LP simply
+declines an unprofitable cycle; the greedy had no such test. Storing energy worth R700 to
+sell it at R700 destroys 12% of it.
+
+Fixed by pairing the cheapest charging hour with the dearest discharge hour and executing
+only where `sell x efficiency > buy`. That is the SAME reservation-price logic the system
+storage work arrived at independently — a heuristic without a value test loses money, and
+it does so while looking busy.
+
+After the fix, +3% at today's build against the LP's +2-6%. `audit.py` pins the column
+(37 -> 38).
+
+---
+
+*GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
+Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
+the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

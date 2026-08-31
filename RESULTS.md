@@ -1275,3 +1275,158 @@ that scale, not dispatch intelligence.
 So the honest position: the model does not give seasonal operation a fair test, and
 should say so - but in the scenarios examined the conditions for it do not arise, and
 iron-air is the wrong technology to test it with.
+
+---
+
+## Merchant value trajectory to 2035 - and who is exposed to it
+
+Measured 30 Aug 2026. Each year's installed base is the current fleet plus the build
+pace compounded, then dispatched and priced. Achieved revenue is output-weighted against
+the model's hourly shadow price.
+
+```
+                        2026    2029    2032    2035     fall
+IRP pace (2.2 GW wind, 1.5 GW solar a year)
+  wind R/MWh             758     741     726     647     -15%
+  solar R/MWh            743     742     727     627     -16%
+  total wind+solar GW    7.9    19.0    30.1    41.2
+
+Masterplan (2.5 / 2.0)
+  wind R/MWh             758     742     713     588     -22%
+  solar R/MWh            743     744     712     543     -27%
+  total GW               7.9    21.4    34.9    48.4
+
+Grid pace (4.3 / 4.0 - all remaining GCCA headroom by 2030)
+  wind R/MWh             758     737     516     313     -59%
+  solar R/MWh            743     741     425     133     -82%
+  total GW               7.9    32.8    57.7    82.6
+  curtailment TWh        0.0     0.2    17.2    59.0
+```
+
+**MERCHANT VALUE OF SOLAR ENERGY FALLS 82&#37; BY 2035 AT GRID PACE, 16&#37; AT IRP PACE.**
+The build rate, a policy choice rather than a market outcome, moves this five times more
+than anything about an individual project.
+
+### WHO ACTUALLY BEARS THIS - the correction that matters
+
+An earlier version of this section said "a solar PPA signed today loses 82&#37; of its
+value". **That was wrong.** A PPA is a contract at a fixed or CPI-indexed price for a set
+term. Wholesale prices falling does NOT reduce the seller's revenue during that term -
+insulating the seller is precisely what the contract is for.
+
+What the numbers above measure is the MERCHANT value of the energy. Who that reaches:
+
+```
+CONTRACTED SELLER, in term    NOT EXPOSED. A 20-year REIPPPP PPA signed in 2026 runs to
+                              2046; 2035 is mid-term and the tariff is unchanged.
+THE OFFTAKER                  FULLY EXPOSED. Eskom or a corporate buyer pays a contracted
+                              R0.55/kWh for energy worth R0.13 on the market. The
+                              contract did not remove the loss, it moved it.
+NEW PPAs                      EXPOSED. A buyer signing in 2032 prices against expected
+                              merchant value, so offered tariffs fall even though
+                              existing ones do not.
+MERCHANT AND PARTLY-MERCHANT  DIRECTLY EXPOSED. Corporate PPAs with floating or
+                              partly-merchant structures track this closely.
+POST-TERM ASSET VALUE         EXPOSED. Residual value after PPA expiry, and any
+                              repowering case, rests on the merchant tail.
+CURTAILMENT RISK              DEPENDS ON THE CONTRACT. Whether a curtailed MWh is paid
+                              for is a clause, not a market outcome. At 59 TWh of
+                              curtailment that clause is worth more than the tariff.
+```
+
+**So this is not a warning to project developers holding signed PPAs. It is a warning
+about what those contracts will cost the party on the other side, and about what the next
+round of contracts will be worth.** That is a more useful finding, and a different one.
+
+### THE COMPRESSION IS DOUBLE, AND THAT IS THE PART USUALLY MISSED
+
+Capture rate and the price pool fall TOGETHER. At grid pace in 2035 solar captures 40&#37;
+of a mean price that has itself fallen from R756 to R331. Neither number alone shows the
+damage: 40&#37; sounds survivable, R331 sounds survivable, and the product is R133.
+
+Anyone quoting capture rate alone is understating the problem by roughly half.
+
+### THE CLIFF EDGE IS SHARPER THAN THE AVERAGE SUGGESTS
+
+Nothing much happens for four years, then it goes quickly. At grid pace, solar holds
+above R680 through 2030 and reaches R133 five years later. The inflection is where
+curtailment starts: 0.2 TWh in 2029, 1.8 in 2030, 17.2 by 2032.
+
+**Curtailment is the leading indicator**, and it is observable years before the value
+arrives. Anyone watching national curtailment has warning; anyone watching only capture
+rate does not.
+
+It also compounds the contract question: at 59 TWh spilled, whether a curtailed MWh is
+paid for under the PPA matters more to the seller than the tariff does.
+
+CAVEATS: single weather year; merchant revenue against the model's shadow price, which
+has no floor, no bilateral contracting and limited exports - all of which lift real
+outcomes. Storage scales with the build at each pace's own rate, which materially
+protects solar. The DIRECTION and the ORDER of magnitude are the result, not the levels.
+
+---
+
+## Hybrids: co-locating a battery, and when it stops being optional
+
+Tested 30 Aug 2026 after the merchant-value result raised the obvious question. A
+project-level price-taker LP: the battery is BEHIND THE METER, so it can charge only
+from its own plant's output, which is what distinguishes a hybrid from a merchant
+battery. Four-hour duration, 88&#37; round trip, sized as a share of plant capacity.
+Prices from a full system dispatch at each year, so the plant is a price taker in a
+market already shaped by everyone else's build.
+
+```
+                        SOLAR R/MWh              WIND R/MWh
+battery           2026    2030    2035     2026    2030    2035
+none               743     687     133      758     694     313
+25% of plant       755     712     353      766     714     435
+50% of plant       766     733     554      774     730     500
+100% of plant      789     743     674      790     740     568
+
+uplift at 2035    +166% to +408%           +39% to +82%
+```
+
+### THE ANSWER CHANGES COMPLETELY WITH PENETRATION
+
+**In 2026 a battery is worth 2-6&#37;** — a marginal financing decision, easily lost in
+capex. **By 2035 at grid pace it is worth 166 to 408&#37; on solar.** Co-location moves
+from an optimisation to the difference between a viable project and a stranded one.
+
+A solar plant with a battery equal to its own capacity recovers R674/MWh in 2035 against
+R133 without: **it recovers 91&#37; of what solar earned in 2026, in a market where
+unstored solar has lost 82&#37;.**
+
+### WIND NEEDS IT LESS, AND THAT IS THE SAME ASYMMETRY AGAIN
+
+Wind gains 39-82&#37; where solar gains 166-408&#37;. The reason is the one behind every
+capture-rate result in this file: solar output is coincident across the whole fleet, so
+it floods the same hours and needs shifting to escape them. Wind is diverse and already
+runs at night, so it has less to escape from.
+
+**But wind ALSO ends up worse off in absolute terms with a full battery** — R568 against
+solar's R674. Solar has further to fall and more to gain; with storage attached it
+overtakes wind, because it has more energy concentrated in fewer hours and a battery is
+exactly the tool for that.
+
+### WHAT THIS MEANS FOR THE PPA QUESTION
+
+The exposure identified above sits with offtakers, new contracts and post-term value.
+Co-location is the lever that changes those numbers:
+
+- A buyer pricing a 2032 PPA against expected merchant value will offer far more for a
+  hybrid than for bare solar, and the gap widens every year.
+- Post-term residual value for a solar asset without storage approaches nothing at grid
+  pace. With storage it holds.
+- Retrofitting storage to existing plant becomes the obvious move well before 2035 — the
+  uplift is already 7&#37; at 2030 and compounding.
+
+CAVEATS: perfect foresight of prices, so an UPPER BOUND on what co-location recovers.
+No battery capex is netted off — this is the revenue side only, and a 100&#37;-of-plant
+4-hour battery is a very large investment. Single weather year. Grid pace is the fastest
+of the three and the most punishing; at IRP pace the 2035 uplift would be far smaller.
+
+---
+
+*GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
+Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
+the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
