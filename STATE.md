@@ -3286,6 +3286,49 @@ than its own headline claims.
 
 ---
 
+## Locational transmission signal re-verified — 31 Aug 2026
+
+The finding that carried most weight in the EPP submission, re-run as published: default
+scenario, MASTERPLAN build pace, regional build LP, duals on the `hw_`/`hp_` headroom rows
+in the final year.
+
+```
+solve                    813 s · Optimal
+rows parsed / returned   119,225 / 119,225 · MATCH  (exactly as published)
+wind dual, highest       3,571,840   (published 11,046,170)
+wind dual, lowest non-0     53,841   (published    228,814)
+spread                          66x  (published        48x)
+```
+
+**THE SPREAD HOLDS AND IS LARGER.** The submission described a "fiftyfold spread" in
+measured shadow prices under Policy Position 20. It is now 66-fold. **Nothing filed is
+wrong and the argument is stronger.**
+
+LEVELS FELL ABOUT THREEFOLD, which is consistent with the constant corrections: a system
+with less coal capacity, fewer imports and lower availability values an extra megawatt of
+connection headroom differently. The RATIO between regions is the claim, and ratios
+survived.
+
+The row-count match reproducing exactly — 119,225 both ways — is the check that the dual
+mapping is sound, and it is the same number as on 29 Aug.
+
+### NOT VERIFIED HERE
+
+My probe did not recover REGION NAMES from the builder's row objects, so the sharper half
+of the finding — that the optimiser builds the most wind where the RESOURCE is worst —
+is untested by this run. The duals are per region index only. Re-running with names
+resolved would close it.
+
+### A NOTE ON COST
+
+This single verification took 813 seconds of solve plus about twenty minutes of setup,
+against roughly two minutes for each of the dispatch-based re-runs. The build LP is a
+different class of check. `validate_findings.js` deliberately covers dispatch findings
+only for that reason — a harness nobody runs because it takes fifteen minutes protects
+nothing.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

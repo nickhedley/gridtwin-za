@@ -628,6 +628,14 @@ Gauteng                  0.00          2.40                       0             
 Kwazulu Natal            2.48          0.00                       0                  0
 ```
 
+RE-VERIFIED 31 Aug 2026 after the constant corrections. Row counts reproduce exactly
+(119,225 parsed, 119,225 returned) and **the spread HOLDS AND WIDENS: 66-fold against the
+48-fold published**, top wind dual 3,571,840 against a lowest non-zero of 53,841. Levels
+fell about threefold - a system with less coal capacity, fewer imports and lower
+availability values connection headroom differently - but the RATIO between regions is
+the claim, and ratios survived. The EPP submission's "fiftyfold spread" is unchanged in
+substance and understated if anything.
+
 THE finding: the optimiser builds the most wind where the resource is WORST.
 Mpumalanga takes 3.32 GW at a 25.5% capacity factor and KwaZulu-Natal 2.48 GW at
 21.6%, while Hydra Central (42.5%) and the Northern Cape (37.9%) get NOTHING. The
