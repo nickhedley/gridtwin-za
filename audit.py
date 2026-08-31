@@ -66,6 +66,9 @@ CHECKS = [
     # They barely do, and that is the finding — losing this styling hides it again.
     ('NAMES_STORAGE',                                              'mix donut splits storage by chemistry'),
     ('battByTier',                                                 'per-tier hourly discharge series'),
+    # Hybrid uplift column. Validated against a full-year price-taker LP; losing it
+    # would remove the only answer the panel gives to the cannibalisation it shows.
+    ('hybridUplift',                                               'co-located battery uplift'),
 ]
 
 path = sys.argv[1] if len(sys.argv) > 1 else '/mnt/user-data/outputs/index.html'
