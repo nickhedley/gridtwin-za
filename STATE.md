@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 850 checks
+suite                      18 harnesses, 849 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,11 +223,11 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 850 checks. Last full run: 850/850.
+Eighteen harnesses, 849 checks. Last full run: 848/849, one standing flag.
 
 ```
 node stress_suite.js                290/290
-node validate_invariants.js .       148/148
+node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
@@ -238,7 +238,7 @@ node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       18/18   the documents, added 30 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .        17/17
+node validate_consistency.js .       16/17   one standing flag, by design
 node validate_structure.js .          10/10
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -2594,9 +2594,10 @@ measured change, which is the only reason to re-pin.
 
 ### Calibration worth revisiting
 
-6. **Sales fell 6.2% to 178 TWh**, industrial down 22.5% on ferrochrome smelter
-   hardship. STRUCTURAL, not cyclical. The demand slider starts at zero growth; the
-   observed trend is negative, and three years of audited sales now exist to anchor it.
+6. ~~Demand trend anchor.~~ DONE 31 Aug 2026 — the demand slider had NO note at all and
+   now carries the audited series: 183.3 TWh FY2024, 189.7 FY2025, 178.0 FY2026, with
+   Eskom targeting stabilisation at 178. It also states that growth here is a forward
+   assumption, not the observed trend.
 7. **2–3 GW surplus capacity**, Eskom's own words, for the first time in over a decade.
    Bears directly on the adequacy results.
 8. ~~Grid capex cross-check against `txRPerKWyr`.~~ DONE 31 Aug 2026. The two routes
@@ -2855,6 +2856,47 @@ happen — the value is as a lower bound and as a test of whether Eskom's own pl
 adequate on its own.
 
 Two `audit.py` checks pin the pace and the floor-not-forecast caveat (41 -> 43).
+
+## coalEAFPct: four literals, no constant, and the wrong value — 31 Aug 2026
+
+Going to add a demand-trend note, I found `coalEAFPct` had **no `FIXED` entry at all**.
+The quantity existed as the slider default plus SIX `?? 68` fallbacks — seven copies of
+one number with no source. Rule 6, in the largest instance found so far.
+
+**AND 68 WAS WRONG.** It was the part-year "FY2026 to date" figure; the audited outturn
+is 65.16%. Part-year EAF is biased because availability is seasonal, and it overstated
+the full year by three points. `FIXED.coalEAFPct` is now 65 and every site reads it.
+
+Coal energy lands at 165.5 TWh against an audited 165.4, at the audited availability
+rather than by accident.
+
+TWO OF THE SEVEN were written `coalEAFPct??68` with no spaces and survived the first
+replacement. `validate_structure` caught them. A textual replacement across a 1 MB file
+needs the harness, not care.
+
+### THE CHANGE EXPOSED A REAL DEFECT — recorded as a standing flag, NOT relaxed
+
+`validate_consistency` now fails one check: storage delivers 0 MW at the annual peak
+while adequacy counts it as firm capacity.
+
+```
+peak hour 3834, 31,595 MW
+  EAF 68%   coal 26,991 · pumped storage 1,465 · diesel    47
+  EAF 65%   coal 25,365 · pumped storage     0 · diesel 3,138
+```
+
+Pumped storage runs flat out at 2,900 MW for the three hours BEFORE the peak and arrives
+empty, so diesel covers the worst hour of the year. **Lower availability did not create
+this — it exposed it.**
+
+CAUSE: the same missing value function as the storage LP work. The heuristic discharges
+whenever there is a deficit, with nothing reserving energy for the annual peak. Two
+ordering fixes were tried and reverted on 30 Aug, so a third improvised attempt is not
+warranted.
+
+**IT STAYS RED DELIBERATELY.** The check is right and the behaviour is wrong; widening it
+would hide an overstated firm-capacity figure. Suite is now 849/850 with one standing
+flag, alongside `validate_capacity`'s existing 27/28.
 
 ---
 

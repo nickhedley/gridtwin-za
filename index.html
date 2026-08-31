@@ -3839,6 +3839,15 @@ const FIXED = {
   // It matters for SCENARIOS rather than for the base case: anything that moves the
   // energy availability factor or decommissions plant was working off a fleet 5.8%
   // larger than the one Eskom actually operates.
+  // Coal fleet availability. Was FOUR bare literals of 68 - the slider default plus
+  // three `?? 68` fallbacks - with no FIXED entry at all, so the quantity had no single
+  // source. Rule 6: no constant appears twice.
+  //
+  // 65 is Eskom's AUDITED FY2026 outturn of 65.16%. The 68 it replaces was a part-year
+  // "FY2026 to date" figure, and part-year EAF is biased because availability is
+  // seasonal - it overstated the full year by three points. FY2024 54.6, FY2025 60.6,
+  // FY2026 65.2, Eskom's medium-term target 70.
+  coalEAFPct:65,
   nuclearMW:1860, hydroMW:600,
   importsMW:1150,
   // Import utilisation, added 31 Aug 2026 from Eskom's audited energy balance. Was the
@@ -5192,7 +5201,7 @@ function simulate(u, prof, outPath){
   // `?? 64` not `|| 64`: zero is a real input (total coal collapse). The `||`
   // form silently ran EAF=0 scenarios at 64% availability - unserved energy
   // read zero with the entire coal fleet dead. Caught by stress_deep check G8.
-  const eafFraction = (p.coalEAFPct ?? 68) / 100;
+  const eafFraction = (p.coalEAFPct ?? FIXED.coalEAFPct) / 100;
   // Hourly wind+solar for the VRE-following reserve term. Built before UC so the
   // commitment can see it - reserve need scales with how much variable output is
   // actually running, not with installed capacity.
@@ -7001,7 +7010,7 @@ async function runBuildOpt(){
   const totalGrowth = 1 + (state.demandGrowthPct || 0)/100;
   const opts = {
     growth: Math.pow(totalGrowth, 1/5) - 1,
-    eaf:    (state.coalEAFPct ?? 68) / 100,   // ?? not ||: EAF=0 is a real input
+    eaf:    (state.coalEAFPct ?? FIXED.coalEAFPct) / 100,   // ?? not ||: EAF=0 is a real input
     rate:   bldRates(),
     state:  state,
   };
@@ -7916,7 +7925,7 @@ function renderBuildRegional(res, rate, opts){
 function bldShowInherit(){
   const el = document.getElementById('bldInherit');
   if (!el || typeof state === 'undefined') return;
-  const g = state.demandGrowthPct || 0, e = state.coalEAFPct ?? 68;
+  const g = state.demandGrowthPct || 0, e = state.coalEAFPct ?? FIXED.coalEAFPct;
   const dec = state.coalDecomMW || 0;
   el.innerHTML = '<strong>Using the scenario set above:</strong> demand '
     + (g >= 0 ? '+' : '') + g + '% to 2030, coal availability ' + e + '%'
@@ -7966,7 +7975,7 @@ function bldStressTest(){
   // the ones where availability disappoints too, and a plan that only works at
   // the assumed EAF is not much of a plan.
   const base = run({});
-  const hard = run({ coalEAFPct: Math.max(0, (state.coalEAFPct ?? 68) - 10) });
+  const hard = run({ coalEAFPct: Math.max(0, (state.coalEAFPct ?? FIXED.coalEAFPct) - 10) });
 
   const verdict = base.lole === 0 && hard.lole === 0
     ? { c:'var(--ok,#4A8C5C)', t:'stable', d:'No unserved energy across the full year, even with coal availability 10 points below plan.' }
@@ -9023,7 +9032,7 @@ async function runDelayAnalysis(){
   if (!highsMod){ st.textContent = 'Solver unavailable.'; btn.disabled=false; btn.style.opacity=1; return; }
 
   const base = { growth: Math.pow(1 + (state.demandGrowthPct||0)/100, 1/5) - 1,
-                 eaf: (state.coalEAFPct??68)/100, rate: bldRates(), state };
+                 eaf: (state.coalEAFPct??FIXED.coalEAFPct)/100, rate: bldRates(), state };
 
   const out = [];
   for (const [label, delayed] of [['On schedule', 0], [`Slipped ${slip}\u00a0years`, slip]]){
@@ -10835,9 +10844,9 @@ function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 const SUB_CTRL = 'padding-left:16px;border-left:3px solid var(--alert2,#9E5C42);margin-left:6px;margin-top:-2px';
 const SLIDERS=[
   {grp:'Demand'},
-  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %'},
+  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'Eskom sales: 183.3 TWh FY2024 &#183; 189.7 FY2025 &#183; 178.0 FY2026, the last a 6.2&#37; fall driven by industrial demand down 22.5&#37;. Eskom targets stabilisation at 178 TWh. Growth here is a forward assumption, not the observed trend.'},
   {grp:'Existing coal fleet'},
-  {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:68,fmt:v=>v+' %',note:'Audited: FY2024 54.6&#37; &#183; FY2025 60.6&#37; &#183; FY2026 65.2&#37; &#183; Eskom target 70&#37;. 2023 crisis ran 50\u201355&#37;.'},
+  {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:FIXED.coalEAFPct,fmt:v=>v+' %',note:'Audited: FY2024 54.6&#37; &#183; FY2025 60.6&#37; &#183; FY2026 65.2&#37; &#183; Eskom target 70&#37;. 2023 crisis ran 50\u201355&#37;.'},
   {subgrp:'Outage settings'},
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
    ctrlStyle:SUB_CTRL,note:'When turned on, individual units trip and must be taken out for repairs (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Means the bad hours are more extreme. At an EAF of 55%, for example, this moves shedding from 3 hours to 207 hours.'},
@@ -12043,7 +12052,7 @@ function renderAdequacy(r){
   const el=document.getElementById('adequacyBody');
   if(!el||!r||!r.stack) return;
   const p={...FIXED,...state};
-  const firm=(p.coalInstalledMW-(p.coalDecomMW||0))*((p.coalEAFPct??68)/100)
+  const firm=(p.coalInstalledMW-(p.coalDecomMW||0))*((p.coalEAFPct??FIXED.coalEAFPct)/100)
     +(p.nuclearMW+(p.newNuclearMW||0))*0.90+p.hydroMW+p.importsMW*(p.importsCF??0.41)
     +p.ocgtDieselMW+(p.ccgtMW||0)+(p.newCcgtMW||0)
     +p.psPowerMW+p.battPowerMW+(p.newBattMW||0)
@@ -12607,7 +12616,7 @@ function downloadDispatchCSV() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   // Include key scenario params in filename
-  const eaf = state.coalEAFPct ?? 68;   // ?? not ||: an EAF-0 export must not be named eaf64
+  const eaf = state.coalEAFPct ?? FIXED.coalEAFPct;   // ?? not ||: an EAF-0 export must not be named eaf64
   const wind = Math.round((state.newWindMW||0)/1000);
   const solar = Math.round((state.newPvMW||0)/1000);
   a.download = `gridtwin_za_dispatch_eaf${eaf}${wind?'_w'+wind+'gw':''}${solar?'_s'+solar+'gw':''}.csv`;

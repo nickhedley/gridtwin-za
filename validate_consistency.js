@@ -199,6 +199,24 @@ const num = t => {
         `${(E.psTWh + E.battTWh).toFixed(3)} TWh from it all year`);
 
   // and it must actually be there at the annual peak, which is what "firm" means
+  //
+  // STANDING FLAG since 31 Aug 2026, when coalEAFPct moved 68 -> 65 (Eskom's audited
+  // FY2026 outturn). NOT RELAXED, and it should not be: the check is right and the
+  // BEHAVIOUR is wrong.
+  //
+  // Measured at the peak hour 3834: pumped storage runs flat out at 2,900 MW for the
+  // three hours BEFORE the peak and arrives empty, so 3,138 MW of DIESEL covers the
+  // hour instead. At 68% it still had 1,465 MW left; the audited 65% exhausts it an
+  // hour earlier. Lower availability did not create this - it exposed it.
+  //
+  // CAUSE: the same missing value function as the storage LP work. The heuristic
+  // discharges whenever there is a deficit, with nothing reserving energy for the worst
+  // hour of the year. Two ordering fixes were tried and reverted on 30 Aug; a third
+  // improvised attempt is not warranted. See STATE.md "the full fix".
+  //
+  // WHY IT STAYS FAILING RATHER THAN BEING WIDENED: adequacy counts this storage as
+  // firm capacity. If the dispatch cannot deliver it at the annual peak, the firm figure
+  // is overstated, and that is worth a red line until the dispatch is fixed.
   check('storage contributes at the annual peak hour',
         (E.psAtPeakMW + E.battAtPeakMW) > 100 || E.peakHour === undefined,
         `at the peak hour storage delivers ${(E.psAtPeakMW + E.battAtPeakMW).toFixed(0)} MW ` +
