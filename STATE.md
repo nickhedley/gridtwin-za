@@ -4079,6 +4079,54 @@ building with someone's name on it.
 
 ---
 
+## Two Tier 3 findings promoted, and one new result — 31 Aug 2026
+
+The Wind Pioneers near-miss showed that a ten-year file sitting unused turns single-year
+noise into a published claim. So the Tier 3 findings marked "single weather year" were
+screened rather than left there.
+
+### BOTH HOLD ACROSS TEN YEARS
+
+```
+demand response optimum   lowers cost in 10/10 years, reverses by 30% in 10/10,
+                          saving R5.11-6.91/MWh at the optimum
+no-gas cost neutrality    sign FLIPS six to four, spread -10 to +3 R bn on a base
+                          near R278 bn - which is what neutrality actually looks like
+```
+
+Both promoted to **Tier 2**.
+
+### THE NEW RESULT: THE GAS BUILD CARRIES SEVEN TIMES THE COST VARIANCE
+
+The single year could show neutrality but not test what surrounds it.
+
+```
+                       range across ten years   spread
+Seriti + 25 GW gas              R275 - 289 bn    14 bn
+no gas, 50W/60S                 R277 - 279 bn     2 bn
+```
+
+The gas scenario's bad years are 2015 and 2022 - poor wind years, where it burns more gas
+to cover the shortfall. **The 110 GW no-gas build barely registers them**, because it is
+overbuilt enough to absorb a bad wind year by curtailing less.
+
+**That reframes the trade.** It is not "same cost, pick either" - it is the same expected
+cost with a seventh of the variance. Annual fuel-cost variance is precisely what a utility
+hedges and what a regulator sees as tariff volatility, so the overbuild is buying
+insurance the single-year comparison priced at zero.
+
+CAVEATS, both material: this excludes gas PRICE risk entirely, which would widen the gas
+spread further and strengthen the result; and it assumes connections that today's headroom
+data says do not exist.
+
+### THE PATTERN
+
+Three times today a ten-year run has changed a single-year conclusion - the Wind Pioneers
+rankings, and now the framing of the frontier. The file was always there. **"Single weather
+year" in Tier 3 should be read as work not yet done, not as a property of the finding.**
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

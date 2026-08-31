@@ -55,12 +55,20 @@ dataset. Western Cape does NOT hold - it flips by year, so a single-year study f
 either answer.
 → "Wind Pioneers' diurnal observation"
 
-### Tier 3 — single weather year, or dependent on the storage heuristic.
+**Demand response has an optimum near 7.5% and is counterproductive past 15%**, in every
+one of ten weather years. The optimum lowers cost in 10/10 and 30% shifting reverses it in
+10/10, saving R5.11 to R6.91/MWh at the optimum.
+→ "Demand response has an optimum"
 
-**Removing gas is cost-neutral at ONE point on the frontier** - R274 vs R277 bn/yr,
-identical at R1.32/kWh - but only there, and only if the connections existed. Re-verified
-31 Aug: levels fell 3-4% with the recalibration, ordering unchanged.
+**Removing gas is cost-neutral at ONE point on the frontier, and the no-gas build carries
+a SEVENTH of the cost variance.** Ten weather years: the sign of the difference flips six
+to four, on a spread of -10 to +3 R bn. But the gas scenario ranges R275-289 bn across
+years while the no-gas build ranges R277-279 - same expected cost, far less exposure to a
+bad wind year. Only at this one point on the frontier, and only if the connections
+existed.
 → "The no-gas frontier"
+
+### Tier 3 — single weather year, or dependent on the storage heuristic.
 
 **Storage's ancillary market SHRINKS as renewables grow**, if curtailed plant may sell
 reserve. Binary on that policy choice, insensitive to every numeric parameter.
@@ -75,9 +83,6 @@ from surplus. Corrected 31 Aug - the earlier version reported a rising curve, me
 constants that suppressed today's scarcity pricing. **"Storage becomes valuable later" is
 the wrong conclusion.**
 → "Hybrids"
-
-**Demand response has an optimum near 7.5% and is counterproductive past 15%.**
-→ "Demand response has an optimum"
 
 ### Withdrawn — kept deliberately
 
@@ -349,6 +354,52 @@ no gas, 60W/60S                    120         0      96.4    276    28       2 
 no gas, 80W/40S                    120         0     101.8    288    25       1    315   1.51
 no gas, 50W/80S                    130         0     112.5    287    29       2    318   1.51
 ```
+
+### TEN WEATHER YEARS, run 31 Aug 2026 — and the neutrality is REAL
+
+The single-year version could show cost neutrality but not test it. Across all ten:
+
+```
+year      with 25 GW gas   no gas 50W/60S   delta
+2014                 278              277      -1
+2015                 288              279      -9
+2016                 279              278      -1
+2017                 279              277      -2
+2018                 279              278      -1
+2019                 275              278      +3
+2020                 275              278      +3
+2021                 280              278      -2
+2022                 289              279     -10
+2023                 275              277      +2
+```
+
+**THE SIGN FLIPS.** Six years favour the no-gas build, four favour gas, and the spread is
+-10 to +3 R bn on a base near R278 bn. That is what cost-neutral actually looks like, and
+it is a stronger statement than a single year matching by coincidence.
+
+### AND SOMETHING THE SINGLE YEAR COULD NOT SEE
+
+```
+                       range R bn/yr   spread
+Seriti + 25 GW gas         275 - 289      14
+no gas, 50W/60S            277 - 279       2
+```
+
+**THE GAS SCENARIO IS SEVEN TIMES MORE WEATHER-EXPOSED ON COST.** Its bad years are 2015
+and 2022 - poor wind years, where it burns more gas to cover the shortfall. The 110 GW
+no-gas build barely registers them, because it is overbuilt enough that a bad wind year is
+absorbed by curtailing less.
+
+That reframes the trade. It is not "same cost, pick either". It is **the same expected
+cost with a seventh of the variance** - and variance in annual fuel cost is exactly what a
+utility hedges, and what a regulator sees as tariff volatility. The overbuild is buying
+insurance the single-year comparison priced at zero.
+
+CAVEAT: this is fuel and capex within the model's cost families. It excludes gas PRICE
+risk entirely, which would widen the gas scenario's spread further, and it assumes the
+connections exist - which on today's headroom they do not.
+
+---
 
 RE-RUN 31 Aug 2026 against the corrected constants, same scenarios:
 
