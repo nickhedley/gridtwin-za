@@ -37,13 +37,47 @@ Still open ON these:
 ## Hard deadlines
 
 ```
+~7 Sep 2026    NEAREST DATE - about a week out as at 31 Aug, and INDICATIVE rather
+               than fixed. Eskom Retail Tariff Structural Adjustment (ERTSA), written
+               comments. Public hearing 8 Oct 2026. Not previously tracked; it is a
+               RETAIL tariff structure matter, so it bears on how the wholesale work
+               reaches customers rather than on the model directly. Confirm the date -
+               the dashboard marks it indicative.
+
+10 Sep 2026    Eskom Regulating Clearing Account (RCA) FY2024/25, public hearing.
+               Written comments closed 14 Aug 2026, so this is attendance only.
+
 10 Sep 2026    NEAREST ACTIONABLE DATE - ten days out as at 31 Aug.
                NERSA public hearing on seriti green energy's trading licence
                application. Different matter, same regulator, and Seriti is already
                an outreach target. Registration to make oral representations closed
                28 Aug; attendance may still be possible. Livestreamed.
-30 Sep 2026    NERSA expects to finalise the Trading Rules. NOT a comment deadline -
+31 Oct 2026    NERSA target completion for the Trading Rules. NOT a comment deadline -
                see above. The date to watch for the final text, not to submit against.
+               CORRECTED 31 Aug 2026 from 30 Sep: NERSA's own Electricity Regulation
+               Projects Dashboard (Issue 03, 15 Aug 2026) gives 31 October. A member
+               workshop is planned for September, so the text may move before then.
+Oct 2026       PRICE AND TARIFF RULE - consultation paper. THE DIRECT FOLLOW-ON FROM
+               THE EPP SUBMISSION. The ERA as amended requires NERSA to set unbundled
+               prices and tariffs by rule, and the dashboard states the consultation
+               paper will be published FOLLOWING PUBLICATION OF THE EPP, with the rule
+               targeted for October and completion by 30 Nov 2026.
+               So the EPP comments already filed feed directly into this. Policy
+               Position 20 (locational transmission cost) and section 4 (published
+               disaggregation of price components) are both squarely in scope.
+               WATCH FOR the consultation paper - this is the one to comment on.
+
+30 Sep 2026    TDP Rules - NERSA target completion. Submitted to the Minister for
+               comments; finalisation depends on receiving them, so it may slip.
+               Relevant: the TDP is the source of the R390bn / 56 GW figure behind
+               txRPerKWyr.
+
+31 Oct 2026    Four NERSA instruments at target completion on the same date - Market
+               Code (ER decision expected October), Vesting Contract Framework,
+               Wholesale Tariff Methodology, and Municipal KPI Rules. All are at
+               FINALISATION with consultation concluded, so none is open for comment.
+               Watch for final texts.
+
 Q4 2026        SAWEM trading expected to commence. The Market Code (NTCSA) completed
                written comment in June with a hearing on 1 July.
 ```
@@ -103,6 +137,16 @@ rolling        Eskom Transmission Development Plan. The 2025-2034 edition (14,50
 ## Undated but time-sensitive
 
 ```
+NERSA "other     Four workstreams listed on the dashboard with no dates attached. Two
+activities"      matter to this project: the TRADING PLATFORM ALGORITHM FRAMEWORK, which
+                 governs how the market actually clears and is the closest thing to what
+                 GridTwin models, and the MARKET SURVEILLANCE FRAMEWORK. The other two
+                 are the CoS Framework Review and Compliance Enforcement Rules.
+                 No consultation dates published yet. Watch the dashboard.
+```
+
+
+```
 UJ conference  EIUG outreach is gated on this. Mike Teke chairs both Seriti Resources
                and the UJ council - one connection, two routes.
 Seriti reply   The outreach email is drafted and ready to send to Peter Venn. Green
@@ -136,4 +180,8 @@ every session  Confirm profiles.json is at the repo root. Without it the suite
 every session  Read RULES.md in full. It is short by design. ELEVEN rules as at
                31 Aug 2026.
 every session  Check this file. Anything past its date moves or gets a new one.
+every session  Check the NERSA Electricity Regulation Projects Dashboard. It carries
+               every consultation, deadline and hearing in one table and is the single
+               best source for this file. Not checking it left the Trading Rules
+               completion date wrong by a month and four consultations untracked.
 ```

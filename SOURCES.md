@@ -50,6 +50,7 @@ superseded queue entries. Never add the delta. See RULES.md.
 | Oxpeckers | complementary project data | their data is a validation set |
 | #PowerTracker | primary source for wheeled commissioning | identified 17 Aug 2026 |
 | NREL ATB | storage capex cross-check | checked 28 Aug 2026 and it cannot do the job: ATB covers lithium only, with no flow-battery or iron-air line. `acapVrfb` stays single-source |
+| NERSA Electricity Regulation Projects Dashboard | THE consolidated view of every NERSA consultation - written-comment deadlines, hearing dates and target completions in one table | Issue 03, 15 Aug 2026. Appears roughly monthly at `nersa.org.za/files/files/YYYY/MM/ELRStakeholderDashboard-RevN.png`. Reading it on 31 Aug corrected a Trading Rules date this project had wrong by a month, and surfaced four consultations not previously tracked. Check it every session. |
 | PFL IPP Knowledge Hub COD table | settles Mulilo's COD month | deep links 404; navigate Research > Knowledge Hub |
 | NERSA Trading Rules | governs how wheeling and trading clear | comment due 30 Sep 2026; the locational work is directly reusable |
 | #PowerTracker | primary source for wheeled commissioning | identified 17 Aug 2026, not yet ingested |

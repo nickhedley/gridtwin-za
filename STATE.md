@@ -3940,6 +3940,55 @@ because prose does not recompute.
 
 ---
 
+## NERSA's own dashboard, and a date we had wrong — 31 Aug 2026
+
+NERSA publishes an Electricity Regulation Projects Dashboard carrying every consultation,
+deadline and hearing in one table. **This project had not been reading it**, and the cost
+of that was immediate.
+
+### A DATE WE HELD WAS WRONG BY A MONTH
+
+```
+CALENDAR said   30 Sep 2026   NERSA expects to finalise the Trading Rules
+dashboard says  31 Oct 2026   target completion, with a member workshop in September
+```
+
+### FOUR CONSULTATIONS WE WERE NOT TRACKING
+
+```
+~7 Sep 2026   Eskom Retail Tariff Structural Adjustment (ERTSA), written comments -
+              INDICATIVE, and now the nearest date on the file. Hearing 8 Oct.
+10 Sep 2026   Eskom RCA FY2024/25 public hearing. Comments closed 14 Aug, attendance only.
+30 Sep 2026   TDP Rules, with the Minister for comment. The TDP is the source of the
+              R390bn / 56 GW figure behind txRPerKWyr.
+31 Oct 2026   Market Code, Vesting Contract Framework, Wholesale Tariff Methodology and
+              Municipal KPI Rules all at target completion, all at FINALISATION with
+              consultation concluded. Final texts to watch, nothing open to comment on.
+```
+
+### THE ONE THAT MATTERS MOST: THE PRICE AND TARIFF RULE
+
+The ERA as amended requires NERSA to set unbundled prices and tariffs BY RULE, and the
+dashboard states the consultation paper will be published **following publication of the
+EPP**, with the rule targeted for October and completion by 30 Nov 2026.
+
+**That is the direct follow-on from the EPP submission already filed.** Policy Position 20
+(locational transmission cost) and section 4 (published disaggregation of the price
+components) are both squarely in scope. This is the paper to comment on, and today's
+re-verification means both arguments are stronger than what was filed.
+
+Two undated workstreams are also worth watching: the **Trading Platform Algorithm
+Framework**, which governs how the market actually clears and is the closest published
+work to what GridTwin models, and the Market Surveillance Framework.
+
+### ADDED AS A STANDING CHECK
+
+The dashboard is now in SOURCES.md and in CALENDAR.md's per-session checks. It is the
+single best input to that file, and one reading corrected a date and added four
+consultations.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
