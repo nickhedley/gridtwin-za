@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 848 checks
+suite                      18 harnesses, 850 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 848 checks. Last full run: 848/848.
+Eighteen harnesses, 850 checks. Last full run: 850/850.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       148/148
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           41/41
+python3 audit.py index.html           43/43
 node validate_benchmarks.js .        20/20
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -2595,7 +2595,7 @@ measured change, which is the only reason to re-pin.
 
 ### New scenario
 
-9. **Eskom Green as a fifth build preset** — 6 GW carbon-free by FY2030, 32 GW
+9. ~~Eskom Green as a fifth build preset.~~ DONE 31 Aug 2026 — see below. Original scope: — 6 GW carbon-free by FY2030, 32 GW
    renewables and storage by FY2040, 1,500 MW gas by FY2029 ramping to 3,000 MW by
    FY2031. It is Eskom's OWN plan, which none of historical, IRP, masterplan or grid
    are, and it is the one a South African reader is most likely to want to test.
@@ -2804,6 +2804,44 @@ over a year it can legitimately discharge more than it charges by the opening st
 never replaces. The check guarded on charge VOLUME, a proxy; it now compares discharge
 against charge PLUS opening stock. If the engine is ever made SOC-cyclic, that allowance
 should return to zero.
+
+---
+
+## Eskom Green build pace added — 31 Aug 2026
+
+A fifth pace, and the only one that is an OPERATOR'S OWN PLAN rather than a policy target
+(IRP, masterplan), a historical record, or a physical limit (grid).
+
+```
+pace          wind+solar MW/yr   storage   gas   RE by 2030
+historical                 550       100   200      2.8 GW
+eskomGreen               1,500       786   600      7.5 GW
+irp                      3,700       550 1,200     18.5 GW
+masterplan               4,500     1,150 1,200     22.5 GW
+grid                     8,300     4,800 2,000     41.5 GW
+```
+
+It lands between historical and IRP, which is where a single builder should sit.
+
+FROM THE PUBLISHED MILESTONES: 32 GW renewables and storage by FY2040 over FY2027-40 =
+2,286 MW/yr; gas 1,500 MW by FY2029 to 3,000 MW by FY2031 = 600 MW/yr. The assumed split
+sums to 2,286 exactly.
+
+### TWO CAVEATS CARRIED IN THE NOTE, because neither is inferable from the number
+
+**1. THE TECHNOLOGY SPLIT IS NOT PUBLISHED.** Eskom gives a combined "renewables and
+storage" figure. The split is weighted toward solar and storage because the named
+repowering sites — Komati, Grootvlei, Camden, Hendrina — are Mpumalanga coal sites with
+strong solar and weak wind. A reasonable inference, NOT Eskom's statement, and the first
+number to challenge.
+
+**2. IT IS A FLOOR ON THE NATIONAL BUILD, NOT A FORECAST OF IT.** Every other pace is
+national; this is ONE PARTICIPANT. IPPs added 8,565 MW to 31 March 2026 against Eskom's
+own 100 MW of wind. Selecting it models a world where only Eskom builds, which will not
+happen — the value is as a lower bound and as a test of whether Eskom's own plan is
+adequate on its own.
+
+Two `audit.py` checks pin the pace and the floor-not-forecast caveat (41 -> 43).
 
 ---
 

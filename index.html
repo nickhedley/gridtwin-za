@@ -586,6 +586,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               <option value="historical">Historical &ndash; what SA has actually delivered</option>
               <option value="irp" selected>IRP 2025 pace &ndash; the official plan</option>
               <option value="masterplan">Masterplan ambition &ndash; ~5 GW/yr renewables</option>
+              <option value="eskomGreen">Eskom Green &ndash; Eskom's own plan, one builder only</option>
               <option value="grid">Grid-limited &ndash; all remaining GCCA headroom</option>
               <option value="none">Unconstrained &ndash; economics only</option>
             </select>
@@ -6450,6 +6451,27 @@ const BLD_PACE = {
     note:'Renewable Energy Masterplan ambition of roughly 5 GW a year.' },
   grid:        { wind:4300, pv:4000, rooftop:2000, batt:4000, vrfb: 500, ironair: 300, ccgt:2000,
     note:'All remaining GCCA headroom (21.5 GW wind, 19.9 GW solar) spread to 2030. Zero headroom remains in the Northern Cape, Hydra Central, or for Western Cape solar.' },
+  // ESKOM GREEN, added 31 Aug 2026 from the FY2026 integrated report. The only pace here
+  // that is an OPERATOR'S OWN PLAN rather than a policy target or a physical limit.
+  //
+  // PUBLISHED MILESTONES: 2 GW construction-ready renewables by FY2027; commission 6 GW
+  // by FY2031; 32 GW renewables and storage by FY2040; 1,500 MW gas by FY2029 ramping to
+  // 3,000 MW by FY2031. Rates below are 32 GW over FY2027-40 and gas over FY2027-31.
+  //
+  // TWO THINGS THE READER MUST KNOW, and the note says both:
+  //
+  // 1. THE TECHNOLOGY SPLIT IS NOT PUBLISHED. Eskom gives a combined "renewables and
+  //    storage" figure. The split below is ASSUMED, weighted toward solar and storage
+  //    because the named repowering sites - Komati, Grootvlei, Camden, Hendrina - are
+  //    Mpumalanga coal sites with strong solar and weak wind. That is a reasonable
+  //    inference, not Eskom's statement, and it is the number to challenge first.
+  //
+  // 2. THIS IS A FLOOR ON THE NATIONAL BUILD, NOT A FORECAST OF IT. Every other pace
+  //    here is national; this is ONE PARTICIPANT. IPPs build on top of it - they added
+  //    8,565 MW to 31 March 2026 against Eskom's own 100 MW of wind. Selecting this
+  //    pace models a world where only Eskom builds, which will not happen.
+  eskomGreen:  { wind: 400, pv:1100, rooftop: 500, batt: 700, vrfb:  50, ironair:  36, ccgt: 600,
+    note:'Eskom Green\u2019s own plan: 32 GW renewables and storage by FY2040, gas to 3 GW by FY2031. The technology split is ASSUMED - Eskom publishes a combined figure - and this is ONE BUILDER, so treat it as a floor on the national build rather than a forecast of it.' },
   none:        { wind:99000, pv:99000, rooftop:99000, batt:99000, vrfb:99000, ironair:99000, ccgt:99000,
     note:'No build limit - shows what pure economics would choose, which is not physically deliverable.' },
 };

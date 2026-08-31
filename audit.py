@@ -77,6 +77,10 @@ CHECKS = [
     # an attribution audit found panels titled "Curtailment forecast" and "Capacity
     # payments" with no indication either way — they read as observations.
     ('>modelled',                                                  'panels marked as model output'),
+    # Eskom Green build pace. The only pace that is an operator's OWN plan; its note
+    # carries two caveats a reader needs - the split is assumed, and it is one builder.
+    ('eskomGreen',                                                 'Eskom Green build pace'),
+    ('one builder',                                                'Eskom Green floor-not-forecast caveat'),
 ]
 
 path = sys.argv[1] if len(sys.argv) > 1 else '/mnt/user-data/outputs/index.html'
