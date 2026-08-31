@@ -128,6 +128,19 @@ const CF_BENCH = {
   // WHAT IT GUARDS: this is the first check on the ADEQUACY side against a published
   // national figure. If the model ever reports a system that is comfortable when Eskom
   // says it is tight, or vice versa, this is where it shows.
+  // PEAKER SEASONALITY, not level. Added 31 Aug 2026 from Eskom's own hourly file:
+  // peakers run 8.5x more in Jan-Mar than Jul-Sep, because maintenance is scheduled away
+  // from the winter peak. The model reproduces Jan and Feb to within half a point.
+  //
+  // The LEVEL is deliberately NOT benchmarked. 63% of Eskom's peaker output runs below
+  // 25 GW of demand with ~25.8 GW of coal available - reserve, network support and
+  // ramping, none of which an energy merit order prices. A model that dispatches on
+  // economics cannot reproduce it, and a level benchmark would invite tuning availability
+  // to fit the right total for the wrong reason. That mistake was made and withdrawn
+  // twice on 31 Aug; this comment exists so it is not made a third time.
+  peakerSeasonRatio: { lo: 2.0, hi: 12.0, unit: 'x', why: 'Eskom hourly 2025 (ESK19243): '
+    + 'Jan-Mar peaker output is 8.5x Jul-Sep. Band is wide because the model reproduces '
+    + 'the shape, not the level' },
   surplusGW: { lo: 1.8, hi: 4.0, unit: 'GW', why: 'Eskom FY2026: an estimated 2-3 GW surplus '
     + 'capacity, first time in over a decade. Method not published - band spans the '
     + 'defensible definitions' },
@@ -183,6 +196,18 @@ const check = (name, ok, detail) => {
       // Residual basis: rooftop out of numerator and denominator, matching how Eskom
       // reports 'power supplied' - it cannot meter behind the customer's meter.
       // Surplus at the annual peak: what could still have run, less the reserve held.
+      peakerSeasonRatio: (() => {
+        const MD = [31,28,31,30,31,30,31,31,30,31,30,31];
+        const bym = new Array(12).fill(0);
+        let h = 0;
+        for (let m = 0; m < 12; m++){
+          const n = MD[m] * 24;
+          for (let k = 0; k < n && h < 8760; k++, h++)
+            bym[m] += (r.stack.ccgt[h] || 0) + (r.stack.diesel[h] || 0);
+        }
+        const q1 = bym[0] + bym[1] + bym[2], q3 = bym[6] + bym[7] + bym[8];
+        return q3 > 0 ? q1 / q3 : null;
+      })(),
       surplusGW: (() => {
         const L = r.loadS; let ph = 0, pk = -1;
         for (let h = 0; h < L.length; h++) if (L[h] > pk){ pk = L[h]; ph = h; }

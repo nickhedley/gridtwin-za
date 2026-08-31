@@ -88,7 +88,10 @@ the wrong conclusion.**
 ### Withdrawn — kept deliberately
 
 **~~OCGT: no flat availability factor reproduces both.~~** Withdrawn 31 Aug 2026, hours
-after being written. I read `coalAvail` as the hourly dispatch limit when the binding one
+after being written, and the successor diagnosis was withdrawn too - see "Validated
+against Eskom's audited FY2026 generation". The settled answer is that 63% of Eskom's
+peaker output runs below 25 GW of demand, which is reserve and network support rather than
+energy, so no availability figure should reproduce it. I read `coalAvail` as the hourly dispatch limit when the binding one
 is `cAvail`, capped by a stochastic outage path that was active all along - and I swept
 single draws on a distribution where nine draws carry a 75% standard error. Re-run as
 means, 61% availability reproduces both. **The second finding this file has withdrawn,
@@ -1689,51 +1692,62 @@ in this file.
 
 ### TWO GAPS THAT ARE REAL, NOT ROUNDING
 
-**~~OCGT: no flat availability factor reproduces both peaking and unserved energy.~~
-WITHDRAWN 31 Aug 2026, the same day it was written.** Two errors, both mine.
+**OCGT: the model runs 217 GWh against Eskom's 1,898. EXPLAINED 31 Aug 2026, and it is a
+SCOPE difference rather than a modelling error.**
 
-**ERROR 1 - I read the wrong variable.** The diagnosis rested on `coalAvail` being a flat
-derate. It is, but it is NOT the hourly dispatch limit: it feeds initial conditions, the
-ramp basis and the shortfall lookahead. The binding limit is `cAvail`, which is capped by
-`unitOutage` - a seeded unit-level Markov outage path that is **on by default**. The model
-has had stochastic availability all along, and I claimed it did not.
+Eskom's own hourly file `ESK19243.csv` records `Eskom OCGT Generation` for all of 2025 -
+what the peakers actually did. Two things fall out.
 
-**ERROR 2 - I swept single draws.** Each point was one outage seed. Today's later work
-established that a single draw on this distribution is close to meaningless: the standard
-error at nine draws is 75% of the mean.
-
-Re-run properly, as means over 24 outage draws:
+### THE SEASONALITY IS RIGHT
 
 ```
-              coal TWh   OCGT TWh   unserved GWh
-EAF 65           165.7      0.217            0.8
-EAF 63           165.4      0.513            8.1
-EAF 61           164.8      1.026           26.0     <- matches Eskom on both
-EAF 60           164.3      1.412           44.2
-EAF 58           163.0      2.462          116.1
+month      model share   Eskom share
+Jan              16.5%         16.0%
+Feb              17.2%         17.0%
+Jul               7.1%          6.0%
+Sep               2.9%          0.0%
 
-Eskom FY2026     165.4      1.079           36.0
+Jan-Mar : Jul-Sep     model 3.9:1     Eskom 8.5:1
 ```
 
-**A SINGLE VALUE DOES REPRODUCE BOTH**, at about 60-61%, which is exactly what the
-withdrawn finding said was impossible. The outage process also works as intended: turning
-it off drops OCGT from 0.217 to 0.057 TWh, so stochastic availability lifts peaker use
-roughly fourfold over a smooth derate.
+Peakers run eight and a half times more in late summer and autumn than in winter, because
+maintenance is scheduled away from the winter peak. The model reproduces January and
+February to within half a point, and if anything its 3:1 maintenance concentration is too
+MILD.
 
-### WHAT SURVIVES, AND IT IS MORE INTERESTING THAN THE CLAIM IT REPLACES
+### THE LEVEL DIFFERS BECAUSE ESKOM DOES NOT DISPATCH PEAKERS ON MERIT
 
-Reproducing Eskom's actual peaking and shedding needs about **four points LOWER
-availability than the audited 65.2% EAF**. At the audited figure the model under-runs
-peakers fivefold and under-sheds forty-fold.
+```
+Eskom OCGT ran in 2,016 hours - 23% of the year - and across the WHOLE demand range:
 
-That gap is worth understanding rather than tuning away. EAF is an ENERGY availability
-factor over the year and includes planned maintenance; what a dispatch model needs is the
-capacity actually available in each hour, and the two are not the same quantity. Whether
-the residual is the maintenance treatment, the outage process having too thin a tail, or
-Eskom running peakers for network reasons the merit order never prices, is untested.
+demand decile        demand MW        mean OCGT MW
+ 3                 19.5-20.2k                   85
+ 6                 21.6-22.3k                  198
+ 8                 23.1-24.1k                  256
+10                 25.5-31.2k                  688
 
-**DO NOT tune `coalEAFPct` to 61 to close it.** The 65.2% is audited and belongs in the
-model; the gap is a finding about what EAF measures, not a parameter to fit.
+output at demand above 28,000 MW      209 GWh    11% of the total
+output at demand below 25,000 MW    1,203 GWh    63% of the total
+```
+
+**Sixty-three per cent of Eskom's peaker generation happens below 25 GW of demand**, with
+roughly 25.8 GW of coal available - hours where a merit-order model has no reason to start
+a peaker at all, and correctly does not.
+
+That output is reserve provision, network support and ramping. NONE of those are priced by
+an energy merit order, so a model that dispatches on economics alone cannot reproduce
+them, and tuning availability until it does would be fitting the right total for the wrong
+reason.
+
+**THIS CLOSES THE FOUR-POINT EAF GAP.** Reproducing Eskom's outturn appeared to need ~61%
+availability against an audited 65.2%. It does not: the missing energy is non-energy
+services, and lowering availability would have manufactured scarcity to imitate them.
+`coalEAFPct` stays at the audited value.
+
+WHAT IT MEANS FOR RESULTS: peaking cost and emissions are understated in the base case,
+and the understatement is concentrated in the moderate-demand hours where reserve is held
+rather than in the tight ones. Direction is unchanged - reality is dirtier and dearer than
+the model.
 
 ---
 

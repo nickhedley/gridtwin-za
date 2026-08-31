@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 891 checks
+suite                      19 harnesses, 892 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 891 checks. Last full run: 891/891.
+Nineteen harnesses, 892 checks. Last full run: 892/892.
 
 ```
 node stress_suite.js                290/290
@@ -257,7 +257,7 @@ node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           58/58
-node validate_benchmarks.js .        21/21
+node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
@@ -2588,25 +2588,12 @@ measured change, which is the only reason to re-pin.
 
 ### Model gaps the audited data exposed
 
-1. **THE MODEL SHEDS IN THE WRONG SEASON.** Supersedes both the withdrawn OCGT diagnosis
-   and the four-point EAF gap, which is a symptom of this. Mean of 24 outage draws:
-
-   ```
-   summer Dec-Feb  0.44 GWh          winter Jun-Aug  0.00 GWh
-   ```
-
-   **South African load shedding is a WINTER phenomenon. This model never sheds in
-   winter.** `genUnitOutagePath` shifts planned maintenance out of winter on a `SEASON`
-   array running 3:1, putting winter availability at 74.6% against an annual 65% - nearly
-   ten points of extra margin exactly when the system is tightest.
-
-   Flattening the season was TESTED and makes it better not worse. Two things are missing
-   together: winter availability closer to the annual mean, AND a forced-outage rate that
-   RISES in winter when units run hardest, which `forcedSharePct` does not model at all.
-
-   **Do not publish the EAF gap and do not tune `coalEAFPct`.** Next step is a
-   winter-weighted forced-outage rate calibrated against Eskom's published UCLF by month -
-   a data question before a modelling one. Full working below.
+1. ~~OCGT under-runs / the model sheds in the wrong season / the four-point EAF gap.~~
+   **ALL THREE CLOSED 31 Aug 2026 on Eskom's own hourly data.** The seasonality is right
+   (model 9.0x Jan-Mar against Jul-Sep, Eskom 8.5x, now benchmarked). The level differs
+   because **63% of Eskom's peaker output runs below 25 GW of demand with ~25.8 GW of coal
+   available** - reserve, network support and ramping, none of which an energy merit order
+   prices. `coalEAFPct` stays at the audited 65. Full working in RESULTS.md.
 
 2. ~~Technical and other losses not modelled.~~ **I WAS WRONG — CHECKED 31 Aug 2026.**
    They are ALREADY inside the demand series. `profiles.json` states its basis:
@@ -4416,6 +4403,157 @@ published**, and `coalEAFPct` stays at the audited value.
 
 NEXT STEP: a winter-weighted forced-outage rate, calibrated against Eskom's published UCLF
 by month rather than assumed. That is a data question before it is a modelling one.
+
+---
+
+## CORRECTION: "South Africa sheds in winter" was not verified — 31 Aug 2026
+
+Written into the seasonal diagnosis an hour earlier as though established. **It is not
+supported by FY2026.**
+
+Eskom's integrated report states the country reached 365 consecutive days without
+loadshedding **in May 2026**. FY2026 runs April 2025 to March 2026, so the clean run began
+around May 2025 and the year's 36 GWh of shedding fell in **April-May 2025 - autumn**, at
+the very start of the fiscal year.
+
+Severe winter shedding is a real memory from 2022-23, but that is not what FY2026 shows,
+and I asserted it from intuition rather than the document sitting open beside me.
+
+### THE DEFENSIBLE STATEMENT IS NARROWER AND STRONGER
+
+**The model's own demand peaks in June at 31,595 MW, and it never sheds then. It sheds in
+January to March, when its own peaks are 1 to 2.5 GW LOWER.** That is an internal
+inconsistency requiring no external claim at all:
+
+```
+month   coal available   monthly peak   margin
+Feb              23.3           30.6     -7.3    <- tightest
+Jun              29.9           31.6     -1.7    <- most comfortable
+```
+
+The seasonal availability swing is 16.5 points, worth 6.5 GW, against a demand swing of
+1.0 GW. **The maintenance shape overwhelms the demand shape by six to one and inverts
+which season binds.**
+
+### WHY THIS MATTERS FOR THE FIX
+
+Had the winter claim gone unchallenged, the obvious target would have been "make it shed
+in winter" - and any parameter reaching that target would have been fitting to an assumed
+pattern. The real target is narrower: **the availability swing should not be so much larger
+than the demand swing that it decides the answer by itself.**
+
+That is a constraint derived from data already in the model, not from a memory of what
+load shedding felt like.
+
+---
+
+## The seasonal diagnosis was wrong, and Eskom's own file proves it — 31 Aug 2026
+
+Three claims in one afternoon, each correcting the last:
+
+```
+CLAIMED  no flat availability factor reproduces both peaking and shedding
+         -> withdrawn: read the wrong variable, swept single draws
+
+CLAIMED  the model sheds in summer while South Africa sheds in winter
+         -> the winter half was never verified; FY2026's shedding was AUTUMN
+
+CLAIMED  the model's seasonality is inverted and needs fixing
+         -> WITHDRAWN. Eskom's measured dispatch says the shape is RIGHT.
+```
+
+### THE MEASUREMENT
+
+`ESK19243.csv` carries `Eskom OCGT Generation` hourly for 2025 - the peakers Eskom
+actually ran, which is where the system was actually tight.
+
+```
+month      model share   Eskom share
+Jan              16.5%         16.0%
+Feb              17.2%         17.0%
+Jul               7.1%          6.0%
+Sep               2.9%          0.0%
+
+Jan-Mar : Jul-Sep     model 3.9:1     Eskom 8.5:1
+```
+
+**Eskom runs peakers eight and a half times more in late summer and autumn than in
+winter.** January and February match the model's share to within half a point. The
+`SEASON` array's 3:1 maintenance concentration is not too aggressive - **it is if anything
+too mild.**
+
+The mechanism is exactly what the code comment always claimed: maintenance is scheduled
+away from the winter peak, so summer availability is low and peakers cover it. Winter runs
+a full fleet.
+
+### WHAT I GOT WRONG, AND HOW
+
+I reasoned from what load shedding FEELS like in South Africa - a winter emergency - and
+built a diagnosis on it. Two checks would have stopped me. The Eskom report was open beside
+me and says the 365-day clean run began in May 2025, making FY2026's shedding autumn. And
+this CSV, already in the project as the demand source, had the answer in a column I had
+never looked at.
+
+**The data to falsify this was in the repo the whole time.** Rule 3 - check the input
+before building on it - and the input here was one column of a file already loaded.
+
+### WHAT ACTUALLY REMAINS
+
+The LEVEL, not the shape. Model 217 GWh of peaking against Eskom's 1,898 for calendar 2025.
+That is the four-point EAF gap restated, now with the seasonality corroborated rather than
+suspect - which makes it a cleaner question than it was this morning.
+
+The file also reconciles to the published accounts: Eskom OCGT for Apr-Dec 2025 is 800 GWh,
+implying ~279 for Jan-Mar 2026 against the 1,079 audited FY2026 total.
+
+---
+
+## The peaker question, settled — 31 Aug 2026
+
+Three successive diagnoses, two withdrawn, one that holds. The data that settled it was a
+column of a CSV already in the project as the demand source.
+
+### WHAT ESKOM ACTUALLY DID IN 2025
+
+```
+OCGT ran in 2,016 hours - 23% of the year - across the WHOLE demand range:
+
+demand decile      demand MW      mean OCGT MW
+ 3               19.5-20.2k                 85
+ 6               21.6-22.3k                198
+ 8               23.1-24.1k                256
+10               25.5-31.2k                688
+
+above 28,000 MW      209 GWh    11% of the total
+below 25,000 MW    1,203 GWh    63% of the total
+```
+
+**Sixty-three per cent of peaker output runs below 25 GW of demand**, with roughly 25.8 GW
+of coal available. Those are hours where a merit-order model has no reason to start a
+peaker, and correctly does not. That output is reserve, network support and ramping.
+
+### SO THE GAP IS SCOPE, NOT ERROR
+
+The model prices energy. Most of Eskom's peaker running is not energy. Tuning availability
+until the totals matched - which the four-point EAF gap invited - would have manufactured
+scarcity to imitate services the model does not represent. **`coalEAFPct` stays at the
+audited 65.2%.**
+
+### BENCHMARKED ON SHAPE, DELIBERATELY NOT ON LEVEL
+
+`validate_benchmarks` 21 -> 22. `peakerSeasonRatio` asserts Jan-Mar against Jul-Sep output:
+model 9.0x, Eskom 8.5x, band 2-12x.
+
+**The level is deliberately NOT benchmarked**, and the reason is written into the harness:
+a level benchmark would invite exactly the tuning that was tried and withdrawn twice today.
+The comment exists so it is not attempted a third time.
+
+### THE PATTERN WORTH KEEPING
+
+Every wrong turn today came from reasoning about the model instead of measuring it, and
+every correction came from a file already in the repository. The EAF gap, the seasonal
+inversion, the winter assumption - three diagnoses built on intuition, all falsified by
+data nobody had to go and fetch.
 
 ---
 
