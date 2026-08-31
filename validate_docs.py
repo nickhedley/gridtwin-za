@@ -100,6 +100,29 @@ if st:
           'it must come BEFORE the working notes; a reader deciding whether to cite '
           'this should hit it before anything quotable')
 
+# ── RESULTS.md index integrity ────────────────────────────────────────────────
+# The index at the top of RESULTS.md is written by hand and drifts the moment a section
+# is added. On 31 Aug it read "Fifteen sections follow" against nineteen - and a
+# correction to "Twenty" was itself one out, which is exactly why this is a check rather
+# than a habit. A count nobody verifies is worse than no count, because it looks checked.
+_res = read('RESULTS.md')
+if _res:
+    _actual = len(re.findall(r'^## ', _res, re.M))
+    _words = {'ten':10,'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,
+              'sixteen':16,'seventeen':17,'eighteen':18,'nineteen':19,'twenty':20,
+              'twenty-one':21,'twenty-two':22,'twenty-three':23,'twenty-four':24}
+    _m = re.search(r'([A-Za-z-]+) sections follow', _res)
+    _stated = _words.get(_m.group(1).lower()) if _m else None
+    check('RESULTS.md index states the right number of sections',
+          _stated == _actual,
+          'index says "%s" (%s), file has %d' % (_m.group(1) if _m else 'nothing',
+                                                 _stated, _actual))
+
+    # NO POINTER CHECK HERE. One already exists above - "every index pointer in
+    # RESULTS.md resolves to a section" - and adding a second was caught on 31 Aug only
+    # because breaking a heading fired BOTH. Rule 6 applies to harnesses too: two checks
+    # of the same thing drift apart and the weaker one starts passing.
+
 print(f'\n{npass}/{npass + nfail} documentation checks passed')
 if fails:
     print('\nFAILURES:')

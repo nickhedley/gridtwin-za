@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 880 checks
+suite                      19 harnesses, 881 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 880 checks. Last full run: 880/880.
+Nineteen harnesses, 881 checks. Last full run: 881/881.
 
 ```
 node stress_suite.js                290/290
@@ -236,7 +236,7 @@ node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
-python3 validate_docs.py . nodal       18/18   the documents, added 30 Aug
+python3 validate_docs.py . nodal       19/19   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
@@ -3788,6 +3788,42 @@ storage is shifted energy rather than generation and counting it would double-co
 
 Exact. The KPI was right and my measurement was the loose one. Worth recording because I
 raised it as a suspected fault and it was not.
+
+---
+
+## The RESULTS.md index had drifted from its own file — 31 Aug 2026
+
+Today's re-verification changed several published findings, so the ranked index at the top
+of RESULTS.md no longer described what sat beneath it. **Three entries were stale and one
+contradicted its own section.**
+
+```
+capture asymmetry   solar "falls to 2.5%" -> 2.7%, and now records that solar already
+                    earns 24% BELOW the market average TODAY, which the old entry missed
+hybrids             "worth 3% today, several hundred percent at a full pipeline"
+                    -> the U-SHAPE: +130% today, +8% in 2030, +386% by 2035
+battery saturation  now records that South Africa is already PAST the knee
+locational spread   ADDED to Tier 2 - 66-fold, independently re-verified
+```
+
+The header also read "Fifteen sections follow" against nineteen.
+
+### AND THE CORRECTION WAS ITSELF WRONG
+
+I changed it to "Twenty". The file has nineteen. **That is precisely why this is now a
+check rather than a habit** - a hand-written count that nobody verifies is worse than no
+count, because it looks checked.
+
+`validate_docs.py` now asserts the stated count matches the number of `##` sections.
+Verified it fails: reverting to "Fifteen" reports `index says "Fifteen" (15), file has 19`.
+
+### A DUPLICATE CHECK, CAUGHT BY ITS OWN FAILURE
+
+I also wrote a pointer-resolution check. Breaking a heading to test it fired TWO failures -
+an equivalent check already existed twenty lines above. Removed, with a note in its place.
+
+**Rule 6 applies to harnesses as much as to constants.** Two checks of the same thing
+drift apart, and the weaker one starts passing while the reader assumes both still bind.
 
 ---
 

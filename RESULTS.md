@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Fifteen sections follow. This index exists because the file passed 1,400 lines and the
+Nineteen sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by EVIDENTIAL STRENGTH, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -35,10 +35,18 @@ storage LP, and a reserve-constrained LP - the most-tested result in this file.
 which is what a mechanism looks like rather than noise.
 → "Flexibilising the coal fleet"
 
-**Solar cannibalises itself; wind does not.** Wind holds 96-106% of the mean price across
-the whole build range while solar falls to 2.5%. Every solar plant produces in the same
-hours.
+**Solar cannibalises itself; wind does not.** Wind holds 96-107% of the mean price across
+the whole build range while solar falls to 2.7%. Every solar plant produces in the same
+hours. Re-verified 31 Aug against the corrected constants: four of five build points
+reproduce within two points. **Solar already earns 24% below the market average TODAY** -
+the published version showed near-parity at the start of the curve and understated it.
 → "Capture rates"
+
+**Connection headroom is worth 66 TIMES more in the best region than the worst.** Duals
+on the build LP's headroom constraints, re-verified 31 Aug with row counts reproducing
+exactly (119,225 both ways). The EPP submission described a fiftyfold spread; it is
+sixty-six-fold. Levels moved with the recalibration, ratios did not.
+→ "Locational transmission signal"
 
 ### Tier 3 — single weather year, or dependent on the storage heuristic.
 
@@ -48,11 +56,16 @@ but only there, and only if the connections existed.
 
 **Storage's ancillary market SHRINKS as renewables grow**, if curtailed plant may sell
 reserve. Binary on that policy choice, insensitive to every numeric parameter.
+**South Africa is already PAST the knee** - re-run 31 Aug puts it near 2.5 GW against an
+existing 3.7 GW fleet, so a battery built today already earns a reduced ancillary rate.
+The EPP submission's version of this is understated, not wrong.
 → "Battery saturation"
 
-**Co-locating a battery is worth 3% today and several hundred percent at a full
-pipeline.** The mitigation for cannibalisation, and its value is a function of
-penetration.
+**Co-location value is U-SHAPED, not rising.** +130% today, +8% in 2030, +386% by 2035.
+Arbitrage pays for VOLATILITY, and 2026 is volatile from scarcity while 2035 is volatile
+from surplus. Corrected 31 Aug - the earlier version reported a rising curve, measured on
+constants that suppressed today's scarcity pricing. **"Storage becomes valuable later" is
+the wrong conclusion.**
 → "Hybrids"
 
 **Demand response has an optimum near 7.5% and is counterproductive past 15%.**
