@@ -12206,10 +12206,51 @@ function render(r){
   // board
   const sw=document.getElementById('statusWord');
   const shedGWh=r.shedMWh/1000;
-  if(r.maxStage===0){sw.textContent='Stable';sw.className='statusword ok';}
-  else if(r.maxStage<=2){sw.textContent='Constrained';sw.className='statusword warn';}
-  else {sw.textContent='Stage '+r.maxStage;sw.className='statusword bad';}
+  // SYSTEM STATUS WAS KEYED ON maxStage ALONE, so ONE bad hour in 8,760 flipped the whole
+  // board to "Stage 3" - which is what it showed on 31 Aug 2026 beside 0 GWh of expected
+  // shed. The two cells contradicted each other and the model looked broken. It was not:
+  // 5 shortage hours totalling 5.5 GWh, 0.003% of demand and SIX TIMES BETTER than
+  // Eskom's audited FY2026 outturn of 36 GWh.
+  //
+  // A status word has to carry DEPTH AND FREQUENCY. Eskom went 365 days without load
+  // shedding while still having a worst hour; describing that as "Stage 3" is wrong in
+  // the way that matters - it is the difference between a system that sheds and a system
+  // that had one tight evening.
+  //
+  // Thresholds: below 0.05% of hours is 4 hours a year, which is within what a system
+  // with 99.95% reliability experiences and is NOT load shedding. Above 1% of hours -
+  // 88 hours - is a system genuinely shedding.
+  const _shedHours = (r.stack && r.stack.unserved)
+    ? Array.prototype.reduce.call(r.stack.unserved, (a, v) => a + (v > 1 ? 1 : 0), 0) : 0;
+  const _shedPct = 100 * _shedHours / 8760;
+  if (r.maxStage === 0){ sw.textContent='Stable'; sw.className='statusword ok'; }
+  else if (_shedPct < 0.05){ sw.textContent='Tight hours'; sw.className='statusword warn'; }
+  else if (_shedPct < 1 || r.maxStage <= 2){ sw.textContent='Constrained'; sw.className='statusword warn'; }
+  else { sw.textContent='Stage '+r.maxStage; sw.className='statusword bad'; }
+  sw.title = r.maxStage === 0 ? 'No hour of the year falls short.'
+    : `${_shedHours} of 8,760 hours fall short (${_shedPct.toFixed(2)}% of the year), `
+      + `worst hour reaching stage ${r.maxStage}. Eskom's audited FY2026 outturn was `
+      + `0.02% of demand unmet.`;
+  // MAX STAGE IS THE WORST SINGLE HOUR OF 8,760, not a state the system sits in. On
+  // 31 Aug 2026 the board showed stage 3 beside 0 GWh of expected shed and read as though
+  // the country were load shedding. It was one hour at 2,055 MW short, out of five
+  // shortage hours all year - 0.003% of demand.
+  //
+  // The lamps still show the worst hour, because that is what the label says, but the
+  // TITLE now carries how often it happened. A peak with no frequency beside it is not a
+  // measurement anyone can act on.
+  const _shedHrs = (r.stack && r.stack.unserved)
+    ? Array.prototype.reduce.call(r.stack.unserved, (a, v) => a + (v > 1 ? 1 : 0), 0) : 0;
   document.querySelectorAll('.lamp').forEach((l,i)=>l.classList.toggle('on',i<r.maxStage));
+  {
+    const lb = lampsEl && lampsEl.parentElement;
+    if (lb) lb.title = r.maxStage > 0
+      ? `Worst single hour of the year reached stage ${r.maxStage}. `
+        + `${_shedHrs} hour${_shedHrs===1?'':'s'} of 8,760 fall short in total `
+        + `(${(100*_shedHrs/8760).toFixed(2)}% of the year). This is the PEAK, not a state `
+        + `the system sits in.`
+      : 'No hour of the year falls short.';
+  }
   document.getElementById('bdPeak').textContent=(r.peak/1000).toFixed(1)+' GW';
   document.getElementById('bdShed').textContent='…';
 
@@ -12497,7 +12538,15 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
     '<div class="rk"><div class="k">E[diesel]</div><div class="v">'+meanDiesel.toFixed(1)+' TWh</div></div>';
   document.getElementById('shed').innerHTML=exceed.map((p,i)=>'<div class="sb"><div class="sbv" style="height:'+(100*p).toFixed(1)+'%"></div><div class="sbl">S'+(i+1)+'</div></div>').join('');
   document.getElementById('shedNums').innerHTML=exceed.map(p=>'<div class="shednum" style="flex:1;text-align:center">'+(p>0?Math.round(p*100)+'%':'')+'</div>').join('');
-  document.getElementById('bdShed').textContent=meanShed<1?'0 GWh':Math.round(meanShed).toLocaleString()+' GWh';
+  // A hard '0 GWh' below 1 GWh made the board CONTRADICT ITSELF on 31 Aug 2026: the lamps
+  // showed stage 3 while this cell read 0 GWh, so the system looked both short and fine.
+  // The shortage was real and tiny - 5.5 GWh across 5 hours of 8,760, which is 0.003% of
+  // demand and SIX TIMES BETTER than Eskom's audited FY2026 outturn of 36 GWh. Rounding a
+  // real number to zero to keep the board tidy is how a contradiction gets shipped.
+  document.getElementById('bdShed').textContent =
+      meanShed < 0.05 ? '0 GWh'
+    : meanShed < 10   ? meanShed.toFixed(1) + ' GWh'
+    : Math.round(meanShed).toLocaleString() + ' GWh';
   // status word: deterministic stage, upgraded by risk
   const sw=document.getElementById('statusWord');
   if(detStage===0){

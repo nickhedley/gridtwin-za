@@ -90,6 +90,9 @@ CHECKS = [
     # battery panels never made.
     ('storageSummary',                                             'storage investment summary'),
     ('Merchant or attached',                                       'merchant vs co-located comparison'),
+    # System status must reflect FREQUENCY, not just the worst hour. Keyed on maxStage
+    # alone, one bad hour in 8,760 flipped the board to "Stage 3" beside 0 GWh of shed.
+    ('Tight hours',                                                'status word: frequency-aware'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices
     # beside MIP energy with nothing saying so.

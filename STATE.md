@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 864 checks
+suite                      19 harnesses, 865 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 864 checks. Last full run: 864/864.
+Nineteen harnesses, 865 checks. Last full run: 865/865.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           50/50
+python3 audit.py index.html           51/51
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -3326,6 +3326,47 @@ against roughly two minutes for each of the dispatch-based re-runs. The build LP
 different class of check. `validate_findings.js` deliberately covers dispatch findings
 only for that reason — a harness nobody runs because it takes fifteen minutes protects
 nothing.
+
+---
+
+## The board said Stage 3 beside 0 GWh — 31 Aug 2026
+
+Reported from the live site: the dashboard showed the country load shedding under the
+Today scenario. **The board was contradicting itself, and the model was fine.**
+
+```
+shortage hours        5 of 8,760      0.06% of the year
+total unserved        5.463 GWh       0.003% of demand
+worst hour            2,055 MW short  -> stage 3
+Eskom FY2026 audited  36 GWh          0.02% of demand
+```
+
+**THE MODEL IS SIX TIMES MORE OPTIMISTIC THAN REALITY**, not pessimistic. The corrections
+of 31 Aug — coal capacity down 5.8%, imports down 52%, availability down three points —
+moved unserved energy from ~0 toward Eskom's audited outturn. That is an IMPROVEMENT in
+realism. The display was not ready for a non-zero number.
+
+### THREE DISPLAY FAULTS, ALL THE SAME MISTAKE
+
+**1. System status keyed on `maxStage` ALONE.** One bad hour in 8,760 flipped the whole
+board to "Stage 3". Now carries frequency: `Stable` at zero, `Tight hours` under 0.05% of
+hours, `Constrained` under 1%, and a stage number only above that. Today reads
+**Constrained**; the 2023 crisis scenario still reads Stage 8 at 4,032 shortage hours, and
+a no-coal-no-gas system still reads Stage 8 at 8,760.
+
+**2. Expected shed rounded anything under 1 GWh to a hard "0 GWh".** 5.5 GWh became zero,
+which is what created the visible contradiction. Now shows one decimal below 10 GWh.
+
+**3. The lamps had no frequency at all.** They still show the worst hour, because that is
+what the label says, but the cell now carries a tooltip stating how many hours of 8,760
+fall short. **A peak with no frequency beside it is not a measurement anyone can act on.**
+
+### THE GENERAL LESSON
+
+A dashboard that rounds a real number to zero to stay tidy will eventually contradict
+another cell that did not round. The contradiction is the useful signal — it was visible
+on the live site within hours, and it pointed at a display fault rather than the
+calibration work that exposed it.
 
 ---
 
