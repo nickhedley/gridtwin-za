@@ -2547,6 +2547,54 @@ measured change, which is the only reason to re-pin.
 
 ---
 
+## TO DO — from the Eskom FY2026 results and integrated report
+
+### Model gaps the audited data exposed
+
+1. **OCGT runs at zero.** Eskom burned 1,079 GWh; the merit order never calls a peaker
+   at 65% EAF and today's demand. Eskom runs them for reserve, ramping and network
+   support — none of which the model prices. Reality is dirtier and dearer than the
+   model, and the gap will be worst in exactly the tight hours the adequacy work turns
+   on. Options: a minimum-run constraint, or pricing the services that actually call
+   them.
+2. **Technical and other losses: 23,921 GWh, 11.6% of energy available.** Not modelled
+   at all, and larger than every technology except coal. Anything comparing the model's
+   served energy against a national sales figure is out by this much.
+3. **`IMPORTS_CF` in `nodal_engine.js` is still a second copy** of `FIXED.importsCF`.
+   Make it read the constant. Rule 6.
+4. **Kusile Unit 6, 799 MW synchronised.** Check whether it is already inside
+   `coalInstalledMW` 42,000 before adding. Eskom reports nominal capacity 47,378 MW
+   (2025: 46,866) across the whole fleet, so reconcile against that rather than guessing.
+5. **13.1 TWh lost to theft**, about 6% of supply. Distinct from technical losses and
+   also absent.
+
+### Calibration worth revisiting
+
+6. **Sales fell 6.2% to 178 TWh**, industrial down 22.5% on ferrochrome smelter
+   hardship. STRUCTURAL, not cyclical. The demand slider starts at zero growth; the
+   observed trend is negative, and three years of audited sales now exist to anchor it.
+7. **2–3 GW surplus capacity**, Eskom's own words, for the first time in over a decade.
+   Bears directly on the adequacy results.
+8. **Grid: 8,362 km of line and 82,425 MVA by FY2031** from R343bn capex with 46% to
+   NTCSA. Cross-check against the TDP-derived R584/kW-yr behind `txRPerKWyr`. Different
+   period and scope, so not like-for-like, but it is a second published route to the
+   same constant.
+
+### New scenario
+
+9. **Eskom Green as a fifth build preset** — 6 GW carbon-free by FY2030, 32 GW
+   renewables and storage by FY2040, 1,500 MW gas by FY2029 ramping to 3,000 MW by
+   FY2031. It is Eskom's OWN plan, which none of historical, IRP, masterplan or grid
+   are, and it is the one a South African reader is most likely to want to test.
+
+### Watch
+
+10. Municipal arrear debt R111.6bn, heading to R358bn by FY2031 if unabated. Outside
+    the model's scope, but it is the largest single risk to the tariff path that
+    everything here prices against.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
