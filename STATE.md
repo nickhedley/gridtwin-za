@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 850 checks
+suite                      18 harnesses, 851 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 850 checks. Last full run: 850/850.
+Eighteen harnesses, 851 checks. Last full run: 851/851.
 
 ```
 node stress_suite.js                290/290
@@ -232,7 +232,7 @@ node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           44/44
-node validate_benchmarks.js .        20/20
+node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
@@ -2598,8 +2598,10 @@ measured change, which is the only reason to re-pin.
    now carries the audited series: 183.3 TWh FY2024, 189.7 FY2025, 178.0 FY2026, with
    Eskom targeting stabilisation at 178. It also states that growth here is a forward
    assumption, not the observed trend.
-7. **2–3 GW surplus capacity**, Eskom's own words, for the first time in over a decade.
-   Bears directly on the adequacy results.
+7. ~~2-3 GW surplus capacity check.~~ DONE 31 Aug 2026. Model gives 2.2, 2.9 or 3.4 GW
+   depending on whether contracted imports and VRE count as surplus; two of three sit
+   inside Eskom's range. Now a benchmark (`surplusGW`, 1.8-4.0 GW) — **the first check on
+   the ADEQUACY side against a published national figure.** Full working in RESULTS.md.
 8. ~~Grid capex cross-check against `txRPerKWyr`.~~ DONE 31 Aug 2026. The two routes
    BRACKET the constant: TDP ~R700/kW-yr gross, Eskom's FY2027-31 capex plan ~R490, model
    default R600 net. No change made — it was defensible on one source and is better

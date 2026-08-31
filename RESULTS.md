@@ -1626,3 +1626,38 @@ bounds either side of it.
 
 CONCLUSION: no change to the constant. It was defensible on one source and is better
 supported by two, and the slider note now shows both bounds rather than one derivation.
+
+---
+
+## Surplus capacity: the model agrees with Eskom, within a definition nobody published
+
+Eskom FY2026: *improved generation availability has created an estimated 2-3 GW surplus
+capacity, positioning Eskom to attract new demand rather than ration it.* First time in
+over a decade, and the first published figure this project can test its ADEQUACY side
+against rather than its energy side.
+
+Measured at the model's annual peak, 31,595 MW:
+
+```
+gross headroom at the annual peak                  4,754 MW
+less operating reserve held                        3,366 MW = 3.4 GW
+less reserve AND contracted imports                2,894 MW = 2.9 GW
+less reserve, imports AND VRE credit at peak       2,190 MW = 2.2 GW
+
+Eskom                                              2,000-3,000 MW
+```
+
+**TWO OF THE THREE DEFENSIBLE DEFINITIONS SIT INSIDE ESKOM'S RANGE**, and the third is
+13% above its top. Eskom does not state its method, so the honest reading is agreement
+rather than a match.
+
+The definitional question is real and not a quibble. Contracted Cahora Bassa imports are
+capacity, but they are not capacity Eskom can sell to a new customer. VRE at the winter
+evening peak contributes 704 MW of a 8,483 MW fleet, so whether it counts at all depends
+on what firm means. Those two choices move the answer by 1.2 GW - more than the width of
+Eskom's own range.
+
+Now a benchmark check, band 1.8-4.0 GW, deliberately spanning the definitions rather than
+picking the flattering one. **It is the first check on the adequacy side against a
+published national figure**: if the model ever calls the system comfortable while Eskom
+calls it tight, that is where it will show.

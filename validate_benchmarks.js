@@ -113,6 +113,24 @@ const CF_BENCH = {
   // This check exists to stop the basis being changed by accident. If it fails high by
   // roughly 17%, someone has compared against sales; if it drops by roughly 12%,
   // someone has added a loss term that double-counts what is already in the demand.
+  // SURPLUS CAPACITY AT THE ANNUAL PEAK. Added 31 Aug 2026 against Eskom's FY2026
+  // statement: "improved generation availability has created an estimated 2-3 GW surplus
+  // capacity, positioning Eskom to attract new demand rather than ration it".
+  //
+  // ESKOM DOES NOT PUBLISH ITS METHOD, so this band covers the defensible definitions
+  // rather than picking the one that fits best:
+  //     less operating reserve only                        3.4 GW
+  //     less reserve and contracted imports                2.9 GW
+  //     less reserve, imports and VRE credit at peak       2.2 GW
+  // Two of the three sit inside Eskom's range. Band is 1.8-4.0 GW: tight enough to catch
+  // a real adequacy drift, loose enough not to fail on a definition nobody published.
+  //
+  // WHAT IT GUARDS: this is the first check on the ADEQUACY side against a published
+  // national figure. If the model ever reports a system that is comfortable when Eskom
+  // says it is tight, or vice versa, this is where it shows.
+  surplusGW: { lo: 1.8, hi: 4.0, unit: 'GW', why: 'Eskom FY2026: an estimated 2-3 GW surplus '
+    + 'capacity, first time in over a decade. Method not published - band spans the '
+    + 'defensible definitions' },
   gridGenTWh: { lo: 190, hi: 222, unit: 'TWh', why: 'Eskom FY2026 audited: energy available for distribution '
     + '206.0 TWh. NOT sales, which are 178.0 TWh - losses of 23.9 TWh sit between them' },
   cfPv:      { lo: 19, hi: 27, why: 'SA fixed-tilt utility PV, 21-24% typical; tracking reaches 26-28%' },
@@ -164,6 +182,18 @@ const check = (name, ok, detail) => {
       cfWind: cf(E.wind/1e6, FIXED.windMW), cfPv: cf(E.pv/1e6, FIXED.pvUtilityMW),
       // Residual basis: rooftop out of numerator and denominator, matching how Eskom
       // reports 'power supplied' - it cannot meter behind the customer's meter.
+      // Surplus at the annual peak: what could still have run, less the reserve held.
+      surplusGW: (() => {
+        const L = r.loadS; let ph = 0, pk = -1;
+        for (let h = 0; h < L.length; h++) if (L[h] > pk){ pk = L[h]; ph = h; }
+        const st = r.stack;
+        const avail = (FIXED.coalInstalledMW - (st._decom || 0)) * FIXED.coalEAFPct / 100
+          + FIXED.nuclearMW * 0.9 + FIXED.hydroMW + FIXED.psPowerMW + FIXED.battPowerMW
+          + FIXED.ocgtDieselMW + FIXED.importsMW * FIXED.importsCF;
+        const vre = st.wind[ph] + st.pv[ph] + st.csp[ph];
+        const res = (r.reserveMW || [])[ph] || r.resReqMeanMW || 0;
+        return (avail + vre - pk - res) / 1000;
+      })(),
       // Grid generation excluding rooftop, which is behind the meter and never reaches
       // the distribution network. Compare against energy AVAILABLE, not sales.
       gridGenTWh: (E.coal + E.nuclear + E.ccgt + E.diesel + E.hydro + E.ps + E.wind
