@@ -3415,6 +3415,101 @@ value is 0.0000 TWh, so "0.0 TWh/yr" is accurate rather than rounded-down.
 
 ---
 
+## Why "Constrained" under Today — a REAL dispatch bug, located 31 Aug 2026
+
+Asked why the board shows the system constrained. The five shortage hours are not a
+capacity problem. **Coal is dispatched roughly 7 GW BELOW its own availability while the
+system sheds load.**
+
+```
+ hour  time    load    coal     pv   wind  short
+  493 13:00  25,978  19,106  1,470  1,436      0
+  494 14:00  26,868  19,106    987  1,575      0
+  495 15:00  27,555  19,106    495  1,654      0
+  496 16:00  28,045  17,906     99  1,704  2,055   <- coal FALLS as demand peaks
+  497 17:00  27,107  17,906      0  1,689  1,202
+  499 19:00  26,566  17,906      0  1,246  1,170
+  500 20:00  25,868  18,594      0  1,031      0
+
+coal available all day: 25,800 MW. Highest coal reached: 19,765.
+```
+
+**COAL GOES DOWN AS DEMAND GOES UP.** That is backwards, and it happens on 21 January -
+summer, at 60% of the annual peak. At the actual June peak of 31,595 MW coal runs 25,365
+and there is no shortage at all, so the fleet can clearly do it.
+
+### WHAT IT IS NOT
+
+- **Not the pumped-storage peak reservation added earlier today.** Disabling it gives
+  identical results: 5 hours, 5.463 GWh, stage 3.
+- **Not capacity.** 25,800 coal + 3,400 diesel + 2,900 pumped + 472 imports + 1,700 wind
+  is about 34 GW against a 28 GW load.
+- **Not the constant corrections.** They raised the shortage from ~0 toward Eskom's
+  audited 36 GWh, which is a realism gain. The DISPATCH fault below is separate.
+
+### THE SUSPECT, narrowed
+
+Coal holds flat in four-hour blocks - 19,106 for 492-495, then 17,906 for 496-499 - so the
+level is set by `committedMW` around index.html:5446, not by the hourly ceiling. Outside
+the 09:00-15:00 solar window `solarAwareNeed` is `need24`, the maximum net load over the
+next 24 hours, which at 16:00 should be about 26,242 MW and would commit the full 25,800.
+It commits 17,906 instead.
+
+So either `need24` is not seeing that hour, or a decommitment floor from the preceding
+solar window is holding the block down. `rampBuffer` is 15% of the trough-to-night swing,
+which on a strong summer solar day may be too small to get back up.
+
+### DIAGNOSED — it is a SEEDED OUTAGE DRAW, not a dispatch fault
+
+Instrumented the commitment terms. The chain, in order:
+
+```
+solarAwareNeed at 16:00      24,189 MW   correct - it wants the capacity
+unit commitment committed    25,611 MW   correct - the UC committed nearly everything
+cAvail seen by dispatch      17,906 MW   45.1% of installed, against a 65% EAF mean
+```
+
+The commitment logic is RIGHT and was never the problem. `cAvail` is capped by
+`unitOutage`, a seeded unit-level Markov outage path that is **on by default**
+(`outageUnitLevel ?? 1`, `outageSeed 20260816`). Hour 496 lands in a deep outage draw.
+
+### THE SHIPPED SEED IS THE WORST OF TEN TESTED
+
+```
+seed 20260816 (shipped)   5 hours   5.46 GWh   stage 3
+seed 1, 3, 5, 7, 8        0 hours   0.00 GWh   stage 0
+seed 2                    2 hours   0.57 GWh   stage 1
+seed 4                    3 hours   2.09 GWh   stage 2
+seed 6                    4 hours   1.49 GWh   stage 2
+seed 9                    4 hours   2.64 GWh   stage 2
+smooth derate (off)       0 hours   0.00 GWh   stage 0
+
+range 0.00 to 5.46 GWh · median 0.28 · HALF the seeds shed nothing
+```
+
+**THE BASE CASE IS ONE RANDOM DRAW PRESENTED AS THE ANSWER**, and it happens to sit at
+the tail rather than the middle. That is the real fault, and it is the same class as
+everything else found today: a number shown without the uncertainty that generated it.
+
+### THREE OPTIONS, AND THIS IS A DECISION RATHER THAN A FIX
+
+1. **Change the seed.** Cheapest, and dishonest - it hides the variance rather than
+   showing it.
+2. **Headline the median or expected outcome**, with the draw available underneath. Most
+   informative, and the biggest change to how the tool behaves.
+3. **Say what it is.** Keep the draw, and state on the board that the base case includes
+   one seeded outage path with a stated range. Smallest change, and consistent with how
+   this project handles every other uncertainty.
+
+RECOMMENDATION: option 3 now, option 2 when the stochastic-availability work in the
+to-do list is done - they are the same problem, and the risk panel already runs 60 draws
+that could supply the headline.
+
+NOTE FOR CONTEXT: Eskom's audited FY2026 outturn was 36 GWh unserved. Every seed above,
+including the worst, is more optimistic than what actually happened.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
