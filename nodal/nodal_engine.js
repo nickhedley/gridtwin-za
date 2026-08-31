@@ -212,10 +212,15 @@ const IMPORTS_MW = 1150;      // matches the single-node app's assumption
 // has more than halved in two years while the contract stayed at 1.15 GW firm.
 //
 // THIS IS A SECOND COPY of FIXED.importsCF in index.html and that is a rule 6 violation.
-// It stays a literal only because this file is loaded as a plain script by four harnesses
-// with no access to FIXED. It was 0.85 in BOTH places and drifted in NEITHER, which is
-// luck rather than design - the two must be changed together, and index.html says the
-// same thing at its own constant.
+// THIS FILE OWNS THE VALUE, as of 31 Aug 2026. It is loaded as a plain script by four
+// harnesses with no access to FIXED, so it cannot read the value from there - but it
+// loads BEFORE index.html's constant block, so index.html can and now does read it:
+// `importsCF: IMPORTS_CF`. One definition, and the dependency runs the only way the
+// load order permits.
+//
+// Before that, the same number sat in both files plus two `?? 0.41` fallbacks - four
+// copies. They never drifted, which was luck; a COMMENT about them did, still claiming
+// 0.85 five hours after the value was corrected.
 const IMPORTS_CF = 0.41;
 const IMPORTS_COST = 550;     // R/MWh, matches the single-node app's costImports
 

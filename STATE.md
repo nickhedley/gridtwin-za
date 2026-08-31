@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 883 checks
+suite                      19 harnesses, 886 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 883 checks. Last full run: 883/883.
+Nineteen harnesses, 886 checks. Last full run: 886/886.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
-node validate_structure.js .          10/10
+node validate_structure.js .         13/13
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
@@ -4209,6 +4209,44 @@ adequacy figures         Only as LOLE and EUE with the standard error. Never a d
    because they engaged with someone else's published work rather than announcing ours.
 3. The Price and Tariff Rule consultation, expected October, is the natural hook for
    findings 1 and 6.
+
+---
+
+## IMPORTS_CF single-sourced — 31 Aug 2026
+
+The open item said "a literal in nodal_engine.js". It was worse: **four copies.**
+
+```
+nodal/nodal_engine.js   const IMPORTS_CF = 0.41
+index.html              importsCF: 0.41
+index.html:5181         (p.importsCF ?? 0.41)
+index.html:5404         (p.importsCF ?? 0.41)
+```
+
+**None of them had drifted. A COMMENT about them had** - index.html still read
+"IMPORTS_CF = 0.85 is defined in nodal_engine.js" five hours after the value was corrected
+to 0.41 in both files that morning. That is the failure mode a duplicated constant
+actually has: the number is easy to update everywhere, and the prose around it is not.
+
+### THE FIX RUNS THE ONLY DIRECTION THE LOAD ORDER PERMITS
+
+`nodal_engine.js` is loaded as a plain script by four harnesses with no access to `FIXED`,
+so it cannot read the value from there. But it loads at index.html:1124, BEFORE the
+constant block at 3829 - so `FIXED` can read it, and now does: `importsCF: IMPORTS_CF`.
+
+**No fallback, deliberately.** If the engine fails to load the page should fail loudly,
+which it already does - four harnesses die with "IMPORTS_CF is not defined" without it. A
+fallback would convert a loud failure into a plausible wrong answer, which is exactly
+rule 7's lesson.
+
+Verified unchanged: imports land at 4.13 TWh against Eskom's audited 4.09.
+
+### PINNED, so it cannot come back
+
+`validate_structure` 10 -> 13. Three checks: the engine declares it, `FIXED` reads it
+rather than restating it, and no `?? <number>` fallback reintroduces a copy. Verified they
+fail - reverting `FIXED` to the literal reports "FIXED.importsCF should be IMPORTS_CF, not
+a literal".
 
 ---
 

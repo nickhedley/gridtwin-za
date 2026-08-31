@@ -3825,7 +3825,15 @@ function buildProfiles(real){
 // rules. Nuclear (1,854 MW) + hydro (600 MW) + imports (850 MW) = 3,304 MW of always-synchronous
 // plant, so additional coal/gas must make up the rest to reach 6,000 MW.
 const SYNC_MIN_MW = 6000;
-// IMPORTS_CF = 0.85 is defined in nodal_engine.js (loaded first)
+// IMPORTS_CF is defined in nodal_engine.js, which loads at line 1124 - BEFORE this
+// constant block. So FIXED can read it, and does. That direction is deliberate: the
+// nodal engine is also loaded as a plain script by four harnesses with no access to
+// FIXED, so it has to own the value; anything else duplicates it.
+//
+// This comment said "IMPORTS_CF = 0.85" until 31 Aug 2026, five hours after the value
+// was corrected to 0.41 in both places. The number drifted in neither file and the
+// COMMENT ABOUT the number drifted in one - which is the failure mode a duplicated
+// constant actually has.
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -3861,7 +3869,11 @@ const FIXED = {
   // deliveries have more than halved in two years. Set to the FY2026 outturn.
   // If this is ever changed, change nodal_engine.js IMPORTS_CF with it - or better,
   // make that read this.
-  importsCF:0.41,
+  // Reads nodal_engine.js rather than restating 0.41. No fallback on purpose: if that
+  // file fails to load the page should fail loudly, which it already does - four
+  // harnesses die with "IMPORTS_CF is not defined" without it. A fallback here would
+  // turn a loud failure into a plausible wrong answer, which is rule 7's whole lesson.
+  importsCF:IMPORTS_CF,
   psPowerMW:2900, psEnergyMWh:60000, psEff:0.76,
   // windMW is derived from regional_renewable_capacity.json, not set by hand:
   //   4,042 MW REIPPPP (IPP Office Q4 2025/26, capacity online at 31 Mar 2026)
@@ -5178,7 +5190,7 @@ function simulate(u, prof, outPath){
     // constraints - with them in place it converges to this ordering. Note the
     // economics anyway: contracted imports (R550) now undercut marginal coal
     // (R674 with VOM and carbon) - true, and no code change follows from it.
-    const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*(p.importsCF??0.41);
+    const nuc=(p.nuclearMW+p.newNuclearMW)*0.90, hyd=p.hydroMW*0.55, imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -5401,7 +5413,7 @@ function simulate(u, prof, outPath){
       windGen *= (1 - _cgp2); pvGen *= (1 - _cgp2);
       congestMW[h] = _lost2; congestTot += _lost2;
     }
-    const nuc=(p.nuclearMW+p.newNuclearMW)*(p.nuclearCF??0.70), hyd=p.hydroMW*0.55, imp=p.importsMW*(p.importsCF??0.41);
+    const nuc=(p.nuclearMW+p.newNuclearMW)*(p.nuclearCF??0.70), hyd=p.hydroMW*0.55, imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -12141,7 +12153,7 @@ function renderAdequacy(r){
   if(!el||!r||!r.stack) return;
   const p={...FIXED,...state};
   const firm=(p.coalInstalledMW-(p.coalDecomMW||0))*((p.coalEAFPct??FIXED.coalEAFPct)/100)
-    +(p.nuclearMW+(p.newNuclearMW||0))*0.90+p.hydroMW+p.importsMW*(p.importsCF??0.41)
+    +(p.nuclearMW+(p.newNuclearMW||0))*0.90+p.hydroMW+p.importsMW*(p.importsCF ?? FIXED.importsCF)
     +p.ocgtDieselMW+(p.ccgtMW||0)+(p.newCcgtMW||0)
     +p.psPowerMW+p.battPowerMW+(p.newBattMW||0)
     +p.hybridMW*p.hybridCF;

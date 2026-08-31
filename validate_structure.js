@@ -297,6 +297,28 @@ const live = stripComments(src);
 
   notes.push(`${S.defCount} controls across ${S.groups.length} groups`);
 
+  // ── IMPORTS_CF has ONE definition ─────────────────────────────────────────
+  // Until 31 Aug 2026 the imports capacity factor existed in nodal_engine.js, in FIXED,
+  // and in two `?? 0.41` fallbacks - four copies. They never drifted, but a COMMENT
+  // about them did, still claiming 0.85 five hours after the value changed.
+  //
+  // nodal_engine.js now owns it and FIXED reads it. This asserts that stays true: the
+  // engine declares it, index.html does not restate it as a literal, and no fallback
+  // reintroduces a copy.
+  {
+    const eng = fs.readFileSync(path.join(ROOT, 'nodal', 'nodal_engine.js'), 'utf8');
+    const decl = eng.match(/const\s+IMPORTS_CF\s*=\s*([0-9.]+)/);
+    check('nodal_engine.js declares IMPORTS_CF', !!decl,
+          'the engine must own the value - index.html reads it and cannot fall back');
+    check('FIXED reads IMPORTS_CF rather than restating it',
+          /importsCF\s*:\s*IMPORTS_CF/.test(src),
+          'FIXED.importsCF should be IMPORTS_CF, not a literal');
+    const lits = (src.match(/importsCF\s*\?\?\s*[0-9.]+/g) || []);
+    check('no numeric fallback duplicates the imports capacity factor',
+          lits.length === 0,
+          lits.length ? 'found: ' + lits.join(', ') : '');
+  }
+
   console.log(`\n${pass}/${pass + fail} structural checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length) { console.log('\nNOTES:'); notes.forEach(n => console.log('  ' + n)); }
