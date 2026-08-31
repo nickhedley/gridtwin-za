@@ -15209,6 +15209,9 @@ self.onmessage = async (e) => {
   // mapping did not verify - the consumer must treat zero as ABSENT, not as a price
   // of zero, which is a real value in a curtailed hour.
   const mipPrice = new Float64Array(8760);
+  // Why the pricing run did or did not produce duals. Reported to the main thread so a
+  // silent fallback can be told apart from a fallback with a cause.
+  let priceOkDays = 0, priceFailDays = 0, priceFailReason = null, priceNoMatchDays = 0;
   const corridorFlow = new Float64Array(corridors.length);   // annual |MWh| per corridor
   const corridorHrsAtLimit = new Float64Array(corridors.length);
   const solvedDay = new Uint8Array(365);
@@ -15269,6 +15272,7 @@ self.onmessage = async (e) => {
               const m = lines[ix].match(/^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*:/);
               if (m) names.push(m[1]);
             }
+            if (names.length !== Object.keys(rp.Rows).length) priceNoMatchDays++;
             if (names.length === Object.keys(rp.Rows).length){
               dayPrice = new Array(24).fill(0);
               const cnt = new Array(24).fill(0);
@@ -15282,8 +15286,16 @@ self.onmessage = async (e) => {
               for (let h = 0; h < 24; h++) if (cnt[h] > 1) dayPrice[h] /= cnt[h];
             }
           }
-        } catch (err) { dayPrice = null; }   // pricing is best-effort; energy is not
-        if (dayPrice) for (let h = 0; h < 24; h++) mipPrice[day * 24 + h] = dayPrice[h];
+        } catch (err) {
+          dayPrice = null;
+          // DIAGNOSTIC. The first version swallowed the reason entirely, so a pricing run
+          // that never fired was indistinguishable from one that fired and found nothing.
+          // Keep the first failure so the main thread can say WHY.
+          if (!priceFailReason) priceFailReason = String(err && err.message || err).slice(0, 120);
+          priceFailDays++;
+        }
+        if (dayPrice){ priceOkDays++;
+          for (let h = 0; h < 24; h++) mipPrice[day * 24 + h] = dayPrice[h]; }
       }
 
       if (res && res.Columns) {
@@ -15340,6 +15352,7 @@ self.onmessage = async (e) => {
   self.postMessage({
     type: 'done', solved, failed, totalStartCost, totalStarts,
     coalProfile, chgProfile, disProfile, unservProfile, curtProfile, mipPrice,
+    priceOkDays, priceFailDays, priceFailReason, priceNoMatchDays,
     corridorFlow, corridorHrsAtLimit,
     solvedDay, daysCount: days.length, elapsed: (Date.now() - t0) / 1000
   }, [coalProfile.buffer, chgProfile.buffer, disProfile.buffer, unservProfile.buffer, curtProfile.buffer, mipPrice.buffer,
@@ -15714,6 +15727,8 @@ function applyMIPResult(m, mode, quiet) {
                      return out;
                    })(),
                    pricesFromInstant: false,
+                   priceDiag: { ok: m.priceOkDays|0, fail: m.priceFailDays|0,
+                                noMatch: m.priceNoMatchDays|0, reason: m.priceFailReason||null },
                    mipCurtailedTWh: curtMWh / 1e6 };
   // The gap between what the MIP curtails and what the single-node engine does is
   // the network-driven component. Recorded so the curtailment forecast, which
@@ -15801,6 +15816,11 @@ function showMIPBanner() {
     '<strong>These KPIs, the energy mix and the dispatch chart are the optimal network-aware solution</strong> – '
     + 'coal unit commitment, storage scheduling and corridor flows across all 10 regions solved together '
     + 'as a mixed-integer program over ' + label + ' with HiGHS in ' + a.elapsed.toFixed(0) + 's. '
+    + (a.priceDiag ? '<br><span style="font-size:10px;opacity:.85">Pricing run: '
+        + a.priceDiag.ok + ' days priced, ' + a.priceDiag.fail + ' errored, '
+        + a.priceDiag.noMatch + ' with a row-count mismatch'
+        + (a.priceDiag.reason ? ' \u2013 first error: ' + a.priceDiag.reason : '')
+        + '.</span>' : '')
     + (mipPricedHours > 0
         ? 'Prices come from a pricing run \u2013 commitment fixed to this solution and re-solved as an LP \u2013 covering ' + mipPricedHours.toLocaleString() + ' of 8,760 hours; the rest keep heuristic prices. '
         : 'The pricing run did not return usable duals, so prices remain the heuristic\u2019s. ')

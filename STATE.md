@@ -4652,6 +4652,43 @@ Rules 6 and 7 are about constants appearing twice; this is the same disease in e
 
 ---
 
+## The shadow price did not move after a full run — instrumented, not guessed
+
+Reported from the browser. The MIP applies correctly - curtailment 0.00 -> 11.54 TWh,
+unserved 5 -> 0 GWh - but the wholesale shadow price panel is unchanged, which means the
+pricing run produced no duals and the instant prices were correctly kept.
+
+### WHAT WAS RULED OUT, IN ORDER
+
+```
+the call signature      matches the real one exactly, argument for argument
+the loop variable       `day` is correct - the same variable the real code slices with
+the renderers           all take `r` and use it; none read a stale global
+the mechanism           WORKS at realistic scale: 31 unit groups, 10 regions,
+                        21 corridors, 4,668 rows parsed and matched, 24/24 hours priced
+```
+
+### THE TELL IS THE RUNTIME
+
+**107 seconds for a full year.** A pricing LP per day should roughly double that. So the
+pricing run is not executing at all, and my `catch` swallowed the reason - a pricing run
+that never fired was indistinguishable from one that fired and found nothing.
+
+### THE FIX IS A DIAGNOSTIC, NOT A GUESS
+
+The worker now counts days priced, days that errored, days with a row-count mismatch, and
+keeps the FIRST error message. All four are reported in the banner under the full-run
+summary.
+
+**I could have guessed at a cause and shipped a speculative fix.** Three times today a
+confident diagnosis was wrong and the data was already available - so this one gets
+measured first. The next full run will say which of the three it is.
+
+NEXT: read the banner line after a full-year run. It will read "Pricing run: N days priced,
+M errored, K with a row-count mismatch" and, if anything errored, the first message.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
