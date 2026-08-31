@@ -639,6 +639,10 @@ that file gets wrong. Re-run across weather years before quoting externally.
 
 ## Demand response has an optimum, and past it makes things worse
 
+RE-VERIFIED 31 Aug 2026 against the corrected constants. **The finding holds exactly**:
+optimum still at 7.5%, still reverses by 30%. Levels moved with the calibration - avg cost
+570.46 -> 585.17 at zero shift - but the shape and the conclusion are unchanged.
+
 Found 28 Aug 2026 while investigating a harness warning, not sought. Dashboard
 scenario, sweeping `drShiftPct`:
 

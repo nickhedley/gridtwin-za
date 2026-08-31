@@ -3025,6 +3025,46 @@ constant corrections, none individually dramatic, inverted a headline conclusion
 
 ---
 
+## Audit: do the other published findings survive the corrections? — 31 Aug 2026
+
+The hybrid U-shape showed that three constant corrections could invert a conclusion, so
+the headline findings were re-run rather than assumed. **All four hold.**
+
+```
+finding                        direction   published level    corrected level
+iron-air on winter drought         HOLDS   2,815 both ways    3,964 both ways
+coal flexibilisation worsens       HOLDS   14,078 -> 15,206   15,204 -> 16,622
+capture asymmetry                  HOLDS   wind 96-106%       wind 98%
+demand response optimum            HOLDS   7.5%, reverses     7.5%, reverses
+```
+
+**IRON-AIR IS THE STRONGEST.** July gas is identical to the megawatt-hour with and
+without 20 GW of iron-air, exactly as before. The level rose 41% with the corrections and
+the finding did not move at all.
+
+**COAL FLEXIBILISATION** keeps its direction and roughly its magnitude: the penalty was
++1,128 GWh and is now +1,418.
+
+**CAPTURE ASYMMETRY** holds for wind at 98%. The solar figure needs a proper re-run
+against the capture curve as published rather than the ad-hoc scenario used here - noted,
+not claimed.
+
+### AND A MISTAKE OF MINE THAT THE FILE'S OWN RULE CAUGHT
+
+I first re-tested demand response by sweeping `drShiftPct` in a NO-GAS scenario measuring
+UNSERVED ENERGY, and got a monotonic improvement with no optimum. I was one step from
+recording that the finding had broken.
+
+It had not. The published result was measured on the DASHBOARD scenario against AVERAGE
+COST. Re-run as published, it reproduces exactly.
+
+**"A number without its scenario is not a result" is the first line of RESULTS.md**, and
+it exists for exactly this. It protected the finding from its own author re-testing it
+carelessly. Any re-verification must reproduce the ORIGINAL scenario and the ORIGINAL
+metric, or it is testing something else.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
