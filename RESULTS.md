@@ -1440,64 +1440,62 @@ protects solar. The DIRECTION and the ORDER of magnitude are the result, not the
 
 ---
 
-## Hybrids: co-locating a battery, and when it stops being optional
+## Hybrids: co-locating a battery, and the U-shape nobody expects
 
-Tested 30 Aug 2026 after the merchant-value result raised the obvious question. A
-project-level price-taker LP: the battery is BEHIND THE METER, so it can charge only
-from its own plant's output, which is what distinguishes a hybrid from a merchant
-battery. Four-hour duration, 88&#37; round trip, sized as a share of plant capacity.
-Prices from a full system dispatch at each year, so the plant is a price taker in a
-market already shaped by everyone else's build.
+REVISED 31 Aug 2026. An earlier version of this section reported the uplift rising
+monotonically with penetration - 2-6% today, 166-408% by 2035. **That was measured on
+pre-correction constants and the shape was wrong.** Coal capacity was 5.8% too high,
+imports more than double reality, and availability three points optimistic, which between
+them suppressed the scarcity pricing that co-location actually monetises.
+
+Re-run with the audited constants. Project-level price-taker LP, battery behind the meter
+so it charges only from its own plant, 4-hour duration, grid pace:
 
 ```
-                        SOLAR R/MWh              WIND R/MWh
-battery           2026    2030    2035     2026    2030    2035
-none               743     687     133      758     694     313
-25% of plant       755     712     353      766     714     435
-50% of plant       766     733     554      774     730     500
-100% of plant      789     743     674      790     740     568
+                       SOLAR R/MWh                    WIND R/MWh
+battery          2026     2030     2035        2026     2030     2035
+none              756      690      139         977      698      323
+25% of plant    1,004      714      359       1,152      716      445
+50% of plant    1,252      733      558       1,320      731      510
+100% of plant   1,743      742      677       1,627      740      575
 
-uplift at 2035    +166% to +408%           +39% to +82%
+solar uplift     +130%      +8%    +386%
+wind  uplift      +66%      +6%     +78%
 ```
 
-### THE ANSWER CHANGES COMPLETELY WITH PENETRATION
+### THE VALUE IS U-SHAPED, NOT RISING
 
-**In 2026 a battery is worth 2-6&#37;** — a marginal financing decision, easily lost in
-capex. **By 2035 at grid pace it is worth 166 to 408&#37; on solar.** Co-location moves
-from an optimisation to the difference between a viable project and a stranded one.
+**Today +130%. In 2030 +8%. In 2035 +386%.** Co-location is worth a great deal now, very
+little in five years, and a great deal again in ten.
 
-A solar plant with a battery equal to its own capacity recovers R674/MWh in 2035 against
-R133 without: **it recovers 91&#37; of what solar earned in 2026, in a market where
-unstored solar has lost 82&#37;.**
+The reason is that arbitrage pays for VOLATILITY, and volatility has two different
+causes at the two ends:
 
-### WIND NEEDS IT LESS, AND THAT IS THE SAME ASYMMETRY AGAIN
+- **2026 is volatile from SCARCITY.** Coal sets the price most hours and diesel sets it
+  in the tight ones, so the spread is large. A battery monetises that immediately.
+- **2030 is COMFORTABLE.** About 41 GW of wind and solar with storage built alongside;
+  prices flatten, spreads collapse, and there is little to trade.
+- **2035 is volatile from SURPLUS.** At 82 GW, midday solar is worth almost nothing and
+  evening scarcity returns. Solar bare collapses to R139 and a battery restores it to
+  R677.
 
-Wind gains 39-82&#37; where solar gains 166-408&#37;. The reason is the one behind every
-capture-rate result in this file: solar output is coincident across the whole fleet, so
-it floods the same hours and needs shifting to escape them. Wind is diverse and already
-runs at night, so it has less to escape from.
-
-**But wind ALSO ends up worse off in absolute terms with a full battery** — R568 against
-solar's R674. Solar has further to fall and more to gain; with storage attached it
-overtakes wind, because it has more energy concentrated in fewer hours and a battery is
-exactly the tool for that.
+**A DEVELOPER'S CONCLUSION SHOULD NOT BE "STORAGE BECOMES VALUABLE LATER".** It is
+valuable now for one reason, briefly less so, then valuable again for the opposite
+reason. The two are not the same trade and would not be financed the same way.
 
 ### WHAT THIS MEANS FOR THE PPA QUESTION
 
 The exposure identified above sits with offtakers, new contracts and post-term value.
-Co-location is the lever that changes those numbers:
+Co-location changes those numbers at both ends of the period, and a buyer pricing a
+contract in 2032 is pricing the trough rather than either peak.
 
-- A buyer pricing a 2032 PPA against expected merchant value will offer far more for a
-  hybrid than for bare solar, and the gap widens every year.
-- Post-term residual value for a solar asset without storage approaches nothing at grid
-  pace. With storage it holds.
-- Retrofitting storage to existing plant becomes the obvious move well before 2035 — the
-  uplift is already 7&#37; at 2030 and compounding.
+CAVEATS: perfect foresight of prices, so an UPPER BOUND. No battery capex is netted off -
+this is the revenue side only, and a battery at 100% of plant capacity is a very large
+investment. Single weather year. Grid pace is the fastest of the three build paces and
+the most punishing on capture.
 
-CAVEATS: perfect foresight of prices, so an UPPER BOUND on what co-location recovers.
-No battery capex is netted off — this is the revenue side only, and a 100&#37;-of-plant
-4-hour battery is a very large investment. Single weather year. Grid pace is the fastest
-of the three and the most punishing; at IRP pace the 2035 uplift would be far smaller.
+VALIDATION: the browser-speed greedy in the capture panel tracks this LP within 4.7%
+across twelve cases and is conservative in eleven of them.
 
 ---
 

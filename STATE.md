@@ -2978,10 +2978,10 @@ at one full cycle. Now R113 against the R153 bound.
   moved and are now physically bounded.
 - **RESULTS.md's hybrid table did NOT** — that came from `hybrid.js`, the full-year
   price-taker LP, which is a different implementation and correctly capacity-constrained.
-- **The greedy-vs-LP validation from 30 Aug is now STALE.** It was run before this fix
-  and before today's constant corrections (coal capacity, imports, availability, the
-  pumped-storage peak reservation). It should be re-run before the panel's numbers are
-  quoted.
+- **The greedy-vs-LP validation was re-run 31 Aug and HOLDS**: within 4.7% across twelve
+  cases, conservative in eleven. The panel's numbers can be quoted again.
+- **But re-running the LP changed the published hybrid finding.** RESULTS.md now reports
+  a U-SHAPE, not a rising curve — see below.
 
 ### THE LESSON
 
@@ -2989,6 +2989,39 @@ The bug produced a plausible number. Nothing in the suite caught it, no review w
 caught it, and I had already "validated" the function against an LP and recorded it as
 within 4.5%. **What caught it was asking what the asset can physically move and comparing
 the answer to that.** For any heuristic that trades energy, compute the bound first.
+
+---
+
+## The hybrid finding was wrong in SHAPE, not just level — corrected 31 Aug 2026
+
+Re-running the LP with the audited constants overturned a published conclusion.
+
+```
+solar uplift from a 100%-of-plant battery
+  as published        2026   +6%      2030   +8%      2035  +408%
+  corrected           2026 +130%      2030   +8%      2035  +386%
+```
+
+**The value is U-SHAPED, not rising.** Co-location is worth a great deal now, very little
+in 2030, and a great deal again by 2035.
+
+Arbitrage pays for VOLATILITY, and volatility has two different causes at the two ends.
+2026 is volatile from SCARCITY — coal sets the price most hours, diesel sets it in the
+tight ones. 2030 is COMFORTABLE, with storage built alongside 41 GW of VRE, so spreads
+collapse. 2035 is volatile from SURPLUS — midday solar worth nothing, evening scarcity
+back.
+
+**WHY THE ORIGINAL WAS WRONG:** it was measured before today's corrections. Coal capacity
+5.8% too high, imports more than double reality, availability three points optimistic —
+together they suppressed the scarcity pricing that co-location monetises, so 2026 looked
+flat when it is not.
+
+**THE CONSEQUENCE FOR ADVICE IS THE OPPOSITE OF WHAT I WROTE.** "Storage becomes valuable
+later" is wrong. It is valuable NOW for one reason, briefly less so, then valuable again
+for the OPPOSITE reason — and the two are not the same trade or the same financing case.
+
+This is the clearest demonstration yet of why the calibration work matters: three
+constant corrections, none individually dramatic, inverted a headline conclusion.
 
 ---
 
