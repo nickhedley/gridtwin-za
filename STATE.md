@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 854 checks
+suite                      18 harnesses, 857 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 854 checks. Last full run: 854/854.
+Eighteen harnesses, 857 checks. Last full run: 857/857.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           47/47
+python3 audit.py index.html           50/50
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -3111,6 +3111,54 @@ The corrections were three constants and none was individually dramatic. Togethe
 changed what the model says about the PRESENT, while leaving what it says about 2035
 almost untouched. **Anything anchored on today's prices needed re-running; anything
 anchored on a future build did not.**
+
+---
+
+## The full model now prices its own solution — 31 Aug 2026
+
+**THE PROBLEM, found by asking whether every box updates.** `runMIP` called `render()`,
+which refreshes ONE panel. The normal slider path calls `run()`, which refreshes FIFTEEN.
+Measured: changing the result and calling `render()` alone updates 1 of 28 panel bodies;
+`run()` updates 8.
+
+So after "Run the full model" the KPIs, energy mix, dispatch chart and map showed the MIP,
+while the shadow price, capture rate, capture forecast, capacity payments, both battery
+panels and the comparison kept showing HEURISTIC output — with nothing on the page saying
+so. The banner claimed the KPIs were network-aware and was silent about everything else.
+
+The code knew: `mipRes` carried `pricesFromInstant: true` with a comment warning that
+panels reading those prices "must say which engine they are showing". **The flag was set
+and never read.**
+
+### THE FIX: A PRICING RUN, WHICH IS WHAT REAL MARKETS DO
+
+A MIP has no duals — integer commitment makes it non-convex. The standard answer, used by
+ERCOT, PJM and MISO, is to fix the commitment binaries to the MIP's own solution and
+re-solve the remainder as an LP. That problem is convex, so its duals exist and are
+CONSISTENT with the commitment chosen.
+
+`buildDayLP` takes a `fixedOn` argument: supplied, it pins each commitment via its bounds
+and emits no Binary block. The worker solves it per day, reads the duals off the regional
+balance rows, and returns `mipPrice`.
+
+The price-derived panels are now refreshed from the MIP result, each wrapped so one
+failing panel cannot discard an expensive solve. The banner reports COVERAGE — how many
+of 8,760 hours carry a real dual — and says the rest keep heuristic prices.
+
+**ZERO MEANS ABSENT, NOT FREE.** A day that failed to solve, or whose dual mapping did not
+verify, leaves zeros; those hours keep the instant price rather than reporting R0, which
+is a real value in a curtailed hour and must not be faked.
+
+CAVEAT CARRIED IN THE CODE: fixed-commitment prices do not recover start-up costs, which
+is exactly why real markets pay uplift on top. Same distinction the model already draws —
+start-up is in the system cost, not in the price.
+
+### AND A TRAP IN THE FILE'S OWN STRUCTURE
+
+`buildDayLP` lives inside a WORKER TEMPLATE LITERAL. My comment used backticks around an
+identifier, which terminated the literal and broke the page — `validate_solve` reported
+"page errors during load: Unexpected identifier". Lint passed, because the file is still
+valid HTML. **Never put a backtick in a comment inside the worker block.**
 
 ---
 

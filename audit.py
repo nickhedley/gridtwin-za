@@ -90,6 +90,12 @@ CHECKS = [
     # battery panels never made.
     ('storageSummary',                                             'storage investment summary'),
     ('Merchant or attached',                                       'merchant vs co-located comparison'),
+    # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
+    # that depends on them. Losing either returns the tool to showing heuristic prices
+    # beside MIP energy with nothing saying so.
+    ('PRICING RUN',                                                'MIP pricing run'),
+    ('fixedOn',                                                    'fixed-commitment LP mode'),
+    ('mipPricedHours',                                             'pricing-run coverage reported'),
     ('one builder',                                                'Eskom Green floor-not-forecast caveat'),
 ]
 

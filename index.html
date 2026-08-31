@@ -12363,6 +12363,7 @@ let lastRes=null, rafPending=false, detStage=0;
   if(peakEl&&peakEl.textContent==='–') peakEl.textContent='~30 GW';
   if(shedEl&&shedEl.textContent==='–') shedEl.textContent='computing…';
 })();
+let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
 let nodalNationalShedGwh=null; // national engine shed at same scenario — used to compute corridor correction factor
@@ -14677,7 +14678,12 @@ let highs = null;
 
 // Network-aware unit commitment for one day.
 // Regional balance: local coal + storage + corridor imports - exports + slack >= regional net load
-function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0, slackCost) {
+// fixedOn is the PRICING RUN hook, added 31 Aug 2026. When supplied it is a
+// units-by-hours array of the MIP's own commitment decisions; the Binary block is then
+// dropped and each commitment variable is pinned to its solved value, which makes the
+// problem a pure LP whose duals are the prices consistent with that commitment.
+// Absent, the builder behaves exactly as before and emits the MIP.
+function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0, slackCost, fixedOn) {
   const H = 24, L = ['Minimize', ' obj:'], obj = [];
   units.forEach((u, i) => {
     for (let h = 0; h < H; h++) {
@@ -14772,10 +14778,20 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
       L.push(' 0 <= e_'  + j + '_' + h + ' <= ' + s.energy.toFixed(1));
     }
   });
-  L.push('Binary');
-  const b = [];
-  units.forEach((u, i) => { for (let h = 0; h < H; h++) b.push('c_' + i + '_' + h); });
-  L.push(' ' + b.join(' '));
+  if (fixedOn){
+    // Pin each commitment to the MIP's answer via its bounds, and emit NO Binary block.
+    units.forEach((u, i) => {
+      for (let h = 0; h < H; h++){
+        const v = (fixedOn[i] && fixedOn[i][h]) ? 1 : 0;
+        L.push(' c_' + i + '_' + h + ' = ' + v);
+      }
+    });
+  } else {
+    L.push('Binary');
+    const b = [];
+    units.forEach((u, i) => { for (let h = 0; h < H; h++) b.push('c_' + i + '_' + h); });
+    L.push(' ' + b.join(' '));
+  }
   L.push('End');
   return L.join('\\n');
 }
@@ -14807,6 +14823,10 @@ self.onmessage = async (e) => {
   // buffer. Only populated for solved sample days; representative-day mode fills the
   // gaps on the main thread the same way it already does for coal/storage/unserved.
   const curtProfile = new Float64Array(nR * 8760);
+  // Hourly prices from the pricing run. Zero where a day failed to solve or the dual
+  // mapping did not verify - the consumer must treat zero as ABSENT, not as a price
+  // of zero, which is a real value in a curtailed hour.
+  const mipPrice = new Float64Array(8760);
   const corridorFlow = new Float64Array(corridors.length);   // annual |MWh| per corridor
   const corridorHrsAtLimit = new Float64Array(corridors.length);
   const solvedDay = new Uint8Array(365);
@@ -14822,6 +14842,68 @@ self.onmessage = async (e) => {
     const lp = buildDayLP(units, sto, corridors, nR, dayLoad, onState, socState, slackCost);
     try {
       const res = highs.solve(lp, { time_limit: 25, mip_rel_gap: 0.02 });
+
+      // ── PRICING RUN ───────────────────────────────────────────────────────
+      // A MIP has no duals - the integer commitment variables make the problem
+      // non-convex, so there is no shadow price to read. Until 31 Aug 2026 the full
+      // model therefore inherited the INSTANT engine's prices and every price-derived
+      // panel silently kept showing heuristic output beside MIP energy.
+      //
+      // THE STANDARD FIX, and what ERCOT, PJM and MISO actually do: fix the commitment
+      // binaries to the MIP's own solution, re-solve the remainder as a pure LP, and
+      // take the duals of the energy balance. That LP is convex, so the duals exist and
+      // they are CONSISTENT with the commitment the MIP chose.
+      //
+      // It is not free and it is not exact: prices from a fixed-commitment LP do not
+      // recover start-up costs, which is precisely why real markets pay uplift on top.
+      // Same caveat as the model's own treatment of start-up - in the system cost, not
+      // in the price.
+      let dayPrice = null;
+      if (res && res.Columns) {
+        try {
+          // Rebuild with the binaries pinned. Cheapest correct way to fix them is to
+          // pass the solved commitment through as the onState the builder already
+          // takes, and drop the Binary block so HiGHS solves an LP.
+          const fixedOn = units.map((u, i) => {
+            const row = [];
+            for (let h = 0; h < 24; h++){
+              const c = res.Columns['c_' + i + '_' + h];
+              row.push(c && c.Primal > 0.5 ? 1 : 0);
+            }
+            return row;
+          });
+          const lpFixed = buildDayLP(units, sto, corridors, nR, dayLoad, onState, socState,
+                                     slackCost, fixedOn);
+          const rp = highs.solve(lpFixed, { time_limit: 15 });
+          if (rp && rp.Rows){
+            // Duals on the regional energy balance. Row order is the order the builder
+            // emits them, so the balance rows are recovered by name from the LP text -
+            // the same technique storage_lp.js uses.
+            const names = [];
+            const lines = lpFixed.split('\n');
+            const ci = lines.findIndex(l => /^Subject To$/.test(l.trim()));
+            const bi = lines.findIndex((l, ix) => ix > ci && /^Bounds$/.test(l.trim()));
+            for (let ix = ci + 1; ix < (bi < 0 ? lines.length : bi); ix++){
+              const m = lines[ix].match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:/);
+              if (m) names.push(m[1]);
+            }
+            if (names.length === Object.keys(rp.Rows).length){
+              dayPrice = new Array(24).fill(0);
+              const cnt = new Array(24).fill(0);
+              Object.entries(rp.Rows).forEach(([k, v]) => {
+                const n = names[+k]; if (!n) return;
+                const m = n.match(/^bal_(\d+)_(\d+)$/);
+                if (!m) return;
+                const h = +m[2];
+                if (h >= 0 && h < 24){ dayPrice[h] += Math.abs(v.Dual || 0); cnt[h]++; }
+              });
+              for (let h = 0; h < 24; h++) if (cnt[h] > 1) dayPrice[h] /= cnt[h];
+            }
+          }
+        } catch (err) { dayPrice = null; }   // pricing is best-effort; energy is not
+        if (dayPrice) for (let h = 0; h < 24; h++) mipPrice[day * 24 + h] = dayPrice[h];
+      }
+
       if (res && res.Columns) {
         for (let h = 0; h < 24; h++) {
           let gh = 0, ch = 0, di = 0, qq = 0;
@@ -14875,10 +14957,10 @@ self.onmessage = async (e) => {
 
   self.postMessage({
     type: 'done', solved, failed, totalStartCost, totalStarts,
-    coalProfile, chgProfile, disProfile, unservProfile, curtProfile,
+    coalProfile, chgProfile, disProfile, unservProfile, curtProfile, mipPrice,
     corridorFlow, corridorHrsAtLimit,
     solvedDay, daysCount: days.length, elapsed: (Date.now() - t0) / 1000
-  }, [coalProfile.buffer, chgProfile.buffer, disProfile.buffer, unservProfile.buffer, curtProfile.buffer,
+  }, [coalProfile.buffer, chgProfile.buffer, disProfile.buffer, unservProfile.buffer, curtProfile.buffer, mipPrice.buffer,
       corridorFlow.buffer, corridorHrsAtLimit.buffer, solvedDay.buffer]);
 };
 `;
@@ -15228,12 +15310,28 @@ function applyMIPResult(m, mode, quiet) {
 
   const mipRes = { ...lastRes, E, stack, fuelCost, carbonCost, totalCost, co2,
                    avgCost: totalCost / Math.max(1, gridServed), shedMWh: unservedMWh,
-                   // flag: marginalP and curtailMW are inherited from the instant run by the
-                   // spread above. A MIP has no duals, so there are no MIP hourly prices to
-                   // put here. Panels that read them must say which engine they are showing,
-                   // or they will present instant-engine prices beside MIP energy as though
-                   // both came from the same solve.
-                   pricesFromInstant: true,
+                   // PRICES. Until 31 Aug 2026 these were inherited from the instant run
+                   // and every price-derived panel silently showed heuristic output beside
+                   // MIP energy. The worker now does a PRICING RUN - commitment binaries
+                   // fixed to the MIP's own solution, re-solved as an LP, duals taken from
+                   // the regional energy balance - so there are real MIP-consistent prices
+                   // for the hours it solved.
+                   //
+                   // Zero means ABSENT, not free: a day that failed to solve, or whose dual
+                   // mapping did not verify, leaves zeros. Those hours keep the instant
+                   // price rather than reporting a price of zero, which is a real value in a
+                   // curtailed hour and must not be faked.
+                   marginalP: (() => {
+                     const mp = m.mipPrice;
+                     if (!mp || !lastRes.marginalP) return lastRes.marginalP;
+                     const out = Float64Array.from(lastRes.marginalP);
+                     let n = 0;
+                     for (let h = 0; h < out.length && h < mp.length; h++)
+                       if (mp[h] > 0){ out[h] = mp[h]; n++; }
+                     mipPricedHours = n;
+                     return out;
+                   })(),
+                   pricesFromInstant: false,
                    mipCurtailedTWh: curtMWh / 1e6 };
   // The gap between what the MIP curtails and what the single-node engine does is
   // the network-driven component. Recorded so the curtailment forecast, which
@@ -15266,6 +15364,19 @@ function applyMIPResult(m, mode, quiet) {
   if (!quiet) {
     render(mipRes);
     draw(mipRes);
+    // REFRESH THE PRICE-DERIVED PANELS TOO. Until 31 Aug 2026 only render() ran here,
+    // which refreshes the adequacy panel and the KPIs - so roughly fifteen panels kept
+    // showing INSTANT-ENGINE output beside MIP energy with nothing saying so. They were
+    // left alone deliberately, because a MIP had no prices to give them.
+    //
+    // It now does: the worker's pricing run supplies MIP-consistent duals, so these can
+    // update honestly. Wrapped individually because a panel that throws must not take
+    // the others with it - the MIP result is the expensive thing here and a rendering
+    // fault should not discard it.
+    [renderPricePanel, drawShadowPriceWeek, renderRegionalCapture, renderCaptureForecast,
+     renderCapacityPayment, renderBess, drawBessWeek, renderBessStack,
+     renderBessSaturation, renderCarbonBudget, renderComparison]
+      .forEach(fn => { try { if (typeof fn === 'function') fn(mipRes); } catch (e) {} });
     showMIPBanner();
     renderMIPSummary();
   }
@@ -15308,7 +15419,10 @@ function showMIPBanner() {
     '<strong>These KPIs, the energy mix and the dispatch chart are the optimal network-aware solution</strong> – '
     + 'coal unit commitment, storage scheduling and corridor flows across all 10 regions solved together '
     + 'as a mixed-integer program over ' + label + ' with HiGHS in ' + a.elapsed.toFixed(0) + 's. '
-    + 'Moving any slider returns to the instant heuristic – press Run the full model to bring this back.';
+    + (mipPricedHours > 0
+        ? 'Prices come from a pricing run \u2013 commitment fixed to this solution and re-solved as an LP \u2013 covering ' + mipPricedHours.toLocaleString() + ' of 8,760 hours; the rest keep heuristic prices. '
+        : 'The pricing run did not return usable duals, so prices remain the heuristic\u2019s. ')
+    + 'Moving any slider returns to the instant heuristic \u2013 press Run the full model to bring this back.';
 }
 
 function renderMIPSummary() {
