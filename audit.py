@@ -80,6 +80,9 @@ CHECKS = [
     # Eskom Green build pace. The only pace that is an operator's OWN plan; its note
     # carries two caveats a reader needs - the split is assumed, and it is one builder.
     ('eskomGreen',                                                 'Eskom Green build pace'),
+    # Peak reservation for pumped storage. Without it the store empties before the annual
+    # peak and diesel covers the worst hour while adequacy counts the storage as firm.
+    ('psPeakFloor',                                                'pumped storage peak reservation'),
     ('one builder',                                                'Eskom Green floor-not-forecast caveat'),
 ]
 

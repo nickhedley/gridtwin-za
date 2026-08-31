@@ -5296,6 +5296,38 @@ function simulate(u, prof, outPath){
   // Kept for the scalar path and for panels that still read one number.
   const _longestStoreH = Math.max(25, ...Object.values(_tierHorizonH));
   const anticipatedShortfall = shortfallOver(_longestStoreH);
+
+  // ── PEAK RESERVATION FOR PUMPED STORAGE ───────────────────────────────────
+  // Added 31 Aug 2026. The discharge was purely greedy: it served whatever deficit was
+  // in front of it, so on the tightest day of the year pumped storage ran flat out for
+  // the three hours BEFORE the annual peak and arrived EMPTY. 3,138 MW of diesel covered
+  // the worst hour while the adequacy panel counted that storage as firm capacity.
+  //
+  // THE RULE: do not spend energy now that a TIGHTER hour within the store's own
+  // discharge duration will need. For each hour, sum the deliverable energy required by
+  // future hours whose gap is LARGER than this one's, and hold that much back.
+  //
+  // This is the value function in its cheapest defensible form. It is NOT the tier
+  // ordering problem that was tried and reverted twice on 30 Aug - that was about which
+  // CHEMISTRY gets charged; this is about WHEN one store discharges, where the
+  // comparison is against a known future deficit rather than against another asset.
+  //
+  // Horizon is the store's own duration, since a 20-hour asset cannot hold energy for a
+  // peak further out than that anyway. Capped so the floor can never exceed capacity.
+  const _psDurH = psPowerTot > 0 ? Math.min(48, Math.round(psEnergyTot / psPowerTot) + 4) : 0;
+  const psPeakFloor = new Float64Array(HOURS);
+  if (_psDurH > 1){
+    for (let h = 0; h < HOURS; h++){
+      const gapNow = netLoadPre[h] - coalAvail;
+      let need = 0;
+      const end = Math.min(HOURS, h + _psDurH);
+      for (let k = h + 1; k < end; k++){
+        const gap = netLoadPre[k] - coalAvail;
+        if (gap > gapNow) need += Math.min(psPowerTot, gap);
+      }
+      psPeakFloor[h] = Math.min(psEnergyTot, need);
+    }
+  }
   // DAILY-relative threshold, not a single year-wide one: a real battery doesn't care whether
   // today is worse than winter - it cares whether there's a cheap-to-expensive spread worth
   // capturing TODAY. A year-wide threshold (top 25% of all 8760 hours) is dominated by winter's
@@ -5572,7 +5604,9 @@ function simulate(u, prof, outPath){
       // A resource is marginal only if it is the last one dispatched AND it still had
       // room to give more. Storage at its power or energy limit is constrained, not
       // marginal, and the next unit up sets the price. `slack` captures that.
-      const psLim=Math.min(psPowerTot*(1-_asHold),Math.max(0,psSoc-psEnergyTot*_asHold)),
+      // Floor is the GREATER of the ancillary holdback and the peak reservation.
+      const psLim=Math.min(psPowerTot*(1-_asHold),
+        Math.max(0, psSoc - Math.max(psEnergyTot*_asHold, psPeakFloor[h]))),
             btLim=Math.min(battPower*(1-_asHold),Math.max(0,battSoc-battEnergy*_asHold));
       if(isExpensiveHour){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of

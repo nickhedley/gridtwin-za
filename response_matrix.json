@@ -1,13 +1,13 @@
 {
  "base": {
-  "coalTWh": 165.881,
-  "co2": 174.883,
-  "avgCost": 578.27,
-  "replAvg": 1538.53,
-  "avgPrice": 809.14,
-  "rePct": 17.829,
+  "coalTWh": 165.553,
+  "co2": 174.518,
+  "avgCost": 585.17,
+  "replAvg": 1548.23,
+  "avgPrice": 998.96,
+  "rePct": 17.832,
   "curtTWh": 0,
-  "loleHrs": 0
+  "loleHrs": 5
  },
  "summary": {
   "ccsCaptureRatePct": {
@@ -53,7 +53,7 @@
   "battHours": {
    "coalTWh": true,
    "co2": true,
-   "avgCost": false,
+   "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
    "rePct": true,
@@ -78,7 +78,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "demandGrowthPct": {
    "coalTWh": true,
@@ -106,9 +106,9 @@
    "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
-   "rePct": false,
+   "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "outageForcedSharePct": {
    "coalTWh": true,
@@ -178,7 +178,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": true,
-   "loleHrs": false
+   "loleHrs": true
   },
   "newPvMW": {
    "coalTWh": true,
@@ -188,7 +188,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": true,
-   "loleHrs": false
+   "loleHrs": true
   },
   "newRooftopMW": {
    "coalTWh": true,
@@ -198,7 +198,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": true,
-   "loleHrs": false
+   "loleHrs": true
   },
   "newBattMW": {
    "coalTWh": true,
@@ -215,7 +215,7 @@
    "co2": true,
    "avgCost": true,
    "replAvg": true,
-   "avgPrice": false,
+   "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
    "loleHrs": false
@@ -228,7 +228,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "newVrfbMW": {
    "coalTWh": true,
@@ -248,7 +248,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "newCcgtMW": {
    "coalTWh": false,
@@ -256,9 +256,9 @@
    "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
-   "rePct": false,
+   "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "ccgtForceLoad": {
    "coalTWh": false,
@@ -276,9 +276,9 @@
    "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
-   "rePct": false,
+   "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "newNuclearMW": {
    "coalTWh": true,
@@ -288,7 +288,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "drInterruptMW": {
    "coalTWh": false,
@@ -328,7 +328,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "vppEnrolPct": {
    "coalTWh": true,
@@ -338,7 +338,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "reserveEnabled": {
    "coalTWh": true,
@@ -348,7 +348,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "reserveContingencyMW": {
    "coalTWh": true,
@@ -438,7 +438,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "congestionCurtailPct": {
    "coalTWh": true,
@@ -448,7 +448,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "asReserveOn": {
    "coalTWh": true,
@@ -458,7 +458,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "asReserveRMWh": {
    "coalTWh": true,
@@ -478,7 +478,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
   },
   "exportCapMW": {
    "coalTWh": false,

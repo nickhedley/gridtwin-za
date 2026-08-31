@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 849 checks
+suite                      18 harnesses, 850 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 849 checks. Last full run: 848/849, one standing flag.
+Eighteen harnesses, 850 checks. Last full run: 850/850.
 
 ```
 node stress_suite.js                290/290
@@ -231,14 +231,14 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           43/43
+python3 audit.py index.html           44/44
 node validate_benchmarks.js .        20/20
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       18/18   the documents, added 30 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       16/17   one standing flag, by design
+node validate_consistency.js .       17/17
 node validate_structure.js .          10/10
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -2894,9 +2894,50 @@ whenever there is a deficit, with nothing reserving energy for the annual peak. 
 ordering fixes were tried and reverted on 30 Aug, so a third improvised attempt is not
 warranted.
 
-**IT STAYS RED DELIBERATELY.** The check is right and the behaviour is wrong; widening it
-would hide an overstated firm-capacity figure. Suite is now 849/850 with one standing
-flag, alongside `validate_capacity`'s existing 27/28.
+**~~IT STAYS RED DELIBERATELY.~~ FIXED THE SAME DAY — see below.**
+
+---
+
+## Pumped storage peak reservation — fixed 31 Aug 2026
+
+The standing flag is CLOSED. `validate_consistency` back to 17/17, suite green.
+
+```
+scenario           ps at annual peak MW        unserved GWh
+                   before        after      before      after
+today                   0        2,331         5.5        5.5
+EAF 55              2,900        2,900       619.5      528.1
+crisis 2023             0        2,900    13,413.0   13,089.2
+```
+
+**At the audited availability, pumped storage now delivers 2,331 MW at the annual peak
+instead of ZERO**, and diesel at that hour falls from 3,138 MW to 807. Annual pumped
+output is unchanged at 3.43 TWh — the same energy, spent at better hours.
+
+It is strongest where it matters most: in the 2023 crisis scenario it moves 0 -> 2,900 MW
+at the peak and cuts unserved energy by 324 GWh. At 55% availability, 91 GWh.
+
+### THE RULE, and why this is not the third failed heuristic
+
+Do not spend energy now that a TIGHTER hour within the store's own duration will need.
+For each hour, sum the deliverable energy required by future hours whose gap exceeds this
+one's, and hold that much back. Horizon is the store's own duration — a 20-hour asset
+cannot hold energy for a peak further out than that anyway.
+
+**This is a different problem from the two reverted attempts on 30 Aug.** Those were
+about which CHEMISTRY gets charged, where the comparison is between assets and needs a
+value function to resolve. This is about WHEN one store discharges, where the comparison
+is against a KNOWN FUTURE DEFICIT in the same series. That is why a simple rule works
+here and did not there.
+
+The floor is the greater of the ancillary holdback and the peak reservation, so it
+composes with the existing `_asHold` rather than overriding it.
+
+CAVEAT: perfect foresight of the deficit series, like everything else in this engine. A
+real operator forecasts. And it does NOT fix the battery tiers — the long-duration
+allocation problem is untouched and still needs the LP.
+
+`audit.py` pins it (43 -> 44).
 
 ---
 
