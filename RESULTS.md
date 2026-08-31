@@ -1,5 +1,79 @@
 # GridTwin ZA - verified results
 
+## The findings, ranked by how well they would survive a hostile reviewer
+
+Fifteen sections follow. This index exists because the file passed 1,400 lines and the
+strongest results were no longer findable. Ranked by EVIDENTIAL STRENGTH, not by how
+interesting they are - the two are not the same, and the difference matters when
+choosing what to say in public.
+
+### Tier 1 — arithmetic on published data. Nothing to dispute but the source.
+
+**Connection headroom is the binding constraint, not wind speed.** The four best-wind
+regions hold 100% of South Africa's existing wind and 7.3% of the national room to add
+more. For solar they have ZERO headroom between them. The Northern Cape and Hydra
+Central, at 37.9% and 42.5% capacity factor, are at zero for every technology.
+→ "The no-gas frontier", "Locational transmission signal"
+
+**The no-gas frontier is not buildable on today's grid.** It needs 45,388 MW of new wind
+and 56,729 MW of new solar; available headroom is 21,520 and 19,940. A 61 GW shortfall.
+→ "The no-gas frontier"
+
+### Tier 2 — tested across ten weather years, or against an optimal solve.
+
+**Wind-heavy beats solar-heavy at equal capacity, in every one of ten years, by 15-19%.**
+Replicates Seriti Green's own sensitivity on more granular data.
+→ "The Seriti Green scenario"
+
+**Long-duration storage does not solve a winter wind drought.** 20 GW of 100-hour
+iron-air changes July gas by essentially nothing. Survived a heuristic, an optimal
+storage LP, and a reserve-constrained LP - the most-tested result in this file.
+→ "Long-duration storage", "Why long-duration storage does not bite"
+
+**Flexibilising coal WORSENS adequacy in a no-gas system**, ten years out of ten, by
++1,057 to +1,223 GWh against a 4,200 GWh weather spread. Nearly independent of weather,
+which is what a mechanism looks like rather than noise.
+→ "Flexibilising the coal fleet"
+
+**Solar cannibalises itself; wind does not.** Wind holds 96-106% of the mean price across
+the whole build range while solar falls to 2.5%. Every solar plant produces in the same
+hours.
+→ "Capture rates"
+
+### Tier 3 — single weather year, or dependent on the storage heuristic.
+
+**Removing gas is cost-neutral at ONE point on the frontier** - R285 bn/yr either way -
+but only there, and only if the connections existed.
+→ "The no-gas frontier"
+
+**Storage's ancillary market SHRINKS as renewables grow**, if curtailed plant may sell
+reserve. Binary on that policy choice, insensitive to every numeric parameter.
+→ "Battery saturation"
+
+**Co-locating a battery is worth 3% today and several hundred percent at a full
+pipeline.** The mitigation for cannibalisation, and its value is a function of
+penetration.
+→ "Hybrids"
+
+**Demand response has an optimum near 7.5% and is counterproductive past 15%.**
+→ "Demand response has an optimum"
+
+### Withdrawn — kept deliberately
+
+**~~The heuristic leaves 37% of July gas on the table.~~** Failed three successive tests
+and was withdrawn the same day. A findings file that shows what did not survive is more
+credible than one showing only what did.
+→ "Why long-duration storage does not bite"
+
+### Before quoting anything from this file
+
+Read the fitness-for-purpose section at the top of STATE.md. Three things must not be
+quoted: the withdrawn 37%, the rolling-horizon July figures, and `avgCost` as a tariff -
+six of NERSA's thirteen price components are absent from it.
+
+---
+
+
 Findings fit to quote externally, each with the scenario that produced it. A
 number without its scenario is not a result. Every entry states the weather year
 and the period, because an annual figure and a July figure are not comparable.

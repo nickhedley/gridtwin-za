@@ -11546,6 +11546,20 @@ window.resetMapCurtailment = resetMapCurtailment;
 let pipelineData=null, pipelineVisible=false;
 fetch('nodal/ipp_pipeline.json?v=' + (window.DATA_V || '7')).then(r=>r.json()).then(d=>{pipelineData=d;console.log('pipeline loaded:',Object.keys(d.by_region||{}).length,'regions');}).catch(e=>console.warn('pipeline fetch failed:',e.message));
 
+// Tab switch for the NERSA registrations panel. Total pipeline is the default view;
+// the latest quarter is the delta. Both stay in the DOM - toggling display rather than
+// re-rendering keeps the regional bars from reflowing on every click.
+function nersaView(v){
+  const c=document.getElementById('nersaCum'), q=document.getElementById('nersaQ');
+  const tc=document.getElementById('nersaTabCum'), tq=document.getElementById('nersaTabQ');
+  if(!c||!q) return;
+  const cum = v==='cum';
+  c.style.display = cum ? '' : 'none';
+  q.style.display = cum ? 'none' : '';
+  if(tc) tc.classList.toggle('active', cum);
+  if(tq) tq.classList.toggle('active', !cum);
+}
+
 function togglePipeline(){
   pipelineVisible=!pipelineVisible;
   const btn=document.getElementById('pipelineToggle');
@@ -11653,25 +11667,36 @@ fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r=>r.js
     const solarMW=Object.values(cum).reduce((s,v)=>s+v.solar_mw,0);
     const windMW=Object.values(cum).reduce((s,v)=>s+v.wind_mw,0);
     const bessMW=Object.values(cum).reduce((s,v)=>s+v.bess_mw,0);
-    // Latest quarter first. The panel is called "new project registrations" and
-    // showed only the running total, so the actual news was invisible.
-    let html = '';
+    // TWO VIEWS, TOTAL FIRST. An earlier change put the latest quarter at the top on
+    // the reasoning that "new project registrations" should lead with the news. That
+    // buried the pipeline, which is the number most people come here for - 20.1 GW
+    // registered against the grid's headroom is the comparison that matters.
+    //
+    // Tabs rather than stacking both: the panel is already dense and the two answer
+    // different questions. Cumulative is the default because it is the standing fact;
+    // the quarter is the delta, one click away.
     const q = (data.quarters && data.quarters.length)
       ? data.quarters[data.quarters.length-1] : null;
+    let html = '';
     if (q){
       const big = (q.by_tech||[]).slice().sort((a,b)=>b.mw-a.mw)[0];
-      html += '<div style="padding:8px 10px;margin-bottom:9px;background:var(--panel2);'
-        + 'border-left:3px solid var(--alert,#C4785A)">'
-        + `<div style="font-size:11px;font-weight:700">${q.quarter} \u00b7 `
-        + `${q.facilities} facilities \u00b7 ${q.total_mw} MW</div>`
+      html += '<div style="display:flex;gap:4px;margin-bottom:9px">'
+        + '<button id="nersaTabCum" onclick="nersaView(\'cum\')" class="hbtn active" '
+        + 'style="font-size:10px;padding:2px 9px">Total pipeline</button>'
+        + '<button id="nersaTabQ" onclick="nersaView(\'q\')" class="hbtn" '
+        + 'style="font-size:10px;padding:2px 9px">' + q.quarter + ' only</button></div>'
+        + '<div id="nersaQ" style="display:none;padding:8px 10px;margin-bottom:9px;'
+        + 'background:var(--panel2);border-left:3px solid var(--alert,#C4785A)">'
+        + '<div style="font-size:11px;font-weight:700">' + q.quarter + ' \u00b7 '
+        + q.facilities + ' facilities \u00b7 ' + q.total_mw + ' MW</div>'
         + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:3px">'
-        + (q.by_tech||[]).map(t =>
-            `${t.facilities} ${t.tech} at ${t.mw}\u00a0MW`).join(' \u00b7 ')
-        + (big ? ` \u2013 <strong>${big.tech} took ${(100*big.mw/q.total_mw).toFixed(0)}&#37; `
-                 + `of the capacity from ${big.facilities} of ${q.facilities} projects</strong>` : '')
-        + `. R${q.investment_bn}bn invested, R${q.avg_cost_r_per_kw.toLocaleString()}/kW average.`
+        + (q.by_tech||[]).map(function(t){return t.facilities+' '+t.tech+' at '+t.mw+'\u00a0MW';}).join(' \u00b7 ')
+        + (big ? ' \u2013 <strong>'+big.tech+' took '+(100*big.mw/q.total_mw).toFixed(0)
+                 + '&#37; of the capacity from '+big.facilities+' of '+q.facilities+' projects</strong>' : '')
+        + '. R'+q.investment_bn+'bn invested, R'+q.avg_cost_r_per_kw.toLocaleString()+'/kW average.'
         + '</div></div>';
     }
+    html += '<div id="nersaCum">';
     html += `<div style="margin-bottom:6px;font-size:11px"><strong>${totalProj.toLocaleString()} facilities \u00b7 ${(totalMW/1000).toFixed(1)} GW total registered</strong></div>`;
     html+='<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px">';
     if(solarMW) html+=`<span style="background:#F5C518;color:#fff;border-radius:3px;padding:1px 5px;font-size:9.5px">Solar ${(solarMW/1000).toFixed(1)}GW</span>`;
@@ -11692,6 +11717,7 @@ fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r=>r.js
         <span style="text-align:right;font-size:10px;white-space:nowrap">${(v.total_mw/1000).toFixed(1)}GW</span></div>`;
     });
     html+=`<div style="margin-top:6px;font-size:9px;color:var(--ink2)"><span style="display:inline-block;width:8px;height:8px;background:#F5C518;border-radius:1px;margin-right:3px"></span>Solar &nbsp;<span style="display:inline-block;width:8px;height:8px;background:#3EA055;border-radius:1px;margin-right:3px"></span>Wind &nbsp;Source: SAPVIA NERSA Dashboard</div>`;
+    html+='</div>';   // close #nersaCum
     body.innerHTML=html;
     return;
   }

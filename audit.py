@@ -69,6 +69,10 @@ CHECKS = [
     # Hybrid uplift column. Validated against a full-year price-taker LP; losing it
     # would remove the only answer the panel gives to the cannibalisation it shows.
     ('hybridUplift',                                               'co-located battery uplift'),
+    # NERSA panel tabs. Total pipeline is the default view; an earlier change made the
+    # quarter the default and buried the 20.1 GW figure people come for.
+    ('nersaView',                                                  'NERSA panel tab switch'),
+    ('Total pipeline<',                                            'NERSA total is the default tab'),
 ]
 
 path = sys.argv[1] if len(sys.argv) > 1 else '/mnt/user-data/outputs/index.html'

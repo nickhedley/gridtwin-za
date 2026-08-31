@@ -1,6 +1,6 @@
 # GridTwin ZA - current state
 
-## fitness FOR purpose - read this before quoting anything
+## Fitness for purpose - read this before quoting anything
 
 Written 30 Aug 2026. What this model can carry, what it cannot, and which published
 numbers depend on which. A reader deciding whether to cite GridTwin should start here.
@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 817 checks
+suite                      18 harnesses, 846 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Seventeen harnesses, 826 checks. Last full run: 826/826.
+Eighteen harnesses, 846 checks. Last full run: 846/846.
 
 ```
 node stress_suite.js                290/290
@@ -231,11 +231,12 @@ node validate_invariants.js .       149/149
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           38/38
+python3 audit.py index.html           40/40
 node validate_benchmarks.js .         18/18
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
+python3 validate_docs.py . nodal       18/18   the documents, added 30 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .        17/17
 node validate_structure.js .          10/10
@@ -2142,6 +2143,68 @@ and a comment explaining why, so it is not "tidied" back.
 THE LESSON: a running count is not a measurement. Every individual change today was
 checked and the aggregate was still wrong, in a document whose entire purpose is to say
 what is true right now.
+
+---
+
+## RESULTS.md indexed, and a harness for the documents — 30 Aug 2026
+
+### The index
+
+`RESULTS.md` passed 1,400 lines and the strongest findings were no longer findable. It
+now opens with an index ranked by **evidential strength, not by how interesting the
+finding is** — the two are not the same, and the difference is what should decide what
+gets said in public.
+
+```
+Tier 1  arithmetic on published data — the headroom result, the frontier shortfall
+Tier 2  ten weather years or an optimal solve — wind-heavy, iron-air, flexibilisation,
+        capture asymmetry
+Tier 3  single year or heuristic-dependent — frontier cost, ancillary shrinkage,
+        hybrids, demand response
+Withdrawn, kept deliberately — the 37%
+```
+
+### validate_docs.py — 18 checks, and it found two things immediately
+
+Nothing in the suite looked at the markdown, and these files are the project's public
+face and the basis of a regulatory submission.
+
+**IT CAUGHT A SECOND STALE COUNT I HAD MISSED.** The consolidation pass earlier today
+fixed the suite table at line 226 and I believed it done. There was another at line 16,
+inside the fitness-for-purpose section — still reading 18 harnesses and 817 checks. Two
+copies of the same fact, one updated. Rule 6 applies to documents as much as to code.
+
+**AND A HEADING MY OWN SCRIPT HAD MANGLED.** "Fitness for purpose" had become "fitness
+FOR purpose" when the de-capitalisation script ran over it. The first version of the
+check was case-sensitive and reported the section as MISSING rather than misspelled —
+which would have sent someone looking for the wrong problem. Now case-insensitive.
+
+What it checks: every tracked document exists and carries a licence line; every
+fingerprint quoted in the docs matches a real data file; the suite table sums to its own
+headline; every index pointer in RESULTS.md resolves to a real section; and STATE.md
+opens with fitness-for-purpose.
+
+---
+
+## NERSA registrations panel: total first, quarter on a tab — 30 Aug 2026
+
+Reported: the panel used to show the total pipeline and now shows only the latest
+quarter. Both were in fact present, but an earlier change put the quarter at the top on
+the reasoning that a panel called "new project registrations" should lead with the news.
+That buried the 20.1 GW cumulative figure, which is what most readers come for — it is
+the number that gets compared against grid headroom.
+
+Now two tabs, **total pipeline as the default**, with the quarter one click away. Both
+stay in the DOM and the switch toggles display, so the regional bars do not reflow.
+
+**A REAL BUG CAUGHT BY TESTING THE CLICK, NOT THE RENDER.** The handler was first placed
+inside a block two braces deep, so it was NOT on `window` and the `onclick` would have
+failed silently in a browser — the default view rendered perfectly and the tab would
+simply have done nothing. jsdom surfaced it as `nersaView is not a function`; a render-only
+check would have passed. Moved beside `togglePipeline`, an existing handler proven
+reachable, and brace depth verified as zero.
+
+Two `audit.py` checks pin the tab switch and the default view (38 -> 40).
 
 ---
 
