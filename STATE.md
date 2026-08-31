@@ -3162,6 +3162,87 @@ valid HTML. **Never put a backtick in a comment inside the worker block.**
 
 ---
 
+## The pricing run, verified — 31 Aug 2026
+
+The day MIP runs inside a Web Worker, which every harness stubs out, so the pricing run
+shipped earlier today **had never been executed**. `price_test.js` extracts `buildDayLP`
+from `index.html` and exercises both solves directly against HiGHS.
+
+```
+MIP                    Optimal · commitment recovered 24/24 and 1/24 hours on
+fixed LP               Binary block correctly ABSENT
+pricing run            Optimal · 283 rows returned, 283 names parsed, MATCH
+duals                  24 of 24 hours
+off-peak hour 03       R608/MWh against a marginal cost of R600
+peak dearer than off-peak   true
+```
+
+**It works.** The off-peak price lands within 1.3% of the marginal unit's cost, which is
+what a shadow price on an energy balance should give.
+
+### TWO THINGS THE TEST TAUGHT, both about the test rather than the model
+
+**A shed hour prices at the slack cost, and that is CORRECT.** The first run showed
+R25,842 at an off-peak hour, which looked like nonsense. It was not: that scenario could
+not serve region 1, so unserved energy set the price at the R50,000 slack cost, and the
+average across two regions landed between. The dual was right and the SCENARIO was
+infeasible. A price far above any unit's marginal cost is the model saying it is shedding.
+
+**Extraction from a worker template literal needs unescaping.** `buildDayLP` lives inside
+a template literal, so its `\n` are still doubled in the raw file text. Extracted
+verbatim, every LP came out with literal backslash-n and HiGHS returned `Empty` with no
+diagnostic. Same trap as the backtick that broke the page: **the worker block is not
+ordinary source and cannot be read as though it were.**
+
+### WHAT IS STILL NOT VERIFIED
+
+This tests the MECHANISM on a two-region toy day. It does not establish COVERAGE — how
+many of 8,760 hours get a dual in a real run, which depends on how many days solve within
+the 25-second limit. The banner reports that figure at run time, so the honest position is
+that the machinery is proven and the coverage is observable but unmeasured here.
+
+---
+
+## Battery saturation re-run: the knee moved, and it matters for the submission
+
+```
+fleet     ancillary R/MW/yr   as published
+0.5 GW           197,100          197,100    exact match
+3   GW           167,345          197,100
+10  GW            50,204           69,305
+knee            ~2.5 GW           ~3.8 GW
+fall              74.5%            64.8%
+```
+
+**SOUTH AFRICA IS ALREADY PAST THE KNEE, NOT APPROACHING IT.** Existing fleet 3,700 MW
+against a knee near 2,500. The published version said the country sat "almost exactly at
+the knee" and called 3,700 MW "the last point at which a new battery earns the full
+ancillary rate". Both are one revision out of date — a battery built today already earns a
+REDUCED rate.
+
+CAUSE: the reserve rebuild of 30 Aug consolidated the battery panel's duplicate reserve
+constants onto the unit commitment's definition and cut the requirement ~30%, from 1,768
+to 1,263 MW. A smaller requirement saturates with a smaller fleet.
+
+**THIS BEARS ON THE EPP SUBMISSION**, which used the shrinking-ancillary-pot argument
+under Policy Position 9. The direction is unchanged and the force is GREATER — the pot is
+smaller and shrinking sooner than the submission stated. Nothing filed is wrong; it is
+understated. Worth a line if there is any follow-up correspondence.
+
+### AND I NEARLY REPORTED A 60% ERROR THAT WAS MINE
+
+The first re-run showed ancillary at 78,840 against a published 197,100 and I was about to
+record a large discrepancy. The ratio was exactly 60/150: I had set `asReserveRMWh` to an
+arbitrary 60 while the published run used the FIXED default of 150. Scaled back, the
+match was exact to the rand.
+
+**Third time today** that re-testing a finding in a scenario other than the one it was
+measured in nearly produced a false correction. The pattern is now unmistakable: reproduce
+the ORIGINAL scenario and the ORIGINAL metric, and check the ratio before believing a
+level shift.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

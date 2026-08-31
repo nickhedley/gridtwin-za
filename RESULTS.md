@@ -452,22 +452,37 @@ Weather-independent: driven by the reserve requirement and fleet size, not by wi
 or solar output. But see the reserve caveat at the end of this section.
 
 
-The country sits almost exactly at the knee.
+The country has passed the knee - see the re-run below.
+
+RE-RUN 31 Aug 2026 at the published reserve price of R150/MWh held:
 
 ```
-fleet      ancillary R/MW/yr      total R/MW/yr
-0.5 GW            197,100              304,165
-3   GW            197,100              304,165
-4   GW            173,262              280,327
-6   GW            115,508              222,573
-8   GW             86,631              193,696
-10  GW             69,305              176,369
+fleet      ancillary R/MW/yr    as published
+0.5 GW            197,100            197,100
+1   GW            197,100                  -
+2   GW            197,100                  -
+3   GW            167,345            197,100
+4   GW            125,509            173,262
+6   GW             83,673            115,508
+8   GW             62,754             86,631
+10  GW             50,204             69,305
 ```
 
-Ancillary falls 64.8% between 0.5 and 10 GW. Revenue is flat to about 3.8 GW,
-where the fleet's contribution first exceeds the reserve requirement (6% of a
-32 GW peak = 1,920 MW). The existing fleet is 3,700 MW. The last point at which a
-new battery earns the full ancillary rate.
+**THE KNEE HAS MOVED EARLIER, AND THAT STRENGTHENS THE FINDING.** Revenue is now flat
+only to about 2.5 GW, not 3.8. Ancillary falls 74.5% across the range, not 64.8%.
+
+The cause is the reserve rebuild of 30 Aug 2026, which consolidated the battery panel's
+duplicate reserve constants onto the unit commitment's own definition and cut the
+requirement about 30%, from 1,768 to 1,263 MW. A smaller requirement is satisfied by a
+smaller fleet, so saturation arrives sooner.
+
+**SOUTH AFRICA IS NOT APPROACHING THE KNEE. IT IS ALREADY PAST IT.** The existing fleet is
+3,700 MW against a knee near 2,500. The published version said the country sat "almost
+exactly at the knee" and that 3,700 MW was "the last point at which a new battery earns
+the full ancillary rate". Both were one revision out of date: a battery built today
+already earns a reduced ancillary rate, not the full one.
+
+The direction of the argument is unchanged and its force is greater.
 
 Understates against ERCOT's ~90% because arbitrage is held flat in this model.
 
