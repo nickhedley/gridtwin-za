@@ -1382,24 +1382,39 @@ Measured 30 Aug 2026. Each year's installed base is the current fleet plus the b
 pace compounded, then dispatched and priced. Achieved revenue is output-weighted against
 the model's hourly shadow price.
 
+RE-RUN 31 Aug 2026 against the corrected constants.
+
 ```
                         2026    2029    2032    2035     fall
 IRP pace (2.2 GW wind, 1.5 GW solar a year)
-  wind R/MWh             758     741     726     647     -15%
-  solar R/MWh            743     742     727     627     -16%
+  wind R/MWh             977     771     733     653     -33%
+  solar R/MWh            756     743     730     633     -16%
   total wind+solar GW    7.9    19.0    30.1    41.2
 
 Masterplan (2.5 / 2.0)
-  wind R/MWh             758     742     713     588     -22%
-  solar R/MWh            743     744     712     543     -27%
+  wind R/MWh             977     763     720     600     -39%
+  solar R/MWh            756     744     717     559     -26%
   total GW               7.9    21.4    34.9    48.4
 
 Grid pace (4.3 / 4.0 - all remaining GCCA headroom by 2030)
-  wind R/MWh             758     737     516     313     -59%
-  solar R/MWh            743     741     425     133     -82%
+  wind R/MWh             977     740     530     323     -67%
+  solar R/MWh            756     741     437     139     -82%
   total GW               7.9    32.8    57.7    82.6
-  curtailment TWh        0.0     0.2    17.2    59.0
+  curtailment TWh        0.0     0.2    16.3    57.3
 ```
+
+**SOLAR IS UNCHANGED FROM THE PUBLISHED VERSION** - the same -16%, -26% and -82%. **WIND
+IS NOT.** Its 2026 starting point moves from R758 to R977, and its fall steepens from
+-59% to -67% at grid pace.
+
+The reason is the scarcity pricing the 31 Aug constant corrections revealed. Wind produces
+in the evening hours that are now expensive; solar does not. So wind starts 29% ABOVE
+solar today, where the published version had them within 2% of each other.
+
+**THE PRACTICAL POINT CHANGES.** Wind's advantage over solar is larger today than
+published - R977 against R756, not R758 against R743 - and it therefore has further to
+fall. A wind project's merchant case is stronger now and erodes faster; a solar project's
+was always weaker and erodes on the same path as before.
 
 **MERCHANT VALUE OF SOLAR ENERGY FALLS 82&#37; BY 2035 AT GRID PACE, 16&#37; AT IRP PACE.**
 The build rate, a policy choice rather than a market outcome, moves this five times more

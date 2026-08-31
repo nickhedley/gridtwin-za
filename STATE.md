@@ -3072,6 +3072,48 @@ metric, or it is testing something else.
 
 ---
 
+## Merchant value trajectory re-run — solar unchanged, wind not — 31 Aug 2026
+
+```
+grid pace          published        corrected
+solar 2026-2035    743 -> 133       756 -> 139      -82% both
+wind  2026-2035    758 -> 313       977 -> 323      -59% -> -67%
+```
+
+**SOLAR IS UNCHANGED** across all three paces: -16%, -26%, -82%, exactly as published.
+**WIND'S STARTING POINT MOVES 29%**, from R758 to R977, and its decline steepens.
+
+Same cause as the capture and hybrid corrections: the model now prices evening scarcity,
+and WIND PRODUCES IN THOSE HOURS WHILE SOLAR DOES NOT. Wind therefore starts 29% above
+solar today, where the published version had them within 2% of each other.
+
+**THIS CHANGES THE ADVICE.** A wind project's merchant case is stronger today than
+published and erodes faster; a solar project's was always weaker and erodes on the same
+path. The published version made them look like near-identical assets facing different
+futures. They are different assets today.
+
+### PATTERN ACROSS THE WHOLE RE-AUDIT
+
+Four findings re-run after the constant corrections. Every one holds in DIRECTION. Three
+moved in LEVEL, and all three moved for the same reason: the model previously had too
+much capacity, too many imports and too generous availability, so it could not see the
+evening scarcity South Africa actually prices.
+
+```
+iron-air winter drought     unchanged in every respect
+demand response optimum     unchanged in shape, level +2.6%
+capture asymmetry           holds; TODAY's solar capture 98.4% -> 75.7%
+hybrid uplift               holds at 2035; TODAY's uplift +6% -> +130%, shape now U
+merchant trajectory         solar unchanged; WIND +29% at the start
+```
+
+The corrections were three constants and none was individually dramatic. Together they
+changed what the model says about the PRESENT, while leaving what it says about 2035
+almost untouched. **Anything anchored on today's prices needed re-running; anything
+anchored on a future build did not.**
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
