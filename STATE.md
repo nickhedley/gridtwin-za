@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 865 checks
+suite                      19 harnesses, 867 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 865 checks. Last full run: 865/865.
+Nineteen harnesses, 867 checks. Last full run: 867/867.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           51/51
+python3 audit.py index.html           53/53
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -3501,12 +3501,64 @@ everything else found today: a number shown without the uncertainty that generat
    one seeded outage path with a stated range. Smallest change, and consistent with how
    this project handles every other uncertainty.
 
-RECOMMENDATION: option 3 now, option 2 when the stochastic-availability work in the
-to-do list is done - they are the same problem, and the risk panel already runs 60 draws
-that could supply the headline.
+**DONE 31 Aug 2026 — option 2, the median.** See below.
 
 NOTE FOR CONTEXT: Eskom's audited FY2026 outturn was 36 GWh unserved. Every seed above,
 including the worst, is more optimistic than what actually happened.
+
+---
+
+## Adequacy ensemble: the board is now a median, not a draw — 31 Aug 2026
+
+The board headline came from ONE seeded outage path, and that path was the worst of ten
+tested. It now reports the MEDIAN of nine draws.
+
+### SIZED BEFORE BUILDING — only adequacy needed it
+
+```
+metric          spread across seeds
+unserved GWh              1,916%     <- ensemble
+max stage                   600%     <- ensemble
+diesel TWh                  112%     <- ensemble
+coal TWh                      0.2%   single draw is fine
+CO2 Mt                        0.1%
+avgCost                       1.2%
+```
+
+Energy and cost are effectively seed-independent, so the ensemble covers the adequacy
+headline and nothing else. Nine draws rather than sixty because it must not slow a slider
+drag, and odd so the median is a real draw rather than an average of two.
+
+```
+scenario       status        median          range
+today          Stable        0 hrs, stage 0  0.00-5.46 GWh
+EAF 58         Stage 5     104 hrs, stage 5  41.97-239.79 GWh
+crisis 2023    Stage 8   3,903 hrs, stage 8  9,929-13,089 GWh
+```
+
+**Today reads Stable**, which is what five of ten seeds and the smooth-derate control all
+gave. The escalation still works where it should.
+
+### WEATHER IS HELD FIXED, deliberately
+
+Unlike the 60-year risk panel, which varies weather AND outages, this varies outages only
+on the scenario's own weather. It answers one question — how much of the shed is the draw?
+— and stays consistent with every other panel on the page.
+
+### A RACE I CREATED AND THEN REMOVED
+
+Both the risk Monte Carlo and the new ensemble wrote `bdShed`, and whichever finished last
+won. That put a 60-year weather-and-outage mean in a cell beside a status word derived
+from the scenario's own weather. **One owner per cell:** the ensemble owns the board, the
+Monte Carlo keeps its mean in the risk panel where it is labelled.
+
+### ON THE ESKOM COMPARISON — I was right for the wrong reason to be confident
+
+Checked footnote 4 of the energy balance: the 36 GWh is *"an estimate by the System
+Operator based on forecast versus actual demand"*, so it IS generation-side load shedding
+and curtailment. The distribution-level problem is **load reduction**, which Eskom reports
+separately and has eliminated in seven provinces. The comparison stands - but it was worth
+checking rather than repeating.
 
 ---
 

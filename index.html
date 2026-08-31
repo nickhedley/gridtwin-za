@@ -12409,6 +12409,79 @@ let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a succe
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
 let nodalNationalShedGwh=null; // national engine shed at same scenario — used to compute corridor correction factor
 
+/* --- Adequacy ensemble: the board headline, over outage draws --- */
+// WHY. The base run carries ONE seeded unit-level outage path (outageSeed 20260816).
+// Measured 31 Aug 2026 across ten seeds, that single draw turned out to sit at the TAIL,
+// not the middle:
+//
+//     unserved   0.00 to 5.46 GWh, median 0.28 - and the shipped seed gives 5.46
+//     max stage  0 to 3, median 0 - five of ten seeds shed nothing at all
+//
+// So the board announced "Stage 3" on the strength of one unlucky draw. Energy and cost
+// are NOT affected - coal varies 0.2% across seeds, CO2 0.1%, avgCost 1.2% - so only the
+// ADEQUACY headline needs an ensemble. That is what this computes, and nothing else.
+//
+// Runs async and chunked after the main solve, exactly as the risk Monte Carlo does, so
+// dragging a slider is not slowed. The board shows the single draw until it lands, then
+// switches to the median and says so.
+//
+// WEATHER IS HELD FIXED, unlike the 60-year risk panel which also varies weather. This
+// answers one question only: given this weather, how much of the shed is the outage draw?
+// Applies the ensemble to the board. Separate from render() because the ensemble lands
+// LATER than the main solve - the board shows the single draw first and upgrades in place.
+function applyAdequacyToBoard(){
+  const e = adequacyEnsemble;
+  if (!e) return;
+  const sw = document.getElementById('statusWord');
+  const shedEl = document.getElementById('bdShed');
+  if (!sw) return;
+  const pct = 100 * e.medHours / 8760;
+  if (e.medStage === 0){ sw.textContent = 'Stable'; sw.className = 'statusword ok'; }
+  else if (pct < 0.05){ sw.textContent = 'Tight hours'; sw.className = 'statusword warn'; }
+  else if (pct < 1 || e.medStage <= 2){ sw.textContent = 'Constrained'; sw.className = 'statusword warn'; }
+  else { sw.textContent = 'Stage ' + e.medStage; sw.className = 'statusword bad'; }
+  sw.title = `MEDIAN of ${e.n} outage draws on the same weather: `
+    + `${e.medHours} of 8,760 hours short, worst hour stage ${e.medStage}. `
+    + `Across the draws unserved energy ranges ${e.lo.toFixed(2)}-${e.hi.toFixed(2)} GWh. `
+    + `A single draw is not the answer - the shipped seed alone gave the worst of ten tested.`;
+  document.querySelectorAll('.lamp').forEach((l,i)=>l.classList.toggle('on', i < e.medStage));
+  if (shedEl){
+    shedEl.textContent = (e.medUnservedGWh < 0.05 ? '0'
+      : e.medUnservedGWh < 10 ? e.medUnservedGWh.toFixed(1)
+      : Math.round(e.medUnservedGWh).toLocaleString()) + ' GWh';
+    shedEl.title = `Median of ${e.n} outage draws, range `
+      + `${e.lo.toFixed(2)}-${e.hi.toFixed(2)} GWh. Weather held fixed, so this isolates `
+      + `the outage draw rather than mixing it with weather variation.`;
+  }
+}
+
+const ADEQ_N = 9;              // odd, so the median is a real draw rather than an average
+let adequacyEnsemble = null;   // {medUnservedGWh, medStage, medHours, lo, hi, n}
+let adeqToken = 0, adeqTimer = null;
+function scheduleAdequacy(){ clearTimeout(adeqTimer); adeqTimer = setTimeout(runAdequacy, 400); }
+async function runAdequacy(){
+  const token = ++adeqToken;
+  const runs = [];
+  for (let i = 0; i < ADEQ_N; i++){
+    if (token !== adeqToken) return;                    // a newer scenario superseded this
+    // Seeds spaced by a large odd stride so consecutive draws are not correlated.
+    const r = simulate({ ...state, outageSeed: 20260816 + i * 7919 }, PROFILES);
+    let hrs = 0;
+    for (let h = 0; h < HOURS; h++) if (r.stack.unserved[h] > 1) hrs++;
+    runs.push({ gwh: (r.E.unserved || 0) / 1000, stage: r.maxStage, hrs });
+    if (i % 3 === 2) await new Promise(res => setTimeout(res, 0));   // yield to the UI
+  }
+  if (token !== adeqToken) return;
+  const med = arr => { const a = arr.slice().sort((x, y) => x - y); return a[(a.length - 1) >> 1]; };
+  const g = runs.map(r => r.gwh);
+  adequacyEnsemble = {
+    medUnservedGWh: med(g), medStage: med(runs.map(r => r.stage)),
+    medHours: med(runs.map(r => r.hrs)),
+    lo: Math.min(...g), hi: Math.max(...g), n: ADEQ_N,
+  };
+  if (typeof applyAdequacyToBoard === 'function') applyAdequacyToBoard();
+}
+
 /* --- Monte Carlo outage risk (60 synthetic years, chunked async) --- */
 let mcToken=0, mcTimer=null;
 const MC_N=60;
@@ -12551,7 +12624,14 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
   // The shortage was real and tiny - 5.5 GWh across 5 hours of 8,760, which is 0.003% of
   // demand and SIX TIMES BETTER than Eskom's audited FY2026 outturn of 36 GWh. Rounding a
   // real number to zero to keep the board tidy is how a contradiction gets shipped.
-  document.getElementById('bdShed').textContent = _shedFmt(meanShed) + ' GWh';
+  // THE RISK PANEL NO LONGER WRITES THE BOARD. Both this and the adequacy ensemble were
+  // setting bdShed, and whichever finished last won - a race that put the 60-year
+  // weather-and-outage mean in a cell sitting beside a status word derived from the
+  // scenario's OWN weather. One owner per cell.
+  //
+  // The adequacy ensemble owns the board because it holds weather FIXED and so is
+  // consistent with every other panel on the page. This mean stays in the risk panel
+  // below, where it is labelled as an ensemble across weather years and belongs.
   // THESE TWO CELLS RUN ON DIFFERENT WEATHER, and the board does not otherwise say so.
   // The lamps and status word come from the DETERMINISTIC run on the default profile;
   // this cell is the mean of 60 Monte Carlo years that substitute REAL weather years for
@@ -12631,7 +12711,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();

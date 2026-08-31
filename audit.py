@@ -93,6 +93,10 @@ CHECKS = [
     # System status must reflect FREQUENCY, not just the worst hour. Keyed on maxStage
     # alone, one bad hour in 8,760 flipped the board to "Stage 3" beside 0 GWh of shed.
     ('Tight hours',                                                'status word: frequency-aware'),
+    # Adequacy ensemble. The board headline is the MEDIAN of 9 outage draws, not one
+    # seeded draw - the shipped seed alone gave the worst of ten tested.
+    ('adequacyEnsemble',                                           'adequacy ensemble'),
+    ('MEDIAN of ',                                                 'board states it is a median'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices
     # beside MIP energy with nothing saying so.
