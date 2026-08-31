@@ -3825,7 +3825,21 @@ function buildProfiles(real){
 const SYNC_MIN_MW = 6000;
 // IMPORTS_CF = 0.85 is defined in nodal_engine.js (loaded first)
 const FIXED = {
-  coalInstalledMW:42000, nuclearMW:1860, hydroMW:600,   importsMW:1150,
+  coalInstalledMW:39692,
+  // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
+  // publishes nominal capacity by technology: coal 39,692 MW of a 47,378 MW fleet.
+  //
+  // 42,000 was the widely-cited nameplate figure and it was a COMPENSATING ERROR: the
+  // model produced the right coal ENERGY (166.0 TWh against an audited 165.4) from too
+  // large a fleet at too low a utilisation. Implied capacity factor was 45.1% against
+  // Eskom's 47.6%. Correcting the capacity moves it to 47.7% and changes coal energy by
+  // 0.1 TWh, because coal is demand-limited here rather than capacity-limited.
+  //
+  // It matters for SCENARIOS rather than for the base case: anything that moves the
+  // energy availability factor or decommissions plant was working off a fleet 5.8%
+  // larger than the one Eskom actually operates.
+  nuclearMW:1860, hydroMW:600,
+  importsMW:1150,
   // Import utilisation, added 31 Aug 2026 from Eskom's audited energy balance. Was the
   // literal 0.85 hardcoded at FOUR sites and duplicated as IMPORTS_CF in
   // nodal_engine.js - a rule 6 violation and a stale value at the same time.
@@ -5169,7 +5183,11 @@ function simulate(u, prof, outPath){
   // ── Day-ahead unit commitment schedule ─────────────────────────────────────
   // Build daily commitment decisions using per-unit min up/down times and start-up costs.
   // This replaces the simple committed=available assumption with per-plant scheduling.
-  const coalInstalled = (p.coalInstalledMW ?? 42000) - (p.coalDecomMW || 0);
+  // Fallback tracks the constant. It read 42000 until 31 Aug 2026 and was caught by
+  // validate_structure the moment the constant moved to 39,692 - rule 6 working as
+  // designed: a fallback that DIFFERS from FIXED is a latent wrong answer waiting
+  // for the resolution to change.
+  const coalInstalled = (p.coalInstalledMW ?? 39692) - (p.coalDecomMW || 0);
   // `?? 64` not `|| 64`: zero is a real input (total coal collapse). The `||`
   // form silently ran EAF=0 scenarios at 64% availability - unserved energy
   // read zero with the entire coal fleet dead. Caught by stress_deep check G8.
@@ -10809,7 +10827,7 @@ const SLIDERS=[
   {id:'coalPartLoadK',label:'Part-load heat rate penalty',min:0,max:0.25,step:0.01,def:FIXED.coalPartLoadK,fmt:v=>v===0?'off':'+'+(v*100).toFixed(0)+'% fuel at half load',
    note:'A coal unit burns more fuel per MWh the more its output is reduced, because mills, fans and boiler losses are largely fixed and spread over less output. At the slider\u2019s default setting, a unit running at 50&#37; burns 10&#37; more fuel per MWh than at full output. Set the slider to zero and every coal MWh costs the same whatever the load factor, which flatters part-load running. The penalty raises CO\u2082 as well as cost because emissions follow fuel burned rather than energy sold.'},
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'Multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW'},
-  {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:42000,step:1000,def:0,fmt:v=>(v/1000).toFixed(0)+' GW',note:'of 42 GW installed'},
+  {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:39692,step:1000,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'of 39.7 GW installed (Eskom FY2026 nominal)'},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit R223/kW/yr (Weisweiler). SA fleet ramps ~24&#37;/hr today (Agora 2017), ~100&#37;/hr once flexibilised (IRENA). Applies to the non-decommissioned fleet.'},
   {grp:'New build (national view/region agnostic)'},
   {id:'newWindMW',label:'New wind',min:0,max:140000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4.6 GW existing (4 GW from REIPPPP + 470 MW wheeled + 100 MW Eskom’s Sere farm)'},

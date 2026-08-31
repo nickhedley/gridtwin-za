@@ -1,11 +1,11 @@
 {
  "base": {
-  "coalTWh": 165.96,
-  "co2": 175.055,
-  "avgCost": 576.82,
-  "replAvg": 1535.88,
-  "avgPrice": 764.86,
-  "rePct": 17.828,
+  "coalTWh": 165.881,
+  "co2": 174.883,
+  "avgCost": 578.27,
+  "replAvg": 1538.53,
+  "avgPrice": 809.14,
+  "rePct": 17.829,
   "curtTWh": 0,
   "loleHrs": 0
  },
@@ -252,7 +252,7 @@
   },
   "newCcgtMW": {
    "coalTWh": false,
-   "co2": false,
+   "co2": true,
    "avgCost": true,
    "replAvg": true,
    "avgPrice": true,

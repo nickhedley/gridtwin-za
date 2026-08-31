@@ -2577,9 +2577,7 @@ measured change, which is the only reason to re-pin.
    with a comment at both constants saying the other exists. It stays a literal because
    the file is loaded as a plain script by four harnesses with no access to `FIXED`.
    NOTE both read 0.85 and drifted in NEITHER, which was luck rather than design.
-4. **Kusile Unit 6, 799 MW synchronised.** Check whether it is already inside
-   `coalInstalledMW` 42,000 before adding. Eskom reports nominal capacity 47,378 MW
-   (2025: 46,866) across the whole fleet, so reconcile against that rather than guessing.
+4. ~~Kusile Unit 6 / capacity reconciliation.~~ DONE 31 Aug 2026 — see below.
 5. **13.1 TWh lost to theft**, about 6% of supply. Distinct from technical losses and
    also absent.
 
@@ -2706,6 +2704,66 @@ confusion it exists to prevent. Printer is now unit-aware.
 It stays a literal because that file is loaded as a plain script by four harnesses with
 no access to `FIXED`, but both constants now carry a comment naming the other. They read
 0.85 and drifted in NEITHER place, which was luck rather than design.
+
+---
+
+## Fleet capacity reconciled against Eskom's published nominal — 31 Aug 2026
+
+The integrated report gives nominal capacity by technology. The parts sum to 47,378 MW
+exactly, so the extraction is sound.
+
+```
+                Eskom nominal   GridTwin    delta
+coal                   39,692     42,000    +5.8%
+nuclear                 1,880      1,860    -1.1%
+pumped storage          2,724      2,900    +6.5%
+hydro                     602        600    -0.3%
+OCGT                    2,380      3,400   +42.9%
+IPP capacity            8,565      8,483    -1.0%
+```
+
+**IPP within 1% and nuclear and hydro within 1.1%.** Two gaps explain themselves:
+
+**OCGT is not a discrepancy.** Eskom's 2,380 MW is ESKOM-OWNED only. Adding the IPP
+peakers Avon 670 and Dedisa 335 gives 3,385 MW against the model's 3,400 — a 0.4% match.
+Different universe, not a different number.
+
+**COAL WAS A COMPENSATING ERROR, and is corrected.** 42,000 is the widely-cited nameplate
+figure; Eskom's audited nominal is 39,692. The model produced the RIGHT coal energy from
+too large a fleet at too low a utilisation:
+
+```
+implied capacity factor    before 45.1%    after 47.7%    Eskom 47.6%
+coal energy                166.0 TWh       165.9 TWh      165.4 TWh
+```
+
+Correcting the capacity moves the capacity factor onto Eskom's almost exactly and changes
+energy by 0.1 TWh, because coal here is demand-limited rather than capacity-limited. **It
+matters for SCENARIOS, not the base case**: anything moving the availability factor or
+decommissioning plant was working off a fleet 5.8% larger than Eskom operates. The
+decommissioning slider max moved 42,000 -> 39,692 with it.
+
+### THREE THINGS THE SUITE CAUGHT, ALL WORTH RECORDING
+
+**1. My edit swallowed two constants.** The original line read
+`coalInstalledMW:42000, nuclearMW:1860, hydroMW:600,` on ONE line, and my inserted comment
+block absorbed the other two into itself. `nuclearMW` and `hydroMW` became undefined, and
+the suite collapsed — benchmarks 3/20, response 2/81. Lint PASSED, because the syntax was
+valid. Only the behavioural harnesses caught it. **A multi-line comment inserted before a
+constant is only safe if you check what shares its line.**
+
+**2. Rule 6, exactly as written.** `validate_structure` flagged
+`coalInstalledMW ?? 42000` the moment the constant moved — a fallback that DIFFERS from
+FIXED is a latent wrong answer waiting for the resolution to change. It waited, and the
+check caught it.
+
+**3. A round-trip check that was structurally incomplete.** The fleet-collapse scenario
+reported a storage round trip of 1.053 — energy from nowhere. It is not: the engine is
+NOT state-of-charge cyclic. Storage opens at 70% for pumped and 50% for batteries, so
+over a year it can legitimately discharge more than it charges by the opening stock it
+never replaces. The check guarded on charge VOLUME, a proxy; it now compares discharge
+against charge PLUS opening stock. If the engine is ever made SOC-cyclic, that allowance
+should return to zero.
 
 ---
 

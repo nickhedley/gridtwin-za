@@ -219,9 +219,29 @@ const SCENARIOS = {
     // of 8,760 — storage simply drains its opening state and sits empty. The
     // ratio of a large discharge to a near-zero charge is arithmetic noise, not
     // a physics violation, and the first version of this check flagged it.
-    if (R.rt !== null && R.storeIn > 100000)
+    // REFINED 31 Aug 2026. The guard above is a volume threshold, which is a PROXY for
+    // the real condition. The engine is NOT state-of-charge cyclic: storage opens at
+    // psSoc 70% and battSoc 50% of capacity, so over a year it can legitimately
+    // discharge MORE than it charges by exactly the opening stock it never replaces.
+    // That is a real energy source, not energy from nowhere.
+    //
+    // At coalEAFPct 40 the system charges heavily AND drains its opening stock, so it
+    // passed the volume guard while the ratio reached 1.053. The correct condition
+    // compares discharge against charge PLUS the opening stock available to it.
+    //
+    // Storage opening energy: psEnergyMWh*0.7 + battEnergy*0.5, capped generously since
+    // the harness cannot see the tier split. If the engine is ever made SOC-cyclic this
+    // allowance should go back to zero and the ratio must sit under 1.0 outright.
+    // FIXED is a page global and is NOT in scope here - this harness reads RESULTS, not
+    // the page. The probe already returns both figures; use those.
+    const openingStock = (R.psEnergyMWh || 0) * 0.7 + (R.battEnergyMWh || 0) * 0.5;
+    const rtAdj = (R.rt !== null && R.storeIn > 0)
+      ? R.storeOut / (R.storeIn + openingStock) : null;
+    if (rtAdj !== null && R.storeIn > 100000)
       check(`[${label}] storage round-trip efficiency is physical`,
-            R.rt > 0.3 && R.rt <= 1.0, `round trip = ${R.rt.toFixed(3)}`);
+            R.rt > 0.3 && rtAdj <= 1.0,
+            `raw round trip ${R.rt.toFixed(3)}, adjusted for opening stock ${rtAdj.toFixed(3)} `
+            + `- above 1.0 adjusted IS energy from nowhere`);
 
     // THE CHECK THAT WOULD HAVE CAUGHT THE STORAGE-IDLE BUG, measured in CYCLES
     // PER YEAR rather than absolute energy.
