@@ -36,7 +36,7 @@ superseded queue entries. Never add the delta. See RULES.md.
 | SolarAfrica SunCentral | one-off | 342 MW energised of a planned 1 GW | candidate against the 1,823 MW unexplained solar in identity 3 — NOT loaded, press report only |
 | Aurora Energy Research | occasional | 2060 outlook, Aug 2026 | independent corroboration of the no-gas frontier: >120 GW new capacity |
 
-| Eskom annual results | annual | FY2026, published 31 Aug 2026 | EAF calibration and the `reShareResid` benchmark: renewables 11.7% of power supplied |
+| Eskom annual results and integrated report | annual | FY2026, **as at 31 March 2026** | EAF calibration, the `reShareResid` benchmark, fleet nominal capacity and the audited energy balance. YEAR-END SNAPSHOT: the renewable register here runs to 30 June 2026, so three months sit on one side of any comparison and not the other |
 
 ## Watched, not yet loaded
 

@@ -2722,7 +2722,47 @@ OCGT                    2,380      3,400   +42.9%
 IPP capacity            8,565      8,483    -1.0%
 ```
 
-**IPP within 1% and nuclear and hydro within 1.1%.** Two gaps explain themselves:
+**Nuclear and hydro within 1.1%.** Three points need care, and the first was an error of
+mine.
+
+### THE FIGURES ARE AS AT 31 MARCH 2026 — and I did not check that
+
+The integrated report covers the year ended 31 March 2026, so every capacity above is a
+year-end snapshot. Two consequences:
+
+- Kusile Unit 6 reached commercial operation on 29 September 2025, INSIDE FY2026, so its
+  799 MW is already in the 39,692. Nothing to add. Note the fleet only grew 46,866 ->
+  47,378, **+512 MW against Kusile's +799**, so roughly 287 MW was retired or derated in
+  the same year and Eskom does not itemise it here.
+- The model's renewable register runs to 30 JUNE 2026 (PFL H1). Three months of additions
+  sit on one side of the comparison and not the other. Small for the base case, but it is
+  a real date mismatch and it should be stated whenever these are lined up.
+
+### MY "IPP WITHIN 1%" CLAIM WAS A UNIVERSE MISMATCH — corrected
+
+Eskom's 8,565 MW is ALL IPPs selling through NTCSA. Compared like for like:
+
+```
+IPP total                              8,565
+less OCGT peakers Avon + Dedisa       -1,005
+less REIPPPP hydro, biomass, LFG         -51
+= IPP variable renewables + CSP        7,509
+
+GridTwin wind + pv + csp               8,483      +974 MW, +13.0%
+```
+
+So the model looked 13% HIGH, not 1% low. **But the 974 MW is almost exactly the private
+wheeled block**: `by_source.private` holds 958 MW. Residual 16 MW.
+
+**PRIVATELY WHEELED PLANT SELLS TO CORPORATE CUSTOMERS, NOT TO ESKOM, so it correctly
+does not appear in Eskom's IPP figure at all.** The gap is not an error in either source
+— it is the two universes, and it reconciles to 16 MW once named.
+
+This is what the `by_source` tagging bought. Without it the 974 MW would have looked like
+a 13% overstatement with no way to decompose it, exactly as the opaque total once hid a
+badly derived `windMW`.
+
+Two further gaps explain themselves:
 
 **OCGT is not a discrepancy.** Eskom's 2,380 MW is ESKOM-OWNED only. Adding the IPP
 peakers Avon 670 and Dedisa 335 gives 3,385 MW against the model's 3,400 — a 0.4% match.
