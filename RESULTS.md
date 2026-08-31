@@ -1585,3 +1585,44 @@ calibration which is currently within 1.2%.
 CAVEAT ON THE COMPARISON: Eskom's figures are ESKOM's fleet plus IPPs it purchases from.
 GridTwin models the national system. The two universes are close but not identical, which
 is why the deltas above should be read as a sanity check rather than an error bar.
+
+---
+
+## Transmission cost: two published routes that bracket the constant
+
+`txRPerKWyr` underpins the locational transmission work and the EPP submission, and until
+31 Aug 2026 it rested on ONE derivation. Eskom's FY2026 capex plan gives a second,
+independent route.
+
+```
+ROUTE 1  Eskom TDP (in the model since the start)
+  R390bn / 56 GW  =  R6,964/kW overnight  ->  ~R700/kW-yr gross
+  R26.9m per route-km
+
+ROUTE 2  Eskom FY2026 results, capex plan FY2027-31
+  R343bn x 46% to NTCSA = R157.8bn, delivering 8,362 km and 82,425 MVA
+  R18.9m per route-km
+  if unlocked capacity scales with route-km: 32.3 GW -> ~R490/kW-yr gross
+
+MODEL DEFAULT  R600/kW-yr, net of the share already committed
+```
+
+**THE TWO ROUTES BRACKET THE DEFAULT.** R490 and R700 gross, with the model at R600 net.
+That is the useful result: an independent source does not overturn the constant, it puts
+bounds either side of it.
+
+### WHAT THIS DOES NOT ESTABLISH — three assumptions doing real work
+
+1. **"Capacity unlocked scales with route-km" is an assumption, not a finding.** It is
+   the step converting 8,362 km into 32.3 GW, and the R490 depends entirely on it.
+   Corridors differ enormously in what they unlock per kilometre - that is the whole
+   point of the locational analysis this constant feeds.
+2. **The 46% NTCSA share is read off a donut chart** in the results presentation, not a
+   stated figure. Treat it as approximate.
+3. **Scopes differ.** NTCSA capex covers transformers, substations and refurbishment, not
+   only new lines for renewables. The TDP figure is renewables-integration specific. The
+   per-km numbers - R26.9m against R18.9m - are the cleaner comparison, and they still
+   differ by 30% for reasons the sources do not resolve.
+
+CONCLUSION: no change to the constant. It was defensible on one source and is better
+supported by two, and the slider note now shows both bounds rather than one derivation.

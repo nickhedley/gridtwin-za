@@ -2599,10 +2599,12 @@ measured change, which is the only reason to re-pin.
    observed trend is negative, and three years of audited sales now exist to anchor it.
 7. **2–3 GW surplus capacity**, Eskom's own words, for the first time in over a decade.
    Bears directly on the adequacy results.
-8. **Grid: 8,362 km of line and 82,425 MVA by FY2031** from R343bn capex with 46% to
-   NTCSA. Cross-check against the TDP-derived R584/kW-yr behind `txRPerKWyr`. Different
-   period and scope, so not like-for-like, but it is a second published route to the
-   same constant.
+8. ~~Grid capex cross-check against `txRPerKWyr`.~~ DONE 31 Aug 2026. The two routes
+   BRACKET the constant: TDP ~R700/kW-yr gross, Eskom's FY2027-31 capex plan ~R490, model
+   default R600 net. No change made — it was defensible on one source and is better
+   supported by two. Three assumptions are doing real work in the R490, chiefly that
+   unlocked capacity scales with route-km, which is exactly what the locational analysis
+   says is false corridor by corridor. Full working in RESULTS.md.
 
 ### New scenario
 
