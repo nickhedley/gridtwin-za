@@ -3045,9 +3045,16 @@ the finding did not move at all.
 **COAL FLEXIBILISATION** keeps its direction and roughly its magnitude: the penalty was
 +1,128 GWh and is now +1,418.
 
-**CAPTURE ASYMMETRY** holds for wind at 98%. The solar figure needs a proper re-run
-against the capture curve as published rather than the ad-hoc scenario used here - noted,
-not claimed.
+**CAPTURE ASYMMETRY** — re-run properly 31 Aug against the published scenario (no
+storage, same build points). **It holds**: wind 96-107% across the range, solar falls to
+2.7% against a published 2.5%, and four of five rows reproduce within two points.
+
+BUT THE FIRST ROW MOVED. Today's fleet was published at 98.4% solar capture against a
+R755 mean; it now reads 75.7% against R999. The corrections revealed scarcity pricing the
+old constants suppressed, and the new expensive hours are EVENING hours when solar does
+not produce. **Solar already earns a quarter below the market average today**, before any
+cannibalisation from new build — the published version showed near-parity and understated
+the starting point.
 
 ### AND A MISTAKE OF MINE THAT THE FILE'S OWN RULE CAUGHT
 

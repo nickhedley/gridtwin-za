@@ -910,18 +910,38 @@ share of the time-weighted mean price - what a merchant project earns against wh
 market averages. Computed from the model's own hourly shadow price against each
 technology's dispatched output.
 
+RE-RUN 31 Aug 2026 against the corrected constants, reproducing the published scenario
+exactly - no storage, same build points:
+
 ```
 wind GW  solar GW  batt GW   mean R/MWh   wind capture   solar capture   solar R/MWh   curt TWh
-    4.6       3.3        0          755         100.2%           98.4%           743        0.0
-   15        15          0          701          96.8%           91.9%           644        0.8
-   20        25          0          544         100.6%           47.7%           260        9.9
-   30        35          0          410         106.2%           14.5%            59       35.2
-   50        60          0          215          95.9%            2.5%             5      113.5
+    4.6       3.3        0          999          97.8%           75.7%           756        0.0
+   15        15          0          716          96.3%           90.9%           651        0.8
+   20        25          0          549         100.2%           49.3%           271        9.9
+   30        35          0          417         106.8%           14.7%            61       35.2
+   50        60          0          227          97.2%            2.7%             6      111.9
 ```
 
-**THE asymmetry IS THE FINDING.** Wind holds 96-106% of the mean price across the whole
-range. Solar falls from 98% to 2.5%. At 50 GW of solar a merchant plant earns R5/MWh
-against wind's R206 - not a discount, an evaporation.
+**THE asymmetry IS THE FINDING, and it survives.** Wind holds 96-107% of the mean price
+across the whole range. Solar falls to 2.7%. At 50 GW of solar a merchant plant earns
+R6/MWh against wind's R221 - not a discount, an evaporation. Four of the five rows
+reproduce within two points of the 29 Aug measurement.
+
+### THE FIRST ROW MOVED, AND IT MATTERS
+
+Today's fleet was published at 98.4% solar capture against a R755 mean. It now reads
+**75.7% against a R999 mean.** The corrections of 31 Aug - coal capacity down 5.8%,
+imports down 52%, availability down three points - revealed scarcity pricing that the
+old constants suppressed. The mean price rose 32%, and the new expensive hours are
+EVENING hours, when solar does not produce.
+
+**So solar already earns a quarter below the market average TODAY**, before any
+cannibalisation from new build. The published version showed near-parity and understated
+the starting point. The direction of the finding is unchanged; its starting level was
+wrong.
+
+This is the same correction that produced the hybrid U-shape: today's system has real
+scarcity pricing, and both findings had been measured on a model that did not.
 
 The mechanism is coincidence. Every solar plant in the country produces in the same
 hours, so adding solar drives the price toward zero in precisely the hours solar earns.
