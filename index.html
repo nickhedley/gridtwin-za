@@ -3834,6 +3834,37 @@ const SYNC_MIN_MW = 6000;
 // was corrected to 0.41 in both places. The number drifted in neither file and the
 // COMMENT ABOUT the number drifted in one - which is the failure mode a duplicated
 // constant actually has.
+// ── ON `X || <literal>` FALLBACKS, audited 31 Aug 2026 ───────────────────────
+// Rules 6 and 7 both bear on these. A full audit found 55 sites where a FIXED key is
+// read with a numeric fallback. They are NOT all the same thing, and deleting them
+// wholesale would break the model - so the verdict is recorded here rather than left to
+// whoever next greps for `||`.
+//
+// THREE CLASSES:
+//
+// 1. FALLBACK MATCHES THE CONSTANT - pure duplication, rule 6. Drift risk only. These
+//    are the ones worth converting to `?? FIXED.x` opportunistically. IMPORTS_CF was the
+//    worst instance and is now single-sourced.
+//
+// 2. FALLBACK IS 0 WHERE FIXED HOLDS A REAL VALUE - looks alarming, mostly ISN'T. For
+//    asReserveRMWh, asInertiaRkWyr and capacityPaymentRkWyr, zero is the CORRECT default:
+//    South Africa prices no ancillary services and has no capacity market, so an unset
+//    value means unpriced, not "use the FIXED number". FIXED holds what those markets
+//    would pay IF they existed, which is a different question. Leave them.
+//
+// 3. FALLBACK ON A KEY THAT IS NOT IN FIXED - rule 7's case, and the dangerous one,
+//    because the read resolves to undefined and falls through silently. Seventeen sites.
+//    All checked 31 Aug: every one is a genuine optional control with no FIXED entry
+//    (newVrfbMW, newIronAirMW, exportCapMW and similar), where 0 is the intended default.
+//
+// WHAT WAS ACTUALLY WRONG, and is now fixed: `state.coalEAFPct || 0` at two EXPORT sites.
+// Not dispatch - the scenario labels written into the build-optimiser summary and the CSV
+// header. If the key were ever unset those printed "EAF 0%" for a run at 65, and a
+// mislabelled export travels without the model attached to correct it.
+//
+// THE STANDING RISK is class 1, and it is not the numbers. IMPORTS_CF's four copies never
+// drifted; the COMMENT about them did, still claiming 0.85 five hours after the value
+// changed. Prose about a constant rots faster than the constant.
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -8875,7 +8906,11 @@ function exportBuildSchedule(){
   rows.push(['generated', new Date().toISOString().slice(0,16).replace('T',' ')]);
   rows.push(['mode', regional ? 'regional (decides where)' : 'national']);
   rows.push(['demand growth to 2030', (state.demandGrowthPct||0) + '%']);
-  rows.push(['coal EAF', (state.coalEAFPct||0) + '%']);
+  // ?? not ||, and FIXED not 0. These are SCENARIO LABELS on an exported artefact: if
+  // state.coalEAFPct were ever unset this printed "coal EAF 0%" on a run that actually
+  // used 65. A mislabelled export is worse than a mislabelled screen because it travels
+  // without the model attached. EAF=0 is also a real input, which || would swallow.
+  rows.push(['coal EAF', (state.coalEAFPct ?? FIXED.coalEAFPct) + '%']);
   rows.push(['build pace', document.getElementById('bldPace').value]);
   rows.push(['discounted system cost (R bn)', (res.ObjectiveValue/1e9).toFixed(1)]);
   rows.push([]);
@@ -12900,8 +12935,11 @@ function exportPpaTimeseries(){
   rows.push('# generated,' + new Date().toISOString().slice(0,16).replace('T',' '));
   rows.push('# price series,national - single-node engine, one price for the country');
   rows.push('# wind and solar profiles,' + reg);
+  // Same as the build-optimiser label above: this line is the only record of what
+  // scenario produced the CSV, so it must not be able to say 0 for a run at 65.
+  // demandGrowthPct legitimately defaults to 0 and has no FIXED entry, so it keeps ||.
   rows.push('# scenario,demand growth ' + (state.demandGrowthPct||0) + '%, EAF '
-            + (state.coalEAFPct||0) + '%');
+            + (state.coalEAFPct ?? FIXED.coalEAFPct) + '%');
   rows.push('#');
   rows.push('# price_r_per_mwh is a shadow price, not a market price. South Africa');
   rows.push('# has no day-ahead market, so nothing clears at these numbers and no');

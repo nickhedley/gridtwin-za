@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 886 checks
+suite                      19 harnesses, 887 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 886 checks. Last full run: 886/886.
+Nineteen harnesses, 887 checks. Last full run: 887/887.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
-node validate_structure.js .         13/13
+node validate_structure.js .         14/14
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
@@ -514,10 +514,11 @@ and is not here.
 3. **`emisCoal || 0.95` at line 5812 disagrees with `FIXED.emisCoal` = 1.04.** Dead
    today, because that site already uses `{ ...FIXED, ...state }`. A latent wrong
    answer if the resolution ever changes.
-4. **Fourteen other surviving `X || <literal>` fallbacks** shadow a `FIXED` key (the
-   CCS cluster at 3116–3182, `coalInstalledMW` at 3206, `costCoal` at 5811,
-   `costDiesel` at 8998, `ccgtMW` at 9056). All currently agree with `FIXED`. That is
-   the pre-drift state, not a safe one.
+4. ~~Fourteen surviving `X || <literal>` fallbacks shadow a `FIXED` key.~~ AUDITED AND
+   CLOSED 31 Aug 2026. There were 55, not 14, and they fall into three classes with
+   different verdicts - the audit is recorded at the FIXED block in index.html so the
+   next person to grep for `||` finds the reasoning rather than repeating it. One was
+   genuinely wrong and is fixed. See below.
 5. **Named-project layer.** The Q4 quarterly is aggregate throughout — zero project
    names. The annual *"An Overview of the IPPPP"* on the same publications page
    historically carries project-level tables and is the route to named entries and the
@@ -4247,6 +4248,52 @@ Verified unchanged: imports land at 4.13 TWh against Eskom's audited 4.09.
 rather than restating it, and no `?? <number>` fallback reintroduces a copy. Verified they
 fail - reverting `FIXED` to the literal reports "FIXED.importsCF should be IMPORTS_CF, not
 a literal".
+
+---
+
+## The fallback audit: 55, not 14, and mostly deliberate — 31 Aug 2026
+
+The open item said fourteen `X || <literal>` fallbacks shadowing a `FIXED` key. A full
+audit found **55**, in three classes with different verdicts.
+
+```
+1. FALLBACK MATCHES THE CONSTANT      duplication, rule 6, drift risk only
+2. FALLBACK IS 0, FIXED HOLDS A VALUE looks alarming, mostly CORRECT
+3. KEY IS NOT IN FIXED                rule 7's dangerous case - 17 sites
+```
+
+**Class 2 is the one that would have been broken by a naive cleanup.** For
+`asReserveRMWh`, `asInertiaRkWyr` and `capacityPaymentRkWyr` the fallback of zero is the
+RIGHT default: South Africa prices no ancillary services and has no capacity market, so an
+unset value means unpriced. `FIXED` holds what those markets would pay IF they existed,
+which is a different question. Converting them to `?? FIXED.x` would have silently created
+revenue that does not exist.
+
+**Class 3 is rule 7's case and all seventeen check out** - every one is a genuine optional
+control with no `FIXED` entry (`newVrfbMW`, `newIronAirMW`, `exportCapMW` and similar)
+where zero is intended.
+
+### ONE WAS ACTUALLY WRONG
+
+`state.coalEAFPct || 0`, at two EXPORT sites - the build-optimiser summary row and the CSV
+header. Not dispatch. If the key were ever unset those stamped **"EAF 0%" on a run that
+used 65**, and a mislabelled export travels without the model attached to correct it.
+Fixed to `?? FIXED.coalEAFPct`; `demandGrowthPct` beside it keeps `|| 0` because it
+legitimately defaults to zero and has no `FIXED` entry.
+
+### THE VERDICT IS IN THE CODE, NOT JUST HERE
+
+The audit is written at the `FIXED` block. Fifty-five sites is too many to re-derive, and
+the next person to grep for `||` needs the reasoning at the point of use rather than in a
+document they may not open.
+
+### AND THE CHECK MATCHED ITS OWN DOCUMENTATION
+
+The pin for this greps for `coalEAFPct || 0` - and the audit note QUOTES that pattern while
+explaining it, so the first version failed on its own comment. Same trap as the backtick
+that broke the worker block this morning. **A check that greps source must exclude the
+prose about the source.** Now strips comment lines first; 14/14, and it fails on exactly
+the one fault when reintroduced.
 
 ---
 

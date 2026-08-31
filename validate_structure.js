@@ -313,6 +313,22 @@ const live = stripComments(src);
     check('FIXED reads IMPORTS_CF rather than restating it',
           /importsCF\s*:\s*IMPORTS_CF/.test(src),
           'FIXED.importsCF should be IMPORTS_CF, not a literal');
+    // No FIXED key may be read with `|| 0` in an EXPORT label. Audited 31 Aug 2026:
+    // `state.coalEAFPct || 0` sat in the build-optimiser summary and the CSV header, so
+    // an unset key would have stamped "EAF 0%" on a run that used 65. A mislabelled
+    // export travels without the model attached to correct it.
+    // Strip comment lines first. The audit note in the FIXED block QUOTES the faulty
+    // pattern while explaining it, and the first version of this check matched its own
+    // documentation - same trap as the backtick that broke the worker block on 31 Aug.
+    // A check that greps source must exclude the prose about the source.
+    const codeOnly = src.split('\n')
+      .filter(l => !/^\s*(\/\/|\*|\/\*)/.test(l))
+      .join('\n');
+    const eafLbl = (codeOnly.match(/coalEAFPct\s*\|\|\s*0/g) || []);
+    check('scenario labels do not fall back to zero availability',
+          eafLbl.length === 0,
+          eafLbl.length ? 'coalEAFPct || 0 found ' + eafLbl.length + ' times - use ?? FIXED.coalEAFPct' : '');
+
     const lits = (src.match(/importsCF\s*\?\?\s*[0-9.]+/g) || []);
     check('no numeric fallback duplicates the imports capacity factor',
           lits.length === 0,
