@@ -2551,12 +2551,23 @@ measured change, which is the only reason to re-pin.
 
 ### Model gaps the audited data exposed
 
-1. **OCGT runs at zero.** Eskom burned 1,079 GWh; the merit order never calls a peaker
-   at 65% EAF and today's demand. Eskom runs them for reserve, ramping and network
-   support — none of which the model prices. Reality is dirtier and dearer than the
-   model, and the gap will be worst in exactly the tight hours the adequacy work turns
-   on. Options: a minimum-run constraint, or pricing the services that actually call
-   them.
+1. **OCGT under-runs — DIAGNOSED 31 Aug 2026, and it is a structural cause, not a
+   parameter.** The model now runs 0.39 TWh against Eskom's 1.079 (it was 0.02 before the
+   coal capacity correction). Sweeping the availability factor shows NO FLAT VALUE
+   reproduces both peaking and unserved energy: matching OCGT needs ~62% EAF, which
+   overshoots unserved by ~1,000x; matching unserved needs 65%, which halves the peaking.
+
+   `coalAvail` is a FLAT DERATE — identical megawatts in all 8,760 hours. A real fleet
+   has the same mean with a distribution around it, so peakers cover bad weeks while good
+   weeks run surplus. **A flat derate conflates the mean with the distribution.**
+
+   THE FIX IS STOCHASTIC AVAILABILITY IN THE MAIN DISPATCH, and the engine already has
+   the machinery: `outVolPct` drives a 60-year Monte Carlo over outage paths in the RISK
+   PANEL. It is not wired to dispatch. Sequence: apply an outage path to `coalAvail`,
+   check OCGT and unserved move toward the audited pair together, then decide whether the
+   default run is one path or a mean of several — a single path makes every output
+   stochastic, which is a large change to how the tool behaves. Full evidence in
+   RESULTS.md.
 2. ~~Technical and other losses not modelled.~~ **I WAS WRONG — CHECKED 31 Aug 2026.**
    They are ALREADY inside the demand series. `profiles.json` states its basis:
    `demand = underlying(gross grid demand + est rooftop)`, which is Eskom's

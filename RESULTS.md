@@ -1528,12 +1528,34 @@ in this file.
 
 ### TWO GAPS THAT ARE REAL, NOT ROUNDING
 
-**OCGT: the model runs ZERO, Eskom ran 1,079 GWh.** At today's demand and a 65% energy
-availability factor the model never needs a peaker, because it dispatches on economics
-alone. Eskom runs them anyway - for reserve, ramping and network support, none of which
-the merit order prices. So the model UNDERSTATES peaking, and it will understate it
-worst in exactly the tight hours that matter. Note the direction: reality is dirtier and
-more expensive than the model, not cleaner.
+**OCGT: the model runs 0.39 TWh, Eskom ran 1.079.** Diagnosed 31 Aug 2026, and the cause
+is more interesting than "not tight enough". Sweeping the flat availability factor:
+
+```
+flat EAF   coal TWh   OCGT TWh   unserved GWh
+     65%      165.5       0.39            5.5
+     62%      164.6       1.16           41.9
+     60%      163.6       1.96          122.3
+     55%      158.8       5.48          619.5
+
+Eskom          165.4       1.08          0.036
+```
+
+**NO FLAT AVAILABILITY FACTOR REPRODUCES BOTH.** Matching Eskom's peaker energy needs
+about 62%, which overshoots unserved energy by roughly a THOUSAND times. Matching
+unserved needs 65% or better, which halves the peaking.
+
+The reason is that `coalAvail` is a FLAT DERATE - the same megawatts available in every
+one of 8,760 hours. A real fleet has the same MEAN and a distribution around it: peakers
+cover the bad weeks, and the good weeks have surplus. **A flat derate conflates the mean
+with the distribution, and cannot produce "runs peakers often, sheds almost never".**
+
+The engine already knows this. `outVolPct` drives a 60-year Monte Carlo over outage paths
+- but only in the RISK PANEL. The main dispatch sees a perfectly steady fleet.
+
+CONSEQUENCE: peaking cost and emissions are understated in the base case, and the
+understatement is worst in exactly the tight hours adequacy turns on. Direction matters -
+reality is dirtier and dearer than the model, not cleaner.
 
 **Imports: the model runs 8.6 TWh, Eskom reports 4,090 GWh.** More than double. The
 model's `importsMW` and its capacity factor need re-deriving against this table - and
