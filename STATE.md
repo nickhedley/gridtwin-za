@@ -3611,6 +3611,53 @@ expectation, spread, and share of draws affected - which is what the tooltip now
 
 ---
 
+## Draw count set by measurement, not assumption — 31 Aug 2026
+
+Asked what else was worth doing. The obvious candidate was my own claim that nine draws
+was thin. **Measured rather than asserted, and it was much worse than thin.**
+
+```
+cost                 54 ms per draw   (I had assumed ~250)
+standard error at  9 draws            75% of the mean
+standard error at 30 draws            41%
+EUE across sample sizes 3 to 48       wandered 0.74 to 2.10 GWh, no convergence
+sd 3.83 against mean 1.71             a heavy tail: most draws shed nothing, a few a lot
+```
+
+Nine was chosen for a speed cost that turned out to be eight times smaller than assumed.
+**Raised to 48**, about 2.6 s async, which brings the standard error to roughly a third
+of the mean.
+
+### THE LARGER SAMPLE FOUND A HEAVIER TAIL
+
+```
+                 9 draws        48 draws
+draws shedding      44%             65%
+worst draw     stage 3, 5.46   stage 4, 18.63 GWh
+EUE                1.27            1.71 +/- 0.55
+```
+
+Nine draws had not seen the tail at all. The worst case is more than three times larger
+than the sample suggested, which is exactly what a skewed distribution does to a small
+sample.
+
+### IT STILL DOES NOT CONVERGE, AND THE BOARD SAYS SO
+
+Closing the gap properly needs hundreds of draws. Rather than pretend, the tooltip now
+carries the STANDARD ERROR: "EUE 1.71 GWh, standard error +/- 0.55". A reader who sees
+that knows not to quote 1.71 to three figures.
+
+**That is the same correction as the two before it.** One draw was a point estimate. The
+median was a point estimate. The mean is also a point estimate - the difference is that it
+now arrives with its own uncertainty attached.
+
+### FOR CONTEXT
+
+Eskom's audited FY2026 outturn was 36 GWh. The worst of 48 draws is 18.63 GWh, so the
+model remains optimistic against what actually happened even at its tail.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

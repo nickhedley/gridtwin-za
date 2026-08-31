@@ -12446,6 +12446,8 @@ function applyAdequacyToBoard(){
     + `LOLE ${e.lole.toFixed(1)} hours/year, EUE ${e.eueGWh.toFixed(2)} GWh. `
     + `${Math.round(100*e.pShed)}% of draws shed something; worst draw reached stage `
     + `${e.worstStage} and ${e.hi.toFixed(2)} GWh. `
+    + `EUE standard error +/- ${e.seGWh.toFixed(2)} GWh - the distribution is tail-heavy, `
+    + `so treat the expectation as indicative rather than precise. `
     + `Expectations, not a median - half the draws being clean does not make the year clean.`;
   // Lamps show the WORST draw, matching their label ("max stage"), not the expectation.
   document.querySelectorAll('.lamp').forEach((l,i)=>l.classList.toggle('on', i < e.worstStage));
@@ -12461,7 +12463,22 @@ function applyAdequacyToBoard(){
   }
 }
 
-const ADEQ_N = 9;              // odd, so the median is a real draw rather than an average
+// DRAW COUNT, set from a convergence measurement on 31 Aug 2026 rather than guessed.
+// The first version used 9, chosen for speed on an assumed 250 ms per draw. Measured, a
+// draw costs 54 ms, and 9 was badly too few:
+//
+//     standard error at  9 draws   75% of the mean
+//     standard error at 30 draws   41%
+//     EUE across sample sizes      wandered 0.74 to 2.10 GWh, no convergence by 48
+//
+// The distribution is severely skewed - sd 3.83 against a mean 1.71 - because most draws
+// shed nothing and a few shed a lot. 48 draws costs about 2.6 s async, which is
+// affordable, and gets the standard error to roughly a third of the mean.
+//
+// IT DOES NOT CONVERGE FULLY, and pretending otherwise would be the same error as the
+// single draw. Closing the gap properly needs hundreds of draws; instead the board
+// REPORTS its own uncertainty, which is the honest response to a heavy tail.
+const ADEQ_N = 48;
 let adequacyEnsemble = null;   // {medUnservedGWh, medStage, medHours, lo, hi, n}
 let adeqToken = 0, adeqTimer = null;
 function scheduleAdequacy(){ clearTimeout(adeqTimer); adeqTimer = setTimeout(runAdequacy, 400); }
@@ -12475,7 +12492,7 @@ async function runAdequacy(){
     let hrs = 0;
     for (let h = 0; h < HOURS; h++) if (r.stack.unserved[h] > 1) hrs++;
     runs.push({ gwh: (r.E.unserved || 0) / 1000, stage: r.maxStage, hrs });
-    if (i % 3 === 2) await new Promise(res => setTimeout(res, 0));   // yield to the UI
+    if (i % 8 === 7) await new Promise(res => setTimeout(res, 0));   // yield to the UI
   }
   if (token !== adeqToken) return;
   // EXPECTATIONS, NOT MEDIANS. The first version of this reported the median and it
@@ -12498,6 +12515,13 @@ async function runAdequacy(){
     worstStage: Math.max(...runs.map(r => r.stage)),
     medStage: med(runs.map(r => r.stage)),
     lo: Math.min(...g), hi: Math.max(...g), n: ADEQ_N,
+    // Standard error of the mean. On a tail-heavy distribution this is large and saying
+    // so is the point - a reader who sees EUE 1.3 +/- 0.6 knows not to quote 1.3.
+    seGWh: (() => {
+      const m = mean(g);
+      const sd = Math.sqrt(g.reduce((a, b) => a + (b - m) * (b - m), 0) / Math.max(1, g.length - 1));
+      return sd / Math.sqrt(g.length);
+    })(),
   };
   if (typeof applyAdequacyToBoard === 'function') applyAdequacyToBoard();
 }
