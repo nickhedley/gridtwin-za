@@ -96,7 +96,8 @@ CHECKS = [
     # Adequacy ensemble. The board headline is the MEDIAN of 9 outage draws, not one
     # seeded draw - the shipped seed alone gave the worst of ten tested.
     ('adequacyEnsemble',                                           'adequacy ensemble'),
-    ('MEDIAN of ',                                                 'board states it is a median'),
+    ('LOLE ',                                                      'board reports LOLE'),
+    ('EUE ',                                                       'board reports expected unserved energy'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices
     # beside MIP energy with nothing saying so.

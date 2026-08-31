@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 867 checks
+suite                      19 harnesses, 868 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 867 checks. Last full run: 867/867.
+Nineteen harnesses, 868 checks. Last full run: 868/868.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           53/53
+python3 audit.py index.html           54/54
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -3559,6 +3559,55 @@ Operator based on forecast versus actual demand"*, so it IS generation-side load
 and curtailment. The distribution-level problem is **load reduction**, which Eskom reports
 separately and has eliminated in seven provinces. The comparison stands - but it was worth
 checking rather than repeating.
+
+---
+
+## The median was the wrong statistic — corrected the same hour, 31 Aug 2026
+
+Asked whether the median ensemble was a good-enough solve. **It was not, and the reason
+matters more than the fix.**
+
+```
+ten measured seeds, unserved GWh
+  0.00 0.00 0.00 0.00 0.00 0.57 1.49 2.09 2.64 5.46
+
+  median  0.28 GWh   <- what the board reported
+  MEAN    1.23 GWh   <- four times higher
+  5 of 10 draws shed something
+```
+
+**A board reading "Stable" off the median understated exactly as badly as the single draw
+overstated.** The median of a distribution with half its mass at zero is near zero, however
+bad the other half is - and adequacy is a TAIL question.
+
+### NOW ON THE STANDARD PLANNING METRICS
+
+Both are expectations, which is what a skewed distribution needs and what a planner
+recognises:
+
+```
+LOLE   loss of load expectation   expected HOURS short per year
+EUE    expected unserved energy   expected GWh short per year
+
+scenario       status         LOLE h/yr      EUE GWh   draws shedding   worst draw
+today          Tight hours          1.4         1.27         44%        stage 3, 5.46
+EAF 58         Constrained         94.0       119.29        100%        stage 6, 239.79
+crisis 2023    Stage 8          3,883.9    11,610.51        100%        stage 8, 13,089
+```
+
+Status keyed on LOLE with STATED thresholds so they can be argued with: under 1 hour a
+year is a system that does not shed, up to 24 is the criterion older South African
+planning has used, beyond 200 it is shedding. The lamps show the WORST draw, matching
+their own label, while the status and shed cell report expectations.
+
+**Today reads "Tight hours", LOLE 1.4 h/yr, EUE 1.27 GWh, 44% of draws shedding.** That is
+the honest description: not a system in crisis, not a system with nothing to watch.
+
+### THE LESSON, which is the third of its kind today
+
+One draw overstated. The median understated. Both were single numbers standing in for a
+distribution. The fix was not a better point estimate but reporting the DISTRIBUTION -
+expectation, spread, and share of draws affected - which is what the tooltip now carries.
 
 ---
 
