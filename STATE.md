@@ -2595,6 +2595,64 @@ measured change, which is the only reason to re-pin.
 
 ---
 
+## TO DO — what to take from Aurora Energy Research, 31 Aug 2026
+
+Studied 31 Aug. Opposite business model — they sell subscriptions and advisory, this is
+free and open — but the STRUCTURE is instructive.
+
+### THE ORGANISING INSIGHT: they segment by DECISION, not by data
+
+Aurora's entry points are Developers, Financial Sector, Utilities, Energy Consumers.
+Their offerings are Asset Siting, Portfolio Valuation, PPAs, Transaction Support. Not
+"here is our data" but "here is the decision you are making".
+
+GridTwin already splits System Planning from Project Planning, which is the same
+instinct. But the project side is a row of TOOLS rather than a framed decision, and the
+strongest developer-facing work of the past two days — merchant value, capture rates,
+hybrid uplift — is not presented as answering a developer's question even though it does.
+
+**1. RE-FRAME THE PROJECT PLANNING TAB AROUND THE ASSET LIFECYCLE.** Siting, valuation,
+PPA, connection. The existing tools map onto those almost one-to-one; this is labelling
+and grouping, not new modelling.
+
+**2. A "WHAT IS THIS FOR" LINE ON EACH TOOL.** One sentence naming the decision it
+supports. The panels now say `modelled` or name a source; they do not say what question
+they answer.
+
+### FLEXPLORER IS THE CLOSEST ANALOGUE TO SOMETHING HALF-BUILT HERE
+
+Their battery product benchmarks assets against peers and against their own indices
+across 40+ markets. The battery saturation curve, revenue split, locational panel and the
+new hybrid uplift are the components of exactly that for South Africa.
+
+Their published case study is "supporting landmark battery storage financing in a market
+WITHOUT CAPACITY PAYMENTS" — which is literally the ancillary finding in RESULTS.md.
+
+**3. ASSEMBLE THE BATTERY WORK INTO ONE VIEW.** It is currently four panels in three
+places. As a single storage-investment view it would be the most complete public analysis
+of South African battery revenue that exists.
+
+### WHAT NOT TO TAKE
+
+**Do not chase breadth.** 40 markets, hydrogen, subscription analytics — that is a
+hundred-person company. The advantage here is the opposite: ONE country modelled
+properly, openly, with the workings visible and the failures published. **Aurora cannot
+be checked by anyone outside Aurora.** That is the thing to lean into, not trade away.
+
+**Do not adopt "bankable" or similar.** Their word for credibility is a claim; the
+fitness-for-purpose section does the same job by showing its limits, which is stronger
+for a tool anyone can inspect.
+
+### AND THEY ARE A PLAUSIBLE READER, NOT ONLY A COMPETITOR
+
+**4. AURORA IS AN OUTREACH TARGET.** They have a named South Africa presence, and their
+2060 outlook — 88% renewables, >120 GW of new capacity — independently corroborated the
+no-gas frontier at 110-120 GW. Different method, different horizon, same order of
+magnitude. That corroboration is a reason for them to take an approach from this
+project seriously. Queue behind Seriti.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
