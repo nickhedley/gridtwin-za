@@ -50,8 +50,9 @@ sixty-six-fold. Levels moved with the recalibration, ratios did not.
 
 ### Tier 3 — single weather year, or dependent on the storage heuristic.
 
-**Removing gas is cost-neutral at ONE point on the frontier** - R285 bn/yr either way -
-but only there, and only if the connections existed.
+**Removing gas is cost-neutral at ONE point on the frontier** - R274 vs R277 bn/yr,
+identical at R1.32/kWh - but only there, and only if the connections existed. Re-verified
+31 Aug: levels fell 3-4% with the recalibration, ordering unchanged.
 → "The no-gas frontier"
 
 **Storage's ancillary market SHRINKS as renewables grow**, if curtailed plant may sell
@@ -334,10 +335,30 @@ no gas, 80W/40S                    120         0     101.8    288    25       1 
 no gas, 50W/80S                    130         0     112.5    287    29       2    318   1.51
 ```
 
+RE-RUN 31 Aug 2026 against the corrected constants, same scenarios:
+
+```
+scenario                        Total now   published   R/kWh now   published
+Seriti as published, 25 GW gas       274         285        1.32        1.37
+no gas, 50W/60S                      277         285        1.32        1.36
+no gas, 40W/80S                      291         297        1.38        1.41
+no gas, 60W/60S                      299         305        1.43        1.46
+no gas, 80W/40S                      308         315        1.49        1.51
+```
+
+**THE FINDING HOLDS.** Every level fell 3-4% with the recalibration, the ORDERING is
+unchanged, and 50W/60S remains the one no-gas build that matches the gas scenario -
+R277 bn against R274 bn, and identical at R1.32/kWh.
+
+ONE HONEST NUANCE: the sign flipped inside the noise. The published version had the
+no-gas build marginally CHEAPER (R1.36 against R1.37); it is now marginally DEARER in
+total (R277 against R274) and identical per kWh. A 1% gap either way is below what this
+model can resolve, so the claim is **cost-neutral**, not "cheaper" - which is how it
+should have been stated the first time.
+
 Removing GAS IS cost-neutral AT THE right BUILD. 50 GW wind with 60 GW solar and no
-gas at all costs R285 bn a year - the same as the 25 GW gas scenario, and marginally
-cheaper per kWh at R1.36 against R1.37. The trade is R88 bn more capex against R87 bn
-less fuel.
+gas at all costs about the same as the 25 GW gas scenario. The trade is roughly R90 bn
+more capex against R90 bn less fuel.
 
 But it is only cost-neutral at ONE point on the frontier. Every other no-gas build
 tested costs 4% to 12% more, and the wrong mix is expensive: 80 GW wind with 40 GW

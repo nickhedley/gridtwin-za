@@ -2,8 +2,9 @@
 
 ## Fitness for purpose - read this before quoting anything
 
-Written 30 Aug 2026. What this model can carry, what it cannot, and which published
-numbers depend on which. A reader deciding whether to cite GridTwin should start here.
+Written 30 Aug 2026, REVISED 31 Aug after a day of recalibration that moved several
+published levels. What this model can carry, what it cannot, and which published numbers
+depend on which. A reader deciding whether to cite GridTwin should start here.
 
 ### solid: the engineering identities
 
@@ -18,6 +19,9 @@ weather                    ten real years, bias correction confirmed from two in
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
                            not - the 1,823 MW solar gap - the validator refuses to go green
+adequacy                   reported as LOLE and expected unserved energy over 48 draws
+                           varying outage path and weather year, with the standard error
+                           stated - not a single draw
 ```
 
 ### defensible IN front OF A hostile reviewer
@@ -31,6 +35,9 @@ Findings grounded in data rather than in dispatch:
   capacity-weighted mean reproducing the existing R600 exactly.
 - **Wind versus solar capture asymmetry.** Solar cannibalises itself, wind does not. The
   mechanism - every solar plant produces in the same hours - is obvious once stated.
+  Re-verified 31 Aug: wind holds 96-107%, solar falls to 2.7%, four of five build points
+  reproducing within two points. Note the STARTING point moved - solar already earns 24%
+  below the market average today, where the earlier version showed near-parity.
 - **Iron-air does not solve a winter wind drought.** Survived a heuristic, an optimal LP,
   and a reserve-constrained LP. The strongest-tested result in the file.
 - **Coal flexibilisation worsens adequacy in a no-gas system**, ten years out of ten,
@@ -43,11 +50,29 @@ the 37% storage gap     Withdrawn 30 Aug 2026 - a price-taker accounting artefac
 rolling-horizon July    a comparison on a metric neither run optimises
 avgCost as a tariff     six of NERSA's thirteen price components are absent from it,
                         including legacy cost recovery and distribution charges
+
+SUPERSEDED 31 Aug 2026 by the constant corrections. All were measured on a model with
+coal capacity 5.8% too high, imports more than double reality, and availability three
+points optimistic - which together suppressed the evening scarcity South Africa prices.
+
+hybrid uplift rising    The curve is U-SHAPED: +130% today, +8% in 2030, +386% by 2035.
+                        "Storage becomes valuable later" is the wrong conclusion.
+solar capture ~98%      Solar earns 24% BELOW the market average today, not near parity.
+wind merchant R758      R977 at 2026, and it falls further - -67% not -59% at grid pace.
+battery knee 3.8 GW     ~2.5 GW. South Africa is already PAST it, not approaching it.
+any single-draw shed    Adequacy figures from one outage seed. The shipped seed alone
+                        gave the worst of ten tested. Quote LOLE and EUE with their
+                        standard error, never one draw.
 ```
 
 ### THE honest weak spot: storage dispatch
 
 The heuristic charges best-round-trip-first with no value function on state of charge.
+PARTLY ADDRESSED 31 Aug: pumped storage now carries a peak reservation, so it no longer
+empties before the annual peak - measured 0 to 2,331 MW at the peak hour, and 324 GWh
+less unserved in the 2023 crisis scenario. The CHARGING side, and the allocation between
+chemistries, are untouched and still need the LP.
+
 Which published results lean on it:
 
 ```
@@ -3824,6 +3849,50 @@ an equivalent check already existed twenty lines above. Removed, with a note in 
 
 **Rule 6 applies to harnesses as much as to constants.** Two checks of the same thing
 drift apart, and the weaker one starts passing while the reader assumes both still bind.
+
+---
+
+## Fitness-for-purpose revised, and the last price-based finding re-run — 31 Aug 2026
+
+The section at the top of this file tells a reader what may be quoted. After a day that
+moved several published levels, it described a model that no longer existed.
+
+### ADDED TO "DO NOT QUOTE"
+
+```
+hybrid uplift rising    the curve is U-SHAPED: +130% today, +8% in 2030, +386% by 2035
+solar capture ~98%      solar earns 24% BELOW the market average today, not near parity
+wind merchant R758      R977 at 2026, falling further: -67% not -59% at grid pace
+battery knee 3.8 GW     ~2.5 GW, and South Africa is already PAST it
+any single-draw shed    the shipped outage seed alone gave the worst of ten tested
+```
+
+All five were measured on constants that suppressed the evening scarcity South Africa
+actually prices. Adequacy moved into the "solid" block, since it is now reported as LOLE
+and EUE over 48 draws with a stated standard error rather than one draw. The storage weak
+spot was narrowed: pumped storage now carries a peak reservation, so the CHARGING side and
+the allocation between chemistries are what remain.
+
+### THE R285BN FRONTIER, THE LAST PRICE-BASED FINDING NOT RE-RUN
+
+```
+scenario                        Total now   published
+Seriti as published, 25 GW gas       274         285
+no gas, 50W/60S                      277         285
+no gas, 40W/80S                      291         297
+no gas, 60W/60S                      299         305
+no gas, 80W/40S                      308         315
+```
+
+**It holds.** Levels fell 3-4%, the ORDERING is unchanged, and 50W/60S remains the single
+no-gas build that matches the gas scenario - R277 bn against R274 bn, identical at
+R1.32/kWh.
+
+ONE NUANCE RECORDED RATHER THAN GLOSSED: the sign flipped inside the noise. The published
+version had no-gas marginally CHEAPER; it is now marginally DEARER in total and identical
+per kWh. A 1% gap either way is below what this model resolves, so the claim is
+**cost-neutral** - which is how it should have been worded originally rather than
+"marginally cheaper".
 
 ---
 
