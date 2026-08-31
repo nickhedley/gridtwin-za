@@ -86,6 +86,10 @@ CHECKS = [
     # Project-planning tools framed by DECISION rather than topic. Each tab carries the
     # question it answers, and the row is introduced as a project's lifecycle.
     ('These follow a project',                                     'project tools framed as a lifecycle'),
+    # Storage investment summary: the merchant-vs-attached comparison the separate
+    # battery panels never made.
+    ('storageSummary',                                             'storage investment summary'),
+    ('Merchant or attached',                                       'merchant vs co-located comparison'),
     ('one builder',                                                'Eskom Green floor-not-forecast caveat'),
 ]
 

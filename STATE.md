@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 852 checks
+suite                      18 harnesses, 854 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 852 checks. Last full run: 852/852.
+Eighteen harnesses, 854 checks. Last full run: 854/854.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           45/45
+python3 audit.py index.html           47/47
 node validate_benchmarks.js .        21/21
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -2664,9 +2664,15 @@ new hybrid uplift are the components of exactly that for South Africa.
 Their published case study is "supporting landmark battery storage financing in a market
 WITHOUT CAPACITY PAYMENTS" — which is literally the ancillary finding in RESULTS.md.
 
-**3. ASSEMBLE THE BATTERY WORK INTO ONE VIEW.** It is currently four panels in three
-places. As a single storage-investment view it would be the most complete public analysis
-of South African battery revenue that exists.
+**3. ~~Assemble the battery work into one view.~~ DONE 31 Aug 2026.** `storageSummary()`
+reuses `bessBenchmark`, `bessSaturationCurve` and `hybridUplift` rather than recomputing,
+so it cannot drift from the panels it summarises, and it surfaces the one comparison the
+separate panels never made: MERCHANT OR ATTACHED. The same 4-hour battery attached to a
+solar plant at half its capacity lifts that plant from R756 to R1,225/MWh.
+
+Wired into the existing battery panel rather than given its own, because that panel
+already opens with the question. `validate_structure`'s orphan check caught it as
+unwired first — correctly.
 
 ### WHAT NOT TO TAKE
 
@@ -2947,6 +2953,42 @@ real operator forecasts. And it does NOT fix the battery tiers — the long-dura
 allocation problem is untouched and still needs the LP.
 
 `audit.py` pins it (43 -> 44).
+
+---
+
+## A real bug in hybridUplift, found by bounding not by reading — 31 Aug 2026
+
+Assembling the storage summary produced a 74% co-location uplift at today's build against
+a price spread of R14/MWh. Inconsistent on its face, so I bounded it.
+
+**TEST: 100 MW plant, 50 MW / 200 MWh battery, 24 rising prices R400-R2,240.** The
+battery can move at most 200 MWh a day; across the day's R1,840 spread that caps the
+uplift at R153/MWh. The function returned **R199**.
+
+**THE FAULT:** the greedy tracked `soc`, which after each matched charge/discharge pair
+returned to exactly its starting value — `take*eff - give == 0` by construction — so the
+`(E - soc)` capacity cap NEVER BOUND and the battery cycled without limit within a day.
+
+Fixed with an explicit daily energy budget: `moved` accumulates charge energy and stops
+at one full cycle. Now R113 against the R153 bound.
+
+### WHAT THIS DOES AND DOES NOT AFFECT
+
+- **The capture-rate panel's hybrid column USED the faulty function.** Its figures have
+  moved and are now physically bounded.
+- **RESULTS.md's hybrid table did NOT** — that came from `hybrid.js`, the full-year
+  price-taker LP, which is a different implementation and correctly capacity-constrained.
+- **The greedy-vs-LP validation from 30 Aug is now STALE.** It was run before this fix
+  and before today's constant corrections (coal capacity, imports, availability, the
+  pumped-storage peak reservation). It should be re-run before the panel's numbers are
+  quoted.
+
+### THE LESSON
+
+The bug produced a plausible number. Nothing in the suite caught it, no review would have
+caught it, and I had already "validated" the function against an LP and recorded it as
+within 4.5%. **What caught it was asking what the asset can physically move and comparing
+the answer to that.** For any heuristic that trades energy, compute the bound first.
 
 ---
 

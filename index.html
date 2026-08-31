@@ -9735,16 +9735,28 @@ function hybridUplift(gen, price, plantMW, frac, hours){
     // an unprofitable cycle. Storing energy worth R700 to sell it at R700 destroys 12%
     // of it. The gate below is the same reservation-price logic the system storage work
     // arrived at: charge only if  sell price * efficiency > buy price.
-    let lo = 0, hi = byPrice.length - 1, soc = 0;
+    // `moved` is the ENERGY BUDGET for the day and is the fix for a real bug found
+    // 31 Aug 2026. The first version tracked `soc`, which after each matched pair
+    // returned to exactly its starting value - take*eff - give == 0 by construction - so
+    // the `(E - soc)` capacity cap NEVER BOUND and the battery cycled without limit
+    // within a day. On a 24-hour test with 100 MW of plant and a 50 MW / 200 MWh
+    // battery it delivered R199/MWh of uplift where 200 MWh across the day's R1,840
+    // spread caps the physical maximum at R153.
+    //
+    // Caught by bounding the answer against what the asset can physically move, not by
+    // reading the code. A heuristic that returns a plausible-looking number is exactly
+    // the kind that survives review.
+    let lo = 0, hi = byPrice.length - 1, moved = 0;
     while (lo < hi){
       const ch = byPrice[lo], dh = byPrice[hi];
       if (price[dh] * eff <= price[ch]){ break; }        // spread no longer pays
-      const room = Math.min(P - c[ch], gen[ch], (E - soc)/eff);
+      const room = Math.min(P - c[ch], gen[ch] - c[ch], (E - moved) / eff);
       if (room <= 1e-9){ lo++; continue; }
       const give = Math.min(P - d[dh], room * eff);
       if (give <= 1e-9){ hi--; continue; }
       const take = give / eff;
-      c[ch] += take; d[dh] += give; soc += take*eff - give;
+      c[ch] += take; d[dh] += give; moved += take;       // charge energy against the budget
+      if (moved >= E - 1e-9) break;                       // one full cycle a day, no more
       if (c[ch] >= P - 1e-9 || gen[ch] - c[ch] <= 1e-9) lo++;
       if (d[dh] >= P - 1e-9) hi--;
     }
@@ -9954,10 +9966,45 @@ function renderBessStack(r){
     + 'Comparators from Modo Energy\u2019s published benchmarks.</div>';
 }
 
+// ── STORAGE INVESTMENT SUMMARY ──────────────────────────────────────────────
+// Added 31 Aug 2026. The battery work was four panels in three places: a revenue
+// benchmark, a revenue split, a saturation curve and a locational view. Each answers
+// part of one question - IS A BATTERY WORTH BUILDING IN SOUTH AFRICA, AND WHERE - and
+// nobody reading one panel could see the others' answer.
+//
+// This RE-USES the existing functions rather than recomputing: bessBenchmark for
+// arbitrage, bessSaturationCurve for the ancillary saturation, and the hybrid uplift for
+// co-location. If any of those changes, this changes with it.
+//
+// The comparison that matters is not between durations - it is between a merchant
+// battery and the SAME battery attached to a plant. Those sit in different panels today
+// and the second is much the larger number at high penetration.
+function storageSummary(r){
+  if (!r || !r.marginalP) return null;
+  const p = r.marginalP;
+  const arb = [1, 2, 4].map(h => ({ h, ...bessBenchmark(p, h) }));
+  const best = arb.reduce((a, b) => b.revPerMW > a.revPerMW ? b : a);
+  const sat = (typeof bessSaturationCurve === 'function') ? bessSaturationCurve(r) : null;
+  // Co-located uplift on solar at half the plant's capacity, the same basis the
+  // capture-rate panel uses, so the two agree.
+  const pvCap = (FIXED.pvUtilityMW || 0) + (state.newPvMW || 0);
+  const hyb = (typeof hybridUplift === 'function' && r.stack && r.stack.pv)
+    ? hybridUplift(r.stack.pv, p, pvCap, 0.5, 4) : null;
+  return { arb, best, sat, hyb,
+    asPriced: !!(state.asReserveOn),
+    spread: (() => { const q = Array.from(p).sort((a,b)=>a-b);
+      return q[Math.floor(0.95*(q.length-1))] - q[Math.floor(0.5*(q.length-1))]; })() };
+}
+
 function renderBess(r){
   const host = document.getElementById('bessBody');
   if (!host || !r || !r.marginalP) return;
   const p = r.marginalP;
+  // The consolidated view. Assembled here rather than in a panel of its own because the
+  // question - is a battery worth building, and merchant or attached to a plant - is the
+  // one this panel already opens. Reuses bessBenchmark, bessSaturationCurve and
+  // hybridUplift, so it cannot drift from the panels it summarises.
+  const _sum = storageSummary(r);
   // p95-minus-median of the scenario's own prices: if this is tiny there is
   // genuinely no arbitrage available and the panel should say so rather than
   // reporting R0/MW with no explanation.
@@ -9969,7 +10016,13 @@ function renderBess(r){
   const k = v => 'R' + (v/1000).toFixed(0) + 'k';
 
   host.innerHTML =
-      '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-bottom:7px">Four-hour lithium-ion only, as the dominant technology and the one that arbitrages a daily price spread. Pumped storage, vanadium flow and iron-air have different durations and cycling patterns \u2013 iron-air in particular charges on surplus across days rather than within one \u2013 so this benchmark does not describe them.</div>' + '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
+      (_sum && _sum.hyb && _sum.hyb.bare > 0
+        ? '<div style="padding:7px 9px;margin-bottom:8px;background:var(--panel2);border-left:3px solid var(--ok,#4A8C5C);font-size:10px;line-height:1.5">'
+          + '<strong>Merchant or attached?</strong> The same 4-hour battery attached to a solar plant at half its capacity lifts that plant from R' + _sum.hyb.bare.toFixed(0) + ' to R'
+          + _sum.hyb.with.toFixed(0) + '/MWh, <strong>' + (_sum.hyb.pct>=0?'+':'') + _sum.hyb.pct.toFixed(0) + '&#37;</strong>. '
+          + 'That is the comparison the separate panels never make \u2013 and at a fuller pipeline it grows, because it is cannibalisation the battery is undoing.</div>'
+        : '')
+    + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-bottom:7px">Four-hour lithium-ion only, as the dominant technology and the one that arbitrages a daily price spread. Pumped storage, vanadium flow and iron-air have different durations and cycling patterns \u2013 iron-air in particular charges on surplus across days rather than within one \u2013 so this benchmark does not describe them.</div>' + '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
     + 'The results below show what a battery would have earned arbitraging this scenario\u2019s prices, '
     + 'per MW of power capacity. <strong>Shows arbitrage only</strong> \u2013 South Africa has no '
     + 'ancillary services or capacity market with published prices, so the streams worth roughly 40% '
