@@ -4036,6 +4036,49 @@ records what did not survive is not just more honest - it is the mechanism.
 
 ---
 
+## Two single-year artefacts caught before they went to an external company
+
+The Wind Pioneers differential test was first run on calendar 2023 alone and produced two
+striking claims. Both were in a drafted outreach note. **Neither survived ten years.**
+
+```
+CLAIMED  North West has the best wind-solar complementarity, -0.155.
+ACTUALLY Northern Cape is best at -0.180 mean. 2023 was North West's strongest year
+         and Northern Cape's weakest - the ranking inverted on one year's noise.
+
+CLAIMED  Hydra Central has the best wind in the country AND positive wind-solar
+         correlation. Best resource, worst place for a hybrid.
+ACTUALLY -0.004 mean across ten years, flipping sign. NEUTRAL, not bad. The 2023
+         value of +0.028 sat inside the year-to-year spread.
+```
+
+The second was the most quotable line in the draft, and it was a story built on one year.
+
+### WHAT SURVIVED IS STRONGER
+
+```
+Northern Cape   night-peaking 10/10, 25-40% day-night swing, best complementarity
+                in the country at -0.180, negative in every year
+Eastern Cape    day-peaking 10/10
+Western Cape    MIXED - flips by year, so their claim does not hold and a single-year
+                study finds either answer
+```
+
+Wind Pioneers' Northern Cape observation is right and UNDERSTATED. Their Western Cape one
+does not replicate. The finding moves from Tier 3 to **Tier 2** - ten weather years.
+
+### THE LESSON
+
+The ten-year file already existed and the first run simply had not used it. Nothing failed;
+the single-year numbers were correct for their year. **What made them wrong was presenting
+a one-year ranking as a property of the regions.**
+
+That is the same fault as the outage seed, the median, and the lamps: a single draw
+standing in for a distribution. The difference here is that it was about to leave the
+building with someone's name on it.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

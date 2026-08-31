@@ -48,11 +48,11 @@ exactly (119,225 both ways). The EPP submission described a fiftyfold spread; it
 sixty-six-fold. Levels moved with the recalibration, ratios did not.
 → "Locational transmission signal"
 
-**Northern Cape wind peaks at NIGHT; Eastern Cape and Hydra Central by DAY.** A 25% swing
-between day and night in the Northern Cape. Independently confirms two of three published
-Wind Pioneers observations; Western Cape is flat rather than day-peaking. Adds that Hydra
-Central has the best wind in the country AND the worst wind-solar correlation, so it is
-the wrong place for a hybrid.
+**Northern Cape wind peaks at NIGHT in every one of ten weather years**, with a 25-40%
+day-night swing, and has the best wind-solar complementarity in the country at -0.180.
+Independently confirms two of three published Wind Pioneers observations on a different
+dataset. Western Cape does NOT hold - it flips by year, so a single-year study finds
+either answer.
 → "Wind Pioneers' diurnal observation"
 
 ### Tier 3 — single weather year, or dependent on the storage heuristic.
@@ -1761,53 +1761,71 @@ calls it tight, that is where it will show.
 
 ---
 
-## Wind Pioneers' diurnal observation, tested independently
+## Wind Pioneers' diurnal observation, tested across ten weather years
 
 Wind Pioneers published a South African prospecting study in Aug 2026 arguing that wind
 prospecting should answer "is the wind right for our project?" rather than "where is the
-wind?" - because two sites with equal mean speed can generate at very different hours.
-Their stated observation: Western and Eastern Cape peak in DAYTIME, Northern Cape at NIGHT.
+wind?" - two sites with equal mean speed can generate at very different hours. Their
+stated observation: Western and Eastern Cape peak in DAYTIME, Northern Cape at NIGHT.
 
 Tested on GridTwin's regional profiles - MERRA-2 via Renewables.ninja, Vestas V90 at 80 m,
-capacity-weighted to actual plant locations. Different derivation from theirs.
+capacity-weighted to actual plant locations. A different derivation from theirs.
+
+FIRST RUN WAS SINGLE-YEAR AND TWO OF ITS CONCLUSIONS DID NOT SURVIVE THE TEN-YEAR TEST.
+Both are recorded below, because the difference is the point.
 
 ```
-region           wind CF   peak SAST   day/mean   night/mean   verdict
-Northern Cape      0.379       21:00      0.889        1.110   NIGHT - confirms
-Eastern Cape       0.367       18:00      1.044        0.929   DAY - confirms
-Western Cape       0.365       20:00      1.003        0.991   FLAT - does not
-Hydra Central      0.425       14:00      1.058        0.950   strongly DAY
-North West         0.332       05:00      0.818        1.173   strongly NIGHT
+region           wind CF   day/mean       night/mean      holds across 10 yrs
+Northern Cape      0.379   0.829-0.889    1.110-1.162     NIGHT, 10/10
+North West         0.332   0.790-0.900    1.092-1.194     NIGHT, 10/10
+Free State         0.268   0.892-1.004    1.020-1.139     NIGHT, 10/10
+Eastern Cape       0.367   0.989-1.057    0.896-0.966     DAY,   10/10
+Western Cape       0.365   0.950-1.032    0.967-1.031     MIXED - flips by year
+Hydra Central      0.425   0.997-1.059    0.950-1.005     MIXED - flips by year
 ```
 
 day = 08-17 SAST, night = 20-05 SAST, each against that region's own mean.
 
-**TWO OF THEIR THREE REPLICATE, AND THE NORTHERN CAPE ONE IS STRONG** - a 25% swing
-between day and night. Western Cape does not: it is flat to within 1%, not day-peaking.
+**THEIR NORTHERN CAPE CLAIM IS RIGHT AND STRONGER THAN THEY STATED** - night-peaking in
+every one of ten years, with a 25-40% day-night swing. Eastern Cape day-peaking also holds
+10/10. **Western Cape does NOT**: it flips between day and night across years, so a
+single-year study can find either.
 
-### THEIR HYBRID CLAIM ALSO HOLDS, AND WE CAN ADD TO IT
+### THE HYBRID CASE, ALSO TEN YEARS
 
-They argue Northern Cape suits wind-plus-solar hybrids because night wind complements day
-solar, reducing the battery needed. Measured as the hourly correlation between wind and
-solar within each region:
+Hourly wind-solar correlation within each region. Negative means they complement.
 
 ```
-region           corr    hours below 10% of nameplate, 50/50 mix   wind alone
-North West     -0.155                     1,736                       2,337
-Northern Cape  -0.103                     1,434                       1,844
-Free State     -0.054                     2,439                       3,095
-Western Cape    0.011                     1,817                       2,074
-Eastern Cape    0.028                     2,161                       2,219
-Hydra Central   0.082                     1,483                       1,608
+region           min      max      mean     holds
+Northern Cape   -0.233   -0.149   -0.180    negative 10/10   <- best in the country
+North West      -0.176   -0.099   -0.144    negative 10/10
+Western Cape    -0.104   -0.025   -0.062    negative 10/10
+Free State      -0.092   -0.015   -0.054    negative 10/10
+Eastern Cape    -0.031    0.013   -0.007    MIXED
+Hydra Central   -0.047    0.037   -0.004    MIXED
 ```
 
-Northern Cape confirms: a 50/50 mix cuts near-zero hours by 22% against wind alone.
+**Their Northern Cape hybrid argument is correct and it is the best case in South Africa** -
+the strongest complementarity of any region, in every year tested.
 
-**TWO THINGS THEY DID NOT SAY.** North West has the BEST complementarity at -0.155 despite
-mediocre wind - the strongest hybrid case in the country on this measure. And **Hydra
-Central, which has the BEST wind resource at 0.425, has POSITIVE wind-solar correlation**
-and is therefore the worst place to build a hybrid. Best wind and worst hybrid, in the
-same supply area.
+### TWO SINGLE-YEAR CONCLUSIONS THAT DID NOT SURVIVE
+
+On calendar 2023 alone the first run produced two striking claims. Neither holds:
+
+```
+CLAIMED  North West has the best complementarity, at -0.155.
+ACTUALLY Northern Cape is best at -0.180 mean. 2023 happened to be North West's
+         strongest year and Northern Cape's weakest.
+
+CLAIMED  Hydra Central has the best wind AND positive wind-solar correlation - best
+         wind in the country, worst place for a hybrid.
+ACTUALLY Hydra Central averages -0.004 across ten years and flips sign. It is NEUTRAL
+         for hybrids, not bad. The 2023 value of +0.028 was inside the year-to-year
+         spread, and "best wind, worst hybrid" was a story built on one year.
+```
+
+**The second was about to be sent to an external company.** It was caught by running the
+ten-year file that already existed - the same file the single-year run had not used.
 
 ### THE DIMENSION MISSING FROM THE FRAMING
 
@@ -1816,6 +1834,6 @@ headroom data the binding constraint is neither: **the four best-wind regions ho
 existing wind and 7.3% of the national room to add more, and Northern Cape and Hydra
 Central - the two best resources here - are at ZERO headroom for every technology.**
 
-A perfect diurnal match at a site with no connection is not a project. That is the
-complement to their work rather than a criticism of it: they answer whether the wind fits
-the offtaker, and the unanswered question is whether the grid will take it.
+A perfect diurnal match at a site with no connection is not a project. That complements
+their work rather than criticising it: they answer whether the wind fits the offtaker, and
+the unanswered question is whether the grid will take it.
