@@ -2208,6 +2208,35 @@ Two `audit.py` checks pin the tab switch and the default view (38 -> 40).
 
 ---
 
+## NERSA panel: two sources that conflicted — 30 Aug 2026
+
+The panel header said "Source: NERSA media statements" for everything, while the footer
+credited "SAPVIA NERSA Dashboard". A reader could not tell which applied to what, and one
+of them had to be wrong.
+
+**BOTH WERE RIGHT, FOR DIFFERENT SCOPES.** `nersa_registrations.json` settles it: its
+`meta.source` is SAPVIA and its description names the SAPVIA NERSA Registered Plants
+Dashboard, while the quarterly figures in `meta.note` come from NERSA's own media
+statement. Cumulative and quarterly are different series from different places.
+
+Fixed by labelling each at the point it appears rather than making one claim for the
+panel:
+
+```
+header      no source claim at all - it covers both views
+cumulative  "Cumulative: SAPVIA NERSA Registered Plants Dashboard"
+quarter     "Source: NERSA media statement."
+```
+
+A THIRD reference was found in the About source register, which credited only NERSA media
+statements for the whole dataset. Corrected there too, and `SOURCES.md` now carries them
+as two rows rather than one — different cadence, different scope.
+
+THE PATTERN: an attribution that covers a panel rather than a figure will eventually
+cover something it did not come from. Attribute at the point of use.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

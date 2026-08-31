@@ -20,7 +20,8 @@ superseded queue entries. Never add the delta. See RULES.md.
 | PVGIS SARAH2 v5.2 | static | 739-point grid, 0.5 deg | `sa_solar_grid.json` - orphan, unused |
 | CSIR least-cost study (PLEXOS) | occasional | as cited in `validate_external.js` | external comparison, 2030 coal share |
 | Eskom weekly system status | weekly | drift detector only | `validate_capacity.js` |
-| NERSA registrations | rolling | as at last ingest | `nersa_registrations.json` |
+| SAPVIA NERSA Registered Plants Dashboard | rolling | Q1 2026/27, as at 24 Aug 2026 | `nersa_registrations.json` — the CUMULATIVE series |
+| NERSA media statements | quarterly | Q1 2026/27 | the QUARTERLY figures in the same file — a different source for a different scope |
 | DFFE REEA | rolling | 2,597 authorisations | `reea_projects.json` - permits, not commissioning |
 | DFFE REEA, grid-language subset | derived | 161 of 2,597 | `private_grid_candidates.json` - candidate private grid assets |
 | Eskom TDP | annual | 2025-2034 edition | `tdp_projects.json`; also underpins the storage and transmission capex constants |

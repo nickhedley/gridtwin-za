@@ -662,7 +662,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
           <div style="padding:0 14px 12px">
             <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
-              Private &amp; embedded generation registered. Source: NERSA media statements. Includes all technologies.
+              Private &amp; embedded generation registered, all technologies.
             </p>
             <div id="nersaBody" style="overflow:hidden;width:100%;box-sizing:border-box"></div>
           </div>
@@ -3717,7 +3717,8 @@ function printPrefeas() {
       NTCSA Grid Connection Capacity Assessment 2025 and transmission shapefiles (corridors, substations, headroom) &middot;
       <a href="https://github.com/PyPSA/pypsa-za" target="_blank" rel="noopener" style="color:inherit">PyPSA-RSA</a>
       (per-unit fleet parameters: minimum stable levels, up/down times, start-up costs) &middot;
-      NERSA media statements (private and embedded generation registrations) &middot;
+      SAPVIA NERSA Registered Plants Dashboard (cumulative private and embedded generation)
+      and NERSA media statements (the quarterly figures) &middot;
       DMRE / IPP Office (REIPPPP project pipeline) &middot;
       <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:inherit">Open-Meteo ERA5</a>
       and PVGIS (solar resource) &middot; NASA MERRA-2 (wind profiles) &middot;
@@ -11694,6 +11695,13 @@ fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r=>r.js
         + (big ? ' \u2013 <strong>'+big.tech+' took '+(100*big.mw/q.total_mw).toFixed(0)
                  + '&#37; of the capacity from '+big.facilities+' of '+q.facilities+' projects</strong>' : '')
         + '. R'+q.investment_bn+'bn invested, R'+q.avg_cost_r_per_kw.toLocaleString()+'/kW average.'
+        // TWO SOURCES, TWO SCOPES - they conflicted until 30 Aug 2026. The panel header
+        // claimed NERSA media statements for everything while the footer credited the
+        // SAPVIA dashboard, and a reader could not tell which applied to what. Per the
+        // data file's own meta: the CUMULATIVE series is SAPVIA's dashboard, the
+        // QUARTERLY figures come from NERSA's media statement. Each is now labelled at
+        // the point it appears, and the header claims neither.
+        + ' <span style="opacity:.75">Source: NERSA media statement.</span>'
         + '</div></div>';
     }
     html += '<div id="nersaCum">';
@@ -11716,7 +11724,7 @@ fetch('nodal/nersa_registrations.json?v=' + (window.DATA_V || '7')).then(r=>r.js
         </div>
         <span style="text-align:right;font-size:10px;white-space:nowrap">${(v.total_mw/1000).toFixed(1)}GW</span></div>`;
     });
-    html+=`<div style="margin-top:6px;font-size:9px;color:var(--ink2)"><span style="display:inline-block;width:8px;height:8px;background:#F5C518;border-radius:1px;margin-right:3px"></span>Solar &nbsp;<span style="display:inline-block;width:8px;height:8px;background:#3EA055;border-radius:1px;margin-right:3px"></span>Wind &nbsp;Source: SAPVIA NERSA Dashboard</div>`;
+    html+=`<div style="margin-top:6px;font-size:9px;color:var(--ink2)"><span style="display:inline-block;width:8px;height:8px;background:#F5C518;border-radius:1px;margin-right:3px"></span>Solar &nbsp;<span style="display:inline-block;width:8px;height:8px;background:#3EA055;border-radius:1px;margin-right:3px"></span>Wind &nbsp;Cumulative: SAPVIA NERSA Registered Plants Dashboard</div>`;
     html+='</div>';   // close #nersaCum
     body.innerHTML=html;
     return;
