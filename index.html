@@ -440,7 +440,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="main2" style="align-items:start">
       <div>
           <div class="panel" aria-label="Weekly dispatch">
-          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2>
+          <div class="ph"><h2>Hourly dispatch <span id="nodalDispatchBadge" style="display:none;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:400;background:#517180;color:#fff;padding:1px 6px;border-radius:2px;vertical-align:middle;margin-left:4px">NODAL</span></h2><span class="tag">modelled</span>
             <div style="display:flex;align-items:center;gap:10px">
               <div class="wkbtns">
                 <button id="wkW" class="active">Winter week</button>
@@ -458,17 +458,17 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
 
           <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Annual electricity mix</h2><span class="tag" id="mixTotal"></span></div>
+          <div class="ph"><h2>Annual electricity mix</h2><span class="tag">modelled</span><span class="tag" id="mixTotal"></span></div>
           <div class="pb" id="mix"></div>
         </div>
 
           <div id="nav-results" class="panel">
-  <div class="ph"><h2>System adequacy</h2><span class="tag">reserve margin &middot; LOLE &middot; EUE</span></div>
+  <div class="ph"><h2>System adequacy</h2><span class="tag">modelled &middot; reserve margin &middot; LOLE &middot; EUE</span></div>
   <div class="pb" id="adequacyBody" style="padding:12px 14px"><p style="font-size:11px;color:var(--ink2);margin:0">Run the model to compute adequacy statistics.</p></div>
 </div>
 
           <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Load-shedding risk</h2><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
+          <div class="ph"><h2>Load-shedding risk</h2><span class="tag">modelled</span><span class="tag" id="riskTag">60 outage-years</span><span class="tag" id="riskEngineTag" style="margin-left:6px;background:var(--ink2);color:#fff;font-size:10px;opacity:0.75;letter-spacing:0.02em">National engine</span></div>
             <div class="pb">
               <div class="riskhead" id="riskHead"></div>
               <div class="shedbars" id="shed"></div>
@@ -478,12 +478,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Carbon budget</h2><span class="tag">vs South Africa&rsquo;s NDC</span></div>
+            <div class="ph"><h2>Carbon budget</h2><span class="tag">modelled &middot; vs South Africa&rsquo;s NDC</span></div>
             <div class="pb" id="carbonBudget"></div>
           </div>
 
           <div class="panel mapbox" id="nav-network">
-        <div class="ph"><h2>Network Schematic</h2><span class="tag">400 kV corridors · node size = avg output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><!-- The 3D map lives at gridtwin-3d/index.html, NOT gridtwin-3d.html. Link to the
+        <div class="ph"><h2>Network Schematic</h2><span class="tag">Eskom TDP &amp; SAPP corridors · node size = modelled output</span><button id="pipelineToggle" onclick="togglePipeline()" class="hbtn active" style="margin-left:8px">Show REIPPPP project pipeline</button><!-- The 3D map lives at gridtwin-3d/index.html, NOT gridtwin-3d.html. Link to the
              DIRECTORY with a trailing slash: without it some servers redirect and some 404.
              The subfolder is also why that page fetches /nodal/... ABSOLUTE while this one
              uses relative nodal/... - a page one level down resolving nodal/ relatively
@@ -514,7 +514,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
 
           <div id="nav-wheretobuild" class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
-          <div class="ph"><h2>Where To Build</h2><span class="tag">nodal prototype · indicative</span></div>
+          <div class="ph"><h2>Where To Build</h2><span class="tag">NTCSA GCCA headroom · nodal prototype · indicative</span></div>
           <div class="pb">
             <p style="font-size:11.5px; color:var(--ink2); margin-bottom:12px; line-height:1.45">Pick a region and technology. Spare headroom on today&rsquo;s network is free; beyond it you see the corridor-specific grid-build charge needed to unlock capacity.</p>
             <p style="font-size:11px; color:var(--ink2); margin-bottom:12px; line-height:1.4">The instant engine is single-node: nodes grow with the national total regardless of siting. Only the dot and its own bump reflect your choice. Siting IS read by virtual power plants, Run the full model, and the capture-rate and curtailment panels.</p>
@@ -654,12 +654,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
 
           <div class="panel" id="provMixPanel" style="margin-top:18px">
-          <div class="ph"><h2>Provincial electricity mix</h2></div>
+          <div class="ph"><h2>Provincial electricity mix</h2><span class="tag">modelled</span></div>
           <div class="pb" id="provMixBody"></div>
           </div>
 
           <div class="panel" id="nersaPanel" style="margin-top:18px;display:none"><span id="nav-pipeline" style="display:block;height:0"></span>
-          <div class="ph"><h2>NERSA new project registrations</h2></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
+          <div class="ph"><h2>NERSA new project registrations</h2><span class="tag">SAPVIA &amp; NERSA</span></div><p id="nersaTag" style="font-size:10.5px;color:var(--ink2);margin:0 0 6px;font-weight:600;padding:8px 14px 0"></p>
           <div style="padding:0 14px 12px">
             <p style="font-size:11px;color:var(--ink2);margin:0 0 8px">
               Private &amp; embedded generation registered, all technologies.
@@ -669,7 +669,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Grid queue pressure</h2><span class="tag">pipeline vs headroom</span></div>
+            <div class="ph"><h2>Grid queue pressure</h2><span class="tag">SAPVIA &amp; NTCSA GCCA &middot; pipeline vs headroom</span></div>
             <div class="pb" id="queueBody"></div>
           </div>
 
@@ -679,7 +679,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
-          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">R/kWh · full lifecycle build cost</span></div>
+          <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">sourced constants &middot; see About &middot; R/kWh · full lifecycle build cost</span></div>
           <div class="pb" id="lcoe"></div>
         </div>
 
@@ -771,12 +771,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 </div>
       <div>
           <div id="nav-prices" class="panel" style="">
-            <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">what a market would clear at</span></div>
+            <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">modelled &middot; what a market would clear at</span></div>
             <div class="pb" id="priceBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Price-setting technology by hour</h2>
+            <div class="ph"><h2>Price-setting technology by hour</h2><span class="tag">modelled</span>
               <div class="wkbtns">
                 <button id="spW" class="active">Winter week</button>
                 <button id="spS">Summer week</button>
@@ -792,7 +792,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div id="nav-curtforecast" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Curtailment forecast</h2>
+            <div class="ph"><h2>Curtailment forecast</h2><span class="tag">modelled</span>
               <span class="tag">what happens as the queue builds</span></div>
             <div class="pb">
               <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
@@ -831,43 +831,43 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capture price forecast</h2><span class="tag">PPA value to 2030</span></div>
+            <div class="ph"><h2>Capture price forecast</h2><span class="tag">modelled &middot; PPA value to 2030</span></div>
             <div class="pb" id="capFcBody"></div>
           </div>
 
           <div id="nav-capture" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capture rate by region</h2><span class="tag">what a project earns vs the average MWh</span></div>
+            <div class="ph"><h2>Capture rate by region</h2><span class="tag">modelled &middot; what a project earns vs the average MWh</span></div>
             <div class="pb" id="captureBody"></div>
           </div>
 
           <div id="nav-cappay" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Capacity payments</h2>
+            <div class="ph"><h2>Capacity payments</h2><span class="tag">modelled</span>
               <span class="tag">what firm capacity earns for existing</span></div>
             <div class="pb" id="capPayBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Battery revenue benchmark</h2><span class="tag">lithium-ion 4h &middot; what a BESS would earn</span></div>
+            <div class="ph"><h2>Battery revenue benchmark</h2><span class="tag">modelled &middot; lithium-ion 4h &middot; what a BESS would earn</span></div>
             <div class="pb" id="bessBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Battery revenue split</h2><span class="tag">lithium-ion 4h &middot; arbitrage vs ancillary vs capacity</span></div>
+            <div class="ph"><h2>Battery revenue split</h2><span class="tag">modelled &middot; lithium-ion 4h &middot; arbitrage vs ancillary vs capacity</span></div>
             <div class="pb" id="bessStackBody"></div>
           </div>
 
           <div class="panel" id="capCurvePanel" style="margin-top:18px">
-          <div class="ph"><h2>Capture rate as the pipeline fills</h2><span class="tag">cannibalisation &middot; wind vs solar</span></div>
+          <div class="ph"><h2>Capture rate as the pipeline fills</h2><span class="tag">modelled &middot; cannibalisation &middot; wind vs solar</span></div>
           <div class="pb" id="capCurveBody"></div>
           </div>
 
           <div class="panel" id="bessSatPanel" style="margin-top:18px">
-          <div class="ph"><h2>What happens as the fleet grows</h2><span class="tag">revenue per MW</span></div>
+          <div class="ph"><h2>What happens as the fleet grows</h2><span class="tag">modelled &middot; revenue per MW</span></div>
           <div class="pb" id="bessSatBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Where a battery earns most</h2><span class="tag">lithium-ion 4h &middot; nodal &middot; needs full model run</span></div>
+            <div class="ph"><h2>Where a battery earns most</h2><span class="tag">modelled &middot; lithium-ion 4h &middot; nodal &middot; needs full model run</span></div>
             <div class="pb" id="bessLocBody"></div>
           </div>
 

@@ -6,7 +6,7 @@ CHECKS = [
     # Text changes that have historically reverted
     # Old separate nodal-only banner retired when nodal + MIP merged into one optimiser; see below.
     ('the dispatch chart are the optimal network-aware solution',   'MIP banner text (layout-agnostic)'),
-    ('node size = avg output',                                     'node size label'),
+    ('node size = modelled output',                                     'node size label'),
     ('Show REIPPPP project pipeline',                              'REIPPPP button text'),
     ('Click on each for region-specific',                          'click on each (was Hover)'),
     ('Ring size scales with capacity',                            'pipeline rings: size means capacity'),
@@ -73,6 +73,10 @@ CHECKS = [
     # quarter the default and buried the 20.1 GW figure people come for.
     ('nersaView',                                                  'NERSA panel tab switch'),
     ('Total pipeline<',                                            'NERSA total is the default tab'),
+    # Every panel must declare whether its numbers are MODELLED or SOURCED. Added after
+    # an attribution audit found panels titled "Curtailment forecast" and "Capacity
+    # payments" with no indication either way — they read as observations.
+    ('>modelled',                                                  'panels marked as model output'),
 ]
 
 path = sys.argv[1] if len(sys.argv) > 1 else '/mnt/user-data/outputs/index.html'

@@ -13,7 +13,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      18 harnesses, 846 checks
+suite                      18 harnesses, 847 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -223,7 +223,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Eighteen harnesses, 846 checks. Last full run: 846/846.
+Eighteen harnesses, 847 checks. Last full run: 847/847.
 
 ```
 node stress_suite.js                290/290
@@ -231,7 +231,7 @@ node validate_invariants.js .       149/149
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           40/40
+python3 audit.py index.html           41/41
 node validate_benchmarks.js .         18/18
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .                39/39   SA boundary clamp, added 30 Aug
@@ -2270,6 +2270,40 @@ that produced a plausible figure would have been believed.
 
 `validate_docs.py`, written this morning, caught the resulting stale fingerprints
 immediately.
+
+---
+
+## Attribution audit — 31 Aug 2026
+
+Prompted by the NERSA panel, where two source lines conflicted. Checked all 29 panels.
+
+### THE CONFLICT WAS THE ONLY ONE — but it hid a bigger gap
+
+The twelve existing source attributions are all correctly scoped. One is already a
+correct COMBINED attribution: the grid-queue panel names SAPVIA for registrations and
+NTCSA for headroom, which is right because it plots two series from two places.
+
+**The real problem was panels with NO indication of what kind of number they show.**
+"Curtailment forecast", "Capacity payments", "Capture price forecast", "Battery revenue
+benchmark" — all read as observations, and all are model output.
+
+### ONE CONVENTION: modelled or sourced, on every panel
+
+```
+17 panels now tagged "modelled"    numbers out of the engine
+ 5 name their external source      Eskom TDP, NTCSA GCCA, SAPVIA, DFFE
+```
+
+Two data panels gained an attribution they never had: the Network Schematic (Eskom TDP
+and SAPP corridors) and Where To Build (NTCSA GCCA headroom).
+
+**THE DISTINCTION MATTERS MORE THAN THE SOURCE.** A reader who mistakes a modelled
+capture price for an observed one will quote it as fact. `audit.py` now pins the
+convention (40 -> 41).
+
+`audit.py` also caught the Network Schematic edit mid-change: it pinned "node size = avg
+output" and I had written "modelled output". Correct behaviour — that phrase is a claim
+about what the node size MEANS, not decoration.
 
 ---
 
