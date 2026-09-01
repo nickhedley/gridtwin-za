@@ -36,22 +36,45 @@ Still open on these:
 
 ## Hard deadlines
 
+EVERY ENTRY MUST NAME ITS SOURCE. Added 1 Sep 2026 after an entry reading "ERTSA written
+comments, ~7 Sep, indicative - confirm the date" was carried unverified and a 900-word
+submission drafted against it. There was no open ERTSA process: NERSA decided the 2026/27
+application on 5 March 2026. An unsourced date is a guess wearing a deadline's clothes.
+
 ```
-~7 Sep 2026    NEAREST DATE - about a week out as at 31 Aug, and INDICATIVE rather
-               than fixed. Eskom Retail Tariff Structural Adjustment (ERTSA), written
-               comments. Public hearing 8 Oct 2026. Not previously tracked; it is a
-               RETAIL tariff structure matter, so it bears on how the wholesale work
-               reaches customers rather than on the model directly. Confirm the date -
-               the dashboard marks it indicative.
+8 Sep 2026     NEAREST DATE, and the only one open for comment. NERSA DRAFT MARKET
+               INQUIRY into fixed charges and generation capacity charges applied by
+               electricity distributors. Written submissions to
+               electricity.marketinquiry@nersa.org.za by 8 Sep, extended from 27 Jul.
+               NERSA asks specifically for comment on the methodology and approach,
+               and on the evidence and analysis in the draft report.
+
+               DIRECTLY RELEVANT: a generation capacity charge is levied on peak
+               DEMAND, and our dispatch evidence says peak demand and system SCARCITY
+               fall in different seasons here. Read the draft report before drafting.
+
+~7 Sep 2026    ~~ERTSA written comments.~~ WRONG, corrected 1 Sep 2026. There is no
+               open ERTSA process. NERSA decided Eskom's 2026/27 ERTSA application on
+               5 MARCH 2026; tariffs took effect 1 April for direct customers and
+               1 July for municipalities. That consultation closed in February.
+
+               The entry was carried as "indicative - confirm the date" and I drafted
+               a 900-word submission against it without confirming. The draft is kept
+               as `ertsa_submission_draft.md` because the ANALYSIS holds; the process
+               it names does not exist.
 
 10 Sep 2026    Eskom Regulating Clearing Account (RCA) FY2024/25, public hearing.
                Written comments closed 14 Aug 2026, so this is attendance only.
+               UNVERIFIED - carried from an earlier session without a cited source.
+               Confirm against NERSA's site before relying on it.
 
-10 Sep 2026    NEAREST ACTIONABLE DATE - ten days out as at 31 Aug.
-               NERSA public hearing on seriti green energy's trading licence
-               application. Different matter, same regulator, and Seriti is already
-               an outreach target. Registration to make oral representations closed
-               28 Aug; attendance may still be possible. Livestreamed.
+10 Sep 2026    VERIFIED 1 Sep 2026. NERSA public hearing on Seriti Green Energy's
+               electricity trading licence application, for proposed trading
+               operations in Mpumalanga where Eskom is the distributor. VIRTUAL, on
+               Microsoft Teams, 13:30 to 16:30. Registration to make oral
+               representations closed 28 Aug; attendance may still be possible.
+               Seriti is already an outreach target and their July 2026 simulation is
+               the differential test in RESULTS.md.
 31 Oct 2026    NERSA target completion for the Trading Rules. NOT a comment deadline -
                see above. The date to watch for the final text, not to submit against.
                CORRECTED 31 Aug 2026 from 30 Sep: NERSA's own Electricity Regulation
@@ -69,6 +92,8 @@ Oct 2026       PRICE AND TARIFF RULE - consultation paper. THE DIRECT FOLLOW-ON 
 
 30 Sep 2026    TDP Rules - NERSA target completion. Submitted to the Minister for
                comments; finalisation depends on receiving them, so it may slip.
+               UNVERIFIED against a primary source - a target, not a deadline, and
+               nothing is open for comment either way.
                Relevant: the TDP is the source of the R390bn / 56 GW figure behind
                txRPerKWyr.
 
@@ -76,7 +101,8 @@ Oct 2026       PRICE AND TARIFF RULE - consultation paper. THE DIRECT FOLLOW-ON 
                Code (ER decision expected October), Vesting Contract Framework,
                Wholesale Tariff Methodology, and Municipal KPI Rules. All are at
                FINALISATION with consultation concluded, so none is open for comment.
-               Watch for final texts.
+               Watch for final texts. UNVERIFIED against a primary source; nothing
+               here is actionable, so the risk of the date being wrong is low.
 
 Q4 2026        SAWEM trading expected to commence. The Market Code (NTCSA) completed
                written comment in June with a hearing on 1 July.

@@ -6090,10 +6090,12 @@ keep the reasoning behind each item.
 
 ## Regulatory calendar
 
-16. **~7 Sep** ERTSA written comments (indicative). **Draft ready:
-    `ertsa_submission_draft.md`.** One narrow point - Eskom ran 83% of its peaker energy
-    outside the season its own tariff calls expensive. Explicitly does NOT argue Megaflex
-    is wrong. CONFIRM THE DATE before sending; the dashboard marks it indicative.
+16. **8 Sep - NERSA market inquiry into fixed and generation capacity charges.** The
+    only near-term process actually open. Submissions to
+    electricity.marketinquiry@nersa.org.za. **Read the draft report first**, then reframe:
+    a capacity charge is levied on peak DEMAND, and our evidence says demand and scarcity
+    fall in different seasons. `ertsa_submission_draft.md` holds the analysis but names a
+    process that does not exist - the 2026/27 ERTSA was decided 5 March 2026.
 17. **10 Sep** Eskom RCA hearing.
 18. **Oct** Price and Tariff Rule consultation - the most consequential dated item.
 19. **31 Oct** Trading Rules final text, Market Code, Vesting Framework, Wholesale Tariff
@@ -6202,6 +6204,37 @@ implied it was part of the core answer.
 Verified after the move: markup intact, panel renders at all four slider settings, no
 navigation anchor pointed at its old position. `nav-heat` is referenced only by its own
 div, so nothing needed rewiring.
+
+## an unsourced date cost a 900-word draft - 1 Sep 2026
+
+The calendar carried "ERTSA written comments, ~7 Sep, INDICATIVE - confirm the date". I
+drafted a submission against it without confirming. **There is no open ERTSA process:**
+NERSA decided Eskom's 2026/27 application on 5 March 2026 and the tariffs took effect
+1 April.
+
+The entry warned me in its own text. I read the warning and wrote anyway.
+
+### what is actually open
+
+**NERSA's draft market inquiry into fixed charges and generation capacity charges**,
+submissions to electricity.marketinquiry@nersa.org.za by 8 September, extended from
+27 July. NERSA asks specifically for comment on the methodology and on the evidence in the
+draft report.
+
+**It fits our finding better than ERTSA did.** A generation capacity charge is levied on
+peak DEMAND, and the dispatch evidence says demand and scarcity fall in different seasons
+here. That is a sharper point for an inquiry into capacity charges than it was as general
+comment on tariff structure.
+
+### the calendar now requires a source per entry
+
+Audited all eight hard deadlines: three cited a source, five did not. The Seriti hearing is
+now verified independently - 10 Sep, Microsoft Teams, 13:30 to 16:30. The remaining three
+are marked UNVERIFIED in place rather than deleted, because a date that might be right is
+worth keeping and a date that LOOKS verified is not.
+
+**An unsourced date is a guess wearing a deadline's clothes**, and that line is now at the
+top of the section.
 
 ---
 
