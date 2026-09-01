@@ -353,6 +353,21 @@ const live = stripComments(src);
           try { new Function(evaluated); }
           catch (e) { err = e.message; }
         }
+        // PARSING IS NOT ENOUGH. A collapsed backslash usually still parses - it just
+        // changes meaning. /^bal_(\\d+)/ became /^bal_(d+)/, matched nothing, and threw
+        // no error, so 365 days "solved but yielded no duals". Three separate escaping
+        // faults in this block on 31 Aug; this catches the silent ones too.
+        if (evaluated){
+          const suspects = [];
+          // a regex character class or shorthand that lost its backslash
+          if (/\/\^[a-z_]*\(d\+\)/.test(evaluated)) suspects.push('(d+) - was \\d+');
+          if (/\.split\('n'\)/.test(evaluated)) suspects.push("split('n') - was \\n");
+          if (/match\(\/\^s\*/.test(evaluated)) suspects.push('/^s* - was \\s*');
+          check('no escape sequence in the worker collapsed to a bare letter',
+                suspects.length === 0,
+                suspects.join('; ') + ' - a backslash in MIP_WORKER_SRC must be DOUBLED');
+        }
+
         check('the MIP worker source parses after template evaluation',
               !err, err + ' - a backslash in MIP_WORKER_SRC must be DOUBLED to survive');
       }

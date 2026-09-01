@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 895 checks
+suite                      19 harnesses, 896 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 895 checks. Last full run: 895/895.
+Nineteen harnesses, 896 checks. Last full run: 896/896.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
-node validate_structure.js .         17/17
+node validate_structure.js .         18/18
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
@@ -4769,6 +4769,50 @@ Four rounds of reasoning about correct code. The signature matched, the loop var
 right, the renderers used their arguments, and the mechanism worked at full scale in Node -
 every check passed because every check was in Node. **The counters took ten minutes and
 answered it outright.** When a silent path fails, instrument it before theorising about it.
+
+---
+
+## THE THIRD ESCAPING FAULT, and the one that actually silenced the prices
+
+```
+build e:  0 days priced, 0 errored, 0 mismatch, 365 SOLVED BUT YIELDED NO DUALS
+```
+
+Each counter narrowed it further, and this one was conclusive: the LP solved, the names
+matched, and no row was recognised. One line remained.
+
+```
+in the file          /^bal_(\\d+)_(\\d+)$/
+what the worker got  /^bal_(d+)_(d+)$/      -> matches "bal_ddd_ddd", so nothing
+```
+
+**A collapsed backslash that still PARSES.** The check added this morning builds the
+worker source and parses it - and this passed, because `(d+)` is perfectly valid syntax.
+It just means something else. Every dual was discarded at the final step, silently,
+because a non-match is a normal path.
+
+Replaced with `n.split('_')`, which cannot be collapsed because it contains no escapes.
+Verified with the worker's exact evaluated logic: 24 of 24 hours priced under BOTH
+numeric-keyed and name-keyed rows, R628 either way.
+
+### THE CHECK NOW LOOKS FOR MEANING, NOT JUST SYNTAX
+
+`validate_structure` 17 -> 18. It scans the EVALUATED worker for escape sequences that
+have collapsed into bare letters - `(d+)` where `\\d+` was meant, `split('n')`,
+`/^s*`. Verified the detector fires on the exact broken string and not on the fix.
+
+### THREE FAULTS, ONE ROOT CAUSE, INCREASING SUBTLETY
+
+```
+backtick     terminated the literal          -> page broke loudly
+\\n vs \\\\n    literal newline in a string     -> worker threw SyntaxError
+\\d vs \\\\d    valid regex, wrong meaning      -> SILENT, cost four rounds
+```
+
+Each got quieter. The first two announced themselves; the third passed every check
+including the one written for the first two. **A template literal that carries code is a
+second language embedded in the file, and only running it - or reading what it evaluates
+to - tells you what it says.**
 
 ---
 
