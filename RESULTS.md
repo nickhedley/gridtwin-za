@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Twenty sections follow. This index exists because the file passed 1,400 lines and the
+Twenty-one sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by EVIDENTIAL STRENGTH, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -68,6 +68,12 @@ years while the no-gas build ranges R277-279 - same expected cost, far less expo
 bad wind year. Only at this one point on the frontier, and only if the connections
 existed.
 → "The no-gas frontier"
+
+**Eskom's tariff seasons are inverted against its own dispatch.** Megaflex prices Jun-Aug
+as the expensive season; Eskom ran 83% of its peaker energy outside it. The modelled
+low-season peak is dearer than the high-season peak, R1,475 against R1,277. Corroborated
+by Eskom's own hourly file, so it is not a model artefact.
+→ "Eskom's tariff seasons are inverted"
 
 ### Tier 3 — single weather year, or dependent on the storage heuristic.
 
@@ -1903,3 +1909,69 @@ Central - the two best resources here - are at ZERO headroom for every technolog
 A perfect diurnal match at a site with no connection is not a project. That complements
 their work rather than criticising it: they answer whether the wind fits the offtaker, and
 the unanswered question is whether the grid will take it.
+
+---
+
+## Eskom's tariff seasons are inverted against its own dispatch
+
+Prompted by Ausgrid's dynamic network tariff going live in Australia, and directly
+relevant to the Eskom Retail Tariff Structural Adjustment now open for comment.
+
+Eskom's Megaflex time-of-use structure prices **June to August as the high-demand
+season** - the expensive one. Two independent tests say the system is not tight then.
+
+### ESKOM'S OWN MEASURED DISPATCH
+
+`ESK19243.csv`, Eskom's hourly file for 2025, records what its peakers actually did:
+
+```
+tariff season          Eskom OCGT run     share of hours
+low  (Sep-May)            1,583 GWh              75%
+high (Jun-Aug)              315 GWh              25%
+```
+
+**Eskom ran 83% of its peaker energy in the season its own tariff calls cheap.** Peakers
+run when the system is short, so this is the operator's own revealed measure of scarcity,
+not a model output.
+
+### AND THE MODELLED SHADOW PRICE AGREES
+
+Hourly shadow price within each Megaflex block:
+
+```
+block               hours     mean    median      p95
+high/peak             330    1,277       750    6,206
+low/peak              975    1,475       749    6,206
+high/offpeak          528      744       744      760
+low/offpeak         1,560      787       737      757
+weekend (both)      2,496      868       748    6,206
+```
+
+Two things fall out.
+
+**THE LOW-SEASON PEAK IS DEARER THAN THE HIGH-SEASON PEAK** - R1,475 against R1,277. The
+seasonal labels are the wrong way round.
+
+**THE BLOCKS BARELY DISCRIMINATE ON A TYPICAL HOUR.** Every median sits between R737 and
+R755, a spread of 2%. What separates the blocks is entirely the TAIL: p95 runs from R757
+off-peak to R6,206 in peak, standard AND weekend. A fixed block cannot see that, because
+the expensive hours are scattered rather than scheduled.
+
+**Weekends are called cheap and carry a p95 of R6,206.** Off-peak and weekend hours are
+50.8% of energy and carry 41% of the system's hourly cost - closer to proportional than a
+cheap-rate label implies.
+
+### WHY THIS IS NOT A MODEL ARTEFACT
+
+The summer scarcity is driven by maintenance scheduled away from the winter peak, and that
+seasonality is **corroborated by Eskom's measured OCGT dispatch at 8.5:1 Jan-Mar against
+Jul-Sep** - see the peaker section. Model and operator agree independently.
+
+### WHAT IT DOES NOT SAY
+
+Not that Megaflex is wrong as a tariff. Retail tariffs recover network and fixed costs, not
+just energy, and the high-demand season reflects PEAK DEMAND, which genuinely is in winter.
+The finding is narrower: **peak demand and system scarcity are in different seasons in
+South Africa**, and a tariff built on the first does not price the second. That is exactly
+the gap a dynamic or scarcity-linked component would close, and it is what makes the
+Ausgrid model relevant here rather than merely interesting.
