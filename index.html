@@ -3356,6 +3356,57 @@ function printPrefeas() {
   // Exposed for the same reason as fetchSolar and solarCrossCheck: a function no harness
   // can reach is one nobody proves works. Three faults shipped this week in code that was
   // correct on disk and unreachable from a test.
+  // Renders the coverage question beside the transport cost. Deliberately shows a FIXED
+  // ladder of configurations rather than adding capacity sliders: the point is the SHAPE -
+  // that solar alone stops near the daylight fraction and diversity is what moves it - and
+  // a reader gets that faster from four rows than from a control they have to discover.
+  //
+  // Sized relative to the load, so the ladder means the same thing at 5 MW and 500 MW.
+  function wheelCoverageHtml(region, loadMW){
+    const cfg = [
+      // Labelled as a multiple of the load, so 4x on a 50 MW load means 200 MW of solar.
+      // The second row DOUBLES the first to show the ceiling directly: twice the plant,
+      // three more points.
+      { lab: 'Solar 4&times; load',                  s: 4, w: 0, bm: 0, bh: 0 },
+      { lab: 'Solar 8&times; load',                  s: 8, w: 0, bm: 0, bh: 0 },
+      { lab: 'Solar 4&times; + battery 1&times;/4h', s: 4, w: 0, bm: 1, bh: 4 },
+      { lab: 'Solar 4&times; + wind 1&times;',       s: 4, w: 1, bm: 0, bh: 0 },
+      { lab: 'Solar 4&times; + wind 1&times; + battery', s: 4, w: 1, bm: 1, bh: 4 },
+    ];
+    const rows = [];
+    let sun = null;
+    for (const c of cfg){
+      const r = wheelCoverage(region, loadMW, c.s * loadMW, c.w * loadMW,
+                              c.bm * loadMW, c.bh);
+      if (!r) return '';                         // profiles not loaded yet
+      sun = r.sunPct;
+      rows.push(`<tr><td style="padding:2px 0">${c.lab}</td>`
+        + `<td style="text-align:right;font-family:monospace">${r.coverPct.toFixed(0)}&#37;</td>`
+        + `<td style="text-align:right;font-family:monospace;color:var(--ink2)">${r.spillPct.toFixed(0)}&#37;</td></tr>`);
+    }
+    return `
+      <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--line)">
+        <div style="font-size:10.5px;font-weight:600;margin-bottom:6px">
+          What share of the load does it actually cover?</div>
+        <table style="width:100%;font-size:10.5px;border-collapse:collapse">
+          <thead><tr style="color:var(--ink2)">
+            <th style="text-align:left;font-weight:400">contracted plant</th>
+            <th style="text-align:right;font-weight:400">covered</th>
+            <th style="text-align:right;font-weight:400">spilled</th>
+          </tr></thead>
+          <tbody>${rows.join('')}</tbody>
+        </table>
+        <div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">
+          Solar alone cannot pass ${sun.toFixed(0)}&#37; here, because that is the share of
+          hours with any sun &ndash; four times the load covers about the same as eight.
+          Wind produces in hours solar never does, so diversity moves the number where
+          volume does not. <strong>Spilled</strong> is generation the contract produces
+          above your load; whether you pay for it depends on the structure of the deal.
+          Modelled on ${region} profiles against a flat load.
+        </div>
+      </div>`;
+  }
+
   window.wheelCoverage = wheelCoverage;
 
   function calcWheeling() {
@@ -3510,7 +3561,8 @@ function printPrefeas() {
         on tariff category, time of use, season and connection voltage – which is why the number
         above stops at the transmission boundary.
       </div>
-      ${muniWheelingHtml(cons)}`;
+      ${muniWheelingHtml(cons)}
+      ${wheelCoverageHtml(gen, loadMW)}`;
   }
 
   // Wire up dropdowns
@@ -12580,7 +12632,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // not appear in the browser, and neither of us could tell whether the page was serving a
 // cached older copy. A version string settles that in one glance instead of an hour of
 // reasoning about code that is demonstrably correct on disk.
-const BUILD_STAMP = '2026-09-01c';
+const BUILD_STAMP = '2026-09-01d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 904 checks
+suite                      19 harnesses, 906 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 904 checks. Last full run: 904/904.
+Nineteen harnesses, 906 checks. Last full run: 906/906.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           59/59
+python3 audit.py index.html           61/61
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -5075,6 +5075,43 @@ would mean the arithmetic is wrong, not that the contract is good.
 
 Exposed on `window` beside `fetchSolar` and `solarCrossCheck`. Three faults shipped this
 week in code that was correct on disk and unreachable from a test.
+
+---
+
+## the coverage table is now visible - 1 Sep 2026
+
+`wheelCoverage()` was callable but rendered nowhere. It now appears under the wheeling
+cost, answering the question the panel never did.
+
+```
+contracted plant                covered   spilled
+Solar 4x load                       41%       57%
+Solar 8x load                       44%       77%
+Solar 4x + battery 1x/4h            58%       38%
+Solar 4x + wind 1x                  66%       50%
+Solar 4x + wind 1x + battery        82%       37%
+```
+
+with a line beneath stating the ceiling: solar cannot pass 48% in that region because that
+is the share of hours with any sun.
+
+### two deliberate choices
+
+**A fixed ladder rather than capacity sliders.** The point is the SHAPE - that solar stops
+at the daylight fraction and diversity is what moves it - and a reader gets that from five
+rows faster than from a control they must first discover. The second row deliberately
+doubles the first to show the ceiling directly: twice the plant, three more points.
+
+**Sized as a multiple of the load**, so the ladder means the same thing at 5 MW and 500 MW.
+Verified identical at both.
+
+### the spill column is the part a buyer has not seen
+
+A solar contract at eight times the load spills 77% of what it generates to reach 44%
+coverage. Whether the buyer pays for that depends entirely on the contract structure, and
+the note says so rather than implying the energy is free.
+
+Verified: renders, no NaN, scales with load. `audit.py` 59 -> 61.
 
 ---
 

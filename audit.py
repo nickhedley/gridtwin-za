@@ -108,6 +108,10 @@ CHECKS = [
     # No shouted emphasis in the KPI note. "NEW-build capex" read as a shout in a header
     # a reader sees before anything else; the surrounding prose uses bold for emphasis.
     ('start-up and new-build capex only',                          'KPI note not shouted'),
+    # Wheeling coverage. The panel priced transport and never answered what share of the
+    # load a contract covers - the question an offtaker asks first.
+    ('What share of the load does it actually cover',              'wheeling coverage table'),
+    ('wheelCoverageHtml',                                          'coverage renderer'),
     ('Expected shed &middot; per year',                            'shed label states it is per year'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices
