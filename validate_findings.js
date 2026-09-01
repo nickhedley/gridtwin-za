@@ -171,6 +171,41 @@ setTimeout(()=>{
     }
   }
 
+
+  // ── 6. AN ANNUAL BUILD TRIGGER CANNOT SEE CUMULATIVE OVERSUPPLY ───────────
+  // SCENARIO: demand growing 2% a year, VRE added at a fixed annual rate, EAF 70 -
+  // EDMSA Scenario A's own assumptions. METRIC: renewable output wasted as a share of
+  // what renewables generate. The claim is about DURATION at a fixed rate, so both runs
+  // must use the SAME rate and differ only in years.
+  {
+    const r = probe(`
+      const run = (gwYr, yrs) => {
+        const added = gwYr * yrs * 1000;
+        const g = Math.round(100 * (Math.pow(1.02, yrs) - 1));
+        const x = simulate({ ...state, demandGrowthPct: g, coalEAFPct: 70,
+          newWindMW: Math.round(added * 0.45), newPvMW: Math.round(added * 0.55),
+          newBattMW: Math.round(gwYr * yrs * 150), newBattHours: 4 }, PROFILES);
+        const econ = (x.E.curtailed || 0) / 1e6;
+        const cong = Array.from(x.congestMW || []).reduce((a, b) => a + b, 0) / 1e6;
+        const vre = (x.E.wind + x.E.pv) / 1e6;
+        return 100 * (econ + cong) / Math.max(vre + econ + cong, 1);
+      };
+      return { five: run(5, 5), ten: run(5, 10), lowTen: run(2, 10) };
+    `);
+    if (r && !r.error){
+      check('the same build rate wastes more when sustained longer',
+            r.ten > r.five * 1.5,
+            `5 GW/yr wastes ${r.five.toFixed(1)}% over five years and ${r.ten.toFixed(1)}% `
+            + `over ten - if these converge, the cumulative-versus-rate finding has changed`);
+      check('a low build rate stays at the congestion floor',
+            r.lowTen < 5,
+            `2 GW/yr over ten years wastes ${r.lowTen.toFixed(1)}%, which should be the `
+            + `NERSA congestion ceiling rather than economic surplus`);
+      console.log(`  oversupply     5 GW/yr: ${r.five.toFixed(1)}% at 5 yrs, `
+        + `${r.ten.toFixed(1)}% at 10 \u00b7 2 GW/yr: ${r.lowTen.toFixed(1)}%`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

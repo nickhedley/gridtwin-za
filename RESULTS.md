@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Twenty-six sections follow. This index exists because the file passed 1,400 lines and the
+Twenty-seven sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2321,3 +2321,59 @@ assumes the plan is delivered will not see the constraint its own insights ident
 The executive summary states capacity growing "from approximately 66 MW in 2025 to over
 120 MW by 2035", twice. Megawatts for gigawatts - a typo rather than a modelling issue, but
 it is in the first paragraph a reader meets.
+
+---
+
+## An annual build trigger cannot see the risk it is meant to catch
+
+EDMSA Scenario A's central question is whether new capacity is being added in line with
+what the system can efficiently absorb, and its Action 5 proposes a monitoring trigger:
+**"Implement a 5 GW per annum renewable addition monitoring trigger. If annual additions
+exceed this threshold, convene a system flexibility review."**
+
+Tested directly. Renewable output wasted, as economic plus congestion curtailment, against
+the share of generation it represents. Demand grows 2% a year as their scenario assumes.
+
+```
+annual rate      sustained 5 years   sustained 10 years
+2 GW/yr                       4.0%                 4.0%
+4 GW/yr                       4.0%                 5.9%
+5 GW/yr                       4.2%                 9.8%
+6 GW/yr                       4.8%                15.3%
+8 GW/yr                       8.1%                25.9%
+10 GW/yr                     13.9%                34.6%
+```
+
+**The same rate produces very different outcomes depending on how long it runs.** Five
+gigawatts a year wastes 4.2% of renewable output over five years and 9.8% over ten. The
+rate is identical; only the accumulation differs.
+
+### so the trigger measures the wrong variable
+
+An annual threshold is satisfied indefinitely while waste compounds underneath it. A
+programme running at 4.9 GW a year never trips a 5 GW trigger, and after a decade is
+wasting close to a tenth of what it generates.
+
+**The binding variable is cumulative capacity against demand, not the rate of addition.**
+A trigger on installed VRE as a multiple of peak demand, or on measured curtailment itself,
+would catch what the annual rate cannot.
+
+### the 4% floor is not oversupply
+
+Note the flat 4.0% at low build rates. That is the NERSA-approved congestion curtailment
+ceiling, not economic surplus - output spilled because a corridor is full while other
+regions still import. **It exists today at zero economic curtailment**, which matters for
+their framing: their band 3, "uncontrolled excess capacity results in curtailment", is
+already partly happening for a reason that has nothing to do with excess capacity.
+
+Economic curtailment - genuine surplus nobody wants - only becomes material above about
+4 GW a year sustained for a decade.
+
+### what this does not say
+
+Not that curtailment is a reason to build less. Our own frontier work shows removing gas
+entirely requires 110-120 GW and throws away more than 40% of output, and is still roughly
+cost-neutral, because the capex of overbuild is cheaper than the fuel it displaces. **Waste
+is a price, not a verdict.** The question a monitoring framework should ask is whether the
+waste is bought deliberately or accumulated by inattention, and an annual rate trigger
+cannot tell those apart.

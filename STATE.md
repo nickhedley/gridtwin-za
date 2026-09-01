@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 919 checks
+suite                      19 harnesses, 921 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 919 checks. Last full run: 919/919.
+Nineteen harnesses, 921 checks. Last full run: 921/921.
 
 ```
 node stress_suite.js                290/290
@@ -262,7 +262,7 @@ node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity c
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
-node validate_findings.js .            9/9   the PUBLISHED FINDINGS, added 31 Aug
+node validate_findings.js .          11/11   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       28/28
 node validate_structure.js .         20/20
@@ -5514,6 +5514,47 @@ is the part a challenger will not have.
 Whether EDMSA's 195 is CO2e, a different calorific assumption, or a wider boundary. That
 remains the first question to ask them, and it is now a precise question rather than a
 vague discrepancy.
+
+---
+
+## testing EDMSA's own proposed trigger - 1 Sep 2026
+
+Scenario A's Action 5 proposes a 5 GW per annum renewable addition trigger, convening a
+flexibility review when annual additions exceed it. Tested at their assumptions.
+
+```
+annual rate      5 years   10 years
+2 GW/yr             4.0%       4.0%
+5 GW/yr             4.2%       9.8%
+8 GW/yr             8.1%      25.9%
+```
+
+**The same rate produces very different outcomes depending on duration.** Five gigawatts a
+year wastes 4.2% of renewable output over five years and about 10% over ten. A programme
+running at 4.9 GW a year never trips the trigger and after a decade wastes close to a tenth
+of what it generates.
+
+So the trigger measures the wrong variable: the binding quantity is cumulative capacity
+against demand, not the rate of addition. A trigger on installed VRE as a multiple of peak
+demand, or on measured curtailment itself, catches what an annual rate cannot.
+
+### the 4% floor is not oversupply, and that matters for their framing
+
+The flat 4.0% at low build rates is the NERSA congestion ceiling, not economic surplus.
+**It exists today at zero economic curtailment.** Their band 3 - "uncontrolled excess
+capacity results in curtailment" - is therefore already partly occurring for a reason that
+has nothing to do with excess capacity, which is the point the user made about IPPs
+reporting curtailment while the system has surplus.
+
+### the caveat that keeps this honest
+
+Waste is a price, not a verdict. Our own frontier work has a 110-120 GW build throwing away
+more than 40% of output and remaining roughly cost-neutral, because overbuild capex is
+cheaper than the fuel it displaces. The useful question is whether waste is bought
+deliberately or accumulated by inattention - and an annual rate trigger cannot distinguish
+them. That distinction is the contribution, not the numbers.
+
+Now in `validate_findings` with the scenario attached: 9/9 -> 11/11.
 
 ---
 
