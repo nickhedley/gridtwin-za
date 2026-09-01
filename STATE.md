@@ -6459,6 +6459,48 @@ Trimmed as asked, from three sentences to one. The two removed sentences explain
 finding rather than labelling the numbers - the same habit the prose ratchet now guards
 against.
 
+## the price duration curve was not inverted - it was unreadable - 1 Sep 2026
+
+Asked whether the curve was inverted. It was not: 87,000 on the left, 715 on the right,
+and the SVG confirms high-left low-right, which is the convention.
+
+**But the instinct was right about something.** On a linear axis one hour at the value of
+lost load set the entire vertical range:
+
+```
+percentile   price      position down the chart
+  0%       R87,000                  0.0%
+  1%        R6,206                 93.6%
+  5%          R762                 99.9%
+ 50%          R748                100.0%
+```
+
+**95% of the year sat in the bottom 0.1% of the chart.** Correctly oriented and completely
+uninformative.
+
+### log scale, which is the convention for scarcity-priced markets
+
+The 1st percentile moved from 93.6% down to 33.9% down, so the diesel-priced hours are now
+visible instead of hidden in the baseline. Floored at R1 so a zero or negative hour cannot
+produce a negative logarithm.
+
+### the body stays flat, and that is TRUE
+
+95% of hours fall between R715 and R762 - a 6.6% spread. No axis choice will make that look
+interesting, and distorting it to try would be worse. It is the same fact as the tariff
+finding: every Megaflex block median sits between R737 and R755. **South African prices are
+genuinely almost flat with a tiny extreme tail**, and the chart should say so rather than
+flatter itself.
+
+Axis now labelled "log scale" so nobody reads the spread as linear.
+
+### PPA export moved to the prices panel
+
+It was beside the dispatch CSV in Hourly dispatch. Both export hourly series, but the
+dispatch CSV is a system view and the PPA series is a developer artefact whose main content
+is the price series. It now sits with the prices. Picker and button moved together; verified
+still populated with ten regions and defaulting to Northern Cape.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

@@ -446,9 +446,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <button id="wkW" class="active">Winter week</button>
                 <button id="wkS">Summer week</button>
               </div>
-              <select id="ppaRegion" title="Which region's wind and solar profiles to include. The price series is national - the instant engine is single-node, so there is one shadow price for the whole country."
-                      style="font-size:10px;padding:2px 4px;max-width:130px"></select>
-              <button onclick="exportPpaTimeseries()" title="Hourly shadow prices and regional wind and solar profiles, for PPA modelling" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap;margin-right:4px">↓ PPA series</button>
+              
                 <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
             </div>
           </div>
@@ -804,6 +802,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div>
           <div id="nav-prices" class="panel" style="">
             <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">modelled &middot; what a market would clear at</span></div>
+            <div style="display:flex;align-items:center;gap:6px;padding:0 0 8px">
+              <select id="ppaRegion" title="Which region's wind and solar profiles to include. The price series is national - the instant engine is single-node, so there is one shadow price for the whole country."
+              style="font-size:10px;padding:2px 4px;max-width:130px"></select>
+              <button onclick="exportPpaTimeseries()" title="Hourly shadow prices and regional wind and solar profiles, for PPA modelling" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap;margin-right:4px">↓ PPA series</button>
+            </div>
             <div class="pb" id="priceBody"></div>
           </div>
 
@@ -10296,8 +10299,20 @@ function renderPricePanel(r){
 
   // Duration curve: price sorted high to low across the year.
   const dur = s.duration.slice().reverse();
-  const maxD = Math.max(...dur, 1);
-  const pts = dur.map((v, i) => `${(i/100*100).toFixed(1)},${(60 - v/maxD*58).toFixed(1)}`).join(' ');
+  // LOG SCALE, and it is not decoration. On a linear axis one hour at the R87,000 value of
+  // lost load sets the whole vertical range: measured 1 Sep 2026, the 1st percentile lands
+  // 93.6% of the way down and 95% of the year sits in the bottom 0.1% of the chart. The
+  // curve is correctly oriented - high left, low right - and completely unreadable.
+  //
+  // A log axis is the convention for any market with scarcity pricing, precisely because
+  // the tail is orders of magnitude above the body. Floor at R1 so a zero or negative hour
+  // cannot produce a negative logarithm.
+  const loD = Math.max(1, Math.min(...dur.filter(v => v > 0)));
+  const hiD = Math.max(...dur, loD * 10);
+  const lg = v => Math.log10(Math.max(v, 1));
+  const span = Math.max(lg(hiD) - lg(loD), 0.3);
+  const pts = dur.map((v, i) =>
+    `${(i).toFixed(1)},${(60 - (lg(v) - lg(loD)) / span * 58).toFixed(1)}`).join(' ');
 
   host.innerHTML =
       `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">`
