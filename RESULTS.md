@@ -448,7 +448,7 @@ tested costs 4% to 12% more, and the wrong mix is expensive: 80 GW wind with 40 
 solar costs R315 bn for the same job. So this is not "gas is unnecessary", it is
 "there exists a build where gas is unnecessary and it is not the obvious one".
 
-### the frontier is not buildable on today'S grid
+### the frontier is not buildable on today's grid
 
 Checked 28 Aug 2026, and this is the finding that governs everything above.
 
@@ -662,7 +662,7 @@ and the conclusion are unchanged.
 
 At 110 GW of wind and solar the gross requirement rises to 2,114 MW, as expected. But
 curtailed renewables supply 1,457 MW of it, and the net pot left for storage collapses
-to 657 MW - smaller than today'S 1,263 MW, in a system more than twice the size.
+to 657 MW - smaller than today's 1,263 MW, in a system more than twice the size.
 
 This inverts the usual assumption that storage ancillary revenue grows with renewable
 penetration. It grows only while curtailment stays low. Past the point where the system
@@ -1089,7 +1089,7 @@ Wind output is diverse across sites and runs at night, so it keeps meeting hours
 something dispatchable is still setting the price. Zero-price hours go from none to
 6,065 - 69% of the year - across this range.
 
-### storage is what protects solar'S revenue, and the effect is large
+### storage is what protects solar's revenue, and the effect is large
 
 The rows above carry no storage, which overstates the collapse. Scaling batteries
 alongside the build (6-hour lithium):
@@ -1136,7 +1136,7 @@ scenario                     storage TWh   Fe full cycles   July gas GWh   curta
 110 GW VRE, + iron-air 40 GW        7.61              1.9              0            95.8
 ```
 
-**at 45 GW there is A deficit but no surplus.** Annual curtailment is 0.2 TWh. A
+**at 45 GW there is a deficit but no surplus.** Annual curtailment is 0.2 TWh. A
 seasonal store needs terawatt-hours of spare energy to fill it; there are 200 GWh in the
 whole year, and the system is still running 50 TWh of coal. Perfect foresight would have
 had nothing to charge with.
@@ -1392,7 +1392,7 @@ without reserve             1.44 TWh          941,568         18 GWh
 with reserve                0.77 TWh          242,264          7 GWh
 ```
 
-**iron-air'S energy role halves once it must also hold reserve**, and its peak state of
+**iron-air's energy role halves once it must also hold reserve**, and its peak state of
 charge falls by three quarters. Its opportunity value rises correspondingly - p90 from
 2,025 to 2,377 - because the energy is scarcer. July displacement is unchanged at 36.5%,
 so lithium absorbs the difference.
@@ -1449,7 +1449,7 @@ round   July gas GWh   schedule the engine could not follow
 About 3,000 GWh of a roughly 11 TWh schedule is not physically followable - close to
 30% of it.
 
-**but the test is still one-sided, and I should not present the clipping as A verdict.**
+**but the test is still one-sided, and I should not present the clipping as a verdict.**
 Discharge was overridden; charging was not. The store is still filled by the heuristic,
 so it cannot possibly discharge to the LP's plan - the clipping largely measures my own
 incomplete override, not the schedule's infeasibility.
@@ -1488,7 +1488,7 @@ The finding may survive - the efficiency penalty is severe and the July deficit 
 - but it has not been tested against a dispatch that gives long-duration storage a fair
 chance. Do not repeat the claim externally until it has.
 
-### what A seasonal lookahead would and would not fix
+### what a seasonal lookahead would and would not fix
 
 The dispatch has no lookahead of any kind. Tiers are sorted by round-trip efficiency, so
 iron-air at 45% charges last and discharges last, purely on whether this hour has a
@@ -1499,7 +1499,7 @@ to store and in the other nothing to serve. **The untested case is in between** 
 60 to 80 GW of vre, where curtailment has begun but the drought is not yet covered. That
 is where a seasonal lookahead could bite, and it has not been run.
 
-### and iron-air is not A seasonal technology anyway
+### and iron-air is not a seasonal technology anyway
 
 100 hours is about four days. Form Energy markets it as multi-day storage, sized for
 extended weather events, not for shifting summer into winter. Seasonal shifting needs
@@ -1658,7 +1658,7 @@ causes at the two ends:
   evening scarcity returns. Solar bare collapses to R139 and a battery restores it to
   R677.
 
-**A developer'S conclusion should not be "storage becomes valuable later".** It is
+**A developer's conclusion should not be "storage becomes valuable later".** It is
 valuable now for one reason, briefly less so, then valuable again for the opposite
 reason. The two are not the same trade and would not be financed the same way.
 
@@ -1823,7 +1823,7 @@ less reserve, imports AND VRE credit at peak       2,190 MW = 2.2 GW
 Eskom                                              2,000-3,000 MW
 ```
 
-**two of the three defensible definitions sit inside eskom'S range**, and the third is
+**two of the three defensible definitions sit inside eskom's range**, and the third is
 13% above its top. Eskom does not state its method, so the honest reading is agreement
 rather than a match.
 
@@ -1927,7 +1927,7 @@ relevant to the Eskom Retail Tariff Structural Adjustment now open for comment.
 Eskom's Megaflex time-of-use structure prices **June to August as the high-demand
 season** - the expensive one. Two independent tests say the system is not tight then.
 
-### eskom'S own measured dispatch
+### eskom's own measured dispatch
 
 `ESK19243.csv`, Eskom's hourly file for 2025, records what its peakers actually did:
 
@@ -1959,7 +1959,7 @@ Two things fall out.
 **the low-season peak is dearer than the high-season peak** - R1,475 against R1,277. The
 seasonal labels are the wrong way round.
 
-**the blocks barely discriminate on A typical hour.** Every median sits between R737 and
+**the blocks barely discriminate on a typical hour.** Every median sits between R737 and
 R755, a spread of 2%. What separates the blocks is entirely the tail: p95 runs from R757
 off-peak to R6,206 in peak, standard and weekend. A fixed block cannot see that, because
 the expensive hours are scattered rather than scheduled.
@@ -1968,7 +1968,7 @@ the expensive hours are scattered rather than scheduled.
 50.8% of energy and carry 41% of the system's hourly cost - closer to proportional than a
 cheap-rate label implies.
 
-### why this is not A model artefact
+### why this is not a model artefact
 
 The summer scarcity is driven by maintenance scheduled away from the winter peak, and that
 seasonality is **corroborated by Eskom's measured OCGT dispatch at 8.5:1 Jan-Mar against

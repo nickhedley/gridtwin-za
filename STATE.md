@@ -24,7 +24,7 @@ adequacy                   reported as LOLE and expected unserved energy over 48
                            stated - not a single draw
 ```
 
-### defensible in front of A hostile reviewer
+### defensible in front of a hostile reviewer
 
 Findings grounded in data rather than in dispatch:
 
@@ -752,7 +752,7 @@ grid + growth 5%        22,995,861  255,181     2.1     244.4   Time limit reach
 grid + 5% + no gas      22,995,861  255,181     2.0     244.6   Time limit reached       0.0
 ```
 
-**not A cliff — slow, not intractable.** An earlier version of this note called it a
+**not a cliff — slow, not intractable.** An earlier version of this note called it a
 cliff on the strength of the 240 s rows. That was wrong. Given a 2,400 s limit:
 
 ```
@@ -764,7 +764,7 @@ limit, not the model. Demand growth and a gas ban still change nothing once past
 limit, because all three were being cut off at the same point rather than failing for
 different reasons.
 
-**the ceiling is A compute problem, not A formulation one.** That is the better answer:
+**the ceiling is a compute problem, not a formulation one.** That is the better answer:
 nothing needs rearchitecting.
 
 **size is not the variable.** Every rung builds the same 255,181-row, 23 mb model,
@@ -799,7 +799,7 @@ times slower, 90 s to 557 s. After that it flattens and is not monotonic — 4,3
 faster than 3,500. So pace is not a clean predictor above 3,000; the solver's path
 matters more than the problem does.
 
-The envelope has A real edge, and it is beyond every shipped pace. Everything in
+The envelope has a real edge, and it is beyond every shipped pace. Everything in
 BLD_PACE solves. Doubling Grid pace does not, at 900 s.
 
 **SO the guard should almost never fire in normal use.** A user has to go beyond the
@@ -911,7 +911,7 @@ satellite and reference layers); and osm's tile policy discourages public-facing
 hitting their servers directly. Attribution set as Esri requires. Serves to zoom 16 and
 this map caps at 10.
 
-**not verified in A browser.** The container's egress proxy blocks
+**not verified in a browser.** The container's egress proxy blocks
 `server.arcgisonline.com` (`x-deny-reason: host_not_allowed`), so the tiles could not be
 fetched here. Confirm they render before treating this as done.
 
@@ -930,7 +930,7 @@ owner       NTCSA 447 · Red Cap Energy 1
 line_type   shared network 447 · single-project connection 1
 ```
 
-**the tagging is A statement about the source, not the world.** All 447 pre-existing
+**the tagging is a statement about the source, not the world.** All 447 pre-existing
 features are NTCSA because this file is built from Eskom TDP and SAPP planning data,
 which contains no privately built assets by construction. It is not evidence that none
 exist — South Africa's longest privately permitted renewable line was missing from it
@@ -1252,7 +1252,7 @@ long-duration storage charges last and discharges last, purely on whether the cu
 hour has a surplus or a deficit. There is no lookahead of any kind, seasonal or
 multi-day. Iron-air cannot deliberately hold energy for a coming drought.
 
-**that is A real gap, but it is not why long-duration storage fails to bite.** Measured:
+**that is a real gap, but it is not why long-duration storage fails to bite.** Measured:
 at 45 GW of vre there is a deficit but annual curtailment is only 0.2 TWh, so foresight
 would have nothing to charge with. At 110 GW curtailment is 100 TWh but July gas is
 already zero, so there is nothing to serve. The two conditions never co-occur.
@@ -1296,7 +1296,7 @@ Efficiency-first is correct within an hour and wrong across a week. The right ru
 the long store when a long event is coming, accepting worse round trip, because lithium
 cannot hold energy that far. That is a dispatch rewrite, not a tweak.
 
-**consequence for A published result.** "Iron-air changes July gas by exactly zero in all
+**consequence for a published result.** "Iron-air changes July gas by exactly zero in all
 ten years" was measured on a dispatch that structurally cannot charge it. The finding may
 well survive — 45% round trip is punishing and the July deficit is large — but it has not
 been tested fairly. results.md now marks it provisional. Do not repeat it externally
@@ -2223,12 +2223,12 @@ Withdrawn, kept deliberately — the 37%
 Nothing in the suite looked at the markdown, and these files are the project's public
 face and the basis of a regulatory submission.
 
-**it caught A second stale count I had missed.** The consolidation pass earlier today
+**it caught a second stale count I had missed.** The consolidation pass earlier today
 fixed the suite table at line 226 and I believed it done. There was another at line 16,
 inside the fitness-for-purpose section — still reading 18 harnesses and 817 checks. Two
 copies of the same fact, one updated. Rule 6 applies to documents as much as to code.
 
-**and A heading my own script had mangled.** "Fitness for purpose" had become "fitness
+**and a heading my own script had mangled.** "Fitness for purpose" had become "fitness
 For purpose" when the de-capitalisation script ran over it. The first version of the
 check was case-sensitive and reported the section as missing rather than misspelled —
 which would have sent someone looking for the wrong problem. Now case-insensitive.
@@ -2306,7 +2306,7 @@ Grassridge at 106.9 km.
 Nothing downstream moved: **zero substation reassignments across 2,597 REEA projects**,
 maximum distance change 0.20 km.
 
-### I fell into A trap I had documented this morning
+### I fell into a trap I had documented this morning
 
 My first measurement reported **46 reassignments and an 87 km maximum change** — from a
 178 m shift, which is impossible. The cause: I compared the before and after states by
@@ -2465,7 +2465,7 @@ Gauteng                 2,569                50        2%
 TOTAL                  20,116             6,754       34%
 ```
 
-**206% is not A finding, it is A universe mismatch.** NERSA registrations cover private
+**206% is not a finding, it is a universe mismatch.** NERSA registrations cover private
 and embedded generation above 100 kW. REIPPPP plant is licensed under a different regime
 and never appears in them — so the Eastern Cape's REIPPPP wind is in the commissioned
 column with no counterpart in the registered one. Comparing the two mixes universes,
@@ -2724,7 +2724,7 @@ be checked by anyone outside Aurora.** That is the thing to lean into, not trade
 fitness-for-purpose section does the same job by showing its limits, which is stronger
 for a tool anyone can inspect.
 
-### and they are A plausible reader, not only A competitor
+### and they are a plausible reader, not only a competitor
 
 **4. aurora is an outreach target.** They have a named South Africa presence, and their
 2060 outlook — 88% renewables, >120 GW of new capacity — independently corroborated the
@@ -2749,7 +2749,7 @@ Eskom local and international SALES        178.0 TWh  +17.1%
 is the available-for-distribution figure, before losses. The model tracks it to 1.2%.
 Adding a loss term would have double-counted 24 TWh.
 
-**the requirement was A caveat, not A model change.** Never compare the model's served
+**the requirement was a caveat, not a model change.** Never compare the model's served
 energy against a national sales figure — it reads 17% higher by construction, and
 correctly so.
 
@@ -2759,7 +2759,7 @@ correctly so.
 someone compares against sales; fails low by ~12% if someone adds a loss term that
 double-counts. The band's `why` names both failure modes.
 
-### and the check immediately exposed A display bug
+### and the check immediately exposed a display bug
 
 The band printer assumed every range was a percentage, so a TWh band rendered as
 "210.2%    190-222%". Harmless to the assertion, misleading to read — and the first band
@@ -2806,7 +2806,7 @@ year-end snapshot. Two consequences:
   sit on one side of the comparison and not the other. Small for the base case, but it is
   a real date mismatch and it should be stated whenever these are lined up.
 
-### my "IPP within 1%" claim was A universe mismatch — corrected
+### my "IPP within 1%" claim was a universe mismatch — corrected
 
 Eskom's 8,565 MW is all IPPs selling through NTCSA. Compared like for like:
 
@@ -2836,7 +2836,7 @@ Two further gaps explain themselves:
 peakers Avon 670 and Dedisa 335 gives 3,385 MW against the model's 3,400 — a 0.4% match.
 Different universe, not a different number.
 
-**coal was A compensating error, and is corrected.** 42,000 is the widely-cited nameplate
+**coal was a compensating error, and is corrected.** 42,000 is the widely-cited nameplate
 figure; Eskom's audited nominal is 39,692. The model produced the right coal energy from
 too large a fleet at too low a utilisation:
 
@@ -2877,7 +2877,7 @@ should return to zero.
 
 ## Eskom Green build pace added — 31 Aug 2026
 
-A fifth pace, and the only one that is an operator'S own plan rather than a policy target
+A fifth pace, and the only one that is an operator's own plan rather than a policy target
 (IRP, masterplan), a historical record, or a physical limit (grid).
 
 ```
@@ -2903,7 +2903,7 @@ repowering sites — Komati, Grootvlei, Camden, Hendrina — are Mpumalanga coal
 strong solar and weak wind. A reasonable inference, not Eskom's statement, and the first
 number to challenge.
 
-**2. it is A floor on the national build, not A forecast of it.** Every other pace is
+**2. it is a floor on the national build, not a forecast of it.** Every other pace is
 national; this is one participant. IPPs added 8,565 MW to 31 March 2026 against Eskom's
 own 100 MW of wind. Selecting it models a world where only Eskom builds, which will not
 happen — the value is as a lower bound and as a test of whether Eskom's own plan is
@@ -2928,7 +2928,7 @@ Two of the seven were written `coalEAFPct??68` with no spaces and survived the f
 replacement. `validate_structure` caught them. A textual replacement across a 1 mb file
 needs the harness, not care.
 
-### the change exposed A real defect — recorded as a standing flag, not relaxed
+### the change exposed a real defect — recorded as a standing flag, not relaxed
 
 `validate_consistency` now fails one check: storage delivers 0 MW at the annual peak
 while adequacy counts it as firm capacity.
@@ -3095,7 +3095,7 @@ not produce. **Solar already earns a quarter below the market average today**, b
 cannibalisation from new build — the published version showed near-parity and understated
 the starting point.
 
-### and A mistake of mine that the file'S own rule caught
+### and a mistake of mine that the file's own rule caught
 
 I first re-tested demand response by sweeping `drShiftPct` in a no-gas scenario measuring
 Unserved energy, and got a monotonic improvement with no optimum. I was one step from
@@ -3120,7 +3120,7 @@ wind  2026-2035    758 -> 313       977 -> 323      -59% -> -67%
 ```
 
 **solar is unchanged** across all three paces: -16%, -26%, -82%, exactly as published.
-**wind'S starting point moves 29%**, from R758 to R977, and its decline steepens.
+**wind's starting point moves 29%**, from R758 to R977, and its decline steepens.
 
 Same cause as the capture and hybrid corrections: the model now prices evening scarcity,
 and wind produces in those hours while solar does not. Wind therefore starts 29% above
@@ -3192,7 +3192,7 @@ Caveat carried in the code: fixed-commitment prices do not recover start-up cost
 is exactly why real markets pay uplift on top. Same distinction the model already draws —
 start-up is in the system cost, not in the price.
 
-### and A trap in the file'S own structure
+### and a trap in the file's own structure
 
 `buildDayLP` lives inside a worker template literal. My comment used backticks around an
 identifier, which terminated the literal and broke the page — `validate_solve` reported
@@ -3529,7 +3529,7 @@ range 0.00 to 5.46 GWh · median 0.28 · HALF the seeds shed nothing
 the tail rather than the middle. That is the real fault, and it is the same class as
 everything else found today: a number shown without the uncertainty that generated it.
 
-### three options, and this is A decision rather than A fix
+### three options, and this is a decision rather than a fix
 
 1. **Change the seed.** Cheapest, and dishonest - it hides the variance rather than
    showing it.
@@ -3666,7 +3666,7 @@ Nine was chosen for a speed cost that turned out to be eight times smaller than 
 **Raised to 48**, about 2.6 s async, which brings the standard error to roughly a third
 of the mean.
 
-### the larger sample found A heavier tail
+### the larger sample found a heavier tail
 
 ```
                  9 draws        48 draws
@@ -3698,7 +3698,7 @@ model remains optimistic against what actually happened even at its tail.
 
 ## Weather basis reconciled, and the ensemble finally has a harness — 31 Aug 2026
 
-### 1. the board was answering A narrower question than its label
+### 1. the board was answering a narrower question than its label
 
 Decomposed the uncertainty on the default scenario, 30 draws each:
 
@@ -3807,7 +3807,7 @@ The lamps now show the median draw, so "max stage" was wrong in the opposite dir
 from before - it read as the worst outcome while showing the typical one. And "Expected
 shed" gave no period, on a board where every other figure is annual.
 
-### the KPIs are on A different basis, and that is fine
+### the KPIs are on a different basis, and that is fine
 
 The eight KPI cells come from the single deterministic run, not the ensemble. Checked
 rather than assumed: coal varies 0.2% across seeds, CO2 0.1%, avgCost 1.2%. Those are
@@ -3959,7 +3959,7 @@ NERSA publishes an Electricity Regulation Projects Dashboard carrying every cons
 deadline and hearing in one table. **This project had not been reading it**, and the cost
 of that was immediate.
 
-### A date we held was wrong by A month
+### A date we held was wrong by a month
 
 ```
 CALENDAR said   30 Sep 2026   NERSA expects to finalise the Trading Rules
@@ -3994,7 +3994,7 @@ Two undated workstreams are also worth watching: the **Trading Platform Algorith
 Framework**, which governs how the market actually clears and is the closest published
 work to what GridTwin models, and the Market Surveillance Framework.
 
-### added as A standing check
+### added as a standing check
 
 The dashboard is now in sources.md and in calendar.md's per-session checks. It is the
 single best input to that file, and one reading corrected a date and added four
@@ -4167,7 +4167,7 @@ technology.
   but the source. It reframes a debate the public thinks is about resource and cost.
   risk: low. Tier 1.
 
-**2. long-duration storage does not solve A winter wind drought.** 20 GW of 100-hour
+**2. long-duration storage does not solve a winter wind drought.** 20 GW of 100-hour
 iron-air - two terawatt-hours - changes July gas by nothing to three significant figures.
   why it travels: contrarian against a widely repeated assumption, and it is the
   most-tested result in the file. Survived a heuristic, an optimal LP, a
@@ -4182,7 +4182,7 @@ a 110 GW renewable build, but R275-289 bn across ten weather years against R277-
   risk: medium. Excludes gas price risk (which strengthens it) and assumes connections
   that do not exist (which weakens it). Both must be said.
 
-**4. solar already earns A quarter below the market average, today.** Before any
+**4. solar already earns a quarter below the market average, today.** Before any
 cannibalisation from new build. Wind holds 96-107% of the mean across the whole range;
 solar falls to 2.7% at 60 GW.
   why it travels: directly commercial. Every solar developer and offtaker in the country
@@ -4190,7 +4190,7 @@ solar falls to 2.7% at 60 GW.
   risk: low-medium. The mechanism - every solar plant produces in the same hours - is
   obvious once stated, which is what makes it publishable.
 
-**5. flexibilising coal makes A no-gas system worse**, ten years out of ten.
+**5. flexibilising coal makes a no-gas system worse**, ten years out of ten.
   why it travels: it is the opposite of the intuition and was found by testing a
   hypothesis that returned the reverse of what was wanted.
   risk: medium. Only true with no dispatchable backup. Quoted without that scope it is
@@ -4686,7 +4686,7 @@ the mechanism           WORKS at realistic scale: 31 unit groups, 10 regions,
 pricing run is not executing at all, and my `catch` swallowed the reason - a pricing run
 that never fired was indistinguishable from one that fired and found nothing.
 
-### the fix is A diagnostic, not A guess
+### the fix is a diagnostic, not a guess
 
 The worker now counts days priced, days that errored, days with a row-count mismatch, and
 keeps the first error message. All four are reported in the banner under the full-run
@@ -4873,7 +4873,7 @@ is the only instrument that works before a market has a past**, and its shadow p
 becomes checkable against a real one for the first time. That is a narrow window in which
 this model is comparatively strong, and it closes as history accumulates.
 
-Recorded as analysis, not A plan. No product decision follows from this, and the honest
+Recorded as analysis, not a plan. No product decision follows from this, and the honest
 constraint is that a forecasting service needs live data ingestion and an uptime
 commitment that a single-file browser model does not have.
 
@@ -4905,7 +4905,7 @@ is precisely why real markets pay uplift separately. This solve carries 4,343 un
 start-ups, so system cost includes them while the price does not - the same distinction
 the model already draws for start-up in `avgCost` versus `marginalP`.
 
-### what is worth A glance
+### what is worth a glance
 
 Curtailment rises to 11.54 TWh under the MIP because it respects corridor limits the
 instant model ignores. Hours where a corridor binds should now price differently from
@@ -5463,7 +5463,7 @@ recorded in RESULTS.md as the first thing to ask them.
 
 ## the 20 Mt emissions gap, resolved by a third route - 1 Sep 2026
 
-EDMSA Scenario A puts 2025 power-sector emissions at 195 Mt against our 174.5. Availability
+EDMSA Scenario a puts 2025 power-sector emissions at 195 Mt against our 174.5. Availability
 explained half a megatonne of the twenty, so it needed a different answer.
 
 **Eskom's own coal burn is that answer.** 96.5 Mt burnt in FY2026 for about 165 TWh, and the
@@ -6090,7 +6090,10 @@ keep the reasoning behind each item.
 
 ## Regulatory calendar
 
-16. **~7 Sep** ERTSA written comments (indicative).
+16. **~7 Sep** ERTSA written comments (indicative). **Draft ready:
+    `ertsa_submission_draft.md`.** One narrow point - Eskom ran 83% of its peaker energy
+    outside the season its own tariff calls expensive. Explicitly does NOT argue Megaflex
+    is wrong. CONFIRM THE DATE before sending; the dashboard marks it indicative.
 17. **10 Sep** Eskom RCA hearing.
 18. **Oct** Price and Tariff Rule consultation - the most consequential dated item.
 19. **31 Oct** Trading Rules final text, Market Code, Vesting Framework, Wholesale Tariff
@@ -6155,6 +6158,35 @@ the branch writes through to `FIXED` - two of the three fire, naming the cause.
 
 **The lesson is that the stale item was worth opening anyway.** Chasing a fallback that no
 longer existed led to a real mutation with no guard on it.
+
+## ERTSA submission drafted, and a de-capitalisation bug fixed - 1 Sep 2026
+
+### the draft
+
+`ertsa_submission_draft.md`, about 900 words. One point: Eskom ran 83% of its peaker energy
+outside the season its own tariff calls expensive, and the low-season peak block prices
+higher than the high-season one.
+
+**It leads with Eskom's own dispatch, not with the model.** The first table needs only
+Eskom's published hourly file and no model at all, which makes it checkable by a reader who
+distrusts GridTwin entirely. The modelled shadow prices are the second table and are framed
+as corroboration.
+
+**It explicitly does not argue Megaflex is wrong.** Retail tariffs recover network and fixed
+costs, the high-demand season does reflect peak DEMAND, and predictability is a real
+constraint. The claim is narrower: demand and scarcity diverge here, so a structure aligned
+to the first will not signal the second.
+
+Limitations are stated rather than buried - one weather year, shadow prices not market
+prices, and no dispatch-preference mechanism, which is the live curtailment question and
+would move these numbers if material.
+
+### and a bug in decaps_docs.py
+
+The de-capitalisation pass on 1 Sep had a two-letter minimum, so single letters survived
+inside words it had lowercased: `eskom'S`, `air'S`, `on A typical hour`. Fifty-eight
+instances across two files, now corrected with targeted patterns rather than another
+blanket pass - `and I should` and `capex R bn` are correct English and had to survive.
 
 ---
 
