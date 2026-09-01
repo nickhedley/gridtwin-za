@@ -801,11 +801,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 </div>
       <div>
           <div id="nav-prices" class="panel" style="">
-            <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">modelled &middot; what a market would clear at</span></div>
-            <div style="padding:0 0 8px">
+            <div class="ph"><h2>Wholesale shadow price</h2>
+              <span class="tag">modelled &middot; what a market would clear at</span>
+              <!-- Inside .ph, which is already flex with space-between, so the button sits
+                   at the right edge of the header rather than on a row of its own. It is a
+                   PANEL ACTION, not a control that scopes the panel - which is why the
+                   region is chosen after the click, not beside the button. -->
               <button onclick="exportPpaTimeseries()" title="Hourly shadow prices and regional wind and solar profiles, for PPA modelling"
-                      style="font-size:10px;padding:3px 8px">&darr; PPA series</button>
-            </div>
+                      style="font-size:10px;padding:3px 8px;margin-left:auto">&darr; PPA series</button></div>
             <div class="pb" id="priceBody"></div>
           </div>
 

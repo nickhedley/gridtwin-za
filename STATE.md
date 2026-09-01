@@ -6597,6 +6597,23 @@ exists.
 numbers; the "Cost of generation" tile above already shows the R950 figure, so the
 explanation was narrating a number the reader can see.
 
+## PPA button moved into the panel header - 1 Sep 2026
+
+Now at the right edge of the Wholesale shadow price header, beside the title, rather than on
+a row of its own beneath it.
+
+`.ph` is already `display:flex` with `justify-content:space-between`, so the button belongs
+inside it with `margin-left:auto` rather than in a wrapper div. That is also what caused the
+earlier accident - the wrapper div is what I miscounted when removing the picker, taking
+`priceBody` with it. One fewer nested div is one fewer thing to close.
+
+**A panel ACTION, not a control that scopes the panel.** The distinction is why the region
+is chosen after the click: a dropdown beside the button reads as "this panel shows Northern
+Cape", and the shadow price is national.
+
+Verified this time before shipping: button inside `.ph`, siblings H2/SPAN/BUTTON,
+`priceBody` present and filled with content.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
