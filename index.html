@@ -15745,7 +15745,12 @@ function applyMIPResult(m, mode, quiet) {
     hrsAtLimit: Math.round(m.corridorHrsAtLimit[k] * scale),
   })).sort((a,b) => b.hrsAtLimit - a.hrsAtLimit);
 
+  // priceDiag is lifted onto the WRAPPER, not left on mipRes. showMIPBanner reads
+  // `mipActiveRes.priceDiag`, and on 31 Aug it was attached one level down where the
+  // banner could never see it - so the diagnostic added to explain a silent failure
+  // failed silently itself.
   mipActiveRes = { res: mipRes, mode, elapsed: m.elapsed,
+                   priceDiag: mipRes.priceDiag,
                    starts: Math.round(m.totalStarts*scale), startCost,
                    heurCoalCost: lastRes.E.coal * p.costCoal,
                    mipCoalCost: coalMWh*p.costCoal + startCost,

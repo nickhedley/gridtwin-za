@@ -358,6 +358,15 @@ const live = stripComments(src);
       }
     }
 
+    // The banner reads mipActiveRes.priceDiag. On 31 Aug the diagnostic was attached to
+    // mipRes instead - one level down, where the banner could never see it - so a
+    // diagnostic written to explain a silent failure failed silently itself.
+    const diagSet = /mipActiveRes\s*=\s*\{[\s\S]{0,400}?priceDiag\s*:/.test(codeOnly);
+    const diagRead = /a\.priceDiag/.test(codeOnly);
+    check('the pricing diagnostic is attached where the banner reads it',
+          !diagRead || diagSet,
+          'showMIPBanner reads a.priceDiag but mipActiveRes does not set it');
+
     const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
     const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
     check('there is one shared weather-profile builder',

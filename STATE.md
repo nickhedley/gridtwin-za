@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 894 checks
+suite                      19 harnesses, 895 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 894 checks. Last full run: 894/894.
+Nineteen harnesses, 895 checks. Last full run: 895/895.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
-node validate_structure.js .         16/16
+node validate_structure.js .         17/17
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
@@ -4684,8 +4684,17 @@ summary.
 confident diagnosis was wrong and the data was already available - so this one gets
 measured first. The next full run will say which of the three it is.
 
-NEXT: read the banner line after a full-year run. It will read "Pricing run: N days priced,
-M errored, K with a row-count mismatch" and, if anything errored, the first message.
+**AND THE DIAGNOSTIC FAILED SILENTLY TOO.** `showMIPBanner` reads
+`mipActiveRes.priceDiag`, but `mipActiveRes` is a WRAPPER - `{ res: mipRes, mode, ... }` -
+and I attached `priceDiag` to `mipRes`, one level down where the banner could never see
+it. A diagnostic written to explain a silent failure was itself silent.
+
+Lifted onto the wrapper and verified rendering: "Pricing run: 0 days priced, 365 errored".
+`validate_structure` 16 -> 17 now asserts that anything `showMIPBanner` reads is actually
+set on the object it reads from.
+
+NEXT: read the banner after a full-year run - it sits by the KPI row at the top, not with
+the solve summary.
 
 ---
 
