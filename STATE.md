@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 897 checks
+suite                      19 harnesses, 899 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 897 checks. Last full run: 897/897.
+Nineteen harnesses, 899 checks. Last full run: 899/899.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           58/58
+python3 audit.py index.html           59/59
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
-node validate_structure.js .         19/19
+node validate_structure.js .         20/20
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
@@ -4946,6 +4946,47 @@ every value is individually plausible.
 
 `validate_structure` 18 -> 19 asserts both are recomputed; removing either fails with the
 name of what went stale.
+
+---
+
+## auditing every field of the MIP result at once - 1 Sep 2026
+
+Three stale-field bugs in the mip result were each found by a user rather than a harness,
+one round at a time. Rather than wait for a fourth, all 85 returned fields were classified.
+
+```
+overridden              8   E, stack, fuelCost, carbonCost, totalCost, co2,
+                            avgCost, shedMWh - plus priceStats and marginalTech
+genuinely unaffected   ~58  caps, rates, constants, demand series
+zero at defaults         4  ancillary and capacity revenue
+genuinely stale          8  listed and cleared
+```
+
+### the one with a visible consequence
+
+`costDecomposition` carries its own `sumRPerMWh` and a `reconciles` flag, and `avgCost`
+is recomputed for the mip. Inherited, the panel would show seventeen components summing
+to R585/MWh beneath a headline of R544 - a **R41/MWh gap a reader can see**, on the panel
+built specifically to prove the cost adds up.
+
+### storage tier splits were materially wrong, not marginally stale
+
+The mip discharges 1.41 TWh against the heuristic's 3.68. The per-chemistry breakdown
+inherited from the heuristic describes a dispatch that did not happen.
+
+### cleared rather than recomputed, deliberately
+
+All eight are set to null and listed on `mipRes.staleUnderMIP`. Recomputing them needs
+machinery that lives inside `simulate()`, and the panels already handle a null by hiding.
+**An absent number beats a wrong one**, and the list makes the gap explicit rather than
+leaving it for a fourth user report.
+
+### the general shape of this fault
+
+`{ ...lastRes }` is a convenience that copies everything, including values computed from
+the very fields being replaced. Every one of these was individually plausible, which is
+why three shipped. The audit took twenty minutes and found five more than the three that
+had been reported.
 
 ---
 

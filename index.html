@@ -12524,7 +12524,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // not appear in the browser, and neither of us could tell whether the page was serving a
 // cached older copy. A version string settles that in one glance instead of an hour of
 // reasoning about code that is demonstrably correct on disk.
-const BUILD_STAMP = '2026-09-01b';
+const BUILD_STAMP = '2026-09-01c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -15790,7 +15790,33 @@ function applyMIPResult(m, mode, quiet) {
   // Ancillary and capacity revenue are priced off the energy price, so they are stale too.
   // NOT recomputed here: both are zero at defaults (South Africa prices neither), and the
   // functions that build them live inside simulate(). Flagged rather than silently wrong.
+  // ── fields the MIP result still inherits from the heuristic ────────────────
+  // Audited 1 Sep 2026, after three separate stale-field bugs were each found by a user
+  // rather than a harness. `{ ...lastRes }` copies 85 fields; eight are overridden. The
+  // rest fall into three groups.
+  //
+  // 1. genuinely unaffected - caps, rates, constants, demand. Correct to inherit.
+  // 2. zero at defaults - ancillary and capacity revenue. South Africa prices neither,
+  //    so inheriting zero is right until it is not.
+  // 3. GENUINELY STALE, listed below. Each is marked rather than recomputed, because
+  //    recomputing them needs machinery that lives inside simulate() and a wrong number
+  //    is worse than an absent one.
+  //
+  // costDecomposition is the one with a visible consequence: it carries its own
+  // sumRPerMWh and a reconciles flag, and avgCost IS recomputed for the MIP. Left
+  // inherited, the panel shows components summing to R585 beneath a headline of R544 -
+  // a R41/MWh gap a reader can see. Cleared so the panel hides rather than misleads.
+  mipRes.costDecomposition = null;
+
+  // Storage tier splits. The MIP discharges 1.41 TWh against the heuristic's 3.68, so
+  // the per-chemistry breakdown is materially wrong rather than marginally stale.
+  mipRes.tierDis = null; mipRes.tierChg = null; mipRes.tierDrift = null;
+  mipRes.battByTier = null; mipRes.battTierTWh = null;
+
+  // Ancillary and capacity revenue: priced off the energy price, zero at defaults.
   mipRes.revenueFromInstantPrices = true;
+  mipRes.staleUnderMIP = ['costDecomposition','tierDis','tierChg','tierDrift',
+                          'battByTier','battTierTWh','asRevenueR','capacityRevenueR'];
   // The gap between what the MIP curtails and what the single-node engine does is
   // the network-driven component. Recorded so the curtailment forecast, which
   // cannot practically run the MIP six times, can at least show it as a floor.

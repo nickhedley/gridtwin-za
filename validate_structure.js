@@ -399,6 +399,19 @@ const live = stripComments(src);
             + ' - overriding marginalP alone leaves the panels showing heuristic numbers');
     }
 
+    // Fields the MIP result inherits stale must be CLEARED, not left to display the
+    // heuristic's answer. costDecomposition is the visible case: it carries its own
+    // sum and avgCost is recomputed, so inherited it shows components summing to R585
+    // beneath a headline of R544.
+    if (/const mipRes = \{ \.\.\.lastRes/.test(codeOnly)){
+      const cleared = [];
+      for (const f of ['costDecomposition','tierDis','battByTier'])
+        if (!new RegExp('mipRes\\.' + f + '\\s*=').test(codeOnly)) cleared.push(f);
+      check('stale MIP fields are cleared rather than inherited',
+            cleared.length === 0,
+            'still inherited from the heuristic: ' + cleared.join(', '));
+    }
+
     const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
     const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
     check('there is one shared weather-profile builder',
