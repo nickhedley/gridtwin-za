@@ -386,6 +386,34 @@ const num = t => {
   }
 
 
+  // ── WHEELING COVERAGE ─────────────────────────────────────────────────────
+  // The panel prices transport; this answers what share of load a contract covers.
+  // Its ceiling is physical - only ~49% of hours have any sun - so a coverage figure
+  // above the daylight fraction for solar ALONE would mean the maths has broken.
+  const wcov = run(`
+    if (typeof wheelCoverage !== 'function') return { err: 'wheelCoverage not exposed' };
+    const s4  = wheelCoverage('Northern Cape', 1, 4,  0, 0, 0);
+    const s32 = wheelCoverage('Northern Cape', 1, 32, 0, 0, 0);
+    const mix = wheelCoverage('Northern Cape', 1, 4,  1, 1, 4);
+    if (!s4 || !s32 || !mix) return { err: 'profiles not loaded' };
+    return { s4: s4.coverPct, s32: s32.coverPct, mix: mix.coverPct, sun: s4.sunPct };
+  `);
+  if (wcov && !wcov.err){
+    check('solar-only coverage cannot exceed the daylight fraction',
+          wcov.s32 <= wcov.sun + 0.5,
+          `32 MW of solar on a 1 MW load covers ${wcov.s32.toFixed(1)}% against a daylight `
+          + `fraction of ${wcov.sun.toFixed(1)}% - above it means the maths is wrong`);
+    check('eight times the solar buys less than eight points',
+          (wcov.s32 - wcov.s4) < 8,
+          `4 MW covers ${wcov.s4.toFixed(1)}%, 32 MW covers ${wcov.s32.toFixed(1)}%`);
+    check('wind and storage break the solar ceiling',
+          wcov.mix > wcov.sun,
+          `solar with wind and a battery covers ${wcov.mix.toFixed(1)}%, which must exceed `
+          + `the ${wcov.sun.toFixed(1)}% daylight fraction or the diversity is not working`);
+  } else {
+    check('wheeling coverage is reachable', false, wcov ? wcov.err : 'probe returned nothing');
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

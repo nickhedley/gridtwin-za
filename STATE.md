@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 901 checks
+suite                      19 harnesses, 904 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 901 checks. Last full run: 901/901.
+Nineteen harnesses, 904 checks. Last full run: 904/904.
 
 ```
 node stress_suite.js                290/290
@@ -264,7 +264,7 @@ python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            9/9   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       25/25
+node validate_consistency.js .       28/28
 node validate_structure.js .         20/20
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -5037,6 +5037,44 @@ one is not.
 Two checks, 7/7 -> 9/9. The scenario note is explicit that the test uses **no wind and no
 battery**, because adding either tests a different claim - the same discipline that
 prevented three false corrections on 31 Aug.
+
+---
+
+## wheeling coverage, now in the tool - 1 Sep 2026
+
+The solar ceiling was a document finding. `wheelCoverage()` puts it beside the wheeling
+panel, which priced the transport and said nothing about the question an offtaker asks
+first: how much of my load does this actually cover?
+
+```
+configuration                   coverage   spilled
+solar 4 MW only                    41.2%       57%
+solar 32 MW only                   46.5%       94%
+solar 4 + 4h battery               57.7%       38%
+solar 4 + wind 1                   66.0%       50%
+solar 4 + wind 1 + battery         82.3%       37%
+wind 2 + solar 4 + 2 MW / 8 MWh    99.9%       40%
+
+daylight fraction, the ceiling for solar alone   48.4%
+```
+
+Reproduces the ten-year result within a point, using the single-year regional file the
+page already loads - so no new data dependency.
+
+**The spill column is the part a buyer will not have seen.** A 32 MW solar contract on a
+1 MW load throws away 94% of what it generates to reach 46.5% coverage. Whether the buyer
+pays for that energy depends entirely on the contract structure, and it is the right
+question to put to a broker.
+
+### pinned three ways
+
+`validate_consistency` 25 -> 28: solar-only coverage cannot exceed the daylight fraction,
+eight times the solar buys under eight points, and wind plus storage must break the
+ceiling. The first is the load-bearing one - a coverage figure above the daylight fraction
+would mean the arithmetic is wrong, not that the contract is good.
+
+Exposed on `window` beside `fetchSolar` and `solarCrossCheck`. Three faults shipped this
+week in code that was correct on disk and unreachable from a test.
 
 ---
 
