@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 915 checks
+suite                      19 harnesses, 917 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 915 checks. Last full run: 915/915.
+Nineteen harnesses, 917 checks. Last full run: 917/917.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           70/70
+python3 audit.py index.html           72/72
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -5326,14 +5326,12 @@ Added at the user's request so they are not rediscovered.
 **~~`electrolyserSiting`~~ DONE 1 Sep 2026.** Ranked regional table with the weighting as a
 control, not a default. Verified across all four weightings.
 
-**`getsCompare`** belongs with the network panel, beside the corridor congestion figures
-that motivate it. Wants a corridor selector, since the cost ratio scales with corridor
-length: 76x on the 167 km Eastern Cape to KwaZulu-Natal line, 127x on the 278 km Western
-Cape to Hydra Central.
+**~~`getsCompare`~~ DONE 1 Sep 2026.** Panel sits between the network schematic and Where
+To Build, with a six-corridor selector. Verified across corridors.
 
-Both are written, tested and exposed. Neither has a panel. The orphan check in
-`validate_structure` does not catch this class, because exposing a function on `window`
-satisfies it while the feature stays invisible.
+Both now have panels. The orphan check in `validate_structure` did not catch this class,
+because exposing a function on `window` satisfies it while the feature stays invisible -
+worth remembering rather than trusting the check.
 
 ---
 
@@ -5398,6 +5396,44 @@ absent from the ranking.
 
 `getsCompare` remains a function without a panel. It belongs with the network panel and
 wants a corridor selector, since the cost ratio scales with corridor length.
+
+---
+
+## the grid-enhancing panel, and the set is closed - 1 Sep 2026
+
+Sits between the network schematic and Where To Build, with the corridor as a control
+because the cost ratio scales with corridor length.
+
+```
+corridor                            line cost    cheapest option
+Northern Cape - Free State, 90 km     R2.06bn    dynamic line rating   41x
+Eastern Cape - KwaZulu-Natal, 167 km  R3.82bn    dynamic line rating   76x
+Western Cape - Hydra Central, 278 km  R6.37bn    dynamic line rating  127x
+```
+
+**The ratio triples across the corridors offered**, because line cost scales with distance
+while a set of sensors barely does. A single headline number would have been wrong on five
+of the six corridors, which is why the selector exists rather than a default.
+
+The six offered are the binding constraints from the headroom file - the corridors a
+developer is actually queuing behind.
+
+### the note does the work the table cannot
+
+Per megawatt unlocked is stated as the only honest comparison, with the reason: a line adds
+a corridor, these extract more from the one already there. The line unlocks several times
+more, and the ratio says nothing about whether the smaller amount suffices. **It is a
+screening question, not a business case**, and the panel says so.
+
+Line cost is shown as a RANGE on every corridor, from the two published routes that differ
+by 30% and cannot be reconciled. Device costs are labelled as international ranges rather
+than South African tenders, and named as the number to interrogate first.
+
+### all three modules are now visible
+
+`electrolyserH2`, `electrolyserSiting` and `getsCompare` each have a panel. All three were
+built, tested and exposed before any of them appeared in the interface - the lesson being
+that `window` exposure satisfies the orphan check while leaving a feature invisible.
 
 ---
 

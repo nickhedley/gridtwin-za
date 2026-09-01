@@ -513,6 +513,20 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
       </div>
 
+          <div id="nav-gets" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Grid-enhancing technologies, or build line?</h2>
+              <span class="tag">line cost sourced</span>
+              <span class="tag">device cost indicative</span></div>
+            <div class="pb">
+              <div style="display:flex;gap:6px;align-items:center;margin-bottom:9px;flex-wrap:wrap">
+                <span style="font-size:10.5px;color:var(--ink2)">Corridor</span>
+                <select id="getsCorridor" onchange="renderGets()"
+                        style="font-size:10.5px;padding:2px 4px;max-width:280px"></select>
+              </div>
+              <div id="getsBody"></div>
+            </div>
+          </div>
+
           <div id="nav-wheretobuild" class="panel" style="margin-top:18px" aria-label="Capacity siting tool">
           <div class="ph"><h2>Where To Build</h2><span class="tag">NTCSA GCCA headroom · nodal prototype · indicative</span></div>
           <div class="pb">
@@ -3593,6 +3607,69 @@ function printPrefeas() {
         is the obvious anchor and is not in this table.
       </div>`;
   }
+  // The corridors offered are the binding constraints from the headroom file - the ones a
+  // developer is actually queuing behind - with their published lengths. Ratings are the
+  // corridor's own where known; where not, a conventional 400 kV double-circuit rating is
+  // used and the row says so, because the ratio depends on it.
+  const GETS_CORRIDORS = [
+    { k: 'ec-kzn',  lab: 'Eastern Cape \u2013 KwaZulu-Natal', km: 167, mw: 1500 },
+    { k: 'wc-hyd',  lab: 'Western Cape \u2013 Hydra Central', km: 278, mw: 2000 },
+    { k: 'nc-fs',   lab: 'Northern Cape \u2013 Free State',   km:  90, mw: 2000 },
+    { k: 'mp-gp',   lab: 'Mpumalanga \u2013 Gauteng',          km: 102, mw: 3000 },
+    { k: 'lim-mp',  lab: 'Limpopo \u2013 Mpumalanga',          km: 121, mw: 2000 },
+    { k: 'mp-kzn',  lab: 'Mpumalanga \u2013 KwaZulu-Natal',    km: 172, mw: 2000 },
+  ];
+
+  function renderGets(){
+    const host = document.getElementById('getsBody');
+    const sel = document.getElementById('getsCorridor');
+    if (!host || !sel) return;
+    if (!sel.options.length){
+      sel.innerHTML = GETS_CORRIDORS.map(c =>
+        `<option value="${c.k}">${c.lab} \u00b7 ${c.km} km</option>`).join('');
+    }
+    const c = GETS_CORRIDORS.find(x => x.k === sel.value) || GETS_CORRIDORS[0];
+    const r = getsCompare(c.km, 0, c.mw);
+    if (!r){ host.innerHTML = ''; return; }
+    const rows = r.options.map(o => `<tr>
+        <td style="padding:2px 0">${o.lab}</td>
+        <td style="text-align:right;font-family:monospace">R${(o.costRbn * 1000).toFixed(0)}m</td>
+        <td style="text-align:right;font-family:monospace">${Math.round(o.unlockedMW).toLocaleString()}</td>
+        <td style="text-align:right;font-family:monospace">R${(o.rPerMW / 1e6).toFixed(3)}m</td>
+        <td style="text-align:right;font-family:monospace;font-weight:600">${o.vsLine.toFixed(0)}&times;</td></tr>`).join('');
+    host.innerHTML = `
+      <table style="width:100%;font-size:10.5px;border-collapse:collapse">
+        <thead><tr style="color:var(--ink2)">
+          <th style="text-align:left;font-weight:400">option</th>
+          <th style="text-align:right;font-weight:400">cost</th>
+          <th style="text-align:right;font-weight:400">MW unlocked</th>
+          <th style="text-align:right;font-weight:400">per MW</th>
+          <th style="text-align:right;font-weight:400">vs line</th>
+        </tr></thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--line)">
+            <td style="padding:2px 0"><strong>New line</strong></td>
+            <td style="text-align:right;font-family:monospace">R${r.lineRbn.toFixed(2)}bn</td>
+            <td style="text-align:right;font-family:monospace">${c.mw.toLocaleString()}</td>
+            <td style="text-align:right;font-family:monospace">R${(r.lineRpMW / 1e6).toFixed(2)}m</td>
+            <td style="text-align:right;color:var(--ink2)">&ndash;</td></tr>
+          ${rows}
+        </tbody>
+      </table>
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.55">
+        <strong>Per megawatt unlocked is the only honest comparison.</strong> A line adds a
+        corridor; these extract more from the one already there. The line unlocks several
+        times more, and the ratio says nothing about whether the smaller amount is enough
+        &ndash; it is a screening question, not a business case.
+        Line cost R${r.lineRangeRbn[0].toFixed(2)}&ndash;${r.lineRangeRbn[1].toFixed(2)}bn on
+        this corridor, from two published routes: Eskom&rsquo;s FY2027&ndash;31 capex plan
+        and the Transmission Development Plan, which differ by 30% and are shown as a range
+        for that reason. <strong>Device costs are international ranges</strong>, not South
+        African tenders, and are the number to interrogate first.
+      </div>`;
+  }
+  window.renderGets = renderGets;
+
   window.renderH2Siting = renderH2Siting;
 
   window.renderH2 = renderH2;   // called from run(), which is in another closure
@@ -12993,7 +13070,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // not appear in the browser, and neither of us could tell whether the page was serving a
 // cached older copy. A version string settles that in one glance instead of an hour of
 // reasoning about code that is demonstrably correct on disk.
-const BUILD_STAMP = '2026-09-01i';
+const BUILD_STAMP = '2026-09-01j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -13416,7 +13493,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderH2Siting==='function')window.renderH2Siting();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderH2Siting==='function')window.renderH2Siting();if(typeof window.renderGets==='function')window.renderGets();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
