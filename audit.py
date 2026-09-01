@@ -144,6 +144,10 @@ CHECKS = [
     ('marginalCarbon',                                             'marginal carbon module'),
     ('curtailmentToCompute',                                       'data centre throttling'),
     ('nonWiresCompare',                                            'storage and DR as non-wires'),
+    # The battery panel must say which dispatch produced its numbers. The instant model
+    # dispatches storage heuristically at roughly the median price; the co-optimised
+    # answer comes from the full run. Quoting one as the other is the whole risk.
+    ('Dispatch basis',                                             'battery revenue basis stated'),
     ('Expected shed &middot; per year',                            'shed label states it is per year'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices

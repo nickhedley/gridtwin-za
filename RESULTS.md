@@ -2597,12 +2597,17 @@ the answer is measured and then attacked rather than reported.
 1,800 MW / 7,200 MWh, the model's own hourly prices, 52 weeks
 
                     revenue    discharged    average price achieved
-heuristic            R327m       471 GWh              R694/MWh
+heuristic            R355m       473 GWh              R754/MWh
 perfect foresight  R3,066m       497 GWh            R6,169/MWh
 ```
 
-Both discharge almost the same ENERGY - 471 against 497 GWh. **The heuristic achieves
-R694/MWh against a market median of R748.** It is discharging at roughly the average hour,
+Both discharge almost the same ENERGY - 473 against 497 GWh. **The heuristic achieves
+R754/MWh against a market median of R748 - a ratio of 1.01.**
+
+CORRECTED 1 Sep 2026: an earlier version of this table gave R694/MWh. That figure was the
+margin NET of the R60/MWh cycle cost, labelled as a price achieved. The substance is
+unchanged and slightly strengthened - 1.01 times the median is closer to the average hour
+than 0.93 would have been. It is discharging at roughly the average hour,
 which means it is not targeting peaks at all. That is a clean, checkable statement and it
 does not depend on believing any revenue figure.
 

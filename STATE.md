@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 928 checks
+suite                      19 harnesses, 931 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 928 checks. Last full run: 928/928.
+Nineteen harnesses, 931 checks. Last full run: 931/931.
 
 ```
 node stress_suite.js                290/290
@@ -256,13 +256,13 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           78/78
+python3 audit.py index.html           79/79
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
-node validate_findings.js .          11/11   the PUBLISHED FINDINGS, added 31 Aug
+node validate_findings.js .          13/13   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       28/28
 node validate_structure.js .         21/21
@@ -5887,6 +5887,46 @@ The co-optimised run is the answer; the instant one approximates it. Any battery
 figure quoted from the instant path should say so. **A percentage would have been more
 quotable and less true**, and this file already carries one withdrawn finding from choosing
 the quotable version.
+
+---
+
+## finishing the storage work: three things the finding itself demanded - 1 Sep 2026
+
+### 1. the panel now states its dispatch basis
+
+The finding says any battery revenue figure from the instant path should say so. It did not.
+The battery panel now opens by naming the basis and pointing at the full run for the
+co-optimised answer. Pinned in `audit.py`.
+
+### 2. the finding is pinned - the TIMING claim, not the revenue gap
+
+`validate_findings` 11 -> 13. It asserts the heuristic discharges near the median price,
+with a threshold at 1.5x that would fire if it ever started targeting peaks.
+
+**The revenue gap is deliberately NOT pinned.** Against perfect foresight it reads 89%, and
+almost all of that sits in hours a 1,800 MW battery would price away by discharging into
+them. Pinning a number I do not believe would make it durable, which is the opposite of
+what a check is for.
+
+### 3. two errors found while pinning it, both mine
+
+**The published figure was mislabelled.** R694/MWh was the margin NET of the R60 cycle
+cost, presented as a price achieved. The correct figure is R754 against a median of R748 -
+a ratio of 1.01. The substance is unchanged and slightly stronger.
+
+**The probe inherited a polluted scenario.** Probes in `validate_findings` share one window
+and earlier ones mutate the scenario object - the oversupply check leaves 46 GW of wind
+behind. That gave R1,141/MWh, and I nearly recorded it. Rebuilding from `FIXED` did not
+work either: it lacks the slider keys `simulate` needs, so the run threw and my guard
+skipped the check silently. Now it snapshots and restores, and fails loudly if the probe
+returns nothing.
+
+**A check that can silently skip is worse than no check**, because it reports a pass.
+
+### what remains untested
+
+The reserve co-optimisation has never run in a real browser. Same exposure as the pricing
+run this morning, which passed every harness and failed on the first click.
 
 ---
 

@@ -206,6 +206,51 @@ setTimeout(()=>{
     }
   }
 
+
+  // ── 7. THE INSTANT HEURISTIC DISPATCHES AT THE AVERAGE PRICE ──────────────
+  // SCENARIO: the model's own battery fleet against its own hourly prices, default build.
+  // METRIC: revenue-weighted average price ACHIEVED on discharge, against the median
+  // market price. The published claim is that the heuristic is not targeting peaks -
+  // which is a statement about TIMING and needs no revenue comparison to hold.
+  //
+  // Deliberately NOT asserting the revenue gap. Against perfect foresight it reads 89%,
+  // and almost all of that sits in hours a 1,800 MW battery would itself price away by
+  // discharging into them. That number is not defensible and is not pinned.
+  {
+    const r = probe(`
+      // SNAPSHOT AND RESTORE. Probes in this harness share one window and earlier ones
+      // mutate the scenario object - the oversupply check leaves 46 GW of wind behind.
+      // Inheriting that gave R1,141/MWh against R754 measured in isolation, and I nearly
+      // recorded the polluted figure as a finding.
+      //
+      // Rebuilding from FIXED does not work either: it lacks the slider keys simulate
+      // needs, so the run throws and a guard silently skips the check - which is how this
+      // one disappeared without failing. Restore the defaults instead.
+      const saved = JSON.parse(JSON.stringify(state));
+      for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
+      const x = simulate({ ...state, newBattMW: 1000, newBattHours: 4 }, PROFILES);
+      const p = x.marginalP, dis = x.stack.batt;
+      let rev = 0, mwh = 0;
+      for (let h = 0; h < 8760; h++){ const d = dis[h] || 0; rev += d * p[h]; mwh += d; }
+      const srt = Array.from(p).sort((a, b) => a - b);
+      Object.assign(state, saved);
+      return { achieved: mwh > 0 ? rev / mwh : 0, median: srt[4380], mwh };
+    `);
+    check('the storage timing probe returns a result',
+          !!(r && !r.error && r.mwh > 0),
+          r && r.error ? String(r.error).slice(0, 90) : 'probe returned no discharge');
+    if (r && !r.error && r.mwh > 0){
+      const ratio = r.achieved / r.median;
+      check('the instant heuristic discharges near the median price, not the peak',
+            ratio < 1.5,
+            `achieves R${r.achieved.toFixed(0)}/MWh against a median of R${r.median.toFixed(0)} `
+            + `- a ratio of ${ratio.toFixed(2)}. If this rises above 1.5 the heuristic has `
+            + `started targeting peaks and the published claim needs revisiting`);
+      console.log(`  storage timing R${r.achieved.toFixed(0)}/MWh achieved \u00b7 `
+        + `median R${r.median.toFixed(0)} \u00b7 ratio ${ratio.toFixed(2)}`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

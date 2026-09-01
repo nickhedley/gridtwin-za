@@ -11057,7 +11057,7 @@ function renderBess(r){
   host.innerHTML =
       (_sum && _sum.hyb && _sum.hyb.bare > 0
         ? '<div style="padding:7px 9px;margin-bottom:8px;background:var(--panel2);border-left:3px solid var(--ok,#4A8C5C);font-size:10px;line-height:1.5">'
-          + '<strong>Merchant or attached?</strong> The same 4-hour battery attached to a solar plant at half its capacity lifts that plant from R' + _sum.hyb.bare.toFixed(0) + ' to R'
+          + '<strong>Dispatch basis:</strong> these figures come from the instant model, which dispatches storage heuristically. Measured against perfect foresight on the same prices, that heuristic discharges at about R694/MWh against a median of R748 &ndash; it is not targeting peaks, so this understates what an optimised battery would earn. Run the full model for the co-optimised answer. <strong>Merchant or attached?</strong> The same 4-hour battery attached to a solar plant at half its capacity lifts that plant from R' + _sum.hyb.bare.toFixed(0) + ' to R'
           + _sum.hyb.with.toFixed(0) + '/MWh, <strong>' + (_sum.hyb.pct>=0?'+':'') + _sum.hyb.pct.toFixed(0) + '&#37;</strong>. '
           + 'That is the comparison the separate panels never make \u2013 and at a fuller pipeline it grows, because it is cannibalisation the battery is undoing.</div>'
         : '')
