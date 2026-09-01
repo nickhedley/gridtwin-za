@@ -2595,6 +2595,14 @@ measured change, which is the only reason to re-pin.
    available** - reserve, network support and ramping, none of which an energy merit order
    prices. `coalEAFPct` stays at the audited 65. Full working in results.md.
 
+2. **Non-economic dispatch is not modelled.** IPPs report substantial curtailment with
+   Eskom compensation payments, and the likely mechanism - Eskom favouring its own plant
+   now that there is surplus, absent a competitive market - has no representation here.
+   The model dispatches on merit order between Eskom and IPP plant. `congestionCurtailPct`
+   captures the NERSA-approved ceiling as a flat national haircut, which is the effect
+   without the cause. Same class as the OCGT gap: the model prices energy, real dispatch
+   does not only price energy.
+
 2. ~~Technical and other losses not modelled.~~ **I was wrong — checked 31 Aug 2026.**
    They are already inside the demand series. `profiles.json` states its basis:
    `demand = underlying(gross grid demand + est rooftop)`, which is Eskom's
@@ -5208,6 +5216,53 @@ is the entire export case for the Northern Cape.
 a commercial judgement, so the function returns every dimension separately and the ranking
 shifts completely across the three weightings shown. Presenting one blended index would
 have hidden the only interesting thing in the result.
+
+---
+
+## correction: curtailment is not zero today - 1 Sep 2026
+
+I wrote that "today curtailment is zero everywhere, so a siting tool built on it alone
+would return nothing", and used that to justify building electrolyser siting on headroom
+scarcity instead. **Wrong on two counts, and the user was right to push back.**
+
+### the model does carry curtailment today
+
+```
+E.curtailed   0.000 TWh   ECONOMIC curtailment - correctly zero, nothing is spilled for price
+congestMW     0.775 TWh   CONGESTION curtailment at the NERSA 4% ceiling
+              1.936 TWh   at a 10% ceiling
+```
+
+I read the first and missed the second. `congestMW` is deliberately kept apart from
+`curtailMW` so the price engine never mistakes a full corridor for national oversupply -
+the separation is correct and the code says why, and I did not read far enough.
+
+The model also already carried the context: the slider note records that NERSA approved a
+4% congestion ceiling in September 2025 to unlock 1,180 MW of Western Cape wind, and that
+curtailment in the first half of 2026 ran roughly an order of magnitude above all of 2025.
+
+### the real-world point is larger than my error
+
+IPPs report substantial curtailment with belated Eskom compensation. The likely mechanism -
+that Eskom favours its own plant in dispatch now that there is surplus, absent a
+competitive market - **is not modelled at all.** GridTwin dispatches on merit order
+between Eskom and IPP plant, with no representation of self-dispatch preference or
+contractual priority.
+
+That is the same class of gap as the OCGT finding: the model prices energy, and real
+dispatch includes considerations energy prices do not carry. It belongs on the open list.
+
+### what changed in the tool
+
+Congestion curtailment is applied as a FLAT NATIONAL HAIRCUT on wind and PV, so it cannot
+attribute waste to a region and genuinely cannot drive siting alone - that part of my
+reasoning survives. But regional curtailment does exist in the nodal MIP's region-major
+`curtProfile`, and was being discarded. `mipActiveRes.regionCurtTWh` now exposes it, and
+the siting function uses measured regional curtailment when a full run has been done,
+falling back to headroom scarcity otherwise.
+
+**The lesson is the one from this morning restated.** I reasoned about the model instead of
+reading it, and the answer was in a variable twenty lines from the one I checked.
 
 ---
 

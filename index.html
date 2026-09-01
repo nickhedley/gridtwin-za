@@ -3354,9 +3354,22 @@ function printPrefeas() {
   }
 
   // ── ELECTROLYSER SITING ───────────────────────────────────────────────────
-  // Where should an electrolyser go? Not where curtailment is today - there is none. The
-  // signal is the inverse relationship measured 1 Sep 2026: the correlation between wind
-  // capacity factor and connection headroom is -0.91.
+  // Where should an electrolyser go?
+  //
+  // CORRECTED 1 Sep 2026. An earlier version of this comment said there is no curtailment
+  // today. That was wrong on two counts. The model carries 0.775 TWh of CONGESTION
+  // curtailment at defaults under the NERSA 4% ceiling - I had read `E.curtailed`, which
+  // is ECONOMIC curtailment and correctly zero, and missed `congestMW` entirely. And in
+  // reality IPPs report substantial curtailment with Eskom compensation payments, which
+  // is why that ceiling exists at all.
+  //
+  // But congestion curtailment here is applied as a FLAT NATIONAL HAIRCUT on wind and PV,
+  // so it cannot attribute waste to a region and cannot drive siting on its own. Regional
+  // curtailment does exist in the nodal MIP's region-major `curtProfile`, and
+  // `siteCurtailmentByRegion` below uses it when a full run has been done.
+  //
+  // Absent that, the signal is the inverse relationship measured the same day: the
+  // correlation between wind capacity factor and connection headroom is -0.91.
   //
   //   region            combined CF    headroom MW
   //   Hydra Central           31.3%              0
@@ -3396,6 +3409,15 @@ function printPrefeas() {
   // default - because the weighting between resource, water and export access is a
   // commercial judgement, not a modelling one. The caller supplies weights and sees what
   // moves.
+  // Regional curtailment from the last full network-aware run, if there was one. Returns
+  // null otherwise, and the caller falls back to headroom scarcity - which is what the
+  // flat national haircut is a simplification of anyway.
+  function siteCurtailmentByRegion(){
+    const a = (typeof mipActiveRes !== 'undefined') ? mipActiveRes : null;
+    if (!a || !a.res || !a.regionCurtTWh) return null;
+    return a.regionCurtTWh;
+  }
+
   function electrolyserSiting(weights){
     const W = (typeof regionalWindProfiles !== 'undefined') ? regionalWindProfiles : null;
     const S = (typeof regionalSolarProfiles !== 'undefined') ? regionalSolarProfiles : null;
@@ -3410,8 +3432,11 @@ function printPrefeas() {
       const scf = mean(Array.from(S[r]));
       const combined = (wcf + scf) / 2;
       const site = H2_SITE[r];
+      const rc = siteCurtailmentByRegion();
       rows.push({ region: r, windCF: 100 * wcf, solarCF: 100 * scf,
                   combinedCF: 100 * combined,
+                  // measured regional curtailment where a full run supplied it, else null
+                  curtailTWh: rc ? (rc[r] ?? null) : null,
                   waterStress: site.waterStress, port: site.port, portNote: site.portNote });
     }
     if (!rows.length) return null;
@@ -12826,7 +12851,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // not appear in the browser, and neither of us could tell whether the page was serving a
 // cached older copy. A version string settles that in one glance instead of an hour of
 // reasoning about code that is demonstrably correct on disk.
-const BUILD_STAMP = '2026-09-01f';
+const BUILD_STAMP = '2026-09-01g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -16140,6 +16165,21 @@ function applyMIPResult(m, mode, quiet) {
   // failed silently itself.
   mipActiveRes = { res: mipRes, mode, elapsed: m.elapsed,
                    priceDiag: mipRes.priceDiag,
+                   // Curtailment BY REGION, from the network-aware solve. The instant
+                   // engine applies congestion curtailment as a flat national haircut, so
+                   // this is the only place regional waste is actually resolved - and it
+                   // is what an electrolyser siting question needs.
+                   regionCurtTWh: (() => {
+                     const cp = m.curtProfile;
+                     if (!cp || !mipInputs || !mipInputs.regions) return null;
+                     const out = {}, nR = mipInputs.regions.length;
+                     for (let r = 0; r < nR; r++){
+                       let t = 0;
+                       for (let h = 0; h < 8760; h++) t += cp[r * 8760 + h] || 0;
+                       out[mipInputs.regions[r]] = t * scale / 1e6;
+                     }
+                     return out;
+                   })(),
                    starts: Math.round(m.totalStarts*scale), startCost,
                    heurCoalCost: lastRes.E.coal * p.costCoal,
                    mipCoalCost: coalMWh*p.costCoal + startCost,
