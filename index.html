@@ -10371,7 +10371,15 @@ function renderPricePanel(r){
     + capRow('Wind', 'wind', 'var(--veld,#7DC47A)')
     + capRow('Utility solar', 'pv', '#F5C518')
     + capRow('Coal', 'coal', 'var(--coal2,#8a8a8a)')
+    // Battery was computed in priceStats.capture all along and never shown. It is the most
+    // informative row on the table: a battery discharging on price should capture ABOVE the
+    // average, and here it lands below - the instant engine dispatches storage on state of
+    // charge, not on price. Showing it makes that limitation visible rather than implicit.
+    + (s.capture.batt > 0 ? capRow('Battery', 'batt', 'var(--accent,#C4785A)') : '')
     + `</table>`
+    + `<div style="font-size:9.5px;color:var(--ink2);margin-top:5px;line-height:1.45">`
+    + `Generation-weighted averages over the year: what each technology earns per MWh it `
+    + `actually produces.</div>`
 
     + (capPct('pv') < 70
         ? `<div style="border-left:3px solid var(--alert,#C4785A);background:rgba(196,120,90,0.07);padding:7px 10px;margin-top:9px;font-size:10.5px;line-height:1.5">`

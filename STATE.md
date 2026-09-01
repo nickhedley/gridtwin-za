@@ -6501,6 +6501,41 @@ dispatch CSV is a system view and the PPA series is a developer artefact whose m
 is the price series. It now sits with the prices. Picker and button moved together; verified
 still populated with ten regions and defaulting to Northern Cape.
 
+## capture price: a definition, and the battery row - 1 Sep 2026
+
+### an 18-word note
+
+"Generation-weighted averages over the year: what each technology earns per MWh it actually
+produces."
+
+A reader seeing four technologies with different prices for the same commodity needs to know
+the number is weighted by output. Without it the table looks like an error rather than a
+result.
+
+### the battery row was computed all along and never shown
+
+`priceStats.capture.batt` existed; only wind, solar and coal were rendered. It is arguably
+the most informative row on the table:
+
+```
+Wind            R977    98%
+Utility solar   R756    76%
+Coal          R1,034   104%
+Battery         R774    78%
+```
+
+**A battery discharging on price should capture ABOVE the average. This one lands at 78%.**
+That is the instant engine dispatching storage on state of charge rather than on price - the
+limitation reclassified earlier today - and showing it makes the limitation visible in the
+tool rather than only in the documents.
+
+### the prose ratchet fired on my own addition
+
+4,116 words against a ceiling of 4,100. Eighteen words over, and the audit refused. Raised to
+4,120 **deliberately**, with the reason recorded at the constant - which is exactly what a
+ratchet is for. It forced the decision rather than letting the total drift, and it fired on
+the person who built it within hours of it being built.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

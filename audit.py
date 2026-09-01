@@ -214,7 +214,14 @@ def check_shouting(src):
             found[w] = found.get(w, 0) + 1
     return found
 
-PROSE_CEILING = 4100        # measured 1 Sep 2026 after the trim: 4,098
+# 4100 -> 4120 on 1 Sep 2026: the capture-price table gained an 18-word note defining what
+# a capture price IS. Raised deliberately, which is what the ratchet is for - it fired on
+# the addition and forced this decision rather than letting the total drift.
+#
+# The note earns its place because it is a DEFINITION, not a finding. A reader seeing four
+# technologies with different prices for the same commodity needs to know the number is
+# generation-weighted; without that the table looks like an error.
+PROSE_CEILING = 4120        # measured 1 Sep 2026 after the trim: 4,098
 
 def check_prose(src):
     blocks = re.findall(r'font-size:9\.5px;color:var\(--ink2\)[^>]*>(.*?)</div>', src, re.S)
