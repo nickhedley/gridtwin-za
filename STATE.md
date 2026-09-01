@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 896 checks
+suite                      19 harnesses, 897 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 896 checks. Last full run: 896/896.
+Nineteen harnesses, 897 checks. Last full run: 897/897.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
-node validate_structure.js .         18/18
+node validate_structure.js .         19/19
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .             2/2
@@ -4902,6 +4902,50 @@ it is the main reason the pricing run was worth building.
 
 Build stamp `2026-09-01a`. The trailing clause "the rest keep heuristic prices" is now
 suppressed at full coverage, where it read as a contradiction.
+
+---
+
+## "The wholesale prices didn't budge" — the last link — 1 Sep 2026
+
+The pricing run reached full coverage, 8,760 of 8,760 hours, and the panel still showed
+the old numbers. **The prices were replaced; the panel does not read the prices.**
+
+```
+renderPricePanel(r)  ->  reads r.priceStats, NOT r.marginalP
+mipRes               ->  { ...lastRes, ... } copies the HEURISTIC's priceStats
+```
+
+I overrode `marginalP` and left every statistic derived from it inherited. The panel was
+faithfully redrawing the heuristic's summary of a series that no longer existed.
+
+### THE AUDIT FOUND THREE MORE
+
+```
+priceStats        overridden now - recomputed via priceStatsOf(mipRes.marginalP, ...)
+marginalTech      was INHERITED - re-derived from the MIP's own stack
+asRevenueR        was INHERITED - flagged, zero at defaults
+capacityRevenueR  was INHERITED - flagged, zero at defaults
+```
+
+**`marginalTech` was the worst of them.** It captions each hour with the technology that
+set the price, so inherited it would have labelled pricing-run numbers with heuristic
+technologies - worse than a stale number, because it reads as an explanation. Re-derived
+coarsely from the MIP's stack: a fixed-commitment LP has no bid stack, so claiming the
+heuristic's resolution on storage bids and demand response would be false precision.
+
+The two revenue figures are flagged rather than recomputed. Both are zero at defaults -
+South Africa prices neither ancillary services nor capacity - and the functions that build
+them live inside `simulate()`. Flagged beats silently wrong.
+
+### THE PATTERN, WHICH IS THE REAL LESSON
+
+`{ ...lastRes }` is a convenience that copies EVERY field, including ones computed from a
+field you are about to replace. Overriding the source without recomputing its dependants
+leaves the object internally inconsistent, and the inconsistency is invisible because
+every value is individually plausible.
+
+`validate_structure` 18 -> 19 asserts both are recomputed; removing either fails with the
+name of what went stale.
 
 ---
 

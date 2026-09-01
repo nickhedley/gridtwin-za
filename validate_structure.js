@@ -382,6 +382,23 @@ const live = stripComments(src);
           !diagRead || diagSet,
           'showMIPBanner reads a.priceDiag but mipActiveRes does not set it');
 
+    // DERIVED VALUES MUST NOT BE INHERITED THROUGH THE SPREAD.
+    // `const mipRes = { ...lastRes, ... }` copies EVERY heuristic field, including ones
+    // derived from the price series. Overriding marginalP alone left renderPricePanel -
+    // which reads r.priceStats, not r.marginalP - redrawing the heuristic's numbers after
+    // a full run. Reported 1 Sep as "the wholesale prices didn't budge".
+    //
+    // Anything computed FROM marginalP has to be recomputed after it is replaced.
+    if (/const mipRes = \{ \.\.\.lastRes/.test(codeOnly)){
+      const missing = [];
+      if (!/mipRes\.priceStats\s*=/.test(codeOnly)) missing.push('priceStats');
+      if (!/mipRes\.marginalTech\s*=/.test(codeOnly)) missing.push('marginalTech');
+      check('price-derived values are recomputed for the MIP result',
+            missing.length === 0,
+            'inherited stale from lastRes: ' + missing.join(', ')
+            + ' - overriding marginalP alone leaves the panels showing heuristic numbers');
+    }
+
     const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
     const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
     check('there is one shared weather-profile builder',
