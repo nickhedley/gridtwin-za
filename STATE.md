@@ -4816,6 +4816,57 @@ to - tells you what it says.**
 
 ---
 
+## Can we replicate a NEM-style price forecasting service? — 1 Sep 2026
+
+Prompted by Endgame Analytics' pd4castr - ML price forecasts for the NEM, sold by
+subscription over intraday, week-ahead and quarterly horizons.
+
+**NOT AS BUILT, AND THE REASON IS STRUCTURAL RATHER THAN TECHNICAL.** Endgame forecasts an
+OBSERVABLE price: the NEM has a spot market with decades of published half-hourly
+settlement data, which is what makes supervised learning possible. **South Africa has no
+wholesale spot price.** There is no target variable, so there is nothing to train on.
+SAWEM is expected to begin trading Q4 2026.
+
+### BUT THE QUANTITY IS FORECASTABLE, AND MEASURABLY SO
+
+Tested across 12 draws varying both weather year and outage path:
+
+```
+hours where the draws agree within 5%      7,823    89.3%
+hours where they disagree widely             937    10.7%
+share of total price mass in those hours              27.2%
+worst single hour                          R86,255 range
+```
+
+**The distribution is bimodal.** Nearly nine hours in ten are effectively deterministic -
+coal is marginal, the price is the marginal unit's cost, and a structural model gets it
+almost exactly with no learning required. The remaining tenth carries more than a quarter
+of the value and is decided entirely by which outage and weather realisation occurs.
+
+### WHAT THAT IMPLIES
+
+**The 89% needs no machine learning** - it needs a merit order, a fleet and a demand
+forecast, which is what GridTwin already is.
+
+**The 11% is not learnable from history South Africa does not have.** In the NEM, ML earns
+its keep in the tail because it learns BIDDING BEHAVIOUR from years of observed conduct.
+Before a market opens there is no conduct to learn. What that tail actually needs is an
+outage forecast - and Eskom publishes weekly system status, which this project already
+tracks as a drift detector.
+
+### THE TIMING POINT
+
+At market start nobody will have price history, including incumbents. **A structural model
+is the only instrument that works before a market has a past**, and its shadow price
+becomes checkable against a real one for the first time. That is a narrow window in which
+this model is comparatively strong, and it closes as history accumulates.
+
+RECORDED AS ANALYSIS, NOT A PLAN. No product decision follows from this, and the honest
+constraint is that a forecasting service needs live data ingestion and an uptime
+commitment that a single-file browser model does not have.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
