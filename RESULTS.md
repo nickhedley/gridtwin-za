@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Twenty-five sections follow. This index exists because the file passed 1,400 lines and the
+Twenty-six sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2237,3 +2237,72 @@ knowledge would give a precision the inputs cannot support.
 export access is a commercial judgement, so the tool returns every region scored on each
 dimension and lets the user move the weighting - the ranking above shifts completely
 between the three weightings shown, which is the honest way to present it.
+
+---
+
+## EDMSA Scenario A: the 2035 endpoint agrees to 0.2%, the starting point does not
+
+The Energy Council's Energy Data and Modelling South Africa platform published Scenario A
+(As-Is Baseline) on 7 May 2026, built in PLEXOS. Reproduced in GridTwin from its stated
+assumptions: EAF 70%, demand growth 2% a year, roughly 5 GW a year of renewables, 4 GW of
+CCGT, 4.1 GW of coal retirement.
+
+### the endpoint is close to identical
+
+```
+2035                    GridTwin      EDMSA Scenario A
+CO2 Mt                     123.8                   124
+wind TWh                    64.1                   64+
+unserved energy                0        0 by 2034
+```
+
+**Two independently built models, one in PLEXOS and one in a browser, landing within 0.2%
+on 2035 emissions and exactly on wind output.** That is the strongest external corroboration
+this project has, and it is worth more than agreement with a single number would be,
+because the models share almost no code, data pipeline or authorship.
+
+### the 2025 starting point differs by 11%, and availability does not explain it
+
+```
+                    coal TWh    CO2 Mt
+GridTwin, EAF 65       165.6     174.5     validated against Eskom's audited FY2026
+GridTwin, EAF 70       165.9     175.0
+EDMSA Scenario A                    195
+```
+
+Raising availability to their assumption moves our answer by 0.5 Mt. **The gap is 20 Mt and
+availability accounts for half a megatonne of it.** Our 174.5 Mt is benchmarked against
+Eskom's own audited reporting, so the difference is a scope or factor question rather than
+a dispatch one: it may include embedded and private generation, or use a different emission
+factor. It is the first thing to ask about.
+
+### the 2032 adequacy trough does not reproduce
+
+They identify 2029-2032 as the critical window, with unserved energy peaking at 49.51 GWh
+in 2032. Reconstructing that year gives **zero unserved energy** in GridTwin.
+
+Stated with appropriate caution: our reconstruction of their build PATH is approximate -
+they specify endpoints and a CCGT determination, not an annual schedule - so a timing
+difference is the likely explanation rather than a disagreement about adequacy. The
+endpoints agreeing while the path differs is exactly what a path assumption does.
+
+### where the two models genuinely disagree
+
+Scenario A's assumption table records **"Grid Readiness: Adequate per TDP 2023/24; IRP 2025
+Section D confirms transmission adequacy through 2030"** - and its key insights then say
+"grid absorption capacity, not just installed capacity, is emerging as the binding
+constraint."
+
+Those two statements sit uneasily together, and our data supports the second against the
+first. On NTCSA's GCCA 2025, **the four best wind regions hold 7.3% of national headroom
+and the two best are at zero for every technology.** The correlation between wind capacity
+factor and available headroom is -0.91.
+
+TDP 2023/24 is a plan; GCCA 2025 is a snapshot of what can connect today. A scenario that
+assumes the plan is delivered will not see the constraint its own insights identify.
+
+### a small thing, said plainly
+
+The executive summary states capacity growing "from approximately 66 MW in 2025 to over
+120 MW by 2035", twice. Megawatts for gigawatts - a typo rather than a modelling issue, but
+it is in the first paragraph a reader meets.
