@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Twenty-seven sections follow. This index exists because the file passed 1,400 lines and the
+Twenty-eight sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2377,3 +2377,66 @@ cost-neutral, because the capex of overbuild is cheaper than the fuel it displac
 is a price, not a verdict.** The question a monitoring framework should ask is whether the
 waste is bought deliberately or accumulated by inattention, and an annual rate trigger
 cannot tell those apart.
+
+---
+
+## Heat: the damage comes through demand, not through derated plant
+
+The model carries no temperature data, so this is a stress test rather than a forecast:
+apply the physical effects of a hot spell and see what the system does. Four channels, each
+with a physical basis - solar -0.40%/degC, thermal -0.15%/degC, cooling demand +1.2%/degC,
+line rating -0.8%/degC, all against a 25degC baseline.
+
+**Why this matters more in South Africa than elsewhere.** This model's shortage hours fall
+in January to March, and Eskom's own dispatch confirms it - 8.5 times more peaker energy in
+Jan-Mar than Jul-Sep, because maintenance is scheduled away from the winter peak. **The
+tight season is the hot season.** In a northern-hemisphere system heat and system stress
+fall in opposite halves of the year; here they coincide.
+
+```
++degC   EAF used   demand   unserved GWh   short hours   worst stage
+    0       65.0       +0%            5.5             5             3
+    3       64.7     +3.6%           27.8            30             4
+    5       64.5       +6%           67.0            57             4
+    8       64.2     +9.6%          162.7           122             6
+   12       63.8    +14.4%          500.2           344             7
+```
+
+### one channel does almost all of it
+
+```
+at +8degC                    unserved GWh
+baseline                              5.5
+thermal derate only                   8.1      +2.6
+cooling demand only                 124.6    +119.1
+both together                       162.7    +157.2
+```
+
+**Cooling demand does forty-six times the damage that plant derating does.** At +8degC the
+thermal derate costs 1.2 points of availability; the demand uplift is nearly 10%. The
+effect that dominates the popular account of heat and power systems - power stations
+struggling in the heat - is the smaller half by a wide margin.
+
+And the two do not simply add: together they produce 1.29 times the sum of the parts,
+because a derated fleet meets a raised peak.
+
+### what follows for adaptation spending
+
+If heat is a material risk to South African adequacy, **the lever is cooling load, not plant
+cooling**. Demand-side measures - efficiency standards for air conditioning, time-of-use
+signals in summer, demand response contracted for hot evenings - address the channel doing
+119 of the 157 GWh. Upgrading condensers addresses 2.6.
+
+That is a testable claim rather than a preference, and it inverts where adaptation
+attention usually goes.
+
+### what is NOT modelled, stated plainly
+
+Solar output derate and transmission line rating derate are **reported but not injected**,
+because neither has a scenario lever in the engine. At +8degC they would remove a further
+3.2% of solar output and 6.4% of line rating - both making the picture worse, so the
+figures above are conservative.
+
+Drought and cooling-water constraints are not modelled at all. Nor is the correlation
+between heat and low wind, which is the mechanism behind most northern-hemisphere
+heat-driven adequacy events.

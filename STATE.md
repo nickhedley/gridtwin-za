@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 921 checks
+suite                      19 harnesses, 923 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 921 checks. Last full run: 921/921.
+Nineteen harnesses, 923 checks. Last full run: 923/923.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           72/72
+python3 audit.py index.html           74/74
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -5555,6 +5555,51 @@ deliberately or accumulated by inattention - and an annual rate trigger cannot d
 them. That distinction is the contribution, not the numbers.
 
 Now in `validate_findings` with the scenario attached: 9/9 -> 11/11.
+
+---
+
+## heat stress: the reviewer's genuine gap, and it inverts the usual story - 1 Sep 2026
+
+Of the reviewer's seven suggestions, climate stress-testing was the only substantial gap.
+Built as a STRESS TEST rather than a forecast, because the model carries no temperature
+data and inventing an hourly series would be worse than admitting its absence.
+
+```
+at +8degC                    unserved GWh
+baseline                              5.5
+thermal derate only                   8.1      +2.6
+cooling demand only                 124.6    +119.1
+both together                       162.7    +157.2
+```
+
+**Cooling demand does forty-six times the damage that plant derating does**, and the two
+compound rather than add - together they produce 1.29 times the sum of the parts, because a
+derated fleet meets a raised peak.
+
+The popular account of heat and power systems is power stations struggling in the heat.
+That channel is the smaller half by a wide margin.
+
+### why it lands harder here than in Europe
+
+This model sheds in January to March, and Eskom's measured dispatch agrees - 8.5 times more
+peaker energy in Jan-Mar than Jul-Sep. **South Africa's tight season is its hot season.** A
+northern-hemisphere system has heat and system stress in opposite halves of the year; here
+they coincide, so every heat derate lands on the weeks already tightest.
+
+### what this says about adaptation spending
+
+The lever is cooling load, not plant cooling. Efficiency standards for air conditioning,
+summer time-of-use signals and demand response contracted for hot evenings address the
+119 GWh; upgrading condensers addresses 2.6. That is a testable claim, and it inverts where
+adaptation attention usually goes.
+
+### stated, not hidden
+
+Solar and line-rating derates are computed and REPORTED but not injected, because neither
+has a scenario lever - at +8degC they would remove a further 3.2% of solar and 6.4% of line
+rating, so the numbers above are conservative. Drought and cooling-water limits are not
+modelled at all, nor is the heat-and-low-wind correlation behind most northern-hemisphere
+heat events.
 
 ---
 

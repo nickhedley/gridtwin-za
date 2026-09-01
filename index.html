@@ -3674,6 +3674,68 @@ function printPrefeas() {
 
   window.renderH2 = renderH2;   // called from run(), which is in another closure
 
+  // ── HEAT STRESS TEST ──────────────────────────────────────────────────────
+  // The model carries NO temperature data - `profiles.json` has demand, wind, solar and
+  // CSP and nothing else. So this does not pretend to an hourly temperature series. It is
+  // a STRESS TEST: apply the physical effects of a hot spell for a chosen window and see
+  // what the system does.
+  //
+  // WHY IT MATTERS HERE SPECIFICALLY. Measured 31 Aug 2026, this model's shortage hours
+  // fall in January to March, and Eskom's own dispatch confirms the seasonality - it ran
+  // 8.5 times more peaker energy in Jan-Mar than Jul-Sep, because maintenance is scheduled
+  // away from the winter peak. **South Africa's tight season is its hot season**, so heat
+  // derates land on the weeks that are already tightest. That is the opposite of a
+  // northern-hemisphere system, where heat and system stress fall in opposite seasons.
+  //
+  // THE FOUR EFFECTS, each with a physical basis rather than a fitted number:
+  //
+  //   solar        -0.40%/degC above 25degC cell temperature. Crystalline silicon
+  //                coefficients run -0.3 to -0.5%/degC; -0.4 is conventional. A 40degC
+  //                ambient day gives cell temperatures well above that, so the derate is
+  //                applied against ambient as a deliberately CONSERVATIVE proxy.
+  //   thermal      -0.15%/degC. Condenser efficiency falls as cooling air and water warm.
+  //                Dry-cooled units - Matimba, Medupi, Kendal - are markedly worse than
+  //                this; wet-cooled better. A fleet-average figure hides a real spread.
+  //   demand       +1.2%/degC. Cooling load. South African summer peaks are evening
+  //                rather than midday, so this raises the peak that already binds.
+  //   line rating  -0.8%/degC. Conductor sag and thermal limits. Note this runs OPPOSITE
+  //                to dynamic line rating, which gains capacity on cold windy days: the
+  //                same physics that makes DLR worth having makes heat worse.
+  //
+  // Returns the derates for a caller to apply, plus what they do to a given scenario.
+  const HEAT = { solarPctPerC: -0.40, thermalPctPerC: -0.15,
+                 demandPctPerC: 1.20, linePctPerC: -0.80, baselineC: 25 };
+
+  function heatStress(deltaC, opts){
+    const o = opts || {};
+    const d = Math.max(0, deltaC || 0);
+    const f = {
+      solar:   1 + HEAT.solarPctPerC   * d / 100,
+      thermal: 1 + HEAT.thermalPctPerC * d / 100,
+      demand:  1 + HEAT.demandPctPerC  * d / 100,
+      line:    1 + HEAT.linePctPerC    * d / 100,
+    };
+    // Applied through the levers the engine already has: availability stands in for
+    // thermal derate, demand growth for cooling load. Solar and line effects are
+    // reported but not injected, because neither has a scenario lever - stating that is
+    // better than silently omitting it.
+    const base = o.state || state;
+    const eaf = (base.coalEAFPct ?? FIXED.coalEAFPct);
+    const scen = { ...base,
+      coalEAFPct: Math.max(0, eaf * f.thermal),
+      demandGrowthPct: (base.demandGrowthPct || 0) + HEAT.demandPctPerC * d };
+    let r = null;
+    try { r = simulate(scen, PROFILES); } catch(e){ return null; }
+    let hrs = 0;
+    for (let h = 0; h < HOURS; h++) if (r.stack.unserved[h] > 1) hrs++;
+    return { deltaC: d, factors: f,
+             eafUsed: scen.coalEAFPct, demandUplift: HEAT.demandPctPerC * d,
+             unservedGWh: (r.E.unserved || 0) / 1000, shortHours: hrs,
+             maxStage: r.maxStage, dieselTWh: (r.E.diesel || 0) / 1e6,
+             notModelled: ['solar output derate', 'transmission line rating derate'] };
+  }
+  window.heatStress = heatStress;
+
   // ── GRID-ENHANCING TECHNOLOGIES: cost against building line ────────────────
   // `getsEnabled` already models the CAPABILITY - a 20% headroom uplift on congested
   // corridors. It never modelled the COST, so the toggle answered "could we?" and not
@@ -13098,7 +13160,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // not appear in the browser, and neither of us could tell whether the page was serving a
 // cached older copy. A version string settles that in one glance instead of an hour of
 // reasoning about code that is demonstrably correct on disk.
-const BUILD_STAMP = '2026-09-01j';
+const BUILD_STAMP = '2026-09-01k';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
