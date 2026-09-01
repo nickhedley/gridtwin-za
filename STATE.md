@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 939 checks
+suite                      19 harnesses, 940 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 939 checks. Last full run: 939/939.
+Nineteen harnesses, 940 checks. Last full run: 940/940.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          16/16   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       35/35
-node validate_structure.js .         21/21
+node validate_structure.js .         22/22
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .            4/4
@@ -6385,6 +6385,37 @@ had to be made twice before it was asserted.**
 Ninety-odd entries: units, technology acronyms, institutions, and code identifiers like
 `FIXED`, `MONTHS` and `COLORS` that appear inside template literals. Without it the check
 would fire on every legitimate mention of `TWh` and be switched off within a day.
+
+## clicking Pipeline highlighted Prices - 1 Sep 2026
+
+Reported from the browser: the jump nav scrolled to the right section and lit the wrong tab.
+
+### the cause is an assumption, not a typo
+
+```
+nav order    Scenario  Network  Where to build  Build rates  Pipeline  Results  Prices
+DOM order    Scenario  Results  Network  Where to build  Build rates  Pipeline  Prices
+```
+
+**`nav-results` sits at DOM position 781, above `nav-network` at 847, but reads fifth in
+the bar.** That is deliberate - the bar follows a reading order, the page follows a layout
+one.
+
+The spy walked the NAV order and broke at the first section not yet passed. Reaching
+Pipeline, the out-of-order Results was already above the bar, so the loop did not break, it
+carried on, and Prices claimed the highlight.
+
+The comment above that loop explains why it was rewritten away from IntersectionObserver
+and calls the rule "deterministic". It was deterministic and it was wrong, because it
+encoded an assumption nobody had checked.
+
+### fixed by sorting on document position
+
+`pairs.sort(compareDocumentPosition)`. Nav order no longer matters. Simulated at every
+section: all nine light correctly, including Pipeline.
+
+`validate_structure` 21 -> 22 asserts the sort is present, and fails with "the nav bar
+assumes its links are in DOM order, and they are not" when removed.
 
 ---
 

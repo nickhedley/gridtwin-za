@@ -443,6 +443,16 @@ const live = stripComments(src);
             + ' - a working function nobody can see is not a feature');
     }
 
+    // THE SCROLL-SPY MUST SORT BY DOCUMENT POSITION.
+    // Nav order and DOM order genuinely differ - Results sits above Network in the page
+    // but reads fifth in the bar. The original loop walked nav order and broke at the
+    // first section not yet passed, so clicking Pipeline lit Prices. Reported 1 Sep 2026.
+    check('the scroll-spy sorts sections by document position',
+          /compareDocumentPosition/.test(codeOnly)
+          && /pairs\.sort/.test(codeOnly),
+          'the nav bar assumes its links are in DOM order, and they are not - '
+          + 'clicking one section will highlight another');
+
     const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
     const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
     check('there is one shared weather-profile builder',

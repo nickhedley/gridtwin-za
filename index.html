@@ -16907,6 +16907,14 @@ window.cancelMIP = cancelMIP;
   const pairs = links.map(a => ({ a, t: document.querySelector(a.getAttribute('href')) }))
                      .filter(p => p.t);
   if (!pairs.length) return;
+  // SORT BY DOCUMENT POSITION, not by nav order. The two differ: Results sits above
+  // Network in the page but reads fifth in the bar, which is a deliberate reading order.
+  // The old loop walked the nav order and broke at the first section not yet passed, so
+  // reaching Pipeline left the out-of-order Results already above the bar, the loop
+  // carried on, and Prices claimed the highlight. Reported 1 Sep 2026: clicking Pipeline
+  // scrolled correctly and lit Prices.
+  pairs.sort((x, y) =>
+    (x.t.compareDocumentPosition(y.t) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
   const BAR = 70;                       // sticky bar height plus a little slack
   let queued = false;
   function update(){
