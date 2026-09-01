@@ -4867,6 +4867,44 @@ commitment that a single-file browser model does not have.
 
 ---
 
+## The pricing run works — 8,760 of 8,760 hours — 1 Sep 2026
+
+```
+Pricing run: 365 days priced, 0 errored, 0 with a row-count mismatch,
+             0 solved but yielded no duals.
+Prices come from a pricing run covering 8,760 of 8,760 hours.
+```
+
+Full coverage. The full model now produces its own prices rather than inheriting the
+heuristic's, and every price-derived panel refreshes from them.
+
+### WHAT TO EXPECT FROM THE NEW PRICES, AND WHY
+
+They will NOT match the heuristic's, and two differences are structural rather than
+suspicious:
+
+**The scarcity tail should disappear.** The heuristic run sheds 5 GWh and prices five
+hours at the R87,000 value of lost load. The MIP finds a feasible dispatch with ZERO
+unserved energy, so those hours no longer price at VOLL. Mean price should fall
+noticeably, and that is the MIP being better rather than the prices being wrong.
+
+**Start-up costs are not in the price.** A fixed-commitment LP cannot recover them, which
+is precisely why real markets pay uplift separately. This solve carries 4,343 unit
+start-ups, so system COST includes them while the PRICE does not - the same distinction
+the model already draws for start-up in `avgCost` versus `marginalP`.
+
+### WHAT IS WORTH A GLANCE
+
+Curtailment rises to 11.54 TWh under the MIP because it respects corridor limits the
+instant model ignores. Hours where a corridor binds should now price differently from
+unconstrained hours - that is the locational signal the instant engine cannot produce, and
+it is the main reason the pricing run was worth building.
+
+Build stamp `2026-09-01a`. The trailing clause "the rest keep heuristic prices" is now
+suppressed at full coverage, where it read as a contradiction.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
