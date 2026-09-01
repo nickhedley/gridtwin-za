@@ -12520,6 +12520,11 @@ let lastRes=null, rafPending=false, detStage=0;
   if(peakEl&&peakEl.textContent==='–') peakEl.textContent='~30 GW';
   if(shedEl&&shedEl.textContent==='–') shedEl.textContent='computing…';
 })();
+// BUILD STAMP. Added 31 Aug 2026 because a banner line that was present in the file did
+// not appear in the browser, and neither of us could tell whether the page was serving a
+// cached older copy. A version string settles that in one glance instead of an hour of
+// reasoning about code that is demonstrably correct on disk.
+const BUILD_STAMP = '2026-08-31e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -15211,7 +15216,7 @@ self.onmessage = async (e) => {
   const mipPrice = new Float64Array(8760);
   // Why the pricing run did or did not produce duals. Reported to the main thread so a
   // silent fallback can be told apart from a fallback with a cause.
-  let priceOkDays = 0, priceFailDays = 0, priceFailReason = null, priceNoMatchDays = 0;
+  let priceOkDays = 0, priceFailDays = 0, priceFailReason = null, priceNoMatchDays = 0, priceEmptyDays = 0;
   const corridorFlow = new Float64Array(corridors.length);   // annual |MWh| per corridor
   const corridorHrsAtLimit = new Float64Array(corridors.length);
   const solvedDay = new Uint8Array(365);
@@ -15277,7 +15282,15 @@ self.onmessage = async (e) => {
               dayPrice = new Array(24).fill(0);
               const cnt = new Array(24).fill(0);
               Object.entries(rp.Rows).forEach(([k, v]) => {
-                const n = names[+k]; if (!n) return;
+                // HiGHS returns Rows keyed EITHER by numeric index or by row NAME,
+                // depending on the build. Node's package uses indices; the browser WASM
+                // build uses names. The first version assumed indices, so in the browser
+                // names[+k] was names[NaN] - every row skipped, every dual lost, and
+                // no error raised. Diagnosed 31 Aug 2026 from a run reporting
+                // "365 days priced, 0 errored, 0 with a row-count mismatch" and still no
+                // usable prices. Accept both.
+                const n = (k !== '' && !isNaN(Number(k))) ? names[Number(k)] : k;
+                if (!n) return;
                 const m = n.match(/^bal_(\d+)_(\d+)$/);
                 if (!m) return;
                 const h = +m[2];
@@ -15294,8 +15307,13 @@ self.onmessage = async (e) => {
           if (!priceFailReason) priceFailReason = String(err && err.message || err).slice(0, 120);
           priceFailDays++;
         }
-        if (dayPrice){ priceOkDays++;
+        // dayPrice is an Array(24).fill(0) - TRUTHY even when nothing was extracted.
+        // The first version counted that as a priced day, which is why the banner read
+        // "365 days priced" while no hour carried a dual. Require a real value.
+        const gotAny = dayPrice && dayPrice.some(v => v > 0);
+        if (gotAny){ priceOkDays++;
           for (let h = 0; h < 24; h++) mipPrice[day * 24 + h] = dayPrice[h]; }
+        else if (dayPrice) priceEmptyDays++;
       }
 
       if (res && res.Columns) {
@@ -15352,7 +15370,7 @@ self.onmessage = async (e) => {
   self.postMessage({
     type: 'done', solved, failed, totalStartCost, totalStarts,
     coalProfile, chgProfile, disProfile, unservProfile, curtProfile, mipPrice,
-    priceOkDays, priceFailDays, priceFailReason, priceNoMatchDays,
+    priceOkDays, priceFailDays, priceFailReason, priceNoMatchDays, priceEmptyDays,
     corridorFlow, corridorHrsAtLimit,
     solvedDay, daysCount: days.length, elapsed: (Date.now() - t0) / 1000
   }, [coalProfile.buffer, chgProfile.buffer, disProfile.buffer, unservProfile.buffer, curtProfile.buffer, mipPrice.buffer,
@@ -15728,7 +15746,8 @@ function applyMIPResult(m, mode, quiet) {
                    })(),
                    pricesFromInstant: false,
                    priceDiag: { ok: m.priceOkDays|0, fail: m.priceFailDays|0,
-                                noMatch: m.priceNoMatchDays|0, reason: m.priceFailReason||null },
+                                noMatch: m.priceNoMatchDays|0, empty: m.priceEmptyDays|0,
+                                reason: m.priceFailReason||null },
                    mipCurtailedTWh: curtMWh / 1e6 };
   // The gap between what the MIP curtails and what the single-node engine does is
   // the network-driven component. Recorded so the curtailment forecast, which
@@ -15746,7 +15765,7 @@ function applyMIPResult(m, mode, quiet) {
   })).sort((a,b) => b.hrsAtLimit - a.hrsAtLimit);
 
   // priceDiag is lifted onto the WRAPPER, not left on mipRes. showMIPBanner reads
-  // `mipActiveRes.priceDiag`, and on 31 Aug it was attached one level down where the
+  // mipActiveRes.priceDiag, and on 31 Aug it was attached one level down where the
   // banner could never see it - so the diagnostic added to explain a silent failure
   // failed silently itself.
   mipActiveRes = { res: mipRes, mode, elapsed: m.elapsed,
@@ -15821,9 +15840,13 @@ function showMIPBanner() {
     '<strong>These KPIs, the energy mix and the dispatch chart are the optimal network-aware solution</strong> – '
     + 'coal unit commitment, storage scheduling and corridor flows across all 10 regions solved together '
     + 'as a mixed-integer program over ' + label + ' with HiGHS in ' + a.elapsed.toFixed(0) + 's. '
+    + '<br><span style="font-size:10px;opacity:.7">build ' + BUILD_STAMP
+    + (a.priceDiag ? ' \u00b7 pricing run reported' : ' \u00b7 NO pricing diagnostic on this result')
+    + '</span>'
     + (a.priceDiag ? '<br><span style="font-size:10px;opacity:.85">Pricing run: '
         + a.priceDiag.ok + ' days priced, ' + a.priceDiag.fail + ' errored, '
-        + a.priceDiag.noMatch + ' with a row-count mismatch'
+        + a.priceDiag.noMatch + ' with a row-count mismatch, '
+        + (a.priceDiag.empty|0) + ' solved but yielded no duals'
         + (a.priceDiag.reason ? ' \u2013 first error: ' + a.priceDiag.reason : '')
         + '.</span>' : '')
     + (mipPricedHours > 0

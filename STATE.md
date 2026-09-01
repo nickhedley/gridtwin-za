@@ -4698,6 +4698,80 @@ the solve summary.
 
 ---
 
+## A build stamp, because "which version is running" was unanswerable
+
+The pricing diagnostic is present and correct in `index.html` - wired to `mipRes`, lifted
+onto `mipActiveRes`, read by `showMIPBanner`, and verified rendering in isolation. It did
+not appear in the browser.
+
+**Neither of us could tell whether the page was serving a cached older copy**, and I spent
+an hour reasoning about code that is demonstrably correct on disk. That is the wrong
+failure mode: the question "is this the file I sent" should take one glance.
+
+`BUILD_STAMP` now prints in the banner:
+
+```
+build 2026-08-31d · pricing run reported
+build 2026-08-31d · NO pricing diagnostic on this result
+```
+
+The second half distinguishes the two hypotheses directly. If the stamp is missing
+entirely, the browser has an old file. If the stamp shows but says NO pricing diagnostic,
+the code is current and `applyMIPResult` is not setting `priceDiag` - a real bug. If it
+says "pricing run reported", the diagnostic line follows.
+
+**THE LESSON.** Any deployed artefact needs a version marker. Without one, every
+"it doesn't work" is ambiguous between a code fault and a stale cache, and the debugging
+cost is paid on every single report.
+
+---
+
+## The pricing run: found by instrumenting, not reasoning — 31 Aug 2026
+
+The banner that finally answered it read:
+
+```
+Pricing run: 365 days priced, 0 errored, 0 with a row-count mismatch.
+The pricing run did not return usable duals.
+```
+
+Every day solved. Nothing errored. Nothing mismatched. And no prices. **That combination
+names the fault precisely**, which is exactly what four rounds of reasoning had failed to
+do.
+
+### TWO BUGS, BOTH INVISIBLE WITHOUT THE COUNTERS
+
+**1. HiGHS keys its Rows differently in the browser.** Node's package returns rows keyed
+by NUMERIC INDEX; the browser WASM build returns them keyed by ROW NAME. My extraction did
+`names[+k]`, so in the browser every key gave `names[NaN]`, every row was skipped, and
+every dual was lost - with no error, because skipping is a normal path.
+
+Now accepts both: `(k !== '' && !isNaN(Number(k))) ? names[Number(k)] : k`. Verified under
+both formats, giving identical prices - 24 of 24 hours, R628 either way.
+
+**2. My own success counter was wrong.** `if (dayPrice)` counted a day as priced whenever
+the array existed - and `new Array(24).fill(0)` is TRUTHY. That is why the banner claimed
+365 days priced while no hour carried a price. Now requires `dayPrice.some(v => v > 0)`,
+and days that solve but yield nothing are counted separately as `empty`.
+
+### AND THE BACKTICK TRAP, FOR THE SECOND TIME TODAY
+
+The comment explaining bug 1 used backticks around an identifier. Inside
+`MIP_WORKER_SRC` - a template literal - that terminated the string and truncated the
+worker mid-comment.
+
+**The check added this morning caught it before it shipped.** That is the whole value of
+building the worker source the way the browser does rather than lint-checking the file.
+
+### WHAT THIS COST, AND WHAT IT SHOULD HAVE COST
+
+Four rounds of reasoning about correct code. The signature matched, the loop variable was
+right, the renderers used their arguments, and the mechanism worked at full scale in Node -
+every check passed because every check was in Node. **The counters took ten minutes and
+answered it outright.** When a silent path fails, instrument it before theorising about it.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
