@@ -414,6 +414,39 @@ const num = t => {
     check('wheeling coverage is reachable', false, wcov ? wcov.err : 'probe returned nothing');
   }
 
+  // ── SCENARIO ISOLATION ────────────────────────────────────────────────────
+  // `simulate()` MUTATES its parameter object: the CCS branch rewrites p.costCoal and
+  // p.emisCoal in place, and syncFloorMW is derived onto it. That is fine only while `p`
+  // is a fresh copy per call. If it ever becomes shared - or if a caller passes FIXED or
+  // `state` directly - enabling CCS once would silently poison every later run.
+  //
+  // Checked 1 Sep 2026 while closing a stale open item about an `emisCoal || 0.95`
+  // fallback that no longer exists. The mutation does not leak today; this asserts that
+  // it keeps not leaking, because the failure would be invisible - every number stays
+  // plausible, just wrong.
+  const iso = run(`
+    const a = simulate({ ...state, ccsEnabled: false }, PROFILES);
+    const b = simulate({ ...state, ccsEnabled: true  }, PROFILES);
+    const c = simulate({ ...state, ccsEnabled: false }, PROFILES);
+    return { first: a.co2, mid: b.co2, third: c.co2,
+             fixedEmis: FIXED.emisCoal, fixedCost: FIXED.costCoal };
+  `);
+  if (iso && !iso.err){
+    check('a CCS run does not leak into a later non-CCS run',
+          Math.abs(iso.first - iso.third) < 0.01,
+          `CO2 ${iso.first.toFixed(2)} then ${iso.third.toFixed(2)} Mt with an identical `
+          + `scenario either side of a CCS run - simulate() mutates its parameter object, `
+          + `so this means the object is being shared`);
+    check('CCS lowers emissions when enabled',
+          iso.mid < iso.first * 0.5,
+          `${iso.mid.toFixed(2)} against ${iso.first.toFixed(2)} Mt - if these converge the `
+          + `capture rate is not being applied at all`);
+    check('the emission and cost constants survive a CCS run',
+          Math.abs(iso.fixedEmis - 1.04) < 1e-9 && iso.fixedCost === 546,
+          `FIXED.emisCoal ${iso.fixedEmis}, FIXED.costCoal ${iso.fixedCost} - the CCS `
+          + `branch has written through to the constants`);
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

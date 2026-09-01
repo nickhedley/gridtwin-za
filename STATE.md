@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 932 checks
+suite                      19 harnesses, 935 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 932 checks. Last full run: 932/932.
+Nineteen harnesses, 935 checks. Last full run: 935/935.
 
 ```
 node stress_suite.js                290/290
@@ -264,7 +264,7 @@ python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          16/16   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       28/28
+node validate_consistency.js .       31/31
 node validate_structure.js .         21/21
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -6061,8 +6061,9 @@ keep the reasoning behind each item.
    R0.70bn a year to generators at the 4% ceiling - but the model still dispatches on merit
    order between Eskom and IPP plant. **Needs metered curtailment instructions by plant: a
    data request, not a modelling problem.**
-5. **`emisCoal || 0.95` at line 5812** disagrees with `FIXED.emisCoal` = 1.04. Dead today;
-   a latent wrong answer if the resolution changes.
+5. ~~`emisCoal || 0.95` at line 5812.~~ **STALE, closed 1 Sep 2026.** The pattern does not
+   exist anywhere in the file; every read is `p.emisCoal` or `S.emisCoal` with no fallback.
+   The item had outlived the code. What the check DID find is below.
 6. **Drought and cooling-water limits are not modelled**, nor the heat-with-low-wind
    correlation behind most northern-hemisphere heat events.
 
@@ -6125,6 +6126,35 @@ source fragments, so the pin failed. The RENDERED text is unchanged - checked be
 touching the pin - so it was repointed at wording that survives in one piece rather than
 relaxed. **A pin that greps source will break on a legitimate refactor; the answer is to
 verify the output first, then move the pin, never to widen it.**
+
+## a stale open item, and the real risk hiding behind it - 1 Sep 2026
+
+Open item 5 flagged `emisCoal || 0.95` at line 5812 as a latent wrong answer. **The pattern
+does not exist.** Every read is `p.emisCoal` or `S.emisCoal` with no fallback at all - it
+had been removed and the item outlived it.
+
+### but `simulate()` mutates its parameter object
+
+```
+p.costCoal = p.costCoal / keep + ccsOpexR + ccsCapexR + ccsTsR;
+p.emisCoal = p.emisCoal * (1 - cap) / keep;
+```
+
+The CCS branch rewrites both in place, and `syncFloorMW` is derived onto `p` the same way.
+That is safe only while `p` is a fresh copy per call. **If it ever becomes shared, or a
+caller passes `FIXED` or the scenario object directly, enabling CCS once would poison every
+later run** - and every number would stay plausible.
+
+Tested: CCS off, on, off. 174.52 -> 27.76 -> 174.52 Mt. No leak, constants intact.
+
+### now asserted, because the failure would be invisible
+
+`validate_consistency` 28 -> 31: a CCS run must not change an identical run after it, CCS
+must actually cut emissions, and the constants must survive. Verified against a build where
+the branch writes through to `FIXED` - two of the three fire, naming the cause.
+
+**The lesson is that the stale item was worth opening anyway.** Chasing a fallback that no
+longer existed led to a real mutation with no guard on it.
 
 ---
 
