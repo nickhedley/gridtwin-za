@@ -5707,6 +5707,79 @@ municipal network models to synthesise from.
 
 ---
 
+## storage co-optimisation: the error is 1 to 6%, and it is all in reserve - 1 Sep 2026
+
+The largest open item, approached by first measuring whether the problem exists.
+
+### the model's stack does not cost energy
+
+```
+5 GW / 4h battery, reserve pricing off vs on
+battery TWh        1.02 -> 3.48
+pumped storage     3.43 -> 0.98
+total               4.45 -> 4.45
+```
+
+Turning reserve on REALLOCATES between technologies and leaves total throughput unchanged.
+So the feared double-count - a battery selling the same megawatt twice - does not show up
+as lost energy in the dispatch.
+
+### `storage_coopt.js` sizes what it does cost
+
+One LP, energy and reserve decided together, with the constraint the stacked calculation
+omits: `d[h] + r[h] <= MW`.
+
+```
+100 MW / 4h                       R m/yr   MWh out   MW-h reserve
+energy only                        102.8   103,990             0
+energy + reserve, STACKED          122.5   103,990       873,600
+energy + reserve, CO-OPTIMISED     119.7   103,990       767,530
+```
+
+**Discharge is identical; the co-optimised battery holds 12% less reserve.** In the hours it
+discharges, energy is worth more than reserve and it sells the dearer product. The error is
+entirely over-claimed reserve, which is the more comfortable of the two possibilities -
+only the ancillary line is affected, not every arbitrage figure in the model.
+
+```
+duration    R11.25/MW-h   R22.50   R45.00
+1h                 4.7%     5.1%     5.6%
+2h                 1.8%     2.4%     3.2%
+4h                 1.5%     2.4%     3.8%
+8h                 1.1%     2.0%     3.4%
+```
+
+At the durations South Africa is building, 2 to 4%. Smaller than capex uncertainty, and it
+changes no published finding - but it is a one-directional bias and should be stated
+whenever a battery revenue figure is quoted.
+
+### three bugs found building it, all mine
+
+**The reserve price units.** I used `asReserveRMWh` at R150 as R/MW-h. It is R150 per MWh of
+reserve ENERGY, which is R1.31m/MW-yr - over six times the R197,100/MW-yr the model's own
+saturation analysis reports. Reserve became so lucrative the LP held full power all year and
+discharged nothing.
+
+**The column extraction.** `c.Name || k` fails when HiGHS keys Columns by index - the exact
+fault that cost four rounds on the pricing run this morning, repeated within hours.
+
+**Duplicate objective terms.** I wrote `740.8 d_0` and `-60 d_0` as separate terms. **LP
+format does not sum duplicates; it takes the last.** The discharge coefficient was -60, so
+discharging looked like pure cost and the battery correctly did nothing. The LP was right
+and my objective was wrong - a plausible answer from a broken input, which is the hardest
+kind to catch.
+
+All three produced a battery that did nothing, which at least fails loudly.
+
+### what remains
+
+This is a PRICE-TAKER analysis, not a replacement for the dispatch heuristic inside
+`simulate()`. Making storage co-optimised in the model itself is still open, and is a
+larger job: it changes how every scenario dispatches, not just what a merchant battery
+earns.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

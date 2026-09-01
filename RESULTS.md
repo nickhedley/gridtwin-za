@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty sections follow. This index exists because the file passed 1,400 lines and the
+Thirty-one sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2523,3 +2523,60 @@ Two further asymmetries run the other way. A line lasts fifty years and a batter
 so a like-for-like annualisation would widen the gap. And a battery DEFERS rather than
 removes a constraint: the deferral ends when load grows past it, while a line does not
 expire.
+
+---
+
+## Stacking energy and reserve revenue overstates a battery by 1 to 6%
+
+GridTwin computes arbitrage from the dispatch and ancillary revenue separately, from a rate
+on capacity held. Nothing forces the two to agree, and a battery cannot discharge at full
+power while holding that same power in reserve. `storage_coopt.js` co-optimises them in one
+LP to size the error.
+
+```
+100 MW / 4h, a representative price week x 52
+
+                                  R m/yr   MWh discharged   MW-h reserve
+energy only                        102.8          103,990              0
+energy + reserve, STACKED          122.5          103,990        873,600
+energy + reserve, CO-OPTIMISED     119.7          103,990        767,530
+
+stacking overstates revenue by 2.4%
+```
+
+### the battery gives up reserve, not energy
+
+Discharge is IDENTICAL under both. The co-optimised battery holds 12% less reserve, in
+exactly the hours it is discharging - because in those hours energy is worth more than
+reserve, and it correctly sells the dearer product. **The error is entirely
+over-claimed reserve.**
+
+That is a more comfortable result than the alternative. If the stack had cost energy, every
+arbitrage figure in the model would need revisiting; as it is, only the ancillary line is
+affected.
+
+### it matters most for short-duration batteries
+
+```
+duration    reserve R11.25/MW-h    R22.50    R45.00
+1h                        4.7%       5.1%      5.6%
+2h                        1.8%       2.4%      3.2%
+4h                        1.5%       2.4%      3.8%
+8h                        1.1%       2.0%      3.4%
+```
+
+A one-hour battery is overstated by 5%, an eight-hour one by 2%. Short-duration assets
+spend a larger share of their hours at full power, so the conflict binds more often. The
+error also rises with the reserve price, which is the expected direction and a reason to
+re-test if South Africa ever prices ancillary services properly.
+
+### so the model's revenue figures are defensible, with a caveat now quantified
+
+At the durations South Africa is actually building - two to four hours - the overstatement
+is 2 to 4%. That is smaller than the uncertainty on capex, and it does not change any
+published finding. **But it is a real bias in one direction, and it should be stated
+whenever a battery revenue figure is quoted rather than left implicit.**
+
+CAVEAT: this is a PRICE-TAKER model. The battery is assumed too small to move prices, which
+is right for a merchant asset and wrong for a system study. It answers what a battery can
+earn, not what the system should build.
