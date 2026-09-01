@@ -6090,12 +6090,16 @@ keep the reasoning behind each item.
 
 ## Regulatory calendar
 
-16. **8 Sep - NERSA market inquiry into fixed and generation capacity charges.** The
-    only near-term process actually open. Submissions to
-    electricity.marketinquiry@nersa.org.za. **Read the draft report first**, then reframe:
-    a capacity charge is levied on peak DEMAND, and our evidence says demand and scarcity
-    fall in different seasons. `ertsa_submission_draft.md` holds the analysis but names a
-    process that does not exist - the 2026/27 ERTSA was decided 5 March 2026.
+16. **8 Sep - NERSA market inquiry into fixed and generation capacity charges.** The only
+    near-term process actually open. **Draft ready:
+    `nersa_market_inquiry_submission.md`**, reframed from the withdrawn ERTSA draft.
+    Submissions to electricity.marketinquiry@nersa.org.za.
+
+    **BEFORE SENDING: read the draft report.** The submission says openly that we have not
+    seen it and responds to the published scope and to the findings as reported. That is
+    defensible but weaker than responding to the document. If you can get the report, the
+    section 3 argument about "ability to respond to tariff signals" should be checked
+    against what it actually says.
 17. **10 Sep** Eskom RCA hearing.
 18. **Oct** Price and Tariff Rule consultation - the most consequential dated item.
 19. **31 Oct** Trading Rules final text, Market Code, Vesting Framework, Wholesale Tariff
@@ -6235,6 +6239,43 @@ worth keeping and a date that LOOKS verified is not.
 
 **An unsourced date is a guess wearing a deadline's clothes**, and that line is now at the
 top of the section.
+
+## the submission, reframed for the process that is actually open - 1 Sep 2026
+
+`nersa_market_inquiry_submission.md`, about 850 words, to
+electricity.marketinquiry@nersa.org.za by 8 September.
+
+### the reframe is not cosmetic
+
+ERTSA was about tariff structure generally. This inquiry is about the GENERATION CAPACITY
+CHARGE specifically, and that sharpens the argument: a capacity charge exists to recover
+the cost of capacity built for the tightest hour, so a seasonal definition that does not
+identify the tightest hours is a defect in the instrument rather than a general observation
+about tariff design.
+
+### section 3 is the part that engages their own framing
+
+The draft findings, as reported, note that customer impacts depend on **the ability to
+respond to tariff signals**, citing agricultural customers constrained by production
+cycles. That asks who can follow the signal. Our evidence raises the prior question: **if
+the seasonal definition does not match when the system is short, a customer who responds
+successfully has shifted load away from hours that were not the tight ones.**
+
+The cost of inflexibility and the accuracy of the signal are separable, and only the first
+appears to be examined.
+
+### one metric computed and DISCARDED
+
+I tried to show which month is capacity-tightest by monthly minimum supply margin. It
+clipped at -3,700 MW in nine of twelve months - a floor, not a scarcity signal. Dropped
+rather than presented, because three independent pieces of clean evidence beat four with
+one that invites a methodological objection.
+
+### what it says about itself
+
+**"We have not seen the full draft report."** Stated in section 5, with the note that
+sections 1 and 2 stand independently of any reading of it. That is honest and it is also
+weaker than responding to the document - which is why the to-do says read it first.
 
 ---
 
