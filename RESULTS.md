@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Twenty-eight sections follow. This index exists because the file passed 1,400 lines and the
+Thirty sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2440,3 +2440,86 @@ figures above are conservative.
 Drought and cooling-water constraints are not modelled at all. Nor is the correlation
 between heat and low wind, which is the mechanism behind most northern-hemisphere
 heat-driven adequacy events.
+
+---
+
+## Marginal carbon: a renewable megawatt-hour in South Africa avoids more than the average
+
+Every corporate emissions report uses AVERAGE carbon intensity - total emissions over total
+generation. For a procurement decision that is the wrong number. Average asks how dirty the
+grid is; **marginal asks what one more or one fewer kilowatt-hour actually causes.**
+
+```
+average intensity          834 gCO2/kWh
+marginal intensity       1,026 gCO2/kWh mean, 1,040 median
+hours with a clean margin   35 of 8,760
+
+what sets the margin        coal 8,398 h  ·  diesel 327  ·  storage 30  ·  shortage 5
+```
+
+**Coal sets the margin in 96% of hours.** So a renewable megawatt-hour bought here displaces
+coal at 1,040 g/kWh, not the average mix at 834 - and average-factor accounting
+**undercredits South African renewable procurement by about 23%.**
+
+### this inverts the usual worry about 24/7 matching
+
+The standard concern on a coal-heavy grid is that buying clean power at night displaces
+nothing, because the marginal unit is already clean. **Here there is almost no such hour** -
+35 in the year. The concern is a northern-hemisphere one, imported into a system where it
+does not apply.
+
+### and it responds correctly to the build
+
+```
+clean-margin hours, today          35 of 8,760
+clean-margin hours, 130 GW VRE  7,678 of 8,760
+```
+
+The undercrediting shrinks as the grid decarbonises, which is the right behaviour and the
+reason this cannot be a fixed factor.
+
+### why it is the right basis for CBAM
+
+The EU's Carbon Border Adjustment Mechanism prices embedded emissions in imported steel,
+aluminium and cement. An exporter claiming a figure below the grid average needs an hourly,
+causal basis - which a marginal series is and an annual average is not.
+
+CAVEAT, and it is important: storage and demand response are excluded from the margin
+because they SHIFT emissions rather than cause them. Crediting them would double-count the
+charging hour. That exclusion is a judgement, and a different convention would give a
+different answer in the 30 hours where storage is marginal.
+
+---
+
+## Batteries are the most expensive way to relieve a corridor, per megawatt
+
+Extending the non-wires comparison beyond transmission technologies to the two a
+distribution utility actually controls.
+
+```
+Eastern Cape - KwaZulu-Natal, 167 km, 1,500 MW, 3,080 hours a year at limit
+
+option                              per MW unlocked    versus line
+dynamic line rating                        R0.033m        76x cheaper
+topology optimisation                      R0.208m        12x cheaper
+advanced power flow control                R0.300m         8x cheaper
+new line                                   R2.55m                  -
+demand response, 5% of rating              R2.500m         about equal
+battery, 10% of rating, 4h                 R8.105m         3x DEARER
+```
+
+**A battery is three times more expensive per megawatt unlocked than building the line**,
+and demand response is roughly a wash. Batteries as a non-wires alternative are widely
+promoted; on this metric, for this purpose, they are the worst option on the list.
+
+### the caveat that makes this fair
+
+**Per megawatt unlocked is not the whole value of a battery.** It also arbitrages, provides
+reserve, and can be moved when the constraint does. The comparison prices one service and a
+battery sells several - so this understates it, and the right reading is that congestion
+relief alone does not justify a battery, not that batteries are poor investments.
+
+Two further asymmetries run the other way. A line lasts fifty years and a battery fifteen,
+so a like-for-like annualisation would widen the gap. And a battery DEFERS rather than
+removes a constraint: the deferral ends when load grows past it, while a line does not
+expire.

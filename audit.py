@@ -138,6 +138,12 @@ CHECKS = [
     # land on the weeks already tightest - the opposite of a northern-hemisphere system.
     ('heatStress',                                                 'heat stress test'),
     ('demandPctPerC',                                              'cooling demand channel'),
+    # Marginal carbon intensity. Average asks how dirty the grid is; marginal asks what a
+    # displaced kWh actually avoids, and on this grid the two differ by about a quarter.
+    ('Marginal carbon intensity',                                  'marginal carbon panel'),
+    ('marginalCarbon',                                             'marginal carbon module'),
+    ('curtailmentToCompute',                                       'data centre throttling'),
+    ('nonWiresCompare',                                            'storage and DR as non-wires'),
     ('Expected shed &middot; per year',                            'shed label states it is per year'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices

@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 924 checks
+suite                      19 harnesses, 928 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 924 checks. Last full run: 924/924.
+Nineteen harnesses, 928 checks. Last full run: 928/928.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           74/74
+python3 audit.py index.html           78/78
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -5644,6 +5644,66 @@ DECOMPOSITION rather than the total, because the decomposition is the finding:
 ```
 
 Verified at four settings including zero, no NaN.
+
+---
+
+## the second reviewer list: what was built, and what was refused - 1 Sep 2026
+
+Six suggestions. Two were already built, one was refused, one needs a market that does not
+exist, and three were built or extended.
+
+```
+1 data centre siting      runDC() existed; ADDED curtailmentToCompute
+2 synthetic grid data     REFUSED - no municipal networks to synthesise from
+3 probabilistic forecast  P10/P50/P90 and the LOLE/EUE ensemble already exist;
+                          short-term forecasting needs SAWEM
+4 marginal carbon         BUILT - the standout, and it inverts the usual worry
+5 battery revenue stack   arbitrage, ancillary, capacity and degradation exist;
+                          simultaneous bidding needs the storage co-optimisation LP
+6 non-wires ranker        transmission half built this morning; ADDED storage and DR
+```
+
+### the marginal carbon result
+
+```
+average    834 gCO2/kWh        marginal  1,026 gCO2/kWh
+clean-margin hours: 35 of 8,760, rising to 7,678 at a 130 GW build
+```
+
+Coal sets the margin in 96% of hours, so average-factor accounting **undercredits** South
+African renewable procurement by about 23%. The standard worry - that buying clean power at
+night displaces nothing - is a northern-hemisphere concern that does not apply here.
+
+### the non-wires result
+
+A battery costs three times more per megawatt unlocked than building the line, and demand
+response is roughly a wash. The caveat is in the write-up and it matters: per megawatt
+unlocked prices ONE service and a battery sells several.
+
+### two bugs found while building
+
+`BLD_COST.batt` is an OBJECT, not a number. Reading it as a number gave NaN silently, and
+the panel would have rendered a blank row rather than an error. Rule 11 caught it -
+compute the bound before believing the number.
+
+And the reachability check added an hour earlier **failed on a correctly wired renderer**,
+because `run()` calls these as `window.renderX(...)` and my regex only matched bare calls.
+`(?:window\.)?(?<![.\w])name` does not work either - after consuming "window." the
+lookbehind sees a dot and rejects. Alternation is the only form that matches both.
+
+### what I did not do, and why
+
+**Item 5 needs the storage co-optimisation LP**, which is the largest item on the open list.
+Simultaneous multi-service bidding is not a panel; it is a rebuild of how storage is
+dispatched, and faking it with a heuristic would repeat the mistake that produced the
+withdrawn 37% finding.
+
+**Item 3 needs a target variable South Africa does not have.** Short-term price forecasting
+requires a spot market with history to train on; SAWEM is expected Q4 2026.
+
+**Item 2 I would not build at all.** Generating synthetic municipal networks for third
+parties to test against is a product for a utility with data to protect. We have no
+municipal network models to synthesise from.
 
 ---
 

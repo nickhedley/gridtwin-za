@@ -421,9 +421,17 @@ const live = stripComments(src);
     // These are FEATURES, not harness hooks. fetchSolar, sarahCFAt, solarCrossCheck and
     // wheelCoverage are deliberately exposed for testing and are NOT listed here.
     {
-      const features = ['renderH2', 'renderH2Siting', 'renderGets', 'renderHeat'];
+      const features = ['renderH2', 'renderH2Siting', 'renderGets', 'renderHeat', 'renderLMCI'];
       const unreachable = features.filter(f => {
-        const called = new RegExp('(?<![.\\w])' + f + '\\s*\\(', 'g');
+        // Allow a `window.` prefix. run() calls these as window.renderX(...) because they
+        // live in a different closure, and the first version of this check counted only
+        // bare calls - so a genuinely wired renderer failed. Catching that here was the
+        // check working on itself.
+        // ALTERNATION, not an optional prefix. `(?:window\\.)?(?<![.\\w])name` still fails,
+        // because after consuming "window." the lookbehind sees a dot and rejects. Two
+        // separate alternatives is the only form that matches both a bare call and a
+        // window-prefixed one - and run() uses the prefixed form for every renderer.
+        const called = new RegExp('(?:window\\.' + f + '|(?<![.\\w])' + f + ')\\s*\\(', 'g');
         const bound = new RegExp('on\\w+="[^"]*' + f, 'g');
         const nCalls = (codeOnly.match(called) || []).length;
         const nDefs = (codeOnly.match(new RegExp('function\\s+' + f + '\\s*\\(', 'g')) || []).length;
