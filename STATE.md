@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 909 checks
+suite                      19 harnesses, 911 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 909 checks. Last full run: 909/909.
+Nineteen harnesses, 911 checks. Last full run: 911/911.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           64/64
+python3 audit.py index.html           66/66
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -5165,6 +5165,49 @@ corporate PPA matching, nodal pricing, and distributed energy. Climate stress-te
 remains the largest genuine gap: nothing models heat degrading solar output or thermal
 efficiency, or drought constraining cooling water, and today's work showed the model is
 already tightest in summer.
+
+---
+
+## electrolyser siting - 1 Sep 2026
+
+Built on the inverse relationship rather than on curtailment, because today curtailment is
+zero everywhere and a curtailment-based tool would return nothing.
+
+```
+region            combined CF    headroom MW
+Hydra Central           31.3%              0
+Northern Cape           30.5%              0
+KwaZulu-Natal           21.0%         11,000
+```
+
+The two best resources cannot connect. An off-grid electrolyser is worth most exactly
+where a generator is worth least - which is the whole case for siting one.
+
+### water reverses the answer, and that is the finding
+
+```
+resource only            Hydra Central · Northern Cape · Western Cape
++ water and port         Western Cape · Eastern Cape · KwaZulu-Natal
+```
+
+Electrolysis needs 9-10 litres per kg plus cooling, and the Northern Cape has the best
+resource and the least water in the country. **Any siting analysis ranking on resource
+alone points at the Karoo and is wrong.**
+
+### honest about the layers
+
+Resource and headroom are modelled. Water stress and port access are ASSERTED from public
+knowledge as three coarse levels, deliberately not numeric - a hydrological or logistics
+dataset would let them be scored properly, and inventing decimals would give a precision
+the inputs cannot support. Industrial demand is not scored at all.
+
+Boegoebaai is flagged as PROPOSED rather than counted as a port, which matters because it
+is the entire export case for the Northern Cape.
+
+**The weights belong to the caller.** Whether resource beats water beats export access is
+a commercial judgement, so the function returns every dimension separately and the ranking
+shifts completely across the three weightings shown. Presenting one blended index would
+have hidden the only interesting thing in the result.
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Twenty-four sections follow. This index exists because the file passed 1,400 lines and the
+Twenty-five sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2178,3 +2178,62 @@ several times more, and the ratios say nothing about whether the smaller amount 
 published NTCSA procurement is available. The line costs are well sourced and the uplift
 percentages are conventional, but the capital costs are the number to interrogate first -
 which is why the output is a ratio rather than a business case.
+
+---
+
+## Electrolyser siting: resource points at the Karoo, water points at the coast
+
+An electrolyser is worth most where the resource is best and the grid will not take it -
+which is a real place in South Africa, because the correlation between wind capacity
+factor and connection headroom is -0.91.
+
+```
+region            combined CF    headroom MW
+Hydra Central           31.3%              0
+Northern Cape           30.5%              0
+Eastern Cape            28.3%            400
+KwaZulu-Natal           21.0%         11,000
+```
+
+**The two best resources in the country cannot connect.** An off-grid electrolyser
+monetises exactly the resource a generator cannot sell, so it is worth most where a
+generator is worth least.
+
+### and then water reverses the answer
+
+Electrolysis needs roughly 9-10 litres of demineralised water per kg of hydrogen, plus
+cooling. The Northern Cape has the best resource in South Africa and the least water.
+
+```
+weighting                     top three
+resource only                 Hydra Central · Northern Cape · Western Cape
++ water and port equally      Western Cape · Eastern Cape · KwaZulu-Natal
++ port weighted double        Western Cape · Eastern Cape · KwaZulu-Natal
+```
+
+**Adding water and export access moves the answer from the Karoo to the coast entirely.**
+Hydra Central and the Northern Cape fall out of the top three altogether once water is
+scored at all.
+
+That is the finding, and it is a caution rather than a recommendation: **any siting
+analysis that ranks on resource alone will point at the Karoo and be wrong.** The
+resource case and the water case run in opposite directions across the same geography.
+
+### what is modelled, and what is asserted
+
+```
+resource quality      MODELLED - ten weather years, capacity-weighted regional profiles
+grid headroom         MODELLED - NTCSA GCCA, and it is the inverse signal
+water stress          ASSERTED - three coarse levels from public knowledge
+port access           ASSERTED - three coarse levels; Boegoebaai flagged as PROPOSED
+industrial demand     NOT MODELLED - needs a dataset this project does not have
+```
+
+The two asserted layers are deliberately three-level rather than numeric. A hydrological
+or logistics dataset would let them be scored properly; inventing decimals from general
+knowledge would give a precision the inputs cannot support.
+
+**The weights are the caller's, not the model's.** Whether resource beats water beats
+export access is a commercial judgement, so the tool returns every region scored on each
+dimension and lets the user move the weighting - the ranking above shifts completely
+between the three weightings shown, which is the honest way to present it.

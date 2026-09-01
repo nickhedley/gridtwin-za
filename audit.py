@@ -117,6 +117,10 @@ CHECKS = [
     ('electrolyserH2',                                             'hydrogen from curtailment'),
     ('getsCompare',                                                'grid-enhancing cost comparison'),
     ('LINE_RM_PER_KM',                                             'line cost from two published routes'),
+    # Electrolyser siting. The water layer is what stops the tool pointing at the Karoo,
+    # which has the best resource in the country and the least water.
+    ('electrolyserSiting',                                         'electrolyser siting'),
+    ('waterStress',                                                'water layer present'),
     ('Expected shed &middot; per year',                            'shed label states it is per year'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices

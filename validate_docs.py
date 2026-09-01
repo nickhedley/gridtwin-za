@@ -110,7 +110,9 @@ if _res:
     _actual = len(re.findall(r'^## ', _res, re.M))
     _words = {'ten':10,'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,
               'sixteen':16,'seventeen':17,'eighteen':18,'nineteen':19,'twenty':20,
-              'twenty-one':21,'twenty-two':22,'twenty-three':23,'twenty-four':24}
+              'twenty-one':21,'twenty-two':22,'twenty-three':23,'twenty-four':24,
+              'twenty-five':25,'twenty-six':26,'twenty-seven':27,'twenty-eight':28,
+              'twenty-nine':29,'thirty':30}
     _m = re.search(r'([A-Za-z-]+) sections follow', _res)
     _stated = _words.get(_m.group(1).lower()) if _m else None
     check('RESULTS.md index states the right number of sections',
@@ -144,6 +146,8 @@ if _rules:
         check('CALENDAR.md standing check agrees with the rule count',
               _cs == _n, 'calendar says "%s" (%s), RULES.md has %d'
                          % (_cm.group(1) if _cm else 'nothing', _cs, _n))
+
+
 
 print(f'\n{npass}/{npass + nfail} documentation checks passed')
 if fails:
