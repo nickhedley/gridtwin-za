@@ -802,12 +802,10 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div>
           <div id="nav-prices" class="panel" style="">
             <div class="ph"><h2>Wholesale shadow price</h2><span class="tag">modelled &middot; what a market would clear at</span></div>
-            <div style="display:flex;align-items:center;gap:6px;padding:0 0 8px">
-              <select id="ppaRegion" title="Which region's wind and solar profiles to include. The price series is national - the instant engine is single-node, so there is one shadow price for the whole country."
-              style="font-size:10px;padding:2px 4px;max-width:130px"></select>
-              <button onclick="exportPpaTimeseries()" title="Hourly shadow prices and regional wind and solar profiles, for PPA modelling" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap;margin-right:4px">↓ PPA series</button>
+            <div style="padding:0 0 8px">
+              <button onclick="exportPpaTimeseries()" title="Hourly shadow prices and regional wind and solar profiles, for PPA modelling"
+                      style="font-size:10px;padding:3px 8px">&darr; PPA series</button>
             </div>
-            <div class="pb" id="priceBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
@@ -1337,23 +1335,6 @@ function initResourceQuery(){
   fetch('nodal/profiles_regional.json').then(r=>r.json()).then(d=>{
     regionalWindProfiles = d.wind_pu;
     regionalSolarProfiles = d.solar_pu;
-    // Populate the PPA export picker HERE, not in bldLoadRegionalData - that one is lazy
-    // and only fires when Where To Build is opened, so the picker sat empty on a page the
-    // user had never scrolled. This fetch is unconditional.
-    //
-    // Options come from the profile file itself, so the list is exactly the regions that
-    // HAVE profiles. Building it from a separate constant is how an option that cannot be
-    // exported ends up in the list.
-    (function(){
-      const sel = document.getElementById('ppaRegion');
-      if (!sel || sel.options.length) return;
-      const regs = Object.keys(d.wind_pu || {}).filter(k => d.solar_pu && d.solar_pu[k]).sort();
-      if (!regs.length) return;
-      sel.innerHTML = regs.map(r => '<option value="' + r + '">' + r + '</option>').join('');
-      const site = document.getElementById('siteRegion');
-      if (site && site.value && regs.indexOf(site.value) >= 0) sel.value = site.value;
-      else if (regs.indexOf('Northern Cape') >= 0) sel.value = 'Northern Cape';
-    })();
   }).catch(()=>{});
 
   // ── Shared behind-the-meter constants ────────────────────────────────────
@@ -13833,7 +13814,67 @@ let siteSliderContribution={newWindMW:0, newPvMW:0}; // how much of the national
  * says so, because a file that travels into someone else's model must carry
  * its own caveats - the person running it will not have read this comment.
  */
-function exportPpaTimeseries(){
+// Region chooser for the PPA export. A small modal rather than a picker parked in the
+// prices panel: the shadow price is NATIONAL, and a region control sitting above the
+// charts implied they were regional. It is also not a prompt() - free text let a typo
+// through and produced a CSV with the price column populated and both profile columns
+// empty, silently.
+//
+// Options come from the profile file itself, so the list is exactly the regions that have
+// profiles. Resolves to null if the user cancels.
+async function ppaAskRegion(){
+  // Source the list from bldRegProfiles, which is what the export itself reads, so the
+  // options and the data can never disagree. regionalWindProfiles is closure-scoped to the
+  // site-query block and not reachable here.
+  //
+  // Awaited, because bldLoadRegionalData is lazy - it fires when Where To Build is opened,
+  // and a user may never have gone there.
+  if (typeof bldLoadRegionalData === 'function'){
+    try { await bldLoadRegionalData(); } catch(e){ /* handled by the empty-list branch */ }
+  }
+  return new Promise(resolve => {
+    const P = (typeof bldRegProfiles !== 'undefined' && bldRegProfiles) ? bldRegProfiles : null;
+    const regs = (P && P.wind_pu)
+      ? Object.keys(P.wind_pu).filter(k => P.solar_pu && P.solar_pu[k]).sort() : [];
+    if (!regs.length){
+      alert('Regional wind and solar profiles have not loaded, so the export would contain '
+          + 'no profile columns. Cancelled.');
+      return resolve(null);
+    }
+    const site = document.getElementById('siteRegion');
+    const def = (site && regs.indexOf(site.value) >= 0) ? site.value
+              : (regs.indexOf('Northern Cape') >= 0 ? 'Northern Cape' : regs[0]);
+
+    const back = document.createElement('div');
+    back.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9999;'
+      + 'display:flex;align-items:center;justify-content:center';
+    back.innerHTML = `
+      <div style="background:var(--panel,#fff);border:1.5px solid var(--ink,#222);
+                  padding:16px 18px;max-width:340px;font-size:12px;line-height:1.5">
+        <div style="font-weight:700;margin-bottom:8px">Download PPA series</div>
+        <div style="font-size:10.5px;color:var(--ink2);margin-bottom:10px">
+          The price series is national &ndash; the instant engine is single-node, so there is
+          one shadow price for the whole country. Choose which region&rsquo;s wind and solar
+          profiles to include alongside it.
+        </div>
+        <select id="ppaRegionModal" style="width:100%;font-size:11px;padding:4px;margin-bottom:12px">
+          ${regs.map(r => `<option value="${r}"${r === def ? ' selected' : ''}>${r}</option>`).join('')}
+        </select>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button id="ppaCancel" style="font-size:11px;padding:4px 10px">Cancel</button>
+          <button id="ppaOk" style="font-size:11px;padding:4px 10px;font-weight:700">Download</button>
+        </div>
+      </div>`;
+    document.body.appendChild(back);
+    const done = v => { back.remove(); resolve(v); };
+    back.querySelector('#ppaOk').onclick = () =>
+      done(back.querySelector('#ppaRegionModal').value);
+    back.querySelector('#ppaCancel').onclick = () => done(null);
+    back.onclick = e => { if (e.target === back) done(null); };
+  });
+}
+
+async function exportPpaTimeseries(){
   if (!lastRes){ alert('Run the model first.'); return; }
   const r = lastRes;
   const mp = r.marginalP || [];
@@ -13846,8 +13887,11 @@ function exportPpaTimeseries(){
   // undefined, the null was carried through, and the user got a plausible-looking CSV with
   // no wind or solar in it. A picker cannot be misspelled, and the validation below means
   // an unrecognised region now refuses rather than exports a hollow file.
-  const _pick = document.getElementById('ppaRegion');
-  const reg = _pick ? _pick.value : null;
+  // The picker is opened BY the button, not parked beside it. Sitting in the panel header
+  // it implied the whole price panel was regional - it is not. The shadow price is
+  // national because the instant engine is single-node; only the wind and solar profiles
+  // in the export are regional. A control that suggests otherwise misreads the panel.
+  const reg = await ppaAskRegion();
   if (!reg) return;
   const P = (typeof bldRegProfiles !== 'undefined' && bldRegProfiles) ? bldRegProfiles : null;
   const wind = P && P.wind_pu && P.wind_pu[reg] ? P.wind_pu[reg] : null;

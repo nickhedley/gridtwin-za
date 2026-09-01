@@ -140,7 +140,12 @@ CHECKS = [
     ('getsCorridor',                                              'corridor selector'),
     # PPA export: a picker, not a free-text prompt. A misspelled region used to produce a
     # CSV with the price column populated and both profile columns empty, silently.
-    ('ppaRegion',                                                  'PPA export region picker'),
+    # PPA export: the region is chosen AFTER clicking, in a modal. A picker parked in the
+    # prices panel implied the panel was regional - it is not, the shadow price is national.
+    # And it must not be a prompt(): free text let a typo produce a CSV with the price
+    # column populated and both profile columns empty, silently.
+    ('ppaAskRegion',                                               'PPA region chooser'),
+    ('ppaRegionModal',                                             'chooser is a modal, not inline'),
     # Heat stress test. South Africa's tight season IS its hot season, so heat derates
     # land on the weeks already tightest - the opposite of a northern-hemisphere system.
     ('heatStress',                                                 'heat stress test'),

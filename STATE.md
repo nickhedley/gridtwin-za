@@ -6536,6 +6536,37 @@ tool rather than only in the documents.
 ratchet is for. It forced the decision rather than letting the total drift, and it fired on
 the person who built it within hours of it being built.
 
+## the PPA picker was in the wrong place, and it misread the panel - 1 Sep 2026
+
+Parking the region dropdown beside the button in the prices panel header **implied the
+charts below were for that region.** They are not: the shadow price is national because the
+instant engine is single-node, and only the wind and solar profiles in the export are
+regional.
+
+That is not a cosmetic complaint. A control at the top of a panel is read as scoping the
+panel.
+
+### now a chooser, opened by the button
+
+`ppaAskRegion()` returns a promise, opens a small modal with a dropdown, and explains in two
+lines why the price series is national before asking which region's profiles to attach.
+Cancel and click-outside both resolve to null.
+
+**Still not a prompt().** The original free-text prompt let a typo through and produced a CSV
+with the price column populated and both profile columns empty. The list is built from
+`bldRegProfiles` - the same object the export reads - so the options and the data cannot
+disagree.
+
+### two things caught while building it
+
+`regionalWindProfiles` is closure-scoped to the site-query block and not reachable from the
+export, so the modal sources from `bldRegProfiles` instead. And `bldLoadRegionalData()` is
+LAZY - it fires when Where To Build is opened - so the chooser awaits it rather than
+assuming a user has been there.
+
+Verified: no picker in the panel, button in Wholesale shadow price, modal opens with ten
+options defaulting to Northern Cape, and the national-price explanation present.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
