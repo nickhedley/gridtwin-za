@@ -340,6 +340,7 @@ const SCENARIOS = {
   }
 
   // ── report ────────────────────────────────────────────────────────────────
+
   console.log(`\n${pass}/${pass + fail} invariant checks passed across ` +
               `${Object.keys(SCENARIOS).length} scenarios`);
   if (failures.length) {

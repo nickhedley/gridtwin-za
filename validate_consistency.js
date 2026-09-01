@@ -447,6 +447,41 @@ const num = t => {
           + `branch has written through to the constants`);
   }
 
+  // ── HOURLY ENERGY BALANCE IN SHED HOURS ──────────────────────────────────
+  // Found 1 Sep 2026 by sweeping eight scenarios: a residual under 1 MW was DROPPED rather
+  // than recorded as unserved, so the balance failed by up to 0.8 MW in the one hour a year
+  // where diesel hit its cap with a sub-MW shortfall left over. Immaterial as energy - 0.8
+  // MWh - but a balance that is exact everywhere EXCEPT the shed hours is the wrong
+  // approximation, and nothing in 914 checks caught it.
+  //
+  // Must be tested in scenarios that SHED. A scenario with no unserved energy never enters
+  // the branch, so it would pass without proving anything - hence the second check.
+  const bal = run(`
+    const out = [];
+    for (const [lab, ov] of [['EAF 50', { coalEAFPct: 50 }],
+                             ['demand +50%', { demandGrowthPct: 50 }]]){
+      const x = simulate({ ...state, ...ov }, PROFILES);
+      let worst = 0;
+      for (let h = 0; h < HOURS; h++){
+        let sup = 0;
+        for (const k in x.stack){ const a = x.stack[k]; if (a) sup += a[h] || 0; }
+        const e = Math.abs(sup - x.loadS[h]);
+        if (e > worst) worst = e;
+      }
+      out.push({ lab, worst, un: (x.E.unserved || 0) / 1000 });
+    }
+    return out;
+  `);
+  if (Array.isArray(bal)) for (const c of bal){
+    check(`[${c.lab}] hourly energy balance is exact`,
+          c.worst < 1e-6,
+          `worst imbalance ${c.worst.toFixed(4)} MW - a residual is being dropped instead of `
+          + `recorded as unserved`);
+    check(`[${c.lab}] the scenario sheds, so the branch is exercised`,
+          c.un > 1,
+          `${c.un.toFixed(1)} GWh unserved - without shedding this proves nothing`);
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

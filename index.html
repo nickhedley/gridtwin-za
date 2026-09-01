@@ -6572,10 +6572,21 @@ function simulate(u, prof, outPath){
         drCostR += drUse * DR_COST;
         if (drUse > 0 && marginalP[h] < DR_COST){ marginalP[h] = DR_COST; marginalTech[h] = 'dr'; }
       }
-      if(residual>1){
+      // A residual under 1 MW was DROPPED entirely, so the hourly energy balance failed by
+      // up to 0.8 MW in the one hour a year where diesel hit its cap with a sub-MW
+      // shortfall left over. Immaterial as energy - 0.8 MWh in a year - but a balance that
+      // is exact except in the hours that matter most is the wrong kind of approximation.
+      //
+      // The 1 MW floor still governs the SHED STATISTICS, and deliberately: a 0.8 MW
+      // shortfall is not load shedding, and counting it would put a stage-1 event in the
+      // record for a rounding residual. So the energy is now always recorded and only the
+      // stage counting keeps the threshold.
+      if(residual>0){
         E.unserved+=residual; shedMWh+=residual;
-        const st=Math.min(8,Math.ceil(residual/1000)); shedHours[st]++; if(st>maxStage)maxStage=st;
         stack.unserved[h]=residual;
+        if(residual>1){
+          const st=Math.min(8,Math.ceil(residual/1000)); shedHours[st]++; if(st>maxStage)maxStage=st;
+        }
       }
     }
     // ── hourly marginal price ────────────────────────────────────────────

@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 935 checks
+suite                      19 harnesses, 939 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 935 checks. Last full run: 935/935.
+Nineteen harnesses, 939 checks. Last full run: 939/939.
 
 ```
 node stress_suite.js                290/290
@@ -264,7 +264,7 @@ python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          16/16   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       31/31
+node validate_consistency.js .       35/35
 node validate_structure.js .         21/21
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -6310,6 +6310,51 @@ later on a different quantity.
 The RESULTS.md section is retitled and now carries the qualification. The pinned check is
 unaffected: it asserts the ratio is near 1.0, which is a fact about timing and does not
 depend on the interpretation.
+
+## end-of-day sweep: one real bug, one false alarm - 1 Sep 2026
+
+Eight scenarios, checked for energy balance, negative or non-finite values, carbon
+consistency and deletion residue.
+
+### the real bug: a dropped residual
+
+```
+if(residual>1){ ... stack.unserved[h]=residual; }
+```
+
+A shortfall under 1 MW was **discarded**, not recorded. The hourly balance therefore failed
+by up to 0.8 MW in the one hour a year where diesel hit its cap with a sub-MW shortfall
+left over.
+
+**Immaterial as energy** - 0.8 MWh in a year, one hour in 8,760. **Not immaterial as a
+property**: a balance that is exact everywhere except the hours that matter most is the
+wrong approximation, and 914 checks did not catch it.
+
+Fixed so the energy is always recorded while the **1 MW floor still governs the SHED
+STATISTICS** - a 0.8 MW shortfall is not load shedding, and counting it would put a stage-1
+event in the record for a rounding residual. Balance now exact in all eight scenarios;
+unserved totals unchanged to a tenth of a GWh; all 16 published findings unmoved.
+
+### the false alarm: carbon
+
+Recomputing CO2 as energy times emission factor differed from the model by 1.2% today and
+9.1% at a 120 GW build. **The model is right and my check was naive.** It charges emissions
+on FUEL BURNT, not energy sent out, so the gap tracks `partLoadF` almost exactly - 1.19%
+against 1.0125, 9.10% against 1.0977. The CCS case differed by 83% because the CCS branch
+mutates `emisCoal` and my recompute used the unmutated constant.
+
+### also checked, and clean
+
+Marginal carbon deletion left no residue - five identifiers, zero references. No orphan
+panel bodies. No negative or non-finite values in any stack series across eight scenarios.
+Worker still parses.
+
+### where the check went
+
+First placed in `validate_invariants`, which has no probe helper - `probe` there is a script
+element inside a loop, not a function. Reverted rather than duplicating the harness
+machinery, and placed in `validate_consistency` where `run()` exists. 31 -> 35, and it
+fails on both scenarios when the old threshold is restored.
 
 ---
 
