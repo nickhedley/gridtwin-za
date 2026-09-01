@@ -2271,7 +2271,22 @@ EDMSA Scenario A                    195
 ```
 
 Raising availability to their assumption moves our answer by 0.5 Mt. **The gap is 20 Mt and
-availability accounts for half a megatonne of it.** Our 174.5 Mt is benchmarked against
+availability accounts for half a megatonne of it.**
+
+RESOLVED 1 Sep 2026 by a third route. Eskom burnt 96.5 Mt of coal in FY2026 for about
+165 TWh, and the emissions that implies depend entirely on calorific value:
+
+```
+CV 19 GJ/t   ->  173.4 Mt   1.049 t/MWh     our emisCoal is 1.040
+CV 20 GJ/t   ->  182.6 Mt   1.104 t/MWh
+CV 21 GJ/t   ->  191.7 Mt   1.159 t/MWh
+```
+
+Our factor corresponds to roughly 19 GJ/t, defensible for Eskom's low-grade burn, and we
+sit within 0.3% of Ember's power-sector figure. **Three numbers are in circulation and they
+measure three different things**: Ember's 175 Mt is power-sector CO2; Eskom's 184.5 is
+group Scope 1 across all greenhouse gases; EDMSA's 195 is unstated. The question to ask is
+which boundary, not which is right. Our 174.5 Mt is benchmarked against
 Eskom's own audited reporting, so the difference is a scope or factor question rather than
 a dispatch one: it may include embedded and private generation, or use a different emission
 factor. It is the first thing to ask about.

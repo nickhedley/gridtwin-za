@@ -5474,6 +5474,49 @@ recorded in RESULTS.md as the first thing to ask them.
 
 ---
 
+## the 20 Mt emissions gap, resolved by a third route - 1 Sep 2026
+
+EDMSA Scenario A puts 2025 power-sector emissions at 195 Mt against our 174.5. Availability
+explained half a megatonne of the twenty, so it needed a different answer.
+
+**Eskom's own coal burn is that answer.** 96.5 Mt burnt in FY2026 for about 165 TWh, and the
+implied emissions depend entirely on calorific value:
+
+```
+CV 19 GJ/t   ->  173.4 Mt   1.049 t/MWh     our emisCoal is 1.040
+CV 20 GJ/t   ->  182.6 Mt   1.104 t/MWh
+CV 21 GJ/t   ->  191.7 Mt   1.159 t/MWh
+```
+
+Our constant corresponds to roughly 19 GJ/t, which is defensible for Eskom's low-grade
+burn, and we sit within 0.3% of Ember's power-sector figure.
+
+### three numbers, three boundaries
+
+```
+Ember          175 Mt     power-sector CO2, all generators, CO2 only
+Eskom          184.5 Mt   group Scope 1, ALL greenhouse gases as CO2e
+EDMSA          195 Mt     boundary unstated
+GridTwin       174.5 Mt   power-sector CO2, benchmarked to Ember
+```
+
+**They measure three different things and none is wrong.** Eskom's is CO2e across all
+gases for the whole group; Ember's is power-sector CO2, which is the right comparator for a
+power-system model. EDMSA's boundary is not stated in Scenario A.
+
+The working is now in `validate_benchmarks` beside the constant, with the instruction to
+ask WHICH BOUNDARY before anyone touches it. This is the number most likely to be
+challenged, and the calorific-value sensitivity - 19 to 21 GJ/t moves the answer by 18 Mt -
+is the part a challenger will not have.
+
+### what this does NOT settle
+
+Whether EDMSA's 195 is CO2e, a different calorific assumption, or a wider boundary. That
+remains the first question to ask them, and it is now a precise question rather than a
+vague discrepancy.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

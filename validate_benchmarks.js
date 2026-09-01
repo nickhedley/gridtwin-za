@@ -82,6 +82,21 @@ const BENCH = {
   co2: {
     value: 175, tolPct: 12, unit: 'Mt',
     source: 'Ember 2025 power-sector CO2 for South Africa',
+    // CROSS-CHECKED 1 Sep 2026 against Eskom's own coal burn, after EDMSA Scenario A put
+    // 2025 emissions at 195 Mt against our 174.5. Eskom FY2026 burnt 96.5 Mt of coal for
+    // about 165 TWh. The implied emission factor depends entirely on calorific value:
+    //
+    //   CV 19 GJ/t   ->  173.4 Mt   1.049 t/MWh     our emisCoal is 1.040
+    //   CV 20 GJ/t   ->  182.6 Mt   1.104 t/MWh
+    //   CV 21 GJ/t   ->  191.7 Mt   1.159 t/MWh
+    //
+    // Our 1.04 corresponds to roughly 19 GJ/t, which is a defensible figure for Eskom's
+    // low-grade burn. Eskom's reported 184.5 MtCO2e is a different quantity again - group
+    // Scope 1, all greenhouse gases, not power-sector CO2 - so it is not the comparator.
+    //
+    // THREE NUMBERS, THREE BOUNDARIES. Anyone challenging this should be asked which they
+    // mean before the constant is touched. Ember's power-sector CO2 is the right
+    // comparator for a power-system model and we sit within 0.3% of it.
     why: 'Follows the coal reconciliation, plus the part-load heat-rate penalty added 17 Aug ' +
          'which raises emissions per MWh by ~1.5% at default.',
   },
