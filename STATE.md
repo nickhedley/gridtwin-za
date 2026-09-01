@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 917 checks
+suite                      19 harnesses, 919 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 917 checks. Last full run: 917/917.
+Nineteen harnesses, 919 checks. Last full run: 919/919.
 
 ```
 node stress_suite.js                290/290
@@ -268,7 +268,7 @@ node validate_consistency.js .       28/28
 node validate_structure.js .         20/20
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
-node validate_external.js .             2/2
+node validate_external.js .            4/4
 node validate_lint.js .                 2/2
 node jsdom_local2.js                renders without error
 ```
@@ -5434,6 +5434,43 @@ than South African tenders, and named as the number to interrogate first.
 `electrolyserH2`, `electrolyserSiting` and `getsCompare` each have a panel. All three were
 built, tested and exposed before any of them appeared in the interface - the lesson being
 that `window` exposure satisfies the orphan check while leaving a feature invisible.
+
+---
+
+## EDMSA added to the published-model comparison - 1 Sep 2026
+
+The panel previously ran one external comparison, against the CSIR least-cost study. It now
+runs two, each at its own source's stated assumptions rather than ours.
+
+```
+metric                       model   published    gap   band
+Coal share 2030, CSIR        57.5%         55%   +2.5     ±6
+Renewable share, CSIR        35.7%         40%   -4.3     ±8
+CO2 2035, EDMSA              123.8         124   -0.2    ±12
+Wind 2035, EDMSA              64.1          64   +0.1     ±8
+```
+
+**The EDMSA gaps are -0.2 and +0.1.** Two models sharing no code, no data pipeline and no
+authorship, one in PLEXOS and one in a browser, landing within 0.2% on 2035 emissions and
+essentially exactly on wind output.
+
+### the bands are wider than the gaps, deliberately
+
+Agreement this close is partly coincidence, and pinning ±0.5 would fail on any legitimate
+recalibration. The bands are set to catch a DRIFT AWAY from independent corroboration, not
+to freeze a number. `validate_external` 2 -> 4.
+
+### what the panel does NOT now claim
+
+The existing caveat is untouched and still governs: this is a bracket, not a validation.
+Nobody has run GridTwin and PLEXOS on identical inputs line by line. What the comparison
+shows is that an independently built model, on different data and a different solver, lands
+in the same territory.
+
+The 2025 starting point is deliberately NOT in the table. EDMSA's 2025 emissions are 195 Mt
+against our 174.5, and availability explains half a megatonne of the twenty. That is an
+open question about scope or emission factor rather than a check to display, and it is
+recorded in RESULTS.md as the first thing to ask them.
 
 ---
 

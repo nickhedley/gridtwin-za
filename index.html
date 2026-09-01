@@ -8827,18 +8827,40 @@ function renderExternalComparison(){
   const reShare = 100 * (r.E.wind + r.E.pv + r.E.csp + (r.E.hybrid || 0)
                        + r.E.rooftop + r.E.hydro) / dom_;
 
+  // EDMSA Scenario A (As-Is Baseline), Energy Council of South Africa, 7 May 2026, built
+  // in PLEXOS. Reproduced at THEIR stated assumptions: EAF 70%, demand growth 2% a year
+  // compounded to 2035, roughly 5 GW a year of renewables, 4 GW of CCGT, 4.1 GW of coal
+  // retirement.
+  //
+  // This is the strongest external check the model has, because the two share no code, no
+  // data pipeline and no authorship - and they land within 0.2% on 2035 emissions.
+  const gA = Math.round(100 * (Math.pow(1.02, 9) - 1));
+  let ed = null;
+  try {
+    ed = simulate({ ...state, coalEAFPct: 70, demandGrowthPct: gA,
+      newWindMW: 20000, newPvMW: 25000, newBattMW: 8000, newBattHours: 4,
+      newCcgtMW: 4000, coalDecomMW: 4100 }, PROFILES);
+  } catch(e){ ed = null; }
+
   const ROWS = [
-    { name: 'Coal share, 2030',  model: coalShare, pub: 55, band: 6 },
-    { name: 'Renewable share',   model: reShare,   pub: 40, band: 8 },
+    { name: 'Coal share, 2030',  model: coalShare, pub: 55, band: 6, src: 'CSIR' },
+    { name: 'Renewable share',   model: reShare,   pub: 40, band: 8, src: 'CSIR' },
   ];
+  if (ed){
+    ROWS.push({ name: 'CO\u2082 2035, Mt',  model: ed.co2, pub: 124, band: 12,
+                src: 'EDMSA', unit: '' });
+    ROWS.push({ name: 'Wind 2035, TWh', model: ed.E.wind / 1e6, pub: 64, band: 8,
+                src: 'EDMSA', unit: '' });
+  }
 
   const rows = ROWS.map(x => {
     const gap = x.model - x.pub;
     const ok = Math.abs(gap) <= x.band;
     return '<tr style="border-bottom:1px solid var(--line2)">'
-      + '<td style="padding:4px 6px">' + x.name + '</td>'
-      + '<td class="mono" style="text-align:right;padding:4px 6px">' + x.model.toFixed(1) + '&#37;</td>'
-      + '<td class="mono" style="text-align:right;padding:4px 6px;color:var(--ink2)">' + x.pub + '&#37;</td>'
+      + '<td style="padding:4px 6px">' + x.name
+        + '<span style="color:var(--ink2);font-size:9.5px"> \u00b7 ' + x.src + '</span></td>'
+      + '<td class="mono" style="text-align:right;padding:4px 6px">' + x.model.toFixed(1) + (x.unit === '' ? '' : '&#37;') + '</td>'
+      + '<td class="mono" style="text-align:right;padding:4px 6px;color:var(--ink2)">' + x.pub + (x.unit === '' ? '' : '&#37;') + '</td>'
       + '<td class="mono" style="text-align:right;padding:4px 6px;font-weight:700;color:'
         + (ok ? 'var(--ok,#4A8C5C)' : 'var(--alert,#C4785A)') + '">'
         + (gap >= 0 ? '+' : '') + gap.toFixed(1) + '</td>'
@@ -8847,8 +8869,14 @@ function renderExternalComparison(){
 
   host.innerHTML =
       '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:8px">'
-    + 'Run against the CSIR\u2019s least-cost scenario for 2030, at the CSIR\u2019s own '
-    + 'assumptions: 285 TWh demand, 65&#37; coal fleet EAF, and 15 GW solar with 20 GW wind '
+    + 'Run against two independently built published models, each at ITS OWN stated '
+    + 'assumptions rather than ours. '
+    + '<strong>CSIR</strong> least-cost 2030: 285 TWh demand, 65&#37; coal fleet EAF, 15 GW solar and 20 GW wind \u2013 the low end of their reported range. '
+    + '<strong>EDMSA Scenario A</strong> (Energy Council of South Africa, May 2026, built in PLEXOS): EAF 70&#37;, demand growth 2&#37; a year to 2035, about 5 GW a year of renewables, 4 GW of CCGT and 4.1 GW of coal retirement. '
+    + 'The CSIR rows read as shares of generation; the EDMSA rows are absolute. '
+    + '<!-- '
+    + '-->'
+    + ''
     + 'installed \u2013 the low end of the range they report. Source: '
     + '<em>Systems analysis to support increasingly ambitious CO\u2082 emissions scenarios in the '
     + 'South African electricity system</em>, CSIR for Meridian Economics, July 2020, Table 1.</p>'

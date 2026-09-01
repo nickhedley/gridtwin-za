@@ -124,7 +124,7 @@ function check(name, ok, detail) {
           coalShare: 100 * r.E.coal / dom_,
           reShare: 100 * (r.E.wind + r.E.pv + r.E.csp + (r.E.hybrid || 0)
                           + r.E.rooftop + r.E.hydro) / dom_,
-          co2: r.co2, cost: r.avgCost });
+          co2: r.co2, cost: r.avgCost, windTWh: r.E.wind / 1e6 });
       }`;
     w.document.body.appendChild(s);
     return JSON.parse(w.__x);
@@ -142,6 +142,30 @@ function check(name, ok, detail) {
     check(`${key} within ${e.band} points of ${e.source}`, ok,
       `model ${metric.toFixed(1)}% vs published ${e.published}% (gap ${gap.toFixed(1)} pts, band ±${e.band})`);
   }
+
+  // ── EDMSA Scenario A ──────────────────────────────────────────────────────
+  // Energy Council of South Africa, 7 May 2026, built in PLEXOS. Reproduced at THEIR
+  // stated assumptions, not ours: EAF 70%, demand growth 2% a year compounded to 2035,
+  // about 5 GW a year of renewables, 4 GW of CCGT, 4.1 GW of coal retirement.
+  //
+  // This is the strongest external check the model has - two models sharing no code, no
+  // data pipeline and no authorship, landing within 0.2% on 2035 emissions. The bands are
+  // deliberately wider than the observed gaps, because the point is to catch a DRIFT away
+  // from independent corroboration, not to freeze agreement that is partly coincidence.
+  const gA = Math.round(100 * (Math.pow(1.02, 9) - 1));
+  const edmsa = run({ coalEAFPct: 70, demandGrowthPct: gA,
+    newWindMW: 20000, newPvMW: 25000, newBattMW: 8000, newBattHours: 4,
+    newCcgtMW: 4000, coalDecomMW: 4100 });
+
+  for (const [lab, got, pub, band, unit] of [
+        ['EDMSA Scenario A CO2 2035', edmsa.co2,     124, 12, 'Mt'],
+        ['EDMSA Scenario A wind 2035', edmsa.windTWh, 64,  8, 'TWh']]){
+    const gap = got - pub;
+    check(`${lab} within ${band} ${unit} of the published figure`,
+          Math.abs(gap) <= band,
+          `${got.toFixed(1)} against ${pub} ${unit}, gap ${gap >= 0 ? '+' : ''}${gap.toFixed(1)}`);
+  }
+
 
   // ── WHY THERE IS NO COST COMPARISON HERE ──────────────────────────────────
   // PyPSA-ZA reports a 95% CO2 reduction costing about 20% more than the
