@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 906 checks
+suite                      19 harnesses, 909 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 906 checks. Last full run: 906/906.
+Nineteen harnesses, 909 checks. Last full run: 909/909.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           61/61
+python3 audit.py index.html           64/64
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -5112,6 +5112,59 @@ coverage. Whether the buyer pays for that depends entirely on the contract struc
 the note says so rather than implying the energy is free.
 
 Verified: renders, no NaN, scales with load. `audit.py` 59 -> 61.
+
+---
+
+## two modules from the reviewer's list - 1 Sep 2026
+
+Both chosen because the data already existed. Neither is a new engine.
+
+### green hydrogen: the finding inverts the usual framing
+
+```
+scenario         curtailed   500 MW electrolyser CF   LCOH R/kg
+today                0 TWh                      0%           -
+45 GW VRE         2.86 TWh                    4.9%         285
+grid pace 2035   57.64 TWh                   47.8%          29
+110 GW VRE      110.82 TWh                   58.8%          24
+```
+
+Curtailment-driven hydrogen is **not an early-transition play**. At the 45 GW build most
+scenarios assume, an electrolyser on spilled energy alone runs at 4.9% capacity factor and
+costs R285/kg against a grey benchmark near R30-45.
+
+With energy free, cost is entirely capital recovery, so LCOH is inversely proportional to
+capacity factor - verified independently to the rand. Positioning hydrogen as a way to
+make today's build more economic has the causation backwards: today there is no
+curtailment at all.
+
+### grid-enhancing technologies: eight to 127 times cheaper per megawatt
+
+The toggle modelled the capability and never the cost. Line cost uses the two published
+routes reconciled on 31 Aug, R18.9-26.9m/km.
+
+```
+Eastern Cape - KwaZulu-Natal, 167 km, 3,080 hours a year at limit
+new line                     R3.82bn      R2.55m per MW
+dynamic line rating          R0.006bn     R0.033m per MW      76x cheaper
+topology optimisation        R0.025bn     R0.208m per MW      12x cheaper
+```
+
+Per megawatt is the only honest basis: a line adds a corridor, sensors extract more from
+the one already there. A line unlocks several times more, and the ratio says nothing about
+whether the smaller amount suffices.
+
+**The grid-enhancing capital costs are the weak input and are labelled as such** -
+international ranges, no published NTCSA tender. The output is a ratio to interrogate, not
+a business case.
+
+### what was NOT built from the reviewer's list
+
+Four of the seven suggestions were already substantially present - siting and headroom,
+corporate PPA matching, nodal pricing, and distributed energy. Climate stress-testing
+remains the largest genuine gap: nothing models heat degrading solar output or thermal
+efficiency, or drought constraining cooling water, and today's work showed the model is
+already tightest in summer.
 
 ---
 

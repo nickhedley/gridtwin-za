@@ -3353,6 +3353,123 @@ function printPrefeas() {
              sunPct: 100 * sv.reduce((a, v) => a + (v > 0.001 ? 1 : 0), 0) / sv.length };
   }
 
+  // ── GRID-ENHANCING TECHNOLOGIES: cost against building line ────────────────
+  // `getsEnabled` already models the CAPABILITY - a 20% headroom uplift on congested
+  // corridors. It never modelled the COST, so the toggle answered "could we?" and not
+  // "should we?". This compares a non-wires alternative against the conventional
+  // alternative on the same corridor.
+  //
+  // THE ONLY HONEST COMPARISON IS PER MEGAWATT UNLOCKED. A new line and a set of
+  // dynamic line rating sensors are not alternatives in kind: one adds a corridor, the
+  // other extracts more from the corridor already there. What they share is that both
+  // release capacity, and capacity is what a constrained developer is queuing for.
+  //
+  // LINE COST uses the range established 31 Aug from two independent published routes:
+  // R18.9m/km from Eskom's own FY2027-31 capex plan, R26.9m/km from the TDP. The
+  // midpoint is used and both ends are reported, because a 30% spread that two Eskom
+  // sources cannot reconcile should not be hidden behind a single number.
+  //
+  // GETS COST is the weakest input here and is flagged as such. Dynamic line rating runs
+  // roughly R3-8m for a corridor's sensors and software; advanced power flow control is
+  // R50-150m a device. No South African published tender is available, so these are
+  // international ranges and the output is a ratio to interrogate, not a business case.
+  const GETS_COST = {
+    dlr:          { lab: 'Dynamic line rating',      rM: 6,   upliftPct: 12,
+                    note: 'sensors and software; uplift is weather-dependent and largest on windy corridors' },
+    flowControl:  { lab: 'Advanced power flow control', rM: 90, upliftPct: 20,
+                    note: 'pushes flow onto under-used parallel paths; needs a meshed network to act on' },
+    topology:     { lab: 'Topology optimisation',    rM: 25,  upliftPct: 8,
+                    note: 'software reconfiguration; cheapest and smallest, and it needs no new hardware' },
+  };
+  const LINE_RM_PER_KM = { low: 18.9, high: 26.9 };
+
+  function getsCompare(corridorKmLen, existingHeadroomMW, corridorCapMW){
+    if (!(corridorKmLen > 0) || !(corridorCapMW > 0)) return null;
+    const mid = (LINE_RM_PER_KM.low + LINE_RM_PER_KM.high) / 2;
+    // A new line on this corridor: assume it duplicates the existing one, so it unlocks
+    // capacity equal to the corridor's own rating.
+    const lineRbn  = corridorKmLen * mid / 1000;
+    const lineRpMW = corridorKmLen * mid * 1e6 / corridorCapMW;
+    const rows = Object.entries(GETS_COST).map(([k, g]) => {
+      const mw = corridorCapMW * g.upliftPct / 100;
+      return { key: k, lab: g.lab, note: g.note,
+               costRbn: g.rM / 1000, unlockedMW: mw,
+               rPerMW: g.rM * 1e6 / mw,
+               // how many times cheaper per megawatt than building the line
+               vsLine: (g.rM * 1e6 / mw) > 0 ? lineRpMW / (g.rM * 1e6 / mw) : null };
+    });
+    return { corridorKm: corridorKmLen, corridorCapMW,
+             lineRbn, lineRpMW, lineRangeRbn: [corridorKmLen * LINE_RM_PER_KM.low / 1000,
+                                               corridorKmLen * LINE_RM_PER_KM.high / 1000],
+             options: rows.sort((a, b) => a.rPerMW - b.rPerMW) };
+  }
+  window.getsCompare = getsCompare;
+
+  // ── GREEN HYDROGEN FROM CURTAILED ENERGY ──────────────────────────────────
+  // South Africa's hydrogen roadmap leans on the idea that surplus renewable energy can
+  // be diverted to electrolysers instead of being spilled. The curtailment series needed
+  // to test that is already computed hourly, so this is arithmetic rather than a new
+  // engine.
+  //
+  // Measured 1 Sep 2026, and the answer is not the one the narrative assumes:
+  //
+  //   scenario        curtailed   hours   500 MW electrolyser capacity factor
+  //   today               0 TWh       0                                  0%
+  //   45 GW VRE        2.86 TWh     442                                4.9%
+  //   grid pace 2035  57.64 TWh   4,245                               47.8%
+  //   110 GW VRE     110.82 TWh   5,208                               58.8%
+  //
+  // Curtailment-only hydrogen is uneconomic until very high penetration. At the 45 GW
+  // build most South African scenarios assume, an electrolyser running solely on spilled
+  // energy achieves a 5% capacity factor - and electrolyser economics are capex-dominated,
+  // so a low capacity factor is fatal rather than merely poor.
+  //
+  // CONSTANTS, and the two that matter most:
+  //   capex   R18,000/kW installed. Alkaline at scale sits near USD 1,000/kW; PEM higher.
+  //           Wide uncertainty, so it is a parameter rather than a buried number.
+  //   energy  52 kWh per kg of hydrogen, system-level including balance of plant. The
+  //           thermodynamic floor is 39.4; commercial stacks run 50-55.
+  function electrolyserH2(curtailMW, sizeMW, opts){
+    const o = opts || {};
+    const kWhPerKg   = o.kWhPerKg   ?? 52;
+    const capexRPerKW= o.capexRPerKW?? 18000;
+    const lifeYears  = o.lifeYears  ?? 20;
+    const discount   = o.discount   ?? 0.08;
+    const fomPct     = o.fomPct     ?? 0.03;      // fixed O&M as a share of capex a year
+    const energyRPerMWh = o.energyRPerMWh ?? 0;   // curtailed energy, priced at zero
+    if (!curtailMW || !(sizeMW > 0)) return null;
+
+    let mwh = 0, hours = 0;
+    for (let h = 0; h < curtailMW.length; h++){
+      const take = Math.min(curtailMW[h] || 0, sizeMW);
+      if (take > 1) hours++;
+      mwh += take;
+    }
+    const cf = mwh / (sizeMW * 8760);
+    const kg = mwh * 1000 / kWhPerKg;
+
+    // Annuitised capex plus fixed O&M over annual output. With free energy the whole
+    // cost is capital recovery, which is exactly why capacity factor dominates.
+    const crf = discount / (1 - Math.pow(1 + discount, -lifeYears));
+    const annualR = sizeMW * 1000 * capexRPerKW * crf
+                  + sizeMW * 1000 * capexRPerKW * fomPct
+                  + mwh * energyRPerMWh;
+    return {
+      capturedTWh: mwh / 1e6,
+      runHours: hours,
+      capacityFactor: 100 * cf,
+      tonnesH2: kg / 1000,
+      lcohRPerKg: kg > 0 ? annualR / kg : null,
+      // the share of available curtailment this size actually catches
+      capturedSharePct: (() => {
+        let tot = 0;
+        for (let h = 0; h < curtailMW.length; h++) tot += curtailMW[h] || 0;
+        return tot > 0 ? 100 * mwh / tot : 0;
+      })(),
+    };
+  }
+  window.electrolyserH2 = electrolyserH2;
+
   // Exposed for the same reason as fetchSolar and solarCrossCheck: a function no harness
   // can reach is one nobody proves works. Three faults shipped this week in code that was
   // correct on disk and unreachable from a test.
@@ -12632,7 +12749,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // not appear in the browser, and neither of us could tell whether the page was serving a
 // cached older copy. A version string settles that in one glance instead of an hour of
 // reasoning about code that is demonstrably correct on disk.
-const BUILD_STAMP = '2026-09-01d';
+const BUILD_STAMP = '2026-09-01e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

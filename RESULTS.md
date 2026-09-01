@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Twenty-two sections follow. This index exists because the file passed 1,400 lines and the
+Twenty-four sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2094,3 +2094,87 @@ compared between offers.
 The 25% saving. It depends on the buyer's blended tariff, the wheeling charge and the PPA
 price, none of which are published here. It is the number a buyer should press hardest on,
 because it is the one this analysis cannot corroborate.
+
+---
+
+## Green hydrogen from curtailment needs far more overbuild than the roadmap assumes
+
+South Africa's hydrogen strategy leans on diverting surplus renewable energy to
+electrolysers rather than spilling it. The curtailment series to test that is computed
+hourly, so this is arithmetic on data already in the model.
+
+```
+scenario          curtailed   hours at   500 MW electrolyser
+                              non-zero    CF      LCOH R/kg
+today                 0 TWh          0    0%              -
+45 GW VRE          2.86 TWh        442  4.9%            285
+grid pace 2035    57.64 TWh      4,245 47.8%             29
+110 GW VRE       110.82 TWh      5,208 58.8%             24
+```
+
+**At the 45 GW build most South African scenarios assume, an electrolyser running only on
+curtailed energy achieves a 4.9% capacity factor.** Electrolyser economics are
+capex-dominated - with free energy the entire cost is capital recovery - so low capacity
+factor is fatal rather than merely poor. R285/kg against a grey hydrogen benchmark near
+R30-45.
+
+The relationship is exact: **cost is inversely proportional to capacity factor.** A
+twelvefold gap in capacity factor is a twelvefold gap in cost, and nothing else in the
+calculation moves.
+
+### where it does work
+
+At grid pace by 2035, or at the 110 GW no-gas frontier, curtailment reaches 4,000-5,000
+hours a year and the same electrolyser reaches 48-59% capacity factor and R24-29/kg. That
+is competitive.
+
+**So curtailment-driven hydrogen is not an early-transition play.** It requires the
+overbuild that produces sustained curtailment, which on our own frontier work means
+roughly 110-120 GW of wind and solar. Positioning it as a way to make today's build more
+economic has the causation backwards: the curtailment has to exist first, and today there
+is none at all.
+
+CAVEATS: electrolyser capex at R18,000/kW carries wide uncertainty and is a parameter
+rather than a fixed number; 52 kWh/kg is system-level including balance of plant against a
+thermodynamic floor of 39.4. Curtailed energy is priced at zero, which is generous - in
+practice it would carry some network charge.
+
+---
+
+## Grid-enhancing technologies against building line, per megawatt unlocked
+
+The model already had a toggle for grid-enhancing technologies giving a 20% headroom
+uplift. It answered "could we" and never "should we", because it carried no cost.
+
+Line cost uses the range established from two independent published routes - R18.9m/km
+from Eskom's own FY2027-31 capex plan, R26.9m/km from the TDP.
+
+```
+Eastern Cape - KwaZulu-Natal, 167 km, the most congested corridor in the model
+at 3,080 hours a year at its limit
+
+option                        cost      per MW unlocked    versus line
+new line                   R3.82bn            R2.55m                 -
+dynamic line rating        R0.006bn           R0.033m           76x cheaper
+topology optimisation      R0.025bn           R0.208m           12x cheaper
+advanced power flow control R0.090bn          R0.300m            8x cheaper
+```
+
+**The cheapest option is between eight and seventy-six times cheaper per megawatt
+unlocked**, and on the longer Western Cape to Hydra Central corridor the dynamic line
+rating ratio reaches 127x because line cost scales with distance while sensor cost barely
+does.
+
+### the comparison is per megawatt, and that is the only honest basis
+
+A new line and a set of sensors are not alternatives in kind: one adds a corridor, the
+other extracts more from the corridor already there. What they share is that both release
+capacity, and capacity is what a constrained developer is queuing for. A new line unlocks
+several times more, and the ratios say nothing about whether the smaller amount is enough.
+
+### the weakest input, stated
+
+**The grid-enhancing costs are international ranges, not South African tenders.** No
+published NTCSA procurement is available. The line costs are well sourced and the uplift
+percentages are conventional, but the capital costs are the number to interrogate first -
+which is why the output is a ratio rather than a business case.

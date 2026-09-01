@@ -112,6 +112,11 @@ CHECKS = [
     # load a contract covers - the question an offtaker asks first.
     ('What share of the load does it actually cover',              'wheeling coverage table'),
     ('wheelCoverageHtml',                                          'coverage renderer'),
+    # Green hydrogen from curtailed energy, and the grid-enhancing cost comparison.
+    # Both answer "should we", not "could we" - the toggles already answered the latter.
+    ('electrolyserH2',                                             'hydrogen from curtailment'),
+    ('getsCompare',                                                'grid-enhancing cost comparison'),
+    ('LINE_RM_PER_KM',                                             'line cost from two published routes'),
     ('Expected shed &middot; per year',                            'shed label states it is per year'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices
