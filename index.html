@@ -477,12 +477,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
           </div>
 
-          <div id="nav-lmci" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Marginal carbon intensity</h2><span class="tag">modelled</span>
-              <span class="tag">what a displaced kWh actually avoids</span></div>
-            <div class="pb" id="lmciBody"></div>
-          </div>
-
           <div id="nav-heat" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Heat stress</h2><span class="tag">stress test, not a forecast</span>
               <span class="tag">the tight season is the hot season</span></div>
@@ -3469,12 +3463,8 @@ function printPrefeas() {
         <tbody>${rows}</tbody>
       </table>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.55">
-        Running only on spilled energy, so the energy is free and the whole cost is capital
-        recovery &ndash; which makes cost inversely proportional to capacity factor. Green
-        hydrogen is broadly considered competitive below about R60/kg; grey hydrogen from
-        gas sits near R30&ndash;45. At R18,000/kW and 52&#160;kWh/kg, both wide-uncertainty
-        assumptions. <strong>Curtailment has to exist first:</strong> at today&rsquo;s build
-        an electrolyser on spilled energy alone runs at a few per cent capacity factor.
+        Energy is free, so cost is capital recovery divided by capacity factor. Competitive
+        below about R60/kg; grey hydrogen is R30&ndash;45. R18,000/kW, 52&#160;kWh/kg.
       </div>`;
   }
 
@@ -3615,17 +3605,11 @@ function printPrefeas() {
         <tbody>${body}</tbody>
       </table>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.55">
-        Ranked by the weighting selected; the top three are emphasised.
-        <strong>Switch between weightings and the answer changes completely</strong> &ndash;
-        on resource alone the Karoo leads, and adding water moves it to the coast. That is
-        the finding, not a defect: electrolysis needs 9&ndash;10 litres of water per kg of
-        hydrogen and the best resource in South Africa sits where there is least of it.
-        ${anyCurt ? 'Curtailment is measured per region from the last full model run.'
-                  : 'Run the full model to add measured regional curtailment to this table.'}
-        Resource and grid are modelled; water and port access are coarse three-level
-        judgements from public knowledge, not a hydrological or logistics dataset. Boegoebaai
-        is treated as proposed, not built. Industrial demand is not scored &ndash; Secunda
-        is the obvious anchor and is not in this table.
+        Switch weightings and the answer moves from the Karoo to the coast: electrolysis
+        needs 9&ndash;10 litres per kg, and the best resource sits where water is scarcest.
+        ${anyCurt ? '' : 'Run the full model for measured regional curtailment. '}Resource
+        and grid modelled; water and ports are coarse judgements. Boegoebaai counted as
+        proposed. Industrial demand not scored &ndash; Secunda is absent.
       </div>`;
   }
   // The corridors offered are the binding constraints from the headroom file - the ones a
@@ -3678,15 +3662,11 @@ function printPrefeas() {
         </tbody>
       </table>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.55">
-        <strong>Per megawatt unlocked is the only honest comparison.</strong> A line adds a
-        corridor; these extract more from the one already there. The line unlocks several
-        times more, and the ratio says nothing about whether the smaller amount is enough
-        &ndash; it is a screening question, not a business case.
-        Line cost R${r.lineRangeRbn[0].toFixed(2)}&ndash;${r.lineRangeRbn[1].toFixed(2)}bn on
-        this corridor, from two published routes: Eskom&rsquo;s FY2027&ndash;31 capex plan
-        and the Transmission Development Plan, which differ by 30% and are shown as a range
-        for that reason. <strong>Device costs are international ranges</strong>, not South
-        African tenders, and are the number to interrogate first.
+        Per megawatt unlocked. A line adds a corridor; these extract more from the existing
+        one, and unlock far less &ndash; a screening question, not a business case.
+        Line R${r.lineRangeRbn[0].toFixed(2)}&ndash;${r.lineRangeRbn[1].toFixed(2)}bn, from
+        two Eskom routes that differ by 30%. <strong>Device costs are international
+        ranges</strong>, not South African tenders.
       </div>`;
   }
   window.renderGets = renderGets;
@@ -3785,118 +3765,6 @@ function printPrefeas() {
     return { ...g, options: rows, hoursAtLimit: hrs };
   }
   window.nonWiresCompare = nonWiresCompare;
-
-  // ── MARGINAL CARBON INTENSITY ─────────────────────────────────────────────
-  // The model already reports AVERAGE carbon intensity - total emissions over total
-  // generation. That is the number in every corporate emissions report, and for a
-  // procurement decision it is the wrong one.
-  //
-  // AVERAGE answers "how dirty is the grid". MARGINAL answers "what does one more, or one
-  // fewer, kilowatt-hour actually cause" - which is the question a buyer signing a
-  // renewable contract, or a data centre deciding when to run, is really asking.
-  //
-  // MEASURED 1 Sep 2026, and the result inverts the usual worry:
-  //
-  //   average intensity      834 gCO2/kWh
-  //   marginal intensity   1,026 gCO2/kWh mean, 1,040 median
-  //   hours with a zero marginal factor      35 of 8,760
-  //
-  // Coal sets the margin in 8,398 hours of the year. So a renewable megawatt-hour bought
-  // in South Africa displaces coal at 1,040 g/kWh, not the grid average of 834 - and
-  // average-factor accounting UNDERCREDITS corporate renewable procurement by about 23%.
-  //
-  // The common fear about 24/7 matching on a coal grid is that buying renewables at night
-  // displaces nothing. Here the opposite holds: there is almost no hour in which the
-  // marginal unit is clean, so almost every avoided kilowatt-hour avoids coal.
-  //
-  // WHY THIS IS THE RIGHT BASIS FOR CBAM. The EU's Carbon Border Adjustment Mechanism
-  // prices embedded emissions in imported steel, aluminium and cement. An exporter
-  // demonstrating a lower figure than the grid average needs an hourly, causal basis for
-  // the claim - which is exactly what a marginal series is and an annual average is not.
-  function marginalCarbon(res){
-    const r = res || (typeof lastRes !== 'undefined' ? lastRes : null);
-    if (!r || !r.marginalTech || !r.stack) return null;
-    const P = { ...FIXED, ...state };
-    // Emission factors in tonnes per MWh. Anything not listed emits nothing at the margin:
-    // storage and demand response SHIFT emissions rather than causing them, and attributing
-    // a factor to them would double-count the charging hour.
-    const EF = { coal: P.emisCoal ?? 1.04, ccgt: P.emisCcgt ?? 0.37,
-                 diesel: P.emisDiesel ?? 0.78 };
-    const marg = new Float64Array(HOURS);
-    const avg  = new Float64Array(HOURS);
-    const byTech = {};
-    let totGen = 0, totCO2 = 0, zeroMarg = 0;
-    for (let h = 0; h < HOURS; h++){
-      const t = r.marginalTech[h] || 'none';
-      const ef = EF[t];
-      marg[h] = ef ? ef * 1000 : 0;          // gCO2/kWh
-      if (!ef) zeroMarg++;
-      byTech[t] = (byTech[t] || 0) + 1;
-      let g = 0, c = 0;
-      for (const k in r.stack){
-        const a = r.stack[k]; if (!a) continue;
-        const v = a[h] || 0;
-        if (k === 'unserved') continue;
-        g += v; c += v * (EF[k] || 0);
-      }
-      totGen += g; totCO2 += c;
-      avg[h] = g > 0 ? 1000 * c / g : 0;
-    }
-    const mean = a => { let s2 = 0; for (let i = 0; i < a.length; i++) s2 += a[i]; return s2 / a.length; };
-    return { marginal: marg, average: avg,
-             annualAvg: totGen > 0 ? 1000 * totCO2 / totGen : 0,
-             meanMarginal: mean(marg), meanAverage: mean(avg),
-             zeroMarginalHours: zeroMarg, byTech,
-             // the ratio a buyer should care about: how much more a displaced MWh avoids
-             // than average-factor accounting credits
-             underCreditPct: totGen > 0 ? 100 * (mean(marg) / (1000 * totCO2 / totGen) - 1) : 0 };
-  }
-  function renderLMCI(r){
-    const host = document.getElementById('lmciBody');
-    if (!host) return;
-    const m = marginalCarbon(r);
-    if (!m){ host.innerHTML = ''; return; }
-    const top = Object.entries(m.byTech).sort((a, b) => b[1] - a[1]).slice(0, 4);
-    const rows = top.map(([t, n]) => `<tr>
-        <td style="padding:2px 0">${t}</td>
-        <td style="text-align:right;font-family:monospace">${n.toLocaleString()}</td>
-        <td style="text-align:right;font-family:monospace;color:var(--ink2)">${(100 * n / 8760).toFixed(1)}&#37;</td></tr>`).join('');
-    host.innerHTML = `
-      <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px">
-        <div><div style="font-size:9.5px;color:var(--ink2)">average intensity</div>
-          <div style="font-family:monospace;font-size:17px">${m.annualAvg.toFixed(0)}
-            <span style="font-size:10px;color:var(--ink2)">gCO&#8322;/kWh</span></div></div>
-        <div><div style="font-size:9.5px;color:var(--ink2)">marginal intensity</div>
-          <div style="font-family:monospace;font-size:17px;font-weight:600">${m.meanMarginal.toFixed(0)}
-            <span style="font-size:10px;color:var(--ink2)">gCO&#8322;/kWh</span></div></div>
-        <div><div style="font-size:9.5px;color:var(--ink2)">hours with a clean margin</div>
-          <div style="font-family:monospace;font-size:17px">${m.zeroMarginalHours.toLocaleString()}
-            <span style="font-size:10px;color:var(--ink2)">of 8,760</span></div></div>
-      </div>
-      <table style="width:100%;font-size:10.5px;border-collapse:collapse">
-        <thead><tr style="color:var(--ink2)">
-          <th style="text-align:left;font-weight:400">sets the margin</th>
-          <th style="text-align:right;font-weight:400">hours</th>
-          <th style="text-align:right;font-weight:400">of year</th>
-        </tr></thead><tbody>${rows}</tbody>
-      </table>
-      <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.55">
-        <strong>Average</strong> asks how dirty the grid is. <strong>Marginal</strong> asks what
-        one more or one fewer kilowatt-hour actually causes &ndash; the question a renewable
-        buyer is really asking. Here the marginal figure is
-        <strong>${m.underCreditPct.toFixed(0)}&#37; higher than the average</strong>, because
-        coal sets the margin in almost every hour. So a renewable megawatt-hour bought in
-        South Africa displaces coal, not the average mix, and average-factor accounting
-        <strong>undercredits</strong> it by that margin. The common worry about 24/7 matching
-        on a coal grid is that buying clean power at night displaces nothing; here there is
-        almost no hour in which the marginal unit is already clean. Storage and demand
-        response are excluded from the margin because they shift emissions rather than
-        cause them &ndash; crediting them would double-count the charging hour.
-      </div>`;
-  }
-  window.renderLMCI = renderLMCI;
-
-  window.marginalCarbon = marginalCarbon;
 
   // ── HEAT STRESS TEST ──────────────────────────────────────────────────────
   // The model carries NO temperature data - `profiles.json` has demand, wind, solar and
@@ -4007,16 +3875,12 @@ function printPrefeas() {
         </tbody>
       </table>
       <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.55">
-        A stress test, not a forecast &ndash; the model carries no temperature series, so this
-        applies the physical effects of a hot spell and shows what the system does.
-        <strong>Cooling demand carries most of the risk, not derated plant</strong>, and the
-        two compound rather than add. That matters here more than elsewhere: this model sheds
-        in January to March and Eskom ran 8.5 times more peaker energy in Jan&ndash;Mar than
-        Jul&ndash;Sep, so South Africa&rsquo;s tight season is its hot season.
-        Solar output ${(100*(r.factors.solar-1)).toFixed(1)}&#37; and line ratings
-        ${(100*(r.factors.line-1)).toFixed(1)}&#37; at this temperature are computed but
-        <strong>not</strong> applied &ndash; neither has a scenario lever, so the figures above
-        are conservative. Drought and cooling-water limits are not modelled.
+        A stress test, not a forecast: no temperature series, so the physical effects of a
+        hot spell are applied directly. <strong>Cooling demand carries the risk, not derated
+        plant</strong>, and South Africa&rsquo;s tight season is its hot season.
+        Solar ${(100*(r.factors.solar-1)).toFixed(1)}&#37; and line ratings
+        ${(100*(r.factors.line-1)).toFixed(1)}&#37; are computed but <strong>not</strong>
+        applied, so this is conservative. Drought is not modelled.
       </div>`;
   }
   window.renderHeat = renderHeat;
@@ -4184,12 +4048,10 @@ function printPrefeas() {
           <tbody>${rows.join('')}</tbody>
         </table>
         <div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">
-          Solar alone cannot pass ${sun.toFixed(0)}&#37; here, because that is the share of
-          hours with any sun &ndash; four times the load covers about the same as eight.
-          Wind produces in hours solar never does, so diversity moves the number where
-          volume does not. <strong>Spilled</strong> is generation the contract produces
-          above your load; whether you pay for it depends on the structure of the deal.
-          Modelled on ${region} profiles against a flat load.
+          Solar cannot pass ${sun.toFixed(0)}&#37; here &ndash; the share of hours with any
+          sun. Diversity moves the number, volume does not. <strong>Spilled</strong> is
+          output above your load; whether you pay for it depends on the contract.
+          ${region} profiles, flat load.
         </div>
       </div>`;
   }
@@ -13870,7 +13732,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderH2Siting==='function')window.renderH2Siting();if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof window.renderLMCI==='function')window.renderLMCI(lastRes);if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderH2Siting==='function')window.renderH2Siting();if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();

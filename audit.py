@@ -140,8 +140,6 @@ CHECKS = [
     ('demandPctPerC',                                              'cooling demand channel'),
     # Marginal carbon intensity. Average asks how dirty the grid is; marginal asks what a
     # displaced kWh actually avoids, and on this grid the two differ by about a quarter.
-    ('Marginal carbon intensity',                                  'marginal carbon panel'),
-    ('marginalCarbon',                                             'marginal carbon module'),
     ('curtailmentToCompute',                                       'data centre throttling'),
     ('nonWiresCompare',                                            'storage and DR as non-wires'),
     # The battery panel must say which dispatch produced its numbers. The instant model

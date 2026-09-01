@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 931 checks
+suite                      19 harnesses, 929 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 931 checks. Last full run: 931/931.
+Nineteen harnesses, 929 checks. Last full run: 929/929.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           79/79
+python3 audit.py index.html           77/77
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -5927,6 +5927,55 @@ returns nothing.
 
 The reserve co-optimisation has never run in a real browser. Same exposure as the pricing
 run this morning, which passed every harness and failed on the first click.
+
+---
+
+## to do
+
+**Test the reserve co-optimisation in a browser.** It has never run outside a harness. Same
+exposure as the pricing run on 31 Aug, which passed every check and failed on the first
+click. It is INERT AT DEFAULTS, so a normal full-year run exercises the unchanged path -
+switch on reserve pricing under Network first, then run the full model.
+
+---
+
+## tutorial prose came back, and I put it there - 1 Sep 2026
+
+Six panels built today carried **617 words of always-visible explanation**. The 30 Aug
+session cut slider notes by 44% for exactly this reason, and I undid it panel by panel
+without noticing.
+
+```
+                 before   after
+hydrogen             73      24
+siting              135      61
+grid-enhancing       99      46
+heat                115      57
+wheeling coverage    71      38
+marginal carbon     124   DELETED
+total               617     226
+```
+
+A 63% cut, and the marginal carbon panel removed entirely at the user's call - module,
+renderer and panel, not just hidden.
+
+### what went wrong, specifically
+
+Every one of those notes was explaining the FINDING rather than labelling the number. "The
+common worry about 24/7 matching on a coal grid is that buying clean power at night
+displaces nothing" is a good sentence for RESULTS.md and wrong on a panel: the reader is
+looking at a table, not reading an argument.
+
+**The findings belong in the file; the panel gets the caveat and the units.** What survives
+is provenance - what is modelled, what is asserted, what is excluded - because a reader
+cannot check those from the numbers alone.
+
+### the pattern to watch
+
+This is the third distinct kind of regression today after the invisible features and the
+capitalised emphasis, and all three share a shape: something the project had already
+decided, undone by me while adding something new. The decisions are in the documents; I was
+not re-reading them between builds.
 
 ---
 
