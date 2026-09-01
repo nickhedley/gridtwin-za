@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 923 checks
+suite                      19 harnesses, 924 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 923 checks. Last full run: 923/923.
+Nineteen harnesses, 924 checks. Last full run: 924/924.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          11/11   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       28/28
-node validate_structure.js .         20/20
+node validate_structure.js .         21/21
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .            4/4
@@ -5600,6 +5600,50 @@ has a scenario lever - at +8degC they would remove a further 3.2% of solar and 6
 rating, so the numbers above are conservative. Drought and cooling-water limits are not
 modelled at all, nor is the heat-and-low-wind correlation behind most northern-hemisphere
 heat events.
+
+---
+
+## the invisible-feature fault, caught by a check rather than a user - 1 Sep 2026
+
+Four times in one session a module was built, tested, exposed on `window` and pinned in
+`audit.py` without appearing anywhere in the interface. Three were found by the user asking
+"where is hydrogen?"; `heatStress` was the fourth.
+
+### the audit
+
+Forty-seven functions are exposed on `window`. Five have no caller, and four of those are
+variables or called through a pattern the regex missed. **`heatStress` was the only genuine
+orphan** - which is reassuring about the rest, and does nothing about the recurrence.
+
+### why the existing orphan check cannot catch this
+
+`validate_structure` has had an orphan check for months. It looks for functions never
+referenced at all - and `window.heatStress = heatStress` is a reference. **Exposing a
+function satisfies the check while the feature stays invisible.**
+
+### the new check is a curated list, deliberately
+
+Feature renderers must be called or bound to an event handler: `renderH2`,
+`renderH2Siting`, `renderGets`, `renderHeat`. Harness hooks are explicitly excluded and
+named - `fetchSolar`, `sarahCFAt`, `solarCrossCheck`, `wheelCoverage` are exposed for
+testing and should not be reachable from the interface.
+
+A general rule would have false positives on exactly those four, so the list is curated and
+the reason is in the comment. Verified: unwiring `renderHeat` fails with "exposed but never
+called or bound".
+
+### the heat panel
+
+Sits under load-shedding risk, with a hot-spell slider from 0 to 12degC. Shows the
+DECOMPOSITION rather than the total, because the decomposition is the finding:
+
+```
++5degC     thermal +2.0    demand  +46    both  67 GWh
++8degC     thermal +2.6    demand +119    both 163 GWh
++12degC    thermal +3.8    demand +332    both 500 GWh
+```
+
+Verified at four settings including zero, no NaN.
 
 ---
 

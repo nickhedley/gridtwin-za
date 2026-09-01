@@ -477,6 +477,21 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
           </div>
 
+          <div id="nav-heat" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Heat stress</h2><span class="tag">stress test, not a forecast</span>
+              <span class="tag">the tight season is the hot season</span></div>
+            <div class="pb">
+              <div style="display:flex;gap:6px;align-items:center;margin-bottom:9px;flex-wrap:wrap">
+                <span style="font-size:10.5px;color:var(--ink2)">Hot spell</span>
+                <input id="heatDelta" type="range" min="0" max="12" step="1" value="5"
+                       oninput="renderHeat()" style="flex:1;min-width:120px;max-width:200px">
+                <span id="heatDeltaVal" style="font-family:monospace;font-size:11px">+5</span>
+                <span style="font-size:10px;color:var(--ink2)">&deg;C above 25&deg;C</span>
+              </div>
+              <div id="heatBody"></div>
+            </div>
+          </div>
+
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Carbon budget</h2><span class="tag">modelled &middot; vs South Africa&rsquo;s NDC</span></div>
             <div class="pb" id="carbonBudget"></div>
@@ -3734,6 +3749,69 @@ function printPrefeas() {
              maxStage: r.maxStage, dieselTWh: (r.E.diesel || 0) / 1e6,
              notModelled: ['solar output derate', 'transmission line rating derate'] };
   }
+  // Renders the heat stress test. Shows the DECOMPOSITION rather than just the total,
+  // because the decomposition is the finding: cooling demand does forty-six times the
+  // damage of plant derating at +8degC, which inverts the popular account.
+  function renderHeat(){
+    const host = document.getElementById('heatBody');
+    const sl = document.getElementById('heatDelta');
+    if (!host || !sl) return;
+    const d = +sl.value || 0;
+    const lab = document.getElementById('heatDeltaVal');
+    if (lab) lab.textContent = '+' + d;
+
+    const r = heatStress(d);
+    if (!r){ host.innerHTML = ''; return; }
+    // Each channel alone, so the reader can see which one carries the risk.
+    const one = (ov) => {
+      try {
+        const x = simulate({ ...state, ...ov }, PROFILES);
+        return (x.E.unserved || 0) / 1000;
+      } catch(e){ return null; }
+    };
+    const eaf0 = (state.coalEAFPct ?? FIXED.coalEAFPct);
+    const base = one({});
+    const thermOnly = one({ coalEAFPct: eaf0 * r.factors.thermal });
+    const demOnly = one({ demandGrowthPct: (state.demandGrowthPct || 0) + r.demandUplift });
+    const fmt = v => v == null ? '&ndash;' : (v < 10 ? v.toFixed(1) : Math.round(v).toLocaleString());
+    host.innerHTML = `
+      <table style="width:100%;font-size:10.5px;border-collapse:collapse">
+        <thead><tr style="color:var(--ink2)">
+          <th style="text-align:left;font-weight:400">channel</th>
+          <th style="text-align:right;font-weight:400">unserved GWh</th>
+          <th style="text-align:right;font-weight:400">added</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:2px 0">No hot spell</td>
+            <td style="text-align:right;font-family:monospace">${fmt(base)}</td>
+            <td style="text-align:right;color:var(--ink2)">&ndash;</td></tr>
+          <tr><td style="padding:2px 0">Plant derating only</td>
+            <td style="text-align:right;font-family:monospace">${fmt(thermOnly)}</td>
+            <td style="text-align:right;font-family:monospace;color:var(--ink2)">+${fmt(thermOnly - base)}</td></tr>
+          <tr><td style="padding:2px 0">Cooling demand only</td>
+            <td style="text-align:right;font-family:monospace">${fmt(demOnly)}</td>
+            <td style="text-align:right;font-family:monospace;color:var(--ink2)">+${fmt(demOnly - base)}</td></tr>
+          <tr style="font-weight:600;border-top:1px solid var(--line)">
+            <td style="padding:3px 0">Both together</td>
+            <td style="text-align:right;font-family:monospace">${fmt(r.unservedGWh)}</td>
+            <td style="text-align:right;font-family:monospace">+${fmt(r.unservedGWh - base)}</td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.55">
+        A stress test, not a forecast &ndash; the model carries no temperature series, so this
+        applies the physical effects of a hot spell and shows what the system does.
+        <strong>Cooling demand carries most of the risk, not derated plant</strong>, and the
+        two compound rather than add. That matters here more than elsewhere: this model sheds
+        in January to March and Eskom ran 8.5 times more peaker energy in Jan&ndash;Mar than
+        Jul&ndash;Sep, so South Africa&rsquo;s tight season is its hot season.
+        Solar output ${(100*(r.factors.solar-1)).toFixed(1)}&#37; and line ratings
+        ${(100*(r.factors.line-1)).toFixed(1)}&#37; at this temperature are computed but
+        <strong>not</strong> applied &ndash; neither has a scenario lever, so the figures above
+        are conservative. Drought and cooling-water limits are not modelled.
+      </div>`;
+  }
+  window.renderHeat = renderHeat;
+
   window.heatStress = heatStress;
 
   // ── GRID-ENHANCING TECHNOLOGIES: cost against building line ────────────────
@@ -13160,7 +13238,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // not appear in the browser, and neither of us could tell whether the page was serving a
 // cached older copy. A version string settles that in one glance instead of an hour of
 // reasoning about code that is demonstrably correct on disk.
-const BUILD_STAMP = '2026-09-01k';
+const BUILD_STAMP = '2026-09-01l';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -13583,7 +13661,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderH2Siting==='function')window.renderH2Siting();if(typeof window.renderGets==='function')window.renderGets();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderH2Siting==='function')window.renderH2Siting();if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();

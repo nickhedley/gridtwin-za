@@ -412,6 +412,29 @@ const live = stripComments(src);
             'still inherited from the heuristic: ' + cleared.join(', '));
     }
 
+    // EVERY FEATURE FUNCTION MUST BE REACHABLE BY A USER.
+    // Four times in one session a module was built, tested, exposed on `window` and pinned
+    // in audit.py without ever appearing in the interface. Exposing on `window` satisfies
+    // the orphan check while the feature stays invisible, so the orphan check cannot catch
+    // this class - a curated list can.
+    //
+    // These are FEATURES, not harness hooks. fetchSolar, sarahCFAt, solarCrossCheck and
+    // wheelCoverage are deliberately exposed for testing and are NOT listed here.
+    {
+      const features = ['renderH2', 'renderH2Siting', 'renderGets', 'renderHeat'];
+      const unreachable = features.filter(f => {
+        const called = new RegExp('(?<![.\\w])' + f + '\\s*\\(', 'g');
+        const bound = new RegExp('on\\w+="[^"]*' + f, 'g');
+        const nCalls = (codeOnly.match(called) || []).length;
+        const nDefs = (codeOnly.match(new RegExp('function\\s+' + f + '\\s*\\(', 'g')) || []).length;
+        return (nCalls - nDefs) <= 0 && (src.match(bound) || []).length === 0;
+      });
+      check('every feature renderer is reachable from the interface',
+            unreachable.length === 0,
+            'exposed but never called or bound: ' + unreachable.join(', ')
+            + ' - a working function nobody can see is not a feature');
+    }
+
     const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
     const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
     check('there is one shared weather-profile builder',
