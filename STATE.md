@@ -5840,6 +5840,56 @@ the gap between them is the natural next step.
 
 ---
 
+## quantifying the heuristic gap, and refusing to publish the headline - 1 Sep 2026
+
+`gaplp.js` dispatches the model's own battery against its own prices two ways: the instant
+heuristic, and an LP with perfect foresight.
+
+**The first answer was 89.3%.** That is the shape of the withdrawn 37% claim, so it was
+attacked rather than written up.
+
+### what survives attack
+
+```
+                    revenue    discharged    average price achieved
+heuristic            R327m       471 GWh              R694/MWh
+perfect foresight  R3,066m       497 GWh            R6,169/MWh
+```
+
+Both move nearly the same ENERGY. The heuristic achieves R694/MWh against a market median
+of R748 - **it discharges at roughly the average hour and is not targeting peaks.** That
+statement needs no revenue figure to be believed and is the finding.
+
+### what does not survive
+
+```
+price cap        heuristic captures
+uncapped                     10.7%
+R6,300                       13.6%
+R2,000                       67.3%
+```
+
+Almost the whole gap sits in hours above R2,000. **A 1,800 MW battery is not a price taker
+in a scarcity hour** - discharging into a shortage removes the shortage, so the R87,000
+value of lost load does not survive its own arrival. The LP captures value that the act of
+capturing destroys, which is precisely how the 37% claim died.
+
+### two errors in opposite directions, both stated
+
+The heuristic's revenue here EXCLUDES its charging cost while the LP's includes it, so the
+heuristic is flattered. The LP has perfect foresight and a price-taker assumption that fails
+where the value is, so the LP is flattered. Reporting either as a clean percentage would be
+false.
+
+### the useful conclusion is not a number
+
+The co-optimised run is the answer; the instant one approximates it. Any battery revenue
+figure quoted from the instant path should say so. **A percentage would have been more
+quotable and less true**, and this file already carries one withdrawn finding from choosing
+the quotable version.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

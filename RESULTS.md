@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty-one sections follow. This index exists because the file passed 1,400 lines and the
+Thirty-two sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2580,3 +2580,64 @@ whenever a battery revenue figure is quoted rather than left implicit.**
 CAVEAT: this is a PRICE-TAKER model. The battery is assumed too small to move prices, which
 is right for a merchant asset and wrong for a system study. It answers what a battery can
 earn, not what the system should build.
+
+---
+
+## The instant heuristic dispatches storage at the average price, not the peak
+
+The instant path dispatches storage heuristically; the network-aware path co-optimises it in
+an LP. How much does the approximation cost?
+
+**This is the question that produced the withdrawn "37% of July gas" claim on 30 Aug**, so
+the answer is measured and then attacked rather than reported.
+
+### the clean observation, independent of any value judgement
+
+```
+1,800 MW / 7,200 MWh, the model's own hourly prices, 52 weeks
+
+                    revenue    discharged    average price achieved
+heuristic            R327m       471 GWh              R694/MWh
+perfect foresight  R3,066m       497 GWh            R6,169/MWh
+```
+
+Both discharge almost the same ENERGY - 471 against 497 GWh. **The heuristic achieves
+R694/MWh against a market median of R748.** It is discharging at roughly the average hour,
+which means it is not targeting peaks at all. That is a clean, checkable statement and it
+does not depend on believing any revenue figure.
+
+### but the headline gap is not trustworthy, and here is why
+
+```
+price cap        heuristic captures
+uncapped                     10.7%
+R6,300 (diesel)              13.6%
+R2,000                       67.3%
+```
+
+Almost all of the apparent gap comes from hours priced above R2,000 - the diesel and
+scarcity hours. **A 1,800 MW battery is not a price taker in a scarcity hour.** Discharging
+into a shortage removes the shortage, so the R87,000 value of lost load does not survive its
+own arrival. The LP is capturing value that the act of capturing destroys.
+
+That is exactly the error that collapsed the 37% claim: an optimisation exploiting a price
+signal that would not exist once it acted on it.
+
+### two errors, running in opposite directions
+
+**Flattering the heuristic:** its revenue here excludes charging cost, while the LP's
+objective includes it. The true gap on that axis is larger than measured.
+
+**Flattering the LP:** perfect foresight over a whole week, and the price-taker assumption
+that fails in exactly the hours carrying the value.
+
+### what can honestly be said
+
+The heuristic is not targeting peaks, and a better one would capture more. **The size is
+bounded below by roughly a third at a R2,000 cap and is not reliably measurable above it**,
+because the model would have to re-price the system after each battery decision - which is
+what the network-aware MIP already does.
+
+So the useful conclusion is not a percentage. It is that **the co-optimised run is the
+answer and the instant one is an approximation**, and any battery revenue figure quoted from
+the instant path should say so.
