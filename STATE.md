@@ -549,6 +549,23 @@ and is not here.
    capacity exists, not by distance.** No heuristic over a register of coordinates can
    recover that. Before reusing this method for the Hydra Central split, treat it as a
    prior to be corroborated per project, never as an answer.
+
+   **a second confirmation, 26 Aug 2026, from a project at financial close.** Red Cap's
+   Nuweveld wind farm in the Upper Karoo, 720 MW initial phase, has 200 km of transmission
+   already permitted with a further 100 km to build.
+
+   ```
+   our nearest-substation assignment    Droerivier, 41.0 - 64.9 km
+   reported build                       200 km permitted + 100 km initial
+   understated by                       roughly 5.7 times
+   ```
+
+   Same developer as Impofu, which built 116 km to Chatty when Hlaziya sat 13.8 km away.
+   Two projects, one conclusion: the nearest substation predicts neither the connection nor
+   its length. Nuweveld carries more weight because it is a forward commitment rather than
+   a completed build explained after the fact - and it sits in Hydra Central, the best wind
+   resource measured anywhere here and zero headroom for every technology. A developer
+   committing 300 km of private line to escape it is the headroom finding stated in capital.
 8. ~~`pfl_cod_h1_2026.json` carries no fingerprint.~~ added 28 Aug 2026,
    `gtza-a4cb23b744a2385b`, same method as the generated files. Note a fingerprint would not have caught
    the stale rollups found on 28 Aug — it is recomputed over whatever the file contains,
@@ -5299,6 +5316,51 @@ looking at.
 decision - siting wants a ranked regional table, the grid-enhancing comparison wants to sit
 with the network panel - and neither is wired yet. **Recorded here rather than left to be
 noticed again.**
+
+---
+
+## to do: two modules built but invisible - 1 Sep 2026
+
+Added at the user's request so they are not rediscovered.
+
+**`electrolyserSiting`** needs a ranked regional table. Resource, water stress, port access
+and - after a full run - measured regional curtailment, with the weighting exposed rather
+than blended, because the ranking changes completely between weightings and that shift is
+the finding.
+
+**`getsCompare`** belongs with the network panel, beside the corridor congestion figures
+that motivate it. Wants a corridor selector, since the cost ratio scales with corridor
+length: 76x on the 167 km Eastern Cape to KwaZulu-Natal line, 127x on the 278 km Western
+Cape to Hydra Central.
+
+Both are written, tested and exposed. Neither has a panel. The orphan check in
+`validate_structure` does not catch this class, because exposing a function on `window`
+satisfies it while the feature stays invisible.
+
+---
+
+## private transmission is a category the model does not represent - 1 Sep 2026
+
+From reporting on 26 Aug: Impofu's 116 km line was privately permitted across **87 separate
+land parcels** - private farms, state forestry, correctional facilities, municipal ground -
+and now forms part of the national grid, wheeling to Sasol and Air Liquide at Secunda.
+Nuweveld follows with 300 km.
+
+GridTwin assumes NTCSA builds the network. It has no representation of privately funded
+transmission, and the Independent Transmission Infrastructure Procurement Programme is
+designed to make exactly that the norm - private capital funds, builds and transfers to the
+state. Registered in SOURCES.md as watched.
+
+Two things follow that are worth testing rather than assuming.
+
+**The wheeling case is longer than the model's corridors.** Impofu generates in the Eastern
+Cape and delivers to Mpumalanga. The wheeling panel prices region-to-region transport, so
+that specific route is testable against a real contract.
+
+**Air Liquide at Secunda is the hydrogen link.** It operates the world's largest oxygen
+production there for Sasol, and is the most likely early buyer of green hydrogen in the
+country. That is an industrial-demand anchor the electrolyser siting tool explicitly does
+not model - and it sits in Mpumalanga, which scores mid-table on resource and has no port.
 
 ---
 
