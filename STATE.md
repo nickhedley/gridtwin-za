@@ -5780,6 +5780,66 @@ earns.
 
 ---
 
+## storage co-optimisation, now inside the model - 1 Sep 2026
+
+The largest open item, closed for the network-aware path.
+
+### the key realisation: energy was already co-optimised
+
+`buildDayLP` has carried `ch`, `di` and `e` variables with state of charge chained across
+days since it was written. **Storage energy has always been decided by the LP, not a
+heuristic** - the heuristic is only in the instant path, which must stay instant.
+
+What was missing was RESERVE. Two constraints close it:
+
+```
+rp: di + rs <= power     discharge and reserve compete for the SAME megawatt
+rb: rs - e  <= 0         reserve must be BACKED by stored energy, not promised
+```
+
+plus a system requirement row with a soft shortfall variable, priced below unserved energy
+so the LP sheds reserve before it sheds load - a hard constraint there would make a tight
+winter evening infeasible rather than merely expensive.
+
+### verified to bind, and verified to be inert
+
+```
+resFrac   cost          reserve   shortfall   discharge
+0.02      174,182,690     6,206           0       1,668
+0.07      174,182,690    21,720           0       1,668
+0.20      185,368,486    57,600       4,456           0
+0.50      418,078,486    57,600      97,540           0
+```
+
+Free at low requirement because storage has ample headroom; at 20% discharge collapses to
+zero as reserve takes the power. That is the constraint working, not failing.
+
+**And it is byte-identical at defaults.** South Africa prices no ancillary services, so
+`resFrac` is zero, no reserve variable is emitted, and `lpMip === zeroLP` is asserted. If
+that ever stops being true every published MIP result moves, which is why it is a check
+rather than a comment.
+
+Five assertions in `price_test.js`, where `buildDayLP` is reachable. I first put them in
+`validate_solve`, which has never had access to the builder - reverted rather than
+duplicating the extraction machinery.
+
+### the reserve fraction comes from the engine, not from me
+
+`(reserveRegulatingPct + reserveVrePct) / 100`. `validate_lint` caught my first attempt -
+I invented `FIXED.reserveSharePct`, which is exactly the rule 7 failure the lint exists to
+find. The contingency term is a fixed MW and cannot be expressed as a share of load, so it
+is deliberately excluded: this understates the requirement rather than inventing a
+conversion.
+
+### what is still open
+
+The INSTANT path still dispatches storage heuristically. That is a deliberate trade - it
+must respond to a slider in milliseconds - and the honest position is that the network-aware
+run is the co-optimised answer and the instant one is an approximation to it. Quantifying
+the gap between them is the natural next step.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

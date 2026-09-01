@@ -15993,7 +15993,10 @@ let highs = null;
 // dropped and each commitment variable is pinned to its solved value, which makes the
 // problem a pure LP whose duals are the prices consistent with that commitment.
 // Absent, the builder behaves exactly as before and emits the MIP.
-function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0, slackCost, fixedOn) {
+function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0, slackCost, fixedOn, resFrac) {
+  // resFrac: reserve requirement as a share of load. Zero or absent leaves every reserve
+  // constraint out of the LP entirely, so the formulation is unchanged when unpriced.
+  resFrac = (typeof resFrac === 'number' && resFrac > 0) ? resFrac : 0;
   const H = 24, L = ['Minimize', ' obj:'], obj = [];
   units.forEach((u, i) => {
     for (let h = 0; h < H; h++) {
@@ -16006,6 +16009,13 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
   sto.forEach((s, j) => {
     for (let h = 0; h < H; h++) { obj.push('0.5 ch_' + j + '_' + h); obj.push('0.5 di_' + j + '_' + h); }
   });
+  // Reserve shortfall penalty. Priced BELOW unserved energy so the LP will always shed
+  // reserve before it sheds load - holding reserve is a precaution, serving load is not
+  // optional. One term per variable: LP format takes the LAST coefficient for a repeated
+  // variable rather than summing, which produced a battery that did nothing when I got it
+  // wrong in storage_coopt.js earlier today.
+  if (resFrac > 0)
+    for (let h = 0; h < H; h++) obj.push((slackCost * 0.05).toFixed(2) + ' rsl_' + h);
   // Small per-MWh-per-km transmission charge on corridor usage, either direction.
   // Without this an LP with only capacity limits (no cost for using a corridor at
   // all) is free to spread flow across many corridors arbitrarily - any feasible
@@ -16062,7 +16072,46 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
       else L.push(' soc_' + j + '_' + h + ': e_' + j + '_' + h + ' - e_' + j + '_' + (h-1) + ' - ' + s.eff.toFixed(4) + ' ch_' + j + '_' + h + ' + di_' + j + '_' + h + ' = 0');
     }
     L.push(' socend_' + j + ': e_' + j + '_' + (H-1) + ' >= ' + soc0[j].toFixed(1));
+
+    // RESERVE CO-OPTIMISATION, added 1 Sep 2026.
+    // Storage energy was already co-optimised here - charge, discharge and state of charge
+    // are decided together and carried across days. Reserve was not, and that is the gap
+    // that made the revenue stack overstate a battery.
+    //
+    // Two constraints, and they are the whole of it:
+    //   rp: di + rs <= power     discharging and holding reserve compete for the SAME MW
+    //   rb: rs - e  <= 0         reserve must be BACKED by stored energy, not promised
+    //
+    // storage_coopt.js sized what this changes on a price-taker basis: discharge is
+    // unaffected and reserve falls about 12%, because in the hours a battery discharges,
+    // energy is worth more than reserve and it should sell the dearer product. The
+    // overstatement without these lines is 1-6%, largest for short-duration assets.
+    //
+    // The reserve requirement is a SHARE of regional load, matching how the engine sizes
+    // it elsewhere. Zero when reserve is unpriced, which is South Africa today - so this
+    // is inert at defaults and binds only when a user prices ancillary services.
+    if (resFrac > 0){
+      for (let h = 0; h < H; h++){
+        L.push(' rp_' + j + '_' + h + ': di_' + j + '_' + h + ' + rs_' + j + '_' + h
+               + ' <= ' + s.power.toFixed(1));
+        L.push(' rb_' + j + '_' + h + ': rs_' + j + '_' + h + ' - e_' + j + '_' + h + ' <= 0');
+      }
+    }
   });
+
+  // System reserve requirement: the fleet must hold at least this much, when priced.
+  if (resFrac > 0 && sto.length){
+    for (let h = 0; h < H; h++){
+      let need = 0;
+      for (let r = 0; r < nRegions; r++) need += (regionLoad[r] && regionLoad[r][h]) || 0;
+      need *= resFrac;
+      const terms = sto.map((_, j) => 'rs_' + j + '_' + h).join(' + ');
+      // Soft: a shortfall variable priced in the objective, so an infeasible reserve
+      // requirement degrades the answer rather than failing the solve. A hard constraint
+      // here would make the whole day infeasible on a tight winter evening.
+      L.push(' rq_' + h + ': ' + terms + ' + rsl_' + h + ' >= ' + need.toFixed(2));
+    }
+  }
 
   L.push('Bounds');
   units.forEach((u, i) => {
@@ -16073,6 +16122,12 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
   });
   for (let r = 0; r < nRegions; r++)
     for (let h = 0; h < H; h++) L.push(' 0 <= q_' + r + '_' + h + ' <= 100000');
+  if (resFrac > 0){
+    sto.forEach((s2, j) => {
+      for (let h = 0; h < H; h++) L.push(' 0 <= rs_' + j + '_' + h + ' <= ' + s2.power.toFixed(1));
+    });
+    for (let h = 0; h < H; h++) L.push(' 0 <= rsl_' + h + ' <= 100000');
+  }
   for (let r = 0; r < nRegions; r++)
     for (let h = 0; h < H; h++) L.push(' 0 <= curt_' + r + '_' + h + ' <= 100000');
   corridors.forEach((cd, k) => {
@@ -16107,7 +16162,7 @@ function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0
 }
 
 self.onmessage = async (e) => {
-  const { cmd, days, units, sto, corridors, regionLoad, slackCost } = e.data;
+  const { cmd, days, units, sto, corridors, regionLoad, slackCost, resFrac } = e.data;
   if (cmd !== 'solve') return;
 
   if (!highs) {
@@ -16152,7 +16207,11 @@ self.onmessage = async (e) => {
     for (let r = 0; r < nR; r++) dayLoad.push(regionLoad[r].slice(day * 24, day * 24 + 24));
     if (dayLoad[0].length < 24) continue;
 
-    const lp = buildDayLP(units, sto, corridors, nR, dayLoad, onState, socState, slackCost);
+    // resFrac comes from the main thread with the scenario. Zero unless the user prices
+    // reserve, so the LP is byte-identical at defaults and this cannot change any existing
+    // published result.
+    const lp = buildDayLP(units, sto, corridors, nR, dayLoad, onState, socState, slackCost,
+                          null, resFrac || 0);
     try {
       const res = highs.solve(lp, { time_limit: 25, mip_rel_gap: 0.02 });
 
@@ -16186,7 +16245,7 @@ self.onmessage = async (e) => {
             return row;
           });
           const lpFixed = buildDayLP(units, sto, corridors, nR, dayLoad, onState, socState,
-                                     slackCost, fixedOn);
+                                     slackCost, fixedOn, resFrac || 0);
           const rp = highs.solve(lpFixed, { time_limit: 15 });
           if (rp && rp.Rows){
             // Duals on the regional energy balance. Row order is the order the builder
@@ -16545,7 +16604,18 @@ function runMIP(mode) {
     mipWorker.postMessage({
       cmd: 'solve', days,
       units: inp.units, sto: inp.sto, corridors: inp.corridors,
-      regionLoad: inp.regionLoad, slackCost: FIXED.costDiesel || 6100
+      regionLoad: inp.regionLoad, slackCost: FIXED.costDiesel || 6100,
+      // Reserve requirement as a share of load, and ZERO unless the user has priced
+      // ancillary services. South Africa prices none today, so the LP is unchanged at
+      // defaults - this cannot move any published result without a deliberate act.
+      // Built from the engine's OWN reserve components rather than a number chosen here:
+      // a regulating share plus a VRE share, both already used to size reserve elsewhere.
+      // The contingency term is a fixed MW and cannot be expressed as a fraction of load,
+      // so it is deliberately EXCLUDED - this understates the requirement rather than
+      // inventing a conversion. Zero unless the user prices reserve.
+      resFrac: (state.asReserveOn
+        ? (((FIXED.reserveRegulatingPct || 0) + (FIXED.reserveVrePct || 0)) / 100)
+        : 0)
     });
   }).catch(err => {
     document.getElementById('mipResult').innerHTML =

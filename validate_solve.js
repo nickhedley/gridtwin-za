@@ -131,6 +131,7 @@ const check = (name, ok, detail) => {
   console.log('\nWHAT THE OPTIMISER CHOSE, GW');
   for (const [t, v] of Object.entries(got))
     console.log('   ' + t.padEnd(10) + (v > 0.01 ? v.toFixed(2) : '\u2013').padStart(9));
+
   console.log('   ' + 'TOTAL'.padEnd(10) + total.toFixed(2).padStart(9));
 
   check('total build is not a runaway', total <= EXPECT.maxTotalGW,
