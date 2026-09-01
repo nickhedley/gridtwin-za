@@ -105,6 +105,9 @@ CHECKS = [
     # The board LABELS must match what the cells now compute. "max stage" described a
     # single deterministic year; the lamps show the median of 48 draws.
     ('Load shedding &middot; typical year',                        'lamp label matches the median'),
+    # No shouted emphasis in the KPI note. "NEW-build capex" read as a shout in a header
+    # a reader sees before anything else; the surrounding prose uses bold for emphasis.
+    ('start-up and new-build capex only',                          'KPI note not shouted'),
     ('Expected shed &middot; per year',                            'shed label states it is per year'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices
