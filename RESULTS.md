@@ -2583,7 +2583,7 @@ earn, not what the system should build.
 
 ---
 
-## The instant heuristic dispatches storage at the average price, not the peak
+## The instant heuristic dispatches storage on state of charge, not on price
 
 The instant path dispatches storage heuristically; the network-aware path co-optimises it in
 an LP. How much does the approximation cost?
@@ -2611,7 +2611,24 @@ than 0.93 would have been. It is discharging at roughly the average hour,
 which means it is not targeting peaks at all. That is a clean, checkable statement and it
 does not depend on believing any revenue figure.
 
-### but the headline gap is not trustworthy, and here is why
+### and a qualification this section originally lacked
+
+**The heuristic is not trying to maximise revenue.** The dispatch order in the instant model
+is deliberate and documented at the code: nuclear, hydro and imports are fixed infeeds, coal
+is must-run within unit-commitment limits, **storage moves on state of charge**, and gas and
+diesel are the flexible margin. It is a SYSTEM dispatch model serving net load, not a
+merchant optimiser chasing price.
+
+So "it is not targeting peaks" is factually right and was framed as though it were a
+failing. It is not. Judging a system dispatcher by revenue capture measures it against an
+objective it does not hold - the same category error as expecting a merit-order model to
+reproduce Eskom's peaker running, which is recorded elsewhere in this file.
+
+**What survives:** the instant path's storage timing should not be read as a merchant
+signal, and any battery revenue figure taken from it understates what an optimising operator
+would earn. That is a caveat on interpretation, not a defect in the model.
+
+### the headline gap is also not trustworthy, and here is why
 
 ```
 price cap        heuristic captures

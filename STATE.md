@@ -6034,81 +6034,92 @@ because probe pollution gave a wrong figure once already today.
 
 ---
 
-# TO DO - consolidated 1 Sep 2026
+# TO DO - revised 1 Sep 2026, end of session
 
-Six separate to-do sections had accumulated. This is the single list; the sections above
-keep the reasoning behind each item.
+Closed items are struck through with what settled them, so the same ground is not covered
+twice. The sections above keep the full reasoning.
 
-## Needs the browser, not a harness
+## Dated, and the only one open
 
-1. ~~Test the reserve co-optimisation.~~ **DONE 1 Sep 2026.** Ran clean in the browser,
-   93s against 100s with reserve on, no solver error, unserved still zero. A/B on the
-   optimal column: storage discharge 1.41 -> 1.63 TWh, start-ups 4,343 -> 4,272, coal cost
-   +R0.01bn on R93.89bn. **The constraint reaches the solver and costs one part in ten
-   thousand.** The +16% discharge is the opposite of what I predicted and the mechanism -
-   fewer coal starts, more cycling - is INFERRED from four aggregates, not traced. Do not
-   quote it.
-2. **Check the four new panels render sanely.** Hydrogen, electrolyser siting,
-   grid-enhancing technologies, heat stress. Verified headless for content and NaN, never
-   seen laid out.
+1. **8 Sep - NERSA market inquiry into fixed and generation capacity charges.**
+   `nersa_market_inquiry_submission.md` is drafted and ready, to
+   electricity.marketinquiry@nersa.org.za. **Read the draft report before sending** - the
+   submission states openly that we have not seen it, which is honest but weaker than
+   responding to the document. Section 3 is the part built on reported findings rather
+   than primary text and should be checked against what the report actually says.
+2. **10 Sep - Seriti Green trading licence hearing.** Verified: Microsoft Teams, 13:30 to
+   16:30. Attendance only; oral representations closed 28 Aug. Seriti is an outreach
+   target and their July 2026 simulation is already a differential test in RESULTS.md.
+3. **Oct - Price and Tariff Rule consultation.** The most consequential dated item, and the
+   direct follow-on from the EPP submission. Watch for the consultation paper.
+4. **Three calendar entries remain UNVERIFIED** and are marked as such in place: the Eskom
+   RCA hearing, the TDP Rules target, the four instruments at 31 Oct. None is actionable,
+   so the exposure is low.
+
+## Needs the browser
+
+5. **Look at the four new panels.** Hydrogen, electrolyser siting, grid-enhancing
+   technologies, heat stress. All verified headless for content and NaN; none has been
+   seen laid out. The heat panel moved below the levelised cost comparison this session.
 
 ## Model
 
-3. **Instant-path storage stays heuristic.** The network-aware run is co-optimised; the
-   instant one approximates it. It discharges at R754/MWh against a median of R748 - not
-   targeting peaks. Deliberate trade for sub-second response, now disclosed on the panel.
-4. **Non-economic dispatch has no mechanism.** Priced - 0.97 TWh of coal per TWh spilled,
-   R0.70bn a year to generators at the 4% ceiling - but the model still dispatches on merit
-   order between Eskom and IPP plant. **Needs metered curtailment instructions by plant: a
-   data request, not a modelling problem.**
-5. ~~`emisCoal || 0.95` at line 5812.~~ **STALE, closed 1 Sep 2026.** The pattern does not
-   exist anywhere in the file; every read is `p.emisCoal` or `S.emisCoal` with no fallback.
-   The item had outlived the code. What the check DID find is below.
-6. **Drought and cooling-water limits are not modelled**, nor the heat-with-low-wind
-   correlation behind most northern-hemisphere heat events.
+6. ~~Instant-path storage stays heuristic.~~ **NOT A TASK - reclassified 1 Sep 2026 as a
+   known limitation.** It contained three facts and no action.
+
+   And the finding behind it needed a qualification it did not have. The instant dispatch
+   order is deliberate and documented: **storage moves on state of charge**, not on price.
+   It is a SYSTEM dispatcher serving net load, not a merchant optimiser. Measuring its
+   revenue capture against a perfect-foresight LP judges it against an objective it does
+   not hold - the same category error as expecting a merit-order model to reproduce
+   Eskom's peaker running.
+
+   What survives: battery revenue from the instant path understates what an optimising
+   operator would earn, which is a caveat on interpretation and is now on the panel.
+   **Improving the heuristic is explicitly NOT queued** - rule: no ordering heuristic can
+   substitute for an LP when the logic needed is a value function on state of charge,
+   proven by two rewrites and two reversions.
+7. **Non-economic dispatch has no mechanism.** Priced this session - 0.97 TWh of coal per
+   TWh spilled, R0.70bn a year to generators at the 4% ceiling - but the model still
+   dispatches on merit order between Eskom and IPP plant. **Needs metered curtailment
+   instructions by plant: a data request, not a modelling problem.**
+8. **Drought and cooling-water limits are not modelled**, nor the heat-with-low-wind
+   correlation. Heat stress covers demand and thermal derating only.
 
 ## Data
 
-7. **1,823 MW solar gap** against `FIXED.pvUtilityMW`. Pre-2026 private capacity
-   unsourced; SunCentral 342 MW the best candidate. Needs #PowerTracker.
-8. **Named-project layer.** The IPP Office annual overview is the only published route to
-   project names and the Hydra Central split.
-9. **NERSA cumulative reconciliation** - SAPVIA 20,131 MW against NERSA 21,900 MW.
-10. **`sa_solar_grid.json`** stays as a plausibility reference, not a data source. Decided
-    and pinned; listed so it is not reopened.
+9. **1,823 MW solar gap** against `FIXED.pvUtilityMW`. SunCentral 342 MW the best
+   candidate; needs #PowerTracker.
+10. **Named-project layer** - the IPP Office annual overview, the only route to project
+    names and the Hydra Central split.
+11. **NERSA cumulative reconciliation** - SAPVIA 20,131 MW against NERSA 21,900 MW.
+12. **EDMSA boundary question** - what produces 195 Mt for 2025 against our 174.5. Three
+    numbers measure three different things; theirs is unstated.
 
 ## Publication and outreach
 
-11. **`post_headroom.md`** - verified, ready, unpublished.
-12. **Wind Pioneers note** - three variants drafted, use the ten-year version.
-13. **EDMSA** - two questions worth putting to them: what boundary produces 195 Mt for 2025
-    against our 174.5, and whether "grid readiness adequate per TDP 2023/24" can be
-    reconciled with their own finding that grid absorption is the binding constraint.
-14. **Energy Brokers** - the solar ceiling finding is directly useful to their offtakers.
-15. **Findings ready to publish**, Tier 1 and Tier 2 only: the solar 49% ceiling, the
-    inverted tariff seasons, curtailment priced, hydrogen needing overbuild first.
-
-## Regulatory calendar
-
-16. **8 Sep - NERSA market inquiry into fixed and generation capacity charges.** The only
-    near-term process actually open. **Draft ready:
-    `nersa_market_inquiry_submission.md`**, reframed from the withdrawn ERTSA draft.
-    Submissions to electricity.marketinquiry@nersa.org.za.
-
-    **BEFORE SENDING: read the draft report.** The submission says openly that we have not
-    seen it and responds to the published scope and to the findings as reported. That is
-    defensible but weaker than responding to the document. If you can get the report, the
-    section 3 argument about "ability to respond to tariff signals" should be checked
-    against what it actually says.
-17. **10 Sep** Eskom RCA hearing.
-18. **Oct** Price and Tariff Rule consultation - the most consequential dated item.
-19. **31 Oct** Trading Rules final text, Market Code, Vesting Framework, Wholesale Tariff
-    Methodology.
+13. **`post_headroom.md`** - verified, ready, unpublished. The oldest unshipped item.
+14. **Wind Pioneers note** - three variants drafted, use the ten-year version.
+15. **EDMSA** - the boundary question above, plus whether "grid readiness adequate per TDP
+    2023/24" reconciles with their own finding that grid absorption is binding.
+16. **Energy Brokers** - the solar ceiling is directly useful to their offtakers.
+17. **Findings ready**, Tier 1 and 2 only: the solar 49% ceiling, inverted tariff seasons,
+    curtailment priced, hydrogen needing overbuild first, heat acting through demand.
 
 ## Repo
 
-20. Remove `HANDOVER.md` from `.gitignore`; add the four custom instructions to Project
+18. Remove `HANDOVER.md` from `.gitignore`; add the four custom instructions to Project
     settings.
+
+## Closed this session
+
+```
+reserve co-optimisation tested in browser    ran clean, costs 1 part in 10,000
+emisCoal || 0.95                             stale - pattern does not exist
+sa_solar_grid.json                           decided: plausibility reference, pinned
+electrolyserSiting, getsCompare, renderH2    all now have panels
+ERTSA submission                             WITHDRAWN - no such process is open
+```
 
 ---
 
@@ -6276,6 +6287,29 @@ one that invites a methodological objection.
 **"We have not seen the full draft report."** Stated in section 5, with the note that
 sections 1 and 2 stand independently of any reading of it. That is honest and it is also
 weaker than responding to the document - which is why the to-do says read it first.
+
+## item 6 was not a task, and the finding behind it overreached - 1 Sep 2026
+
+Asked whether task 6 was done. It contained no action - three facts about a limitation.
+Checking why led somewhere more useful.
+
+**The instant dispatch order is deliberate and documented at the code**, settled 14 Aug:
+nuclear, hydro and imports are fixed infeeds; coal is must-run within unit-commitment
+limits; **storage moves on state of charge**; gas and diesel are the flexible margin. A
+naive cheapest-first sort was rejected because it would flex a take-or-pay contract and
+erase coal-forced curtailment.
+
+So the model's storage is a SYSTEM dispatcher serving net load. **It is not trying to
+maximise revenue.** Reporting that it "is not targeting peaks" was factually correct and
+framed as a shortcoming. It is neither trying nor failing.
+
+This is the same category error as the OCGT finding - expecting a merit-order model to
+reproduce dispatch driven by something other than merit - and I made it again three weeks
+later on a different quantity.
+
+The RESULTS.md section is retitled and now carries the qualification. The pinned check is
+unaffected: it asserts the ratio is near 1.0, which is a fact about timing and does not
+depend on the interpretation.
 
 ---
 
