@@ -251,6 +251,47 @@ setTimeout(()=>{
     }
   }
 
+
+  // ── 8. CURTAILED RENEWABLES ARE REPLACED BY COAL, ONE FOR ONE ─────────────
+  // SCENARIO: default build, the congestion curtailment ceiling swept from 0 to 15%.
+  // METRIC: coal energy and CO2 against renewable output spilled. The published claim is
+  // a SUBSTITUTION RATIO, so it must be tested by differencing two runs that differ only
+  // in the ceiling - not by reading one run's totals.
+  //
+  // Snapshot and restore, because probes here share one window and earlier ones mutate
+  // the scenario. That pollution gave a wrong figure once already today.
+  {
+    const r = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
+      const run = pct => {
+        const x = simulate({ ...state, congestionCurtailOn: pct > 0,
+                             congestionCurtailPct: pct }, PROFILES);
+        const cong = Array.from(x.congestMW || []).reduce((a, b) => a + b, 0) / 1e6;
+        return { cong, coal: x.E.coal / 1e6, co2: x.co2 };
+      };
+      const a = run(0), b = run(10);
+      Object.assign(state, saved);
+      return { spilled: b.cong - a.cong, dCoal: b.coal - a.coal, dCo2: b.co2 - a.co2 };
+    `);
+    check('the curtailment substitution probe returns a result',
+          !!(r && !r.error && r.spilled > 0.1),
+          r && r.error ? String(r.error).slice(0, 90) : 'no spill at a 10% ceiling');
+    if (r && !r.error && r.spilled > 0.1){
+      const ratio = r.dCoal / r.spilled, co2r = r.dCo2 / r.spilled;
+      check('spilled renewable output is replaced by coal roughly one for one',
+            ratio > 0.8 && ratio < 1.2,
+            `${r.spilled.toFixed(2)} TWh spilled replaced by ${r.dCoal.toFixed(2)} TWh of `
+            + `coal - a ratio of ${ratio.toFixed(2)}`);
+      check('the carbon that follows matches the coal emission factor',
+            co2r > 0.85 && co2r < 1.25,
+            `${co2r.toFixed(2)} Mt per TWh spilled against an emisCoal of 1.04 - if these `
+            + `diverge, either the factor or the substitution has changed`);
+      console.log(`  curtail cost   ${r.spilled.toFixed(2)} TWh spilled \u00b7 coal `
+        + `${ratio.toFixed(2)}x \u00b7 CO2 ${co2r.toFixed(2)} Mt/TWh`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

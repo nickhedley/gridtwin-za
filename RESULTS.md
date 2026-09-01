@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty-two sections follow. This index exists because the file passed 1,400 lines and the
+Thirty-three sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2646,3 +2646,52 @@ what the network-aware MIP already does.
 So the useful conclusion is not a percentage. It is that **the co-optimised run is the
 answer and the instant one is an approximation**, and any battery revenue figure quoted from
 the instant path should say so.
+
+---
+
+## Every terawatt-hour of curtailed renewables is replaced by coal, almost exactly
+
+South African IPPs report substantial curtailment with belated Eskom compensation, and
+NERSA approved a 4% congestion ceiling in September 2025. What does using it cost, and who
+pays?
+
+```
+ceiling   spilled TWh   coal TWh   CO2 Mt   R/MWh   IPP revenue lost
+    0%           0.00      164.8    173.7   582.2            R0.00bn
+    4%           0.77      165.6    174.5   585.2            R0.70bn
+   10%           1.94      166.7    175.7   589.5            R1.79bn
+   15%           2.90      167.6    176.6   593.2            R2.76bn
+```
+
+**The substitution is one for one.** Each terawatt-hour of spilled renewable output is
+replaced by very close to a terawatt-hour of coal, and carries very close to one megatonne
+of CO2 with it - which follows directly from an emission factor of 1.04 t/MWh, and is a
+useful arithmetic check on the whole chain.
+
+### three parties, three different bills
+
+At the approved 4% ceiling:
+
+```
+generators   R0.70bn a year of lost revenue, or about R910 per MWh spilled
+consumers    system cost up R3.0/MWh, roughly half a per cent
+the climate  +0.8 Mt CO2
+```
+
+**The generator bears the cost concentrated; the consumer bears it diffusely.** That
+asymmetry is why curtailment compensation is contested: R0.70bn is material to a project
+and R3/MWh is invisible on a bill.
+
+### what this does NOT show
+
+Not that the ceiling is being misused. It exists for genuine congestion, and our own
+headroom data supports the case for it - the two best wind regions in the country have zero
+connection headroom, so some spill is physical rather than discretionary.
+
+**And the model does not represent dispatch PREFERENCE at all.** It dispatches on merit
+order between Eskom and IPP plant, with no mechanism for an operator favouring its own
+units when the system is in surplus. If that is happening, the numbers above are a floor:
+they price the approved ceiling, not any use of it beyond what congestion requires.
+
+Separating the two needs metered curtailment instructions by plant, which is not public.
+That is the data request worth making rather than a modelling problem worth solving.

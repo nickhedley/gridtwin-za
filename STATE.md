@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 929 checks
+suite                      19 harnesses, 932 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 929 checks. Last full run: 929/929.
+Nineteen harnesses, 932 checks. Last full run: 932/932.
 
 ```
 node stress_suite.js                290/290
@@ -262,7 +262,7 @@ node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity c
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
-node validate_findings.js .          13/13   the PUBLISHED FINDINGS, added 31 Aug
+node validate_findings.js .          16/16   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       28/28
 node validate_structure.js .         21/21
@@ -2612,30 +2612,17 @@ measured change, which is the only reason to re-pin.
    available** - reserve, network support and ramping, none of which an energy merit order
    prices. `coalEAFPct` stays at the audited 65. Full working in results.md.
 
-2. **Non-economic dispatch is not modelled.** IPPs report substantial curtailment with
-   Eskom compensation payments, and the likely mechanism - Eskom favouring its own plant
-   now that there is surplus, absent a competitive market - has no representation here.
-   The model dispatches on merit order between Eskom and IPP plant. `congestionCurtailPct`
-   captures the NERSA-approved ceiling as a flat national haircut, which is the effect
-   without the cause. Same class as the OCGT gap: the model prices energy, real dispatch
-   does not only price energy.
+2. **Non-economic dispatch is not modelled - now PRICED, still not represented.**
+   1 Sep 2026: the cost of curtailing renewables is quantified. Every TWh spilled is
+   replaced by 0.97 TWh of coal carrying 1.00 Mt of CO2, and at the approved 4% ceiling
+   costs generators R0.70bn a year against R3.0/MWh on system cost.
 
-2. ~~Technical and other losses not modelled.~~ **I was wrong — checked 31 Aug 2026.**
-   They are already inside the demand series. `profiles.json` states its basis:
-   `demand = underlying(gross grid demand + est rooftop)`, which is Eskom's
-   energy-available-for-distribution basis, i.e. before distribution losses. Measured:
+   What remains absent is the MECHANISM. The model dispatches on merit order between
+   Eskom and IPP plant with no representation of an operator favouring its own units in
+   surplus. The figures above therefore price the APPROVED ceiling and are a floor on any
+   use beyond what congestion requires. Separating the two needs metered curtailment
+   instructions by plant, which is not public - a data request, not a modelling problem.
 
-   ```
-   model grid generation, excl rooftop        208.5 TWh
-   Eskom energy available for distribution    206.0 TWh   +1.2%
-   Eskom local and international SALES        178.0 TWh  +17.1%
-   ```
-
-   The model tracks the available-for-distribution figure to within 1.2%. Adding a loss
-   term would have double-counted 24 TWh and broken a calibration that is currently very
-   good. **The real requirement is a caveat, not a model change**: never compare the
-   model's served energy against a national sales figure — it is 17% higher by
-   construction, and correctly so.
 3. ~~`IMPORTS_CF` in nodal_engine.js is a second copy.~~ corrected 31 Aug 2026 to 0.41,
    with a comment at both constants saying the other exists. It stays a literal because
    the file is loaded as a plain script by four harnesses with no access to `FIXED`.
@@ -6012,6 +5999,38 @@ has to live where the work happens.
 
 `validate_docs` caught the CALENDAR.md rule count within seconds of the rule being added,
 which is the rule demonstrating itself.
+
+---
+
+## pricing curtailment - 1 Sep 2026
+
+```
+ceiling   spilled TWh   coal TWh   CO2 Mt   R/MWh   IPP revenue lost
+    0%           0.00      164.8    173.7   582.2            R0.00bn
+    4%           0.77      165.6    174.5   585.2            R0.70bn
+   15%           2.90      167.6    176.6   593.2            R2.76bn
+```
+
+**The substitution is one for one** - 0.97 TWh of coal and 1.00 Mt of CO2 per TWh spilled.
+That last figure recovers `emisCoal` of 1.04 from the differencing itself, which is a
+useful check on the whole chain rather than just the headline.
+
+### the asymmetry is the point
+
+At the approved 4% ceiling: generators lose R0.70bn a year, about R910 per MWh spilled;
+consumers pay R3.0/MWh, roughly half a per cent. **Concentrated on one party, diffuse on the
+other** - which is exactly why curtailment compensation is contested, and why it took
+belated payments to surface.
+
+### what it does not show, said plainly in the write-up
+
+Not that the ceiling is misused. Our own headroom data supports its existence: the two best
+wind regions have zero connection headroom, so some spill is physical. And the model has no
+dispatch-preference mechanism at all, so these are a FLOOR on any use beyond congestion.
+
+`validate_findings` 13 -> 16. The ratio is tested by DIFFERENCING two runs that differ only
+in the ceiling, not by reading one run's totals - and it snapshots and restores the scenario,
+because probe pollution gave a wrong figure once already today.
 
 ---
 
