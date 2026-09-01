@@ -16774,25 +16774,29 @@ function showMIPBanner() {
   const label = a.mode === 'full' ? 'the full year (365 days)'
                                   : '52 representative days, one per week';
   banner.style.display = 'block';
+  // ONE small-font diagnostic line, then continuous prose. The first version stacked three
+  // font sizes with <br> between them and ran two sentences together - "no duals.Prices
+  // come from" - because each fragment ended a string without a trailing space.
+  const diag = 'build ' + BUILD_STAMP
+    + (a.priceDiag
+        ? ' \u00b7 pricing run ' + a.priceDiag.ok + '/' + (a.priceDiag.ok + a.priceDiag.fail
+            + a.priceDiag.noMatch + (a.priceDiag.empty | 0)) + ' days'
+          + (a.priceDiag.reason ? ' \u00b7 first error: ' + a.priceDiag.reason : '')
+        : ' \u00b7 no pricing diagnostic');
+  const prices = mipPricedHours > 0
+    ? 'Prices come from a pricing run \u2013 commitment fixed to this solution and re-solved '
+      + 'as an LP \u2013 covering ' + mipPricedHours.toLocaleString() + ' of 8,760 hours'
+      + (mipPricedHours >= 8760 ? '. ' : '; the rest keep heuristic prices. ')
+    : 'The pricing run did not return usable duals, so prices remain the heuristic\u2019s. ';
   banner.innerHTML =
-    '<strong>These KPIs, the energy mix and the dispatch chart are the optimal network-aware solution</strong> – '
-    + 'coal unit commitment, storage scheduling and corridor flows across all 10 regions solved together '
-    + 'as a mixed-integer program over ' + label + ' with HiGHS in ' + a.elapsed.toFixed(0) + 's. '
-    + '<br><span style="font-size:10px;opacity:.7">build ' + BUILD_STAMP
-    + (a.priceDiag ? ' \u00b7 pricing run reported' : ' \u00b7 NO pricing diagnostic on this result')
-    + '</span>'
-    + (a.priceDiag ? '<br><span style="font-size:10px;opacity:.85">Pricing run: '
-        + a.priceDiag.ok + ' days priced, ' + a.priceDiag.fail + ' errored, '
-        + a.priceDiag.noMatch + ' with a row-count mismatch, '
-        + (a.priceDiag.empty|0) + ' solved but yielded no duals'
-        + (a.priceDiag.reason ? ' \u2013 first error: ' + a.priceDiag.reason : '')
-        + '.</span>' : '')
-    + (mipPricedHours > 0
-        ? 'Prices come from a pricing run \u2013 commitment fixed to this solution and re-solved as an '
-          + 'LP \u2013 covering ' + mipPricedHours.toLocaleString() + ' of 8,760 hours'
-          + (mipPricedHours >= 8760 ? '. ' : '; the rest keep heuristic prices. ')
-        : 'The pricing run did not return usable duals, so prices remain the heuristic\u2019s. ')
-    + 'Moving any slider returns to the instant heuristic \u2013 press Run the full model to bring this back.';
+    '<strong>These KPIs, the energy mix and the dispatch chart are the optimal network-aware '
+    + 'solution</strong> \u2013 coal unit commitment, storage scheduling and corridor flows '
+    + 'across all 10 regions solved together as a mixed-integer program over ' + label
+    + ' with HiGHS in ' + a.elapsed.toFixed(0) + 's. '
+    + prices
+    + 'Moving any slider returns to the instant heuristic \u2013 press Run the full model to '
+    + 'bring this back.'
+    + '<div style="font-size:10px;opacity:.6;margin-top:5px">' + diag + '</div>';
 }
 
 function renderMIPSummary() {

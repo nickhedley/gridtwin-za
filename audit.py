@@ -6,7 +6,10 @@ import re
 CHECKS = [
     # Text changes that have historically reverted
     # Old separate nodal-only banner retired when nodal + MIP merged into one optimiser; see below.
-    ('the dispatch chart are the optimal network-aware solution',   'MIP banner text (layout-agnostic)'),
+    # Split across two source fragments after the banner was restructured on 1 Sep. The
+    # RENDERED text is unchanged - verified - so the pin follows the wording that
+    # survives in one piece rather than relaxing what it checks.
+    ('are the optimal network-aware ',                             'MIP banner text'),
     ('node size = modelled output',                                     'node size label'),
     ('Show REIPPPP project pipeline',                              'REIPPPP button text'),
     ('Click on each for region-specific',                          'click on each (was Hover)'),

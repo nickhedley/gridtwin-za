@@ -6034,6 +6034,100 @@ because probe pollution gave a wrong figure once already today.
 
 ---
 
+# TO DO - consolidated 1 Sep 2026
+
+Six separate to-do sections had accumulated. This is the single list; the sections above
+keep the reasoning behind each item.
+
+## Needs the browser, not a harness
+
+1. ~~Test the reserve co-optimisation.~~ **DONE 1 Sep 2026.** Ran clean in the browser,
+   93s against 100s with reserve on, no solver error, unserved still zero. A/B on the
+   optimal column: storage discharge 1.41 -> 1.63 TWh, start-ups 4,343 -> 4,272, coal cost
+   +R0.01bn on R93.89bn. **The constraint reaches the solver and costs one part in ten
+   thousand.** The +16% discharge is the opposite of what I predicted and the mechanism -
+   fewer coal starts, more cycling - is INFERRED from four aggregates, not traced. Do not
+   quote it.
+2. **Check the four new panels render sanely.** Hydrogen, electrolyser siting,
+   grid-enhancing technologies, heat stress. Verified headless for content and NaN, never
+   seen laid out.
+
+## Model
+
+3. **Instant-path storage stays heuristic.** The network-aware run is co-optimised; the
+   instant one approximates it. It discharges at R754/MWh against a median of R748 - not
+   targeting peaks. Deliberate trade for sub-second response, now disclosed on the panel.
+4. **Non-economic dispatch has no mechanism.** Priced - 0.97 TWh of coal per TWh spilled,
+   R0.70bn a year to generators at the 4% ceiling - but the model still dispatches on merit
+   order between Eskom and IPP plant. **Needs metered curtailment instructions by plant: a
+   data request, not a modelling problem.**
+5. **`emisCoal || 0.95` at line 5812** disagrees with `FIXED.emisCoal` = 1.04. Dead today;
+   a latent wrong answer if the resolution changes.
+6. **Drought and cooling-water limits are not modelled**, nor the heat-with-low-wind
+   correlation behind most northern-hemisphere heat events.
+
+## Data
+
+7. **1,823 MW solar gap** against `FIXED.pvUtilityMW`. Pre-2026 private capacity
+   unsourced; SunCentral 342 MW the best candidate. Needs #PowerTracker.
+8. **Named-project layer.** The IPP Office annual overview is the only published route to
+   project names and the Hydra Central split.
+9. **NERSA cumulative reconciliation** - SAPVIA 20,131 MW against NERSA 21,900 MW.
+10. **`sa_solar_grid.json`** stays as a plausibility reference, not a data source. Decided
+    and pinned; listed so it is not reopened.
+
+## Publication and outreach
+
+11. **`post_headroom.md`** - verified, ready, unpublished.
+12. **Wind Pioneers note** - three variants drafted, use the ten-year version.
+13. **EDMSA** - two questions worth putting to them: what boundary produces 195 Mt for 2025
+    against our 174.5, and whether "grid readiness adequate per TDP 2023/24" can be
+    reconciled with their own finding that grid absorption is the binding constraint.
+14. **Energy Brokers** - the solar ceiling finding is directly useful to their offtakers.
+15. **Findings ready to publish**, Tier 1 and Tier 2 only: the solar 49% ceiling, the
+    inverted tariff seasons, curtailment priced, hydrogen needing overbuild first.
+
+## Regulatory calendar
+
+16. **~7 Sep** ERTSA written comments (indicative).
+17. **10 Sep** Eskom RCA hearing.
+18. **Oct** Price and Tariff Rule consultation - the most consequential dated item.
+19. **31 Oct** Trading Rules final text, Market Code, Vesting Framework, Wholesale Tariff
+    Methodology.
+
+## Repo
+
+20. Remove `HANDOVER.md` from `.gitignore`; add the four custom instructions to Project
+    settings.
+
+---
+
+## the KPI banner: three font sizes and a missing space - 1 Sep 2026
+
+```
+before   main prose, then <br> 10px build stamp, then <br> 10.5px pricing line,
+         then back to main prose - and "no duals.Prices come from" with no space
+after    continuous prose, one 10px footnote line, no <br> at all
+```
+
+The missing space was structural rather than a typo: each fragment ended a string without a
+trailing space, so two sentences ran together whenever the pricing diagnostic appeared. The
+three sizes came from bolting the build stamp and then the diagnostic on as separate
+`<br><span>` blocks over two sessions.
+
+Verified: one font size in the markup, zero `<br>` tags, no run-together sentences, no
+double spaces.
+
+### audit.py caught a real break in the same edit
+
+Restructuring split "the dispatch chart are the optimal network-aware solution" across two
+source fragments, so the pin failed. The RENDERED text is unchanged - checked before
+touching the pin - so it was repointed at wording that survives in one piece rather than
+relaxed. **A pin that greps source will break on a legitimate refactor; the answer is to
+verify the output first, then move the pin, never to widen it.**
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
