@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Twenty-one sections follow. This index exists because the file passed 1,400 lines and the
+Twenty-two sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -1975,3 +1975,70 @@ The finding is narrower: **peak demand and system scarcity are in different seas
 South Africa**, and a tariff built on the first does not price the second. That is exactly
 the gap a dynamic or scarcity-linked component would close, and it is what makes the
 Ausgrid model relevant here rather than merely interesting.
+
+---
+
+## Wheeling calculators: the 65% is real, the shape behind it is the story
+
+Energy Brokers publishes a free wheeled-energy estimator whose worked example claims a
+9 GWh/yr industrial user can reach 25% lower costs, 65% renewable coverage and 5,000+
+tonnes of carbon avoided. Tested against our regional profiles over ten weather years,
+matching a flat 1,027 kW industrial load in the Northern Cape.
+
+### the coverage claim holds
+
+```
+mix                       ten-year range      mean
+solar only 2 MW            35.7 - 36.7%      36.3%
+solar only 4 MW            41.2 - 41.9%      41.6%
+wind only 2 MW             57.5 - 64.2%      61.2%
+wind 1 + solar 2 MW        61.0 - 65.7%      63.7%
+wind 2 + solar 3 MW        78.4 - 83.9%      81.1%
+```
+
+65% is achievable with a wind and solar mix. It needs roughly three megawatts of
+generation for a one megawatt load, which is the part a headline number hides.
+
+### solar alone hits a ceiling near 40%, and building more does not move it
+
+Doubling solar from 2 MW to 4 MW lifts coverage from 36.3% to 41.6% - **five points for
+twice the plant.** Every additional panel produces in the hours already covered.
+
+This is the capture-rate finding at the scale of a single customer. A buyer offered a
+solar-heavy wheeling deal should know their renewable share is capped near 40% however
+much they contract, and that wind is what breaks the ceiling: one megawatt of wind added
+to 2 MW of solar buys 27.5 points, while two more megawatts of solar buys five.
+
+### and this is where a battery earns its place
+
+```
+solar 2 MW, no battery                36.3%
+solar 2 MW + 1 MW / 4 MWh             44.0%    +7.7
+solar 4 MW + 1 MW / 4 MWh             57.6%   +21.3
+wind 1 + solar 2 + 1 MW / 4 MWh       76.9%   +13.1
+```
+
+A battery is worth far more on a solar-heavy contract than a mixed one, because it is
+substituting for the diversity wind provides directly. On 4 MW of solar it adds 21 points.
+
+### the carbon figure depends on a factor nobody states
+
+```
+9 GWh at 65% renewable = 5.85 GWh displaced
+
+GridTwin modelled grid mix   0.780 t/MWh    4,563 t
+a common SA grid factor      0.95           5,558 t
+Eskom coal-only              1.04           6,084 t
+calculator claims                           5,000+ t
+```
+
+Their number sits inside the plausible range, but the range is a third wide and the
+answer turns entirely on which emission factor is used. **Any wheeling estimate quoting
+avoided carbon should state its factor**; without it the figure cannot be checked or
+compared between offers.
+
+### what was not tested
+
+The 25% saving. It depends on the buyer's blended tariff, the wheeling charge and the PPA
+price, none of which are published here. It is the number a buyer should press hardest on,
+because it is the one this analysis cannot corroborate.
