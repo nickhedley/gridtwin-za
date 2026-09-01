@@ -477,21 +477,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
           </div>
 
-          <div id="nav-heat" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Heat stress</h2><span class="tag">stress test, not a forecast</span>
-              <span class="tag">the tight season is the hot season</span></div>
-            <div class="pb">
-              <div style="display:flex;gap:6px;align-items:center;margin-bottom:9px;flex-wrap:wrap">
-                <span style="font-size:10.5px;color:var(--ink2)">Hot spell</span>
-                <input id="heatDelta" type="range" min="0" max="12" step="1" value="5"
-                       oninput="renderHeat()" style="flex:1;min-width:120px;max-width:200px">
-                <span id="heatDeltaVal" style="font-family:monospace;font-size:11px">+5</span>
-                <span style="font-size:10px;color:var(--ink2)">&deg;C above 25&deg;C</span>
-              </div>
-              <div id="heatBody"></div>
-            </div>
-          </div>
-
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Carbon budget</h2><span class="tag">modelled &middot; vs South Africa&rsquo;s NDC</span></div>
             <div class="pb" id="carbonBudget"></div>
@@ -712,6 +697,21 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="ph"><h2>Levelised cost comparison</h2><span class="tag">sourced constants &middot; see About &middot; R/kWh · full lifecycle build cost</span></div>
           <div class="pb" id="lcoe"></div>
         </div>
+
+          <div id="nav-heat" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Heat stress</h2><span class="tag">stress test, not a forecast</span>
+              <span class="tag">the tight season is the hot season</span></div>
+            <div class="pb">
+              <div style="display:flex;gap:6px;align-items:center;margin-bottom:9px;flex-wrap:wrap">
+                <span style="font-size:10.5px;color:var(--ink2)">Hot spell</span>
+                <input id="heatDelta" type="range" min="0" max="12" step="1" value="5"
+                       oninput="renderHeat()" style="flex:1;min-width:120px;max-width:200px">
+                <span id="heatDeltaVal" style="font-family:monospace;font-size:11px">+5</span>
+                <span style="font-size:10px;color:var(--ink2)">&deg;C above 25&deg;C</span>
+              </div>
+              <div id="heatBody"></div>
+            </div>
+          </div>
 
           
 

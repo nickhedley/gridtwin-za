@@ -6188,6 +6188,21 @@ inside words it had lowercased: `eskom'S`, `air'S`, `on A typical hour`. Fifty-e
 instances across two files, now corrected with targeted patterns rather than another
 blanket pass - `and I should` and `capex R bn` are correct English and had to survive.
 
+## heat stress panel moved down - 1 Sep 2026
+
+```
+was    line 480, directly under System adequacy
+now    line 701, directly under Levelised cost comparison
+```
+
+Too prominent where it was. Heat stress is a SENSITIVITY, not a headline result - it sits
+better below the cost comparison than immediately beneath adequacy, where its position
+implied it was part of the core answer.
+
+Verified after the move: markup intact, panel renders at all four slider settings, no
+navigation anchor pointed at its old position. `nav-heat` is referenced only by its own
+div, so nothing needed rewiring.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
