@@ -182,6 +182,35 @@ for needle, label in CHECKS:
 # What this catches is the specific failure mode: explaining the FINDING on a panel. The
 # findings belong in RESULTS.md. A panel gets the caveat, the units and the provenance,
 # because a reader cannot check those from the numbers alone.
+# ── NO SHOUTED EMPHASIS IN USER-FACING STRINGS ──────────────────────────────
+# Capitalised emphasis has now returned TWICE: once in the markdown documents and once in
+# the JavaScript strings that build tooltips and panel notes. The second time the user
+# found it in the adequacy tooltip - "the lamps show the TYPICAL year" - and 918 checks
+# had nothing to say about it.
+#
+# Acronyms and code identifiers are exempt. What this catches is a word capitalised for
+# emphasis inside a sentence, which is a house-style decision the project made twice and
+# undid twice.
+_SHOUT_OK = set("""MW GW TWh GWh MWh kW kWh CO2 CO LOLE EUE EAF VOLL OCGT CCGT IPP CSP PV
+SA ZA NERSA IRP TDP GCCA REIPPPP SAWEM CSV PPA VPP BESS LCOE SRMC NTCSA DLR CCS PVGIS
+MERRA ERA SARAH KPI KPIs UI URL SOC MIP LP HiGHS PyPSA API DR AC DC UTC SAST NDC SAPP
+REDZ REEA SSEG ATB NREL CSIR AEMO EIA JSON HTML PDF MD FY CY RCA ERTSA GCC MYPD RAB
+MONTHS COLORS FIXED EMIS CARBON EX EFF MC GPS NRS TOU PLEXOS EDMSA IGCAR SANS DFFE
+SAPVIA UCT GSB PFL DBSA BW COD RMIPPPP BESIPPPP UPG NCE SALGA PAJA MFMA NEM SDK ML AI
+US UK II III IV""".split())
+
+def check_shouting(src):
+    found = {}
+    for m in re.finditer(r'([`\'"])([^`\'"\n]{25,400})\1', src):
+        t = m.group(2)
+        if not re.search(r'[a-z]{4}\s+[a-z]{3}', t):
+            continue
+        for w in set(re.findall(r'(?<![A-Za-z0-9_])[A-Z]{2,}(?![A-Za-z0-9_])', t)):
+            if w in _SHOUT_OK:
+                continue
+            found[w] = found.get(w, 0) + 1
+    return found
+
 PROSE_CEILING = 4100        # measured 1 Sep 2026 after the trim: 4,098
 
 def check_prose(src):
@@ -195,6 +224,14 @@ def check_prose(src):
     return total, len(blocks)
 
 _prose, _blocks = check_prose(c)
+_shout = check_shouting(c)
+if _shout:
+    _top = ', '.join(sorted(_shout, key=lambda k: -_shout[k])[:6])
+    missing.append(('no shouted emphasis in user-facing strings',
+                    f'{sum(_shout.values())} occurrences of {len(_shout)} words: {_top} '
+                    f'- acronyms are exempt; these are words capitalised for emphasis'))
+    print(f'  SHOUTING: {sum(_shout.values())} occurrences across {len(_shout)} words')
+
 if _prose > PROSE_CEILING:
     missing.append((f'always-visible prose within {PROSE_CEILING} words',
                     f'{_prose} words across {_blocks} blocks - RAISE THE CEILING '

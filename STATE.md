@@ -6356,6 +6356,36 @@ element inside a loop, not a function. Reverted rather than duplicating the harn
 machinery, and placed in `validate_consistency` where `run()` exists. 31 -> 35, and it
 fails on both scenarios when the old threshold is restored.
 
+## shouted emphasis returned a second time, in the code - 1 Sep 2026
+
+The user spotted "the lamps show the TYPICAL year" in the adequacy tooltip. Sweeping every
+prose string in `index.html` found **85 distinct words, 113 occurrences** - far more than
+the two visible on that screen.
+
+```
+this morning   markdown documents      2,648 words de-capitalised
+this evening   JavaScript strings         87 words de-capitalised
+```
+
+The first pass covered the documents and stopped there. Tooltips and panel notes are built
+from string literals in code, so nothing touched them and 918 checks had nothing to say.
+
+### now checked, and it catches one word
+
+`audit.py` scans every quoted string that looks like prose and fails on any capitalised word
+outside an allow-list of acronyms and code identifiers. Verified by restoring a single
+instance: `SHOUTING: 1 occurrences across 1 words`, and the audit fails.
+
+That is the third house-style decision now enforced by a check rather than by memory -
+after the prose ratchet and the feature-reachability list. **Rule 12 in practice: this one
+had to be made twice before it was asserted.**
+
+### the allow-list is the load-bearing part
+
+Ninety-odd entries: units, technology acronyms, institutions, and code identifiers like
+`FIXED`, `MONTHS` and `COLORS` that appear inside template literals. Without it the check
+would fire on every legitimate mention of `TWh` and be switched off within a day.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
