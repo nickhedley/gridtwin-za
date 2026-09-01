@@ -2,7 +2,7 @@
 
 ## Fitness for purpose - read this before quoting anything
 
-Written 30 Aug 2026, REVISED 31 Aug after a day of recalibration that moved several
+Written 30 Aug 2026, revised 31 Aug after a day of recalibration that moved several
 published levels. What this model can carry, what it cannot, and which published numbers
 depend on which. A reader deciding whether to cite GridTwin should start here.
 
@@ -24,7 +24,7 @@ adequacy                   reported as LOLE and expected unserved energy over 48
                            stated - not a single draw
 ```
 
-### defensible IN front OF A hostile reviewer
+### defensible in front of A hostile reviewer
 
 Findings grounded in data rather than in dispatch:
 
@@ -36,7 +36,7 @@ Findings grounded in data rather than in dispatch:
 - **Wind versus solar capture asymmetry.** Solar cannibalises itself, wind does not. The
   mechanism - every solar plant produces in the same hours - is obvious once stated.
   Re-verified 31 Aug: wind holds 96-107%, solar falls to 2.7%, four of five build points
-  reproducing within two points. Note the STARTING point moved - solar already earns 24%
+  reproducing within two points. Note the starting point moved - solar already earns 24%
   below the market average today, where the earlier version showed near-parity.
 - **Iron-air does not solve a winter wind drought.** Survived a heuristic, an optimal LP,
   and a reserve-constrained LP. The strongest-tested result in the file.
@@ -65,12 +65,12 @@ any single-draw shed    Adequacy figures from one outage seed. The shipped seed 
                         standard error, never one draw.
 ```
 
-### THE honest weak spot: storage dispatch
+### the honest weak spot: storage dispatch
 
 The heuristic charges best-round-trip-first with no value function on state of charge.
-PARTLY ADDRESSED 31 Aug: pumped storage now carries a peak reservation, so it no longer
+Partly addressed 31 Aug: pumped storage now carries a peak reservation, so it no longer
 empties before the annual peak - measured 0 to 2,331 MW at the peak hour, and 324 GWh
-less unserved in the 2023 crisis scenario. The CHARGING side, and the allocation between
+less unserved in the 2023 crisis scenario. The charging side, and the allocation between
 chemistries, are untouched and still need the LP.
 
 Which published results lean on it:
@@ -82,10 +82,10 @@ leans ON IT    no-gas frontier
 leans ON IT    the storage-mitigation half of the capture-rate curve
 ```
 
-Those three are directionally sound and quantitatively UNCERTAIN. Every model carries a
+Those three are directionally sound and quantitatively uncertain. Every model carries a
 dispatch approximation; this one is documented rather than assumed.
 
-### where this IS NOT YET PLEXOS OR PyPSA
+### where this is not yet plexos or PyPSA
 
 - Storage is not CO-optimised with unit commitment.
 - No intra-hour balancing product - the model is hourly, and NERSA's own wholesale
@@ -94,7 +94,7 @@ dispatch approximation; this one is documented rather than assumed.
   own locational analysis says is binding. Two engines, and only one scales that far.
 - No stochastic outage or forecast-error representation.
 
-### WHY IT IS nevertheless defensible
+### why it is nevertheless defensible
 
 Not because the model is right, but because **every number carries its scenario and its
 caveat, and claims get withdrawn when they fail**. On 30 Aug 2026 alone: a headline
@@ -105,8 +105,8 @@ one that does not.
 ---
 
 
-What IS true right NOW. Rewritten in place, never appended to. If a fact here
-disagrees with LOG.md, this file wins. If it disagrees with a data file, stop -
+What is true right now. Rewritten in place, never appended to. If a fact here
+disagrees with log.md, this file wins. If it disagrees with a data file, stop -
 that is the failure mode that cost most of 27 Aug 2026.
 
 Last verified: 28 Aug 2026, end of session.
@@ -146,7 +146,7 @@ the wind figure and must not be hand-edited. The private block covers
 listed in the source and deliberately excluded: it suppresses demand rather than adding
 supply.
 
-Hydra Central is **NOT zero**. It carries 669 MW wind and 459.5 MW solar from the
+Hydra Central is **not zero**. It carries 669 MW wind and 459.5 MW solar from the
 supply-area split, applied 14 Aug 2026 by `build_capacity.py` step 1b reading
 `nodal/supply_area_split_draft.json`. The old text here said zero, and the data file's
 own `HYDRA_CENTRAL_ZERO` note still says zero — both were stale, and following them
@@ -180,7 +180,7 @@ truncated to 16 hex characters.
 
 `by_source` now has four buckets: `reipppp`, `private`, `eskom`, `rmipppp`. The last
 was added 28 Aug to hold Mulilo Total Hydra at 75 MW under a new `hybrid_mw` key —
-NOT `solar_mw`, because the plant is 216 MWp of solar behind a 75 MW contracted
+Not `solar_mw`, because the plant is 216 MWp of solar behind a 75 MW contracted
 dispatchable output. `FIXED.pvUtilityMW` is untouched at 3,271 MW as a result.
 
 ---
@@ -201,7 +201,7 @@ online below their contracted figure. Terminated projects are **not** part of th
 IPP Office's "Capacity Procured" already excludes anything that never reached
 financial close.
 
-**2. Preferred bidders reconcile to financial close plus pre-FC:**
+**2. Preferred bidders reconcile to financial close plus pre-fc:**
 
 ```
 preferred_bidders = reached_FC + pre_FC
@@ -236,7 +236,7 @@ and the file agree, and fails loudly if either is edited alone. It will also fai
 pre-2026 private **wind** is later found, which is the correct behaviour: the constant
 would then be understated and must be re-derived, not patched.
 
-Solar stays PENDING. `meta.private_coverage` is `h1-2026-only`, and the validator only
+Solar stays pending. `meta.private_coverage` is `h1-2026-only`, and the validator only
 evaluates the solar identity when it reads `complete`. **Do not let it go green on a
 widened tolerance** — the 1,823 MW residual is the finding.
 
@@ -296,7 +296,7 @@ worse than the honest 17/18.
 
 COD remains 2026-07 pending the PFL Knowledge Hub table.
 
-  75 MW contracted, 216 MW installed. USE THE contracted FIGURE.
+  75 MW contracted, 216 MW installed. use the contracted figure.
 
   COD unresolved, leaning H1. PFL places it in H1 2026, so on or before 30 June.
   Engineering News reports it inaugurated and brought into operation on 16 July
@@ -311,14 +311,14 @@ COD remains 2026-07 pending the PFL Knowledge Hub table.
 Ten harnesses take the root as `argv[2]` and default to `.`. Two default to
 `testroot`. Three ignore the argument entirely:
 
-  stress_suite.js      NO root variable. Hardcodes `nodal/...` and `index.html`
-                       as paths relative to the working DIRECTORY. Passing
+  stress_suite.js      no root variable. Hardcodes `nodal/...` and `index.html`
+                       as paths relative to the working directory. Passing
                        `testroot` does nothing — the argument is discarded and
                        the run silently uses cwd. It therefore appears to work
                        from the repo root and fails from anywhere else with
                        MODULE_NOT_FOUND on ./nodal/nodal_engine.js.
-  eng5.js              Hardcodes `testroot/index.html`. Run from the PARENT.
-  jsdom_local2.js      Hardcodes `testroot/index.html`. Run from the PARENT.
+  eng5.js              Hardcodes `testroot/index.html`. Run from the parent.
+  jsdom_local2.js      Hardcodes `testroot/index.html`. Run from the parent.
   validate_outputs.js  Hardcodes path.resolve('testroot'). Run it from the
                        Parent of testroot, not from inside it.
   validate_capacity.js, validate_lp.js   default to 'testroot' if no argument.
@@ -348,14 +348,14 @@ validate_external           1/2           2/2
 ```
 
 What they looked like: total energy 193.3 TWh against an Ember-equivalent
-218.8; CO2 137.6 Mt against 175, a 21% shortfall; solar CF 27.8% and rooftop
+218.8; CO2 137.6 Mt against 175, a 21% shortfall; solar cf 27.8% and rooftop
 22.6%, both above their plausible bands; CSP below its; PV at 3,561 MW against
 a 3,271 MW cap; and a peak-demand disagreement of 27.7 GW against 33.2 GW that
 looked exactly like the 17 Aug storage-charging bug. All one cause: a synthetic
 solar shape that is too generous, and a demand series that peaks in a different
 hour.
 
-THE rule: before investigating any failure below the top four lines, confirm
+The rule: before investigating any failure below the top four lines, confirm
 `profiles.json` is at the repo root. A run without it is not evidence.
 
 ### Data the suite needs
@@ -382,10 +382,10 @@ fetches — it is a harness input, not a page dependency.
 Checked 27 Aug 2026, because an earlier draft of this block assumed it was
 redundant and it is not.
 
-`validate_response`'s SIGN_RULES cover four of eng5's six checks — VRE against
+`validate_response`'s SIGN_RULES cover four of eng5's six checks — vre against
 coal, demand against coal, EAF against lole — and add carbon-tax and
 decommissioning rules eng5 lacks. But `newBattMW` appears nowhere in SIGN_RULES,
-so TWO of eng5's checks have no equivalent anywhere in the suite:
+so two of eng5's checks have no equivalent anywhere in the suite:
 
     5. more storage must not increase curtailment
     6. more storage must not increase unserved energy
@@ -400,15 +400,15 @@ then both must run.
 
 ### sa_solar_grid.json is an orphan, not a missing dependency
 
-The file is present at `nodal/sa_solar_grid.json`, 23 KB, and it is real data:
+The file is present at `nodal/sa_solar_grid.json`, 23 kb, and it is real data:
 PVGIS SARAH2 v5.2, a 0.5-degree grid over 16–33°E and 22–35°S, 739 valid points
 of annual capacity factor, nulls for ocean and outside-coverage.
 
 Nothing fetches it. The only reference anywhere in the repo is the comment at
 index.html:1291, which states the file has never existed and that the PVGIS path
-is "worth reviving IF the grid is ever built".
+is "worth reviving if the grid is ever built".
 
-The grid HAS been built. So this is not a dead branch to delete — it is a
+The grid has been built. So this is not a dead branch to delete — it is a
 completed input whose consumer was removed on 14 Aug 2026. Reconnecting it would
 replace the Open-Meteo ERA5 fallback that the code's own comment says
 overestimates by 10–15%, with satellite-observed irradiance at roughly 5%.
@@ -471,13 +471,13 @@ and is not here.
    changed to an unsubstantiated figure, and the "Existing fleet" documentation row
    still reads "Utility PV 4 GW" for the same reason. Change both in one commit once
    the earlier private capacity is sourced.
-2. ~~`carbonPrice` is disconnected, pinned at R550/t.~~ **stale — checked AND closed
+2. ~~`carbonPrice` is disconnected, pinned at R550/t.~~ **stale — checked and closed
    29 Aug 2026.** Neither part of this is true any more. Both LPs read
    `const CARBON = S.carbonTaxRPerT` (lines 6434 and 6981), so the slider does feed
    them. There is no R550 literal anywhere in the file. `carbonTaxRPerT` is **46**, not
    550, and its slider already documents why.
 
-   THE R46 IS correct AND well SOURCED. Phase 2 headline is R308/t from 1 Jan 2026, up
+   the R46 is correct and well sourced. Phase 2 headline is R308/t from 1 Jan 2026, up
    from R236. Electricity generation moved into the carbon tax from that date with up to
    **85% tax-free allowances**, so R308 x 0.15 = R46/t effective. That matches the
    slider's own note. Independent corroboration: the effective rate across the economy
@@ -485,21 +485,21 @@ and is not here.
    its allowance is at the top of the range.
 
    Alignment with professional practice — this is the part worth acting on. Models of
-   this kind carry TWO carbon numbers and GridTwin has one:
+   this kind carry two carbon numbers and GridTwin has one:
      - a compliance price, what generators actually pay, which drives dispatch. R46 is
        right for this and is what the model uses.
      - a shadow or policy price, used to test what a decarbonisation target would cost.
-       PLEXOS and PyPSA studies routinely run both. The slider's suggested values —
+       plexos and PyPSA studies routinely run both. The slider's suggested values —
        R308 headline, R462 by 2030, R640 for a carbon-budget breach — are exactly the
        policy-price ladder, so the capability exists; it is just not labelled as a
        distinct concept.
-   ON checking, THE GAP WAS smaller than first WRITTEN. GridTwin already carries both
+   on checking, the gap was smaller than first written. GridTwin already carries both
    prices in the correct relationship: the compliance price as an input (R46) and the
    shadow price as an output — the marginal abatement cost from the carbon cap dual,
    already displayed alongside the compliance price with the comparison spelled out.
-   That IS the professional structure. No restructuring was needed or done.
+   That is the professional structure. No restructuring was needed or done.
 
-   FIXED 29 Aug 2026, presentation only: the slider was labelled "Effective carbon
+   fixed 29 Aug 2026, presentation only: the slider was labelled "Effective carbon
    price" while offering R308, R462 and R640 as things to try — none of which is an
    effective rate. A user setting R462 could reasonably read it as what generators will
    pay in 2030, when at 85% allowances the effective rate would be nearer R69. Label is
@@ -514,13 +514,13 @@ and is not here.
 3. **`emisCoal || 0.95` at line 5812 disagrees with `FIXED.emisCoal` = 1.04.** Dead
    today, because that site already uses `{ ...FIXED, ...state }`. A latent wrong
    answer if the resolution ever changes.
-4. ~~Fourteen surviving `X || <literal>` fallbacks shadow a `FIXED` key.~~ AUDITED AND
-   CLOSED 31 Aug 2026. There were 55, not 14, and they fall into three classes with
-   different verdicts - the audit is recorded at the FIXED block in index.html so the
+4. ~~Fourteen surviving `X || <literal>` fallbacks shadow a `FIXED` key.~~ audited and
+   closed 31 Aug 2026. There were 55, not 14, and they fall into three classes with
+   different verdicts - the audit is recorded at the fixed block in index.html so the
    next person to grep for `||` finds the reasoning rather than repeating it. One was
    genuinely wrong and is fixed. See below.
 5. **Named-project layer.** The Q4 quarterly is aggregate throughout — zero project
-   names. The annual *"An Overview of the IPPPP"* on the same publications page
+   names. The annual *"An Overview of the ipppp"* on the same publications page
    historically carries project-level tables and is the route to named entries and the
    Hydra Central split.
 6. **`sa_solar_grid.json` is an orphan, not a missing file.** The comment was corrected
@@ -530,7 +530,7 @@ and is not here.
    observed irradiance at roughly 5%. It would move every solar figure the model produces,
    so expect `validate_benchmarks` to shift and run the suite either side. Do not delete
    the file.
-7. **The nearest-substation heuristic is FALSIFIED — and 31 Aug 2026 CONFIRMED it
+7. **The nearest-substation heuristic is falsified — and 31 Aug 2026 confirmed it
    decisively.** Two thirds of this item are already closed: Chatty is
    `pluscode-corroborated` in the register, and Impofu's `sub`/`subkm` were re-derived and
    now assign to Chatty at 88-93 km rather than Grassridge at 106.9.
@@ -538,11 +538,11 @@ and is not here.
    The remaining question was register completeness. Answered against `tdp_projects.json`,
    an independent file of 221 planned projects with named, coordinated endpoints: **seven
    TDP endpoints have no register entry within 5 km.** All are planned, several dated 2032,
-   so their absence from a register of EXISTING infrastructure is correct - but the count
+   so their absence from a register of existing infrastructure is correct - but the count
    is now asserted, so a rise means the TDP has named something the register has not caught.
 
-   **AND ONE OF THE SEVEN SETTLES THE ORIGINAL QUESTION.** Hlaziya sits 13.8 km from the
-   Impofu wind farms. Chatty, which Red Cap ACTUALLY connected to, is 72.6 km away, and
+   **and one of the seven settles the original question.** Hlaziya sits 13.8 km from the
+   Impofu wind farms. Chatty, which Red Cap actually connected to, is 72.6 km away, and
    they built 116 km of line to reach it. So the nearest substation was not merely a
    different substation - it was five times nearer, and the developer still did not use it.
    Hlaziya is planned for 2032, which is the reason: **connection choice is driven by when
@@ -550,23 +550,23 @@ and is not here.
    recover that. Before reusing this method for the Hydra Central split, treat it as a
    prior to be corroborated per project, never as an answer.
 8. ~~`pfl_cod_h1_2026.json` carries no fingerprint.~~ added 28 Aug 2026,
-   `gtza-a4cb23b744a2385b`, same method as the generated files. Note a fingerprint would NOT have caught
+   `gtza-a4cb23b744a2385b`, same method as the generated files. Note a fingerprint would not have caught
    the stale rollups found on 28 Aug — it is recomputed over whatever the file contains,
    so a hand edit produces a self-consistent fingerprint on wrong data. The rollup and
    generator-reproduction checks added to `validate_capacity.js` are what catch that.
 9. ~~Reserve is sized as a flat share of annual peak.~~ rebuilt 28 Aug 2026 as
-   contingency + demand share + VRE share, resolved hourly. `sysContingencyMW` 930 (a
+   contingency + demand share + vre share, resolved hourly. `sysContingencyMW` 930 (a
    Koeberg unit), `sysResDemandShare` 0.03, `sysResVreShare` 0.05. Mean requirement:
    1,768 MW today, 2,272 MW under Seriti's 45 GW, 2,438 MW at 110 GW — so the pot now
    Grows with renewable build. Ancillary fall deepened 62.1% to 64.8%; the knee moved
    out slightly and the 3,700 MW fleet still sits just below it. The panel now reads the
    engine's figure rather than recomputing its own, which is how it came to reference
    `FIXED.peakMW`, a key that never existed. Corrected again 28 Aug 2026, same session:
-   the requirement now uses available VRE (dispatched + curtailed) and credits curtailed
-   VRE as a reserve provider at 50%, giving gross / provided / net. `vreCurtMW` is tracked
-   separately from `curtailMW`, which mixes VRE spill with forced coal surplus and could
+   the requirement now uses available vre (dispatched + curtailed) and credits curtailed
+   vre as a reserve provider at 50%, giving gross / provided / net. `vreCurtMW` is tracked
+   separately from `curtailMW`, which mixes vre spill with forced coal surplus and could
    not be used. Finding: at 110 GW of wind and solar the gross requirement rises to
-   3,096 MW but curtailed VRE supplies 2,098 MW, so the NET pot for storage collapses to
+   3,096 MW but curtailed vre supplies 2,098 MW, so the net pot for storage collapses to
    998 MW — below today's 1,768 MW. Storage's ancillary market shrinks as renewables grow,
    once curtailment begins. Invisible at 45 GW (0.2 TWh curtailed); it appears between 45
    and 110 GW. Whether it is real depends on whether South Africa lets curtailed renewables
@@ -575,7 +575,7 @@ and is not here.
 10. **`weatherYearNational` was weighting by demand, fixed 28 Aug 2026.** It used
    `BLD_LOAD_SHARE` — Gauteng 31.5%, Northern Cape 1.4% — to build a national
    Renewable profile, when all South African wind sits in the Cape provinces and Hydra
-   Central. Wind CF came out 22.6-27.2% across all ten years, below the 28-38% band
+   Central. Wind cf came out 22.6-27.2% across all ten years, below the 28-38% band
    `validate_benchmarks` enforces, and nothing caught it because no harness exercises
    the multi-year path. Now capacity-weighted per technology, and it refuses to build a
    profile if `regional_renewable_capacity.json` is missing rather than falling back to
@@ -587,24 +587,24 @@ and is not here.
    delivers 31.97%. `profiles.json` received this correction on 16 Aug as a 0.8571
    rescale; the regional files never did. The two factors agree to 1.1% from
    independent derivations, which is the corroboration. Re-derive whenever
-   `profiles.json` or the capacity split changes. Solar is deliberately NOT corrected:
+   `profiles.json` or the capacity split changes. Solar is deliberately not corrected:
    22.42% modelled against 22.50% metered is noise.
 12. **`profiles.json` metadata was wrong and is corrected.** `wind_source_updated`
    claimed the wind series was a MERRA-2 composite. It is the Eskom metered series.
    Second stale note found inside a data file this session, after `HYDRA_CENTRAL_ZERO`.
 13. **All six falsy-zero suspects investigated and explained, 28 Aug 2026.** None is a
-   bug. Five are one mechanism: a rebound PEAK. Modest demand shifting cuts the peak from
+   bug. Five are one mechanism: a rebound peak. Modest demand shifting cuts the peak from
    31.60 to 29.23 GW, but past ~15% the shifted load rebuilds a peak in the valley and at
    30% the system costs more than with no demand response at all. Driven by fuel, not by
    `drCostR`, which stays near zero. The sixth, `asReserveRMWh`, is a designed step: the
    reserve holdback is binary on price > 0 and does not scale with price. All six are now
    Annotated in `validate_response.js` rather than suppressed — the suspect still prints,
    because the day one changes shape is the day something broke.
-14. ~~Three results in RESULTS.md are still on one weather year.~~ RE-RUN 28 Aug 2026
+14. ~~Three results in results.md are still on one weather year.~~ re-run 28 Aug 2026
    across all ten. All three hold, and two are stronger than the single-year run showed.
    Iron-air changes July gas by exactly zero in all ten years. Lithium 4h-to-10h buys
    under 1% of gas in every year, tighter than the 1.7% first reported, which was the
-   most favourable year. Coal flexibilisation worsens adequacy in TEN years out of ten,
+   most favourable year. Coal flexibilisation worsens adequacy in ten years out of ten,
    by +1,057 to +1,223 GWh — a 166 GWh range against a 4,200 GWh spread in the underlying
    unserved energy, so the penalty is nearly independent of weather. It was flagged as the
    weakest result in the file; it is now among the best evidenced. The
@@ -613,19 +613,19 @@ and is not here.
    conservative one. Long-duration storage, lithium duration and coal flexibilisation
    have not been re-run. The flexibilisation result is the weakest: its 1,128 GWh
    effect sits inside a 4,600 GWh weather spread and could reverse in some years.
-11. **The no-gas frontier costs the same as gas, but is NOT buildable on today's grid.**
+11. **The no-gas frontier costs the same as gas, but is not buildable on today's grid.**
    50W/60S with no gas comes out at R285 bn/yr against R285 bn for the 25 GW gas scenario.
    Checked against `headroom_summary.json`: national headroom is 21,520 MW wind and
    19,940 MW solar; the frontier needs 45,388 and 56,729. Shortfall ~61 GW. The four
    best-wind regions hold 100% of existing wind and 7.3% of national wind headroom, and
    Zero solar headroom. Northern Cape and Hydra Central are at zero for everything.
-   R285 bn is a FLOOR. The finding is about sequencing — transmission first — not about
+   R285 bn is a floor. The finding is about sequencing — transmission first — not about
    whether a no-gas system is affordable.
-12. **Long-duration capex is single-source.** `acapVrfb` 5,565 rests on one USD 450/kWh
+12. **Long-duration capex is single-source.** `acapVrfb` 5,565 rests on one usd 450/kWh
    estimate; NREL ATB covers lithium only and cannot corroborate it. `acapIronAir`
    12,940 comes from one transaction, pre-incentive. Both scale linearly with duration,
    which overstates long durations against NREL's finding that cost per kWh falls as
-   duration rises. FX is pinned at R16.50/USD, the 180-day average to 26 Aug 2026.
+   duration rises. fx is pinned at R16.50/usd, the 180-day average to 26 Aug 2026.
 
 ---
 
@@ -633,7 +633,7 @@ and is not here.
 
 ## Wholesale price components — coverage against the Revised EPP
 
-Mapped 28 Aug 2026 against section 4 of Gazette 55257. Full table in RESULTS.md.
+Mapped 28 Aug 2026 against section 4 of Gazette 55257. Full table in results.md.
 
 ```
 produced (3)              energy, carbon, congestion duals (unpriced)
@@ -646,14 +646,14 @@ Absent (6)                standby, legacy cost recovery, subsidy, distribution,
                           balancing, environmental compliance
 ```
 
-TWO actionable gaps, in order:
+Two actionable gaps, in order:
 1. ~~Price the congestion duals.~~ extracted 28 Aug 2026. Nine binding rows of 38,400
    (0.023%), all the same event: the Western Cape import boundary, midday 8 June, three
    consecutive years, dual declining 199,872 to 171,358 R/MW as transmission is built.
    **design trap found: the three corridors into the Western Cape carry identical duals**,
    because relaxing any one admits the same megawatt. A congestion charge must therefore
    be defined on boundaries or cutsets, not on individual lines — charging each corridor
-   its own dual triple-counts one constraint. Still TO DO: run it on the 110 GW no-gas
+   its own dual triple-counts one constraint. Still to do: run it on the 110 GW no-gas
    frontier, where congestion should actually be material.
 2. ~~Make the transmission charge locational.~~ done 28 Aug 2026. `txRateFor()` builds a
    supply curve from electrical distance to Gauteng plus available headroom, filling
@@ -680,7 +680,7 @@ It is not a tariff and must never be quoted as one.
 
 Added 28 Aug 2026.
 
-### FIXED: a non-converged solve was presented as an answer
+### fixed: a non-converged solve was presented as an answer
 
 `bldSolve` ran `highs.solve(lp, { time_limit: 120 })` and both result consumers
 checked only `if (!res || !res.Columns)`. HiGHS returns a populated `Columns` object
@@ -696,13 +696,13 @@ limit is `BLD_TIME_LIMIT_S`, declared once before the worker template literal an
 interpolated into it — a bare reference would throw inside the worker, which runs in
 its own context.
 
-**This was the largest single gap between GridTwin and a professional tool.** PLEXOS
+**This was the largest single gap between GridTwin and a professional tool.** plexos
 and PyPSA both refuse to return a non-converged solution as a solution.
 
-### correction: the carbon cap is NOT the cause of slow solves
+### correction: the carbon cap is not the cause of slow solves
 
 An earlier note in this session claimed the carbon cap adds a dense row that took the
-LP from ~0.3 MB to 23 MB. Measured, and it is wrong:
+LP from ~0.3 mb to 23 mb. Measured, and it is wrong:
 
 ```
 regional LP            chars        rows
@@ -713,15 +713,15 @@ carbonCap on      22,995,170     255,181
 all three         22,995,861     255,181
 ```
 
-The regional LP is already 23 MB and 255,181 rows at baseline. The cap changes it by
-316 characters. The "0.3 MB" figure was a misreading of `constraint rows parsed:
+The regional LP is already 23 mb and 255,181 rows at baseline. The cap changes it by
+316 characters. The "0.3 mb" figure was a misreading of `constraint rows parsed:
 119,225`, which counts only the subject-to section.
 
-So the cause of non-convergence is scenario difficulty, not problem SIZE. Forcing a
+So the cause of non-convergence is scenario difficulty, not problem size. Forcing a
 large renewable build with no gas is simply harder to solve, at the same dimensions.
 Do not "optimise the carbon cap formulation" on the strength of the old note.
 
-### THE envelope, measured 28 Aug 2026
+### the envelope, measured 28 Aug 2026
 
 Six-rung ladder, 240 s solver limit, same machine:
 
@@ -735,7 +735,7 @@ grid + growth 5%        22,995,861  255,181     2.1     244.4   Time limit reach
 grid + 5% + no gas      22,995,861  255,181     2.0     244.6   Time limit reached       0.0
 ```
 
-**NOT A cliff — slow, NOT INTRACTABLE.** An earlier version of this note called it a
+**not A cliff — slow, not intractable.** An earlier version of this note called it a
 cliff on the strength of the 240 s rows. That was wrong. Given a 2,400 s limit:
 
 ```
@@ -747,25 +747,25 @@ limit, not the model. Demand growth and a gas ban still change nothing once past
 limit, because all three were being cut off at the same point rather than failing for
 different reasons.
 
-**THE ceiling IS A compute problem, NOT A formulation ONE.** That is the better answer:
+**the ceiling is A compute problem, not A formulation one.** That is the better answer:
 nothing needs rearchitecting.
 
-**size IS NOT THE VARIABLE.** Every rung builds the same 255,181-row, 23 MB model,
+**size is not the variable.** Every rung builds the same 255,181-row, 23 mb model,
 varying by under 800 characters. Only the difficulty changes. Nothing is gained by
 simplifying the formulation elsewhere, and the earlier carbon-cap theory is doubly dead.
 
-**THE failing rows return 0.0 GW BUILT.** Before the status guard the interface would
+**the failing rows return 0.0 GW built.** Before the status guard the interface would
 have rendered that as a plan: build nothing. Not a degraded answer, a confidently wrong
 one — the single best argument for the guard.
 
-THE practical envelope: every pace up to and including Grid solves, but Grid needs
+The practical envelope: every pace up to and including Grid solves, but Grid needs
 about ten minutes. `BLD_TIME_LIMIT_S` was raised 120 -> 900 to accommodate it.
 
-That limit is only defensible because the solve runs in a WEB worker and the page stays
+That limit is only defensible because the solve runs in a web worker and the page stays
 responsive. Do not raise it further without rechecking that — a 15-minute block on the
 main thread would be unusable.
 
-### THE full curve, bisected 28-29 Aug 2026
+### the full curve, bisected 28-29 Aug 2026
 
 ```
 pace, MW/yr wind        solve s   status               built GW
@@ -777,21 +777,21 @@ pace, MW/yr wind        solve s   status               built GW
 8,600  2x grid            906.5   Time limit reached        0.0
 ```
 
-THE steep part IS between 2,500 AND 3,000. A 20% pace increase makes the solve SIX
-times slower, 90 s to 557 s. After that it flattens and is NOT monotonic — 4,300 solves
+The steep part is between 2,500 and 3,000. A 20% pace increase makes the solve six
+times slower, 90 s to 557 s. After that it flattens and is not monotonic — 4,300 solves
 faster than 3,500. So pace is not a clean predictor above 3,000; the solver's path
 matters more than the problem does.
 
-THE envelope HAS A real edge, and it is beyond every shipped pace. Everything in
+The envelope has A real edge, and it is beyond every shipped pace. Everything in
 BLD_PACE solves. Doubling Grid pace does not, at 900 s.
 
-**SO THE guard should almost never fire IN normal USE.** A user has to go beyond the
+**SO the guard should almost never fire in normal use.** A user has to go beyond the
 fastest shipped pace to reach it. That is the right place for a limit: it protects
 against the pathological case without obstructing the intended range.
 
-**AND THE frontier scenarios IN RESULTS.md ARE OUTSIDE IT.** The 110 GW no-gas frontier
+**and the frontier scenarios in results.md are outside it.** The 110 GW no-gas frontier
 is roughly this scale. It is reachable through the national dispatch model, which is how
-RESULTS.md computes it, but NOT through the regional build LP inside 900 s. That is why
+Results.md computes it, but not through the regional build LP inside 900 s. That is why
 the frontier congestion analysis (open item) remains untested and cannot be closed
 in-browser. State that limitation whenever the frontier is discussed alongside the
 network results — they come from different engines and only one of them scales that far.
@@ -822,25 +822,25 @@ Systematic pass over the engine looking for bugs, inconsistencies and strange ou
 - **Fleet-size claims in slider notes** match their constants (0.8 GW battery, 2.9 GW
   pumped, 4.6 GW wind).
 
-### found AND FIXED: a duplicated reserve structure, self-inflicted
+### found and fixed: a duplicated reserve structure, self-inflicted
 
-The battery ancillary panel had defined its OWN operating reserve on 28 Aug 2026 —
+The battery ancillary panel had defined its own operating reserve on 28 Aug 2026 —
 `sysContingencyMW` 930, `sysResDemandShare` 0.03, `sysResVreShare` 0.05 — in parallel
 with the one the unit commitment had used all along at line ~4980:
 `reserveContingencyMW` 794, `reserveRegulatingPct` 2.0, `reserveVrePct` 5.0, via
 `reserveMWAt(h)`.
 
-**TWO constants FOR ONE physical quantity** — largest single credible loss, 930 MW
+**two constants for one physical quantity** — largest single credible loss, 930 MW
 described as a Koeberg unit against 794 MW described as a Medupi unit. Exactly the
 rule-6 violation the project has been policing everywhere else, introduced by the same
 work that documented the rule.
 
-Worse, the 28 Aug note claimed the engine retained no pre-curtailment VRE series and
+Worse, the 28 Aug note claimed the engine retained no pre-curtailment vre series and
 built `vreCurtMW` to reconstruct one. `_vreMW` at line 4979 is installed capacity times
-the per-unit profile — available VRE, pre-curtailment — and had been there all along,
+the per-unit profile — available vre, pre-curtailment — and had been there all along,
 feeding the very reserve structure that was being duplicated.
 
-NOW: gross requirement = the commitment definition, shared. VRE-provided credit stays
+Now: gross requirement = the commitment definition, shared. vre-provided credit stays
 here, because for commitment you correctly want the gross figure. Net = what storage
 competes for. Reserve levels fall about 30% (today 1,768 -> 1,263 MW); the shape and
 every conclusion are unchanged. `vreCurtMW` is still needed for the provider credit.
@@ -856,7 +856,7 @@ reading the surrounding code would.
 Two changes, both tested by injecting cases into a temporary copy.
 
 **1. Undated queue entries are reported, not skipped.** The guard keys entirely on COD,
-so `if (!x.cod) continue` gave a project with no verified date NO double-count scrutiny
+so `if (!x.cod) continue` gave a project with no verified date no double-count scrutiny
 at all — and passed silently, which invites the reader to infer everything was checked.
 Undated entries are now listed with the instruction not to invent a date to make them
 testable. Not a failure: an undated project is a sourcing gap, not an error.
@@ -868,33 +868,33 @@ the queue's bucket label is a guess about where a project belongs, not a fact ab
 where it is counted. Restricting the match meant a mislabelled queue entry bypassed the
 one check that beats date arithmetic entirely.
 
-Verified: ARM Platinum queued under `reipppp` is now caught by name. Under the old code
+Verified: arm Platinum queued under `reipppp` is now caught by name. Under the old code
 it would not have been.
 
-Note ARM itself sits in the accounted-for list, not this queue, so neither change alters
+Note arm itself sits in the accounted-for list, not this queue, so neither change alters
 today's output. Both were tested against injected cases rather than assumed.
 
 ---
 
-## Basemap: CARTO -> Esri, 30 Aug 2026
+## Basemap: carto -> Esri, 30 Aug 2026
 
-The resource map carried an "API KEY required · carto.com/basemaps/apikey" watermark
-across every tile. CARTO has withdrawn keyless access to `basemaps.cartocdn.com`.
+The resource map carried an "API key required · carto.com/basemaps/apikey" watermark
+across every tile. carto has withdrawn keyless access to `basemaps.cartocdn.com`.
 
-**THE failure mode IS THE interesting PART.** The tiles still serve — they just arrive
+**the failure mode is the interesting part.** The tiles still serve — they just arrive
 watermarked. Nothing threw, no request failed, and every harness passed throughout,
 because the substations, corridors and project dots are our own data drawn on top. Only
 a human looking at the page could see it. Worth remembering when judging what a green
 suite does and does not prove.
 
 Replacement: Esri `Canvas/World_Light_Gray_Base` plus `World_Light_Gray_Reference` for
-labels. Chosen because the grey canvas is the closest match to CARTO Positron so nothing
+labels. Chosen because the grey canvas is the closest match to carto Positron so nothing
 else needed restyling; Esri is already a provider in this file (the rooftop tracer's
-satellite and reference layers); and OSM's tile policy discourages public-facing apps
+satellite and reference layers); and osm's tile policy discourages public-facing apps
 hitting their servers directly. Attribution set as Esri requires. Serves to zoom 16 and
 this map caps at 10.
 
-**NOT verified IN A BROWSER.** The container's egress proxy blocks
+**not verified in A browser.** The container's egress proxy blocks
 `server.arcgisonline.com` (`x-deny-reason: host_not_allowed`), so the tiles could not be
 fetched here. Confirm they render before treating this as done.
 
@@ -913,23 +913,23 @@ owner       NTCSA 447 · Red Cap Energy 1
 line_type   shared network 447 · single-project connection 1
 ```
 
-**THE tagging IS A statement about THE source, NOT THE WORLD.** All 447 pre-existing
+**the tagging is A statement about the source, not the world.** All 447 pre-existing
 features are NTCSA because this file is built from Eskom TDP and SAPP planning data,
-which contains no privately built assets BY CONSTRUCTION. It is not evidence that none
+which contains no privately built assets by construction. It is not evidence that none
 exist — South Africa's longest privately permitted renewable line was missing from it
 until it was added by hand.
 
 `line_type` matters more than `owner` for the modelling: only a shared network asset
 creates headroom another developer can use. A single-project connection does not.
-Koruson's privately built main transmission substation (1.5 GW, EDF Power Solutions) is
-the shared kind and is still NOT represented.
+Koruson's privately built main transmission substation (1.5 GW, edf Power Solutions) is
+the shared kind and is still not represented.
 
 Added: Impofu - Thornhill - Chatty, 116 km, 132 kV, Red Cap Energy with Enel Green
 Power, serving the 330 MW Impofu complex. Route indicative — three vertices from the
 published route description, not a surveyed centreline, which is the same convention
 the SAPP lines in this file already use.
 
-Verification note worth keeping: my first check compared old and new features BY label
+Verification note worth keeping: my first check compared old and new features by label
 and reported a geometry change. The file has 65 duplicate labels, so the lookup was
 matching a different feature. Compared positionally instead: zero mismatches across all
 447. Do not key on `label` in this file.
@@ -938,7 +938,7 @@ matching a different feature. Compared positionally instead: zero mismatches acr
 
 ## Wheeling region selector, and Koruson — 30 Aug 2026
 
-### BUG FIXED: both wheeling dropdowns were incomplete and the map mirror failed silently
+### bug fixed: both wheeling dropdowns were incomplete and the map mirror failed silently
 
 Reported as "won't let me select Mpumalanga and KwaZulu-Natal". The cause was broader:
 
@@ -957,9 +957,9 @@ consumers exist in the Northern Cape. Both lists now carry all ten regions, and 
 mirror logs a warning if a region ever fails to match, so REGION_CENTROIDS and the
 dropdowns cannot drift apart again in silence.
 
-### koruson: substation tagged, NO line added
+### koruson: substation tagged, no line added
 
-Koruson's main transmission substation was privately constructed by EDF Power Solutions
+Koruson's main transmission substation was privately constructed by edf Power Solutions
 to accommodate up to 1.5 GW — the shared kind of private asset, built so later projects
 in the region can connect rather than only serving Koruson 1. That distinction is the
 one that matters for modelling: a single-project connection creates no headroom for
@@ -968,14 +968,14 @@ anyone else.
 `substations_compact.json` now carries `owner`, `built_by`, `line_type` and
 `headroom_built_mw` on that entry. Fingerprint `gtza-0fe0a41096f9685a`.
 
-**lines added 30 Aug 2026 AS indicative connectors**, after establishing that
+**lines added 30 Aug 2026 as indicative connectors**, after establishing that
 `transmission_lines.geojson` is display-only — styled and tooltipped, with nothing in the
 model computing length or topology from it. That removed the objection: a straight line
 cannot corrupt a calculation here.
 
 Two connectors, Phezukomoya -> Koruson and San Kraal -> Koruson, endpoints from DFFE
-REEA authorisations. The connection is documented — Koruson 1 is EDF's cluster of exactly
-these two farms, connecting at the privately built MTS — while the route is not.
+REEA authorisations. The connection is documented — Koruson 1 is edf's cluster of exactly
+these two farms, connecting at the privately built mts — while the route is not.
 
 They are marked `route_indicative: true` and rendered as a third visual state:
 
@@ -990,19 +990,19 @@ Do not measure this line." Someone reading a dotted line off the map has not ope
 geojson, and a straight line between two real substations is exactly what gets measured
 off a screenshot. Tooltips also now surface private ownership.
 
-WHY NOT just omit them: leaving real private assets off the map makes it systematically
-incomplete in ONE direction — everything Eskom built is shown, everything private is not
+Why not just omit them: leaving real private assets off the map makes it systematically
+incomplete in one direction — everything Eskom built is shown, everything private is not
 — which is a worse distortion than a clearly-labelled straight line. An `audit.py` check
 pins the styling so it cannot be lost silently.
 
-**also flagged, NOT FIXED:** the Koruson entry still carries `planned: true` from the
+**also flagged, not fixed:** the Koruson entry still carries `planned: true` from the
 DBSA register. The cluster is operating, so the substation is built and the flag is
 probably stale — but that has not been confirmed against a commissioning source, so it
 is left as found rather than flipped on inference. Worth resolving, and worth checking
 whether other `planned` entries have the same problem.
 
-Absence OF AN owner TAG IN this file means unknown, not NTCSA. The register is sourced
-from DBSA, NTCSA GIS and Eskom, none of which record private ownership.
+Absence of an owner tag in this file means unknown, not NTCSA. The register is sourced
+from DBSA, NTCSA gis and Eskom, none of which record private ownership.
 
 ---
 
@@ -1014,7 +1014,7 @@ any kind until today** — `audit.py` and `validate_lint` both run against `inde
 only. Same blind spot that let the multi-year weather bug live: an unrun code path is
 not "probably fine", it is unmeasured.
 
-### IT reads THE same data, SO changes land ON both pages — BUT styling does NOT
+### it reads the same data, SO changes land on both pages — but styling does not
 
 It fetches `nodal/substations_compact.json`, `nodal/transmission_lines.geojson` and
 `nodal/tdp_projects.json`. So the Impofu line and the two Koruson connectors appeared
@@ -1027,35 +1027,35 @@ do not.** Adding a flag to the data without teaching every consumer about it pro
 page that shows a straight line between two real substations as though it were a
 surveyed route.
 
-FIXED: indicative connectors now render at low alpha and 0.8 width — thinnest on the
+Fixed: indicative connectors now render at low alpha and 0.8 width — thinnest on the
 map — with a tooltip reading "The connection is sourced, the route is not. Do not
 measure this line." deck.gl's GeoJsonLayer has no dash support, so alpha and width
 replace the 2D dotted style. Private ownership is surfaced in tooltips too.
 
-### NEW harness: audit3d.py
+### new harness: audit3d.py
 
 Nine checks. Scored against the original file first, where it fails on three — the two
 indicative checks and private ownership. Run it as
 `python3 audit3d.py gridtwin-3d.html`.
 
-### TWO things flagged, NOT FIXED
+### two things flagged, not fixed
 
-**Basemap.** This page uses CARTO's vector GL style
+**Basemap.** This page uses carto's vector gl style
 (`basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json`), a different product from
 the raster tiles that were watermarked in 2D. It may or may not be affected and **has
 not been verified in a browser** — the container cannot reach either host. If it is
 watermarked or blank, OpenFreeMap serves a keyless dark vector style at
 `https://tiles.openfreemap.org/styles/dark`, a drop-in for `mapStyle`. Esri raster is
-NOT a drop-in here: MapLibre needs a vector style spec.
+Not a drop-in here: MapLibre needs a vector style spec.
 
-**Path convention — DO NOT HARMONISE. I was wrong to flag this.** The 3D page fetches
+**Path convention — DO NOT harmonise. I was wrong to flag this.** The 3D page fetches
 `/nodal/...` absolute while `index.html` uses relative `nodal/...`. That is not drift:
 the 3D page lives at `gridtwin-3d/index.html`, one level down, so a relative `nodal/`
 there would resolve to `/gridtwin-3d/nodal/` and find nothing. The absolute paths are
 required by the folder layout and correct as they are. Changing them would break the
 page.
 
-**link FIXED 30 Aug 2026.** Both links in `index.html` read `href="gridtwin-3d.html"`,
+**link fixed 30 Aug 2026.** Both links in `index.html` read `href="gridtwin-3d.html"`,
 a flat file at the root, which 404s against the actual `gridtwin-3d/index.html` layout.
 Now `href="gridtwin-3d/"` — trailing slash matters, since without it some servers
 redirect and some do not. An `audit.py` check pins it, because **no harness notices a
@@ -1064,7 +1064,7 @@ the check fails on the old form.
 
 ---
 
-## SOURCES.md and CALENDAR.md refreshed, 30 Aug 2026
+## sources.md and calendar.md refreshed, 30 Aug 2026
 
 Both were written at the split on 27 Aug and neither had been touched since, while a
 great deal changed. Stale documentation is this project's most persistent failure mode -
@@ -1072,25 +1072,25 @@ great deal changed. Stale documentation is this project's most persistent failur
 all wrong for the same reason - so these two files are the ones most likely to mislead
 if left.
 
-CALENDAR: the EPP submission moved from a hard deadline to a done entry with what to
+Calendar: the EPP submission moved from a hard deadline to a done entry with what to
 watch for next. **NERSA Trading Rules, 30 September, is now the nearest binding date and
 nothing has been drafted** - though the locational and congestion work is directly
 reusable, since Trading Rules govern how wheeling actually clears. Added the TDP as a
 rolling source that moves four constants, the carbon-tax suspension watch, the two
 unverified basemaps, and Mulilo's pending COD.
 
-SOURCES: added six loaded sources that had accumulated without being registered - the
+Sources: added six loaded sources that had accumulated without being registered - the
 EPP gazette, the regional multi-year profiles, the Form Energy and Tubatse transactions
 behind the storage capex, and the REEA records behind the Impofu and Koruson connectors.
 
-TWO NEW sections, and they are the useful part:
+Two new sections, and they are the useful part:
 
 **Sources used for constants, not for data files.** Six numbers in `FIXED` rest on a
 source that populates no JSON - `txRPerKWyr`, `acapIronAir`, `acapVrfb`, `acapPs`,
-`carbonTaxRPerT` and the FX rate. They were invisible to a register organised by file,
+`carbonTaxRPerT` and the fx rate. They were invisible to a register organised by file,
 which is exactly how a constant drifts from its source unnoticed.
 
-**Sources consulted AND REJECTED.** NREL ATB cannot corroborate the vanadium constant -
+**Sources consulted and rejected.** NREL ATB cannot corroborate the vanadium constant -
 it covers lithium only. PyPSA-ZA's cost comparison answers a different question because
 it co-optimises investment and operation. Both were investigated at length; recording
 the negative result stops the next session repeating the work.
@@ -1112,9 +1112,9 @@ rejected   Polokwane · Musina · Thohoyandou · Mokopane · Lephalale · Tzanee
 The entire Limpopo salient was outside it, along with the North West and the Gqeberha
 coast.
 
-**IT failed IN complete SILENCE.** The point was rejected before any region was
+**it failed in complete silence.** The point was rejected before any region was
 resolved, so there was no error, no message, no console warning. The map simply did
-nothing. This is the same shape as the CARTO watermark and the broken 3D link: a whole
+nothing. This is the same shape as the carto watermark and the broken 3D link: a whole
 class of defect that every harness passes over because nothing was looking.
 
 Replaced with a 57-vertex trace: Orange River, the 20E Kgalagadi line, the Molopo, the
@@ -1122,7 +1122,7 @@ Limpopo up to Beitbridge, then the Zimbabwe, Mozambique and coastal borders. Sti
 rough clamp — it does not cut out Lesotho or Eswatini, which is right for a resource
 query and wrong for anything needing jurisdiction. Noted in the code.
 
-### NEW harness: validate_geo.js — 37 checks, and it runs in a second
+### new harness: validate_geo.js — 37 checks, and it runs in a second
 
 Twenty-five real SA locations must be accepted, ten foreign and ocean points must be
 rejected. **Both directions matter**: the easy fix for a too-tight polygon is one that
@@ -1139,7 +1139,7 @@ is the Impofu site, and it was among the nine being rejected.
 
 ## Private grid candidates, 30 Aug 2026 — and a task premise that was wrong
 
-### there IS NO transmission filter TO widen
+### there is no transmission filter to widen
 
 The task "re-extract REEA including transmission and grid-infrastructure categories" rested
 on my assumption that DFFE publishes those as separate categories. **It does not.** REEA is
@@ -1147,7 +1147,7 @@ the renewable energy EIA application database. Grid infrastructure appears only 
 generation project's description, which is exactly why the extract shows nine technology
 values, all generation. A re-download would return the same nine.
 
-### THE data WAS already IN hand
+### the data was already in hand
 
 161 of the 2,597 records describe a line, substation or grid connection in their own title.
 Parsed into `nodal/private_grid_candidates.json` with applicant, voltage, capacity,
@@ -1165,9 +1165,9 @@ Collector**" — a title that describes a shared asset. Phinda Power Projects ha
 132 kV in KwaZulu-Natal. Mainstream holds nineteen grid-connected applications, and a
 portfolio developer building repeatedly in one area is where shared infrastructure appears.
 
-### three cautions, IN THE file
+### three cautions, in the file
 
-**An EA is not a built asset.** Status and decision date record what was authorised.
+**An ea is not a built asset.** Status and decision date record what was authorised.
 Cross-check against commissioning before treating any row as infrastructure.
 
 **Coordinates are the generation centroid, not the line.** There is no route geometry.
@@ -1191,7 +1191,7 @@ converts an inference from field names into an answer.
 ## The calendar was wrong and it cost a consultation window, 30 Aug 2026
 
 `CALENDAR.md` read "30 Sep 2026 NERSA Trading Rules - comment submission. Hard
-DEADLINE." **Both halves were wrong.** 30 September is when NERSA expects to finalise
+Deadline." **Both halves were wrong.** 30 September is when NERSA expects to finalise
 the rules. The comment window on Version 3 ran to 27 July, extended to **28 August** -
 which closed two days before anyone looked. The consultation paper states late
 submissions "will not be considered".
@@ -1199,22 +1199,22 @@ submissions "will not be considered".
 The entry predates the 27 Aug split, so it has been wrong for as long as the file has
 existed: a finalisation milestone recorded as an opportunity to participate.
 
-TWO more windows closed unwatched: the Wholesale Electricity Pricing Methodology and
+Two more windows closed unwatched: the Wholesale Electricity Pricing Methodology and
 the Vesting Contract Framework, comments 4 Aug, hearings 19 Aug. The first is directly
 relevant - it is the document defining the price components this project has been
 mapping.
 
-**THE lesson IS about THE form OF THE entry, NOT THE DILIGENCE.** "30 Sep - comment
+**the lesson is about the form of the entry, not the diligence.** "30 Sep - comment
 submission" carries no source and no distinction between a milestone and a window. An
-entry that had recorded where THE date came from would have been checkable. Every
+entry that had recorded where the date came from would have been checkable. Every
 calendar entry should now name its source and say what kind of date it is.
 
-### what THE wholesale pricing methodology gives THE model
+### what the wholesale pricing methodology gives the model
 
 Independently of the EPP, NERSA splits the wholesale price into market costs (energy,
 transmission, system operation, balancing, market operator, other regulated) and
-NON-market costs (legacy, bad debt, social and cross-subsidy, vesting). **That confirms
-the two-kinds split already in RESULTS.md, from a regulator rather than from
+Non-market costs (legacy, bad debt, social and cross-subsidy, vesting). **That confirms
+the two-kinds split already in results.md, from a regulator rather than from
 inference** - and it is the split the EPP submission argued for.
 
 It also names one gap we had not: **balancing costs**. That is a modelling quantity and
@@ -1222,7 +1222,7 @@ GridTwin has none, because the model is hourly and has no intra-hour product. At
 of wind and solar that is not a rounding error. System operation and market operator
 charges are also named, but those are institutional costs and correctly absent.
 
-From the EIUG's Market Code submission, the risk worth quoting: non-market charges
+From the eiug's Market Code submission, the risk worth quoting: non-market charges
 becoming "dumping grounds for unallocated costs". That is the strongest argument for
 the disaggregation this project has been advocating.
 
@@ -1235,8 +1235,8 @@ long-duration storage charges last and discharges last, purely on whether the cu
 hour has a surplus or a deficit. There is no lookahead of any kind, seasonal or
 multi-day. Iron-air cannot deliberately hold energy for a coming drought.
 
-**that IS A real GAP, but it is not why long-duration storage fails to bite.** Measured:
-at 45 GW of VRE there is a deficit but annual curtailment is only 0.2 TWh, so foresight
+**that is A real gap, but it is not why long-duration storage fails to bite.** Measured:
+at 45 GW of vre there is a deficit but annual curtailment is only 0.2 TWh, so foresight
 would have nothing to charge with. At 110 GW curtailment is 100 TWh but July gas is
 already zero, so there is nothing to serve. The two conditions never co-occur.
 
@@ -1244,7 +1244,7 @@ Open: the 60-80 GW range is untested, and is where a seasonal lookahead could pl
 matter - curtailment has begun, the drought is not yet covered. Worth running before any
 dispatch change is contemplated.
 
-Note FOR framing: iron-air at 100 hours is a four-DAY asset, marketed for multi-day
+Note for framing: iron-air at 100 hours is a four-day asset, marketed for multi-day
 weather events, not seasonal shifting. Seasonal duty needs thousands of hours. At 45%
 round trip, summer-to-winter shifting discards 55% of the energy. Do not describe
 iron-air as seasonal storage.
@@ -1265,12 +1265,12 @@ at ~R1,533 against gas near R1,968 — the arbitrage is in the money.
 Also noted: South Africa curtails today at low penetration for localised network reasons,
 which a single-node national model cannot represent at all.
 
-**FIXED — charging horizon was 25 hours.** `anticipatedShortfall` looked one day ahead to
+**fixed — charging horizon was 25 hours.** `anticipatedShortfall` looked one day ahead to
 set the charge target, which is right for a 4-10 hour battery and useless for a 100-hour
 store. Now scales with the longest storage on the system, capped at 168 hours because
 beyond a week perfect foresight does more work than the storage does. Suite 817/817.
 
-**NOT FIXED, AND IT IS THE binding ONE — efficiency merit order.** `tierCharge` fills
+**not fixed, and it is the binding one — efficiency merit order.** `tierCharge` fills
 best-round-trip-first: lithium 0.88, vanadium 0.70, iron-air 0.45. Lithium empties daily
 so it always has room, absorbs the cheap charging, and iron-air is never reached. Fixing
 the horizon changed July gas by zero for exactly this reason.
@@ -1279,10 +1279,10 @@ Efficiency-first is correct within an hour and wrong across a week. The right ru
 the long store when a long event is coming, accepting worse round trip, because lithium
 cannot hold energy that far. That is a dispatch rewrite, not a tweak.
 
-**consequence FOR A published RESULT.** "Iron-air changes July gas by exactly zero in all
+**consequence for A published result.** "Iron-air changes July gas by exactly zero in all
 ten years" was measured on a dispatch that structurally cannot charge it. The finding may
 well survive — 45% round trip is punishing and the July deficit is large — but it has not
-been tested fairly. RESULTS.md now marks it PROVISIONAL. Do not repeat it externally
+been tested fairly. results.md now marks it provisional. Do not repeat it externally
 until the merit order is addressed.
 
 ---
@@ -1304,13 +1304,13 @@ horizon-based target made July gas worse, 2,742 -> 2,810 GWh, and cut storage de
 8.42 -> 7.44 TWh. Filling a 45%-efficient store ahead of an 88%-efficient one destroys
 more energy than the earlier availability recovers.
 
-**THE lesson: unmet need is not value.** The heuristic had no test of whether the
+**the lesson: unmet need is not value.** The heuristic had no test of whether the
 arbitrage was worth making, and an ordering cannot express one. The correct rule charges
 a tier only when current marginal cost is below expected discharge value times round
-trip — a value function on state of charge, which needs an LP. That is why PLEXOS and
+trip — a value function on state of charge, which needs an LP. That is why plexos and
 PyPSA co-optimise storage across the horizon rather than ranking it.
 
-So the defect identified yesterday is real and remains OPEN. What is now also known is
+So the defect identified yesterday is real and remains open. What is now also known is
 that it cannot be fixed by reordering, which rules out the cheap options. The reverted
 code and the measurement are documented at the `tierCharge` block so this is not
 re-attempted blind.
@@ -1324,11 +1324,11 @@ two hands each tier a reservation price (90th percentile over its own horizon) a
 charges only when `cost now < reservation x efficiency`. One extra simulate call, ~590 ms.
 Opt-in, not wired into run().
 
-**IT answers THE economic question: the arbitrage IS in the money.** July reservation
+**it answers the economic question: the arbitrage is in the money.** July reservation
 price R2,020/MWh; iron-air needs 690 < 2020 x 0.45 = 909 and clears easily. The model's
-under-use of long-duration storage is NOT an economic judgement.
+under-use of long-duration storage is not an economic judgement.
 
-**IT does NOT bind, so it changes nothing alone** — every tier passes in July. And
+**it does not bind, so it changes nothing alone** — every tier passes in July. And
 gate+ordering behaved exactly as ordering alone (July gas 2,742 -> 2,810). Ordering
 reverted a second time.
 
@@ -1349,17 +1349,17 @@ study currently reports.
 Note the envelope work: the regional build LP takes 90-780 s, so budget accordingly and
 surface solver status (the guard added 29 Aug already does).
 
-Caveat TO carry: both approaches use perfect foresight of the price series. Results are an
+Caveat to carry: both approaches use perfect foresight of the price series. Results are an
 upper bound on long-duration storage value, not an estimate.
 
-`simulateTwoPass` is a documented orphan in validate_structure's KNOWN list — the harness
+`simulateTwoPass` is a documented orphan in validate_structure's known list — the harness
 caught it as unwired, which was correct. Remove that entry when it gets a panel.
 
 ---
 
 ## Storage LP result — 30 Aug 2026
 
-`storage_lp.js` at the repo root. 52,560 variables, 4.0 MB, **Optimal in 3.0 seconds** —
+`storage_lp.js` at the repo root. 52,560 variables, 4.0 mb, **Optimal in 3.0 seconds** —
 the storage problem is small next to the regional build LP's 90-780 s.
 
 ```
@@ -1368,13 +1368,13 @@ li            12.48            10.98        200,000                  995
 fe             3.20             1.44        941,568                   18
 ```
 
-**1. THE iron-AIR result SURVIVES.** Under an optimal dispatch with perfect foresight and
+**1. the iron-air result survives.** Under an optimal dispatch with perfect foresight and
 no merit order to starve it, 20 GW / 2 TWh of iron-air displaces 18 GWh of July gas out of
 2,742. It does fill — peak SOC 47% of capacity, which the heuristic never approached — so
 this is no longer a dispatch artefact. 45% round trip is punishing enough that the energy
-is better left in coal. **provisional flag removed from RESULTS.md.**
+is better left in coal. **provisional flag removed from results.md.**
 
-**2. THE heuristic under-uses lithium BY 37% OF july GAS.** The LP finds 995 GWh that
+**2. the heuristic under-uses lithium by 37% of july gas.** The LP finds 995 GWh that
 lithium could displace and the heuristic does not. That is far larger than anything about
 iron-air, it affects the technology actually being deployed, and it was invisible until
 the LP existed. **This is now the most valuable open item in the model.**
@@ -1390,17 +1390,17 @@ two-pass gate was approximating, and no South African study publishes it.
 
 ## Storage LP, improved toward professional practice — 30 Aug 2026
 
-Added to `storage_lp.js`: SOC duals and a rolling HORIZON.
+Added to `storage_lp.js`: SOC duals and a rolling horizon.
 
 **opportunity value (duals on the SOC balance).** 35,040 rows parsed, 35,040 returned.
 Lithium mean R1,789/MWh, iron-air R2,020 — the scarcity ceiling. Iron-air's is higher
 because it is rarely the binding store, so its shadow price is never competed down. This
 is the storage revenue signal and is not published for South Africa anywhere.
 
-**rolling HORIZON.** 168 h window / 24 h step = 365 solves in 6.8 s; 336/48 = 183 solves
-in 6.0 s. Both Optimal throughout. This is how a PCM limits foresight.
+**rolling horizon.** 168 h window / 24 h step = 365 solves in 6.8 s; 336/48 = 183 solves
+in 6.0 s. Both Optimal throughout. This is how a pcm limits foresight.
 
-**A trap recorded rather than HIDDEN.** The rolling runs show higher July displacement
+**A trap recorded rather than hidden.** The rolling runs show higher July displacement
 than perfect foresight (37.6% and 40.1% vs 36.9%), which is impossible for the quantity
 being optimised. The explanation: July displacement is not the objective — the LP
 maximises annual arbitrage value, and perfect foresight spends storage wherever the
@@ -1415,23 +1415,23 @@ Five gaps addressed 30 Aug 2026 — four closed, one not closeable here.
    impossible. All three now agree at 36.5%, so the result no longer depends on foresight
    assumptions at all — a stronger finding than the original.
 2. Self-discharge, 0.004%/h lithium and 0.05%/h iron-air. Estimates, flagged in code,
-   deliberately NOT promoted to FIXED because no SA source gives them.
+   deliberately not promoted to fixed because no SA source gives them.
 3. Cycle cost, R250/MWh throughput lithium, R50 iron-air. Duals are no longer pinned at
    the scarcity ceiling: lithium mean R1,563, iron-air R1,925.
-4. RESERVE CO-optimised (opt-in, `--reserve`). **Iron-air's energy role halves** —
+4. reserve CO-optimised (opt-in, `--reserve`). **Iron-air's energy role halves** —
    discharge 1.44 -> 0.77 TWh, peak SOC 941,568 -> 242,264 MWh — once it must also hold
    reserve. Its opportunity value rises (p90 2,025 -> 2,377) because energy is scarcer.
    July displacement unchanged at 36.5%; lithium absorbs it.
-5. FIXED-point iteration — RUN 30 Aug 2026, does NOT CONVERGE. Five rounds, 0.5 damping:
+5. fixed-point iteration — run 30 Aug 2026, does not converge. Five rounds, 0.5 damping:
    mean price movement falls only 352 -> 199 R/MWh and July gas oscillates 2,751-2,816
    with no trend. Storage flattens the peaks it was built to exploit, removing the spread
    that justified the schedule. Known failure mode, and it happened.
 
-   **consequence: THE 37% claim IS NOW UNVERIFIED.** Every iterated July figure is at or
-   Above the heuristic's 2,742 GWh — imposing the LP schedule did NOT deliver the
+   **consequence: the 37% claim is now unverified.** Every iterated July figure is at or
+   Above the heuristic's 2,742 GWh — imposing the LP schedule did not deliver the
    predicted 1,000 GWh saving. Either the price-taker objective (arbitrage value, not gas
    displacement) was never measuring a gas saving, or my test is one-sided:
-   `_forcedDischargeMW` is a CAP by design, so where the LP wants more discharge than the
+   `_forcedDischargeMW` is a cap by design, so where the LP wants more discharge than the
    heuristic gives it cannot deliver. Storage throughput fell 8.42 -> 7.91 TWh, the
    signature of a binding cap. **Do not repeat "the heuristic leaves 37% on the table"
    until a two-sided imposition exists** — which means replacing the storage dispatch,
@@ -1468,26 +1468,26 @@ by something better than a number that has failed three tests.
 - The rolling horizon agreeing with perfect foresight at 36.5%, once the terminal value
   function replaced the crude floor.
 
-`_forceStorageSchedule` and `_forcedDischargeMW` remain in the engine as DIAGNOSTICS.
+`_forceStorageSchedule` and `_forcedDischargeMW` remain in the engine as diagnostics.
 Both default to null and neither is a dispatch mode. If the charge side is ever
 overridden too, the clipping number becomes meaningful and this can be revisited.
 
 ---
 
-## THE full FIX — the one-day rebuild, when it is justified
+## the full fix — the one-day rebuild, when it is justified
 
 Scoped 30 Aug 2026 so it is not re-derived. This is the single change that closes most
-of the "not yet PLEXOS" list at once, and it is ONE change, not five.
+of the "not yet plexos" list at once, and it is one change, not five.
 
-### what IT IS
+### what it is
 
-Put storage INSIDE the dispatch optimisation rather than beside it. Today the engine
+Put storage inside the dispatch optimisation rather than beside it. Today the engine
 dispatches heuristically and storage is fitted afterwards by merit order; the LP built
 today optimises storage against prices from that heuristic, which is why it cannot be
 made self-consistent. The fix is a single co-optimised problem over charge, discharge,
-state of charge AND the thermal dispatch, so prices and storage are solved together.
+state of charge and the thermal dispatch, so prices and storage are solved together.
 
-### what IT closes, all at once
+### what it closes, all at once
 
 ```
 storage / commitment co-optimisation   the thing a price-taker LP is defined not to do
@@ -1499,12 +1499,12 @@ no-gas frontier                        moves off the heuristic
 capture-rate storage mitigation        moves off the heuristic
 ```
 
-### what IT does NOT close
+### what it does not close
 
 Intra-hour balancing (needs sub-hourly resolution), the single-node limitation of the
 national engine, and stochastic outages. Those are separate.
 
-### what IS already IN place
+### what is already in place
 
 - HiGHS is in the browser and the storage LP solves 8,760 hours in 3 seconds, so the
   compute is not the obstacle.
@@ -1513,7 +1513,7 @@ national engine, and stochastic outages. Those are separate.
 - The solver status guard means a non-converged solve cannot be presented as an answer.
 - The envelope is measured: every shipped build pace solves, 90-780 s.
 
-### THE hard part, honestly
+### the hard part, honestly
 
 The thermal dispatch is not currently an LP. It is a heuristic with unit commitment,
 part-load heat rates, ramp-aware coal floors, synchronous floors and a reserve
@@ -1523,7 +1523,7 @@ badly-calibrated optimum.** `validate_benchmarks` and `validate_external` are th
 the rebuild must reproduce them before it is adopted, and if it cannot, the heuristic was
 better and that is a finding too.
 
-### when IT IS justified
+### when it is justified
 
 Not to chase the 37%, which failed three tests. Justified when a result that matters
 depends on it — the most likely candidate is the no-gas frontier costing, which is the
@@ -1532,7 +1532,7 @@ storage.
 
 ### sequence, if it is ever started
 
-1. Pin `validate_benchmarks` and `validate_external` as the acceptance test FIRST.
+1. Pin `validate_benchmarks` and `validate_external` as the acceptance test first.
 2. Build the co-optimised LP alongside the heuristic, not in place of it.
 3. Compare on the benchmarks before switching anything.
 4. Keep both, with the heuristic as the fast path for slider dragging and the LP for
@@ -1552,7 +1552,7 @@ Recomputed by great-circle distance against all 186 substations.
     1  Dedisa     -> Chatty
 ```
 
-**ALL three impofu farms reassigned, and the numbers match the falsification exactly.**
+**all three impofu farms reassigned, and the numbers match the falsification exactly.**
 Impofu North moves Grassridge 106.1 km -> Chatty 92.7 km, against the 93.3 km measured
 independently on 28 Aug from the Plus Code. The register fix has now propagated to the
 derived data.
@@ -1562,7 +1562,7 @@ Tsitsikamma and Oyster Bay all move too. **A single missing substation was disto
 connection picture for 1.4 GW of Eastern Cape wind**, which is the concrete cost of an
 incomplete register.
 
-### THE check that matters
+### the check that matters
 
 ```
 records altered beyond sub/subkm      0
@@ -1575,14 +1575,14 @@ formality. Grassridge falls 65 -> 33 assignments; Chatty takes 33.
 
 New fingerprint `gtza-7f4d8068c08bbb07`. `meta.nearest_substation_caution` now carries
 the Impofu falsification in the data file itself, so anyone reading `sub`/`subkm` sees
-that nearest IS NOT connected without having to find it in these notes.
+that nearest is not connected without having to find it in these notes.
 
-### karoo completeness — tested 30 Aug 2026, AND IT passes
+### karoo completeness — tested 30 Aug 2026, and it passes
 
 A closed-loop test needing no external data: every transmission line records the
 substation at each end, so any endpoint absent from `substations_compact.json` is a
 missing substation. The two files come from different sources — lines from Eskom TDP and
-SAPP planning data, substations from DBSA, OSM, Eskom and shapefiles — so they do not
+SAPP planning data, substations from DBSA, osm, Eskom and shapefiles — so they do not
 share a blind spot by construction.
 
 ```
@@ -1592,27 +1592,27 @@ missing from the register       0
 ```
 
 Three raw misses were all correctly excluded: kokerboom is the Namibian interconnector
-endpoint, and phezukomoya and SAN kraal are wind farms named as endpoints on the
+endpoint, and phezukomoya and san kraal are wind farms named as endpoints on the
 connectors added earlier today — plants, not substations.
 
 **So the register is complete for the Karoo relative to the line register**, which is the
 area the Hydra Central split would use nearest-substation matching over.
 
-Necessary, NOT sufficient, and the check says so in its own output: a substation with no
+Necessary, not sufficient, and the check says so in its own output: a substation with no
 line in the line register would not be caught. It finds a specific, common kind of gap —
 the kind Chatty was.
 
-Now a permanent check in `validate_geo.js` (37 -> 38 checks). Verified IT CAN fail:
+Now a permanent check in `validate_geo.js` (37 -> 38 checks). Verified it can fail:
 removing Aggeneis, a genuine Karoo endpoint, produces
 `missing: aggeneis` and exit code 1.
 
-**AN honest note ON THE first ATTEMPT.** I first tested it by deleting Chatty, and the
+**an honest note on the first attempt.** I first tested it by deleting Chatty, and the
 check still passed — which looked like the check being useless. It is not: Chatty sits on
 the Eastern Cape coast at -33.84, outside the Karoo box, so it was never in scope. The
 test was wrong, not the check. Worth recording because the same mistake would look like a
 harness failure to the next person.
 
-**TO DO — national register GAPS.** 8 domestic endpoints are absent from the register — rassona
+**to do — national register gaps.** 8 domestic endpoints are absent from the register — rassona
 garcia, durban south, ottawa, zwavelpoort EE1, kappa (A) among them. Reported, not
 asserted, because the line register names endpoints this project has no obligation to
 hold. Worth a look if the nearest-substation method is ever used outside the Karoo.
@@ -1621,7 +1621,7 @@ hold. Worth a look if the nearest-substation method is ever used outside the Kar
 
 ## Storage split out in the mix view — 30 Aug 2026
 
-The electricity mix showed ONE slice, "Batteries and flow storage", covering lithium,
+The electricity mix showed one slice, "Batteries and flow storage", covering lithium,
 vanadium and iron-air together. So there was no way to see whether the long-duration
 tiers ever dispatch — the exact question the storage work of the past few days kept
 running into blind.
@@ -1635,12 +1635,12 @@ vanadium           0.119             17        0.0     10,000
 iron-air           1.022            131        0.0     13,759
 ```
 
-**Vanadium dispatches 17 hours a year. Iron-air 131. Neither IN july AT ALL.** That is
+**Vanadium dispatches 17 hours a year. Iron-air 131. Neither in july at all.** That is
 the whole long-duration finding, visible at a glance, where previously it took an LP to
 establish.
 
-HOW IT IS built, and the constraint that mattered: `battByTier` holds hourly per-tier
-series and `battTierTWh` the totals, but they are diagnostic — deliberately NOT added to
+How it is built, and the constraint that mattered: `battByTier` holds hourly per-tier
+series and `battTierTWh` the totals, but they are diagnostic — deliberately not added to
 `stackKeys`. `stack.batt` remains the single carrier the energy balance sums, so
 `validate_invariants` is untouched. Adding them as carriers would double-count storage in
 every balance check: the split must decompose the total, never sit beside it. Verified —
@@ -1671,21 +1671,21 @@ The absences are the point: ten of the enumerated components are not in `avgCost
 including legacy cost recovery, distribution charges and cross-subsidy. **That is why it
 is not a tariff, now shown rather than asserted in a footnote.**
 
-### TWO defects caught BY summing IT — within minutes of writing it
+### two defects caught by summing it — within minutes of writing it
 
 **A factor-of-1000 unit error.** My `per()` helper multiplied by 1000 when the terms were
 already rand over MWh. Components summed to 574,000 against an avgCost of 570.
 
-**`startUpCostR` IS computed AND used NOWHERE.** The residual gap was R3.54/MWh — exactly
+**`startUpCostR` is computed and used nowhere.** The residual gap was R3.54/MWh — exactly
 the start-up cost. It accumulates at line ~5415, is exported on the result, and appears
-in neither `avgCost` NOR `totalCost` NOR `gridCost`. Small today, 0.6%, but it scales
+in neither `avgCost` nor `totalCost` nor `gridCost`. Small today, 0.6%, but it scales
 with coal cycling — precisely the regime a high-renewables system pushes coal into, which
 is what this model exists to study.
 
-**decided AND FIXED, same day: start-up costs are now included** in `avgCost`,
+**decided and fixed, same day: start-up costs are now included** in `avgCost`,
 `gridCost` and `totalCost`. See the section below for the reasoning and the measurement.
 
-### THE check, not just the display
+### the check, not just the display
 
 `validate_consistency` now asserts reconciliation across three scenarios (14 -> 17). A
 decomposition that is never summed against the whole can be wrong indefinitely — this one
@@ -1695,21 +1695,21 @@ caught two faults immediately, which is the argument for the check existing at a
 
 ## Start-up costs now included — 30 Aug 2026
 
-### THE professional position
+### the professional position
 
-Every unit commitment model — PLEXOS, PyPSA, any production cost model — carries
-start-up in the objective. It IS the commitment problem: without it units cycle freely,
+Every unit commitment model — plexos, PyPSA, any production cost model — carries
+start-up in the objective. It is the commitment problem: without it units cycle freely,
 which is precisely the behaviour start-up costs exist to penalise.
 
-The nuance is where they land. Start-up is NOT in a marginal energy price — ERCOT, PJM
-and MISO recover it through uplift or make-whole payments rather than through LMP. So
+The nuance is where they land. Start-up is not in a marginal energy price — ercot, pjm
+and miso recover it through uplift or make-whole payments rather than through lmp. So
 excluding it from `marginalP` is correct, and **it stays excluded there**.
 
 But `avgCost`, `gridCost` and `totalCost` are system cost measures, not prices. They
 already carry carbon and new-build capex, neither of which is marginal energy either.
 Excluding start-up while including capex was an inconsistency, not a position.
 
-### THE measurement — and why it matters more than 0.6% suggests
+### the measurement — and why it matters more than 0.6% suggests
 
 ```
 scenario                coal TWh   start-up R bn   R/MWh   % of avgCost
@@ -1720,8 +1720,8 @@ today                      161.5            0.73    3.54          0.62%
 110 GW VRE                  44.5            1.08    5.19          0.40%
 ```
 
-**IT does NOT scale with renewables — IT scales with cycling**, and the two are not the
-same thing. The peak is at 20 GW of VRE (0.95%), not at 110 GW. At 45 GW it collapses to
+**it does not scale with renewables — it scales with cycling**, and the two are not the
+same thing. The peak is at 20 GW of vre (0.95%), not at 110 GW. At 45 GW it collapses to
 0.11%, because that scenario retains only 10 GW of coal running near baseload; there is
 barely anything left to cycle.
 
@@ -1730,10 +1730,10 @@ drives start-up cost is a large coal fleet being pushed around, which happens in
 middle of the transition and eases at both ends. That is a more interesting result than
 the correction itself.
 
-### effect ON published figures
+### effect on published figures
 
 avgCost moves 570.46 -> 574.00 today, 1260.77 -> 1262.22 for Seriti. Every cost figure in
-RESULTS.md shifts by under 1%. `validate_benchmarks` still passes 18/18 — the change sits
+Results.md shifts by under 1%. `validate_benchmarks` still passes 18/18 — the change sits
 well inside the bands, which is itself evidence the correction is modest and sound.
 
 `marginalP` is unchanged, so shadow prices, capture rates and the storage opportunity
@@ -1747,32 +1747,32 @@ Checked the user-facing blurbs against what the code now does. Four updated.
 
 **cost note (line ~397).** Said system cost was "fuel, carbon and the capex of
 newly-built capacity". Start-up costs are now in it. Both the system-cost and
-avg-energy-cost sentences updated, and the note now explains WHY start-up is in a system
-cost but NOT in the shadow price — because a marginal price recovers it separately
-through uplift, as ERCOT and PJM do. That distinction was previously nowhere in the
+avg-energy-cost sentences updated, and the note now explains why start-up is in a system
+cost but not in the shadow price — because a marginal price recovers it separately
+through uplift, as ercot and pjm do. That distinction was previously nowhere in the
 interface.
 
-**iron-AIR SLIDER.** Read "the only option here that can ride out a multi-day renewables
+**iron-air slider.** Read "the only option here that can ride out a multi-day renewables
 lull" — untenable after the storage work. I then replaced it with a 400-character
 explanation of hours, efficiency ranking and LP testing, which was worse: a slider note
 should give the spec and point at the tool, not deliver the conclusion before the reader
 has looked. Now one line — 100-hour storage at 45% round trip, and the mix splits storage
 by chemistry so you can see when it dispatches.
 
-**vanadium SLIDER.** Same overcorrection, same trim. Now the spec plus the one thing the
+**vanadium slider.** Same overcorrection, same trim. Now the spec plus the one thing the
 reader cannot deduce: the electrolyte does not degrade with cycling, an advantage this
 model does not yet price.
 
-**THE principle, worth holding to:** a note states what the control IS and where to look.
-It does not pre-state what you will find. Findings belong in RESULTS.md.
+**the principle, worth holding to:** a note states what the control is and where to look.
+It does not pre-state what you will find. Findings belong in results.md.
 
-**hourly dispatch LEGEND.** Left merged as "Batteries and flow storage", with a comment
+**hourly dispatch legend.** Left merged as "Batteries and flow storage", with a comment
 saying why: that chart draws `stack.batt`, the single carrier the energy balance sums.
-The per-chemistry split belongs in the MIX donut, which decomposes a total rather than
+The per-chemistry split belongs in the mix donut, which decomposes a total rather than
 stacking carriers. Splitting the dispatch chart would need `battByTier` in `stackKeys`
 and would double-count storage in every balance check.
 
-ONE typo OF MY OWN, caught by reading the rendered string back: "Seriti 45&#37; GW" — the
+One typo of my own, caught by reading the rendered string back: "Seriti 45&#37; GW" — the
 percent entity applied to the wrong number. Fixed. Worth doing that read-back on any
 blurb containing entities.
 
@@ -1780,7 +1780,7 @@ blurb containing entities.
 
 ## Site text trimmed — 30 Aug 2026 (sliders done, rest outstanding)
 
-### THE diagnosis: they were teaching, not informing
+### the diagnosis: they were teaching, not informing
 
 The pattern was consistent. Good notes give a calibration anchor — something a modeller
 cannot look up:
@@ -1791,7 +1791,7 @@ lcoePv        BW7 bids averaged R0.46; anchor R0.55
 coalDecomMW   of 42 GW installed
 ```
 
-Heavy notes opened by defining THE concept — what synchronous inertia is, what dynamic
+Heavy notes opened by defining the concept — what synchronous inertia is, what dynamic
 line rating does, what LCOE means — to an audience that already knows. That is what made
 the platform read as a tutorial rather than an instrument.
 
@@ -1847,16 +1847,16 @@ build optimiser         488 -> 198
 single-node caveat      285 -> 247   substance kept, throat-clearing cut
 ```
 
-**THE collapsed methodology WAS left alone, deliberately.** About 12,000 characters sit
+**the collapsed methodology was left alone, deliberately.** About 12,000 characters sit
 behind `<details class="assump">` — "Model assumptions & caveats" — covering price
-formation, unit commitment, DC power flow, the risk model. That is exactly where detailed
+formation, unit commitment, dc power flow, the risk model. That is exactly where detailed
 methodology belongs in a serious tool, and it is closed by default. The problem was never
 that the documentation existed; it was that definitions were on the working pages.
 
 Still outstanding: the About tab itself and the project-planning tab descriptions.
 
-THE rule TO apply: a note gives the spec and points at the tool. It does not pre-state
-outcomes, argue methodology, or carry provenance — those belong in RESULTS.md, STATE.md
+The rule to apply: a note gives the spec and points at the tool. It does not pre-state
+outcomes, argue methodology, or carry provenance — those belong in results.md, state.md
 and the source comments respectively, all of which already exist and are better places
 for them.
 
@@ -1886,7 +1886,7 @@ the exclusion. Same for the pipeline rings. 36 -> 37 checks.
 
 Measured before starting: ~3,000 shouted words, almost all my own emphasis in comments
 and these documents. User-visible page text was already clean — the scan found only a hex
-fragment and "README".
+fragment and "readme".
 
 ```
 index.html comments   3,753 -> 3,073 capitalised tokens
@@ -1902,20 +1902,20 @@ What remains is legitimate: acronyms, units and code identifiers.
 
 ### The first attempt corrupted index.html, and the suite caught it
 
-A block-comment regex with DOTALL matched CSS comments and regex literals, and rewrote
+A block-comment regex with dotall matched css comments and regex literals, and rewrote
 code. `validate_lp` fell 50/50 -> 1/17 and `validate_solve` 6/6 -> 0/1 within seconds of
 running it. Reverted from a backup taken before the edit.
 
-The second pass only touches LINE comments, and only lines that are pure comment with no
+The second pass only touches line comments, and only lines that are pure comment with no
 backtick, quote or brace — so no line carrying code or a string can be reached. Verified
-by stripping those lines from both versions and confirming the remaining code is BYTE
-IDENTICAL.
+by stripping those lines from both versions and confirming the remaining code is byte
+Identical.
 
 `decaps.py` protects a keep-list: code identifiers (`FIXED`, `SLIDERS`, `BLD_PACE`,
 `REGION_CENTROIDS`), document names (`RULES.md`, `STATE.md`) and about 120 acronyms.
 Confirmed intact after the run.
 
-TWO LESSONS. Take a backup before any scripted mass edit — this one needed it inside two
+Two lessons. Take a backup before any scripted mass edit — this one needed it inside two
 minutes. And a mass edit is exactly what a test suite is for: nothing else would have
 caught a regex quietly rewriting a solver.
 
@@ -1941,11 +1941,11 @@ looks exactly like a missing domestic one, and a suffixed name looks exactly lik
 missing substation when the register holds the short form. Five of eight would have sent
 someone looking for coordinates that were never needed.
 
-TWO FIXES IN `validate_geo.js`: `RESSANO`/`RASSONA` and the country names added to the
+Two fixes in `validate_geo.js`: `RESSANO`/`RASSONA` and the country names added to the
 foreign filter, and a name normaliser that strips a trailing bracketed unit designator
 and the `EE1`/`MTS`/`DS`/`SS` suffixes before declaring a substation absent.
 
-THE THREE THAT REMAIN ARE REAL — and were closed the same day when the coordinates were
+The three that remain are real — and were closed the same day when the coordinates were
 supplied. See below. **The register now has zero missing domestic line endpoints.**
 
 The harness now warns if more than three appear: "check whether a naming variant or
@@ -1965,35 +1965,35 @@ Ottawa         82CX+7Q Blackburn  -29.679313, 31.049438   275 kV   PROVISIONAL
 Zwavelpoort    approximate        -25.809440, 28.379720   400 kV   planned, unlocated
 ```
 
-**THEY ARE NOT EQUALLY TRUSTWORTHY, and the file says so per entry.**
+**they are not equally trustworthy, and the file says so per entry.**
 
-Durban South is CORROBORATED: the transmission line naming it as an endpoint terminates
+Durban South is corroborated: the transmission line naming it as an endpoint terminates
 0.1 km from the decoded point, which is evidence independent of the Plus Code.
 
-Ottawa is PROVISIONAL: its line endpoint is 10.8 km away. Either the geometry is
+Ottawa is provisional: its line endpoint is 10.8 km away. Either the geometry is
 schematic there or the Plus Code locates a different feature. Recorded as a discrepancy
 rather than smoothed — Durban South came from the same source on the same day and matched
 to 0.1 km, so the method is sound and this case is specifically uncertain.
 
-Zwavelpoort is `src:"approx"`, deliberately NOT `"pluscode"`, so it cannot be mistaken for
+Zwavelpoort is `src:"approx"`, deliberately not `"pluscode"`, so it cannot be mistaken for
 a located point. It is excluded from nearest-substation matching entirely.
 
 Register 186 -> 189. `validate_geo` now reports **0 domestic endpoints absent**.
 
-### A MISTAKE I MADE AND CAUGHT IN THE SAME STEP
+### A mistake I made and caught in the same step
 
 My first re-derivation excluded every `planned:true` substation from matching, on the
 reasoning that a planned substation is not a connection point. That reassigned **205
 projects**, moving them away from Koruson — 65 km — to Poseidon at 122 km.
 
-But Koruson IS BUILT. Its `planned:true` is the stale DBSA flag that STATE.md already
+But Koruson is built. Its `planned:true` is the stale DBSA flag that state.md already
 records as unresolved. I acted on a flag I had personally documented as wrong, and it
 made the data worse while looking like a principled improvement.
 
 Corrected: only `src:"approx"` is excluded, which is one entry. Net change against the
 original file is **34 projects** — the 33 Chatty reassignments plus one to Ottawa.
 
-THE LESSON: `planned` in this register means "the register said planned at ingest", not
+The lesson: `planned` in this register means "the register said planned at ingest", not
 "does not exist". Do not use it as a filter until the stale flags are resolved.
 
 ---
@@ -2010,29 +2010,29 @@ it was worth establishing what the flag actually means across all eleven entries
  1 genuinely unbuilt and unlocated — Zwavelpoort
 ```
 
-### THE FIRST EVIDENCE I FOUND WAS CIRCULAR
+### the first evidence I found was circular
 
-The line register appeared to show Koruson as an endpoint of an EXISTING line, which
+The line register appeared to show Koruson as an endpoint of an existing line, which
 looked like proof it is built. It is not: the only two lines naming Koruson are the
-INDICATIVE CONNECTORS added earlier the same day, marked `existing` because the
+Indicative connectors added earlier the same day, marked `existing` because the
 connection is real. **My own data confirming my own conclusion.** Checked before acting
 on it, which is the only reason it did not become a finding.
 
-So the line register offers NO independent evidence on any of the eleven.
+So the line register offers no independent evidence on any of the eleven.
 
-### KORUSON IS DISPUTED, NOT RESOLVED
+### koruson is disputed, not resolved
 
-EDF Power Solutions built the main transmission substation for Koruson 1 and that cluster
+Edf Power Solutions built the main transmission substation for Koruson 1 and that cluster
 is operating, so it is almost certainly built and the TDP entry predates completion. The
-flag is NOT flipped — no commissioning source has been checked — but the entry now carries
+flag is not flipped — no commissioning source has been checked — but the entry now carries
 `planned_disputed: true` and the reasoning.
 
-### WHAT THE FLAG MEANS, now in the data file
+### what the flag means, now in the data file
 
-`planned` records what the DBSA register said AT INGEST. It does not mean the substation
+`planned` records what the DBSA register said at ingest. It does not mean the substation
 does not exist. `meta.planned_flag_meaning` says so, names the 205-project error, and
 directs anyone wanting a filter to use `src="approx"` instead — which records whether a
-POSITION is known, a question the data can actually answer.
+Position is known, a question the data can actually answer.
 
 `validate_geo` (38 -> 39) asserts that documentation exists, so the explanation cannot be
 lost while the flag survives.
@@ -2057,12 +2057,12 @@ not.
 Solar with a full-capacity battery recovers 91% of its 2026 revenue in a market where
 unstored solar has lost 82%.
 
-WIND GAINS FAR LESS (39-82%) for the same reason as every capture result here: solar is
+Wind gains far less (39-82%) for the same reason as every capture result here: solar is
 coincident and needs shifting, wind is diverse and already runs at night. But solar with
-storage OVERTAKES wind in absolute terms — R674 against R568 — because it has more energy
+storage overtakes wind in absolute terms — R674 against R568 — because it has more energy
 in fewer hours and a battery is the right tool for exactly that.
 
-CAVEATS: perfect foresight (upper bound), NO CAPEX netted off, single weather year, grid
+Caveats: perfect foresight (upper bound), no capex netted off, single weather year, grid
 pace is the harshest of the three.
 
 ---
@@ -2072,20 +2072,20 @@ pace is the harshest of the three.
 ### Licence lines added
 
 `RESULTS.md`, `STATE.md`, `SOURCES.md`, `MANIFEST.md` — `RULES.md` already had one.
-Uniform wording, and it says the three things that matter: CC BY-NC-ND 4.0, that DATA
+Uniform wording, and it says the three things that matter: CC BY-NC-ND 4.0, that data
 files carry their own terms, and that **nothing here is a tariff, a forecast, or
 investment advice**. Worth stating explicitly now that the file contains merchant-value
 and hybrid revenue figures.
 
-### RESULTS.md is publishable — checked, not assumed
+### results.md is publishable — checked, not assumed
 
 Scanned for email addresses, named individuals, unsourced claims and unconfirmed
 allegations. Clean on all four. The withdrawn claims stay in, marked as withdrawn: a
 findings file that shows what failed is more credible than one that shows only successes.
 
-### CALENDAR.md names two people — AND HAS BEEN PUBLIC SINCE 27 AUGUST
+### calendar.md names two people — and has been public since 27 august
 
-A redacted `CALENDAR.public.md` was created and then DROPPED the same day. The reasoning
+A redacted `CALENDAR.public.md` was created and then dropped the same day. The reasoning
 that killed it: only `HANDOVER.md` and `LOG.md` were ever gitignored, so `CALENDAR.md`
 has been tracked and pushed since the split. **Removing the names now does not unpublish
 them** — git keeps history and GitHub keeps forks. A second edition would have added a
@@ -2095,17 +2095,17 @@ process that provides no benefit gets skipped until the wrong file is published.
 What is actually exposed is mild: both roles are published by the organisations
 themselves, neither person is private, and the entries say nothing objectionable.
 
-FULL AUDIT of the tracked documents afterwards — personal emails, phone numbers,
+Full audit of the tracked documents afterwards — personal emails, phone numbers,
 negotiating positions, unverified allegations, commercial terms. **All clean.** The two
-"unverified claim" hits in STATE.md are this paragraph describing the scan.
+"unverified claim" hits in state.md are this paragraph describing the scan.
 
 The institutional email addresses in `SOURCES.md` are published contacts on their own
 organisations' websites.
 
-**RULES.md rule 8 now states the position:** assume every tracked file is already public.
+**rules.md rule 8 now states the position:** assume every tracked file is already public.
 A second copy is not a control.
 
-### HANDOVER.md replaced with a stub
+### handover.md replaced with a stub
 
 Not deleted, so an old copy or an old link lands somewhere useful rather than on stale
 content. It says where each of the seven documents went and what each is for, and points
@@ -2128,13 +2128,13 @@ tot GW   solar bare   solar + battery   uplift
    110           56               549    +877%
 ```
 
-**GREEDY, NOT AN LP, AND VALIDATED BEFORE SHIPPING.** Checked against the full-year
+**greedy, not an LP, and validated before shipping.** Checked against the full-year
 price-taker LP in `hybrid.js` across three build levels and two technologies: the greedy
-lands within 4.5% and is CONSERVATIVE in eleven of twelve cases. It runs in 1-5 ms
+lands within 4.5% and is conservative in eleven of twelve cases. It runs in 1-5 ms
 against the LP's seconds, which is what makes a panel possible at all. A day at a time is
 also closer to how a plant is actually operated than perfect foresight of the year.
 
-### THE FIRST VERSION LOST MONEY, AND THAT IS THE INTERESTING BIT
+### the first version lost money, and that is the interesting bit
 
 It charged to full every day and discharged regardless of price. The panel showed **-1%
 and -4% uplift at low penetration**, while the LP showed +2% to +6%. The LP simply
@@ -2142,7 +2142,7 @@ declines an unprofitable cycle; the greedy had no such test. Storing energy wort
 sell it at R700 destroys 12% of it.
 
 Fixed by pairing the cheapest charging hour with the dearest discharge hour and executing
-only where `sell x efficiency > buy`. That is the SAME reservation-price logic the system
+only where `sell x efficiency > buy`. That is the same reservation-price logic the system
 storage work arrived at independently — a heuristic without a value test loses money, and
 it does so while looking busy.
 
@@ -2153,16 +2153,16 @@ After the fix, +3% at today's build against the LP's +2-6%. `audit.py` pins the 
 
 ## Consolidation pass — 30 Aug 2026
 
-Everything today was verified in isolation. This checked the delivered set TOGETHER, and
+Everything today was verified in isolation. This checked the delivered set together, and
 found three inconsistencies that no individual change would have shown.
 
-**1. FOUR STALE FINGERPRINTS IN STATE.md.** Each was correct when written and superseded
+**1. four stale fingerprints in state.md.** Each was correct when written and superseded
 when the same file changed again later the same day — `substations_compact.json` changed
 three times, `reea_projects.json` twice. All ten data files verify against their own
-content; it was the DOCUMENTATION that had drifted. Corrected, and re-verified to zero.
+content; it was the documentation that had drifted. Corrected, and re-verified to zero.
 
-**2. THE SUITE TABLE WAS WRONG BY NINE CHECKS AND ONE HARNESS.** It claimed eighteen
-harnesses and 817 checks. A full run gives SEVENTEEN harnesses and 826 checks — I had
+**2. the suite table was wrong by nine checks and one harness.** It claimed eighteen
+harnesses and 817 checks. A full run gives seventeen harnesses and 826 checks — I had
 been incrementing a running tally rather than measuring, and the tally drifted in both
 directions at once. Rebuilt from the actual run.
 
@@ -2172,18 +2172,18 @@ audit 38 · outputs 33 · capacity 28 · benchmarks 18 · consistency 17
 structure 10 · audit3d 9 · solve 6 · eng5 6 · external 2 · lint 2
 ```
 
-**3. .gitignore had HANDOVER.md still ignored**, from when it was the 3,622-line
-original. It is now a STUB pointing at the seven documents that replaced it, so it must
-be TRACKED — an ignored stub helps nobody holding an old link. Written with `!HANDOVER.md`
+**3. .gitignore had handover.md still ignored**, from when it was the 3,622-line
+original. It is now a stub pointing at the seven documents that replaced it, so it must
+be tracked — an ignored stub helps nobody holding an old link. Written with `!HANDOVER.md`
 and a comment explaining why, so it is not "tidied" back.
 
-THE LESSON: a running count is not a measurement. Every individual change today was
+The lesson: a running count is not a measurement. Every individual change today was
 checked and the aggregate was still wrong, in a document whose entire purpose is to say
 what is true right now.
 
 ---
 
-## RESULTS.md indexed, and a harness for the documents — 30 Aug 2026
+## results.md indexed, and a harness for the documents — 30 Aug 2026
 
 ### The index
 
@@ -2206,19 +2206,19 @@ Withdrawn, kept deliberately — the 37%
 Nothing in the suite looked at the markdown, and these files are the project's public
 face and the basis of a regulatory submission.
 
-**IT CAUGHT A SECOND STALE COUNT I HAD MISSED.** The consolidation pass earlier today
+**it caught A second stale count I had missed.** The consolidation pass earlier today
 fixed the suite table at line 226 and I believed it done. There was another at line 16,
 inside the fitness-for-purpose section — still reading 18 harnesses and 817 checks. Two
 copies of the same fact, one updated. Rule 6 applies to documents as much as to code.
 
-**AND A HEADING MY OWN SCRIPT HAD MANGLED.** "Fitness for purpose" had become "fitness
-FOR purpose" when the de-capitalisation script ran over it. The first version of the
-check was case-sensitive and reported the section as MISSING rather than misspelled —
+**and A heading my own script had mangled.** "Fitness for purpose" had become "fitness
+For purpose" when the de-capitalisation script ran over it. The first version of the
+check was case-sensitive and reported the section as missing rather than misspelled —
 which would have sent someone looking for the wrong problem. Now case-insensitive.
 
 What it checks: every tracked document exists and carries a licence line; every
 fingerprint quoted in the docs matches a real data file; the suite table sums to its own
-headline; every index pointer in RESULTS.md resolves to a real section; and STATE.md
+headline; every index pointer in results.md resolves to a real section; and state.md
 opens with fitness-for-purpose.
 
 ---
@@ -2232,10 +2232,10 @@ That buried the 20.1 GW cumulative figure, which is what most readers come for �
 the number that gets compared against grid headroom.
 
 Now two tabs, **total pipeline as the default**, with the quarter one click away. Both
-stay in the DOM and the switch toggles display, so the regional bars do not reflow.
+stay in the dom and the switch toggles display, so the regional bars do not reflow.
 
-**A REAL BUG CAUGHT BY TESTING THE CLICK, NOT THE RENDER.** The handler was first placed
-inside a block two braces deep, so it was NOT on `window` and the `onclick` would have
+**A real bug caught by testing the click, not the render.** The handler was first placed
+inside a block two braces deep, so it was not on `window` and the `onclick` would have
 failed silently in a browser — the default view rendered perfectly and the tab would
 simply have done nothing. jsdom surfaced it as `nersaView is not a function`; a render-only
 check would have passed. Moved beside `togglePipeline`, an existing handler proven
@@ -2251,7 +2251,7 @@ The panel header said "Source: NERSA media statements" for everything, while the
 credited "SAPVIA NERSA Dashboard". A reader could not tell which applied to what, and one
 of them had to be wrong.
 
-**BOTH WERE RIGHT, FOR DIFFERENT SCOPES.** `nersa_registrations.json` settles it: its
+**both were right, for different scopes.** `nersa_registrations.json` settles it: its
 `meta.source` is SAPVIA and its description names the SAPVIA NERSA Registered Plants
 Dashboard, while the quarterly figures in `meta.note` come from NERSA's own media
 statement. Cumulative and quarterly are different series from different places.
@@ -2265,11 +2265,11 @@ cumulative  "Cumulative: SAPVIA NERSA Registered Plants Dashboard"
 quarter     "Source: NERSA media statement."
 ```
 
-A THIRD reference was found in the About source register, which credited only NERSA media
+A third reference was found in the About source register, which credited only NERSA media
 statements for the whole dataset. Corrected there too, and `SOURCES.md` now carries them
 as two rows rather than one — different cadence, different scope.
 
-THE PATTERN: an attribution that covers a panel rather than a figure will eventually
+The pattern: an attribution that covers a panel rather than a figure will eventually
 cover something it did not come from. Attribute at the point of use.
 
 ---
@@ -2278,7 +2278,7 @@ cover something it did not come from. Attribute at the point of use.
 
 A second Plus Code was supplied: `5G7C+QF Ibhayi`, against `5G7F+J6` in the register
 since 28 Aug. **They are different codes.** Decoded, they fall 178 m apart — inside the
-footprint of a substation, so this is CORROBORATION from an independent code rather than
+footprint of a substation, so this is corroboration from an independent code rather than
 a correction.
 
 The later, more precise code is now used. `src` upgraded `pluscode` ->
@@ -2289,11 +2289,11 @@ Grassridge at 106.9 km.
 Nothing downstream moved: **zero substation reassignments across 2,597 REEA projects**,
 maximum distance change 0.20 km.
 
-### I FELL INTO A TRAP I HAD DOCUMENTED THIS MORNING
+### I fell into A trap I had documented this morning
 
 My first measurement reported **46 reassignments and an 87 km maximum change** — from a
 178 m shift, which is impossible. The cause: I compared the before and after states by
-keying on project NAME, and `reea_projects.json` has **652 DUPLICATE NAMES** among 2,597
+keying on project name, and `reea_projects.json` has **652 duplicate names** among 2,597
 records. Most projects were being compared against a different project's row.
 
 This is the same fault, in the same session, as the 65 duplicate labels in
@@ -2301,8 +2301,8 @@ This is the same fault, in the same session, as the 65 duplicate labels in
 on `label` in this file". The lesson did not generalise because I had written it as a
 fact about one file rather than as a habit.
 
-**COMPARE POSITIONALLY, ALWAYS.** Re-measured by index: 0 reassignments, 0.20 km. And
-note the failure was LOUD only because the number was absurd — a duplicate-key comparison
+**compare positionally, always.** Re-measured by index: 0 reassignments, 0.20 km. And
+note the failure was loud only because the number was absurd — a duplicate-key comparison
 that produced a plausible figure would have been believed.
 
 `validate_docs.py`, written this morning, caught the resulting stale fingerprints
@@ -2314,17 +2314,17 @@ immediately.
 
 Prompted by the NERSA panel, where two source lines conflicted. Checked all 29 panels.
 
-### THE CONFLICT WAS THE ONLY ONE — but it hid a bigger gap
+### the conflict was the only one — but it hid a bigger gap
 
 The twelve existing source attributions are all correctly scoped. One is already a
-correct COMBINED attribution: the grid-queue panel names SAPVIA for registrations and
+correct combined attribution: the grid-queue panel names SAPVIA for registrations and
 NTCSA for headroom, which is right because it plots two series from two places.
 
-**The real problem was panels with NO indication of what kind of number they show.**
+**The real problem was panels with no indication of what kind of number they show.**
 "Curtailment forecast", "Capacity payments", "Capture price forecast", "Battery revenue
 benchmark" — all read as observations, and all are model output.
 
-### ONE CONVENTION: modelled or sourced, on every panel
+### one convention: modelled or sourced, on every panel
 
 ```
 17 panels now tagged "modelled"    numbers out of the engine
@@ -2334,49 +2334,49 @@ benchmark" — all read as observations, and all are model output.
 Two data panels gained an attribution they never had: the Network Schematic (Eskom TDP
 and SAPP corridors) and Where To Build (NTCSA GCCA headroom).
 
-**THE DISTINCTION MATTERS MORE THAN THE SOURCE.** A reader who mistakes a modelled
+**the distinction matters more than the source.** A reader who mistakes a modelled
 capture price for an observed one will quote it as fact. `audit.py` now pins the
 convention (40 -> 41).
 
 `audit.py` also caught the Network Schematic edit mid-change: it pinned "node size = avg
 output" and I had written "modelled output". Correct behaviour — that phrase is a claim
-about what the node size MEANS, not decoration.
+about what the node size means, not decoration.
 
 ---
 
 ## Yelland newsletter, 31 Aug 2026 — four items acted on
 
-### 1. AQUILA IS BUILT, AND PRIVATELY BUILT — a planned flag resolved by SOURCE
+### 1. aquila is built, and privately built — a planned flag resolved by source
 
 The R1.35bn Aquila Main Transmission Substation was built in a partnership led by
 SolarAfrica with Proconics NewFields, serving the SunCentral wheeling hub between Hanover
-and De Aar, and HANDED OVER to Eskom and NTCSA.
+and De Aar, and handed over to Eskom and NTCSA.
 
 `planned` removed. **This is the first of the eleven planned flags resolved by a
 published source rather than inference**, and it resolved the way the Koruson case
 suggested the others might — the DBSA register is stale, not wrong about the world.
 
-**SECOND CONFIRMED PRIVATE SHARED-NETWORK ASSET**, after Koruson. Both follow the same
+**second confirmed private shared-network asset**, after Koruson. Both follow the same
 pattern: a developer builds a substation sized for multiple customers, then transfers it
-to the utility. That is how private capital is adding SHARED headroom — the only kind
+to the utility. That is how private capital is adding shared headroom — the only kind
 that helps anyone but the builder — and it is worth tracking as a category rather than
 case by case.
 
-### 2. TWO CUMULATIVE NERSA TOTALS THAT DISAGREE BY 1,769 MW
+### 2. two cumulative NERSA totals that disagree by 1,769 MW
 
 ```
 SAPVIA collation (ours)   2,619 facilities · 20,131 MW · ~R409bn
 NERSA's own statement     2,692 facilities · 21.9 GW  ·  R452.9bn
 ```
 
-The QUARTERLY figures agree exactly — 124 facilities, 804 MW, R20.2bn — so the divergence
-is in accumulated history, not the current period. NOT RECONCILED and deliberately not
+The quarterly figures agree exactly — 124 facilities, 804 MW, R20.2bn — so the divergence
+is in accumulated history, not the current period. not reconciled and deliberately not
 averaged. The panel now shows the SAPVIA figure and states NERSA's alongside it.
 
 Likeliest explanation is different treatment of deregistered or superseded facilities,
 but that is inference. Ask SAPVIA, or read a NERSA quarterly directly.
 
-### 3. NERSA CANNOT TRACK WHAT GETS BUILT — from the regulator itself
+### 3. NERSA cannot track what gets built — from the regulator itself
 
 NERSA has no mechanism to monitor which registered projects reach operation, and no
 legislated deadline requires a developer to build a registered plant. Sub-100 kW
@@ -2384,20 +2384,20 @@ generation needs no registration at all and mostly is not recorded by Eskom Dist
 or municipalities either.
 
 So the 20 GW is **an overcount of what will exist and an undercount of small plant**. Now
-stated in the panel and in the data file: this is a pipeline of INTENT.
+stated in the panel and in the data file: this is a pipeline of intent.
 
-### 4. AURORA CORROBORATES THE FRONTIER, INDEPENDENTLY
+### 4. aurora corroborates the frontier, independently
 
 Aurora Energy Research forecasts renewables at 88% of supply by 2060, needing **more than
 120 GW of new capacity** as over 30 GW of coal retires. Our own no-gas frontier lands at
 110-120 GW combined. Different method, different horizon, same order of magnitude — the
 first external corroboration of that number this project has had.
 
-### NOTED, NOT ACTED ON
+### noted, not acted on
 
-- Voltalia Bolobedu (148 MW, Limpopo, wheeled to RBM) and Envusa are ALREADY in
+- Voltalia Bolobedu (148 MW, Limpopo, wheeled to rbm) and Envusa are already in
   `pfl_private_h1_2026.json`. Good — the H1 monitor caught them.
-- **SunCentral is NOT.** 342 MW energised near Hanover/De Aar, of a planned 1 GW. A named
+- **SunCentral is not.** 342 MW energised near Hanover/De Aar, of a planned 1 GW. A named
   candidate against the 1,823 MW of unexplained solar in identity 3. Do not add it on a
   press report — but it is the best lead yet on that gap.
 - Koeberg fully offline 27 Aug (both units). An outage, not a structural change;
@@ -2405,9 +2405,9 @@ first external corroboration of that number this project has had.
 
 ---
 
-## TO DO — two priorities from the 31 Aug newsletter
+## to do — two priorities from the 31 Aug newsletter
 
-### A. RECONCILE THE NERSA CUMULATIVE, 1,769 MW SHORT
+### A. reconcile the NERSA cumulative, 1,769 MW short
 
 ```
 SAPVIA collation (loaded)  2,619 facilities · 20,131 MW · ~R409bn
@@ -2415,29 +2415,29 @@ NERSA Q1 2026/27 statement 2,692 facilities · 21.9 GW  ·  R452.9bn
 gap                           73 facilities ·  1,769 MW
 ```
 
-The quarterly figures agree EXACTLY, so the divergence is in accumulated history. Both
+The quarterly figures agree exactly, so the divergence is in accumulated history. Both
 are currently shown in the panel with neither presented as correct.
 
-ROUTES, in order of likely yield:
+Routes, in order of likely yield:
 1. Read a NERSA quarterly media statement directly rather than through SAPVIA's
    collation — the primary source settles which is which.
 2. Ask SAPVIA how deregistered or superseded facilities are treated. A collation that
    nets off withdrawals against a regulator that does not would produce exactly this
-   shape: fewer facilities AND less capacity, growing over time.
-3. Compare an OLDER quarter from both. If the gap is roughly constant it is a one-off
+   shape: fewer facilities and less capacity, growing over time.
+3. Compare an older quarter from both. If the gap is roughly constant it is a one-off
    reclassification; if it grows it is a treatment difference.
 
 DO NOT average them, and do not switch source silently — the whole point of carrying two
 is that a reader can see they disagree.
 
-### B. TRACK WHAT ACTUALLY GETS BUILT — the opportunity NERSA has named
+### B. track what actually gets built — the opportunity NERSA has named
 
 NERSA states it has no mechanism to monitor which registered projects reach operation,
 and no deadline compels a developer to build. **That is a gap in the national data that
 this project is unusually well placed to fill**, because it already holds all three
 stages: REEA permits (2,597), NERSA registrations (2,619), and commissioning records.
 
-A first pass is COMPUTABLE TODAY from data on disk — registered against commissioned by
+A first pass is computable today from data on disk — registered against commissioned by
 region — and it immediately shows why the naive version must not be published:
 
 ```
@@ -2448,26 +2448,26 @@ Gauteng                 2,569                50        2%
 TOTAL                  20,116             6,754       34%
 ```
 
-**206% IS NOT A FINDING, IT IS A UNIVERSE MISMATCH.** NERSA registrations cover PRIVATE
+**206% is not A finding, it is A universe mismatch.** NERSA registrations cover private
 and embedded generation above 100 kW. REIPPPP plant is licensed under a different regime
 and never appears in them — so the Eastern Cape's REIPPPP wind is in the commissioned
 column with no counterpart in the registered one. Comparing the two mixes universes,
 which is the error this project keeps catching in other people's numbers.
 
-THE CORRECT COMPARISON is NERSA-registered against PRIVATE commissioned only. The blocker
+The correct comparison is NERSA-registered against private commissioned only. The blocker
 is that `by_source.private` holds H1 2026 alone (958 MW) — the same gap as open item
 "pre-2026 private capacity", and #PowerTracker is the identified source for it.
 
-SO THE SEQUENCE IS:
-1. Ingest #PowerTracker for private commissioning history. This unblocks BOTH this and
+SO the sequence is:
+1. Ingest #PowerTracker for private commissioning history. This unblocks both this and
    the 1,823 MW unexplained solar in identity 3.
 2. Then reconcile registered against private-commissioned, by region.
 3. Then project-level matching — but note `reea_projects.json` has 652 duplicate names,
    so match on coordinates and capacity, never on name (rule 9).
-4. Satellite verification is the only method that scales to confirming a plant EXISTS,
+4. Satellite verification is the only method that scales to confirming a plant exists,
    and is already on the list.
 
-WHY IT MATTERS: a 20 GW pipeline that nobody can convert into a build forecast is exactly
+Why it matters: a 20 GW pipeline that nobody can convert into a build forecast is exactly
 the uncertainty the headroom and merchant-value work runs into. And a credible
 registered-to-built conversion rate would be a genuinely novel public output — the
 regulator has said plainly that it does not have one.
@@ -2476,7 +2476,7 @@ regulator has said plainly that it does not have one.
 
 ## Eskom FY2026 annual results, 31 Aug 2026 — read for model impact
 
-### THE BEST EXTERNAL CHECK THIS MODEL HAS: renewable share
+### the best external check this model has: renewable share
 
 Eskom reports **renewables at 11.7% of power supplied in FY2026**. The model returns
 **12.0% on the residual basis** — rooftop removed from numerator and denominator, which
@@ -2489,12 +2489,12 @@ Eskom does not state its treatment of hydro, imports or IPP output, and any of t
 would move it by a point. A sanity check against a published national figure, not a
 precision test.
 
-This also vindicates the dual-denominator convention in RULES.md. On the TOTAL basis the
+This also vindicates the dual-denominator convention in rules.md. On the total basis the
 model reads 17.2%, which would have looked like a 47% overstatement against Eskom's
 number. Same model, same year, five points apart — exactly the ambiguity the convention
 exists to prevent, now demonstrated against a real published figure.
 
-### EAF: the constant was right, the NOTE was stale
+### EAF: the constant was right, the note was stale
 
 `FIXED.coalEAFPct` is 65 against an audited FY2026 of **65.16%** — essentially exact. But
 the slider note read "FY2026 to date = 68%", a part-year figure now superseded. Replaced
@@ -2503,23 +2503,23 @@ with the audited series: FY2024 54.6%, FY2025 60.6%, FY2026 65.2%, Eskom target 
 Three years of audited outturn is a better calibration anchor than one part-year number,
 and it shows the trend the model's own scenarios turn on.
 
-### NOTED, NOT ACTED ON — each needs a decision
+### noted, not acted on — each needs a decision
 
 - **Kusile Unit 6, 799 MW synchronised.** `coalInstalledMW` is 42,000. Check whether it
   is already inside that figure before adding.
 - **Sales 178 TWh, down 6.2%**, with industrial down 9.7 TWh (22.5%) on ferrochrome
-  smelter hardship. A STRUCTURAL demand change, not a cycle. The model's demand growth
+  smelter hardship. A structural demand change, not a cycle. The model's demand growth
   slider starts at 0; the real trend is negative.
 - **2-3 GW surplus capacity for the first time in over a decade.** Bears directly on the
   adequacy results.
 - **13.1 TWh lost to theft** — about 6% of supply, and not represented in the model at
   all.
-- **Grid: 8,362 km of line and 82,425 MVA by FY2031**, out of R343bn capex with 46% to
+- **Grid: 8,362 km of line and 82,425 mva by FY2031**, out of R343bn capex with 46% to
   NTCSA. Cross-check against the TDP-derived R584/kW-yr behind `txRPerKWyr`. Different
   period and scope, so not a like-for-like, but worth reconciling.
 - **Eskom Green: 6 GW carbon-free by FY2030, 32 GW renewables and storage by FY2040,
   1,500 MW gas by FY2029 ramping to 3,000 MW by FY2031.** This is a fourth named build
-  pathway alongside historical, IRP, masterplan and grid — and it is Eskom's OWN plan,
+  pathway alongside historical, IRP, masterplan and grid — and it is Eskom's own plan,
   which none of the existing four are. Strong candidate for a preset.
 - **OCGT utilisation more than halved, R10.6bn saved.** Corroborates the merit-order
   dispatch the model assumes.
@@ -2533,7 +2533,7 @@ and it shows the trend the model's own scenarios turn on.
 
 The integrated report publishes generation by technology and a full audited energy
 balance. First check of the model against national data technology by technology rather
-than against a band. Full table in RESULTS.md.
+than against a band. Full table in results.md.
 
 ```
 coal  -2.4%   nuclear  -1.8%   wind  +6.7%   solar  -8.7%   CO2  -7.6%
@@ -2541,10 +2541,10 @@ coal  -2.4%   nuclear  -1.8%   wind  +6.7%   solar  -8.7%   CO2  -7.6%
 
 Four of five inside 9%, coal and nuclear inside 3%.
 
-### IMPORTS WERE DOUBLE REALITY — corrected
+### imports were double reality — corrected
 
 The model ran 8.56 TWh against an audited 4,090 GWh. The cause was a literal `0.85`
-utilisation HARDCODED AT THREE SITES and duplicated as `IMPORTS_CF` in
+utilisation hardcoded at three sites and duplicated as `IMPORTS_CF` in
 `nodal_engine.js` — a rule 6 violation and a stale value at once.
 
 ```
@@ -2554,16 +2554,16 @@ audited   FY2024  9,150 GWh -> 0.91      FY2025  7,570 -> 0.75      FY2026  4,09
 0.85 was roughly right for FY2024. Cahora Bassa deliveries have more than halved in two
 years and no constant reflected it. Now `FIXED.importsCF` 0.41, one constant, sourced.
 
-RESULT: imports 4.13 TWh against 4.09 audited, coal 166.0 against 165.4, and **CO2
+Result: imports 4.13 TWh against 4.09 audited, coal 166.0 against 165.4, and **CO2
 improved from -7.6% to -5.1%**.
 
-### TWO CHECKS REBASED FROM CONTRACT TO MEASUREMENT
+### two checks rebased from contract to measurement
 
 `validate_benchmarks` and `validate_outputs` both failed, and both were testing against
-the Cahora Bassa CONTRACT — 1.15 GW firm at high availability — rather than delivery.
+the Cahora Bassa contract — 1.15 GW firm at high availability — rather than delivery.
 The contract is unchanged and still runs to 2030; what changed is how much arrives.
 
-**Testing against a contract tests what is PERMITTED, not what HAPPENS.** Rebased on
+**Testing against a contract tests what is permitted, not what happens.** Rebased on
 three years of audited outturn, with bands wide enough to hold the trend so a normal
 year-on-year move is not a failure. This is not relaxing a check to make a change pass:
 it replaces an assumed utilisation with an audited one, which is strictly stronger.
@@ -2571,9 +2571,9 @@ it replaces an assumed utilisation with an audited one, which is strictly strong
 The `validate_response` baseline moved four cells and was re-pinned — a deliberate,
 measured change, which is the only reason to re-pin.
 
-### STILL OPEN
+### still open
 
-- **OCGT: the model runs ZERO, Eskom ran 1,079 GWh.** The merit order never needs a
+- **OCGT: the model runs zero, Eskom ran 1,079 GWh.** The merit order never needs a
   peaker at 65% EAF and today's demand; Eskom runs them for reserve, ramping and network
   support, none of which the model prices. Reality is dirtier and dearer than the model,
   and the gap will be worst in the tight hours.
@@ -2584,21 +2584,21 @@ measured change, which is the only reason to re-pin.
 
 ---
 
-## TO DO — from the Eskom FY2026 results and integrated report
+## to do — from the Eskom FY2026 results and integrated report
 
 ### Model gaps the audited data exposed
 
 1. ~~OCGT under-runs / the model sheds in the wrong season / the four-point EAF gap.~~
-   **ALL THREE CLOSED 31 Aug 2026 on Eskom's own hourly data.** The seasonality is right
+   **all three closed 31 Aug 2026 on Eskom's own hourly data.** The seasonality is right
    (model 9.0x Jan-Mar against Jul-Sep, Eskom 8.5x, now benchmarked). The level differs
    because **63% of Eskom's peaker output runs below 25 GW of demand with ~25.8 GW of coal
    available** - reserve, network support and ramping, none of which an energy merit order
-   prices. `coalEAFPct` stays at the audited 65. Full working in RESULTS.md.
+   prices. `coalEAFPct` stays at the audited 65. Full working in results.md.
 
-2. ~~Technical and other losses not modelled.~~ **I WAS WRONG — CHECKED 31 Aug 2026.**
-   They are ALREADY inside the demand series. `profiles.json` states its basis:
+2. ~~Technical and other losses not modelled.~~ **I was wrong — checked 31 Aug 2026.**
+   They are already inside the demand series. `profiles.json` states its basis:
    `demand = underlying(gross grid demand + est rooftop)`, which is Eskom's
-   ENERGY-AVAILABLE-FOR-DISTRIBUTION basis, i.e. BEFORE distribution losses. Measured:
+   energy-available-for-distribution basis, i.e. before distribution losses. Measured:
 
    ```
    model grid generation, excl rooftop        208.5 TWh
@@ -2607,40 +2607,40 @@ measured change, which is the only reason to re-pin.
    ```
 
    The model tracks the available-for-distribution figure to within 1.2%. Adding a loss
-   term would have DOUBLE-COUNTED 24 TWh and broken a calibration that is currently very
+   term would have double-counted 24 TWh and broken a calibration that is currently very
    good. **The real requirement is a caveat, not a model change**: never compare the
-   model's served energy against a national SALES figure — it is 17% higher by
+   model's served energy against a national sales figure — it is 17% higher by
    construction, and correctly so.
-3. ~~`IMPORTS_CF` in nodal_engine.js is a second copy.~~ CORRECTED 31 Aug 2026 to 0.41,
+3. ~~`IMPORTS_CF` in nodal_engine.js is a second copy.~~ corrected 31 Aug 2026 to 0.41,
    with a comment at both constants saying the other exists. It stays a literal because
    the file is loaded as a plain script by four harnesses with no access to `FIXED`.
-   NOTE both read 0.85 and drifted in NEITHER, which was luck rather than design.
-4. ~~Kusile Unit 6 / capacity reconciliation.~~ DONE 31 Aug 2026 — see below.
+   note both read 0.85 and drifted in neither, which was luck rather than design.
+4. ~~Kusile Unit 6 / capacity reconciliation.~~ done 31 Aug 2026 — see below.
 5. **13.1 TWh lost to theft**, about 6% of supply. Distinct from technical losses and
    also absent.
 
 ### Calibration worth revisiting
 
-6. ~~Demand trend anchor.~~ DONE 31 Aug 2026 — the demand slider had NO note at all and
+6. ~~Demand trend anchor.~~ done 31 Aug 2026 — the demand slider had no note at all and
    now carries the audited series: 183.3 TWh FY2024, 189.7 FY2025, 178.0 FY2026, with
    Eskom targeting stabilisation at 178. It also states that growth here is a forward
    assumption, not the observed trend.
-7. ~~2-3 GW surplus capacity check.~~ DONE 31 Aug 2026. Model gives 2.2, 2.9 or 3.4 GW
-   depending on whether contracted imports and VRE count as surplus; two of three sit
+7. ~~2-3 GW surplus capacity check.~~ done 31 Aug 2026. Model gives 2.2, 2.9 or 3.4 GW
+   depending on whether contracted imports and vre count as surplus; two of three sit
    inside Eskom's range. Now a benchmark (`surplusGW`, 1.8-4.0 GW) — **the first check on
-   the ADEQUACY side against a published national figure.** Full working in RESULTS.md.
-8. ~~Grid capex cross-check against `txRPerKWyr`.~~ DONE 31 Aug 2026. The two routes
-   BRACKET the constant: TDP ~R700/kW-yr gross, Eskom's FY2027-31 capex plan ~R490, model
+   the adequacy side against a published national figure.** Full working in results.md.
+8. ~~Grid capex cross-check against `txRPerKWyr`.~~ done 31 Aug 2026. The two routes
+   bracket the constant: TDP ~R700/kW-yr gross, Eskom's FY2027-31 capex plan ~R490, model
    default R600 net. No change made — it was defensible on one source and is better
    supported by two. Three assumptions are doing real work in the R490, chiefly that
    unlocked capacity scales with route-km, which is exactly what the locational analysis
-   says is false corridor by corridor. Full working in RESULTS.md.
+   says is false corridor by corridor. Full working in results.md.
 
 ### New scenario
 
-9. ~~Eskom Green as a fifth build preset.~~ DONE 31 Aug 2026 — see below. Original scope: — 6 GW carbon-free by FY2030, 32 GW
+9. ~~Eskom Green as a fifth build preset.~~ done 31 Aug 2026 — see below. Original scope: — 6 GW carbon-free by FY2030, 32 GW
    renewables and storage by FY2040, 1,500 MW gas by FY2029 ramping to 3,000 MW by
-   FY2031. It is Eskom's OWN plan, which none of historical, IRP, masterplan or grid
+   FY2031. It is Eskom's own plan, which none of historical, IRP, masterplan or grid
    are, and it is the one a South African reader is most likely to want to test.
 
 ### Watch
@@ -2651,60 +2651,60 @@ measured change, which is the only reason to re-pin.
 
 ---
 
-## TO DO — what to take from Aurora Energy Research, 31 Aug 2026
+## to do — what to take from Aurora Energy Research, 31 Aug 2026
 
 Studied 31 Aug. Opposite business model — they sell subscriptions and advisory, this is
-free and open — but the STRUCTURE is instructive.
+free and open — but the structure is instructive.
 
-### THE ORGANISING INSIGHT: they segment by DECISION, not by data
+### the organising insight: they segment by decision, not by data
 
 Aurora's entry points are Developers, Financial Sector, Utilities, Energy Consumers.
 Their offerings are Asset Siting, Portfolio Valuation, PPAs, Transaction Support. Not
 "here is our data" but "here is the decision you are making".
 
 GridTwin already splits System Planning from Project Planning, which is the same
-instinct. But the project side is a row of TOOLS rather than a framed decision, and the
+instinct. But the project side is a row of tools rather than a framed decision, and the
 strongest developer-facing work of the past two days — merchant value, capture rates,
 hybrid uplift — is not presented as answering a developer's question even though it does.
 
-**1 & 2. ~~Re-frame the project tools by decision.~~ DONE 31 Aug 2026.** Each of the
-seven tabs now carries the QUESTION it answers as a tooltip — "Can I connect here, and
+**1 & 2. ~~Re-frame the project tools by decision.~~ done 31 Aug 2026.** Each of the
+seven tabs now carries the question it answers as a tooltip — "Can I connect here, and
 what does the connection cost?" rather than "Grid connection" — and the row is introduced
 as a project's lifecycle: resource at the site, then grid connection, then what it earns,
 then how the power reaches a customer, then whether it stacks up.
 
-Deliberately a tooltip plus ONE visible line rather than seven visible subtitles: the
+Deliberately a tooltip plus one visible line rather than seven visible subtitles: the
 text trim earlier the same day removed 44% of the page prose, and seven new lines would
 have put much of it straight back. The lifecycle sentence carries the framing; the
 per-tool detail is one hover away.
 
-Verified the line sits as a SIBLING of the tab row rather than inside a panel, and that
+Verified the line sits as a sibling of the tab row rather than inside a panel, and that
 tab switching still works — placement is the thing that would break silently. `audit.py`
 pins it (44 -> 45).
 
-### FLEXPLORER IS THE CLOSEST ANALOGUE TO SOMETHING HALF-BUILT HERE
+### flexplorer is the closest analogue to something half-built here
 
 Their battery product benchmarks assets against peers and against their own indices
 across 40+ markets. The battery saturation curve, revenue split, locational panel and the
 new hybrid uplift are the components of exactly that for South Africa.
 
 Their published case study is "supporting landmark battery storage financing in a market
-WITHOUT CAPACITY PAYMENTS" — which is literally the ancillary finding in RESULTS.md.
+Without capacity payments" — which is literally the ancillary finding in results.md.
 
-**3. ~~Assemble the battery work into one view.~~ DONE 31 Aug 2026.** `storageSummary()`
+**3. ~~Assemble the battery work into one view.~~ done 31 Aug 2026.** `storageSummary()`
 reuses `bessBenchmark`, `bessSaturationCurve` and `hybridUplift` rather than recomputing,
 so it cannot drift from the panels it summarises, and it surfaces the one comparison the
-separate panels never made: MERCHANT OR ATTACHED. The same 4-hour battery attached to a
+separate panels never made: merchant or attached. The same 4-hour battery attached to a
 solar plant at half its capacity lifts that plant from R756 to R1,225/MWh.
 
 Wired into the existing battery panel rather than given its own, because that panel
 already opens with the question. `validate_structure`'s orphan check caught it as
 unwired first — correctly.
 
-### WHAT NOT TO TAKE
+### what not to take
 
 **Do not chase breadth.** 40 markets, hydrogen, subscription analytics — that is a
-hundred-person company. The advantage here is the opposite: ONE country modelled
+hundred-person company. The advantage here is the opposite: one country modelled
 properly, openly, with the workings visible and the failures published. **Aurora cannot
 be checked by anyone outside Aurora.** That is the thing to lean into, not trade away.
 
@@ -2712,9 +2712,9 @@ be checked by anyone outside Aurora.** That is the thing to lean into, not trade
 fitness-for-purpose section does the same job by showing its limits, which is stronger
 for a tool anyone can inspect.
 
-### AND THEY ARE A PLAUSIBLE READER, NOT ONLY A COMPETITOR
+### and they are A plausible reader, not only A competitor
 
-**4. AURORA IS AN OUTREACH TARGET.** They have a named South Africa presence, and their
+**4. aurora is an outreach target.** They have a named South Africa presence, and their
 2060 outlook — 88% renewables, >120 GW of new capacity — independently corroborated the
 no-gas frontier at 110-120 GW. Different method, different horizon, same order of
 magnitude. That corroboration is a reason for them to take an approach from this
@@ -2734,11 +2734,11 @@ Eskom local and international SALES        178.0 TWh  +17.1%
 ```
 
 `profiles.json` states its own basis: `demand = gross grid demand + est rooftop`, which
-is the AVAILABLE-FOR-DISTRIBUTION figure, before losses. The model tracks it to 1.2%.
+is the available-for-distribution figure, before losses. The model tracks it to 1.2%.
 Adding a loss term would have double-counted 24 TWh.
 
-**THE REQUIREMENT WAS A CAVEAT, NOT A MODEL CHANGE.** Never compare the model's served
-energy against a national SALES figure — it reads 17% higher by construction, and
+**the requirement was A caveat, not A model change.** Never compare the model's served
+energy against a national sales figure — it reads 17% higher by construction, and
 correctly so.
 
 ### Pinned as a check, because this is a mistake someone will repeat
@@ -2747,19 +2747,19 @@ correctly so.
 someone compares against sales; fails low by ~12% if someone adds a loss term that
 double-counts. The band's `why` names both failure modes.
 
-### AND THE CHECK IMMEDIATELY EXPOSED A DISPLAY BUG
+### and the check immediately exposed A display bug
 
 The band printer assumed every range was a percentage, so a TWh band rendered as
-"210.2%    190-222%". Harmless to the assertion, misleading to read — and the FIRST band
-in another unit was the one asserting a demand BASIS, where a wrong unit is exactly the
+"210.2%    190-222%". Harmless to the assertion, misleading to read — and the first band
+in another unit was the one asserting a demand basis, where a wrong unit is exactly the
 confusion it exists to prevent. Printer is now unit-aware.
 
-### ALSO DONE
+### also done
 
 `IMPORTS_CF` in `nodal_engine.js` corrected 0.85 -> 0.41, matching `FIXED.importsCF`.
 It stays a literal because that file is loaded as a plain script by four harnesses with
 no access to `FIXED`, but both constants now carry a comment naming the other. They read
-0.85 and drifted in NEITHER place, which was luck rather than design.
+0.85 and drifted in neither place, which was luck rather than design.
 
 ---
 
@@ -2781,22 +2781,22 @@ IPP capacity            8,565      8,483    -1.0%
 **Nuclear and hydro within 1.1%.** Three points need care, and the first was an error of
 mine.
 
-### THE FIGURES ARE AS AT 31 MARCH 2026 — and I did not check that
+### the figures are as at 31 march 2026 — and I did not check that
 
 The integrated report covers the year ended 31 March 2026, so every capacity above is a
 year-end snapshot. Two consequences:
 
-- Kusile Unit 6 reached commercial operation on 29 September 2025, INSIDE FY2026, so its
+- Kusile Unit 6 reached commercial operation on 29 September 2025, inside FY2026, so its
   799 MW is already in the 39,692. Nothing to add. Note the fleet only grew 46,866 ->
   47,378, **+512 MW against Kusile's +799**, so roughly 287 MW was retired or derated in
   the same year and Eskom does not itemise it here.
-- The model's renewable register runs to 30 JUNE 2026 (PFL H1). Three months of additions
+- The model's renewable register runs to 30 june 2026 (PFL H1). Three months of additions
   sit on one side of the comparison and not the other. Small for the base case, but it is
   a real date mismatch and it should be stated whenever these are lined up.
 
-### MY "IPP WITHIN 1%" CLAIM WAS A UNIVERSE MISMATCH — corrected
+### my "IPP within 1%" claim was A universe mismatch — corrected
 
-Eskom's 8,565 MW is ALL IPPs selling through NTCSA. Compared like for like:
+Eskom's 8,565 MW is all IPPs selling through NTCSA. Compared like for like:
 
 ```
 IPP total                              8,565
@@ -2807,10 +2807,10 @@ less REIPPPP hydro, biomass, LFG         -51
 GridTwin wind + pv + csp               8,483      +974 MW, +13.0%
 ```
 
-So the model looked 13% HIGH, not 1% low. **But the 974 MW is almost exactly the private
+So the model looked 13% high, not 1% low. **But the 974 MW is almost exactly the private
 wheeled block**: `by_source.private` holds 958 MW. Residual 16 MW.
 
-**PRIVATELY WHEELED PLANT SELLS TO CORPORATE CUSTOMERS, NOT TO ESKOM, so it correctly
+**privately wheeled plant sells to corporate customers, not to eskom, so it correctly
 does not appear in Eskom's IPP figure at all.** The gap is not an error in either source
 — it is the two universes, and it reconciles to 16 MW once named.
 
@@ -2820,12 +2820,12 @@ badly derived `windMW`.
 
 Two further gaps explain themselves:
 
-**OCGT is not a discrepancy.** Eskom's 2,380 MW is ESKOM-OWNED only. Adding the IPP
+**OCGT is not a discrepancy.** Eskom's 2,380 MW is eskom-owned only. Adding the IPP
 peakers Avon 670 and Dedisa 335 gives 3,385 MW against the model's 3,400 — a 0.4% match.
 Different universe, not a different number.
 
-**COAL WAS A COMPENSATING ERROR, and is corrected.** 42,000 is the widely-cited nameplate
-figure; Eskom's audited nominal is 39,692. The model produced the RIGHT coal energy from
+**coal was A compensating error, and is corrected.** 42,000 is the widely-cited nameplate
+figure; Eskom's audited nominal is 39,692. The model produced the right coal energy from
 too large a fleet at too low a utilisation:
 
 ```
@@ -2835,37 +2835,37 @@ coal energy                166.0 TWh       165.9 TWh      165.4 TWh
 
 Correcting the capacity moves the capacity factor onto Eskom's almost exactly and changes
 energy by 0.1 TWh, because coal here is demand-limited rather than capacity-limited. **It
-matters for SCENARIOS, not the base case**: anything moving the availability factor or
+matters for scenarios, not the base case**: anything moving the availability factor or
 decommissioning plant was working off a fleet 5.8% larger than Eskom operates. The
 decommissioning slider max moved 42,000 -> 39,692 with it.
 
-### THREE THINGS THE SUITE CAUGHT, ALL WORTH RECORDING
+### three things the suite caught, all worth recording
 
 **1. My edit swallowed two constants.** The original line read
-`coalInstalledMW:42000, nuclearMW:1860, hydroMW:600,` on ONE line, and my inserted comment
+`coalInstalledMW:42000, nuclearMW:1860, hydroMW:600,` on one line, and my inserted comment
 block absorbed the other two into itself. `nuclearMW` and `hydroMW` became undefined, and
-the suite collapsed — benchmarks 3/20, response 2/81. Lint PASSED, because the syntax was
+the suite collapsed — benchmarks 3/20, response 2/81. Lint passed, because the syntax was
 valid. Only the behavioural harnesses caught it. **A multi-line comment inserted before a
 constant is only safe if you check what shares its line.**
 
 **2. Rule 6, exactly as written.** `validate_structure` flagged
-`coalInstalledMW ?? 42000` the moment the constant moved — a fallback that DIFFERS from
-FIXED is a latent wrong answer waiting for the resolution to change. It waited, and the
+`coalInstalledMW ?? 42000` the moment the constant moved — a fallback that differs from
+Fixed is a latent wrong answer waiting for the resolution to change. It waited, and the
 check caught it.
 
 **3. A round-trip check that was structurally incomplete.** The fleet-collapse scenario
 reported a storage round trip of 1.053 — energy from nowhere. It is not: the engine is
-NOT state-of-charge cyclic. Storage opens at 70% for pumped and 50% for batteries, so
+Not state-of-charge cyclic. Storage opens at 70% for pumped and 50% for batteries, so
 over a year it can legitimately discharge more than it charges by the opening stock it
-never replaces. The check guarded on charge VOLUME, a proxy; it now compares discharge
-against charge PLUS opening stock. If the engine is ever made SOC-cyclic, that allowance
+never replaces. The check guarded on charge volume, a proxy; it now compares discharge
+against charge plus opening stock. If the engine is ever made SOC-cyclic, that allowance
 should return to zero.
 
 ---
 
 ## Eskom Green build pace added — 31 Aug 2026
 
-A fifth pace, and the only one that is an OPERATOR'S OWN PLAN rather than a policy target
+A fifth pace, and the only one that is an operator'S own plan rather than a policy target
 (IRP, masterplan), a historical record, or a physical limit (grid).
 
 ```
@@ -2879,20 +2879,20 @@ grid                     8,300     4,800 2,000     41.5 GW
 
 It lands between historical and IRP, which is where a single builder should sit.
 
-FROM THE PUBLISHED MILESTONES: 32 GW renewables and storage by FY2040 over FY2027-40 =
+From the published milestones: 32 GW renewables and storage by FY2040 over FY2027-40 =
 2,286 MW/yr; gas 1,500 MW by FY2029 to 3,000 MW by FY2031 = 600 MW/yr. The assumed split
 sums to 2,286 exactly.
 
-### TWO CAVEATS CARRIED IN THE NOTE, because neither is inferable from the number
+### two caveats carried in the note, because neither is inferable from the number
 
-**1. THE TECHNOLOGY SPLIT IS NOT PUBLISHED.** Eskom gives a combined "renewables and
+**1. the technology split is not published.** Eskom gives a combined "renewables and
 storage" figure. The split is weighted toward solar and storage because the named
 repowering sites — Komati, Grootvlei, Camden, Hendrina — are Mpumalanga coal sites with
-strong solar and weak wind. A reasonable inference, NOT Eskom's statement, and the first
+strong solar and weak wind. A reasonable inference, not Eskom's statement, and the first
 number to challenge.
 
-**2. IT IS A FLOOR ON THE NATIONAL BUILD, NOT A FORECAST OF IT.** Every other pace is
-national; this is ONE PARTICIPANT. IPPs added 8,565 MW to 31 March 2026 against Eskom's
+**2. it is A floor on the national build, not A forecast of it.** Every other pace is
+national; this is one participant. IPPs added 8,565 MW to 31 March 2026 against Eskom's
 own 100 MW of wind. Selecting it models a world where only Eskom builds, which will not
 happen — the value is as a lower bound and as a test of whether Eskom's own plan is
 adequate on its own.
@@ -2902,21 +2902,21 @@ Two `audit.py` checks pin the pace and the floor-not-forecast caveat (41 -> 43).
 ## coalEAFPct: four literals, no constant, and the wrong value — 31 Aug 2026
 
 Going to add a demand-trend note, I found `coalEAFPct` had **no `FIXED` entry at all**.
-The quantity existed as the slider default plus SIX `?? 68` fallbacks — seven copies of
+The quantity existed as the slider default plus six `?? 68` fallbacks — seven copies of
 one number with no source. Rule 6, in the largest instance found so far.
 
-**AND 68 WAS WRONG.** It was the part-year "FY2026 to date" figure; the audited outturn
+**and 68 was wrong.** It was the part-year "FY2026 to date" figure; the audited outturn
 is 65.16%. Part-year EAF is biased because availability is seasonal, and it overstated
 the full year by three points. `FIXED.coalEAFPct` is now 65 and every site reads it.
 
 Coal energy lands at 165.5 TWh against an audited 165.4, at the audited availability
 rather than by accident.
 
-TWO OF THE SEVEN were written `coalEAFPct??68` with no spaces and survived the first
-replacement. `validate_structure` caught them. A textual replacement across a 1 MB file
+Two of the seven were written `coalEAFPct??68` with no spaces and survived the first
+replacement. `validate_structure` caught them. A textual replacement across a 1 mb file
 needs the harness, not care.
 
-### THE CHANGE EXPOSED A REAL DEFECT — recorded as a standing flag, NOT relaxed
+### the change exposed A real defect — recorded as a standing flag, not relaxed
 
 `validate_consistency` now fails one check: storage delivers 0 MW at the annual peak
 while adequacy counts it as firm capacity.
@@ -2927,22 +2927,22 @@ peak hour 3834, 31,595 MW
   EAF 65%   coal 25,365 · pumped storage     0 · diesel 3,138
 ```
 
-Pumped storage runs flat out at 2,900 MW for the three hours BEFORE the peak and arrives
+Pumped storage runs flat out at 2,900 MW for the three hours before the peak and arrives
 empty, so diesel covers the worst hour of the year. **Lower availability did not create
 this — it exposed it.**
 
-CAUSE: the same missing value function as the storage LP work. The heuristic discharges
+Cause: the same missing value function as the storage LP work. The heuristic discharges
 whenever there is a deficit, with nothing reserving energy for the annual peak. Two
 ordering fixes were tried and reverted on 30 Aug, so a third improvised attempt is not
 warranted.
 
-**~~IT STAYS RED DELIBERATELY.~~ FIXED THE SAME DAY — see below.**
+**~~it stays red deliberately.~~ fixed the same day — see below.**
 
 ---
 
 ## Pumped storage peak reservation — fixed 31 Aug 2026
 
-The standing flag is CLOSED. `validate_consistency` back to 17/17, suite green.
+The standing flag is closed. `validate_consistency` back to 17/17, suite green.
 
 ```
 scenario           ps at annual peak MW        unserved GWh
@@ -2953,30 +2953,30 @@ crisis 2023             0        2,900    13,413.0   13,089.2
 ```
 
 **At the audited availability, pumped storage now delivers 2,331 MW at the annual peak
-instead of ZERO**, and diesel at that hour falls from 3,138 MW to 807. Annual pumped
+instead of zero**, and diesel at that hour falls from 3,138 MW to 807. Annual pumped
 output is unchanged at 3.43 TWh — the same energy, spent at better hours.
 
 It is strongest where it matters most: in the 2023 crisis scenario it moves 0 -> 2,900 MW
 at the peak and cuts unserved energy by 324 GWh. At 55% availability, 91 GWh.
 
-### THE RULE, and why this is not the third failed heuristic
+### the rule, and why this is not the third failed heuristic
 
-Do not spend energy now that a TIGHTER hour within the store's own duration will need.
+Do not spend energy now that a tighter hour within the store's own duration will need.
 For each hour, sum the deliverable energy required by future hours whose gap exceeds this
 one's, and hold that much back. Horizon is the store's own duration — a 20-hour asset
 cannot hold energy for a peak further out than that anyway.
 
 **This is a different problem from the two reverted attempts on 30 Aug.** Those were
-about which CHEMISTRY gets charged, where the comparison is between assets and needs a
-value function to resolve. This is about WHEN one store discharges, where the comparison
-is against a KNOWN FUTURE DEFICIT in the same series. That is why a simple rule works
+about which chemistry gets charged, where the comparison is between assets and needs a
+value function to resolve. This is about when one store discharges, where the comparison
+is against a known future deficit in the same series. That is why a simple rule works
 here and did not there.
 
 The floor is the greater of the ancillary holdback and the peak reservation, so it
 composes with the existing `_asHold` rather than overriding it.
 
-CAVEAT: perfect foresight of the deficit series, like everything else in this engine. A
-real operator forecasts. And it does NOT fix the battery tiers — the long-duration
+Caveat: perfect foresight of the deficit series, like everything else in this engine. A
+real operator forecasts. And it does not fix the battery tiers — the long-duration
 allocation problem is untouched and still needs the LP.
 
 `audit.py` pins it (43 -> 44).
@@ -2988,29 +2988,29 @@ allocation problem is untouched and still needs the LP.
 Assembling the storage summary produced a 74% co-location uplift at today's build against
 a price spread of R14/MWh. Inconsistent on its face, so I bounded it.
 
-**TEST: 100 MW plant, 50 MW / 200 MWh battery, 24 rising prices R400-R2,240.** The
+**test: 100 MW plant, 50 MW / 200 MWh battery, 24 rising prices R400-R2,240.** The
 battery can move at most 200 MWh a day; across the day's R1,840 spread that caps the
 uplift at R153/MWh. The function returned **R199**.
 
-**THE FAULT:** the greedy tracked `soc`, which after each matched charge/discharge pair
+**the fault:** the greedy tracked `soc`, which after each matched charge/discharge pair
 returned to exactly its starting value — `take*eff - give == 0` by construction — so the
-`(E - soc)` capacity cap NEVER BOUND and the battery cycled without limit within a day.
+`(E - soc)` capacity cap never bound and the battery cycled without limit within a day.
 
 Fixed with an explicit daily energy budget: `moved` accumulates charge energy and stops
 at one full cycle. Now R113 against the R153 bound.
 
-### WHAT THIS DOES AND DOES NOT AFFECT
+### what this does and does not affect
 
-- **The capture-rate panel's hybrid column USED the faulty function.** Its figures have
+- **The capture-rate panel's hybrid column used the faulty function.** Its figures have
   moved and are now physically bounded.
-- **RESULTS.md's hybrid table did NOT** — that came from `hybrid.js`, the full-year
+- **results.md's hybrid table did not** — that came from `hybrid.js`, the full-year
   price-taker LP, which is a different implementation and correctly capacity-constrained.
-- **The greedy-vs-LP validation was re-run 31 Aug and HOLDS**: within 4.7% across twelve
+- **The greedy-vs-LP validation was re-run 31 Aug and holds**: within 4.7% across twelve
   cases, conservative in eleven. The panel's numbers can be quoted again.
-- **But re-running the LP changed the published hybrid finding.** RESULTS.md now reports
-  a U-SHAPE, not a rising curve — see below.
+- **But re-running the LP changed the published hybrid finding.** results.md now reports
+  a U-shape, not a rising curve — see below.
 
-### THE LESSON
+### the lesson
 
 The bug produced a plausible number. Nothing in the suite caught it, no review would have
 caught it, and I had already "validated" the function against an LP and recorded it as
@@ -3019,7 +3019,7 @@ the answer to that.** For any heuristic that trades energy, compute the bound fi
 
 ---
 
-## The hybrid finding was wrong in SHAPE, not just level — corrected 31 Aug 2026
+## The hybrid finding was wrong in shape, not just level — corrected 31 Aug 2026
 
 Re-running the LP with the audited constants overturned a published conclusion.
 
@@ -3029,23 +3029,23 @@ solar uplift from a 100%-of-plant battery
   corrected           2026 +130%      2030   +8%      2035  +386%
 ```
 
-**The value is U-SHAPED, not rising.** Co-location is worth a great deal now, very little
+**The value is U-shaped, not rising.** Co-location is worth a great deal now, very little
 in 2030, and a great deal again by 2035.
 
-Arbitrage pays for VOLATILITY, and volatility has two different causes at the two ends.
-2026 is volatile from SCARCITY — coal sets the price most hours, diesel sets it in the
-tight ones. 2030 is COMFORTABLE, with storage built alongside 41 GW of VRE, so spreads
-collapse. 2035 is volatile from SURPLUS — midday solar worth nothing, evening scarcity
+Arbitrage pays for volatility, and volatility has two different causes at the two ends.
+2026 is volatile from scarcity — coal sets the price most hours, diesel sets it in the
+tight ones. 2030 is comfortable, with storage built alongside 41 GW of vre, so spreads
+collapse. 2035 is volatile from surplus — midday solar worth nothing, evening scarcity
 back.
 
-**WHY THE ORIGINAL WAS WRONG:** it was measured before today's corrections. Coal capacity
+**why the original was wrong:** it was measured before today's corrections. Coal capacity
 5.8% too high, imports more than double reality, availability three points optimistic —
 together they suppressed the scarcity pricing that co-location monetises, so 2026 looked
 flat when it is not.
 
-**THE CONSEQUENCE FOR ADVICE IS THE OPPOSITE OF WHAT I WROTE.** "Storage becomes valuable
-later" is wrong. It is valuable NOW for one reason, briefly less so, then valuable again
-for the OPPOSITE reason — and the two are not the same trade or the same financing case.
+**the consequence for advice is the opposite of what I wrote.** "Storage becomes valuable
+later" is wrong. It is valuable now for one reason, briefly less so, then valuable again
+for the opposite reason — and the two are not the same trade or the same financing case.
 
 This is the clearest demonstration yet of why the calibration work matters: three
 constant corrections, none individually dramatic, inverted a headline conclusion.
@@ -3065,36 +3065,36 @@ capture asymmetry                  HOLDS   wind 96-106%       wind 98%
 demand response optimum            HOLDS   7.5%, reverses     7.5%, reverses
 ```
 
-**IRON-AIR IS THE STRONGEST.** July gas is identical to the megawatt-hour with and
+**iron-air is the strongest.** July gas is identical to the megawatt-hour with and
 without 20 GW of iron-air, exactly as before. The level rose 41% with the corrections and
 the finding did not move at all.
 
-**COAL FLEXIBILISATION** keeps its direction and roughly its magnitude: the penalty was
+**coal flexibilisation** keeps its direction and roughly its magnitude: the penalty was
 +1,128 GWh and is now +1,418.
 
-**CAPTURE ASYMMETRY** — re-run properly 31 Aug against the published scenario (no
+**capture asymmetry** — re-run properly 31 Aug against the published scenario (no
 storage, same build points). **It holds**: wind 96-107% across the range, solar falls to
 2.7% against a published 2.5%, and four of five rows reproduce within two points.
 
-BUT THE FIRST ROW MOVED. Today's fleet was published at 98.4% solar capture against a
+But the first row moved. Today's fleet was published at 98.4% solar capture against a
 R755 mean; it now reads 75.7% against R999. The corrections revealed scarcity pricing the
-old constants suppressed, and the new expensive hours are EVENING hours when solar does
+old constants suppressed, and the new expensive hours are evening hours when solar does
 not produce. **Solar already earns a quarter below the market average today**, before any
 cannibalisation from new build — the published version showed near-parity and understated
 the starting point.
 
-### AND A MISTAKE OF MINE THAT THE FILE'S OWN RULE CAUGHT
+### and A mistake of mine that the file'S own rule caught
 
-I first re-tested demand response by sweeping `drShiftPct` in a NO-GAS scenario measuring
-UNSERVED ENERGY, and got a monotonic improvement with no optimum. I was one step from
+I first re-tested demand response by sweeping `drShiftPct` in a no-gas scenario measuring
+Unserved energy, and got a monotonic improvement with no optimum. I was one step from
 recording that the finding had broken.
 
-It had not. The published result was measured on the DASHBOARD scenario against AVERAGE
-COST. Re-run as published, it reproduces exactly.
+It had not. The published result was measured on the dashboard scenario against average
+Cost. Re-run as published, it reproduces exactly.
 
-**"A number without its scenario is not a result" is the first line of RESULTS.md**, and
+**"A number without its scenario is not a result" is the first line of results.md**, and
 it exists for exactly this. It protected the finding from its own author re-testing it
-carelessly. Any re-verification must reproduce the ORIGINAL scenario and the ORIGINAL
+carelessly. Any re-verification must reproduce the original scenario and the original
 metric, or it is testing something else.
 
 ---
@@ -3107,22 +3107,22 @@ solar 2026-2035    743 -> 133       756 -> 139      -82% both
 wind  2026-2035    758 -> 313       977 -> 323      -59% -> -67%
 ```
 
-**SOLAR IS UNCHANGED** across all three paces: -16%, -26%, -82%, exactly as published.
-**WIND'S STARTING POINT MOVES 29%**, from R758 to R977, and its decline steepens.
+**solar is unchanged** across all three paces: -16%, -26%, -82%, exactly as published.
+**wind'S starting point moves 29%**, from R758 to R977, and its decline steepens.
 
 Same cause as the capture and hybrid corrections: the model now prices evening scarcity,
-and WIND PRODUCES IN THOSE HOURS WHILE SOLAR DOES NOT. Wind therefore starts 29% above
+and wind produces in those hours while solar does not. Wind therefore starts 29% above
 solar today, where the published version had them within 2% of each other.
 
-**THIS CHANGES THE ADVICE.** A wind project's merchant case is stronger today than
+**this changes the advice.** A wind project's merchant case is stronger today than
 published and erodes faster; a solar project's was always weaker and erodes on the same
 path. The published version made them look like near-identical assets facing different
 futures. They are different assets today.
 
-### PATTERN ACROSS THE WHOLE RE-AUDIT
+### pattern across the whole re-audit
 
-Four findings re-run after the constant corrections. Every one holds in DIRECTION. Three
-moved in LEVEL, and all three moved for the same reason: the model previously had too
+Four findings re-run after the constant corrections. Every one holds in direction. Three
+moved in level, and all three moved for the same reason: the model previously had too
 much capacity, too many imports and too generous availability, so it could not see the
 evening scarcity South Africa actually prices.
 
@@ -3135,7 +3135,7 @@ merchant trajectory         solar unchanged; WIND +29% at the start
 ```
 
 The corrections were three constants and none was individually dramatic. Together they
-changed what the model says about the PRESENT, while leaving what it says about 2035
+changed what the model says about the present, while leaving what it says about 2035
 almost untouched. **Anything anchored on today's prices needed re-running; anything
 anchored on a future build did not.**
 
@@ -3143,46 +3143,46 @@ anchored on a future build did not.**
 
 ## The full model now prices its own solution — 31 Aug 2026
 
-**THE PROBLEM, found by asking whether every box updates.** `runMIP` called `render()`,
-which refreshes ONE panel. The normal slider path calls `run()`, which refreshes FIFTEEN.
+**the problem, found by asking whether every box updates.** `runMIP` called `render()`,
+which refreshes one panel. The normal slider path calls `run()`, which refreshes fifteen.
 Measured: changing the result and calling `render()` alone updates 1 of 28 panel bodies;
 `run()` updates 8.
 
 So after "Run the full model" the KPIs, energy mix, dispatch chart and map showed the MIP,
 while the shadow price, capture rate, capture forecast, capacity payments, both battery
-panels and the comparison kept showing HEURISTIC output — with nothing on the page saying
+panels and the comparison kept showing heuristic output — with nothing on the page saying
 so. The banner claimed the KPIs were network-aware and was silent about everything else.
 
 The code knew: `mipRes` carried `pricesFromInstant: true` with a comment warning that
 panels reading those prices "must say which engine they are showing". **The flag was set
 and never read.**
 
-### THE FIX: A PRICING RUN, WHICH IS WHAT REAL MARKETS DO
+### the fix: A pricing run, which is what real markets do
 
 A MIP has no duals — integer commitment makes it non-convex. The standard answer, used by
-ERCOT, PJM and MISO, is to fix the commitment binaries to the MIP's own solution and
+Ercot, pjm and miso, is to fix the commitment binaries to the MIP's own solution and
 re-solve the remainder as an LP. That problem is convex, so its duals exist and are
-CONSISTENT with the commitment chosen.
+Consistent with the commitment chosen.
 
 `buildDayLP` takes a `fixedOn` argument: supplied, it pins each commitment via its bounds
 and emits no Binary block. The worker solves it per day, reads the duals off the regional
 balance rows, and returns `mipPrice`.
 
 The price-derived panels are now refreshed from the MIP result, each wrapped so one
-failing panel cannot discard an expensive solve. The banner reports COVERAGE — how many
+failing panel cannot discard an expensive solve. The banner reports coverage — how many
 of 8,760 hours carry a real dual — and says the rest keep heuristic prices.
 
-**ZERO MEANS ABSENT, NOT FREE.** A day that failed to solve, or whose dual mapping did not
+**zero means absent, not free.** A day that failed to solve, or whose dual mapping did not
 verify, leaves zeros; those hours keep the instant price rather than reporting R0, which
 is a real value in a curtailed hour and must not be faked.
 
-CAVEAT CARRIED IN THE CODE: fixed-commitment prices do not recover start-up costs, which
+Caveat carried in the code: fixed-commitment prices do not recover start-up costs, which
 is exactly why real markets pay uplift on top. Same distinction the model already draws —
 start-up is in the system cost, not in the price.
 
-### AND A TRAP IN THE FILE'S OWN STRUCTURE
+### and A trap in the file'S own structure
 
-`buildDayLP` lives inside a WORKER TEMPLATE LITERAL. My comment used backticks around an
+`buildDayLP` lives inside a worker template literal. My comment used backticks around an
 identifier, which terminated the literal and broke the page — `validate_solve` reported
 "page errors during load: Unexpected identifier". Lint passed, because the file is still
 valid HTML. **Never put a backtick in a comment inside the worker block.**
@@ -3207,12 +3207,12 @@ peak dearer than off-peak   true
 **It works.** The off-peak price lands within 1.3% of the marginal unit's cost, which is
 what a shadow price on an energy balance should give.
 
-### TWO THINGS THE TEST TAUGHT, both about the test rather than the model
+### two things the test taught, both about the test rather than the model
 
-**A shed hour prices at the slack cost, and that is CORRECT.** The first run showed
+**A shed hour prices at the slack cost, and that is correct.** The first run showed
 R25,842 at an off-peak hour, which looked like nonsense. It was not: that scenario could
 not serve region 1, so unserved energy set the price at the R50,000 slack cost, and the
-average across two regions landed between. The dual was right and the SCENARIO was
+average across two regions landed between. The dual was right and the scenario was
 infeasible. A price far above any unit's marginal cost is the model saying it is shedding.
 
 **Extraction from a worker template literal needs unescaping.** `buildDayLP` lives inside
@@ -3221,9 +3221,9 @@ verbatim, every LP came out with literal backslash-n and HiGHS returned `Empty` 
 diagnostic. Same trap as the backtick that broke the page: **the worker block is not
 ordinary source and cannot be read as though it were.**
 
-### WHAT IS STILL NOT VERIFIED
+### what is still not verified
 
-This tests the MECHANISM on a two-region toy day. It does not establish COVERAGE — how
+This tests the mechanism on a two-region toy day. It does not establish coverage — how
 many of 8,760 hours get a dual in a real run, which depends on how many days solve within
 the 25-second limit. The banner reports that figure at run time, so the honest position is
 that the machinery is proven and the coverage is observable but unmeasured here.
@@ -3241,38 +3241,38 @@ knee            ~2.5 GW           ~3.8 GW
 fall              74.5%            64.8%
 ```
 
-**SOUTH AFRICA IS ALREADY PAST THE KNEE, NOT APPROACHING IT.** Existing fleet 3,700 MW
+**south africa is already past the knee, not approaching it.** Existing fleet 3,700 MW
 against a knee near 2,500. The published version said the country sat "almost exactly at
 the knee" and called 3,700 MW "the last point at which a new battery earns the full
 ancillary rate". Both are one revision out of date — a battery built today already earns a
-REDUCED rate.
+Reduced rate.
 
-CAUSE: the reserve rebuild of 30 Aug consolidated the battery panel's duplicate reserve
+Cause: the reserve rebuild of 30 Aug consolidated the battery panel's duplicate reserve
 constants onto the unit commitment's definition and cut the requirement ~30%, from 1,768
 to 1,263 MW. A smaller requirement saturates with a smaller fleet.
 
-**THIS BEARS ON THE EPP SUBMISSION**, which used the shrinking-ancillary-pot argument
-under Policy Position 9. The direction is unchanged and the force is GREATER — the pot is
+**this bears on the EPP submission**, which used the shrinking-ancillary-pot argument
+under Policy Position 9. The direction is unchanged and the force is greater — the pot is
 smaller and shrinking sooner than the submission stated. Nothing filed is wrong; it is
 understated. Worth a line if there is any follow-up correspondence.
 
-### AND I NEARLY REPORTED A 60% ERROR THAT WAS MINE
+### and I nearly reported A 60% error that was mine
 
 The first re-run showed ancillary at 78,840 against a published 197,100 and I was about to
 record a large discrepancy. The ratio was exactly 60/150: I had set `asReserveRMWh` to an
-arbitrary 60 while the published run used the FIXED default of 150. Scaled back, the
+arbitrary 60 while the published run used the fixed default of 150. Scaled back, the
 match was exact to the rand.
 
 **Third time today** that re-testing a finding in a scenario other than the one it was
 measured in nearly produced a false correction. The pattern is now unmistakable: reproduce
-the ORIGINAL scenario and the ORIGINAL metric, and check the ratio before believing a
+the original scenario and the original metric, and check the ratio before believing a
 level shift.
 
 ---
 
 ## validate_findings.js — the findings, re-run against their own scenarios
 
-Built 31 Aug 2026 after THREE near-miss false corrections in one session, every one from
+Built 31 Aug 2026 after three near-miss false corrections in one session, every one from
 re-testing a published result in a scenario other than the one it was measured in:
 
 ```
@@ -3283,7 +3283,7 @@ battery saturation  run at an arbitrary reserve price of 60 against a published 
 capture asymmetry   run WITH storage against a published run with none.
 ```
 
-RESULTS.md opens with "a number without its scenario is not a result". **That rule lived
+Results.md opens with "a number without its scenario is not a result". **That rule lived
 in prose, and prose does not run.** This encodes the scenario next to the number, so a
 re-check cannot silently test something else.
 
@@ -3296,16 +3296,16 @@ capture        wind 97% · solar 2.7%, NO STORAGE
 ancillary      knee ~3.0 GW against a 3.7 GW fleet, reserve price R150/MWh
 ```
 
-TOLERANT BY DESIGN. The point is not to freeze values — the calibration work moved
-several legitimately today — but to catch a finding whose DIRECTION or SHAPE has changed
+Tolerant by design. The point is not to freeze values — the calibration work moved
+several legitimately today — but to catch a finding whose direction or shape has changed
 without anyone noticing.
 
-### VERIFIED IT CAN FAIL, twice
+### verified it can fail, twice
 
 Neutralising `drShiftPct` gives 5/7 with both demand-response checks failing and the
 scenario named in the message.
 
-Setting iron-air round-trip efficiency to 95% did NOT break its check — a 0.9% change
+Setting iron-air round-trip efficiency to 95% did not break its check — a 0.9% change
 against a 1% tolerance. That is not the check being loose: **even a 95%-efficient
 long-duration store barely touches July gas**, which is the finding being more robust
 than its own headline claims.
@@ -3315,7 +3315,7 @@ than its own headline claims.
 ## Locational transmission signal re-verified — 31 Aug 2026
 
 The finding that carried most weight in the EPP submission, re-run as published: default
-scenario, MASTERPLAN build pace, regional build LP, duals on the `hw_`/`hp_` headroom rows
+scenario, masterplan build pace, regional build LP, duals on the `hw_`/`hp_` headroom rows
 in the final year.
 
 ```
@@ -3326,26 +3326,26 @@ wind dual, lowest non-0     53,841   (published    228,814)
 spread                          66x  (published        48x)
 ```
 
-**THE SPREAD HOLDS AND IS LARGER.** The submission described a "fiftyfold spread" in
+**the spread holds and is larger.** The submission described a "fiftyfold spread" in
 measured shadow prices under Policy Position 20. It is now 66-fold. **Nothing filed is
 wrong and the argument is stronger.**
 
-LEVELS FELL ABOUT THREEFOLD, which is consistent with the constant corrections: a system
+Levels fell about threefold, which is consistent with the constant corrections: a system
 with less coal capacity, fewer imports and lower availability values an extra megawatt of
-connection headroom differently. The RATIO between regions is the claim, and ratios
+connection headroom differently. The ratio between regions is the claim, and ratios
 survived.
 
 The row-count match reproducing exactly — 119,225 both ways — is the check that the dual
 mapping is sound, and it is the same number as on 29 Aug.
 
-### NOT VERIFIED HERE
+### not verified here
 
-My probe did not recover REGION NAMES from the builder's row objects, so the sharper half
-of the finding — that the optimiser builds the most wind where the RESOURCE is worst —
+My probe did not recover region names from the builder's row objects, so the sharper half
+of the finding — that the optimiser builds the most wind where the resource is worst —
 is untested by this run. The duals are per region index only. Re-running with names
 resolved would close it.
 
-### A NOTE ON COST
+### A note on cost
 
 This single verification took 813 seconds of solve plus about twenty minutes of setup,
 against roughly two minutes for each of the dispatch-based re-runs. The build LP is a
@@ -3367,14 +3367,14 @@ worst hour            2,055 MW short  -> stage 3
 Eskom FY2026 audited  36 GWh          0.02% of demand
 ```
 
-**THE MODEL IS SIX TIMES MORE OPTIMISTIC THAN REALITY**, not pessimistic. The corrections
+**the model is six times more optimistic than reality**, not pessimistic. The corrections
 of 31 Aug — coal capacity down 5.8%, imports down 52%, availability down three points —
-moved unserved energy from ~0 toward Eskom's audited outturn. That is an IMPROVEMENT in
+moved unserved energy from ~0 toward Eskom's audited outturn. That is an improvement in
 realism. The display was not ready for a non-zero number.
 
-### THREE DISPLAY FAULTS, ALL THE SAME MISTAKE
+### three display faults, all the same mistake
 
-**1. System status keyed on `maxStage` ALONE.** One bad hour in 8,760 flipped the whole
+**1. System status keyed on `maxStage` alone.** One bad hour in 8,760 flipped the whole
 board to "Stage 3". Now carries frequency: `Stable` at zero, `Tight hours` under 0.05% of
 hours, `Constrained` under 1%, and a stage number only above that. Today reads
 **Constrained**; the 2023 crisis scenario still reads Stage 8 at 4,032 shortage hours, and
@@ -3387,7 +3387,7 @@ which is what created the visible contradiction. Now shows one decimal below 10 
 what the label says, but the cell now carries a tooltip stating how many hours of 8,760
 fall short. **A peak with no frequency beside it is not a measurement anyone can act on.**
 
-### THE GENERAL LESSON
+### the general lesson
 
 A dashboard that rounds a real number to zero to stay tidy will eventually contradict
 another cell that did not round. The contradiction is the useful signal — it was visible
@@ -3400,17 +3400,17 @@ calibration work that exposed it.
 
 Auditing the rest of the headline cells after the Stage 3 fault found two more things.
 
-### 1. I FIXED THE ROUNDING IN ONE PLACE OF THREE
+### 1. I fixed the rounding in one place of three
 
 The board cell now read **0.1 GWh** while the risk panel beneath it still read **0 GWh** —
 a new contradiction, created by the fix for the old one, within the hour.
 
-Cause: `meanShed < 1 ? '0' : ...` appeared THREE times with two different roundings. Now
+Cause: `meanShed < 1 ? '0' : ...` appeared three times with two different roundings. Now
 one `_shedFmt` used at all three sites. **Rule 6 applies to display logic as much as to
 constants:** a number formatted two ways in two places will eventually disagree, and the
 first fix is what exposes it.
 
-### 2. THE BOARD MIXES TWO WEATHER BASES, AND SAID NOTHING
+### 2. the board mixes two weather bases, and said nothing
 
 ```
 deterministic run (lamps, status word)     5.5 GWh unserved
@@ -3419,32 +3419,32 @@ Monte Carlo ensemble mean (expected shed)  0.1 GWh
 
 **Fiftyfold apart, and it is not risk — it is weather basis.** The deterministic run uses
 the default profile, whose wind series is the Eskom metered feed rescaled. The ensemble
-substitutes REAL weather years drawing MERRA-2 based wind, and STATE.md already records a
+substitutes real weather years drawing MERRA-2 based wind, and state.md already records a
 documented bias between the two.
 
 So the two cells are legitimately different quantities, sitting side by side with nothing
 saying so. **That is the same fault as Stage 3 beside 0 GWh** — not a wrong number, but
 two right numbers presented as though comparable.
 
-STATED, NOT RECONCILED. Changing which weather the ensemble draws would move every figure
+Stated, not reconciled. Changing which weather the ensemble draws would move every figure
 in the risk panel, and that is a decision rather than a fix. The cell now carries a
 tooltip naming the difference and its rough size.
 
-**TO DO:** decide whether the deterministic run and the risk ensemble should share a
+**to do:** decide whether the deterministic run and the risk ensemble should share a
 weather basis. If they should, the deterministic run is the one to change — the ensemble's
 ten real years are better evidence than one rescaled series.
 
-### CURTAILMENT IS HONESTLY ZERO
+### curtailment is honestly zero
 
 Checked, because it was the obvious next candidate for a rounding artefact: the underlying
 value is 0.0000 TWh, so "0.0 TWh/yr" is accurate rather than rounded-down.
 
 ---
 
-## Why "Constrained" under Today — a REAL dispatch bug, located 31 Aug 2026
+## Why "Constrained" under Today — a real dispatch bug, located 31 Aug 2026
 
 Asked why the board shows the system constrained. The five shortage hours are not a
-capacity problem. **Coal is dispatched roughly 7 GW BELOW its own availability while the
+capacity problem. **Coal is dispatched roughly 7 GW below its own availability while the
 system sheds load.**
 
 ```
@@ -3460,20 +3460,20 @@ system sheds load.**
 coal available all day: 25,800 MW. Highest coal reached: 19,765.
 ```
 
-**COAL GOES DOWN AS DEMAND GOES UP.** That is backwards, and it happens on 21 January -
+**coal goes down as demand goes up.** That is backwards, and it happens on 21 January -
 summer, at 60% of the annual peak. At the actual June peak of 31,595 MW coal runs 25,365
 and there is no shortage at all, so the fleet can clearly do it.
 
-### WHAT IT IS NOT
+### what it is not
 
 - **Not the pumped-storage peak reservation added earlier today.** Disabling it gives
   identical results: 5 hours, 5.463 GWh, stage 3.
 - **Not capacity.** 25,800 coal + 3,400 diesel + 2,900 pumped + 472 imports + 1,700 wind
   is about 34 GW against a 28 GW load.
 - **Not the constant corrections.** They raised the shortage from ~0 toward Eskom's
-  audited 36 GWh, which is a realism gain. The DISPATCH fault below is separate.
+  audited 36 GWh, which is a realism gain. The dispatch fault below is separate.
 
-### THE SUSPECT, narrowed
+### the suspect, narrowed
 
 Coal holds flat in four-hour blocks - 19,106 for 492-495, then 17,906 for 496-499 - so the
 level is set by `committedMW` around index.html:5446, not by the hourly ceiling. Outside
@@ -3485,7 +3485,7 @@ So either `need24` is not seeing that hour, or a decommitment floor from the pre
 solar window is holding the block down. `rampBuffer` is 15% of the trough-to-night swing,
 which on a strong summer solar day may be too small to get back up.
 
-### DIAGNOSED — it is a SEEDED OUTAGE DRAW, not a dispatch fault
+### diagnosed — it is a seeded outage draw, not a dispatch fault
 
 Instrumented the commitment terms. The chain, in order:
 
@@ -3495,11 +3495,11 @@ unit commitment committed    25,611 MW   correct - the UC committed nearly every
 cAvail seen by dispatch      17,906 MW   45.1% of installed, against a 65% EAF mean
 ```
 
-The commitment logic is RIGHT and was never the problem. `cAvail` is capped by
+The commitment logic is right and was never the problem. `cAvail` is capped by
 `unitOutage`, a seeded unit-level Markov outage path that is **on by default**
 (`outageUnitLevel ?? 1`, `outageSeed 20260816`). Hour 496 lands in a deep outage draw.
 
-### THE SHIPPED SEED IS THE WORST OF TEN TESTED
+### the shipped seed is the worst of ten tested
 
 ```
 seed 20260816 (shipped)   5 hours   5.46 GWh   stage 3
@@ -3513,11 +3513,11 @@ smooth derate (off)       0 hours   0.00 GWh   stage 0
 range 0.00 to 5.46 GWh · median 0.28 · HALF the seeds shed nothing
 ```
 
-**THE BASE CASE IS ONE RANDOM DRAW PRESENTED AS THE ANSWER**, and it happens to sit at
+**the base case is one random draw presented as the answer**, and it happens to sit at
 the tail rather than the middle. That is the real fault, and it is the same class as
 everything else found today: a number shown without the uncertainty that generated it.
 
-### THREE OPTIONS, AND THIS IS A DECISION RATHER THAN A FIX
+### three options, and this is A decision rather than A fix
 
 1. **Change the seed.** Cheapest, and dishonest - it hides the variance rather than
    showing it.
@@ -3527,19 +3527,19 @@ everything else found today: a number shown without the uncertainty that generat
    one seeded outage path with a stated range. Smallest change, and consistent with how
    this project handles every other uncertainty.
 
-**DONE 31 Aug 2026 — option 2, the median.** See below.
+**done 31 Aug 2026 — option 2, the median.** See below.
 
-NOTE FOR CONTEXT: Eskom's audited FY2026 outturn was 36 GWh unserved. Every seed above,
+Note for context: Eskom's audited FY2026 outturn was 36 GWh unserved. Every seed above,
 including the worst, is more optimistic than what actually happened.
 
 ---
 
 ## Adequacy ensemble: the board is now a median, not a draw — 31 Aug 2026
 
-The board headline came from ONE seeded outage path, and that path was the worst of ten
-tested. It now reports the MEDIAN of nine draws.
+The board headline came from one seeded outage path, and that path was the worst of ten
+tested. It now reports the median of nine draws.
 
-### SIZED BEFORE BUILDING — only adequacy needed it
+### sized before building — only adequacy needed it
 
 ```
 metric          spread across seeds
@@ -3565,23 +3565,23 @@ crisis 2023    Stage 8   3,903 hrs, stage 8  9,929-13,089 GWh
 **Today reads Stable**, which is what five of ten seeds and the smooth-derate control all
 gave. The escalation still works where it should.
 
-### WEATHER IS HELD FIXED, deliberately
+### weather is held fixed, deliberately
 
-Unlike the 60-year risk panel, which varies weather AND outages, this varies outages only
+Unlike the 60-year risk panel, which varies weather and outages, this varies outages only
 on the scenario's own weather. It answers one question — how much of the shed is the draw?
 — and stays consistent with every other panel on the page.
 
-### A RACE I CREATED AND THEN REMOVED
+### A race I created and then removed
 
 Both the risk Monte Carlo and the new ensemble wrote `bdShed`, and whichever finished last
 won. That put a 60-year weather-and-outage mean in a cell beside a status word derived
 from the scenario's own weather. **One owner per cell:** the ensemble owns the board, the
 Monte Carlo keeps its mean in the risk panel where it is labelled.
 
-### ON THE ESKOM COMPARISON — I was right for the wrong reason to be confident
+### on the eskom comparison — I was right for the wrong reason to be confident
 
 Checked footnote 4 of the energy balance: the 36 GWh is *"an estimate by the System
-Operator based on forecast versus actual demand"*, so it IS generation-side load shedding
+Operator based on forecast versus actual demand"*, so it is generation-side load shedding
 and curtailment. The distribution-level problem is **load reduction**, which Eskom reports
 separately and has eliminated in seven provinces. The comparison stands - but it was worth
 checking rather than repeating.
@@ -3604,9 +3604,9 @@ ten measured seeds, unserved GWh
 
 **A board reading "Stable" off the median understated exactly as badly as the single draw
 overstated.** The median of a distribution with half its mass at zero is near zero, however
-bad the other half is - and adequacy is a TAIL question.
+bad the other half is - and adequacy is a tail question.
 
-### NOW ON THE STANDARD PLANNING METRICS
+### now on the standard planning metrics
 
 Both are expectations, which is what a skewed distribution needs and what a planner
 recognises:
@@ -3621,18 +3621,18 @@ EAF 58         Constrained         94.0       119.29        100%        stage 6,
 crisis 2023    Stage 8          3,883.9    11,610.51        100%        stage 8, 13,089
 ```
 
-Status keyed on LOLE with STATED thresholds so they can be argued with: under 1 hour a
+Status keyed on LOLE with stated thresholds so they can be argued with: under 1 hour a
 year is a system that does not shed, up to 24 is the criterion older South African
-planning has used, beyond 200 it is shedding. The lamps show the WORST draw, matching
+planning has used, beyond 200 it is shedding. The lamps show the worst draw, matching
 their own label, while the status and shed cell report expectations.
 
 **Today reads "Tight hours", LOLE 1.4 h/yr, EUE 1.27 GWh, 44% of draws shedding.** That is
 the honest description: not a system in crisis, not a system with nothing to watch.
 
-### THE LESSON, which is the third of its kind today
+### the lesson, which is the third of its kind today
 
 One draw overstated. The median understated. Both were single numbers standing in for a
-distribution. The fix was not a better point estimate but reporting the DISTRIBUTION -
+distribution. The fix was not a better point estimate but reporting the distribution -
 expectation, spread, and share of draws affected - which is what the tooltip now carries.
 
 ---
@@ -3654,7 +3654,7 @@ Nine was chosen for a speed cost that turned out to be eight times smaller than 
 **Raised to 48**, about 2.6 s async, which brings the standard error to roughly a third
 of the mean.
 
-### THE LARGER SAMPLE FOUND A HEAVIER TAIL
+### the larger sample found A heavier tail
 
 ```
                  9 draws        48 draws
@@ -3667,17 +3667,17 @@ Nine draws had not seen the tail at all. The worst case is more than three times
 than the sample suggested, which is exactly what a skewed distribution does to a small
 sample.
 
-### IT STILL DOES NOT CONVERGE, AND THE BOARD SAYS SO
+### it still does not converge, and the board says SO
 
 Closing the gap properly needs hundreds of draws. Rather than pretend, the tooltip now
-carries the STANDARD ERROR: "EUE 1.71 GWh, standard error +/- 0.55". A reader who sees
+carries the standard error: "EUE 1.71 GWh, standard error +/- 0.55". A reader who sees
 that knows not to quote 1.71 to three figures.
 
 **That is the same correction as the two before it.** One draw was a point estimate. The
 median was a point estimate. The mean is also a point estimate - the difference is that it
 now arrives with its own uncertainty attached.
 
-### FOR CONTEXT
+### for context
 
 Eskom's audited FY2026 outturn was 36 GWh. The worst of 48 draws is 18.63 GWh, so the
 model remains optimistic against what actually happened even at its tail.
@@ -3686,7 +3686,7 @@ model remains optimistic against what actually happened even at its tail.
 
 ## Weather basis reconciled, and the ensemble finally has a harness — 31 Aug 2026
 
-### 1. THE BOARD WAS ANSWERING A NARROWER QUESTION THAN ITS LABEL
+### 1. the board was answering A narrower question than its label
 
 Decomposed the uncertainty on the default scenario, 30 draws each:
 
@@ -3696,8 +3696,8 @@ outage AND weather vary           EUE 2.23 GWh   LOLE 2.9 h    <- 56% higher
 weather varies, outage fixed      EUE 6.76 GWh   LOLE 8.3 h
 ```
 
-**Weather is the LARGER driver**, and holding it fixed understated the risk by about a
-third. The board now varies both, which also puts it on the SAME BASIS as the 60-year
+**Weather is the larger driver**, and holding it fixed understated the risk by about a
+third. The board now varies both, which also puts it on the same basis as the 60-year
 risk panel below - the two were previously measuring different things on the same page,
 which was the original complaint.
 
@@ -3712,7 +3712,7 @@ today now reads   LOLE 3.0 h/yr · EUE 2.36 +/- 0.73 GWh · 63% of draws shed
 It degrades gracefully: if the multi-year weather file does not load it reports outage
 risk alone and the tooltip says so.
 
-### 2. EIGHT NEW CHECKS IN validate_consistency (17 -> 25)
+### 2. eight new checks in validate_consistency (17 -> 25)
 
 The ensemble had no coverage, and the pricing run earlier today showed exactly what
 happens to code that ships without a harness ever executing it.
@@ -3726,11 +3726,11 @@ LOLE rises as coal availability falls
 expected unserved energy sits below the worst draw             a mean over the wrong array
 ```
 
-The checks assert PROPERTIES rather than pinning values, because the values legitimately
+The checks assert properties rather than pinning values, because the values legitimately
 move with the draw. Monotonicity is the load-bearing one: it is what breaks if the
 ensemble ever averages the wrong thing.
 
-VERIFIED IT CAN FAIL: setting `ADEQ_N` back to 9 fails the draw-count check with the
+Verified it can fail: setting `ADEQ_N` back to 9 fails the draw-count check with the
 measurement quoted in the message.
 
 ---
@@ -3747,23 +3747,23 @@ Eskom FY2026 audited      36 GWh unserved · 365 consecutive loadshedding-free d
 the model is 15x MORE OPTIMISTIC than the year that actually ran
 ```
 
-### THE LAMPS CHANGED MEANING WHEN I ADDED THE ENSEMBLE
+### the lamps changed meaning when I added the ensemble
 
-"Load shedding · max stage" always meant the worst HOUR within a year. With one
+"Load shedding · max stage" always meant the worst hour within a year. With one
 deterministic year the lamps showed exactly that. **The 48-draw ensemble silently
-redefined it as the worst hour across 48 SIMULATED YEARS** - and the label never changed.
+redefined it as the worst hour across 48 simulated years** - and the label never changed.
 
 ```
 max stage by draw:  stage 0: 18 · stage 1: 17 · stage 2: 9 · stage 3: 2 · stage 5: 2
 median year reaches stage 1 · p90 stage 2 · worst 5
 ```
 
-Five lamps was a 1-in-48 tail on the masthead. **They now show the MEDIAN draw**: one lamp
+Five lamps was a 1-in-48 tail on the masthead. **They now show the median draw**: one lamp
 under Today, five at 58% availability, eight in the 2023 crisis. The tail is not hidden -
 the tooltip gives the worst draw, the share of clean years, and Eskom's actual outturn for
 scale.
 
-### THE PATTERN, FOR THE FOURTH TIME TODAY
+### the pattern, for the fourth time today
 
 Every fault in this sequence has been the same shape: a single number standing in for a
 distribution, and a label that stopped matching what the number meant.
@@ -3791,21 +3791,21 @@ Load shedding · max stage           Load shedding · typical year
 Expected shed                       Expected shed · per year
 ```
 
-The lamps now show the MEDIAN draw, so "max stage" was wrong in the opposite direction
+The lamps now show the median draw, so "max stage" was wrong in the opposite direction
 from before - it read as the worst outcome while showing the typical one. And "Expected
 shed" gave no period, on a board where every other figure is annual.
 
-### THE KPIs ARE ON A DIFFERENT BASIS, AND THAT IS FINE
+### the KPIs are on A different basis, and that is fine
 
 The eight KPI cells come from the single deterministic run, not the ensemble. Checked
 rather than assumed: coal varies 0.2% across seeds, CO2 0.1%, avgCost 1.2%. Those are
-seed-insensitive, so a single draw is the right and cheap choice. Only ADEQUACY needed
+seed-insensitive, so a single draw is the right and cheap choice. Only adequacy needed
 the ensemble, which is what it got.
 
-### A LOOSE END FROM THE EARLIER AUDIT, RESOLVED - AND IT WAS MY ERROR
+### A loose end from the earlier audit, resolved - and it was my error
 
 The board reads "Energy supplied 220 TWh" where I had measured 223.66 and flagged a
-possible discrepancy. `genTWh` correctly EXCLUDES pumped storage and batteries, because
+possible discrepancy. `genTWh` correctly excludes pumped storage and batteries, because
 storage is shifted energy rather than generation and counting it would double-count.
 
 ```
@@ -3817,10 +3817,10 @@ raised it as a suspected fault and it was not.
 
 ---
 
-## The RESULTS.md index had drifted from its own file — 31 Aug 2026
+## The results.md index had drifted from its own file — 31 Aug 2026
 
 Today's re-verification changed several published findings, so the ranked index at the top
-of RESULTS.md no longer described what sat beneath it. **Three entries were stale and one
+of results.md no longer described what sat beneath it. **Three entries were stale and one
 contradicted its own section.**
 
 ```
@@ -3834,7 +3834,7 @@ locational spread   ADDED to Tier 2 - 66-fold, independently re-verified
 
 The header also read "Fifteen sections follow" against nineteen.
 
-### AND THE CORRECTION WAS ITSELF WRONG
+### and the correction was itself wrong
 
 I changed it to "Twenty". The file has nineteen. **That is precisely why this is now a
 check rather than a habit** - a hand-written count that nobody verifies is worse than no
@@ -3843,9 +3843,9 @@ count, because it looks checked.
 `validate_docs.py` now asserts the stated count matches the number of `##` sections.
 Verified it fails: reverting to "Fifteen" reports `index says "Fifteen" (15), file has 19`.
 
-### A DUPLICATE CHECK, CAUGHT BY ITS OWN FAILURE
+### A duplicate check, caught by its own failure
 
-I also wrote a pointer-resolution check. Breaking a heading to test it fired TWO failures -
+I also wrote a pointer-resolution check. Breaking a heading to test it fired two failures -
 an equivalent check already existed twenty lines above. Removed, with a note in its place.
 
 **Rule 6 applies to harnesses as much as to constants.** Two checks of the same thing
@@ -3858,7 +3858,7 @@ drift apart, and the weaker one starts passing while the reader assumes both sti
 The section at the top of this file tells a reader what may be quoted. After a day that
 moved several published levels, it described a model that no longer existed.
 
-### ADDED TO "DO NOT QUOTE"
+### added to "DO NOT quote"
 
 ```
 hybrid uplift rising    the curve is U-SHAPED: +130% today, +8% in 2030, +386% by 2035
@@ -3871,10 +3871,10 @@ any single-draw shed    the shipped outage seed alone gave the worst of ten test
 All five were measured on constants that suppressed the evening scarcity South Africa
 actually prices. Adequacy moved into the "solid" block, since it is now reported as LOLE
 and EUE over 48 draws with a stated standard error rather than one draw. The storage weak
-spot was narrowed: pumped storage now carries a peak reservation, so the CHARGING side and
+spot was narrowed: pumped storage now carries a peak reservation, so the charging side and
 the allocation between chemistries are what remain.
 
-### THE R285BN FRONTIER, THE LAST PRICE-BASED FINDING NOT RE-RUN
+### the R285BN frontier, the last price-based finding not re-run
 
 ```
 scenario                        Total now   published
@@ -3885,12 +3885,12 @@ no gas, 60W/60S                      299         305
 no gas, 80W/40S                      308         315
 ```
 
-**It holds.** Levels fell 3-4%, the ORDERING is unchanged, and 50W/60S remains the single
+**It holds.** Levels fell 3-4%, the ordering is unchanged, and 50W/60S remains the single
 no-gas build that matches the gas scenario - R277 bn against R274 bn, identical at
 R1.32/kWh.
 
-ONE NUANCE RECORDED RATHER THAN GLOSSED: the sign flipped inside the noise. The published
-version had no-gas marginally CHEAPER; it is now marginally DEARER in total and identical
+One nuance recorded rather than glossed: the sign flipped inside the noise. The published
+version had no-gas marginally cheaper; it is now marginally dearer in total and identical
 per kWh. A 1% gap either way is below what this model resolves, so the claim is
 **cost-neutral** - which is how it should have been worded originally rather than
 "marginally cheaper".
@@ -3899,27 +3899,27 @@ per kWh. A 1% gap either way is below what this model resolves, so the claim is
 
 ## Session review, and rule 11 — 31 Aug 2026
 
-CALENDAR.md mandates a review every session and today's had not happened.
+Calendar.md mandates a review every session and today's had not happened.
 
-### THE CALENDAR
+### the calendar
 
 Standing checks verified rather than assumed: `profiles.json` is at the repo root
-(356 KB - without it the suite produces eleven false failures across five harnesses), and
-RULES.md read in full.
+(356 kb - without it the suite produces eleven false failures across five harnesses), and
+Rules.md read in full.
 
 **Nearest actionable date is 10 Sep, ten days out**: the NERSA public hearing on Seriti
 Green's trading licence. Registration for oral representations closed 28 Aug; attendance
 and the livestream remain.
 
-**The EPP submission entry now records that today's re-verification STRENGTHENED two of
+**The EPP submission entry now records that today's re-verification strengthened two of
 its four arguments.** Policy Position 20 was filed as a "fiftyfold" spread and is
 sixty-six-fold; Policy Position 9 was filed as approaching the ancillary knee when South
 Africa is already past it. Nothing filed needs correcting - both are understated, and a
 line each would strengthen any follow-up.
 
-### RULE 11: COMPUTE THE BOUND BEFORE BELIEVING THE NUMBER
+### rule 11: compute the bound before believing the number
 
-Today produced one lesson general enough to be durable. For anything that MOVES a
+Today produced one lesson general enough to be durable. For anything that moves a
 quantity - a battery, a corridor, a store, a transfer - work out what it can physically
 do, then check the answer against that.
 
@@ -3929,10 +3929,10 @@ The suite passed, the number was plausible, and it had already been "validated" 
 LP and recorded as agreeing within 4.5%. Reading the code did not reveal it; one line of
 arithmetic did.
 
-### AND THE COUNT DRIFTED AGAIN, IMMEDIATELY
+### and the count drifted again, immediately
 
-Adding an eleventh rule made the RULES.md heading and the CALENDAR.md standing check both
-wrong - the same fault as the RESULTS.md section count fixed an hour earlier. Both are now
+Adding an eleventh rule made the rules.md heading and the calendar.md standing check both
+wrong - the same fault as the results.md section count fixed an hour earlier. Both are now
 asserted by `validate_docs.py`, which fails with `heading says "ten" (10), file has 11`.
 
 **Three hand-written counts have drifted in one day.** The lesson is not to count more
@@ -3947,14 +3947,14 @@ NERSA publishes an Electricity Regulation Projects Dashboard carrying every cons
 deadline and hearing in one table. **This project had not been reading it**, and the cost
 of that was immediate.
 
-### A DATE WE HELD WAS WRONG BY A MONTH
+### A date we held was wrong by A month
 
 ```
 CALENDAR said   30 Sep 2026   NERSA expects to finalise the Trading Rules
 dashboard says  31 Oct 2026   target completion, with a member workshop in September
 ```
 
-### FOUR CONSULTATIONS WE WERE NOT TRACKING
+### four consultations we were not tracking
 
 ```
 ~7 Sep 2026   Eskom Retail Tariff Structural Adjustment (ERTSA), written comments -
@@ -3967,9 +3967,9 @@ dashboard says  31 Oct 2026   target completion, with a member workshop in Septe
               consultation concluded. Final texts to watch, nothing open to comment on.
 ```
 
-### THE ONE THAT MATTERS MOST: THE PRICE AND TARIFF RULE
+### the one that matters most: the price and tariff rule
 
-The ERA as amended requires NERSA to set unbundled prices and tariffs BY RULE, and the
+The ERA as amended requires NERSA to set unbundled prices and tariffs by rule, and the
 dashboard states the consultation paper will be published **following publication of the
 EPP**, with the rule targeted for October and completion by 30 Nov 2026.
 
@@ -3982,9 +3982,9 @@ Two undated workstreams are also worth watching: the **Trading Platform Algorith
 Framework**, which governs how the market actually clears and is the closest published
 work to what GridTwin models, and the Market Surveillance Framework.
 
-### ADDED AS A STANDING CHECK
+### added as A standing check
 
-The dashboard is now in SOURCES.md and in CALENDAR.md's per-session checks. It is the
+The dashboard is now in sources.md and in calendar.md's per-session checks. It is the
 single best input to that file, and one reading corrected a date and added four
 consultations.
 
@@ -4020,19 +4020,19 @@ Eskom            1.079           36.0
 **A single value reproduces both, at about 60-61%** - exactly what the withdrawn claim
 said was impossible.
 
-### WHAT REPLACES IT IS BETTER
+### what replaces it is better
 
-Matching Eskom's actual peaking and shedding needs about four points LOWER availability
-than the audited 65.2% EAF. EAF is an ENERGY availability factor across the year and
+Matching Eskom's actual peaking and shedding needs about four points lower availability
+than the audited 65.2% EAF. EAF is an energy availability factor across the year and
 includes planned maintenance; a dispatch model needs hourly available capacity. They are
 not the same quantity, and the four points are a finding about that gap rather than a
 parameter to fit. **Do not tune coalEAFPct to 61.**
 
-### WHY IT HAPPENED, AND WHY IT WAS CAUGHT
+### why it happened, and why it was caught
 
 Both errors are ones this project already had rules against. Rule 3 - check the input
 before building on it - would have caught reading the wrong variable. The single-draw
-sweep was made BEFORE the ensemble work that established how noisy single draws are, so
+sweep was made before the ensemble work that established how noisy single draws are, so
 the morning could not have known; but the afternoon could have gone back, and only did
 because the two entries visibly contradicted each other.
 
@@ -4059,7 +4059,7 @@ ACTUALLY -0.004 mean across ten years, flipping sign. NEUTRAL, not bad. The 2023
 
 The second was the most quotable line in the draft, and it was a story built on one year.
 
-### WHAT SURVIVED IS STRONGER
+### what survived is stronger
 
 ```
 Northern Cape   night-peaking 10/10, 25-40% day-night swing, best complementarity
@@ -4069,10 +4069,10 @@ Western Cape    MIXED - flips by year, so their claim does not hold and a single
                 study finds either answer
 ```
 
-Wind Pioneers' Northern Cape observation is right and UNDERSTATED. Their Western Cape one
+Wind Pioneers' Northern Cape observation is right and understated. Their Western Cape one
 does not replicate. The finding moves from Tier 3 to **Tier 2** - ten weather years.
 
-### THE LESSON
+### the lesson
 
 The ten-year file already existed and the first run simply had not used it. Nothing failed;
 the single-year numbers were correct for their year. **What made them wrong was presenting
@@ -4090,7 +4090,7 @@ The Wind Pioneers near-miss showed that a ten-year file sitting unused turns sin
 noise into a published claim. So the Tier 3 findings marked "single weather year" were
 screened rather than left there.
 
-### BOTH HOLD ACROSS TEN YEARS
+### both hold across ten years
 
 ```
 demand response optimum   lowers cost in 10/10 years, reverses by 30% in 10/10,
@@ -4101,7 +4101,7 @@ no-gas cost neutrality    sign FLIPS six to four, spread -10 to +3 R bn on a bas
 
 Both promoted to **Tier 2**.
 
-### THE NEW RESULT: THE GAS BUILD CARRIES SEVEN TIMES THE COST VARIANCE
+### the new result: the gas build carries seven times the cost variance
 
 The single year could show neutrality but not test what surrounds it.
 
@@ -4120,11 +4120,11 @@ cost with a seventh of the variance. Annual fuel-cost variance is precisely what
 hedges and what a regulator sees as tariff volatility, so the overbuild is buying
 insurance the single-year comparison priced at zero.
 
-CAVEATS, both material: this excludes gas PRICE risk entirely, which would widen the gas
+Caveats, both material: this excludes gas price risk entirely, which would widen the gas
 spread further and strengthen the result; and it assumes connections that today's headroom
 data says do not exist.
 
-### THE PATTERN
+### the pattern
 
 Three times today a ten-year run has changed a single-year conclusion - the Wind Pioneers
 rankings, and now the framing of the frontier. The file was always there. **"Single weather
@@ -4132,65 +4132,65 @@ year" in Tier 3 should be read as work not yet done, not as a property of the fi
 
 ---
 
-## TO DO: publish findings to media and LinkedIn
+## to do: publish findings to media and LinkedIn
 
-ADDED 31 Aug 2026. The Seriti Green and Wind Pioneers differential tests both landed well,
+Added 31 Aug 2026. The Seriti Green and Wind Pioneers differential tests both landed well,
 which suggests the model's findings travel when attached to something a reader already
 cares about. The task is to run publishable scenarios and pitch them.
 
-### THE RULE FOR THIS WORK
+### the rule for this work
 
 **Publish from Tier 1 and Tier 2 only.** Everything below has an evidential tier and a
 known weakness; a finding that is retracted in public costs more than one never published.
-Every claim needs its scenario attached - RESULTS.md's first line exists for exactly this,
+Every claim needs its scenario attached - results.md's first line exists for exactly this,
 and three near-misses today came from ignoring it.
 
-### RANKED FOR PUBLICATION - strength first, not interest
+### ranked for publication - strength first, not interest
 
-**1. THE GRID, NOT THE WIND, IS THE CONSTRAINT.** The four best-wind regions hold 100% of
+**1. the grid, not the wind, is the constraint.** The four best-wind regions hold 100% of
 South Africa's existing wind and 7.3% of the national room to add more. Northern Cape and
-Hydra Central - the two best resources measured - are at ZERO headroom for every
+Hydra Central - the two best resources measured - are at zero headroom for every
 technology.
-  WHY IT TRAVELS: it is arithmetic on published figures, so there is nothing to dispute
+  why it travels: it is arithmetic on published figures, so there is nothing to dispute
   but the source. It reframes a debate the public thinks is about resource and cost.
-  RISK: low. Tier 1.
+  risk: low. Tier 1.
 
-**2. LONG-DURATION STORAGE DOES NOT SOLVE A WINTER WIND DROUGHT.** 20 GW of 100-hour
+**2. long-duration storage does not solve A winter wind drought.** 20 GW of 100-hour
 iron-air - two terawatt-hours - changes July gas by nothing to three significant figures.
-  WHY IT TRAVELS: contrarian against a widely repeated assumption, and it is the
+  why it travels: contrarian against a widely repeated assumption, and it is the
   most-tested result in the file. Survived a heuristic, an optimal LP, a
   reserve-constrained LP, and a full recalibration.
-  RISK: low, but state the mechanism - the deficit is an ENERGY shortage, not a shifting
+  risk: low, but state the mechanism - the deficit is an energy shortage, not a shifting
   problem - or it reads as anti-storage, which it is not.
 
-**3. THE GAS BUILD CARRIES SEVEN TIMES THE COST VARIANCE.** Same expected annual cost as
+**3. the gas build carries seven times the cost variance.** Same expected annual cost as
 a 110 GW renewable build, but R275-289 bn across ten weather years against R277-279 bn.
-  WHY IT TRAVELS: tariff volatility is a live public issue, and this prices the overbuild
+  why it travels: tariff volatility is a live public issue, and this prices the overbuild
   as insurance rather than waste. Genuinely new, found 31 Aug.
-  RISK: medium. Excludes gas PRICE risk (which strengthens it) and assumes connections
+  risk: medium. Excludes gas price risk (which strengthens it) and assumes connections
   that do not exist (which weakens it). Both must be said.
 
-**4. SOLAR ALREADY EARNS A QUARTER BELOW THE MARKET AVERAGE, TODAY.** Before any
+**4. solar already earns A quarter below the market average, today.** Before any
 cannibalisation from new build. Wind holds 96-107% of the mean across the whole range;
 solar falls to 2.7% at 60 GW.
-  WHY IT TRAVELS: directly commercial. Every solar developer and offtaker in the country
+  why it travels: directly commercial. Every solar developer and offtaker in the country
   is pricing against an average their asset does not earn.
-  RISK: low-medium. The mechanism - every solar plant produces in the same hours - is
+  risk: low-medium. The mechanism - every solar plant produces in the same hours - is
   obvious once stated, which is what makes it publishable.
 
-**5. FLEXIBILISING COAL MAKES A NO-GAS SYSTEM WORSE**, ten years out of ten.
-  WHY IT TRAVELS: it is the opposite of the intuition and was found by testing a
+**5. flexibilising coal makes A no-gas system worse**, ten years out of ten.
+  why it travels: it is the opposite of the intuition and was found by testing a
   hypothesis that returned the reverse of what was wanted.
-  RISK: medium. Only true with NO dispatchable backup. Quoted without that scope it is
+  risk: medium. Only true with no dispatchable backup. Quoted without that scope it is
   simply wrong, and it is an easy caveat to lose in a headline.
 
-**6. CONNECTION HEADROOM IS WORTH 66 TIMES MORE IN THE BEST REGION THAN THE WORST.**
-  WHY IT TRAVELS: it answers "where should grid investment go" with a number, and it is
+**6. connection headroom is worth 66 times more in the best region than the worst.**
+  why it travels: it answers "where should grid investment go" with a number, and it is
   in a filed regulatory submission.
-  RISK: low on the ratio, higher on the levels - they moved threefold with recalibration
-  while the ratio held. Publish the RATIO.
+  risk: low on the ratio, higher on the levels - they moved threefold with recalibration
+  while the ratio held. Publish the ratio.
 
-### DO NOT PUBLISH YET
+### DO NOT publish yet
 
 ```
 the 4-point EAF gap      Reproducing Eskom's outturn needs ~61% against an audited 65.2%.
@@ -4203,12 +4203,12 @@ anything Tier 3          Single weather year or heuristic-dependent. Promote it 
 adequacy figures         Only as LOLE and EUE with the standard error. Never a draw.
 ```
 
-### NEXT STEPS
+### next steps
 
-1. ~~Pick one finding and write it properly.~~ DONE 31 Aug 2026 - `post_headroom.md`,
+1. ~~Pick one finding and write it properly.~~ done 31 Aug 2026 - `post_headroom.md`,
    drafted on finding 1. Verified from source before writing: 4,612 MW is exactly 100% of
    national wind, 1,580 of 21,520 MW is 7.34%, and solar headroom across the four is zero.
-   The piece also carries a NEW number found while checking - **the correlation between
+   The piece also carries a new number found while checking - **the correlation between
    wind capacity factor and connection headroom is -0.91**, and the four worst-resource
    regions hold 78.3% of the room. That inverse relationship is the strongest version of
    this finding and did not exist before today.
@@ -4230,15 +4230,15 @@ index.html:5181         (p.importsCF ?? 0.41)
 index.html:5404         (p.importsCF ?? 0.41)
 ```
 
-**None of them had drifted. A COMMENT about them had** - index.html still read
+**None of them had drifted. A comment about them had** - index.html still read
 "IMPORTS_CF = 0.85 is defined in nodal_engine.js" five hours after the value was corrected
 to 0.41 in both files that morning. That is the failure mode a duplicated constant
 actually has: the number is easy to update everywhere, and the prose around it is not.
 
-### THE FIX RUNS THE ONLY DIRECTION THE LOAD ORDER PERMITS
+### the fix runs the only direction the load order permits
 
 `nodal_engine.js` is loaded as a plain script by four harnesses with no access to `FIXED`,
-so it cannot read the value from there. But it loads at index.html:1124, BEFORE the
+so it cannot read the value from there. But it loads at index.html:1124, before the
 constant block at 3829 - so `FIXED` can read it, and now does: `importsCF: IMPORTS_CF`.
 
 **No fallback, deliberately.** If the engine fails to load the page should fail loudly,
@@ -4248,11 +4248,11 @@ rule 7's lesson.
 
 Verified unchanged: imports land at 4.13 TWh against Eskom's audited 4.09.
 
-### PINNED, so it cannot come back
+### pinned, so it cannot come back
 
 `validate_structure` 10 -> 13. Three checks: the engine declares it, `FIXED` reads it
 rather than restating it, and no `?? <number>` fallback reintroduces a copy. Verified they
-fail - reverting `FIXED` to the literal reports "FIXED.importsCF should be IMPORTS_CF, not
+fail - reverting `FIXED` to the literal reports "fixed.importsCF should be IMPORTS_CF, not
 a literal".
 
 ---
@@ -4270,8 +4270,8 @@ audit found **55**, in three classes with different verdicts.
 
 **Class 2 is the one that would have been broken by a naive cleanup.** For
 `asReserveRMWh`, `asInertiaRkWyr` and `capacityPaymentRkWyr` the fallback of zero is the
-RIGHT default: South Africa prices no ancillary services and has no capacity market, so an
-unset value means unpriced. `FIXED` holds what those markets would pay IF they existed,
+Right default: South Africa prices no ancillary services and has no capacity market, so an
+unset value means unpriced. `FIXED` holds what those markets would pay if they existed,
 which is a different question. Converting them to `?? FIXED.x` would have silently created
 revenue that does not exist.
 
@@ -4279,23 +4279,23 @@ revenue that does not exist.
 control with no `FIXED` entry (`newVrfbMW`, `newIronAirMW`, `exportCapMW` and similar)
 where zero is intended.
 
-### ONE WAS ACTUALLY WRONG
+### one was actually wrong
 
-`state.coalEAFPct || 0`, at two EXPORT sites - the build-optimiser summary row and the CSV
+`state.coalEAFPct || 0`, at two export sites - the build-optimiser summary row and the CSV
 header. Not dispatch. If the key were ever unset those stamped **"EAF 0%" on a run that
 used 65**, and a mislabelled export travels without the model attached to correct it.
 Fixed to `?? FIXED.coalEAFPct`; `demandGrowthPct` beside it keeps `|| 0` because it
 legitimately defaults to zero and has no `FIXED` entry.
 
-### THE VERDICT IS IN THE CODE, NOT JUST HERE
+### the verdict is in the code, not just here
 
 The audit is written at the `FIXED` block. Fifty-five sites is too many to re-derive, and
 the next person to grep for `||` needs the reasoning at the point of use rather than in a
 document they may not open.
 
-### AND THE CHECK MATCHED ITS OWN DOCUMENTATION
+### and the check matched its own documentation
 
-The pin for this greps for `coalEAFPct || 0` - and the audit note QUOTES that pattern while
+The pin for this greps for `coalEAFPct || 0` - and the audit note quotes that pattern while
 explaining it, so the first version failed on its own comment. Same trap as the backtick
 that broke the worker block this morning. **A check that greps source must exclude the
 prose about the source.** Now strips comment lines first; 14/14, and it fails on exactly
@@ -4319,19 +4319,19 @@ found by looking rather than assuming.**
    (-1.3% to -11.3% by region).
 ```
 
-**Point 3 is the interesting one.** The gap is not error - it is SITING. The regional
+**Point 3 is the interesting one.** The gap is not error - it is siting. The regional
 series is capacity-weighted to real plant locations, and developers choose
 better-than-average points. A 0.5 degree cell averages roughly 55 km including the ground
-nobody would build on. So for SITE assessment, where the user has picked a specific point,
+nobody would build on. So for site assessment, where the user has picked a specific point,
 the coarse grid is biased the wrong way.
 
-### WHAT IT IS ACTUALLY FOR
+### what it is actually for
 
 A plausibility band. `fetchSolar` calls a live third-party API; if Open-Meteo changes units,
 returns a different variable, or silently degrades, nothing downstream notices - the number
 just moves. A satellite value for the same cell catches that.
 
-The band is deliberately WIDE at 25%, because ~5% from siting plus the acknowledged ERA5
+The band is deliberately wide at 25%, because ~5% from siting plus the acknowledged ERA5
 overestimate are both expected. Tested: silent at the reference and at 20% high, flags at
 +63% and -52%, silent over ocean where there is no cell.
 
@@ -4341,10 +4341,10 @@ plausible / 20% high          silent
 60% high / half               FLAGGED
 ```
 
-### PINNED SO IT CANNOT DRIFT BACK
+### pinned SO it cannot drift back
 
 `validate_geo` 40 -> 43: the file holds its stated 739 points, every capacity factor is
-physically plausible, and **the grid is fetched AND its cross-check wired in**. Renaming
+physically plausible, and **the grid is fetched and its cross-check wired in**. Renaming
 the function fails the third with "or it is an orphan again".
 
 `solarCrossCheck` and `sarahCFAt` are exposed on `window` beside `fetchSolar` - an
@@ -4366,11 +4366,11 @@ WHEN the model sheds, mean of 24 outage draws
 **Every South African knows load shedding is a winter problem. This model never sheds in
 winter at all.**
 
-### THE MECHANISM
+### the mechanism
 
 `genUnitOutagePath` shifts planned maintenance out of the winter peak on a `SEASON` array
 running 3:1 - 0.45 in June and July against 1.35 in December to February. Real utilities do
-schedule this way, so the direction is right. The MAGNITUDE is not:
+schedule this way, so the direction is right. The magnitude is not:
 
 ```
 annual EAF set to          65.0%
@@ -4382,7 +4382,7 @@ seasonal swing            +15.7 points
 Nearly ten points of extra availability exactly when the system is tightest. The model
 sails through the winter peak and manufactures scarcity in January instead.
 
-### THE OBVIOUS FIX IS WRONG, TESTED
+### the obvious fix is wrong, tested
 
 Flattening the season to 1.45:1 should have moved shedding into winter. It did the
 opposite - OCGT fell 0.217 to 0.132 TWh and unserved went to zero. Less summer maintenance
@@ -4390,23 +4390,23 @@ removes the summer scarcity without creating winter scarcity, because winter has
 margin either way.
 
 **So this is not a parameter to tune.** Two things are missing together: winter
-availability should sit closer to the annual mean, AND unplanned outages should RISE in
+availability should sit closer to the annual mean, and unplanned outages should rise in
 winter when units run hardest. The process models the second not at all - `forcedSharePct`
 is flat across the year.
 
-### WHAT THIS DOES TO THE EAF FINDING
+### what this does to the EAF finding
 
 The four-point gap - needing 61% to reproduce Eskom's outturn against an audited 65.2% - is
-a SYMPTOM of this, not a separate result. Lowering annual availability is compensating for
+a symptom of this, not a separate result. Lowering annual availability is compensating for
 a seasonal shape that is too generous where it matters. **It stays out of anything
 published**, and `coalEAFPct` stays at the audited value.
 
-NEXT STEP: a winter-weighted forced-outage rate, calibrated against Eskom's published UCLF
+Next step: a winter-weighted forced-outage rate, calibrated against Eskom's published UCLF
 by month rather than assumed. That is a data question before it is a modelling one.
 
 ---
 
-## CORRECTION: "South Africa sheds in winter" was not verified — 31 Aug 2026
+## correction: "South Africa sheds in winter" was not verified — 31 Aug 2026
 
 Written into the seasonal diagnosis an hour earlier as though established. **It is not
 supported by FY2026.**
@@ -4419,10 +4419,10 @@ the very start of the fiscal year.
 Severe winter shedding is a real memory from 2022-23, but that is not what FY2026 shows,
 and I asserted it from intuition rather than the document sitting open beside me.
 
-### THE DEFENSIBLE STATEMENT IS NARROWER AND STRONGER
+### the defensible statement is narrower and stronger
 
 **The model's own demand peaks in June at 31,595 MW, and it never sheds then. It sheds in
-January to March, when its own peaks are 1 to 2.5 GW LOWER.** That is an internal
+January to March, when its own peaks are 1 to 2.5 GW lower.** That is an internal
 inconsistency requiring no external claim at all:
 
 ```
@@ -4435,7 +4435,7 @@ The seasonal availability swing is 16.5 points, worth 6.5 GW, against a demand s
 1.0 GW. **The maintenance shape overwhelms the demand shape by six to one and inverts
 which season binds.**
 
-### WHY THIS MATTERS FOR THE FIX
+### why this matters for the fix
 
 Had the winter claim gone unchallenged, the obvious target would have been "make it shed
 in winter" - and any parameter reaching that target would have been fitting to an assumed
@@ -4462,7 +4462,7 @@ CLAIMED  the model's seasonality is inverted and needs fixing
          -> WITHDRAWN. Eskom's measured dispatch says the shape is RIGHT.
 ```
 
-### THE MEASUREMENT
+### the measurement
 
 `ESK19243.csv` carries `Eskom OCGT Generation` hourly for 2025 - the peakers Eskom
 actually ran, which is where the system was actually tight.
@@ -4486,9 +4486,9 @@ The mechanism is exactly what the code comment always claimed: maintenance is sc
 away from the winter peak, so summer availability is low and peakers cover it. Winter runs
 a full fleet.
 
-### WHAT I GOT WRONG, AND HOW
+### what I got wrong, and how
 
-I reasoned from what load shedding FEELS like in South Africa - a winter emergency - and
+I reasoned from what load shedding feels like in South Africa - a winter emergency - and
 built a diagnosis on it. Two checks would have stopped me. The Eskom report was open beside
 me and says the 365-day clean run began in May 2025, making FY2026's shedding autumn. And
 this CSV, already in the project as the demand source, had the answer in a column I had
@@ -4497,9 +4497,9 @@ never looked at.
 **The data to falsify this was in the repo the whole time.** Rule 3 - check the input
 before building on it - and the input here was one column of a file already loaded.
 
-### WHAT ACTUALLY REMAINS
+### what actually remains
 
-The LEVEL, not the shape. Model 217 GWh of peaking against Eskom's 1,898 for calendar 2025.
+The level, not the shape. Model 217 GWh of peaking against Eskom's 1,898 for calendar 2025.
 That is the four-point EAF gap restated, now with the seasonality corroborated rather than
 suspect - which makes it a cleaner question than it was this morning.
 
@@ -4513,7 +4513,7 @@ implying ~279 for Jan-Mar 2026 against the 1,079 audited FY2026 total.
 Three successive diagnoses, two withdrawn, one that holds. The data that settled it was a
 column of a CSV already in the project as the demand source.
 
-### WHAT ESKOM ACTUALLY DID IN 2025
+### what eskom actually did in 2025
 
 ```
 OCGT ran in 2,016 hours - 23% of the year - across the WHOLE demand range:
@@ -4532,23 +4532,23 @@ below 25,000 MW    1,203 GWh    63% of the total
 of coal available. Those are hours where a merit-order model has no reason to start a
 peaker, and correctly does not. That output is reserve, network support and ramping.
 
-### SO THE GAP IS SCOPE, NOT ERROR
+### SO the gap is scope, not error
 
 The model prices energy. Most of Eskom's peaker running is not energy. Tuning availability
 until the totals matched - which the four-point EAF gap invited - would have manufactured
 scarcity to imitate services the model does not represent. **`coalEAFPct` stays at the
 audited 65.2%.**
 
-### BENCHMARKED ON SHAPE, DELIBERATELY NOT ON LEVEL
+### benchmarked on shape, deliberately not on level
 
 `validate_benchmarks` 21 -> 22. `peakerSeasonRatio` asserts Jan-Mar against Jul-Sep output:
 model 9.0x, Eskom 8.5x, band 2-12x.
 
-**The level is deliberately NOT benchmarked**, and the reason is written into the harness:
+**The level is deliberately not benchmarked**, and the reason is written into the harness:
 a level benchmark would invite exactly the tuning that was tried and withdrawn twice today.
 The comment exists so it is not attempted a third time.
 
-### THE PATTERN WORTH KEEPING
+### the pattern worth keeping
 
 Every wrong turn today came from reasoning about the model instead of measuring it, and
 every correction came from a file already in the repository. The EAF gap, the seasonal
@@ -4561,7 +4561,7 @@ data nobody had to go and fetch.
 
 Asked to scour everything as both modeller and coder after a day of large changes.
 
-### WHAT CHECKED OUT
+### what checked out
 
 ```
 hourly energy balance      0.00e+00 MW worst error, and exact in all ten
@@ -4576,17 +4576,17 @@ marginal technology        8,398 coal · 327 diesel · 30 ps · 5 unserved = 8,7
 today's additions          all eleven reachable, no leftover instrumentation
 ```
 
-### TWO THINGS I CHASED THAT WERE NOT BUGS
+### two things I chased that were not bugs
 
 **A 2,800 MW balance error** at hour 8333 - my check double-counted, because `loadS`
 already includes storage charging. Caught by noticing supply equalled `loadS` exactly.
 
 **A price floor of R715 where coal SRMC computes to R594.** Neither part-load (median
 1.012, too small) nor an error: `coalMarginalCost` walks a within-fleet merit curve, so
-the MARGINAL coal unit legitimately costs more than the R546 fleet average. The model is
+the marginal coal unit legitimately costs more than the R546 fleet average. The model is
 more sophisticated than my expectation of it.
 
-### ONE REAL FINDING: TWO COPIES OF THE WEATHER BUILDER
+### one real finding: two copies of the weather builder
 
 `runMC` and `runAdequacy` each carried their own `loadWeatherYears`, `wxCache` and
 `profileFor` - identical logic, two places. **Rule 6 applied to behaviour, and its failure
@@ -4597,22 +4597,22 @@ Extracted to `weatherProfileFactory()`. Results byte-identical either side - LOL
 EUE 2.36 - so the refactor is behaviour-preserving. `validate_structure` 14 -> 15 asserts
 one factory and zero private caches.
 
-### THE HONEST SUMMARY
+### the honest summary
 
 Nothing in the model's outputs is wrong. The one defect found was structural, and it was
 the specific structure that had already produced a real bug hours earlier.
 
 ---
 
-## The full-year run was BROKEN and the whole suite passed — 31 Aug 2026
+## The full-year run was broken and the whole suite passed — 31 Aug 2026
 
 Reported from the browser: **"Solver error: Uncaught SyntaxError: Invalid or unexpected
 token"** on Run the full model. My pricing-run edit had broken it, and 893 checks said
 everything was fine.
 
-### THE FAULT
+### the fault
 
-`MIP_WORKER_SRC` is a template literal, so every backslash in it is collapsed ONCE before
+`MIP_WORKER_SRC` is a template literal, so every backslash in it is collapsed once before
 the worker sees the string. The existing code knows this and writes four backslashes where
 the worker needs one escape. My code wrote two:
 
@@ -4624,26 +4624,26 @@ in the file      what the worker receives
 
 `const lines = lpFixed.split('\\n')` became `split('` followed by a real line break.
 
-### WHY NOTHING CAUGHT IT
+### why nothing caught it
 
 **The file is valid JavaScript.** Lint passes, `node --check` passes, every harness passes,
 because the fault does not exist in the source - it exists only in the string the browser
-BUILDS from the source at runtime. The worker also never runs under jsdom, which stubs
+Builds from the source at runtime. The worker also never runs under jsdom, which stubs
 `Worker` out entirely.
 
 Three separate defences all missed it for the same reason: they all inspect the file.
 
-### THE CHECK NOW BUILDS WHAT THE BROWSER BUILDS
+### the check now builds what the browser builds
 
 `validate_structure` 15 -> 16. It slices out the template literal, evaluates it exactly as
 the browser does, and parses the result with `new Function`. Verified against the broken
 copy: reports "Invalid or unexpected token - a backslash in MIP_WORKER_SRC must be
-DOUBLED".
+Doubled".
 
 Pricing run re-verified end to end afterwards: 283 rows parsed and matched, R608 against a
 R600 marginal cost.
 
-### THE THIRD ESCAPING TRAP IN ONE DAY
+### the third escaping trap in one day
 
 A backtick in a worker comment broke the page this morning. A regex in a check matched its
 own documentation this afternoon. Now a backslash. **The worker block is not ordinary
@@ -4658,7 +4658,7 @@ Reported from the browser. The MIP applies correctly - curtailment 0.00 -> 11.54
 unserved 5 -> 0 GWh - but the wholesale shadow price panel is unchanged, which means the
 pricing run produced no duals and the instant prices were correctly kept.
 
-### WHAT WAS RULED OUT, IN ORDER
+### what was ruled out, in order
 
 ```
 the call signature      matches the real one exactly, argument for argument
@@ -4668,24 +4668,24 @@ the mechanism           WORKS at realistic scale: 31 unit groups, 10 regions,
                         21 corridors, 4,668 rows parsed and matched, 24/24 hours priced
 ```
 
-### THE TELL IS THE RUNTIME
+### the tell is the runtime
 
 **107 seconds for a full year.** A pricing LP per day should roughly double that. So the
 pricing run is not executing at all, and my `catch` swallowed the reason - a pricing run
 that never fired was indistinguishable from one that fired and found nothing.
 
-### THE FIX IS A DIAGNOSTIC, NOT A GUESS
+### the fix is A diagnostic, not A guess
 
 The worker now counts days priced, days that errored, days with a row-count mismatch, and
-keeps the FIRST error message. All four are reported in the banner under the full-run
+keeps the first error message. All four are reported in the banner under the full-run
 summary.
 
 **I could have guessed at a cause and shipped a speculative fix.** Three times today a
 confident diagnosis was wrong and the data was already available - so this one gets
 measured first. The next full run will say which of the three it is.
 
-**AND THE DIAGNOSTIC FAILED SILENTLY TOO.** `showMIPBanner` reads
-`mipActiveRes.priceDiag`, but `mipActiveRes` is a WRAPPER - `{ res: mipRes, mode, ... }` -
+**and the diagnostic failed silently too.** `showMIPBanner` reads
+`mipActiveRes.priceDiag`, but `mipActiveRes` is a wrapper - `{ res: mipRes, mode, ... }` -
 and I attached `priceDiag` to `mipRes`, one level down where the banner could never see
 it. A diagnostic written to explain a silent failure was itself silent.
 
@@ -4693,7 +4693,7 @@ Lifted onto the wrapper and verified rendering: "Pricing run: 0 days priced, 365
 `validate_structure` 16 -> 17 now asserts that anything `showMIPBanner` reads is actually
 set on the object it reads from.
 
-NEXT: read the banner after a full-year run - it sits by the KPI row at the top, not with
+Next: read the banner after a full-year run - it sits by the KPI row at the top, not with
 the solve summary.
 
 ---
@@ -4716,11 +4716,11 @@ build 2026-08-31d · NO pricing diagnostic on this result
 ```
 
 The second half distinguishes the two hypotheses directly. If the stamp is missing
-entirely, the browser has an old file. If the stamp shows but says NO pricing diagnostic,
+entirely, the browser has an old file. If the stamp shows but says no pricing diagnostic,
 the code is current and `applyMIPResult` is not setting `priceDiag` - a real bug. If it
 says "pricing run reported", the diagnostic line follows.
 
-**THE LESSON.** Any deployed artefact needs a version marker. Without one, every
+**the lesson.** Any deployed artefact needs a version marker. Without one, every
 "it doesn't work" is ambiguous between a code fault and a stale cache, and the debugging
 cost is paid on every single report.
 
@@ -4739,10 +4739,10 @@ Every day solved. Nothing errored. Nothing mismatched. And no prices. **That com
 names the fault precisely**, which is exactly what four rounds of reasoning had failed to
 do.
 
-### TWO BUGS, BOTH INVISIBLE WITHOUT THE COUNTERS
+### two bugs, both invisible without the counters
 
 **1. HiGHS keys its Rows differently in the browser.** Node's package returns rows keyed
-by NUMERIC INDEX; the browser WASM build returns them keyed by ROW NAME. My extraction did
+by numeric index; the browser WASM build returns them keyed by row name. My extraction did
 `names[+k]`, so in the browser every key gave `names[NaN]`, every row was skipped, and
 every dual was lost - with no error, because skipping is a normal path.
 
@@ -4750,11 +4750,11 @@ Now accepts both: `(k !== '' && !isNaN(Number(k))) ? names[Number(k)] : k`. Veri
 both formats, giving identical prices - 24 of 24 hours, R628 either way.
 
 **2. My own success counter was wrong.** `if (dayPrice)` counted a day as priced whenever
-the array existed - and `new Array(24).fill(0)` is TRUTHY. That is why the banner claimed
+the array existed - and `new Array(24).fill(0)` is truthy. That is why the banner claimed
 365 days priced while no hour carried a price. Now requires `dayPrice.some(v => v > 0)`,
 and days that solve but yield nothing are counted separately as `empty`.
 
-### AND THE BACKTICK TRAP, FOR THE SECOND TIME TODAY
+### and the backtick trap, for the second time today
 
 The comment explaining bug 1 used backticks around an identifier. Inside
 `MIP_WORKER_SRC` - a template literal - that terminated the string and truncated the
@@ -4763,7 +4763,7 @@ worker mid-comment.
 **The check added this morning caught it before it shipped.** That is the whole value of
 building the worker source the way the browser does rather than lint-checking the file.
 
-### WHAT THIS COST, AND WHAT IT SHOULD HAVE COST
+### what this cost, and what it should have cost
 
 Four rounds of reasoning about correct code. The signature matched, the loop variable was
 right, the renderers used their arguments, and the mechanism worked at full scale in Node -
@@ -4772,7 +4772,7 @@ answered it outright.** When a silent path fails, instrument it before theorisin
 
 ---
 
-## THE THIRD ESCAPING FAULT, and the one that actually silenced the prices
+## the third escaping fault, and the one that actually silenced the prices
 
 ```
 build e:  0 days priced, 0 errored, 0 mismatch, 365 SOLVED BUT YIELDED NO DUALS
@@ -4786,22 +4786,22 @@ in the file          /^bal_(\\d+)_(\\d+)$/
 what the worker got  /^bal_(d+)_(d+)$/      -> matches "bal_ddd_ddd", so nothing
 ```
 
-**A collapsed backslash that still PARSES.** The check added this morning builds the
+**A collapsed backslash that still parses.** The check added this morning builds the
 worker source and parses it - and this passed, because `(d+)` is perfectly valid syntax.
 It just means something else. Every dual was discarded at the final step, silently,
 because a non-match is a normal path.
 
 Replaced with `n.split('_')`, which cannot be collapsed because it contains no escapes.
-Verified with the worker's exact evaluated logic: 24 of 24 hours priced under BOTH
+Verified with the worker's exact evaluated logic: 24 of 24 hours priced under both
 numeric-keyed and name-keyed rows, R628 either way.
 
-### THE CHECK NOW LOOKS FOR MEANING, NOT JUST SYNTAX
+### the check now looks for meaning, not just syntax
 
-`validate_structure` 17 -> 18. It scans the EVALUATED worker for escape sequences that
+`validate_structure` 17 -> 18. It scans the evaluated worker for escape sequences that
 have collapsed into bare letters - `(d+)` where `\\d+` was meant, `split('n')`,
 `/^s*`. Verified the detector fires on the exact broken string and not on the fix.
 
-### THREE FAULTS, ONE ROOT CAUSE, INCREASING SUBTLETY
+### three faults, one root cause, increasing subtlety
 
 ```
 backtick     terminated the literal          -> page broke loudly
@@ -4821,13 +4821,13 @@ to - tells you what it says.**
 Prompted by Endgame Analytics' pd4castr - ML price forecasts for the NEM, sold by
 subscription over intraday, week-ahead and quarterly horizons.
 
-**NOT AS BUILT, AND THE REASON IS STRUCTURAL RATHER THAN TECHNICAL.** Endgame forecasts an
-OBSERVABLE price: the NEM has a spot market with decades of published half-hourly
+**not as built, and the reason is structural rather than technical.** Endgame forecasts an
+Observable price: the NEM has a spot market with decades of published half-hourly
 settlement data, which is what makes supervised learning possible. **South Africa has no
 wholesale spot price.** There is no target variable, so there is nothing to train on.
 SAWEM is expected to begin trading Q4 2026.
 
-### BUT THE QUANTITY IS FORECASTABLE, AND MEASURABLY SO
+### but the quantity is forecastable, and measurably SO
 
 Tested across 12 draws varying both weather year and outage path:
 
@@ -4843,25 +4843,25 @@ coal is marginal, the price is the marginal unit's cost, and a structural model 
 almost exactly with no learning required. The remaining tenth carries more than a quarter
 of the value and is decided entirely by which outage and weather realisation occurs.
 
-### WHAT THAT IMPLIES
+### what that implies
 
 **The 89% needs no machine learning** - it needs a merit order, a fleet and a demand
 forecast, which is what GridTwin already is.
 
 **The 11% is not learnable from history South Africa does not have.** In the NEM, ML earns
-its keep in the tail because it learns BIDDING BEHAVIOUR from years of observed conduct.
+its keep in the tail because it learns bidding behaviour from years of observed conduct.
 Before a market opens there is no conduct to learn. What that tail actually needs is an
 outage forecast - and Eskom publishes weekly system status, which this project already
 tracks as a drift detector.
 
-### THE TIMING POINT
+### the timing point
 
 At market start nobody will have price history, including incumbents. **A structural model
 is the only instrument that works before a market has a past**, and its shadow price
 becomes checkable against a real one for the first time. That is a narrow window in which
 this model is comparatively strong, and it closes as history accumulates.
 
-RECORDED AS ANALYSIS, NOT A PLAN. No product decision follows from this, and the honest
+Recorded as analysis, not A plan. No product decision follows from this, and the honest
 constraint is that a forecasting service needs live data ingestion and an uptime
 commitment that a single-file browser model does not have.
 
@@ -4878,22 +4878,22 @@ Prices come from a pricing run covering 8,760 of 8,760 hours.
 Full coverage. The full model now produces its own prices rather than inheriting the
 heuristic's, and every price-derived panel refreshes from them.
 
-### WHAT TO EXPECT FROM THE NEW PRICES, AND WHY
+### what to expect from the new prices, and why
 
-They will NOT match the heuristic's, and two differences are structural rather than
+They will not match the heuristic's, and two differences are structural rather than
 suspicious:
 
 **The scarcity tail should disappear.** The heuristic run sheds 5 GWh and prices five
-hours at the R87,000 value of lost load. The MIP finds a feasible dispatch with ZERO
+hours at the R87,000 value of lost load. The MIP finds a feasible dispatch with zero
 unserved energy, so those hours no longer price at VOLL. Mean price should fall
 noticeably, and that is the MIP being better rather than the prices being wrong.
 
 **Start-up costs are not in the price.** A fixed-commitment LP cannot recover them, which
 is precisely why real markets pay uplift separately. This solve carries 4,343 unit
-start-ups, so system COST includes them while the PRICE does not - the same distinction
+start-ups, so system cost includes them while the price does not - the same distinction
 the model already draws for start-up in `avgCost` versus `marginalP`.
 
-### WHAT IS WORTH A GLANCE
+### what is worth A glance
 
 Curtailment rises to 11.54 TWh under the MIP because it respects corridor limits the
 instant model ignores. Hours where a corridor binds should now price differently from
@@ -4918,7 +4918,7 @@ mipRes               ->  { ...lastRes, ... } copies the HEURISTIC's priceStats
 I overrode `marginalP` and left every statistic derived from it inherited. The panel was
 faithfully redrawing the heuristic's summary of a series that no longer existed.
 
-### THE AUDIT FOUND THREE MORE
+### the audit found three more
 
 ```
 priceStats        overridden now - recomputed via priceStatsOf(mipRes.marginalP, ...)
@@ -4937,9 +4937,9 @@ The two revenue figures are flagged rather than recomputed. Both are zero at def
 South Africa prices neither ancillary services nor capacity - and the functions that build
 them live inside `simulate()`. Flagged beats silently wrong.
 
-### THE PATTERN, WHICH IS THE REAL LESSON
+### the pattern, which is the real lesson
 
-`{ ...lastRes }` is a convenience that copies EVERY field, including ones computed from a
+`{ ...lastRes }` is a convenience that copies every field, including ones computed from a
 field you are about to replace. Overriding the source without recomputing its dependants
 leaves the object internally inconsistent, and the inconsistency is invisible because
 every value is individually plausible.
@@ -4950,5 +4950,5 @@ name of what went stale.
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
-Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
+Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

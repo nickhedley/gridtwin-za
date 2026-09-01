@@ -3,7 +3,7 @@
 ## The findings, ranked by how well they would survive a hostile reviewer
 
 Twenty-one sections follow. This index exists because the file passed 1,400 lines and the
-strongest results were no longer findable. Ranked by EVIDENTIAL STRENGTH, not by how
+strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
 
@@ -11,9 +11,9 @@ choosing what to say in public.
 
 **Connection headroom is the binding constraint, not wind speed.** The four best-wind
 regions hold 100% of South Africa's existing wind and 7.3% of the national room to add
-more. For solar they have ZERO headroom between them. Quantified 31 Aug 2026 across ten
+more. For solar they have zero headroom between them. Quantified 31 Aug 2026 across ten
 weather years: **the correlation between wind capacity factor and connection headroom is
--0.91**, and the four WORST-resource regions hold 78.3% of the room.
+-0.91**, and the four worst-resource regions hold 78.3% of the room.
 → "The no-gas frontier", "Locational transmission signal"
 
 **The no-gas frontier is not buildable on today's grid.** It needs 45,388 MW of new wind
@@ -31,7 +31,7 @@ iron-air changes July gas by essentially nothing. Survived a heuristic, an optim
 storage LP, and a reserve-constrained LP - the most-tested result in this file.
 → "Long-duration storage", "Why long-duration storage does not bite"
 
-**Flexibilising coal WORSENS adequacy in a no-gas system**, ten years out of ten, by
+**Flexibilising coal worsens adequacy in a no-gas system**, ten years out of ten, by
 +1,057 to +1,223 GWh against a 4,200 GWh weather spread. Nearly independent of weather,
 which is what a mechanism looks like rather than noise.
 → "Flexibilising the coal fleet"
@@ -39,20 +39,20 @@ which is what a mechanism looks like rather than noise.
 **Solar cannibalises itself; wind does not.** Wind holds 96-107% of the mean price across
 the whole build range while solar falls to 2.7%. Every solar plant produces in the same
 hours. Re-verified 31 Aug against the corrected constants: four of five build points
-reproduce within two points. **Solar already earns 24% below the market average TODAY** -
+reproduce within two points. **Solar already earns 24% below the market average today** -
 the published version showed near-parity at the start of the curve and understated it.
 → "Capture rates"
 
-**Connection headroom is worth 66 TIMES more in the best region than the worst.** Duals
+**Connection headroom is worth 66 times more in the best region than the worst.** Duals
 on the build LP's headroom constraints, re-verified 31 Aug with row counts reproducing
 exactly (119,225 both ways). The EPP submission described a fiftyfold spread; it is
 sixty-six-fold. Levels moved with the recalibration, ratios did not.
 → "Locational transmission signal"
 
-**Northern Cape wind peaks at NIGHT in every one of ten weather years**, with a 25-40%
+**Northern Cape wind peaks at night in every one of ten weather years**, with a 25-40%
 day-night swing, and has the best wind-solar complementarity in the country at -0.180.
 Independently confirms two of three published Wind Pioneers observations on a different
-dataset. Western Cape does NOT hold - it flips by year, so a single-year study finds
+dataset. Western Cape does not hold - it flips by year, so a single-year study finds
 either answer.
 → "Wind Pioneers' diurnal observation"
 
@@ -61,8 +61,8 @@ one of ten weather years. The optimum lowers cost in 10/10 and 30% shifting reve
 10/10, saving R5.11 to R6.91/MWh at the optimum.
 → "Demand response has an optimum"
 
-**Removing gas is cost-neutral at ONE point on the frontier, and the no-gas build carries
-a SEVENTH of the cost variance.** Ten weather years: the sign of the difference flips six
+**Removing gas is cost-neutral at one point on the frontier, and the no-gas build carries
+a seventh of the cost variance.** Ten weather years: the sign of the difference flips six
 to four, on a spread of -10 to +3 R bn. But the gas scenario ranges R275-289 bn across
 years while the no-gas build ranges R277-279 - same expected cost, far less exposure to a
 bad wind year. Only at this one point on the frontier, and only if the connections
@@ -77,15 +77,15 @@ by Eskom's own hourly file, so it is not a model artefact.
 
 ### Tier 3 — single weather year, or dependent on the storage heuristic.
 
-**Storage's ancillary market SHRINKS as renewables grow**, if curtailed plant may sell
+**Storage's ancillary market shrinks as renewables grow**, if curtailed plant may sell
 reserve. Binary on that policy choice, insensitive to every numeric parameter.
-**South Africa is already PAST the knee** - re-run 31 Aug puts it near 2.5 GW against an
+**South Africa is already past the knee** - re-run 31 Aug puts it near 2.5 GW against an
 existing 3.7 GW fleet, so a battery built today already earns a reduced ancillary rate.
 The EPP submission's version of this is understated, not wrong.
 → "Battery saturation"
 
-**Co-location value is U-SHAPED, not rising.** +130% today, +8% in 2030, +386% by 2035.
-Arbitrage pays for VOLATILITY, and 2026 is volatile from scarcity while 2035 is volatile
+**Co-location value is U-shaped, not rising.** +130% today, +8% in 2030, +386% by 2035.
+Arbitrage pays for volatility, and 2026 is volatile from scarcity while 2035 is volatile
 from surplus. Corrected 31 Aug - the earlier version reported a rising curve, measured on
 constants that suppressed today's scarcity pricing. **"Storage becomes valuable later" is
 the wrong conclusion.**
@@ -111,7 +111,7 @@ credible than one showing only what did.
 
 ### Before quoting anything from this file
 
-Read the fitness-for-purpose section at the top of STATE.md. Three things must not be
+Read the fitness-for-purpose section at the top of state.md. Three things must not be
 quoted: the withdrawn 37%, the rolling-horizon July figures, and `avgCost` as a tariff -
 six of NERSA's thirteen price components are absent from it.
 
@@ -126,8 +126,8 @@ Weather basis, settled 28 Aug 2026 after three attempts. Every result in this fi
 now on ten real weather years, 2014-2023, except where a line says otherwise. Read this
 before quoting anything.
 
-The dashboard is NOT a synthetic or average year. `profiles.json` carries Eskom
-hourly demand for 2025 and a metered wind series at 31.97% CF. The label
+The dashboard is not a synthetic or average year. `profiles.json` carries Eskom
+hourly demand for 2025 and a metered wind series at 31.97% cf. The label
 "synthetic-normal weather year" used in earlier versions of this file was simply
 wrong.
 
@@ -138,12 +138,12 @@ when every megawatt of South African wind is in the Cape provinces and Hydra
 Central. That produced wind capacity factors of 22.6-27.2%, below the 28-38% band
 validate_benchmarks enforces, and no harness caught it because nothing exercised
 the multi-year path. An intermediate version of this file reported gas figures ~35%
-too high on that broken weighting. Those numbers are WITHDRAWN.
+too high on that broken weighting. Those numbers are withdrawn.
 
 Verification that the current basis is right: 2023 through the multi-year path now
-returns 31.97% wind CF, identical to the dashboard for the same year.
+returns 31.97% wind cf, identical to the dashboard for the same year.
 
-2022 IS THE design year, with 2015 close behind. Wind output 46.0 TWh against
+2022 is the design year, with 2015 close behind. Wind output 46.0 TWh against
 53.7 TWh in 2023 - a 17% spread. Quote the worst year for anything that sizes
 capacity and the range for anything else.
 
@@ -182,10 +182,10 @@ annual gas TWh    min  31.1   mean  33.4   max  38.2 (2022)
 dashboard 2023          2,761 GWh July - almost exactly the ten-year mean
 ```
 
-THE GAP IS REAL. Seriti's 5,553 GWh sits above the worst of ten years. GridTwin
-runs the retained Medupi and Kusile ON merit, generating 4,479 GWh in July; Seriti
+The gap is real. Seriti's 5,553 GWh sits above the worst of ten years. GridTwin
+runs the retained Medupi and Kusile on merit, generating 4,479 GWh in July; Seriti
 scale thermal output to a fixed capacity share (~25%) and let gas fill the residual.
-That modelling choice remains the leading explanation and IS worth putting to them.
+That modelling choice remains the leading explanation and is worth putting to them.
 
 An intermediate version of this file said the opposite - that the gap was an
 artefact and the coal explanation should be dropped. That was the broken weighting.
@@ -204,16 +204,16 @@ At equal 45 GW total, no gas, across ten weather years:
 
 Wind-heavy wins in every year, by 15 to 19%. 2022 is worst for both. The direction
 holds across a decade of real weather, and the margin is wider than the single-year
-run suggested. This IS THE strongest result IN this FILE.
+run suggested. This is the strongest result in this file.
 
 They found the same direction on a five-point ERA5 composite. GridTwin finds it
 on regional MERRA-2 profiles at capacity-weighted plant locations. Their
-conclusion survives a more granular wind model. This IS THE strongest thing TO
+conclusion survives a more granular wind model. This is the strongest thing to
 lead with in any outreach.
 
 ### Their solar assumption is self-contradictory
 
-Their page says the 25 GW may include a mix of utility and rooftop, AND that
+Their page says the 25 GW may include a mix of utility and rooftop, and that
 existing embedded generation is already in Eskom's demand data. Both cannot hold.
 Read both ways:
 
@@ -240,7 +240,7 @@ Eskom-owned plant.
 
 ## Long-duration storage does not solve a winter wind drought
 
-Confirmed across TEN weather years, 28 Aug 2026. Adding 20 GW of 100-hour iron-air
+Confirmed across ten weather years, 28 Aug 2026. Adding 20 GW of 100-hour iron-air
 to the Seriti scenario changes July gas by exactly zero in all ten years - not
 approximately, not to three significant figures, but to the last digit printed in
 every year from 2014 to 2023. July gas itself ranges 1,605 to 3,968 GWh across those
@@ -251,7 +251,7 @@ which is where the value of long-duration storage actually sits. It is a
 shoulder-season and spring-curtailment technology, not a winter-drought one.
 
 
-Their conclusion is that the deficit needs firm wind or seasonal STORAGE. Tested
+Their conclusion is that the deficit needs firm wind or seasonal storage. Tested
 directly. July gas energy, Seriti scenario:
 
 ```
@@ -273,7 +273,7 @@ R259bn and takes average cost from R1.30 to R2.54/kWh - nearly double - to buy a
 Twenty gigawatts of 100-hour iron-air is two terawatt-hours of storage and it
 changes July by nothing, to three significant figures. Iron-air alone makes it
 worse. There is no surplus to store; the deficit is an energy shortage, not a
-shifting problem. Seasonal storage does NOT solve IT either - a stronger claim
+shifting problem. Seasonal storage does not solve it either - a stronger claim
 than Seriti's own.
 
 Annual effect is real but happens in other months: gas 30.7 to 29.7 TWh,
@@ -283,7 +283,7 @@ curtailment to zero.
 
 ## Lithium duration: the wall, priced
 
-Confirmed across TEN weather years, 28 Aug 2026. Going 4h to 10h cuts annual gas by
+Confirmed across ten weather years, 28 Aug 2026. Going 4h to 10h cuts annual gas by
 between 0.55% and 1.63%, mean 0.93%, in every year. It also removes curtailment
 almost entirely - 0.167-0.539 TWh at 4h falls to 0.000-0.129 TWh at 10h.
 
@@ -341,11 +341,11 @@ first estimate and the corrected ten-year run is a coincidence of two errors
 cancelling, not corroboration - the first was one favourable year, this is the worst
 of ten. Cite this one.
 
-THE price IS CURTAILMENT. At 50 GW wind / 60 GW solar the system throws away
+The price is curtailment. At 50 GW wind / 60 GW solar the system throws away
 75.7 TWh a year on the worst weather year. Building for the worst week and wasting
 the output the rest of the year.
 
-### costed, 28 Aug 2026 - and gas is NOT cheaper
+### costed, 28 Aug 2026 - and gas is not cheaper
 
 An earlier version of this file said "gas is almost certainly cheaper, but that
 comparison needs the storage capex fix first". The fix is in. The claim was wrong.
@@ -365,7 +365,7 @@ no gas, 80W/40S                    120         0     101.8    288    25       1 
 no gas, 50W/80S                    130         0     112.5    287    29       2    318   1.51
 ```
 
-### TEN WEATHER YEARS, run 31 Aug 2026 — and the neutrality is REAL
+### ten weather years, run 31 Aug 2026 — and the neutrality is real
 
 The single-year version could show cost neutrality but not test it. Across all ten:
 
@@ -383,11 +383,11 @@ year      with 25 GW gas   no gas 50W/60S   delta
 2023                 275              277      +2
 ```
 
-**THE SIGN FLIPS.** Six years favour the no-gas build, four favour gas, and the spread is
+**the sign flips.** Six years favour the no-gas build, four favour gas, and the spread is
 -10 to +3 R bn on a base near R278 bn. That is what cost-neutral actually looks like, and
 it is a stronger statement than a single year matching by coincidence.
 
-### AND SOMETHING THE SINGLE YEAR COULD NOT SEE
+### and something the single year could not see
 
 ```
                        range R bn/yr   spread
@@ -395,7 +395,7 @@ Seriti + 25 GW gas         275 - 289      14
 no gas, 50W/60S            277 - 279       2
 ```
 
-**THE GAS SCENARIO IS SEVEN TIMES MORE WEATHER-EXPOSED ON COST.** Its bad years are 2015
+**the gas scenario is seven times more weather-exposed on cost.** Its bad years are 2015
 and 2022 - poor wind years, where it burns more gas to cover the shortfall. The 110 GW
 no-gas build barely registers them, because it is overbuilt enough that a bad wind year is
 absorbed by curtailing less.
@@ -405,13 +405,13 @@ cost with a seventh of the variance** - and variance in annual fuel cost is exac
 utility hedges, and what a regulator sees as tariff volatility. The overbuild is buying
 insurance the single-year comparison priced at zero.
 
-CAVEAT: this is fuel and capex within the model's cost families. It excludes gas PRICE
+Caveat: this is fuel and capex within the model's cost families. It excludes gas price
 risk entirely, which would widen the gas scenario's spread further, and it assumes the
 connections exist - which on today's headroom they do not.
 
 ---
 
-RE-RUN 31 Aug 2026 against the corrected constants, same scenarios:
+Re-run 31 Aug 2026 against the corrected constants, same scenarios:
 
 ```
 scenario                        Total now   published   R/kWh now   published
@@ -422,26 +422,26 @@ no gas, 60W/60S                      299         305        1.43        1.46
 no gas, 80W/40S                      308         315        1.49        1.51
 ```
 
-**THE FINDING HOLDS.** Every level fell 3-4% with the recalibration, the ORDERING is
+**the finding holds.** Every level fell 3-4% with the recalibration, the ordering is
 unchanged, and 50W/60S remains the one no-gas build that matches the gas scenario -
 R277 bn against R274 bn, and identical at R1.32/kWh.
 
-ONE HONEST NUANCE: the sign flipped inside the noise. The published version had the
-no-gas build marginally CHEAPER (R1.36 against R1.37); it is now marginally DEARER in
+One honest nuance: the sign flipped inside the noise. The published version had the
+no-gas build marginally cheaper (R1.36 against R1.37); it is now marginally dearer in
 total (R277 against R274) and identical per kWh. A 1% gap either way is below what this
 model can resolve, so the claim is **cost-neutral**, not "cheaper" - which is how it
 should have been stated the first time.
 
-Removing GAS IS cost-neutral AT THE right BUILD. 50 GW wind with 60 GW solar and no
+Removing gas is cost-neutral at the right build. 50 GW wind with 60 GW solar and no
 gas at all costs about the same as the 25 GW gas scenario. The trade is roughly R90 bn
 more capex against R90 bn less fuel.
 
-But it is only cost-neutral at ONE point on the frontier. Every other no-gas build
+But it is only cost-neutral at one point on the frontier. Every other no-gas build
 tested costs 4% to 12% more, and the wrong mix is expensive: 80 GW wind with 40 GW
 solar costs R315 bn for the same job. So this is not "gas is unnecessary", it is
 "there exists a build where gas is unnecessary and it is not the obvious one".
 
-### THE frontier IS NOT buildable ON today'S grid
+### the frontier is not buildable on today'S grid
 
 Checked 28 Aug 2026, and this is the finding that governs everything above.
 
@@ -468,7 +468,7 @@ The 50W/60S frontier needs 45,388 MW of new wind and 56,729 MW of new solar. Ava
 headroom is 21,520 and 19,940. **Shortfall: 23,868 MW of wind and 36,789 MW of solar -
 about 61 GW of connections that do not exist.**
 
-THE distribution IS THE POINT. The Eastern Cape, Western Cape, Northern Cape and Hydra
+The distribution is the point. The Eastern Cape, Western Cape, Northern Cape and Hydra
 Central hold **100% of South Africa's existing wind capacity and 7.3% of the national
 room to add more**. For solar those four regions have zero headroom between them. The
 Northern Cape and Hydra Central - the two best resources in the country, at 37.9% and
@@ -480,7 +480,7 @@ per-kW figure; it is not the cost of creating headroom in the Karoo specifically
 is where it would have to be created. Treat R285 bn as a floor and the gap to gas as
 understated by an amount this model cannot yet price.
 
-What this does NOT mean: headroom is not fixed. It is what the grid can take today, and
+What this does not mean: headroom is not fixed. It is what the grid can take today, and
 the whole purpose of the Transmission Development Plan is to expand it. The finding is
 about sequencing, not impossibility - a no-gas system is reachable at roughly the cost
 of a gas one, but only after a transmission build that is itself the binding constraint
@@ -491,9 +491,9 @@ mechanism in this model - under REIPPPP some of it would be paid for.
 
 ---
 
-## Flexibilising the coal fleet does NOT improve adequacy
+## Flexibilising the coal fleet does not improve adequacy
 
-Confirmed across TEN weather years, 28 Aug 2026. It does NOT reverse in any year.
+Confirmed across ten weather years, 28 Aug 2026. It does not reverse in any year.
 This was flagged as the weakest result in this file and it is no longer weak.
 
 ```
@@ -510,7 +510,7 @@ year     rigid   flexible    delta    coal rigid  coal flex   batt rigid  batt f
 2023     14,381    15,542   +1,161       50.0       47.1         6.41       5.08
 ```
 
-TEN years OUT OF TEN, and the effect is remarkably stable: +1,057 to +1,223 GWh,
+Ten years out of ten, and the effect is remarkably stable: +1,057 to +1,223 GWh,
 a range of 166 GWh, while the underlying unserved energy moves by 4,200 GWh between
 best and worst year. So the flexibilisation penalty is nearly independent of weather,
 which is much stronger evidence than the single-year run gave. The concern that it
@@ -535,12 +535,12 @@ Mechanism, confirmed by measurement rather than inference: rigid coal cannot bac
 off fast enough during renewable surplus, so it is forced to keep generating
 (index.html, the coalFloor branch). That forced output charges pumped storage and
 batteries. In a normal system this is the well-known pathology of inflexible coal
-wasting renewables. In a NO-GAS system it becomes an accidental virtue, because
+wasting renewables. In a no-gas system it becomes an accidental virtue, because
 the storage it fills is the only thing left to cover the drought. Flexible coal
 backs down properly, generates 2.9 TWh less, and storage delivers 2 TWh less.
 
-What IT IS NOT: the four-hour ramp-aware look-ahead was hypothesised as the cause
-and TESTED. It is not. Sweeping `coalLookaheadH` from 2 to 48 hours changes the
+What it is not: the four-hour ramp-aware look-ahead was hypothesised as the cause
+and tested. It is not. Sweeping `coalLookaheadH` from 2 to 48 hours changes the
 flexible case by zero across the whole range, because at 100%/hr the ramp term
 swamps the horizon and the floor collapses regardless. The horizon binds only in
 the rigid case, where 4h to 12h improves unserved from 14,078 to 13,695 GWh, a
@@ -551,7 +551,7 @@ Scope: this effect appears only with no dispatchable backup at all. With Seriti'
 a curtailment and emissions measure, not an adequacy one. State that caveat
 whenever this result is quoted.
 
-Capacity IS THE binding constraint, NOT ramp RATE. Retaining 20 GW of coal instead
+Capacity is the binding constraint, not ramp rate. Retaining 20 GW of coal instead
 of 10 cuts unserved from 15,206 to 768 GWh. Retaining 30 GW takes it to zero.
 
 ---
@@ -564,7 +564,7 @@ or solar output. But see the reserve caveat at the end of this section.
 
 The country has passed the knee - see the re-run below.
 
-RE-RUN 31 Aug 2026 at the published reserve price of R150/MWh held:
+Re-run 31 Aug 2026 at the published reserve price of R150/MWh held:
 
 ```
 fleet      ancillary R/MW/yr    as published
@@ -578,7 +578,7 @@ fleet      ancillary R/MW/yr    as published
 10  GW             50,204             69,305
 ```
 
-**THE KNEE HAS MOVED EARLIER, AND THAT STRENGTHENS THE FINDING.** Revenue is now flat
+**the knee has moved earlier, and that strengthens the finding.** Revenue is now flat
 only to about 2.5 GW, not 3.8. Ancillary falls 74.5% across the range, not 64.8%.
 
 The cause is the reserve rebuild of 30 Aug 2026, which consolidated the battery panel's
@@ -586,7 +586,7 @@ duplicate reserve constants onto the unit commitment's own definition and cut th
 requirement about 30%, from 1,768 to 1,263 MW. A smaller requirement is satisfied by a
 smaller fleet, so saturation arrives sooner.
 
-**SOUTH AFRICA IS NOT APPROACHING THE KNEE. IT IS ALREADY PAST IT.** The existing fleet is
+**south africa is not approaching the knee. it is already past it.** The existing fleet is
 3,700 MW against a knee near 2,500. The published version said the country sat "almost
 exactly at the knee" and that 3,700 MW was "the last point at which a new battery earns
 the full ancillary rate". Both were one revision out of date: a battery built today
@@ -594,7 +594,7 @@ already earns a reduced ancillary rate, not the full one.
 
 The direction of the argument is unchanged and its force is greater.
 
-Understates against ERCOT's ~90% because arbitrage is held flat in this model.
+Understates against ercot's ~90% because arbitrage is held flat in this model.
 
 Requires `asReserveOn`. At defaults the panel shows a flat line and says so,
 because South Africa prices no ancillary services today.
@@ -604,12 +604,12 @@ Recomputed 28 Aug 2026. The reserve requirement previously read a hardcoded
 and fell through. It now reads the model's own peak (31,595 MW at default, and
 46,193 MW at 50% demand growth, where the old code would still have said 32,000).
 The ancillary fall moved 61.6% to 62.1% and the 10 GW figure R75,686 to R74,729.
-The knee DID NOT move and the conclusion is unchanged - which is the reassuring
+The knee did not move and the conclusion is unchanged - which is the reassuring
 outcome, since a 1.3% input correction producing a large swing would have meant
 something else was wrong.
 
-RESERVE rebuilt 28 Aug 2026, and this section now reflects it. The requirement is
-contingency + demand share + VRE share, resolved hourly:
+Reserve rebuilt 28 Aug 2026, and this section now reflects it. The requirement is
+contingency + demand share + vre share, resolved hourly:
 
 ```
 scenario                  mean MW   max MW
@@ -630,13 +630,13 @@ Corrected 28 Aug 2026, and the correction produced the most important storage fi
 in this file.
 
 The requirement is now split into three, as professional practice does:
-  Gross        the uncertainty to be covered, driven by available VRE - dispatched
+  Gross        the uncertainty to be covered, driven by available vre - dispatched
                Plus curtailed - because forecast error is a property of what a plant
                could have produced.
-  VRE-provided curtailed plant can ramp back up, so it is an eligible upward-reserve
-               provider. ERCOT, EirGrid and AEMO all permit this. Counted at 50% of
+  vre-provided curtailed plant can ramp back up, so it is an eligible upward-reserve
+               provider. ercot, EirGrid and AEMO all permit this. Counted at 50% of
                curtailed output, since it must be fast, telemetered and controllable.
-  NET          what storage and thermal actually compete for.
+  net          what storage and thermal actually compete for.
 
 ```
 scenario              gross    VRE provides    NET   curtailment TWh
@@ -645,16 +645,16 @@ Seriti, 45 GW VRE     1,567               3   1,564        0.2
 frontier, 110 GW      2,114           1,457     657      115.3
 ```
 
-Revised 29 Aug 2026 after an audit found this panel had defined its OWN reserve
+Revised 29 Aug 2026 after an audit found this panel had defined its own reserve
 constants in parallel with the ones the unit commitment already used - 930 MW versus
 794 MW for the same "largest single credible loss". Now consolidated onto the
 commitment definition, which is older and better sourced. Levels drop ~30%; the shape
 and the conclusion are unchanged.
 
-### THE ancillary market FOR storage shrinks AS renewables grow
+### the ancillary market for storage shrinks as renewables grow
 
 At 110 GW of wind and solar the gross requirement rises to 2,114 MW, as expected. But
-curtailed renewables supply 1,457 MW of it, and the NET pot left for storage collapses
+curtailed renewables supply 1,457 MW of it, and the net pot left for storage collapses
 to 657 MW - smaller than today'S 1,263 MW, in a system more than twice the size.
 
 This inverts the usual assumption that storage ancillary revenue grows with renewable
@@ -665,7 +665,7 @@ on the system and storage is competing against a near-zero-marginal-cost incumbe
 The turning point is curtailment, not capacity: the Seriti 45 GW case curtails only
 0.2 TWh and the effect is invisible there. It appears between 45 and 110 GW.
 
-What this does NOT SAY: whether South Africa will permit curtailed renewables to sell
+What this does not say: whether South Africa will permit curtailed renewables to sell
 reserve. That is a market-design decision, not a physical one, and it is exactly the
 kind of thing the Revised Electricity Pricing Policy is deciding now. If the answer is
 yes, the storage business case at high penetration is materially worse than any
@@ -688,7 +688,7 @@ reserve VRE pct         2.5 -> 521    5.0 -> 657    7.5 -> 804    10 -> 958   al
 contingency MW          400 -> 486    794 -> 657    930 -> 718   1600 -> 1,018  all shrink
 ```
 
-THE only thing that matters IS whether curtailed VRE MAY sell RESERVE AT ALL. Bar it
+The only thing that matters is whether curtailed vre may sell reserve at all. Bar it
 and the pot grows from 1,263 to 2,114 MW, as intuition expects. Allow even a quarter of
 curtailed output to qualify and the pot collapses to 743 MW, below today's. Everything
 from 0.25 to 1.0 lands in a narrow band of 606-743 MW.
@@ -698,14 +698,14 @@ parameter; it is sensitive to a yes/no policy decision, and it flips at a very l
 threshold.
 
 Nor does it depend on the other two. Across a fourfold range of contingency size and a
-fourfold range of the VRE reserve share, the pot at 110 GW is smaller than today's in
+fourfold range of the vre reserve share, the pot at 110 GW is smaller than today's in
 every single case.
 
-That IS THE stronger version OF this result, and the one to put to a regulator: the
+That is the stronger version of this result, and the one to put to a regulator: the
 question is not "how much reserve will curtailed plant provide" but "will it be allowed
 to provide any".
 
-The shares (0.03 of load, 0.05 of available VRE, 50% of curtailed VRE counting as a
+The shares (0.03 of load, 0.05 of available vre, 50% of curtailed vre counting as a
 provider) are the uncertain part. The structure now follows practice.
 
 ---
@@ -713,7 +713,7 @@ provider) are the uncertain part. The structure now follows practice.
 ## Locational transmission signal, measured
 
 Directly relevant to the Revised Electricity Pricing Policy (Gazette 55257,
-28 Aug 2026). Policy Position 20 instructs the transmission licence holder, DEE and
+28 Aug 2026). Policy Position 20 instructs the transmission licence holder, dee and
 NERSA to "investigate different options and adopt the most appropriate method for
 allocating costs between generators", noting that the current methodology recognises
 only peak security and does not reflect the costs different generator types impose.
@@ -738,17 +738,17 @@ Gauteng                  0.00          2.40                       0             
 Kwazulu Natal            2.48          0.00                       0                  0
 ```
 
-RE-VERIFIED 31 Aug 2026 after the constant corrections. Row counts reproduce exactly
-(119,225 parsed, 119,225 returned) and **the spread HOLDS AND WIDENS: 66-fold against the
+Re-verified 31 Aug 2026 after the constant corrections. Row counts reproduce exactly
+(119,225 parsed, 119,225 returned) and **the spread holds and widens: 66-fold against the
 48-fold published**, top wind dual 3,571,840 against a lowest non-zero of 53,841. Levels
 fell about threefold - a system with less coal capacity, fewer imports and lower
-availability values connection headroom differently - but the RATIO between regions is
+availability values connection headroom differently - but the ratio between regions is
 the claim, and ratios survived. The EPP submission's "fiftyfold spread" is unchanged in
 substance and understated if anything.
 
-THE finding: the optimiser builds the most wind where the resource is WORST.
+The finding: the optimiser builds the most wind where the resource is worst.
 Mpumalanga takes 3.32 GW at a 25.5% capacity factor and KwaZulu-Natal 2.48 GW at
-21.6%, while Hydra Central (42.5%) and the Northern Cape (37.9%) get NOTHING. The
+21.6%, while Hydra Central (42.5%) and the Northern Cape (37.9%) get nothing. The
 Eastern Cape stops at 0.40 GW.
 
 The reason is in the second column. Headroom binds hardest in exactly the regions
@@ -772,7 +772,7 @@ that file gets wrong. Re-run across weather years before quoting externally.
 
 ## Demand response has an optimum, and past it makes things worse
 
-RE-VERIFIED 31 Aug 2026 against the corrected constants. **The finding holds exactly**:
+Re-verified 31 Aug 2026 against the corrected constants. **The finding holds exactly**:
 optimum still at 7.5%, still reverses by 30%. Levels moved with the calibration - avg cost
 570.46 -> 585.17 at zero shift - but the shape and the conclusion are unchanged.
 
@@ -789,10 +789,10 @@ shift %   avg cost R/MWh   peak GW   coal TWh   diesel TWh   curtailment TWh   C
  30            574.74       29.56     161.84        0.118           0.013      171.2
 ```
 
-Modest shifting WORKS. The evening peak falls from 31.60 to 29.23 GW, diesel halves
+Modest shifting works. The evening peak falls from 31.60 to 29.23 GW, diesel halves
 and CO2 falls. The optimum sits near 7.5%.
 
-Past about 15% IT REVERSES. The shifted load builds a NEW peak in the valley it was
+Past about 15% it reverses. The shifted load builds a new peak in the valley it was
 moved into: peak rises again to 29.56 GW, coal goes from 161.46 to 161.84 TWh, diesel
 from 0.005 to 0.118, and curtailment appears for the first time. At 30% the system
 costs more than with no demand response at all - R574.74/MWh against R570.46.
@@ -839,7 +839,7 @@ Balancing services               -                                  Absent
 Environmental compliance costs   -                                  Absent
 ```
 
-### cross-checked against NERSA'S OWN list, 30 Aug 2026
+### cross-checked against NERSA'S own list, 30 Aug 2026
 
 The Wholesale Electricity Pricing Methodology (NERSA consultation, May 2026) enumerates
 the wholesale price build-up independently of the EPP. It splits into two groups, and the
@@ -853,24 +853,24 @@ NON-market costs      legacy charges, bad debt recovery, social and cross-subsid
                       charges, vesting contract obligations
 ```
 
-That confirms THE split already IN this file, from a regulator rather than from
+That confirms the split already in this file, from a regulator rather than from
 inference. GridTwin produces or can produce every market cost. It produces none of the
-NON-market costs, and should not try: they are allocation decisions, not modelling
+Non-market costs, and should not try: they are allocation decisions, not modelling
 outputs. The methodology's own framing - that the wholesale cost "extends beyond the
 energy price in the day-ahead market" - is the sentence to quote when explaining why
 `avgCost` is not a tariff.
 
-TWO terms NERSA NAMES that THE EPP list DID NOT:
+Two terms NERSA names that the EPP list did not:
 
 **System operation charges** and **market operator charges**. Neither is in GridTwin and
 neither should be - they are institutional costs, not dispatch outcomes.
 
-**Balancing costs.** This one IS a modelling quantity and GridTwin does not have it. The
+**Balancing costs.** This one is a modelling quantity and GridTwin does not have it. The
 model is hourly, so it has no intra-hour balancing product at all. In a market with
 45 GW of wind and solar, balancing is not a rounding error. Worth knowing that the gap
 is now named by the regulator rather than only by us.
 
-A note ON risk, from the EIUG's submission on the Market Code: non-market charges risk
+A note on risk, from the eiug's submission on the Market Code: non-market charges risk
 becoming "dumping grounds for unallocated costs". That is the strongest argument for the
 disaggregation this project has been advocating - if the market costs are separately
 published and checkable, whatever is left in the non-market bucket becomes visible.
@@ -880,13 +880,13 @@ published and checkable, whatever is left in the non-market bucket becomes visib
 Three produced, three modelled but switched off because South Africa does not price
 them today, one partial, six absent.
 
-What this means FOR ANY price CLAIM. GridTwin's `avgCost` is fuel plus carbon plus new
-grid-connected capex, divided by grid-served energy. It is NOT a tariff and does not
+What this means for any price claim. GridTwin's `avgCost` is fuel plus carbon plus new
+grid-connected capex, divided by grid-served energy. It is not a tariff and does not
 try to be - the panel says so. Six of the thirteen components the policy enumerates are
 simply not in it, and they are not small: legacy cost recovery and distribution charges
 are a large part of what a South African customer actually pays.
 
-THE TWO worth closing, in order.
+The two worth closing, in order.
 
 Transmission is partial and the gap matters for the locational work. `txRPerKWyr` is a
 flat R600/kW-yr adder on new wind and utility PV. That is a build cost, not a
@@ -895,7 +895,7 @@ way whether a plant connects into 5,500 MW of headroom in KwaZulu-Natal or into 
 the Northern Cape. The corridor duals from the regional LP are the raw material for
 fixing that, and they already exist.
 
-Congestion is produced BUT NOT PRICED. The `txa_` shadow prices come out of every
+Congestion is produced but not priced. The `txa_` shadow prices come out of every
 regional solve and are discarded. Converting them into a congestion charge is the
 smallest step available toward what Policy Position 20 asks for.
 
@@ -911,7 +911,7 @@ The first of the two gaps identified in the price-component mapping. The `txa_`/
 shadow prices come out of every regional solve and were being discarded. Extracted
 28 Aug 2026, default scenario, masterplan pace.
 
-Congestion IS rare AND CONCENTRATED. Nine binding rows out of 38,400 corridor
+Congestion is rare and concentrated. Nine binding rows out of 38,400 corridor
 constraints - 0.023%. Every one of them is the same event:
 
 ```
@@ -931,24 +931,24 @@ Day 159 is 8 June - midwinter, midday. Flow is into the Western Cape on all thre
 its import corridors simultaneously, in the same hour, in three consecutive years. The
 dual declines 199,872 to 171,358 as transmission is built out.
 
-### THE duals ARE identical, AND that IS NOT AN error
+### the duals are identical, and that is not an error
 
 Three corridors with different ratings - 2,377, 823 and 233 MW - carry the same shadow
 price to the rand. Checked, because it looked like a mapping fault. It is structural:
 the Western Cape is fed by exactly these three corridors, and in a transport model with
-one balance per region, relaxing ANY ONE of them admits the same additional megawatt.
+one balance per region, relaxing any one of them admits the same additional megawatt.
 So the marginal value is the same on all three.
 
-**consequence FOR pricing, and it is the whole point.** You cannot charge each corridor
+**consequence for pricing, and it is the whole point.** You cannot charge each corridor
 its own dual and add them up - that triple-counts a single constraint. The economically
 meaningful quantity is the rent on the western cape import boundary, not on any wire.
 Any congestion charge built off these duals has to be defined on boundaries or on
 cutsets, not on individual lines. That is a real design trap and it is invisible until
 you look at which rows bind together.
 
-### what this does AND does NOT support
+### what this does and does not support
 
-It does NOT support a claim that South Africa's grid is congested in this scenario -
+It does not support a claim that South Africa's grid is congested in this scenario -
 0.023% of corridor-hours is close to nothing, and this is the default build at the
 masterplan pace, which does not push much energy across the network.
 
@@ -967,7 +967,7 @@ The second gap from the price-component mapping, closed 28 Aug 2026.
 identically whether a plant connected into 5,500 MW of headroom in KwaZulu-Natal or
 into zero in the Northern Cape.
 
-THE level WAS right, THE shape WAS NOT. TDP 2025-2034 is 14,500 km and 210 transformers
+The level was right, the shape was not. TDP 2025-2034 is 14,500 km and 210 transformers
 for 56 GW at over R390bn - R6,964/kW overnight, which over a 40-year life at 8%
 annuitises to R584/kW-yr. So R600 is a sound national average. It just had no variation.
 
@@ -992,7 +992,7 @@ Hydra Central              479             0       735
 
 Nearly a fivefold spread, R150 to R735.
 
-### THE headroom IS where THE cost IS LOW AND THE resource IS BAD
+### the headroom is where the cost is low and the resource is bad
 
 This is the finding, and it was not obvious before the numbers existed.
 
@@ -1013,7 +1013,7 @@ So the trade-off Policy Position 20 describes is now quantified from both ends. 
 near load: cheap grid, poor resource. Build in the Karoo: excellent resource, R735/kW-yr
 of grid, and no headroom to connect into at all.
 
-### THE rate NOW rises with build volume
+### the rate now rises with build volume
 
 Regions fill cheapest-first, so a bigger programme costs more per kW - which is true and
 was previously not modelled at all.
@@ -1043,7 +1043,7 @@ share of the time-weighted mean price - what a merchant project earns against wh
 market averages. Computed from the model's own hourly shadow price against each
 technology's dispatched output.
 
-RE-RUN 31 Aug 2026 against the corrected constants, reproducing the published scenario
+Re-run 31 Aug 2026 against the corrected constants, reproducing the published scenario
 exactly - no storage, same build points:
 
 ```
@@ -1055,20 +1055,20 @@ wind GW  solar GW  batt GW   mean R/MWh   wind capture   solar capture   solar R
    50        60          0          227          97.2%            2.7%             6      111.9
 ```
 
-**THE asymmetry IS THE FINDING, and it survives.** Wind holds 96-107% of the mean price
+**the asymmetry is the finding, and it survives.** Wind holds 96-107% of the mean price
 across the whole range. Solar falls to 2.7%. At 50 GW of solar a merchant plant earns
 R6/MWh against wind's R221 - not a discount, an evaporation. Four of the five rows
 reproduce within two points of the 29 Aug measurement.
 
-### THE FIRST ROW MOVED, AND IT MATTERS
+### the first row moved, and it matters
 
 Today's fleet was published at 98.4% solar capture against a R755 mean. It now reads
 **75.7% against a R999 mean.** The corrections of 31 Aug - coal capacity down 5.8%,
 imports down 52%, availability down three points - revealed scarcity pricing that the
 old constants suppressed. The mean price rose 32%, and the new expensive hours are
-EVENING hours, when solar does not produce.
+Evening hours, when solar does not produce.
 
-**So solar already earns a quarter below the market average TODAY**, before any
+**So solar already earns a quarter below the market average today**, before any
 cannibalisation from new build. The published version showed near-parity and understated
 the starting point. The direction of the finding is unchanged; its starting level was
 wrong.
@@ -1082,9 +1082,9 @@ Wind output is diverse across sites and runs at night, so it keeps meeting hours
 something dispatchable is still setting the price. Zero-price hours go from none to
 6,065 - 69% of the year - across this range.
 
-### storage IS what protects solar'S revenue, and the effect is large
+### storage is what protects solar'S revenue, and the effect is large
 
-The rows above carry NO storage, which overstates the collapse. Scaling batteries
+The rows above carry no storage, which overstates the collapse. Scaling batteries
 alongside the build (6-hour lithium):
 
 ```
@@ -1099,7 +1099,7 @@ At 30 GW wind / 35 GW solar, adding 20 GW of storage lifts solar capture from 14
 54.1% and the achieved price from R59 to R261/MWh - a fourfold improvement in project
 revenue. At the top of the range it is 2.5% to 22.6%, roughly ninefold.
 
-SO THE storage case IS NOT primarily about ADEQUACY. Elsewhere in this file storage
+SO the storage case is not primarily about adequacy. Elsewhere in this file storage
 does almost nothing for winter security. Here it is worth more than anything else
 tested, because it is the only thing standing between a solar developer and a merchant
 price of R5/MWh. Those two findings are not in tension - they answer different
@@ -1129,12 +1129,12 @@ scenario                     storage TWh   Fe full cycles   July gas GWh   curta
 110 GW VRE, + iron-air 40 GW        7.61              1.9              0            95.8
 ```
 
-**AT 45 GW there IS A deficit BUT NO SURPLUS.** Annual curtailment is 0.2 TWh. A
+**at 45 GW there is A deficit but no surplus.** Annual curtailment is 0.2 TWh. A
 seasonal store needs terawatt-hours of spare energy to fill it; there are 200 GWh in the
 whole year, and the system is still running 50 TWh of coal. Perfect foresight would have
 had nothing to charge with.
 
-**AT 110 GW there IS AN enormous surplus BUT NO DEFICIT.** Curtailment is 100 TWh, and
+**at 110 GW there is an enormous surplus but no deficit.** Curtailment is 100 TWh, and
 July gas is already zero because the build itself covers the drought. There is nothing
 left for storage to improve.
 
@@ -1154,7 +1154,7 @@ price floor            R690/MWh in every month - coal sets it, and it never goes
 spare coal capacity    10.2 TWh across 7,305 hours, with 10 GW of coal retained
 ```
 
-So there IS cheap energy available all year. A 45%-efficient store charging at R690
+So there is cheap energy available all year. A 45%-efficient store charging at R690
 delivers at about R1,533/MWh, against gas clearing near R1,968. **Long-duration
 arbitrage against gas is in the money**, and the model was not doing it.
 
@@ -1162,16 +1162,16 @@ South Africa also curtails today at low penetration for network reasons - locali
 Cape constraints - which a single-node national model cannot see at all. That is a real
 limitation of this engine, not evidence that no surplus exists.
 
-### TWO dispatch defects found, ONE FIXED
+### two dispatch defects found, one fixed
 
-**FIXED - the charging horizon was 25 hours, fixed.** `anticipatedShortfall` summed the
+**fixed - the charging horizon was 25 hours, fixed.** `anticipatedShortfall` summed the
 next 25 hours to set the charge target. That is right for a 4-10 hour battery and
 useless for a 100-hour store: one day's anticipated shortfall is trivial against 2 TWh,
 so iron-air never saw a reason to fill. It now scales with the longest storage on the
 system, capped at one week - beyond that perfect foresight does more work than the
 storage does.
 
-**NOT FIXED - efficiency merit order starves long-duration storage.** `tierCharge` fills
+**not fixed - efficiency merit order starves long-duration storage.** `tierCharge` fills
 best round trip first: lithium 0.88, then vanadium 0.70, then iron-air 0.45. Lithium
 empties every day, so it always has room, so it absorbs the cheap charging and iron-air
 is never reached. Fixing the horizon changed July gas by nothing at all for exactly this
@@ -1182,7 +1182,7 @@ fills the long store when a long event is coming, even at worse round trip, beca
 lithium cannot hold energy that far. That is a real dispatch rewrite and has not been
 attempted.
 
-### THE rewrite WAS attempted, measured, AND reverted - 30 Aug 2026
+### the rewrite was attempted, measured, and reverted - 30 Aug 2026
 
 Against how the literature says this should be done. Production cost models run one- to
 two-day horizons to match day-ahead markets, which cannot capture a multi-day store's
@@ -1191,7 +1191,7 @@ operational value and 14-34% of capacity credit. The recommended treatment is
 opportunity-value dispatch - a reservation price per store reflecting expected future
 scarcity - not an efficiency merit order.
 
-TWO changes MADE. Per-tier lookahead horizons, so a 10-hour battery looks at tonight and
+Two changes made. Per-tier lookahead horizons, so a 10-hour battery looks at tonight and
 a 100-hour store at the coming week instead of both being asked about the next 25 hours.
 And charging served in order of unmet need against those horizons, efficiency only as a
 tie-break.
@@ -1202,17 +1202,17 @@ efficiency order (before)            8.42            2742
 unmet-need order (rewrite)           7.44            2810
 ```
 
-IT made things worse, so it was reverted. Filling a 45%-efficient store ahead of an
+It made things worse, so it was reverted. Filling a 45%-efficient store ahead of an
 88%-efficient one destroys more energy than the earlier availability recovers. **Unmet
 need is not value.** The heuristic had no test of whether the arbitrage was worth making,
 and ordering alone cannot express one.
 
 What would actually work: charge a tier only when the current marginal cost is below its
 expected discharge value times the round trip. That is a value function on state of
-charge, which needs an LP rather than a merit order - the same reason PLEXOS and PyPSA
+charge, which needs an LP rather than a merit order - the same reason plexos and PyPSA
 co-optimise storage across the horizon instead of ranking it.
 
-### then THE price-taker gate - built, and it settles the question
+### then the price-taker gate - built, and it settles the question
 
 The missing piece was an economic test. Two-pass price-taker: run once to get the hourly
 marginal price, build a reservation price per tier from the 90th percentile over its own
@@ -1224,16 +1224,16 @@ forward horizon, then re-run charging a tier only when
 
 `simulateTwoPass()` in index.html. One extra simulate call, about 590 ms.
 
-**THE gate says THE arbitrage IS IN THE MONEY.** In early July the reservation price is
+**the gate says the arbitrage is in the money.** In early July the reservation price is
 R2,020/MWh. Iron-air at 45% needs 690 < 2020 x 0.45 = 909, which clears comfortably. So
 charging a 100-hour store from R690 coal to displace R1,968 gas is worth doing, and the
 model's failure to do more of it is not an economic judgement.
 
-**BUT THE gate does NOT bind, so it changes nothing on its own.** Both tiers pass, so
+**but the gate does not bind, so it changes nothing on its own.** Both tiers pass, so
 gate-plus-ordering behaves exactly as ordering alone: July gas 2,742 -> 2,810 GWh with
 20 GW of iron-air, and -> 2,832 with vanadium. Reverted a second time.
 
-### WHY NO ordering heuristic CAN FIX this
+### why no ordering heuristic can fix this
 
 The gate answers "is this trade worth making". The question that decides the megawatt is
 comparative - is it worth more in the 45% store or the 88% one - and that depends on
@@ -1241,11 +1241,11 @@ whether the coming event is longer than the short store can cover, given both st
 charge. **That is a value function on state of charge, and a ranking cannot express
 one.** Measured twice, not assumed.
 
-Which is exactly why PLEXOS and PyPSA co-optimise storage across the horizon rather than
+Which is exactly why plexos and PyPSA co-optimise storage across the horizon rather than
 ranking it, and why the fix is a storage-only LP: take the non-storage dispatch as given
 and let HiGHS optimise charge, discharge and SOC across all 8,760 hours. About 50,000
 variables for three tiers - small against the LPs this project already solves - and the
-dual on the SOC constraint IS the opportunity value, an output no South African study
+dual on the SOC constraint is the opportunity value, an output no South African study
 currently publishes.
 
 Kept: the per-tier horizons and the price-taker gate, both correct on their own merits
@@ -1256,12 +1256,12 @@ Reverted: the ordering, twice.
 Perfect foresight caveat: pass two sees pass one's realised prices. A real operator
 forecasts. Anything from this path is an upper bound on long-duration storage value.
 
-### THE storage LP, built AND solved - and it settles both questions
+### the storage LP, built and solved - and it settles both questions
 
 `storage_lp.js`. Price-taker formulation: charge, discharge and state of charge as
 decision variables across all 8,760 hours, SOC balance as a constraint, cyclic so no
 free energy, objective to buy cheap and sell dear against the marginal price series
-from a prior dispatch. This is what PLEXOS and PyPSA do.
+from a prior dispatch. This is what plexos and PyPSA do.
 
 ```
 52,560 variables · 4.0 MB · solved optimal in 3.0 seconds
@@ -1276,7 +1276,7 @@ li            12.48            10.98        200,000                  995
 fe             3.20             1.44        941,568                   18
 ```
 
-**THE iron-AIR result survives THE fair TEST.** Given perfect foresight, an LP, and no
+**the iron-air result survives the fair test.** Given perfect foresight, an LP, and no
 merit order to starve it, a 20 GW / 2 TWh iron-air fleet displaces **18 GWh of July gas
 out of 2,742**. It does fill - peak state of charge reaches 941,568 MWh, 47% of capacity,
 which the heuristic never approached - so this is no longer a dispatch artefact. The 45%
@@ -1284,15 +1284,15 @@ round trip is simply punishing enough that the energy is better left in coal. Th
 provisional flag is removed: "long-duration storage does not solve a winter wind drought"
 now holds under an optimal dispatch, not just a heuristic one.
 
-**~~THE heuristic MAY BE under-using lithium~~ - withdrawn 30 Aug 2026, see below.** The LP finds 995 GWh of July gas that lithium could displace and the
+**~~the heuristic may be under-using lithium~~ - withdrawn 30 Aug 2026, see below.** The LP finds 995 GWh of July gas that lithium could displace and the
 heuristic does not, which would be 37% of July gas by the technology actually deployed.
-Imposing that schedule DID NOT reproduce THE saving - the fixed-point test returned July
-gas of 2,751-2,816 against the heuristic's 2,742. The claim is UNVERIFIED. Full account
-in "FIXED-point iteration" below.
+Imposing that schedule did not reproduce the saving - the fixed-point test returned July
+gas of 2,751-2,816 against the heuristic's 2,742. The claim is unverified. Full account
+in "fixed-point iteration" below.
 
 Caveats, and they matter for how the 37% is read:
-- perfect FORESIGHT. The LP sees the whole year; a real operator forecasts. Upper BOUND.
-- price-TAKER. The objective uses a FIXED marginal price series and does not re-clear
+- perfect foresight. The LP sees the whole year; a real operator forecasts. Upper bound.
+- price-taker. The objective uses a fixed marginal price series and does not re-clear
   the market, so the displaced gas is an estimate of the opportunity, not a re-solved
   system cost.
 - The serveable and chargeable limits are approximations from the pass-one dispatch.
@@ -1313,7 +1313,7 @@ is higher than lithium's because it is rarely the binding store, so its shadow p
 at the ceiling rather than being competed down. **That is the storage revenue signal, and
 it is not published for South Africa anywhere.**
 
-### rolling horizon — and a result that must NOT be read as it looks
+### rolling horizon — and a result that must not be read as it looks
 
 A full-year solve sees every hour before deciding anything; no operator does. Production
 cost models solve a window, step forward and carry SOC. Both now run.
@@ -1325,24 +1325,24 @@ rolling 168 h window, 24 h step   1,032 GWh (37.6%)        11.26 TWh    6.8 s (3
 rolling 336 h window, 48 h step   1,100 GWh (40.1%)        11.66 TWh    6.0 s (183 solves)
 ```
 
-**limited foresight appeared TO beat perfect foresight ON JULY. Resolved - it was the
+**limited foresight appeared to beat perfect foresight on july. Resolved - it was the
 crude end-of-window floor, replaced with a terminal value function; all three runs now
 agree at 36.5%. The original diagnosis below was only half right.** That
 combination is impossible for the quantity being optimised, and the explanation is that
-July displacement is NOT the objective. The LP maximises arbitrage value across the whole
+July displacement is not the objective. The LP maximises arbitrage value across the whole
 year. Perfect foresight spends storage wherever the price spread is best, which is not
 necessarily July; the myopic runs cannot see those better opportunities and serve July
 more or less by accident. Annual discharge - closer to the actual objective - behaves
 correctly: 12.42 TWh with foresight against 11.26 and 11.66 without.
 
-SO DO NOT quote THE rolling july figures AS AN IMPROVEMENT. The honest reading is that
+So do not quote the rolling july figures as an improvement. The honest reading is that
 the 37% is robust to foresight assumptions, which is the useful conclusion, and that
 comparing runs on a metric neither is optimising invites exactly this error.
 
-### THE five gaps, addressed 30 Aug 2026 — four closed, one cannot be
+### the five gaps, addressed 30 Aug 2026 — four closed, one cannot be
 
-**1. Terminal value function, replacing the crude end-of-window floor. Closed, AND IT
-FIXED THE PARADOX.** Each rolling window now values energy left in the store at the
+**1. Terminal value function, replacing the crude end-of-window floor. Closed, and it
+Fixed the paradox.** Each rolling window now values energy left in the store at the
 expected price beyond the horizon, rather than requiring it to end where it started.
 
 ```
@@ -1357,12 +1357,12 @@ the crude floor, and it is gone. All three now agree at 36.5%. **That is a much 
 finding than the original: the 37% survives, and it no longer depends on foresight
 assumptions at all.**
 
-**2. Self-DISCHARGE. CLOSED.** SOC carries a per-hour loss: 0.004%/h lithium,
+**2. Self-discharge. closed.** SOC carries a per-hour loss: 0.004%/h lithium,
 0.05%/h iron-air. Immaterial for a 10-hour battery, about 5% over a full 100-hour
 iron-air cycle. Estimates, not sourced - no South African source gives them, and they are
 flagged in the code rather than promoted to `FIXED`.
 
-**3. Cycle-life COST. CLOSED.** R250/MWh of throughput for lithium, R50 for iron-air,
+**3. Cycle-life cost. closed.** R250/MWh of throughput for lithium, R50 for iron-air,
 standing in for degradation. It stops the LP cycling for a one-rand spread. It also lets
 the model express something it previously could not: vanadium's electrolyte does not
 degrade, which is a genuine commercial advantage.
@@ -1375,7 +1375,7 @@ li        1,563    1,769    1,771    1,774
 fe        1,925    1,969    2,025    2,133
 ```
 
-**4. RESERVE CO-optimised against ARBITRAGE. Closed** (opt-in, `--reserve`). Power sold
+**4. reserve CO-optimised against arbitrage. Closed** (opt-in, `--reserve`). Power sold
 as reserve cannot also discharge, and energy behind it cannot be spent. Until now the
 model let a battery sell both at once, which overstates storage revenue.
 
@@ -1385,12 +1385,12 @@ without reserve             1.44 TWh          941,568         18 GWh
 with reserve                0.77 TWh          242,264          7 GWh
 ```
 
-**iron-AIR'S energy role halves once IT must also hold RESERVE**, and its peak state of
+**iron-air'S energy role halves once it must also hold reserve**, and its peak state of
 charge falls by three quarters. Its opportunity value rises correspondingly - p90 from
 2,025 to 2,377 - because the energy is scarcer. July displacement is unchanged at 36.5%,
 so lithium absorbs the difference.
 
-**5. FIXED-point ITERATION. RUN, AND IT does NOT converge - which is the finding.**
+**5. fixed-point iteration. run, and it does not converge - which is the finding.**
 
 The LP optimises against prices the heuristic produced. Impose its schedule, re-dispatch,
 take the new prices, re-solve. Five rounds with 0.5 damping:
@@ -1409,23 +1409,23 @@ and 2,816 with no trend. Storage flattens the peaks it was built to exploit, whi
 removes the spread that justified the schedule. This is the known failure mode and it
 happened.
 
-### AND IT puts THE 37% IN doubt - read this before quoting it
+### and it puts the 37% in doubt - read this before quoting it
 
 Every iterated July figure (2,751-2,816 GWh) is at or above the heuristic's 2,742. The
 LP predicted 1,000 GWh of displacement. **Imposing the schedule did not deliver it.**
 
-TWO explanations, and they are not equally flattering:
+Two explanations, and they are not equally flattering:
 
 1. The price-taker objective is arbitrage value, not gas displacement. Discharging in an
    hour when gas was running is counted as displacing gas, but the real dispatch
    re-optimises around the schedule and the gas returns elsewhere. If so, the 37% was
    never a gas saving - it was a bookkeeping artefact.
-2. MY test IS ONE-SIDED. `_forcedDischargeMW` is a CAP, deliberately, so no infeasible
+2. my test is one-sided. `_forcedDischargeMW` is a cap, deliberately, so no infeasible
    state can be forced in. But that means where the LP wants more discharge than the
    heuristic gives, the cap cannot deliver it. Storage throughput fell, 8.42 -> 7.91 TWh,
    which is the signature of a binding cap rather than a better schedule.
 
-### THE TWO-sided test, attempted - AND WHY I stopped
+### the two-sided test, attempted - and why I stopped
 
 A second override was built to replace the heuristic's discharge outright rather than
 cap it, and to count what the engine could not follow:
@@ -1442,12 +1442,12 @@ round   July gas GWh   schedule the engine could not follow
 About 3,000 GWh of a roughly 11 TWh schedule is not physically followable - close to
 30% of it.
 
-**BUT THE test IS still ONE-sided, AND I should NOT present THE clipping AS A VERDICT.**
+**but the test is still one-sided, and I should not present the clipping as A verdict.**
 Discharge was overridden; charging was not. The store is still filled by the heuristic,
 so it cannot possibly discharge to the LP's plan - the clipping largely measures my own
 incomplete override, not the schedule's infeasibility.
 
-### retire THE 37%, DO NOT chase IT
+### retire the 37%, DO NOT chase it
 
 Three rounds of testing have each revealed another layer, and the direction of travel is
 consistent: every time the schedule is brought closer to the real engine, the predicted
@@ -1455,19 +1455,19 @@ saving fails to appear. Combined with the fact that the LP's objective is arbitr
 rather than gas displacement, the reasonable conclusion is that **the 37% was an
 accounting artefact of the price-taker formulation** and is not a real dispatch gap.
 
-What would settle IT properly is storage inside the unit commitment - the thing a
+What would settle it properly is storage inside the unit commitment - the thing a
 price-taker LP is defined not to do. That is a genuine model rebuild, and it should be
 justified by something better than chasing a number that has failed three tests.
 
 **DO NOT repeat "the heuristic leaves 37% of July gas on the table".** It is withdrawn.
-What survives is everything the LP established that did NOT depend on that accounting:
+What survives is everything the LP established that did not depend on that accounting:
 the opportunity-value duals, the iron-air result, and the reserve-versus-arbitrage
 trade-off.
 
-**6. CO-optimisation with unit COMMITMENT. NOT closed, AND NOT closeable HERE.** A
-price-taker LP takes prices as GIVEN. Genuine co-optimisation means storage inside the
+**6. CO-optimisation with unit commitment. not closed, and not closeable here.** A
+price-taker LP takes prices as given. Genuine co-optimisation means storage inside the
 commitment problem, which is a different and much larger model - that is the difference
-between this and PLEXOS. The available partial answer is a fixed-point iteration: re-run
+between this and plexos. The available partial answer is a fixed-point iteration: re-run
 the dispatch with the LP's schedule, take the new prices, re-solve, repeat. Worth doing;
 not done.
 
@@ -1475,26 +1475,26 @@ Next: the 37% is large enough to justify embedding the LP in the engine rather t
 leaving it as a probe. The dual on the SOC balance is the opportunity value - the number
 the two-pass gate was approximating - and no South African study publishes it.
 
-**~~SO THE headline result IS NOW PROVISIONAL.~~ resolved - see above.** "Iron-air changes July gas by exactly
+**~~SO the headline result is now provisional.~~ resolved - see above.** "Iron-air changes July gas by exactly
 zero in all ten years" was measured on a dispatch that structurally cannot charge it.
 The finding may survive - the efficiency penalty is severe and the July deficit is large
 - but it has not been tested against a dispatch that gives long-duration storage a fair
 chance. Do not repeat the claim externally until it has.
 
-### what A seasonal lookahead would AND would NOT FIX
+### what A seasonal lookahead would and would not fix
 
-The dispatch has NO lookahead of any kind. Tiers are sorted by round-trip efficiency, so
+The dispatch has no lookahead of any kind. Tiers are sorted by round-trip efficiency, so
 iron-air at 45% charges last and discharges last, purely on whether this hour has a
 surplus or a deficit. It cannot deliberately hold energy for a future event.
 
 But adding foresight would not change either row above, because in one there is nothing
 to store and in the other nothing to serve. **The untested case is in between** - roughly
-60 to 80 GW of VRE, where curtailment has begun but the drought is not yet covered. That
+60 to 80 GW of vre, where curtailment has begun but the drought is not yet covered. That
 is where a seasonal lookahead could bite, and it has not been run.
 
-### AND iron-AIR IS NOT A seasonal technology anyway
+### and iron-air is not A seasonal technology anyway
 
-100 hours is about four DAYS. Form Energy markets it as multi-day storage, sized for
+100 hours is about four days. Form Energy markets it as multi-day storage, sized for
 extended weather events, not for shifting summer into winter. Seasonal shifting needs
 thousands of hours - large-reservoir pumped hydro, hydrogen, or thermal.
 
@@ -1515,7 +1515,7 @@ Measured 30 Aug 2026. Each year's installed base is the current fleet plus the b
 pace compounded, then dispatched and priced. Achieved revenue is output-weighted against
 the model's hourly shadow price.
 
-RE-RUN 31 Aug 2026 against the corrected constants.
+Re-run 31 Aug 2026 against the corrected constants.
 
 ```
                         2026    2029    2032    2035     fall
@@ -1536,31 +1536,31 @@ Grid pace (4.3 / 4.0 - all remaining GCCA headroom by 2030)
   curtailment TWh        0.0     0.2    16.3    57.3
 ```
 
-**SOLAR IS UNCHANGED FROM THE PUBLISHED VERSION** - the same -16%, -26% and -82%. **WIND
-IS NOT.** Its 2026 starting point moves from R758 to R977, and its fall steepens from
+**solar is unchanged from the published version** - the same -16%, -26% and -82%. **wind
+Is not.** Its 2026 starting point moves from R758 to R977, and its fall steepens from
 -59% to -67% at grid pace.
 
 The reason is the scarcity pricing the 31 Aug constant corrections revealed. Wind produces
-in the evening hours that are now expensive; solar does not. So wind starts 29% ABOVE
+in the evening hours that are now expensive; solar does not. So wind starts 29% above
 solar today, where the published version had them within 2% of each other.
 
-**THE PRACTICAL POINT CHANGES.** Wind's advantage over solar is larger today than
+**the practical point changes.** Wind's advantage over solar is larger today than
 published - R977 against R756, not R758 against R743 - and it therefore has further to
 fall. A wind project's merchant case is stronger now and erodes faster; a solar project's
 was always weaker and erodes on the same path as before.
 
-**MERCHANT VALUE OF SOLAR ENERGY FALLS 82&#37; BY 2035 AT GRID PACE, 16&#37; AT IRP PACE.**
+**merchant value of solar energy falls 82&#37; by 2035 at grid pace, 16&#37; at IRP pace.**
 The build rate, a policy choice rather than a market outcome, moves this five times more
 than anything about an individual project.
 
-### WHO ACTUALLY BEARS THIS - the correction that matters
+### who actually bears this - the correction that matters
 
 An earlier version of this section said "a solar PPA signed today loses 82&#37; of its
-value". **That was wrong.** A PPA is a contract at a fixed or CPI-indexed price for a set
-term. Wholesale prices falling does NOT reduce the seller's revenue during that term -
+value". **That was wrong.** A PPA is a contract at a fixed or cpi-indexed price for a set
+term. Wholesale prices falling does not reduce the seller's revenue during that term -
 insulating the seller is precisely what the contract is for.
 
-What the numbers above measure is the MERCHANT value of the energy. Who that reaches:
+What the numbers above measure is the merchant value of the energy. Who that reaches:
 
 ```
 CONTRACTED SELLER, in term    NOT EXPOSED. A 20-year REIPPPP PPA signed in 2026 runs to
@@ -1584,15 +1584,15 @@ CURTAILMENT RISK              DEPENDS ON THE CONTRACT. Whether a curtailed MWh i
 about what those contracts will cost the party on the other side, and about what the next
 round of contracts will be worth.** That is a more useful finding, and a different one.
 
-### THE COMPRESSION IS DOUBLE, AND THAT IS THE PART USUALLY MISSED
+### the compression is double, and that is the part usually missed
 
-Capture rate and the price pool fall TOGETHER. At grid pace in 2035 solar captures 40&#37;
+Capture rate and the price pool fall together. At grid pace in 2035 solar captures 40&#37;
 of a mean price that has itself fallen from R756 to R331. Neither number alone shows the
 damage: 40&#37; sounds survivable, R331 sounds survivable, and the product is R133.
 
 Anyone quoting capture rate alone is understating the problem by roughly half.
 
-### THE CLIFF EDGE IS SHARPER THAN THE AVERAGE SUGGESTS
+### the cliff edge is sharper than the average suggests
 
 Nothing much happens for four years, then it goes quickly. At grid pace, solar holds
 above R680 through 2030 and reaches R133 five years later. The inflection is where
@@ -1605,16 +1605,16 @@ rate does not.
 It also compounds the contract question: at 59 TWh spilled, whether a curtailed MWh is
 paid for under the PPA matters more to the seller than the tariff does.
 
-CAVEATS: single weather year; merchant revenue against the model's shadow price, which
+Caveats: single weather year; merchant revenue against the model's shadow price, which
 has no floor, no bilateral contracting and limited exports - all of which lift real
 outcomes. Storage scales with the build at each pace's own rate, which materially
-protects solar. The DIRECTION and the ORDER of magnitude are the result, not the levels.
+protects solar. The direction and the order of magnitude are the result, not the levels.
 
 ---
 
 ## Hybrids: co-locating a battery, and the U-shape nobody expects
 
-REVISED 31 Aug 2026. An earlier version of this section reported the uplift rising
+Revised 31 Aug 2026. An earlier version of this section reported the uplift rising
 monotonically with penetration - 2-6% today, 166-408% by 2035. **That was measured on
 pre-correction constants and the shape was wrong.** Coal capacity was 5.8% too high,
 imports more than double reality, and availability three points optimistic, which between
@@ -1635,44 +1635,44 @@ solar uplift     +130%      +8%    +386%
 wind  uplift      +66%      +6%     +78%
 ```
 
-### THE VALUE IS U-SHAPED, NOT RISING
+### the value is U-shaped, not rising
 
 **Today +130%. In 2030 +8%. In 2035 +386%.** Co-location is worth a great deal now, very
 little in five years, and a great deal again in ten.
 
-The reason is that arbitrage pays for VOLATILITY, and volatility has two different
+The reason is that arbitrage pays for volatility, and volatility has two different
 causes at the two ends:
 
-- **2026 is volatile from SCARCITY.** Coal sets the price most hours and diesel sets it
+- **2026 is volatile from scarcity.** Coal sets the price most hours and diesel sets it
   in the tight ones, so the spread is large. A battery monetises that immediately.
-- **2030 is COMFORTABLE.** About 41 GW of wind and solar with storage built alongside;
+- **2030 is comfortable.** About 41 GW of wind and solar with storage built alongside;
   prices flatten, spreads collapse, and there is little to trade.
-- **2035 is volatile from SURPLUS.** At 82 GW, midday solar is worth almost nothing and
+- **2035 is volatile from surplus.** At 82 GW, midday solar is worth almost nothing and
   evening scarcity returns. Solar bare collapses to R139 and a battery restores it to
   R677.
 
-**A DEVELOPER'S CONCLUSION SHOULD NOT BE "STORAGE BECOMES VALUABLE LATER".** It is
+**A developer'S conclusion should not be "storage becomes valuable later".** It is
 valuable now for one reason, briefly less so, then valuable again for the opposite
 reason. The two are not the same trade and would not be financed the same way.
 
-### WHAT THIS MEANS FOR THE PPA QUESTION
+### what this means for the PPA question
 
 The exposure identified above sits with offtakers, new contracts and post-term value.
 Co-location changes those numbers at both ends of the period, and a buyer pricing a
 contract in 2032 is pricing the trough rather than either peak.
 
-CAVEATS: perfect foresight of prices, so an UPPER BOUND. No battery capex is netted off -
+Caveats: perfect foresight of prices, so an upper bound. No battery capex is netted off -
 this is the revenue side only, and a battery at 100% of plant capacity is a very large
 investment. Single weather year. Grid pace is the fastest of the three build paces and
 the most punishing on capture.
 
-VALIDATION: the browser-speed greedy in the capture panel tracks this LP within 4.7%
+Validation: the browser-speed greedy in the capture panel tracks this LP within 4.7%
 across twelve cases and is conservative in eleven of them.
 
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
-Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
+Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
 
 ---
@@ -1696,15 +1696,15 @@ CO2                    184.5       170.5    -7.6%
 from public data with no access to Eskom's dispatch, that is the strongest corroboration
 in this file.
 
-### TWO GAPS THAT ARE REAL, NOT ROUNDING
+### two gaps that are real, not rounding
 
-**OCGT: the model runs 217 GWh against Eskom's 1,898. EXPLAINED 31 Aug 2026, and it is a
-SCOPE difference rather than a modelling error.**
+**OCGT: the model runs 217 GWh against Eskom's 1,898. explained 31 Aug 2026, and it is a
+Scope difference rather than a modelling error.**
 
 Eskom's own hourly file `ESK19243.csv` records `Eskom OCGT Generation` for all of 2025 -
 what the peakers actually did. Two things fall out.
 
-### THE SEASONALITY IS RIGHT
+### the seasonality is right
 
 ```
 month      model share   Eskom share
@@ -1719,9 +1719,9 @@ Jan-Mar : Jul-Sep     model 3.9:1     Eskom 8.5:1
 Peakers run eight and a half times more in late summer and autumn than in winter, because
 maintenance is scheduled away from the winter peak. The model reproduces January and
 February to within half a point, and if anything its 3:1 maintenance concentration is too
-MILD.
+Mild.
 
-### THE LEVEL DIFFERS BECAUSE ESKOM DOES NOT DISPATCH PEAKERS ON MERIT
+### the level differs because eskom does not dispatch peakers on merit
 
 ```
 Eskom OCGT ran in 2,016 hours - 23% of the year - and across the WHOLE demand range:
@@ -1740,17 +1740,17 @@ output at demand below 25,000 MW    1,203 GWh    63% of the total
 roughly 25.8 GW of coal available - hours where a merit-order model has no reason to start
 a peaker at all, and correctly does not.
 
-That output is reserve provision, network support and ramping. NONE of those are priced by
+That output is reserve provision, network support and ramping. none of those are priced by
 an energy merit order, so a model that dispatches on economics alone cannot reproduce
 them, and tuning availability until it does would be fitting the right total for the wrong
 reason.
 
-**THIS CLOSES THE FOUR-POINT EAF GAP.** Reproducing Eskom's outturn appeared to need ~61%
+**this closes the four-point EAF gap.** Reproducing Eskom's outturn appeared to need ~61%
 availability against an audited 65.2%. It does not: the missing energy is non-energy
 services, and lowering availability would have manufactured scarcity to imitate them.
 `coalEAFPct` stays at the audited value.
 
-WHAT IT MEANS FOR RESULTS: peaking cost and emissions are understated in the base case,
+What it means for results: peaking cost and emissions are understated in the base case,
 and the understatement is concentrated in the moderate-demand hours where reserve is held
 rather than in the tight ones. Direction is unchanged - reality is dirtier and dearer than
 the model.
@@ -1760,7 +1760,7 @@ the model.
 ## Transmission cost: two published routes that bracket the constant
 
 `txRPerKWyr` underpins the locational transmission work and the EPP submission, and until
-31 Aug 2026 it rested on ONE derivation. Eskom's FY2026 capex plan gives a second,
+31 Aug 2026 it rested on one derivation. Eskom's FY2026 capex plan gives a second,
 independent route.
 
 ```
@@ -1776,11 +1776,11 @@ ROUTE 2  Eskom FY2026 results, capex plan FY2027-31
 MODEL DEFAULT  R600/kW-yr, net of the share already committed
 ```
 
-**THE TWO ROUTES BRACKET THE DEFAULT.** R490 and R700 gross, with the model at R600 net.
+**the two routes bracket the default.** R490 and R700 gross, with the model at R600 net.
 That is the useful result: an independent source does not overturn the constant, it puts
 bounds either side of it.
 
-### WHAT THIS DOES NOT ESTABLISH — three assumptions doing real work
+### what this does not establish — three assumptions doing real work
 
 1. **"Capacity unlocked scales with route-km" is an assumption, not a finding.** It is
    the step converting 8,362 km into 32.3 GW, and the R490 depends entirely on it.
@@ -1793,7 +1793,7 @@ bounds either side of it.
    per-km numbers - R26.9m against R18.9m - are the cleaner comparison, and they still
    differ by 30% for reasons the sources do not resolve.
 
-CONCLUSION: no change to the constant. It was defensible on one source and is better
+Conclusion: no change to the constant. It was defensible on one source and is better
 supported by two, and the slider note now shows both bounds rather than one derivation.
 
 ---
@@ -1802,7 +1802,7 @@ supported by two, and the slider note now shows both bounds rather than one deri
 
 Eskom FY2026: *improved generation availability has created an estimated 2-3 GW surplus
 capacity, positioning Eskom to attract new demand rather than ration it.* First time in
-over a decade, and the first published figure this project can test its ADEQUACY side
+over a decade, and the first published figure this project can test its adequacy side
 against rather than its energy side.
 
 Measured at the model's annual peak, 31,595 MW:
@@ -1816,12 +1816,12 @@ less reserve, imports AND VRE credit at peak       2,190 MW = 2.2 GW
 Eskom                                              2,000-3,000 MW
 ```
 
-**TWO OF THE THREE DEFENSIBLE DEFINITIONS SIT INSIDE ESKOM'S RANGE**, and the third is
+**two of the three defensible definitions sit inside eskom'S range**, and the third is
 13% above its top. Eskom does not state its method, so the honest reading is agreement
 rather than a match.
 
 The definitional question is real and not a quibble. Contracted Cahora Bassa imports are
-capacity, but they are not capacity Eskom can sell to a new customer. VRE at the winter
+capacity, but they are not capacity Eskom can sell to a new customer. vre at the winter
 evening peak contributes 704 MW of a 8,483 MW fleet, so whether it counts at all depends
 on what firm means. Those two choices move the answer by 1.2 GW - more than the width of
 Eskom's own range.
@@ -1838,12 +1838,12 @@ calls it tight, that is where it will show.
 Wind Pioneers published a South African prospecting study in Aug 2026 arguing that wind
 prospecting should answer "is the wind right for our project?" rather than "where is the
 wind?" - two sites with equal mean speed can generate at very different hours. Their
-stated observation: Western and Eastern Cape peak in DAYTIME, Northern Cape at NIGHT.
+stated observation: Western and Eastern Cape peak in daytime, Northern Cape at night.
 
 Tested on GridTwin's regional profiles - MERRA-2 via Renewables.ninja, Vestas V90 at 80 m,
 capacity-weighted to actual plant locations. A different derivation from theirs.
 
-FIRST RUN WAS SINGLE-YEAR AND TWO OF ITS CONCLUSIONS DID NOT SURVIVE THE TEN-YEAR TEST.
+First run was single-year and two of its conclusions did not survive the ten-year test.
 Both are recorded below, because the difference is the point.
 
 ```
@@ -1858,12 +1858,12 @@ Hydra Central      0.425   0.997-1.059    0.950-1.005     MIXED - flips by year
 
 day = 08-17 SAST, night = 20-05 SAST, each against that region's own mean.
 
-**THEIR NORTHERN CAPE CLAIM IS RIGHT AND STRONGER THAN THEY STATED** - night-peaking in
+**their northern cape claim is right and stronger than they stated** - night-peaking in
 every one of ten years, with a 25-40% day-night swing. Eastern Cape day-peaking also holds
-10/10. **Western Cape does NOT**: it flips between day and night across years, so a
+10/10. **Western Cape does not**: it flips between day and night across years, so a
 single-year study can find either.
 
-### THE HYBRID CASE, ALSO TEN YEARS
+### the hybrid case, also ten years
 
 Hourly wind-solar correlation within each region. Negative means they complement.
 
@@ -1880,7 +1880,7 @@ Hydra Central   -0.047    0.037   -0.004    MIXED
 **Their Northern Cape hybrid argument is correct and it is the best case in South Africa** -
 the strongest complementarity of any region, in every year tested.
 
-### TWO SINGLE-YEAR CONCLUSIONS THAT DID NOT SURVIVE
+### two single-year conclusions that did not survive
 
 On calendar 2023 alone the first run produced two striking claims. Neither holds:
 
@@ -1899,12 +1899,12 @@ ACTUALLY Hydra Central averages -0.004 across ten years and flips sign. It is NE
 **The second was about to be sent to an external company.** It was caught by running the
 ten-year file that already existed - the same file the single-year run had not used.
 
-### THE DIMENSION MISSING FROM THE FRAMING
+### the dimension missing from the framing
 
 They map wind in space and time and ask whether it fits the project. On GridTwin's
 headroom data the binding constraint is neither: **the four best-wind regions hold 100% of
 existing wind and 7.3% of the national room to add more, and Northern Cape and Hydra
-Central - the two best resources here - are at ZERO headroom for every technology.**
+Central - the two best resources here - are at zero headroom for every technology.**
 
 A perfect diurnal match at a site with no connection is not a project. That complements
 their work rather than criticising it: they answer whether the wind fits the offtaker, and
@@ -1920,7 +1920,7 @@ relevant to the Eskom Retail Tariff Structural Adjustment now open for comment.
 Eskom's Megaflex time-of-use structure prices **June to August as the high-demand
 season** - the expensive one. Two independent tests say the system is not tight then.
 
-### ESKOM'S OWN MEASURED DISPATCH
+### eskom'S own measured dispatch
 
 `ESK19243.csv`, Eskom's hourly file for 2025, records what its peakers actually did:
 
@@ -1934,7 +1934,7 @@ high (Jun-Aug)              315 GWh              25%
 run when the system is short, so this is the operator's own revealed measure of scarcity,
 not a model output.
 
-### AND THE MODELLED SHADOW PRICE AGREES
+### and the modelled shadow price agrees
 
 Hourly shadow price within each Megaflex block:
 
@@ -1949,28 +1949,28 @@ weekend (both)      2,496      868       748    6,206
 
 Two things fall out.
 
-**THE LOW-SEASON PEAK IS DEARER THAN THE HIGH-SEASON PEAK** - R1,475 against R1,277. The
+**the low-season peak is dearer than the high-season peak** - R1,475 against R1,277. The
 seasonal labels are the wrong way round.
 
-**THE BLOCKS BARELY DISCRIMINATE ON A TYPICAL HOUR.** Every median sits between R737 and
-R755, a spread of 2%. What separates the blocks is entirely the TAIL: p95 runs from R757
-off-peak to R6,206 in peak, standard AND weekend. A fixed block cannot see that, because
+**the blocks barely discriminate on A typical hour.** Every median sits between R737 and
+R755, a spread of 2%. What separates the blocks is entirely the tail: p95 runs from R757
+off-peak to R6,206 in peak, standard and weekend. A fixed block cannot see that, because
 the expensive hours are scattered rather than scheduled.
 
 **Weekends are called cheap and carry a p95 of R6,206.** Off-peak and weekend hours are
 50.8% of energy and carry 41% of the system's hourly cost - closer to proportional than a
 cheap-rate label implies.
 
-### WHY THIS IS NOT A MODEL ARTEFACT
+### why this is not A model artefact
 
 The summer scarcity is driven by maintenance scheduled away from the winter peak, and that
 seasonality is **corroborated by Eskom's measured OCGT dispatch at 8.5:1 Jan-Mar against
 Jul-Sep** - see the peaker section. Model and operator agree independently.
 
-### WHAT IT DOES NOT SAY
+### what it does not say
 
 Not that Megaflex is wrong as a tariff. Retail tariffs recover network and fixed costs, not
-just energy, and the high-demand season reflects PEAK DEMAND, which genuinely is in winter.
+just energy, and the high-demand season reflects peak demand, which genuinely is in winter.
 The finding is narrower: **peak demand and system scarcity are in different seasons in
 South Africa**, and a tariff built on the first does not price the second. That is exactly
 the gap a dynamic or scarcity-linked component would close, and it is what makes the

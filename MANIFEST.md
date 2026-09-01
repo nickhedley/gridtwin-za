@@ -64,7 +64,7 @@ sa_solar_grid.json          ORPHAN. Real PVGIS SARAH2 data, 739 points, nothing
 Harness-only, not fetched by the page: `regional_renewable_capacity.json` is read
 directly by `validate_capacity.js`.
 
-### KNOWN inconsistency, unresolved
+### known inconsistency, unresolved
 
 `build_hydra_split.py` writes to `nodal/hydra_central_split_draft.json`.
 `build_capacity.py` reads `nodal/supply_area_split_draft.json`.
@@ -74,7 +74,7 @@ reading the stale one. Reconcile before regenerating the split.
 
 ### delete this
 
-`nodal/build_capacity.py` - a 324-line copy with NO step 1b and no eskom bucket.
+`nodal/build_capacity.py` - a 324-line copy with no step 1b and no eskom bucket.
 Running it destroys the Hydra Central split (669 MW wind, 459.5 MW solar reverting
 to zero), drops 22 fields, and updates its own fingerprint so the damage looks
 consistent. The correct script is at the root.
@@ -84,7 +84,7 @@ consistent. The correct script is at the root.
 ## Running the suite - there is no single working directory
 
 Ten harnesses take the root as `argv[2]` and default to `.`. Two default to
-`testroot`. Three ignore THE argument ENTIRELY.
+`testroot`. Three ignore the argument entirely.
 
 From the directory holding `index.html` and `nodal/`:
 
@@ -112,7 +112,7 @@ node eng5.js                         # hardcodes testroot/index.html
 node jsdom_local2.js                 # hardcodes testroot/index.html
 ```
 
-`jsdom_local2.js` exits 0 regardless of what it finds. Read ITS output, do not
+`jsdom_local2.js` exits 0 regardless of what it finds. Read its output, do not
 check its exit code. Two `ctx.createPattern` errors at index.html:7210 are jsdom
 lacking canvas, not a regression.
 
@@ -139,5 +139,5 @@ two stale rollups on 27 Aug.
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
-Data files carry their own terms — see SOURCES.md. Model outputs are reproducible from
+Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

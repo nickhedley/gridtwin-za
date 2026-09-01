@@ -1,7 +1,7 @@
 # GridTwin ZA - dated commitments
 
 Things that expire. Checked at the start of every session; anything past its date
-either moves to LOG.md as done or gets a new date and a reason.
+either moves to log.md as done or gets a new date and a reason.
 
 Last reviewed: 31 Aug 2026.
 
@@ -25,7 +25,7 @@ Last reviewed: 31 Aug 2026.
  4 Aug 2026    Transitional Generation Pricing and Vesting Contract Framework. MISSED.
 ```
 
-Still open ON these:
+Still open on these:
 - Public hearings on Trading Rules v3 were "to be announced after the closing date".
   No date found. Check nersa.org.za/notices/public-hearings - oral representations may
   still be possible.
