@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 940 checks
+suite                      19 harnesses, 941 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 940 checks. Last full run: 940/940.
+Nineteen harnesses, 941 checks. Last full run: 941/941.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           77/77
+python3 audit.py index.html           78/78
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -6416,6 +6416,48 @@ section: all nine light correctly, including Pipeline.
 
 `validate_structure` 21 -> 22 asserts the sort is present, and fails with "the nav bar
 assumes its links are in DOM order, and they are not" when removed.
+
+## the PPA export was writing hollow files - 1 Sep 2026
+
+Reported as a UX complaint - the export makes you type a province name. There was a bug
+behind it.
+
+### a typo produced a plausible CSV with no data in it
+
+`prompt()` returned free text. `wind_pu[reg]` on an unrecognised string returned undefined,
+the null was carried through, and the user got a file with the **price column populated and
+both profile columns empty**. No error, no warning. It looks like data.
+
+Three fixes:
+
+**A picker, not a prompt.** Cannot be misspelled. Ten regions, taken from the profile file
+itself so the list is exactly the regions that have profiles - building it from a separate
+constant is how an option that cannot be exported ends up in the list.
+
+**Validation.** An unrecognised or unloaded region now refuses and says why, rather than
+writing a hollow file.
+
+**Populated on the unconditional fetch.** My first attempt put the population inside
+`bldLoadRegionalData()`, which is LAZY - it only fires when Where To Build is opened, so
+the picker was empty on a page the user had never scrolled. Caught by the picker rendering
+with zero options.
+
+### on placement, which was the original question
+
+The button sits in Hourly dispatch, beside the CSV export. That is defensible - both export
+hourly series - but the two are for different readers. The dispatch CSV is a system view;
+the PPA series is a project-developer artefact, and the panel it sits in is about
+representative weeks rather than about prices.
+
+**Not moved.** It is a judgement about information architecture rather than a defect, and
+the Prices panel or Project Planning would both be arguable homes. Worth deciding
+deliberately rather than as a side effect of a bug fix.
+
+### also, the extremes blurb
+
+Trimmed as asked, from three sentences to one. The two removed sentences explained the
+finding rather than labelling the numbers - the same habit the prose ratchet now guards
+against.
 
 ---
 

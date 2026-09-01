@@ -138,6 +138,9 @@ CHECKS = [
     # scales with corridor length - 41x at 90 km, 127x at 278 km.
     ('Grid-enhancing technologies, or build line?',                'grid-enhancing panel'),
     ('getsCorridor',                                              'corridor selector'),
+    # PPA export: a picker, not a free-text prompt. A misspelled region used to produce a
+    # CSV with the price column populated and both profile columns empty, silently.
+    ('ppaRegion',                                                  'PPA export region picker'),
     # Heat stress test. South Africa's tight season IS its hot season, so heat derates
     # land on the weeks already tightest - the opposite of a northern-hemisphere system.
     ('heatStress',                                                 'heat stress test'),

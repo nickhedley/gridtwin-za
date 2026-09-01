@@ -446,6 +446,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <button id="wkW" class="active">Winter week</button>
                 <button id="wkS">Summer week</button>
               </div>
+              <select id="ppaRegion" title="Which region's wind and solar profiles to include. The price series is national - the instant engine is single-node, so there is one shadow price for the whole country."
+                      style="font-size:10px;padding:2px 4px;max-width:130px"></select>
               <button onclick="exportPpaTimeseries()" title="Hourly shadow prices and regional wind and solar profiles, for PPA modelling" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap;margin-right:4px">↓ PPA series</button>
                 <button id="csvDownloadBtn" onclick="downloadDispatchCSV()" title="Download full year hourly dispatch as CSV" style="font-size:10px;padding:2px 8px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);cursor:pointer;border-radius:3px;white-space:nowrap">↓ CSV</button>
             </div>
@@ -1332,6 +1334,23 @@ function initResourceQuery(){
   fetch('nodal/profiles_regional.json').then(r=>r.json()).then(d=>{
     regionalWindProfiles = d.wind_pu;
     regionalSolarProfiles = d.solar_pu;
+    // Populate the PPA export picker HERE, not in bldLoadRegionalData - that one is lazy
+    // and only fires when Where To Build is opened, so the picker sat empty on a page the
+    // user had never scrolled. This fetch is unconditional.
+    //
+    // Options come from the profile file itself, so the list is exactly the regions that
+    // HAVE profiles. Building it from a separate constant is how an option that cannot be
+    // exported ends up in the list.
+    (function(){
+      const sel = document.getElementById('ppaRegion');
+      if (!sel || sel.options.length) return;
+      const regs = Object.keys(d.wind_pu || {}).filter(k => d.solar_pu && d.solar_pu[k]).sort();
+      if (!regs.length) return;
+      sel.innerHTML = regs.map(r => '<option value="' + r + '">' + r + '</option>').join('');
+      const site = document.getElementById('siteRegion');
+      if (site && site.value && regs.indexOf(site.value) >= 0) sel.value = site.value;
+      else if (regs.indexOf('Northern Cape') >= 0) sel.value = 'Northern Cape';
+    })();
   }).catch(()=>{});
 
   // ── Shared behind-the-meter constants ────────────────────────────────────
@@ -9728,9 +9747,7 @@ function renderWeatherSpread(runs, d){
 
   html += '<div style="font-size:10px;color:var(--ink2);margin-top:6px;line-height:1.45">'
     + 'Range across ' + runs.length + ' weather years (' + runs[0].year + '\u2013'
-    + runs[runs.length-1].year + '), with fleet and demand held fixed so only the weather changes. '
-    + 'The two risks pull in opposite directions: a poor year threatens supply, a good one wastes it. '
-    + 'A single-year run shows only one of them.'
+    + runs[runs.length-1].year + '), with fleet and demand held fixed so only the weather changes.'
     + (d.meta.warning ? ' <strong style="color:var(--alert,#C4785A)">' + d.meta.warning + '</strong>' : '')
     + '</div></div>';
   host.innerHTML = html;
@@ -13799,22 +13816,29 @@ function exportPpaTimeseries(){
   const mp = r.marginalP || [];
   if (!mp.length){ alert('No price series available.'); return; }
 
-  // Region defaults to whatever the site query is set to, so the export matches
-  // what the user was just looking at rather than an arbitrary choice.
-  // ASK for the region rather than inheriting it from the site resource query
-  // panel, which is elsewhere on the page and may never have been touched. The
-  // silent inherit produced files named for regions nobody had chosen.
-  const _sel = document.getElementById('siteRegion');
-  const _def = (_sel && _sel.value) ? _sel.value : 'Northern Cape';
-  const reg = prompt('Which region\u2019s wind and solar profiles?\n\n'
-    + 'The price series is national. The instant engine is single-node, so there is '
-    + 'one shadow price for the whole country. Only the profiles are regional.\n\n'
-    + 'Options: ' + (typeof BLD_REGIONS !== 'undefined' ? BLD_REGIONS.join(', ') : _def),
-    _def);
+  // Region comes from the picker beside the button, not from a free-text prompt.
+  //
+  // The prompt was a genuine trap, not just awkward: a typo produced a file with the
+  // price series intact and EVERY PROFILE COLUMN EMPTY, silently. `wind_pu[reg]` returned
+  // undefined, the null was carried through, and the user got a plausible-looking CSV with
+  // no wind or solar in it. A picker cannot be misspelled, and the validation below means
+  // an unrecognised region now refuses rather than exports a hollow file.
+  const _pick = document.getElementById('ppaRegion');
+  const reg = _pick ? _pick.value : null;
   if (!reg) return;
   const P = (typeof bldRegProfiles !== 'undefined' && bldRegProfiles) ? bldRegProfiles : null;
   const wind = P && P.wind_pu && P.wind_pu[reg] ? P.wind_pu[reg] : null;
   const solar = P && P.solar_pu && P.solar_pu[reg] ? P.solar_pu[reg] : null;
+  // REFUSE rather than export a hollow file. The old prompt would happily write a CSV with
+  // the price column populated and both profile columns blank if the region did not match
+  // a key, which looks like data and is not.
+  if (!wind || !solar){
+    alert('No wind and solar profiles for ' + reg + '.\n\n'
+      + 'The regional profile file has not loaded, or this region is not in it. '
+      + 'The export has been cancelled rather than writing a file with empty profile '
+      + 'columns.');
+    return;
+  }
 
   const rows = [];
   rows.push('# GridTwin ZA - hourly series for PPA modelling');
