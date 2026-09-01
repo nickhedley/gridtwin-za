@@ -136,6 +136,41 @@ setTimeout(()=>{
     }
   }
 
+
+  // ── 5. SOLAR ALONE CANNOT PASS THE DAYLIGHT FRACTION ──────────────────────
+  // SCENARIO: a FLAT 1 MW load matched against regional solar - NO wind, NO battery.
+  // METRIC: share of load served directly. Adding either tests a different claim; the
+  // point is what solar can do ALONE. PUBLISHED: capped near 45%, because only 49.3%
+  // of hours have any sun at all.
+  {
+    const mp = path.join(ROOT, 'nodal', 'profiles_regional_multiyear.json');
+    if (fs.existsSync(mp)){
+      const j = JSON.parse(fs.readFileSync(mp, 'utf8'));
+      const sc = j.scale, ys = j.meta.years.map(String), reg = 'Northern Cape';
+      const cover = smw => {
+        let tot = 0;
+        for (const y of ys){
+          const s = j.solar_pu[reg][y];
+          let served = 0;
+          for (let h = 0; h < 8760; h++) served += Math.min(s[h] / sc * smw, 1);
+          tot += 100 * served / 8760;
+        }
+        return tot / ys.length;
+      };
+      let n = 0, t = 0;
+      for (const y of ys){ const s = j.solar_pu[reg][y];
+        for (let h = 0; h < 8760; h++){ t++; if (s[h] / sc > 0.001) n++; } }
+      const sunPct = 100 * n / t, c4 = cover(4), c32 = cover(32);
+      check('solar alone cannot exceed the daylight fraction', c32 < sunPct + 1,
+            `32 MW on a 1 MW load serves ${c32.toFixed(1)}% against a daylight fraction `
+            + `of ${sunPct.toFixed(1)}% - the ceiling is physical, not a model artefact`);
+      check('eight times the solar buys less than eight points', (c32 - c4) < 8,
+            `4 MW serves ${c4.toFixed(1)}%, 32 MW serves ${c32.toFixed(1)}%`);
+      console.log(`  solar ceiling  4 MW ${c4.toFixed(1)}% \u00b7 32 MW ${c32.toFixed(1)}%`
+        + ` \u00b7 daylight ${sunPct.toFixed(1)}%`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

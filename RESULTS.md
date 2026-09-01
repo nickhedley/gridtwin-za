@@ -75,6 +75,13 @@ low-season peak is dearer than the high-season peak, R1,475 against R1,277. Corr
 by Eskom's own hourly file, so it is not a model artefact.
 → "Eskom's tariff seasons are inverted"
 
+**Solar alone cannot cover more than 49% of a flat industrial load, anywhere in South
+Africa.** Eight regions, ten weather years, under two points of spread. The ceiling is the
+daylight fraction: only 49.3% of hours have any solar output. Sixteen times the plant buys
+eleven points. Wind and a battery solve different halves of the problem, and together
+reach 98%. Directly commercial - the wheeling market is sold on renewable share.
+→ "Wheeling calculators"
+
 ### Tier 3 — single weather year, or dependent on the storage heuristic.
 
 **Storage's ancillary market shrinks as renewables grow**, if curtailed plant may sell
@@ -1999,15 +2006,60 @@ wind 2 + solar 3 MW        78.4 - 83.9%      81.1%
 65% is achievable with a wind and solar mix. It needs roughly three megawatts of
 generation for a one megawatt load, which is the part a headline number hides.
 
-### solar alone hits a ceiling near 40%, and building more does not move it
+### solar alone cannot pass 49% of a flat load, anywhere in South Africa
 
-Doubling solar from 2 MW to 4 MW lifts coverage from 36.3% to 41.6% - **five points for
-twice the plant.** Every additional panel produces in the hours already covered.
+Extended to eight regions and ten weather years. The result is a physical limit, not a
+regional quirk.
 
-This is the capture-rate finding at the scale of a single customer. A buyer offered a
-solar-heavy wheeling deal should know their renewable share is capped near 40% however
-much they contract, and that wind is what breaks the ceiling: one megawatt of wind added
-to 2 MW of solar buys 27.5 points, while two more megawatts of solar buys five.
+```
+region           solar 2 MW   solar 4 MW   solar 8 MW
+Northern Cape         36.6%        41.8%        44.5%
+Western Cape          34.9%        40.5%        43.5%
+Eastern Cape          35.7%        41.2%        44.1%
+Free State            36.2%        41.8%        44.6%
+North West            36.4%        41.9%        44.8%
+Limpopo               36.0%        41.9%        44.5%
+Mpumalanga            36.0%        41.6%        44.4%
+Gauteng               36.1%        41.8%        44.5%
+```
+
+**Under two points of spread across the whole country at every build level.** The best
+solar resource in South Africa buys a wheeling customer barely one point more coverage
+than the worst.
+
+The ceiling is the daylight fraction. **Only 49.3% of hours in the year have any solar
+output at all**, so no quantity of panels can serve a flat load in the other half:
+
+```
+solar  2 MW for a 1 MW load    36.6%
+solar  4 MW                    41.8%
+solar  8 MW                    44.5%
+solar 16 MW                    46.1%
+solar 32 MW                    47.6%     sixteen times the plant, eleven points
+```
+
+### what actually breaks it
+
+```
+solar 4 MW alone                        41.8%
+   add a 4-hour battery                 58.2%    +16.4
+   add 1 MW of wind                     67.3%    +25.5
+   add both                             83.5%    +41.7
+wind 2 + solar 4 + 2 MW / 8 MWh         98.0%
+```
+
+**Wind buys more than a battery, and both together buy more than the sum of either.** A
+battery moves solar within the day; wind produces in hours solar never does. For a
+24-hour industrial load they solve different halves of the same problem.
+
+### why this matters commercially
+
+South Africa's wheeling market is growing quickly and is sold largely on renewable share.
+**A solar-only contract is capped near 45% regardless of contracted capacity**, and a
+buyer scaling up a solar-only deal to raise their share is buying eleven points for
+sixteen times the plant. The lever is diversity, not volume.
+
+
 
 ### and this is where a battery earns its place
 

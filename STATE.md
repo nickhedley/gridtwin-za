@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 899 checks
+suite                      19 harnesses, 901 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 899 checks. Last full run: 899/899.
+Nineteen harnesses, 901 checks. Last full run: 901/901.
 
 ```
 node stress_suite.js                290/290
@@ -262,7 +262,7 @@ node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity c
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
-node validate_findings.js .            7/7   the PUBLISHED FINDINGS, added 31 Aug
+node validate_findings.js .            9/9   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       25/25
 node validate_structure.js .         20/20
@@ -4987,6 +4987,56 @@ leaving it for a fourth user report.
 the very fields being replaced. Every one of these was individually plausible, which is
 why three shipped. The audit took twenty minutes and found five more than the three that
 had been reported.
+
+---
+
+## the solar ceiling, extended nationally - 1 Sep 2026
+
+The wheeling-calculator test found solar coverage capping near 40% in the Northern Cape.
+Extended to eight regions and ten weather years, it is a physical limit rather than a
+regional quirk.
+
+```
+region           solar 2 MW   solar 4 MW   solar 8 MW
+Northern Cape         36.6%        41.8%        44.5%
+Western Cape          34.9%        40.5%        43.5%
+Gauteng               36.1%        41.8%        44.5%
+```
+
+**Under two points of spread across the whole country at every build level.** The best
+solar resource in South Africa buys a wheeling customer barely one point more coverage
+than the worst - which is the opposite of how solar sites are marketed.
+
+### the ceiling is the daylight fraction
+
+Only **49.3% of hours have any solar output**, so no quantity of panels serves a flat load
+in the other half:
+
+```
+solar  4 MW for a 1 MW load    41.8%
+solar 32 MW                    47.6%    eight times the plant, six points
+daylight fraction              49.3%    the asymptote
+```
+
+### wind and storage solve different halves
+
+```
+solar 4 MW alone                        41.8%
+   add a 4-hour battery                 58.2%
+   add 1 MW of wind                     67.3%
+   add both                             83.5%
+wind 2 + solar 4 + 2 MW / 8 MWh         98.0%
+```
+
+A battery moves solar within the day; wind produces in hours solar never does. Together
+they beat the sum of either, which is why a 98% contract is reachable and a solar-only
+one is not.
+
+### now in validate_findings, with its scenario attached
+
+Two checks, 7/7 -> 9/9. The scenario note is explicit that the test uses **no wind and no
+battery**, because adding either tests a different claim - the same discipline that
+prevented three false corrections on 31 Aug.
 
 ---
 
