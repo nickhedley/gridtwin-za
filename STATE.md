@@ -5979,6 +5979,42 @@ not re-reading them between builds.
 
 ---
 
+## the prose ratchet, and rule 12 - 1 Sep 2026
+
+Two of today's three regressions are now checkable. This closes the third.
+
+### a ratchet, not a budget
+
+`audit.py` measures every always-visible note block and fails if the total rises above a
+recorded ceiling. **4,098 words across 85 blocks; ceiling 4,100.**
+
+A word BUDGET would have been the wrong instrument. Most of that prose predates today,
+survived the 44% trim on 30 Aug and is accepted - a budget would either fail on day one or
+sit so high it caught nothing. A ratchet judges the DIRECTION, not the current state: the
+total may fall freely and may not rise without someone deliberately raising the ceiling and
+saying why.
+
+Verified by adding back roughly ninety words of the tutorial prose cut an hour earlier:
+`PROSE: 4209 words, ceiling 4100`, and the audit fails.
+
+### rule 12
+
+**A decision the project has already made must be enforced by a check, not by memory.**
+
+Three regressions today shared one shape - something settled earlier, undone while adding
+something new. Features exposed on `window` but invisible. Capitalised emphasis returning.
+Tutorial prose undoing a 44% trim. **Every one was caught by the user rather than the
+suite.**
+
+The documents record all three decisions. Recording them was not enough, because the
+failure happens mid-build and nobody re-reads a governance file mid-build. The assertion
+has to live where the work happens.
+
+`validate_docs` caught the CALENDAR.md rule count within seconds of the rule being added,
+which is the rule demonstrating itself.
+
+---
+
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

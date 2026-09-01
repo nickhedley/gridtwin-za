@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """GridTwin ZA regression audit — run at the start of every session."""
 import sys
+import re
 
 CHECKS = [
     # Text changes that have historically reverted
@@ -165,6 +166,40 @@ for needle, label in CHECKS:
     print(f'{"✅" if ok else "❌"} {label}')
     if not ok:
         missing.append((needle, label))
+
+
+# ── ALWAYS-VISIBLE PROSE RATCHET ────────────────────────────────────────────
+# On 1 Sep six new panels added 617 words of always-visible explanation, undoing a 44% trim
+# made on 30 Aug. Nothing caught it; the user did, on sight.
+#
+# A word BUDGET is the wrong check - most of the existing prose predates today, survived
+# that trim, and is accepted. A RATCHET is right: the total may fall freely and may not
+# rise without someone deliberately raising the ceiling and saying why.
+#
+# What this catches is the specific failure mode: explaining the FINDING on a panel. The
+# findings belong in RESULTS.md. A panel gets the caveat, the units and the provenance,
+# because a reader cannot check those from the numbers alone.
+PROSE_CEILING = 4100        # measured 1 Sep 2026 after the trim: 4,098
+
+def check_prose(src):
+    blocks = re.findall(r'font-size:9\.5px;color:var\(--ink2\)[^>]*>(.*?)</div>', src, re.S)
+    total = 0
+    for b in blocks:
+        t = re.sub(r'<[^>]+>', ' ', b)
+        t = re.sub(r'\$\{[^}]*\}', ' ', t)
+        t = re.sub(r'&[a-z#0-9]+;', ' ', t)
+        total += len(t.split())
+    return total, len(blocks)
+
+_prose, _blocks = check_prose(c)
+if _prose > PROSE_CEILING:
+    missing.append((f'always-visible prose within {PROSE_CEILING} words',
+                    f'{_prose} words across {_blocks} blocks - RAISE THE CEILING '
+                    f'DELIBERATELY or cut. Panels get the caveat and the units; the '
+                    f'findings go in RESULTS.md'))
+    print(f'  PROSE: {_prose} words across {_blocks} blocks, ceiling {PROSE_CEILING}')
+else:
+    print(f'  prose: {_prose} words across {_blocks} blocks, ceiling {PROSE_CEILING}')
 
 print(f'\n{len(CHECKS)-len(missing)}/{len(CHECKS)} present')
 if missing:

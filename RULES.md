@@ -5,7 +5,7 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
-## The eleven rules
+## The twelve rules
 
 1. **Always run the full validation suite after any change to index.html, and
    report the counts.** Before and after, so the baseline is measured rather than
@@ -70,6 +70,14 @@ every session. Everything here was learned by getting it wrong at least once.
     It had already been "validated" against an LP and recorded as agreeing within 4.5%.
     Reading the code did not reveal it; asking what the asset could physically move did,
     in one line of arithmetic.
+
+12. **A decision the project has already made must be enforced by a check, not by
+    memory.** Three regressions on 1 Sep shared one shape: something settled earlier,
+    undone while adding something new. Features exposed on `window` but invisible;
+    capitalised emphasis returning; 617 words of tutorial prose undoing a 44% trim. Each
+    was caught by the user, not the suite. If a decision matters enough to make twice, it
+    matters enough to assert - and the assertion belongs where the work happens, not in a
+    document nobody re-reads mid-task.
 
 ---
 
