@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 911 checks
+suite                      19 harnesses, 913 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 911 checks. Last full run: 911/911.
+Nineteen harnesses, 913 checks. Last full run: 913/913.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           66/66
+python3 audit.py index.html           68/68
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -5263,6 +5263,42 @@ falling back to headroom scarcity otherwise.
 
 **The lesson is the one from this morning restated.** I reasoned about the model instead of
 reading it, and the answer was in a variable twenty lines from the one I checked.
+
+---
+
+## three modules built, none visible - 1 Sep 2026
+
+`electrolyserH2`, `electrolyserSiting` and `getsCompare` were all written, tested, exposed
+on `window` and pinned in `audit.py`. **None of them appeared anywhere in the interface.**
+Each was called exactly once - by its own definition.
+
+This is the orphan fault I had already flagged and fixed for `wheelCoverage` in the same
+session, and then repeated three times. `validate_structure` has an orphan check, but it
+only catches functions that are never referenced at all; exposing one on `window` satisfies
+it while leaving the feature invisible.
+
+### the hydrogen panel
+
+Sits beside the curtailment forecast, because hydrogen is what you do with curtailment.
+Shows a ladder of electrolyser sizes against whatever the current scenario spills.
+
+```
+today, 4% ceiling      0.77 TWh congestion curtailment
+110 GW VRE           110.82 TWh economic curtailment
+congestion off             no curtailment - panel explains rather than showing an empty table
+```
+
+It names WHICH curtailment is driving the number. Congestion curtailment is output spilled
+because a corridor is full; economic curtailment is surplus nobody wanted. They are
+different phenomena and a reader deciding on an electrolyser needs to know which they are
+looking at.
+
+### still not visible
+
+`electrolyserSiting` and `getsCompare` remain functions without panels. Both need a layout
+decision - siting wants a ranked regional table, the grid-enhancing comparison wants to sit
+with the network panel - and neither is wired yet. **Recorded here rather than left to be
+noticed again.**
 
 ---
 

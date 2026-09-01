@@ -121,6 +121,11 @@ CHECKS = [
     # which has the best resource in the country and the least water.
     ('electrolyserSiting',                                         'electrolyser siting'),
     ('waterStress',                                                'water layer present'),
+    # The hydrogen PANEL, not just the function. Three modules were built and exposed
+    # without any of them appearing in the interface - a working function nobody can see
+    # is not a feature.
+    ('Green hydrogen from curtailed energy',                       'hydrogen panel heading'),
+    ('renderH2',                                                   'hydrogen panel renderer'),
     ('Expected shed &middot; per year',                            'shed label states it is per year'),
     # Pricing run: fixed-commitment LP giving the MIP real duals, and the panel refresh
     # that depends on them. Losing either returns the tool to showing heuristic prices

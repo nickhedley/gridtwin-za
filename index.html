@@ -792,6 +792,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="spWeekNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.45"></div>
           </div>
 
+          <div id="nav-h2" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Green hydrogen from curtailed energy</h2><span class="tag">modelled</span>
+              <span class="tag">electrolyser on spilled renewables</span></div>
+            <div class="pb" id="h2Body"></div>
+          </div>
+
           <div id="nav-curtforecast" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Curtailment forecast</h2><span class="tag">modelled</span>
               <span class="tag">what happens as the queue builds</span></div>
@@ -3353,6 +3359,72 @@ function printPrefeas() {
              sunPct: 100 * sv.reduce((a, v) => a + (v > 0.001 ? 1 : 0), 0) / sv.length };
   }
 
+  // Renders the hydrogen panel. Shows a ladder of electrolyser sizes against the CURRENT
+  // scenario's curtailment, because the finding is that the answer depends almost entirely
+  // on how much curtailment the scenario produces - at today's build the capacity factor
+  // is a few per cent and the cost is an order of magnitude off competitive.
+  function renderH2(r){
+    const host = document.getElementById('h2Body');
+    if (!host || !r) return;
+    // Congestion curtailment is the real spilled energy at today's build; economic
+    // curtailment only appears at high penetration. Use whichever the scenario produces,
+    // and say which - they are different phenomena and a reader should know which is
+    // driving the number.
+    const econ = r.curtailMW, cong = r.congestMW;
+    const sum = a => a ? Array.prototype.reduce.call(a, (x, y) => x + y, 0) : 0;
+    const econT = sum(econ) / 1e6, congT = sum(cong) / 1e6;
+    const useCong = congT > econT;
+    const series = useCong ? cong : econ;
+    const totalTWh = Math.max(econT, congT);
+
+    if (!(totalTWh > 0.001)){
+      host.innerHTML = '<p style="font-size:11px;color:var(--ink2);line-height:1.55">'
+        + 'This scenario spills no renewable energy, so there is nothing for an electrolyser '
+        + 'to run on. Raise the wind and solar build, or the curtailment ceiling under '
+        + 'Network, to see the hydrogen case.</p>';
+      return;
+    }
+    const sizes = [200, 500, 1000, 2000];
+    const rows = sizes.map(mw => {
+      const h = electrolyserH2(series, mw);
+      if (!h) return '';
+      const lcoh = h.lcohRPerKg;
+      const good = lcoh != null && lcoh < 60;
+      return `<tr>
+        <td style="padding:2px 0">${mw.toLocaleString()} MW</td>
+        <td style="text-align:right;font-family:monospace">${h.capacityFactor.toFixed(0)}&#37;</td>
+        <td style="text-align:right;font-family:monospace">${(h.tonnesH2/1000).toFixed(0)}</td>
+        <td style="text-align:right;font-family:monospace;${good?'':'color:var(--ink2)'}">R${lcoh!=null?lcoh.toFixed(0):'-'}</td>
+        <td style="text-align:right;font-family:monospace;color:var(--ink2)">${h.capturedSharePct.toFixed(0)}&#37;</td></tr>`;
+    }).join('');
+
+    host.innerHTML = `
+      <div style="font-size:10.5px;color:var(--ink2);margin-bottom:8px;line-height:1.5">
+        ${totalTWh.toFixed(2)} TWh of ${useCong ? 'congestion' : 'economic'} curtailment in this
+        scenario. ${useCong
+          ? 'Congestion curtailment is renewable output spilled because a corridor is full, not because the energy was unwanted.'
+          : 'Economic curtailment is surplus the system could not use at any price.'}
+      </div>
+      <table style="width:100%;font-size:10.5px;border-collapse:collapse">
+        <thead><tr style="color:var(--ink2)">
+          <th style="text-align:left;font-weight:400">electrolyser</th>
+          <th style="text-align:right;font-weight:400">capacity factor</th>
+          <th style="text-align:right;font-weight:400">kt H&#8322;/yr</th>
+          <th style="text-align:right;font-weight:400">cost R/kg</th>
+          <th style="text-align:right;font-weight:400">of spill</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.55">
+        Running only on spilled energy, so the energy is free and the whole cost is capital
+        recovery &ndash; which makes cost inversely proportional to capacity factor. Green
+        hydrogen is broadly considered competitive below about R60/kg; grey hydrogen from
+        gas sits near R30&ndash;45. At R18,000/kW and 52&#160;kWh/kg, both wide-uncertainty
+        assumptions. <strong>Curtailment has to exist first:</strong> at today&rsquo;s build
+        an electrolyser on spilled energy alone runs at a few per cent capacity factor.
+      </div>`;
+  }
+
   // ── ELECTROLYSER SITING ───────────────────────────────────────────────────
   // Where should an electrolyser go?
   //
@@ -3454,6 +3526,7 @@ function printPrefeas() {
     return rows;
   }
   window.electrolyserSiting = electrolyserSiting;
+  window.renderH2 = renderH2;   // called from run(), which is in another closure
 
   // ── GRID-ENHANCING TECHNOLOGIES: cost against building line ────────────────
   // `getsEnabled` already models the CAPABILITY - a 20% headroom uplift on congested
@@ -12851,7 +12924,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // not appear in the browser, and neither of us could tell whether the page was serving a
 // cached older copy. A version string settles that in one glance instead of an hour of
 // reasoning about code that is demonstrably correct on disk.
-const BUILD_STAMP = '2026-09-01g';
+const BUILD_STAMP = '2026-09-01h';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -13274,7 +13347,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
