@@ -453,6 +453,28 @@ const live = stripComments(src);
           'the nav bar assumes its links are in DOM order, and they are not - '
           + 'clicking one section will highlight another');
 
+    // EVERY PANEL RENDERER NEEDS ITS TARGET DIV.
+    // While moving the PPA button on 1 Sep I miscounted closing tags and deleted
+    // `<div class="pb" id="priceBody">` - the entire wholesale price panel body. All 919
+    // checks passed: they exercise the ENGINE, and a renderer whose host is missing
+    // returns early without error.
+    //
+    // Caught only because a probe threw on a null element. This asserts that every id a
+    // renderer writes to actually exists in the markup.
+    {
+      const missingHosts = [];
+      for (const id of ['priceBody', 'captureBody', 'capPayBody', 'heatBody', 'getsBody',
+                        'h2Body', 'h2SiteBody', 'capFcBody', 'wheelResult']){
+        const written = new RegExp("getElementById\\(['\"]" + id + "['\"]\\)").test(src);
+        const exists = new RegExp('id="' + id + '"').test(src);
+        if (written && !exists) missingHosts.push(id);
+      }
+      check('every panel renderer has its target div in the markup',
+            missingHosts.length === 0,
+            'renderers write to ids that do not exist: ' + missingHosts.join(', ')
+            + ' - the panel will silently render nothing');
+    }
+
     const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
     const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
     check('there is one shared weather-profile builder',

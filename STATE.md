@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 941 checks
+suite                      19 harnesses, 942 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 941 checks. Last full run: 941/941.
+Nineteen harnesses, 942 checks. Last full run: 942/942.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          16/16   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       35/35
-node validate_structure.js .         22/22
+node validate_structure.js .         23/23
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .            4/4
@@ -6566,6 +6566,36 @@ assuming a user has been there.
 
 Verified: no picker in the panel, button in Wholesale shadow price, modal opens with ten
 options defaulting to Northern Cape, and the national-price explanation present.
+
+## I deleted a whole panel and 919 checks said nothing - 1 Sep 2026
+
+Trimming the scarcity note, a probe threw on a null element. **`<div class="pb"
+id="priceBody">` was gone** - I had miscounted closing tags an hour earlier while moving the
+PPA button out of the prices panel header, and taken the panel body with it.
+
+**Every one of 919 checks passed.** They exercise the engine, and `renderPricePanel` opens
+with `if (!host ...) return;` - a renderer whose host is missing returns early, silently and
+by design.
+
+So the wholesale shadow price panel would have rendered nothing at all, and only a browser
+visit would have shown it.
+
+### now checked
+
+`validate_structure` 22 -> 23: every id a renderer writes to must exist in the markup.
+Nine panel hosts covered. Verified by deleting `priceBody` again - it fails naming the id
+and saying the panel will silently render nothing.
+
+**The lesson is about the guard, not the typo.** `if (!host) return` is correct defensive
+code and it is exactly what hid this. A defensive early return converts a missing element
+from a loud error into an invisible absence, so something else has to assert the element
+exists.
+
+### and the trim itself
+
+78 words to 39, to the user's wording. The removed half explained how to read the two
+numbers; the "Cost of generation" tile above already shows the R950 figure, so the
+explanation was narrating a number the reader can see.
 
 ---
 

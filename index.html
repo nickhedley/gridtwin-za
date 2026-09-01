@@ -806,6 +806,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               <button onclick="exportPpaTimeseries()" title="Hourly shadow prices and regional wind and solar profiles, for PPA modelling"
                       style="font-size:10px;padding:3px 8px">&darr; PPA series</button>
             </div>
+            <div class="pb" id="priceBody"></div>
           </div>
 
           <div class="panel" style="margin-top:18px">
@@ -10322,10 +10323,7 @@ function renderPricePanel(r){
           + `<strong>${s.scarcityHours} hour${s.scarcityHours === 1 ? '' : 's'} priced at the value of lost load, `
           + `contributing ${(s.scarcityShare*100).toFixed(0)}% of the average.</strong> `
           + 'Those are hours the system had nothing left to dispatch, priced at what an hour without '
-          + 'power costs the economy rather than what generation costs. They say the system ran '
-          + `<em>short</em>, not that electricity became expensive to make \u2013 strip them out and the `
-          + `cost of generation is ${R(s.avgExScarcity)}/MWh against the ${R(s.avg)} headline. `
-          + 'Read the first number for the cost of the mix and the second for the cost of the shortfall.</div>'
+          + 'power costs the economy, rather than what generation costs.</div>'
         : '')
 
     + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">`
