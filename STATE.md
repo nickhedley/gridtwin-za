@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 913 checks
+suite                      19 harnesses, 915 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 913 checks. Last full run: 913/913.
+Nineteen harnesses, 915 checks. Last full run: 915/915.
 
 ```
 node stress_suite.js                290/290
@@ -256,7 +256,7 @@ node validate_invariants.js .       147/147
 node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
-python3 audit.py index.html           68/68
+python3 audit.py index.html           70/70
 node validate_benchmarks.js .        22/22
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
@@ -5323,10 +5323,8 @@ noticed again.**
 
 Added at the user's request so they are not rediscovered.
 
-**`electrolyserSiting`** needs a ranked regional table. Resource, water stress, port access
-and - after a full run - measured regional curtailment, with the weighting exposed rather
-than blended, because the ranking changes completely between weightings and that shift is
-the finding.
+**~~`electrolyserSiting`~~ DONE 1 Sep 2026.** Ranked regional table with the weighting as a
+control, not a default. Verified across all four weightings.
 
 **`getsCompare`** belongs with the network panel, beside the corridor congestion figures
 that motivate it. Wants a corridor selector, since the cost ratio scales with corridor
@@ -5361,6 +5359,45 @@ that specific route is testable against a real contract.
 production there for Sasol, and is the most likely early buyer of green hydrogen in the
 country. That is an industrial-demand anchor the electrolyser siting tool explicitly does
 not model - and it sits in Mpumalanga, which scores mid-table on resource and has no port.
+
+---
+
+## the siting panel, and why the weighting is a control - 1 Sep 2026
+
+```
+weighting                          top three
+resource only          Hydra Central · Northern Cape · Western Cape
+resource+water+export  Western Cape · Eastern Cape · KwaZulu-Natal
+export-led             Western Cape · Eastern Cape · KwaZulu-Natal
+water-constrained      KwaZulu-Natal · Western Cape · Eastern Cape
+```
+
+**The answer changes completely, and that is the point.** KwaZulu-Natal has the WORST
+combined resource in the country at 21.0% and leads the water-constrained ranking, because
+electrolysis needs 9-10 litres per kg and the Karoo has none. A blended index would have
+produced one plausible ordering and hidden the whole result.
+
+So the weighting is a dropdown rather than a default, and the note beneath says outright
+that switching it changes the answer.
+
+### the table is honest about its layers
+
+Modelled: resource from ten weather years, grid headroom from the GCCA, and measured
+regional curtailment once a full run has been done - the column appears only then, and says
+so when it is absent.
+
+Asserted: water stress and port access, as three coarse levels. Boegoebaai is treated as
+proposed rather than built, which matters because it is the entire export case for the
+Northern Cape.
+
+Not modelled at all: industrial demand. The note names Secunda specifically, because Air
+Liquide's operation there is the most likely early hydrogen buyer in the country and it is
+absent from the ranking.
+
+### one still invisible
+
+`getsCompare` remains a function without a panel. It belongs with the network panel and
+wants a corridor selector, since the cost ratio scales with corridor length.
 
 ---
 
