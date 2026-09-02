@@ -76,8 +76,9 @@ captive, no Eskom-owned. A private wheeled project can never appear in a
 provincial aggregate, so absence from the named files is not evidence it is
 already counted.
 
-**Eskom sales, the observed series.** Removed from the demand slider note on 2 Sep 2026
-when that note was shortened, and recorded here because it now appears nowhere in the tool.
+**Eskom sales, the observed series.** The figures were removed from the demand slider note
+on 2 Sep 2026 when it was shortened; the note keeps the direction ("demand has been
+declining in recent years") and this is where the numbers behind it live.
 
 ```
 FY2024   183.3 TWh
