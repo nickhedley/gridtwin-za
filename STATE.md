@@ -7059,6 +7059,45 @@ function. Baseline regenerated on that basis. **Rule 2 is about not relaxing a c
 make a change pass; re-recording a reference after a deliberate, source-verified input
 change is a different act - but only because the deltas were measured first.**
 
+## slider copy, and a claim that was simply false - 2 Sep 2026
+
+Five wording changes, and one substantive correction found by the user reading carefully.
+
+### the interruptible load note claimed the wrong merit position
+
+It read "Sits between the cost of diesel and the cost of unserved energy." Measured:
+
+```
+coal SRMC                 R   594
+gas CCGT SRMC             R 1,985
+interruptible load        R 4,000
+diesel SRMC               R 6,136
+unserved energy (VOLL)    R87,000
+```
+
+**R4,000 is BELOW diesel, not between diesel and lost load.** The note had the ordering
+backwards, and it matters because the companion note on the adjacent slider says
+interruptible load is "called before anything is shed" - which is correct precisely BECAUSE
+it is cheaper than diesel, the opposite of what the cost note claimed.
+
+Corrected to state the position and both reference costs.
+
+### now checked, by ordering rather than wording
+
+`validate_consistency` 40 -> 42 asserts interruptible compensation is cheaper than the
+diesel SRMC and far cheaper than lost load. **The ordering, not the sentence**, so the note
+stays true if either cost is re-based.
+
+Nothing caught this before because the claim was prose about two constants and no check
+compared them. That is the same shape as the fallback class where a value is plausible and
+unverified.
+
+### the other five
+
+Iron-air and nuclear notes trimmed as asked; "ev" to "EV"; the reserve note cut to its two
+substantive sentences; the synchronous floor note reworded. The shouting check then fired on
+EV, because the allow-list lacked it - now extended with the technology acronyms.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

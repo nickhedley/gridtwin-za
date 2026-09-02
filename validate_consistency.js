@@ -508,6 +508,29 @@ const num = t => {
     }
   }
 
+  // ── THE INTERRUPTIBLE LOAD BLURB MUST MATCH THE MERIT ORDER ──────────────
+  // The note claimed the compensation "sits between the cost of diesel and the cost of
+  // unserved energy". At the default it is R4,000 against a diesel SRMC of R6,136 - BELOW
+  // diesel, not between. Reported 2 Sep 2026; nothing checked it because the claim was
+  // prose about two constants and no check compared the two.
+  //
+  // Assert the ORDERING rather than the wording, so the note stays true if either cost is
+  // ever re-based.
+  const dr = run(`
+    const P = { ...FIXED, ...state };
+    const dieselSRMC = P.costDiesel + (P.carbonTaxRPerT || 0) * (P.emisDiesel || 0);
+    return { drCost: P.drInterruptCostR, dieselSRMC, voll: P.voll ?? 87000 };
+  `);
+  if (dr && !dr.err){
+    check('interruptible load is cheaper than diesel, as the note says',
+          dr.drCost < dr.dieselSRMC,
+          `compensation R${dr.drCost} against a diesel SRMC of R${dr.dieselSRMC.toFixed(0)} - `
+          + `if this inverts, the slider note must change with it`);
+    check('interruptible load is far cheaper than unserved energy',
+          dr.drCost < dr.voll / 5,
+          `R${dr.drCost} against a value of lost load of R${dr.voll}`);
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

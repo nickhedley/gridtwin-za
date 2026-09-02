@@ -11887,18 +11887,18 @@ const SLIDERS=[
   {id:'newVrfbMW',label:'New vanadium flow batteries',min:0,max:20000,step:500,def:FIXED.newVrfbMW,fmt:v=>v===0?'none':(v/1000).toFixed(1)+' GW',
    note:'on 0 GW existing. 8-hour storage at 75&#37; round-trip efficiency. The electrolyte does not degrade with cycling \u2013 an advantage this model does not yet price.'},
   {id:'newIronAirMW',label:'New iron-air storage',min:0,max:20000,step:500,def:FIXED.newIronAirMW,fmt:v=>v===0?'none':(v/1000).toFixed(1)+' GW',
-   note:'on 0 GW existing. 100-hour storage at 45&#37; round trip \u2013 the longest duration here. The energy mix splits storage by chemistry, so you can see when it actually dispatches.'},
+   note:'on 0 GW existing. 100-hour storage at 45&#37; round-trip efficiency.'},
   {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'Lng-fired · runs as backup/insurance and rarely dispatched when storage is ample (except when IRP artificial load factor is applied)'},
   {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:SUB_CTRL,note:'Must-run at 50&#37; of capacity, matching the IRP 2025 load factor. Off = merit order.'},
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'Modern supercritical, same fuel cost as existing fleet'},
-  {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here'},
+  {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here.'},
   {grp:'Demand-side &amp; flexibility'},
   {id:'drInterruptMW',label:'Large interruptible load/demand flexibility',min:0,max:4000,step:100,def:FIXED.drInterruptMW,fmt:v=>v+' MW',
    note:'Contracted large industrial load that Eskom can drop in a shortage (for a fee) \u2013 historically the aluminium smelters and other energy-intensive users. Called before anything is shed, because the customer is compensated at far less than the cost of a blackout. Reported separately from unserved energy: a managed reduction under contract is not load shedding.'},
   {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString()+'/MWh',ctrlStyle:SUB_CTRL,
-   note:'What a customer is paid to reduce their power use. Sits between the cost of diesel and the cost of unserved energy.'},
+   note:'What a customer is paid to reduce their power use. At the default it sits below diesel (R6,136/MWh) and far below the cost of unserved energy (R87,000/MWh), which is why it is called before either.'},
   {id:'drShiftPct',label:'Shiftable load',min:0,max:30,step:1,def:FIXED.drShiftPct,fmt:v=>v+' % of daily load',
-   note:'Load moved within the day rather than dropped. I.e., loads including water heating, pumping, irrigation and ev charging are shifted out of the six highest net-load hours into the six lowest (i.e. midday solar). Strictly energy-neutral per day. Defaults to zero because this barely exists at scale in South Africa yet but is a potential policy lever.'},
+   note:'Load moved within the day rather than dropped. I.e., loads including water heating, pumping, irrigation and EV charging are shifted out of the six highest net-load hours into the six lowest (i.e. midday solar). Strictly energy-neutral per day. Defaults to zero because this barely exists at scale in South Africa yet but is a potential policy lever.'},
   {id:'vppGeyserPoolMW',label:'Virtual power plants \u2013 national potential',min:0,max:12000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(2)+' GW',
    note:'How much behind-the-meter load could be aggregated nationally. 4 GW is our estimate for electric geysers, which drive the morning and evening peaks. Raise the slider above 4 GW to include pool pumps, air conditioning and EV charging as those fleets grow. Nothing happens until you set an enrolment share below. To place VPPs in specific municipalities rather than nationally, use the Where To Build panel and pick Virtual power plant as the technology \u2013 you can site several at once.'},
   {id:'vppEnrolPct',label:'\u2013 share actually enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',ctrlStyle:SUB_CTRL,
@@ -11906,7 +11906,7 @@ const SLIDERS=[
   {id:'vppTotalReadout',readout:true,ctrlStyle:SUB_CTRL},
   {grp:'System operation'},
   {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
-   note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output. At today\u2019s fleet this rarely binds \u2013 South Africa has ~7 GW of fast-start peakers and storage against a reserve need near 1.3 GW \u2013 but it bites hard once coal is tight or peakers retire.'},
+   note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output.'},
   {subgrp:'Reserve settings'},
   {id:'reserveContingencyMW',label:'N-1 contingency reserve',min:0,max:1600,step:20,def:FIXED.reserveContingencyMW,fmt:v=>v+' MW',
    ctrlStyle:SUB_CTRL,note:'Cover for the largest single unit tripping. 794 MW is a Medupi/Kusile set, the biggest on the system.'},
@@ -11915,7 +11915,7 @@ const SLIDERS=[
   {id:'reserveVrePct',label:'Wind & solar following reserve',min:0,max:25,step:1,def:FIXED.reserveVrePct,fmt:v=>v+' % of VRE output',
    ctrlStyle:SUB_CTRL,note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2013 which is why reserve costs rise with a high-renewables fleet.'},
   {endsub:true},
-  {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Baseline 6 GW, ~15&#37; of SA peak \u2013 Eskom\u2019s historical practice. 0 models a fully grid-forming future.'},
+  {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Baseline is 6 GW, or ~15&#37; of SA\u2019s peak \u2013 Eskom\u2019s historical practice. 0 GW models a scenario where inverters and other tech take over.'},
   {grp:'Grid'},
   {id:'gridBeyondGccaPct',label:'Grid built beyond current plan',min:0,max:150,step:10,def:FIXED.gridBeyondGccaPct,fmt:v=>v===0?'GCCA plan only':'+'+v+'% headroom',
    note:'Scales every region\u2019s connection headroom in the build optimiser. Zero means the network Eskom currently plans to build. Raise it to ask what a larger build programme would unlock; the transmission cost slider below prices the network. Without this the optimiser simply stops at GCCA headroom, which is why it builds no new corridors in high-renewables scenarios.'},
@@ -13339,7 +13339,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02i';
+const BUILD_STAMP = '2026-09-02j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
