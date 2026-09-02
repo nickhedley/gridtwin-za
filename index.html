@@ -705,9 +705,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                       style="font-size:10px;padding:3px 8px;margin-left:auto">Compute grid</button></div>
             <div class="pb">
               <div style="font-size:10.5px;line-height:1.5;margin-bottom:9px">
-                How much wind and solar removes the need for gas entirely. Each cell is a
-                full year at that build with no gas at all; the grid takes about ten
-                seconds because every cell is run against ten weather years and the worst
+                How much wind and solar removes the need for gas entirely. Only gas is
+                forced to zero &ndash; coal, storage, nuclear, imports and demand all follow
+                your scenario. Ten seconds: every cell is ten weather years and the worst
                 is kept.
               </div>
               <div id="frontierBody"><div style="font-size:10.5px;color:var(--ink2)">Press
@@ -3935,11 +3935,9 @@ function printPrefeas() {
       // zero. Say so, or it reads as a failure to compute.
       + ((allZero && anyDone && asm) ? `<div style="font-size:10.5px;margin-top:7px;padding:7px 9px;`
           + `background:var(--panel2);border-left:3px solid var(--veld,#7DC47A);line-height:1.5">`
-          + `<strong>Every cell is zero</strong>, which is the answer rather than a failure. `
-          + `With ${(asm.coalLeftMW/1000).toFixed(1)} GW of coal retained the system covers `
-          + `the worst of ${nYears} weather years without gas at any build on this grid. `
-          + `The frontier only becomes interesting once coal is being retired \u2013 raise `
-          + `Coal decommissioned and recompute.</div>` : '')
+          + `<strong>Every cell is zero</strong>, because with `
+          + `${(asm.coalLeftMW/1000).toFixed(1)} GW of coal retained, the system covers the `
+          + `worst of ${nYears} weather years without gas.</div>` : '')
       + (asm ? `<div style="font-size:9.5px;color:var(--ink2);margin-top:5px;line-height:1.5">`
           + `<strong>From your scenario:</strong> `
           + `${(asm.coalLeftMW/1000).toFixed(1)} GW of coal left at `
@@ -13492,7 +13490,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02q';
+const BUILD_STAMP = '2026-09-02r';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

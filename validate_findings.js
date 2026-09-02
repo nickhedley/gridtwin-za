@@ -292,6 +292,57 @@ setTimeout(()=>{
     }
   }
 
+
+  // ── LONG-DURATION STORAGE: THE RESULT INVERTS ON THE GAS ASSUMPTION ──────
+  // RESULTS.md carries both: 20 GW of 100-hour iron-air changes July by nothing WITH the
+  // Seriti 25 GW of gas, and 10 GW cuts unserved energy 98% WITHOUT gas. Those look
+  // contradictory and are not - with gas the deficit is an energy shortage no store can
+  // fill; without it the shortfall concentrates into fewer, deeper hours.
+  //
+  // Both directions asserted, because quoting either without its gas assumption inverts
+  // the finding. Snapshot and restore - probes here share one window.
+  {
+    const r = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
+      const seriti = { newWindMW: 20000, newPvMW: 25000, newBattMW: 20000, newBattHours: 10,
+                       coalDecomMW: 32000, coalEAFPct: 70 };
+      const julGas = x => { const MD=[31,28,31,30,31,30,31,31,30,31,30,31];
+        let h0=0; for(let m=0;m<6;m++) h0+=MD[m]*24;
+        let g=0; for(let h=h0;h<h0+31*24;h++) g+=(x.stack.ccgt[h]||0)+(x.stack.diesel[h]||0);
+        return g/1000; };
+      const withGasNo  = simulate({ ...state, ...seriti, newCcgtMW: 25000 }, PROFILES);
+      const withGasIA  = simulate({ ...state, ...seriti, newCcgtMW: 25000,
+                                    newIronAirMW: 20000, newIronAirHours: 100 }, PROFILES);
+      // No new lithium in the no-gas case. With Seriti's 20 GW of 4-hour storage the gap
+      // is already closed and iron-air has nothing to improve - the check then passes
+      // vacuously on 0 -> 0, which is how the first version of it read.
+      const bare = { coalDecomMW: 32000, coalEAFPct: 70, newCcgtMW: 0,
+                     newWindMW: 40000, newPvMW: 80000 };
+      const noGasNo    = simulate({ ...state, ...bare }, PROFILES);
+      const noGasIA    = simulate({ ...state, ...bare,
+                                    newIronAirMW: 10000, newIronAirHours: 100 }, PROFILES);
+      Object.assign(state, saved);
+      return { gasJulBefore: julGas(withGasNo), gasJulAfter: julGas(withGasIA),
+               noGasBefore: (noGasNo.E.unserved||0)/1000,
+               noGasAfter: (noGasIA.E.unserved||0)/1000 };
+    `);
+    if (r && !r.error){
+      const julDelta = Math.abs(r.gasJulAfter - r.gasJulBefore) / Math.max(r.gasJulBefore, 1);
+      check('with gas, 20 GW of 100-hour iron-air barely moves July',
+            julDelta < 0.02,
+            `July gas ${r.gasJulBefore.toFixed(0)} -> ${r.gasJulAfter.toFixed(0)} GWh, `
+            + `a ${(julDelta*100).toFixed(1)}% change`);
+      check('without gas, 10 GW of 100-hour iron-air cuts unserved energy sharply',
+            r.noGasAfter < r.noGasBefore * 0.25 && r.noGasBefore > 100,
+            `unserved ${r.noGasBefore.toFixed(0)} -> ${r.noGasAfter.toFixed(0)} GWh - if this `
+            + `stops holding, the scope note in RESULTS.md is wrong`);
+      console.log(`  LDES scope     with gas July ${r.gasJulBefore.toFixed(0)} -> `
+        + `${r.gasJulAfter.toFixed(0)} GWh \u00b7 no gas unserved `
+        + `${r.noGasBefore.toFixed(0)} -> ${r.noGasAfter.toFixed(0)} GWh`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

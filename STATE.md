@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 953 checks
+suite                      19 harnesses, 955 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 953 checks. Last full run: 953/953.
+Nineteen harnesses, 955 checks. Last full run: 955/955.
 
 ```
 node stress_suite.js                290/290
@@ -262,7 +262,7 @@ node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity c
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
-node validate_findings.js .          16/16   the PUBLISHED FINDINGS, added 31 Aug
+node validate_findings.js .          18/18   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       40/40
 node validate_structure.js .         25/25
@@ -7339,6 +7339,36 @@ points at the Coal decommissioned slider, rather than looking broken.
 4,162 against a ceiling of 4,120. Raised to 4,170 deliberately. Both new blocks are
 provenance: **the assumptions line exists precisely because the first version did not say
 what it assumed.**
+
+## the storage finding inverts on the gas assumption - 2 Sep 2026
+
+Two results in RESULTS.md look contradictory:
+
+```
+WITH the Seriti 25 GW of gas    20 GW of 100-hour iron-air changes July by NOTHING
+WITHOUT gas                     10 GW cuts unserved energy 4,663 -> 78 GWh
+```
+
+Both are right. With gas the deficit is an energy shortage no store can fill; without it the
+shortfall concentrates into fewer, deeper hours, which is what a 100-hour store is for.
+**Quoting either without its gas assumption inverts the finding.**
+
+Scope note added to RESULTS.md; `validate_findings` 16 -> 18 asserts BOTH directions.
+
+### the check passed vacuously first
+
+Its no-gas case inherited Seriti's 20 GW of 4-hour lithium, which already closes the gap, so
+it read `0 -> 0` and the assertion held on nothing. The no-gas case now carries no new
+lithium. **A check that passes because the effect it measures cannot occur is worse than no
+check** - it reports confidence.
+
+### also
+
+The all-zero note trimmed to one sentence, and the panel intro now says in one line that
+only gas is forced. Confirmed by test that all eleven other levers reach the grid - iron-air,
+vanadium, lithium, nuclear, imports, demand, demand response, interruptible load, rooftop,
+reserve and congestion curtailment. The last two read as inert until switched OFF, because
+both are on by default.
 
 ---
 
