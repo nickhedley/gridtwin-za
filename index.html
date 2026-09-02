@@ -514,7 +514,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
 
           <div id="nav-gets" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Grid-enhancing technologies, or build line?</h2>
+            <div class="ph"><h2>Grid-enhancing technologies vs new transmission lines</h2>
               <span class="tag">line cost sourced</span>
               <span class="tag">device cost indicative</span></div>
             <div class="pb">
@@ -895,12 +895,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
           <div class="panel" id="capCurvePanel" style="margin-top:18px">
-          <div class="ph"><h2>Capture rate as the pipeline fills</h2><span class="tag">modelled &middot; cannibalisation &middot; wind vs solar</span></div>
+          <div class="ph"><h2>Capture rate projections</h2><span class="tag">modelled &middot; cannibalisation &middot; wind vs solar</span></div>
           <div class="pb" id="capCurveBody"></div>
           </div>
 
           <div class="panel" id="bessSatPanel" style="margin-top:18px">
-          <div class="ph"><h2>What happens as the fleet grows</h2><span class="tag">modelled &middot; revenue per MW</span></div>
+          <div class="ph"><h2>Battery revenue projections</h2><span class="tag">modelled &middot; revenue per MW</span></div>
           <div class="pb" id="bessSatBody"></div>
           </div>
 
@@ -13339,7 +13339,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02m';
+const BUILD_STAMP = '2026-09-02n';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

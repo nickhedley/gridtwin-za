@@ -49,7 +49,7 @@ CHECKS = [
     ('besPct',                                                     'NERSA battery bars'),
     ('transmission_lines.geojson',                                 'transmission lines layer'),
     ('addSubstationLayer',                                         'substation dots'),
-    ('Capture rate as the pipeline fills',                         'capture curve panel'),
+    ('Capture rate projections',                                   'capture curve panel'),
     ('scheduleCaptureCurve',                                       'capture curve debounce'),
     # Basemap. CARTO withdrew keyless access and watermarked every tile "API KEY
     # REQUIRED" while still SERVING them - a silent degradation no automated check
@@ -145,7 +145,7 @@ CHECKS = [
     # between weightings, and that shift is the finding rather than a defect.
     # Grid-enhancing comparison, with the corridor as a control because the cost ratio
     # scales with corridor length - 41x at 90 km, 127x at 278 km.
-    ('Grid-enhancing technologies, or build line?',                'grid-enhancing panel'),
+    ('Grid-enhancing technologies vs new',                         'grid-enhancing panel'),
     ('getsCorridor',                                              'corridor selector'),
     # PPA export: a picker, not a free-text prompt. A misspelled region used to produce a
     # CSV with the price column populated and both profile columns empty, silently.

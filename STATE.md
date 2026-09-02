@@ -7179,6 +7179,23 @@ today.
 `lng` and `usd` capitalised in the gas fuel note - the fifth and sixth casualties of the
 1 Sep de-capitalisation pass. The coal LCOE note reworded as requested.
 
+## three panel headers renamed - 2 Sep 2026
+
+```
+Grid-enhancing technologies, or build line?   ->  Grid-enhancing technologies vs new transmission lines
+Capture rate as the pipeline fills            ->  Capture rate projections
+What happens as the fleet grows               ->  Battery revenue projections
+```
+
+The last two were the vaguest headers in the tool - neither said what it showed, and
+"What happens as the fleet grows" sat directly below "Battery revenue split", so a reader
+had no way to tell the two apart from the headers alone.
+
+**Two `audit.py` pins matched the old text** and were repointed after confirming the panels
+still render. A third hit in `validate_findings` - "ancillary revenue saturates as the fleet
+grows" - was left alone: it is a check NAME describing a finding, not a reference to the
+header, and changing it would have been a search-and-replace error rather than a fix.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
