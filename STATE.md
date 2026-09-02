@@ -1288,7 +1288,7 @@ store. Now scales with the longest storage on the system, capped at 168 hours be
 beyond a week perfect foresight does more work than the storage does. Suite 817/817.
 
 **not fixed, and it is the binding one — efficiency merit order.** `tierCharge` fills
-best-round-trip-first: lithium 0.88, vanadium 0.70, iron-air 0.45. Lithium empties daily
+best-round-trip-first: lithium 0.88, vanadium 0.75, iron-air 0.45. Lithium empties daily
 so it always has room, absorbs the cheap charging, and iron-air is never reached. Fixing
 the horizon changed July gas by zero for exactly this reason.
 
@@ -6991,6 +6991,26 @@ now sentence case.
 that reads the source cannot see what CSS does to it**, and a regex over quoted strings
 cannot see template literals. Both gaps were invisible until the user looked at a
 screenshot.
+
+## vanadium round-trip efficiency 0.70 to 0.75 - 2 Sep 2026
+
+Midpoint of South African project estimates. **The figure lived in FOUR places** - the
+`FIXED` constant and three `?? 0.70` fallbacks, in the storage stack builder, the weighted
+efficiency calculation and the LP tier table. Exactly the duplication rule 6 warns about,
+and changing the constant alone would have left three sites disagreeing with it.
+
+All four changed together; zero `0.70` sites remain.
+
+**Verified live, not just present.** A 10 GW vanadium fleet gives 28.175 TWh of gas at 0.75
+against 28.178 at 0.70, and the default now matches the forced 0.75 exactly. A constant that
+does not move an output is not connected.
+
+`RESULTS.md` and this file both quoted the ordering "lithium 0.88, vanadium 0.70, iron-air
+0.45" and were corrected in the same change. **The published record must not state a
+parameter the model no longer uses.**
+
+The blurb is unchanged in substance: 8-hour storage, 75% round-trip, and the note that
+electrolyte does not degrade with cycling - an advantage the model still does not price.
 
 ---
 

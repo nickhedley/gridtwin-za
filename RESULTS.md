@@ -1179,7 +1179,7 @@ system, capped at one week - beyond that perfect foresight does more work than t
 storage does.
 
 **not fixed - efficiency merit order starves long-duration storage.** `tierCharge` fills
-best round trip first: lithium 0.88, then vanadium 0.70, then iron-air 0.45. Lithium
+best round trip first: lithium 0.88, then vanadium 0.75, then iron-air 0.45. Lithium
 empties every day, so it always has room, so it absorbs the cheap charging and iron-air
 is never reached. Fixing the horizon changed July gas by nothing at all for exactly this
 reason.
