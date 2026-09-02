@@ -208,13 +208,24 @@ for needle, label in CHECKS:
 # Acronyms and code identifiers are exempt. What this catches is a word capitalised for
 # emphasis inside a sentence, which is a house-style decision the project made twice and
 # undid twice.
+# Extended three times in one day - UCLF/IRENA, then EV, then DOE/USD - because it is built
+# by listing acronyms as they come up. That is mildly annoying and it is the right shape.
+#
+# TRIED AND REVERTED 2 Sep 2026: a rule that treats an all-caps token as emphasis only if
+# the same word appears in lowercase elsewhere. It looked elegant and it fails, because
+# lowercase homographs are everywhere in CODE - `nersa_registrations.json`, `ppaRegion`,
+# `exportPpaTimeseries` - so NERSA, PPA, IRP and eighteen others all tripped. Scoping the
+# lookup to prose only would make the check depend on the thing it is checking.
+#
+# An allow-list needs occasional maintenance. A wrong rule needs constant argument.
 _SHOUT_OK = set("""MW GW TWh GWh MWh kW kWh CO2 CO LOLE EUE EAF VOLL OCGT CCGT IPP CSP PV
 SA ZA NERSA IRP TDP GCCA REIPPPP SAWEM CSV PPA VPP BESS LCOE SRMC NTCSA DLR CCS PVGIS
 MERRA ERA SARAH KPI KPIs UI URL SOC MIP LP HiGHS PyPSA API DR AC DC UTC SAST NDC SAPP
 REDZ REEA SSEG ATB NREL CSIR AEMO EIA JSON HTML PDF MD FY CY RCA ERTSA GCC MYPD RAB
 MONTHS COLORS FIXED EMIS CARBON EX EFF MC GPS NRS TOU PLEXOS EDMSA IGCAR SANS DFFE
 SAPVIA UCT GSB PFL DBSA BW COD RMIPPPP BESIPPPP UPG NCE SALGA PAJA MFMA NEM SDK ML AI
-US UK II III IV UCLF PCLF OCLF IRENA EAF EV EVs BESS VRE SRMC LDES N GVA MVA kV""".split())
+US UK II III IV UCLF PCLF OCLF IRENA EV EVs VRE LDES GVA MVA kV DOE USD ZAR EUR GBP
+""".split())
 
 def check_shouting(src):
     found = {}

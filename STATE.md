@@ -7098,6 +7098,31 @@ Iron-air and nuclear notes trimmed as asked; "ev" to "EV"; the reserve note cut 
 substantive sentences; the synchronous floor note reworded. The shouting check then fired on
 EV, because the allow-list lacked it - now extended with the technology acronyms.
 
+## three slider tweaks, and a check I made worse before making it right - 2 Sep 2026
+
+Grid-enhancing and congestion-curtailment notes reworded. The reserve capacity pricing
+slider is now indented as a child of "Price reserve capacity", matching the export price
+pattern - an en-dash label prefix, and `asReserveRMWh` already sits directly after
+`asReserveOn` so it reads correctly.
+
+**Two more de-capitalisation casualties** found while editing: `doe 2024` and `usd 25-40`,
+both mangled by the 1 Sep pass. Same bug class as `eskom'S` and `on A typical hour`.
+
+### the shouting check: a clever rule, reverted
+
+The allow-list had been extended three times in a day, so I replaced it with a rule - treat
+an all-caps token as emphasis only if the same word appears in lowercase elsewhere, since
+acronyms have no lowercase homograph.
+
+**It failed immediately.** Eighty-four occurrences across twenty-two words, because
+lowercase homographs are everywhere in CODE: `nersa_registrations.json`, `ppaRegion`,
+`exportPpaTimeseries`. Scoping the lookup to prose only would make the check depend on the
+thing it is checking.
+
+Reverted, with the reasoning recorded at the constant so it is not tried again.
+
+**An allow-list needs occasional maintenance. A wrong rule needs constant argument.**
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

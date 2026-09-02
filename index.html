@@ -11920,15 +11920,15 @@ const SLIDERS=[
   {id:'gridBeyondGccaPct',label:'Grid built beyond current plan',min:0,max:150,step:10,def:FIXED.gridBeyondGccaPct,fmt:v=>v===0?'GCCA plan only':'+'+v+'% headroom',
    note:'Scales every region\u2019s connection headroom in the build optimiser. Zero means the network Eskom currently plans to build. Raise it to ask what a larger build programme would unlock; the transmission cost slider below prices the network. Without this the optimiser simply stops at GCCA headroom, which is why it builds no new corridors in high-renewables scenarios.'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind and utility PV. Two published routes bracket it: the TDP gives ~R700/kW&middot;yr gross, Eskom&rsquo;s FY2027-31 capex plan implies ~R490. R600 sits between them and nets off the committed share. Rooftop solar avoids new grid.'},
-  {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Adds 20&#37; to corridors above 30&#37; utilisation, at R1.55m/km \u2013 about a twentieth of a new line (doe 2024). Nodal simulation only.'},
+  {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Adds 20&#37; capacity to corridors above 30&#37; utilisation, at R1.55m/km \u2013 about a twentieth of a new line (DOE 2024). Nodal simulation only.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar &amp; batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder \u2013 up to the MW of coal retired.'},
   {id:'congestionCurtailOn',toggle:true,def:true,label:'Congestion curtailment',
-   note:'On by default because it is happening now. Curtailment in the first half of 2026 ran roughly an order of magnitude above all of 2025, and IPPs report revenues about 9&#37; below budget. Turn off to see what the fleet would produce on an unconstrained network.'},
+   note:'On by default because it is happening today. Curtailment in the first half of 2026 ran roughly an order of magnitude above all of 2025, and IPPs report revenues about 9&#37; below budget. Turn off to see what the fleet would produce on an unconstrained network.'},
   {id:'congestionCurtailPct',label:'Curtailment ceiling',min:0,max:15,step:0.5,def:FIXED.congestionCurtailPct,fmt:v=>v+'&#37; of wind and solar',
    note:'NERSA approved 4&#37; congestion curtailment in September 2025, expected to unlock 1,180&#160;MW of Western Cape wind. Compensation runs only to 2028 under the pilot. The single-node engine applies it nationally rather than to the corridors that actually bind.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. Switch on to see what a priced reserve market would be worth to storage.'},
-  {id:'asReserveRMWh',label:'Reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,
+  {id:'asReserveRMWh',label:'\u2013 reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,
    fmt:v=>v===0?'none':'R'+v+'/MWh held',
    note:'What the system operator pays for reserve capacity held back. Eskom already procures instantaneous, regulating and ten-minute reserves, and 1,014 MW of demand response already responds within six seconds. The Grid Code makes reserve categories exclusive \u2013 capacity held for one cannot count toward another, and cannot simultaneously sell energy. This model enforces that: raising the price holds storage power back from arbitrage, so reserve revenue rises and energy revenue falls.'},
   {id:'asInertiaOn',toggle:true,def:false,label:'Price inertia',
@@ -11946,7 +11946,7 @@ const SLIDERS=[
   {id:'exportCapMW',label:'Export capacity',min:0,max:5000,step:250,def:FIXED.exportCapMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
    note:'Capacity available to sell surplus into the region instead of curtailing it. Storage charges first, since stored energy fetches more in the domestic evening peak than the regional pool pays; only what storage cannot absorb is exported.'},
   {id:'exportPriceR',label:'\u2013 export price received',min:150,max:1200,step:25,def:FIXED.exportPriceR,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',ctrlStyle:SUB_CTRL,
-   note:'What a neighbouring utility pays for surplus South African energy. Defaults near SAPP system operation costs, which the draft SAPP Master Plan puts at usd 25\u201340/MWh through the horizon. Revenue offsets the system bill directly.'},
+   note:'What a neighbouring utility pays for surplus South African energy. Defaults near SAPP system operation costs, which the draft SAPP Master Plan puts at USD 25\u201340/MWh through the horizon. Revenue offsets the system bill directly.'},
   {grp:'Policy &amp; prices'},
   {id:'carbonTaxRPerT',label:'Carbon price',min:0,max:2000,step:2,def:FIXED.carbonTaxRPerT,fmt:v=>'R'+v+'/t',note:'R46/t is the compliance rate: R308/t Phase 2 headline less allowances of up to 85&#37;. R308, R462 and R640 are policy prices, not forecasts \u2013 the 2030 effective rate would be nearer R69. For the price that would meet a given cap, use the carbon cap in the build optimiser.'},
   {id:'carbonCapEnabled',label:'Carbon cap on the build plan',toggle:true,def:0,
@@ -13339,7 +13339,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02j';
+const BUILD_STAMP = '2026-09-02k';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
