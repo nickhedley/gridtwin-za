@@ -6878,6 +6878,39 @@ The hydrogen panel now sits directly below carbon capture, as asked. And the bui
 `2026-09-02c` - the previous instruction to check it was itself wrong, since the stamp only
 appears in the full-run banner and needs a model run to see.
 
+## the caps in the KPI box were CSS, not text - 2 Sep 2026
+
+Third report of capitals, and the first two sweeps could not have found these. Three
+distinct causes:
+
+### 1. text-transform, which is not shouting in the source
+
+`.kpi .k`, `.board .lbl` and `.riskhead .rk .k` carried `text-transform:uppercase`. The
+source reads "System status"; the browser rendered "SYSTEM STATUS". **Every text-based
+sweep was looking at the wrong layer.** Removed from those three rules, with letter-spacing
+reduced to suit sentence case.
+
+Left in place elsewhere: `h1,h2,h3`, the nav groups, preset buttons and the week toggles.
+Those are headings and controls where small caps is a typographic idiom rather than
+emphasis - but it is the same mechanism, so if it should go, it goes in one change.
+
+### 2. a literal AND inside a template literal
+
+`'outages AND weather year'` in the adequacy tooltip. The earlier check scanned quoted
+strings with a regex that could not reach inside template literals, so it never saw it.
+
+### 3. two user-facing labels
+
+`NEW SITE` / `PLANNED` on the project map, and a `BEST` badge in the capture table. Both
+now sentence case.
+
+### the lesson about the checks
+
+`audit.py` now guards shouted words in quoted strings, and it passed throughout. **A check
+that reads the source cannot see what CSS does to it**, and a regex over quoted strings
+cannot see template literals. Both gaps were invisible until the user looked at a
+screenshot.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

@@ -83,7 +83,7 @@ header{border-bottom:2px solid #3a5668; background:#517180; box-shadow:var(--sha
 .board{display:flex; align-items:stretch; gap:0; border:2px solid var(--ink); background:var(--ink); color:#E8E4D8; box-shadow:var(--shadow)}
 .board .cell{padding:8px 14px 7px; display:flex; flex-direction:column; justify-content:center; border-right:1px solid #454F49}
 .board .cell:last-child{border-right:none}
-.board .lbl{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA69B; font-family:'Saira Condensed'}
+.board .lbl{font-size:10px; letter-spacing:.09em; color:#9AA69B; font-family:'Saira Condensed'}
 .board .val{font-family:'IBM Plex Mono'; font-size:19px; font-weight:600; line-height:1.15}
 @media(max-width:700px){
   .hwrap{padding:10px 14px 10px;gap:8px 14px;box-sizing:border-box;width:100%;max-width:100%}
@@ -213,7 +213,7 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 @media(max-width:1150px){.kpis{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--panel); border:1.5px solid var(--ink); box-shadow:var(--shadow); padding:9px 12px 8px; position:relative}
-.kpi .k{font-family:'Saira Condensed'; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink2)}
+.kpi .k{font-family:'Saira Condensed'; font-size:11.5px; letter-spacing:.06em; color:var(--ink2)}
 .kpi .ksub{font-family:'Saira Condensed'; font-size:12px; letter-spacing:.04em; color:var(--ink2); margin-top:1px; white-space:nowrap}
 .kpi .v{font-family:'Archivo',sans-serif; font-size:22px; font-weight:700; margin-top:1px;
         font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum' 1,'lnum' 1;
@@ -266,7 +266,7 @@ canvas{width:100%; display:block}
 .shednum{font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink2); height:12px}
 .riskhead{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px}
 .riskhead .rk{flex:1; min-width:86px}
-.riskhead .rk .k{font-family:'Saira Condensed'; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink2)}
+.riskhead .rk .k{font-family:'Saira Condensed'; font-size:11px; letter-spacing:.06em; color:var(--ink2)}
 .riskhead .rk .v{font-family:'IBM Plex Mono'; font-size:18px; font-weight:600}
 .risknote{font-size:10.5px; color:var(--ink2); margin-top:8px}
 
@@ -2482,7 +2482,7 @@ let redzData = null;
       if (p.year > tdpCutoff) continue;
       const op = tdpPhaseStyle(p.phase);
       const tip = `<strong>${p.name}</strong><br>`
-        + `<span style="color:#C4785A">${p.newsite ? 'NEW SITE' : 'PLANNED'} &middot; ${p.year} &middot; ${p.phase}</span><br>`
+        + `<span style="color:#C4785A">${p.newsite ? 'New site' : 'Planned'} &middot; ${p.year} &middot; ${p.phase}</span><br>`
         + (p.newsite ? '<em>Substation does not exist yet</em><br>' : '')
         + (p.km ? `${p.km} km<br>` : '') + (p.prov || '');
       if (p.kind === 'line' && p.pts.length >= 2) {
@@ -10961,7 +10961,7 @@ function renderBess(r){
     + '<th style="text-align:right;padding:4px 6px">Spread/day</th></tr>'
     + rows.map(x => '<tr style="border-bottom:1px solid var(--line2)'
         + (x === best ? ';background:rgba(125,196,122,0.10)' : '') + '">'
-        + `<td style="padding:4px 6px">${x.h}-hour${x === best ? ' <span style="color:var(--ok,#4A8C5C);font-size:9px">BEST</span>' : ''}</td>`
+        + `<td style="padding:4px 6px">${x.h}-hour${x === best ? ' <span style="color:var(--ok,#4A8C5C);font-size:9px">Best</span>' : ''}</td>`
         + `<td style="text-align:right;padding:4px 6px;font-weight:700">${k(x.revPerMW)}/MW/yr</td>`
         + `<td style="text-align:right;padding:4px 6px">${x.cycles}</td>`
         + `<td style="text-align:right;padding:4px 6px">${R(x.avgSpread)}/MWh</td></tr>`).join('')
@@ -13333,7 +13333,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02c';
+const BUILD_STAMP = '2026-09-02d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -13422,7 +13422,7 @@ function applyAdequacyToBoard(){
   else if (e.lole < 200){ sw.textContent = 'Constrained'; sw.className = 'statusword warn'; }
   else { sw.textContent = 'Stage ' + e.medStage; sw.className = 'statusword bad'; }
   sw.title = `Expectations over ${e.n} draws varying `
-    + (e.weatherVaried ? 'outages AND weather year' : 'outages only (weather years unavailable)') + '. '
+    + (e.weatherVaried ? 'outages and weather year' : 'outages only (weather years unavailable)') + '. '
     + `LOLE ${e.lole.toFixed(1)} hours/year, EUE ${e.eueGWh.toFixed(2)} GWh. `
     + `${Math.round(100*e.pShed)}% of draws shed something; worst draw reached stage `
     + `${e.worstStage} and ${e.hi.toFixed(2)} GWh. `
