@@ -698,6 +698,23 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="pb" id="lcoe"></div>
         </div>
 
+          <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>The no-gas frontier</h2>
+              <span class="tag">modelled &middot; worst of ten weather years</span>
+              <button id="frontierBtn" onclick="runFrontier()"
+                      style="font-size:10px;padding:3px 8px;margin-left:auto">Compute grid</button></div>
+            <div class="pb">
+              <div style="font-size:10.5px;line-height:1.5;margin-bottom:9px">
+                How much wind and solar removes the need for gas entirely. Each cell is a
+                full year at that build with no gas at all; the grid takes about ten
+                seconds because every cell is run against ten weather years and the worst
+                is kept.
+              </div>
+              <div id="frontierBody"><div style="font-size:10.5px;color:var(--ink2)">Press
+                compute to run the grid.</div></div>
+            </div>
+          </div>
+
           <div id="nav-heat" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Heat stress</h2><span class="tag">stress test, not a forecast</span>
               <span class="tag">the tight season is the hot season</span></div>
@@ -3797,6 +3814,110 @@ function printPrefeas() {
         applied, so this is conservative. Drought is not modelled.
       </div>`;
   }
+  // ── THE NO-GAS FRONTIER ───────────────────────────────────────────────────
+  // A 6x4 grid of unserved energy against wind and solar build, with gas removed. The
+  // published finding in RESULTS.md is the WORST of ten weather years, and this reproduces
+  // that basis rather than a cheaper single year: two authorities disagreeing about the
+  // same headline is worse than a slow panel.
+  //
+  // Cost measured 2 Sep 2026: 44 ms per run, 24 cells x 10 years = 240 runs, about 10.6 s.
+  // Chunked with yields so the page stays responsive and the grid fills in visibly. Button
+  // triggered - it must never run on a slider move.
+  const FRONT_WIND  = [20000, 40000, 50000, 60000, 70000, 80000];
+  const FRONT_SOLAR = [25000, 40000, 60000, 80000];
+
+  let frontierRunning = false;
+  async function runFrontier(){
+    if (frontierRunning) return;
+    frontierRunning = true;
+    const host = document.getElementById('frontierBody');
+    const btn  = document.getElementById('frontierBtn');
+    if (btn){ btn.disabled = true; btn.textContent = 'running\u2026'; }
+
+    const wx = await weatherProfileFactory();
+    const years = wx.years && wx.years.length ? wx.years : [null];
+    // Base case: the Seriti scenario with gas removed, which is what the published
+    // frontier holds fixed. Everything else follows the user's current scenario.
+    const base = { ...state, newCcgtMW: 0, coalDecomMW: 32000, coalEAFPct: 70,
+                   newBattMW: 20000, newBattHours: 10, coalFlexPct: 100 };
+
+    const grid = FRONT_WIND.map(() => FRONT_SOLAR.map(() => null));
+    let done = 0;
+    const total = FRONT_WIND.length * FRONT_SOLAR.length;
+
+    for (let i = 0; i < FRONT_WIND.length; i++){
+      for (let j = 0; j < FRONT_SOLAR.length; j++){
+        let worst = 0;
+        for (const y of years){
+          const r = simulate({ ...base, newWindMW: FRONT_WIND[i], newPvMW: FRONT_SOLAR[j] },
+                             wx.profileFor(y));
+          worst = Math.max(worst, (r.E.unserved || 0) / 1000);
+        }
+        grid[i][j] = worst;
+        done++;
+        if (btn) btn.textContent = 'running\u2026 ' + done + '/' + total;
+        drawFrontier(host, grid, years.length);
+        await new Promise(r => setTimeout(r, 0));
+      }
+    }
+    if (btn){ btn.disabled = false; btn.textContent = 'Recompute'; }
+    frontierRunning = false;
+  }
+  window.runFrontier = runFrontier;
+
+  function drawFrontier(host, grid, nYears){
+    if (!host) return;
+    const W = 110, H = 44, X0 = 76, Y0 = 72;
+    // Sequential ramp on a log scale: the range spans four orders of magnitude, so a
+    // linear ramp would make every cell below ~2,000 GWh look identical.
+    const shade = v => {
+      if (v == null) return { f: 'var(--panel2)', t: 'var(--ink2)' };
+      if (v <= 0.5)  return { f: '#E1F5EE', t: '#04342C' };
+      const l = Math.log10(Math.max(v, 1));
+      if (l < 1.7) return { f: '#FCEBEB', t: '#501313' };
+      if (l < 2.5) return { f: '#F7C1C1', t: '#501313' };
+      if (l < 3.1) return { f: '#F09595', t: '#501313' };
+      if (l < 3.7) return { f: '#E24B4A', t: '#FCEBEB' };
+      if (l < 4.2) return { f: '#A32D2D', t: '#FCEBEB' };
+      return { f: '#501313', t: '#F7C1C1' };
+    };
+    let cells = '', edge = '';
+    for (let i = 0; i < FRONT_WIND.length; i++){
+      for (let j = 0; j < FRONT_SOLAR.length; j++){
+        const v = grid[i][j], c = shade(v);
+        const x = X0 + j * W, y = Y0 + i * H;
+        cells += `<rect x="${x}" y="${y}" width="${W - 2}" height="${H - 2}" rx="2" fill="${c.f}"/>`
+              +  `<text x="${x + W/2 - 1}" y="${y + H/2 + 4}" text-anchor="middle" `
+              +  `font-size="11.5" fill="${c.t}">`
+              +  (v == null ? '' : (v <= 0.5 ? '0' : Math.round(v).toLocaleString())) + '</text>';
+        // frontier edge: the boundary between a zero cell and a non-zero one
+        if (v != null && v <= 0.5){
+          const left = j > 0 ? grid[i][j-1] : null;
+          const below = i + 1 < FRONT_WIND.length ? grid[i+1][j] : null;
+          if (left != null && left > 0.5) edge += `<line x1="${x}" y1="${y}" x2="${x}" y2="${y + H - 2}" />`;
+          if (below == null || below > 0.5) edge += `<line x1="${x}" y1="${y + H - 2}" x2="${x + W - 2}" y2="${y + H - 2}" />`;
+        }
+      }
+    }
+    const colLab = FRONT_SOLAR.map((v, j) =>
+      `<text x="${X0 + j*W + W/2 - 1}" y="${Y0 - 10}" text-anchor="middle" font-size="10.5" fill="var(--ink2)">${v/1000} GW</text>`).join('');
+    const rowLab = FRONT_WIND.map((v, i) =>
+      `<text x="${X0 - 8}" y="${Y0 + i*H + H/2 + 4}" text-anchor="end" font-size="10.5" fill="var(--ink2)">${v/1000} GW</text>`).join('');
+    host.innerHTML =
+      `<svg viewBox="0 0 ${X0 + FRONT_SOLAR.length*W + 16} ${Y0 + FRONT_WIND.length*H + 30}" width="100%">`
+      + `<text x="${X0 + FRONT_SOLAR.length*W/2}" y="${Y0 - 30}" text-anchor="middle" font-size="10.5" fill="var(--ink2)">solar built</text>`
+      + `<text x="18" y="${Y0 + FRONT_WIND.length*H/2}" text-anchor="middle" font-size="10.5" fill="var(--ink2)" transform="rotate(-90 18 ${Y0 + FRONT_WIND.length*H/2})">wind built</text>`
+      + colLab + rowLab + cells
+      + `<g stroke="#0F6E56" stroke-width="2.5" stroke-linecap="square">${edge}</g>`
+      + `</svg>`
+      + `<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">`
+      + `Unserved energy in GWh a year with gas removed, on the worst of `
+      + `${nYears} weather years. The green edge is the zero-unserved frontier. `
+      + `Grid spacing is coarse, so the staircase is where the sampling is, not where the `
+      + `physics is.</div>`;
+  }
+  window.drawFrontier = drawFrontier;
+
   window.renderHeat = renderHeat;
 
   window.heatStress = heatStress;
@@ -13339,7 +13460,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02o';
+const BUILD_STAMP = '2026-09-02p';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

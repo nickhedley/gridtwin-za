@@ -6197,6 +6197,42 @@ a source; at present it has neither.
     congestion. Full nodal coverage of eight countries is a different project and needs a
     reason beyond completeness.
 
+20. **Satellite detection of project status.** Raised 2 Sep 2026 from Robin Hawkes'
+    demonstration that Sentinel-2 captures its spectral bands about a second apart, so a
+    turbine's blades are displaced between bands and its ROTATION can be extracted from a
+    single pass.
+
+    **Where it does not help, which is most of our gaps:**
+
+    ```
+    1,823 MW solar gap                  solar    no moving parts
+    battery figure unsourced            battery  no moving parts
+    Mulilo Total Hydra COD              battery  no moving parts
+    named-project layer / Hydra split   all      conventional imagery, not this
+    ```
+
+    Our pipeline is 13,388 MW solar against 5,797 MW wind, so the technique speaks to under
+    a third of it, and to none of the open data items above.
+
+    **Where it fits exactly, and this is the interesting part:** open item 7 says
+    non-economic dispatch needs "metered curtailment instructions by plant, which is not
+    public". **A turbine that is stationary in a high-wind hour is being curtailed**, and
+    that is observable from orbit without anyone publishing anything.
+
+    Serious limits before anyone gets excited. Sentinel-2 is 10 m resolution against a
+    120-160 m rotor, so a turbine is a handful of pixels. Revisit is five days and cloud
+    cover removes passes, so it can never measure curtailment VOLUMES - only produce spot
+    evidence on particular days. And non-rotation is not proof of curtailment: low wind,
+    maintenance and faults look identical from above.
+
+    **What it could realistically produce is an existence proof** - a dated, verifiable
+    instance of a specific wind farm held down while its neighbours ran. For a debate
+    currently conducted entirely on aggregate claims, one is worth more than an estimate.
+
+    For SOLAR construction and commissioning, conventional change detection on the same
+    imagery is the right tool and a separate exercise: panels are highly reflective and
+    geometrically regular, which is an easier target than blade rotation.
+
 ## Closed this session
 
 ```
@@ -7227,6 +7263,39 @@ demonstrably works. jsdom normalises `cssText` to `padding-left: 16px` with a sp
 regex had none. **The probe was wrong in the direction that would have hidden a real fix**,
 which is the more dangerous direction - I nearly went looking for a bug that did not
 exist.
+
+## the frontier heatmap, and what building it found - 2 Sep 2026
+
+The no-gas frontier was a 6x4 table of numbers in RESULTS.md. It is now a live panel: a
+heatmap on a log colour ramp with the zero-unserved boundary drawn as an edge.
+
+### the design decision that mattered
+
+**Worst of ten weather years, not one.** A single year costs 1.1 s and ten costs 10.6 s.
+The published finding is explicitly worst-of-ten and says "cite this one", so a fast panel
+showing single-year numbers would have put two authorities in disagreement about the same
+headline. Button-triggered, chunked with yields so the grid fills in visibly.
+
+Log ramp, because the range spans four orders of magnitude - 20,347 down to zero - and a
+linear ramp makes every cell below about 2,000 GWh look identical.
+
+### building it made the published table stale
+
+Nineteen of twenty-four cells came out higher than the 28 Aug figures, one-sided rather than
+scattered. Not a model change: **the Eskom Integrated Report corrections made this morning**.
+Isolated at 40 GW wind / 80 GW solar - 1.6 GWh unserved with the old constants, 4.1 with the
+corrected ones - and reverting pumped storage alone accounts for nearly all of it.
+
+**176 MW less pumped storage moves a 120 GW frontier.** In a no-gas system the flexible
+fleet does more work than its size suggests, which is a finding in itself.
+
+RESULTS.md restated with the new grid and the reason.
+
+### the caveat is on the panel
+
+The grid is coarse - six wind levels, four solar - so the staircase is where the sampling
+is, not where the physics is. Said in the panel note rather than left for a reader to
+infer.
 
 ---
 

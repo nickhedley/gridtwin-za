@@ -134,6 +134,11 @@ CHECKS = [
     # Internal identifiers still read spill/spillPct/spillHours - no reader sees them and
     # renaming them is churn with breakage risk.
     ('National curtailment rate',                                  'curtailment wording'),
+    # The frontier heatmap: button-triggered, 240 full-year runs. Must stay button-driven -
+    # it can never be wired to a slider.
+    ('runFrontier',                                                'frontier grid function'),
+    ('frontierBody',                                               'frontier panel host'),
+    ('The no-gas frontier',                                        'frontier panel heading'),
     ('Curtailed hrs',                                              'curtailment wording'),
     ('waterStress',                                                'water layer present'),
     # The hydrogen PANEL, not just the function. Three modules were built and exposed

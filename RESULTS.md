@@ -330,13 +330,24 @@ Worst of ten weather years - the number that sizes a system:
 
 ```
 wind\solar     25 GW     40 GW     60 GW     80 GW
-   20 GW       19,664     9,289     1,311       298
-   40 GW        4,294       899        77         0
-   50 GW        1,606       262        21         0
-   60 GW          516       134         0         0
-   70 GW          233        51         0         0
-   80 GW          107        12         0         0
+   20 GW       20,347     9,229     1,855       577
+   40 GW        4,738     1,169       149        40
+   50 GW        1,885       452        69        11
+   60 GW          702       201        25         0
+   70 GW          362       100        11         0
+   80 GW          186        51         0         0
 ```
+
+RESTATED 2 Sep 2026, and the frontier moved OUTWARD. Nineteen of twenty-four cells rose.
+The cause is not a model change but a DATA correction: the Eskom Integrated Report 2026
+gives pumped storage as 2,724 MW where the model held 2,900, along with smaller corrections
+to nuclear and hydro. Isolated at 40 GW wind / 80 GW solar: 1.6 GWh unserved with the old
+constants, 4.1 with the corrected ones.
+
+**176 MW less pumped storage moves a 120 GW frontier**, which is worth knowing on its own -
+in a no-gas system the flexible fleet is doing more work than its size suggests.
+
+The tool now computes this grid live, so it is reproducible rather than quoted.
 
 On the worst year the frontier runs 40W/80S through 60W/60S to 80W/40S-ish. So
 roughly 110 to 120 GW combined, against Seriti's 45 GW - about two and a half
