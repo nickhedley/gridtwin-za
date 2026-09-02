@@ -123,7 +123,11 @@ CHECKS = [
     ('LINE_RM_PER_KM',                                             'line cost from two published routes'),
     # Electrolyser siting. The water layer is what stops the tool pointing at the Karoo,
     # which has the best resource in the country and the least water.
+    # electrolyserSiting is now surfaced as one line inside the hydrogen panel rather
+    # than its own table. Ports dropped from the weighting: hydrogen can be used in
+    # domestic heavy industry, so export access is one commercial case among several.
     ('electrolyserSiting',                                         'electrolyser siting'),
+    ('rank best for electrolysis',                                 'siting headline in the H2 panel'),
     ('waterStress',                                                'water layer present'),
     # The hydrogen PANEL, not just the function. Three modules were built and exposed
     # without any of them appearing in the interface - a working function nobody can see
@@ -132,8 +136,6 @@ CHECKS = [
     ('renderH2',                                                   'hydrogen panel renderer'),
     # Siting panel. The WEIGHTING must stay a control: the ranking changes completely
     # between weightings, and that shift is the finding rather than a defect.
-    ('Where to put an electrolyser',                               'siting panel heading'),
-    ('h2SiteWeight',                                               'siting weighting control'),
     # Grid-enhancing comparison, with the corridor as a control because the cost ratio
     # scales with corridor length - 41x at 90 km, 127x at 278 km.
     ('Grid-enhancing technologies, or build line?',                'grid-enhancing panel'),

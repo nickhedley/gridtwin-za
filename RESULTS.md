@@ -2207,9 +2207,15 @@ cooling. The Northern Cape has the best resource in South Africa and the least w
 ```
 weighting                     top three
 resource only                 Hydra Central · Northern Cape · Western Cape
-+ water and port equally      Western Cape · Eastern Cape · KwaZulu-Natal
-+ port weighted double        Western Cape · Eastern Cape · KwaZulu-Natal
++ water, ports excluded       Western Cape · Eastern Cape · North West
++ water weighted double       KwaZulu-Natal · Western Cape · Eastern Cape
 ```
+
+PORTS DROPPED 2 Sep 2026. Hydrogen can be used in domestic heavy industry, so export access
+is one commercial case among several and weighting it prejudges the buyer. Removing it
+changes the third place: **North West, not KwaZulu-Natal.** KwaZulu-Natal reaches the top
+three only when water is weighted double, because it has ample water and the worst combined
+resource in the country at 20.6%.
 
 **Adding water and export access moves the answer from the Karoo to the coast entirely.**
 Hydra Central and the Northern Cape fall out of the top three altogether once water is

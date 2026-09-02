@@ -421,7 +421,7 @@ const live = stripComments(src);
     // These are FEATURES, not harness hooks. fetchSolar, sarahCFAt, solarCrossCheck and
     // wheelCoverage are deliberately exposed for testing and are NOT listed here.
     {
-      const features = ['renderH2', 'renderH2Siting', 'renderGets', 'renderHeat'];
+      const features = ['renderH2', 'renderGets', 'renderHeat'];
       const unreachable = features.filter(f => {
         // Allow a `window.` prefix. run() calls these as window.renderX(...) because they
         // live in a different closure, and the first version of this check counted only

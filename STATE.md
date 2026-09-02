@@ -6751,6 +6751,38 @@ back and the gap should be reinstated as the finding it was.
 should settle, because the wrong choice either erases a real finding or entrenches a wrong
 constant.
 
+## the siting panel became one line - 2 Sep 2026
+
+The ranked table was crude for what it could actually support. Replaced by a single sentence
+inside the hydrogen panel:
+
+> On combined renewable resource and water availability, the Western Cape, Eastern Cape and
+> North West rank best for electrolysis. Water is the binding constraint: the strongest
+> resource sits in the driest regions.
+
+Computed live rather than hard-coded, so it follows the profiles if they are rebuilt.
+
+### ports dropped, which changed the answer
+
+Hydrogen can be used in domestic heavy industry, so export access is one commercial case
+among several and weighting it prejudges the buyer.
+
+**Removing it moved third place from KwaZulu-Natal to North West.** The proposed wording was
+Western Cape, Eastern Cape and KwaZulu-Natal - which the model supports only when water is
+weighted DOUBLE. On equal weighting KwaZulu-Natal is fifth, tied with Hydra Central, because
+it has ample water and the worst combined resource in the country at 20.6%.
+
+Worth checking before writing rather than after.
+
+### what survives
+
+`electrolyserSiting()` is unchanged and still returns every region scored on each dimension
+- the function was never the crude part. What went is the panel that presented four
+weightings as though choosing between them were the user's job.
+
+`nav-h2site`, `renderH2Siting` and `h2SiteBody` are fully removed, with the feature list and
+`audit.py` pins updated to match.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
