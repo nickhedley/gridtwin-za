@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 943 checks
+suite                      19 harnesses, 944 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 943 checks. Last full run: 943/943.
+Nineteen harnesses, 944 checks. Last full run: 944/944.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          16/16   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       35/35
-node validate_structure.js .         24/24
+node validate_structure.js .         25/25
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .            4/4
@@ -6782,6 +6782,27 @@ weightings as though choosing between them were the user's job.
 
 `nav-h2site`, `renderH2Siting` and `h2SiteBody` are fully removed, with the feature list and
 `audit.py` pins updated to match.
+
+## a stale build stamp made a bug report unanswerable - 2 Sep 2026
+
+Reported: the siting line does not appear in the hydrogen panel. It is in the shipped file
+and renders at defaults in a headless run.
+
+**The stamp read `2026-09-01m` through roughly fifteen changes on 2 September**, so there
+was no way to tell which build was loaded. The stamp exists precisely to answer that
+question and it had stopped moving.
+
+A stamp that does not move is worse than no stamp: it looks like evidence.
+
+### now asserted
+
+`validate_structure` 24 -> 25: the build stamp must not predate today. Verified by setting
+it back - "stamp reads 2026-08-15, today is 2026-09-02 - bump it on delivery".
+
+Built with `new RegExp` from a plain string, because writing the literal inline needed `\d`
+escaped through a Python heredoc into a JavaScript file and arrived as `\\d`, matching
+nothing. **Third escaping fault of the same family this week**, and the first one caught by
+a check rather than by a failure.
 
 ---
 

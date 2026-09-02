@@ -493,6 +493,22 @@ const live = stripComments(src);
             + ' - zero and negative prices have no logarithm and will render off-chart');
     }
 
+    // The build stamp must match today. It sat unchanged through fifteen changes on
+    // 2 Sep, so a report of "I don't see that line" could not be answered - there was no
+    // way to tell which build was loaded. A stale stamp looks like evidence and is not.
+    {
+      // Built with RegExp from a plain string. Writing the literal inline needed \\d
+      // escaped through a Python heredoc into a JS file and came out as \\\\d, matching
+      // nothing - the third escaping fault of the same family this week.
+      const m = codeOnly.match(new RegExp("BUILD_STAMP = '(\\d{4}-\\d{2}-\\d{2})"));
+      const stamp = m ? m[1] : null;
+      const today = new Date().toISOString().slice(0, 10);
+      check('the build stamp is not stale',
+            !!stamp && stamp >= today,
+            stamp ? `stamp reads ${stamp}, today is ${today} - bump it on delivery`
+                  : 'no BUILD_STAMP found');
+    }
+
     const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
     const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
     check('there is one shared weather-profile builder',
