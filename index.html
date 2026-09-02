@@ -4692,7 +4692,7 @@ const FIXED = {
   // seasonal - it overstated the full year by three points. FY2024 54.6, FY2025 60.6,
   // FY2026 65.2, Eskom's medium-term target 70.
   coalEAFPct:65,
-  nuclearMW:1860, hydroMW:600,
+  nuclearMW:1880, hydroMW:602,
   importsMW:1150,
   // Import utilisation, added 31 Aug 2026 from Eskom's audited energy balance. Was the
   // literal 0.85 hardcoded at FOUR sites and duplicated as IMPORTS_CF in
@@ -4709,7 +4709,7 @@ const FIXED = {
   // harnesses die with "IMPORTS_CF is not defined" without it. A fallback here would
   // turn a loud failure into a plausible wrong answer, which is rule 7's whole lesson.
   importsCF:IMPORTS_CF,
-  psPowerMW:2900, psEnergyMWh:60000, psEff:0.76,
+  psPowerMW:2724, psEnergyMWh:60000, psEff:0.76,
   // windMW is derived from regional_renewable_capacity.json, not set by hand:
   //   4,042 MW REIPPPP (IPP Office Q4 2025/26, capacity online at 31 Mar 2026)
   // +   470 MW private/wheeled (PFL H1 2026 monitor)
@@ -4732,6 +4732,12 @@ const FIXED = {
   // validate_capacity.js asserts this equality; if you change windMW by hand it
   // will fail. Excludes 88 MW behind-the-meter captive, which suppresses demand
   // rather than adding supply.
+  // SYSTEM total, not Eskom's. The Integrated Report 2026 p10 gives Eskom's own OCGTs as
+  // 2,380 MW; this figure adds the IPP peakers Avon (670) and Dedisa (335), which the model
+  // dispatches on the same merit basis. 2,380 + 1,005 = 3,385, rounded to 3,400.
+  //
+  // Checked 2 Sep 2026 against the report. NOT an error - a different boundary. State the
+  // boundary whenever this constant is compared against an Eskom figure.
   ocgtDieselMW:3400, windMW:4612, pvUtilityMW:3271, rooftopMW:8619.4, cspMW:600,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
@@ -13333,7 +13339,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02h';
+const BUILD_STAMP = '2026-09-02i';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

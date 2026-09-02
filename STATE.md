@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 949 checks
+suite                      19 harnesses, 953 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 949 checks. Last full run: 949/949.
+Nineteen harnesses, 953 checks. Last full run: 953/953.
 
 ```
 node stress_suite.js                290/290
@@ -257,7 +257,7 @@ node validate_response.js .           81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           78/78
-node validate_benchmarks.js .        22/22
+node validate_benchmarks.js .        26/26
 node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
@@ -6121,7 +6121,7 @@ twice. The sections above keep the full reasoning.
 Checked while fixing slider copy. Neither resolved, because both need a primary source
 rather than a judgement.
 
-### the coal installed figure disagrees with Eskom's own document
+### ~~the coal installed figure disagrees~~ RESOLVED 2 Sep 2026 - it is exactly right
 
 The slider reads "of 39.7 GW installed (Eskom FY2026 nominal)" and `FIXED.coalInstalledMW`
 is 39,692 - internally consistent.
@@ -7011,6 +7011,53 @@ parameter the model no longer uses.**
 
 The blurb is unchanged in substance: 8-hour storage, 75% round-trip, and the note that
 electrolyte does not degrade with cycling - an advantage the model still does not price.
+
+## the Eskom Integrated Report 2026 settles four constants - 2 Sep 2026
+
+Page 10, the primary source. **Coal was exactly right at 39,692 MW** - the 45,340 MW in
+Eskom's Generation Plant Mix document is a different basis, and the open item is closed.
+
+Three others were wrong:
+
+```
+                    ours     report    action
+coal              39,692     39,692    correct, no change
+nuclear            1,860      1,880    corrected
+pumped storage     2,900      2,724    corrected
+hydro                600        602    corrected
+OCGT               3,400      2,380    NOT changed - see below
+```
+
+All three were single-sourced, so no fallback hunt was needed.
+
+### OCGT is a boundary difference, not an error
+
+The report's 2,380 MW is Eskom-only. The model's 3,400 is a system total including the Avon
+(670) and Dedisa (335) IPP peakers, which it dispatches on the same merit basis: 2,380 +
+1,005 = 3,385, rounded. **A check that asserted the report figure would have forced a wrong
+fix**, so `validate_benchmarks` pins the other four and deliberately not this one. The
+boundary is now documented at the constant.
+
+### the response matrix flagged three controls as newly inert
+
+`validate_response` fell to 80/81: `battHours -> avgCost`, `reserveEnabled -> avgCost` and
+`congestionCurtailOn -> loleHrs` all went from responsive to inert. Reverting the constants
+restored 81/81, so the cause was certain.
+
+**Measured before regenerating the baseline**, because "was responsive, now inert" is
+exactly what that harness exists to catch:
+
+```
+battHours -> avgCost        0.0004 R/MWh    newBattMW defaults to 0, so duration
+                                            has nothing to act on - correctly inert
+reserveEnabled -> avgCost   0.042  R/MWh
+congestionCurtailOn -> LOLE 0       hours
+```
+
+All three are threshold crossings on effects that were always negligible, not a loss of
+function. Baseline regenerated on that basis. **Rule 2 is about not relaxing a check to
+make a change pass; re-recording a reference after a deliberate, source-verified input
+change is a different act - but only because the deltas were measured first.**
 
 ---
 

@@ -1,11 +1,11 @@
 {
  "base": {
-  "coalTWh": 165.553,
-  "co2": 174.518,
-  "avgCost": 585.17,
-  "replAvg": 1548.23,
-  "avgPrice": 998.96,
-  "rePct": 17.832,
+  "coalTWh": 165.415,
+  "co2": 174.359,
+  "avgCost": 584.27,
+  "replAvg": 1547.01,
+  "avgPrice": 985.83,
+  "rePct": 17.839,
   "curtTWh": 0,
   "loleHrs": 5
  },
@@ -53,7 +53,7 @@
   "battHours": {
    "coalTWh": true,
    "co2": true,
-   "avgCost": true,
+   "avgCost": false,
    "replAvg": true,
    "avgPrice": true,
    "rePct": true,
@@ -343,7 +343,7 @@
   "reserveEnabled": {
    "coalTWh": true,
    "co2": true,
-   "avgCost": true,
+   "avgCost": false,
    "replAvg": true,
    "avgPrice": true,
    "rePct": true,
@@ -438,7 +438,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": true
+   "loleHrs": false
   },
   "congestionCurtailPct": {
    "coalTWh": true,

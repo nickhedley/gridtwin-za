@@ -208,6 +208,9 @@ const check = (name, ok, detail) => {
       ps: E.ps/1e6, batt: E.batt/1e6, ccgt: E.ccgt/1e6, diesel: E.diesel/1e6,
       co2: r.co2,
       cfWind: cf(E.wind/1e6, FIXED.windMW), cfPv: cf(E.pv/1e6, FIXED.pvUtilityMW),
+      // Existing-fleet constants, for the Eskom Integrated Report 2026 p10 checks below.
+      fleetCoal: FIXED.coalInstalledMW, fleetNuclear: FIXED.nuclearMW,
+      fleetPs: FIXED.psPowerMW, fleetHydro: FIXED.hydroMW,
       // Residual basis: rooftop out of numerator and denominator, matching how Eskom
       // reports 'power supplied' - it cannot meter behind the customer's meter.
       // Surplus at the annual peak: what could still have run, less the reserve held.
@@ -305,6 +308,24 @@ const check = (name, ok, detail) => {
   for (const [k, [lo, hi]] of Object.entries(SANITY))
     check(`${k} is within a sane range`, M[k] >= lo && M[k] <= hi,
           `${M[k].toFixed(3)} TWh outside ${lo}-${hi} TWh`);
+
+
+  // ── ESKOM INTEGRATED REPORT 2026, PAGE 10 ────────────────────────────────
+  // The primary source for the existing fleet. Checked 2 Sep 2026: coal was exactly right
+  // at 39,692 MW, three others were not - nuclear 1,860 against 1,880, pumped storage
+  // 2,900 against 2,724, hydro 600 against 602.
+  //
+  // OCGT is deliberately NOT asserted. The report gives 2,380 MW, which is Eskom-only;
+  // the model's 3,400 is a system total including the Avon and Dedisa IPP peakers. A
+  // different boundary, not an error, and a check ignoring that would force a wrong fix.
+  for (const [k, want, lab] of [['fleetCoal', 39692, 'coal-fired stations'],
+                                ['fleetNuclear', 1880, 'nuclear'],
+                                ['fleetPs', 2724, 'pumped storage'],
+                                ['fleetHydro', 602, 'hydro']]){
+    check(`[Eskom IR2026 p10] ${lab} ${want.toLocaleString()} MW`,
+          Math.abs(M[k] - want) < 1,
+          `model holds ${M[k]} against ${want} in the Integrated Report 2026`);
+  }
 
   console.log(`\n${pass}/${pass + fail} benchmark checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
