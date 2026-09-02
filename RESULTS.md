@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty-three sections follow. This index exists because the file passed 1,400 lines and the
+Thirty-four sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2732,3 +2732,71 @@ they price the approved ceiling, not any use of it beyond what congestion requir
 
 Separating the two needs metered curtailment instructions by plant, which is not public.
 That is the data request worth making rather than a modelling problem worth solving.
+
+---
+
+## Compressed air and gravity storage in mine shafts: the arithmetic first
+
+Prompted by Hydrostor's Silver City project, 200 MW / 1,600 MWh in a cavern inside an
+operating silver mine, cleared by AEMO on 2 September 2026. The obvious South African
+question is whether our mine shafts make the same thing possible here.
+
+Two separate questions, and they have different answers.
+
+### as national storage, the existing finding already covers it
+
+Compressed air is an energy-shifting asset like any other, so it faces the constraint the
+iron-air test found. Added to a high-renewables build:
+
+```
+configuration      July gas GWh   annual gas TWh
+no long-duration          2,409            28.40
++5 GW / 24h               2,409            28.20
++10 GW / 24h              2,409            28.04
+```
+
+**July does not move at all.** Ten gigawatts of 24-hour storage changes the winter month by
+nothing to four significant figures, and annual gas by 1.3%. The winter deficit is an energy
+shortage, not a shifting problem, and no duration fixes it. That result now covers
+compressed air as well as iron-air and vanadium.
+
+### gravity storage in a shaft is energy-poor, and the bound is decisive
+
+```
+mass        drop      energy
+1,000 t   1,000 m     2.7 MWh
+1,000 t   3,000 m     8.2 MWh
+10,000 t  3,000 m    81.8 MWh
+```
+
+To match one Hydrostor project - 1,600 MWh - with a 3 km drop you must raise and lower
+**195,719 tonnes**, about 25,000 cubic metres of steel, or roughly twenty-seven Eiffel
+Towers. Mponeng, the deepest mine in the world, is about 4 km.
+
+Power is not the problem: at 5 m/s that mass gives nearly 10 GW while it is moving. **Energy
+is the problem**, and it is set by mass times height, which is why gravity storage keeps
+being proposed and rarely built.
+
+### the Broken Hill case is not a national storage case, and that is the useful part
+
+Silver City replaces two 25 MW diesel generators at the end of a **260 km single line**,
+with 50 MW / 250 MWh reserved for outage backup. The existing 50 MW battery could not do
+it, having been configured unable to island.
+
+That is local resilience on a constrained radial feed, not national adequacy. **South Africa
+has that problem too**, and this model already identifies where: the corridor congestion
+figures show Eastern Cape to KwaZulu-Natal at its limit 3,080 hours a year, and the two best
+wind regions hold zero connection headroom.
+
+So the question worth asking is not whether compressed air helps the national build - it
+does not, on the evidence above - but **which South African supply areas are radially fed,
+diesel-backed and congested enough for the Broken Hill logic to apply.** That is a question
+this model can frame and cannot yet answer, because it has no representation of islanding or
+of local supply security.
+
+### what is asserted rather than modelled
+
+Cavern integrity, shaft condition and geology are outside this model entirely. Hydrostor
+excavates a purpose-built cavern with hydrostatic compensation rather than using a shaft as
+found, which is a material distinction for any South African analogue: an abandoned gold
+shaft is not a sealed pressure vessel.
