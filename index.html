@@ -828,11 +828,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" id="spWeekNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.45"></div>
           </div>
 
-          <div id="nav-h2" class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Green hydrogen from curtailed energy</h2><span class="tag">modelled</span>
-              <span class="tag">electrolyser on curtailed renewables</span></div>
-            <div class="pb" id="h2Body"></div>
-          </div>
 
           <div id="nav-curtforecast" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Curtailment forecast</h2><span class="tag">modelled</span>
@@ -921,6 +916,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>Carbon capture &amp; storage retrofits for the coal fleet</h2><span class="tag">policy test &middot; changes every output</span></div>
             <div class="pb" id="ccsBody"></div>
+          </div>
+
+          <div id="nav-h2" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Green hydrogen from curtailed energy</h2><span class="tag">modelled</span>
+              <span class="tag">electrolyser on curtailed renewables</span></div>
+            <div class="pb" id="h2Body"></div>
           </div>
 
           <div style="margin-top:18px"><details class="assump">
@@ -3852,6 +3853,69 @@ function printPrefeas() {
   }
   window.getsCompare = getsCompare;
 
+  // RESTORED 2 Sep 2026. GETS_CORRIDORS and renderGets were deleted when the electrolyser
+  // siting panel was removed - they sat adjacent in the file and the cut took both. The
+  // panel markup and the run() call survived, so the page kept a corridor selector with
+  // zero options and an empty body, and nothing failed: `if (window.renderGets)` is a
+  // guard, so a missing function is indistinguishable from a quiet one.
+  //
+  // The corridors offered are the binding constraints from the headroom file. Ratings are
+  // the corridor's own where known; the ratio depends on them, so they are stated.
+  const GETS_CORRIDORS = [
+    { k: 'ec-kzn',  lab: 'Eastern Cape \u2013 KwaZulu-Natal', km: 167, mw: 1500 },
+    { k: 'wc-hyd',  lab: 'Western Cape \u2013 Hydra Central', km: 278, mw: 2000 },
+    { k: 'nc-fs',   lab: 'Northern Cape \u2013 Free State',   km:  90, mw: 2000 },
+    { k: 'mp-gp',   lab: 'Mpumalanga \u2013 Gauteng',          km: 102, mw: 3000 },
+    { k: 'lim-mp',  lab: 'Limpopo \u2013 Mpumalanga',          km: 121, mw: 2000 },
+    { k: 'mp-kzn',  lab: 'Mpumalanga \u2013 KwaZulu-Natal',    km: 172, mw: 2000 },
+  ];
+
+  function renderGets(){
+    const host = document.getElementById('getsBody');
+    const sel = document.getElementById('getsCorridor');
+    if (!host || !sel) return;
+    if (!sel.options.length){
+      sel.innerHTML = GETS_CORRIDORS.map(c =>
+        `<option value="${c.k}">${c.lab} \u00b7 ${c.km} km</option>`).join('');
+    }
+    const c = GETS_CORRIDORS.find(x => x.k === sel.value) || GETS_CORRIDORS[0];
+    const r = getsCompare(c.km, 0, c.mw);
+    if (!r){ host.innerHTML = ''; return; }
+    const rows = r.options.map(o => `<tr>
+        <td style="padding:2px 0">${o.lab}</td>
+        <td style="text-align:right;font-family:monospace">R${(o.costRbn * 1000).toFixed(0)}m</td>
+        <td style="text-align:right;font-family:monospace">${Math.round(o.unlockedMW).toLocaleString()}</td>
+        <td style="text-align:right;font-family:monospace">R${(o.rPerMW / 1e6).toFixed(3)}m</td>
+        <td style="text-align:right;font-family:monospace;font-weight:600">${o.vsLine.toFixed(0)}&times;</td></tr>`).join('');
+    host.innerHTML = `
+      <table style="width:100%;font-size:10.5px;border-collapse:collapse">
+        <thead><tr style="color:var(--ink2)">
+          <th style="text-align:left;font-weight:400">option</th>
+          <th style="text-align:right;font-weight:400">cost</th>
+          <th style="text-align:right;font-weight:400">MW unlocked</th>
+          <th style="text-align:right;font-weight:400">per MW</th>
+          <th style="text-align:right;font-weight:400">vs line</th>
+        </tr></thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--line)">
+            <td style="padding:2px 0"><strong>New line</strong></td>
+            <td style="text-align:right;font-family:monospace">R${r.lineRbn.toFixed(2)}bn</td>
+            <td style="text-align:right;font-family:monospace">${c.mw.toLocaleString()}</td>
+            <td style="text-align:right;font-family:monospace">R${(r.lineRpMW / 1e6).toFixed(2)}m</td>
+            <td style="text-align:right;color:var(--ink2)">&ndash;</td></tr>
+          ${rows}
+        </tbody>
+      </table>
+      <div style="font-size:9.5px;color:var(--ink2);margin-top:8px;line-height:1.55">
+        Per megawatt unlocked. A line adds a corridor; these extract more from the existing
+        one, and unlock far less &ndash; a screening question, not a business case.
+        Line R${r.lineRangeRbn[0].toFixed(2)}&ndash;${r.lineRangeRbn[1].toFixed(2)}bn, from
+        two Eskom routes that differ by 30%. <strong>Device costs are international
+        ranges</strong>, not South African tenders.
+      </div>`;
+  }
+  window.renderGets = renderGets;
+
   // ── GREEN HYDROGEN FROM CURTAILED ENERGY ──────────────────────────────────
   // South Africa's hydrogen roadmap leans on the idea that surplus renewable energy can
   // be diverted to electrolysers instead of being spilled. The curtailment series needed
@@ -4154,6 +4218,7 @@ function printPrefeas() {
 <div class="projwrap" style="max-width:1380px;margin:0 auto;padding:0 20px 20px">
 
 <section id="resourceSection" style="margin-top:18px;box-sizing:border-box;max-width:100%">
+
   <div id="nav-sitetools" class="panel">
     <div class="ph">
       <h2>Site resource query</h2>
@@ -13268,7 +13333,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02b';
+const BUILD_STAMP = '2026-09-02c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -16953,6 +17018,30 @@ window.cancelMIP = cancelMIP;
   update();
   window.addEventListener('load', update);
   setTimeout(update, 400); setTimeout(update, 1500);
+})();
+
+// ── FIRST PAINT FOR PANELS DEFINED AFTER run() ─────────────────────────────
+// run() fires during page load and reaches these three through `window.renderX`. Their
+// defining closures execute LATER, so at that moment the guards read undefined and skip -
+// silently, because `typeof X === 'function'` is a guard and not an assertion.
+//
+// Measured 2 Sep 2026 on a fresh load with no interaction: h2Body, getsBody and heatBody
+// were all EMPTY while the older panels filled. Three separate reports of "I don't see it"
+// were this one fault, and every test that missed it had called run() by hand first.
+//
+// One repaint here, after every script block has run, is the smallest fix that cannot
+// race: nothing is defined after this point.
+(function firstPaint(){
+  if (typeof window.lastRes === 'undefined' || !window.lastRes) return;
+  const paint = () => {
+    try { if (window.renderH2) window.renderH2(window.lastRes); } catch(e){ console.error('h2 first paint:', e); }
+    try { if (window.renderGets) window.renderGets(); } catch(e){ console.error('gets first paint:', e); }
+    try { if (window.renderHeat) window.renderHeat(); } catch(e){ console.error('heat first paint:', e); }
+  };
+  paint();
+  // Again once the async regional profiles land, because the electrolyser siting line
+  // needs them and they arrive after first paint.
+  setTimeout(paint, 1200);
 })();
 </script>
 

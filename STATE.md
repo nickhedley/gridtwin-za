@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 944 checks
+suite                      19 harnesses, 949 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 944 checks. Last full run: 944/944.
+Nineteen harnesses, 949 checks. Last full run: 949/949.
 
 ```
 node stress_suite.js                290/290
@@ -264,7 +264,7 @@ python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          16/16   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       35/35
+node validate_consistency.js .       40/40
 node validate_structure.js .         25/25
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -6831,6 +6831,52 @@ Counting "spill" in `body.textContent` gave 52 hits - because textContent includ
 `<script>` element, so it was counting variable names. Stripping script and style tags
 first gives zero. **Measuring the source would have failed this check; measuring what a
 reader sees is the point.**
+
+## three panels were empty on every real page load - 2 Sep 2026
+
+Three reports of "I don't see it" were one fault, and my tests could not have found it.
+
+```
+fresh load, no interaction
+h2Body      EMPTY
+getsBody    EMPTY
+heatBody    EMPTY
+priceBody   filled
+captureBody filled
+```
+
+`run()` fires during page load and reaches the three new panels through `window.renderX`.
+**Their defining closures execute later**, so at that moment every guard read undefined and
+skipped. `typeof X === 'function'` is a guard, not an assertion - nothing failed, nothing
+logged.
+
+**Every test I wrote called `run()` by hand first**, which is exactly what hid it. The bug
+only exists in the window between page load and closure execution, and a test that runs
+after everything has loaded cannot see it.
+
+### and renderGets had been deleted outright
+
+Restoring the paint order exposed a second fault: `GETS_CORRIDORS` and `renderGets` were
+gone entirely, removed with the electrolyser siting panel because they sat adjacent in the
+file. The panel markup and the `run()` call both survived, so the page carried a corridor
+selector with zero options and an empty body - and `if (window.renderGets)` made a missing
+function indistinguishable from a quiet one.
+
+### fixed with one repaint, and pinned
+
+A single `firstPaint()` at the end of the last script block, after every closure has
+executed, plus a repeat at 1.2s because the electrolyser siting line needs the async
+regional profiles.
+
+`validate_consistency` 35 -> 40: every panel must fill **with no interaction at all**. The
+probe deliberately does not call `run()`. Verified by removing the repaint - all three fail
+with "the renderer did not run on load".
+
+### also done
+
+The hydrogen panel now sits directly below carbon capture, as asked. And the build stamp is
+`2026-09-02c` - the previous instruction to check it was itself wrong, since the stamp only
+appears in the full-run banner and needs a model run to see.
 
 ---
 

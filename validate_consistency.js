@@ -483,6 +483,31 @@ const num = t => {
   }
 
 
+  // ── EVERY PANEL MUST FILL ON A FRESH LOAD ────────────────────────────────
+  // Three panels - hydrogen, grid-enhancing and heat - were EMPTY on a real page load for
+  // a day. run() reaches them through `window.renderX`, but their defining closures
+  // execute later, so the guards read undefined and skipped. `typeof X === 'function'` is
+  // a guard, not an assertion, so nothing failed.
+  //
+  // Every test that missed it had called run() by hand first. This one must not: it reads
+  // the panels as a visitor gets them, with no interaction at all.
+  const fresh = run(`
+    const out = {};
+    for (const id of ['h2Body', 'getsBody', 'heatBody', 'priceBody', 'captureBody']){
+      const el = document.getElementById(id);
+      out[id] = el ? (el.textContent || '').trim().length : -1;
+    }
+    return out;
+  `, { noRun: true });
+  if (fresh && !fresh.err){
+    for (const id of Object.keys(fresh)){
+      check(`[${id}] fills without any interaction`,
+            fresh[id] > 30,
+            fresh[id] < 0 ? 'element missing from the markup'
+                          : `only ${fresh[id]} characters - the renderer did not run on load`);
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }
