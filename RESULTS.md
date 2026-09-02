@@ -280,11 +280,8 @@ R259bn and takes average cost from R1.30 to R2.54/kWh - nearly double - to buy a
 Twenty gigawatts of 100-hour iron-air is two terawatt-hours of storage and it
 changes July by nothing, to three significant figures.
 
-SCOPE, measured 2 Sep 2026: this holds WITH GAS. Remove the 25 GW of gas and long-duration
-storage becomes decisive - 10 GW of 100-hour iron-air cuts unserved energy from 4,663 to
-78 GWh. With gas the deficit is an energy shortage no store can fill; without it the
-shortfall concentrates into fewer, deeper hours, which is what a 100-hour store is for.
-**Quote either result with its gas assumption or it inverts.** Iron-air alone makes it
+SCOPE: this holds WITH GAS. Remove the 25 GW of gas and 10 GW of 100-hour iron-air cuts
+unserved energy from 4,663 to 78 GWh. Quote either result with its gas assumption. Iron-air alone makes it
 worse. There is no surplus to store; the deficit is an energy shortage, not a
 shifting problem. Seasonal storage does not solve it either - a stronger claim
 than Seriti's own.

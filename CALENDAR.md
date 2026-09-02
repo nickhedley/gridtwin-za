@@ -203,7 +203,7 @@ Mulilo COD     Recorded as 2026-07 pending the PFL IPP Knowledge Hub COD table.
 every session  Run the full suite before any change. Report counts.
 every session  Confirm profiles.json is at the repo root. Without it the suite
                produces eleven false failures across five harnesses.
-every session  Read RULES.md in full. It is short by design. TWELVE rules as at
+every session  Read RULES.md in full. It is short by design. THIRTEEN rules as at
                31 Aug 2026.
 every session  Check this file. Anything past its date moves or gets a new one.
 every session  Check the NERSA Electricity Regulation Projects Dashboard. It carries

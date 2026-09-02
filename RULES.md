@@ -5,7 +5,7 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
-## The twelve rules
+## The thirteen rules
 
 1. **Always run the full validation suite after any change to index.html, and
    report the counts.** Before and after, so the baseline is measured rather than
@@ -78,6 +78,17 @@ every session. Everything here was learned by getting it wrong at least once.
     was caught by the user, not the suite. If a decision matters enough to make twice, it
     matters enough to assert - and the assertion belongs where the work happens, not in a
     document nobody re-reads mid-task.
+
+13. **State the finding. Do not explain the mechanism.** A reader who wants to know WHY can
+    run the model. Every note, panel and summary gives the number, the scenario it came
+    from, and the caveat - nothing else.
+
+    The tell is a sentence beginning "with X the deficit is...", "this is because...",
+    "the reason is...", or any clause explaining what the reader should conclude. Cut it.
+
+    Broken repeatedly on 1-2 Sep despite the prose ratchet, because the ratchet counts
+    words in PANELS and this habit also appears in RESULTS.md, in commit notes, and in
+    replies. **It is a writing rule, not a panel rule.**
 
 ---
 
