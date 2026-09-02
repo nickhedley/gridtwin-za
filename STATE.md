@@ -7149,6 +7149,36 @@ is that inertia is priced the way real markets price it. Lower case there would 
 five other acronym corrections requested in the same session. Flagged rather than silently
 changed.
 
+## a slider note explaining the wrong number - 2 Sep 2026
+
+The gas LCOE note read "R2.50 implies a 30-50% capacity factor at the default fuel cost"
+while `FIXED.lcoeCcgt` was **3,340**. The slider displayed R3.34 above a sentence explaining
+R2.50: the constant had been re-based and the prose beside it had not.
+
+### the replacement says only what can be verified
+
+"At the default gas price, fuel alone is R1.97/kWh - about 59% of this figure - so the
+balance is capital recovery, which falls as utilisation rises."
+
+**The 30-50% capacity factor claim was not carried over**, because it cannot be reproduced:
+CCGT has no entry in `BLD_COST`, so there is no capex in the model from which to derive a
+capacity factor at all. The old sentence asserted something the model does not contain. The
+fuel share is arithmetic from two constants that both exist.
+
+### now checked
+
+`validate_consistency` 42 -> 43 parses rand-per-kWh figures out of the gas LCOE note and
+fails if any is neither the default nor the fuel cost. Verified by restoring R2.50: "note
+cites R2.50/kWh against a default of R3.34 - the constant moved and the prose did not".
+
+Not exhaustive, and cannot be - prose is free text. It pins the note that carries a figure
+today.
+
+### also
+
+`lng` and `usd` capitalised in the gas fuel note - the fifth and sixth casualties of the
+1 Sep de-capitalisation pass. The coal LCOE note reworded as requested.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

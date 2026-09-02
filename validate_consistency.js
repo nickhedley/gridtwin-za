@@ -531,6 +531,36 @@ const num = t => {
           `R${dr.drCost} against a value of lost load of R${dr.voll}`);
   }
 
+  // ── SLIDER NOTES MUST NOT HARDCODE A STALE DEFAULT ───────────────────────
+  // The gas LCOE note read "R2.50 implies a 30-50% capacity factor" while FIXED.lcoeCcgt
+  // was 3,340. The constant had been re-based and the prose beside it had not, so the
+  // slider showed R3.34 above a sentence explaining R2.50. Reported 2 Sep 2026.
+  //
+  // Checks the notes that quote their own default in rands. Not exhaustive - it cannot be,
+  // since prose is free text - but it pins the ones that carry a figure today.
+  const notes = run(`
+    const out = {};
+    for (const sl of SLIDERS){
+      if (!sl.id || !sl.note) continue;
+      out[sl.id] = { note: String(sl.note), def: (typeof sl.def === 'number') ? sl.def : null };
+    }
+    return { s: out, lcoeCcgt: FIXED.lcoeCcgt, costCcgt: FIXED.costCcgt };
+  `);
+  if (notes && !notes.err){
+    // the gas LCOE note must not quote a rand-per-kWh figure that is not the default
+    const g = notes.s.lcoeCcgt;
+    if (g){
+      const quoted = (g.note.match(/R([0-9]+\.[0-9]{2})\/kWh/g) || [])
+        .map(x => Math.round(parseFloat(x.slice(1)) * 1000));
+      const defK = notes.lcoeCcgt;
+      const stale = quoted.filter(q => Math.abs(q - defK) > 5 && Math.abs(q - 1968) > 5);
+      check('the gas LCOE note quotes no stale rand figure',
+            stale.length === 0,
+            `note cites R${(stale[0]/1000).toFixed(2)}/kWh against a default of `
+            + `R${(defK/1000).toFixed(2)} - the constant moved and the prose did not`);
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

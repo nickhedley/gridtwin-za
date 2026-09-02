@@ -11954,7 +11954,7 @@ const SLIDERS=[
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
    ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that.'},
   {id:'ccsEnabled',toggle:true,def:false,label:'Apply carbon capture &amp; storage to the coal fleet',note:'Retrofits the existing fleet and includes capture on new build.'},
-  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'R1,968 = $18.50/MMBtu delivered lng &#215; R16.21/usd &#215; 52&#37; efficiency. Each $1/MMBtu \u2248 R106/MWh. Fuel only; build cost is the Gas CCGT slider.'},
+  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'R1,968 = $18.50/MMBtu delivered LNG &#215; R16.21/USD &#215; 52&#37; efficiency. Each $1/MMBtu \u2248 R106/MWh. Fuel only; build cost is the Gas CCGT slider.'},
   {grp:'LCOE assumptions (R/kWh) \u2013 full lifecycle build cost'},
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55'},
   {id:'lcoeWind',label:'Wind',min:400,max:1800,step:10,def:FIXED.lcoeWind,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 wind bids > solar; anchor R0.75'},
@@ -11964,9 +11964,9 @@ const SLIDERS=[
   {id:'lcoeIronAir',label:'Iron-air',min:600,max:4000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
   {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:3500,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
-  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'R2.50 implies a 30-50&#37; capacity factor at the default fuel cost. IRP 2025 assumed $10/MMBtu against the FY2026 reference of $18.50.'},
+  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R1.97/kWh \u2013 about 59&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed $10/MMBtu against the FY2026 reference of $18.50.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Wide range; SMRs higher'},
-  {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Escalated from the 2016 Coal Baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Neither was built, so this is the best anchor available rather than a demonstrated cost.'},
+  {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Calculated from the 2016 coal baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Adjusted for inflation. Neither project was built.'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'R9.00 at a 5&#37; capacity factor; R13.20 at 2&#37;, R7.60 at 10&#37;. Floor is diesel\u2019s own SRMC, ~R6.2/kWh.'}
 ];
 const PRESETS={
@@ -13339,7 +13339,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02l';
+const BUILD_STAMP = '2026-09-02m';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
