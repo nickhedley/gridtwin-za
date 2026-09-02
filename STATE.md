@@ -6088,8 +6088,13 @@ twice. The sections above keep the full reasoning.
 
 ## Data
 
-9. **1,823 MW solar gap** against `FIXED.pvUtilityMW`. SunCentral 342 MW the best
-   candidate; needs #PowerTracker.
+9. **The solar gap is not what this item says, and four sources disagree.** Investigated
+   2 Sep 2026 - see below. `FIXED.pvUtilityMW` is 3,271 and equals the data file total
+   exactly, so the 1,823 MW gap does not exist in the arithmetic. But the data file still
+   instructs that the constant must NOT be re-derived from it, and the documentation row
+   in the page gives a third figure. **Needs a decision, not more data.**
+
+   The SunCentral candidate is also weaker than recorded: 114 MW is energised, not 342.
 10. **Named-project layer** - the IPP Office annual overview, the only route to project
     names and the Hydra Central split.
 11. **NERSA cumulative reconciliation** - SAPVIA 20,131 MW against NERSA 21,900 MW.
@@ -6691,6 +6696,60 @@ Both are privately funded transmission handed to the state, and both are SHARED 
 carry more than their own project. That is the ITIPP pattern registered in SOURCES.md after
 the Impofu and Nuweveld reporting, and it is a category this model still does not represent:
 GridTwin assumes NTCSA builds the network.
+
+## the solar gap: four sources, three numbers, and a self-contradicting file - 2 Sep 2026
+
+Started as a follow-on from the Aquila correction - if SunCentral is 114 MW rather than 342,
+the best candidate for the 1,823 MW gap shrinks. It turns out the gap itself is the problem.
+
+```
+source                              REIPPPP   private     total
+documentation row in index.html       2,660       490     3,150
+regional_renewable_capacity.json      2,783       488     3,271
+FIXED.pvUtilityMW                                         3,271
+this file's own open item             2,663       488     3,151
+```
+
+**`FIXED.pvUtilityMW` now equals the data file total exactly.** The 1,823 MW gap does not
+exist in the arithmetic any more.
+
+### but the data file forbids exactly that
+
+`meta.known_gaps` still reads:
+
+```
+"roughly 1.8 GW of solar remains unexplained against FIXED.pvUtilityMW, so identity 3
+ stays PENDING and pvUtilityMW must NOT be re-derived from this file yet"
+```
+
+The constant has been re-derived from the file, against the file's own written instruction.
+Either the instruction is stale and should be removed, or the constant was lowered to match
+the data and the gap was absorbed rather than resolved. **From here I cannot tell which**,
+and guessing would be worse than saying so.
+
+### why nothing caught it
+
+`validate_capacity` only evaluates the solar identity when `meta.private_coverage` reads
+`complete`. It still reads `h1-2026-only`, so the identity is skipped and 28/28 passes
+without ever testing the quantity in dispute. That guard was deliberate and correct when
+written; it now hides a change it was meant to prevent.
+
+### the REIPPPP figure also moved and the page did not follow
+
+The file has REIPPPP solar at 2,783 MW; the documentation row still says 2.66 GW and this
+file's own item says 2,663. The difference traces to a redistribution - Northern Cape 1,570
+became 1,282.6 with 459.5 in Hydra Central, plus smaller moves - so the split was rebuilt
+and the page copy was not updated with it.
+
+### what needs deciding, and by whom
+
+Whether 3,271 is a sourced figure or a lowered one. If sourced, `known_gaps` should be
+rewritten and the documentation row corrected to match. If lowered, the constant should go
+back and the gap should be reinstated as the finding it was.
+
+**Recorded rather than acted on.** This is the one thing today that a fresh pair of eyes
+should settle, because the wrong choice either erases a real finding or entrenches a wrong
+constant.
 
 ---
 
