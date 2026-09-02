@@ -7123,6 +7123,32 @@ Reverted, with the reasoning recorded at the constant so it is not tried again.
 
 **An allow-list needs occasional maintenance. A wrong rule needs constant argument.**
 
+## ancillary slider labels regrouped - 2 Sep 2026
+
+The three ancillary-service markets now read as toggle-then-price pairs, matching the export
+pattern:
+
+```
+Price reserve capacity      -> - reserve capacity pricing
+Price inertia               -> - inertia pricing
+Capacity payments           -> - capacity pricing
+```
+
+The middle one was "Pay for firm capacity" over a slider called "Capacity payments", so the
+checkbox and the slider named the same thing two different ways. Now the checkbox carries
+the name and the slider carries the price.
+
+`hvdc` capitalised in the imports note - another casualty of the 1 Sep de-capitalisation
+pass, alongside `doe` and `usd` found in the previous round.
+
+### one deviation from the requested text
+
+The inertia blurb was asked for with "gva-seconds" in lower case. **Written as GVA-seconds**,
+because it is an acronym - gigavolt-ampere - and the whole point of the surrounding sentence
+is that inertia is priced the way real markets price it. Lower case there would contradict
+five other acronym corrections requested in the same session. Flagged rather than silently
+changed.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
