@@ -8,7 +8,7 @@
   "manual_count": 10,
   "centroid_count": 1,
   "note": "src='dbsa' = DBSA RFP 008 published GPS coordinates. src='eskom' = Eskom published coordinates. src='shp' = NTCSA point coordinate. src='osm' = OpenStreetMap contributors. src='manual' = individually verified. All are cross-checked against the real Eskom transmission network; the DBSA register independently agreed with 129 of 130 previously-verified entries to within 1km. src='centroid' = GCCA supply-zone polygon centroid, which marks the supply area rather than the physical site. planned=true marks substations not yet built. Voltages come from the DBSA register where listed; the remaining eight were derived individually and are marked kv_src='derived' - six from transmission lines named for the substation itself terminating at it, two from Eskom EIA documents.",
-  "attribution": "Locations marked src='osm' © OpenStreetMap contributors, ODbL. https://www.openstreetmap.org/copyright",
+  "attribution": "Locations marked src='osm' \u00a9 OpenStreetMap contributors, ODbL. https://www.openstreetmap.org/copyright",
   "src_legend": {
    "line-geom": "Position taken from where its own transmission lines terminate. Rabbit appears in no coordinate source (shapefile, OSM, Eskom GPS, DBSA register) but the two INVUBU-RABBIT 275 kV circuits both end at the same point, 9.7 km east of Invubu, agreeing to within 23 m. That convergence is the substation.",
    "pluscode": "Position decoded from a Google plus code supplied by the maintainer, not from a published coordinate source. Accurate to ~14 m at the point given, but NOT independently corroborated. One entry: Chatty (5G7F+J6 Ibhayi -> 4GR75G7F+J6 -> -33.835938, 25.523063), added 28 Aug 2026. It is the connection point for the 330 MW Impofu wind farms; its absence was making the nearest-substation heuristic return Grassridge at 106.9 km when Chatty sits at 93.3 km. Cross-checks: 16.3 km from Grassridge, 16.2 km from Gqeberha centre, consistent with Ibhayi. See pfl_cod_h1_2026.json for the full record."
@@ -102,7 +102,10 @@
    "owner": "NTCSA (handed over)",
    "built_by": "SolarAfrica with Proconics NewFields, R1.35bn",
    "line_type": "shared network",
-   "note": "PRIVATELY BUILT AND HANDED TO ESKOM/NTCSA. Aquila Main Transmission Substation, R1.35bn, built in a partnership led by SolarAfrica with Proconics NewFields, serving the SunCentral solar-wheeling hub between Hanover and De Aar (342 MW energised of a planned 1 GW). Reported Aug 2026. `planned` REMOVED on that basis - it is the first of the eleven planned flags resolved by a published source rather than by inference, and the resolution went the way the Koruson case suggests the others might. SECOND CONFIRMED PRIVATE SHARED-NETWORK ASSET after Koruson: built by a developer, sized for multiple customers, then transferred to the utility. That transfer is a pattern worth tracking - it is how private capital is adding SHARED headroom, which is the only kind that helps anyone but the builder."
+   "note": "PRIVATELY BUILT AND HANDED TO ESKOM/NTCSA on 26 Aug 2026. Aquila Main Transmission Substation, R1.35bn, built by SolarAfrica with Proconics NewFields, serving the SunCentral wheeling hub between Hanover and De Aar. 132/400 kV, one 500 MVA transformer, engineered for up to 2 GVA of evacuation capacity. CORRECTED 2 Sep 2026: an earlier note read '342 MW energised of a planned 1 GW'. SunCentral 1 is 114 MW and is what was energised; 342 MW is the Phase 1 total across SunCentral 1-3, which had reached financial close but not energisation. Energised capacity and contracted capacity are different quantities and the note conflated them. `planned` removed on the published handover.",
+   "mva": 500,
+   "kv_levels": "132/400",
+   "evacuation_gva": 2.0
   },
   {
    "n": "Ararat",
@@ -799,14 +802,15 @@
    "lng": 24.82183,
    "src": "dbsa",
    "kv": 400,
-   "planned": true,
    "area": "Hydra Central",
    "owner": "EDF Power Solutions",
    "built_by": "EDF Power Solutions (privately constructed main transmission substation)",
    "line_type": "shared network",
    "headroom_built_mw": 1500,
-   "note": "PRIVATELY BUILT, and the SHARED kind - constructed to accommodate up to 1.5 GW so later renewable projects in the region can connect, not merely to serve Koruson 1. That distinction is what matters for modelling: a single-project connection creates no headroom for anyone else, this does. CAUTION: this entry still carries planned=true from the DBSA register. The Koruson cluster is operating, so the substation is built and the flag is probably stale - but it has NOT been confirmed against a published commissioning source, so it is left as found rather than flipped on inference. NO LINE ADDED: the sourced fact is a SUBSTATION. No route or geometry for its connecting lines has been published that I have seen, and a fabricated centreline would be worse than an absent one. PLANNED FLAG DISPUTED, audited 30 Aug 2026. The DBSA register says planned and the Eskom TDP lists it, but EDF Power Solutions built the main transmission substation for Koruson 1 and that cluster is operating - so it is almost certainly built and the TDP entry predates completion. NOT flipped, because no commissioning source has been checked. The two lines in transmission_lines.geojson that name Koruson are the INDICATIVE connectors added on 30 Aug 2026 and are NOT independent evidence of anything.",
-   "planned_disputed": true
+   "note": "PRIVATELY BUILT AND ENERGISED. Koruson 400/132 kV Main Transmission Substation near Noupoort, EDF Renewables with H1 Holdings, Gibb-Crede and a community trust, designed to connect 1.5 GW. `planned` REMOVED 2 Sep 2026 on the published energisation - it was carried as planned_disputed and this resolves it. SHARED headroom: built to accommodate later projects in the region, not only Koruson 1, which is what makes it count as headroom for anyone else. NOTE TWO COMPETING CLAIMS: EDF calls this the first full IPP self-build MTS; SolarAfrica says the same of Aquila. Both are reported; neither is adjudicated here.",
+   "planned_disputed": true,
+   "mva": null,
+   "kv_levels": "400/132"
   },
   {
    "n": "Kriel",

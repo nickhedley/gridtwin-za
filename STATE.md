@@ -6654,6 +6654,44 @@ prices. The fix was correct there and broken everywhere else. **A scenario with 
 thing being fixed cannot test the fix** - the same lesson as the shed-hour balance check
 needing a shedding scenario.
 
+## Aquila and Koruson: one correction, one open item closed - 2 Sep 2026
+
+We had Aquila. Checking it against the coverage found an error in our own note and resolved
+a flag that had been open for days.
+
+### the Aquila note conflated two capacities
+
+It read "342 MW energised of a planned 1 GW". **SunCentral 1 is 114 MW, and that is what was
+energised.** 342 MW is the Phase 1 total across SunCentral 1 to 3, which had reached
+financial close but not energisation.
+
+Energised capacity and contracted capacity are different quantities, and the note treated
+them as one. Corrected, with the distinction stated so it is not re-merged.
+
+Added from the published sources: 132/400 kV, one 500 MVA transformer, engineered for up to
+2 GVA of evacuation capacity, handed to NTCSA on 26 August 2026.
+
+### Koruson was still flagged planned, and it is energised
+
+`planned: true` removed. The Koruson 400/132 kV MTS near Noupoort - EDF Renewables with
+H1 Holdings, Gibb-Crede and a community trust, built for 1.5 GW - has been energised. **That
+closes the `planned_disputed` open item**, and it is the second of the eleven planned flags
+resolved by a published source rather than by inference.
+
+### two competing claims, both recorded, neither adjudicated
+
+EDF calls Koruson the first full IPP self-build main transmission substation. SolarAfrica
+says the same of Aquila. Both are in the notes as reported claims. **This project does not
+need to settle which was first**, and pretending to would be the kind of judgement the data
+does not support.
+
+### why both matter beyond the register
+
+Both are privately funded transmission handed to the state, and both are SHARED - built to
+carry more than their own project. That is the ITIPP pattern registered in SOURCES.md after
+the Impofu and Nuweveld reporting, and it is a category this model still does not represent:
+GridTwin assumes NTCSA builds the network.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
