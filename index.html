@@ -11887,7 +11887,9 @@ function renderCCS(r){
       + '<strong>circulating fluidised bed</strong>, which burns coal in a bed of sand and limestone '
       + 'at 800\u2013900\u00b0C to cut sulphur dioxide and nitrogen oxides at source \u2013 not carbon. '
       + 'The CSIR draws the same line: that programme is about combustion, the Council for '
-      + 'Geoscience\u2019s Leandra project is about storage. Its 500 kW test facility at Rosherville has '
+      + 'Geoscience\u2019s Leandra project is about storage. Eskom\u2019s proposed Kusile '
+        + 'capture demonstration (Sep 2026) is <strong>22,000 t CO2/yr</strong>, 0.5&#37; of one '
+        + '800 MW unit. Its 500 kW test facility at Rosherville has '
       + 'only its detailed engineering funded, will not feed the grid, and is not expected to produce '
       + 'locally validated results before 2029. The design allows capture to be added later, which is '
       + 'where this panel would apply.</div>'
@@ -11949,10 +11951,8 @@ function renderCCS(r){
           + 'The Council for Geoscience has identified 34&#160;Gt of storage potential at '
           + '<strong>Leandra</strong> in Mpumalanga, in the coalfields themselves, which would vastly '
           + 'reduce transport distances. But Leandra completed its first phase in early 2024 and '
-          + '<strong>has yet to inject a single tonne underground</strong>. It is therefore treated as '
-          + 'the upside case, not the base case. '
-          + 'A more accurate submission would model each unit\u2019s remaining life, phasing and financing '
-          + 'separately; this is a transparent approximation.</div>'
+          + '<strong>has yet to inject a single tonne underground</strong>, so it is the upside '
+          + 'case, not the base. Unit-by-unit remaining life and phasing are not modelled.</div>'
           + '<details style="margin-top:7px;font-size:10px;line-height:1.55">'
           + '<summary style="cursor:pointer;color:var(--alert,#C4785A);font-weight:600">'
           + 'Eskom has costed this, and its number is far higher</summary>'
@@ -13490,7 +13490,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02r';
+const BUILD_STAMP = '2026-09-02s';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

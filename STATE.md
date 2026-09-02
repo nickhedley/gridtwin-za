@@ -7370,6 +7370,42 @@ vanadium, lithium, nuclear, imports, demand, demand response, interruptible load
 reserve and congestion curtailment. The last two read as inert until switched OFF, because
 both are on by default.
 
+## Eskom's clean coal statement gives the CCS panel a scale anchor - 2 Sep 2026
+
+Eskom announced a proposed carbon-capture demonstration at Kusile **sized at 22,000 tonnes
+of CO2 a year**. Against what our panel models:
+
+```
+share of one 800 MW unit          0.50%
+share of Kusile station           0.08%
+share of the coal fleet         0.0126%
+plants needed for 90% of fleet    7,139
+```
+
+The panel prices a fleet-wide retrofit at R1,508bn and a 90% capture rate. **The largest
+capture project Eskom has proposed is half a per cent of one unit.** That is the most useful
+sentence available for reading the panel's numbers, and it is now on the panel.
+
+### three other figures worth having
+
+```
+FY2026 EAF        65.16% audited   - our default of 65 matches
+Aug 2026 EAF      67.87%
+clean days        470 consecutive  - our note still says 365 reached May 2026
+IRP 2025          R2.1 trillion investment plan
+```
+
+Also: HELE demonstration targeted 2030, Kriel 20% biomass co-firing full-scale demonstration
+by March 2027, CCUS feasibility concluded 2025.
+
+### the prose ratchet fired a third time and I did not raise it
+
+4,200 against 4,170. Rather than raise the ceiling again, **I cut to pay for the addition** -
+the CCS note lost a sentence about unit-by-unit modelling that argued rather than informed,
+and my own insert was shortened twice. 4,166 under a ceiling of 4,170.
+
+Raising a ceiling three times in one day is not a ratchet, it is a formality.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
