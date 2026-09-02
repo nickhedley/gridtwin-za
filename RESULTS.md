@@ -2789,10 +2789,54 @@ figures show Eastern Cape to KwaZulu-Natal at its limit 3,080 hours a year, and 
 wind regions hold zero connection headroom.
 
 So the question worth asking is not whether compressed air helps the national build - it
-does not, on the evidence above - but **which South African supply areas are radially fed,
-diesel-backed and congested enough for the Broken Hill logic to apply.** That is a question
-this model can frame and cannot yet answer, because it has no representation of islanding or
-of local supply security.
+does not, on the evidence above - but **which South African points are radially fed,
+peaker-backed and congested enough for the Broken Hill logic to apply.**
+
+### that question is answerable, and the answer is short
+
+Radiality is computable from the transmission line file: a substation with exactly one
+connection is a radial endpoint. Of 172 substations in the existing network, **35 are
+radial**.
+
+Cross-referencing those against South Africa's open-cycle peaking fleet:
+
+```
+station      kV   supply area      peaker MW   fed from    radial?
+Ankerlig    400   Western Cape         1,338   Koeberg     2 links
+Gourikwa    400   Western Cape           740   Proteus     YES
+Avon        275   KwaZulu-Natal          670   Impala      3 links
+Dedisa      400   Eastern Cape           335   Poseidon    2 links
+Acacia      400   Western Cape           171   Koeberg     3 links
+```
+
+**Gourikwa is the only peaker-backed radial endpoint in the network** - 740 MW of
+open-cycle gas turbine at Mossel Bay, hanging off a single 400 kV connection to Proteus.
+That is the Broken Hill shape: expensive liquid-fuelled backup at the end of a radial feed.
+
+The other four peaking stations are all meshed with two or more connections, so the
+resilience case that carried Silver City does not transfer to them.
+
+### and the supply-area view agrees
+
+```
+supply area        corridors   total MVA   wind headroom
+KwaZulu-Natal              2      15,600           5,500
+Western Cape               2      10,000           1,180
+Free State                 6      38,000           1,420
+```
+
+Only two supply areas are near-radial, and the Western Cape is one of them - the same
+province as Gourikwa, on a corridor the model has at its limit 799 hours a year.
+
+### what this does NOT establish
+
+The model has no representation of islanding, so it cannot say whether Gourikwa's feed
+actually fails, how often, or what an outage there would cost. Broken Hill's case rested on
+a two-week blackout and an eight-hour one before it - lived events, not modelled risk.
+
+Nor does it say compressed air is the right answer there rather than a battery configured to
+island, which is what Broken Hill's existing battery could not do. **What the analysis
+supports is a shortlist of one, and a reason to look at it.**
 
 ### what is asserted rather than modelled
 
