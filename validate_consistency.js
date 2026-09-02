@@ -482,6 +482,7 @@ const num = t => {
           `${c.un.toFixed(1)} GWh unserved - without shedding this proves nothing`);
   }
 
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

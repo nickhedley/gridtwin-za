@@ -475,6 +475,24 @@ const live = stripComments(src);
             + ' - the panel will silently render nothing');
     }
 
+    // THE PRICE DURATION CURVE MUST HANDLE NON-POSITIVE PRICES.
+    // Reported 2 Sep 2026 as "shouldn't it extend to 100%?" - it did, off the bottom of the
+    // chart. A log axis has no logarithm for zero or a negative price, and in a
+    // high-renewables scenario most of the curve is exactly that: 57 of 101 points rendered
+    // at y=65.9 in a 60-unit viewBox, so the last 56% of the line was invisible.
+    //
+    // Checked in SOURCE rather than by scraping the rendered SVG: a probe that reads the
+    // panel races the render and measures an empty string, which is how the first version
+    // of this check reported "1 of 1 points outside".
+    {
+      const hasFloor = /if \(!\(v > 0\)\) return 60;/.test(codeOnly);
+      const hasClamp = /Math\.max\(2, Math\.min\(60, y\)\)/.test(codeOnly);
+      check('the price duration curve floors non-positive prices and clamps to the viewBox',
+            hasFloor && hasClamp,
+            `floor ${hasFloor ? 'present' : 'MISSING'}, clamp ${hasClamp ? 'present' : 'MISSING'}`
+            + ' - zero and negative prices have no logarithm and will render off-chart');
+    }
+
     const wxFactory = (codeOnly.match(/async function weatherProfileFactory/g) || []);
     const wxCopies = (codeOnly.match(/const\s+wxCache\s*=\s*new Map\(\)/g) || []);
     check('there is one shared weather-profile builder',

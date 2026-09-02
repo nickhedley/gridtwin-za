@@ -10292,12 +10292,28 @@ function renderPricePanel(r){
   // A log axis is the convention for any market with scarcity pricing, precisely because
   // the tail is orders of magnitude above the body. Floor at R1 so a zero or negative hour
   // cannot produce a negative logarithm.
-  const loD = Math.max(1, Math.min(...dur.filter(v => v > 0)));
+  // ZERO AND NEGATIVE PRICES NEED A FLOOR ROW, NOT A LOGARITHM.
+  // A log axis cannot represent them at all. The first version floored the VALUE at R1 but
+  // took `loD` from the positive prices only, so every non-positive hour resolved below the
+  // axis minimum and was drawn outside the 60-unit viewBox. In a high-renewables scenario
+  // that is most of the curve: measured 2 Sep 2026, 57 of 101 points sat at y=65.9 and the
+  // last 56% of the line was invisible. Reported as "shouldn't it extend to 100%?" - it
+  // did, off the bottom of the chart.
+  //
+  // Non-positive hours now sit ON the baseline, which is honest: the reader sees the curve
+  // run to 100% and flatten at the floor, and the panel already reports how many hours are
+  // at or below zero as a separate figure.
+  const posD = dur.filter(v => v > 0);
+  const loD = posD.length ? Math.max(1, Math.min(...posD)) : 1;
   const hiD = Math.max(...dur, loD * 10);
   const lg = v => Math.log10(Math.max(v, 1));
   const span = Math.max(lg(hiD) - lg(loD), 0.3);
-  const pts = dur.map((v, i) =>
-    `${(i).toFixed(1)},${(60 - (lg(v) - lg(loD)) / span * 58).toFixed(1)}`).join(' ');
+  const yOf = v => {
+    if (!(v > 0)) return 60;                       // zero or negative: the baseline
+    const y = 60 - (lg(v) - lg(loD)) / span * 58;
+    return Math.max(2, Math.min(60, y));           // clamp, so nothing renders off-chart
+  };
+  const pts = dur.map((v, i) => `${(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(' ');
 
   host.innerHTML =
       `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">`

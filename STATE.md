@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 942 checks
+suite                      19 harnesses, 943 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 942 checks. Last full run: 942/942.
+Nineteen harnesses, 943 checks. Last full run: 943/943.
 
 ```
 node stress_suite.js                290/290
@@ -265,7 +265,7 @@ python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          16/16   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       35/35
-node validate_structure.js .         23/23
+node validate_structure.js .         24/24
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
 node validate_external.js .            4/4
@@ -6613,6 +6613,46 @@ Cape", and the shadow price is national.
 
 Verified this time before shipping: button inside `.ph`, siblings H2/SPAN/BUTTON,
 `priceBody` present and filled with content.
+
+## the duration curve ran off the bottom of the chart - 2 Sep 2026
+
+Reported as "shouldn't it extend to 100%?" **It did - off the bottom.**
+
+The log scale added yesterday floored the VALUE at R1 but took the axis minimum from
+positive prices only, so every zero or negative hour resolved below the axis and was drawn
+outside the 60-unit viewBox.
+
+```
+high-renewables scenario, 45 GW wind and 52 GW solar
+duration points          101
+points at or below zero   57   (56% of the curve)
+rendered at y=65.9        57   viewBox height is 60
+```
+
+**More than half the line was invisible**, and the panel's own headline said so: 4,348
+hours at or below zero, 50% of the year.
+
+Non-positive hours now sit ON the baseline, with a clamp so nothing can render off-chart.
+That is honest - the reader sees the curve run to 100% and flatten at the floor, and the
+count of zero and negative hours is already reported separately.
+
+### the check went in SOURCE, after two failed attempts at scraping
+
+A probe reading `priceBody` races the render and measures an empty string, which reported
+"1 of 1 points fall outside" - a measurement of nothing rather than a fault. Anchoring the
+regex on the polyline's stroke then failed on escaping through two layers of string
+embedding, returning undefined.
+
+`validate_structure` 23 -> 24 checks the floor and the clamp in source instead. Weaker than
+measuring the rendered output, and it works. Verified by removing the floor: "floor MISSING,
+clamp present".
+
+### the pattern worth noting
+
+Yesterday's log-scale fix was tested only on the DEFAULT scenario, which has no negative
+prices. The fix was correct there and broken everywhere else. **A scenario with none of the
+thing being fixed cannot test the fix** - the same lesson as the shed-hour balance check
+needing a shedding scenario.
 
 ---
 

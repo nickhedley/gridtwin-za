@@ -2685,6 +2685,26 @@ replaced by very close to a terawatt-hour of coal, and carries very close to one
 of CO2 with it - which follows directly from an emission factor of 1.04 t/MWh, and is a
 useful arithmetic check on the whole chain.
 
+### how big is this against what IPPs are actually paid?
+
+NTCSA states it administers approximately **R45 billion a year in payments to independent
+power producers** (media statement, 1 September 2026).
+
+```
+ceiling   modelled revenue loss   share of total IPP payments
+    4%              R0.70bn                          1.6%
+   10%              R1.79bn                          4.0%
+   15%              R2.76bn                          6.1%
+```
+
+A useful sanity check on the modelled figure, and a scale for the dispute: at the approved
+ceiling this is one and a half per cent of the sector's revenue, concentrated on whichever
+plants are curtailed rather than spread across all of them.
+
+The same statement records **just under 3,000 curtailment claims processed in July and
+August alone**, following elevated volumes in April and May. That is the administrative
+footprint of the effect priced below.
+
 ### three parties, three different bills
 
 At the approved 4% ceiling:
