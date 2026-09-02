@@ -500,7 +500,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
         <div style="padding:2px 14px 14px">
         <p style="font-size:11px;color:var(--ink2);line-height:1.6">
-        <strong>Run the full model</strong> for real flows: thicker, redder lines are corridors nearer their transfer limit; a red <em>X% curt.</em> label under a node means wind or solar spilled there.</p>
+        <strong>Run the full model</strong> for real flows: thicker, redder lines are corridors nearer their transfer limit; a red <em>X% curt.</em> label under a node means wind or solar was curtailed there.</p>
       <p style="font-size:11px;color:var(--ink2);line-height:1.6">
         This schematic is deliberately simplified. For the real thing, the
         <a href="gridtwin-3d/">3D network map</a> plots every transmission line at 220&nbsp;kV and
@@ -830,7 +830,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
           <div id="nav-h2" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Green hydrogen from curtailed energy</h2><span class="tag">modelled</span>
-              <span class="tag">electrolyser on spilled renewables</span></div>
+              <span class="tag">electrolyser on curtailed renewables</span></div>
             <div class="pb" id="h2Body"></div>
           </div>
 
@@ -1870,7 +1870,7 @@ let redzData = null;
       ${(()=>{ const c=(window.__nodalCurtByRegion||{})[sub.area];
         if(c===undefined) return '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px">Curtailment risk: run the full model (button above the schematic) to compute it for this connection.</div>';
         const col=c>10?'var(--alert,#C4785A)':c>1?'#f5c518':'var(--ok,#4A8C5C)';
-        return `<div style="margin-top:6px;font-size:10.5px">Curtailment risk at this connection: <strong style="color:${col}">${c.toFixed(1)}%</strong> <span style="font-size:9.5px;color:var(--ink2)">of ${sub.area}\u2019s renewable potential spills under the current scenario \u2013 same basis as the schematic labels.</span></div>`; })()}
+        return `<div style="margin-top:6px;font-size:10.5px">Curtailment risk at this connection: <strong style="color:${col}">${c.toFixed(1)}%</strong> <span style="font-size:9.5px;color:var(--ink2)">of ${sub.area}\u2019s renewable potential is curtailed under the current scenario \u2013 same basis as the schematic labels.</span></div>`; })()}
       <div style="margin-top:11px;padding-top:9px;border-top:1px solid var(--line2)">
         <div style="font-size:10.5px;font-weight:600;margin-bottom:5px">Curtailment risk if you build here</div>
         <div id="curtRiskResult"></div>${(()=>{ setTimeout(()=>{ try{ renderCurtailRisk(sub.area); renderNeighbours(sub.area, lat, lng); }catch(e){} }, 0); return ''; })()}
@@ -2188,16 +2188,16 @@ let redzData = null;
         '<div style="display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px">'
       + `<div><div style="font-size:22px;font-weight:700;color:${band};font-family:'IBM Plex Mono',monospace">`
       + `${sitePct.toFixed(1)}%</div>`
-      + '<div style="font-size:9.5px;color:var(--ink2)">of output spilled, this scenario</div></div>'
+      + '<div style="font-size:9.5px;color:var(--ink2)">of output curtailed, this scenario</div></div>'
       + `<div style="font-size:11px;color:${band};font-weight:600">${verdict}</div></div>`
       + '<table class="mono" style="width:100%;font-size:10.5px;border-collapse:collapse">'
-      + `<tr><td style="padding:2px 0;color:var(--ink2)">National spill rate</td><td style="text-align:right">${(nat*100).toFixed(1)}%</td></tr>`
+      + `<tr><td style="padding:2px 0;color:var(--ink2)">National curtailment rate</td><td style="text-align:right">${(nat*100).toFixed(1)}%</td></tr>`
       + `<tr><td style="padding:2px 0;color:var(--ink2)">${region} queue pressure</td><td style="text-align:right">${
           pressure === null ? '\u2013' : pressure === Infinity ? 'headroom full' : pressure.toFixed(2)+'\u00d7'}</td></tr>`
       + `<tr><td style="padding:2px 0;color:var(--ink2)">Regional multiplier</td><td style="text-align:right">${mult.toFixed(2)}\u00d7</td></tr>`
       + '</table>'
       + '<div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">'
-      + 'The modelled national spill rate, scaled by how oversubscribed this supply area is. Move the '
+      + 'The modelled national curtailment rate, scaled by how oversubscribed this supply area is. Move the '
       + 'build sliders and this moves with them \u2013 your curtailment risk depends on what else gets '
       + 'built, not on your site alone. Run the network model for a corridor-level figure rather than '
       + 'this regional approximation.</div>';
@@ -3415,7 +3415,7 @@ function printPrefeas() {
 
     if (!(totalTWh > 0.001)){
       host.innerHTML = '<p style="font-size:11px;color:var(--ink2);line-height:1.55">'
-        + 'This scenario spills no renewable energy, so there is nothing for an electrolyser '
+        + 'This scenario curtails no renewable energy, so there is nothing for an electrolyser '
         + 'to run on. Raise the wind and solar build, or the curtailment ceiling under '
         + 'Network, to see the hydrogen case.</p>';
       return;
@@ -3438,7 +3438,7 @@ function printPrefeas() {
       <div style="font-size:10.5px;color:var(--ink2);margin-bottom:8px;line-height:1.5">
         ${totalTWh.toFixed(2)} TWh of ${useCong ? 'congestion' : 'economic'} curtailment in this
         scenario. ${useCong
-          ? 'Congestion curtailment is renewable output spilled because a corridor is full, not because the energy was unwanted.'
+          ? 'Congestion curtailment is renewable output curtailed because a corridor is full, not because the energy was unwanted.'
           : 'Economic curtailment is surplus the system could not use at any price.'}
       </div>
       <table style="width:100%;font-size:10.5px;border-collapse:collapse">
@@ -3447,7 +3447,7 @@ function printPrefeas() {
           <th style="text-align:right;font-weight:400">capacity factor</th>
           <th style="text-align:right;font-weight:400">kt H&#8322;/yr</th>
           <th style="text-align:right;font-weight:400">cost R/kg</th>
-          <th style="text-align:right;font-weight:400">of spill</th>
+          <th style="text-align:right;font-weight:400">of curtailment</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -3956,13 +3956,13 @@ function printPrefeas() {
           <thead><tr style="color:var(--ink2)">
             <th style="text-align:left;font-weight:400">contracted plant</th>
             <th style="text-align:right;font-weight:400">covered</th>
-            <th style="text-align:right;font-weight:400">spilled</th>
+            <th style="text-align:right;font-weight:400">excess</th>
           </tr></thead>
           <tbody>${rows.join('')}</tbody>
         </table>
         <div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">
           Solar cannot pass ${sun.toFixed(0)}&#37; here &ndash; the share of hours with any
-          sun. Diversity moves the number, volume does not. <strong>Spilled</strong> is
+          sun. Diversity moves the number, volume does not. <strong>Excess</strong> is
           output above your load; whether you pay for it depends on the contract.
           ${region} profiles, flat load.
         </div>
@@ -9633,7 +9633,7 @@ function renderWeatherSpread(runs, d){
     + ';padding:5px 8px;font-size:10px;line-height:1.45;background:' + (spilly ? 'rgba(245,197,24,0.09)' : 'transparent') + '">'
     + '<strong>Best wind and solar year based on recent records (' + bestVre.year + ')</strong><br>'
     + (spilly
-        ? 'Spills <strong>' + worstCurt.curtPct.toFixed(1) + '%</strong> of everything wind and solar '
+        ? 'Curtails <strong>' + worstCurt.curtPct.toFixed(1) + '%</strong> of everything wind and solar '
           + 'could generate (' + worstCurt.curtTWh.toFixed(1) + '\u00a0TWh). A good resource year is not '
           + 'free upside \u2013 without more storage or transmission, the surplus is wasted.'
         : 'Curtailment stays below 10% even in the strongest year \u2013 the system absorbs what it builds.')
@@ -10994,7 +10994,7 @@ function renderLocationalBess(){
   if (!bessLocational){
     host.innerHTML = '<p style="font-size:10.5px;color:var(--ink2);line-height:1.5">'
       + 'Run the network optimiser (<strong>Run the full model</strong>, above) to see where a battery '
-      + 'earns most. A single national price hides the thing that actually pays: one region spilling '
+      + 'earns most. A single national price hides the thing that actually pays: one region curtailing '
       + 'renewables while another is short.</p>';
     return;
   }
@@ -11012,7 +11012,7 @@ function renderLocationalBess(){
     + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)">'
     + '<th style="text-align:left;padding:4px 6px">Supply area</th>'
-    + '<th style="text-align:right;padding:4px 6px">Spill hrs</th>'
+    + '<th style="text-align:right;padding:4px 6px">Curtailed hrs</th>'
     + '<th style="text-align:right;padding:4px 6px">Cycles</th>'
     + '<th style="text-align:right;padding:4px 6px">4h revenue</th></tr>'
     + rows.map((x, i) => '<tr style="border-bottom:1px solid var(--line2)'
@@ -11024,7 +11024,7 @@ function renderLocationalBess(){
     + '</table>'
     + `<div style="border-left:3px solid var(--steel,#4A6B7A);background:rgba(74,107,122,0.06);padding:8px 11px;margin-top:10px;font-size:10.5px;line-height:1.55">`
     + `<strong>${best.reg} pays best</strong> at ${k(best.h4.rev)}/MW/yr, against ${k(worst.h4.rev)} in ${worst.reg}. `
-    + 'Revenue tracks spill hours, but not simply: a region can spill so heavily that its own evening '
+    + 'Revenue tracks curtailed hours, but not simply: a region can curtail so heavily that its own evening '
     + 'price collapses too, leaving cheap energy and nowhere profitable to sell it. The best sites pair '
     + 'plenty of surplus with a firm local price to discharge into.</div>';
 }
@@ -11112,7 +11112,7 @@ const SP_TECH_LABEL = { unserved:'Unserved (VoLL)', diesel:'Diesel OCGT', ccgt:'
                         // battByTier added to stackKeys, and that would double-count storage.
                         batt:'Batteries and flow storage', ps:'Pumped storage', coalneg:'Must-run coal (paying)',
                         coal:'Coal', imports:'Imports', hydro:'Hydro', nuclear:'Nuclear',
-                        curtail:'Renewables spilling', none:'Nothing scarce' };
+                        curtail:'Renewables curtailed', none:'Nothing scarce' };
 const SP_ZERO_COL = '#7DC47A';
 function spTechColour(t){
   if (t === 'curtail' || t === 'none') return SP_ZERO_COL;
@@ -13268,7 +13268,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02a';
+const BUILD_STAMP = '2026-09-02b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

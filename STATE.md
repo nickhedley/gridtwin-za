@@ -6804,6 +6804,34 @@ escaped through a Python heredoc into a JavaScript file and arrived as `\\d`, ma
 nothing. **Third escaping fault of the same family this week**, and the first one caught by
 a check rather than by a failure.
 
+## "spilled" replaced throughout the visible copy - 2 Sep 2026
+
+Sixty-nine uses in the file; sixteen of them user-facing. **Zero "spill" words now render.**
+
+### two words, chosen by context
+
+**"Curtailed" for system contexts** - the industry term, and the one NTCSA uses in its own
+media statements. "National spill rate" became "National curtailment rate", "Renewables
+spilling" became "Renewables curtailed", "Spill hrs" became "Curtailed hrs".
+
+**"Excess" for the wheeling coverage table**, where the column means output above the
+customer's own load. That is a different quantity from system curtailment: a contract can
+produce above its buyer's load in an hour when the system wants every megawatt. Calling
+both "curtailed" would merge two things the model deliberately separates.
+
+### internal identifiers left alone
+
+`spill`, `spillPct`, `spillHours` and `spilly` still exist in the source. No reader sees
+them, and renaming thirty-odd identifiers is churn with breakage risk for no benefit.
+Recorded so the next person does not think the job was left half done.
+
+### verified on rendered text, not on the file
+
+Counting "spill" in `body.textContent` gave 52 hits - because textContent includes the
+`<script>` element, so it was counting variable names. Stripping script and style tags
+first gives zero. **Measuring the source would have failed this check; measuring what a
+reader sees is the point.**
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

@@ -128,6 +128,13 @@ CHECKS = [
     # domestic heavy industry, so export access is one commercial case among several.
     ('electrolyserSiting',                                         'electrolyser siting'),
     ('rank best for electrolysis',                                 'siting headline in the H2 panel'),
+    # "Spilled" replaced throughout the visible copy on 2 Sep. System contexts use
+    # "curtailed", which is the industry term and the one NTCSA uses; a buyer's own
+    # above-load output is "excess", which is a different thing from system curtailment.
+    # Internal identifiers still read spill/spillPct/spillHours - no reader sees them and
+    # renaming them is churn with breakage risk.
+    ('National curtailment rate',                                  'curtailment wording'),
+    ('Curtailed hrs',                                              'curtailment wording'),
     ('waterStress',                                                'water layer present'),
     # The hydrogen PANEL, not just the function. Three modules were built and exposed
     # without any of them appearing in the interface - a working function nobody can see
