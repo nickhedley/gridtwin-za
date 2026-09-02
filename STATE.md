@@ -7196,6 +7196,38 @@ still render. A third hit in `validate_findings` - "ancillary revenue saturates 
 grows" - was left alone: it is a check NAME describing a finding, not a reference to the
 header, and changing it would have been a search-and-replace error rather than a fix.
 
+## the dash was cosmetic - the indent is a style flag - 2 Sep 2026
+
+Asked to indent three ancillary sliders as children of their toggles. I changed the LABELS
+to start with an en-dash and stopped there, so they read like sub-controls and rendered
+flush with their parents. The user spotted it by comparing against `- export price
+received`, which looks right.
+
+**The indent comes from `ctrlStyle: SUB_CTRL`**, applied to the `.ctrl` wrapper:
+
+```
+padding-left:16px; border-left:3px solid var(--alert2); margin-left:6px; margin-top:-2px
+```
+
+Twelve sliders already used it. Three now added: `asReserveRMWh`, `asInertiaRkWyr`,
+`capacityPaymentRkWyr`. **Including the reserve one from the first round** - that had been
+wrong since it was asked for and I had reported it done.
+
+### now checked
+
+`validate_consistency` 43 -> 45: any label beginning with an en-dash must also carry
+`ctrlStyle`. The dash and the indent travel together or the check fails, naming the slider.
+A second check asserts the convention is still in use, so the first cannot pass vacuously by
+the convention being abandoned.
+
+### and a probe that lied
+
+My verification said all five had no padding, including `export price received`, which
+demonstrably works. jsdom normalises `cssText` to `padding-left: 16px` with a space and my
+regex had none. **The probe was wrong in the direction that would have hidden a real fix**,
+which is the more dangerous direction - I nearly went looking for a bug that did not
+exist.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

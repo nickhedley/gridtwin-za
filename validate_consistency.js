@@ -561,6 +561,34 @@ const num = t => {
     }
   }
 
+  // ── SUB-CONTROLS MUST CARRY THE INDENT, NOT JUST THE DASH ────────────────
+  // On 2 Sep three sliders were given an en-dash label prefix to mark them as children of
+  // the toggle above, and I stopped there. The dash is cosmetic; the indent comes from
+  // `ctrlStyle: SUB_CTRL`, which draws the padding and the left rule. The result was three
+  // labels that read like sub-controls and rendered flush with their parents.
+  //
+  // Asserts the two travel together: any label starting with an en-dash must have the
+  // indent style on its .ctrl wrapper.
+  const subs = run(`
+    const out = [];
+    for (const sl of SLIDERS){
+      if (!sl.label || sl.label.indexOf('\u2013') !== 0) continue;
+      out.push({ id: sl.id, label: sl.label, styled: !!sl.ctrlStyle });
+    }
+    return out;
+  `);
+  if (Array.isArray(subs)){
+    check('every en-dash sub-control also carries the indent style',
+          subs.every(x => x.styled),
+          'dash but no ctrlStyle: '
+          + subs.filter(x => !x.styled).map(x => x.id).join(', ')
+          + ' - the label says child, the layout says sibling');
+    check('the sub-control convention is actually in use',
+          subs.length >= 3,
+          `only ${subs.length} en-dash labels found - if the convention changed, this check `
+          + `needs revisiting rather than deleting`);
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

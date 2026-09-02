@@ -11928,17 +11928,17 @@ const SLIDERS=[
    note:'NERSA approved 4&#37; congestion curtailment in September 2025, expected to unlock 1,180&#160;MW of Western Cape wind. Compensation runs only to 2028 under the pilot. The single-node engine applies it nationally rather than to the corridors that actually bind.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. Switch on to see what a priced reserve market would be worth to storage.'},
-  {id:'asReserveRMWh',label:'\u2013 reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,
+  {id:'asReserveRMWh',label:'\u2013 reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,ctrlStyle:SUB_CTRL,
    fmt:v=>v===0?'none':'R'+v+'/MWh held',
    note:'What the system operator pays for reserve capacity held back. Eskom already procures instantaneous, regulating and ten-minute reserves, and 1,014 MW of demand response already responds within six seconds. The Grid Code makes reserve categories exclusive \u2013 capacity held for one cannot count toward another, and cannot simultaneously sell energy. This model enforces that: raising the price holds storage power back from arbitrage, so reserve revenue rises and energy revenue falls.'},
   {id:'asInertiaOn',toggle:true,def:false,label:'Price inertia',
    note:'Off by default: South Africa does not procure inertia at all yet. Switch on to test what price would make batteries displace spinning mass.'},
-  {id:'asInertiaRkWyr',label:'\u2013 inertia pricing',min:0,max:400,step:10,def:FIXED.asInertiaRkWyr,
+  {id:'asInertiaRkWyr',label:'\u2013 inertia pricing',min:0,max:400,step:10,def:FIXED.asInertiaRkWyr,ctrlStyle:SUB_CTRL,
    fmt:v=>v===0?'none':'R'+v+'k/GVA\u00b7s/yr',
    note:'Paid-for inertia, which South Africa does not procure yet but will need as inverter-based generation grows. Earned only by plants that can provide it: synchronous machines inherently, grid-forming batteries synthetically. Priced in GVA\u00b7seconds, as real markets are.'},
   {id:'capacityPaymentOn',toggle:true,def:false,label:'Capacity payments',
    note:'Off by default: South Africa has no capacity mechanism. The August 2026 Electricity Pricing Policy says capacity charges are needed; switch on to model one.'},
-  {id:'capacityPaymentRkWyr',label:'\u2013 capacity pricing',min:0,max:600,step:10,def:FIXED.capacityPaymentRkWyr,
+  {id:'capacityPaymentRkWyr',label:'\u2013 capacity pricing',min:0,max:600,step:10,def:FIXED.capacityPaymentRkWyr,ctrlStyle:SUB_CTRL,
    fmt:v=>v===0?'none':'R'+v+'/kW/yr',
    note:'Paid-for firm capacity being available, whether or not it runs. SA\u2019s revised Electricity Pricing Policy (August 2026) states that capacity charges are necessary to incentivise reliable generation; this models one. In this model, capacity payments are based on Ireland\u2019s de-rated MW approach. De-rating credits a 4-hour battery at 25&#37; of nameplate capacity and a 100-hour store at 90&#37; (since what matters is capacity the grid operator can rely on through a long event, not nameplate capacity). Defaults to zero: South Africa has no such mechanism today. Capacity payments improve the case for long-duration storage.'},
   {id:'importsMW',label:'Regional imports',min:0,max:8000,step:250,def:FIXED.importsMW,fmt:v=>(v/1000).toFixed(2)+' GW',
@@ -13339,7 +13339,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02n';
+const BUILD_STAMP = '2026-09-02o';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
