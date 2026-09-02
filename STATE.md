@@ -6116,6 +6116,44 @@ twice. The sections above keep the full reasoning.
 18. Remove `HANDOVER.md` from `.gitignore`; add the four custom instructions to Project
     settings.
 
+## Long term - not queued, recorded so it is not re-litigated
+
+19. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
+
+    **The code lift is small.** The engine is already region-generic: `REGIONS` is an
+    array, `REGIONS.length` is used 15 times, and there are ZERO hardcoded region counts.
+    Of 66 literal "Northern Cape" references only two are in logic, and one of those is the
+    PPA picker default. The rest are coordinate lookups and display strings.
+
+    **The transmission data already crosses the border.** Cahora Bassa, Insukamini,
+    Phokoje, Harib and Kokerboom are endpoints in `transmission_lines.geojson`, with
+    country nodes for Angola, Botswana, Malawi, Mozambique, Namibia, Tanzania, Zambia and
+    Zimbabwe. The interconnectors are drawn and nothing consumes them.
+
+    **The data lift is the whole job**, per country added:
+
+    ```
+    wind and solar profiles     EASY - MERRA-2 is global, same pipeline
+    interconnector ratings      partly held; corridors exist, ratings do not
+    generation fleet by tech    moderate - SAPP annual report is utility-level
+    substation coordinates      moderate - some already in the line endpoints
+    hourly demand series        THE HARD ONE - SAPP members publish inconsistently
+    ```
+
+    Demand is the binding constraint, exactly as it was for South Africa.
+
+    **Two things to settle before starting.** Imports are today a 1,150 MW flat block with
+    a capacity factor; modelling a neighbour properly changes a boundary condition of every
+    existing result, and Cahora Bassa is seasonal and drought-exposed, so South African
+    adequacy would become sensitive to Zambezi inflows. More truthful, and it means
+    re-validating the benchmarks.
+
+    **And scope matters more than effort.** A TWO-NODE model - South Africa plus one
+    aggregated SAPP neighbour - captures most of the trading insight for a fraction of the
+    work, because a trader wants the price and flow at the border, not Zambian internal
+    congestion. Full nodal coverage of eight countries is a different project and needs a
+    reason beyond completeness.
+
 ## Closed this session
 
 ```
