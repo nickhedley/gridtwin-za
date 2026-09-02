@@ -11853,7 +11853,7 @@ function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 const SUB_CTRL = 'padding-left:16px;border-left:3px solid var(--alert2,#9E5C42);margin-left:6px;margin-top:-2px';
 const SLIDERS=[
   {grp:'Demand'},
-  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'Eskom sales: 183.3 TWh FY2024 &#183; 189.7 FY2025 &#183; 178.0 FY2026, the last a 6.2&#37; fall driven by industrial demand down 22.5&#37;. Eskom targets stabilisation at 178 TWh. Growth here is a forward assumption, not the observed trend.'},
+  {id:'demandGrowthPct',label:'Demand growth vs 2026',min:-10,max:120,step:1,def:0,fmt:v=>(v>0?'+':'')+v+' %',note:'Driven by electrification, economic growth, and new loads such as data centres.'},
   {grp:'Existing coal fleet'},
   {id:'coalEAFPct',label:'Coal fleet availability (EAF)',min:0,max:100,step:1,def:FIXED.coalEAFPct,fmt:v=>v+' %',note:'Audited: FY2024 54.6&#37; &#183; FY2025 60.6&#37; &#183; FY2026 65.2&#37; &#183; Eskom target 70&#37;. 2023 crisis ran 50\u201355&#37;.'},
   {subgrp:'Outage settings'},
@@ -13333,7 +13333,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-02d';
+const BUILD_STAMP = '2026-09-02e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

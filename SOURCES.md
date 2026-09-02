@@ -76,6 +76,19 @@ captive, no Eskom-owned. A private wheeled project can never appear in a
 provincial aggregate, so absence from the named files is not evidence it is
 already counted.
 
+**Eskom sales, the observed series.** Removed from the demand slider note on 2 Sep 2026
+when that note was shortened, and recorded here because it now appears nowhere in the tool.
+
+```
+FY2024   183.3 TWh
+FY2025   189.7 TWh
+FY2026   178.0 TWh    a 6.2% fall, industrial demand down 22.5%
+```
+
+Eskom targets stabilisation at 178 TWh. **The recent trend is DOWN**, so any positive
+setting on the demand growth slider is a forward assumption rather than an extrapolation.
+Relevant whenever a demand-growth scenario is quoted.
+
 **Captive capacity is deliberately excluded.** 88 MW in the H1 2026 monitor. It
 sits behind the meter and suppresses demand rather than adding supply.
 
