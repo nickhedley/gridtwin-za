@@ -6116,6 +6116,49 @@ twice. The sections above keep the full reasoning.
 18. Remove `HANDOVER.md` from `.gitignore`; add the four custom instructions to Project
     settings.
 
+## Data figures needing verification - raised 2 Sep 2026
+
+Checked while fixing slider copy. Neither resolved, because both need a primary source
+rather than a judgement.
+
+### the coal installed figure disagrees with Eskom's own document
+
+The slider reads "of 39.7 GW installed (Eskom FY2026 nominal)" and `FIXED.coalInstalledMW`
+is 39,692 - internally consistent.
+
+**But Eskom's Generation Plant Mix (Rev 32, July 2025) states 14 active coal stations with
+an installed capacity of 45,340 MW.** A gap of 5,648 MW.
+
+The likely explanation is gross nominal against operational net, or the inclusion of
+Camden, Komati, Grootvlei and Hendrina units that are retired or partly shut - those three
+alone are roughly 3,650 MW. Plausible, and NOT verified. The note claims "FY2026 nominal",
+which is precisely the basis that appears to disagree.
+
+**Resolve against the FY2026 annual report, not by inference.** If 39,692 is net or
+post-decommissioning, the note should say so rather than say "nominal".
+
+### the four existing-fleet figures
+
+All four match `FIXED` exactly:
+
+```
+wind      4.6 GW   4,612 MW   4,042 REIPPPP + 470 wheeled + 100 Sere
+solar     3.2 GW   3,271 MW   2,783 REIPPPP + 488 wheeled
+rooftop   8.6 GW   8,619 MW
+battery   0.8 GW     800 MW
+```
+
+Two dating problems rather than arithmetic ones:
+
+**Solar excludes SunCentral.** `by_source.private` is H1 2026 only; SunCentral 1 energised
+114 MW in August. Also the note says "2.7 GW from REIPPPP" where the file holds 2,783 -
+the same rounding drift recorded in the solar gap item.
+
+**The battery figure has no stated source.** 800 MW is plausible for late 2026 as BESIPPPP
+BW1 delivers, but Eskom's own programme was at 68 MW operational in mid-2025 against a
+343 MW target, and BW1's 513 MW has been arriving through 2026. The figure needs a date and
+a source; at present it has neither.
+
 ## Long term - not queued, recorded so it is not re-litigated
 
 19. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
