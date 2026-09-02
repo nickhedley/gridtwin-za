@@ -7297,6 +7297,49 @@ The grid is coarse - six wind levels, four solar - so the staircase is where the
 is, not where the physics is. Said in the panel note rather than left for a reader to
 infer.
 
+## the frontier grid was ignoring the scenario - 2 Sep 2026
+
+Asked whether the heatmap considered the coal fleet. It did, and **it overrode the user's
+settings without saying so**:
+
+```
+const base = { ...state, newCcgtMW: 0, coalDecomMW: 32000, coalEAFPct: 70,
+               newBattMW: 20000, newBattHours: 10, coalFlexPct: 100 };
+```
+
+The comment directly above claimed "everything else follows the user's current scenario".
+It did not. Set decommissioning to zero, press compute, and the grid silently ran 32 GW of
+retirements anyway.
+
+### now only gas is forced
+
+`{ ...state, newCcgtMW: 0 }`. Coal decommissioning, availability, flexibilisation and the
+storage build all come from the scenario. Verified that they reach the grid - at 40 GW wind
+and 80 GW solar, one weather year:
+
+```
+all coal retained      39.7 GW left          0 GWh
+Seriti: 32 GW decom     7.7 GW           4,673
+all coal gone              0 GW          16,060
+Seriti but EAF 50       7.7 GW           7,456
+```
+
+**The trade is that it no longer reproduces the RESULTS.md table unless you are on the
+Seriti settings**, and that is the right way round: a panel answering YOUR question beats
+one reproducing a table you can already read.
+
+### an all-zero grid is an answer, not a failure
+
+At defaults nothing is decommissioned, so 39.7 GW of coal covers the worst of ten weather
+years without gas at any build on the grid - twenty-four zeros. The panel now says so, and
+points at the Coal decommissioned slider, rather than looking broken.
+
+### the prose ratchet fired on me again
+
+4,162 against a ceiling of 4,120. Raised to 4,170 deliberately. Both new blocks are
+provenance: **the assumptions line exists precisely because the first version did not say
+what it assumed.**
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

@@ -253,7 +253,13 @@ def check_shouting(src):
 # The note earns its place because it is a DEFINITION, not a finding. A reader seeing four
 # technologies with different prices for the same commodity needs to know the number is
 # generation-weighted; without that the table looks like an error.
-PROSE_CEILING = 4120        # measured 1 Sep 2026 after the trim: 4,098
+# 4120 -> 4170 on 2 Sep 2026: the frontier panel adds an assumptions line naming the coal
+# and storage settings the grid ran on, plus an explanation for the all-zero case.
+#
+# Both earn it as PROVENANCE, which is what panels are for. The assumptions line exists
+# because the first version silently overrode the user's coal settings; a grid that does
+# not say what it assumed is the defect that line prevents.
+PROSE_CEILING = 4170        # measured 1 Sep 2026 after the trim: 4,098
 
 def check_prose(src):
     blocks = re.findall(r'font-size:9\.5px;color:var\(--ink2\)[^>]*>(.*?)</div>', src, re.S)
