@@ -497,7 +497,7 @@ const num = t => {
     // SENTENCE and no tables - its write had been truncated mid-literal, losing both
     // section() calls - and a length check passed it because the sentence is 130
     // characters. Panels that carry a table must have rows.
-    for (const id of ['h2Body', 'getsBody', 'heatBody', 'priceBody', 'captureBody']){
+    for (const id of ['h2Body', 'getsBody', 'heatBody', 'priceBody', 'captureBody', 'touBody']){
       const el = document.getElementById(id);
       out[id] = el ? (el.textContent || '').trim().length : -1;
       out[id + '__rows'] = el ? el.querySelectorAll('tr').length : -1;
@@ -513,7 +513,7 @@ const num = t => {
                           : `only ${fresh[id]} characters - the renderer did not run on load`);
     }
     // Panels whose whole purpose is a table must actually produce one.
-    for (const id of ['captureBody', 'getsBody', 'priceBody']){
+    for (const id of ['captureBody', 'getsBody', 'priceBody', 'touBody']){
       check(`[${id}] renders its table, not just its note`,
             fresh[id + '__rows'] > 1,
             `${fresh[id + '__rows']} table rows - the panel has prose but no data, which a `
@@ -600,6 +600,44 @@ const num = t => {
           subs.length >= 3,
           `only ${subs.length} en-dash labels found - if the convention changed, this check `
           + `needs revisiting rather than deleting`);
+  }
+
+  // ── THE TOU CLASSIFIER MUST MATCH THE PUBLISHED BLOCK STRUCTURE ──────────
+  // Megaflex is public and unambiguous, so the classifier is checkable against arithmetic
+  // rather than against itself: 52 weekends is exactly 2,496 hours, and the blocks must
+  // partition the year with nothing left over.
+  const tou = run(`
+    const tally = {}; let weekend = 0;
+    for (let h = 0; h < 8760; h++){
+      const t = touBlockOf(h);
+      const k = t.season + ' ' + t.block;
+      tally[k] = (tally[k] || 0) + 1;
+      if (t.weekend) weekend++;
+    }
+    const rows = touCompare(lastRes);
+    const hp = rows.find(r => r.block === 'high peak');
+    const lp = rows.find(r => r.block === 'low peak');
+    return { total: Object.values(tally).reduce((a, b) => a + b, 0), weekend,
+             highPeakMean: hp ? hp.mean : null, lowPeakMean: lp ? lp.mean : null,
+             medians: rows.map(r => r.median) };
+  `);
+  if (tou && !tou.err){
+    check('the TOU blocks partition the whole year',
+          tou.total === 8760,
+          `${tou.total} hours classified, not 8,760 - the blocks overlap or leave a gap`);
+    check('weekend hours are exactly 52 weekends',
+          tou.weekend === 2496,
+          `${tou.weekend} weekend hours against 2,496 - the day-of-week offset is wrong`);
+    check('the low-season peak block prices above the high-season one',
+          tou.lowPeakMean > tou.highPeakMean,
+          `low R${(tou.lowPeakMean||0).toFixed(0)} against high R${(tou.highPeakMean||0).toFixed(0)} `
+          + `- this inversion is the NERSA submission's central claim; if it stops holding, `
+          + `the submission needs revisiting, not the check`);
+    const md = tou.medians.filter(x => x > 0);
+    check('block medians barely separate',
+          (Math.max(...md) - Math.min(...md)) / Math.min(...md) < 0.05,
+          `medians span ${(100*(Math.max(...md)-Math.min(...md))/Math.min(...md)).toFixed(1)}% - `
+          + `the submission argues the blocks discriminate on the tail, not the level`);
   }
 
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);

@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 963 checks
+suite                      19 harnesses, 969 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 963 checks. Last full run: 963/963.
+Nineteen harnesses, 969 checks. Last full run: 969/969.
 
 ```
 node stress_suite.js                290/290
@@ -264,7 +264,7 @@ python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          18/18   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       48/48
+node validate_consistency.js .       54/54
 node validate_structure.js .         25/25
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -6250,6 +6250,26 @@ a source; at present it has neither.
     valuable one and puts our numbers into someone else's commercial dispute.** It needs a
     named developer who wants it, not a speculative build.
 
+22. **Price-elastic demand.** The model computes hourly shadow prices, but demand does not
+    respond to them. `drShiftPct` sorts each day by NET LOAD and moves load from the top six
+    hours to the bottom six - a good proxy, and not the same thing. Net load and price
+    diverge exactly where dynamic pricing matters: a scarcity hour at R87,000 and a merely
+    busy hour look identical to the current mechanism.
+
+    It is also energy-neutral by construction. Real dynamic pricing destroys some demand
+    rather than moving it, and there is no elasticity parameter.
+
+    **What it needs:** run the dispatch, take the prices, shift or destroy load by an
+    elasticity, re-run. The work is not the elasticity - it is damping and a convergence
+    test, because shifted load creates a new peak which moves the price which moves the
+    load.
+
+    **The binding gap is calibration.** Nobody knows the price elasticity of a South African
+    smelter under a tariff that does not exist. Draw on published elasticities from markets
+    that have run dynamic tariffs at scale - ERCOT, the Nordics, the GB half-hourly trials -
+    and state which market each number came from, because transferring an elasticity across
+    markets is an assumption, not a measurement.
+
 ## Closed this session
 
 ```
@@ -7451,6 +7471,49 @@ That is the second time this week a guard has hidden a fault by succeeding parti
 The restore pushed the total to 4,207 against 4,170. I cut a line printing the best-to-worst
 spread - the per-region table above already shows the range, and restating it is what rule 13
 forbids. 4,166.
+
+## time-of-use blocks against modelled cost - 3 Sep 2026
+
+New panel. `touBlockOf()` classifies every hour into its Megaflex block; `touCompare()`
+reports the modelled shadow price in each.
+
+```
+block                    hours    mean   median     95th
+high season, peak          325   1,170      751    6,206
+low season, peak           980   1,494      749    6,206
+high season, standard      715     922      755      764
+low season, standard     2,156   1,158      751    6,206
+high season, off-peak      520     744      744      760
+low season, off-peak     1,568     798      744      756
+weekend                  2,496     800      744      759
+```
+
+**No tariff rates are used**, deliberately. Comparing rands charged against rands modelled
+needs Megaflex c/kWh figures, and any error in those would be read as a finding about the
+tariff. The block STRUCTURE is public and unambiguous; the rates are not needed to show the
+structure does not track cost.
+
+### the classifier is checkable against arithmetic
+
+52 weekends is exactly 2,496 hours, and the blocks must partition 8,760 with nothing left
+over. Both asserted, so the classifier is verified against the published structure rather
+than against itself.
+
+`validate_consistency` 48 -> 54, including the submission's central claim: the low-season
+peak block must price above the high-season one. If that stops holding, the SUBMISSION needs
+revisiting, not the check - and the failure message says so.
+
+### paid for in prose again
+
+The panel pushed the total to 4,194 against 4,170. Cut the site-assessment coverage note,
+which was the longest counted block at 305 words and argued rather than informed. 4,163.
+
+### and item 22 added
+
+Price-elastic demand, with the calibration gap named: nobody knows the elasticity of a South
+African smelter under a tariff that does not exist, so published elasticities from ERCOT, the
+Nordics and the GB half-hourly trials would have to be borrowed and each attributed to its
+market.
 
 ---
 

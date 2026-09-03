@@ -699,6 +699,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
 
           <div class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Time-of-use blocks against cost</h2>
+              <span class="tag">modelled &middot; Megaflex structure</span></div>
+            <div class="pb" id="touBody"></div>
+          </div>
+
+          <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>The no-gas frontier</h2>
               <span class="tag">modelled &middot; worst of ten weather years</span>
               <button id="frontierBtn" onclick="runFrontier()"
@@ -3947,6 +3953,112 @@ function printPrefeas() {
           + `Only gas is forced to zero. Change any of these and recompute.</div>` : '');
   }
   window.drawFrontier = drawFrontier;
+
+  // ── TIME-OF-USE BLOCKS AGAINST MODELLED COST ─────────────────────────────
+  // Eskom's Megaflex structure, classified per hour, with the model's shadow price in each
+  // block. This is the evidence behind the NERSA market inquiry submission: the seasonal
+  // labels are the wrong way round against dispatch, and the blocks separate on the TAIL
+  // rather than the level.
+  //
+  // NO TARIFF RATES ARE USED. Comparing rands charged against rands modelled would need
+  // Megaflex c/kWh rates, and any error in those would be read as a finding about the
+  // tariff. The block STRUCTURE is public and unambiguous; the rates are not needed to show
+  // that the structure does not track cost.
+  //
+  // Megaflex, per Eskom's published schedule:
+  //   high demand season  Jun-Aug          low demand season  Sep-May
+  //   weekday peak        06-09, 17-19     weekday standard   09-17, 19-22
+  //   weekday off-peak    22-06
+  //   Saturday standard   07-12, 18-20     Saturday off-peak  rest
+  //   Sunday              off-peak all day
+  function touBlockOf(hour){
+    const MD = [31,28,31,30,31,30,31,31,30,31,30,31];
+    let m = 0, d0 = 0;
+    for (let i = 0; i < 12; i++){ if (hour < (d0 + MD[i]) * 24){ m = i; break; } d0 += MD[i]; }
+    const hod = hour % 24;
+    // 1 Jan 2025 was a Wednesday; day 0 = Wed. 0=Sun ... 6=Sat
+    const dow = (Math.floor(hour / 24) + 3) % 7;
+    const season = (m >= 5 && m <= 7) ? 'high' : 'low';
+    let block;
+    if (dow === 0) block = 'offpeak';
+    else if (dow === 6) block = ((hod >= 7 && hod < 12) || (hod >= 18 && hod < 20))
+                                ? 'standard' : 'offpeak';
+    else if ((hod >= 6 && hod < 9) || (hod >= 17 && hod < 19)) block = 'peak';
+    else if ((hod >= 9 && hod < 17) || (hod >= 19 && hod < 22)) block = 'standard';
+    else block = 'offpeak';
+    return { season, block, weekend: dow === 0 || dow === 6 };
+  }
+  window.touBlockOf = touBlockOf;
+
+  function touCompare(res){
+    const r = res || (typeof lastRes !== 'undefined' ? lastRes : null);
+    if (!r || !r.marginalP) return null;
+    const p = r.marginalP, L = r.loadS;
+    const acc = {};
+    for (let h = 0; h < p.length; h++){
+      const t = touBlockOf(h);
+      const key = t.weekend ? 'weekend' : (t.season + ' ' + t.block);
+      (acc[key] = acc[key] || { n: 0, prices: [], load: 0, cost: 0 });
+      const a = acc[key];
+      a.n++; a.prices.push(p[h]);
+      a.load += (L && L[h]) || 0;
+      a.cost += ((L && L[h]) || 0) * p[h];
+    }
+    const rows = Object.keys(acc).map(k => {
+      const a = acc[k];
+      const srt = a.prices.slice().sort((x, y) => x - y);
+      return { block: k, hours: a.n,
+               mean: a.prices.reduce((x, y) => x + y, 0) / a.n,
+               median: srt[Math.floor(a.n / 2)],
+               p95: srt[Math.floor(a.n * 0.95)],
+               loadWeighted: a.load > 0 ? a.cost / a.load : 0 };
+    });
+    const order = ['high peak', 'low peak', 'high standard', 'low standard',
+                   'high offpeak', 'low offpeak', 'weekend'];
+    rows.sort((x, y) => order.indexOf(x.block) - order.indexOf(y.block));
+    return rows;
+  }
+  window.touCompare = touCompare;
+
+  function renderTou(res){
+    const host = document.getElementById('touBody');
+    if (!host) return;
+    const rows = touCompare(res);
+    if (!rows){ host.innerHTML = '<div class="muted">Run the model to compare blocks.</div>'; return; }
+    const lab = { 'high peak': 'High season, peak', 'low peak': 'Low season, peak',
+                  'high standard': 'High season, standard', 'low standard': 'Low season, standard',
+                  'high offpeak': 'High season, off-peak', 'low offpeak': 'Low season, off-peak',
+                  'weekend': 'Weekend, both seasons' };
+    const hp = rows.find(r => r.block === 'high peak'), lp = rows.find(r => r.block === 'low peak');
+    const meds = rows.map(r => r.median);
+    const spread = 100 * (Math.max(...meds) - Math.min(...meds)) / Math.min(...meds);
+    host.innerHTML =
+        '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
+      + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
+      + '<th style="text-align:left;padding:3px 4px">Megaflex block</th>'
+      + '<th style="text-align:right;padding:3px 4px">hours</th>'
+      + '<th style="text-align:right;padding:3px 4px">mean</th>'
+      + '<th style="text-align:right;padding:3px 4px">median</th>'
+      + '<th style="text-align:right;padding:3px 4px">95th</th></tr>'
+      + rows.map(r =>
+          '<tr style="border-bottom:1px solid var(--line)">'
+        + '<td style="padding:3px 4px">' + (lab[r.block] || r.block) + '</td>'
+        + '<td class="mono" style="text-align:right;padding:3px 4px">' + r.hours.toLocaleString() + '</td>'
+        + '<td class="mono" style="text-align:right;padding:3px 4px">R' + r.mean.toFixed(0) + '</td>'
+        + '<td class="mono" style="text-align:right;padding:3px 4px">R' + r.median.toFixed(0) + '</td>'
+        + '<td class="mono" style="text-align:right;padding:3px 4px">R' + r.p95.toFixed(0) + '</td></tr>').join('')
+      + '</table>'
+      + ((hp && lp && lp.mean > hp.mean)
+          ? '<div style="margin-top:8px;padding:7px 9px;background:var(--panel2);'
+            + 'border-left:3px solid var(--alert,#C4785A);font-size:10.5px;line-height:1.5">'
+            + '<strong>Low-season peak prices above high-season peak</strong>: R'
+            + lp.mean.toFixed(0) + ' against R' + hp.mean.toFixed(0) + '/MWh.</div>'
+          : '')
+      + '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
+      + 'Megaflex structure against modelled shadow prices. Medians span '
+      + spread.toFixed(1) + '&#37;. No tariff rates used.</div>';
+  }
+  window.renderTou = renderTou;
 
   window.renderHeat = renderHeat;
 
@@ -12103,7 +12215,7 @@ const SLIDERS=[
    fmt:v=>v===0?'none':'R'+v+'/kW/yr',
    note:'Paid-for firm capacity being available, whether or not it runs. SA\u2019s revised Electricity Pricing Policy (August 2026) states that capacity charges are necessary to incentivise reliable generation; this models one. In this model, capacity payments are based on Ireland\u2019s de-rated MW approach. De-rating credits a 4-hour battery at 25&#37; of nameplate capacity and a 100-hour store at 90&#37; (since what matters is capacity the grid operator can rely on through a long event, not nameplate capacity). Defaults to zero: South Africa has no such mechanism today. Capacity payments improve the case for long-duration storage.'},
   {id:'importsMW',label:'Regional imports',min:0,max:8000,step:250,def:FIXED.importsMW,fmt:v=>(v/1000).toFixed(2)+' GW',
-   note:'Firm import capacity from the Southern African Power Pool, dispatched must-take at 85&#37; availability. The default is today\u2019s interconnection \u2013 mainly the 1,920 MW Cahora Bassa HVDC plus the Mozambique and Botswana 400 kV links. The SAPP draft Master Plan Update adds one new direct link to South Africa (a connection to Zimbabwe from 2030, which will run at 92\u201398&#37; utilisation).'},
+   note:'Firm import capacity from the Southern African Power Pool, must-take at 85&#37; availability. Default is today\u2019s interconnection: the 1,920 MW Cahora Bassa HVDC plus the Mozambique and Botswana 400 kV links. The SAPP draft Master Plan adds a Zimbabwe link from 2030.'},
   {id:'exportCapMW',label:'Export capacity',min:0,max:5000,step:250,def:FIXED.exportCapMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
    note:'Capacity available to sell surplus into the region instead of curtailing it. Storage charges first, since stored energy fetches more in the domestic evening peak than the regional pool pays; only what storage cannot absorb is exported.'},
   {id:'exportPriceR',label:'\u2013 export price received',min:150,max:1200,step:25,def:FIXED.exportPriceR,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',ctrlStyle:SUB_CTRL,
@@ -13500,7 +13612,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-03c';
+const BUILD_STAMP = '2026-09-03d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -13923,7 +14035,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof window.renderTou==='function')window.renderTou(lastRes);if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
@@ -15085,7 +15197,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by inferred bracket: home R17/Wp, small C&I R13/Wp, large C&I R11/Wp, industrial R9.5/Wp (2026 SA installer rates, excluding battery). O&M at 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The last few percent of demand falls in runs of consecutive dull winter days; covering those needs several days of autonomy rather than one night\'s storage, which is where a grid-connected system becomes a true off-grid one and costs step up sharply. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2013 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' – the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2013 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by inferred bracket: home R17/Wp, small C&I R13/Wp, large C&I R11/Wp, industrial R9.5/Wp (2026 SA installer rates, excluding battery). O&M at 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The remainder falls in runs of dull winter days, which needs days of autonomy rather than one night\'s storage. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2013 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' – the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2013 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
 
 
@@ -17204,6 +17316,7 @@ window.cancelMIP = cancelMIP;
     try { if (window.renderH2) window.renderH2(window.lastRes); } catch(e){ console.error('h2 first paint:', e); }
     try { if (window.renderGets) window.renderGets(); } catch(e){ console.error('gets first paint:', e); }
     try { if (window.renderHeat) window.renderHeat(); } catch(e){ console.error('heat first paint:', e); }
+    try { if (window.renderTou) window.renderTou(window.lastRes); } catch(e){ console.error('tou first paint:', e); }
   };
   paint();
   // Again once the async regional profiles land, because the electrolyser siting line

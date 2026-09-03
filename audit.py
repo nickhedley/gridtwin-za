@@ -136,6 +136,8 @@ CHECKS = [
     ('National curtailment rate',                                  'curtailment wording'),
     # The frontier heatmap: button-triggered, 240 full-year runs. Must stay button-driven -
     # it can never be wired to a slider.
+    ('touBlockOf',                                                 'Megaflex block classifier'),
+    ('touBody',                                                    'TOU panel host'),
     ('runFrontier',                                                'frontier grid function'),
     ('frontierBody',                                               'frontier panel host'),
     ('The no-gas frontier',                                        'frontier panel heading'),
