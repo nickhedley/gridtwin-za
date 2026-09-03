@@ -493,18 +493,31 @@ const num = t => {
   // the panels as a visitor gets them, with no interaction at all.
   const fresh = run(`
     const out = {};
+    // Character count alone is not enough. The capture panel spent a day rendering ONE
+    // SENTENCE and no tables - its write had been truncated mid-literal, losing both
+    // section() calls - and a length check passed it because the sentence is 130
+    // characters. Panels that carry a table must have rows.
     for (const id of ['h2Body', 'getsBody', 'heatBody', 'priceBody', 'captureBody']){
       const el = document.getElementById(id);
       out[id] = el ? (el.textContent || '').trim().length : -1;
+      out[id + '__rows'] = el ? el.querySelectorAll('tr').length : -1;
     }
     return out;
   `, { noRun: true });
   if (fresh && !fresh.err){
     for (const id of Object.keys(fresh)){
+      if (id.endsWith('__rows')) continue;
       check(`[${id}] fills without any interaction`,
             fresh[id] > 30,
             fresh[id] < 0 ? 'element missing from the markup'
                           : `only ${fresh[id]} characters - the renderer did not run on load`);
+    }
+    // Panels whose whole purpose is a table must actually produce one.
+    for (const id of ['captureBody', 'getsBody', 'priceBody']){
+      check(`[${id}] renders its table, not just its note`,
+            fresh[id + '__rows'] > 1,
+            `${fresh[id + '__rows']} table rows - the panel has prose but no data, which a `
+            + `character count will not catch`);
     }
   }
 

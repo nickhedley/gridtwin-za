@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 955 checks
+suite                      19 harnesses, 963 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 955 checks. Last full run: 955/955.
+Nineteen harnesses, 963 checks. Last full run: 963/963.
 
 ```
 node stress_suite.js                290/290
@@ -264,7 +264,7 @@ python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          18/18   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       40/40
+node validate_consistency.js .       48/48
 node validate_structure.js .         25/25
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -7405,6 +7405,35 @@ the CCS note lost a sentence about unit-by-unit modelling that argued rather tha
 and my own insert was shortened twice. 4,166 under a ceiling of 4,170.
 
 Raising a ceiling three times in one day is not a ratchet, it is a formality.
+
+## the capture panel was rendering one sentence - 3 Sep 2026
+
+`renderRegionalCapture`'s final write had been **truncated mid-literal**. The note lost its
+closing `</p>` and both `section()` calls went with it, so the panel produced 130 characters
+of prose and no tables. Restored: 22 rows, 12,944 characters.
+
+`section()` and `spread()` were both fully defined directly above and neither was called.
+The function returned normally, threw nothing, and `captureRate()` was working the whole
+time - it returns 107.96% for wind in the Northern Cape.
+
+### the check that should have caught it passed
+
+`validate_consistency` asserts every panel "fills without any interaction" by counting
+characters, with a threshold of 30. **The orphaned note is 130 characters.** The panel was
+broken and the check reported it filled.
+
+Now: panels that exist to carry a table must have more than one `<tr>`. `captureBody`,
+`getsBody` and `priceBody`. Verified by deleting the `section()` calls again - "0 table rows
+- the panel has prose but no data, which a character count will not catch".
+
+**A threshold check measures the wrong thing when the failure mode leaves prose behind.**
+That is the second time this week a guard has hidden a fault by succeeding partially.
+
+### paid for in prose, not by raising the ceiling
+
+The restore pushed the total to 4,207 against 4,170. I cut a line printing the best-to-worst
+spread - the per-region table above already shows the range, and restating it is what rule 13
+forbids. 4,166.
 
 ---
 

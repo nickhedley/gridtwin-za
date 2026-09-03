@@ -9397,9 +9397,19 @@ function renderRegionalCapture(res){
   const spread = t => { const rs = rows.filter(x => x.tech === t).map(x => x.capturedPct);
                         return Math.max(...rs) - Math.min(...rs); };
 
+  // RESTORED 3 Sep 2026. The write had been truncated mid-literal: the note lost its
+  // closing </p> and the two section() calls, so the panel rendered one sentence and no
+  // tables. section() and spread() were both defined above and neither was called.
+  // Nothing failed - the function returned normally, and the note is long enough that a
+  // panel-is-filled check counting characters passed it.
   host.innerHTML =
       '<p style="font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:2px">'
-    + 'Capture rate is earnings per MWh as a share of the average MWh. 100&#37; means no cannibalisation. Weighted by each hour\u2019s output.';
+    + 'Capture rate is earnings per MWh as a share of the average MWh. 100&#37; means no cannibalisation. Weighted by each hour\u2019s output.</p>'
+    + section('wind', 'var(--veld,#7DC47A)')
+    + section('solar', '#F5C518')
+    + '';   // spread() intentionally not printed: the per-region table above already shows
+             // the range, and restating it is the habit rule 13 forbids. Kept as a function
+             // because the site-level panel uses it.
 }
 
 function bldApplyToSliders(){
@@ -12029,7 +12039,7 @@ const SLIDERS=[
   {grp:'New build (national view/region agnostic)'},
   {id:'newWindMW',label:'New wind',min:0,max:140000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4.6 GW existing (4 GW from REIPPPP + 470 MW wheeled + 100 MW Eskom’s Sere farm).'},
   {id:'newPvMW',label:'New utility solar PV',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.2 GW existing (2.7 GW from REIPPPP + 488 MW wheeled).'},
-  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.6 GW existing. Behind the meter (Eskom estimates 9.1 GW; 0.49 GW of that is ground-mounted wheeled plant, which is modelled as utility supply instead).'},
+  {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.6 GW existing, behind the meter. Eskom estimates 9.1 GW; 0.49 GW of that is wheeled plant, modelled as utility supply.'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing (4h).'},
   {id:'newBattHours',label:'New lithium-ion duration',min:1,max:12,step:1,def:FIXED.newBattHours,fmt:v=>v+'h',
    note:'Hours of storage at rated power for new lithium only; the existing 0.8 GW fleet stays at 4h. South African utility procurement is 4h today, so that is the default. Longer durations are modelled at proportionally higher capex from the 4-hour reference, which understates cost slightly because the power electronics do not scale with duration. Above about 8 hours, flow and iron-air chemistries are the cheaper route and have their own controls.'},
@@ -13490,7 +13500,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-03a';
+const BUILD_STAMP = '2026-09-03b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
