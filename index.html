@@ -4020,6 +4020,18 @@ function printPrefeas() {
   }
   window.touCompare = touCompare;
 
+  // The panel compares two ORDERINGS: what Megaflex charges most for, and what the model
+  // says costs most. Ordering is all that is needed and all that is defensible - the
+  // block order is published and unambiguous, while putting c/kWh rates in would make any
+  // error in those rates read as a finding about the tariff.
+  //
+  // Built first as a bare price table. The user could not read it, correctly: a column of
+  // shadow prices with nothing to compare against is not a comparison. The tariff rank is
+  // the half that was missing.
+  const TARIFF_RANK = { 'high peak': 1, 'low peak': 2, 'high standard': 3,
+                        'low standard': 4, 'high offpeak': 5, 'weekend': 6,
+                        'low offpeak': 6 };
+
   function renderTou(res){
     const host = document.getElementById('touBody');
     if (!host) return;
@@ -4028,35 +4040,39 @@ function printPrefeas() {
     const lab = { 'high peak': 'High season, peak', 'low peak': 'Low season, peak',
                   'high standard': 'High season, standard', 'low standard': 'Low season, standard',
                   'high offpeak': 'High season, off-peak', 'low offpeak': 'Low season, off-peak',
-                  'weekend': 'Weekend, both seasons' };
-    const hp = rows.find(r => r.block === 'high peak'), lp = rows.find(r => r.block === 'low peak');
-    const meds = rows.map(r => r.median);
-    const spread = 100 * (Math.max(...meds) - Math.min(...meds)) / Math.min(...meds);
+                  'weekend': 'Weekend' };
+    const byCost = rows.slice().sort((a, b) => b.mean - a.mean);
+    const costRank = {}; byCost.forEach((r, i) => costRank[r.block] = i + 1);
+    const ordered = rows.slice().sort((a, b) =>
+      (TARIFF_RANK[a.block] || 9) - (TARIFF_RANK[b.block] || 9));
+
     host.innerHTML =
-        '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
+        '<div style="font-size:10.5px;line-height:1.5;margin-bottom:8px">'
+      + 'Megaflex charges most for peak hours in winter. This asks whether the model agrees: '
+      + '<strong>rows are in tariff order, most expensive first</strong>, and the cost column '
+      + 'is where the model ranks that block.</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
       + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
-      + '<th style="text-align:left;padding:3px 4px">Megaflex block</th>'
+      + '<th style="text-align:left;padding:3px 4px">Block, in tariff order</th>'
       + '<th style="text-align:right;padding:3px 4px">hours</th>'
-      + '<th style="text-align:right;padding:3px 4px">mean</th>'
-      + '<th style="text-align:right;padding:3px 4px">median</th>'
-      + '<th style="text-align:right;padding:3px 4px">95th</th></tr>'
-      + rows.map(r =>
-          '<tr style="border-bottom:1px solid var(--line)">'
-        + '<td style="padding:3px 4px">' + (lab[r.block] || r.block) + '</td>'
-        + '<td class="mono" style="text-align:right;padding:3px 4px">' + r.hours.toLocaleString() + '</td>'
-        + '<td class="mono" style="text-align:right;padding:3px 4px">R' + r.mean.toFixed(0) + '</td>'
-        + '<td class="mono" style="text-align:right;padding:3px 4px">R' + r.median.toFixed(0) + '</td>'
-        + '<td class="mono" style="text-align:right;padding:3px 4px">R' + r.p95.toFixed(0) + '</td></tr>').join('')
+      + '<th style="text-align:right;padding:3px 4px">modelled cost</th>'
+      + '<th style="text-align:right;padding:3px 4px">ranks</th></tr>'
+      + ordered.map(r => {
+          const tr = TARIFF_RANK[r.block] || 9, cr = costRank[r.block];
+          const off = cr - tr;
+          const mark = off === 0 ? '<span style="color:var(--ink2)">&ndash;</span>'
+                     : (off > 0 ? '<span style="color:var(--alert,#C4785A)">' + off + ' cheaper than charged</span>'
+                                : '<span style="color:var(--alert,#C4785A)">' + (-off) + ' dearer than charged</span>');
+          return '<tr style="border-bottom:1px solid var(--line)">'
+            + '<td style="padding:3px 4px">' + (lab[r.block] || r.block) + '</td>'
+            + '<td class="mono" style="text-align:right;padding:3px 4px">' + r.hours.toLocaleString() + '</td>'
+            + '<td class="mono" style="text-align:right;padding:3px 4px">R' + r.mean.toFixed(0) + '</td>'
+            + '<td style="text-align:right;padding:3px 4px;font-size:9.5px">' + mark + '</td></tr>';
+        }).join('')
       + '</table>'
-      + ((hp && lp && lp.mean > hp.mean)
-          ? '<div style="margin-top:8px;padding:7px 9px;background:var(--panel2);'
-            + 'border-left:3px solid var(--alert,#C4785A);font-size:10.5px;line-height:1.5">'
-            + '<strong>Low-season peak prices above high-season peak</strong>: R'
-            + lp.mean.toFixed(0) + ' against R' + hp.mean.toFixed(0) + '/MWh.</div>'
-          : '')
       + '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
-      + 'Megaflex structure against modelled shadow prices. Medians span '
-      + spread.toFixed(1) + '&#37;. No tariff rates used.</div>';
+      + 'Mean shadow price per block. Tariff order is Eskom\u2019s published Megaflex '
+      + 'structure; no c/kWh rates are used.</div>';
   }
   window.renderTou = renderTou;
 
@@ -13612,7 +13628,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-03d';
+const BUILD_STAMP = '2026-09-03e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

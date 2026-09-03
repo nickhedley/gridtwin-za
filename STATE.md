@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 969 checks
+suite                      19 harnesses, 972 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 969 checks. Last full run: 969/969.
+Nineteen harnesses, 972 checks. Last full run: 972/972.
 
 ```
 node stress_suite.js                290/290
@@ -264,7 +264,7 @@ python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          18/18   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       54/54
+node validate_consistency.js .       57/57
 node validate_structure.js .         25/25
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -7514,6 +7514,51 @@ Price-elastic demand, with the calibration gap named: nobody knows the elasticit
 African smelter under a tariff that does not exist, so published elasticities from ERCOT, the
 Nordics and the GB half-hourly trials would have to be borrowed and each attributed to its
 market.
+
+## the TOU panel was unreadable, and the audit that followed - 3 Sep 2026
+
+User could not make sense of the panel. Correctly: it showed a column of shadow prices with
+nothing to compare them against. **A comparison needs two things and I had shipped one.**
+
+Rebuilt around ORDERING. Rows now sit in Megaflex order, most expensive first, with a column
+saying where the model ranks that block:
+
+```
+High season, peak         325   R1,170   1 cheaper than charged
+Low season, peak          980   R1,494   1 dearer than charged
+High season, standard     715     R922   1 cheaper than charged
+Low season, standard    2,156   R1,158   1 dearer than charged
+High season, off-peak     520     R744   2 cheaper than charged
+Low season, off-peak    1,568     R798   -
+Weekend                 2,496     R800   1 dearer than charged
+```
+
+Ordering is public and needs no rand figures, which was the original reason for leaving
+rates out. The mistake was leaving the tariff side out ENTIRELY rather than just its prices.
+
+### three failures found while fixing it
+
+**A probe error skipped four checks silently.** `TARIFF_RANK` is closure-scoped, so reading
+it from the probe threw, and `if (tou && !tou.err)` swallowed the whole block. Count went
+54 to 50 and the suite still reported green. The probe now fails loudly.
+
+**A backtick in a comment closed a template literal.** Third time this week.
+
+**The weekend check could not detect a shifted calendar.** It asserted 2,496 weekend hours -
+but any day-of-week offset yields 104 weekend days, so a calendar shifted by a day passes
+while classifying every hour into the wrong block. Now anchored on 1 January being a
+Wednesday. Verified by shifting the offset: the count check stays silent, the alignment
+check fires.
+
+**Counting is not the same as checking alignment**, and I had written the weaker one.
+
+### the visual audit
+
+Rendered all 33 panels and inspected the DOM. Twelve draw nothing; four of those are
+button-fed and fine. The strongest remaining candidate is the **levelised cost comparison** -
+twelve technologies from R0.55 to R9.00/kWh rendered as a bare list, the only panel whose
+entire content is one ranked series. Then heat stress, grid-enhancing, and green hydrogen,
+where the shape carries the finding.
 
 ---
 

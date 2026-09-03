@@ -617,17 +617,42 @@ const num = t => {
     const rows = touCompare(lastRes);
     const hp = rows.find(r => r.block === 'high peak');
     const lp = rows.find(r => r.block === 'low peak');
-    return { total: Object.values(tally).reduce((a, b) => a + b, 0), weekend,
+    // Anchor the calendar. Counting weekend hours proves nothing about ALIGNMENT: any
+    // day-of-week offset still yields 104 weekend days, so a calendar shifted by a day
+    // passes a count check while classifying every hour into the wrong block.
+    // 1 January of the profile year is a Wednesday, so hour 0 must be a weekday and
+    // hours 96-143 (the first Sat-Sun pair) must both be weekend.
+    const h0Weekday = !touBlockOf(0).weekend;
+    const firstSat = touBlockOf(24 * 3).weekend && touBlockOf(24 * 4).weekend;
+    const midWeek = !touBlockOf(24 * 5).weekend;
+    return { h0Weekday, firstSat, midWeek,
+             total: Object.values(tally).reduce((a, b) => a + b, 0), weekend,
              highPeakMean: hp ? hp.mean : null, lowPeakMean: lp ? lp.mean : null,
-             medians: rows.map(r => r.median) };
+             medians: rows.map(r => r.median),
+             // TARIFF_RANK is closure-scoped and not on window, so it cannot be read from
+             // here. Referencing it threw, the probe returned an error, and the guard below
+             // skipped four checks SILENTLY while the suite still reported green.
+             // Check the block names instead.
+             unranked: rows.filter(r => ['high peak','low peak','high standard',
+               'low standard','high offpeak','low offpeak','weekend']
+               .indexOf(r.block) < 0).length };
   `);
+  check('the TOU probe returns a result',
+        !!(tou && !tou.err),
+        tou && tou.err ? String(tou.err).slice(0, 90) : 'probe returned nothing - four checks '
+        + 'were skipped silently once already this way');
   if (tou && !tou.err){
     check('the TOU blocks partition the whole year',
           tou.total === 8760,
           `${tou.total} hours classified, not 8,760 - the blocks overlap or leave a gap`);
     check('weekend hours are exactly 52 weekends',
           tou.weekend === 2496,
-          `${tou.weekend} weekend hours against 2,496 - the day-of-week offset is wrong`);
+          `${tou.weekend} weekend hours against 2,496 - too few or too many weekend days`);
+    check('the calendar is aligned, not merely the right shape',
+          tou.h0Weekday && tou.firstSat && tou.midWeek,
+          `1 Jan weekday ${tou.h0Weekday}, first Sat/Sun ${tou.firstSat}, midweek `
+          + `${tou.midWeek} - a shifted calendar keeps 104 weekend days and puts every `
+          + `hour in the wrong block`);
     check('the low-season peak block prices above the high-season one',
           tou.lowPeakMean > tou.highPeakMean,
           `low R${(tou.lowPeakMean||0).toFixed(0)} against high R${(tou.highPeakMean||0).toFixed(0)} `
@@ -638,6 +663,10 @@ const num = t => {
           (Math.max(...md) - Math.min(...md)) / Math.min(...md) < 0.05,
           `medians span ${(100*(Math.max(...md)-Math.min(...md))/Math.min(...md)).toFixed(1)}% - `
           + `the submission argues the blocks discriminate on the tail, not the level`);
+    check('every block has a tariff rank to compare against',
+          tou.unranked === 0,
+          `${tou.unranked} blocks have no tariff rank - the panel would show a comparison `
+          + `column with nothing in it, which is how the first version read`);
   }
 
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
