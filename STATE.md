@@ -6197,21 +6197,6 @@ a source; at present it has neither.
     congestion. Full nodal coverage of eight countries is a different project and needs a
     reason beyond completeness.
 
-21. **Bring your own series.** Scoped 3 Sep 2026 in `scope_bring_your_own_series.md`, not
-    built. A paste-your-own generation or curtailment series, analysed against the
-    scenario's prices, with nothing leaving the browser.
-
-    **The analysis functions already exist** - `captureRate`, `bessBenchmark`,
-    `wheelCoverage`, `priceStatsOf`. A user series is just another per-unit profile, so this
-    is an input path rather than new modelling. Missing: a file input, a parser, validation.
-
-    **The privacy property already holds and is unstated.** No XHR, no beacon, no POST, no
-    analytics; every fetch is a local file except one Open-Meteo call for site irradiance.
-
-    Recommendation in the scope: tier 1 (paste 8,760 numbers) plus an offline check, or
-    nothing. **Tier 3 - valuing a curtailment log against our shadow prices - is the
-    valuable one and puts our numbers into someone else's commercial dispute.** It needs a
-    named developer who wants it, not a speculative build.
 
 20. **Satellite detection of project status.** Raised 2 Sep 2026 from Robin Hawkes'
     demonstration that Sentinel-2 captures its spectral bands about a second apart, so a
@@ -6248,6 +6233,22 @@ a source; at present it has neither.
     For SOLAR construction and commissioning, conventional change detection on the same
     imagery is the right tool and a separate exercise: panels are highly reflective and
     geometrically regular, which is an easier target than blade rotation.
+
+21. **Bring your own series.** Scoped 3 Sep 2026 in `scope_bring_your_own_series.md`, not
+    built. A paste-your-own generation or curtailment series, analysed against the
+    scenario's prices, with nothing leaving the browser.
+
+    **The analysis functions already exist** - `captureRate`, `bessBenchmark`,
+    `wheelCoverage`, `priceStatsOf`. A user series is just another per-unit profile, so this
+    is an input path rather than new modelling. Missing: a file input, a parser, validation.
+
+    **The privacy property already holds and is unstated.** No XHR, no beacon, no POST, no
+    analytics; every fetch is a local file except one Open-Meteo call for site irradiance.
+
+    Recommendation in the scope: tier 1 (paste 8,760 numbers) plus an offline check, or
+    nothing. **Tier 3 - valuing a curtailment log against our shadow prices - is the
+    valuable one and puts our numbers into someone else's commercial dispute.** It needs a
+    named developer who wants it, not a speculative build.
 
 ## Closed this session
 

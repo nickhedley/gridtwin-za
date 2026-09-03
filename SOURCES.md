@@ -81,10 +81,17 @@ on 2 Sep 2026 when it was shortened; the note keeps the direction ("demand has b
 declining in recent years") and this is where the numbers behind it live.
 
 ```
+FY2012   224+ TWh     the peak
 FY2024   183.3 TWh
 FY2025   189.7 TWh
 FY2026   178.0 TWh    a 6.2% fall, industrial demand down 22.5%
 ```
+
+The decline runs from FY2012, not from a recent turn - Eskom has reported falling sales for
+more than ten years against a 2012 peak above 224 TWh (Mining Weekly, 31 Aug 2026). FY2025
+was higher than FY2024, so it is a TREND rather than a year-on-year fall, which is why the
+slider note says "since 2012" and not "every year". Eskom attributes FY2026 to weaker
+industrial demand, embedded self-generation and energy efficiency.
 
 Eskom targets stabilisation at 178 TWh. **The recent trend is DOWN**, so any positive
 setting on the demand growth slider is a forward assumption rather than an extrapolation.
