@@ -7682,6 +7682,57 @@ The correct fix is quantile mapping onto the observed distribution, which preser
 hour-to-hour ordering that drives correlation with demand while fixing the shape. That is a
 piece of work, not an edit, and it needs its own scope.
 
+## the PyPSA-RSA centroids carry the geography we already rejected - 4 Sep 2026
+
+`fetch_real_regional_profiles.py` was recovered, and its coordinate tables carry plant counts
+and capacities per region. That looked like it might settle the Hydra Central split without
+the annual IPP Office overview. **It does not. The vintage is the awards-based lineage the
+27 Aug rebuild removed.**
+
+### solar, against the file we rejected
+
+```
+                  ours    PyPSA   awards-based file (rejected)
+Free State         169    1,645
+North West         345      719   722
+Northern Cape    1,283      538   473
+```
+
+**North West 722 against 719 is not a coincidence.** Northern Cape and Free State are
+inverted the same way the rebuild note describes.
+
+### wind carries the same signature
+
+```
+                 ours    PyPSA
+Eastern Cape    38.7%    35.9%
+Western Cape    28.6%    35.8%
+```
+
+The rebuild note records the awards file putting "Western Cape at 1,274 MW against a
+published 738". PyPSA puts Western Cape level with Eastern Cape; commissioned data does not.
+
+### so it settles neither open item
+
+**Not the Hydra Central split.** 1,143 MW of wind and 392 MW of solar in Hydra Central is
+from the wrong geography. Using it would reintroduce the error the rebuild removed, in a
+place where nothing would catch it - `validate_capacity` asserts internal consistency, not
+provenance.
+
+**Not the profile rebuild either.** The centroids are one point per region, which is exactly
+what we already have. The underlying `reipppp_wind_data.csv` and `reipppp_solar_data.csv`
+remain the thing needed, and they are not on disk.
+
+### what it is still good for
+
+The script itself - resumable, saves after each success, documented dataset choices - is the
+right base to extend. And `fleet_by_region_v2.csv` gives capacity-weighted coal emissions of
+1.008 t/MWh against our 1.04, from a source we did not derive ours from.
+
+**The lesson is that a file's provenance travels with its numbers.** These centroids were
+computed once from data later found wrong, and the coordinates outlived the audit that
+rejected their source.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
