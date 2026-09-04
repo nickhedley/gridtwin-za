@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 972 checks
+suite                      19 harnesses, 970 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 972 checks. Last full run: 972/972.
+Nineteen harnesses, 970 checks. Last full run: 970/970.
 
 ```
 node stress_suite.js                290/290
@@ -264,7 +264,7 @@ python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .          18/18   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       57/57
+node validate_consistency.js .       55/55
 node validate_structure.js .         25/25
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
@@ -6292,11 +6292,22 @@ a source; at present it has neither.
     **Prerequisite: MERRA-2 or ERA5 for 2025** at our plant locations. We hold 2014-2023, so
     this is one pull from Renewables.ninja through the pipeline that already exists.
 
-    **And it will still be hard.** The annual signal is 2.3% and 7.4%; published profile bias
-    against satellite observation runs 5-15%. The bias is the same size as the quantity being
-    measured. The rescue is that bias is roughly CONSTANT while curtailment is EPISODIC:
-    calibrate the bias on hours where curtailment is certainly zero, then read the residual in
-    high-VRE hours. That only works with matched weather.
+    **SUPERSEDED 4 Sep 2026 by a better method** - see `scope_curtailment_from_eskom_data.md`.
+    Eskom publishes contracted AND residual demand, and residual is contracted minus expected
+    renewable generation. The difference is Eskom's own view of what the fleet should produce,
+    so no weather pull is needed at all: correlation against actual wind and PV is **0.875**
+    against 0.125 for our synthetic-normal profiles.
+
+    The naive version still fails, for a different reason. Expected 19,665 GWh against 16,412
+    actual is a 16.5% gap, and its diurnal shape - midday peak 591 MW, evening shoulder to
+    20:00, night floor 160 MW - is CSP with storage, the RMIPPPP hybrids and biomass. Those
+    total about 3,496 GWh against a 3,253 GWh gap. **The confounders are larger than the
+    signal.**
+
+    The scope sets one gate: check whether Eskom publishes CSP and hybrid separately. If yes,
+    tractable. If no, the confounders must be modelled, and a curtailment estimate resting on
+    a modelled CSP profile is not defensible against NTCSA. One afternoon to answer; do not
+    start the rest before it is answered.
 
 ## Closed this session
 
@@ -7587,6 +7598,31 @@ button-fed and fine. The strongest remaining candidate is the **levelised cost c
 twelve technologies from R0.55 to R9.00/kWh rendered as a bare list, the only panel whose
 entire content is one ranked series. Then heat stress, grid-enhancing, and green hydrogen,
 where the shape carries the finding.
+
+## the TOU panel removed - 4 Sep 2026
+
+Built 3 Sep, rebuilt once after the user could not read it, rebuilt again as two side-by-side
+orderings, then removed at the user's call.
+
+**The right outcome.** Two rebuilds and it still needed explaining. A panel that has to be
+narrated is not communicating, and the finding it carried is already in RESULTS.md and in the
+NERSA market inquiry submission where it does its actual work.
+
+### what stays and why
+
+`touBlockOf` and `touCompare` remain, with the `validate_consistency` checks that exercise
+them. They produced the block table in a LIVE SUBMISSION, and a submission should rest on
+code that still runs and is still checked rather than on a number from a deleted function.
+
+The checks are also what stops them becoming the kind of orphan that broke the capture panel
+- defined, uncalled, and silently wrong when someone eventually wires them back in.
+
+### one thing caught during the removal
+
+Deleting `touBody` made `validate_consistency` report h2Body, getsBody and heatBody as empty
+too. They were not - a separate probe confirmed all five fill on a fresh load. **A missing
+element in the list made the whole block misreport**, which is worth remembering: the panel
+check reads several ids in one probe, so one bad id contaminates the rest.
 
 ---
 

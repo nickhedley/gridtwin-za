@@ -136,8 +136,9 @@ CHECKS = [
     ('National curtailment rate',                                  'curtailment wording'),
     # The frontier heatmap: button-triggered, 240 full-year runs. Must stay button-driven -
     # it can never be wired to a slider.
+    # Panel removed 4 Sep; the classifier stays as the evidence base for the NERSA
+    # submission and is exercised by validate_consistency.
     ('touBlockOf',                                                 'Megaflex block classifier'),
-    ('touBody',                                                    'TOU panel host'),
     ('runFrontier',                                                'frontier grid function'),
     ('frontierBody',                                               'frontier panel host'),
     ('The no-gas frontier',                                        'frontier panel heading'),

@@ -497,7 +497,7 @@ const num = t => {
     // SENTENCE and no tables - its write had been truncated mid-literal, losing both
     // section() calls - and a length check passed it because the sentence is 130
     // characters. Panels that carry a table must have rows.
-    for (const id of ['h2Body', 'getsBody', 'heatBody', 'priceBody', 'captureBody', 'touBody']){
+    for (const id of ['h2Body', 'getsBody', 'heatBody', 'priceBody', 'captureBody']){
       const el = document.getElementById(id);
       out[id] = el ? (el.textContent || '').trim().length : -1;
       out[id + '__rows'] = el ? el.querySelectorAll('tr').length : -1;
@@ -513,7 +513,7 @@ const num = t => {
                           : `only ${fresh[id]} characters - the renderer did not run on load`);
     }
     // Panels whose whole purpose is a table must actually produce one.
-    for (const id of ['captureBody', 'getsBody', 'priceBody', 'touBody']){
+    for (const id of ['captureBody', 'getsBody', 'priceBody']){
       check(`[${id}] renders its table, not just its note`,
             fresh[id + '__rows'] > 1,
             `${fresh[id + '__rows']} table rows - the panel has prose but no data, which a `
@@ -603,6 +603,12 @@ const num = t => {
   }
 
   // ── THE TOU CLASSIFIER MUST MATCH THE PUBLISHED BLOCK STRUCTURE ──────────
+  // The PANEL was removed on 4 Sep - twice explained and twice not understood, so it was
+  // not earning its space. `touBlockOf` and `touCompare` stay: they produced the block
+  // table in the NERSA market inquiry submission, and a live submission should rest on
+  // code that still runs and is still checked, not on a number from a deleted function.
+  // These checks are what keeps them from becoming the kind of orphan that broke the
+  // capture panel.
   // Megaflex is public and unambiguous, so the classifier is checkable against arithmetic
   // rather than against itself: 52 weekends is exactly 2,496 hours, and the blocks must
   // partition the year with nothing left over.

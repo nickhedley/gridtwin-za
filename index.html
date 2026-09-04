@@ -699,12 +699,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
 
           <div class="panel" style="margin-top:18px">
-            <div class="ph"><h2>Time-of-use blocks against cost</h2>
-              <span class="tag">modelled &middot; Megaflex structure</span></div>
-            <div class="pb" id="touBody"></div>
-          </div>
-
-          <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>The no-gas frontier</h2>
               <span class="tag">modelled &middot; worst of ten weather years</span>
               <button id="frontierBtn" onclick="runFrontier()"
@@ -4020,61 +4014,7 @@ function printPrefeas() {
   }
   window.touCompare = touCompare;
 
-  // The panel compares two ORDERINGS: what Megaflex charges most for, and what the model
-  // says costs most. Ordering is all that is needed and all that is defensible - the
-  // block order is published and unambiguous, while putting c/kWh rates in would make any
-  // error in those rates read as a finding about the tariff.
-  //
-  // Built first as a bare price table. The user could not read it, correctly: a column of
-  // shadow prices with nothing to compare against is not a comparison. The tariff rank is
-  // the half that was missing.
-  const TARIFF_RANK = { 'high peak': 1, 'low peak': 2, 'high standard': 3,
-                        'low standard': 4, 'high offpeak': 5, 'weekend': 6,
-                        'low offpeak': 6 };
 
-  function renderTou(res){
-    const host = document.getElementById('touBody');
-    if (!host) return;
-    const rows = touCompare(res);
-    if (!rows){ host.innerHTML = '<div class="muted">Run the model to compare blocks.</div>'; return; }
-    const lab = { 'high peak': 'High season, peak', 'low peak': 'Low season, peak',
-                  'high standard': 'High season, standard', 'low standard': 'Low season, standard',
-                  'high offpeak': 'High season, off-peak', 'low offpeak': 'Low season, off-peak',
-                  'weekend': 'Weekend' };
-    const byCost = rows.slice().sort((a, b) => b.mean - a.mean);
-    const costRank = {}; byCost.forEach((r, i) => costRank[r.block] = i + 1);
-    const ordered = rows.slice().sort((a, b) =>
-      (TARIFF_RANK[a.block] || 9) - (TARIFF_RANK[b.block] || 9));
-
-    host.innerHTML =
-        '<div style="font-size:10.5px;line-height:1.5;margin-bottom:8px">'
-      + 'Megaflex charges most for peak hours in winter. This asks whether the model agrees: '
-      + '<strong>rows are in tariff order, most expensive first</strong>, and the cost column '
-      + 'is where the model ranks that block.</div>'
-      + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
-      + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
-      + '<th style="text-align:left;padding:3px 4px">Block, in tariff order</th>'
-      + '<th style="text-align:right;padding:3px 4px">hours</th>'
-      + '<th style="text-align:right;padding:3px 4px">modelled cost</th>'
-      + '<th style="text-align:right;padding:3px 4px">ranks</th></tr>'
-      + ordered.map(r => {
-          const tr = TARIFF_RANK[r.block] || 9, cr = costRank[r.block];
-          const off = cr - tr;
-          const mark = off === 0 ? '<span style="color:var(--ink2)">&ndash;</span>'
-                     : (off > 0 ? '<span style="color:var(--alert,#C4785A)">' + off + ' cheaper than charged</span>'
-                                : '<span style="color:var(--alert,#C4785A)">' + (-off) + ' dearer than charged</span>');
-          return '<tr style="border-bottom:1px solid var(--line)">'
-            + '<td style="padding:3px 4px">' + (lab[r.block] || r.block) + '</td>'
-            + '<td class="mono" style="text-align:right;padding:3px 4px">' + r.hours.toLocaleString() + '</td>'
-            + '<td class="mono" style="text-align:right;padding:3px 4px">R' + r.mean.toFixed(0) + '</td>'
-            + '<td style="text-align:right;padding:3px 4px;font-size:9.5px">' + mark + '</td></tr>';
-        }).join('')
-      + '</table>'
-      + '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
-      + 'Mean shadow price per block. Tariff order is Eskom\u2019s published Megaflex '
-      + 'structure; no c/kWh rates are used.</div>';
-  }
-  window.renderTou = renderTou;
 
   window.renderHeat = renderHeat;
 
@@ -13628,7 +13568,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-04a';
+const BUILD_STAMP = '2026-09-04b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -14051,7 +13991,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof window.renderTou==='function')window.renderTou(lastRes);if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();
@@ -17332,7 +17272,6 @@ window.cancelMIP = cancelMIP;
     try { if (window.renderH2) window.renderH2(window.lastRes); } catch(e){ console.error('h2 first paint:', e); }
     try { if (window.renderGets) window.renderGets(); } catch(e){ console.error('gets first paint:', e); }
     try { if (window.renderHeat) window.renderHeat(); } catch(e){ console.error('heat first paint:', e); }
-    try { if (window.renderTou) window.renderTou(window.lastRes); } catch(e){ console.error('tou first paint:', e); }
   };
   paint();
   // Again once the async regional profiles land, because the electrolyser siting line
