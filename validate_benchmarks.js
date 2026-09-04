@@ -318,6 +318,17 @@ const check = (name, ok, detail) => {
   // OCGT is deliberately NOT asserted. The report gives 2,380 MW, which is Eskom-only;
   // the model's 3,400 is a system total including the Avon and Dedisa IPP peakers. A
   // different boundary, not an error, and a check ignoring that would force a wrong fix.
+  // ── ESKOM HOURLY DATASET ESK19679, Apr 2022 - Aug 2026 ───────────────────
+  // Independent corroboration from a source obtained 4 Sep 2026. Three of our figures were
+  // confirmed exactly and one gap found:
+  //
+  //   CSP installed        600 MW    exact match
+  //   wind installed     4,143 MW    matches the REIPPPP-only fleet, confirming the
+  //                                  series excludes wheeled plant
+  //   interruptible      1,021 MW    observed peak call against our 1,200 MW contract
+  //   Other RE              51 MW    against our biomass 25 - a 26 MW gap, see STATE
+  //
+  // Asserted here so a later edit cannot quietly move them away from measured values.
   for (const [k, want, lab] of [['fleetCoal', 39692, 'coal-fired stations'],
                                 ['fleetNuclear', 1880, 'nuclear'],
                                 ['fleetPs', 2724, 'pumped storage'],

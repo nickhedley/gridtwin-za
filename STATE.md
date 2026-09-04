@@ -7598,6 +7598,61 @@ too. They were not - a separate probe confirmed all five fill on a fresh load. *
 element in the list made the whole block misreport**, which is worth remembering: the panel
 check reads several ids in one probe, so one bad id contaminates the rest.
 
+## what ESK19679 corrects, and what it does not - 4 Sep 2026
+
+I said this would let us correct several figures. Checked one by one, **most of them turned
+out to confirm what we already hold**, which is a better outcome and a smaller change than I
+implied.
+
+```
+CSP installed          600 MW    exact match
+wind installed       4,143 MW    matches our REIPPPP-only fleet exactly
+interruptible load   1,021 MW    observed peak call vs our 1,200 MW CONTRACT figure
+EAF                   62.8% 2025, 68.2% 2026 to Aug, against our default of 65
+Other RE                51 MW    against our biomass 25 - a 26 MW gap
+```
+
+Only the last is a discrepancy, it is 26 MW, and it sits in a generated file that must be
+rebuilt by `build_capacity.py` rather than hand-edited. Recorded, not acted on.
+
+The interruptible note now carries the observed usage: called in 252 hours of 2025, peaking
+at 1,021 MW. Our 1,200 MW is a contract size, not a usage figure, so it stands.
+
+### the profile bias is real, and a rescale would make it worse
+
+Our per-unit profiles understate output against every clean year:
+
+```
+              wind     PV
+2023          38.5   25.2
+2024          36.8   26.3
+our profiles  32.1   22.5
+```
+
+**But it is a SHAPE bias, not a level bias.** Ours as a ratio of observed, by percentile:
+
+```
+ 10%  0.61      our profile is far too low in calm hours
+ 25%  0.72
+ 50%  0.80
+ 75%  0.90
+ 90%  0.96
+ 99%  1.01      and correct at the top
+```
+
+The real fleet has a higher FLOOR because it is spread across the Eastern, Northern and
+Western Cape. Ours is not diversified enough. **A flat rescale of 1.17 would put our 99th
+percentile at 0.93 against an observed 0.79** - inventing output that does not exist, to fix
+a deficit that lives in the calm hours.
+
+That matters far beyond the annual total: adequacy is decided in the calm hours, and a
+profile too low there overstates the storage and firm capacity a renewable build needs.
+**The frontier, the LOLE work and the no-gas result are all affected in the same direction.**
+
+The correct fix is quantile mapping onto the observed distribution, which preserves the
+hour-to-hour ordering that drives correlation with demand while fixing the shape. That is a
+piece of work, not an edit, and it needs its own scope.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
