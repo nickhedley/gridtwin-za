@@ -1,5 +1,24 @@
 # GridTwin ZA - verified results
 
+> **STANDING CAVEAT, added 4 Sep 2026.** Our per-unit renewable profiles are built from ONE
+> capacity-weighted centroid per region, and measured against Eskom's ESK19679 they are far
+> too low in calm hours - the 10th percentile is 0.61 of observed while the 99th is 1.01. A
+> real fleet spread over 300 km has a higher floor than a single point does.
+>
+> Capacity-weighted across the four wind regions against Eskom's observed fleet:
+>
+> ```
+> national wind fleet below     ours    observed
+>   2%                          93 h        7 h    13x
+>   5%                         353 h       72 h     5x
+> ```
+>
+> **The model runs out of wind thirteen times more often than the country does.** Adequacy is
+> decided in exactly those hours, so this biases results in ONE direction: the frontier, the
+> LOLE and EUE figures, and every storage-duration result **overstate** what a renewable build
+> needs. See `scope_profile_rebuild.md`. Treat the affected findings as upper bounds until the
+> profiles are rebuilt.
+
 ## The findings, ranked by how well they would survive a hostile reviewer
 
 Thirty-five sections follow. This index exists because the file passed 1,400 lines and the

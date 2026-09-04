@@ -6161,6 +6161,35 @@ a source; at present it has neither.
 
 ## Long term - not queued, recorded so it is not re-litigated
 
+18. **Rebuild the renewable profiles with multi-site aggregation.** Scoped 4 Sep 2026 in
+    `scope_profile_rebuild.md`. **This is the highest-value item on the list** and the only
+    one that changes published findings.
+
+    Our profiles use one capacity-weighted centroid per region. Capacity-weighted nationally
+    against Eskom's observed fleet: **below 2% output for 93 hours a year against an observed
+    7 - thirteen times too often.** Eastern Cape alone is below 2% for 1,006 hours.
+
+    **Already fixed once, for solar.** `profiles_regional.json` records replacing MERRA-2's
+    50 km grid with PVGIS at 5 km because the coarse sample "compressed the regional spread
+    to 1.08x max/min". Same pathology, diagnosed and fixed for one technology and not carried
+    to the other. This is not a new method.
+
+    **The 13x figure is a calibration target**, not just a diagnosis: add sites until the
+    calm-hour distribution matches the observed years, rather than guessing a site count.
+
+    **First recover the PyPSA-RSA plant data** the existing centroids were built from - the
+    metadata names it, and built plants beat permits. `fetch_real_regional_profiles.py` is not
+    in the session. Fallback is `reea_projects.json`, 279 wind sites with coordinates, but
+    those are permits: 52.9 GW approved against a 4.5 GW built fleet. The work is matching permits to built plant, pulling
+    per-site series, aggregating with capacity weights, then checking the residual against
+    four observed years.
+
+    **Cost: Renewables.ninja rate-limits.** Sixty sites over ten weather years is 600
+    requests per technology against ten today. Days, not an afternoon, and it needs a
+    resumable puller.
+
+    RESULTS.md now carries a standing caveat naming the affected findings.
+
 19. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
 
     **The code lift is small.** The engine is already region-generic: `REGIONS` is an
