@@ -6270,6 +6270,34 @@ a source; at present it has neither.
     and state which market each number came from, because transferring an elasticity across
     markets is an assumption, not a measurement.
 
+23. **Estimate curtailment by differencing modelled against Eskom's reported output.**
+    Tested 4 Sep 2026 against `ESK19243.csv`, Eskom hourly 2025. The idea works; it needs
+    one data pull we do not have.
+
+    **What the test already established.** Eskom's data portal excludes wheeled plant, and
+    the evidence is clean: peak wind is 3,397 MW and peak PV 2,287 MW, which are 74% and 70%
+    of our full register but **both exactly 82% of the REIPPPP-only fleet**. A fleet peaking
+    at 82% of nameplate is normal; one peaking at 70% is not. That independently corroborates
+    the 958 MW private figure.
+
+    On the REIPPPP-only denominator, annually: wind observed 11,333 GWh against 11,600
+    modelled, a 2.3% gap; PV 5,079 against 5,486, a 7.4% gap.
+
+    **Why the hourly version cannot be done yet.** Our profiles are a SYNTHETIC-NORMAL year
+    and the Eskom series is actual 2025 weather. Hourly correlation between them is **0.125**;
+    a shared weather year would give 0.8 or better. Binning the gap by penetration produced a
+    convincing rising curve from -99.7% to +39.5% that is entirely an artefact of comparing
+    different weather.
+
+    **Prerequisite: MERRA-2 or ERA5 for 2025** at our plant locations. We hold 2014-2023, so
+    this is one pull from Renewables.ninja through the pipeline that already exists.
+
+    **And it will still be hard.** The annual signal is 2.3% and 7.4%; published profile bias
+    against satellite observation runs 5-15%. The bias is the same size as the quantity being
+    measured. The rescue is that bias is roughly CONSTANT while curtailment is EPISODIC:
+    calibrate the bias on hours where curtailment is certainly zero, then read the residual in
+    high-VRE hours. That only works with matched weather.
+
 ## Closed this session
 
 ```
