@@ -2,7 +2,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty-four sections follow. This index exists because the file passed 1,400 lines and the
+Thirty-five sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -2864,3 +2864,60 @@ Cavern integrity, shaft condition and geology are outside this model entirely. H
 excavates a purpose-built cavern with hydrostatic compensation rather than using a shaft as
 found, which is a material distinction for any South African analogue: an abandoned gold
 shaft is not a sealed pressure vessel.
+
+---
+
+## Curtailment, estimated from Eskom's own published data
+
+Eskom publishes both RSA contracted demand and residual demand; residual is contracted minus
+the EXPECTED generation from renewables. The difference is Eskom's own view of what the fleet
+should have produced. Comparing it against actual Total RE gives a curtailment estimate that
+needs no weather modelling from us.
+
+Source: Eskom hourly dataset ESK19679, 38,736 hours from April 2022 to August 2026, obtained
+4 Sep 2026. It separates Wind, PV, CSP and Other RE, and carries installed capacity for each.
+
+### the baseline is what makes it credible
+
+```
+year    expected GWh   actual GWh    gap    as %
+2022         12,352       12,470   -118    -1.0%
+2023         18,037       18,241   -204    -1.1%
+2024         18,005       17,981     24     0.1%
+2025         18,849       18,103    746     4.0%
+2026*        12,278       11,283    995     8.1%
+```
+\* eight months to August.
+
+**Three years at zero, then a step.** If Eskom's renewable forecast were systematically
+conservative the gap would be a constant offset; it is not. The method has no detectable
+bias over 29 baseline months: mean -1.37%, standard deviation 3.49%.
+
+### 2025 and 2026 to date
+
+**1,741 GWh above expectation since January 2025, or 5.6%.**
+
+Twelve months since September 2024 sit outside the baseline's 2-sigma band. The largest are
+**May 2026 at 24.8%** and **August 2026 at 19.6%**.
+
+That May spike is independently corroborated: NTCSA's media statement of 1 September 2026
+records elevated curtailment claim volumes submitted during **April and May 2026**, and just
+under 3,000 claims processed in July and August. The two series were produced by different
+parties for different purposes.
+
+The 8.1% for 2026 also sits beside the industry's own reported figure of revenues about 9%
+below budget.
+
+### what this is not
+
+**Not per-plant and never will be from this source.** Eskom's series is national. Curtailment
+by plant or corridor needs metered instructions, which nobody publishes.
+
+**Not clean at monthly resolution.** Several months are negative - expected below actual -
+which cannot be curtailment and is forecast error. The 2-sigma band is roughly +/-7 points,
+so a single month inside it says nothing. Annual figures and the extreme months are what
+carry.
+
+**Not purely curtailment.** The residual contains anything that makes actual output fall short
+of Eskom's expectation: curtailment, forecast error, and outages at renewable plants. It is an
+upper bound on curtailment, not a measurement of it.

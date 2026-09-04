@@ -6270,44 +6270,18 @@ a source; at present it has neither.
     and state which market each number came from, because transferring an elasticity across
     markets is an assumption, not a measurement.
 
-23. **Estimate curtailment by differencing modelled against Eskom's reported output.**
-    Tested 4 Sep 2026 against `ESK19243.csv`, Eskom hourly 2025. The idea works; it needs
-    one data pull we do not have.
+23. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
+    4 Sep 2026.** The gate the scope set - does Eskom publish CSP separately - was answered
+    by a dataset the user obtained: **ESK19679, 38,736 hours from April 2022 to August 2026**,
+    with Wind, PV, CSP and Other RE separated and installed capacity for each.
 
-    **What the test already established.** Eskom's data portal excludes wheeled plant, and
-    the evidence is clean: peak wind is 3,397 MW and peak PV 2,287 MW, which are 74% and 70%
-    of our full register but **both exactly 82% of the REIPPPP-only fleet**. A fleet peaking
-    at 82% of nameplate is normal; one peaking at 70% is not. That independently corroborates
-    the 958 MW private figure.
+    Result in RESULTS.md. Baseline 2022-2024 sits at zero (mean -1.37%, sd 3.49% over 29
+    months), then 4.0% in 2025 and 8.1% in the eight months to August 2026. **1,741 GWh above
+    expectation since January 2025.** May 2026 at 24.8% aligns with NTCSA's own report of
+    elevated claims in April and May.
 
-    On the REIPPPP-only denominator, annually: wind observed 11,333 GWh against 11,600
-    modelled, a 2.3% gap; PV 5,079 against 5,486, a 7.4% gap.
-
-    **Why the hourly version cannot be done yet.** Our profiles are a SYNTHETIC-NORMAL year
-    and the Eskom series is actual 2025 weather. Hourly correlation between them is **0.125**;
-    a shared weather year would give 0.8 or better. Binning the gap by penetration produced a
-    convincing rising curve from -99.7% to +39.5% that is entirely an artefact of comparing
-    different weather.
-
-    **Prerequisite: MERRA-2 or ERA5 for 2025** at our plant locations. We hold 2014-2023, so
-    this is one pull from Renewables.ninja through the pipeline that already exists.
-
-    **SUPERSEDED 4 Sep 2026 by a better method** - see `scope_curtailment_from_eskom_data.md`.
-    Eskom publishes contracted AND residual demand, and residual is contracted minus expected
-    renewable generation. The difference is Eskom's own view of what the fleet should produce,
-    so no weather pull is needed at all: correlation against actual wind and PV is **0.875**
-    against 0.125 for our synthetic-normal profiles.
-
-    The naive version still fails, for a different reason. Expected 19,665 GWh against 16,412
-    actual is a 16.5% gap, and its diurnal shape - midday peak 591 MW, evening shoulder to
-    20:00, night floor 160 MW - is CSP with storage, the RMIPPPP hybrids and biomass. Those
-    total about 3,496 GWh against a 3,253 GWh gap. **The confounders are larger than the
-    signal.**
-
-    The scope sets one gate: check whether Eskom publishes CSP and hybrid separately. If yes,
-    tractable. If no, the confounders must be modelled, and a curtailment estimate resting on
-    a modelled CSP profile is not defensible against NTCSA. One afternoon to answer; do not
-    start the rest before it is answered.
+    Remaining: it is national only, noisy monthly, and an upper bound rather than a
+    measurement - forecast error and renewable-plant outages sit in the same residual.
 
 ## Closed this session
 
