@@ -10,6 +10,7 @@
   "Eastern Cape": {
    "built_mw": 1896.0,
    "permits_available": 46,
+   "basis": "permits",
    "spread_km": 342,
    "sites": [
     {
@@ -89,6 +90,7 @@
   "Free State": {
    "built_mw": 0,
    "permits_available": 3,
+   "basis": "permits",
    "spread_km": 393,
    "sites": [
     {
@@ -114,19 +116,69 @@
   "Gauteng": {
    "built_mw": 0,
    "permits_available": 1,
-   "spread_km": 0,
+   "basis": "province-spread",
+   "spread_km": 71,
    "sites": [
     {
-     "lat": -26.4564,
-     "lng": 27.5143,
-     "w": 1.0,
-     "name": "The proposed Igolide Wind Energy Facility (up to 100 MW) nor"
+     "lat": -26.3856,
+     "lng": 27.5694,
+     "w": 0.1111,
+     "name": "Gauteng spread 00"
+    },
+    {
+     "lat": -26.3856,
+     "lng": 27.926,
+     "w": 0.1111,
+     "name": "Gauteng spread 01"
+    },
+    {
+     "lat": -26.3856,
+     "lng": 28.2825,
+     "w": 0.1111,
+     "name": "Gauteng spread 02"
+    },
+    {
+     "lat": -26.0735,
+     "lng": 27.5694,
+     "w": 0.1111,
+     "name": "Gauteng spread 10"
+    },
+    {
+     "lat": -26.0735,
+     "lng": 27.926,
+     "w": 0.1111,
+     "name": "Gauteng spread 11"
+    },
+    {
+     "lat": -26.0735,
+     "lng": 28.2825,
+     "w": 0.1111,
+     "name": "Gauteng spread 12"
+    },
+    {
+     "lat": -25.7614,
+     "lng": 27.5694,
+     "w": 0.1111,
+     "name": "Gauteng spread 20"
+    },
+    {
+     "lat": -25.7614,
+     "lng": 27.926,
+     "w": 0.1111,
+     "name": "Gauteng spread 21"
+    },
+    {
+     "lat": -25.7614,
+     "lng": 28.2825,
+     "w": 0.1111,
+     "name": "Gauteng spread 22"
     }
    ]
   },
   "Hydra Central": {
    "built_mw": 669.0,
    "permits_available": 39,
+   "basis": "permits",
    "spread_km": 239,
    "sites": [
     {
@@ -206,6 +258,7 @@
   "Kwazulu Natal": {
    "built_mw": 0,
    "permits_available": 5,
+   "basis": "permits",
    "spread_km": 224,
    "sites": [
     {
@@ -243,19 +296,69 @@
   "Limpopo": {
    "built_mw": 0,
    "permits_available": 1,
-   "spread_km": 0,
+   "basis": "province-spread",
+   "spread_km": 217,
    "sites": [
     {
-     "lat": -23.5936,
-     "lng": 27.476,
-     "w": 1.0,
-     "name": "Proposed 1200MW IPP Thabametsi Power Station and associated "
+     "lat": -24.5125,
+     "lng": 27.8125,
+     "w": 0.1111,
+     "name": "Limpopo spread 00"
+    },
+    {
+     "lat": -24.5125,
+     "lng": 28.8792,
+     "w": 0.1111,
+     "name": "Limpopo spread 01"
+    },
+    {
+     "lat": -24.5125,
+     "lng": 29.9459,
+     "w": 0.1111,
+     "name": "Limpopo spread 02"
+    },
+    {
+     "lat": -23.7254,
+     "lng": 27.8125,
+     "w": 0.1111,
+     "name": "Limpopo spread 10"
+    },
+    {
+     "lat": -23.7254,
+     "lng": 28.8792,
+     "w": 0.1111,
+     "name": "Limpopo spread 11"
+    },
+    {
+     "lat": -23.7254,
+     "lng": 29.9459,
+     "w": 0.1111,
+     "name": "Limpopo spread 12"
+    },
+    {
+     "lat": -22.9384,
+     "lng": 27.8125,
+     "w": 0.1111,
+     "name": "Limpopo spread 20"
+    },
+    {
+     "lat": -22.9384,
+     "lng": 28.8792,
+     "w": 0.1111,
+     "name": "Limpopo spread 21"
+    },
+    {
+     "lat": -22.9384,
+     "lng": 29.9459,
+     "w": 0.1111,
+     "name": "Limpopo spread 22"
     }
    ]
   },
   "Mpumalanga": {
    "built_mw": 0,
    "permits_available": 14,
+   "basis": "permits",
    "spread_km": 121,
    "sites": [
     {
@@ -335,19 +438,87 @@
   "North West": {
    "built_mw": 0,
    "permits_available": 1,
-   "spread_km": 0,
+   "basis": "redz",
+   "spread_km": 234,
    "sites": [
     {
-     "lat": -26.0558,
-     "lng": 26.1128,
-     "w": 1.0,
-     "name": "The development of the 100MW Lichtenburg 2 pv SEF and its as"
+     "lat": -26.7162,
+     "lng": 24.73,
+     "w": 0.0833,
+     "name": "REDZ 6 Vryburg"
+    },
+    {
+     "lat": -26.8381,
+     "lng": 24.9669,
+     "w": 0.0833,
+     "name": "REDZ 6 Vryburg"
+    },
+    {
+     "lat": -27.0819,
+     "lng": 24.9669,
+     "w": 0.0833,
+     "name": "REDZ 6 Vryburg"
+    },
+    {
+     "lat": -27.2038,
+     "lng": 24.73,
+     "w": 0.0833,
+     "name": "REDZ 6 Vryburg"
+    },
+    {
+     "lat": -27.0819,
+     "lng": 24.4931,
+     "w": 0.0833,
+     "name": "REDZ 6 Vryburg"
+    },
+    {
+     "lat": -26.8381,
+     "lng": 24.4931,
+     "w": 0.0833,
+     "name": "REDZ 6 Vryburg"
+    },
+    {
+     "lat": -26.6531,
+     "lng": 26.67,
+     "w": 0.0833,
+     "name": "REDZ 10 Klerksdorp"
+    },
+    {
+     "lat": -26.7516,
+     "lng": 26.8611,
+     "w": 0.0833,
+     "name": "REDZ 10 Klerksdorp"
+    },
+    {
+     "lat": -26.9484,
+     "lng": 26.8611,
+     "w": 0.0833,
+     "name": "REDZ 10 Klerksdorp"
+    },
+    {
+     "lat": -27.0469,
+     "lng": 26.67,
+     "w": 0.0833,
+     "name": "REDZ 10 Klerksdorp"
+    },
+    {
+     "lat": -26.9484,
+     "lng": 26.4789,
+     "w": 0.0833,
+     "name": "REDZ 10 Klerksdorp"
+    },
+    {
+     "lat": -26.7516,
+     "lng": 26.4789,
+     "w": 0.0833,
+     "name": "REDZ 10 Klerksdorp"
     }
    ]
   },
   "Northern Cape": {
    "built_mw": 790.1,
    "permits_available": 71,
+   "basis": "permits",
    "spread_km": 645,
    "sites": [
     {
@@ -427,6 +598,7 @@
   "Western Cape": {
    "built_mw": 1256.9,
    "permits_available": 70,
+   "basis": "permits",
    "spread_km": 477,
    "sites": [
     {
@@ -508,6 +680,7 @@
   "Eastern Cape": {
    "built_mw": 0,
    "permits_available": 19,
+   "basis": "permits",
    "spread_km": 320,
    "sites": [
     {
@@ -587,6 +760,7 @@
   "Free State": {
    "built_mw": 168.9,
    "permits_available": 201,
+   "basis": "permits",
    "spread_km": 390,
    "sites": [
     {
@@ -666,6 +840,7 @@
   "Gauteng": {
    "built_mw": 50.0,
    "permits_available": 38,
+   "basis": "permits",
    "spread_km": 139,
    "sites": [
     {
@@ -745,6 +920,7 @@
   "Hydra Central": {
    "built_mw": 459.5,
    "permits_available": 130,
+   "basis": "permits",
    "spread_km": 277,
    "sites": [
     {
@@ -824,6 +1000,7 @@
   "Kwazulu Natal": {
    "built_mw": 0,
    "permits_available": 7,
+   "basis": "permits",
    "spread_km": 220,
    "sites": [
     {
@@ -873,6 +1050,7 @@
   "Limpopo": {
    "built_mw": 506.0,
    "permits_available": 107,
+   "basis": "permits",
    "spread_km": 339,
    "sites": [
     {
@@ -952,6 +1130,7 @@
   "Mpumalanga": {
    "built_mw": 0,
    "permits_available": 37,
+   "basis": "permits",
    "spread_km": 225,
    "sites": [
     {
@@ -1031,6 +1210,7 @@
   "North West": {
    "built_mw": 445.0,
    "permits_available": 159,
+   "basis": "permits",
    "spread_km": 392,
    "sites": [
     {
@@ -1110,6 +1290,7 @@
   "Northern Cape": {
    "built_mw": 1282.6,
    "permits_available": 314,
+   "basis": "permits",
    "spread_km": 785,
    "sites": [
     {
@@ -1189,6 +1370,7 @@
   "Western Cape": {
    "built_mw": 359.0,
    "permits_available": 82,
+   "basis": "permits",
    "spread_km": 410,
    "sites": [
     {
