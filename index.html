@@ -12339,8 +12339,19 @@ function dcFlows(injByRegion){
  * which prices each region separately.
  */
 let regionalProfiles = null;
-fetch('nodal/profiles_regional.json').then(r => r.json()).then(d => { regionalProfiles = d; })
-  .catch(() => { regionalProfiles = null; });
+// RE-RENDER WHEN THE DATA LANDS. The fetch stored the profiles and told nobody, so whether
+// the capture panel worked depended on which finished first. It always raced; the file was
+// just small enough to win. The multi-site rebuild took it to 1.3 MB and the panel started
+// showing "Regional profiles still loading" until a manual refresh served it from cache.
+//
+// Reported 6 Sep 2026. A first paint that depends on network timing is not a first paint.
+fetch('nodal/profiles_regional.json').then(r => r.json()).then(d => {
+  regionalProfiles = d;
+  try {
+    if (typeof window.renderRegionalCapture === 'function' && window.lastRes)
+      window.renderRegionalCapture(window.lastRes);
+  } catch (e) { console.error('capture repaint:', e); }
+}).catch(() => { regionalProfiles = null; });
 
 function captureRate(tech, region, res){
   if (!regionalProfiles || !res || !res.marginalP) return null;
@@ -13568,7 +13579,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-04c';
+const BUILD_STAMP = '2026-09-06a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

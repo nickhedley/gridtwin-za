@@ -7831,6 +7831,30 @@ Separately, my first retry loop treated a 429 as a failed attempt, so it gave up
 after three minutes and moved to the next, which failed identically. A rate limit is not a
 failure and must not consume a retry.
 
+## the capture panel raced the profile fetch - 6 Sep 2026
+
+Reported: the panel says "Regional profiles still loading" on a fresh load and only fills
+after a manual refresh.
+
+```
+fetch('nodal/profiles_regional.json').then(r => r.json()).then(d => { regionalProfiles = d; })
+```
+
+**It stored the data and told nobody.** Whether the panel worked depended on which finished
+first - the render or the network. It always raced; the file was simply small enough to win.
+The multi-site rebuild took it from a few hundred KB to 1.3 MB and the render started
+winning, so the panel showed the loading message until a refresh served the file from cache.
+
+Now repaints when the data lands.
+
+**The rebuild did not cause this. It exposed it**, which is the more useful thing a change
+can do. A first paint that depends on network timing is not a first paint, and it would have
+broken for any user on a slow connection long before the file grew.
+
+Worth noting the fresh-load check could not catch it: the harness fetches from the local
+filesystem, where the file always arrives before the render. A race that only appears over
+a real network needs a real network.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
