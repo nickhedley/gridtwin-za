@@ -1,0 +1,999 @@
+{
+ "meta": {
+  "purpose": "Multi-site coordinates for the regional profile rebuild. Replaces one capacity-weighted centroid per region, which sat below 2% output for 93 hours a year against Eskom-observed 7.",
+  "locations_from": "DFFE REEA environmental authorisations - LOCATION ONLY. REEA is permits, not commissioning, and is not used for capacity.",
+  "capacity_from": "regional_renewable_capacity.json, unchanged.",
+  "not_from": "PyPSA-RSA reipppp_*.csv - its surviving capacities match the awards-based file rejected on 27 Aug (North West solar 719 vs 722), so its geography was not reused.",
+  "sites_per_region": 12
+ },
+ "wind": {
+  "Eastern Cape": {
+   "built_mw": 1896.0,
+   "permits_available": 46,
+   "spread_km": 342,
+   "sites": [
+    {
+     "lat": -32.8651,
+     "lng": 25.8616,
+     "w": 0.3396,
+     "name": "Proposed construction of Terra wind energy golden valley pro"
+    },
+    {
+     "lat": -31.4298,
+     "lng": 27.4908,
+     "w": 0.0489,
+     "name": "Proposed construction of a wind energy farm and its associat"
+    },
+    {
+     "lat": -34.1604,
+     "lng": 24.5334,
+     "w": 0.0527,
+     "name": "Red Cap Kouga Wind Farm - Oyster Bay"
+    },
+    {
+     "lat": -32.6946,
+     "lng": 28.1987,
+     "w": 0.1019,
+     "name": "Proposed Haga Haga wind farm (Rf), Eastern Cape"
+    },
+    {
+     "lat": -33.144,
+     "lng": 27.1308,
+     "w": 0.034,
+     "name": "Proposed Peddie Wind Energy Facility and associated infrastr"
+    },
+    {
+     "lat": -31.8835,
+     "lng": 25.7674,
+     "w": 0.163,
+     "name": "The proposed development of a 240 MW Wind Energy Facility (W"
+    },
+    {
+     "lat": -33.7801,
+     "lng": 25.6639,
+     "w": 0.0255,
+     "name": "Proposed Construction of Electrawinds Wind Energy Project at"
+    },
+    {
+     "lat": -33.2883,
+     "lng": 24.907,
+     "w": 0.0543,
+     "name": "Proposed Wolf Wind Energy Facility Near Wolwefontein Eastern"
+    },
+    {
+     "lat": -31.4465,
+     "lng": 26.3917,
+     "w": 0.0659,
+     "name": "Proposed construction of a wind energy farm and its associat"
+    },
+    {
+     "lat": -33.3372,
+     "lng": 26.4786,
+     "w": 0.0158,
+     "name": "Proposed Waainek wind energy project, Grahamstown, Eastern C"
+    },
+    {
+     "lat": -31.8577,
+     "lng": 27.6603,
+     "w": 0.0306,
+     "name": "The Ncora wind energy project, Eastern Cape Province"
+    },
+    {
+     "lat": -33.9434,
+     "lng": 24.9162,
+     "w": 0.0679,
+     "name": "Proposed Ubuntu Wind Energy project near Jeffreys Bay Easter"
+    }
+   ]
+  },
+  "Free State": {
+   "built_mw": 0,
+   "permits_available": 3,
+   "spread_km": 0,
+   "sites": [
+    {
+     "lat": -30.3564,
+     "lng": 25.5833,
+     "w": 1.0,
+     "name": "The Proposed Construction Of The Mainstream Springfontein Wi"
+    }
+   ]
+  },
+  "Gauteng": {
+   "built_mw": 0,
+   "permits_available": 1,
+   "spread_km": 0,
+   "sites": [
+    {
+     "lat": -26.4564,
+     "lng": 27.5143,
+     "w": 1.0,
+     "name": "The proposed Igolide Wind Energy Facility (up to 100 MW) nor"
+    }
+   ]
+  },
+  "Hydra Central": {
+   "built_mw": 669.0,
+   "permits_available": 39,
+   "spread_km": 239,
+   "sites": [
+    {
+     "lat": -32.4842,
+     "lng": 23.5942,
+     "w": 0.1732,
+     "name": "The proposed FE Kudu Wind Energy Facility, within the Dr Bey"
+    },
+    {
+     "lat": -30.4361,
+     "lng": 23.9865,
+     "w": 0.0433,
+     "name": "The Proposed Renosterberg Wind Energy Facility Near De Aar, "
+    },
+    {
+     "lat": -31.5809,
+     "lng": 22.533,
+     "w": 0.0779,
+     "name": "The proposed Taaibos North Wind Energy Facility, Ubuntu Loca"
+    },
+    {
+     "lat": -31.1854,
+     "lng": 25.061,
+     "w": 0.0546,
+     "name": "The Construction Of A 188.6 Mw Wind Energy Facility And Its "
+    },
+    {
+     "lat": -31.5023,
+     "lng": 23.6433,
+     "w": 0.0404,
+     "name": "The proposed Merino Wind Farm, Northern Cape Province."
+    },
+    {
+     "lat": -30.7876,
+     "lng": 23.4638,
+     "w": 0.1386,
+     "name": "The proposed Soyuz 1 Wind Energy Facility, Emthanjeni Munici"
+    },
+    {
+     "lat": -32.1243,
+     "lng": 22.5554,
+     "w": 0.1008,
+     "name": "The proposed Mulilo Karoo Wind Power Development on Portion "
+    },
+    {
+     "lat": -31.7498,
+     "lng": 23.1845,
+     "w": 0.021,
+     "name": "The Karoo Renewable Energy Facility On A Site Near Victoria "
+    },
+    {
+     "lat": -31.3095,
+     "lng": 22.9321,
+     "w": 0.0779,
+     "name": "The proposed Soutrivier Central Wind Energy Facility, Ubuntu"
+    },
+    {
+     "lat": -30.8337,
+     "lng": 24.0038,
+     "w": 0.0289,
+     "name": "Proposed establishment of a wind power generating facility n"
+    },
+    {
+     "lat": -32.1713,
+     "lng": 23.3631,
+     "w": 0.1048,
+     "name": "Proposed Poortjie Wes Wind Energy Project In Beaufort West, "
+    },
+    {
+     "lat": -31.1505,
+     "lng": 23.6052,
+     "w": 0.1386,
+     "name": "The proposed Soyuz 5 Wind Energy Facility, Emthanjeni Munici"
+    }
+   ]
+  },
+  "Kwazulu Natal": {
+   "built_mw": 0,
+   "permits_available": 5,
+   "spread_km": 0,
+   "sites": [
+    {
+     "lat": -27.6466,
+     "lng": 29.8238,
+     "w": 1.0,
+     "name": "The proposed Mulilo Newcastle Wind Power Wind Energy Facilit"
+    }
+   ]
+  },
+  "Limpopo": {
+   "built_mw": 0,
+   "permits_available": 1,
+   "spread_km": 0,
+   "sites": [
+    {
+     "lat": -23.5936,
+     "lng": 27.476,
+     "w": 1.0,
+     "name": "Proposed 1200MW IPP Thabametsi Power Station and associated "
+    }
+   ]
+  },
+  "Mpumalanga": {
+   "built_mw": 0,
+   "permits_available": 14,
+   "spread_km": 0,
+   "sites": [
+    {
+     "lat": -26.6406,
+     "lng": 29.96,
+     "w": 1.0,
+     "name": "Scoping and Environmental Impact Assessment (EIA) Process fo"
+    }
+   ]
+  },
+  "North West": {
+   "built_mw": 0,
+   "permits_available": 1,
+   "spread_km": 0,
+   "sites": [
+    {
+     "lat": -26.0558,
+     "lng": 26.1128,
+     "w": 1.0,
+     "name": "The development of the 100MW Lichtenburg 2 pv SEF and its as"
+    }
+   ]
+  },
+  "Northern Cape": {
+   "built_mw": 790.1,
+   "permits_available": 71,
+   "spread_km": 645,
+   "sites": [
+    {
+     "lat": -32.6708,
+     "lng": 20.7617,
+     "w": 0.2695,
+     "name": "Proposed development of renewable energy facility at the Sut"
+    },
+    {
+     "lat": -27.5326,
+     "lng": 23.3947,
+     "w": 0.0857,
+     "name": "Proposed Kuruman phase 1 wind energy facility near Kuruman w"
+    },
+    {
+     "lat": -28.9465,
+     "lng": 16.6909,
+     "w": 0.0688,
+     "name": "The establishment fo Richtersveld wind energy facility locat"
+    },
+    {
+     "lat": -30.0913,
+     "lng": 22.3746,
+     "w": 0.0133,
+     "name": "Proposed construction of wind farms on Platsjambok and Mierd"
+    },
+    {
+     "lat": -30.355,
+     "lng": 19.2874,
+     "w": 0.0781,
+     "name": "The proposed development of the Hartebeest Leegtewind farm n"
+    },
+    {
+     "lat": -31.6121,
+     "lng": 22.487,
+     "w": 0.0897,
+     "name": "Taaibos South Wind Energy Facility, Ubuntu Local Municipalit"
+    },
+    {
+     "lat": -28.9349,
+     "lng": 19.6936,
+     "w": 0.0439,
+     "name": "The proposed Paulputs south wind energy facility 132kv grid "
+    },
+    {
+     "lat": -29.545,
+     "lng": 18.3207,
+     "w": 0.0465,
+     "name": "Construction Of The Wind And Photovoltaic (Pv) Energy Facili"
+    },
+    {
+     "lat": -29.8443,
+     "lng": 17.221,
+     "w": 0.0465,
+     "name": "The proposed 140 MW Namas Wind Farm within Nama Khoi Local M"
+    },
+    {
+     "lat": -28.4072,
+     "lng": 23.326,
+     "w": 0.0851,
+     "name": "The Proposed development of the Gorachouqua I Wind Energy Fa"
+    },
+    {
+     "lat": -32.0229,
+     "lng": 21.7258,
+     "w": 0.0997,
+     "name": "The proposed development of the Klipkraal Wind Energy Facili"
+    },
+    {
+     "lat": -29.2696,
+     "lng": 18.8808,
+     "w": 0.0731,
+     "name": "Proposed wind energy facility and associated infrastructure "
+    }
+   ]
+  },
+  "Western Cape": {
+   "built_mw": 1256.9,
+   "permits_available": 70,
+   "spread_km": 477,
+   "sites": [
+    {
+     "lat": -32.7466,
+     "lng": 22.4462,
+     "w": 0.3633,
+     "name": "The Proposed Development of the Carissa Wind Energy Facility"
+    },
+    {
+     "lat": -31.2201,
+     "lng": 17.9003,
+     "w": 0.0363,
+     "name": "Proposed Establishment Of A Wind Farm On Land Owned By Exxar"
+    },
+    {
+     "lat": -34.2092,
+     "lng": 19.2768,
+     "w": 0.0509,
+     "name": "Proposed Establishment Of A Wind Energy Facility (Wef) And I"
+    },
+    {
+     "lat": -34.3081,
+     "lng": 21.4334,
+     "w": 0.0073,
+     "name": "The Proposed Construction Of The Lunsklip Wind Farm, Still B"
+    },
+    {
+     "lat": -32.8468,
+     "lng": 18.0824,
+     "w": 0.0984,
+     "name": "Proposed development of a wind and solar energy facility  at"
+    },
+    {
+     "lat": -32.9467,
+     "lng": 20.4527,
+     "w": 0.0534,
+     "name": "The construction of 147 MW Brandvalley wind energy facility "
+    },
+    {
+     "lat": -32.1212,
+     "lng": 19.06,
+     "w": 0.007,
+     "name": "Proposed Construction Of A 19.2 Mw Wind Energy Facility And "
+    },
+    {
+     "lat": -33.7334,
+     "lng": 23.0263,
+     "w": 0.0509,
+     "name": "Proposed Outeniqia wind Farm near Uniondale within George Mu"
+    },
+    {
+     "lat": -33.2791,
+     "lng": 19.0532,
+     "w": 0.0492,
+     "name": "Proposed Gouda Wind Energy Facility and Associated infrastru"
+    },
+    {
+     "lat": -31.8363,
+     "lng": 22.4007,
+     "w": 0.1017,
+     "name": "The development of the 280MW nuweveld East wind energy facil"
+    },
+    {
+     "lat": -34.1185,
+     "lng": 20.3601,
+     "w": 0.0509,
+     "name": "The proposed Western cape wind energy facility (WEF) within "
+    },
+    {
+     "lat": -33.4477,
+     "lng": 19.8276,
+     "w": 0.1308,
+     "name": "The Hugo Wind Energy Facility and ancillary infrastructure, "
+    }
+   ]
+  }
+ },
+ "solar": {
+  "Eastern Cape": {
+   "built_mw": 0,
+   "permits_available": 19,
+   "spread_km": 0,
+   "sites": [
+    {
+     "lat": -33.0947,
+     "lng": 25.7052,
+     "w": 1.0,
+     "name": "The proposed Solaris Fields PV Facility, Eastern Cape Provin"
+    }
+   ]
+  },
+  "Free State": {
+   "built_mw": 168.9,
+   "permits_available": 201,
+   "spread_km": 390,
+   "sites": [
+    {
+     "lat": -29.8077,
+     "lng": 24.794,
+     "w": 0.4753,
+     "name": "Construction of a 1000 MW solar photovoltaic (PV) facility ("
+    },
+    {
+     "lat": -27.0394,
+     "lng": 28.581,
+     "w": 0.0238,
+     "name": "The Proposed Villiers Solar Power Plant near Villiers, Free "
+    },
+    {
+     "lat": -28.96,
+     "lng": 27.0793,
+     "w": 0.0219,
+     "name": "Proposed Merapi PV plant phase 4 (46MW) on a site near Excel"
+    },
+    {
+     "lat": -26.9908,
+     "lng": 26.7152,
+     "w": 0.0713,
+     "name": "The 150MW Paleso solar power plant near Viljoenskroon situat"
+    },
+    {
+     "lat": -28.234,
+     "lng": 25.5726,
+     "w": 0.009,
+     "name": "The Construction Of 19mw Hertzogville Solar Energy Facility "
+    },
+    {
+     "lat": -30.137,
+     "lng": 26.3939,
+     "w": 0.1663,
+     "name": "The Proposed Development of a Solar Photovoltaic (PV) Facili"
+    },
+    {
+     "lat": -27.9587,
+     "lng": 26.9772,
+     "w": 0.0095,
+     "name": "The proposed 20MW solar facility located on the Remaining Ex"
+    },
+    {
+     "lat": -29.0922,
+     "lng": 26.0355,
+     "w": 0.0713,
+     "name": "The proposed Acrux Solar PV Project One near Bloemfontein, F"
+    },
+    {
+     "lat": -28.9179,
+     "lng": 24.8398,
+     "w": 0.0356,
+     "name": "The Proposed Dioflash Solar Park Renewable Energy Generation"
+    },
+    {
+     "lat": -26.779,
+     "lng": 27.6351,
+     "w": 0.0713,
+     "name": "The proposed development of the Ilikwa and Damlaagte solar f"
+    },
+    {
+     "lat": -30.2884,
+     "lng": 25.7602,
+     "w": 0.0048,
+     "name": "Environmental Authorisation for the Proposed Solaire Direct "
+    },
+    {
+     "lat": -28.4314,
+     "lng": 26.6767,
+     "w": 0.0399,
+     "name": "Proposed Sonvanger photovoltaic solar energy fascilty near T"
+    }
+   ]
+  },
+  "Gauteng": {
+   "built_mw": 50.0,
+   "permits_available": 38,
+   "spread_km": 139,
+   "sites": [
+    {
+     "lat": -25.4492,
+     "lng": 28.2519,
+     "w": 0.3077,
+     "name": "Proposed Schoongezicht Solar and BESS Plant on Portion 3, 4,"
+    },
+    {
+     "lat": -26.4715,
+     "lng": 27.2623,
+     "w": 0.0659,
+     "name": "The Proposed Carmel Solar 3 Photovoltaic Solar Energy Facili"
+    },
+    {
+     "lat": -26.3002,
+     "lng": 28.1389,
+     "w": 0.033,
+     "name": "The Proposed Construction Of A 75mw Solar Energy Generation "
+    },
+    {
+     "lat": -25.9774,
+     "lng": 27.4662,
+     "w": 0.0066,
+     "name": "The Proposed Construction Of Photovoltaic Solar Panels On Po"
+    },
+    {
+     "lat": -26.6759,
+     "lng": 27.7054,
+     "w": 0.044,
+     "name": "The Proposed Blesbok Photovoltaic (PV) Facility and Associat"
+    },
+    {
+     "lat": -25.6564,
+     "lng": 28.6391,
+     "w": 0.0791,
+     "name": "The proposed Cullinan 180 MW Solar Photovoltaics (PV) Facili"
+    },
+    {
+     "lat": -26.6978,
+     "lng": 28.1145,
+     "w": 0.0791,
+     "name": "The Proposed Suikerbos PV 1 and Associated Infrastructure in"
+    },
+    {
+     "lat": -26.2021,
+     "lng": 28.4484,
+     "w": 0.0505,
+     "name": "The proposed establishment of a 115MW solar photovoltaic (PV"
+    },
+    {
+     "lat": -26.3706,
+     "lng": 27.5514,
+     "w": 0.0879,
+     "name": "Proposed construction of the 200 MW Photovoltaic Energy Faci"
+    },
+    {
+     "lat": -26.1014,
+     "lng": 27.7312,
+     "w": 0.0308,
+     "name": "Construction Of 70mw Photovoltaic Power Plant On Portion 57 "
+    },
+    {
+     "lat": -26.1874,
+     "lng": 27.4273,
+     "w": 0.1099,
+     "name": "The proposed Tuli Solar Power Plant near Carletonville, Gaut"
+    },
+    {
+     "lat": -26.4752,
+     "lng": 27.7511,
+     "w": 0.1055,
+     "name": "The proposed Poortje Solar Power Plant near Poortje, Gauteng"
+    }
+   ]
+  },
+  "Hydra Central": {
+   "built_mw": 459.5,
+   "permits_available": 130,
+   "spread_km": 277,
+   "sites": [
+    {
+     "lat": -31.7483,
+     "lng": 23.8546,
+     "w": 0.3065,
+     "name": "The proposed development of the Padloper Solar Pv Facility 1"
+    },
+    {
+     "lat": -30.0002,
+     "lng": 24.544,
+     "w": 0.023,
+     "name": "The proposed construction of the kloofsig 2:75MW solar pv en"
+    },
+    {
+     "lat": -31.9391,
+     "lng": 25.4771,
+     "w": 0.023,
+     "name": "The proposed development of the 75MW Dobbin photovoltaic (PV"
+    },
+    {
+     "lat": -32.4076,
+     "lng": 22.5469,
+     "w": 0.0058,
+     "name": "Proposed Construction of19MW Photovoltaic Solar Facility Pro"
+    },
+    {
+     "lat": -30.7778,
+     "lng": 23.0826,
+     "w": 0.0037,
+     "name": "The Establishment Of Davidskraal Karoo Photovoltaic Solar En"
+    },
+    {
+     "lat": -30.956,
+     "lng": 25.0667,
+     "w": 0.0061,
+     "name": "Proposed Dida Solar Energy installation on a site near Noupo"
+    },
+    {
+     "lat": -30.7564,
+     "lng": 24.0905,
+     "w": 0.0929,
+     "name": "Proposed development of the Hartebeest Hoek Solar PV1 locate"
+    },
+    {
+     "lat": -32.4573,
+     "lng": 23.647,
+     "w": 0.1532,
+     "name": "Proposed Kariega Three Wind Energy Facility and associated i"
+    },
+    {
+     "lat": -31.5196,
+     "lng": 23.2026,
+     "w": 0.0058,
+     "name": "The Development Of A 19mw Photovoltaic Solar Power Generatio"
+    },
+    {
+     "lat": -31.4323,
+     "lng": 24.6796,
+     "w": 0.2145,
+     "name": "Proposed Development of the paarde Valley Solar Photovoltai "
+    },
+    {
+     "lat": -31.8326,
+     "lng": 22.5748,
+     "w": 0.0981,
+     "name": "Application for Mura 3 Solar Photovoltaic Facility (up to 32"
+    },
+    {
+     "lat": -32.0949,
+     "lng": 23.1695,
+     "w": 0.0674,
+     "name": "The proposed Poortjie Wes Cluster Grid, Western Cape Provinc"
+    }
+   ]
+  },
+  "Kwazulu Natal": {
+   "built_mw": 0,
+   "permits_available": 7,
+   "spread_km": 0,
+   "sites": [
+    {
+     "lat": -28.7408,
+     "lng": 32.0268,
+     "w": 1.0,
+     "name": "400 MW Richards Bay Power Facility on Erven 17455, 17443 and"
+    }
+   ]
+  },
+  "Limpopo": {
+   "built_mw": 506.0,
+   "permits_available": 107,
+   "spread_km": 339,
+   "sites": [
+    {
+     "lat": -23.0191,
+     "lng": 29.2288,
+     "w": 0.3376,
+     "name": "Proposed Renewable Energy Generation Project, known as the B"
+    },
+    {
+     "lat": -24.9552,
+     "lng": 27.1595,
+     "w": 0.0563,
+     "name": "The proposed SCSC Solar PV facility and associated Infrastru"
+    },
+    {
+     "lat": -25.1978,
+     "lng": 29.9244,
+     "w": 0.0225,
+     "name": "Proposed Construction Of A 40mw Photovoltaic Facility On Por"
+    },
+    {
+     "lat": -23.3889,
+     "lng": 27.6298,
+     "w": 0.0422,
+     "name": "Construction and Operation of a PV Facility near Lephalale i"
+    },
+    {
+     "lat": -23.5037,
+     "lng": 30.4013,
+     "w": 0.0422,
+     "name": "The proposed development of Bolubedu solar park on remainder"
+    },
+    {
+     "lat": -24.6677,
+     "lng": 28.7882,
+     "w": 0.1406,
+     "name": "The proposed development of the Crecy Photovoltaic (PV) 3 So"
+    },
+    {
+     "lat": -22.2478,
+     "lng": 29.9871,
+     "w": 0.007,
+     "name": "Proposed Renewable Energy Generation Project on Erven 14 and"
+    },
+    {
+     "lat": -23.9549,
+     "lng": 29.4707,
+     "w": 0.0506,
+     "name": "The construction of the 90MW Solar PV Facility on the Farm W"
+    },
+    {
+     "lat": -24.1338,
+     "lng": 27.428,
+     "w": 0.1688,
+     "name": "The proposed Mirach Solar PV Project near Thabazimbi, Limpop"
+    },
+    {
+     "lat": -24.2927,
+     "lng": 30.2197,
+     "w": 0.0056,
+     "name": "The proposed Lebalelo Water User Association Havercroft Pump"
+    },
+    {
+     "lat": -25.2996,
+     "lng": 29.1317,
+     "w": 0.0422,
+     "name": "The proposed construction of the Nokukhanya 75MW solar photo"
+    },
+    {
+     "lat": -25.2241,
+     "lng": 28.3117,
+     "w": 0.0844,
+     "name": "The proposed Oribi Solar Power Plant Near Northam, Limpopo P"
+    }
+   ]
+  },
+  "Mpumalanga": {
+   "built_mw": 0,
+   "permits_available": 37,
+   "spread_km": 0,
+   "sites": [
+    {
+     "lat": -25.0722,
+     "lng": 30.4676,
+     "w": 1.0,
+     "name": "The proposed Glencore Lydenburg Solar Photovoltaic Facility "
+    }
+   ]
+  },
+  "North West": {
+   "built_mw": 445.0,
+   "permits_available": 159,
+   "spread_km": 392,
+   "sites": [
+    {
+     "lat": -26.1617,
+     "lng": 26.5818,
+     "w": 0.3295,
+     "name": "The Proposed Grootvlei 600MW Solar PV Plant, BESS and Grid C"
+    },
+    {
+     "lat": -27.5636,
+     "lng": 24.2012,
+     "w": 0.0064,
+     "name": "The development of a photovoltaic solar plant and associated"
+    },
+    {
+     "lat": -25.3328,
+     "lng": 28.1507,
+     "w": 0.0549,
+     "name": "Proposed costruction of the 100MW Moretele Solar Power Plant"
+    },
+    {
+     "lat": -26.2023,
+     "lng": 25.2249,
+     "w": 0.022,
+     "name": "Proposed Installation Of A 40MW Photovoltaic (Pv) Solar Faci"
+    },
+    {
+     "lat": -27.2179,
+     "lng": 25.9809,
+     "w": 0.0412,
+     "name": "Construction of Wolmaranstad 75mw solar enrgy within Maquass"
+    },
+    {
+     "lat": -25.4781,
+     "lng": 27.1895,
+     "w": 0.0769,
+     "name": "The proposed Impala Rustenburg Solar PV Facility within the "
+    },
+    {
+     "lat": -26.7336,
+     "lng": 27.2923,
+     "w": 0.1648,
+     "name": "The Proposed Taurus Solar Power Plant near Potchefstroom, No"
+    },
+    {
+     "lat": -28.0249,
+     "lng": 24.9421,
+     "w": 0.0461,
+     "name": "Proposed Kappa photovoltaic solar energy fascilty near Chris"
+    },
+    {
+     "lat": -26.9332,
+     "lng": 24.8995,
+     "w": 0.0412,
+     "name": "Proposed renewable energy generation project. Carocraft Sola"
+    },
+    {
+     "lat": -25.564,
+     "lng": 26.0618,
+     "w": 0.0412,
+     "name": "Proposed 75MW PV solar facility and associated infrastructur"
+    },
+    {
+     "lat": -26.983,
+     "lng": 26.6098,
+     "w": 0.1648,
+     "name": "The Proposed Highveld Solar Power Plant near Witbank, Mpumal"
+    },
+    {
+     "lat": -27.6471,
+     "lng": 25.5152,
+     "w": 0.011,
+     "name": "The proposed addition to the Delta Solar Power Plant near Bl"
+    }
+   ]
+  },
+  "Northern Cape": {
+   "built_mw": 1282.6,
+   "permits_available": 314,
+   "spread_km": 785,
+   "sites": [
+    {
+     "lat": -28.5151,
+     "lng": 21.0654,
+     "w": 0.3279,
+     "name": "For the proposed Naledi PV, Northern Cape Province"
+    },
+    {
+     "lat": -32.4826,
+     "lng": 20.6626,
+     "w": 0.0033,
+     "name": "Proposed Photovoltaic (Pv) Solar Energy Facility On A Site S"
+    },
+    {
+     "lat": -28.6276,
+     "lng": 16.7171,
+     "w": 0.0246,
+     "name": "Proposed Richtersveld solar farm within Richtersveld Municip"
+    },
+    {
+     "lat": -28.4921,
+     "lng": 24.8216,
+     "w": 0.0246,
+     "name": "The Construction Of A 75mw Photovoltaic Solar Facility On A "
+    },
+    {
+     "lat": -30.4769,
+     "lng": 19.2595,
+     "w": 0.3279,
+     "name": "The proposed FS Zuurfontein PV Solar Energy Facility and ass"
+    },
+    {
+     "lat": -27.1282,
+     "lng": 22.9456,
+     "w": 0.0246,
+     "name": "Proposed renewable energy project on the farm Rhodes near Ku"
+    },
+    {
+     "lat": -29.671,
+     "lng": 22.8676,
+     "w": 0.0377,
+     "name": "115 MW Camel Thorn Photovoltaic Solar Energy Facility on the"
+    },
+    {
+     "lat": -29.1196,
+     "lng": 18.6818,
+     "w": 0.0246,
+     "name": "Proposed Veld PV North solar energy facility and associated "
+    },
+    {
+     "lat": -29.8231,
+     "lng": 20.6145,
+     "w": 0.0656,
+     "name": "Kotulo Tsatsi Energy PV1, Northern Cape Province"
+    },
+    {
+     "lat": -29.8077,
+     "lng": 17.262,
+     "w": 0.0656,
+     "name": "The proposed Kleinzee Solar PV Facility and associated Grid "
+    },
+    {
+     "lat": -28.3495,
+     "lng": 23.3014,
+     "w": 0.0492,
+     "name": "The Proposed development of the Koraqua IV Solar Energy Faci"
+    },
+    {
+     "lat": -28.6056,
+     "lng": 19.7636,
+     "w": 0.0246,
+     "name": "Proposed 75MW Khoi-Sun Solar development on portion of the F"
+    }
+   ]
+  },
+  "Western Cape": {
+   "built_mw": 359.0,
+   "permits_available": 82,
+   "spread_km": 410,
+   "sites": [
+    {
+     "lat": -32.7915,
+     "lng": 21.0845,
+     "w": 0.3508,
+     "name": "The proposed Klipfontein Solar PV Energy Facility and associ"
+    },
+    {
+     "lat": -31.5297,
+     "lng": 18.1215,
+     "w": 0.007,
+     "name": "The Proposed SERE Solar Photovoltaic Plant Phase 1A and asso"
+    },
+    {
+     "lat": -34.0856,
+     "lng": 18.8077,
+     "w": 0.3508,
+     "name": "The proposed Paardevlei Solar PV & Battery Energy Storage Sy"
+    },
+    {
+     "lat": -31.8724,
+     "lng": 22.4418,
+     "w": 0.0526,
+     "name": "Mura 1 Solar Photovoltaic Facility (up to 150 MW) between Lo"
+    },
+    {
+     "lat": -32.874,
+     "lng": 18.0371,
+     "w": 0.0526,
+     "name": "The construction of the Honingklip PV Solar Energy Facility "
+    },
+    {
+     "lat": -33.5616,
+     "lng": 22.3823,
+     "w": 0.0263,
+     "name": "Proposed Dysselsdorp Re-power photovoltaic plant, near Oudts"
+    },
+    {
+     "lat": -33.4077,
+     "lng": 19.9285,
+     "w": 0.0126,
+     "name": "Proposed Touwsrivier Solar energy facility"
+    },
+    {
+     "lat": -32.8107,
+     "lng": 21.9757,
+     "w": 0.0035,
+     "name": "The Construction Of The 10mw Roma Energy Leeu Gamka Solar Pl"
+    },
+    {
+     "lat": -32.15,
+     "lng": 18.5855,
+     "w": 0.0263,
+     "name": "Proposed Orlight SA solar PV plant on Portion 1 of the Farm "
+    },
+    {
+     "lat": -34.0264,
+     "lng": 20.0376,
+     "w": 0.0263,
+     "name": "Proposed establishment of the 75MW Bonnievale solar Farm loc"
+    },
+    {
+     "lat": -33.351,
+     "lng": 18.5175,
+     "w": 0.0068,
+     "name": "Proposed Establishment Of 9.5mw Photovoltaic Solar Facility "
+    },
+    {
+     "lat": -33.2164,
+     "lng": 19.3184,
+     "w": 0.0842,
+     "name": "The proposed Proposed Gydo Renewable Energy Project (SPVR 6 "
+    }
+   ]
+  }
+ }
+}
