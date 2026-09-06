@@ -133,7 +133,12 @@ if _res:
 _rules = read('RULES.md')
 if _rules:
     _n = len(re.findall(r'^\d+\. \*\*', _rules, re.M))
-    _w = {'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'thirteen':13}
+    # Extended to twenty on 6 Sep. The map stopped at thirteen, so adding rule 14 made the
+    # check fail on its own vocabulary rather than on a real disagreement - the validator
+    # needed updating every time a rule was added, which is a maintenance trap not a check.
+    _w = {'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'thirteen':13,
+          'fourteen':14,'fifteen':15,'sixteen':16,'seventeen':17,'eighteen':18,
+          'nineteen':19,'twenty':20}
     _hm = re.search(r'## The ([a-z-]+) rules', _rules)
     _hs = _w.get(_hm.group(1).lower()) if _hm else None
     check('RULES.md heading states the right number of rules',

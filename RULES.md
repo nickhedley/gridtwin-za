@@ -5,7 +5,7 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
-## The thirteen rules
+## The fourteen rules
 
 1. **Always run the full validation suite after any change to index.html, and
    report the counts.** Before and after, so the baseline is measured rather than
@@ -89,6 +89,24 @@ every session. Everything here was learned by getting it wrong at least once.
     Broken repeatedly on 1-2 Sep despite the prose ratchet, because the ratchet counts
     words in PANELS and this habit also appears in RESULTS.md, in commit notes, and in
     replies. **It is a writing rule, not a panel rule.**
+
+14. **A new check must be shown to FAIL before it is trusted.** Break the thing it guards,
+    watch it fire, then put it back. Rule 2 says never relax a check to get green; this is
+    its other half - a check that cannot fail was never worth adding.
+
+    Four instances in one week, all reporting green while proving nothing:
+
+    - a licence check pasted inside a `catch` block, so it never executed and the count
+      silently stayed at 28
+    - a probe that threw on a closure-scoped variable, so a guard swallowed four checks and
+      the total fell 54 to 50 unnoticed
+    - a "panel fills" check counting characters, satisfied by 130 characters of orphaned
+      prose while the panel's tables were missing
+    - a storage assertion whose scenario already had the gap closed, so it passed on
+      `0 -> 0` and measured nothing
+
+    **The tell is a count that does not move.** When a new check does not raise the total,
+    it did not run. Read the number, not the colour.
 
 ---
 
