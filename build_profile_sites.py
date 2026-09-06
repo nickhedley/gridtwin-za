@@ -36,6 +36,7 @@ import json, math, argparse
 from collections import defaultdict
 
 REEA = 'nodal/reea_projects.json'
+REDZ = 'nodal/redz.json'
 CAP = 'nodal/regional_renewable_capacity.json'
 OUT = 'profile_sites.json'
 
@@ -51,6 +52,70 @@ def region_of(site):
     if HYDRA_BOX['lat'][0] <= la <= HYDRA_BOX['lat'][1] and HYDRA_BOX['lng'][0] <= lo <= HYDRA_BOX['lng'][1]:
         return 'Hydra Central'
     return site.get('province')
+
+
+def redz_sites(zones, province, n):
+    """
+    Points across the Renewable Energy Development Zones for a province.
+
+    REDZ are the government's own gazetted answer to where large-scale wind and solar
+    should go - GN 114 of 2018 for zones 1-8, GN 142/144/145 of 2021 for 9-11. Where a
+    province has almost no REEA wind permits, this is a better basis than one permit: it
+    is authoritative about intent rather than incidental.
+
+    A zone is given as a centre and an area. Points are laid on a ring at roughly half the
+    zone's radius, which spreads them without pushing any outside the boundary.
+    """
+    hits = [z for z in zones if province.lower() in (z.get('province') or '').lower()]
+    if not hits:
+        return []
+    out = []
+    per = max(1, n // len(hits))
+    for z in hits:
+        r_km = math.sqrt(z['area_km2'] / math.pi) * 0.5
+        for i in range(per):
+            ang = 2 * math.pi * i / per
+            dlat = (r_km * math.cos(ang)) / 111.0
+            dlng = (r_km * math.sin(ang)) / (111.0 * math.cos(math.radians(z['lat'])))
+            out.append({'lat': round(z['lat'] + dlat, 4), 'lng': round(z['lng'] + dlng, 4),
+                        'mw': 1.0, 'name': f"REDZ {z['id']} {z['name']}"})
+    return out
+
+
+def province_spread(items, province, n):
+    """
+    Last resort: points spread across the province's own extent.
+
+    Used only where a province has neither wind permits nor a REDZ - which for Gauteng and
+    Limpopo is itself informative. The gazette process assessed the country and designated
+    neither for wind, and REEA holds one wind permit each in eight years. Nobody intends to
+    build wind there.
+
+    The series still has to exist, because a user can put wind anywhere on a slider. But it
+    is marked `province-spread` in the output so the tool can say what it rests on rather
+    than presenting a guess with the same confidence as a sampled fleet. The extent comes
+    from ALL REEA records for the province, any technology, so it is real coverage rather
+    than a hardcoded box.
+    """
+    pts = [(x['lat'], x['lng']) for x in items
+           if x.get('lat') and x.get('lng') and x.get('province') == province]
+    if len(pts) < 4:
+        return []
+    la = [a for a, b in pts]
+    lo = [b for a, b in pts]
+    out = []
+    side = max(2, int(math.sqrt(n)))
+    for i in range(side):
+        for j in range(side):
+            if len(out) >= n:
+                break
+            # inset from the edges so points sit inside the province, not on its corners
+            fa = (i + 1) / (side + 1)
+            fo = (j + 1) / (side + 1)
+            out.append({'lat': round(min(la) + fa * (max(la) - min(la)), 4),
+                        'lng': round(min(lo) + fo * (max(lo) - min(lo)), 4),
+                        'mw': 1.0, 'name': f'{province} spread {i}{j}'})
+    return out
 
 
 def spread_km(sites):
@@ -97,6 +162,7 @@ def main():
     args = ap.parse_args()
 
     reea = json.load(open(REEA))
+    zones = json.load(open(REDZ))['zones']
     items = reea if isinstance(reea, list) else reea.get('projects', [])
     cap = json.load(open(CAP))
 
@@ -137,14 +203,38 @@ def main():
                 built[r] = built.get(r, 0) + (v or 0)
 
         for r, sites in sorted(pool.items()):
-            # A region with no built capacity does not need a sampled profile: nothing is
-            # weighted onto it. Keep one site so the series exists for scenario builds.
-            n = args.sites if built.get(r, 0) > 0 else 1
+            # SAMPLE EVERY REGION PROPERLY, including those with no built wind today.
+            #
+            # The first version gave regions with zero built capacity a single site, on the
+            # reasoning that nothing is weighted onto them. That is right for reproducing
+            # today's fleet and wrong for scenarios, which is most of what this model does.
+            #
+            # It showed immediately: Free State wind came back at 37% CF from one permit
+            # location - higher than the Eastern Cape and implausible for the province - and
+            # Limpopo and Mpumalanga took the top two capture rates in the panel, both on a
+            # single guessed point each. A user building 10 GW of Free State wind would have
+            # got that number.
+            #
+            # Where a region has few permits, take what exists rather than forcing a count.
+            n = args.sites
             sel = pick(sites, n)
+            basis = 'permits'
+            # Where permits are too thin to spread, fall back - REDZ first, because it is
+            # gazetted intent, then the province extent, which is a placeholder and is
+            # labelled as one.
+            if len(sel) < 3:
+                alt = redz_sites(zones, r, n)
+                if len(alt) >= 3:
+                    sel, basis = alt, 'redz'
+                else:
+                    alt = province_spread(items, r, n)
+                    if len(alt) >= 3:
+                        sel, basis = alt, 'province-spread'
             tot = sum(s['mw'] for s in sel) or 1
             out[key][r] = {
                 'built_mw': round(built.get(r, 0), 1),
                 'permits_available': len(sites),
+                'basis': basis,
                 'spread_km': round(spread_km(sel)),
                 'sites': [{'lat': s['lat'], 'lng': s['lng'],
                            'w': round(s['mw'] / tot, 4), 'name': s['name']} for s in sel],
@@ -156,11 +246,11 @@ def main():
     total = 0
     for key in ('wind', 'solar'):
         print(f'{key.upper()}')
-        print(f"  {'region':<16}{'built MW':>10}{'permits':>9}{'sampled':>9}{'spread':>9}")
+        print(f"  {'region':<16}{'built MW':>10}{'permits':>9}{'sampled':>9}{'spread':>9}  basis")
         for r, v in sorted(out[key].items(), key=lambda z: -z[1]['built_mw']):
             total += len(v['sites'])
             print(f"  {r:<16}{v['built_mw']:>10,.0f}{v['permits_available']:>9}"
-                  f"{len(v['sites']):>9}{v['spread_km']:>8}km")
+                  f"{len(v['sites']):>9}{v['spread_km']:>8}km  {v['basis']}")
         print()
     print(f'{total} API calls at one per site-year. Free tier is 50/hour.')
     print('Check the spread column before fetching: a region under ~150 km has not '

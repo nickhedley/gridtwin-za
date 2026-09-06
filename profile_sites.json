@@ -89,12 +89,24 @@
   "Free State": {
    "built_mw": 0,
    "permits_available": 3,
-   "spread_km": 0,
+   "spread_km": 393,
    "sites": [
+    {
+     "lat": -26.9845,
+     "lng": 26.7268,
+     "w": 0.3614,
+     "name": "The proposed Siyanda Solar Power Plant near Viljoenskroon, F"
+    },
+    {
+     "lat": -26.8151,
+     "lng": 27.6313,
+     "w": 0.1807,
+     "name": "The development of the Ilikwa SEF and its associated infrast"
+    },
     {
      "lat": -30.3564,
      "lng": 25.5833,
-     "w": 1.0,
+     "w": 0.4578,
      "name": "The Proposed Construction Of The Mainstream Springfontein Wi"
     }
    ]
@@ -194,13 +206,37 @@
   "Kwazulu Natal": {
    "built_mw": 0,
    "permits_available": 5,
-   "spread_km": 0,
+   "spread_km": 224,
    "sites": [
+    {
+     "lat": -27.9307,
+     "lng": 32.0993,
+     "w": 0.0601,
+     "name": "Proposed Thomas wind energy and PV project between Cathcart "
+    },
+    {
+     "lat": -28.684,
+     "lng": 31.9059,
+     "w": 0.1695,
+     "name": "The Proposed Richards Bay Wind Energy Facility, Umhlathuze L"
+    },
+    {
+     "lat": -27.7553,
+     "lng": 30.5242,
+     "w": 0.2157,
+     "name": "The 140MW Waaihoek wind energy facility, South-East of Utrec"
+    },
     {
      "lat": -27.6466,
      "lng": 29.8238,
-     "w": 1.0,
+     "w": 0.3082,
      "name": "The proposed Mulilo Newcastle Wind Power Wind Energy Facilit"
+    },
+    {
+     "lat": -27.6787,
+     "lng": 29.8143,
+     "w": 0.2465,
+     "name": "The proposed Mulilo Newcastle Wind Power 2 Wind Energy Facil"
     }
    ]
   },
@@ -220,13 +256,79 @@
   "Mpumalanga": {
    "built_mw": 0,
    "permits_available": 14,
-   "spread_km": 0,
+   "spread_km": 121,
    "sites": [
     {
      "lat": -26.6406,
      "lng": 29.96,
-     "w": 1.0,
+     "w": 0.1681,
      "name": "Scoping and Environmental Impact Assessment (EIA) Process fo"
+    },
+    {
+     "lat": -25.8945,
+     "lng": 29.126,
+     "w": 0.0231,
+     "name": "The proposed Transalloys power plant and associated infrastr"
+    },
+    {
+     "lat": -25.9745,
+     "lng": 30.1185,
+     "w": 0.0416,
+     "name": "Proposed establishment of the Haverfontein wind energy facil"
+    },
+    {
+     "lat": -26.2143,
+     "lng": 29.5632,
+     "w": 0.084,
+     "name": "The proposed Hendrina Renewable Energy Complex: South Wind E"
+    },
+    {
+     "lat": -26.5888,
+     "lng": 29.5784,
+     "w": 0.0277,
+     "name": "The proposed Ummbila Emoyeni wind energy facility, Mpumalang"
+    },
+    {
+     "lat": -26.6226,
+     "lng": 30.3402,
+     "w": 0.084,
+     "name": "Proposed Development of the Emvelo Wind Energy Facility and "
+    },
+    {
+     "lat": -26.705,
+     "lng": 30.1254,
+     "w": 0.084,
+     "name": "The proposed Camden II Wind Energy Facility (WEF) and associ"
+    },
+    {
+     "lat": -26.6319,
+     "lng": 30.0701,
+     "w": 0.084,
+     "name": "The proposed Camden up to 400kV Grid Connection, Common Coll"
+    },
+    {
+     "lat": -26.5732,
+     "lng": 30.2643,
+     "w": 0.1513,
+     "name": "Proposed Development of the Sheepmoor Wind Energy Facility a"
+    },
+    {
+     "lat": -26.177,
+     "lng": 29.5682,
+     "w": 0.084,
+     "name": "The proposed Hendrina Renewable Energy Complex: North Wind E"
+    },
+    {
+     "lat": -26.6694,
+     "lng": 30.0718,
+     "w": 0.084,
+     "name": "The proposed Camden I Solar Energy Facility (SEF) and associ"
+    },
+    {
+     "lat": -26.6425,
+     "lng": 30.0548,
+     "w": 0.084,
+     "name": "The proposed Camden I Wind Energy Facility (WEF) and associa"
     }
    ]
   },
@@ -406,13 +508,79 @@
   "Eastern Cape": {
    "built_mw": 0,
    "permits_available": 19,
-   "spread_km": 0,
+   "spread_km": 320,
    "sites": [
     {
      "lat": -33.0947,
      "lng": 25.7052,
-     "w": 1.0,
+     "w": 0.3315,
      "name": "The proposed Solaris Fields PV Facility, Eastern Cape Provin"
+    },
+    {
+     "lat": -30.8278,
+     "lng": 26.2079,
+     "w": 0.0577,
+     "name": "Proposed Construction Of A Photovoltaic (Solar Power) Facili"
+    },
+    {
+     "lat": -33.0541,
+     "lng": 27.8686,
+     "w": 0.0099,
+     "name": "Proposed Gehrlicher Ikhwezi 10-12 Mw Pv Solar Facility, East"
+    },
+    {
+     "lat": -33.288,
+     "lng": 26.6573,
+     "w": 0.2461,
+     "name": "Proposed Matjhabeng solar photovoltaic with battery energy s"
+    },
+    {
+     "lat": -32.6014,
+     "lng": 25.083,
+     "w": 0.0083,
+     "name": "Proposed Construction Of A 10mw Photovoltaic (Pv) Solar Farm"
+    },
+    {
+     "lat": -32.7574,
+     "lng": 27.1181,
+     "w": 0.0124,
+     "name": "The Proposed Ground Mounted Photovoltaic Solar Farm On Erf 1"
+    },
+    {
+     "lat": -33.7105,
+     "lng": 25.6505,
+     "w": 0.0108,
+     "name": "Proposed Construction Of The 13mw Photovoltaic (Pv) Solar Fa"
+    },
+    {
+     "lat": -33.1717,
+     "lng": 24.8634,
+     "w": 0.0083,
+     "name": "Proposed 10MW Solar Farm in the Jansenvile District"
+    },
+    {
+     "lat": -32.4308,
+     "lng": 25.7344,
+     "w": 0.0746,
+     "name": "Proposed 90MW Drennan Photovoltaic (PV) power facility, East"
+    },
+    {
+     "lat": -33.3165,
+     "lng": 27.3337,
+     "w": 0.0332,
+     "name": "Construction Of Thecanyon Springs Wind And Solar Facility In"
+    },
+    {
+     "lat": -33.4843,
+     "lng": 25.3054,
+     "w": 0.1243,
+     "name": "The proposed development of the Mayogi Solar Energy Facility"
+    },
+    {
+     "lat": -32.8661,
+     "lng": 27.5279,
+     "w": 0.0829,
+     "name": "The Construction Of Langa Energy 100MW Photovoltaic Solar En"
     }
    ]
   },
@@ -656,12 +824,48 @@
   "Kwazulu Natal": {
    "built_mw": 0,
    "permits_available": 7,
-   "spread_km": 0,
+   "spread_km": 220,
    "sites": [
+    {
+     "lat": -27.9307,
+     "lng": 32.0993,
+     "w": 0.0117,
+     "name": "Proposed Thomas wind energy and PV project between Cathcart "
+    },
+    {
+     "lat": -29.0448,
+     "lng": 31.526,
+     "w": 0.0949,
+     "name": "The Proposed Renewable Energy Generation Project At Tongaat "
+    },
+    {
+     "lat": -28.1607,
+     "lng": 30.6511,
+     "w": 0.0938,
+     "name": "Proposed Extension Of The Emondlo, St James And Leksand Subs"
+    },
+    {
+     "lat": -28.515,
+     "lng": 29.8443,
+     "w": 0.016,
+     "name": "Proposed Construction Of A Photovoltaic (Pv) Solar Energy Fa"
+    },
+    {
+     "lat": -28.4107,
+     "lng": 29.9616,
+     "w": 0.016,
+     "name": "Proposed Construction Of A Photovoltaic (Pv) Solar Energy Fa"
+    },
+    {
+     "lat": -28.7694,
+     "lng": 31.9883,
+     "w": 0.3412,
+     "name": "The 320MW emergency risk mitigation power plant (RMPP) and a"
+    },
     {
      "lat": -28.7408,
      "lng": 32.0268,
-     "w": 1.0,
+     "w": 0.4264,
      "name": "400 MW Richards Bay Power Facility on Erven 17455, 17443 and"
     }
    ]
@@ -748,13 +952,79 @@
   "Mpumalanga": {
    "built_mw": 0,
    "permits_available": 37,
-   "spread_km": 0,
+   "spread_km": 225,
    "sites": [
     {
      "lat": -25.0722,
      "lng": 30.4676,
-     "w": 1.0,
+     "w": 0.2128,
      "name": "The proposed Glencore Lydenburg Solar Photovoltaic Facility "
+    },
+    {
+     "lat": -26.8039,
+     "lng": 28.4195,
+     "w": 0.0532,
+     "name": "Proposed construction of a 75 MW Solar (PV) electricity inst"
+    },
+    {
+     "lat": -25.4393,
+     "lng": 28.8199,
+     "w": 0.0071,
+     "name": "Proposed transalloys energy project 9 on portions 13 and 23 "
+    },
+    {
+     "lat": -26.8036,
+     "lng": 29.9428,
+     "w": 0.2128,
+     "name": "The proposed development of the ABO Ujekamanzi Wind Energy F"
+    },
+    {
+     "lat": -25.713,
+     "lng": 29.8208,
+     "w": 0.1206,
+     "name": "The ABO Serval Solar Energy Facility 7 (SEF) and associated "
+    },
+    {
+     "lat": -26.5679,
+     "lng": 29.2103,
+     "w": 0.0142,
+     "name": "The proposed development and related operation of 19.99 MWac"
+    },
+    {
+     "lat": -25.8862,
+     "lng": 29.0985,
+     "w": 0.1064,
+     "name": "The proposed 150 MW Renewable Energy Generation Project (Pho"
+    },
+    {
+     "lat": -26.097,
+     "lng": 29.4643,
+     "w": 0.0709,
+     "name": "The proposed establishment of a Solar Photovoltaic (PV) Ener"
+    },
+    {
+     "lat": -25.6549,
+     "lng": 30.2411,
+     "w": 0.0355,
+     "name": "The proposed Eland Solar Photovoltaic Plant and associated i"
+    },
+    {
+     "lat": -27.1026,
+     "lng": 29.7707,
+     "w": 0.0461,
+     "name": "Proposed 65MW solar PV fascility at Majuba Power Station in "
+    },
+    {
+     "lat": -25.6247,
+     "lng": 29.4793,
+     "w": 0.0284,
+     "name": "The ABO Serval Solar Energy Facility 10 (SEF) and associated"
+    },
+    {
+     "lat": -26.8099,
+     "lng": 29.4429,
+     "w": 0.0922,
+     "name": "The proposed Imvuselelo Solar Photovoltaic (PV) Facility in "
     }
    ]
   },
