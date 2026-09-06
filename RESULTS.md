@@ -1,9 +1,14 @@
 # GridTwin ZA - verified results
 
-> **STANDING CAVEAT, added 4 Sep 2026.** Our per-unit renewable profiles are built from ONE
-> capacity-weighted centroid per region, and measured against Eskom's ESK19679 they are far
-> too low in calm hours - the 10th percentile is 0.61 of observed while the 99th is 1.01. A
-> real fleet spread over 300 km has a higher floor than a single point does.
+> **STANDING CAVEAT, narrowed 6 Sep 2026.** The single-year regional profiles have been
+> REBUILT from multi-site sampling and now pass against Eskom's observed years: 8 hours a
+> year below 2% output against an observed 7, where the single centroid gave 60.
+>
+> **The TEN-YEAR file has not been rebuilt**, and it is what adequacy runs on. So the
+> caveat below still applies to the frontier, LOLE, expected unserved energy, storage
+> duration and the iron-air result. It no longer applies to capture rate by region,
+> wheeling coverage, electrolyser siting or where-to-build, which use the single-year file
+> and are now sound.
 >
 > Capacity-weighted across the four wind regions against Eskom's observed fleet:
 >

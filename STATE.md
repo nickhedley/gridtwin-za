@@ -6161,34 +6161,33 @@ a source; at present it has neither.
 
 ## Long term - not queued, recorded so it is not re-litigated
 
-18. **Rebuild the renewable profiles with multi-site aggregation.** Scoped 4 Sep 2026 in
-    `scope_profile_rebuild.md`. **This is the highest-value item on the list** and the only
-    one that changes published findings.
+18. **Rebuild the renewable profiles.** ~~Single year DONE 6 Sep 2026.~~ **Ten-year pull
+    outstanding, and that is what adequacy runs on.**
 
-    Our profiles use one capacity-weighted centroid per region. Capacity-weighted nationally
-    against Eskom's observed fleet: **below 2% output for 93 hours a year against an observed
-    7 - thirteen times too often.** Eastern Cape alone is below 2% for 1,006 hours.
+    ```
+    national wind aggregate    before   after   observed
+    hours below 2%                 60       8          7
+    hours below 5%                261     132         72
+    mean CF                     37.7%   36.6%      37.7%
+    ```
 
-    **Already fixed once, for solar.** `profiles_regional.json` records replacing MERRA-2's
-    50 km grid with PVGIS at 5 km because the coarse sample "compressed the regional spread
-    to 1.08x max/min". Same pathology, diagnosed and fixed for one technology and not carried
-    to the other. This is not a new method.
+    Wind only. The multi-site pull took solar from MERRA-2 and reproduced the known 50 km
+    compression - 1.19x spread across 78 sites against a real 1.4-1.5x - so PVGIS solar was
+    KEPT. `merge_multisite_wind.py` enforces that.
 
-    **The 13x figure is a calibration target**, not just a diagnosis: add sites until the
-    calm-hour distribution matches the observed years, rather than guessing a site count.
+    **Three bases, by what the data supports.** Permits where REEA has enough (7 regions);
+    REDZ gazetted zones for North West, where REEA holds one wind permit but government
+    designated Vryburg and Klerksdorp; a labelled province-spread for Gauteng and Limpopo,
+    which have neither permits nor a REDZ. Every region carries a `basis` field.
 
-    **First recover the PyPSA-RSA plant data** the existing centroids were built from - the
-    metadata names it, and built plants beat permits. `fetch_real_regional_profiles.py` is not
-    in the session. Fallback is `reea_projects.json`, 279 wind sites with coordinates, but
-    those are permits: 52.9 GW approved against a 4.5 GW built fleet. The work is matching permits to built plant, pulling
-    per-site series, aggregating with capacity weights, then checking the residual against
-    four observed years.
+    **The single-point regions all fell**, which is the tell: Limpopo -5.4, Free State -4.5,
+    Gauteng -3.7, Mpumalanga -3.1. A representative point is chosen by someone with an eye
+    for a good site, so it flatters. Limpopo's nine points ranged 0.133 to 0.292 - any one
+    defensible alone, all of them wrong.
 
-    **Cost: Renewables.ninja rate-limits.** Sixty sites over ten weather years is 600
-    requests per technology against ten today. Days, not an afternoon, and it needs a
-    resumable puller.
-
-    RESULTS.md now carries a standing caveat naming the affected findings.
+    **Next: the ten-year pull.** About 540 wind calls at 50/hour. Until then the frontier,
+    LOLE, EUE, storage duration and iron-air results still overstate what a renewable build
+    needs.
 
 19. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
 
@@ -7732,6 +7731,105 @@ right base to extend. And `fleet_by_region_v2.csv` gives capacity-weighted coal 
 **The lesson is that a file's provenance travels with its numbers.** These centroids were
 computed once from data later found wrong, and the coordinates outlived the audit that
 rejected their source.
+
+## the profile rebuild: scripts written, ready to run - 4 Sep 2026
+
+Path B chosen: sample locations from REEA, weight capacity from our own commissioned file.
+The PyPSA-RSA plant list is unreachable and its surviving capacities are the rejected
+awards vintage, so its geography was not reused.
+
+### two scripts
+
+**`build_profile_sites.py`** picks the coordinates. No API calls, so the selection can be
+inspected before quota is spent. Run and verified:
+
+```
+WIND            built MW  permits  sampled   spread
+Eastern Cape       1,896       46       12     342km
+Western Cape       1,257       70       12     477km
+Northern Cape        790       71       12     645km
+Hydra Central        669       39       12     239km
+```
+
+It takes the largest permit first, then repeatedly adds whichever site is FURTHEST from
+everything already chosen. Taking the n largest alone would cluster them in the same wind
+corridors, which is the problem being fixed.
+
+REEA is used for LOCATION ONLY - it is permits, not commissioning. Regional capacity totals
+still come from `regional_renewable_capacity.json`.
+
+**`fetch_multisite_profiles.py`** does the pull. Same API, dataset, turbine and the azim=180
+finding as the original. Caches per SITE rather than per region, because a region is now a
+dozen calls and an interruption partway through one would otherwise waste quota.
+
+### the check is the point, and it already works
+
+`--check` compares the calm-hour distribution against Eskom's observed years. Run against
+the CURRENT profiles it fails, as it should:
+
+```
+                modelled  observed   ratio
+below   2%            60         7    8.6x
+below   5%           261        72    3.6x
+mean CF            37.7%     37.7%   identical
+```
+
+**The mean is exactly right and the calm hours are 8.6x too many.** That is the entire
+diagnosis in two lines, and it is why a rescale would have fixed nothing.
+
+### cost, and the staging that follows from it
+
+```
+one year   141 calls    ~3 hours at the 50/hour free tier
+ten years  1,410 calls  ~28 hours
+```
+
+**Do the single year first and run `--check` before committing to the ten-year pull.** If
+twelve sites do not bring the calm hours within 2x, the answer is more sites, and finding
+that out after 28 hours of pulling would be the expensive way to learn it.
+
+### what is needed from outside
+
+A free Renewables.ninja token. Nothing else.
+
+## the profile rebuild, single year - 6 Sep 2026
+
+Ran. Passes. `nodal/profiles_regional.json` replaced, previous file kept as
+`profiles_regional_SINGLECENTROID_backup.json`.
+
+```
+                modelled  observed   ratio      was
+below   2%             8         7    1.1x     8.6x
+below   5%           132        72    1.8x     3.6x
+```
+
+### three things learned in the doing
+
+**Solar had to be excluded.** The same pull took solar from MERRA-2 and landed on 1.19x
+regional spread against a real 1.4-1.5x - the exact 50 km compression that PVGIS was adopted
+to fix. Adding sites cannot help when the grid cell is coarser than the spacing: eleven of
+twelve Gauteng sites returned 0.222 to 0.224. Overwriting good PVGIS data with worse because
+it arrived in the same file would have been the easiest way to lose ground.
+
+**The first selector under-sampled the regions with no built wind**, on the reasoning that
+nothing is weighted onto them. Right for today's fleet, wrong for scenarios - and it showed
+immediately, with Free State wind at 37% from one permit, above the Eastern Cape.
+
+**REEA runs out.** Gauteng, Limpopo and North West have one wind permit each. North West was
+solved with REDZ, which is better than permits - gazetted intent rather than incidental. The
+other two have no REDZ either, and that absence is itself the finding: the gazette assessed
+the country and designated neither for wind. They are labelled `province-spread` rather than
+dressed up.
+
+### the rate limit, and my error
+
+I told the user to stop, citing a 2018 community post giving 50/day. They kept going and
+reached 132 in a session. It is hourly, as the official documentation says. **I weighted a
+forum post over the primary source and nearly halted a working run.**
+
+Separately, my first retry loop treated a 429 as a failed attempt, so it gave up on a site
+after three minutes and moved to the next, which failed identically. A rate limit is not a
+failure and must not consume a retry.
 
 ---
 
