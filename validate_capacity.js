@@ -645,11 +645,35 @@ try {
       }
     } catch (e) {
       pending++;
-      console.log('  PEND  generator reproduction   could not run: ' + String(e.message).slice(0, 120));
+  console.log('  PEND  generator reproduction   could not run: ' + String(e.message).slice(0, 120));
     } finally {
       if (tmp) { try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (_) {} }
     }
   }
+}
+
+// ── EVERY DATA FILE CARRIES A LICENCE ──────────────────────────────────────
+// Seven files had no licence field at all, found on 6 Sep while verifying the CC BY change.
+// A MISSING licence is worse than a restrictive one: the downloader has to guess, and the
+// safe guess is "all rights reserved" - the opposite of the intent.
+//
+// The first version of this check was pasted inside a catch block, so it never ran and the
+// count stayed at 28. A check that does not execute reports the same green as one that
+// passes, which is why the negative test below matters more than the positive one.
+{
+  const _fs = require('fs'), _path = require('path');
+  const _dir = _path.join(ROOT, 'nodal');
+  const _missing = [];
+  for (const f of _fs.readdirSync(_dir).filter(x => x.endsWith('.json'))){
+    let d;
+    try { d = JSON.parse(_fs.readFileSync(_path.join(_dir, f), 'utf8')); } catch (e) { continue; }
+    if (!d || typeof d !== 'object' || Array.isArray(d)) continue;
+    const m = (d.meta && typeof d.meta === 'object') ? d.meta : d;
+    if (!(m.licence || m.license)) _missing.push(f);
+  }
+  check('every data file carries a licence',
+        _missing.length === 0,
+        `${_missing.length} without one: ${_missing.slice(0, 5).join(', ')}`);
 }
 
 console.log(`\n${pass}/${pass + fail} checks passed` + (pending ? `, ${pending} pending` : ''));

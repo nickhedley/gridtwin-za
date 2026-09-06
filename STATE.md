@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 970 checks
+suite                      19 harnesses, 971 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 970 checks. Last full run: 970/970.
+Nineteen harnesses, 971 checks. Last full run: 971/971.
 
 ```
 node stress_suite.js                290/290
@@ -258,7 +258,7 @@ node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           78/78
 node validate_benchmarks.js .        26/26
-node validate_capacity.js .           28/28   Mulilo closed + 10 new integrity checks
+node validate_capacity.js .          29/29   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
@@ -8004,6 +8004,31 @@ Licence changed to CC BY 4.0. Data published as documented CSVs with a dictionar
 run export with data fingerprints. Scenario diff. The chat assistant was deliberately not
 built - it needs a backend and would let a user extract a number without the provenance
 attached, which is the opposite of what the run export exists to do.
+
+## seven data files had no licence at all - 6 Sep 2026
+
+Found while checking the CC BY change had landed everywhere. Seven of twenty-two files
+carried no licence field, including `profiles_regional.json` - the one rebuilt today.
+
+**A missing licence is worse than a restrictive one.** The downloader has to guess, and the
+safe guess is "all rights reserved", which is the opposite of the intent. All 22 now carry
+it, and `validate_capacity` 28 -> 29 asserts every file does.
+
+### the check did not run the first time
+
+Pasted inside a `catch` block. The count stayed at 28 and the suite reported green - **a
+check that does not execute looks exactly like one that passes.** Caught by noticing the
+count had not moved, then confirmed by deleting a licence and watching for a failure that
+did not come.
+
+Now verified both ways: 29/29 normally, and 28/29 naming `sa_solar_grid.json` when one is
+removed. The negative test is the one that matters here.
+
+### and a false alarm from my own check
+
+The first scan reported all fifteen relicensed files as still CC BY-NC-ND. They were not -
+the new licence text EXPLAINS the change and therefore contains the string "NC-ND", which
+the scan matched. Nearly acted on it.
 
 ---
 
