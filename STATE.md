@@ -8030,6 +8030,36 @@ The first scan reported all fifteen relicensed files as still CC BY-NC-ND. They 
 the new licence text EXPLAINS the change and therefore contains the string "NC-ND", which
 the scan matched. Nearly acted on it.
 
+## rule 14 applied retroactively - 6 Sep 2026
+
+Halved `FIXED.emisCoal` from 1.04 to 0.52 and ran the suite to see what noticed.
+
+```
+validate_response       80/81   caught
+validate_consistency    54/55   caught
+validate_benchmarks     25/26   caught
+validate_findings       17/18   caught
+validate_invariants   147/147   DID NOT NOTICE
+```
+
+Four independent harnesses caught it, which is the right answer - the constant is pinned
+against Eskom's Integrated Report and against published findings.
+
+### but one check is a tautology, and its name hid that
+
+`[label] CO2 >= coal energy x emission factor` computes its floor as
+`coalTWh * emisCoal` and compares it against a CO2 figure derived from the same constant.
+Halving it halves both sides. **The check cannot fail on a wrong value.**
+
+It is not worthless - it proves reported CO2 is not computed from a DIFFERENT factor than
+the one in `FIXED`, and that nothing subtracts coal's contribution away. Both are real
+structural faults. Renamed to say so: "CO2 is consistent with FIXED.emisCoal (not a check
+on its value)".
+
+**No bug, and the coverage is real.** The fault was a name that promised more than the check
+delivered, which is how someone later assumes a constant is guarded when it is guarded
+somewhere else entirely - or not at all.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

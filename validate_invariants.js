@@ -325,8 +325,17 @@ const SCENARIOS = {
     // check only applies with capture off. That is not a get-out: with CCS on,
     // the capture rate itself is swept by stress_deep's meaningful-zero guard.
     if (!R.ccsOn) {
+      // NAMED FOR WHAT IT ACTUALLY PROVES. Both sides derive from `emisCoal`, so halving
+      // that constant halves the reported CO2 and the floor together and this holds
+      // regardless. Verified 6 Sep by halving it: 147/147 still passed here, while
+      // validate_benchmarks, validate_response, validate_consistency and validate_findings
+      // all failed - so the constant IS pinned, just not here.
+      //
+      // What this does prove: reported CO2 is not computed from a different factor than
+      // the one in FIXED, and nothing subtracts coal's contribution away. Both are real
+      // structural faults. It is not a check on the VALUE, and the old name implied it was.
       const co2Floor = R.coalTWh * R.emisCoal;
-      check(`[${label}] CO2 >= coal energy x emission factor`,
+      check(`[${label}] CO2 is consistent with FIXED.emisCoal (not a check on its value)`,
             R.co2 >= co2Floor - 0.5,
             `co2 ${R.co2.toFixed(1)} Mt vs floor ${co2Floor.toFixed(1)} Mt`);
     }
