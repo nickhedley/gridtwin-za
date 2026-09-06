@@ -6058,13 +6058,28 @@ twice. The sections above keep the full reasoning.
 
 ## Needs the browser
 
-5. **Look at the four new panels.** Hydrogen, electrolyser siting, grid-enhancing
-   technologies, heat stress. All verified headless for content and NaN; none has been
-   seen laid out. The heat panel moved below the levelised cost comparison this session.
+**These cannot be checked headlessly.** Three faults this week reached the user because the
+test harness reads local files where the render always wins, or because a headless probe
+cannot see layout: the profile fetch race, the panels empty on first load, and the capture
+panel rendering one sentence. A browser is the only instrument for these.
+
+5. **Look at the panels laid out.** Hydrogen, grid-enhancing technologies, heat stress -
+   verified headless for content and NaN, never seen positioned. The heat panel moved below
+   the levelised cost comparison; the hydrogen panel below carbon capture.
+6. **Pin a scenario, move two sliders, read the change line.** New 6 Sep. It reads
+   "Changed since pinning: Coal fleet availability (EAF) 65 % -> 75 % ...". That is copy
+   which reads fine to whoever wrote it and oddly to everyone else. Check the wording and
+   whether three or four changes still fit on a line.
+7. **Export a run record and open it in a spreadsheet.** New 6 Sep. Check the scenario URL
+   pastes back and restores the run, that the fingerprints match `nodal/`, and that nothing
+   is mangled by Excel - long URLs and leading `#` comment rows are both risky.
+8. **Run `publish_data_csv.py` and open each CSV.** New 6 Sep. Particularly whether the
+   `#` header comments confuse Excel's column detection, which would make the published
+   data awkward for the exact audience it is for.
 
 ## Model
 
-6. ~~Instant-path storage stays heuristic.~~ **NOT A TASK - reclassified 1 Sep 2026 as a
+9. ~~Instant-path storage stays heuristic.~~ **NOT A TASK - reclassified 1 Sep 2026 as a
    known limitation.** It contained three facts and no action.
 
    And the finding behind it needed a qualification it did not have. The instant dispatch
@@ -6079,41 +6094,41 @@ twice. The sections above keep the full reasoning.
    **Improving the heuristic is explicitly NOT queued** - rule: no ordering heuristic can
    substitute for an LP when the logic needed is a value function on state of charge,
    proven by two rewrites and two reversions.
-7. **Non-economic dispatch has no mechanism.** Priced this session - 0.97 TWh of coal per
+10. **Non-economic dispatch has no mechanism.** Priced this session - 0.97 TWh of coal per
    TWh spilled, R0.70bn a year to generators at the 4% ceiling - but the model still
    dispatches on merit order between Eskom and IPP plant. **Needs metered curtailment
    instructions by plant: a data request, not a modelling problem.**
-8. **Drought and cooling-water limits are not modelled**, nor the heat-with-low-wind
+11. **Drought and cooling-water limits are not modelled**, nor the heat-with-low-wind
    correlation. Heat stress covers demand and thermal derating only.
 
 ## Data
 
-9. **The solar gap is not what this item says, and four sources disagree.** Investigated
+12. **The solar gap is not what this item says, and four sources disagree.** Investigated
    2 Sep 2026 - see below. `FIXED.pvUtilityMW` is 3,271 and equals the data file total
    exactly, so the 1,823 MW gap does not exist in the arithmetic. But the data file still
    instructs that the constant must NOT be re-derived from it, and the documentation row
    in the page gives a third figure. **Needs a decision, not more data.**
 
    The SunCentral candidate is also weaker than recorded: 114 MW is energised, not 342.
-10. **Named-project layer** - the IPP Office annual overview, the only route to project
+13. **Named-project layer** - the IPP Office annual overview, the only route to project
     names and the Hydra Central split.
-11. **NERSA cumulative reconciliation** - SAPVIA 20,131 MW against NERSA 21,900 MW.
-12. **EDMSA boundary question** - what produces 195 Mt for 2025 against our 174.5. Three
+14. **NERSA cumulative reconciliation** - SAPVIA 20,131 MW against NERSA 21,900 MW.
+15. **EDMSA boundary question** - what produces 195 Mt for 2025 against our 174.5. Three
     numbers measure three different things; theirs is unstated.
 
 ## Publication and outreach
 
-13. **`post_headroom.md`** - verified, ready, unpublished. The oldest unshipped item.
-14. **Wind Pioneers note** - three variants drafted, use the ten-year version.
-15. **EDMSA** - the boundary question above, plus whether "grid readiness adequate per TDP
+16. **`post_headroom.md`** - verified, ready, unpublished. The oldest unshipped item.
+17. **Wind Pioneers note** - three variants drafted, use the ten-year version.
+18. **EDMSA** - the boundary question above, plus whether "grid readiness adequate per TDP
     2023/24" reconciles with their own finding that grid absorption is binding.
-16. **Energy Brokers** - the solar ceiling is directly useful to their offtakers.
-17. **Findings ready**, Tier 1 and 2 only: the solar 49% ceiling, inverted tariff seasons,
+19. **Energy Brokers** - the solar ceiling is directly useful to their offtakers.
+20. **Findings ready**, Tier 1 and 2 only: the solar 49% ceiling, inverted tariff seasons,
     curtailment priced, hydrogen needing overbuild first, heat acting through demand.
 
 ## Repo
 
-18. Remove `HANDOVER.md` from `.gitignore`; add the four custom instructions to Project
+21. Remove `HANDOVER.md` from `.gitignore`; add the four custom instructions to Project
     settings.
 
 ## Data figures needing verification - raised 2 Sep 2026
@@ -6161,7 +6176,7 @@ a source; at present it has neither.
 
 ## Long term - not queued, recorded so it is not re-litigated
 
-18. **Rebuild the renewable profiles.** ~~Single year DONE 6 Sep 2026.~~ **Ten-year pull
+21. **Rebuild the renewable profiles.** ~~Single year DONE 6 Sep 2026.~~ **Ten-year pull
     outstanding, and that is what adequacy runs on.**
 
     ```
@@ -6189,7 +6204,7 @@ a source; at present it has neither.
     LOLE, EUE, storage duration and iron-air results still overstate what a renewable build
     needs.
 
-19. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
+22. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
 
     **The code lift is small.** The engine is already region-generic: `REGIONS` is an
     array, `REGIONS.length` is used 15 times, and there are ZERO hardcoded region counts.
@@ -6226,7 +6241,7 @@ a source; at present it has neither.
     reason beyond completeness.
 
 
-20. **Satellite detection of project status.** Raised 2 Sep 2026 from Robin Hawkes'
+23. **Satellite detection of project status.** Raised 2 Sep 2026 from Robin Hawkes'
     demonstration that Sentinel-2 captures its spectral bands about a second apart, so a
     turbine's blades are displaced between bands and its ROTATION can be extracted from a
     single pass.
@@ -6262,7 +6277,7 @@ a source; at present it has neither.
     imagery is the right tool and a separate exercise: panels are highly reflective and
     geometrically regular, which is an easier target than blade rotation.
 
-21. **Bring your own series.** Scoped 3 Sep 2026 in `scope_bring_your_own_series.md`, not
+24. **Bring your own series.** Scoped 3 Sep 2026 in `scope_bring_your_own_series.md`, not
     built. A paste-your-own generation or curtailment series, analysed against the
     scenario's prices, with nothing leaving the browser.
 
@@ -6278,7 +6293,7 @@ a source; at present it has neither.
     valuable one and puts our numbers into someone else's commercial dispute.** It needs a
     named developer who wants it, not a speculative build.
 
-22. **Price-elastic demand.** The model computes hourly shadow prices, but demand does not
+25. **Price-elastic demand.** The model computes hourly shadow prices, but demand does not
     respond to them. `drShiftPct` sorts each day by NET LOAD and moves load from the top six
     hours to the bottom six - a good proxy, and not the same thing. Net load and price
     diverge exactly where dynamic pricing matters: a scarcity hour at R87,000 and a merely
@@ -6298,7 +6313,7 @@ a source; at present it has neither.
     and state which market each number came from, because transferring an elasticity across
     markets is an assumption, not a measurement.
 
-23. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
+26. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
     4 Sep 2026.** The gate the scope set - does Eskom publish CSP separately - was answered
     by a dataset the user obtained: **ESK19679, 38,736 hours from April 2022 to August 2026**,
     with Wind, PV, CSP and Other RE separated and installed capacity for each.
