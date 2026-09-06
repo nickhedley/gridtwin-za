@@ -140,6 +140,8 @@ CHECKS = [
     # submission and is exercised by validate_consistency.
     # The citable run export: assumptions, outputs, and the gtza- fingerprints of the
     # data files used, so a figure can be reproduced and checked months later.
+    # The comparison panel names the CONTROLS that changed, not just the outputs.
+    ('Changed since pinning',                                      'scenario diff in comparison'),
     ('exportRunRecord',                                            'citable run export'),
     ('Export run record',                                          'run export button'),
     ('touBlockOf',                                                 'Megaflex block classifier'),

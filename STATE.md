@@ -7957,6 +7957,39 @@ and unbuilt, authorised and possibly never either - and double-counting across t
 most common error with South African capacity data. Permitted capacity exceeds built by
 roughly ten times.
 
+## the comparison panel now names what changed - 6 Sep 2026
+
+It compared outputs and never said which controls produced them. A reader could see system
+cost move R1bn without being told what moved it. **A comparison that hides its own
+independent variable is half a comparison.**
+
+Now, at the top of the panel:
+
+```
+Changed since pinning: Coal fleet availability (EAF) 65 % -> 75 % ·
+New wind 0.0 GW -> 15.0 GW · Grid-enhancing technologies off -> on
+```
+
+`pinScenario` now captures the scenario alongside the result. Everything else was already
+built - the panel, the labels, the identical-scenario note, and the fix for the 17 Aug bug
+where both columns took the same caption.
+
+### two things that had to be handled
+
+**Loose comparison.** `state` stores 0 where `SLIDERS` stores `false`, so a strict compare
+reports every untouched toggle as changed. Same trap as the run export earlier today, and
+the same `same()` shape fixes it.
+
+**Toggles print on and off**, not their raw values. The first version read "Grid-enhancing
+technologies 0 -> true", which is the internal representation leaking into the panel.
+
+### that closes the Modo list
+
+Licence changed to CC BY 4.0. Data published as documented CSVs with a dictionary. Citable
+run export with data fingerprints. Scenario diff. The chat assistant was deliberately not
+built - it needs a backend and would let a user extract a number without the provenance
+attached, which is the opposite of what the run export exists to do.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

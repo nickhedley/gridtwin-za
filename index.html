@@ -13689,7 +13689,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-06c';
+const BUILD_STAMP = '2026-09-06d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -14337,11 +14337,17 @@ function downloadDispatchCSV() {
 
 // ── Scenario comparison ──────────────────────────────────────────────────────
 let pinnedResult = null;
+let pinnedState = null;
 let pinnedLabel  = null;
 
 function pinScenario() {
   if(!lastRes) return;
   pinnedResult = lastRes;
+  // Capture the SCENARIO too, not just the result. The panel compared outputs and never
+  // said which controls produced them, so a reader could see that cost moved R40/MWh
+  // without being told what was changed to move it. A comparison that hides its own
+  // independent variable is half a comparison.
+  pinnedState = JSON.parse(JSON.stringify(state));
   // Get active preset name or "Custom"
   const active = document.querySelector('#presets button.active');
   pinnedLabel = active ? active.textContent : 'Custom';
@@ -14352,7 +14358,7 @@ function pinScenario() {
 }
 
 function clearPin() {
-  pinnedResult = null; pinnedLabel = null;
+  pinnedResult = null; pinnedLabel = null; pinnedState = null;
   document.getElementById('pinBtn').textContent = '📌 Pin for comparison';
   document.getElementById('pinBtn').style.background = 'var(--panel)';
   document.getElementById('pinBtn').style.color = 'var(--ink)';
@@ -14386,6 +14392,38 @@ function renderComparison() {
     ? '<div style="font-size:10.5px;color:var(--ink2);padding:6px 14px 0">Nothing has changed since you pinned this. Move a slider or pick another preset to compare.</div>'
     : '';
 
+  // WHAT CHANGED. The panel compared outputs and never named the inputs, so a reader saw
+  // that cost moved without being told what moved it. Listed first, because it is the
+  // thing a comparison is actually about.
+  //
+  // Compare loosely: `state` stores 0 where SLIDERS stores false, so a strict compare
+  // reports every untouched toggle as changed.
+  const unent = t => String(t).replace(/&amp;/g, '&').replace(/&ndash;/g, '-')
+                              .replace(/&#37;/g, '%').replace(/&middot;/g, '.');
+  const changedNote = (() => {
+    if (identical || !pinnedState) return '';
+    const same = (a, b) => a === b || (typeof b === 'boolean' && Boolean(a) === b) ||
+                           (a !== undefined && b !== undefined && Number(a) === Number(b));
+    const diffs = [];
+    for (const sl of (typeof SLIDERS !== 'undefined' ? SLIDERS : [])){
+      if (!sl.id) continue;
+      const a = pinnedState[sl.id], b = state[sl.id];
+      if (same(a, b)) continue;
+      // Toggles have no `fmt`, so they printed their raw values - "0 -> true", which is
+      // the internal representation leaking into the panel.
+      const fmt = v => {
+        if (sl.toggle) return (v === true || Number(v) === 1) ? 'on' : 'off';
+        try { return sl.fmt ? sl.fmt(v) : v; } catch (e) { return v; }
+      };
+      diffs.push('<span style="white-space:nowrap"><strong>' + unent(sl.label || sl.id)
+        + '</strong> ' + fmt(a) + ' &rarr; ' + fmt(b) + '</span>');
+    }
+    if (!diffs.length) return '';
+    return '<div style="font-size:10.5px;padding:7px 14px 0;line-height:1.7">'
+      + '<span style="color:var(--ink2)">Changed since pinning:</span> '
+      + diffs.join('<span style="color:var(--ink2)"> &middot; </span>') + '</div>';
+  })();
+
   function delta(a, b, decimals, unit, lowerBetter) {
     const d = b - a;
     if(Math.abs(d) < 0.005) return {text:'–', col:'var(--ink2)'};
@@ -14404,7 +14442,7 @@ function renderComparison() {
     {label:'Expected shed',    a:(p.shedMWh/1000).toFixed(0),    b:(r.shedMWh/1000).toFixed(0),    d:delta(p.shedMWh/1000,   r.shedMWh/1000,   0,' GWh', true), unit:'GWh/yr'},
   ];
 
-  body.innerHTML = sameNote + `
+  body.innerHTML = sameNote + changedNote + `
     <div style="display:grid;grid-template-columns:140px 1fr 1fr 90px;gap:4px;align-items:center;font-size:10.5px">
       <div></div>
       <div style="font-weight:600;color:var(--ink2)">📌 ${pinnedLabel}</div>
