@@ -1,0 +1,26 @@
+# GridTwin ZA - operational renewable capacity by region, technology and source
+# CC BY 4.0 - attribution required. gridtwinza.org
+# source fingerprint: gtza-4ec9bc7cc8d3285d
+# as at: 2026-03-31
+# source: IPP Office quarterly (reipppp, rmipppp) + Power Futures Lab IPP monitor (private)
+# NOTE: commissioned capacity, not bid-window awards. Captive behind-the-meter excluded.
+# NOTE: Hydra Central is a transmission supply area, not a province.
+region,technology,source,mw
+Mpumalanga,biomass,reipppp,25.0
+Northern Cape,csp,reipppp,600.0
+Northern Cape,solar,reipppp,1282.6
+Hydra Central,solar,reipppp,459.5
+Limpopo,solar,private,388.0
+Western Cape,solar,reipppp,359.0
+North West,solar,reipppp,345.0
+Free State,solar,reipppp,168.9
+Limpopo,solar,reipppp,118.0
+North West,solar,private,100.0
+Gauteng,solar,reipppp,50.0
+Eastern Cape,wind,reipppp,1566.0
+Western Cape,wind,reipppp,1156.9
+Hydra Central,wind,reipppp,669.0
+Northern Cape,wind,reipppp,650.1
+Eastern Cape,wind,private,330.0
+Northern Cape,wind,private,140.0
+Western Cape,wind,eskom,100.0

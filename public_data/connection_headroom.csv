@@ -1,0 +1,17 @@
+# GridTwin ZA - NTCSA GCCA connection headroom by supply area
+# CC BY 4.0 - attribution required. gridtwinza.org
+# source fingerprint: gtza-93f0182456516e03
+# NOTE: wind and solar SHARE headroom - they are not additive. The GCCA publishes
+# the larger of the two per area, which is why the figures often match.
+# NOTE: a revisable snapshot, not a hard wall. It moves as the TDP is built out.
+supply_area,wind_mw,solar_mw,battery_mw
+Kwazulu Natal,5500,5500,5500
+Gauteng,4680,4680,4680
+Limpopo,3360,3360,3360
+Mpumalanga,3320,3320,3320
+North West,1660,1660,1660
+Free State,1420,1420,1420
+Western Cape,1180,0,0
+Eastern Cape,400,0,0
+Northern Cape,0,0,0
+Hydra Central,0,0,0

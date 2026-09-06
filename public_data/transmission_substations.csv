@@ -1,0 +1,196 @@
+# GridTwin ZA - transmission substations with coordinates and supply areas
+# CC BY 4.0 - attribution required. gridtwinza.org
+# source fingerprint: gtza-0fe0a41096f9685a
+# NOTE: `planned` marks stations not yet energised. Coordinates are compiled from
+# published sources and cross-checked against transmission line endpoints; a small
+# number remain approximate and are flagged in the source file.
+name,lat,lng,kv,supply_area,owner,planned,source
+Acacia,-33.88352,18.53541,400,Western Cape,,no,dbsa
+Acornhoek,-24.59822,31.05371,275,Limpopo,,no,osm
+Aggeneis,-29.29758,18.80338,400,Northern Cape,,no,shp
+Agulhas,-34.1278,20.33857,400,Western Cape,,yes,dbsa
+Alpha,-26.80541,29.39713,765,Mpumalanga,,no,osm
+Anderson,-25.80237,27.94837,275,North West,,no,dbsa
+Ankerlig,-33.67368,18.46069,400,Western Cape,,no,dbsa
+Apollo,-25.91944,28.27609,533,Gauteng,,no,dbsa
+Aquila,-30.88,24.29,400,Hydra Central,NTCSA (handed over),no,dbsa+press
+Ararat,-25.56296,27.18693,275,North West,,no,osm
+Ariadne,-29.73017,30.38981,400,Kwazulu Natal,,no,osm
+Aries,-29.4944,20.79392,400,Northern Cape,,no,shp
+Arnot,-25.94361,29.78791,400,Mpumalanga,,no,osm
+Artemis,-28.6782,25.71746,400,Free State,,yes,dbsa
+Athene,-28.75898,31.92705,400,Kwazulu Natal,,no,osm
+Atlas,-26.75995,28.11719,400,Gauteng,,no,dbsa
+Aurora,-33.01006,18.23056,400,Western Cape,,no,manual
+Avon,-29.41718,31.16075,275,Kwazulu Natal,,no,osm
+Bacchus,-33.81426,19.40482,400,Western Cape,,no,osm
+Benburg,-26.10817,28.35506,275,Gauteng,,no,osm
+Bernina,-26.44786,27.66166,275,Gauteng,,no,osm
+Beta,-28.7219,25.70316,765,Free State,,no,dbsa
+Bighorn,-25.68241,27.50835,400,North West,,no,osm
+Bloedrivier,-27.89549,30.57599,275,Kwazulu Natal,,no,osm
+Bloukrans,-28.76034,29.8517,275,Kwazulu Natal,,no,osm
+Borutho,-23.90204,28.97654,400,Limpopo,,no,osm
+Boundary,-28.72396,24.8801,275,Northern Cape,,no,shp
+Brenner,-26.27704,28.27789,275,Gauteng,,no,osm
+Buffalo,-32.98747,27.80723,132,Eastern Cape,,no,dbsa
+Camden,-26.61888,30.09056,400,Mpumalanga,,no,dbsa
+Carmel,-26.42318,27.30586,275,North West,,no,osm
+Chatty,-33.835563,25.521188,132,Eastern Cape,,no,pluscode-corroborated
+Chivelston,-27.83895,29.99108,400,Kwazulu Natal,,no,osm
+Craighall,-26.09415,28.01553,275,Gauteng,,no,dbsa
+Croydon,-26.14058,28.19491,275,Gauteng,,no,osm
+Danskraal,-28.56655,29.83392,275,Kwazulu Natal,,no,osm
+Dedisa,-33.74199,25.67729,400,Eastern Cape,,no,osm
+Delphi,-32.01233,26.80649,400,Eastern Cape,,no,osm
+Dinaledi,-25.57957,27.85381,400,Gauteng,,no,osm
+Diphororo,-25.56317,28.10025,275,Gauteng,,yes,dbsa
+Drakensberg,-28.56602,29.0832,400,Kwazulu Natal,,no,dbsa
+Droerivier,-32.40894,22.53356,400,Western Cape,,no,manual
+Durban South,-29.951188,30.944438,275,Kwazulu Natal,,no,pluscode
+Duvha,-25.96006,29.33649,400,Mpumalanga,,no,dbsa
+Dwaalboom,-24.81212,26.83741,132,Limpopo,,no,dbsa
+Dwarsberg,-24.90779,26.767,400,North West,,no,dbsa
+Eiger,-26.30776,28.11601,275,Gauteng,,no,osm
+Emkhiweni,-25.876,29.403,400,Mpumalanga,,yes,dbsa
+Eros,-30.60819,29.90706,132,Eastern Cape,,no,manual
+Esselen,-26.00556,28.2686,275,Gauteng,,no,osm
+Etna,-26.38503,27.87585,275,Gauteng,,no,osm
+Everest,-27.99226,26.90036,275,Free State,,no,osm
+Ferrum,-27.72931,23.05694,275,Northern Cape,,no,manual
+Fordsburg,-26.20785,28.02624,275,Gauteng,,no,osm
+Foskor,-24.0281,31.12658,275,Limpopo,,no,osm
+Galenia,-32.93434,22.5583,400,Western Cape,,no,manual
+Gamma,-31.67829,23.41007,765,Hydra Central,,no,osm
+Gariep,-30.623961,25.504032,132,Free State,,no,eskom
+Garona,-28.73922,21.99521,275,Northern Cape,,no,shp
+Georgedale,-29.78273,30.61341,275,Kwazulu Natal,,no,osm
+Glockner,-26.60455,27.98683,400,Gauteng,,no,osm
+Gourikwa,-34.16521,21.96069,400,Western Cape,,no,dbsa
+Grassridge,-33.72031,25.63156,400,Eastern Cape,,no,manual
+Groeipunt,-29.51646,18.26848,220,Northern Cape,,no,osm
+Gromis,-29.59969,17.18046,220,Northern Cape,,no,shp
+Grootvlei,-26.77036,28.49462,400,Mpumalanga,,no,osm
+Gumeni,-25.7508,30.23098,400,Mpumalanga,,no,osm
+Harvard,-29.10385,26.1058,275,Free State,,no,shp
+Hector,-29.77773,30.66118,400,Kwazulu Natal,,no,osm
+Helios,-30.49961,19.56037,400,Northern Cape,,no,shp
+Hendrina,-26.03151,29.59832,400,Mpumalanga,,no,osm
+Hera,-26.44746,27.6619,400,Gauteng,,no,dbsa
+Hermes,-26.90206,26.78439,400,North West,,no,shp
+Highveld,-26.91893,27.8929,275,Free State,,no,dbsa
+Hillside,-28.76888,32.02583,132,Kwazulu Natal,,no,dbsa
+Hydra,-30.71438,24.08685,400,Hydra Central,,no,osm
+Illovo,-30.07577,30.8334,275,Kwazulu Natal,,no,osm
+Impala,-28.76681,31.94706,275,Kwazulu Natal,,no,manual
+Incandu,-27.72057,29.97832,400,Kwazulu Natal,,no,osm
+Ingagane,-27.84628,29.98503,275,Kwazulu Natal,,no,osm
+Ingula,-28.27854,29.58713,400,Kwazulu Natal,,no,dbsa
+Invubu,-28.68883,32.03629,400,Kwazulu Natal,,no,dbsa
+Juno,-31.608,18.44423,400,Western Cape,,no,shp
+Jupiter,-26.22956,28.11476,275,Gauteng,,no,osm
+Kappa,-33.1072,20.01026,400,Western Cape,,no,osm
+Kendal,-26.08644,28.97014,400,Mpumalanga,,no,dbsa
+Kestrel,-30.68656,24.11451,400,Hydra Central,,yes,dbsa
+Khanyazwe,-25.50235,31.52815,275,Mpumalanga,,no,dbsa
+Klaarwater,-29.8593,30.86346,275,Kwazulu Natal,,no,osm
+Koeberg,-33.67368,18.43224,400,Western Cape,,no,dbsa
+Komati,-26.09291,29.47323,275,Mpumalanga,,no,dbsa
+Komatipoort,-25.43369,31.94479,275,Mpumalanga,,no,osm
+Komsberg,-32.93367,20.59464,400,Western Cape,,no,osm
+Kookfontein,-26.5879,27.98756,275,Gauteng,,no,osm
+Koring,-32.71225,21.25975,400,Western Cape,,yes,dbsa
+Koruson,-31.3545,24.82183,400,Hydra Central,EDF Power Solutions,no,dbsa
+Kriel,-26.2562,29.17632,400,Mpumalanga,,no,dbsa
+Kronos,-30.02251,22.3383,400,Northern Cape,,no,shp
+Kruispunt,-26.20993,29.09253,275,Mpumalanga,,no,osm
+Kusile,-25.9135,28.9138,400,Mpumalanga,,no,dbsa
+Kwagga,-25.75752,28.10554,275,Gauteng,,no,osm
+Leander,-27.94486,26.79991,400,Free State,,no,dbsa
+Lepini,-26.0323,28.17963,275,Gauteng,,no,osm
+Leseding,-24.4395,30.01711,400,Limpopo,,no,osm
+Lethabo,-26.73911,27.97573,275,Free State,,no,dbsa
+Lewensaar,-28.2119,22.59514,275,Northern Cape,,no,osm
+Lomond,-25.80234,27.93927,275,North West,,no,osm
+Lulamisa,-25.96522,28.01099,400,Gauteng,,no,osm
+Majuba,-27.09809,29.76827,400,Mpumalanga,,no,dbsa
+Makalu,-26.82351,27.9097,275,Gauteng,,no,osm
+Manogeng,-25.10858,29.82662,400,Mpumalanga,,no,osm
+Marang,-25.61307,27.33478,400,North West,,no,osm
+Marathon,-25.40976,30.92249,275,Mpumalanga,,no,osm
+Matimba,-23.66816,27.61525,400,Limpopo,,no,osm
+Matla,-26.28276,29.13905,400,Mpumalanga,,no,dbsa
+Medupi,-23.70306,27.56714,400,Limpopo,,no,osm
+Merapi,-28.94307,27.08419,275,Free State,,no,osm
+Mercury,-27.00431,26.82019,400,North West,,no,manual
+Merensky,-24.71952,30.2216,400,Limpopo,,no,osm
+Mersey,-29.39342,30.4775,400,Kwazulu Natal,,no,dbsa
+Midas,-26.3871,27.5279,400,North West,,no,osm
+Minerva,-25.92158,28.08017,400,Gauteng,,no,osm
+Mookodi,-27.01285,24.74965,400,North West,,no,shp
+Muldersvlei,-33.81813,18.80559,400,Western Cape,,no,osm
+Nama,-29.63235,17.88402,220,Northern Cape,,no,shp
+Neptune,-32.90242,27.8577,400,Eastern Cape,,no,dbsa
+Nevis,-26.24278,28.53833,275,Gauteng,,no,osm
+Ngwedi,-25.40638,27.08693,400,North West,,no,osm
+Nieuwehoop,-29.15027,21.33842,400,Northern Cape,,no,manual
+Njala,-25.84829,28.29052,275,Gauteng,,no,osm
+Normandie,-27.16131,30.87738,400,Mpumalanga,,no,osm
+Olien,-28.33209,23.62378,275,Northern Cape,,no,shp
+Olympus,-26.66584,27.80596,275,Gauteng,,no,osm
+Oranjemond,-28.54608,16.60008,220,Northern Cape,,no,osm
+Ottawa,-29.679313,31.049438,275,Kwazulu Natal,,no,pluscode
+Palmiet,-34.19856,18.97305,400,Western Cape,,no,dbsa
+Paulputs,-28.877308,19.565376,220,Northern Cape,,no,eskom
+Pegasus,-28.24891,30.32829,400,Kwazulu Natal,,no,osm
+Pelly,-25.41557,28.2922,275,Limpopo,,no,osm
+Pembroke,-32.88385,27.52365,220,Eastern Cape,,no,osm
+Perseus,-28.63794,25.74316,400,Free State,,no,osm
+Philippi,-33.98921,18.53715,400,Western Cape,,no,osm
+Pieterboth,-26.32061,28.45966,275,Gauteng,,no,osm
+Pinotage,-34.04738,18.77891,400,Western Cape,,no,osm
+Pluto,-26.21775,27.45465,400,North West,,no,osm
+Port Rex,-33.02852,27.88148,132,Eastern Cape,,no,dbsa
+Poseidon,-32.74267,25.92485,400,Eastern Cape,,no,dbsa
+Prairie,-25.71757,30.22903,275,Mpumalanga,,no,osm
+Princess,-26.17301,27.8451,275,Gauteng,,no,osm
+Prospect,-26.22346,28.09526,275,Gauteng,,no,osm
+Proteus,-34.10403,21.88055,400,Western Cape,,no,shp
+Rabbit,-28.6807,32.13515,275,Kwazulu Natal,,no,line-geom
+Rigi,-26.6797,27.85717,275,Gauteng,,no,osm
+Rockdale,-25.8106,29.50632,275,Mpumalanga,,no,osm
+Roodekuil,-29.99891,24.7068,220,Hydra Central,,no,osm
+Ruigtevallei,-30.640428,25.504027,220,Hydra Central,,no,eskom
+Scafell,-26.81231,27.63782,275,Gauteng,,no,osm
+Sebenza,-26.11572,28.19054,400,Gauteng,,yes,dbsa
+Senakangwedi,-24.81351,30.11671,275,Limpopo,,no,osm
+Silimela,-25.08626,29.29761,400,Mpumalanga,,no,osm
+Simplon,-25.23498,30.05136,275,Mpumalanga,,no,osm
+Snowdon,-26.53187,28.15026,275,Gauteng,,no,osm
+Sol,-26.53879,29.11757,400,Mpumalanga,,no,dbsa
+Sorata,-28.30135,28.91116,132,Kwazulu Natal,,no,shp
+Spencer,-23.48839,30.38071,275,Limpopo,,no,osm
+Spitskop,-24.96802,27.22746,400,Limpopo,,no,osm
+Sterrekus,-33.70216,18.5122,765,Western Cape,,no,dbsa
+Stikland,-33.90496,18.68631,400,Western Cape,,no,osm
+Tabor,-23.37402,29.78274,275,Limpopo,,no,osm
+Taunus,-26.26849,27.7793,275,Gauteng,,no,osm
+Theseus,-28.15978,26.8289,400,Free State,,no,osm
+Thuso,-25.89486,28.24569,275,Gauteng,,no,osm
+Trident,-25.63494,27.18344,275,North West,,no,osm
+Tugela,-28.58033,29.32163,275,Kwazulu Natal,,no,osm
+Tutuka,-26.77382,29.352,400,Mpumalanga,,no,dbsa
+Umfolozi,-28.21595,31.18752,400,Kwazulu Natal,,no,osm
+Upington,-28.544716,21.138104,400,Northern Cape,,no,eskom
+Van der Kloof,-29.993235,24.731309,220,Northern Cape,,no,eskom
+Venus,-28.93868,29.84619,400,Kwazulu Natal,,no,osm
+Verdun,-26.63998,27.95193,275,Gauteng,,no,dbsa
+Vulcan,-25.82959,29.1102,400,Mpumalanga,,no,osm
+Vuyani,-31.6419,28.81351,400,Eastern Cape,,no,shp
+Warmbad,-24.89051,28.32557,275,Limpopo,,no,osm
+Watershed,-26.08994,26.14494,275,North West,,no,manual
+Westgate,-26.14836,27.75477,275,Gauteng,,no,osm
+Wildebees,-25.74848,28.41554,400,Gauteng,,yes,dbsa
+Witkop,-24.04393,29.35668,400,Limpopo,,no,osm
+Zeus,-26.69454,29.08881,400,Mpumalanga,,no,dbsa
+Zwavelpoort,-25.80944,28.37972,400,Gauteng,,yes,approx

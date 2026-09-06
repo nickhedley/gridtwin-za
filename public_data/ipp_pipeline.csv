@@ -1,0 +1,25 @@
+# GridTwin ZA - IPP pipeline: allocated, unallocated and terminated
+# CC BY 4.0 - attribution required. gridtwinza.org
+# source fingerprint: gtza-06192db1e33eb439
+# NOTE: terminated projects sit OUTSIDE the procured identity - IPP Office capacity
+# procured already excludes anything that never reached financial close.
+# NOTE: allocated + unallocated = 7,046 MW, matching the source reconciliation.
+# Rows marked `unspecified` are capacity in a region total that the source does not
+# split by technology - carried rather than dropped.
+region,technology,mw,bucket,project
+North West,solar,120.0,allocated,Doornhoek Solar PV
+North West,solar,150.0,allocated,Boitumelo Solar PV
+North West,solar,150.0,allocated,Kutlwano Solar PV
+Northern Cape,hybrid,75.0,allocated,Mulilo Total Hydra Storage
+Northern Cape,batt,153.0,allocated,"BESIPPPP BW1, Northern Cape"
+Free State,solar,240.0,allocated,Virginia Solar Park
+Free State,solar,200.0,allocated,Good Hope Solar Park
+Eastern Cape,wind,84.0,allocated,"BW5 wind, Eastern Cape (1 project)"
+Western Cape,batt,300.0,allocated,"BESIPPPP BW1, Western Cape"
+Gauteng,batt,60.0,allocated,"BESIPPPP BW1, Gauteng"
+,solar,140.0,unallocated,"BW6, sixth project"
+,solar,3940.0,unallocated,BW7 solar PV
+,hybrid,203.0,unallocated,RMIPPPP in construction
+,batt,615.0,unallocated,BESIPPPP BW2
+,batt,616.0,unallocated,BESIPPPP BW3
+,mixed,1424.0,terminated,BW5 cancelled capacity
