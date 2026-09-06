@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 971 checks
+suite                      19 harnesses, 973 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 971 checks. Last full run: 971/971.
+Nineteen harnesses, 973 checks. Last full run: 973/973.
 
 ```
 node stress_suite.js                290/290
@@ -262,7 +262,7 @@ node validate_capacity.js .          29/29   Mulilo closed + 10 new integrity ch
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
-node validate_findings.js .          18/18   the PUBLISHED FINDINGS, added 31 Aug
+node validate_findings.js .          20/20   the PUBLISHED FINDINGS, added 31 Aug
 node validate_weather.js .            48/48   multi-year path, added 28 Aug
 node validate_consistency.js .       55/55
 node validate_structure.js .         25/25
@@ -8059,6 +8059,31 @@ on its value)".
 **No bug, and the coverage is real.** The fault was a name that promised more than the check
 delivered, which is how someone later assumes a constant is guarded when it is guarded
 somewhere else entirely - or not at all.
+
+## coverage sweep of RESULTS.md - 6 Sep 2026
+
+Prompted by the NERSA submission quoting R1,475 and R1,277 where the model now gives R1,494
+and R1,170. The finding survived - the gap widened rather than closed - but nobody knew the
+figures had moved. **If one set of published numbers went stale unnoticed, others could
+have.**
+
+Swept all 35 sections against `validate_findings`. Four had nothing asserting them:
+
+```
+The no-gas frontier                                    left unchecked, deliberately
+Locational transmission cost                           now pinned
+Merchant value trajectory to 2035                      reproduces
+Batteries are the most expensive way to relieve         reproduces
+```
+
+Three reproduce exactly - average energy cost R584/MWh and the R600/kW-yr tariff both hold.
+**They were holding by luck rather than by anything guarding them**, which rule 14 says is
+the same as not being guarded. Two now pinned; `validate_findings` 18 -> 20, verified by
+moving the tariff to R900 and watching it fire.
+
+**The frontier is left unchecked on purpose.** It runs on the ten-year profile file, which
+the multi-site rebuild has not replaced yet, so its numbers are expected to move. Pinning
+them now would pin a figure we already know is wrong - the comment in the harness says so.
 
 ---
 

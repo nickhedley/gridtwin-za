@@ -343,6 +343,37 @@ setTimeout(()=>{
     }
   }
 
+
+  // ── FINDINGS WITH NO CHECK UNTIL NOW ────────────────────────────────────
+  // A coverage sweep on 6 Sep found four RESULTS.md sections with nothing asserting them.
+  // Three reproduce; they were holding by luck rather than by anything guarding them, which
+  // rule 14 says is the same as not being guarded.
+  //
+  // The fourth - the no-gas frontier - is deliberately left unchecked: it runs on the
+  // ten-year profile file, which the multi-site rebuild has not yet replaced, so its
+  // numbers are expected to move. Pinning them now would pin a figure we know is wrong.
+  {
+    const r = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
+      const res = simulate(state, PROFILES);
+      const P = { ...FIXED, ...state };
+      const out = { avgCost: res.avgCost, tx: P.txRPerKWyr };
+      Object.assign(state, saved);
+      return out;
+    `);
+    if (r && !r.error){
+      check('locational transmission: average energy cost is R584/MWh at defaults',
+            Math.abs(r.avgCost - 584) < 2,
+            `R${r.avgCost.toFixed(0)}/MWh - RESULTS.md quotes R584 in the locational `
+            + `transmission section; if this moved, that section needs restating`);
+      check('locational transmission: the tariff constant is R600/kW-yr',
+            Math.abs(r.tx - 600) < 1,
+            `R${r.tx}/kW-yr against the R600 the same section is built on`);
+      console.log(`  locational   avgCost R${r.avgCost.toFixed(0)}/MWh \u00b7 tx R${r.tx}/kW-yr`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);
