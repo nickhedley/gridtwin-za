@@ -7917,6 +7917,46 @@ Shadow prices are modelled not observed; one synthetic-normal weather year unles
 and the wind-profile caveat naming which findings the ten-year rebuild still affects. A
 number that travels without its caveat is the failure this feature exists to prevent.
 
+## data published as documented CSVs - 6 Sep 2026
+
+`publish_data_csv.py` writes `public_data/`: five CSVs and a data dictionary, 2,830 rows
+under CC BY 4.0.
+
+```
+operational_renewable_capacity.csv     18   built, by region, technology and route
+ipp_pipeline.csv                       16   allocated, unallocated, terminated
+transmission_substations.csv          189   coordinates, kV, supply area
+connection_headroom.csv                10   NTCSA GCCA headroom
+environmental_authorisations.csv    2,597   DFFE permits with coordinates
+```
+
+Every CSV header carries the source file's `gtza-` fingerprint, so a downloaded copy stays
+checkable against the live data.
+
+### two errors before it was right, both producing plausible CSVs
+
+**Summing technology aggregates dropped a residual.** Northern Cape carries 228 MW in
+`total_mw` against 153 MW split by technology; the missing 75 MW simply vanished.
+
+**Then emitting both aggregates and projects double-counted**, putting allocated pipeline at
+3,064 MW against a documented 1,532. The project lists turned out to be complete - every
+region's projects sum exactly to its total - so they are the better output anyway, and they
+carry names the aggregates do not.
+
+Neither looked wrong. Both were caught by reconciling against the source files' own
+reconciliation blocks, which is now a step in the script rather than something I happened to
+check.
+
+**Publishing is where a plausible wrong number does the most damage**, because it travels
+without the model attached and without anyone able to see how it was derived.
+
+### the dictionary states the trap
+
+Do not add operational to pipeline to permits. Three different universes - built, contracted
+and unbuilt, authorised and possibly never either - and double-counting across them is the
+most common error with South African capacity data. Permitted capacity exceeds built by
+roughly ten times.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
