@@ -379,6 +379,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <p style="font-size:10.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45">Start from a preset, or move any slider.</p>
       <div class="presets" id="presets"></div>
       <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
+      <button class="sharebtn" type="button" onclick="exportRunRecord()" title="A one-page record of this run: assumptions, outputs, and the data fingerprints it used, so the numbers can be reproduced and checked later" style="margin-top:6px">&darr; Export run record</button>
       <button class="sharebtn" id="pinBtn" type="button" onclick="pinScenario()" style="margin-top:6px;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink)">📌 Pin for comparison</button>
       <div id="controls"></div>
     </div>
@@ -9961,6 +9962,112 @@ function csvEscape(v){
   return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
+// ── CITABLE RUN EXPORT ──────────────────────────────────────────────────────
+// A model output nobody can reproduce is an opinion with a number attached. This writes a
+// one-page record of a run: what was assumed, what came out, and - the part nothing else
+// in the South African space does - the `gtza-` fingerprints of the data files it ran
+// against, plus the build stamp and the full scenario as a URL.
+//
+// That makes a GridTwin figure checkable months later. Someone holding this file can
+// reconstruct the exact run, and can tell whether the data underneath has changed since,
+// because a fingerprint that no longer matches says so immediately.
+//
+// The fingerprints are already in the data files - this only surfaces them. They hash the
+// body excluding `meta`, so they track the DATA rather than its documentation.
+async function exportRunRecord(){
+  const r = (typeof lastRes !== 'undefined') ? lastRes : null;
+  if (!r){ alert('Run the model first.'); return; }
+
+  // Fingerprints, read live from the files rather than cached, so the record cannot claim
+  // provenance for data that was swapped underneath the page.
+  const FILES = ['regional_renewable_capacity.json', 'ipp_pipeline.json',
+                 'substations_compact.json', 'headroom_summary.json',
+                 'reea_projects.json', 'tdp_projects.json',
+                 'nersa_registrations.json', 'profiles_regional_multiyear.json'];
+  const prints = [];
+  for (const f of FILES){
+    try {
+      const d = await (await fetch('nodal/' + f)).json();
+      prints.push([f, (d.meta && d.meta.fingerprint) || 'no fingerprint']);
+    } catch (e) { prints.push([f, 'unavailable']); }
+  }
+
+  const P = { ...FIXED, ...state };
+  const n = v => (typeof v === 'number' ? v : '');
+  const rows = [];
+  const sec = t => { rows.push([]); rows.push(['# ' + t]); };
+
+  rows.push(['# GridTwin ZA run record']);
+  rows.push(['# gridtwinza.org - data CC BY 4.0, attribution required']);
+  rows.push(['# This file records one model run so it can be reproduced and checked.']);
+  rows.push([]);
+  rows.push(['generated', new Date().toISOString()]);
+  rows.push(['build', typeof BUILD_STAMP !== 'undefined' ? BUILD_STAMP : 'unknown']);
+  // Only the controls that DIFFER. The first version serialised all sixty, producing a
+  // 1,400-character URL in which the two things the user actually changed were invisible.
+  const defOf = {};
+  for (const sl of (typeof SLIDERS !== 'undefined' ? SLIDERS : [])) if (sl.id) defOf[sl.id] = sl.def;
+  const same = (a, b) => a === b || (a === undefined) ||
+                         (typeof b === 'boolean' && Boolean(a) === b) ||
+                         (Number(a) === Number(b));
+  const changed = Object.keys(state).filter(k => !same(state[k], defOf[k]));
+  rows.push(['scenario url', location.origin + location.pathname +
+             (changed.length ? '?' + changed.map(k => k + '=' + state[k]).join('&') : '')]);
+  rows.push(['controls changed', changed.length]);
+
+  sec('Scenario - every control that differs from its default');
+  rows.push(['control', 'value', 'default']);
+  // `same` handles the 0-versus-false case. A strict compare listed every toggle left at
+  // its default as "changed", because state stores 0 and SLIDERS stores false.
+  // And labels carry HTML entities, which must not reach a CSV.
+  const unent = t => String(t).replace(/&amp;/g, '&').replace(/&ndash;/g, '-')
+                              .replace(/&#37;/g, '%').replace(/&middot;/g, '.');
+  let nChanged = 0;
+  for (const sl of (typeof SLIDERS !== 'undefined' ? SLIDERS : [])){
+    if (!sl.id) continue;
+    const v = state[sl.id], d = sl.def;
+    if (same(v, d)) continue;
+    nChanged++;
+    rows.push([unent(sl.label || sl.id), v, d]);
+  }
+  if (!nChanged) rows.push(['(all controls at their defaults)', '', '']);
+
+  sec('Outputs');
+  rows.push(['metric', 'value', 'unit']);
+  const E = r.E || {};
+  rows.push(['energy supplied', n((E.total || Object.values(E).filter(x => typeof x === 'number')
+              .reduce((a, b) => a + b, 0)) / 1e6).toFixed ? ((Object.values(E)
+              .filter(x => typeof x === 'number').reduce((a, b) => a + b, 0)) / 1e6).toFixed(1) : '', 'TWh']);
+  rows.push(['coal', (E.coal / 1e6).toFixed(1), 'TWh']);
+  rows.push(['unserved energy', ((E.unserved || 0) / 1000).toFixed(1), 'GWh']);
+  rows.push(['CO2', n(r.co2).toFixed ? r.co2.toFixed(1) : '', 'Mt']);
+  rows.push(['average energy cost', n(r.avgCost).toFixed ? r.avgCost.toFixed(0) : '', 'R/MWh']);
+  if (r.priceStats){
+    rows.push(['shadow price, mean', r.priceStats.avg.toFixed(0), 'R/MWh']);
+    rows.push(['shadow price, median', r.priceStats.median.toFixed(0), 'R/MWh']);
+  }
+
+  sec('Data provenance - gtza- fingerprints of the files this run used');
+  rows.push(['file', 'fingerprint']);
+  prints.forEach(x => rows.push(x));
+
+  sec('How to check this');
+  rows.push(['1', 'Open the scenario url above. It restores every control.']);
+  rows.push(['2', 'Compare the build stamp. A different build may give different numbers.']);
+  rows.push(['3', 'Compare each fingerprint against the current file in nodal/.']);
+  rows.push(['4', 'A fingerprint that no longer matches means that dataset has changed.']);
+
+  sec('Caveats that travel with these numbers');
+  rows.push(['shadow prices', 'Modelled, not observed. South Africa has no wholesale market.']);
+  rows.push(['weather', 'One synthetic-normal year unless an adequacy run is stated.']);
+  rows.push(['wind profiles', 'Multi-site rebuild 6 Sep 2026 applies to the single-year ' +
+             'regional file. Adequacy runs on the ten-year file - check whether it has ' +
+             'been rebuilt before quoting frontier, LOLE or storage-duration figures.']);
+
+  downloadRows(rows, 'gridtwin-run-' + new Date().toISOString().slice(0, 10) + '.csv');
+}
+window.exportRunRecord = exportRunRecord;
+
 function downloadRows(rows, filename){
   const csv = rows.map(r => r.map(csvEscape).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -13582,7 +13689,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-06b';
+const BUILD_STAMP = '2026-09-06c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -7883,6 +7883,40 @@ discover-and-verify workaround exists BECAUSE of our own licence. BY removes tha
 `gtza-` hashes the body excluding `meta`, so a licence field change does not invalidate
 them. Checked: `gtza-4ec9bc7cc8d3285d` unchanged, `validate_capacity` 28/28.
 
+## citable run export - 6 Sep 2026
+
+"Export run record" beside the scenario-link buttons. Writes a one-page CSV: what was
+assumed, what came out, and the `gtza-` fingerprints of the eight data files the run used,
+plus the build stamp and a scenario URL.
+
+**A model output nobody can reproduce is an opinion with a number attached.** Someone holding
+this file can restore the exact run, and can tell whether the data underneath has changed
+since - a fingerprint that no longer matches says so immediately.
+
+The fingerprints already existed in the data files and appeared nowhere in the tool. This
+only surfaces them. They hash the body excluding `meta`, so they track the DATA rather than
+its documentation - which is why the licence change did not disturb them.
+
+Fingerprints are read LIVE from the files, not from a cached copy, so the record cannot claim
+provenance for data swapped underneath the page.
+
+### three faults in the first version, all found by reading the output
+
+**The scenario URL serialised all sixty controls** - 1,400 characters in which the two things
+the user actually changed were invisible. Now only the ones that differ, with a count.
+
+**Every toggle read as changed**, because `state` stores 0 and `SLIDERS` stores `false`, and
+a strict compare says those differ. A shared `same()` now handles it.
+
+**HTML entities reached the CSV** - "Apply carbon capture &amp;amp; storage". Labels are
+written for a browser, not a spreadsheet.
+
+### and it carries its caveats
+
+Shadow prices are modelled not observed; one synthetic-normal weather year unless stated;
+and the wind-profile caveat naming which findings the ten-year rebuild still affects. A
+number that travels without its caveat is the failure this feature exists to prevent.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

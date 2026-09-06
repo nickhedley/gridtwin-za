@@ -138,6 +138,10 @@ CHECKS = [
     # it can never be wired to a slider.
     # Panel removed 4 Sep; the classifier stays as the evidence base for the NERSA
     # submission and is exercised by validate_consistency.
+    # The citable run export: assumptions, outputs, and the gtza- fingerprints of the
+    # data files used, so a figure can be reproduced and checked months later.
+    ('exportRunRecord',                                            'citable run export'),
+    ('Export run record',                                          'run export button'),
     ('touBlockOf',                                                 'Megaflex block classifier'),
     ('runFrontier',                                                'frontier grid function'),
     ('frontierBody',                                               'frontier panel host'),
