@@ -15,3 +15,6 @@ LOG.md
 node_modules/
 *.log
 .DS_Store
+ninja_site_cache.json
+profiles_regional_multisite.json
+profiles_regional_rebuilt.json
