@@ -7855,8 +7855,39 @@ Worth noting the fresh-load check could not catch it: the harness fetches from t
 filesystem, where the file always arrives before the render. A race that only appears over
 a real network needs a real network.
 
+## data relicensed to CC BY 4.0 - 6 Sep 2026
+
+Fifteen data files in `nodal/`, plus the About footer, the PPA export header and the
+document footers. **Code, model and presentation stay CC BY-NC-ND.**
+
+### the basis was already established in this project
+
+From the PowerTracker entry in LOG.md: "a project FACT (name, MW, technology, location, COD)
+is not copyrightable, so we use PowerTracker to DISCOVER and VERIFY, record the fact in our
+own compilation with attribution, and never copy the dataset."
+
+That makes these files our own compilation of uncopyrightable facts. Nothing upstream
+constrains the licence.
+
+### NC-ND was costing on both sides
+
+**Outward:** a researcher could not clean, merge or reshape the data - the exact use that
+generates citations and inbound links. For a project whose ambition is to be the source of
+record for South African capacity data, that works against the goal.
+
+**Inward:** PowerTracker is CC BY-SA, and Share-Alike composes with neither NC nor ND. The
+discover-and-verify workaround exists BECAUSE of our own licence. BY removes that.
+
+### fingerprints survive
+
+`gtza-` hashes the body excluding `meta`, so a licence field change does not invalidate
+them. Checked: `gtza-4ec9bc7cc8d3285d` unchanged, `validate_capacity` 28/28.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
+DATA FILES in nodal/ are CC BY 4.0 — attribution only. Changed 6 Sep 2026: they are a
+compilation of uncopyrightable facts, and NC-ND blocked both reuse and the ingestion of
+BY-SA sources.*
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

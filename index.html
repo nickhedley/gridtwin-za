@@ -4763,7 +4763,10 @@ function printPrefeas() {
 
     <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.18)">
       &copy; 2026 Nick Hedley. GridTwin ZA &ndash; model, code, calibration and presentation.
-      Licensed under
+      <strong>The data files in nodal/ are CC BY 4.0</strong> &ndash; attribution only, reuse
+      and modification permitted. They are a compilation of uncopyrightable facts, and the
+      previous NC-ND terms blocked both reuse by researchers and the ingestion of BY-SA
+      sources. The model, code and presentation are licensed under
       <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">CC BY-NC-ND 4.0</a>:
       you may share it with attribution, but not use it commercially or distribute modified versions.
       <strong>Commercial use, redistribution of derivatives, or incorporation into another product requires written permission.</strong>
@@ -13579,7 +13582,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-06a';
+const BUILD_STAMP = '2026-09-06b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -14166,7 +14169,7 @@ async function exportPpaTimeseries(){
   rows.push('# wind_pu and solar_pu are per-unit hourly output for this region,');
   rows.push('# from PVGIS and Renewables.ninja. Multiply by installed MW.');
   rows.push('#');
-  rows.push('# Source: gridtwinza.org - CC BY-NC-ND 4.0');
+  rows.push('# Source: gridtwinza.org - data CC BY 4.0, attribution required');
   rows.push('hour,price_r_per_mwh' + (wind ? ',wind_pu' : '') + (solar ? ',solar_pu' : ''));
 
   const N = Math.min(8760, mp.length);

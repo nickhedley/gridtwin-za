@@ -190,5 +190,8 @@ PyPSA-ZA cost comparison it CO-optimises investment and operation, so its "+20% 
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
+DATA FILES in nodal/ are CC BY 4.0 — attribution only. Changed 6 Sep 2026: they are a
+compilation of uncopyrightable facts, and NC-ND blocked both reuse and the ingestion of
+BY-SA sources.*
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
