@@ -38,7 +38,12 @@ SITES = 'profile_sites.json'
 CURRENT = 'nodal/profiles_regional_multiyear.json'
 OUT = 'profiles_multiyear_rebuilt.json'
 CACHE = 'ninja_multiyear_cache.json'
-YEARS = [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023]
+# Extended to 2025 on 6 Sep 2026. The reanalysis stopped at 2023 while Eskom's observed
+# data runs to Aug 2026, which forced two comparisons between different weather years:
+# the validate_weather anchor (observed 2023 against reanalysis 2023 - fine) and the Ember
+# benchmark (model 2023 against observed 12 months to May 2026 - a good wind year against
+# the worst in the record). Reaching 2025 makes the second nearly like-for-like.
+YEARS = [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
 
 
 def fetch_one(lat, lon, year, session):
@@ -83,6 +88,9 @@ def pull():
                 # Truncate leap years to match the existing file. 2016 and 2020 return 8784
                 # hours; the engine assumes 8760 everywhere, so the existing multiyear file
                 # already drops 29 February. Matching that is the conservative choice.
+                # Truncate to 8760. 2016, 2020 and 2024 are leap years returning 8784
+                # hours; the engine assumes 8760 everywhere and the existing multiyear
+                # file already drops 29 February.
                 cache[k] = [round(v, 5) for v in ser[:8760]]
                 json.dump(cache, open(CACHE, 'w'))
                 done += 1
@@ -125,6 +133,10 @@ def merge():
         'permits are thin, province spread where neither - see profile_sites.json basis.')
     out['meta']['solar_note'] = ('UNCHANGED. The multi-site pull reproduces the MERRA-2 '
                                  '50 km compression PVGIS was adopted to fix.')
+    # weatherProfileFactory reads meta.years to build its year list. Writing it from YEARS
+    # rather than leaving the previous value means the two cannot disagree - a file holding
+    # twelve years while its meta claims ten would silently hide the new ones.
+    out['meta']['years'] = list(YEARS)
 
     missing = []
     for region, cfg in sites.items():

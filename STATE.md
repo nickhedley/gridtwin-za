@@ -8085,6 +8085,41 @@ moving the tariff to R900 and watching it fire.
 the multi-site rebuild has not replaced yet, so its numbers are expected to move. Pinning
 them now would pin a figure we already know is wrong - the comment in the harness says so.
 
+## profiles.json is the wrong YEAR, and divides by the wrong nameplate - 6 Sep 2026
+
+**Read this before the nameplate section below. The year problem is the larger one.**
+
+`profiles.json` declares `"year": 2025` and `"source": "Eskom Data Portal ESK19243"`.
+Correlated against Eskom actuals from ESK19679:
+
+```
+              2023     2024     2025
+wind         0.729    0.104    0.115
+solar        0.774      -        -
+demand       0.804      -        -
+```
+
+**All three series are 2023 data.** The metadata says 2025 and names a file that does not
+reproduce them - a direct check against ESK19243 gives correlation 0.125 and a different
+diurnal shape.
+
+Nothing in the suite compares a per-unit series against its stated source, so the claim went
+unchecked. `validate_weather`'s anchor ties the multi-year path to `profiles.json`, and both
+are internally consistent - they simply agree on the wrong year.
+
+### this is not cosmetic
+
+The dashboard's headline mix, dispatch chart, shadow prices and capture rates all run on
+`profiles.json`. They describe 2023 weather against a fleet and demand labelled 2025. The
+wind/demand correlation - which drives storage cycling, curtailment and adequacy - is 2023's,
+not today's.
+
+2023 was also the best wind year of the ten (CF 0.407 against a 0.381 mean), so the shape is
+drawn from an unusually good year while the LEVEL is depressed by the nameplate error below.
+Two faults pulling opposite ways, which is why neither showed in the energy totals.
+
+---
+
 ## profiles.json divides by the wrong nameplate - 6 Sep 2026
 
 Found while preparing to swap in the rebuilt ten-year file. `validate_weather`'s anchor check
