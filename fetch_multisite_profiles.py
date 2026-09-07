@@ -181,8 +181,26 @@ def check(profile_file, eskom_csv):
             wcap[r] = wcap.get(r, 0) + (v or 0)
     regions = [r for r in prof['wind_pu'] if wcap.get(r, 0) > 0]
     tot = sum(wcap[r] for r in regions)
-    n = len(prof['wind_pu'][regions[0]])
-    agg = [sum(prof['wind_pu'][r][h] * wcap[r] for r in regions) / tot for h in range(n)]
+
+    # Two file shapes. The single-year file is {region: [8760 floats]}; the ten-year file
+    # is {region: {year: [8760 ints scaled by `scale`]}}. The first version of this check
+    # only handled the former and died with KeyError: 0 on the multiyear file - which is
+    # the one that matters most, since adequacy runs on it.
+    scale = prof.get('scale', 1)
+    first = prof['wind_pu'][regions[0]]
+    if isinstance(first, dict):
+        years = sorted(first.keys())
+        agg = []
+        for y in years:
+            n = len(prof['wind_pu'][regions[0]][y])
+            for h in range(n):
+                agg.append(sum(prof['wind_pu'][r][y][h] * wcap[r] for r in regions)
+                           / tot / scale)
+        print(f'  ten-year file: {len(years)} weather years, {len(agg):,} hours\n')
+    else:
+        n = len(first)
+        agg = [sum(prof['wind_pu'][r][h] * wcap[r] for r in regions) / tot / scale
+               for h in range(n)]
 
     obs = []
     with open(eskom_csv) as fh:
@@ -194,6 +212,7 @@ def check(profile_file, eskom_csv):
             except (ValueError, KeyError):
                 pass
 
+    n = len(agg)
     print('hours a year below each threshold, national wind aggregate\n')
     print(f"  {'threshold':<12}{'modelled':>10}{'observed':>10}{'ratio':>8}")
     ok = True
