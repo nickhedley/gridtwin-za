@@ -6176,35 +6176,30 @@ a source; at present it has neither.
 
 ## Long term - not queued, recorded so it is not re-litigated
 
-21. **Rebuild the renewable profiles.** ~~Single year DONE 6 Sep 2026.~~ **Ten-year pull
-    outstanding, and that is what adequacy runs on.**
+22. **Resample the multi-year SOLAR profiles.** The wind rebuild completed 6 Sep 2026. Solar
+    is still one MERRA-2 centroid per region across all twelve years, **regional spread
+    1.07x against a real 1.4-1.5x**.
 
-    ```
-    national wind aggregate    before   after   observed
-    hours below 2%                 60       8          7
-    hours below 5%                261     132         72
-    mean CF                     37.7%   36.6%      37.7%
-    ```
+    Same fault the wind had, same shape of fix, and the diagnosis is already on record:
+    `profiles_regional.json` documents replacing MERRA-2's 50 km grid with PVGIS at 5 km
+    because the coarse sample "compressed the regional spread to 1.08x max/min". The
+    single-year file got that fix. The multi-year file never did.
 
-    Wind only. The multi-site pull took solar from MERRA-2 and reproduced the known 50 km
-    compression - 1.19x spread across 78 sites against a real 1.4-1.5x - so PVGIS solar was
-    KEPT. `merge_multisite_wind.py` enforces that.
+    **Two routes, and neither is clean.** PVGIS at 5 km is the better solar source and is
+    what the single-year file uses - but its coverage ends before recent years, and wind
+    from one year against solar from another destroys the correlation that storage cycling
+    and curtailment depend on. Multi-site MERRA-2 keeps the years matched but reproduces the
+    compression: a 78-site test pull on 6 Sep gave 1.19x, barely better than 1.07x.
 
-    **Three bases, by what the data supports.** Permits where REEA has enough (7 regions);
-    REDZ gazetted zones for North West, where REEA holds one wind permit but government
-    designated Vryburg and Klerksdorp; a labelled province-spread for Gauteng and Limpopo,
-    which have neither permits nor a REDZ. Every region carries a `basis` field.
+    Deciding which matters more - regional spread or wind/solar correlation - IS the work.
+    It should be decided deliberately rather than falling out of whichever script is easier
+    to write.
 
-    **The single-point regions all fell**, which is the tell: Limpopo -5.4, Free State -4.5,
-    Gauteng -3.7, Mpumalanga -3.1. A representative point is chosen by someone with an eye
-    for a good site, so it flatters. Limpopo's nine points ranged 0.133 to 0.292 - any one
-    defensible alone, all of them wrong.
+    **What it affects:** anything regional and solar-driven. Curtailment by region, corridor
+    congestion, where-to-build, the solar ceiling. Not the frontier or adequacy, which are
+    wind-limited.
 
-    **Next: the ten-year pull.** About 540 wind calls at 50/hour. Until then the frontier,
-    LOLE, EUE, storage duration and iron-air results still overstate what a renewable build
-    needs.
-
-22. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
+23. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
 
     **The code lift is small.** The engine is already region-generic: `REGIONS` is an
     array, `REGIONS.length` is used 15 times, and there are ZERO hardcoded region counts.
@@ -6241,7 +6236,7 @@ a source; at present it has neither.
     reason beyond completeness.
 
 
-23. **Satellite detection of project status.** Raised 2 Sep 2026 from Robin Hawkes'
+24. **Satellite detection of project status.** Raised 2 Sep 2026 from Robin Hawkes'
     demonstration that Sentinel-2 captures its spectral bands about a second apart, so a
     turbine's blades are displaced between bands and its ROTATION can be extracted from a
     single pass.
@@ -6277,7 +6272,7 @@ a source; at present it has neither.
     imagery is the right tool and a separate exercise: panels are highly reflective and
     geometrically regular, which is an easier target than blade rotation.
 
-24. **Bring your own series.** Scoped 3 Sep 2026 in `scope_bring_your_own_series.md`, not
+25. **Bring your own series.** Scoped 3 Sep 2026 in `scope_bring_your_own_series.md`, not
     built. A paste-your-own generation or curtailment series, analysed against the
     scenario's prices, with nothing leaving the browser.
 
@@ -6293,7 +6288,7 @@ a source; at present it has neither.
     valuable one and puts our numbers into someone else's commercial dispute.** It needs a
     named developer who wants it, not a speculative build.
 
-25. **Price-elastic demand.** The model computes hourly shadow prices, but demand does not
+26. **Price-elastic demand.** The model computes hourly shadow prices, but demand does not
     respond to them. `drShiftPct` sorts each day by NET LOAD and moves load from the top six
     hours to the bottom six - a good proxy, and not the same thing. Net load and price
     diverge exactly where dynamic pricing matters: a scarcity hour at R87,000 and a merely
@@ -6313,7 +6308,7 @@ a source; at present it has neither.
     and state which market each number came from, because transferring an elasticity across
     markets is an assumption, not a measurement.
 
-26. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
+27. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
     4 Sep 2026.** The gate the scope set - does Eskom publish CSP separately - was answered
     by a dataset the user obtained: **ESK19679, 38,736 hours from April 2022 to August 2026**,
     with Wind, PV, CSP and Other RE separated and installed capacity for each.
