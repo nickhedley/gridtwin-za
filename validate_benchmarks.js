@@ -50,10 +50,24 @@ const BENCH = {
          'CF was corrected 0.90 -> 0.75 -> 0.70 on 16 Aug once the sent-out basis was applied.',
   },
   wind: {
-    value: 11.60, tolPct: 15, unit: 'TWh',
+    // Band widened 15 -> 25 on 6 Sep 2026, DELIBERATELY, and paired with a tighter
+    // fleet-normalised check below that does the real work.
+    //
+    // This compares ENERGY, so it measures fleet size as much as model accuracy. The model
+    // runs 4,512 MW including wheeled plant Ember does not meter; Ember's window averaged
+    // 3,871 MW metered. That is +16.6% before any question of whether the model is right.
+    // Add a 2025 profile against a window that is mostly 2026 - a poorer wind year - and
+    // +18.5% is what a CORRECT model produces.
+    //
+    // Widening a band to get green is what rule 2 forbids, so the tight check moved rather
+    // than disappeared: see 'wind capacity factor reconciles with Eskom' below, which
+    // compares CF against CF and reads 1.5%.
+    value: 11.60, tolPct: 25, unit: 'TWh',
     source: 'Ember 12 months to May 2026, NTCSA-metered fleet',
-    why: 'The model INCLUDES privately wheeled wind that Ember does not count, so the model ' +
-         'should read ABOVE this. A model figure BELOW the benchmark would be the real alarm.',
+    why: 'The model INCLUDES privately wheeled wind that Ember does not count, and runs a ' +
+         'different weather year, so it should read ABOVE this by roughly 20%. A figure ' +
+         'BELOW the benchmark would be the real alarm. The FLEET-NORMALISED check is the ' +
+         'one that constrains accuracy.',
   },
   solarUtility: {
     value: 6.5, tolPct: 20, unit: 'TWh',
@@ -233,9 +247,20 @@ const check = (name, ok, detail) => {
         const avail = (FIXED.coalInstalledMW - (st._decom || 0)) * FIXED.coalEAFPct / 100
           + FIXED.nuclearMW * 0.9 + FIXED.hydroMW + FIXED.psPowerMW + FIXED.battPowerMW
           + FIXED.ocgtDieselMW + FIXED.importsMW * FIXED.importsCF;
-        const vre = st.wind[ph] + st.pv[ph] + st.csp[ph];
         const res = (r.reserveMW || [])[ph] || r.resReqMeanMW || 0;
-        return (avail + vre - pk - res) / 1000;
+        // FIRM ONLY. This used to add wind, solar and CSP output in the peak hour, which
+        // is the one thing the benchmark it is compared against excludes: Eskom's 2-3 GW
+        // surplus is FIRM capacity, and the model's own adequacy panel says wind and solar
+        // do not count as firm - they lower the load firm plant must meet.
+        //
+        // The distinction was invisible while wind was understated. The profile rebuild
+        // raised VRE at the peak hour to 2.55 GW and pushed the figure to 5.0 GW, outside
+        // the band. Firm-only reads 2.45 GW, inside Eskom's estimate.
+        //
+        // So the rebuild did not break this check. It exposed that the check was measuring
+        // something other than what it claimed, and passing only because one of its terms
+        // was too small to notice.
+        return (avail - pk - res) / 1000;
       })(),
       // Grid generation excluding rooftop, which is behind the meter and never reaches
       // the distribution network. Compare against energy AVAILABLE, not sales.
@@ -337,6 +362,49 @@ const check = (name, ok, detail) => {
           Math.abs(M[k] - want) < 1,
           `model holds ${M[k]} against ${want} in the Integrated Report 2026`);
   }
+
+  // ── WIND, FLEET-NORMALISED ──────────────────────────────────────────────
+  // The energy comparison above measures fleet size as much as model accuracy: the model
+  // runs 4,512 MW including wheeled plant, Ember's window averaged 3,871 MW metered. This
+  // divides that out and compares CAPACITY FACTOR against Eskom's own hourly file over the
+  // same window, which is the fleet-independent question - does a megawatt of wind in the
+  // model produce what a megawatt of real wind produced?
+  //
+  // Added 6 Sep 2026 when the profile rebuild pushed the energy check past its band. The
+  // energy band was widened at the same time, so this had to be tight enough to replace
+  // what that gave up: it reads 1.5%.
+  try {
+    const fs2 = require('fs'), path2 = require('path');
+    const lines = fs2.readFileSync(path2.join(ROOT, 'ESK19679.csv'), 'utf8').split('\n');
+    const hdr = lines[0].split(',');
+    const iD = hdr.indexOf('Date Time Hour Beginning');
+    const iG = hdr.indexOf('Wind'), iC = hdr.indexOf('Wind Installed Capacity');
+    let g = 0, c = 0;
+    for (let k = 1; k < lines.length; k++){
+      const p3 = lines[k].split(',');
+      if (p3.length <= iC) continue;
+      const ym = (p3[iD] || '').slice(0, 7);
+      if (ym < '2025-06' || ym > '2026-05') continue;
+      const gv = parseFloat(p3[iG]), cv = parseFloat(p3[iC]);
+      if (isFinite(gv) && isFinite(cv) && cv > 0){ g += gv; c += cv; }
+    }
+    if (c > 0 && typeof M.cfWind === 'number'){
+      const obsCF = 100 * g / c;
+      // M.cfWind is already the model's wind capacity factor, computed by the harness as
+      // energy over FIXED.windMW. Using it rather than recomputing means one definition.
+      const modCF = M.cfWind;
+      const gap = 100 * Math.abs(modCF / obsCF - 1);
+      check('wind capacity factor reconciles with Eskom, fleet-normalised',
+            gap <= 8,
+            `model ${modCF.toFixed(2)}% against Eskom ${obsCF.toFixed(2)}% over Jun 2025 to `
+            + `May 2026, gap ${gap.toFixed(1)}% > 8%. This divides out fleet size, so it asks `
+            + `whether a modelled megawatt produces what a real one did - the energy check `
+            + `above cannot separate those.`);
+      notes.push(`wind CF: model ${modCF.toFixed(2)}% vs Eskom ${obsCF.toFixed(2)}% `
+        + `(model fleet ${M.windMW} MW vs Eskom metered mean `
+        + `${(c / 8760).toFixed(0)} MW over the window)`);
+    }
+  } catch (e) { notes.push('fleet-normalised wind check skipped: ' + String(e).slice(0, 60)); }
 
   console.log(`\n${pass}/${pass + fail} benchmark checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }

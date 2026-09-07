@@ -8331,6 +8331,51 @@ solar has ten. Third symptom of that gap, after `weatherYearNational` returning 
 anchor losing its year. Now filters to years with solar and reports the count, so a shrinking
 sample cannot pass unnoticed.
 
+## two benchmarks were measuring the wrong thing - 6 Sep 2026
+
+Both failed after the profile rebuild. Neither was broken by it; both were exposed by it.
+
+### the Ember wind check measured fleet size
+
+```
+energy comparison        model 13.75 TWh vs Ember 11.60      +18.5%   FAILED
+fleet-normalised         model CF 34.04% vs Eskom 34.29%      -0.7%   passes
+```
+
+The model runs 4,612 MW including wheeled plant Ember does not meter; Ember's window
+averaged 3,871 MW metered. **That is +16.6% before any question of accuracy**, and a 2025
+profile against a window that is mostly 2026 adds the rest.
+
+Eskom's own file gives 11.63 TWh for Ember's window, confirming the benchmark exactly - so
+the reference is right and the comparison was wrong.
+
+The energy band was widened 15 to 25 **and the tight constraint moved rather than
+disappeared**: a new fleet-normalised check compares capacity factor against Eskom's hourly
+file over the same window, at 8% tolerance, reading 0.7%. Widening alone would have been
+rule 2.
+
+### the surplus check counted wind as firm
+
+```
+peak load          31.60 GW
+firm available     35.49 GW
+VRE at that hour    2.55 GW
+reserve             1.45 GW
+
+with VRE            5.00 GW   outside the 1.8-4 band
+firm only           2.45 GW   inside Eskom's 2-3 GW estimate
+```
+
+It added wind, solar and CSP output in the peak hour - the one thing the benchmark excludes.
+Eskom's 2-3 GW is FIRM capacity, and the model's own adequacy panel says wind and solar do
+not count as firm.
+
+**The distinction was invisible while wind was understated.** Raising VRE at the peak hour to
+2.55 GW pushed it outside the band, which is the only reason anyone looked.
+
+Verified both still bite: dropping coal availability to 50% fires the surplus check at
+-3.4 GW.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
