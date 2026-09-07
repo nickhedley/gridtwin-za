@@ -8519,6 +8519,55 @@ Solar is MERRA-2 at one centroid per region across all twelve years, with a regi
 of 1.07x against a real 1.4-1.5x. Consistent, and still wrong in the same way the wind was
 before today. Resampling it - multi-site or PVGIS - is the remaining job.
 
+## post-rebuild sweep - 6 Sep 2026
+
+Read the platform as an energy modeller and the code as a coder, after a day of substantial
+change. **Three real faults, all small. No structural problems.**
+
+### two visible notes described a fix that has been superseded
+
+The CCS-adjacent provenance block still explained the 16 Aug normalisation - metered energy
+divided by a re-derived 4,044 MW nameplate, "so the model now reproduces Ember's 11.6 TWh
+exactly". That figure was an end-of-period estimate against a year whose mean installed
+capacity was 3,642 MW. Rewritten to describe the hourly-capacity method and to say plainly
+that the energy comparison against Ember now reads about 20% high for reasons that are fleet
+size and weather year.
+
+The run-export caveat said "one synthetic-normal year". That label was established as wrong
+on 28 Aug and I reintroduced it this morning writing the export. Now reads calendar 2025,
+Eskom measured.
+
+### a debug log printed on every page load
+
+`console.log('pipeline loaded:', ...)` in the pipeline fetch. Removed; the `catch` stays,
+because a silent fetch failure is the worse fault.
+
+### the outputs are physically sound
+
+```
+wind CF        34.0%     Eskom measured 2025 35.5%
+solar CF       24.1%     Eskom measured 2025 25.2%
+rooftop CF     19.6%     below utility, as it should be
+CSP CF         28.9%     Eskom 2023 31.4%, 2025 25.6%
+coal CF        46.8%     at EAF 65
+nuclear CF     70.0%     Koeberg with refuelling
+CO2            766 kg/MWh   consistent with 72.6% coal at 1.04 t/MWh
+```
+
+### one alarm of mine that was wrong
+
+`curtTWh` reads 0 and I flagged it, since the real system curtails. It is ECONOMIC
+curtailment, legitimately zero at 9.9% VRE share - you do not spill wind that is a tenth of
+supply. Congestion curtailment is separate and reads 0.86 TWh, against roughly 1.0 TWh a
+year measured from Eskom's data. **The model is right and the two are adequately
+distinguished in the UI.**
+
+### fourteen functions looked orphaned and none were
+
+The scan flagged `runAdequacy`, `runMC`, `firstPaint`, `csvEscape` and others. All are called
+through `setTimeout`, HTML attributes or as IIFEs - forms a naive regex cannot see. Recorded
+so the next sweep does not re-raise it.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
