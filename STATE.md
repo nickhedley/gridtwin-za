@@ -8305,6 +8305,32 @@ Checked before recommending: the multi-year solar is **already MERRA-2**, region
 1.07x against PVGIS's 1.4-1.5x. Pulling MERRA-2 solar for two more years introduces nothing
 new. The PVGIS solar lives in the single-year `profiles_regional.json` only.
 
+## I pinned a coincidence - 6 Sep 2026
+
+This morning's coverage sweep added: "locational transmission: average energy cost is
+R584/MWh at defaults", because RESULTS.md's locational transmission section quotes R584.
+
+**It does - as a TRANSMISSION ANNUITY in R/kW-yr.** R6,964/kW over 40 years at 8% gives
+R584/kW-yr, which the section uses to argue R600 is a sound national average. The model's
+average energy cost in R/MWh is a different quantity that happened to sit at the same number
+that day.
+
+The check passed for the wrong reason and broke today for the right one, when the profile
+rebuild moved energy cost to R574. **A check can be green, load-bearing in appearance, and
+testing nothing you think it tests.** Rule 14 says show a new check failing before trusting
+it - I did that, and it fired, which proved only that the number moved when I changed the
+constant, not that the number meant what I claimed.
+
+Replaced with the arithmetic it should have checked: that R6,964/kW annuitises to R584/kW-yr.
+The R600 tariff check beside it was always sound and still bites.
+
+### also fixed, same root cause as the weather failures
+
+`validate_findings` CRASHED rather than failed - it iterated `meta.years`, now twelve, while
+solar has ten. Third symptom of that gap, after `weatherYearNational` returning null and the
+anchor losing its year. Now filters to years with solar and reports the count, so a shrinking
+sample cannot pass unnoticed.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

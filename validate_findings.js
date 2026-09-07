@@ -146,7 +146,17 @@ setTimeout(()=>{
     const mp = path.join(ROOT, 'nodal', 'profiles_regional_multiyear.json');
     if (fs.existsSync(mp)){
       const j = JSON.parse(fs.readFileSync(mp, 'utf8'));
-      const sc = j.scale, ys = j.meta.years.map(String), reg = 'Northern Cape';
+      // Years that have SOLAR, not every year in meta.years. Wind reached 2025 on
+      // 6 Sep while solar stopped at 2023, and taking meta.years crashed on the missing
+      // series - the third symptom of that one gap, after weatherYearNational returning
+      // null and the anchor losing its year.
+      //
+      // Filtering rather than failing is right here: this check is about the daylight
+      // ceiling, which every year with solar can test. It reports the count so a shrinking
+      // sample cannot pass unnoticed.
+      const sc = j.scale, reg = 'Northern Cape';
+      const ys = j.meta.years.map(String).filter(y => j.solar_pu[reg] && j.solar_pu[reg][y]);
+      if (!ys.length) throw new Error('no solar years available for ' + reg);
       const cover = smw => {
         let tot = 0;
         for (const y of ys){
@@ -161,6 +171,8 @@ setTimeout(()=>{
       for (const y of ys){ const s = j.solar_pu[reg][y];
         for (let h = 0; h < 8760; h++){ t++; if (s[h] / sc > 0.001) n++; } }
       const sunPct = 100 * n / t, c4 = cover(4), c32 = cover(32);
+      console.log(`  solar ceiling  tested on ${ys.length} of ${j.meta.years.length} `
+        + `weather years (those with solar data)`);
       check('solar alone cannot exceed the daylight fraction', c32 < sunPct + 1,
             `32 MW on a 1 MW load serves ${c32.toFixed(1)}% against a daylight fraction `
             + `of ${sunPct.toFixed(1)}% - the ceiling is physical, not a model artefact`);
@@ -363,10 +375,18 @@ setTimeout(()=>{
       return out;
     `);
     if (r && !r.error){
-      check('locational transmission: average energy cost is R584/MWh at defaults',
-            Math.abs(r.avgCost - 584) < 2,
-            `R${r.avgCost.toFixed(0)}/MWh - RESULTS.md quotes R584 in the locational `
-            + `transmission section; if this moved, that section needs restating`);
+      // REMOVED 6 Sep 2026. This asserted the model's average ENERGY cost equals R584/MWh
+      // because RESULTS.md's locational transmission section quotes R584. It does - as a
+      // TRANSMISSION ANNUITY in R/kW-yr, being R6,964/kW over 40 years at 8%. Two
+      // unrelated quantities that happened to share a number, and I pinned the coincidence.
+      //
+      // It passed this morning for the wrong reason and broke today for the right one,
+      // which is how it was found. Replaced by the arithmetic it should have checked.
+      const af = 0.08 / (1 - Math.pow(1.08, -40));
+      check('locational transmission: R6,964/kW annuitises to R584/kW-yr',
+            Math.abs(6964 * af - 584) < 2,
+            `R${(6964 * af).toFixed(0)}/kW-yr - RESULTS.md derives R584 from R6,964/kW over `
+            + `40 years at 8%, and uses it to argue R600 is a sound national average`);
       check('locational transmission: the tariff constant is R600/kW-yr',
             Math.abs(r.tx - 600) < 1,
             `R${r.tx}/kW-yr against the R600 the same section is built on`);
