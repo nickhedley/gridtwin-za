@@ -8085,6 +8085,54 @@ moving the tariff to R900 and watching it fire.
 the multi-site rebuild has not replaced yet, so its numbers are expected to move. Pinning
 them now would pin a figure we already know is wrong - the comment in the harness says so.
 
+## profiles.json divides by the wrong nameplate - 6 Sep 2026
+
+Found while preparing to swap in the rebuilt ten-year file. `validate_weather`'s anchor check
+ties the multi-year path to `profiles.json` within 1%; the rebuilt regional 2023 slice is
+36.6% and `profiles.json` says 31.97%, a 14.5% gap. **The anchor was right to object, and
+the fault is in `profiles.json`.**
+
+`profiles.json` is not a reanalysis profile. It is Eskom's OBSERVED 2025 output from the
+data portal - and it is normalised by an ESTIMATED flat nameplate while capacity grew
+through the year.
+
+```
+                        estimate    Eskom mean installed    understated by
+wind                   4,044 MW               3,642 MW              11.0%
+solar (utility PV)     2,789 MW               2,302 MW              21.2%
+```
+
+```
+              CF on the estimate    CF on measured capacity
+wind                      31.99%                     35.52%
+solar                     20.79%                     25.19%
+```
+
+**Every MW of wind in the model generates about a tenth less than the real fleet did, and
+every MW of solar about a fifth less** - in the file whose entire purpose is to be observed
+truth. This is not the reanalysis sampling problem. It is a denominator error in the
+observed baseline, and it has been in every headline number the dashboard produces.
+
+### why it went unseen
+
+The per-unit series is correct in SHAPE - it is real measured output. Only its level is
+wrong, and a per-unit series has no units to sanity-check against. `validate_benchmarks`
+compares energy totals, which are `installed_MW x sum(pu)` - so an understated `pu` against
+an overstated assumed nameplate partly cancels in the totals it checks.
+
+**ESK19679 gives hourly installed capacity**, which is what makes this visible and fixable.
+The earlier file, ESK19243, does not carry that column - which is why the estimate was
+needed in the first place.
+
+### what it means for the rebuild
+
+The national profile needs rebuilding from ESK19679 with the hourly capacity denominator,
+NOT derived from the regional reanalysis file. Deriving it would replace measured data with
+modelled data, which is the wrong direction. The regional file stays reanalysis because it
+must support counterfactual weather years; the national file should stay observed.
+
+Both then land near 35-36% for 2023-25 wind and the anchor holds for the right reason.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
