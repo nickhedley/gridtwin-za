@@ -165,7 +165,7 @@ def run_fetch(year, outfile, cachefile):
     return out
 
 
-def check(profile_file, eskom_csv, only_years=('2023',)):
+def check(profile_file, eskom_csv, only_years=('2022', '2023')):
     """
     The test the rebuild exists to pass. Not the annual mean - the CALM HOURS.
 
@@ -258,7 +258,7 @@ if __name__ == '__main__':
                          'like-for-like test - see the note in check().')
     a = ap.parse_args()
     if a.check:
-        check(a.out, a.eskom, only_years=None if a.all_years else ('2023',))
+        check(a.out, a.eskom, only_years=None if a.all_years else ('2022', '2023'))
     else:
         run_fetch(a.year, a.out, a.cache)
         print('\nNow run with --check before trusting it, and before starting a ten-year pull.')

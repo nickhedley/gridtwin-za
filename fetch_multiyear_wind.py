@@ -171,8 +171,13 @@ def merge():
     print(f"  {'region':<16}{'new mean CF':>13}{'old mean CF':>13}{'change':>9}")
     for r in sorted(out['wind_pu']):
         n = sum(sum(v) for v in out['wind_pu'][r].values()) / (scale * 8760 * len(YEARS)) * 100
+        # Divide the OLD file by ITS OWN year count, not YEARS. Extending YEARS to twelve
+        # while the previous file held ten made every "old" figure read 17% low - Eastern
+        # Cape showed 28.5% against its true 34.2% - which turned a mixed set of changes
+        # into a uniform and entirely fictional improvement.
+        oldyrs = len(cur['wind_pu'][r]) if r in cur['wind_pu'] else 0
         o = (sum(sum(v) for v in cur['wind_pu'][r].values()) /
-             (scale * 8760 * len(YEARS)) * 100) if r in cur['wind_pu'] else None
+             (scale * 8760 * oldyrs) * 100) if oldyrs else None
         ch = f'{n-o:+.1f}' if o is not None else '  new'
         print(f'  {r:<16}{n:>12.1f}%{(f"{o:.1f}%" if o is not None else "-"):>13}{ch:>9}')
     print('\n  solar carried through untouched.')
