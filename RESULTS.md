@@ -313,13 +313,25 @@ Their conclusion is that the deficit needs firm wind or seasonal storage. Tested
 directly. July gas energy, Seriti scenario:
 
 ```
+RESTATED 6 Sep 2026 on rebuilt wind profiles. Every column moved - **annual gas fell
+from 30.7 to 18.7 TWh**, a 39% drop, because more wind displaces gas across the whole
+year. July gas fell 2,815 to 2,342 and peak gas 19.6 to 18.4 GW.
+
+**The FINDING is unchanged**: iron-air moves July by nothing, to three significant
+figures, at any capacity tested.
+
+That is the point worth keeping. A 17% change in the level left the result intact,
+because the result was never about the level. There is no surplus to store in a
+winter wind drought, and correcting the wind made the drought shallower without
+making it storable.
+
                               July gas   peak    annual gas   new capex   avg cost
-lithium 20 GW / 10h          2,815 GWh   19.6      30.7 TWh      R166bn   R1.30/kWh
-+ vanadium 10 GW / 8h        2,815 GWh   19.6      30.6 TWh      R222bn   R1.56/kWh
-+ iron-air 5 GW / 100h       2,815 GWh   19.6      30.5 TWh      R231bn   R1.61/kWh
-+ iron-air 10 GW / 100h      2,815 GWh   19.6      30.2 TWh      R296bn   R1.92/kWh
-+ iron-air 20 GW / 100h      2,815 GWh   19.6      29.7 TWh      R425bn   R2.54/kWh
-iron-air 20 GW, no lithium   3,015 GWh   19.6      32.6 TWh      R350bn   R2.18/kWh
+lithium 20 GW / 10h          2,342 GWh   18.4      18.7 TWh      R172bn   R1.16/kWh
++ vanadium 10 GW / 8h        2,342 GWh   18.4      18.4 TWh      R228bn   R1.42/kWh
++ iron-air 5 GW / 100h       2,342 GWh   18.4      18.2 TWh      R237bn   R1.46/kWh
++ iron-air 10 GW / 100h      2,342 GWh   18.4      17.8 TWh      R302bn   R1.76/kWh
++ iron-air 20 GW / 100h      2,342 GWh   18.4      17.2 TWh      R431bn   R2.37/kWh
+iron-air 20 GW, no lithium   2,729 GWh   18.4      22.0 TWh      R356bn   R2.01/kWh
 ```
 
 Priced 28 Aug 2026. Before that, vanadium, iron-air and pumped storage were absent

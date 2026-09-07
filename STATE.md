@@ -8473,6 +8473,28 @@ EDMSA agreement, arrived at twice in one day from different directions.
 swapped order - 2015 now marginally worse than 2022, within 1% - but the spread is identical,
 and it is the spread that makes a single weather year an unsafe basis for sizing.
 
+## the iron-air table restated, and what survived - 6 Sep 2026
+
+Re-ran every row rather than patching the column I had spotted. Good thing:
+
+```
+                        before      after
+July gas             2,815 GWh   2,342 GWh
+peak gas                19.6 GW     18.4 GW
+annual gas             30.7 TWh    18.7 TWh
+```
+
+**Annual gas fell 39%.** I had noticed July and would have left the annual column at 30.7
+against a measured 18.7 - a far larger error than the one that caught my eye.
+
+**The finding is unchanged.** Iron-air still moves July by nothing, to three significant
+figures, at every capacity tested. A 17% change in the wind level left the result intact
+because the result was never about the level: there is no surplus to store in a winter wind
+drought, and correcting the wind made the drought shallower without making it storable.
+
+That is worth more than the number. **A finding that survives a 39% move in its own inputs
+is a finding about structure**, and those are the ones worth quoting.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
