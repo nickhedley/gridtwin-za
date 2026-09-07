@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 977 checks
+suite                      19 harnesses, 983 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 977 checks. Last full run: 973/977 - four weather checks await the solar pull for 2024-25.
+Nineteen harnesses, 983 checks. Last full run: 983/983.
 
 ```
 node stress_suite.js                290/290
@@ -263,7 +263,7 @@ node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .         20/20   the PUBLISHED FINDINGS, added 31 Aug
-node validate_weather.js .          47/51   multi-year path, added 28 Aug
+node validate_weather.js .          57/57   multi-year path, added 28 Aug
 node validate_consistency.js .      55/55
 node validate_structure.js .         25/25
 node validate_solve.js .                6/6
@@ -8494,6 +8494,35 @@ drought, and correcting the wind made the drought shallower without making it st
 
 That is worth more than the number. **A finding that survives a 39% move in its own inputs
 is a finding about structure**, and those are the ones worth quoting.
+
+## the profile rebuild is complete - 6 Sep 2026
+
+Twenty solar calls closed it. Twelve weather years, 2014-2025, wind and solar complete for
+every region. **Suite 983/983, everything green.**
+
+`validate_weather` went 47/51 to 57/57 - six extra checks appeared because the two new years
+are now exercised rather than skipped.
+
+### the frontier is unchanged on twelve years
+
+Identical to the ten-year run, cell for cell. 2024 and 2025 were not design years, so the
+worst case did not move. **That is confirmation rather than coincidence**: a worst-of-N
+result should be stable when N grows unless the new years are extreme, and neither was.
+
+### the solar pull was 20 calls, not 196
+
+The obvious move was to sample solar at twelve sites per region, matching the wind. That
+would have mixed two sampling methods ACROSS YEARS - multi-site for 2024-25 against single
+centroids for 2014-2023 - so every year-to-year solar comparison would have measured the
+method change rather than the weather.
+
+Pulled at the original centroids instead. Ten regions, two years.
+
+### what is still open on the profiles
+
+Solar is MERRA-2 at one centroid per region across all twelve years, with a regional spread
+of 1.07x against a real 1.4-1.5x. Consistent, and still wrong in the same way the wind was
+before today. Resampling it - multi-site or PVGIS - is the remaining job.
 
 ---
 
