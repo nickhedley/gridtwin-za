@@ -9791,7 +9791,27 @@ function weatherYearNational(year){
   // Applied here rather than to the file so the raw MERRA-2 stays raw and the
   // correction is visible, revisable and in exactly one place. Re-derive it whenever
   // profiles.json or the capacity split changes.
-  const WIND_BIAS = 0.848;
+  // RETIRED 6 Sep 2026, to 1.0. The note above says "re-derive it whenever profiles.json
+  // or the capacity split changes". Both changed, and re-deriving gives 1.0 because the
+  // correction now happens upstream instead:
+  //
+  //   the regional file is bias-corrected at build time by bias_correct_wind.py, scaled
+  //   1.0753 so its capacity-weighted mean matches Eskom's measured 2022-23
+  //
+  //   profiles.json was rebuilt from Eskom actuals divided by that HOUR'S measured
+  //   installed capacity, replacing an estimated flat nameplate that understated wind
+  //   by 11%
+  //
+  // Both paths are now anchored to the same measurement independently. Applying 0.848
+  // on top would be a second correction in the same direction: regional 2025 reads
+  // 36.32% and would become 30.80% against a measured 35.45%.
+  //
+  // The old factor was sound for what it faced. It corrected raw MERRA-2 against a
+  // profiles.json that had itself been rescaled by 0.8571 to reproduce Ember's 11.6 TWh -
+  // a target we now know reflects 2026 weather, the worst wind year in the record, so
+  // that rescale baked a bad year into a series labelled otherwise. Correcting both
+  // files against measured capacity removes the need for either factor.
+  const WIND_BIAS = 1.0;
   // Series are stored as integers scaled by meta.scale to keep the file small -
   // at full float precision it was 9 MB, two-thirds of the entire site payload.
   // Older files without a scale are plain per-unit floats, hence the fallback.

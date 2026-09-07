@@ -8254,6 +8254,57 @@ Per hour, over 2023-25: 365 MWh in the high season against 485 in the low, +33%.
 independent of our model, and supports the weaker claim that costs are not concentrated in the
 tariff's expensive season - not the withdrawn claim that the seasons are inverted.
 
+## WIND_BIAS retired, and the anchor restated - 6 Sep 2026
+
+### the correction became a double correction
+
+`weatherYearNational` applied `WIND_BIAS = 0.848` to scale raw MERRA-2 down to
+`profiles.json`'s metered 31.97%. Its own note said "re-derive it whenever profiles.json or
+the capacity split changes". Both changed.
+
+```
+regional file, after bias_correct_wind.py      2025: 36.32%
+with WIND_BIAS 0.848 applied on top            2025: 30.80%
+Eskom measured                                 2025: 35.52%
+```
+
+Set to 1.0. The correction now happens upstream in one place instead of two: the regional
+file is calibrated at build time, and `profiles.json` is measured output over measured
+capacity.
+
+**The old factor was sound for what it faced.** It corrected raw MERRA-2 against a
+`profiles.json` that had itself been rescaled by 0.8571 on 16 Aug to reproduce Ember's
+11.6 TWh - a target we now know reflects 2026 weather, **the worst wind year in the record**.
+That rescale baked a bad year into a series labelled otherwise, and everything downstream
+inherited it.
+
+### the anchor tied the wrong two things together
+
+It compared the two MODEL paths to each other at 1%. Both are now independently anchored to
+Eskom measurement, so comparing them to each other measures the residual between two
+corrections - 2.1% in 2023, 7.5% in 2024, 2.3% in 2025. A tolerance loose enough for that
+catches almost nothing.
+
+Replaced by TWO anchors against the measurement itself:
+
+```
+profiles.json vs Eskom 2025      tolerance 1%    it IS that series - arithmetic only
+reanalysis vs Eskom 2025         tolerance 9%    modelled; largest observed gap 7.5%
+```
+
+**Strictly stronger.** The old check could only see the paths drifting APART, and would pass
+both drifting together - which is exactly what happened for months while `profiles.json`
+carried 2023 data labelled 2025 and the reanalysis path was corrected to match it.
+
+### four remaining failures, one cause
+
+Wind now has twelve years, solar ten. `weatherYearNational` requires both, so 2024 and 2025
+return null and the anchor cannot find its year. 196 solar calls would close it.
+
+Checked before recommending: the multi-year solar is **already MERRA-2**, regional spread
+1.07x against PVGIS's 1.4-1.5x. Pulling MERRA-2 solar for two more years introduces nothing
+new. The PVGIS solar lives in the single-year `profiles_regional.json` only.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

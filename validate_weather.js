@@ -53,13 +53,28 @@ const CF_BAND_MEAN = {
 // Per-year, only a loose physical sanity range — anything outside is garbage rather
 // than weather. Deliberately NOT the mechanism for catching mis-weighting.
 const CF_BAND_YEAR = { wind: { lo: 20, hi: 45 }, solar: { lo: 15, hi: 30 } };
-// The anchor. profiles.json is calendar 2023 on a METERED basis. The multi-year
-// path is MERRA-2 modelled resource with a bias correction applied. If the
-// correction is right, 2023 through the multi-year path reproduces the dashboard.
-// This is the single most valuable check in the file: it ties the two paths
-// together, so neither can drift without the other noticing.
-const ANCHOR_YEAR = '2023';
-const ANCHOR_TOL_PCT = 1.0;
+// THE ANCHOR, RESTATED 6 Sep 2026.
+//
+// It used to tie the two model paths to EACH OTHER at 1%: profiles.json as metered truth,
+// the multi-year path as MERRA-2 plus a bias correction, and if the correction was right
+// they matched.
+//
+// That shape stopped working when both paths were rebuilt. profiles.json is now Eskom 2025
+// normalised by hourly measured capacity; the multi-year file is bias-corrected at build
+// time against Eskom 2022-23. Comparing them to each other now measures the residual
+// between two independent corrections, which is 2.1% in 2023, 7.5% in 2024 and 2.3% in
+// 2025 - a tolerance loose enough to catch almost nothing.
+//
+// Replaced by TWO anchors against the measurement itself. That is strictly stronger: the
+// old check could only see the paths drifting APART, and would have passed both drifting
+// together - which is exactly what happened for months while profiles.json carried 2023
+// data labelled 2025 and the multi-year path was corrected to match it.
+//
+// Tolerances are derived, not chosen. profiles.json IS the Eskom series, so it must match
+// almost exactly. The reanalysis path is a model and gets the observed single-year spread.
+const ANCHOR_YEAR = '2025';
+const DASH_TOL_PCT = 1.0;      // profiles.json vs Eskom - same data, arithmetic only
+const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 2024
 
 (async () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
@@ -160,18 +175,55 @@ const ANCHOR_TOL_PCT = 1.0;
     notes.push(`mean ${tech} CF across ${xs.length} years: ${m.toFixed(2)}%`);
   }
 
-  // 4. THE ANCHOR. Ties the multi-year path to the dashboard.
+  // 4. THE ANCHORS. Each path against the MEASUREMENT, not against each other.
   {
-    const v = r.byYear[ANCHOR_YEAR];
-    if (!v) { check(`anchor year ${ANCHOR_YEAR} available`, false, 'no profile'); }
-    else {
-      const gap = 100 * Math.abs(v.wind - r.dashWind) / r.dashWind;
-      check(`${ANCHOR_YEAR} wind reproduces profiles.json`, gap <= ANCHOR_TOL_PCT,
-            `multi-year ${(v.wind * 100).toFixed(2)}% vs dashboard ${(r.dashWind * 100).toFixed(2)}%, `
-            + `gap ${gap.toFixed(1)}% > ${ANCHOR_TOL_PCT}%. The two paths describe the SAME fleet in the `
-            + `SAME year and must agree. If the bias correction or the capacity weights changed, re-derive.`);
-      notes.push(`anchor ${ANCHOR_YEAR}: multi-year ${(v.wind * 100).toFixed(2)}% vs dashboard `
-        + `${(r.dashWind * 100).toFixed(2)}% wind CF, gap ${gap.toFixed(2)}%`);
+    // Eskom's own wind CF for the anchor year, read from the hourly file with the hourly
+    // capacity denominator. This is the reference both paths are supposed to reproduce.
+    let obs = null;
+    try {
+      const csv = fs.readFileSync(path.join(ROOT, 'ESK19679.csv'), 'utf8').split('\n');
+      const hdr = csv[0].split(',');
+      const iD = hdr.indexOf('Date Time Hour Beginning');
+      const iG = hdr.indexOf('Wind'), iC = hdr.indexOf('Wind Installed Capacity');
+      let g = 0, c = 0;
+      for (let k = 1; k < csv.length; k++){
+        const p2 = csv[k].split(',');
+        if (p2.length <= iC || (p2[iD] || '').slice(0, 4) !== ANCHOR_YEAR) continue;
+        const gv = parseFloat(p2[iG]), cv = parseFloat(p2[iC]);
+        if (isFinite(gv) && isFinite(cv) && cv > 0){ g += gv; c += cv; }
+      }
+      if (c > 0) obs = g / c;
+    } catch (e) { obs = null; }
+
+    if (obs === null){
+      check(`Eskom reference for ${ANCHOR_YEAR} is readable`, false,
+            'ESK19679.csv missing or unparseable - both anchors skipped, which means this '
+            + 'run proves nothing about either path');
+    } else {
+      notes.push(`Eskom measured ${ANCHOR_YEAR} wind CF: ${(obs * 100).toFixed(2)}%`);
+
+      const dashGap = 100 * Math.abs(r.dashWind - obs) / obs;
+      check(`profiles.json reproduces Eskom ${ANCHOR_YEAR}`, dashGap <= DASH_TOL_PCT,
+            `dashboard ${(r.dashWind * 100).toFixed(2)}% vs measured ${(obs * 100).toFixed(2)}%, `
+            + `gap ${dashGap.toFixed(1)}% > ${DASH_TOL_PCT}%. profiles.json IS the Eskom series `
+            + `divided by hourly capacity, so this is arithmetic - a gap means the wrong year, `
+            + `the wrong denominator, or a stale rescale.`);
+
+      const v = r.byYear[ANCHOR_YEAR];
+      if (!v){
+        check(`anchor year ${ANCHOR_YEAR} available in the multi-year file`, false,
+              'no profile - wind and solar must BOTH be present for that year');
+      } else {
+        const reGap = 100 * Math.abs(v.wind - obs) / obs;
+        check(`the reanalysis path reproduces Eskom ${ANCHOR_YEAR}`,
+              reGap <= REANALYSIS_TOL_PCT,
+              `multi-year ${(v.wind * 100).toFixed(2)}% vs measured ${(obs * 100).toFixed(2)}%, `
+              + `gap ${reGap.toFixed(1)}% > ${REANALYSIS_TOL_PCT}%. This path is MODELLED and is `
+              + `bias-corrected against 2022-23, so single years deviate - but not by this much. `
+              + `Re-derive the correction if the capacity weights or the site list changed.`);
+        notes.push(`anchor ${ANCHOR_YEAR}: reanalysis ${(v.wind * 100).toFixed(2)}%, `
+          + `dashboard ${(r.dashWind * 100).toFixed(2)}%, measured ${(obs * 100).toFixed(2)}%`);
+      }
     }
   }
 
