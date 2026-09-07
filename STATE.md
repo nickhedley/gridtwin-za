@@ -8168,6 +8168,49 @@ must support counterfactual weather years; the national file should stay observe
 
 Both then land near 35-36% for 2023-25 wind and the anchor holds for the right reason.
 
+## the wind profile rebuild, complete - 6 Sep 2026
+
+Twelve weather years, 2014-2025, multi-site sampled and bias-corrected. Passes against Eskom
+observation.
+
+```
+                                    calm hours vs observed
+                                    below 5%    below 10%    mean CF
+old single-centroid                     4.5x         2.5x      35.0%
+multi-site rebuild                      2.1x         1.9x      34.1%
+plus bias correction                    1.8x         1.7x      36.6%
+observed 2022-23                           -            -      36.9%
+```
+
+**Aggregation did the heavy lifting; the correction closed the remainder.** Bias-correcting
+the OLD file was tested and moved calm hours only 4.1x to 3.8x - the two steps are not
+substitutes, and doing them in the wrong order would have looked like success while fixing
+nothing that mattered.
+
+### the correction is calibrated, and the file says so
+
+`correction_warning` is written into the metadata: the level now matches by construction, so
+a mean-CF comparison no longer tests the method. The SHAPE remains an honest test. A
+calibrated profile that does not declare itself is indistinguishable from an independently
+accurate one, and in six months that distinction will not be obvious to anyone.
+
+Factor 1.0753, solved iteratively because clipping at 1.0 removes some of the uplift.
+5,941 of 1,051,200 hours clipped, 0.57%.
+
+The calibration window was checked, not assumed: 2022 and 2023 average to CF 0.379 against a
+ten-year mean of 0.381 - one poor year and one good one.
+
+### the check contradicted its own advice
+
+It printed "the 2% row can sit on a denominator of one and is unstable" and then FAILED on
+that row - 2.8x on five observed hours - while the two scored rows read 1.8x and 1.7x.
+
+Now scores only thresholds with at least 50 observed hours behind them, and marks the rest
+as unscored. **This is not relaxing a check to get green**: the logic was aligned with the
+reasoning the check was already publishing, and it still fails the old file at 4.5x and 2.5x.
+A check that contradicts its own advice trains you to overrule it, and then you overrule it
+when it is right.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

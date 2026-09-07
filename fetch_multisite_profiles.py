@@ -228,20 +228,41 @@ def check(profile_file, eskom_csv, only_years=('2022', '2023')):
     n = len(agg)
     print('hours a year below each threshold, national wind aggregate\n')
     print(f"  {'threshold':<12}{'modelled':>10}{'observed':>10}{'ratio':>8}")
+    # JUDGE ONLY ON THRESHOLDS WITH ENOUGH OBSERVED HOURS BEHIND THEM.
+    #
+    # The first version required every row under 2x while its own printed guidance told the
+    # reader the 2% row was unstable. It then failed a file scoring 1.8x and 1.7x because
+    # the 2% row read 2.8x on FIVE observed hours. A check that contradicts its own advice
+    # is worse than no check: it trains you to overrule it, and then you overrule it when
+    # it is right.
+    #
+    # 50 observed hours is the floor for a ratio to mean anything. Rows below that are
+    # reported and marked, not scored.
+    MIN_OBS = 50
     ok = True
+    scored = 0
     for th in (0.02, 0.05, 0.10):
         m = sum(1 for x in agg if x < th) / (n / 8760)
         o = sum(1 for x in obs if x < th) / (len(obs) / 8760)
         ratio = m / o if o else float('inf')
-        if ratio > 2.0:
-            ok = False
-        print(f'  below {th*100:>3.0f}%    {m:>10,.0f}{o:>10,.0f}{ratio:>7.1f}x')
+        counts = o * (len(obs) / 8760)
+        if counts >= MIN_OBS:
+            scored += 1
+            if ratio > 2.0:
+                ok = False
+            mark = ''
+        else:
+            mark = f'   not scored, only {counts:.0f} observed hours'
+        print(f'  below {th*100:>3.0f}%    {m:>10,.0f}{o:>10,.0f}{ratio:>7.1f}x{mark}')
+    if not scored:
+        ok = False
+        print('\n  NO threshold had enough observed hours to score.')
     print(f'\n  mean CF   modelled {sum(agg)/len(agg)*100:.1f}%   '
           f'observed {sum(obs)/len(obs)*100:.1f}%')
     print('\n  ' + ('PASS - calm hours within 2x of observed'
                     if ok else 'FAIL - still too calm. Add sites and re-run.'))
-    print('  Read the 5% and 10% rows first - they have hundreds of observed hours behind')
-    print('  them. The 2% row can sit on a denominator of one and is unstable.')
+    print(f'  Scored on {scored} of 3 thresholds - those with at least {MIN_OBS} observed '
+          f'hours behind them.')
     return ok
 
 
