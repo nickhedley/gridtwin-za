@@ -155,17 +155,27 @@ Findings fit to quote externally, each with the scenario that produced it. A
 number without its scenario is not a result. Every entry states the weather year
 and the period, because an annual figure and a July figure are not comparable.
 
-Weather basis, settled 28 Aug 2026 after three attempts. Every result in this file is
-now on ten real weather years, 2014-2023, except where a line says otherwise. Read this
-before quoting anything.
+Weather basis, REBUILT 6 Sep 2026. Read this before quoting anything.
 
-The dashboard is not a synthetic or average year. `profiles.json` carries Eskom
-hourly demand for 2025 and a metered wind series at 31.97% cf. The label
-"synthetic-normal weather year" used in earlier versions of this file was simply
-wrong.
+**The dashboard.** `profiles.json` is Eskom's measured calendar 2025, with each hour's
+output divided by that HOUR'S measured installed capacity. Wind 35.45%, solar 25.14%.
 
-Multi-year results are on ten MERRA-2 years, 2014-2023, capacity-weighted by
-technology and bias-corrected to the metered basis. `weatherYearNational()`
+It previously declared 2025 while containing 2023 data, and divided by an estimated flat
+nameplate while the fleet grew - understating wind by 11% and solar by 21%. Both faults are
+fixed. Any figure in this file dated before 6 Sep 2026 was computed on the old basis.
+
+**Multi-year results.** Twelve MERRA-2 years, 2014-2025, capacity-weighted by technology.
+Wind is sampled at up to twelve REEA-located sites per region rather than one centroid, then
+bias-corrected by 1.0753 so the national mean matches Eskom's measured 2022-23.
+
+That file is CALIBRATED: its level matches observation by construction, so a mean-CF
+comparison no longer tests the method. The SHAPE is uncalibrated and does - calm hours below
+5% run 1.8x observed, against 4.5x before the rebuild.
+
+**Solar in the multi-year file is MERRA-2 and remains uncorrected**, with a regional spread
+of 1.07x against a real 1.4-1.5x. The multi-site pull reproduced that compression, so PVGIS
+was kept for the single-year regional file. Solar covers 2014-2023 only; the two extra wind
+years are unusable until it is extended. `weatherYearNational()`
 previously weighted regions by demand share - Gauteng 31.5%, Northern Cape 1.4% -
 when every megawatt of South African wind is in the Cape provinces and Hydra
 Central. That produced wind capacity factors of 22.6-27.2%, below the 28-38% band
@@ -173,12 +183,27 @@ validate_benchmarks enforces, and no harness caught it because nothing exercised
 the multi-year path. An intermediate version of this file reported gas figures ~35%
 too high on that broken weighting. Those numbers are withdrawn.
 
-Verification that the current basis is right: 2023 through the multi-year path now
-returns 31.97% wind cf, identical to the dashboard for the same year.
+Verification, RESTATED 6 Sep 2026. The old test was that the two model paths agreed with
+each other. They did - on the wrong year, at the wrong level, for months. Each path is now
+checked against Eskom measurement instead:
 
-2022 is the design year, with 2015 close behind. Wind output 46.0 TWh against
-53.7 TWh in 2023 - a 17% spread. Quote the worst year for anything that sizes
-capacity and the range for anything else.
+```
+                          2025 wind CF     tolerance
+profiles.json                   35.45%            1%   it IS that series
+reanalysis path                 36.32%            9%   modelled, bias-corrected
+Eskom measured                  35.52%             -
+```
+
+Two paths agreeing proves less than either agreeing with the measurement, because they can
+share a data lineage without sharing a line of code.
+
+2015 and 2022 are the design years, effectively tied - 13.6 and 13.7 TWh at today's
+fleet against 16.0 TWh in 2024, a 17% spread. The order swapped on the rebuilt profiles;
+before it read 2022 then 2015, and the two are within 1% of each other either way.
+
+**The 17% spread is unchanged**, which is the part that matters: it is what makes a single
+weather year an unsafe basis for sizing anything. Quote the worst year for capacity and the
+range for everything else.
 
 ---
 
@@ -359,28 +384,38 @@ Worst of ten weather years - the number that sizes a system:
 
 ```
 wind\solar     25 GW     40 GW     60 GW     80 GW
-   20 GW       20,347     9,229     1,855       577
-   40 GW        4,738     1,169       149        40
-   50 GW        1,885       452        69        11
-   60 GW          702       201        25         0
-   70 GW          362       100        11         0
-   80 GW          186        51         0         0
+   20 GW       13,873     5,231     1,029       288
+   40 GW        1,821       473        75         7
+   50 GW          716       137        28         0
+   60 GW          231        73         0         0
+   70 GW          106        19         0         0
+   80 GW           44         1         0         0
 ```
 
-RESTATED 2 Sep 2026, and the frontier moved OUTWARD. Nineteen of twenty-four cells rose.
-The cause is not a model change but a DATA correction: the Eskom Integrated Report 2026
-gives pumped storage as 2,724 MW where the model held 2,900, along with smaller corrections
-to nuclear and hydro. Isolated at 40 GW wind / 80 GW solar: 1.6 GWh unserved with the old
-constants, 4.1 with the corrected ones.
+RESTATED 6 Sep 2026 on rebuilt wind profiles, and **the frontier moved INWARD**. Every cell
+fell, most by 40 to 60%.
 
-**176 MW less pumped storage moves a 120 GW frontier**, which is worth knowing on its own -
-in a no-gas system the flexible fleet is doing more work than its size suggests.
+```
+                              before      after
+frontier, minimum combined    140 GW     120 GW
+40 GW wind / 40 GW solar    1,169 GWh   473 GWh
+50 GW wind / 80 GW solar       11 GWh     0
+```
+
+The cause is the profile rebuild: single-centroid sampling made the model run out of wind
+thirteen times more often than the country does, and calm hours are what sizes a no-gas
+system. **Correcting it took roughly 20 GW off the build needed to remove gas.**
+
+The previous restatement, on 2 Sep, moved the frontier OUTWARD by 176 MW of pumped storage.
+That was correct and is now swamped: a 176 MW capacity correction moved this less than a
+profile correction did, which is the right ordering - the resource assumption matters more
+than any single plant.
 
 The tool now computes this grid live, so it is reproducible rather than quoted.
 
-On the worst year the frontier runs 40W/80S through 60W/60S to 80W/40S-ish. So
-roughly 110 to 120 GW combined, against Seriti's 45 GW - about two and a half
-times the build.
+On the worst year the frontier runs 50W/80S through 60W/60S to 80W/60S. So roughly
+120 to 140 GW combined, against Seriti's 45 GW - still about two and a half times
+the build, but 20 GW less than before the profiles were corrected.
 
 That is where the first single-year estimate landed too. The intermediate 130-140 GW
 figure came from the broken weighting and is withdrawn. The agreement between the

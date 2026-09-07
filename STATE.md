@@ -8437,6 +8437,42 @@ emission factor to 1.60 fires it at +45.1.
 Narrowing again would need EDMSA to publish an update, or their wind resource assumptions to
 be established well enough to compare like for like.
 
+## the frontier moved inward - 6 Sep 2026
+
+Re-run on rebuilt profiles. **Every cell fell, most by 40 to 60%.**
+
+```
+                              before      after
+frontier, minimum combined    140 GW     120 GW
+40 GW wind / 40 GW solar    1,169 GWh   473 GWh
+20 GW wind / 25 GW solar   20,347 GWh 13,873 GWh
+```
+
+Calm hours are what sizes a no-gas system, and single-centroid sampling made the model run
+out of wind thirteen times more often than the country does. **Correcting it took roughly
+20 GW off the build needed to remove gas.**
+
+The 2 Sep restatement moved the frontier OUTWARD by 176 MW of pumped storage. That was
+correct and is now swamped - which is the right ordering: the resource assumption matters
+more than any single plant.
+
+### RESULTS.md weather basis rewritten
+
+The block describing the weather basis was wrong in three ways at once: it said
+`profiles.json` carried a metered series at 31.97% cf (it was 2023 data mislabelled 2025,
+at the wrong level), and it cited the two model paths agreeing with each other as
+verification.
+
+**Two paths agreeing proves less than either agreeing with the measurement**, because they
+can share a data lineage without sharing a line of code. That is the same lesson as the
+EDMSA agreement, arrived at twice in one day from different directions.
+
+### one claim survived the sweep unchanged
+
+"A 17% spread between the best and worst weather year." Before and after. The design years
+swapped order - 2015 now marginally worse than 2022, within 1% - but the spread is identical,
+and it is the spread that makes a single weather year an unsafe basis for sizing.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
