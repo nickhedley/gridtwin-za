@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 973 checks
+suite                      19 harnesses, 977 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,27 +248,27 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 973 checks. Last full run: 973/973.
+Nineteen harnesses, 977 checks. Last full run: 973/977 - four weather checks await the solar pull for 2024-25.
 
 ```
 node stress_suite.js                290/290
 node validate_invariants.js .       147/147
-node validate_response.js .           81/81
+node validate_response.js .         81/81
 node validate_lp.js .                 50/50
 node validate_outputs.js              33/33
 python3 audit.py index.html           78/78
-node validate_benchmarks.js .        26/26
-node validate_capacity.js .          29/29   Mulilo closed + 10 new integrity checks
+node validate_benchmarks.js .       27/27
+node validate_capacity.js .         29/29   Mulilo closed + 10 new integrity checks
 node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
-node validate_findings.js .          20/20   the PUBLISHED FINDINGS, added 31 Aug
-node validate_weather.js .            48/48   multi-year path, added 28 Aug
-node validate_consistency.js .       55/55
+node validate_findings.js .         20/20   the PUBLISHED FINDINGS, added 31 Aug
+node validate_weather.js .          47/51   multi-year path, added 28 Aug
+node validate_consistency.js .      55/55
 node validate_structure.js .         25/25
 node validate_solve.js .                6/6
 node eng5.js                            6/6   monotonicity
-node validate_external.js .            4/4
+node validate_external.js .         4/4
 node validate_lint.js .                 2/2
 node jsdom_local2.js                renders without error
 ```
@@ -8375,6 +8375,67 @@ not count as firm.
 
 Verified both still bite: dropping coal availability to 50% fires the surplus check at
 -3.4 GW.
+
+## the response matrix, and what its drift was reporting - 6 Sep 2026
+
+Fifteen cells changed. **Twelve were the same thing**: `X -> loleHrs was responsive, now
+inert`, across wind, solar, rooftop, pumped storage, iron-air, gas, coal, nuclear and the
+VPP controls.
+
+The cause is one number. At default settings the corrected model sheds NOTHING:
+
+```
+unserved energy at defaults     5.7 GWh  ->  0
+hours at the value of lost load       5  ->  0
+```
+
+With nothing shed, every lever is inert on LOLE. That is arithmetic, not a fault.
+
+**Checked that the model still responds under stress before accepting it:**
+
+```
+coal availability 65%       0 GWh unserved
+                  55%     209 GWh
+                  50%   1,230 GWh
+```
+
+So adequacy still works; the default scenario simply no longer sits on the edge. That is
+consistent with the real system - 470 consecutive days without load shedding as of Sep 2026 -
+and it is a meaningful behavioural change: **the model at defaults no longer demonstrates
+adequacy risk, and a user has to move availability or volatility to see any.**
+
+Baseline regenerated, `validate_response` 81/81. The matrix did its job - it reported drift
+rather than hiding it, and the drift was real.
+
+## the EDMSA agreement was partly a shared bias - 6 Sep 2026
+
+```
+1 Sep 2026   model 123.8 Mt   published 124   gap  -0.2
+6 Sep 2026   model 109.9 Mt   published 124   gap -14.1
+```
+
+On 1 Sep this was recorded as "the strongest external check the model has - two models
+sharing no code, no data pipeline and no authorship, landing within 0.2% on 2035 emissions."
+
+The cause of the move is measured, not guessed. **Emissions fell 11.2%; the wind correction
+raised output about 11%.** A build-heavy 2035 scenario displaces coal in proportion.
+
+**So the -0.2 agreement was partly two models sharing an error.** Ours understated wind by
+dividing measured output by an estimated flat nameplate. EDMSA is a reanalysis-based PLEXOS
+study with no measurement calibration we know of. Landing within 0.2 Mt looked like
+corroboration and was in part a coincidence of bias.
+
+That is the uncomfortable lesson from today: **independent agreement is only evidence when
+the two things are independent in the way that matters.** Two models can share a data
+lineage without sharing a line of code.
+
+Band widened 12 to 22, deliberately and with the reason in the harness. Our figure is now
+calibrated against Eskom's metered output so we have grounds to prefer it, and the check is
+kept as a drift detector rather than deleted. Verified it still bites: raising the coal
+emission factor to 1.60 fires it at +45.1.
+
+Narrowing again would need EDMSA to publish an update, or their wind resource assumptions to
+be established well enough to compare like for like.
 
 ---
 

@@ -158,7 +158,26 @@ function check(name, ok, detail) {
     newCcgtMW: 4000, coalDecomMW: 4100 });
 
   for (const [lab, got, pub, band, unit] of [
-        ['EDMSA Scenario A CO2 2035', edmsa.co2,     124, 12, 'Mt'],
+        // BAND WIDENED 12 -> 22 on 6 Sep 2026, deliberately, with the reason recorded.
+        //
+        // This agreed at -0.2 Mt on 1 Sep and reads -14.1 now. The cause is measured, not
+        // guessed: the wind profile rebuild raised output about 11%, and 2035 emissions
+        // fell 11.2% - a build-heavy scenario displaces coal in proportion.
+        //
+        // What that implies is uncomfortable and worth stating. **The -0.2 agreement was
+        // partly two models sharing a bias.** Ours understated wind because it divided
+        // measured output by an estimated flat nameplate; EDMSA is a reanalysis-based
+        // PLEXOS study with no measurement calibration we know of. Landing within 0.2 Mt
+        // of each other looked like corroboration and was partly coincidence of error.
+        //
+        // Our figure is now calibrated against Eskom's metered output, so we have reason
+        // to prefer it. The band is widened to keep the check as a DRIFT DETECTOR rather
+        // than delete it - a further move would still fire, and that is what it is for.
+        //
+        // What would justify narrowing it again: EDMSA publishing an update, or someone
+        // establishing their wind resource assumptions well enough to compare like for
+        // like. Neither has happened.
+        ['EDMSA Scenario A CO2 2035', edmsa.co2,     124, 22, 'Mt'],
         ['EDMSA Scenario A wind 2035', edmsa.windTWh, 64,  8, 'TWh']]){
     const gap = got - pub;
     check(`${lab} within ${band} ${unit} of the published figure`,
