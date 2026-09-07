@@ -93,11 +93,13 @@ bad wind year. Only at this one point on the frontier, and only if the connectio
 existed.
 → "The no-gas frontier"
 
-**Eskom's tariff seasons are inverted against its own dispatch.** Megaflex prices Jun-Aug
-as the expensive season; Eskom ran 83% of its peaker energy outside it. The modelled
-low-season peak is dearer than the high-season peak, R1,475 against R1,277. Corroborated
-by Eskom's own hourly file, so it is not a model artefact.
-→ "Eskom's tariff seasons are inverted"
+**Eskom's tariff blocks do not track its own dispatch costs.** CORRECTED 6 Sep 2026 - the
+seasonal inversion claim was a model artefact and is withdrawn. What survives: the blocks
+barely separate a typical hour, with every median between R742 and R755, and high-season
+off-peak is the CHEAPEST block modelled at R747 while being charged above low-season
+off-peak and weekend. Independently, Eskom runs 33% more peaker energy per hour in the low
+season than the high.
+→ "Eskom's tariff blocks against its own dispatch costs"
 
 **Solar alone cannot cover more than 49% of a flat industrial load, anywhere in South
 Africa.** Eight regions, ten weather years, under two points of spread. The ceiling is the
@@ -1717,6 +1719,9 @@ across twelve cases and is conservative in eleven of them.
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
+DATA FILES in nodal/ are CC BY 4.0 — attribution only. Changed 6 Sep 2026: they are a
+compilation of uncopyrightable facts, and NC-ND blocked both reuse and the ingestion of
+BY-SA sources.*
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
 
@@ -1957,71 +1962,67 @@ the unanswered question is whether the grid will take it.
 
 ---
 
-## Eskom's tariff seasons are inverted against its own dispatch
+## Eskom's tariff blocks against its own dispatch costs
 
-Prompted by Ausgrid's dynamic network tariff going live in Australia, and directly
-relevant to the Eskom Retail Tariff Structural Adjustment now open for comment.
+CORRECTED 6 Sep 2026. The seasonal inversion this section originally reported was a MODEL
+ARTEFACT and is withdrawn. A correction note was sent to NERSA, whose market inquiry
+submission relied on it - `nersa_correction_note.md`.
 
-Eskom's Megaflex time-of-use structure prices **June to August as the high-demand
-season** - the expensive one. Two independent tests say the system is not tight then.
+### what was wrong
 
-### eskom's own measured dispatch
-
-`ESK19243.csv`, Eskom's hourly file for 2025, records what its peakers actually did:
-
-```
-tariff season          Eskom OCGT run     share of hours
-low  (Sep-May)            1,583 GWh              75%
-high (Jun-Aug)              315 GWh              25%
-```
-
-**Eskom ran 83% of its peaker energy in the season its own tariff calls cheap.** Peakers
-run when the system is short, so this is the operator's own revealed measure of scarcity,
-not a model output.
-
-### and the modelled shadow price agrees
-
-Hourly shadow price within each Megaflex block:
+`profiles.json` normalised measured generation against an estimated fixed capacity while the
+wind fleet grew through the year, understating wind by 11%. That produced shortage hours the
+real system did not have, priced at the value of lost load. They fell disproportionately in
+the low season, which holds 980 peak hours against the high season's 325, so a handful of
+scarcity events lifted the low-season MEAN above the high-season one.
 
 ```
-block               hours     mean    median      p95
-high/peak             330    1,277       750    6,206
-low/peak              975    1,475       749    6,206
-high/offpeak          528      744       744      760
-low/offpeak         1,560      787       737      757
-weekend (both)      2,496      868       748    6,206
+                  high peak   low peak   95th pct, low
+before                 1,277      1,475           6,206
+after                    956        900             761
 ```
 
-Two things fall out.
+**The 95th percentile is the tell.** Scarcity hours vanish entirely once wind is correctly
+represented. The MEDIANS never moved - R750 and R749 before, R755 and R752 after - because a
+median is insensitive to a few extreme hours, which is exactly why the error moved the
+averages and left them alone.
 
-**the low-season peak is dearer than the high-season peak** - R1,475 against R1,277. The
-seasonal labels are the wrong way round.
+### what survives, on corrected data
 
-**the blocks barely discriminate on a typical hour.** Every median sits between R737 and
-R755, a spread of 2%. What separates the blocks is entirely the tail: p95 runs from R757
-off-peak to R6,206 in peak, standard and weekend. A fixed block cannot see that, because
-the expensive hours are scattered rather than scheduled.
+```
+block                  hours     mean   median      p95
+high season, peak        325      956      755      762
+high season, standard    715      920      754      764
+low season, peak         980      900      752      761
+low season, standard   2,156      895      748      762
+low season, off-peak   1,568      767      742      758
+weekend                2,496      752      744      760
+high season, off-peak    520      747      748      761
+```
 
-**Weekends are called cheap and carry a p95 of R6,206.** Off-peak and weekend hours are
-50.8% of energy and carry 41% of the system's hourly cost - closer to proportional than a
-cheap-rate label implies.
+**The blocks barely distinguish a typical hour.** Every median between R742 and R755, a
+spread of 1.8%.
 
-### why this is not a model artefact
+**High-season off-peak is the cheapest block modelled**, at R747, yet Megaflex charges it
+above low-season off-peak and weekend. The tariff correctly places high-season peak first;
+below that the orders diverge, and the clearest divergence is at the bottom.
 
-The summer scarcity is driven by maintenance scheduled away from the winter peak, and that
-seasonality is **corroborated by Eskom's measured OCGT dispatch at 8.5:1 Jan-Mar against
-Jul-Sep** - see the peaker section. Model and operator agree independently.
+### the Eskom corroboration, restated
 
-### what it does not say
+The original claim was that Eskom ran 83% of its peaker energy outside Jun-Aug. **Jun-Aug is
+25% of the year, so 75% outside is the null** - quoting 83% without that base rate made a
+modest signal look dramatic.
 
-Not that Megaflex is wrong as a tariff. Retail tariffs recover network and fixed costs, not
-just energy, and the high-demand season reflects peak demand, which genuinely is in winter.
-The finding is narrower: **peak demand and system scarcity are in different seasons in
-South Africa**, and a tariff built on the first does not price the second. That is exactly
-the gap a dynamic or scarcity-linked component would close, and it is what makes the
-Ausgrid model relevant here rather than merely interesting.
+Per hour, which is the like-for-like comparison, over 2023-25:
 
----
+```
+high season Jun-Aug     365 MWh per hour
+low season Sep-May      485 MWh per hour     +33%
+```
+
+That still favours the low season and is independent of our model. It supports the weaker
+claim that costs are not concentrated in the tariff's expensive season - not the withdrawn
+claim that the seasons are inverted.
 
 ## Wheeling calculators: the 65% is real, the shape behind it is the story
 

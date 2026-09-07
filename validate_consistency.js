@@ -635,6 +635,7 @@ const num = t => {
              total: Object.values(tally).reduce((a, b) => a + b, 0), weekend,
              highPeakMean: hp ? hp.mean : null, lowPeakMean: lp ? lp.mean : null,
              medians: rows.map(r => r.median),
+             cheapest: rows.slice().sort((a, b) => a.mean - b.mean)[0].block,
              // TARIFF_RANK is closure-scoped and not on window, so it cannot be read from
              // here. Referencing it threw, the probe returned an error, and the guard below
              // skipped four checks SILENTLY while the suite still reported green.
@@ -659,16 +660,29 @@ const num = t => {
           `1 Jan weekday ${tou.h0Weekday}, first Sat/Sun ${tou.firstSat}, midweek `
           + `${tou.midWeek} - a shifted calendar keeps 104 weekend days and puts every `
           + `hour in the wrong block`);
-    check('the low-season peak block prices above the high-season one',
-          tou.lowPeakMean > tou.highPeakMean,
-          `low R${(tou.lowPeakMean||0).toFixed(0)} against high R${(tou.highPeakMean||0).toFixed(0)} `
-          + `- this inversion is the NERSA submission's central claim; if it stops holding, `
-          + `the submission needs revisiting, not the check`);
-    const md = tou.medians.filter(x => x > 0);
-    check('block medians barely separate',
-          (Math.max(...md) - Math.min(...md)) / Math.min(...md) < 0.05,
-          `medians span ${(100*(Math.max(...md)-Math.min(...md))/Math.min(...md)).toFixed(1)}% - `
-          + `the submission argues the blocks discriminate on the tail, not the level`);
+    // WITHDRAWN 6 Sep 2026. This asserted that the low-season peak block prices above the
+    // high-season one, and said the submission would need revisiting if it stopped holding.
+    // It stopped holding, and the submission did need revisiting - a correction note went
+    // to NERSA. The check did its job exactly as written.
+    //
+    // The cause was `profiles.json` understating wind by 11%, which manufactured scarcity
+    // hours that fell disproportionately in the low season. The MEANS moved; the medians
+    // never did.
+    //
+    // Replaced by the two findings that survive correction. Both are about the median and
+    // the ordering, neither depends on a handful of extreme hours, and that is why they
+    // held when the original did not.
+    const meds = tou.medians.filter(x => x > 0);
+    check('the blocks barely separate a typical hour',
+          (Math.max(...meds) - Math.min(...meds)) / Math.min(...meds) < 0.05,
+          `medians span ${(100*(Math.max(...meds)-Math.min(...meds))/Math.min(...meds)).toFixed(1)}% `
+          + `- the surviving NERSA claim is that they separate on the tail, not the level`);
+    check('high-season off-peak is the cheapest block modelled',
+          tou.cheapest === 'high offpeak',
+          `cheapest is "${tou.cheapest}" - the surviving NERSA claim is that Megaflex `
+          + `charges high-season off-peak above low-season off-peak and weekend while it `
+          + `is the cheapest block. If this moves, the correction note needs revisiting`);
+
     check('every block has a tariff rank to compare against',
           tou.unranked === 0,
           `${tou.unranked} blocks have no tariff rank - the panel would show a comparison `

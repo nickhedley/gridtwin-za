@@ -8211,6 +8211,49 @@ reasoning the check was already publishing, and it still fails the old file at 4
 A check that contradicts its own advice trains you to overrule it, and then you overrule it
 when it is right.
 
+## the NERSA finding was a model artefact - 6 Sep 2026
+
+The submission's central claim - that the low-season peak block prices above the high-season
+one - does not survive the profile correction. **A correction note was drafted for NERSA**,
+`nersa_correction_note.md`.
+
+```
+                  high peak   low peak   95th pct, low
+before                 1,277      1,475           6,206
+after                    956        900             761
+```
+
+`profiles.json` understated wind by 11%, manufacturing scarcity hours the real system does
+not have. They fell disproportionately in the low season, which holds 980 peak hours against
+the high season's 325, so a few hours at the value of lost load lifted the low-season MEAN
+above the high-season one.
+
+**The medians never moved** - 750/749 before, 755/752 after. A median is insensitive to a
+handful of extreme hours, which is why the error moved the averages and left them alone. The
+panel showed a 1.8% median spread beside diverging means the whole time; I built the argument
+on the means.
+
+### the check did exactly what it was written to do
+
+`validate_consistency` asserted the inversion with the message: "if it stops holding, the
+submission needs revisiting, not the check." It stopped holding, and the submission did.
+
+Replaced by the two findings that survive: the blocks barely separate a typical hour, and
+high-season off-peak is the cheapest block modelled while being charged above low-season
+off-peak and weekend. **Both are about medians and ordering rather than extreme hours, which
+is why they held.** Verified by shifting the peak-hour definition and watching the new check
+fire.
+
+### the Eskom corroboration was overstated
+
+RESULTS.md claimed Eskom ran 83% of peaker energy outside Jun-Aug, presented as independent
+support. **Jun-Aug is 25% of the year, so 75% outside is the null.** Quoting 83% without the
+base rate made a modest signal look dramatic.
+
+Per hour, over 2023-25: 365 MWh in the high season against 485 in the low, +33%. That is real,
+independent of our model, and supports the weaker claim that costs are not concentrated in the
+tariff's expensive season - not the withdrawn claim that the seasons are inverted.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
