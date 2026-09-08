@@ -8075,7 +8075,19 @@ solar        0.774      -        -
 demand       0.804      -        -
 ```
 
-**All three series are 2023 data.** The metadata says 2025 and names a file that does not
+**Wind and solar were 2023 data. Demand was not** - CORRECTED 8 Sep 2026. I tested demand
+against 2023 only, got 0.804, and concluded the whole file was 2023. Tested against 2025 it
+reads **0.891**, higher. Demand was always the more recent year.
+
+That makes the original fault worse than diagnosed, not better: the file paired 2025 demand
+with 2023 wind and solar, so the wind-against-demand correlation - which drives storage
+cycling, curtailment and adequacy - was between two different years. The fetch script's own
+header warns about exactly this: "wind from one year and solar from another destroys the
+correlation between them".
+
+**The lesson is in the method, not the number.** I tested one hypothesis, it fit, and I
+stopped. Testing against every available year costs one more line and would have shown the
+series disagreeing with each other. The metadata says 2025 and names a file that does not
 reproduce them - a direct check against ESK19243 gives correlation 0.125 and a different
 diurnal shape.
 
@@ -8652,6 +8664,36 @@ worst by threefold, consistent with the winter-drought finding.
 re-decided rather than the value edited. A preset is a policy choice wearing a number, and
 the next person to touch it should have to make the choice again rather than inherit it
 silently.
+
+## label audit - 8 Sep 2026
+
+Asked whether the site's labels are still true after the rebuilds. Checked the two visible
+year claims against the data rather than against memory.
+
+**"hourly demand and renewable profiles from 2025 Eskom data" - now accurate.**
+
+```
+series      vs 2023   vs 2024   vs 2025
+demand        0.804     0.747     0.891
+wind          0.166     0.133     1.000
+solar         0.942     0.951     1.000
+```
+
+Wind and solar correlate 1.000 because they ARE the 2025 Eskom series. Demand at 0.891 is
+its closest year.
+
+**It was NOT accurate before the rebuild** - wind and solar were 2023 while the label said
+2025, and the label has been right only since 6 Sep.
+
+**The meta description says "Calibrated to 2026 Eskom data"**, which is defensible on a
+different reading: the FLEET constants come from Eskom's Integrated Report 2026, while the
+PROFILES are calendar 2025. Two different things, both true, and the page header already
+says so explicitly - "profiles from 2025 Eskom data, fleet assumptions calibrated to
+June-July 2026 system reports". Left as is.
+
+Solar's 0.94 against 2023 and 0.95 against 2024 is worth noting for what it is: solar is
+nearly the same every year, which is why year attribution by correlation works well for wind
+and poorly for solar. Its 3.3% interannual variation, measured separately, is the same fact.
 
 ---
 
