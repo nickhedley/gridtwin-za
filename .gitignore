@@ -18,3 +18,4 @@ node_modules/
 ninja_site_cache.json
 profiles_regional_multisite.json
 profiles_regional_rebuilt.json
+ninja_multiyear_cache.json
