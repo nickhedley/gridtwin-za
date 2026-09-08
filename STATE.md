@@ -6176,28 +6176,40 @@ a source; at present it has neither.
 
 ## Long term - not queued, recorded so it is not re-litigated
 
-22. **Resample the multi-year SOLAR profiles.** The wind rebuild completed 6 Sep 2026. Solar
-    is still one MERRA-2 centroid per region across all twelve years, **regional spread
-    1.07x against a real 1.4-1.5x**.
+22. **Resample the multi-year SOLAR profiles.** Gate answered 6 Sep 2026, and the answer is
+    better than expected.
 
-    Same fault the wind had, same shape of fix, and the diagnosis is already on record:
-    `profiles_regional.json` documents replacing MERRA-2's 50 km grid with PVGIS at 5 km
-    because the coarse sample "compressed the regional spread to 1.08x max/min". The
-    single-year file got that fix. The multi-year file never did.
+    **PVGIS SARAH2 covers 2005-2020**, so seven of our twelve weather years. The note in
+    `fetch_real_regional_profiles.py` claiming "SARAH returns HTTP 400 for South Africa even
+    for 2015" was WRONG - 2015 works. That was a malformed request, not a coverage limit,
+    and it cost the project a year of coarse solar.
 
-    **Two routes, and neither is clean.** PVGIS at 5 km is the better solar source and is
-    what the single-year file uses - but its coverage ends before recent years, and wind
-    from one year against solar from another destroys the correlation that storage cycling
-    and curtailment depend on. Multi-site MERRA-2 keeps the years matched but reproduces the
-    compression: a 78-site test pull on 6 Sep gave 1.19x, barely better than 1.07x.
+    ```
+    covered by PVGIS     2014-2020    7 years, 10 regions = 70 requests
+    not covered          2021-2025    5 years
+    ```
 
-    Deciding which matters more - regional spread or wind/solar correlation - IS the work.
-    It should be decided deliberately rather than falling out of whichever script is easier
-    to write.
+    No token, no rate limit. PVGIS is open.
 
-    **What it affects:** anything regional and solar-driven. Curtailment by region, corridor
-    congestion, where-to-build, the solar ceiling. Not the frontier or adequacy, which are
-    wind-limited.
+    **The five uncovered years need a decision.** Solar varies 3.3% between years against
+    wind's 17.3%, so borrowing a PVGIS year for those is a small compromise - far smaller
+    than leaving all twelve at a 1.07x regional spread against a real 1.4-1.5x.
+
+    **Try SARAH3 first.** It was rejected by API v5_2 as an unknown database name, which
+    means it exists in v5_3 and may reach further than 2020. One request settles it.
+
+    ### the aspect trap, checked and cleared
+
+    A coverage probe using `aspect=0` returned 14.0% at the Northern Cape against the 23.7%
+    the existing file holds. **PVGIS aspect 0 is SOUTH-facing**, which points panels away
+    from the sun in South Africa - the same trap the Renewables.ninja note documents for its
+    own azimuth ("azim=0 gives CF 0.149 against 0.225, about 35% low").
+
+    Tested both ways at the strongest and weakest solar regions. `aspect=180` reproduces the
+    existing file exactly, 23.7% and 19.5%. **The data was always right; only the metadata
+    said aspect=0.** Corrected in `profiles_regional.json`.
+
+    Any resample must use aspect=180.
 
 23. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
 
