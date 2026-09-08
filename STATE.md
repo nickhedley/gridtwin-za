@@ -8906,6 +8906,59 @@ byte-for-byte once the duplicate surfaced.
 
 Rule 3 says check the input before building on it. The file WAS the input.
 
+## the March 2026 export collapse was the Mozal smelter - 8 Sep 2026
+
+South32 suspended its Mozambican aluminium smelter in March 2026 after failing to agree a
+competitive tariff. The Minerals Council states it directly: net exports "declined to near
+zero in March, largely reflecting the shutdown of the Mozal smelter, a key recipient of
+electricity exports from Eskom" (Electricity Update, March-April 2026).
+
+**Three independent confirmations**, and the data carried the signature before the cause was
+known:
+
+```
+step change                      1,054 MW   against a reported load of ~950
+standard deviation before          166 MW
+standard deviation after           178 MW   UNCHANGED while the mean fell 60%
+```
+
+Absolute variability holding steady while the mean halves is what losing a FLAT baseload
+looks like - a smelter runs at constant load or it destroys its pots. A market-driven decline
+would have moved the variable part too. Stats SA corroborates a third time at -59.9% year on
+year.
+
+### what it is worth, and why it is invisible
+
+```
+                          exports 745 MW   exports 1,750 MW
+availability 65% (today)          0 GWh            0.3 GWh
+availability 52% (2023-like)    530 GWh          1,086 GWh
+```
+
+**A Mozal restart doubles unserved energy in a bad year and costs nothing in a good one.**
+Roughly 1 GW of adequacy headroom appeared in March that nobody chose, and it leaves again if
+the smelter returns.
+
+Both directions pinned in `validate_findings` 25 -> 27, including the invisibility - a healthy
+fleet hides this, which is why it is worth stating rather than leaving to be rediscovered.
+
+`exportsMW` is now a slider so the restart can be tested. Suite 994/994.
+
+### open: rooftop solar is uncertain by a factor of two
+
+The same Minerals Council update cites SARB at 7-8 GW installed rooftop, up from about 3 GW
+in 2022. Every estimate we now hold:
+
+```
+best fit from the demand series      ~4,500 MW
+SARB via Minerals Council             7,000-8,000
+FIXED.rooftopMW                       8,619
+Eskom                                 9,100
+```
+
+**Our constant sits above the SARB range**, on a quantity that suppresses roughly 15 TWh of
+grid demand. Worth resolving; not resolved here.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

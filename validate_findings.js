@@ -475,6 +475,33 @@ setTimeout(()=>{
       console.log(`  exports       ${r.expMW} MW capacity \u00b7 curtailing all of it takes `
         + `unserved ${r.unserved0.toFixed(1)} \u2192 ${r.unserved100.toFixed(1)} GWh`);
     }
+
+    // The Mozal closure is worth about 1 GW of adequacy headroom, and it is INVISIBLE at
+    // today's fleet availability. That is the point worth pinning: a healthy fleet hides
+    // the exposure, and it reappears the moment availability falls.
+    const m = probe(`
+      const a = simulate({ ...state, coalEAFPct: 52, exportsMW: 745 }, PROFILES);
+      const b = simulate({ ...state, coalEAFPct: 52, exportsMW: 1750 }, PROFILES);
+      const c = simulate({ ...state, exportsMW: 745 }, PROFILES);
+      const d = simulate({ ...state, exportsMW: 1750 }, PROFILES);
+      return { closed52: (a.E.unserved||0)/1000, open52: (b.E.unserved||0)/1000,
+               closedNow: (c.E.unserved||0)/1000, openNow: (d.E.unserved||0)/1000 };
+    `);
+    if (m && !m.error){
+      check('a Mozal restart roughly doubles unserved energy in a bad year',
+            m.open52 > m.closed52 * 1.5,
+            `at 52% availability, exports 745 MW gives ${m.closed52.toFixed(0)} GWh unserved `
+            + `and 1,750 MW gives ${m.open52.toFixed(0)}. The Mozal smelter took about 1 GW `
+            + `of Eskom exports until March 2026; its closure is worth that much adequacy `
+            + `headroom, and it returns if the smelter does.`);
+      check('the same restart is nearly invisible at current availability',
+            m.openNow < 5,
+            `at 65% availability the restart costs ${m.openNow.toFixed(1)} GWh against `
+            + `${m.closedNow.toFixed(1)}. A healthy fleet HIDES this exposure - which is why `
+            + `it is worth stating rather than leaving to be rediscovered in a bad year.`);
+      console.log(`  Mozal         restart costs ${(m.open52-m.closed52).toFixed(0)} GWh at `
+        + `EAF 52, ${(m.openNow-m.closedNow).toFixed(1)} GWh at EAF 65`);
+    }
   }
 
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);

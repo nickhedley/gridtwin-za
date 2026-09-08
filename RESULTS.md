@@ -3149,8 +3149,25 @@ assumed either way.
 ```
 
 Stats SA reports outflow down 59.9% year on year in July 2026. The model uses the
-post-break mean of 745 MW; averaging across the break would model neither regime. The cause
-of the break is not established here and is worth finding.
+post-break mean of 745 MW; averaging across the break would model neither regime.
+
+**The cause is the Mozal smelter.** South32 suspended the Mozambican aluminium smelter in
+March 2026 over tariff terms. The Minerals Council confirms it directly, and the data carried
+the signature independently: a 1,054 MW step against a reported load of ~950, with absolute
+variability unchanged across the break - 166 MW before, 178 after - while the mean fell 60%.
+That is what losing a flat industrial baseload looks like.
+
+### a restart doubles the shortfall in a bad year
+
+```
+                          exports 745 MW   exports 1,750 MW
+availability 65% (today)          0 GWh            0.3 GWh
+availability 52% (2023-like)    530 GWh          1,086 GWh
+```
+
+**Roughly 1 GW of adequacy headroom appeared in March that nobody chose**, and it leaves again
+if the smelter returns. At today's fleet availability the exposure is invisible, which is the
+reason to state it.
 
 CAVEAT: Eskom's RSA Contracted Demand already includes exports, so the model's demand series
 is domestic-only and the export obligation is added separately. Getting this wrong in either
