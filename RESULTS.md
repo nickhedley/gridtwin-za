@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty-five sections follow. This index exists because the file passed 1,400 lines and the
+Thirty-six sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3004,3 +3004,55 @@ carry.
 **Not purely curtailment.** The residual contains anything that makes actual output fall short
 of Eskom's expectation: curtailment, forecast error, and outages at renewable plants. It is an
 upper bound on curtailment, not a measurement of it.
+
+---
+
+## What a no-gas 2035 build actually costs, lever by lever
+
+Searched 8 Sep 2026. 144 builds across wind, solar, battery power and duration, each scored
+on the WORST of twelve weather years with gas forced to zero.
+
+### the cost of adequacy, by lever
+
+From the Future electricity mix preset - 45 GW wind, 52 GW solar, 30 GW storage, 27 GW of
+coal retired - moving each lever alone:
+
+```
+lever                    R/kWh per GWh of worst-year shortfall avoided
+coal retained                    0.0010
+battery power                    0.0038
+battery duration                 0.0045
+wind                             0.0053
+solar                            0.0068
+iron-air                         0.0117
+```
+
+**Retaining coal is four times cheaper than any clean lever.** Three gigawatts less
+decommissioning closes the entire 30 GWh gap for R0.03/kWh, at a cost of 3.1 Mt CO2 - about
+**R9 per tonne avoided**, far below the carbon price. That is the trade the whole debate is
+about, and it is worth stating plainly rather than leaving implicit.
+
+**Among clean levers, storage beats generation**, and iron-air is the most expensive by
+threefold. Consistent with the separate finding that long-duration storage does not solve a
+winter wind drought.
+
+### the preset, and why it does not buy zero
+
+```
+build                        unserved   capex   R/kWh    CO2
+45W 52S 30B 4h                     30     235   1.269   34.8
+45W 52S 30B 6h    (chosen)          4     258   1.387   34.6
+50W 52S 40B 4h                      1     262   1.410   33.6
+50W 52S 30B 6h                      0     270   1.449   33.6
+```
+
+Sixty of 144 builds reach zero. **The cheapest costs R35bn more capex and 14% on the average
+price, to remove 30 GWh of shortfall in one year out of twelve - 0.01% of annual demand.**
+
+The preset takes 6-hour storage instead: 87% of the adequacy gain for two-thirds of the
+cost. Whether the last 4 GWh is worth R35bn is a policy judgement, not a modelling one, and
+the model should not pretend otherwise.
+
+CAVEAT: costs are the model's own capex and dispatch families, not a procurement estimate.
+Worst-of-twelve-years is the sizing basis; a single year would give a smaller and less safe
+answer.

@@ -394,6 +394,42 @@ setTimeout(()=>{
     }
   }
 
+
+  // ── THE FUTURE MIX PRESET IS A CHOSEN POINT, NOT A GUESS ────────────────
+  // Searched 8 Sep 2026: 144 builds across wind, solar, battery power and duration, each
+  // scored on the worst of twelve weather years with gas excluded.
+  //
+  // Sixty reach zero shortfall. The cheapest costs R35bn more capex and 14% on the average
+  // price to remove 30 GWh in one year of twelve - 0.01% of annual demand. The preset
+  // deliberately does NOT buy that, and sits at 4 GWh instead.
+  //
+  // Pinned so the choice cannot drift back silently. If a future change moves it, the
+  // question to ask is whether the trade was re-decided, not whether the number moved.
+  {
+    const r = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      Object.assign(state, PRESETS['Future electricity mix']);
+      const P = { ...FIXED, ...state };
+      const out = { wind: P.newWindMW, pv: P.newPvMW, batt: P.newBattMW,
+                    hours: P.newBattHours, ccgt: P.newCcgtMW };
+      Object.assign(state, saved);
+      return out;
+    `);
+    if (r && !r.error){
+      check('the future mix preset keeps gas at zero',
+            r.ccgt === 0,
+            `newCcgtMW is ${r.ccgt} - this preset exists to show a no-gas build`);
+      check('the future mix preset uses 6-hour storage',
+            r.hours === 6,
+            `newBattHours is ${r.hours}, chosen as 6 on 8 Sep 2026. At 4h the build leaves `
+            + `30 GWh unserved on the worst of twelve years; 6h takes it to 4 GWh for R23bn. `
+            + `Going all the way to zero costs R35bn more again. If this changed, confirm `
+            + `the trade was re-decided rather than the value edited.`);
+      console.log(`  future mix    ${r.wind/1000} GW wind \u00b7 ${r.pv/1000} GW solar \u00b7 `
+        + `${r.batt/1000} GW / ${r.hours}h storage \u00b7 no gas`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

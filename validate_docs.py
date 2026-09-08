@@ -113,7 +113,16 @@ if _res:
               'twenty-one':21,'twenty-two':22,'twenty-three':23,'twenty-four':24,
               'twenty-five':25,'twenty-six':26,'twenty-seven':27,'twenty-eight':28,
               'twenty-nine':29,'thirty':30,'thirty-one':31,'thirty-two':32,
-              'thirty-three':33,'thirty-four':34,'thirty-five':35}
+              'thirty-three':33,'thirty-four':34,'thirty-five':35,
+              # Extended to fifty on 8 Sep 2026. The map ended at the current count, so
+              # adding a section made this check fail on its own vocabulary rather than on
+              # a real disagreement - the same trap the rule-count map had. A check that
+              # needs editing every time the thing it counts grows is a maintenance cost
+              # pretending to be a safeguard.
+              'thirty-six':36,'thirty-seven':37,'thirty-eight':38,'thirty-nine':39,
+              'forty':40,'forty-one':41,'forty-two':42,'forty-three':43,'forty-four':44,
+              'forty-five':45,'forty-six':46,'forty-seven':47,'forty-eight':48,
+              'forty-nine':49,'fifty':50}
     _m = re.search(r'([A-Za-z-]+) sections follow', _res)
     _stated = _words.get(_m.group(1).lower()) if _m else None
     check('RESULTS.md index states the right number of sections',

@@ -8622,6 +8622,37 @@ months.**
 
 Suite 986/986.
 
+## the future mix preset, searched rather than guessed - 8 Sep 2026
+
+144 builds, worst of twelve weather years, gas excluded. **The preset was not badly chosen** -
+it sat 30 GWh from zero, and the cheapest zero-shortfall build costs R35bn more capex and 14%
+on price to remove 0.01% of annual demand in one year of twelve.
+
+Changed `newBattHours` 4 to 6: shortfall 30 GWh to 4, for R23bn. **87% of the adequacy gain
+for two-thirds of the cost.** Nothing else changed.
+
+### the lever ranking is the real output
+
+```
+coal retained        0.0010    R/kWh per GWh of shortfall avoided
+battery power        0.0038
+battery duration     0.0045
+wind                 0.0053
+solar                0.0068
+iron-air             0.0117
+```
+
+**Retaining coal is four times cheaper than any clean lever**, at about R9 per tonne of CO2 -
+far below the carbon price. Among clean levers storage beats generation, and iron-air is
+worst by threefold, consistent with the winter-drought finding.
+
+### pinned, with the reasoning in the failure message
+
+`validate_findings` 20 -> 22. The message says: if this changed, confirm the TRADE was
+re-decided rather than the value edited. A preset is a policy choice wearing a number, and
+the next person to touch it should have to make the choice again rather than inherit it
+silently.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
