@@ -269,7 +269,15 @@ def check_shouting(src):
 # Both earn it as PROVENANCE, which is what panels are for. The assumptions line exists
 # because the first version silently overrode the user's coal settings; a grid that does
 # not say what it assumed is the defect that line prevents.
-PROSE_CEILING = 4170        # measured 1 Sep 2026 after the trim: 4,098
+# 4170 -> 4200 on 8 Sep 2026: the wheeling panel now shows BOTH reconciliation bases and
+# names the four policy constraints it does not price - no network charge offset, losses on
+# wheeling but not offset, credit forfeited above the maximum export capacity, and no load
+# shedding exemption. Eskom's wheeling and net-billing policy, revision 2, July 2026.
+#
+# That content is worth 30 words because the two bases differ by 14-24 points of coverage
+# and the reader has to know which applies to them. Four other blocks were trimmed first -
+# capture rate, clean coal, rooftop cost, interruptible load - which paid for most of it.
+PROSE_CEILING = 4200        # measured 8 Sep 2026: 4,183
 
 def check_prose(src):
     blocks = re.findall(r'font-size:9\.5px;color:var\(--ink2\)[^>]*>(.*?)</div>', src, re.S)

@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty-six sections follow. This index exists because the file passed 1,400 lines and the
+Thirty-seven sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3056,3 +3056,50 @@ the model should not pretend otherwise.
 CAVEAT: costs are the model's own capex and dispatch families, not a procurement estimate.
 Worst-of-twelve-years is the sizing basis; a single year would give a smaller and less safe
 answer.
+
+---
+
+## Wheeling coverage depends on a reconciliation rule that is about to change
+
+Eskom's Wheeling of Energy and Net-billing policy, revision 2, July 2026.
+
+**Clause 2.2.13.3** reconciles the load customer's account on total energy summed per
+time-of-use period per MONTH. Generation in any peak hour offsets consumption in any peak
+hour of the same month. It does not have to arrive in the same hour.
+
+**Clause 2.2.13.4** announces a shift to HOURLY time-of-use reconciliation, approved,
+applying to all existing and new contracts once the automated system is implemented. **No
+date has been announced.**
+
+The difference is large:
+
+```
+plant, flat 1 MW load        monthly TOU   hourly TOU
+3 MW solar, Northern Cape          63.3%        39.4%
+3 MW wind, Eastern Cape            89.6%        66.5%
+2 MW solar + 1 MW wind             77.5%        63.3%
+```
+
+**Fourteen to twenty-four points of coverage rests on a date nobody has published.** Anyone
+sizing a wheeling PPA on hourly matching is being conservative by a quarter of their load;
+anyone sizing on monthly netting is exposed to a switch that has already been approved.
+
+The model showed only the hourly basis until 8 Sep 2026, which understated coverage against
+the rule actually in force. Both are now shown side by side rather than behind a toggle: the
+reader has to answer which applies with their own contract date, and hiding one would make
+them choose before knowing there is a choice.
+
+### four constraints the coverage table does not price
+
+- **Network charges are not offset** (2.2.14.4). Payable on all energy delivered, so
+  wheeling reduces the energy charge only. A coverage figure is not a bill reduction.
+- **Losses are payable on wheeling but not on offset** (2.2.14.7), because offset happens on
+  one site.
+- **Exceeding the maximum export capacity forfeits the credit** on the excess (2.2.12),
+  which caps how far oversizing pays.
+- **Wheeling does not exempt you from load shedding or curtailment** (2.2.11).
+
+Also worth knowing: wheeling requires the customer to be on a time-of-use tariff (2.2.2),
+portfolio wheeling is capped at 10 generators and 50 load accounts pending an automated
+system (2.2.5), and credited energy per period cannot exceed consumption in that period
+(2.2.13.7) - so surplus peak generation is not credited against off-peak use.

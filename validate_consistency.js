@@ -689,6 +689,36 @@ const num = t => {
           + `column with nothing in it, which is how the first version read`);
   }
 
+  // ── WHEELING RECONCILIATION: TWO BASES, AND THEY MUST DIFFER ────────────
+  // Eskom's Wheeling of Energy and Net-billing policy, revision 2, July 2026, clause
+  // 2.2.13.3 reconciles the load customer's account on total energy summed per TOU period
+  // per MONTH. Clause 2.2.13.4 announces a shift to HOURLY TOU, approved but not dated.
+  //
+  // The model showed only hourly until 8 Sep 2026, which understated coverage by 14 to 24
+  // points against the rule actually in force - a number developers are using to size PPAs
+  // now.
+  //
+  // This asserts the monthly basis is BOTH reachable and materially different. If the
+  // parameter is ever dropped, the two columns silently become one and the panel goes back
+  // to answering only the future question.
+  {
+    const r = run(`
+      const h = wheelCoverage('Northern Cape', 1, 3, 0, 0, 0);
+      const m = wheelCoverage('Northern Cape', 1, 3, 0, 0, 0, 'monthly');
+      return (h && m) ? { hourly: h.coverPct, monthly: m.coverPct } : null;
+    `);
+    if (r && !r.err && r.hourly){
+      check('monthly TOU reconciliation is reachable and more generous than hourly',
+            r.monthly > r.hourly + 5,
+            `monthly ${r.monthly.toFixed(1)}% vs hourly ${r.hourly.toFixed(1)}% - monthly `
+            + `nets generation against consumption across the whole month within each TOU `
+            + `period, so it MUST be more generous. If these converge, the basis parameter `
+            + `is being ignored and the panel is answering one question twice.`);
+      console.log(`  wheeling      Northern Cape 3x solar: monthly ${r.monthly.toFixed(0)}% `
+        + `\u00b7 hourly ${r.hourly.toFixed(0)}%`);
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

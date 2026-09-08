@@ -8798,6 +8798,40 @@ I told the user to gitignore `ninja_site_cache.json` on 6 Sep, then wrote a seco
 with a different cache filename and never added it. I also said a 132 MB repo was "fine,
 leave it" - that growth was the thing about to break the deploy.
 
+## the wheeling panel was answering the wrong question - 8 Sep 2026
+
+Eskom's Wheeling of Energy and Net-billing policy, revision 2, July 2026, was not in the
+model. `wheelCoverage()` matched generation to load HOUR BY HOUR. **Clause 2.2.13.3
+reconciles monthly, summed per TOU period.**
+
+```
+plant, flat 1 MW load        monthly TOU   hourly TOU
+3 MW solar, Northern Cape          63.3%        39.4%
+3 MW wind, Eastern Cape            89.6%        66.5%
+```
+
+**The panel understated coverage by 14 to 24 points against the rule in force** - and it is
+a number developers are using to size PPAs now.
+
+Clause 2.2.13.4 announces a shift TO hourly, approved, undated. So the model was right about
+the future rule and wrong about today's. **Both bases now shown side by side**, not behind a
+toggle: the reader answers which applies from their own contract date, and hiding one would
+make them choose before knowing there is a choice.
+
+Pinned in `validate_consistency` 55 -> 56, asserting the monthly basis is reachable AND more
+generous. Verified by disabling the parameter - the two columns collapse to one and the check
+fires. **That is the failure this guards: not a wrong number, but a silent return to
+answering one question twice.**
+
+### four constraints named on the panel, priced by nothing
+
+Network charges are not offset (2.2.14.4), losses payable on wheeling but not offset
+(2.2.14.7), credit forfeited above the maximum export capacity (2.2.12), and no load
+shedding exemption (2.2.11).
+
+Prose ceiling 4170 -> 4200, deliberately, after trimming four other blocks first - capture
+rate, clean coal, rooftop cost, interruptible load - which paid for most of the addition.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

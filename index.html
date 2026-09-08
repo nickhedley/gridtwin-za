@@ -3382,7 +3382,22 @@ function printPrefeas() {
   //
   // Wind and storage solve different halves: a battery moves solar within the day, wind
   // produces in hours solar never does. Together they beat the sum of either.
-  function wheelCoverage(region, loadMW, solarMW, windMW, battMW, battH){
+  // RECONCILIATION BASIS. Eskom's Wheeling of Energy and Net-billing policy, revision 2,
+  // July 2026, clause 2.2.13.3: the load customer's account is reconciled using "the total
+  // energy summed per TOU in a month". Generation in any peak hour offsets consumption in
+  // any peak hour of the same month. It does NOT have to arrive in the same hour.
+  //
+  // Clause 2.2.13.4 says Eskom has approved a shift to HOURLY TOU reconciliation, applying
+  // to all existing and new contracts once the automated system is implemented. No date has
+  // been announced.
+  //
+  // The difference is 14 to 24 points of coverage, so which basis applies is a commercial
+  // question for anyone signing a PPA now. Both are offered; monthly is the default because
+  // it is the rule in force.
+  //
+  // Clauses 2.2.13.7 and 2.2.13.8 cap credited energy per TOU period at the energy actually
+  // consumed in that period. Surplus in peak is not credited against off-peak consumption.
+  function wheelCoverage(region, loadMW, solarMW, windMW, battMW, battH, basis){
     // regionalWindProfiles / regionalSolarProfiles are loaded in this same scope from
     // nodal/profiles_regional.json - see the fetch above. Returns null until they land,
     // and the caller renders nothing rather than a wrong number.
@@ -3411,6 +3426,31 @@ function printPrefeas() {
       }
     }
     const load = loadMW * 8760;
+
+    // Monthly TOU netting, the rule currently in force. Sum generation and consumption
+    // within each TOU period of each month, credit the lesser of the two.
+    if (basis === 'monthly' && typeof touBlockOf === 'function'){
+      const MD = [31,28,31,30,31,30,31,31,30,31,30,31];
+      let credited = 0, h0 = 0, genTot = 0;
+      for (let m = 0; m < 12; m++){
+        const hrs = MD[m] * 24;
+        const b = { peak: [0,0], standard: [0,0], offpeak: [0,0] };
+        for (let h = h0; h < h0 + hrs && h < 8760; h++){
+          const g = w[h] * windMW + sv[h] * solarMW;
+          genTot += g;
+          const k = touBlockOf(h).block;
+          b[k][0] += g;
+          b[k][1] += loadMW;
+        }
+        for (const k of ['peak', 'standard', 'offpeak'])
+          credited += Math.min(b[k][0], b[k][1]);   // clause 2.2.13.7 cap
+        h0 += hrs;
+      }
+      return { coverPct: 100 * credited / load, genGWh: genTot / 1000,
+               spillPct: genTot > 0 ? 100 * (genTot - credited) / genTot : 0,
+               sunPct: 100 * sv.reduce((a, v) => a + (v > 0.001 ? 1 : 0), 0) / sv.length };
+    }
+
     return { coverPct: 100 * served / load, genGWh: gen / 1000,
              spillPct: gen > 0 ? 100 * spill / gen : 0,
              // the ceiling for solar alone in this region: the daylight fraction
@@ -4227,11 +4267,17 @@ function printPrefeas() {
     const rows = [];
     let sun = null;
     for (const c of cfg){
+      // Both bases, side by side rather than behind a toggle. Which one applies is a
+      // question the reader has to answer with their contract date, so showing one and
+      // hiding the other would make them choose before they know there is a choice.
+      const rm = wheelCoverage(region, loadMW, c.s * loadMW, c.w * loadMW,
+                               c.bm * loadMW, c.bh, 'monthly');
       const r = wheelCoverage(region, loadMW, c.s * loadMW, c.w * loadMW,
                               c.bm * loadMW, c.bh);
-      if (!r) return '';                         // profiles not loaded yet
+      if (!r || !rm) return '';                  // profiles not loaded yet
       sun = r.sunPct;
       rows.push(`<tr><td style="padding:2px 0">${c.lab}</td>`
+        + `<td style="text-align:right;font-family:monospace">${rm.coverPct.toFixed(0)}&#37;</td>`
         + `<td style="text-align:right;font-family:monospace">${r.coverPct.toFixed(0)}&#37;</td>`
         + `<td style="text-align:right;font-family:monospace;color:var(--ink2)">${r.spillPct.toFixed(0)}&#37;</td></tr>`);
     }
@@ -4242,16 +4288,25 @@ function printPrefeas() {
         <table style="width:100%;font-size:10.5px;border-collapse:collapse">
           <thead><tr style="color:var(--ink2)">
             <th style="text-align:left;font-weight:400">contracted plant</th>
-            <th style="text-align:right;font-weight:400">covered</th>
+            <th style="text-align:right;font-weight:400">monthly TOU</th>
+            <th style="text-align:right;font-weight:400">hourly TOU</th>
             <th style="text-align:right;font-weight:400">excess</th>
           </tr></thead>
           <tbody>${rows.join('')}</tbody>
         </table>
         <div style="font-size:9.5px;color:var(--ink2);margin-top:7px;line-height:1.5">
-          Solar cannot pass ${sun.toFixed(0)}&#37; here &ndash; the share of hours with any
-          sun. Diversity moves the number, volume does not. <strong>Excess</strong> is
-          output above your load; whether you pay for it depends on the contract.
-          ${region} profiles, flat load.
+          <strong>Monthly TOU</strong> is the rule in force: peak generation offsets peak
+          consumption anywhere in the same month, capped at what you used.
+          <strong>Hourly TOU</strong> is the stricter basis Eskom has approved but not dated.
+          The gap is what the switch costs you.
+          <br><br>
+          Solar cannot pass ${sun.toFixed(0)}&#37; here &ndash; the share of hours with sun.
+          Diversity moves the number, volume does not. ${region} profiles, flat load.
+          <br><br>
+          Not priced here: network charges are not offset, so wheeling cuts the energy charge
+          only. Losses are payable on wheeling but not on offset. Exceeding your maximum
+          export capacity forfeits the credit on the excess. Wheeling does not exempt you
+          from load shedding. Eskom wheeling and net-billing policy, rev 2, July 2026.
         </div>
       </div>`;
   }
@@ -11089,9 +11144,8 @@ function renderCaptureCurve(res){
     + (100 * c.ratio).toFixed(0) + ':' + (100 * (1 - c.ratio)).toFixed(0) + ', so this is YOUR pipeline scaled up, not a generic one. '
     + (c.battScaled ? 'Storage is scaled with the build at roughly 0.35&#215; vre, because it is the main thing protecting solar revenue \u2013 without it solar capture falls several times further. '
                     : 'Using the storage you have set. ')
-    + 'Solar cannibalises itself and wind does not: every solar plant produces in the same hours, '
-    + 'so adding solar drives the price toward zero in exactly the hours solar earns. Wind output '
-    + 'is diverse across sites and runs at night. '
+    + 'Solar cannibalises itself and wind does not: solar plants all produce in the same hours, '
+    + 'so adding solar drives the price toward zero exactly when solar earns. '
     + 'The last column adds a battery at half the plant\u2019s capacity, 4 hours, charging only '
     + 'from its own output. It is worth little today and a great deal at a full pipeline \u2013 '
     + 'that shift is the point. '
@@ -12092,11 +12146,11 @@ function renderCCS(r){
       + 'padding:7px 10px;background:var(--panel2);border-left:3px solid var(--veld,#4A6B7A)">'
       + '<strong>\u201cClean coal\u201d is an umbrella term for at least six different '
       + 'technologies. This panel models one.</strong> Here it is CO\u2082 capture. IRP 2019\u2019s '
-      + 'preference for high-efficiency low-emission coal covered underground coal gasification, '
-      + 'integrated gasification combined cycle, capture and storage, supercritical and '
-      + 'ultra-supercritical boilers. The programme announced in August 2026 adds a seventh: '
-      + '<strong>circulating fluidised bed</strong>, which burns coal in a bed of sand and limestone '
-      + 'at 800\u2013900\u00b0C to cut sulphur dioxide and nitrogen oxides at source \u2013 not carbon. '
+      + 'preference for high-efficiency low-emission coal covered gasification, combined cycle, '
+      + 'capture and storage, and supercritical boilers. The August 2026 programme adds a '
+      + 'seventh: '
+      + '<strong>circulating fluidised bed</strong>, which cuts sulphur dioxide and nitrogen '
+      + 'oxides at source \u2013 not carbon. '
       + 'The CSIR draws the same line: that programme is about combustion, the Council for '
       + 'Geoscience\u2019s Leandra project is about storage. Eskom\u2019s proposed Kusile '
         + 'capture demonstration (Sep 2026) is <strong>22,000 t CO2/yr</strong>, 0.5&#37; of one '
@@ -13477,8 +13531,8 @@ function renderAdequacy(r){
         + (r.E.dr/1000).toFixed(0) + '&nbsp;GWh</strong> over '
         + (()=>{let n=0;for(let h=0;h<8760;h++) if(r.drMW && r.drMW[h]>1) n++;
             return n + (n === 1 ? ' hour' : ' hours');})()
-        + ' &ndash; contracted industrial customers paid to reduce, called before any shedding. '
-        + 'LOLE and EUE above count only genuine unserved energy, not this.<br>' : ''}
+        + ' &ndash; contracted industrial customers paid to reduce, called before shedding. '
+        + 'LOLE and EUE count only genuine unserved energy, not this.<br>' : ''}
       ${(r.reserveMW && r.reserveMW.length) ? 'Operating reserve carried: <strong>'
         + Math.round(Array.from(r.reserveMW).reduce((a,b)=>a+b,0)/r.reserveMW.length).toLocaleString()
         + '&nbsp;MW</strong> average, '
@@ -13712,7 +13766,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-08c';
+const BUILD_STAMP = '2026-09-08d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -15335,7 +15389,7 @@ function rtCalc() {
     monthlySavings.map(function(v,i){ return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end"><div title="' + MONTHS[i] + ': ' + fmtR(v) + '" style="height:' + Math.round(44*v/maxMS) + 'px;background:#F5C518;border-radius:2px 2px 0 0;min-height:2px"></div></div>'; }).join('') +
     '</div>' +
     '<div style="display:flex;gap:3px;margin-bottom:10px">' + MONTHS.map(function(m){ return '<div style="flex:1;text-align:center;font-size:8px;color:var(--ink2)">' + m + '</div>'; }).join('') + '</div>' +
-    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by inferred bracket: home R17/Wp, small C&I R13/Wp, large C&I R11/Wp, industrial R9.5/Wp (2026 SA installer rates, excluding battery). O&M at 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The remainder falls in runs of dull winter days, which needs days of autonomy rather than one night\'s storage. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2013 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' – the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2013 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
+    '<div style="font-size:9.5px;color:var(--ink2);border-top:1px solid var(--line2);padding-top:8px">Indicative only. Solar CF from ' + location + '. Installed cost by bracket: home R17/Wp, small C&I R13, large C&I R11, industrial R9.5 (2026 SA rates, excluding battery). O&M 1.5% capex/yr. ' + (_atCeiling ? '<strong>Coverage is capped at 95%.</strong> The remainder falls in runs of dull winter days, which needs days of autonomy rather than one night\'s storage. ' : '') + '<strong>Only ' + Math.round(selfConsumedKwh/usableKwh*100) + '% of generation is assumed self-consumed at full tariff value ' + (selfConsumedKwh >= maxCoverageFrac * annualDemandKwh - 1 ? '(capped at ' + Math.round(maxCoverageFrac*100) + '% of this site\'s annual demand \u2013 solar cannot serve night-time load without a battery, so coverage plateaus here regardless of system size)' : '(' + (rawBaseline*100).toFixed(0) + (applianceProfile ? '% daytime share from your ticked appliances' : '% baseline for this load type') + (sizingRatio>1 ? ', reduced for a system generating ' + sizingRatio.toFixed(1) + 'x this site\'s annual demand' : '') + (battKwh>0 ? ' + ' + Math.round(_rtBatteryUplift(battH, rawBaseline, battKwh, annualDemandKwh)*100) + '% from the ' + battKwh.toFixed(1) + ' kWh battery' : '') + ')') + ' – the remaining ' + Math.round(exportedKwh/1000).toLocaleString() + ' MWh/yr is exported and assumed to earn no credit. Coverage and savings reflect this, not total generation. Treat as a rough estimate.</strong>' + (sizingRatio>1.3 ? '<br><br><strong style="color:var(--alert,#C4785A)">\u26A0 This system generates ' + sizingRatio.toFixed(1) + 'x more energy than this site\'s billed demand \u2013 significantly oversized relative to current consumption. Without a battery, most of that surplus will be exported for little or no credit.</strong>' : '') + ' Click the map in the Solar &amp; wind potential tab for site-specific data.</div>';
 }
 
 
