@@ -9115,15 +9115,33 @@ price. Regional capture prices, where-to-build, wheeling coverage, the solar cei
 **The national file is unaffected** - it is Eskom measured throughout, and the dispatch,
 adequacy and frontier results run on that.
 
-### NOT YET FIXED, deliberately
+### RESOLVED at +2 hours, and fixed
 
-The correction is one or two hours and the evidence points both ways: the physics says +2
-(UTC to SAST) and the shape correlation says +1. The difference matters - an hour is 4% of a
-solar day - and applying the wrong one would replace a known error with a hidden one.
+The shape correlation suggesting +1 was the flawed test: it compared a single Northern Cape
+point against Eskom's NATIONAL fleet, whose geography and tracking mix differ. Two tests on
+the point itself both give +2, and neither needs external data.
 
-Resolving it needs a like-for-like test: a single PVGIS point against Eskom's metered output
-for the SAME location, not a Northern Cape point against a national fleet whose geography and
-tracking mix differ. Do that before shifting anything.
+**Solar noon.** The centroid is 21.073E; SAST's standard meridian is 30E, so solar noon there
+runs 36 minutes late - 12:27 to 12:43 across the year. In hour-beginning convention that is
+hour 12. PVGIS gave hour 10.
+
+**Daylight window.** Geometry puts 21 June at 07:36 to 17:42; PVGIS unshifted ran hour 6 to
+hour 15. The LENGTHS already matched - 10 hours in winter, 12 at equinox, 14 in summer - so
+the window was displaced, not distorted. Shift by two and both ends land.
+
+`fix_solar_timezone.py` applied to both regional files. Solar peak hour 10 -> 12; wind
+untouched. Rolls rather than pads, because the hours leaving 31 December belong at the start
+of 1 January of the same year.
+
+### the suite passed throughout, which is the real lesson
+
+All 995 checks passed before the fix and after it. **A time shift moves no level, no spread,
+no ranking and no annual total** - every quantity the suite was testing. It changes only WHEN
+things happen, and nothing was asking.
+
+`validate_weather` 60 -> 61 now asserts regional solar peaks between hours 11 and 13, with
+the solar-noon calculation in the failure message. Verified against both directions: hour 10
+for the original bug, hour 14 for a double conversion.
 
 ### how it was found
 

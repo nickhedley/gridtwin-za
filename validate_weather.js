@@ -338,6 +338,49 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
     }
   }
 
+  // ── CLOCKS: WIND AND SOLAR MUST BE ON THE SAME ONE ──────────────────────
+  // Found 8 Sep 2026 by fuzzing, and NOTHING in the suite was asking. Wind is fetched from
+  // Renewables.ninja with local_time=true; PVGIS has no timezone parameter and returns UTC.
+  // South Africa is UTC+2, so the two carriers sat two hours apart INSIDE the same file
+  // while every level, spread and ranking check passed - a time shift moves none of those.
+  //
+  // The tell was that all ten regions peaked at exactly hour 10. South Africa spans 17
+  // degrees of longitude, about 68 minutes of solar time, so a shared peak hour means
+  // something upstream flattened the geography. A clock does that; a coordinate does not.
+  //
+  // Solar noon at the profile centroid (21.073E, SAST meridian 30E) is 12:27-12:43 across
+  // the year, so hour 12 is correct and hours 10 or 14 are a timezone error.
+  {
+    let j = null;
+    try {
+      j = JSON.parse(fs.readFileSync(
+        path.join(ROOT, 'nodal/profiles_regional.json'), 'utf8'));
+    } catch (e) { j = null; }
+    if (j && j.solar_pu && j.wind_pu){
+      const sc = j.scale || 1;
+      const peak = (ser) => {
+        const b = new Array(24).fill(0);
+        for (let i = 0; i < ser.length; i++) b[i % 24] += ser[i] / sc;
+        let bi = 0; for (let k = 1; k < 24; k++) if (b[k] > b[bi]) bi = k;
+        return bi;
+      };
+      const reg = 'Northern Cape';
+      if (j.solar_pu[reg] && j.wind_pu[reg]){
+        const sp = peak(j.solar_pu[reg]);
+        check('regional solar peaks at local solar noon',
+              sp >= 11 && sp <= 13,
+              `solar peaks at hour ${sp}. Solar noon at the profile centroid is 12:27-12:43 `
+              + `SAST, so hour 12 is right. Hour 10 means PVGIS UTC was never converted; `
+              + `hour 14 means it was converted twice.`);
+        // Every region sharing a peak hour is the flattening signature.
+        const hours = Object.keys(j.solar_pu).map(r => peak(j.solar_pu[r]));
+        const spread = Math.max(...hours) - Math.min(...hours);
+        notes.push(`regional solar peak hours span ${spread} h across `
+          + `${hours.length} regions (solar peak ${sp}, wind peak ${peak(j.wind_pu[reg])})`);
+      }
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} weather checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log(f)); }
   if (notes.length) { console.log('\nNOTES:'); notes.forEach(n => console.log('  ' + n)); }
