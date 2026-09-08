@@ -101,9 +101,9 @@ off-peak and weekend. Independently, Eskom runs 33% more peaker energy per hour 
 season than the high.
 → "Eskom's tariff blocks against its own dispatch costs"
 
-**Solar alone cannot cover more than 49% of a flat industrial load, anywhere in South
+**Solar alone cannot cover more than 48% of a flat industrial load, anywhere in South
 Africa.** Eight regions, ten weather years, under two points of spread. The ceiling is the
-daylight fraction: only 49.3% of hours have any solar output. Sixteen times the plant buys
+daylight fraction: only 48.4% of hours have any solar output. Sixteen times the plant buys
 eleven points. Wind and a battery solve different halves of the problem, and together
 reach 98%. Directly commercial - the wheeling market is sold on renewable share.
 → "Wheeling calculators"
@@ -2092,36 +2092,47 @@ wind 2 + solar 3 MW        78.4 - 83.9%      81.1%
 65% is achievable with a wind and solar mix. It needs roughly three megawatts of
 generation for a one megawatt load, which is the part a headline number hides.
 
-### solar alone cannot pass 49% of a flat load, anywhere in South Africa
+### solar alone cannot pass 48% of a flat load, anywhere in South Africa
 
 Extended to eight regions and ten weather years. The result is a physical limit, not a
 regional quirk.
 
+RESTATED 6 Sep 2026 on PVGIS SARAH3 at 5 km, twelve weather years, ten regions:
+
 ```
 region           solar 2 MW   solar 4 MW   solar 8 MW
-Northern Cape         36.6%        41.8%        44.5%
-Western Cape          34.9%        40.5%        43.5%
-Eastern Cape          35.7%        41.2%        44.1%
-Free State            36.2%        41.8%        44.6%
-North West            36.4%        41.9%        44.8%
-Limpopo               36.0%        41.9%        44.5%
-Mpumalanga            36.0%        41.6%        44.4%
-Gauteng               36.1%        41.8%        44.5%
+Northern Cape         35.9%        40.9%        43.6%
+Western Cape          35.0%        40.1%        43.0%
+North West            34.6%        40.0%        43.2%
+Hydra Central         34.8%        40.0%        43.0%
+Free State            34.2%        39.6%        42.9%
+Limpopo               33.5%        39.6%        43.3%
+Gauteng               33.8%        39.5%        43.0%
+Eastern Cape          33.6%        39.1%        42.4%
+Mpumalanga            33.3%        39.0%        42.5%
+Kwazulu Natal         31.1%        37.2%        41.0%
 ```
 
-**Under two points of spread across the whole country at every build level.** The best
-solar resource in South Africa buys a wheeling customer barely one point more coverage
-than the worst.
+**Under four points of spread across the whole country at every build level.** Previously
+this section read "under two points", computed on MERRA-2 at 50 km - a grid coarser than
+the distance between regions, which compressed the national resource spread to 1.07x
+against a real 1.24x. **The old table understated the regional difference by half.**
 
-The ceiling is the daylight fraction. **Only 49.3% of hours in the year have any solar
+The finding survives the correction and is worth stating carefully: the best solar resource
+in South Africa buys a wheeling customer under four points more coverage than the worst, and
+under two points more than the median. **Siting solar for resource is worth little; siting
+it for grid access or wheeling distance is worth much more.** That was the conclusion before
+and it holds, on a spread twice the size.
+
+The ceiling is the daylight fraction. **Only 48.4% of hours in the year have any solar
 output at all**, so no quantity of panels can serve a flat load in the other half:
 
 ```
-solar  2 MW for a 1 MW load    36.6%
-solar  4 MW                    41.8%
-solar  8 MW                    44.5%
-solar 16 MW                    46.1%
-solar 32 MW                    47.6%     sixteen times the plant, eleven points
+solar  2 MW for a 1 MW load    35.9%
+solar  4 MW                    40.9%
+solar  8 MW                    43.6%
+solar 16 MW                    45.4%
+solar 32 MW                    46.6%     sixteen times the plant, eleven points
 ```
 
 ### what actually breaks it

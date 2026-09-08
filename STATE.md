@@ -6176,40 +6176,9 @@ a source; at present it has neither.
 
 ## Long term - not queued, recorded so it is not re-litigated
 
-22. **Resample the multi-year SOLAR profiles.** Gate answered 6 Sep 2026, and the answer is
-    better than expected.
-
-    **PVGIS SARAH2 covers 2005-2020**, so seven of our twelve weather years. The note in
-    `fetch_real_regional_profiles.py` claiming "SARAH returns HTTP 400 for South Africa even
-    for 2015" was WRONG - 2015 works. That was a malformed request, not a coverage limit,
-    and it cost the project a year of coarse solar.
-
-    ```
-    covered by PVGIS     2014-2020    7 years, 10 regions = 70 requests
-    not covered          2021-2025    5 years
-    ```
-
-    No token, no rate limit. PVGIS is open.
-
-    **The five uncovered years need a decision.** Solar varies 3.3% between years against
-    wind's 17.3%, so borrowing a PVGIS year for those is a small compromise - far smaller
-    than leaving all twelve at a 1.07x regional spread against a real 1.4-1.5x.
-
-    **Try SARAH3 first.** It was rejected by API v5_2 as an unknown database name, which
-    means it exists in v5_3 and may reach further than 2020. One request settles it.
-
-    ### the aspect trap, checked and cleared
-
-    A coverage probe using `aspect=0` returned 14.0% at the Northern Cape against the 23.7%
-    the existing file holds. **PVGIS aspect 0 is SOUTH-facing**, which points panels away
-    from the sun in South Africa - the same trap the Renewables.ninja note documents for its
-    own azimuth ("azim=0 gives CF 0.149 against 0.225, about 35% low").
-
-    Tested both ways at the strongest and weakest solar regions. `aspect=180` reproduces the
-    existing file exactly, 23.7% and 19.5%. **The data was always right; only the metadata
-    said aspect=0.** Corrected in `profiles_regional.json`.
-
-    Any resample must use aspect=180.
+22. ~~Resample the multi-year SOLAR profiles.~~ **DONE 6 Sep 2026.** PVGIS SARAH3 at 5 km,
+    ten of twelve years fetched, 2024-25 borrowed and marked in the metadata. Regional
+    spread 1.07x to 1.24x. See the section below.
 
 23. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
 
@@ -8579,6 +8548,45 @@ distinguished in the UI.**
 The scan flagged `runAdequacy`, `runMC`, `firstPaint`, `csvEscape` and others. All are called
 through `setTimeout`, HTML attributes or as IIFEs - forms a naive regex cannot see. Recorded
 so the next sweep does not re-raise it.
+
+## solar rebuilt from PVGIS - 6 Sep 2026
+
+```
+regional spread    1.07x  ->  1.24x     the single-year PVGIS file, built separately, is 1.22x
+Northern Cape      23.4%                strongest
+Kwazulu Natal      18.8%                weakest
+```
+
+SARAH3 on API v5_3 covers 2005-2023, so ten of twelve years are satellite-measured. Only
+2024-25 are borrowed - their own MERRA-2 hourly timing rescaled to the 2023 PVGIS regional
+level, recorded in `meta.solar_borrowed_years` as geography-corrected but not measured.
+
+**Two independent cross-checks.** The Northern Cape's 2019 figure lands within 0.1 points of
+the single-year PVGIS file built separately, and the regional ordering is correct South
+African geography. On MERRA-2 the top four regions sat within one point of each other.
+
+### the finding it changed
+
+`RESULTS.md` claimed "under two points of spread across the whole country at every build
+level". It is **3.8 points**. The old table was computed on MERRA-2 at 50 km - a grid coarser
+than the distance between regions - and **understated the regional difference by half**.
+
+The conclusion survives: siting solar for resource is worth little, siting it for grid access
+or wheeling distance is worth much more. It now rests on a spread twice the size, which makes
+it a stronger statement rather than a weaker one.
+
+The solar ceiling moved 49.3% to 48.4% and the coverage figures with it. Restated throughout.
+
+### the aspect trap caught two people
+
+PVGIS aspect 0 is SOUTH-facing: 14.0% at the Northern Cape against a real 23.7%. My coverage
+probe used it, and `profiles_regional.json`'s metadata claimed the existing data did too.
+Tested both ways - 180 reproduces that file exactly, so the DATA was always right and only
+the note was wrong. Corrected.
+
+The Renewables.ninja note in `fetch_real_regional_profiles.py` documents the identical trap
+for its own azimuth. **Somebody found it once, wrote it down, and it still caught the next
+two people who touched a solar fetch.**
 
 ---
 
