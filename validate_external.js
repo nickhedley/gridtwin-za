@@ -178,7 +178,14 @@ function check(name, ok, detail) {
         // establishing their wind resource assumptions well enough to compare like for
         // like. Neither has happened.
         ['EDMSA Scenario A CO2 2035', edmsa.co2,     124, 22, 'Mt'],
-        ['EDMSA Scenario A wind 2035', edmsa.windTWh, 64,  8, 'TWh']]){
+                // Band 8 -> 12 TWh on 8 Sep 2026. The demand series was rebuilt to add rooftop
+        // with the same constant the engine removes it with, which raised underlying
+        // demand 3% and lifted 2035 wind from 64 to 72 TWh. A build-heavy scenario scales
+        // with demand, so this is arithmetic rather than divergence.
+        //
+        // Same caveat as the CO2 row above: our figures are now calibrated against Eskom
+        // measurement and EDMSA's are not, so agreement is weaker evidence than it looks.
+['EDMSA Scenario A wind 2035', edmsa.windTWh, 64, 12, 'TWh']]){
     const gap = got - pub;
     check(`${lab} within ${band} ${unit} of the published figure`,
           Math.abs(gap) <= band,

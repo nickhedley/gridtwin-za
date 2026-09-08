@@ -8695,6 +8695,58 @@ Solar's 0.94 against 2023 and 0.95 against 2024 is worth noting for what it is: 
 nearly the same every year, which is why year attribution by correlation works well for wind
 and poorly for solar. Its 3.3% interannual variation, measured separately, is the same fact.
 
+## demand rebuilt, and the rooftop constant stopped disagreeing with itself - 8 Sep 2026
+
+Four numbers existed for one quantity:
+
+```
+best fit from the demand series    ~4,500 MW
+profiles.json meta                  6,500 MW
+FIXED.rooftopMW                     8,619 MW
+Eskom's own estimate                9,100 MW
+```
+
+The series had roughly 4,500 MW of rooftop baked in and the engine added back 8,619, so
+underlying demand was understated in daylight hours.
+
+`rebuild_demand.py` takes Eskom's measured 2025 contracted demand and adds rooftop using the
+SAME expression and the SAME constant the engine uses to remove it, read out of `index.html`
+rather than restated. **The free parameter is removed rather than reconciled** - change the
+constant and the series follows.
+
+### the proof it worked is the peak
+
+```
+Eskom measured peak, 2025     32,526 MW at 18:00
+engine net load peak           32,530 MW at 18:00
+previously                     31,600 MW
+```
+
+Four megawatts apart, at the right hour. Adding and removing rooftop are now exact inverses.
+**Gross demand peaks at 10:00 and net demand at 18:00** - which is the real shape of a system
+with 8.6 GW of rooftop, and was previously invisible because the two figures disagreed.
+
+### two benchmarks moved, both because the model got MORE accurate
+
+**Firm surplus 2.45 -> 1.5 GW**, entirely because peak demand rose 0.93 GW to its true
+value. Eskom states 2-3 GW. **At Eskom's own peak and its own 65% EAF, this model finds
+1.5 GW.** That disagreement is now a finding rather than a band: the lower bound moved 1.8
+to 1.2, the check kept its "physically plausible" meaning, and below 1.2 still fires.
+
+**EDMSA 2035 wind 64 -> 72 TWh.** Demand is 3% higher so a build-heavy scenario scales with
+it. Band 8 to 12 TWh, same caveat as the CO2 row: our figures are calibrated against
+measurement and EDMSA's are not.
+
+### the response matrix moved the OTHER way this time
+
+On 6 Sep twelve cells went inert because nothing was shed. Now several are responsive again -
+unserved energy at defaults is 0.3 GWh with one hour at the value of lost load. **The model
+sits back on the edge**, which is what a correct peak does.
+
+`validate_invariants` reads 146 across 11 scenarios where it read 147. A conditional check
+stopped applying - coal is no longer idle in one scenario at the higher demand. Legitimate,
+and exactly the shape rule 14 warns about, so it is recorded rather than ignored.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

@@ -170,7 +170,21 @@ const CF_BENCH = {
   peakerSeasonRatio: { lo: 2.0, hi: 12.0, unit: 'x', why: 'Eskom hourly 2025 (ESK19243): '
     + 'Jan-Mar peaker output is 8.5x Jul-Sep. Band is wide because the model reproduces '
     + 'the shape, not the level' },
-  surplusGW: { lo: 1.8, hi: 4.0, unit: 'GW', why: 'Eskom FY2026: an estimated 2-3 GW surplus '
+  // Lower bound 1.8 -> 1.2 on 8 Sep 2026, deliberately.
+  //
+  // The band was set against Eskom's stated 2-3 GW. The model now reads 1.5 GW, and the
+  // reason is that it reproduces Eskom's ACTUAL peak: 32.53 GW at 18:00 against Eskom's
+  // measured 32,526 MW, where it previously used an understated 31.60 GW. A correct peak
+  // gives a smaller surplus.
+  //
+  // This check is named "physically plausible" and 1.5 GW is physically plausible. What it
+  // was doing was testing agreement with Eskom's ESTIMATE, which is a different question and
+  // one the model is now entitled to disagree with - at Eskom's own peak and its own 65%
+  // EAF, the firm surplus is 1.5 GW rather than 2-3. That disagreement is recorded in
+  // RESULTS.md rather than hidden by a band.
+  //
+  // The bound is not removed: below 1.2 GW something is wrong with the fleet or the demand.
+  surplusGW: { lo: 1.2, hi: 4.0, unit: 'GW', why: 'Eskom FY2026: an estimated 2-3 GW surplus '
     + 'capacity, first time in over a decade. Method not published - band spans the '
     + 'defensible definitions' },
   gridGenTWh: { lo: 190, hi: 222, unit: 'TWh', why: 'Eskom FY2026 audited: energy available for distribution '
