@@ -14,7 +14,7 @@ cost identity              totalCost reproduces its components to the last digit
 storage round trip         0.776-0.815, correctly between psEff 0.76 and battEff 0.88
 emissions                  track fuel burn plus the documented part-load penalty
 control sweep              76 controls x min and max, no NaN, no negatives, nothing absurd
-suite                      19 harnesses, 983 checks
+suite                      19 harnesses, 986 checks
 weather                    ten real years, bias correction confirmed from two independent
                            derivations agreeing to 1.1%
 capacity data              reconciles to source through asserted identities; where it does
@@ -248,7 +248,7 @@ Keep identity 3 as a permanent assertion, not a one-off check.
 
 ## Validation — all must pass (verified 27 Aug 2026)
 
-Nineteen harnesses, 983 checks. Last full run: 983/983.
+Nineteen harnesses, 986 checks. Last full run: 986/986.
 
 ```
 node stress_suite.js                290/290
@@ -263,7 +263,7 @@ node validate_geo.js .               43/43   SA boundary clamp, added 30 Aug
 python3 audit3d.py gridtwin-3d.html     9/9   the 3D page, added 30 Aug
 python3 validate_docs.py . nodal       21/21   the documents, added 30 Aug
 node validate_findings.js .         20/20   the PUBLISHED FINDINGS, added 31 Aug
-node validate_weather.js .          57/57   multi-year path, added 28 Aug
+node validate_weather.js .          60/60   multi-year path, added 28 Aug
 node validate_consistency.js .      55/55
 node validate_structure.js .         25/25
 node validate_solve.js .                6/6
@@ -8587,6 +8587,40 @@ the note was wrong. Corrected.
 The Renewables.ninja note in `fetch_real_regional_profiles.py` documents the identical trap
 for its own azimuth. **Somebody found it once, wrote it down, and it still caught the next
 two people who touched a solar fetch.**
+
+## the comment became a check - 6 Sep 2026
+
+The azimuth trap was documented in `fetch_real_regional_profiles.py` in August, in plain
+language, with worked numbers. **It caught two more people on 6 Sep.** A comment warns
+whoever reads that file; a check catches whoever does not.
+
+Three checks added to `validate_weather`, 57 to 60, each aimed at a fault this project has
+actually shipped:
+
+```
+LEVEL     national solar mean >= 19%     wrong aspect gives 14%
+SPREAD    best/worst region >= 1.15x     MERRA-2 at 50 km gives 1.07x
+RANKING   Northern Cape > KwaZulu-Natal  a wrong azimuth scrambles the order
+```
+
+**The ranking check is the strongest of the three.** Sunniest region against cloudiest,
+roughly 23% against 19%. No correct dataset inverts it, and every fault above either inverts
+it or flattens it - including faults that leave the national level looking perfectly
+plausible.
+
+Verified against all three signatures, per rule 14:
+
+```
+wrong aspect      caught by the existing CF band, which fires first
+flattened spread  caught at 1.00x, plus the ranking check
+inverted ranking  caught at Northern Cape 19.6% vs KwaZulu-Natal 24.2%
+```
+
+The last two are the ones that matter: a flattened or inverted dataset holds its national
+mean, so the CF band sees nothing wrong. **That is exactly how the 1.07x spread survived for
+months.**
+
+Suite 986/986.
 
 ---
 

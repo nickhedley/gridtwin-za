@@ -269,6 +269,75 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
           + 'the substituted profile is not reaching simulate()');
   }
 
+  // ── SOLAR GEOGRAPHY MUST SURVIVE THE FETCH ──────────────────────────────
+  // Three faults have reached this project through a solar fetch, and all three are
+  // invisible in a per-unit series because it has no units to sanity-check against:
+  //
+  //   WRONG ASPECT   PVGIS aspect 0 and Renewables.ninja azim 0 both mean SOUTH-facing,
+  //                  which points panels away from the sun in South Africa. 14.0% at the
+  //                  Northern Cape against a real 23.7%. The Renewables.ninja note has
+  //                  documented this since August and it still caught two people on
+  //                  6 Sep 2026 - a comment is not a check.
+  //
+  //   COARSE GRID    MERRA-2 at 50 km is coarser than the gap between regions and
+  //                  compressed the national spread to 1.07x against a real 1.24x. That
+  //                  survived in the multi-year file for months and halved the modelled
+  //                  difference between the best and worst place to build.
+  //
+  //   SCRAMBLED RANK The Renewables.ninja note records azim=0 putting Northern Cape below
+  //                  Limpopo. Any dataset that does that is wrong, whatever its level.
+  //
+  // Northern Cape against KwaZulu-Natal is the strongest single test available: the
+  // sunniest region against the cloudiest, roughly 23% against 19%. No correct dataset
+  // inverts it, and every fault above either inverts it or flattens it.
+  {
+    let j = null;
+    try {
+      j = JSON.parse(fs.readFileSync(
+        path.join(ROOT, 'nodal/profiles_regional_multiyear.json'), 'utf8'));
+    } catch (e) { j = null; }
+    if (j && j.solar_pu){
+      const sc = j.scale || 1;
+      const mean = r => {
+        const yy = j.solar_pu[r] || {};
+        const ks = Object.keys(yy);
+        if (!ks.length) return null;
+        let t = 0, n = 0;
+        for (const y of ks){ for (const v of yy[y]){ t += v / sc; n++; } }
+        return 100 * t / n;
+      };
+      const all = Object.keys(j.solar_pu).map(r => [r, mean(r)]).filter(x => x[1] !== null);
+      if (all.length >= 4){
+        const vals = all.map(x => x[1]);
+        const nat = vals.reduce((a, b) => a + b, 0) / vals.length;
+        const spread = Math.max(...vals) / Math.min(...vals);
+        const nc = mean('Northern Cape'), kz = mean('Kwazulu Natal');
+
+        check('solar level is consistent with north-facing panels',
+              nat >= 19,
+              `national mean ${nat.toFixed(1)}% - below 19% means the panels face the wrong `
+              + `way. PVGIS aspect must be 180 and Renewables.ninja azim must be 180; 0 is `
+              + `SOUTH in both and yields about 14% here.`);
+
+        check('solar regional spread survives the source grid',
+              spread >= 1.15,
+              `${spread.toFixed(2)}x between the best and worst region - below 1.15x means `
+              + `the grid is coarser than the distance between regions. MERRA-2 at 50 km `
+              + `gives 1.07x; PVGIS at 5 km gives 1.24x. A compressed spread halves the `
+              + `modelled difference between the best and worst place to build.`);
+
+        check('Northern Cape out-yields KwaZulu-Natal',
+              nc !== null && kz !== null && nc > kz * 1.05,
+              `Northern Cape ${(nc||0).toFixed(1)}% against KwaZulu-Natal ${(kz||0).toFixed(1)}% `
+              + `- the sunniest region must beat the cloudiest by a clear margin. A wrong `
+              + `azimuth scrambles this ranking even when the level looks plausible.`);
+
+        notes.push(`solar geography: national ${nat.toFixed(1)}%, spread ${spread.toFixed(2)}x, `
+          + `Northern Cape ${(nc||0).toFixed(1)}% vs KwaZulu-Natal ${(kz||0).toFixed(1)}%`);
+      }
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} weather checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log(f)); }
   if (notes.length) { console.log('\nNOTES:'); notes.forEach(n => console.log('  ' + n)); }
