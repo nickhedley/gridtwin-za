@@ -1,1 +1,19 @@
-{"meta": {"licence": "CC BY-NC-ND 4.0 - https://creativecommons.org/licenses/by-nc-nd/4.0/", "attribution": "GridTwin ZA - nickhedley.github.io/gridtwin-za", "licence_note": "Licence covers this compilation - the assembly, correction and structuring of the underlying data. Source data remains under its own terms; see the source field."}, "Eastern Cape": 680.2, "Free State": 556.6, "Gauteng": 2961.4, "Kwazulu Natal": 1375.1, "Limpopo": 561.8, "Mpumalanga": 704.9, "North West": 681.2, "Western Cape": 827.8, "Northern Cape": 621.9, "Hydra Central": 136.5}
+{
+ "meta": {
+  "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ . Changed from CC BY-NC-ND on 6 Sep 2026: this file is a compilation of uncopyrightable facts (project name, MW, technology, location, COD), so nothing upstream constrains the licence, and NC-ND blocked both reuse by researchers and ingestion of BY-SA sources such as PowerTracker.",
+  "attribution": "GridTwin ZA - nickhedley.github.io/gridtwin-za",
+  "licence_note": "Licence covers this compilation - the assembly, correction and structuring of the underlying data. Source data remains under its own terms; see the source field.",
+  "source": "Eskom Weekly System Status Report, 2026 Week 36, \"Estimated Rooftop PV\" provincial table, Jul-26 row. Verbatim except Northern Cape 758.4, split to Hydra Central on the 82/18 ratio used for the Jun-26 figure. REPLACED the Jun-26 row on 8 Sep 2026 - rule 5, replace the whole block rather than adding the delta.",
+  "caveat": "Eskom footnotes this series: \"Rooftop PV includes ground-mounted as well as all other PV installations that do not have contracts with NTCSA.\" The bucket is contractual, not physical, so an unknown slice is ground-mounted grid-connected plant being modelled as demand suppression. The provincial split shows it: the Northern Cape carries 583 W per person against Gauteng 190, in a province with few roofs and every large solar farm."
+ },
+ "Eastern Cape": 680.2,
+ "Free State": 556.6,
+ "Gauteng": 3055.7,
+ "Kwazulu Natal": 1375.1,
+ "Limpopo": 579.7,
+ "Mpumalanga": 704.9,
+ "North West": 681.2,
+ "Western Cape": 827.8,
+ "Northern Cape": 621.9,
+ "Hydra Central": 136.5
+}

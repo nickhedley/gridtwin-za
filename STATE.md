@@ -464,13 +464,17 @@ and is not here.
 
 ## Open items
 
-1. **Pre-2026 private capacity.** The PFL H1 2026 monitor is in and populates
-   `by_source.private` with 958 MW of wheeled plant. It does **not** close identity 3:
-   roughly 1,823 MW of solar remains unexplained against `FIXED.pvUtilityMW`. That
-   constant is still 4,974 and known to be high; it has deliberately **not** been
-   changed to an unsubstantiated figure, and the "Existing fleet" documentation row
-   still reads "Utility PV 4 GW" for the same reason. Change both in one commit once
-   the earlier private capacity is sourced.
+1. ~~Pre-2026 private capacity.~~ **CLOSED 8 Sep 2026.** Eskom's Week 36 report gives
+   installed capacity directly, and both grid-supply identities reconcile:
+
+   ```
+   wind        Eskom 4,142.6 + private 470 = 4,612.6   ours 4,612   gap 0.6 MW
+   utility PV  Eskom 2,780.2 + private 488 = 3,268.2   ours 3,271   gap 2.8 MW
+   ```
+
+   This item recorded `pvUtilityMW` at 4,974 with 1,823 MW unexplained. The constant now
+   reads 3,271 and Eskom's own table confirms it to under 3 MW. The item had gone stale
+   against a constant that was corrected without it being updated.
 2. ~~`carbonPrice` is disconnected, pinned at R550/t.~~ **stale — checked and closed
    29 Aug 2026.** Neither part of this is true any more. Both LPs read
    `const CARBON = S.carbonTaxRPerT` (lines 6434 and 6981), so the slider does feed
@@ -8958,6 +8962,48 @@ Eskom                                 9,100
 
 **Our constant sits above the SARB range**, on a quantity that suppresses roughly 15 TWh of
 grid demand. Worth resolving; not resolved here.
+
+## Eskom Week 36 checked against the model - 8 Sep 2026
+
+### it closes a five-week-old open item
+
+Eskom publishes installed capacity directly. Both grid-supply identities reconcile:
+
+```
+wind        Eskom 4,142.6 + private 470 = 4,612.6   ours 4,612   gap 0.6 MW
+utility PV  Eskom 2,780.2 + private 488 = 3,268.2   ours 3,271   gap 2.8 MW
+```
+
+Open item 1 recorded `pvUtilityMW` at 4,974 with 1,823 MW unexplained. **The constant was
+corrected to 3,271 at some point and the open item never was.** Closed.
+
+### the availability figure confirms the constant it looked set to overturn
+
+Eskom's calendar-2026 EAF to 6 September is 68.08% against our `coalEAFPct` of 65. The
+obvious move is to raise it. The constant's own note already says not to:
+
+  "part-year EAF is biased because availability is seasonal - it overstated the full year
+   by three points"
+
+68.08% is 1 January to 6 September, excluding Q4 when planned maintenance is heaviest -
+already climbing from 7.16% in week 30 to 15.17% in week 36. Applying the documented
+three-point correction gives 65.08 against our 65. **The new data confirms the constant
+through a correction the project had already worked out and written down.**
+
+### rooftop refreshed, +112 MW
+
+`rooftop_mw_by_region.json` replaced with the Jul-26 provincial row; `rooftopMW` 8,619.4 ->
+8,731.6, still net of the 488 MW wheeled double-count removed on 15 Aug.
+
+The "rooftop is not all rooftop" distortion was already documented on 14 Aug and needs no
+revision, but the provincial split now quantifies it: **the Northern Cape carries 583 W per
+person against Gauteng's 190**, in a province with few roofs and every large solar farm.
+Eskom's bucket is contractual, not physical.
+
+Trend: 6,800 MW (Jun 2025), 8,294 (May 2026), 9,107 (Jun), 9,220 (Jul). This constant dates
+in weeks.
+
+Suite 995/995.
 
 ---
 
