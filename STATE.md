@@ -9085,6 +9085,53 @@ false at 117 GW of VRE.
 negative-price count is now pinned against Germany's observed 460 hours. A premise cannot
 expire quietly if something outside the model is watching it.
 
+## FOUND BY FUZZING: regional wind and solar are on different clocks - 8 Sep 2026
+
+```
+                                 wind   solar    peak hour
+Eskom measured (SAST)              18      11
+profiles_regional                  19      10
+profiles_regional_multiyear        18      10
+```
+
+**Wind matches Eskom. Solar is one to two hours early.**
+
+CAUSE: `fetch_multisite_profiles.py` sends `local_time=true` to Renewables.ninja for wind.
+**PVGIS has no timezone parameter and returns UTC.** South Africa is UTC+2. So within a
+single file, wind runs on South African time and solar on UTC.
+
+The signature that exposed it: **all ten regions peak at exactly hour 10**. South Africa
+spans 17 degrees of longitude, about 68 minutes of solar time, so they cannot all peak in the
+same hour unless something upstream has flattened the geography - a clock, not a coordinate.
+
+Shape correlation against Eskom confirms it: 0.836 unshifted, **0.973 shifted one hour**,
+0.945 at two.
+
+### what it affects
+
+Anything combining regional wind and solar, or comparing regional solar against demand or
+price. Regional capture prices, where-to-build, wheeling coverage, the solar ceiling.
+
+**The national file is unaffected** - it is Eskom measured throughout, and the dispatch,
+adequacy and frontier results run on that.
+
+### NOT YET FIXED, deliberately
+
+The correction is one or two hours and the evidence points both ways: the physics says +2
+(UTC to SAST) and the shape correlation says +1. The difference matters - an hour is 4% of a
+solar day - and applying the wrong one would replace a known error with a hidden one.
+
+Resolving it needs a like-for-like test: a single PVGIS point against Eskom's metered output
+for the SAME location, not a Northern Cape point against a national fleet whose geography and
+tracking mix differ. Do that before shifting anything.
+
+### how it was found
+
+A fuzzer over 60 random scenarios and 130 slider boundaries found NO invariant violations -
+the model is robust. This came from a separate check on profile ALIGNMENT, asking whether
+demand and renewables sit on the same clock. That question was worth asking precisely because
+nothing in the suite asks it.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
