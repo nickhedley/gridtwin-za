@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty-seven sections follow. This index exists because the file passed 1,400 lines and the
+Thirty-eight sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3103,3 +3103,55 @@ Also worth knowing: wheeling requires the customer to be on a time-of-use tariff
 portfolio wheeling is capped at 10 generators and 50 load accounts pending an automated
 system (2.2.5), and credited energy per period cannot exceed consumption in that period
 (2.2.13.7) - so surplus peak generation is not credited against off-peak use.
+
+---
+
+## South Africa exports more than it imports, and it does not stop when short
+
+Eskom hourly data, corroborated by Stats SA P4141 to within 1%.
+
+```
+                 imports      exports         net
+2025            6,571 GWh   14,935 GWh   -8,365 GWh
+2026 to date    4,962        5,079          -117
+```
+
+**Exports do not back off under stress.** Tested against the 200 most heavily peaked hours
+of every year from 2022 to 2026, including 2023 - the worst load-shedding year on record:
+
+```
+2022  +5%     2023  +1%     2024  +6%     2025  -3%     2026  -2%
+```
+
+Exports were HIGHER in the most stressed hours in three years of five and never fell more
+than 3%. Neighbouring demand peaks in the same evening hours South African demand does,
+which is the likely reason. Whether they COULD be curtailed is a contractual question the
+data cannot settle.
+
+### what curtailing them would be worth
+
+Under a fleet at 52% availability, roughly the 2023 outturn:
+
+```
+exports firm         554.8 GWh unserved
+exports curtailable  315.3 GWh            -43%
+```
+
+**240 GWh of unserved energy in a bad year.** The model carries this as a setting, off by
+default because off is the measured behaviour, so the question can be posed rather than
+assumed either way.
+
+### exports halved in March 2026
+
+```
+2025-12  1,685 MW    2026-01  1,687    2026-02  1,703
+2026-03    987       2026-04    684    2026-05    600    2026-08    822
+```
+
+Stats SA reports outflow down 59.9% year on year in July 2026. The model uses the
+post-break mean of 745 MW; averaging across the break would model neither regime. The cause
+of the break is not established here and is worth finding.
+
+CAVEAT: Eskom's RSA Contracted Demand already includes exports, so the model's demand series
+is domestic-only and the export obligation is added separately. Getting this wrong in either
+direction moves coal generation by about 11 TWh.

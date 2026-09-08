@@ -8832,6 +8832,80 @@ shedding exemption (2.2.11).
 Prose ceiling 4170 -> 4200, deliberately, after trimming four other blocks first - capture
 rate, clean coal, rooftop cost, interruptible load - which paid for most of the addition.
 
+## exports were being double-counted - 8 Sep 2026
+
+The export block added `expAt(h)` on top of a demand series built from Eskom's RSA
+Contracted Forecast. **That series already includes exports.** The 2025 energy balance
+closes on it:
+
+```
+generation, all sources    202.3 TWh
++ imports                    6.6
+= total supply             208.9
+RSA Contracted Demand      209.6      closes to 0.3%
+```
+
+Contracted demand is everything Eskom must serve, international sales included. Adding
+exports again took coal to 180.6 TWh against Ember's 164, and total generation to 242.7
+against 218.8.
+
+### the fix, and why not simply delete the block
+
+`rebuild_demand.py` now subtracts hourly exports, so `profiles.json` carries DOMESTIC demand
+and the engine adds the export obligation back as its own block. Totals reconcile exactly -
+210.9 domestic + 14.9 exports = 225.8, the previous figure.
+
+Deleting the block would also have balanced the books and would have been simpler. It would
+also have made the export question unaskable. Separating domestic demand from interconnector
+flows is what ERAA and PLEXOS do, and it is what lets the model answer this:
+
+```
+coal availability 52%, roughly the 2023 outturn
+  exports firm         554.8 GWh unserved
+  exports curtailable  315.3 GWh          -43%
+```
+
+**Curtailing exports is worth 240 GWh of unserved energy in a bad year.** That is now a
+number rather than an argument.
+
+### two constants were straddling a structural break
+
+Exports halved in March 2026 and stayed down:
+
+```
+2025-12  1,685    2026-01  1,687    2026-02  1,703
+2026-03    987    2026-04    684    2026-05    600    2026-08    822
+```
+
+Stats SA P4141 corroborates independently: outflow down 59.9% year on year in July 2026.
+
+`exportsMW` 1,340 -> 745 and `exportShapePeak` 1.23 -> 1.14, both measured on the
+post-March regime. **A mean across a structural break models neither side of it.**
+
+### what moved
+
+```
+coal TWh              180.6 -> 161.2     Ember 164
+total generation      242.7 -> 222.6     Ember-equivalent 218.8
+peak demand           33.7 -> 31.9 GW
+firm surplus           -0.1 -> 2.14 GW   Eskom states 2-3
+unserved at defaults   42.9 -> 0 GWh
+```
+
+**The firm surplus now lands inside Eskom's stated range without any convention argument.**
+The 1.5 GW figure recorded earlier today was on a demand series carrying exports twice.
+
+Suite 991/991.
+
+### I built this twice
+
+The export implementation was already in the file, written earlier today in a part of this
+session since compacted out of context. I wrote a second one on top of it without reading
+first, produced a duplicate `exportsMW` - the exact thing rule 6 forbids - and reverted mine
+byte-for-byte once the duplicate surfaced.
+
+Rule 3 says check the input before building on it. The file WAS the input.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

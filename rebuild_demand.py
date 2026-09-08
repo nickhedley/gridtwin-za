@@ -78,7 +78,16 @@ def main():
         except (ValueError, KeyError, TypeError):
             return 0.0
 
-    grid = [num(r, 'RSA Contracted Forecast') for r in rows]
+    # DOMESTIC demand only. Eskom's RSA Contracted Demand is everything it must serve,
+    # international sales included - the 2025 energy balance closes to 0.3% as
+    # generation + imports = contracted demand. Leaving exports in and ALSO adding them
+    # through expAt() double-counts them: coal came out at 180.6 TWh against Ember's 164.
+    #
+    # Subtracting them here makes the series domestic, and the engine adds the export
+    # obligation back as its own block - which is what makes it curtailable and visible.
+    # Totals reconcile: 210.9 domestic + 14.9 exports = 225.8, the previous figure.
+    grid = [num(r, 'RSA Contracted Forecast') - num(r, 'International Exports')
+            for r in rows]
     # The SAME expression the engine uses to remove rooftop, so adding and removing are
     # exact inverses. The 0.9 cap is the engine's, not ours - rooftop cannot serve more
     # than 90% of the demand in an hour.

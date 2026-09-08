@@ -430,6 +430,53 @@ setTimeout(()=>{
     }
   }
 
+
+  // ── EXPORTS ARE A LOAD, AND THEY DO NOT BACK OFF ────────────────────────
+  // Added 8 Sep 2026. The model imported 1,150 MW and exported nothing, which is not what
+  // the interconnector does: 2025 saw 6,571 GWh imported against 14,935 exported.
+  //
+  // The curtailable share defaults to ZERO, and that is measured, not assumed. Exports in
+  // the 200 most stressed hours of each year 2022-26 ran within 6% of the annual mean and
+  // were HIGHER in three years of five - including 2023, the worst load-shedding year on
+  // record. They did not back off while the system was failing.
+  //
+  // Pinned so the default cannot drift. If someone sets it above zero as a modelling
+  // convenience, that is a claim about contracts the data does not support, and it should
+  // be argued rather than defaulted.
+  {
+    const r = probe(`
+      const P = { ...FIXED, ...state };
+      // Under a STRESSED fleet, not defaults. With the demand series corrected to
+      // domestic-only on 8 Sep 2026 the model no longer sheds at default settings, so
+      // comparing curtailed against uncurtailed there gives 0.0 both ways and proves
+      // nothing. 52% availability is roughly the 2023 outturn.
+      const a = simulate({ ...state, coalEAFPct: 52, exportsCurtailable: false }, PROFILES);
+      const b = simulate({ ...state, coalEAFPct: 52, exportsCurtailable: true }, PROFILES);
+      return { def: P.exportsCurtailable, expMW: P.exportsMW,
+               unserved0: (a.E.unserved || 0) / 1000,
+               unserved100: (b.E.unserved || 0) / 1000 };
+    `);
+    if (r && !r.error){
+      check('exports are modelled and non-zero',
+            r.expMW > 0,
+            `exportsMW is ${r.expMW} - the interconnector is a NET DRAIN on South Africa, `
+            + `8.4 TWh in 2025. Modelling imports without exports overstates firm supply by `
+            + `about 1.35 GW at the peak.`);
+      check('export curtailment defaults to off',
+            r.def === false,
+            `exportsCurtailable defaults to ${r.def}. Off is the measured behaviour: across `
+            + `2022-26 exports never fell more than 3% in the most stressed hours. A `
+            + `non-zero default asserts a contractual flexibility the record does not show.`);
+      check('curtailing exports measurably reduces unserved energy',
+            r.unserved100 < r.unserved0 - 1,
+            `off gives ${r.unserved0.toFixed(1)} GWh unserved, on gives `
+            + `${r.unserved100.toFixed(1)} - if these match, the setting is not wired and the `
+            + `policy question cannot be asked.`);
+      console.log(`  exports       ${r.expMW} MW capacity \u00b7 curtailing all of it takes `
+        + `unserved ${r.unserved0.toFixed(1)} \u2192 ${r.unserved100.toFixed(1)} GWh`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

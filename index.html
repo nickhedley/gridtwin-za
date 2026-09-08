@@ -4990,6 +4990,29 @@ const FIXED = {
   // harnesses die with "IMPORTS_CF is not defined" without it. A fallback here would
   // turn a loud failure into a plausible wrong answer, which is rule 7's whole lesson.
   importsCF:IMPORTS_CF,
+  // FIRM EXPORTS, added 8 Sep 2026. 1,340 MW is the mean over 2025-26 from Eskom's hourly
+  // file. Exports are a LOAD on the South African system and the model previously had none,
+  // which made it about 1.35 GW optimistic at the annual peak. See the expAt() note in
+  // simulate() for the measurement.
+  // 745 MW, the mean since MARCH 2026. Not the 2025-26 mean of 1,340, which straddles a
+  // structural break: exports ran 1,600-1,850 MW through February 2026 and then halved.
+  //
+  //   2025-12  1,685    2026-01  1,687    2026-02  1,703
+  //   2026-03    987    2026-04    684    2026-05    600    2026-08    822
+  //
+  // Stats SA P4141 corroborates independently: outflow from South Africa down 59.9% year
+  // on year in July 2026. Averaging across the break would model neither regime.
+  exportsMW:745,
+  // How exports scale with system stress. 1.0 is flat; 1.23 is the observed ratio of the
+  // peak-hour export (1,642 MW) to the mean (1,340).
+  // 1.14 in the post-March-2026 regime: exports in the 200 tightest demand hours average
+  // 846 MW against a mean of 745. Was 1.23, measured across the break.
+  exportShapePeak:1.14,
+  // Curtail firm exports under scarcity? FALSE by default because that is the observed
+  // behaviour - exports held up through the 2023 shedding. Setting it true asks what
+  // curtailing exports would be worth to South African adequacy, which is a policy question
+  // worth being able to pose.
+  exportsCurtailable:false,
   psPowerMW:2724, psEnergyMWh:60000, psEff:0.76,
   // windMW is derived from regional_renewable_capacity.json, not set by hand:
   //   4,042 MW REIPPPP (IPP Office Q4 2025/26, capacity online at 31 Mar 2026)
@@ -6278,11 +6301,44 @@ function simulate(u, prof, outPath){
     }
   }
 
+  // FIRM EXPORTS, added 8 Sep 2026. Defined here, once, after demandDR is final and before
+  // BOTH the unit-commitment pre-pass and the dispatch loop - they must see the same load
+  // or the commitment is solved against a different system than the one dispatched.
+  //
+  // The model imported and never exported, which is not how a professional model treats an
+  // interconnector: PyPSA uses bi-directional links with a transfer capacity each way, and
+  // the ENTSO-E adequacy studies model each direction explicitly.
+  //
+  // Over the 100 tightest demand hours of 2025-26, from Eskom's hourly file:
+  //     gross imports +766 MW      exports -1,642 MW      NET -876 MW
+  // South Africa is a net EXPORTER when its own system is tightest, and exports do not
+  // back off at the peak.
+  // No third-level fallback. `?? 0` and `?? 1` were flagged by validate_structure because
+  // they disagree with the constants they shadow - rule 6. FIXED.exportsMW always exists,
+  // so if the read is undefined the right outcome is a loud failure, not a silent zero
+  // that would restore the very bug this block was written to fix.
+  const _expBase = (p.exportsMW ?? FIXED.exportsMW);
+  const _expPk   = (p.exportShapePeak ?? FIXED.exportShapePeak);
+  const _expOff  = (p.exportsCurtailable ?? FIXED.exportsCurtailable);
+  let _dMin = Infinity, _dMax = -Infinity;
+  for (let h = 0; h < HOURS; h++){
+    if (demandDR[h] < _dMin) _dMin = demandDR[h];
+    if (demandDR[h] > _dMax) _dMax = demandDR[h];
+  }
+  // Scaled by where the hour sits between the year's minimum and maximum demand, so
+  // exports are heaviest when the system is tightest - which is what the data shows, not
+  // an assumption. Centred so the annual mean comes out at exportsMW.
+  const expAt = (h) => {
+    if (_expOff || _expBase <= 0) return 0;
+    const f = (_dMax > _dMin) ? (demandDR[h] - _dMin) / (_dMax - _dMin) : 0.5;
+    return _expBase * (1 + (_expPk - 1) * (2 * f - 1));
+  };
+
   const netLoadPre=new Float64Array(HOURS);
   for(let h=0;h<HOURS;h++){
     const rawDemand=demandDR[h]*growth;
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
-    const load=rawDemand-rooftopGen;
+    const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
     let windGen=windCap*wind[h], pvGen=pvCap*solar[h];
     const cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Its OWN accumulator, deliberately - the price
@@ -6523,7 +6579,7 @@ function simulate(u, prof, outPath){
     const ucMSL = (ucMinStable[h] > 0 && !isNaN(ucMinStable[h])) ? Math.min(ucMinStable[h], cAvail) : 0;
     const rawDemand=demandDR[h]*growth;   // same shaped series the UC saw
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
-    const load=rawDemand-rooftopGen;
+    const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
     E.rooftop+=rooftopGen; loadS[h]=load;
     let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Own accumulator, deliberately - see the note at
@@ -13766,7 +13822,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-08d';
+const BUILD_STAMP = '2026-09-08e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
