@@ -120,6 +120,59 @@ Node dependencies: `jsdom`, `highs`. `npx eslint` for validate_lint.
 
 ---
 
+## Deployment - Cloudflare Pages, NOT GitHub Pages
+
+`gridtwinza.org` is served by a **Cloudflare Pages** project called `gridtwin-za`, which
+builds from `main` and runs `npx wrangler deploy`. GitHub Pages also builds this repo and is
+correct, but nothing serves from it. Checking GitHub Pages tells you nothing about the live
+site.
+
+```
+curl -s https://gridtwinza.org/ | grep -o "BUILD_STAMP = '[^']*'"
+```
+
+That is the only reliable check. The browser, incognito or not, can show a stale page for
+reasons unrelated to the deploy.
+
+### the 25 MiB limit will break your deploy silently
+
+Cloudflare Workers rejects any single asset over 25 MiB. When that happens **the build fails
+and the previous deployment keeps serving**, so the site looks fine and simply stops
+updating. On 8 Sep 2026 this went unnoticed for two days: `ninja_multiyear_cache.json` at
+67 MB failed every build from 6 Sep onward while the site served the last good artifact.
+
+**Every fetch script writes a cache file, and none belong in the repo.** They are raw API
+responses, rebuildable, and large:
+
+```
+ninja_site_cache.json          single-year Renewables.ninja
+ninja_multiyear_cache.json     ten-year wind, 67 MB
+pvgis_solar_cache.json         PVGIS solar
+```
+
+All are in `.gitignore`. **Any new fetch script must add its cache file there in the same
+commit**, not after it breaks something.
+
+To check before pushing:
+
+```
+git ls-files -z | xargs -0 ls -l | awk '$5 > 20000000 {printf "%6.1f MB  %s\n", $5/1048576, $9}'
+```
+
+### diagnosing a site that will not update
+
+In this order, because each step rules out the one before it:
+
+1. `curl` the live site for the build stamp - not the browser
+2. `curl -sI` and read `server:` - `cloudflare` means Pages is the origin, not GitHub
+3. Workers & Pages -> gridtwin-za -> Deployments - look for "Latest build failed"
+4. Only then consider caching
+
+**On 8 Sep the whole sequence was run backwards**: a `cf-cache-status: HIT` was read as a
+cache problem, a cache rule was built and the cache purged twice, and none of it could have
+worked because a build had failed. The signal that should have stopped it was the purge
+changing nothing.
+
 ## Per-session upload set
 
 Project knowledge is injected as text and never reaches the filesystem, so
@@ -139,5 +192,8 @@ two stale rollups on 27 Aug.
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
+DATA FILES in nodal/ are CC BY 4.0 — attribution only. Changed 6 Sep 2026: they are a
+compilation of uncopyrightable facts, and NC-ND blocked both reuse and the ingestion of
+BY-SA sources.*
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*

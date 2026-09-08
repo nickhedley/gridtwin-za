@@ -8763,6 +8763,41 @@ sits back on the edge**, which is what a correct peak does.
 stopped applying - coal is no longer idle in one scenario at the higher demand. Legitimate,
 and exactly the shape rule 14 warns about, so it is recorded rather than ignored.
 
+## the site had not updated since 6 Sep - 8 Sep 2026
+
+`ninja_multiyear_cache.json`, 67 MB, exceeded Cloudflare Workers' 25 MiB asset limit. **Every
+build since 6 Sep failed, and the previous deployment kept serving.** The site looked fine
+and silently stopped updating.
+
+Fixed by removing it from tracking. Rule 15 added, and the deployment path documented in
+MANIFEST.md - which never recorded that the site is served by **Cloudflare Pages, not GitHub
+Pages**. Checking GitHub Pages, which is correct, tells you nothing about the live site.
+
+### I diagnosed this backwards for an hour
+
+Read `cf-cache-status: HIT` as a caching problem, built a cache rule, purged the cache twice,
+and suggested incognito windows. **None of it could have worked.**
+
+Two moments should have stopped me:
+
+**The purge changed nothing.** That is not what a cache problem does, and I treated it as a
+failed purge rather than evidence against the diagnosis.
+
+**I confirmed the REPO had the new file and treated that as proof the SITE did.** They are
+different things - Pages builds its own artifact. That is the same error as reading two
+agreeing model paths as corroboration when both drew on one source, made twice in one week
+on entirely different material.
+
+The diagnostic order that would have worked, now in MANIFEST.md: curl the live stamp, read
+the `server:` header to find the origin, check the deployment log, and only then consider
+caching.
+
+### and the cache file was mine to prevent
+
+I told the user to gitignore `ninja_site_cache.json` on 6 Sep, then wrote a second script
+with a different cache filename and never added it. I also said a 132 MB repo was "fine,
+leave it" - that growth was the thing about to break the deploy.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

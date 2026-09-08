@@ -5,7 +5,7 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
-## The fourteen rules
+## The fifteen rules
 
 1. **Always run the full validation suite after any change to index.html, and
    report the counts.** Before and after, so the baseline is measured rather than
@@ -107,6 +107,18 @@ every session. Everything here was learned by getting it wrong at least once.
 
     **The tell is a count that does not move.** When a new check does not raise the total,
     it did not run. Read the number, not the colour.
+
+15. **A cache file never goes in the repo.** Every fetch script writes one; they are raw API
+    responses, rebuildable, and large. Add it to `.gitignore` in the SAME commit as the
+    script, not after it breaks something.
+
+    Cloudflare Workers rejects any asset over 25 MiB, and when it does **the build fails and
+    the previous deployment keeps serving**. The site looks fine and silently stops updating.
+    `ninja_multiyear_cache.json` at 67 MB did this for two days in September 2026.
+
+    **The failure mode is what makes this a rule.** A broken deploy that serves a stale page
+    is worse than one that serves an error, because nothing anywhere reports a problem - the
+    checks pass, the repo is correct, GitHub Pages is correct, and the site is wrong.
 
 ---
 
