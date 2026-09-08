@@ -9044,6 +9044,47 @@ field.** It happened to be defensible at 9.9% VRE share, but the reasoning was n
 Worth a check that the panel and the engine agree on curtailment - they are not obviously
 the same quantity and I have now been caught by that twice in one day.
 
+## sweep for more expired premises - 8 Sep 2026
+
+Two systematic passes after the negative-price fix.
+
+### field mismatches: none, and the earlier one was mine
+
+Checked every reported annual total against the hourly array it should sum. All reconcile to
+0%: coal, wind, PV, battery, pumped storage, gas, diesel, unserved, and curtailment.
+
+**`curtTWh` does not exist on the result object.** My diagnostic scripts read it, got
+undefined, and printed zero. The real field is `E.curtailed`, it reconciles exactly to
+`curtailMW`, and every consumer in the page reads it correctly. **The model was right both
+times; my probe was wrong.** Recorded because I drew a conclusion from that zero earlier the
+same day.
+
+### expired premises: 304 absolute claims scanned, two candidates, both already handled
+
+`STORAGE_CHRONO` guards the "storage can shift within a day but never between days"
+constraint and is already `true` - found and fixed 17 Aug 2026, with the measurement that
+prompted it recorded at the constant.
+
+The instant engine keeps a SEPARATE state of charge per technology and runs chronologically
+across all 8,760 hours, so there is no within-day cap there either.
+
+**Iron-air confirmed by mechanism, not just result.** In the Seriti scenario it charges ZERO
+and discharges ZERO. Lithium takes the available surplus first in round-trip order, and there
+is not enough left to reach the iron-air tier. That is precisely what RESULTS.md claims -
+"there is no surplus to store" - now verified at the tier level rather than inferred from an
+unchanged output.
+
+### what this class of bug looks like
+
+An absolute claim in a comment - never, always, every - that was measured and true when
+written, in a regime the model has since left. The negative-price rule is the archetype: it
+said "every curtailment hour is coal-forced", which was correct at today's penetration and
+false at 117 GW of VRE.
+
+**The guard is a check against an external reference**, not a re-reading of the comment. The
+negative-price count is now pinned against Germany's observed 460 hours. A premise cannot
+expire quietly if something outside the model is watching it.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
