@@ -39,6 +39,39 @@ const rows = [], failures = [], notes = [];
 // question it answered, the band, and WHY the band is that wide.
 const EXTERNAL = {
 
+  // ── NTCSA MEDIUM-TERM SYSTEM ADEQUACY OUTLOOK 2026-2030 ─────────────────
+  // Added 8 Sep 2026. The System Operator's own adequacy study, published 30 Oct 2025
+  // under the Grid Code, multi-nodal with Monte Carlo sampling of demand, wind, solar and
+  // unplanned outages. It is the closest published thing to what GridTwin does, and unlike
+  // CSIR or EDMSA it states its assumptions in enough detail to reproduce.
+  //
+  // THEIR HEADLINE NUMBER, and the tightest one they publish: high EAF (67%), moderate
+  // demand, all new capacity, 6 GW CCGT DELAYED beyond 2030 gives 86 GWh unserved.
+  //
+  // OUR SENSITIVITY TO THEIR CAPACITY SPLIT is the honest caveat. They give 29.7 GW total
+  // without a full technology breakdown, so the split below is inferred. Varying wind and
+  // solar by +/-25% moves the answer from 28 to 131 GWh - their 86 sits inside that range
+  // and so does our central 79. Treat agreement here as ORDER OF MAGNITUDE, not precision.
+  mtsao2030GasDelayed: {
+    source: 'NTCSA Medium-Term System Adequacy Outlook 2026-2030, Oct 2025, section 7.4.1.2',
+    published: 86,           // GWh unserved in 2030
+    band: 55,                // GWh - the measured spread from the capacity-split uncertainty
+    scenario: {
+      demandGrowthPct: 8.6,  // their moderate growth 2024-2030, 243 -> 264 TWh
+      coalEAFPct: 67,        // their HIGH EAF sensitivity
+      coalDecomMW: 8400,     // their shutdown schedule: 5.26 GW 2029 + 3.14 GW 2030
+      importsMW: 0,          // Cahora Bassa contract ends March 2030
+      newWindMW: 6700, newPvMW: 15000, newRooftopMW: 3800,
+      newBattMW: 2000, newBattHours: 4,
+      newCcgtMW: 0,          // the 6 GW CCGT delayed - this IS the sensitivity
+    },
+    why: 'The System Operator finds 86 GWh unserved in 2030 if the 6 GW of CCGT slips. '
+       + 'GridTwin is a single-node model and theirs is multi-nodal, so ours should read '
+       + 'LOWER: they report transmission constraints adding to unserved energy, which a '
+       + 'national model cannot produce at all. A GridTwin figure ABOVE theirs would be the '
+       + 'surprise worth investigating.',
+  },
+
   csir2030CoalShare: {
     source: 'CSIR least-cost study (PLEXOS), extended IRP analysis',
     published: 55,           // % of generated energy from coal by 2030
@@ -124,7 +157,10 @@ function check(name, ok, detail) {
           coalShare: 100 * r.E.coal / dom_,
           reShare: 100 * (r.E.wind + r.E.pv + r.E.csp + (r.E.hybrid || 0)
                           + r.E.rooftop + r.E.hydro) / dom_,
-          co2: r.co2, cost: r.avgCost, windTWh: r.E.wind / 1e6 });
+          co2: r.co2, cost: r.avgCost, windTWh: r.E.wind / 1e6,
+          // Added 8 Sep 2026 for the NTCSA comparison, which is an ADEQUACY study -
+          // unserved energy is its headline metric, not energy shares.
+          unservedGWh: (r.E.unserved || 0) / 1000 });
       }`;
     w.document.body.appendChild(s);
     return JSON.parse(w.__x);
@@ -152,6 +188,13 @@ function check(name, ok, detail) {
   // data pipeline and no authorship, landing within 0.2% on 2035 emissions. The bands are
   // deliberately wider than the observed gaps, because the point is to catch a DRIFT away
   // from independent corroboration, not to freeze agreement that is partly coincidence.
+  // NTCSA's own adequacy study, run at ITS assumptions - see mtsao2030GasDelayed above.
+  // Cahora Bassa is set to zero because their contract ends March 2030, and the 6 GW CCGT
+  // to zero because the delay IS the sensitivity being reproduced.
+  const mtsao = run({ demandGrowthPct: 8.6, coalEAFPct: 67, coalDecomMW: 8400,
+    importsMW: 0, newWindMW: 6700, newPvMW: 15000, newRooftopMW: 3800,
+    newBattMW: 2000, newBattHours: 4, newCcgtMW: 0 });
+
   const gA = Math.round(100 * (Math.pow(1.02, 9) - 1));
   const edmsa = run({ coalEAFPct: 70, demandGrowthPct: gA,
     newWindMW: 20000, newPvMW: 25000, newBattMW: 8000, newBattHours: 4,
@@ -185,7 +228,10 @@ function check(name, ok, detail) {
         //
         // Same caveat as the CO2 row above: our figures are now calibrated against Eskom
         // measurement and EDMSA's are not, so agreement is weaker evidence than it looks.
-['EDMSA Scenario A wind 2035', edmsa.windTWh, 64, 12, 'TWh']]){
+['EDMSA Scenario A wind 2035', edmsa.windTWh, 64, 12, 'TWh'],
+        // NTCSA MTSAO 2026-2030, section 7.4.1.2. See the mtsao2030GasDelayed block above
+        // for the assumptions and for why the band is 55 GWh rather than something tighter.
+        ['NTCSA MTSAO 2030, 6 GW gas delayed', mtsao.unservedGWh, 86, 55, 'GWh']]){
     const gap = got - pub;
     check(`${lab} within ${band} ${unit} of the published figure`,
           Math.abs(gap) <= band,

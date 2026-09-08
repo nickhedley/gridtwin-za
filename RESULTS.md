@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty-nine sections follow. This index exists because the file passed 1,400 lines and the
+Forty sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3210,3 +3210,44 @@ above Germany on a system carrying 117 GW of VRE. Today's default scenario is un
 CAVEAT: the depth of the negative price is still derived from the coal start-up cost, which
 is a proxy for a bid nobody publishes. The COUNT is now defensible; the depth remains an
 assumption.
+
+---
+
+## Measured against the System Operator's own adequacy study
+
+NTCSA Medium-Term System Adequacy Outlook 2026-2030, published 30 October 2025 under the Grid
+Code. Multi-nodal, with Monte Carlo sampling of demand, wind, solar and unplanned outages. It
+is the closest published thing to what GridTwin does, and unlike CSIR or EDMSA it states its
+assumptions in enough detail to reproduce.
+
+Run at THEIR assumptions: demand +8.6% to 2030 (243 to 264 TWh, moderate growth), coal
+shutdown 8.4 GW, Cahora Bassa contract ended, 6 GW CCGT delayed.
+
+```
+case                                 NTCSA        GridTwin
+2030, 6 GW gas built                 adequate     0 GWh unserved
+2030, gas delayed, high EAF 67%      86 GWh       79 GWh
+2030, gas delayed, moderate EAF      > 4 TWh      1.4 TWh
+low EAF 55%, committed only          "continuously high"   4.1 TWh, OCGT 48%
+```
+
+**Their tightest published number is 86 GWh. We give 79.**
+
+### the caveat is larger than the agreement
+
+NTCSA give 29.7 GW of new capacity without a full technology breakdown, so our split is
+inferred. Varying wind and solar by 25% either way moves our answer from 28 to 131 GWh -
+their 86 sits inside that range, and so does our 79. **This is agreement on order of
+magnitude, not precision.**
+
+The moderate-EAF case is the informative disagreement: they find over 4 TWh, we find 1.4.
+**We should read lower.** GridTwin is single-node; theirs is multi-nodal and reports
+transmission constraints adding to unserved energy, which a national model cannot produce at
+all. A GridTwin figure ABOVE theirs would be the finding worth chasing.
+
+### what survives as a shared conclusion
+
+Both models put the 2030 baseload cliff in the same place and give it the same shape. 8.4 GW
+of coal and 1.15 GW of Cahora Bassa leave inside two years; if the 6 GW of CCGT slips, the
+gap is real in both. NTCSA reach that from a nodal Monte Carlo, GridTwin from an hourly
+single-node dispatch, and neither shares code, data pipeline or authorship with the other.
