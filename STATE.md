@@ -8729,9 +8729,25 @@ with 8.6 GW of rooftop, and was previously invisible because the two figures dis
 ### two benchmarks moved, both because the model got MORE accurate
 
 **Firm surplus 2.45 -> 1.5 GW**, entirely because peak demand rose 0.93 GW to its true
-value. Eskom states 2-3 GW. **At Eskom's own peak and its own 65% EAF, this model finds
-1.5 GW.** That disagreement is now a finding rather than a band: the lower bound moved 1.8
-to 1.2, the check kept its "physically plausible" meaning, and below 1.2 still fires.
+value. Eskom states 2-3 GW. The lower bound moved 1.8 to 1.2 and below that still fires.
+
+**CORRECTED 8 Sep 2026: I called this "a disagreement worth investigating". It is not.**
+Decomposed:
+
+```
+firm only, after reserve, at peak net load     1.54 GW   our convention
+adding back the reserve we hold                2.96 GW
+counting the VRE generating at that hour       2.94 GW
+Eskom's stated range                           2-3 GW
+```
+
+**Either convention lands inside Eskom's range.** A 1 GW gap that two plausible definitional
+choices each close is a disagreement about what "surplus" means, not about the system.
+Eskom has not published its method.
+
+The check's `why` now states our convention explicitly and says not to reach for a physical
+explanation, because there is not one to find. **Framing a definitional difference as a
+finding is how a modelling artefact becomes a talking point.**
 
 **EDMSA 2035 wind 64 -> 72 TWh.** Demand is 3% higher so a build-heavy scenario scales with
 it. Band 8 to 12 TWh, same caveat as the CO2 row: our figures are calibrated against

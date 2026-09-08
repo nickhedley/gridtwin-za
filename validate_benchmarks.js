@@ -184,9 +184,14 @@ const CF_BENCH = {
   // RESULTS.md rather than hidden by a band.
   //
   // The bound is not removed: below 1.2 GW something is wrong with the fleet or the demand.
-  surplusGW: { lo: 1.2, hi: 4.0, unit: 'GW', why: 'Eskom FY2026: an estimated 2-3 GW surplus '
-    + 'capacity, first time in over a decade. Method not published - band spans the '
-    + 'defensible definitions' },
+  surplusGW: { lo: 1.2, hi: 4.0, unit: 'GW', why:
+      'OUR CONVENTION: firm capacity only, AFTER holding operating reserve, at the hour of '
+    + 'peak net load. That is the conservative definition and it is why this reads about '
+    + '1.5 GW against Eskom FY2026\'s stated 2-3 GW. The gap is definitional, not a '
+    + 'disagreement about the system: adding back the 1.4 GW of reserve we hold gives '
+    + '2.96 GW, and counting the VRE actually generating at that hour gives 2.94 GW - '
+    + 'either convention lands inside Eskom\'s range. Eskom has not published its method. '
+    + 'Do not reach for a physical explanation of the 1 GW; there is not one to find.' },
   gridGenTWh: { lo: 190, hi: 222, unit: 'TWh', why: 'Eskom FY2026 audited: energy available for distribution '
     + '206.0 TWh. NOT sales, which are 178.0 TWh - losses of 23.9 TWh sit between them' },
   cfPv:      { lo: 19, hi: 27, why: 'SA fixed-tilt utility PV, 21-24% typical; tracking reaches 26-28%' },
