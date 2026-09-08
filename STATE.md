@@ -9005,6 +9005,45 @@ in weeks.
 
 Suite 995/995.
 
+## the negative-price premise expired - 8 Sep 2026
+
+Asked whether the Future mix median of -R4/MWh was plausible. It was not: **5,614 hours
+below zero, 64% of the year**, against roughly 460 in Germany in 2024 - the most
+negative-price-prone system in Europe.
+
+### the rule was right; its premise had expired
+
+The negative-price pass states it explicitly: "Every curtailment hour in this model is
+coal-forced ... never because VRE alone exceeds demand." True at today's penetration. False
+at 117 GW of VRE.
+
+**The test:** retire the entire coal fleet and 103 of the 134 TWh of curtailment remains.
+That spill survives coal's removal, so it was never coal-forced.
+
+```
+                    negative hours   median
+before                       5,614      -R3
+after                          666       R0
+today's default            unchanged   R747
+```
+
+Now requires that coal cannot get out of the way - curtailment no greater than coal's own
+output - rather than merely that coal is running. 666 hours is 7.6%, just above Germany, on
+a system carrying four times South Africa's peak in VRE.
+
+Pinned in `validate_consistency` 56 -> 57 at a 20% ceiling, with the international
+comparison in the failure message. Verified by reverting the premise: it fires at 64.1%.
+
+### this is the second time today the same wrong field misled me
+
+`curtTWh` read ZERO while actual curtailment was 134 TWh - the real field is `curtailMW`.
+I hit this earlier today too, read `curtTWh` as zero on the default scenario, and concluded
+economic curtailment was legitimately absent. **That conclusion was drawn from the wrong
+field.** It happened to be defensible at 9.9% VRE share, but the reasoning was not sound.
+
+Worth a check that the panel and the engine agree on curtailment - they are not obviously
+the same quantity and I have now been caught by that twice in one day.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

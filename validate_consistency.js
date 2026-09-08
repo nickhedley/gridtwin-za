@@ -719,6 +719,41 @@ const num = t => {
     }
   }
 
+  // ── NEGATIVE PRICES MUST STAY IN THE OBSERVED RANGE ─────────────────────
+  // The negative-price rule prices coal-forced curtailment at the avoided restart cost.
+  // Its premise - that EVERY curtailment hour is coal-forced - held at today's penetration
+  // and failed at high VRE: on the Future electricity mix preset it produced 5,614 negative
+  // hours, 64% of the year, against roughly 460 in Germany in 2024, the most
+  // negative-price-prone system in Europe.
+  //
+  // 103 of that scenario's 134 TWh of curtailment survives retiring the ENTIRE coal fleet,
+  // so it was never coal-forced. Fixed 8 Sep 2026 to require that coal cannot get out of
+  // the way, not merely that it is running.
+  //
+  // This asserts the result stays physically credible under the most VRE-heavy scenario
+  // shipped. No real system spends most of its year paying people to consume.
+  {
+    const r = run(`
+      const base = { ...state, ...PRESETS['Future electricity mix'] };
+      const rr = simulate(base, PROFILES);
+      const p = Array.from(rr.marginalP || []);
+      const neg = p.filter(x => x < 0).length;
+      const s2 = p.slice().sort((a, b) => a - b);
+      return { neg, pct: 100 * neg / p.length, median: s2[Math.floor(p.length/2)] };
+    `);
+    if (r && !r.err && typeof r.neg === 'number'){
+      check('negative-price hours stay within observed international range',
+            r.pct < 20,
+            `${r.neg} hours below zero, ${r.pct.toFixed(1)}% of the year, on the Future mix `
+            + `preset. Germany ran about 460 hours (5.3%) in 2024 and is the most `
+            + `negative-price-prone system in Europe. Above 20% the model is asserting `
+            + `something no market has done, and the likely cause is curtailment being `
+            + `priced as coal-forced when it is VRE surplus.`);
+      console.log(`  neg prices    ${r.neg} hours (${r.pct.toFixed(1)}%) on the Future mix, `
+        + `median R${r.median.toFixed(0)}`);
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

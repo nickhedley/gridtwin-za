@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Thirty-eight sections follow. This index exists because the file passed 1,400 lines and the
+Thirty-nine sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3172,3 +3172,41 @@ reason to state it.
 CAVEAT: Eskom's RSA Contracted Demand already includes exports, so the model's demand series
 is domestic-only and the export obligation is added separately. Getting this wrong in either
 direction moves coal generation by about 11 TWh.
+
+---
+
+## Negative prices were being applied to the wrong hours
+
+The model prices coal-forced curtailment below zero: an inflexible unit pays to keep running
+rather than take a stop-start cycle, at the avoided restart cost spread over the spell.
+
+The rule stated its own premise: **every curtailment hour in this model is coal-forced,
+never VRE surplus.** That held at today's penetration. It fails at high VRE.
+
+```
+Future electricity mix preset       negative hours   curtailment
+before                                       5,614      134 TWh
+after                                          666      134 TWh
+```
+
+**5,614 hours is 64% of the year.** Germany, the most negative-price-prone system in Europe,
+ran about 460 negative hours in 2024. Nothing observed anywhere is within an order of
+magnitude.
+
+### the test that found it
+
+Retire the entire coal fleet and **103 of the 134 TWh of curtailment remains**. That spill
+survives coal's removal, so it was never coal-forced - it is VRE exceeding demand, and no
+unit is avoiding a cycle in it.
+
+The rule's own comment names the right answer: South Africa has no production subsidies, so
+there is no bidder paying to generate beyond avoided cycling. With no cycling to avoid, the
+price is zero.
+
+Corrected to require that coal cannot get out of the way - curtailment no greater than coal's
+own output - rather than merely that coal is running. 666 hours, 7.6% of the year, sits just
+above Germany on a system carrying 117 GW of VRE. Today's default scenario is unchanged.
+
+CAVEAT: the depth of the negative price is still derived from the coal start-up cost, which
+is a proxy for a bid nobody publishes. The COUNT is now defensible; the depth remains an
+assumption.
