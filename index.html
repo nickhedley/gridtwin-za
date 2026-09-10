@@ -860,13 +860,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               so this is what the hours are worth, not what anyone could charge.
             </div>
             <div class="pb" style="padding:8px 12px 2px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-              <label style="font-size:10.5px;color:var(--ink2)">
-                <input id="retCap" type="checkbox" checked onchange="renderRetail()">
-                Apply R12.84 cap
-              </label>
               <label style="font-size:10.5px;color:var(--ink2)" title="Ticked: consumers keep paying for closed plant until its asset base runs off, which is what a regulated asset base does. Unticked: the cost leaves with the plant and the fiscus carries it. Worth about 5% of a bill.">
                 <input id="retStranded" type="checkbox" checked onchange="renderRetail()">
-                Retired coal still repaid via tariffs
+                <span id="retStrandedLbl">Retired coal still repaid via tariffs</span>
               </label>
               <label style="font-size:10.5px;color:var(--ink2)" title="The year the scenario's system is costed at. Technology costs decline to it, the existing asset base runs off toward it, one-off recoveries expire before it.">Scenario year
                 <input id="retYear" type="range" min="2026" max="2040" step="1" value="2035"
@@ -12011,10 +12007,28 @@ function retailHourly(){
   const supEl = document.getElementById('retSupply');
   const viaMuni = supEl ? supEl.value === 'muni' : true;
   const markup = 0;   // retained as a parameter so the arithmetic below is unchanged
-  const capEl = document.getElementById('retCap');
-  const capOn = capEl ? capEl.checked : true;
+  // THE CAP TOGGLE WAS REMOVED 10 Sep 2026 because it never bound. It sits at R12.84/kWh
+  // and the dearest hour in any scenario the panel offers is R11.29, at defaults - every
+  // decarbonisation scenario LOWERS the peak, so ticking or unticking it changed nothing
+  // anywhere. It was derived as 3.6x Homepower from Octopus Agile's ratio to Ofgem, and fell
+  // further when Homepower was corrected down 10%.
+  //
+  // The cap is still APPLIED, so a future scenario with a genuine scarcity spike is still
+  // bounded. What is gone is a control that implied a choice the user did not have.
+  const capOn = true;
   const stEl = document.getElementById('retStranded');
   const stranded = stEl ? stEl.checked : true;
+  // The stranded control does nothing until coal has actually retired: with coalDecomMW at
+  // zero the coal fraction is 1 and both branches of the asset-base term give the same
+  // answer. That is correct - there is nothing to strand - but a control that silently does
+  // nothing reads as broken, so it says so.
+  const anyRetired = ((({ ...FIXED, ...state }).coalDecomMW) || 0) > 0;
+  const stLbl = document.getElementById('retStrandedLbl');
+  if (stLbl){
+    stLbl.textContent = anyRetired ? 'Retired coal still repaid via tariffs'
+                                   : 'Retired coal still repaid via tariffs \u2013 retire coal to use';
+    stLbl.style.opacity = anyRetired ? '1' : '0.5';
+  }
   const yrEl = document.getElementById('retYear');
   const year = yrEl ? +yrEl.value : 2035;
   const yv = document.getElementById('retYearVal'); if (yv && yrEl) yv.textContent = yrEl.value;
@@ -14422,7 +14436,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11d';
+const BUILD_STAMP = '2026-09-11e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

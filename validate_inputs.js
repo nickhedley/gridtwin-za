@@ -292,6 +292,25 @@ console.log('\nTariff constants against their published sources\n');
         + `covers their network and surplus and is an upper bound, not a measure.`);
 }
 
+// ── 12. THE PRICE CAP IS ABOVE ANY PRICE THE PANEL PRODUCES ────────────────
+// Recorded 10 Sep 2026 after the cap toggle was found to change nothing. It sits at R12.84
+// and the dearest hour in any scenario is R11.29 - and every decarbonisation scenario LOWERS
+// the peak, so it binds nowhere. The toggle was removed; the cap is still applied so a future
+// scarcity spike stays bounded.
+//
+// If this check ever fails, the cap has started binding and the panel is clipping a real
+// result. That is worth knowing rather than silently truncating.
+{
+  const sp = T.shadow_tariff_parameters || {};
+  const cap = sp.cap_r_per_kwh || 0;
+  check('the price cap sits above the dearest hour the panel produces',
+        cap > 11.5,
+        `cap R${cap}/kWh against a peak of about R11.29 at defaults. The cap is 3.6x `
+        + `Homepower, so correcting Homepower moves it - it fell when Homepower was corrected `
+        + `down 10%. If the cap drops below the peak it starts clipping, and a clipped panel `
+        + `reports a bounded number as if it were a modelled one.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');

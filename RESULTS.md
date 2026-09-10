@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Fifty-five sections follow. This index exists because the file passed 1,400 lines and the
+Fifty-six sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -4193,3 +4193,32 @@ The CTS is the only source that splits them.
 **The constant is left at R0.30 rather than tuned to R0.312.** Moving it 4% to match a single
 source would be fitting rather than checking. What changed is that it is corroborated instead
 of imported.
+
+---
+
+## Two inert controls
+
+Both checkboxes on the retail panel were found to change nothing. Different causes.
+
+### the price cap never binds
+
+Set at R12.84/kWh. The dearest hour in any scenario is R11.29, at defaults - and every
+decarbonisation scenario LOWERS the peak, with the Future mix topping out at R5.56.
+
+The cap is 3.6x Homepower, derived from Octopus Agile's ratio to Ofgem, so it fell when
+Homepower was corrected down 10%.
+
+**Toggle removed; the cap is still applied** so a future scarcity spike stays bounded.
+`validate_inputs` now asserts the cap sits above the panel's peak - if it ever binds, the
+panel is clipping a real result and that should be visible rather than silent.
+
+### the stranded control is correct but invisible at defaults
+
+`existingCap = assets x ((1 - coalShare) + coalShare x (stranded ? 1 : coalFrac))`
+
+At defaults `coalDecomMW` is zero, so `coalFrac` is 1 and both branches give the same answer.
+That is right - nothing has retired, so there is nothing to strand. With 27 GW retired it
+works: R0.313 to R0.198 on the asset line, R4.69 to R4.46 on the bill, the documented 5%.
+
+**The label now says "retire coal to use" and dims when the control is inert.** A control that
+silently does nothing reads as broken.
