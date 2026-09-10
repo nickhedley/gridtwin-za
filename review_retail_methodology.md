@@ -285,3 +285,66 @@ unexplained, and that residual is the honest measure of what the check is worth.
 new CCGT is procurable and connected by 2035, with LNG import capacity for 15.5 TWh a year.
 South African gas-to-power procurement has stalled for a decade. If that gas does not arrive,
 the no-gas case is not a stress test - it is the outcome.
+
+---
+
+## The four tightening items, 10 Sep 2026
+
+NERSA's Reasons for Decision on Eskom's Retail Tariff Plan (18 Feb 2025) turned out to
+contain three of the four. It fetched directly.
+
+### 1. The circular allocation - IMPROVED, not eliminated
+
+The document gives Eskom's Cost to Serve allocation basis: cost causation by supply voltage,
+location density, load profile and points of delivery, with R19.05bn of generation fixed cost
+allocated to the capacity charge, 7% of generation cost. What it does NOT give is the
+per-category allocated cost in rands, which is in the CTS study itself.
+
+**So the residential factor is still 1.29 derived from published prices.** What changed is
+that its composition is now known - see item 3 - and part of it is identified as a transfer
+rather than a cost.
+
+Carry NERSA's own warning with it: it found the CTS functionalises revenue as 86/4/10 across
+Generation, NTCSA and Distribution against its own MYPD6 apportionment of 62/28/10, called
+that a material inconsistency, and imposed ring-fencing conditions. The CTS is published but
+not endorsed as consistent with MYPD6.
+
+### 2. Multi-tariff validation - DONE
+
+All six Homeflex rates are now held, from Table 7 - the gap previously flagged as unfillable.
+Homelight 20A at 191.69 c/kWh and 60A at 243.68 c/kWh, both flat, both with no fixed charge.
+
+Three structural relationships are now asserted, and none is fitted:
+
+```
+Homelight 20A < Homelight 60A              the lifeline carries the larger subsidy
+Homeflex annual average < Homepower flat   or nobody would take a tariff they are forced onto
+Homeflex peak > 1.3x Homepower flat        NERSA set the peak-to-standard ratio at 1:6
+```
+
+The Homeflex spread also corrected: **3.9x on the full six-rate annual table**, against the
+4.4x previously quoted from the winter pair alone.
+
+### 3. Cross-subsidies - QUANTIFIED, and it corrected an assumption
+
+Table 15: total cross-subsidies R10.9bn. Recipients are Homelight 20A and 60A, Landrate,
+Ruraflex and Nightsave Rural. **Homepower is not on that list** - it pays the affordability
+subsidy rather than receiving it.
+
+So part of the 29% residential premium over Eskom's average price is Homepower funding
+Homelight. That is a transfer, not a cost of serving a Homepower household, and I had
+attributed the whole premium to cost causation.
+
+NERSA also approved reducing the electrification and rural subsidy by 69% and the
+affordability subsidy by 53%.
+
+### 4. The RAB run-off - PARTLY CLOSED
+
+The R54bn settlement has a published liquidation schedule: **R12bn in 2026/27, R23bn in
+2027/28, R19.7bn thereafter**, with tariff impacts of 3.4% and 2.64%. The panel had treated
+it as a single expiry year, which overstated recovery in 2027 and understated it in 2029.
+Now on the schedule.
+
+The generation RAB itself and its remaining life are still not available at the level a real
+depreciation schedule needs - the redetermination gives the revenue effect, not the asset
+base. The run-off stays linear and says so.

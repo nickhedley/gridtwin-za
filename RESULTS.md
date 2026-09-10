@@ -3543,6 +3543,46 @@ to the result. It is the panel's only external validation and it now passes.
 The no-gas case remains the outlier at +26%, down from +52% before the year. Still a stress
 test.
 
+### the residential premium is partly a subsidy, not a cost
+
+NERSA's Reasons for Decision on the Retail Tariff Plan, Table 15: total cross-subsidies
+R10.9bn. The recipients are Homelight 20A and 60A, Landrate, Ruraflex and Nightsave Rural.
+**Homepower is not among them** - it pays the affordability subsidy rather than receiving it.
+
+So part of the 29% premium a Homepower household pays over Eskom's average price is funding
+Homelight. A transfer, not a cost of serving them, and the panel had attributed the whole
+premium to cost causation.
+
+### the Homeflex comparison is now on all six rates
+
+Previously only the winter peak and off-peak were held, and the panel had to caveat that its
+Homeflex spread was a high-demand-season figure. All six are now in from Table 7:
+
+```
+                  peak   standard   off-peak
+high season     6.1503     2.0686     1.5927
+low season      3.0110     1.9735     1.5927
+```
+
+**The annual spread is 3.9x, not the 4.4x previously quoted** from the winter pair alone.
+
+### validated against four tariffs, not one
+
+Matching a single published tariff is weak evidence when a factor in the build was derived
+from that tariff. Three structural relationships are now asserted, none of them fitted:
+
+```
+Homelight 20A < Homelight 60A              the lifeline carries the larger subsidy
+Homeflex annual average < Homepower flat   or nobody would take a tariff they are forced onto
+Homeflex peak > 1.3x Homepower flat        NERSA set the peak-to-standard ratio at 1:6
+```
+
+### the R54bn settlement runs on a published schedule
+
+R12bn in 2026/27, R23bn in 2027/28, R19.7bn thereafter, with tariff impacts of 3.4% and
+2.64%. The panel had treated it as a single expiry year, which overstated recovery in 2027
+and understated it in 2029.
+
 ### the municipal markup was hiding a missing cost allocation
 
 Closing the three open gaps on 10 Sep 2026, the markup became a switch - Eskom-direct or

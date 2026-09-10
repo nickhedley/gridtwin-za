@@ -11872,7 +11872,15 @@ function retailComponents(markup, stranded, year, viaMuni){
 
   // ONE-OFFS WITH END DATES. The RCA tranche ends with MYPD6. Arrears are a transfer, not a
   // cost of supply, and are excluded unless toggled in.
-  const rca = (year <= (Y.rca_ends_fy || 2028)) ? C.rca_recoveries : 0;
+  // The R54bn settlement is liquidated on a PUBLISHED schedule, not a cliff: R12bn in
+  // 2026/27, R23bn in 2027/28, R19.7bn thereafter. Treating it as a single expiry year
+  // overstated the recovery in 2027 and understated it in 2029.
+  const sched = A.rca_liquidation_schedule_r_bn || {};
+  const schedYears = Object.keys(sched).map(Number);
+  const lastSched = schedYears.length ? Math.max(...schedYears) : (Y.rca_ends_fy || 2028);
+  const rcaBn = sched[String(year)];
+  const rca = (year > lastSched) ? 0
+            : (rcaBn != null ? rcaBn * 1e9 / (A.sales_twh * 1e9) : C.rca_recoveries);
   const arrears = Y.arrears_in_tariff ? C.arrear_debt : 0;
   const fixedItems = rca + arrears + C.environmental_levy;
 
@@ -11904,9 +11912,23 @@ function retailComponents(markup, stranded, year, viaMuni){
   // customer left the panel 25% under Homepower, which showed the markup had been carrying
   // this allocation silently as well as a municipal margin. Two jobs, one number, described
   // as one of them.
-  const resAlloc = A.residential_allocation_factor || 1.0;
+  // RESIDENTIAL ALLOCATION, split into what it actually is.
+  //
+  // The 1.29 premium over Eskom's average price is not all cost causation. NERSA's Reasons
+  // for Decision, Table 15, puts total cross-subsidies at R10.9bn and lists the recipients:
+  // Homelight 20A and 60A, Landrate, Ruraflex, Nightsave Rural. HOMEPOWER IS NOT ON THAT
+  // list - it pays the affordability subsidy rather than receiving it.
+  //
+  // So part of what a Homepower household pays above the system average is funding
+  // Homelight, which is a transfer, not a cost of serving them. A cost-reflective shadow
+  // tariff should show it separately, because it is the part a household would stop paying
+  // under strict cost reflectivity and the part a regulator can choose to keep.
+  const subs = RETAIL_T.cross_subsidies || {};
+  const subsidyPerKwh = (subs.total_r_bn || 0) * 1e9 * 0.35 / (A.sales_twh * 1e9);
+  const resAllocTotal = A.residential_allocation_factor || 1.0;
+  const resAlloc = resAllocTotal;
 
-  return { distAdj, resAlloc, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
+  return { distAdj, resAlloc, subsidyPerKwh, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
            decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
            viaMuni, salesTWh: salesMWh / 1e6 };
 }
@@ -11967,6 +11989,21 @@ function retailHourly(){
   const comp = retailComponents(markup, stranded, year, viaMuni);
   const dyn = raw.map(v => capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
 
+  const hf = t.homeflex, R = hf.rates_r_per_kwh_2024_25 || {};
+  // ALL SIX RATES, from the NERSA decision of 18 Feb 2025. The panel previously held only
+  // the winter peak and off-peak and had to caveat that its Homeflex spread was a
+  // high-demand-season figure. High season is three months of twelve, so the annual average
+  // weights it a quarter. NERSA also moved the peak-to-standard ratio from 1:8 to 1:6 and
+  // shifted the windows, which are the ones used here.
+  const flexAt = (h, high) => {
+    const pk = high ? (h >= 6 && h < 8) || (h >= 17 && h < 20)
+                    : (h >= 7 && h < 9) || (h >= 18 && h < 21);
+    const std = high ? (h >= 8 && h < 17) : (h >= 9 && h < 18);
+    if (pk)  return high ? R.high_season_peak     : R.low_season_peak;
+    if (std) return high ? R.high_season_standard : R.low_season_standard;
+    return high ? R.high_season_offpeak : R.low_season_offpeak;
+  };
+
   // A REPRESENTATIVE WEEK, hour by hour, on the same basis as the daily curve. The daily
   // curve averages every day of the year into 24 points and hides the thing a household
   // actually experiences: a still winter evening against a windy summer night. Same start
@@ -11989,23 +12026,17 @@ function retailHourly(){
     v = v * 1.15;
     week.push(capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
   }
-  const hfw = t.homeflex;
+  // The week now uses the season it is actually showing, with all six rates.
+  const weekHigh = (wkMode === 'W');
   const weekFlex = [];
   for (let i = 0; i < 168; i++){
     const h = (wkStart + i) % 24, dow = Math.floor((wkStart + i) / 24) % 7;
-    const weekday = dow < 5;
-    const peak = weekday && ((h >= 6 && h < 9) || (h >= 17 && h < 20));
-    // Only the winter pair is in the data file; the summer week reuses them and says so.
-    weekFlex.push(peak ? hfw.winter_peak_r_per_kwh : hfw.offpeak_r_per_kwh);
+    weekFlex.push(dow < 5 ? flexAt(h, weekHigh) : flexAt(h, weekHigh));
   }
 
   // The two tariffs a household can actually buy today, for comparison.
   const flat = new Array(24).fill(hp.energy_r_per_kwh);
-  const hf = t.homeflex;
-  const flex = hod.map((_, h) => {
-    const peak = (h >= 6 && h < 9) || (h >= 17 && h < 20);
-    return peak ? hf.winter_peak_r_per_kwh : hf.offpeak_r_per_kwh;
-  });
+  const flex = hod.map((_, h) => 0.25 * flexAt(h, true) + 0.75 * flexAt(h, false));
   return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp, week, weekFlex, wkMode, viaMuni,
            fixedPerMonth: hp.fixed_r_per_month, cap: sp.cap_r_per_kwh };
 }
@@ -14407,7 +14438,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10m';
+const BUILD_STAMP = '2026-09-10n';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

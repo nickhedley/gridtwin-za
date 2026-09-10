@@ -30,18 +30,28 @@
   "energy_is_not_pure_energy": "R3.5556/kWh still carries 33.34% of the service and administration charge and 70% of the generation capacity charge, both mid phase-in. So any tariff anchored to this rate inherits some fixed-cost recovery inside its energy component. That is not an error - it is what a household actually pays per unit today - but it means the anchor is not a pure energy price."
  },
  "homeflex": {
-  "description": "Time-of-use residential. REQUIRED for any household with grid-tied generation, so every rooftop PV customer is on it.",
-  "winter_peak_r_per_kwh": 8.471,
-  "offpeak_r_per_kwh": 1.9083,
-  "peak_definition": "June to August, 06:00-09:00 and 17:00-20:00 on weekdays",
-  "note": "The existing evidence that South African households CAN be exposed to time-varying prices. The winter peak is 4.4x the off-peak rate, a wider spread than most dynamic tariffs abroad.",
-  "season_caveat": "ONLY THE HIGH-DEMAND SEASON RATES ARE HERE. Eskom publishes six Homeflex rates - peak, standard and off-peak across a high-demand season (June to August) and a low-demand season (September to May). The 4.4x spread quoted from these two is therefore a WINTER figure; the annual spread is narrower. Do not compare it against an annual-average dynamic price without saying so. The missing four rates were deliberately not estimated - they are published in Eskom's Schedule of Standard Prices and should be read from there, not inferred."
+  "description": "Time-of-use residential. Required for any household with grid-tied generation, so every rooftop PV customer is on it. Same network, retail and ancillary charges as Homepower; only the energy charges differ.",
+  "source": "NERSA Reasons for Decision, Eskom Electricity Retail Tariff Plan, 18 Feb 2025, Table 7. Proposed rates in 2024/25 rand, adjusted to 2026/27 by the approved ERTSA increases.",
+  "rates_r_per_kwh_2024_25": {
+   "high_season_peak": 6.1503,
+   "high_season_standard": 2.0686,
+   "high_season_offpeak": 1.5927,
+   "low_season_peak": 3.011,
+   "low_season_standard": 1.9735,
+   "low_season_offpeak": 1.5927
+  },
+  "high_season": "June to August",
+  "peak_hours": "high season 06:00-08:00 and 17:00-20:00; low season 07:00-09:00 and 18:00-21:00",
+  "peak_to_standard_ratio": 6,
+  "ratio_note": "NERSA approved a change from 1:8 to 1:6 in Feb 2025. The 4.4x spread previously quoted here came from two rates only and was a winter figure; the full six-rate table is now present and the annual spread can be computed properly.",
+  "all_six_rates_note": "PREVIOUSLY ONLY THE WINTER PAIR WAS HELD, and the panel had to caveat that its Homeflex comparison was a high-demand-season figure. Resolved 10 Sep 2026 from the NERSA decision document."
  },
  "homelight60a": {
-  "description": "Prepaid, 60 A, no fixed charge at all.",
-  "energy_r_per_kwh": 3.4361,
+  "description": "Residential prepaid, 60A. No fixed charge. Also cross-subsidised, less than the 20A.",
+  "energy_r_per_kwh": 2.4368,
   "fixed_r_per_month": 0.0,
-  "note": "Beats Homepower 4 at every realistic consumption level for eligible households, precisely because there is no fixed charge to absorb. A household on Homelight has nothing to gain from a dynamic tariff's fixed component and everything from its energy component."
+  "source": "NERSA Reasons for Decision, 18 Feb 2025, Table 11.",
+  "note": "Beats Homepower at every realistic consumption for eligible households because it has no fixed charge to absorb - and because it is subsidised."
  },
  "reference_octopus_agile": {
   "description": "Britain's most-cited dynamic tariff, included as a published comparator rather than a target. Its formula is public, which is the standard this model holds itself to.",
@@ -147,6 +157,46 @@
   "tdp_grid_r_per_kw_of_re": 6964,
   "tdp_grid_basis": "Eskom's Transmission Development Plan is R390bn for 56 GW of connection capacity, R6,964m per GW. The model's own connection rate gives about a third of that, and its cost decomposition already labels transmission 'partial'. The panel now annualises the TDP rate over 40 years at 8% against the scenario's new wind and PV, which is the published figure rather than an inferred one.",
   "residential_allocation_factor": 1.29,
-  "residential_allocation_basis": "NERSA's allowed revenue is an average across ALL customers. Residential pays well above it: Eskom's average standard-tariff price for 2026/27 is 240.28 c/kWh while Homepower 4's energy charge is 309.2 c/kWh excluding VAT - a 29% premium. That is cost-to-serve, and every regulator allocates it: low voltage, low load factor, and metering and billing spread over few units. Large industrial customers on Megaflex pay BELOW the average for the same reason in reverse. FOUND 10 Sep 2026 when the municipal markup became a switch: with the markup removed for an Eskom-direct customer the panel came out 25% under Homepower, which showed the 40% markup had been silently carrying this allocation as well as a municipal margin."
+  "residential_allocation_basis": "NERSA's allowed revenue is an average across ALL customers. Residential pays well above it: Eskom's average standard-tariff price for 2026/27 is 240.28 c/kWh while Homepower 4's energy charge is 309.2 c/kWh excluding VAT - a 29% premium. That is cost-to-serve, and every regulator allocates it: low voltage, low load factor, and metering and billing spread over few units. Large industrial customers on Megaflex pay BELOW the average for the same reason in reverse. FOUND 10 Sep 2026 when the municipal markup became a switch: with the markup removed for an Eskom-direct customer the panel came out 25% under Homepower, which showed the 40% markup had been silently carrying this allocation as well as a municipal margin.",
+  "cts_allocation": {
+   "description": "Eskom's Cost to Serve study allocates NERSA's allowable revenue to customer categories on cost-causation principles: supply voltage, location density, load profile, and number of points of delivery.",
+   "source": "NERSA Reasons for Decision, Eskom Retail Tariff Plan, 18 Feb 2025, sections 8.1 and 8.9.",
+   "generation_capacity_allocated_r_bn": 19.05,
+   "generation_capacity_share_of_generation_cost": 0.07,
+   "legacy_charge_share_of_energy_charge": 0.11,
+   "legacy_charge_note": "The premium paid to section 34 REIPPPP contracts above Eskom's own generation cost. Ring-fenced as a separate c/kWh charge from 2025/26, and not applied to Homelight.",
+   "nersa_concern": "NERSA found the CTS functionalises allowable revenue as 86/4/10 across Generation, NTCSA and Distribution, against its own MYPD6 apportionment of 62/28/10. It called this a material inconsistency and imposed ring-fencing conditions. So the CTS allocation is published but NOT endorsed by the regulator as consistent with MYPD6 - use it for the customer-category split, not for the business split."
+  },
+  "rca_liquidation_schedule_r_bn": {
+   "2027": 12.0,
+   "2028": 23.0,
+   "2029": 19.7
+  },
+  "rca_schedule_basis": "The R54bn RAB settlement is liquidated on a PUBLISHED schedule, not a single expiry: R12bn in 2026/27, R23bn in 2027/28 and R19.7bn thereafter. Parliament's Committee on Electricity and Energy briefing, NERSA, 2026. Tariff impact 3.4% in 2026/27 and 2.64% in 2027/28 - the difference between the original 5.36% and the final 8.76%. Replaces the single rca_ends_fy cutoff, which treated a three-year taper as a cliff.",
+  "rab_note": "The generation RAB itself is still not published at a level that supports a real depreciation schedule. NERSA's redetermination approved the depreciated replacement cost approach and revalued the generation RAB, but the Reasons for Decision give the revenue effect rather than the asset base and its remaining life. So the run-off below stays a linear approximation. What WOULD close it: the MYPD6 revenue decision tables, which are a separate document from the Retail Tariff Plan."
+ },
+ "cross_subsidies": {
+  "description": "Eskom's tariffs contain explicit cross-subsidies. These are TRANSFERS between customer categories, not costs of supply, and a cost-reflective shadow tariff should show them separately rather than fold them into a cost.",
+  "source": "NERSA Reasons for Decision, Eskom Retail Tariff Plan, 18 Feb 2025, Table 15 and section 8.14.",
+  "total_r_bn": 10.9,
+  "basis_year": "2024/25 revenues",
+  "recipients": [
+   "Homelight 20A",
+   "Homelight 60A",
+   "Landrate",
+   "Ruraflex",
+   "Nightsave Rural"
+  ],
+  "payers": "Urban large power users pay the electrification and rural subsidy; non-local-authority urban LPUs pay the affordability subsidy.",
+  "homepower_is_a_payer": true,
+  "homepower_note": "HOMEPOWER IS NOT ON THE SUBSIDISED LIST. It contributes to the affordability subsidy rather than receiving it. So part of the residential premium over Eskom's average price is Homepower funding Homelight - a transfer, not a cost to serve. This corrects an assumption made on 10 Sep 2026 that attributed the whole premium to cost causation.",
+  "nersa_reduction": "NERSA approved reducing the electrification and rural subsidy by 69% and the affordability subsidy by 53%, to relieve large power users."
+ },
+ "homelight20a": {
+  "description": "Residential lifeline tariff, 20A prepaid. No fixed charge. The largest recipient of cross-subsidy.",
+  "energy_r_per_kwh": 1.9169,
+  "fixed_r_per_month": 0.0,
+  "source": "NERSA Reasons for Decision, 18 Feb 2025, Table 11. Flat rate replacing the inclining block structure.",
+  "note": "The legacy charge is NOT applied to Homelight, so REIPPPP premium costs are borne by other categories."
  }
 }

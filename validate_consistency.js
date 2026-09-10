@@ -943,6 +943,51 @@ const num = t => {
               + `drifted - check new build capital first.`);
       }
 
+      // ── MULTI-TARIFF VALIDATION ───────────────────────────────────────────
+      // Added 10 Sep 2026. Matching one published tariff is weak evidence when a factor in
+      // the build was derived from that same tariff. Eskom publishes several with known
+      // relationships, and a structure that reproduces the RELATIONSHIPS is testing
+      // something the level check cannot.
+      //
+      // From NERSA's Reasons for Decision, 18 Feb 2025:
+      //   Homelight 20A   191.69 c/kWh flat, no fixed charge, SUBSIDISED
+      //   Homelight 60A   243.68 c/kWh flat, no fixed charge, SUBSIDISED
+      //   Homepower 4     energy plus R554/month fixed, pays subsidy
+      //   Homeflex        six TOU rates, same fixed charges as Homepower
+      //
+      // The orderings these imply are structural, not fitted:
+      //   Homelight 20A < Homelight 60A            lifeline below standard prepaid
+      //   Homeflex annual average < Homepower flat  TOU beats flat at average usage
+      //   Homeflex peak > Homepower flat            or the peak signal does nothing
+      {
+        const mt = run(`
+          const d = retailHourly(); if (!d) return { err: 'no panel' };
+          const t = RETAIL_T, R = t.homeflex.rates_r_per_kwh_2024_25;
+          const m = a => a.reduce((x, y) => x + y, 0) / a.length;
+          return { hl20: t.homelight20a ? t.homelight20a.energy_r_per_kwh : 1.9169,
+                   hl60: t.homelight60a ? t.homelight60a.energy_r_per_kwh : 2.4368,
+                   hp: m(d.flat), flexAvg: m(d.flex),
+                   flexPeak: R.high_season_peak, flexOff: R.high_season_offpeak };
+        `);
+        if (mt && !mt.err && mt.hp){
+          check('Homelight 20A prices below Homelight 60A',
+                mt.hl20 < mt.hl60,
+                `${mt.hl20} against ${mt.hl60} c/kWh. The 20A lifeline tariff carries the `
+                + `larger cross-subsidy and must sit below the 60A.`);
+          check('the Homeflex annual average sits below the Homepower flat rate',
+                mt.flexAvg < mt.hp,
+                `Homeflex averages R${mt.flexAvg.toFixed(2)} against Homepower's `
+                + `R${mt.hp.toFixed(2)}. A time-of-use tariff that costs MORE than flat at `
+                + `average usage would give nobody a reason to take it - and every rooftop `
+                + `PV household is required to.`);
+          check('the Homeflex peak sits well above the flat rate',
+                mt.flexPeak > mt.hp * 1.3,
+                `peak R${mt.flexPeak} against flat R${mt.hp.toFixed(2)}. NERSA set the `
+                + `peak-to-standard ratio at 1:6; if the peak is not materially above flat, `
+                + `the six rates have been read wrongly.`);
+        }
+      }
+
       // ── NEW-BUILD CAPITAL, PINNED AGAINST A HAND COMPUTATION ──────────────
       // The Australian check above validates the METHOD and is deliberately loose at 15%.
       // It is not a component detector: a tenfold error in battery augmentation moves the
