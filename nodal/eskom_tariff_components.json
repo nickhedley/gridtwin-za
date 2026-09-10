@@ -1,0 +1,60 @@
+{
+ "meta": {
+  "description": "Eskom residential tariff components, used by the shadow dynamic retail price panel. Every figure is from Eskom's published Schedule of Standard Prices; nothing here is modelled.",
+  "source": "Eskom Schedule of Standard Prices for the 2026/27 financial year, effective 1 April 2026, published after NERSA's MYPD6 decision of 5 March 2026. Direct-customer rates, 8.76% average increase.",
+  "vat": "All figures INCLUDE VAT at 15% unless a field name says otherwise.",
+  "phase_in": "Eskom is moving residential cost recovery from energy charges to fixed charges over three years. Service and administration went from 33.33% fixed in FY2026 to 66.66% in FY2027. The Generation Capacity Charge went from 20% to 30%. The remainder of each sits inside the energy charge. The ERTSA application for 2027/28, gazetted 4 Sep 2026, continues this.",
+  "why_this_file_exists": "The shadow retail price needs the components a household actually pays, not a single average rate. It also lets the fixed/variable split be modelled as a scenario rather than asserted - see the frozen and completed cases in RESULTS.md.",
+  "caveat_municipal": "Homepower and Homelight are ESKOM DIRECT tariffs. Municipal customers buy from their distributor at a bulk rate and pay that distributor's own structure and markup, which varies by an order of magnitude between metros. Do not present an Eskom-direct figure as a national household price.",
+  "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "GridTwin ZA - nickhedley.github.io/gridtwin-za"
+ },
+ "homepower4": {
+  "description": "Standard residential, 80 A single-phase, no grid-tied generation. The most common Eskom-direct residential tariff.",
+  "energy_r_per_kwh": 3.5556,
+  "energy_is_flat": true,
+  "energy_note": "Flat rate. The same at 03:00 as at 18:00, and the same in July as in January. This is the quantity a dynamic tariff would replace.",
+  "fixed_r_per_day": {
+   "network_capacity": 10.44,
+   "service_and_admin": 6.6,
+   "generation_capacity": 0.82
+  },
+  "fixed_r_per_month": 536.0,
+  "phase_in_status": {
+   "service_and_admin_fixed_pct": 66.66,
+   "generation_capacity_fixed_pct": 30.0,
+   "network_capacity_fixed_pct": 100.0,
+   "note": "At 100% the service and administration charge is R9.90/day and the generation capacity charge R2.73/day. R5.21/day, about R159/month, has still to move from energy to fixed."
+  },
+  "fixed_r_per_month_note": "R17.86/day x 30 = R535.8, quoted as R536. Eskom bills per day, so a 31-day month is R553.7 and a 28-day month R500.1. The monthly figure is a convenience for comparison, not a charge - use fixed_r_per_day for anything computed."
+ },
+ "homeflex": {
+  "description": "Time-of-use residential. REQUIRED for any household with grid-tied generation, so every rooftop PV customer is on it.",
+  "winter_peak_r_per_kwh": 8.471,
+  "offpeak_r_per_kwh": 1.9083,
+  "peak_definition": "June to August, 06:00-09:00 and 17:00-20:00 on weekdays",
+  "note": "The existing evidence that South African households CAN be exposed to time-varying prices. The winter peak is 4.4x the off-peak rate, a wider spread than most dynamic tariffs abroad."
+ },
+ "homelight60a": {
+  "description": "Prepaid, 60 A, no fixed charge at all.",
+  "energy_r_per_kwh": 3.4361,
+  "fixed_r_per_month": 0.0,
+  "note": "Beats Homepower 4 at every realistic consumption level for eligible households, precisely because there is no fixed charge to absorb. A household on Homelight has nothing to gain from a dynamic tariff's fixed component and everything from its energy component."
+ },
+ "reference_octopus_agile": {
+  "description": "Britain's most-cited dynamic tariff, included as a published comparator rather than a target. Its formula is public, which is the standard this model holds itself to.",
+  "standing_charge_p_per_day": [
+   40,
+   65
+  ],
+  "peak_uplift_p_per_kwh": [
+   10,
+   14
+  ],
+  "peak_window": "16:00-19:00 daily, regional",
+  "fixed_share_typical_household_pct": 24,
+  "typical_consumption_kwh_per_year": 2700,
+  "structure": "day-ahead wholesale, half-hourly, plus regional network costs, plus a peak uplift, plus margin, plus VAT, subject to a cap",
+  "note": "The standing charge is NOT dynamic. That is the honest limit on what any dynamic tariff can shift, and it matters more in South Africa: a 200 kWh Homepower household is already at 43% fixed against Octopus's 24%."
+ }
+}

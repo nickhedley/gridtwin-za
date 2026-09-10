@@ -735,5 +735,43 @@ try {
   }
 }
 
+// ── ESKOM TARIFF COMPONENTS MUST AGREE WITH THEMSELVES ─────────────────────
+// Added 10 Sep 2026 for the shadow retail price panel. Every figure in this file is from
+// Eskom's published Schedule of Standard Prices, so the only thing that can go wrong is a
+// partial update - a new April schedule landing in one field and not another.
+//
+// The phase-in percentages and the daily charges are two statements of the same fact, so
+// they can be checked against each other: service and admin at 66.66% of R9.90 is R6.60.
+{
+  let t = null;
+  try {
+    t = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'nodal', 'eskom_tariff_components.json'), 'utf8'));
+  } catch (e) { t = null; }
+  if (!t) {
+    check('eskom_tariff_components.json is readable', false, 'missing or unparseable');
+  } else {
+    const hp = t.homepower4 || {};
+    const f = hp.fixed_r_per_day || {};
+    const daily = (f.network_capacity || 0) + (f.service_and_admin || 0)
+                + (f.generation_capacity || 0);
+    check('Homepower daily charges reconcile with the monthly figure',
+          Math.abs(daily * 30 - (hp.fixed_r_per_month || 0)) < 2,
+          `R${daily.toFixed(2)}/day x 30 = R${(daily*30).toFixed(0)} against a stated `
+          + `R${hp.fixed_r_per_month} - Eskom bills per DAY, so the monthly figure is a `
+          + `convenience and must be derived from it, not set independently.`);
+
+    const ps = hp.phase_in_status || {};
+    const saFull = (f.service_and_admin || 0) / ((ps.service_and_admin_fixed_pct || 100) / 100);
+    const gcFull = (f.generation_capacity || 0) / ((ps.generation_capacity_fixed_pct || 100) / 100);
+    const move = (saFull - (f.service_and_admin || 0)) + (gcFull - (f.generation_capacity || 0));
+    check('the phase-in percentages and daily charges tell the same story',
+          move > 4 && move < 7,
+          `R${move.toFixed(2)}/day still to move from energy to fixed. RESULTS.md quotes `
+          + `R5.21/day, about R159/month. If a new April schedule changed one field and not `
+          + `the other, this is where it shows.`);
+  }
+}
+
 console.log(`\n${pass}/${pass + fail} checks passed` + (pending ? `, ${pending} pending` : ''));
 if (fail) process.exit(1);

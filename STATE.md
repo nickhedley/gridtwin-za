@@ -9574,6 +9574,56 @@ ingest and on item 18, since a dynamic price is a claim about WHEN power is chea
 diurnal shape is where our data is weakest. **The fixed/variable half needed neither**, which
 is why it shipped first.
 
+## unblocking the shadow retail panel - 10 Sep 2026
+
+Both blockers cleared. The panel itself is next.
+
+### blocker 1: the diurnal wind shape. NOT a blocker, measured.
+
+I wrote that a dynamic price is a claim about WHEN power is cheap and should not ship while
+the wind diurnal shape is wrong. That was the right worry and the wrong conclusion.
+
+**What actually drives the daily price shape:**
+
+```
+component   contribution to net-load swing   status
+demand                      5,777 MW         Eskom measured, correct
+solar                       2,249 MW         PVGIS, timezone fixed 10 Sep
+wind                          637 MW         the series with the known error
+```
+
+Wind is **12.9%** of the swing. Applying the full three-hour best-fit correction to the wind
+series and re-running:
+
+```
+daily price shape correlation    0.967
+mean hourly difference           R18/MWh on a R808 mean, 2.2%
+peak hour                        19 either way
+trough hour                      2 -> 0
+```
+
+**A 2% effect on the quantity the panel exists to show.** The wind shape error is real and
+still worth fixing, but it does not block this. The panel should state it anyway.
+
+### blocker 2: the ERTSA schedule. Ingested.
+
+`nodal/eskom_tariff_components.json`, from Eskom's Schedule of Standard Prices 2026/27.
+Homepower 4 with its three fixed components and the flat energy rate, Homeflex time-of-use,
+Homelight with no fixed charge, and Octopus Agile as a published comparator.
+
+Nothing in it is modelled. `validate_capacity` 31 -> 33 asserts the daily charges reconcile
+with the monthly figure and that the phase-in percentages agree with the daily charges -
+the failure mode is a new April schedule landing in one field and not another.
+
+### what the panel still needs decided
+
+- a municipal markup, or the choice to show Eskom-direct only and say so
+- a cap, so shortage hours at the value of lost load do not reach a household figure
+- a retail margin, which stays an import from Octopus and Nordic suppliers
+- whether to show Homepower, Homeflex and Homelight side by side - Homeflex already exposes
+  households to a 4.4x winter peak-to-offpeak spread, so it is the honest baseline for
+  "could South Africans handle a dynamic tariff", and the answer is that some already do
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
