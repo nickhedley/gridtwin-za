@@ -885,7 +885,14 @@ const num = t => {
         const keep = JSON.parse(JSON.stringify(state));
         yr.value = 2026; run();
         const d = retailHourly(); const m = a => a.reduce((x, y) => x + y, 0) / a.length;
-        const out = d ? { dyn: m(d.dyn), flat: m(d.flat) } : { err: 'no panel' };
+        // HOMEPOWER TOTAL, not its energy rate. Since the residential allocation came from
+        // the CTS study it covers network and retail as well as energy, so the panel now
+        // prices the WHOLE residential cost. Comparing that to Homepower's energy charge
+        // alone omits the R536/month of fixed charges and reads 15% high.
+        const HPT = RETAIL_T.homepower4;
+        const perKwhTotal = HPT.energy_r_per_kwh + HPT.fixed_r_per_month / 900;
+        const out = d ? { dyn: m(d.dyn), flat: perKwhTotal, energyOnly: m(d.flat) }
+                      : { err: 'no panel' };
         yr.value = keepY; Object.assign(state, keep); run();
         return out;
       `);
@@ -922,7 +929,9 @@ const num = t => {
         // supply route. Running it against the municipal default was comparing a bill that
         // includes a municipal margin against one that does not.
         reset(); yr.value = 2026; st.checked = true; run();
-        const at2026 = m(retailHourly().dyn), homepower = m(retailHourly().flat);
+        const at2026 = m(retailHourly().dyn);
+        const HPT2 = RETAIL_T.homepower4;
+        const homepower = HPT2.energy_r_per_kwh + HPT2.fixed_r_per_month / 900;
         reset();
         Object.assign(state, { coalDecomMW: 32000, newWindMW: 20000, newPvMW: 25000,
           newBattMW: 12000, newBattHours: 4, newCcgtMW: 8000, newRooftopMW: 5000, drShiftPct: 7.5 });
@@ -946,13 +955,23 @@ const num = t => {
         // something. It tests less than it did.
         //
         // The ratio that would close the gap exactly is 1.34. Using 1.29 leaves 6%
-        // unexplained, and that 6% is the honest measure of what this check is worth.
-        // Tightening the band would be fitting the model to its own validation.
-        check('at 2026 the panel reproduces the published tariff, Eskom direct',
+        // CIRCULARITY REMOVED 10 Sep 2026. The residential allocation was 1.29, derived as
+        // Homepower's energy rate over Eskom's average price - two published figures, but one
+        // of them was the tariff this check compares against. It now comes from Eskom's
+        // 2024/25 cost-to-serve study, Table 42: category C12 urban residential at 320.33
+        // c/kWh against a system total of 197.45, a ratio of 1.622.
+        //
+        // A cost study, not a tariff. Homepower is now a genuinely independent check, and
+        // the agreement is 1% rather than 6%.
+        check('at 2026 the panel reproduces the published tariff',
               Math.abs(vy.at2026 / vy.homepower - 1) < 0.08,
-              `R${vy.at2026.toFixed(2)} at scenario year 2026 against Homepower's `
-              + `R${vy.homepower.toFixed(2)}. The year must add nothing at its origin - if it `
-              + `does, a run-off or expiry is firing when dy is zero.`);
+              `R${vy.at2026.toFixed(2)} at scenario year 2026 against Homepower's all-in `
+              + `R${vy.homepower.toFixed(2)}/kWh at 900 kWh - energy plus R536/month of fixed `
+              + `charges. Since the residential allocation came from Eskom's cost-to-serve `
+              + `study it covers network and retail too, so the panel prices the WHOLE `
+              + `residential cost and must be checked against the whole tariff. The year must `
+              + `add nothing at its origin - if it does, a run-off or expiry is firing when `
+              + `dy is zero.`);
         const move = 100 * (vy.gasFirmed / vy.at2026 - 1);
         check('a gas-firmed high-renewables build does not move the bill much',
               Math.abs(move) < 15,
@@ -1005,6 +1024,32 @@ const num = t => {
                 `peak R${mt.flexPeak} against flat R${mt.hp.toFixed(2)}. NERSA set the `
                 + `peak-to-standard ratio at 1:6; if the peak is not materially above flat, `
                 + `the six rates have been read wrongly.`);
+        }
+      }
+
+      // ── MUNICIPAL TARIFFS TRACK ESKOM'S APPROVED INCREASE ─────────────────
+      // Added 10 Sep 2026 from three years of the AMMP database. Matched by tariff ID so it
+      // is the SAME tariff over time - comparing medians across years measures which tariffs
+      // happen to be in the database, not what prices did. That first attempt showed +185%
+      // and was pure sample composition.
+      //
+      // 42 matched residential tariffs rose 9.0% into 2026/27 against NERSA's 8.76% approved
+      // for Eskom. Municipalities pass the bulk increase through closely, which is what makes
+      // the bulk purchase price the right driver of municipal retail prices.
+      {
+        const tt = run(`
+          const t = RETAIL_T.municipal && RETAIL_T.municipal.tariff_trend;
+          return t ? { muni: t.same_tariff_median_increase_pct['2025_to_2026'],
+                       eskom: t.nersa_approved_eskom_pct['2026_27'] } : { err: 'no trend' };
+        `);
+        if (tt && !tt.err && tt.muni){
+          check('municipal tariff increases track the approved Eskom increase',
+                Math.abs(tt.muni - tt.eskom) < 3,
+                `municipal residential rose ${tt.muni}% into 2026/27 against NERSA's `
+                + `${tt.eskom}% for Eskom, ${(tt.muni - tt.eskom).toFixed(2)} points apart. `
+                + `A wide gap would mean municipal prices are driven by something other than `
+                + `the bulk purchase cost, and the panel's use of bulk as the driver would `
+                + `need revisiting.`);
         }
       }
 

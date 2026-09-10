@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Forty-six sections follow. This index exists because the file passed 1,400 lines and the
+Forty-eight sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3815,3 +3815,68 @@ dispatchable energy sent out      190.81 TWh   excludes wind and solar IPPs
 The panel wants the first. An earlier version used the third and every component was 9% high
 as a result. Modelled sales are 204 TWh - generation less rooftop self-consumption, storage
 throughput and exports - which is 2.6% off the right basis and now asserted.
+
+---
+
+## The circularity is gone
+
+10 Sep 2026. The residential allocation was the last thing in the panel derived from the
+tariff it is validated against. Eskom's 2024/25 cost-to-serve study replaced it.
+
+```
+Table 42, category C12 : 500 U RES, urban residential <500V
+  energy ToU                    182.51 c/kWh
+  legacy charge                  20.21
+  total average unit cost       320.33 c/kWh
+  system total                  197.45 c/kWh
+  allocation                      1.622
+```
+
+**A cost study, not a tariff.** The old factor was 1.29, derived as Homepower's energy rate
+over Eskom's average price - two published figures, but one of them was the thing being
+checked against. Homepower is now genuinely independent.
+
+The new factor is 26% higher, so the panel had been understating residential cost. Allocation
+is on cost causation: supply voltage, location density, load profile and points of delivery.
+
+### and the check had to change with it
+
+The CTS allocation covers network and retail as well as energy, so the panel now prices the
+WHOLE residential cost. Checked against Homepower's energy charge alone it read 15% high;
+against the full tariff it is 1% apart.
+
+```
+panel, 2026                    R4.11/kWh
+Homepower total at 900 kWh     R4.15/kWh   energy R3.5556 plus R536/month fixed
+```
+
+**One per cent, with nothing calibrated to it.**
+
+### the CTS also confirms the time-of-use finding
+
+Table 18 records that the 1:6 ratio is "proposed by the System Operator", with a separate
+annexure motivating it. It is an administered signal, not a measured cost ratio - which is
+why Homeflex prices the winter peak about three times more steeply than modelled cost.
+
+## Municipal tariffs track Eskom's approved increase
+
+Three years of the AMMP database, matched by tariff ID so it is the SAME tariff over time.
+
+```
+transition      matched   median rate increase
+2025 -> 2026         42                   9.0%
+NERSA approved for Eskom, 2026/27         8.76%
+```
+
+**A quarter of a point apart.** Municipalities pass the bulk increase through closely, which
+is what makes the bulk purchase price the right driver of municipal retail prices.
+
+Comparing medians across years instead showed +185% and was pure sample composition - the
+database holds 52 residential tariffs for 2025/26 and 245 for 2026/27, so the median moved
+with coverage, not with prices.
+
+Fixed charges rose 9.0% too, so the fixed-charge SHARE held steady. Eskom's own phase-in is
+moving its share up; municipal distributors in this sample were not.
+
+The 2026 to 2027 figure of 19.2% rests on 22 tariffs against an approved 8.83% and should not
+be quoted without checking which municipalities filed early.

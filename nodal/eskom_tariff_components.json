@@ -156,8 +156,8 @@
   "eskom_retail_distribution_basis": "The last-mile share of Eskom Distribution: the reticulation, metering and customer service a municipal distributor provides for itself. NERSA's approved distribution allowance is about R0.61/kWh over 209.55 TWh; roughly half is sub-transmission and bulk supply that a municipality still buys from Eskom, and roughly half is the retail function it replaces. Removed from the cost base for a municipal customer, who pays their own municipality for it through the markup. ASSUMPTION on the 50/50 split - NERSA publishes distribution allowances but not this cut.",
   "tdp_grid_r_per_kw_of_re": 6964,
   "tdp_grid_basis": "Eskom's Transmission Development Plan is R390bn for 56 GW of connection capacity, R6,964m per GW. The model's own connection rate gives about a third of that, and its cost decomposition already labels transmission 'partial'. The panel now annualises the TDP rate over 40 years at 8% against the scenario's new wind and PV, which is the published figure rather than an inferred one.",
-  "residential_allocation_factor": 1.29,
-  "residential_allocation_basis": "NERSA's allowed revenue is an average across ALL customers. Residential pays well above it: Eskom's average standard-tariff price for 2026/27 is 240.28 c/kWh while Homepower 4's energy charge is 309.2 c/kWh excluding VAT - a 29% premium. That is cost-to-serve, and every regulator allocates it: low voltage, low load factor, and metering and billing spread over few units. Large industrial customers on Megaflex pay BELOW the average for the same reason in reverse. FOUND 10 Sep 2026 when the municipal markup became a switch: with the markup removed for an Eskom-direct customer the panel came out 25% under Homepower, which showed the 40% markup had been silently carrying this allocation as well as a municipal margin.",
+  "residential_allocation_factor": 1.622,
+  "residential_allocation_basis": "FROM ESKOM'S OWN COST TO SERVE STUDY, 2024/25, Table 42. Category C12 '500 U RES' - urban residential below 500V - carries a total average unit cost of 320.33 c/kWh against a system total of 197.45 c/kWh. That ratio is 1.622. Allocation is on cost-causation principles: supply voltage, location density, load profile and points of delivery. REPLACES a factor of 1.29 derived as Homepower's energy rate over Eskom's average price - two published figures, but one of them was the tariff the panel is validated against. That was partly circular and is now not: the allocation comes from a cost study and Homepower stays free as an independent check. The new factor is 26% higher, so the panel had been understating residential cost.",
   "cts_allocation": {
    "description": "Eskom's Cost to Serve study allocates NERSA's allowable revenue to customer categories on cost-causation principles: supply voltage, location density, load profile, and number of points of delivery.",
    "source": "NERSA Reasons for Decision, Eskom Retail Tariff Plan, 18 Feb 2025, sections 8.1 and 8.9.",
@@ -173,7 +173,19 @@
    "2029": 19.7
   },
   "rca_schedule_basis": "The R54bn RAB settlement is liquidated on a PUBLISHED schedule, not a single expiry: R12bn in 2026/27, R23bn in 2027/28 and R19.7bn thereafter. Parliament's Committee on Electricity and Energy briefing, NERSA, 2026. Tariff impact 3.4% in 2026/27 and 2.64% in 2027/28 - the difference between the original 5.36% and the final 8.76%. Replaces the single rca_ends_fy cutoff, which treated a three-year taper as a cliff.",
-  "rab_note": "The generation RAB itself is still not published at a level that supports a real depreciation schedule. NERSA's redetermination approved the depreciated replacement cost approach and revalued the generation RAB, but the Reasons for Decision give the revenue effect rather than the asset base and its remaining life. So the run-off below stays a linear approximation. What WOULD close it: the MYPD6 revenue decision tables, which are a separate document from the Retail Tariff Plan."
+  "rab_note": "The generation RAB itself is still not published at a level that supports a real depreciation schedule. NERSA's redetermination approved the depreciated replacement cost approach and revalued the generation RAB, but the Reasons for Decision give the revenue effect rather than the asset base and its remaining life. So the run-off below stays a linear approximation. What WOULD close it: the MYPD6 revenue decision tables, which are a separate document from the Retail Tariff Plan.",
+  "cts_residential_detail": {
+   "category": "C12 : 500 U RES, urban residential <500V",
+   "energy_tou_c_per_kwh": 182.51,
+   "legacy_charge_c_per_kwh": 20.21,
+   "total_avg_unit_cost_c_per_kwh": 320.33,
+   "dx_network_r_per_kva": 59.7,
+   "retail_r_per_pod_day": 9.24,
+   "system_total_c_per_kwh": 197.45,
+   "source": "Eskom 2024/25 Standard tariffs cost-to-serve study, Table 42, page 57.",
+   "caveat": "2024/25 study. NERSA's Reasons for Decision notes the CTS functionalises revenue as 86/4/10 across Generation, NTCSA and Distribution against its own MYPD6 apportionment of 62/28/10, calls that a material inconsistency and imposes ring-fencing conditions. The customer-category allocation is still the best published source for this factor; the business-level split is not."
+  },
+  "cts_confirms_administered_ratio": "Table 18 of the CTS records that the 1:6 time-of-use ratio is 'proposed by the System Operator', with Annexure 9 giving the motivation. It is an administered signal, not a measured cost ratio - which is why Homeflex prices the winter peak about three times more steeply than modelled cost."
  },
  "cross_subsidies": {
   "description": "Eskom's tariffs contain explicit cross-subsidies. These are TRANSFERS between customer categories, not costs of supply, and a cost-reflective shadow tariff should show them separately rather than fold them into a cost.",
@@ -419,6 +431,26 @@
    "bulk_discount_pct": 41,
    "basis": "Eskom Megaflex <=300 km <66kV, the structure Municflex is built from - NERSA's Retail Tariff Plan decision states Municflex rates are calculated by combining Megaflex, Miniflex, Nightsave and Ruraflex costs for local authority supplies. Crude time weighting: peak 3h, standard 10h, off-peak 11h. AMMP database, FY2026/27.",
    "conclusion": "Bulk is 41% below Homepower's energy charge excluding VAT. That is why most municipalities can price below Eskom direct while still adding their own margin, and it confirms that a 'municipal markup on Eskom's retail cost' was the wrong construction."
+  },
+  "tariff_trend": {
+   "description": "Same-tariff year-on-year increases across the database, residential only. Matched by tariff ID so the comparison is the SAME tariff over time, not a shifting sample - comparing medians across years measures which tariffs happen to be in the database, not what prices did.",
+   "same_tariff_median_increase_pct": {
+    "2024_to_2025": 12.4,
+    "2025_to_2026": 9.0,
+    "2026_to_2027": 19.2
+   },
+   "matched_tariffs": {
+    "2024_to_2025": 1,
+    "2025_to_2026": 42,
+    "2026_to_2027": 22
+   },
+   "nersa_approved_eskom_pct": {
+    "2025_26": 12.7,
+    "2026_27": 8.76,
+    "2027_28": 8.83
+   },
+   "finding": "Municipal residential tariffs rose 9.0% into 2026/27 against NERSA's 8.76% approved for Eskom - within a quarter of a point. Municipalities pass Eskom's bulk increase through closely, which supports treating the bulk purchase price as the driver of municipal retail prices. The 2024 to 2025 transition has ONE matched tariff and is not evidence. The 2026 to 2027 figure of 19.2% rests on 22 tariffs and is far above the approved 8.83%; it may be sample composition or early municipal filings and should not be quoted without checking which municipalities.",
+   "fixed_charges_track_energy": "Fixed charges rose 9.0% into 2026/27, the same as energy rates - so the fixed-charge SHARE of a bill held steady rather than climbing. Eskom's own phase-in is moving its share up; municipal distributors in this sample were not doing the same in that year."
   }
  }
 }
