@@ -861,11 +861,12 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             </div>
             <div class="pb" style="padding:8px 12px 2px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
               <label style="font-size:10.5px;color:var(--ink2)">
-                <input id="retCap" type="checkbox" checked onchange="renderRetail()"> Apply price cap
+                <input id="retCap" type="checkbox" checked onchange="renderRetail()">
+                Apply R12.84 cap
               </label>
-              <label style="font-size:10.5px;color:var(--ink2)" title="When coal retires early, do consumers keep paying for it?">
+              <label style="font-size:10.5px;color:var(--ink2)" title="Ticked: consumers keep paying for closed plant until its asset base runs off, which is what a regulated asset base does. Unticked: the cost leaves with the plant and the fiscus carries it. Worth about 5% of a bill.">
                 <input id="retStranded" type="checkbox" checked onchange="renderRetail()">
-                Retired coal stays in the asset base
+                Retired coal still repaid via tariffs
               </label>
               <label style="font-size:10.5px;color:var(--ink2)" title="The year the scenario's system is costed at. Technology costs decline to it, the existing asset base runs off toward it, one-off recoveries expire before it.">Scenario year
                 <input id="retYear" type="range" min="2026" max="2040" step="1" value="2035"
@@ -14421,7 +14422,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11b';
+const BUILD_STAMP = '2026-09-11c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
