@@ -186,3 +186,59 @@ kept gas as backup would look very different and is the more useful next test.
 One process finding: the scenario-response check existed, then vanished when its surrounding
 block was replaced during the rebuild, and nothing noticed. the state file already names this
 failure mode for `eng5`. It happened again here.
+
+---
+
+## Confidence, stated directly
+
+Asked whether the methodology is now correct. Not fully, and the doubt is specific.
+
+```
+item                                        confidence
+structure: bottom-up from allowed revenue   high     it is how a tariff is built
+today's level, R3.66 vs R3.56               high     within 3%, no calibration
+fuel and carbon from dispatch               high     R107.7bn vs Eskom R110.7bn
+direction under decarbonisation             high     same sign as system cost
+demand response adequacy                    high     tested against the literature
+gas-firmed scenario at +10%                 medium   right order; the gaps below apply
+no-gas scenario at +52%                     low      three gaps, all pushing it up
+```
+
+### three gaps still open, all pushing the scenario figures the same way
+
+**The battery constant.** `acapBatt4h` is R1,500/kW-yr. The model's own EPC figure is
+R8,105/kW at four hours; annualised at 8% over 15 years that is R947. The constant is 40-60%
+above its own capex unless it carries augmentation and O&M, which nothing says. Batteries are
+R67bn of the Future mix's R258bn, so this is worth about R0.15/kWh.
+
+**A 2026 cost base under a future build.** The Future mix has 5% demand growth - a 2030-ish
+scenario - and is costed on today's revenue requirement. RCA recoveries (R14.4bn) are a
+one-off clawback. Arrear debt (R7.7bn) is municipal non-payment, not a cost of supply. And
+the existing fleet's depreciation runs off as plant ages. Roughly R0.30/kWh of today's bill
+does not belong in a 2035 bill.
+
+**Today's technology prices for a future build.** `acap*` are 2026 costs. The model already
+carries `BLD_COST` with real decline rates - wind 2.9%, PV 3.9%, batteries 5.0% a year - and
+the capacity-expansion LPs use them. The retail panel does not. At 2035 prices the Future
+mix's capital falls 28%, from R1.05 to R0.75/kWh.
+
+And the two cost families disagree on today: `BLD_COST` annualised gives wind R1,967/kW-yr,
+`acapWind` is 1,650. RULES.md records that the model carries four cost representations. The
+retail panel picked one without checking it against the others.
+
+### what the three gaps do together
+
+Corrected, they would take the no-gas case from about +52% to +20-25%, and the gas-firmed
+case from +10% to near zero. That would put the gas-firmed result squarely on the Australian
+finding, which is the external check this panel has.
+
+### what fixing them needs
+
+The decline rates are a small change: use `BLD_COST` with a scenario year. The battery
+constant needs its provenance read before it is touched. The cost-base gap is harder: the
+model is a single-year snapshot with no concept of when a scenario happens, and a proper fix
+needs a year, a depreciation schedule and a demand trajectory. That is an architectural
+decision, not a component fix, and it should be taken deliberately.
+
+**Until then the scenario figures are upper bounds.** The panel should say so, and the
+gas-firmed case is the one to quote.

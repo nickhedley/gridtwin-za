@@ -6352,15 +6352,22 @@ a source; at present it has neither.
     markets is an assumption, not a measurement.
 
 
-28. ~~Shadow dynamic retail price.~~ **BUILT 10 Sep 2026.** Panel `nav-retail`, hourly,
-    three tariffs side by side. Both blockers cleared first: the wind diurnal error moves it
-    2%, and the ERTSA components are ingested as `nodal/eskom_tariff_components.json`.
+28. **Shadow dynamic retail price - built, reviewed, and three gaps open.** Panel
+    `nav-retail`, bottom-up from NERSA's allowed revenue, with a stranded-asset control and
+    a representative week. Today lands at R3.66 against Homepower's R3.56 with no
+    calibration. Reviewed twice on 10 Sep; the review reversed the conclusion once and was
+    itself corrected once. `review_retail_methodology.md` has the full trail.
 
-    **The finding: a cost-reflective dynamic tariff would be calmer than Homeflex.** 1.6x
-    against 4.4x, because every component except energy is flat across the day.
+    **Three gaps remain, all pushing scenario figures up:** `acapBatt4h` at 1,500 is 40-60%
+    above its own capex annualised; today's one-off recoveries (RCA, arrears) are carried
+    into a future bill; and new build is priced at 2026 rates when `BLD_COST` already
+    carries decline curves the LPs use. Together they would take the no-gas case from +52%
+    to +20-25% and the gas-firmed case from +10% to near zero - which is the Australian
+    result. Scenario figures are upper bounds until these are fixed; the gas-firmed case is
+    the one to quote.
 
-    Still open: the panel is Eskom-direct only. A municipal customer buys from a distributor
-    with its own structure, and the markup slider approximates that rather than modelling it.
+    The cost-base gap needs a year, a depreciation schedule and a demand trajectory. The
+    model is a single-year snapshot. That is an architectural decision to take deliberately.
 29. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
     4 Sep 2026.** The gate the scope set - does Eskom publish CSP separately - was answered
     by a dataset the user obtained: **ESK19679, 38,736 hours from April 2022 to August 2026**,

@@ -12000,7 +12000,10 @@ function renderRetail(){
     + `and 134&nbsp;TWh a year of curtailment; it raises a bill by about half. A build on `
     + `Australia's principle \u2013 60% renewables, gas kept for firming, demand response on `
     + `\u2013 moves it by about 10%, or not at all if retired coal is written off. `
-    + `<strong>The no-gas case is a stress test, not a decarbonisation plan.</strong><br><br>`
+    + `<strong>The no-gas case is a stress test, not a decarbonisation plan.</strong> `
+    + `Scenario figures are upper bounds: new-build capital is priced at 2026 rates without `
+    + `the model's own decline curves, and today's one-off recoveries are carried forward. `
+    + `See the methodology review.<br><br>`
     + `<strong>The week view shows what the daily curve hides.</strong> Averaging every day of `
     + `the year into 24 points flattens a still winter evening into a mild bump. Hour by hour, `
     + `the same tariff runs from R${Math.min(...d.week).toFixed(2)} to `
@@ -14313,7 +14316,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10j';
+const BUILD_STAMP = '2026-09-10k';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

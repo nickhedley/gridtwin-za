@@ -3536,6 +3536,45 @@ response on - moves a bill by 10%, or not at all if retired coal is written off.
 Australian result, reproduced here. The no-gas case is a stress test, and the panel now says
 so.
 
+### demand response does not rescue it, and the reason is the finding
+
+Challenged again: perhaps the retail figure is high because the model's demand response is
+too timid for a nation on dynamic pricing. Tested against the literature and against the
+model.
+
+The literature - Faruqui and Sergici, 337 treatments from 63 pilots - puts peak reduction at
+3-6% for time-of-use, 13-20% for critical peak pricing, and 27-44% with enabling technology.
+The model's slider moves up to 30% of DAILY ENERGY out of the six highest hours, which is
+roughly a 100% peak reduction at maximum. It is above the literature, not below it.
+
+Then the leanest no-gas build that keeps unserved energy under NTCSA's 20 GWh threshold, at
+each level of response:
+
+```
+DR level    leanest build   retail   vs today
+0%                    90%    R5.23       +43%
+10%                   90%    R5.22       +43%
+20%                   80%    R4.90       +34%
+30%                   80%    R4.89       +34%
+```
+
+**Response above the top of the literature trims the build by a tenth and the bill from +43%
+to +34%.** It does not approach the Australian result.
+
+**Because the no-gas build is sized for winter energy, not for daily peaks.** This file
+already records that 2 TWh of iron-air storage changes July by nothing: there is no surplus
+to store, the deficit is a seasonal energy shortage, not a shifting problem. Demand response
+is a shifting tool. It moves load across the hours of a day. It cannot move July into
+October.
+
+That is why Australia's 82% target does not raise prices much: roughly 10 GW of gas firms the
+droughts. Remove the gas and no amount of daily flexibility substitutes for it.
+
+The model's demand response has real limitations - no conservation effect, within-day only, a
+net-load proxy rather than a price, and no investment response - and none of them bears on
+the binding constraint. They are recorded in the scope document as improvements worth making
+for other reasons.
+
 ### the week view
 
 A 168-hour representative week, winter or summer, on the same basis as the daily curve. The

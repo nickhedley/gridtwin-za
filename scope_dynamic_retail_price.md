@@ -287,3 +287,24 @@ The generation, transmission and distribution split above is from NERSA's MYPD6 
 Eskom's revenue build-up. The Eskom build-up figures are the 2025/26 application, not the
 approved 2026/27 decision, so the proportions are right and the absolute figures need
 updating from the approved tables.
+
+---
+
+## Demand response: what the model lacks, and why it does not change the answer
+
+Reviewed 10 Sep 2026 against Faruqui and Sergici's Arcturus database. The model's
+`drShiftPct` is not timid - at its 30% maximum it removes roughly the whole six-hour peak,
+above anything the pilots measured. What it lacks:
+
+- **Conservation.** It only shifts. Dynamic prices also reduce total use; households with
+  rooftop PV cut grid draw 3-4% under critical peak pricing.
+- **Inter-day shifting.** EV charging, industrial batch processes and hot water with
+  storage move load across days, not just hours.
+- **A price signal.** It responds to net load, a proxy that is right on average and wrong on
+  any hour where scarcity and net load diverge.
+- **Investment response.** Sustained high prices drive rooftop PV, home batteries and
+  efficient appliances. The Future mix's 20 GW of rooftop is an input, not a response.
+
+All four are worth building. None bears on the no-gas scenario's cost, because that build is
+sized for a winter energy deficit that daily flexibility cannot reach. Tested: response at
+30% trims the leanest adequate build from 90% to 80% scale and the bill from +43% to +34%.
