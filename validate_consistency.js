@@ -897,19 +897,29 @@ const num = t => {
         const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value, keepS = st.checked;
         const fm = PRESETS['Future electricity mix'];
         const reset = () => { for (const k of Object.keys(fm)) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k]; };
-        reset(); yr.value = 2026; st.checked = true; run();
+        // Homepower is an ESKOM-DIRECT tariff, so the comparison must be made on that
+        // supply route. Running it against the municipal default was comparing a bill that
+        // includes a municipal margin against one that does not.
+        const sup = document.getElementById('retSupply'); const keepSup = sup.value;
+        reset(); yr.value = 2026; st.checked = true; sup.value = 'eskom'; run();
         const at2026 = m(retailHourly().dyn), homepower = m(retailHourly().flat);
         reset();
         Object.assign(state, { coalDecomMW: 32000, newWindMW: 20000, newPvMW: 25000,
           newBattMW: 12000, newBattHours: 4, newCcgtMW: 8000, newRooftopMW: 5000, drShiftPct: 7.5 });
-        yr.value = 2035; run();
+        yr.value = 2035; sup.value = 'eskom'; run();
         const gasFirmed = m(retailHourly().dyn);
-        Object.assign(state, keep); yr.value = keepY; st.checked = keepS; run();
+        Object.assign(state, keep); yr.value = keepY; st.checked = keepS; sup.value = keepSup; run();
         return { at2026, homepower, gasFirmed };
       `);
       if (vy && !vy.err && vy.at2026){
-        check('at 2026 the panel reproduces the published tariff',
-              Math.abs(vy.at2026 / vy.homepower - 1) < 0.10,
+        // Tightened from 10% to 8% on 10 Sep 2026 after the residential allocation factor
+        // was added. Before it, the panel matched Homepower only because a 40% "municipal
+        // markup" was silently carrying the residential cost-to-serve allocation as well as
+        // a municipal margin. Removing the markup for an Eskom-direct customer exposed a 25%
+        // shortfall, which is how the missing factor was found. The check passed for the
+        // wrong reason until then.
+        check('at 2026 the panel reproduces the published tariff, Eskom direct',
+              Math.abs(vy.at2026 / vy.homepower - 1) < 0.08,
               `R${vy.at2026.toFixed(2)} at scenario year 2026 against Homepower's `
               + `R${vy.homepower.toFixed(2)}. The year must add nothing at its origin - if it `
               + `does, a run-off or expiry is firing when dy is zero.`);

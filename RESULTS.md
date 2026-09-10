@@ -3543,6 +3543,46 @@ to the result. It is the panel's only external validation and it now passes.
 The no-gas case remains the outlier at +26%, down from +52% before the year. Still a stress
 test.
 
+### the municipal markup was hiding a missing cost allocation
+
+Closing the three open gaps on 10 Sep 2026, the markup became a switch - Eskom-direct or
+municipal - because applying a municipal margin to a cost base that already contains Eskom
+Distribution charged the same function twice.
+
+**Removing it for an Eskom-direct customer left the panel 25% under Homepower.** The 40%
+markup had been silently carrying a second job.
+
+NERSA's allowed revenue is an average across all customers. Residential pays well above it:
+Eskom's average standard-tariff price for 2026/27 is 240.28 c/kWh against Homepower's
+309.2 c/kWh excluding VAT, a **29% residential premium**. That is cost-to-serve - low voltage,
+low load factor, metering and billing spread over few units - and every regulator allocates
+it. Industrial customers on Megaflex sit below the average for the same reason in reverse.
+
+Now explicit as `residential_allocation_factor`. The validation tightened from 10% to 8% and
+compares Eskom-direct against Homepower, which is an Eskom-direct tariff:
+
+```
+route                          2026     Homepower actual
+Eskom direct                  R3.34                R3.56
+municipality at 40%           R3.84
+```
+
+**The check had been passing for the wrong reason** - one number doing two jobs, described as
+one of them.
+
+### the grid line now uses the published TDP rate
+
+R390bn for 56 GW is R6,964m per GW, annualised over 40 years at 8% against the scenario's new
+wind and PV. The model's own connection rate gave about a third of that and its cost
+decomposition already labelled the line partial. Worth R0.15/kWh on a gas-firmed 2035 bill.
+
+### what was left alone
+
+The RAB run-off stays a linear approximation to a long-lived residual. NERSA publishes the
+asset base by business in each MYPD decision and the real schedule should be read from there,
+but the difference is about R0.10/kWh - 3% - against R0.91 for the markup and R0.15 for the
+grid. Recorded rather than guessed at.
+
 ### the battery constant was not wrong, it was undocumented
 
 `acapBatt4h` at R1,500/kW-yr against a BLD_COST annuity of R947 looked like a 58% error.

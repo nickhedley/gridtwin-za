@@ -141,6 +141,12 @@
    "runoff_basis": "The existing fleet's depreciation and return run off as plant ages. Most coal is past half its regulatory life; Medupi and Kusile are not, and neither are the wires. A linear run-off from 100% in 2026 to a 35% floor by 2045 approximates the long-lived residual. ASSUMPTION - NERSA publishes the RAB by business in each MYPD decision and the schedule should be read from there.",
    "build_vintage": "midpoint",
    "vintage_basis": "A fleet costed at 2035 was not all bought in 2035. Reference practice prices each vintage at its commissioning year and sums. Without a build pathway the honest approximation is the midpoint between the base year and the scenario year. Stated on the panel."
-  }
+  },
+  "eskom_retail_distribution_r_per_kwh": 0.3,
+  "eskom_retail_distribution_basis": "The last-mile share of Eskom Distribution: the reticulation, metering and customer service a municipal distributor provides for itself. NERSA's approved distribution allowance is about R0.61/kWh over 209.55 TWh; roughly half is sub-transmission and bulk supply that a municipality still buys from Eskom, and roughly half is the retail function it replaces. Removed from the cost base for a municipal customer, who pays their own municipality for it through the markup. ASSUMPTION on the 50/50 split - NERSA publishes distribution allowances but not this cut.",
+  "tdp_grid_r_per_kw_of_re": 6964,
+  "tdp_grid_basis": "Eskom's Transmission Development Plan is R390bn for 56 GW of connection capacity, R6,964m per GW. The model's own connection rate gives about a third of that, and its cost decomposition already labels transmission 'partial'. The panel now annualises the TDP rate over 40 years at 8% against the scenario's new wind and PV, which is the published figure rather than an inferred one.",
+  "residential_allocation_factor": 1.29,
+  "residential_allocation_basis": "NERSA's allowed revenue is an average across ALL customers. Residential pays well above it: Eskom's average standard-tariff price for 2026/27 is 240.28 c/kWh while Homepower 4's energy charge is 309.2 c/kWh excluding VAT - a 29% premium. That is cost-to-serve, and every regulator allocates it: low voltage, low load factor, and metering and billing spread over few units. Large industrial customers on Megaflex pay BELOW the average for the same reason in reverse. FOUND 10 Sep 2026 when the municipal markup became a switch: with the markup removed for an Eskom-direct customer the panel came out 25% under Homepower, which showed the 40% markup had been silently carrying this allocation as well as a municipal margin."
  }
 }

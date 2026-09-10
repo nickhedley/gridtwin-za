@@ -860,9 +860,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               so this is what the hours are worth, not what anyone could charge.
             </div>
             <div class="pb" style="padding:8px 12px 2px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-              <label style="font-size:10.5px;color:var(--ink2)">Municipal markup
+              <label style="font-size:10.5px;color:var(--ink2)">Supplied by
+                <select id="retSupply" onchange="renderRetail()" style="font-size:10.5px">
+                  <option value="eskom">Eskom direct</option>
+                  <option value="muni" selected>a municipality</option>
+                </select>
+              </label>
+              <label style="font-size:10.5px;color:var(--ink2)" id="retMarkupWrap">Municipal markup
                 <input id="retMarkup" type="range" min="0" max="90" step="5" value="40"
-                       oninput="renderRetail()" style="vertical-align:middle;width:130px">
+                       oninput="renderRetail()" style="vertical-align:middle;width:110px">
                 <span id="retMarkupVal" class="mono" style="font-size:11px">40%</span>
               </label>
               <label style="font-size:10.5px;color:var(--ink2)">
@@ -11785,7 +11791,7 @@ fetch('nodal/eskom_tariff_components.json?v=' + (window.DATA_V || '7'))
 // Loss and levy constants, kept together so neither is duplicated at a call site.
 const RETAIL_LOSS = 0.10;    // technical and non-technical, Eskom reported
 
-function retailComponents(markup, stranded, year){
+function retailComponents(markup, stranded, year, viaMuni){
   // ── BOTTOM-UP, FROM NERSA'S ALLOWED REVENUE, AT A SCENARIO YEAR ──────────
   // Reviewed twice on 10 Sep 2026; see review_retail_methodology.md and scope_retail_gaps.md.
   // The year is what the second review added: every reference model that projects a tariff
@@ -11870,15 +11876,43 @@ function retailComponents(markup, stranded, year){
   const arrears = Y.arrears_in_tariff ? C.arrear_debt : 0;
   const fixedItems = rca + arrears + C.environmental_levy;
 
-  const newGrid = (r.txCapexR || 0) / salesMWh / 1000;
+  // NEW GRID at the TDP's own published rate, not the model's connection rate.
+  //
+  // The model computes _txCapexR from txRPerKWyr, which gave R0.07/kWh for a 97 GW build
+  // against R0.23 implied by the Transmission Development Plan - and its own cost
+  // decomposition already labels that line 'partial'. R390bn for 56 GW is R6,964m per GW,
+  // annualised over 40 years at 8%. Worth R0.15/kWh on a gas-firmed 2035 bill.
+  const tdpPerKw = A.tdp_grid_r_per_kw_of_re || 6964;
+  const newReMW = (P.newWindMW || 0) + (P.newPvMW || 0);
+  const gridCrf = 0.08 / (1 - Math.pow(1.08, -40));
+  const newGrid = newReMW * 1000 * tdpPerKw / 1000 * gridCrf / salesMWh / 1000;
 
-  return { fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
+  // A municipal customer buys at a BULK tariff. Eskom's own retail distribution margin - the
+  // last-mile network and customer service it would otherwise provide - is not in that bulk
+  // price; the municipality provides it and charges for it through the markup. Removing it
+  // here stops the same function being paid for twice.
+  const eskomRetailDist = (A.eskom_retail_distribution_r_per_kwh ?? 0.30);
+  const distAdj = viaMuni ? -eskomRetailDist : 0;
+
+  // RESIDENTIAL ALLOCATION. NERSA's allowed revenue is an average across all customers and
+  // residential pays well above it - Eskom's average standard-tariff price is 240.28 c/kWh
+  // against Homepower's 309.2 c/kWh excluding VAT. Cost-to-serve: low voltage, low load
+  // factor, metering and billing over few units. Industrial customers on Megaflex sit below
+  // the average for the same reason in reverse.
+  //
+  // Found when the municipal markup became a switch: removing it for an Eskom-direct
+  // customer left the panel 25% under Homepower, which showed the markup had been carrying
+  // this allocation silently as well as a municipal margin. Two jobs, one number, described
+  // as one of them.
+  const resAlloc = A.residential_allocation_factor || 1.0;
+
+  return { distAdj, resAlloc, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
            decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
-           salesTWh: salesMWh / 1e6 };
+           viaMuni, salesTWh: salesMWh / 1e6 };
 }
 
-function retailRaw(marginalP, markup, stranded, year){
-  const c = retailComponents(markup, stranded, year);
+function retailRaw(marginalP, markup, stranded, year, viaMuni){
+  const c = retailComponents(markup, stranded, year, viaMuni);
   const sp = RETAIL_T.shadow_tariff_parameters;
   // Only fuel and carbon vary by hour. Everything else is a capacity or obligation cost and
   // is flat - which is why adding them compresses the daily spread so heavily.
@@ -11887,11 +11921,12 @@ function retailRaw(marginalP, markup, stranded, year){
   const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
   const varTarget = c.fuel + c.carbon;
   const flat = c.opex + c.existingCap + c.newCap + c.newFom + c.decom + c.ipp + c.imports
-             + c.fixedItems + c.newGrid;
+             + c.fixedItems + c.newGrid + (c.distAdj || 0);
 
   return hod.map(w => {
     const variable = hodMean > 0 ? varTarget * (w / hodMean) : varTarget;
     let r = (variable + flat) / (1 - RETAIL_LOSS);
+    r = r * (c.resAlloc || 1);        // residential cost-to-serve, before any municipal margin
     r = r * (1 + markup);
     r = r + sp.retail_margin_r_per_kwh;
     return r * 1.15;
@@ -11901,8 +11936,23 @@ function retailRaw(marginalP, markup, stranded, year){
 function retailHourly(){
   if (!RETAIL_T || !lastRes || !lastRes.marginalP) return null;
   const t = RETAIL_T, sp = t.shadow_tariff_parameters, hp = t.homepower4;
+  // ── WHO SUPPLIES THE HOUSEHOLD ────────────────────────────────────────────
+  // The markup used to apply to the WHOLE Eskom cost, which already contains Eskom
+  // Distribution at roughly R0.67/kWh. That charged distribution twice for a municipal
+  // customer and charged a municipal margin to an Eskom-direct one. Worth R0.91/kWh on a
+  // gas-firmed 2035 bill - 26%, the largest thing in the panel after new-build capital,
+  // and a definitional error rather than an estimate.
+  //
+  // Now a switch. Eskom-direct pays Eskom's own cost with no markup. A municipal customer
+  // buys at a bulk tariff - Eskom's cost LESS its retail distribution margin - and then pays
+  // the municipality's own network and margin on top.
+  const supEl = document.getElementById('retSupply');
+  const viaMuni = supEl ? supEl.value === 'muni' : true;
   const mkEl = document.getElementById('retMarkup');
-  const markup = (mkEl ? +mkEl.value : sp.municipal_markup_pct) / 100;
+  const markup = viaMuni ? (mkEl ? +mkEl.value : sp.municipal_markup_pct) / 100 : 0;
+  const wrap = document.getElementById('retMarkupWrap');
+  if (wrap) wrap.style.opacity = viaMuni ? '1' : '0.35';
+  if (mkEl) mkEl.disabled = !viaMuni;
   const capEl = document.getElementById('retCap');
   const capOn = capEl ? capEl.checked : true;
   const stEl = document.getElementById('retStranded');
@@ -11913,8 +11963,8 @@ function retailHourly(){
 
   const hod = new Array(24).fill(0);
   for (let h = 0; h < 8760; h++) hod[h % 24] += lastRes.marginalP[h] / 1000 / 365;
-  const raw = retailRaw(lastRes.marginalP, markup, stranded, year);
-  const comp = retailComponents(markup, stranded, year);
+  const raw = retailRaw(lastRes.marginalP, markup, stranded, year, viaMuni);
+  const comp = retailComponents(markup, stranded, year, viaMuni);
   const dyn = raw.map(v => capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
 
   // A REPRESENTATIVE WEEK, hour by hour, on the same basis as the daily curve. The daily
@@ -11927,12 +11977,14 @@ function retailHourly(){
   const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
   const varTarget = comp.fuel + comp.carbon;
   const flatSum = comp.opex + comp.existingCap + comp.newCap + comp.newFom + comp.decom
-                + comp.ipp + comp.imports + comp.fixedItems + comp.newGrid;
+                + comp.ipp + comp.imports + comp.fixedItems + comp.newGrid
+                + (comp.distAdj || 0);
   const week = [];
   for (let i = 0; i < 168; i++){
     const w = (lastRes.marginalP[wkStart + i] || 0) / 1000;
     const variable = hodMean > 0 ? varTarget * (w / hodMean) : varTarget;
     let v = (variable + flatSum) / (1 - RETAIL_LOSS);
+    v = v * (comp.resAlloc || 1);
     v = v * (1 + markup) + sp.retail_margin_r_per_kwh;
     v = v * 1.15;
     week.push(capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
@@ -11954,7 +12006,7 @@ function retailHourly(){
     const peak = (h >= 6 && h < 9) || (h >= 17 && h < 20);
     return peak ? hf.winter_peak_r_per_kwh : hf.offpeak_r_per_kwh;
   });
-  return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp, week, weekFlex, wkMode,
+  return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp, week, weekFlex, wkMode, viaMuni,
            fixedPerMonth: hp.fixed_r_per_month, cap: sp.cap_r_per_kwh };
 }
 
@@ -12064,9 +12116,19 @@ function renderRetail(){
     + `The other ${(100-shareShiftable).toFixed(0)}% is Eskom's fixed charge of `
     + `R${d.fixedPerMonth.toFixed(0)} a month, which no dynamic tariff can shift.<br><br>`
     + `Cheapest hour ${String(loH).padStart(2,'0')}:00 at R${lo.toFixed(2)}, dearest `
-    + `${String(hiH).padStart(2,'0')}:00 at R${hi.toFixed(2)}. Municipal markup `
-    + `${(d.markup*100).toFixed(0)}%, the midpoint of the observed Cape Town range; `
-    + `Ekurhuleni has been measured at 86%.<br><br>`
+    + `${String(hiH).padStart(2,'0')}:00 at R${hi.toFixed(2)}.<br><br>`
+    + `<strong>Supplied by ${d.viaMuni ? 'a municipality' : 'Eskom direct'}.</strong> `
+    + (d.viaMuni
+        ? `A municipal customer buys at a bulk tariff and pays their municipality's own network `
+        + `and margin on top \u2013 ${(d.markup*100).toFixed(0)}% here, the midpoint of the `
+        + `observed Cape Town range, against 86% measured in Ekurhuleni. Eskom's own retail `
+        + `distribution is removed so the same function is not paid for twice.`
+        : `No municipal margin, and Eskom's own distribution included. At scenario year 2026 `
+        + `this route gives R3.34 against Homepower's actual R3.56 \u2013 6% apart, with `
+        + `nothing calibrated to it.`)
+    + ` A residential allocation of 1.29 applies on both routes: NERSA's allowed revenue is an `
+    + `average across all customers and residential pays above it, 309&nbsp;c/kWh against an `
+    + `average 240, because low voltage and low load factor cost more to serve.<br><br>`
     + `<strong>Two things this does not equalise.</strong> Homeflex is shown at winter rates, `
     + `so its spread is a high-demand-season figure. And Homepower's R3.56 still carries part `
     + `of the service and generation capacity charges, mid phase-in.<br><br>`
@@ -14345,7 +14407,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10l';
+const BUILD_STAMP = '2026-09-10m';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
