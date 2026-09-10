@@ -5,7 +5,7 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
-## The fifteen rules
+## The sixteen rules
 
 1. **Always run the full validation suite after any change to index.html, and
    report the counts.** Before and after, so the baseline is measured rather than
@@ -121,6 +121,20 @@ every session. Everything here was learned by getting it wrong at least once.
     checks pass, the repo is correct, GitHub Pages is correct, and the site is wrong.
 
 ---
+
+9. **Check inputs against their sources, not just the model against its inputs.** On
+   10 Sep 2026 a tariff constant was 10% wrong and survived a full methodology review, a
+   confidence assessment and six validation checks. Every one of them tested the MODEL
+   against that number. Nothing tested the NUMBER against its source.
+
+   Within the hour the same exercise found a second instance in a different table of the
+   same document: rates held in 2024/25 rands and used as current-year figures, 22.6% low.
+
+   A constant that a validation depends on must be RE-DERIVABLE from something published by
+   a different route. `validate_inputs.js` does this: NERSA's base rate times the approved
+   increases must reproduce the schedule rate; components must sum to the stated total;
+   phase-in percentages and daily charges must imply each other. A check that restates the
+   constant proves nothing.
 
 ## Reporting conventions
 

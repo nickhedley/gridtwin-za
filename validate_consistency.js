@@ -1012,7 +1012,7 @@ const num = t => {
       {
         const mt = run(`
           const d = retailHourly(); if (!d) return { err: 'no panel' };
-          const t = RETAIL_T, R = t.homeflex.rates_r_per_kwh_2024_25;
+          const t = RETAIL_T, R = t.homeflex.rates_r_per_kwh_2026_27;
           const m = a => a.reduce((x, y) => x + y, 0) / a.length;
           return { hl20: t.homelight20a ? t.homelight20a.energy_r_per_kwh : 1.9169,
                    hl60: t.homelight60a ? t.homelight60a.energy_r_per_kwh : 2.4368,
@@ -1121,7 +1121,7 @@ const num = t => {
           const keep = JSON.parse(JSON.stringify(state));
           yr.value = 2026; run();
           const d = retailHourly();
-          const R = RETAIL_T.homeflex.rates_r_per_kwh_2024_25;
+          const R = RETAIL_T.homeflex.rates_r_per_kwh_2026_27;
           const out = d ? { shadowSpread: Math.max(...d.week) / Math.min(...d.week),
                             hfHigh: R.high_season_peak / R.high_season_offpeak,
                             hfLow: R.low_season_peak / R.low_season_offpeak,

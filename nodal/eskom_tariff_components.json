@@ -35,7 +35,20 @@
  "homeflex": {
   "description": "Time-of-use residential. Required for any household with grid-tied generation, so every rooftop PV customer is on it. Same network, retail and ancillary charges as Homepower; only the energy charges differ.",
   "source": "NERSA Reasons for Decision, Eskom Electricity Retail Tariff Plan, 18 Feb 2025, Table 7. Proposed rates in 2024/25 rand, adjusted to 2026/27 by the approved ERTSA increases.",
-  "rates_r_per_kwh_2024_25": {
+  "high_season": "June to August",
+  "peak_hours": "high season 06:00-08:00 and 17:00-20:00; low season 07:00-09:00 and 18:00-21:00",
+  "peak_to_standard_ratio": 6,
+  "ratio_note": "NERSA approved a change from 1:8 to 1:6 in Feb 2025. The 4.4x spread previously quoted here came from two rates only and was a winter figure; the full six-rate table is now present and the annual spread can be computed properly.",
+  "all_six_rates_note": "PREVIOUSLY ONLY THE WINTER PAIR WAS HELD, and the panel had to caveat that its Homeflex comparison was a high-demand-season figure. Resolved 10 Sep 2026 from the NERSA decision document.",
+  "rates_r_per_kwh_2026_27": {
+   "high_season_peak": 7.5386,
+   "high_season_standard": 2.5355,
+   "high_season_offpeak": 1.9522,
+   "low_season_peak": 3.6907,
+   "low_season_standard": 2.419,
+   "low_season_offpeak": 1.9522
+  },
+  "rates_r_per_kwh_2024_25_original": {
    "high_season_peak": 6.1503,
    "high_season_standard": 2.0686,
    "high_season_offpeak": 1.5927,
@@ -43,18 +56,16 @@
    "low_season_standard": 1.9735,
    "low_season_offpeak": 1.5927
   },
-  "high_season": "June to August",
-  "peak_hours": "high season 06:00-08:00 and 17:00-20:00; low season 07:00-09:00 and 18:00-21:00",
-  "peak_to_standard_ratio": 6,
-  "ratio_note": "NERSA approved a change from 1:8 to 1:6 in Feb 2025. The 4.4x spread previously quoted here came from two rates only and was a winter figure; the full six-rate table is now present and the annual spread can be computed properly.",
-  "all_six_rates_note": "PREVIOUSLY ONLY THE WINTER PAIR WAS HELD, and the panel had to caveat that its Homeflex comparison was a high-demand-season figure. Resolved 10 Sep 2026 from the NERSA decision document."
+  "escalation_note": "CORRECTED 10 Sep 2026. The rates held were NERSA's PROPOSED figures in 2024/25 rands, taken straight from Table 7 of the Reasons for Decision, and used as if they were 2026/27 rates. They were 22.6% low. NERSA's own document says so plainly: 'The proposed rates in the submission were based on 2024/25 revenues. The proposed tariffs in 2024/25 Rand value would be adjusted as per the NERSA 2025/26 tariff increase decision through the ERTSA process.' Grown by the approved 12.7% and 8.76%. Same error as the Homepower one found an hour earlier, in a different table of the same document."
  },
  "homelight60a": {
   "description": "Residential prepaid, 60A. No fixed charge. Also cross-subsidised, less than the 20A.",
-  "energy_r_per_kwh": 2.4368,
+  "energy_r_per_kwh": 2.9868,
   "fixed_r_per_month": 0.0,
   "source": "NERSA Reasons for Decision, 18 Feb 2025, Table 11.",
-  "note": "Beats Homepower at every realistic consumption for eligible households because it has no fixed charge to absorb - and because it is subsidised."
+  "note": "Beats Homepower at every realistic consumption for eligible households because it has no fixed charge to absorb - and because it is subsidised.",
+  "energy_r_per_kwh_2024_25": 2.4368,
+  "escalation_note": "CORRECTED 10 Sep 2026. Held NERSA's 2024/25 proposed rate as if it were 2026/27. Grown by the approved 12.7% and 8.76%, a 22.6% correction."
  },
  "reference_octopus_agile": {
   "description": "Britain's most-cited dynamic tariff, included as a published comparator rather than a target. Its formula is public, which is the standard this model holds itself to.",
@@ -209,10 +220,12 @@
  },
  "homelight20a": {
   "description": "Residential lifeline tariff, 20A prepaid. No fixed charge. The largest recipient of cross-subsidy.",
-  "energy_r_per_kwh": 1.9169,
+  "energy_r_per_kwh": 2.3496,
   "fixed_r_per_month": 0.0,
   "source": "NERSA Reasons for Decision, 18 Feb 2025, Table 11. Flat rate replacing the inclining block structure.",
-  "note": "The legacy charge is NOT applied to Homelight, so REIPPPP premium costs are borne by other categories."
+  "note": "The legacy charge is NOT applied to Homelight, so REIPPPP premium costs are borne by other categories.",
+  "energy_r_per_kwh_2024_25": 1.9169,
+  "escalation_note": "CORRECTED 10 Sep 2026. Held NERSA's 2024/25 proposed rate as if it were 2026/27. Grown by the approved 12.7% and 8.76%, a 22.6% correction."
  },
  "municipal": {
   "description": "Real municipal residential tariffs, replacing the inferred markup slider. The panel's reference household is a medium-sized Johannesburg home on City Power's Residential Single Phase 80A tariff.",
@@ -455,5 +468,15 @@
    "finding": "Municipal residential tariffs rose 9.0% into 2026/27 against NERSA's 8.76% approved for Eskom - within a quarter of a point. Municipalities pass Eskom's bulk increase through closely, which supports treating the bulk purchase price as the driver of municipal retail prices. The 2024 to 2025 transition has ONE matched tariff and is not evidence. The 2026 to 2027 figure of 19.2% rests on 22 tariffs and is far above the approved 8.83%; it may be sample composition or early municipal filings and should not be quoted without checking which municipalities.",
    "fixed_charges_track_energy": "Fixed charges rose 9.0% into 2026/27, the same as energy rates - so the fixed-charge SHARE of a bill held steady rather than climbing. Eskom's own phase-in is moving its share up; municipal distributors in this sample were not doing the same in that year."
   }
+ },
+ "escalation": {
+  "description": "Approved Eskom increases, used to bring NERSA's 2024/25 proposed rates to 2026/27.",
+  "fy2025_26_pct": 12.7,
+  "fy2026_27_pct": 8.76,
+  "fy2027_28_pct": 8.83,
+  "municipal_fy2026_27_pct": 9.01,
+  "cumulative_2024_25_to_2026_27": 1.2257,
+  "source": "NERSA MYPD6 decision and the R54bn settlement. Municipal bulk purchases rise 9.01% from 1 July 2026, direct customers 8.76% from 1 April 2026.",
+  "why_this_exists": "Two inputs were held in 2024/25 rands and used as 2026/27 figures - Homeflex's six rates and both Homelight rates - each 22.6% low. NERSA's own document warns of exactly this: its proposed tariffs are in 2024/25 rand value and are adjusted through the ERTSA process. Any rate taken from the Reasons for Decision must be grown before use."
  }
 }

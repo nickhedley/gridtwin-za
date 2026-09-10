@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Forty-nine sections follow. This index exists because the file passed 1,400 lines and the
+Fifty sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3949,3 +3949,44 @@ reported above meaningless - the panel was 1% from a figure that was itself 10% 
 
 **The lesson is about sourcing.** A tariff that a validation depends on should come from the
 published schedule, not from a summary of it. The check was sound; its target was not.
+
+---
+
+## A second tariff error, of the same kind, found the same hour
+
+Asked how to improve the methodology after the Homepower rate turned out 10% wrong. The
+answer was in how that error survived: **every check tested the model against the inputs, and
+nothing tested the inputs against their sources.**
+
+Building that check found the second instance immediately.
+
+```
+                        held (2024/25 rands)    corrected (2026/27)
+Homeflex high peak                    6.1503                 7.5386
+Homelight 20A                         1.9169                 2.3496
+Homelight 60A                         2.4368                 2.9868
+```
+
+**All 22.6% low**, because NERSA's proposed rates are published in 2024/25 rand value and
+were used as current figures. Its own document says so: the proposed tariffs "would be
+adjusted as per the NERSA 2025/26 tariff increase decision through the ERTSA process". The
+warning was in a document already read.
+
+### validate_inputs.js
+
+Ten checks that RE-DERIVE a held constant from something published by a different route,
+rather than confirming it was typed correctly:
+
+- Homepower energy against NERSA's 2024/25 base times the approved increases
+- every Homeflex and Homelight rate against its own escalated base
+- the fixed charge against its stated phase-in percentages
+- allowed-revenue components against their stated total, and against approved revenue over sales
+- the residential allocation against the CTS category and system costs
+- every tariff must name a source
+
+Verified against both errors it was built for: it fires on the Homepower rate at R3.5556 and
+on all six Homeflex rates unescalated.
+
+**A check that restates a constant proves nothing.** These work because NERSA published a
+base and a set of increases separately, so their product is an independent route to the same
+number.
