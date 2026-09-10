@@ -11808,7 +11808,7 @@ const RETAIL_LOSS = 0.08;
 // cheap midday solar hours are exactly when a heavy user sits in the dear block.
 function muniBill(kwh, ref){
   if (!ref || !ref.blocks || !ref.blocks.length) return null;
-  let energy = 0, prev = 0;
+  let energy = 0; let prev = 0;
   for (const b of ref.blocks){
     const cap = (b.to_kwh == null) ? Infinity : b.to_kwh;
     const take = Math.max(0, Math.min(kwh, cap) - prev);
@@ -11816,8 +11816,16 @@ function muniBill(kwh, ref){
     prev = cap;
     if (kwh <= cap) break;
   }
-  return { energy, fixed: ref.fixed_r_per_month || 0, total: energy + (ref.fixed_r_per_month || 0),
-           effective: kwh > 0 ? (energy + (ref.fixed_r_per_month || 0)) / kwh : 0,
+  // VAT. City Power's schedule states "All charges are exclusive of VAT" and the panel was
+  // treating them as final prices, comparing them against Eskom Homepower which includes it.
+  // Every municipal figure was 15% low and the Johannesburg premium over Eskom read +4% when
+  // it is +38%. The transcription was perfect; the BASIS was wrong, which is a class of error
+  // no peer-structure check reaches.
+  const V = ref.rates_exclude_vat ? (1 + (ref.vat_rate ?? 0.15)) : 1;
+  energy *= V;
+  const fixed = (ref.fixed_r_per_month || 0) * V;
+  return { energy, fixed, total: energy + fixed,
+           effective: kwh > 0 ? (energy + fixed) / kwh : 0,
            marginal: energy > 0 ? energy / kwh : 0 };
 }
 
@@ -14441,7 +14449,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10x';
+const BUILD_STAMP = '2026-09-10y';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

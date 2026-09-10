@@ -222,6 +222,37 @@ console.log('\nTariff constants against their published sources\n');
         + `framing needs revisiting.`);
 }
 
+// ── 9. VAT BASIS IS STATED, NOT ASSUMED ────────────────────────────────────
+// Added 10 Sep 2026 after City Power's published schedule turned out to say "All charges are
+// exclusive of VAT" while the panel treated them as final prices and compared them against a
+// VAT-inclusive Eskom rate. Every municipal figure was 15% low; the Johannesburg premium over
+// Eskom read +4% when it is +38%.
+//
+// The transcription was PERFECT - all five blocks and both fixed charges matched to the cent.
+// The basis was wrong. No peer-structure check reaches that, and no amount of agreement
+// between 21 municipalities would have caught it.
+{
+  const ref = (T.municipal || {}).reference || {};
+  check('the municipal reference states its VAT basis',
+        typeof ref.rates_exclude_vat === 'boolean',
+        `rates_exclude_vat must be set explicitly. A tariff compared against another tariff `
+        + `on a different VAT basis is 15% wrong and looks entirely plausible.`);
+
+  const hp = T.homepower4 || {};
+  const hpInclusive = /includ/i.test(JSON.stringify(hp));
+  check('the Eskom comparison tariff states its VAT basis',
+        hpInclusive,
+        `Homepower's entry must say whether its rate includes VAT. It is the target of the `
+        + `panel's level check, and the municipal comparison is made against it.`);
+
+  check('unverified charges are not carried',
+        (ref.additional_energy_charge_r_per_kwh || 0) === 0
+          || /source|schedule/i.test(ref.additional_charge_removed || ''),
+        `an 'Additional Energy Charge' of R0.06/kWh was carried from a database export with `
+        + `no explanation and did not appear in the published schedule. Worth R62/month at `
+        + `900 kWh. Anything reinstated needs its source.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');

@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Fifty-two sections follow. This index exists because the file passed 1,400 lines and the
+Fifty-three sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -4073,3 +4073,40 @@ export.
 
 Both are worth doing. This one was available in data already on disk and went undone until
 someone asked why a second municipality needed sourcing.
+
+---
+
+## The transcription was perfect and the basis was wrong
+
+City Power's published schedule, checked 10 Sep 2026. All five block rates and both fixed
+charges match the panel to the cent: 288.27, 330.82, 355.23, 374.79, 393.19 c/kWh, service
+R304.12 and capacity R985.11 a month.
+
+**And the schedule says "All charges are exclusive of VAT."** The panel treated them as final
+prices and compared them against Eskom Homepower at R3.2206, which includes VAT.
+
+```
+                              as held    corrected
+900 kWh household              R4,108       R4,662
+effective                       R4.56        R5.18
+premium over Eskom Homepower       +4%         +36%
+```
+
+**Every municipal figure was 15% low.**
+
+### no structural check could have caught this
+
+The peer comparison verified that 24 of 28 municipal tariff families have rising blocks, so
+City Power's structure is normal. Twenty-one distributors agreeing on structure says nothing
+about whether the numbers are on the same VAT basis as the tariff they are compared against.
+
+A transcription check would not have caught it either - the transcription was exact.
+
+`validate_inputs` now asserts that every tariff states its VAT basis explicitly, on both
+sides of the comparison.
+
+### and an unverified charge was being added
+
+The database export carried an "Additional Energy Charge" of R0.06/kWh with no explanation,
+and the panel was applying it to every block. It does not appear in the published schedule.
+Removed - it was worth R62 a month at 900 kWh. Anything reinstated needs its source.

@@ -30,7 +30,8 @@
   "energy_is_not_pure_energy": "R3.5556/kWh still carries 33.34% of the service and administration charge and 70% of the generation capacity charge, both mid phase-in. So any tariff anchored to this rate inherits some fixed-cost recovery inside its energy component. That is not an error - it is what a household actually pays per unit today - but it means the anchor is not a pure energy price.",
   "blocks_removed": "NO, it is not blended. NERSA approved REMOVING the inclining block structure from Homepower and Homelight in Feb 2025, finding it no longer protected the poor - affluent households with rooftop PV had fallen into the low-usage blocks and were being subsidised by those without. So a single flat energy rate is correct for 2026/27. Verified from NERSA's Table 6: the CURRENT structure implies R2.455/kWh to 600 kWh then R3.95 above it, clear blocks; the PROPOSED structure implies a flat R2.305 at every consumption level tested from 0 to 1,600 kWh.",
   "reconciliation_gap": "RESOLVED. See 'corrected'. Our figure now reconciles with NERSA's approved progression to under one per cent, and Homepower is a sound independent check on the panel's level again.",
-  "corrected": "CORRECTED 10 Sep 2026 from R3.5556 to R3.2206, a 10.4% overstatement. The old figure came from a web summary; this one is the Schedule of Standard Prices for 2026/27, effective 1 April 2026, published after NERSA's MYPD6 ruling of 5 March 2026. The error was caught by asking whether the tariff blends usage blocks, then testing our figure against NERSA's own published progression: R2.305 in 2024/25 rands grown by the approved 12.7% and 8.76% with VAT gives R3.2491, which is 0.9% from the published R3.2206 and 9% from our old number. The progression was right and we were wrong."
+  "corrected": "CORRECTED 10 Sep 2026 from R3.5556 to R3.2206, a 10.4% overstatement. The old figure came from a web summary; this one is the Schedule of Standard Prices for 2026/27, effective 1 April 2026, published after NERSA's MYPD6 ruling of 5 March 2026. The error was caught by asking whether the tariff blends usage blocks, then testing our figure against NERSA's own published progression: R2.305 in 2024/25 rands grown by the approved 12.7% and 8.76% with VAT gives R3.2491, which is 0.9% from the published R3.2206 and 9% from our old number. The progression was right and we were wrong.",
+  "vat_basis": "INCLUDES VAT at 15%. R3.2206/kWh is the VAT-inclusive rate from Eskom's Schedule of Standard Prices 2026/27. The fixed charges of R536/month are likewise VAT-inclusive. Stated explicitly on 10 Sep 2026 after a municipal tariff on the OPPOSITE basis was compared against it and every municipal figure came out 15% low."
  },
  "homeflex": {
   "description": "Time-of-use residential. Required for any household with grid-tied generation, so every rooftop PV customer is on it. Same network, retail and ancillary charges as Homepower; only the energy charges differ.",
@@ -56,7 +57,8 @@
    "low_season_standard": 1.9735,
    "low_season_offpeak": 1.5927
   },
-  "escalation_note": "CORRECTED 10 Sep 2026. The rates held were NERSA's PROPOSED figures in 2024/25 rands, taken straight from Table 7 of the Reasons for Decision, and used as if they were 2026/27 rates. They were 22.6% low. NERSA's own document says so plainly: 'The proposed rates in the submission were based on 2024/25 revenues. The proposed tariffs in 2024/25 Rand value would be adjusted as per the NERSA 2025/26 tariff increase decision through the ERTSA process.' Grown by the approved 12.7% and 8.76%. Same error as the Homepower one found an hour earlier, in a different table of the same document."
+  "escalation_note": "CORRECTED 10 Sep 2026. The rates held were NERSA's PROPOSED figures in 2024/25 rands, taken straight from Table 7 of the Reasons for Decision, and used as if they were 2026/27 rates. They were 22.6% low. NERSA's own document says so plainly: 'The proposed rates in the submission were based on 2024/25 revenues. The proposed tariffs in 2024/25 Rand value would be adjusted as per the NERSA 2025/26 tariff increase decision through the ERTSA process.' Grown by the approved 12.7% and 8.76%. Same error as the Homepower one found an hour earlier, in a different table of the same document.",
+  "vat_basis": "Includes VAT at 15%, on the same basis as Homepower."
  },
  "homelight60a": {
   "description": "Residential prepaid, 60A. No fixed charge. Also cross-subsidised, less than the 20A.",
@@ -65,7 +67,8 @@
   "source": "NERSA Reasons for Decision, 18 Feb 2025, Table 11.",
   "note": "Beats Homepower at every realistic consumption for eligible households because it has no fixed charge to absorb - and because it is subsidised.",
   "energy_r_per_kwh_2024_25": 2.4368,
-  "escalation_note": "CORRECTED 10 Sep 2026. Held NERSA's 2024/25 proposed rate as if it were 2026/27. Grown by the approved 12.7% and 8.76%, a 22.6% correction."
+  "escalation_note": "CORRECTED 10 Sep 2026. Held NERSA's 2024/25 proposed rate as if it were 2026/27. Grown by the approved 12.7% and 8.76%, a 22.6% correction.",
+  "vat_basis": "Includes VAT at 15%, on the same basis as Homepower."
  },
  "reference_octopus_agile": {
   "description": "Britain's most-cited dynamic tariff, included as a published comparator rather than a target. Its formula is public, which is the standard this model holds itself to.",
@@ -226,7 +229,8 @@
   "source": "NERSA Reasons for Decision, 18 Feb 2025, Table 11. Flat rate replacing the inclining block structure.",
   "note": "The legacy charge is NOT applied to Homelight, so REIPPPP premium costs are borne by other categories.",
   "energy_r_per_kwh_2024_25": 1.9169,
-  "escalation_note": "CORRECTED 10 Sep 2026. Held NERSA's 2024/25 proposed rate as if it were 2026/27. Grown by the approved 12.7% and 8.76%, a 22.6% correction."
+  "escalation_note": "CORRECTED 10 Sep 2026. Held NERSA's 2024/25 proposed rate as if it were 2026/27. Grown by the approved 12.7% and 8.76%, a 22.6% correction.",
+  "vat_basis": "Includes VAT at 15%, on the same basis as Homepower."
  },
  "municipal": {
   "description": "Real municipal residential tariffs, replacing the inferred markup slider. The panel's reference household is a medium-sized Johannesburg home on City Power's Residential Single Phase 80A tariff.",
@@ -263,7 +267,12 @@
     }
    ],
    "fixed_r_per_month": 1289.23,
-   "additional_energy_charge_r_per_kwh": 0.06
+   "additional_energy_charge_r_per_kwh": 0.0,
+   "rates_exclude_vat": true,
+   "vat_rate": 0.15,
+   "transcription_verified": "VERIFIED against City Power's Schedule of Approved Tariffs FY26/27 on 10 Sep 2026. All five block rates and both fixed charges match to the cent: 288.27, 330.82, 355.23, 374.79, 393.19 c/kWh; service R304.12 and capacity R985.11 per month, R1,289.23 total.",
+   "vat_correction": "THE SCHEDULE STATES 'All charges are exclusive of VAT' AND THE PANEL WAS TREATING THEM AS FINAL PRICES. It compared them against Eskom Homepower at R3.2206, which INCLUDES VAT - so every municipal figure was 15% low and the Johannesburg premium over Eskom was reported as +4% when it is +38%. Corrected 10 Sep 2026. The transcription was perfect and the basis was wrong, which no peer-structure check could have caught.",
+   "additional_charge_removed": "The AMMP export carried an 'Additional Energy Charge' of R0.06/kWh with no explanation, and the panel was adding it to every block. It does NOT appear in the published schedule extract. Removed rather than kept on an unverified basis; worth R62/month at 900 kWh. If it is a real charge from another part of the schedule it should come back WITH its source."
   },
   "comparison_r": {
    "Greater Tzaneen Municipality": {
@@ -479,7 +488,8 @@
    "city_power_vs_peers": "City Power runs 2.88 -> 3.31 -> 3.55 -> 3.75 -> 3.93, a 1.36x spread across five blocks. A typical peer such as Emakhazeni runs 2.12 -> 2.71 -> 3.82 -> 4.50, a 2.12x spread. City Power starts HIGHER and climbs LESS steeply. Both are inclining, which is the structural point; the difference in steepness is a real distributor choice, not an error.",
    "why_this_beats_opening_the_pdf": "The published City Power schedule would confirm one distributor's numbers were transcribed correctly. Twenty-one distributors agreeing on STRUCTURE tests something a transcription check cannot: that the pattern the panel reports is real. Both are worth doing; this one was available in data already held and was not done until asked.",
    "source_for_transcription_check": "City Power Schedule of Approved Tariffs FY26/27, named in the CSV export: api.citypower.co.za/ftp-service/download-pdf/ with filepath Customer_Services/Tariffs/2026.27 Tariffs charges.pdf"
-  }
+  },
+  "premium_over_eskom_corrected": "At 900 kWh a City Power household pays R4,724 a month against R3,435 on Eskom Homepower 4, a 38% premium - not the 4% previously reported. The distributor comparison across 33 municipalities carries the same VAT question and has NOT been rechecked: those rates come from the same database and their VAT basis is unverified per distributor."
  },
  "escalation": {
   "description": "Approved Eskom increases, used to bring NERSA's 2024/25 proposed rates to 2026/27.",
