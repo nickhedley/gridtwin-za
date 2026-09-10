@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Forty-two sections follow. This index exists because the file passed 1,400 lines and the
+Forty-three sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3346,3 +3346,73 @@ read directly.
 right boundary for a dispatch model. Adjusting `emisCoal` to close the gap would make the
 model agree with a figure whose definition we cannot see - and the CO2 benchmark against
 Eskom's own reported 175 Mt would then break.
+
+---
+
+## The residential fixed charge is regressive, and the phase-in makes it more so
+
+Arithmetic on Eskom's published Schedule of Standard Prices for 2026/27. No model involved -
+anyone can reproduce it from the schedule alone.
+
+Homepower 4, 80 A single-phase, Eskom direct, VAT included. Fixed R536 a month: network
+capacity R10.44/day, service and administration R6.60/day, generation capacity R0.82/day.
+Energy R3.5556/kWh, flat - the same at 03:00 as at 18:00.
+
+```
+kWh/month    energy R   fixed R   total R   fixed share
+      300       1,067       536     1,603           33%
+      600       2,133       536     2,669           20%
+      900       3,200       536     3,736           14%
+    2,000       7,111       536     7,647            7%
+```
+
+**A 300 kWh household pays 33% of its bill before using a unit. A 2,000 kWh household pays
+7%.**
+
+### the phase-in is not finished
+
+Service and administration moved from 33.33% fixed in FY2026 to 66.66% in FY2027; the
+generation capacity charge from 20% to 30%. What remains:
+
+```
+component               fixed now   at 100%   still to move
+service and admin            6.60      9.90            3.30   R/day
+generation capacity          0.82      2.73            1.91
+network capacity            10.44     10.44            0.00   already fully fixed
+                                                       5.21 R/day = R159/month
+```
+
+### the two scenarios
+
+Revenue-neutral at 900 kWh a month, so the energy rate falls by exactly what the fixed
+charge gains:
+
+```
+                   frozen      completes
+fixed          R536/month     R695/month
+energy        R3.5556/kWh    R3.3789/kWh
+
+kWh/mo     frozen   completes   change   fixed% frozen   fixed% completes
+   200      1,247       1,371     +124             43%                51%
+   400      1,958       2,047      +88             27%                34%
+   600      2,669       2,722      +53             20%                26%
+   900      3,736       3,736       +0             14%                19%
+ 1,200      4,803       4,750      -53             11%                15%
+ 2,000      7,647       7,453     -194              7%                 9%
+```
+
+**Revenue-neutral in aggregate and regressive by household.** A 200 kWh home pays R124 a
+month more; a 2,000 kWh home pays R194 less.
+
+**The small household's bill becomes 51% fixed** - more than half beyond the reach of any
+tariff that prices by time or volume.
+
+For scale: Octopus Agile in Britain, the most-cited dynamic tariff there is, runs about 24%
+fixed for a typical household. South Africa at typical consumption is near that. A South
+African household at 200 kWh is already at double it, and the phase-in takes it higher.
+
+CAVEAT: Homepower 4 only. Municipal customers face a different structure and their own
+markup, and Homelight has no fixed charge at all - which is why it beats Homepower at every
+realistic consumption for eligible households. The revenue-neutral basis is 900 kWh a month;
+a different basis moves the crossover point but not the direction. Figures are the 2026/27
+schedule at 8.76%; the 2027/28 ERTSA at 8.83% moves the level, not the shape.

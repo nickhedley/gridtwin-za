@@ -504,6 +504,55 @@ setTimeout(()=>{
     }
   }
 
+
+  // ── THE RESIDENTIAL FIXED CHARGE, ARITHMETIC NOT MODEL ──────────────────
+  // Added 10 Sep 2026. This finding uses NO model output - it is arithmetic on Eskom's
+  // published Schedule of Standard Prices, Homepower 4, 2026/27. It is pinned here anyway
+  // because RESULTS.md quotes it, and a published tariff moves every April.
+  //
+  // The check re-derives the numbers rather than storing them, so when the schedule is
+  // updated the constants below are the ONLY thing to change and the conclusions re-compute.
+  // If the direction ever reverses - the phase-in becoming progressive - that is a finding,
+  // not a failure, and the message says so.
+  {
+    const FIXED_R_MONTH = 536.0;     // network 10.44 + service 6.60 + gen 0.82 R/day
+    const ENERGY_R_KWH  = 3.5556;    // incl VAT, flat
+    const STILL_TO_MOVE = 159.0;     // R/month: service+admin 33.34% and GCC 70% not yet fixed
+    const NEUTRAL_KWH   = 900.0;     // basis on which the shift is revenue-neutral
+
+    const energyAfter = ENERGY_R_KWH - STILL_TO_MOVE / NEUTRAL_KWH;
+    const fixedAfter  = FIXED_R_MONTH + STILL_TO_MOVE;
+    const share = (kwh, fx, en) => 100 * fx / (kwh * en + fx);
+
+    const smallNow  = share(200, FIXED_R_MONTH, ENERGY_R_KWH);
+    const smallAfter = share(200, fixedAfter, energyAfter);
+    const bigNow    = share(2000, FIXED_R_MONTH, ENERGY_R_KWH);
+
+    check('the residential fixed charge is regressive',
+          smallNow > bigNow * 2,
+          `a 200 kWh household pays ${smallNow.toFixed(0)}% of its bill in fixed charges `
+          + `against ${bigNow.toFixed(0)}% for a 2,000 kWh household. If this ever reverses `
+          + `it is a FINDING about a tariff change, not a broken check - re-read the `
+          + `schedule before editing anything.`);
+
+    check('completing the fixed-charge phase-in raises the unshiftable share above half',
+          smallAfter > 50,
+          `a 200 kWh household goes from ${smallNow.toFixed(0)}% to ${smallAfter.toFixed(0)}% `
+          + `fixed. RESULTS.md quotes 43% and 51%. The constants here are the 2026/27 `
+          + `schedule - update them each April and let the conclusions re-derive.`);
+
+    const delta200  = (200 * energyAfter + fixedAfter) - (200 * ENERGY_R_KWH + FIXED_R_MONTH);
+    const delta2000 = (2000 * energyAfter + fixedAfter) - (2000 * ENERGY_R_KWH + FIXED_R_MONTH);
+    check('the phase-in transfers from small households to large ones',
+          delta200 > 0 && delta2000 < 0,
+          `200 kWh household ${delta200 >= 0 ? '+' : ''}R${delta200.toFixed(0)}/month, `
+          + `2,000 kWh household ${delta2000 >= 0 ? '+' : ''}R${delta2000.toFixed(0)}. `
+          + `Revenue-neutral in aggregate at ${NEUTRAL_KWH} kWh means someone pays more.`);
+
+    console.log(`  fixed charge  200 kWh household ${smallNow.toFixed(0)}% -> `
+      + `${smallAfter.toFixed(0)}% fixed \u00b7 ${delta200 >= 0 ? '+' : ''}R${delta200.toFixed(0)}/mo`);
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

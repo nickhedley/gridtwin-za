@@ -6355,7 +6355,29 @@ a source; at present it has neither.
     and state which market each number came from, because transferring an elasticity across
     markets is an assumption, not a measurement.
 
-28. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
+
+28. **Shadow dynamic retail price.** Scoped 10 Sep 2026, `scope_dynamic_retail_price.md`.
+    What a household would pay at 02:00 against 18:00 if the price followed cost - a
+    question nobody in South Africa can currently answer.
+
+    **The hard half exists**: hourly wholesale shadow price, the TOU classifier, and a
+    TDP-calibrated transmission cost. Only ONE component is a genuine import - the retail
+    supply margin, because there is no competitive retail here to observe one. Octopus Agile
+    is the reference because its formula is published.
+
+    **Blocked on two things.** Ingesting the Eskom ERTSA tariff schedules, which is the
+    largest missing piece and is published in the 2027/28 consultation paper. And item 18:
+    a dynamic price is a claim about WHEN power is cheap, and the diurnal shape is exactly
+    where our data is weakest.
+
+    **The fixed/variable half is already computed** and needs no model. Homepower 4 today
+    runs 33% fixed at 300 kWh a month and 7% at 2,000 - already regressive. Completing the
+    glide path moves R159/month from energy to fixed, revenue-neutral at 900 kWh: a 200 kWh
+    home pays R124 more and reaches **51% fixed**, a 2,000 kWh home pays R194 less.
+    Octopus Agile sits at about 24% fixed for comparison.
+
+    That is submittable to the ERTSA consultation on its own, without the hourly price.
+29. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
     4 Sep 2026.** The gate the scope set - does Eskom publish CSP separately - was answered
     by a dataset the user obtained: **ESK19679, 38,736 hours from April 2022 to August 2026**,
     with Wind, PV, CSP and Other RE separated and installed capacity for each.
@@ -9514,6 +9536,43 @@ calls, about 24 hours of quota, and it is not urgent.
 Four calls against a possible 1,176. Had the correlation been flat across heights, a day of
 quota would have bought nothing. It was not flat, but it also did not fix what the item was
 opened to fix - and knowing which half is fixable is worth more than either answer alone.
+
+## the fixed-charge finding, published and pinned - 10 Sep 2026
+
+Added to RESULTS.md and to `validate_findings` 27 -> 30. **It uses no model output** - it is
+arithmetic on Eskom's published Schedule of Standard Prices, Homepower 4, 2026/27.
+
+```
+kWh/month   fixed share now   after the phase-in
+      200               43%                  51%
+      900               14%                  19%
+    2,000                7%                   9%
+```
+
+Revenue-neutral at 900 kWh: a 200 kWh household pays R124 a month more, a 2,000 kWh
+household R194 less.
+
+### why pin something with no model in it
+
+A published tariff moves every April, and RESULTS.md quotes these numbers. The check
+RE-DERIVES rather than storing the conclusions: four constants at the top, everything else
+computed. When the schedule updates, change the constants and the conclusions follow.
+
+One check carries an unusual instruction: if the regressivity ever REVERSES, that is a
+finding about a tariff change, not a broken test, and the message says to re-read the
+schedule before editing anything. A check that would be edited into agreement on a real
+change is worse than no check.
+
+### what was NOT built, and why
+
+No household tariff panel. GridTwin's About page directs household advice to Rewiring South
+Africa, and the site has system-planning and project-planning sections but nothing
+consumer-facing. Adding one for this would be scope creep into a sibling project.
+
+The dynamic retail price itself remains scoped and unbuilt - blocked on the ERTSA schedule
+ingest and on item 18, since a dynamic price is a claim about WHEN power is cheap and the
+diurnal shape is where our data is weakest. **The fixed/variable half needed neither**, which
+is why it shipped first.
 
 ---
 
