@@ -677,12 +677,26 @@ try {
 }
 
 // ── NERSA REGISTRATIONS: THE FILE MUST AGREE WITH ITSELF ────────────────────
-// Added 9 Sep 2026 while closing to-do item 14, which asked us to reconcile SAPVIA's
-// 20,131 MW against "NERSA 21,900 MW". THERE IS NOTHING TO RECONCILE: NERSA's own Q1
-// 2026/27 media statement gives 2,619 facilities and 20,131 MW, identical to this file.
-// SAPVIA reproduces NERSA rather than diverging from it, and the 21,900 was an unsourced
-// figure carried in our own notes - the same failure the calendar sourcing rule was
-// written for on 1 Sep 2026.
+// Added 9 Sep 2026 for to-do item 14, which asked us to reconcile SAPVIA's 20,131 MW
+// against "NERSA 21,900 MW".
+//
+// I FIRST CONCLUDED THERE WAS NOTHING TO RECONCILE. That was wrong. Both figures are
+// NERSA's and both are correct on their own boundary:
+//
+//   media statement, syndicated widely   2,619 facilities  20,131 MW  R409bn   RENEWABLES
+//   NERSA to Engineering News, 24 Aug    2,692 facilities  21.9 GW    R452.9bn ALL TECH
+//
+// The 73 facilities and 1,769 MW between them are gas, diesel, biomass and co-generation.
+// This file is the RENEWABLE basis; meta.total_mw_all_technologies carries the other.
+//
+// HOW THE ERROR HAPPENED, because it is the more useful thing to record: SAnews, News24,
+// allAfrica, Green Building Africa, Infrastructure News and the SA Trade Desk all carried
+// IDENTICAL wording, and I read six agreeing sources as six confirmations. They are one
+// press release syndicated six times. Engineering News asked NERSA directly and got
+// different numbers.
+//
+// That is the same error as the EDMSA agreement recorded in validate_external, made twice
+// in one day: independent agreement is only evidence when the sources are independent.
 //
 // What IS real is a gap INSIDE the file, which nothing was checking:
 //

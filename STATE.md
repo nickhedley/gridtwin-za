@@ -6124,14 +6124,20 @@ panel rendering one sentence. A browser is the only instrument for these.
 
 13. **Named-project layer** - the IPP Office annual overview, the only route to project
     names and the Hydra Central split.
-14. ~~NERSA cumulative reconciliation.~~ **CLOSED 9 Sep 2026 - there was nothing to
-    reconcile.** NERSA's own Q1 2026/27 media statement gives 2,619 facilities and
-    20,131 MW, identical to our file. SAPVIA reproduces NERSA rather than diverging from it.
-    **The 21,900 appears once, in this note, with no source.**
+14. **NERSA cumulative reconciliation - BOTH figures are real.** Corrected 10 Sep 2026
+    after I wrongly closed this as a phantom.
 
-    A real gap was found INSIDE the file and is now asserted: regional totals sum to 20,116
-    against a stated 20,131, and 313 MW sits in no technology column. Both immaterial today,
-    neither checked before.
+    ```
+    media statement, syndicated   2,619 facilities  20,131 MW  R409bn    RENEWABLES ONLY
+    NERSA to Engineering News     2,692 facilities  21.9 GW    R452.9bn  ALL TECHNOLOGIES
+    ```
+
+    The 73 facilities and 1,769 MW between them are gas, diesel, biomass and co-generation.
+    Both recorded in the data file; this file stays on the renewable basis.
+
+    Still open: whether that boundary reading is right. It is inferred from the media
+    statement's own wording ("124 RENEWABLE energy generation facilities") and has not been
+    confirmed by NERSA.
 15. ~~EDMSA boundary question.~~ **NARROWED 9 Sep 2026.** A decomposition that reconciles:
     sent-out 170.0 Mt, grossed up for 7.6% auxiliary consumption 181.2 (Stats SA measured,
     not assumed), plus coal-mining fugitive methane as CO2e at national-inventory scale
@@ -9213,7 +9219,48 @@ identity ever since. **The stale artefacts were the three places a human would l
 open item, the file metadata and the page. A check that is right while every human-readable
 description of it is wrong is its own kind of failure.
 
-## to-do item 14 was chasing a number that does not exist - 9 Sep 2026
+## I read one press release six times and called it corroboration - 10 Sep 2026
+
+**Superseded the section below, which was wrong.** The 21,900 is real: NERSA confirmed
+2,692 facilities and 21.9 GW to Engineering News on 24 Aug 2026, against the 2,619 and
+20,131 MW in its own syndicated media statement. Both are NERSA's, on different boundaries -
+renewables only versus all technologies. The 1,769 MW between them is gas, diesel, biomass
+and co-generation.
+
+### how the error happened
+
+I searched, found SAnews, News24, allAfrica, Green Building Africa, Infrastructure News and
+the SA Trade Desk carrying identical wording, and treated six agreeing sources as six
+confirmations. **They are one press release syndicated six times.** Engineering News asked
+NERSA directly and got different numbers.
+
+**This is the same error as the EDMSA agreement, made twice in one day.** That entry reads:
+"independent agreement is only evidence when the two things are independent in the way that
+matters." I wrote that in the morning and violated it in the afternoon.
+
+The difference is that with EDMSA the shared lineage was a data source. Here it was a press
+office. Both look like multiple sources at the point of searching, and neither is.
+
+**What would have caught it:** noticing that six results shared a sentence verbatim. Identical
+phrasing across outlets is the signature of syndication, and it was visible in the search
+results I read.
+
+### the file now carries both
+
+`total_mw` stays 20,131, the renewable basis this file tracks.
+`total_mw_all_technologies` is 21,900. The boundary reading is INFERRED from the media
+statement's own wording and is not confirmed by NERSA.
+
+### and the article carried something more useful than either number
+
+NERSA confirmed it has no capacity or systems to track which registered projects reached
+implementation, and there is no prescribed timeframe to build - the certificate is valid for
+the lifespan of the facility. **The register is a record of intent, not a pipeline.** Recorded
+in the data file so nobody treats registered capacity as committed.
+
+---
+
+## SUPERSEDED: to-do item 14 was chasing a number that does not exist - 9 Sep 2026
 
 The item read "SAPVIA 20,131 MW against NERSA 21,900 MW". NERSA's own media statement for
 Q1 2026/27, carried identically by SAnews, News24, allAfrica and four others:
