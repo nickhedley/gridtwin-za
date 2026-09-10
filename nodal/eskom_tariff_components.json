@@ -198,5 +198,214 @@
   "fixed_r_per_month": 0.0,
   "source": "NERSA Reasons for Decision, 18 Feb 2025, Table 11. Flat rate replacing the inclining block structure.",
   "note": "The legacy charge is NOT applied to Homelight, so REIPPPP premium costs are borne by other categories."
+ },
+ "municipal": {
+  "description": "Real municipal residential tariffs, replacing the inferred markup slider. The panel's reference household is a medium-sized Johannesburg home on City Power's Residential Single Phase 80A tariff.",
+  "source": "AMMP SA Electricity Tariff Database, export of 11 Aug 2026, electricity-tariffs.co.za. City Power figures trace to the Schedule of Approved Tariffs FY26/27; the fixed charge is service R304.12 plus capacity R985.11.",
+  "why_a_reference_household": "A national average describes nobody. Municipal residential tariffs vary by a factor of 62 on fixed charges and 2.1 on energy rates, so one named distributor with a real block structure is more useful and more honest than a percentage.",
+  "reference": {
+   "distributor": "City Power Johannesburg",
+   "tariff": "Residential Single Phase 80A",
+   "blocks": [
+    {
+     "from_kwh": 0,
+     "to_kwh": 500,
+     "rate_r_per_kwh": 2.8827
+    },
+    {
+     "from_kwh": 501,
+     "to_kwh": 1000,
+     "rate_r_per_kwh": 3.3082
+    },
+    {
+     "from_kwh": 1001,
+     "to_kwh": 2000,
+     "rate_r_per_kwh": 3.5523
+    },
+    {
+     "from_kwh": 2001,
+     "to_kwh": 3000,
+     "rate_r_per_kwh": 3.7479
+    },
+    {
+     "from_kwh": 3000,
+     "to_kwh": null,
+     "rate_r_per_kwh": 3.9319
+    }
+   ],
+   "fixed_r_per_month": 1289.23,
+   "additional_energy_charge_r_per_kwh": 0.06
+  },
+  "comparison_r": {
+   "Greater Tzaneen Municipality": {
+    "lowest_rate": 1.7589,
+    "max_fixed": 5288.0,
+    "tariffs": 6
+   },
+   "Enoch Mgijima Local Municipality": {
+    "lowest_rate": 1.2541,
+    "max_fixed": 1850.0,
+    "tariffs": 6
+   },
+   "City of Mbombela": {
+    "lowest_rate": 2.1869,
+    "max_fixed": 0.0,
+    "tariffs": 4
+   },
+   "Breede Valley Municipality": {
+    "lowest_rate": 2.18,
+    "max_fixed": 0.0,
+    "tariffs": 4
+   },
+   "KwaDukuza Local Municipality": {
+    "lowest_rate": 2.7145,
+    "max_fixed": 1090.0,
+    "tariffs": 6
+   },
+   "Magareng Local Municipality": {
+    "lowest_rate": 2.121,
+    "max_fixed": 0.0,
+    "tariffs": 4
+   },
+   "Moqhaka Local Municipality": {
+    "lowest_rate": 2.51,
+    "max_fixed": 407.0,
+    "tariffs": 6
+   },
+   "Emakhazeni Local Municipality": {
+    "lowest_rate": 2.117,
+    "max_fixed": 651.0,
+    "tariffs": 12
+   },
+   "Lekwa Local Municipality": {
+    "lowest_rate": 2.1291,
+    "max_fixed": 269.0,
+    "tariffs": 8
+   },
+   "Buffalo City Metro Municipality": {
+    "lowest_rate": 3.12,
+    "max_fixed": 0.0,
+    "tariffs": 2
+   },
+   "Mangaung Metropolitan Municipality": {
+    "lowest_rate": 3.0442,
+    "max_fixed": 325.0,
+    "tariffs": 9
+   },
+   "Langeberg Municipality": {
+    "lowest_rate": 2.1269,
+    "max_fixed": 406.0,
+    "tariffs": 8
+   },
+   "Overstrand Municipality": {
+    "lowest_rate": 2.506,
+    "max_fixed": 421.0,
+    "tariffs": 6
+   },
+   "George Municipality": {
+    "lowest_rate": 3.7111,
+    "max_fixed": 0.0,
+    "tariffs": 1
+   },
+   "Govan Mbeki Municipality": {
+    "lowest_rate": 2.1736,
+    "max_fixed": 358.0,
+    "tariffs": 5
+   },
+   "Drakenstein Municipality": {
+    "lowest_rate": 2.3254,
+    "max_fixed": 4680.0,
+    "tariffs": 18
+   },
+   "City of Cape Town": {
+    "lowest_rate": 3.0922,
+    "max_fixed": 595.0,
+    "tariffs": 7
+   },
+   "City of Tshwane Metropolitan Municipality": {
+    "lowest_rate": 2.4889,
+    "max_fixed": 1228.0,
+    "tariffs": 2
+   },
+   "Stellenbosch Municipality": {
+    "lowest_rate": 2.0664,
+    "max_fixed": 513.0,
+    "tariffs": 16
+   },
+   "Mogalakwena Local Municipality": {
+    "lowest_rate": 2.9515,
+    "max_fixed": 600.0,
+    "tariffs": 2
+   },
+   "Msunduzi Municipality": {
+    "lowest_rate": 2.0213,
+    "max_fixed": 402.0,
+    "tariffs": 13
+   },
+   "City Power Johannesburg": {
+    "lowest_rate": 2.6703,
+    "max_fixed": 1531.0,
+    "tariffs": 34
+   },
+   "Emalahleni Local Municipality": {
+    "lowest_rate": 2.1864,
+    "max_fixed": 1047.0,
+    "tariffs": 13
+   },
+   "City of Ekurhuleni": {
+    "lowest_rate": 1.9478,
+    "max_fixed": 0.0,
+    "tariffs": 4
+   },
+   "City of Matlosana Local Municipality": {
+    "lowest_rate": 2.1266,
+    "max_fixed": 274.0,
+    "tariffs": 10
+   },
+   "Nelson Mandela Bay": {
+    "lowest_rate": 2.62,
+    "max_fixed": 201.0,
+    "tariffs": 16
+   },
+   "Inkosi Langalibalele Local Municipality": {
+    "lowest_rate": 2.4988,
+    "max_fixed": 0.0,
+    "tariffs": 1
+   },
+   "Matjhabeng Local Municipality": {
+    "lowest_rate": 2.43,
+    "max_fixed": 188.0,
+    "tariffs": 12
+   },
+   "Polokwane Local Municipality": {
+    "lowest_rate": 1.9936,
+    "max_fixed": 205.0,
+    "tariffs": 4
+   },
+   "Sol Plaatje Local Municipality": {
+    "lowest_rate": 2.7642,
+    "max_fixed": 98.0,
+    "tariffs": 4
+   },
+   "Steve Tshwete Local Municipality": {
+    "lowest_rate": 2.1847,
+    "max_fixed": 151.0,
+    "tariffs": 8
+   },
+   "Makhado Local Municipality": {
+    "lowest_rate": 2.1643,
+    "max_fixed": 456.0,
+    "tariffs": 8
+   },
+   "Greater Kokstad Local Municipality": {
+    "lowest_rate": 2.0604,
+    "max_fixed": 0.0,
+    "tariffs": 8
+   }
+  },
+  "markup_was_wrong": "The panel previously applied a flat 40% municipal markup to Eskom's cost. That was wrong in CONCEPT, not just in value. Municipalities buy at Eskom BULK rates, far below Homepower, then add their own charges - so a municipal bill is a different tariff built on a cheaper input, not a margin on a retail price. Measured against Homepower 4 at 900 kWh, the premium across distributors runs -44% to +96% with a median of -25%: most are CHEAPER than Eskom direct.",
+  "fixed_charge_finding": "The spread is dominated by fixed charges, not energy. Energy rates run R1.25 to R4.53 across distributors, a factor of 3.6. Fixed charges run R0 to R5,463 a month. For a 200 kWh household the fixed share is 12% in Msunduzi, 69% on City Power and 83% in Emakhazeni - none of which any dynamic tariff, time-of-use signal or rooftop panel can touch.",
+  "inclining_blocks_note": "City Power's residential blocks RISE with consumption: R2.88, R3.31, R3.55, R3.75, R3.93. That is a price climbing with VOLUME while a dynamic tariff would have it climb with SCARCITY, and the two partly cancel - cheap midday solar hours are exactly when a heavy user sits in the dear block. NERSA approved removing inclining blocks from Eskom's Homepower and Homelight in Feb 2025 on the grounds they no longer protect the poor; municipal customers still face them.",
+  "coverage_caveat": "33 distributors after filtering to true residential single-phase. Rows naming non-domestic, commercial, reseller, three-phase or indigent tariffs are excluded - an unfiltered pass caught Tshwane and Emakhazeni COMMERCIAL tariffs and would have put them in a residential comparison."
  }
 }

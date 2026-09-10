@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Forty-four sections follow. This index exists because the file passed 1,400 lines and the
+Forty-five sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3582,6 +3582,69 @@ Homeflex peak > 1.3x Homepower flat        NERSA set the peak-to-standard ratio 
 R12bn in 2026/27, R23bn in 2027/28, R19.7bn thereafter, with tariff impacts of 3.4% and
 2.64%. The panel had treated it as a single expiry year, which overstated recovery in 2027
 and understated it in 2029.
+
+## Most South African municipalities are cheaper than Eskom direct
+
+From AMMP's tariff database, 33 distributors, financial year 2026/27. This replaced an
+inferred 40% markup slider, and it overturned the concept rather than the number.
+
+```
+premium over Eskom Homepower 4, at 900 kWh a month
+Emakhazeni              +96%
+Tshwane                 +22%
+City Power Johannesburg  +4%
+Langeberg               -25%
+Overstrand              -28%
+George                  -41%
+Msunduzi                -44%
+```
+
+**Median -25%. Four of seven are cheaper than Eskom direct**, and the markup slider was
+wrong in SIGN for the majority.
+
+The reason is structural. Municipalities buy at Eskom BULK rates, far below Homepower, then
+add their own charges. A municipal bill is a different tariff built on a cheaper input, not
+a margin on a retail price - so no percentage applied to Eskom's retail cost can represent
+it.
+
+### the spread is a fixed-charge story
+
+```
+energy rates across distributors    R1.25 to R4.53      a factor of 3.6
+fixed charges                       R0 to R5,463/month
+```
+
+For a 200 kWh household the fixed share is **12% in Msunduzi, 69% on City Power and 83% in
+Emakhazeni**. None of it is touched by a dynamic tariff, a time-of-use signal or a rooftop
+panel.
+
+This is the fixed-charge finding, and municipal data makes it far stronger than the Eskom-only
+version: 43% for an Eskom household against 83% for an Emakhazeni one.
+
+### the reference household
+
+The panel now prices a named household rather than a national average: **900 kWh a month in
+Johannesburg, City Power Residential Single Phase 80A**.
+
+```
+kWh/mo   energy R   fixed R   total R   effective   fixed share
+   200        589     1,289     1,878       R9.39           69%
+   600      1,808     1,289     3,097       R5.16           42%
+   900      2,819     1,289     4,108       R4.56           31%
+ 1,400      4,600     1,289     5,890       R4.21           22%
+```
+
+City Power's fixed charge is R1,289.23 a month - service R304.12 plus capacity R985.11, and
+**2.4 times Eskom's R536**.
+
+### and the blocks run against scarcity pricing
+
+City Power's residential blocks RISE with consumption: R2.88, R3.31, R3.55, R3.75, R3.93. A
+dynamic price rises with scarcity. **The two partly cancel** - cheap midday solar hours are
+exactly when a heavy user sits in the dear block.
+
+NERSA removed inclining blocks from Eskom's Homepower and Homelight in February 2025, finding
+they no longer protect the poor. Municipal customers still face them.
 
 ### the municipal markup was hiding a missing cost allocation
 

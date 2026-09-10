@@ -876,9 +876,18 @@ const num = t => {
       }
       // The build must land near the real tariff WITHOUT calibration - that agreement is
       // the only check the method has on itself.
+      // MUST SET THE YEAR. Homepower's published rate is a 2026 figure, so the comparison
+      // has to be made at scenario year 2026. Running at the panel's 2035 default compared a
+      // bill with nine years of asset run-off against today's tariff and read R2.99 - which
+      // looked like a component error and was a year mismatch.
       const rn = run(`
+        const yr = document.getElementById('retYear'); const keepY = yr.value;
+        const keep = JSON.parse(JSON.stringify(state));
+        yr.value = 2026; run();
         const d = retailHourly(); const m = a => a.reduce((x, y) => x + y, 0) / a.length;
-        return d ? { dyn: m(d.dyn), flat: m(d.flat) } : { err: 'no panel' };
+        const out = d ? { dyn: m(d.dyn), flat: m(d.flat) } : { err: 'no panel' };
+        yr.value = keepY; Object.assign(state, keep); run();
+        return out;
       `);
       if (rn && !rn.err && rn.flat){
         const gap = 100 * Math.abs(rn.dyn / rn.flat - 1);
@@ -896,19 +905,30 @@ const num = t => {
         const yr = document.getElementById('retYear'), st = document.getElementById('retStranded');
         const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value, keepS = st.checked;
         const fm = PRESETS['Future electricity mix'];
-        const reset = () => { for (const k of Object.keys(fm)) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k]; };
+        // RESTORE EVERY KEY, not just the preset's. The first version reset only the Future
+        // mix keys, so coalDecomMW set by an earlier check survived into this one and moved
+        // the 2026 figure from R3.34 to R2.99. It read as a component error and was
+        // check-ordering contamination. Checks must not depend on the order they run in.
+        // Restore from a PRISTINE SNAPSHOT rather than rebuilding from SLIDERS. Rebuilding
+        // dropped non-slider keys the page relies on; resetting only the preset's keys let
+        // coalDecomMW from an earlier check survive and moved 2026 from R3.34 to R2.99.
+        // Neither is a component error - both are check-ordering contamination.
+        const pristine = JSON.parse(JSON.stringify(state));
+        const reset = () => {
+          for (const k of Object.keys(state)) delete state[k];
+          Object.assign(state, JSON.parse(JSON.stringify(pristine)));
+        };
         // Homepower is an ESKOM-DIRECT tariff, so the comparison must be made on that
         // supply route. Running it against the municipal default was comparing a bill that
         // includes a municipal margin against one that does not.
-        const sup = document.getElementById('retSupply'); const keepSup = sup.value;
-        reset(); yr.value = 2026; st.checked = true; sup.value = 'eskom'; run();
+        reset(); yr.value = 2026; st.checked = true; run();
         const at2026 = m(retailHourly().dyn), homepower = m(retailHourly().flat);
         reset();
         Object.assign(state, { coalDecomMW: 32000, newWindMW: 20000, newPvMW: 25000,
           newBattMW: 12000, newBattHours: 4, newCcgtMW: 8000, newRooftopMW: 5000, drShiftPct: 7.5 });
-        yr.value = 2035; sup.value = 'eskom'; run();
+        yr.value = 2035; run();
         const gasFirmed = m(retailHourly().dyn);
-        Object.assign(state, keep); yr.value = keepY; st.checked = keepS; sup.value = keepSup; run();
+        Object.assign(state, keep); yr.value = keepY; st.checked = keepS; run();
         return { at2026, homepower, gasFirmed };
       `);
       if (vy && !vy.err && vy.at2026){
