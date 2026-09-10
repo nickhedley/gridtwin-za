@@ -955,7 +955,18 @@ const num = t => {
         // something. It tests less than it did.
         //
         // The ratio that would close the gap exactly is 1.34. Using 1.29 leaves 6%
-        // CIRCULARITY REMOVED 10 Sep 2026. The residential allocation was 1.29, derived as
+        // HOMEPOWER'S ENERGY RATE WAS 10% WRONG UNTIL 10 Sep 2026.
+      //
+      // It read R3.5556, taken from a web summary. The Schedule of Standard Prices for
+      // 2026/27 gives R3.2206 including VAT. Caught by asking whether the tariff blends
+      // usage blocks and then testing against NERSA's own progression: R2.305 in 2024/25
+      // rands grown by the approved 12.7% and 8.76% with VAT is R3.2491 - 0.9% from the
+      // published figure and 9% from the old one.
+      //
+      // A tariff this check depends on should come from the schedule, not a summary. Any
+      // future update to it must too.
+      //
+      // CIRCULARITY REMOVED 10 Sep 2026. The residential allocation was 1.29, derived as
         // Homepower's energy rate over Eskom's average price - two published figures, but one
         // of them was the tariff this check compares against. It now comes from Eskom's
         // 2024/25 cost-to-serve study, Table 42: category C12 urban residential at 320.33

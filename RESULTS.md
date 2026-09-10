@@ -3903,7 +3903,30 @@ proposed structure      R2.305/kWh at every step from 0 to 1,600    flat
 
 So a single flat rate is right for 2026/27.
 
-### but our figure does not reconcile
+### and our figure was 10% wrong
+
+```
+our figure, from a web summary                R3.5556
+Schedule of Standard Prices 2026/27           R3.2206      -10.4%
+
+NERSA progression: R2.305 (2024/25) x 12.7% x 8.76% x VAT   R3.2491
+against the published rate                                   -0.9%
+```
+
+**The progression was right and we were wrong.** Corrected. Homepower 1-4 share the same
+per-kWh rate; only the fixed daily charge differs by supply size.
+
+### the correction strengthens the fixed-charge finding
+
+A lower energy rate makes the same fixed charge a larger share of the bill:
+
+```
+kWh/month    fixed share, old    fixed share, corrected
+      200                 43%                       45%
+      900                 14%                       16%
+```
+
+### how it was found
 
 ```
 NERSA approved flat rate, 2024/25 rands      R2.3050
@@ -3921,6 +3944,8 @@ the fixed-charge phase-in having moved less than assumed.
 **Our figure came from a web summary rather than Eskom's Schedule of Standard Prices**, which
 is published and would settle it.
 
-This matters because Homepower is the panel's independent level check. A 9% error in it means
-the 1% agreement reported above is measured against the wrong target - the panel could be
-1% from a figure that is itself 9% out.
+Homepower is the panel's independent level check, so a 10% error in it made the agreement
+reported above meaningless - the panel was 1% from a figure that was itself 10% out.
+
+**The lesson is about sourcing.** A tariff that a validation depends on should come from the
+published schedule, not from a summary of it. The check was sound; its target was not.
