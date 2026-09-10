@@ -6162,30 +6162,26 @@ panel rendering one sentence. A browser is the only instrument for these.
     in ZERO of twelve on the rebuilt profiles, and Eskom's metered fleet shows night running
     1% above day. The drafts were never staged to the repo, so nothing needs unpublishing.
 
-18. **The diurnal wind shape - PARTLY DIAGNOSED 10 Sep 2026, and it splits in two.**
-    Tested at four hub heights, four API calls at the Northern Cape centroid:
+18. ~~The diurnal wind shape.~~ **CLOSED 10 Sep 2026 as a known data property.** Two
+    hypotheses tested, both cheaply:
 
     ```
-    hub     mean CF   trough hr  peak hr  night/day  corr vs Eskom
-     80 m     34.3%           6       20      0.999          0.435
-    100 m     36.5%           6       20      1.033          0.510
-    120 m     38.4%           6       20      1.058          0.553
-    140 m     39.9%           6       20      1.078          0.579
-    Eskom     35.5%          10       18      1.026
+                        trough   peak    corr   mean CF
+    Eskom metered           10     18   1.000     35.5%
+    ERA5 (Open-Meteo)       10     21   0.768     27.7%
+    MERRA-2 (ours)           6     19   0.600     34.3%
     ```
 
-    **Hub height fixes the night/day RATIO and does nothing for the TIMING.** The trough
-    sits at hour 6 and the peak at hour 20 at EVERY height tested; Eskom is 10 and 18. That
-    four-hour trough displacement is MERRA-2's diurnal cycle, not our configuration, and no
-    refetch will move it.
+    Hub height ruled out - the trough sits at hour 6 at 80, 100, 120 and 140 m.
+    **ERA5 has the morning minimum and MERRA-2 does not**, established fleet-weighted rather
+    than per-site.
 
-    **A refetch at 100 m is still worth considering**, for a reason unrelated to shape: our
-    raw 80 m mean is 34.3% against a measured 35.5%, so the bias correction scales UP by
-    1.075. At 100 m the raw value is 36.5% and the correction becomes 0.97 - a much smaller
-    fitted adjustment, and 80 m sits below most of South Africa's fleet anyway. Cost is
-    1,176 calls, about 24 hours.
+    **Not switching.** MERRA-2 needs a bias correction of 1.075 against ERA5's 1.28, so the
+    change would make the fitted adjustment bigger. The measured benefit to the retail price
+    panel is about 2%.
 
-    **Not urgent.** The floor in `validate_weather` holds the gap where it is.
+    Revisit only if something needs diurnal accuracy more than it needs level accuracy. The
+    0.55 floor in `validate_weather` holds the gap where it is.
 19. **EDMSA** - the boundary question above, plus whether "grid readiness adequate per TDP
     2023/24" reconciles with their own finding that grid absorption is binding.
 20. **Energy Brokers** - the solar ceiling is directly useful to their offtakers.
@@ -9623,6 +9619,35 @@ the failure mode is a new April schedule landing in one field and not another.
 - whether to show Homepower, Homeflex and Homelight side by side - Homeflex already exposes
   households to a 4.4x winter peak-to-offpeak spread, so it is the honest baseline for
   "could South Africans handle a dynamic tariff", and the answer is that some already do
+
+## the diurnal shape, closed - 10 Sep 2026
+
+Four test scripts and about fifteen API calls, most of them free.
+
+**What was ruled out.** Hub height: the trough is at hour 6 at every height from 80 to 140 m,
+which a configuration error would not do. Renewables.ninja ERA5: it does not exist, the API
+returns "Unknown dataset: era5" for wind.
+
+**What was established.** ERA5 through Open-Meteo, at 100 m, through the same Vestas V90
+curve, capacity-weighted to the operational fleet, troughs at hour 10 - exactly Eskom - and
+correlates 0.768 against MERRA-2's 0.600.
+
+**What nearly went wrong three times.** The per-site table says ERA5 is worse: Hydra Central
+scores -0.352. It carries ZERO operational turbines, and its hour-3 peak is the Karoo
+nocturnal low-level jet, which is real and which ERA5 sees. Comparing a single site against a
+national fleet measures the weighting, not the dataset.
+
+**That is the third instance of the same error in one day** - the PVGIS aspect reading, the
+NERSA syndication, and this. In each case a single source or site was compared against an
+aggregate and produced a confident wrong answer. The fix each time was to make the comparison
+like-for-like, and each time it reversed the conclusion.
+
+**The decision: keep MERRA-2.** ERA5 is better on shape and materially worse on level -
+27.7% raw against a measured 35.5%, needing a 1.28 correction where MERRA-2 needs 1.075.
+A bigger fitted adjustment is a worse position even when it buys a better shape.
+
+`test_era5_openmeteo.py` is kept. It is free to run, needs no token, and is the reference for
+what the diurnal shape SHOULD look like if anyone revisits this.
 
 ---
 

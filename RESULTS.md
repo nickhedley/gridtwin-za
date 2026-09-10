@@ -1983,8 +1983,45 @@ a 60 m range is not a configuration choice - it is MERRA-2 reproducing a diurnal
 real fleet does not have.
 
 Our profiles are modelled at 80 m. South Africa has been building at 105-148 m since 2021,
-so the ratio error is partly ours and is fixable; the timing error is the dataset's and is
-not.
+so the ratio error is partly ours and is fixable.
+
+### the timing error is MERRA-2's, established 10 Sep 2026
+
+Renewables.ninja serves MERRA-2 only for wind - it rejects ERA5 with "Unknown dataset". ERA5
+is available free through Open-Meteo, which this project already uses for solar. Fetched at
+100 m, put through the same Vestas V90 curve, and capacity-weighted to match the operational
+fleet:
+
+```
+                    trough   peak    corr   mean CF
+Eskom metered           10     18   1.000     35.5%
+ERA5 (Open-Meteo)       10     21   0.768     27.7%
+MERRA-2 (ours)           6     19   0.600     34.3%
+```
+
+**ERA5 puts the trough at hour 10, exactly where Eskom measures it, and correlates 0.17
+higher.** The morning minimum is a real feature that MERRA-2 does not reproduce.
+
+The per-site numbers do not show this and cannot: Hydra Central scores -0.352 on ERA5 while
+carrying zero operational turbines, because the Karoo nocturnal low-level jet is real and
+ERA5 sees it. **Comparing any single site against a national fleet average measures the
+weighting, not the dataset** - the same error that produced a wrong PVGIS reading and a wrong
+NERSA reading on the same day.
+
+### and we are not switching
+
+MERRA-2 wins the level by a long way: 34.3% raw against a measured 35.5%, needing a bias
+correction of 1.075. ERA5 at 27.7% would need 1.28. **Switching would make the fitted
+adjustment bigger**, and a larger correction means more of the answer is imposed rather than
+earned.
+
+The cost is also not what it appeared. Open-Meteo is free, so the refetch is cheap - but
+every finding built on the wind file would need re-running, and the measured benefit to the
+thing that prompted this is about 2% on the daily price shape.
+
+**Recorded as a known property of the data, not an open task.** ERA5 is the better reference
+for diurnal shape and MERRA-2 the better source for level, and the floor in
+`validate_weather` holds the gap where it is.
 
 Anything in this file that depends on WHEN wind blows rather than how much, over a day
 rather than a season, should be treated as unverified until the diurnal shape is resolved.
