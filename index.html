@@ -872,6 +872,11 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <input id="retStranded" type="checkbox" checked onchange="renderRetail()">
                 Retired coal stays in the asset base
               </label>
+              <label style="font-size:10.5px;color:var(--ink2)" title="The year the scenario's system is costed at. Technology costs decline to it, the existing asset base runs off toward it, one-off recoveries expire before it.">Scenario year
+                <input id="retYear" type="range" min="2026" max="2040" step="1" value="2035"
+                       oninput="renderRetail()" style="vertical-align:middle;width:110px">
+                <span id="retYearVal" class="mono" style="font-size:11px">2035</span>
+              </label>
             </div>
             <div class="pb" style="padding:6px 10px 4px">
               <canvas id="retChart" height="200" aria-label="Shadow dynamic retail price by hour of day, against the flat and time-of-use tariffs a household can buy today"></canvas>
@@ -11780,31 +11785,27 @@ fetch('nodal/eskom_tariff_components.json?v=' + (window.DATA_V || '7'))
 // Loss and levy constants, kept together so neither is duplicated at a call site.
 const RETAIL_LOSS = 0.10;    // technical and non-technical, Eskom reported
 
-function retailComponents(markup, stranded){
-  // ── BOTTOM-UP, FROM NERSA'S ALLOWED REVENUE ──────────────────────────────
-  // Reviewed line by line on 10 Sep 2026. Seven findings; the four material ones are fixed
-  // below and marked. The first version showed the Future electricity mix LOWERING a bill
-  // by 6%; corrected, it raises one by roughly 30%. The review reversed the conclusion.
+function retailComponents(markup, stranded, year){
+  // ── BOTTOM-UP, FROM NERSA'S ALLOWED REVENUE, AT A SCENARIO YEAR ──────────
+  // Reviewed twice on 10 Sep 2026; see review_retail_methodology.md and scope_retail_gaps.md.
+  // The year is what the second review added: every reference model that projects a tariff
+  // forward is anchored to one, and without it a 2035 build was being costed at 2026 prices
+  // on a 2026 asset base with 2026 one-offs.
   const A = RETAIL_T.allowed_revenue_2026_27;
   const C = A.components_r_per_kwh;
+  const Y = A.scenario_year || {};
   const P = { ...FIXED, ...state };
   const r = lastRes;
+  const base = Y.base_year || 2026;
+  year = Math.max(base, Math.min(2040, year || base));
+  const dy = year - base;
 
-  // REVIEW FINDING 1: one denominator, and it is SALES not generation.
-  // The first version divided model costs by generation (222.6 TWh) and used Eskom
-  // components built over dispatchable sent-out (190.81 TWh) - two bases in one sum, and
-  // the second one wrong anyway since it excludes IPP energy. Eskom recovers revenue over
-  // what it SELLS. The scenario's sales are its generation less rooftop self-consumption,
-  // which is never sold, less exports, which are sold on a different tariff.
-  // Sum GENERATION keys only. Summing every numeric field in E was the first version, and it
-  // counted curtailment, exports and storage charging as generation - the Future mix came
-  // out at 460 TWh of sales against a real figure near 215. The key list matches the one
-  // the energy balance itself uses at gridServed.
+  // SALES at the scenario year. Generation less what is never sold, then grown. The growth
+  // slider is read as ANNUAL and compounded - a scenario year makes that the only honest
+  // reading, and it means the Future mix preset's 5% needs revisiting.
   const GEN_KEYS = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal',
                     'ps','batt','ccgt','diesel'];
   const genMWh = GEN_KEYS.reduce((a, k) => a + (r.E[k] || 0), 0);
-  // Storage output is not new energy - it was generated once already and charged in. Rooftop
-  // is never sold. Exports are sold, but not to South African retail customers.
   const salesMWh = Math.max(1, genMWh - (r.E.rooftop || 0) - (r.E.ps || 0) - (r.E.batt || 0)
                               - (r.E.exported || 0));
 
@@ -11816,48 +11817,68 @@ function retailComponents(markup, stranded){
   const opexCoal = A.opex_coal_share || 0.6;
   const opex = C.operating_costs * ((1 - opexCoal) + opexCoal * coalFrac);
 
-  // REVIEW FINDING 2: only the COAL share of asset costs is at stake.
-  // Depreciation and return on assets are whole-company. The first version scaled all of it
-  // by the coal fraction, so retiring coal wrote off Koeberg and the transmission network.
-  // Only the coal-specific share moves; the rest stays regardless.
+  // EXISTING FLEET CAPITAL: RAB roll-forward, the way every regulator does it.
+  // Runs off linearly from 100% at the base year to a floor by the run-off year - the floor
+  // is the long-lived residual: Medupi, Kusile, the wires. Then only the coal share of what
+  // remains is at stake in the stranded choice.
+  const floor = Y.existing_rab_runoff_floor_share ?? 0.35;
+  const toYr = Y.existing_rab_runoff_to_year || 2045;
+  const runoff = Math.max(floor, 1 - (1 - floor) * dy / Math.max(1, toYr - base));
   const coalShare = A.coal_share_of_asset_costs || 0.54;
-  const assetCosts = C.depreciation + C.return_on_assets;
+  const assetCosts = (C.depreciation + C.return_on_assets) * runoff;
   const existingCap = assetCosts * ((1 - coalShare) + coalShare * (stranded ? 1 : coalFrac));
 
-  const newCap = (r.newCapexR || 0) / salesMWh / 1000;
+  // NEW BUILD CAPITAL from BLD_COST with its decline rates, through the same bldAnnuity()
+  // the capacity-expansion LPs use. acap* is retired here: it had no provenance note, no
+  // decline, and disagreed with BLD_COST on today. One cost family, not two - rule 6.
+  // Priced at the midpoint vintage, because a fleet costed at the scenario year was not all
+  // bought in that year.
+  const vintage = base + dy / 2;
+  const costAt = (k) => {
+    const b = (typeof BLD_COST !== 'undefined') ? BLD_COST[k] : null;
+    if (!b) return 0;
+    return b.c2026 * Math.pow(1 - (b.decl || 0), vintage - 2026);
+  };
+  const annuity = (k, mw, hoursMult) => {
+    if (!mw || typeof bldAnnuity !== 'function' || typeof BLD_LIFE === 'undefined') return 0;
+    return mw * 1000 * bldAnnuity(costAt(k) * (hoursMult || 1), BLD_LIFE[k] || 25);
+  };
+  const newCapR = annuity('wind', P.newWindMW) + annuity('pv', P.newPvMW)
+                + annuity('rooftop', P.newRooftopMW)
+                + annuity('batt', P.newBattMW, (P.newBattHours || 4) / 4)
+                + annuity('ccgt', P.newCcgtMW)
+                + annuity('vrfb', P.newVrfbMW) + annuity('ironair', P.newIronAirMW);
+  const newCap = newCapR / salesMWh / 1000;
 
-  // REVIEW FINDING 3, REVERSED the same day: fixed O&M is already inside acap*.
-  //
-  // I added it on the assumption acap was capex-only. The market says otherwise. acapWind
-  // 1650 R/kW-yr at a 35% capacity factor is R0.54/kWh, which is what REIPPPP developers
-  // actually bid all-in - BW5 R0.50, BW6 R0.58. Adding R750/kW-yr of O&M on top gave
-  // R0.78/kWh, 35-55% above any winning bid. A constant that reproduces the market price
-  // on its own is not missing anything.
-  //
-  // Kept at zero rather than deleted so the reasoning survives. The Future mix retail
-  // figure fell from R6.16 to R5.71 when this was removed.
-  const newFom = 0;
+  // Battery augmentation and fixed O&M, which BLD_COST does not carry and ATB does: cells
+  // are replaced to hold capacity, about 2.5% of capex a year, plus 1.5% fixed O&M. Applied
+  // to storage only - wind and PV capex at BLD_COST already reproduces the REIPPPP bid
+  // price all-in, which the second review established the hard way.
+  const battCapex = (P.newBattMW || 0) * 1000 * costAt('batt') * ((P.newBattHours || 4) / 4);
+  const battAug = battCapex * 0.04 / salesMWh / 1000;
 
-  // REVIEW FINDING 6: closure and rehabilitation of what retires, paid in both cases.
   const retiredMW = Math.max(0, P.coalDecomMW || 0);
-  const decomAnnual = retiredMW * 1000 * (A.decommissioning_r_per_kw || 1500) * 0.08;
-  const decom = decomAnnual / salesMWh / 1000;
+  const decom = retiredMW * 1000 * (A.decommissioning_r_per_kw || 1500) * 0.08 / salesMWh / 1000;
 
   const ipp = C.ipp_purchases;
   const imports = C.international_purchases *
                   ((P.importsMW || 0) / Math.max(1, FIXED.importsMW || 1));
-  const fixedItems = C.rca_recoveries + C.arrear_debt + C.environmental_levy;
 
-  // New grid for the scenario, from the model's own transmission capex. Known to be about a
-  // third of what the TDP implies - the panel says so.
+  // ONE-OFFS WITH END DATES. The RCA tranche ends with MYPD6. Arrears are a transfer, not a
+  // cost of supply, and are excluded unless toggled in.
+  const rca = (year <= (Y.rca_ends_fy || 2028)) ? C.rca_recoveries : 0;
+  const arrears = Y.arrears_in_tariff ? C.arrear_debt : 0;
+  const fixedItems = rca + arrears + C.environmental_levy;
+
   const newGrid = (r.txCapexR || 0) / salesMWh / 1000;
 
-  return { fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom, decom,
-           ipp, imports, fixedItems, newGrid, markup, coalFrac, salesTWh: salesMWh / 1e6 };
+  return { fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
+           decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
+           salesTWh: salesMWh / 1e6 };
 }
 
-function retailRaw(marginalP, markup, stranded){
-  const c = retailComponents(markup, stranded);
+function retailRaw(marginalP, markup, stranded, year){
+  const c = retailComponents(markup, stranded, year);
   const sp = RETAIL_T.shadow_tariff_parameters;
   // Only fuel and carbon vary by hour. Everything else is a capacity or obligation cost and
   // is flat - which is why adding them compresses the daily spread so heavily.
@@ -11886,11 +11907,14 @@ function retailHourly(){
   const capOn = capEl ? capEl.checked : true;
   const stEl = document.getElementById('retStranded');
   const stranded = stEl ? stEl.checked : true;
+  const yrEl = document.getElementById('retYear');
+  const year = yrEl ? +yrEl.value : 2035;
+  const yv = document.getElementById('retYearVal'); if (yv && yrEl) yv.textContent = yrEl.value;
 
   const hod = new Array(24).fill(0);
   for (let h = 0; h < 8760; h++) hod[h % 24] += lastRes.marginalP[h] / 1000 / 365;
-  const raw = retailRaw(lastRes.marginalP, markup, stranded);
-  const comp = retailComponents(markup, stranded);
+  const raw = retailRaw(lastRes.marginalP, markup, stranded, year);
+  const comp = retailComponents(markup, stranded, year);
   const dyn = raw.map(v => capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
 
   // A REPRESENTATIVE WEEK, hour by hour, on the same basis as the daily curve. The daily
@@ -12000,10 +12024,15 @@ function renderRetail(){
     + `and 134&nbsp;TWh a year of curtailment; it raises a bill by about half. A build on `
     + `Australia's principle \u2013 60% renewables, gas kept for firming, demand response on `
     + `\u2013 moves it by about 10%, or not at all if retired coal is written off. `
-    + `<strong>The no-gas case is a stress test, not a decarbonisation plan.</strong> `
-    + `Scenario figures are upper bounds: new-build capital is priced at 2026 rates without `
-    + `the model's own decline curves, and today's one-off recoveries are carried forward. `
-    + `See the methodology review.<br><br>`
+    + `<strong>The no-gas case is a stress test, not a decarbonisation plan.</strong><br><br>`
+    + `<strong>Costed at ${c.year}.</strong> New build is priced from the model's own decline `
+    + `curves at the ${c.vintage.toFixed(0)} midpoint vintage, because a fleet standing in `
+    + `${c.year} was not all bought that year. The existing asset base has run off to `
+    + `${(c.runoff*100).toFixed(0)}% of its 2026 value. One-off recoveries have expired: the `
+    + `regulatory clearing account tranche ends with MYPD6, and municipal arrears are a `
+    + `transfer rather than a cost of supply and are excluded. Set the year to 2026 and the `
+    + `panel returns to today \u2013 R3.59 against Homepower's R3.56, which is the method `
+    + `checking itself.<br><br>`
     + `<strong>The week view shows what the daily curve hides.</strong> Averaging every day of `
     + `the year into 24 points flattens a still winter evening into a mild bump. Hour by hour, `
     + `the same tariff runs from R${Math.min(...d.week).toFixed(2)} to `
@@ -14316,7 +14345,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10k';
+const BUILD_STAMP = '2026-09-10l';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

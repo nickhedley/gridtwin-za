@@ -6352,26 +6352,23 @@ a source; at present it has neither.
     markets is an assumption, not a measurement.
 
 
-28. **Shadow dynamic retail price - built, reviewed, and three gaps open.** Panel
-    `nav-retail`, bottom-up from NERSA's allowed revenue, with a stranded-asset control and
-    a representative week. Today lands at R3.66 against Homepower's R3.56 with no
-    calibration. Reviewed twice on 10 Sep; the review reversed the conclusion once and was
-    itself corrected once. `review_retail_methodology.md` has the full trail.
+28. ~~Shadow dynamic retail price.~~ **BUILT AND VALIDATED 10 Sep 2026.** Panel
+    `nav-retail`: bottom-up from NERSA's allowed revenue, costed at a scenario year, with a
+    stranded-asset control, a municipal markup, a price cap and a representative week.
 
-    **Three gaps remain, all pushing scenario figures up:** `acapBatt4h` at 1,500 is 40-60%
-    above its own capex annualised; today's one-off recoveries (RCA, arrears) are carried
-    into a future bill; and new build is priced at 2026 rates when `BLD_COST` already
-    carries decline curves the LPs use. Together they would take the no-gas case from +52%
-    to +20-25% and the gas-firmed case from +10% to near zero - which is the Australian
-    result. Scenario figures are upper bounds until these are fixed; the gas-firmed case is
-    the one to quote.
+    **The external validation passes.** A gas-firmed 60% renewables build at 2035 gives
+    R3.61 against R3.59 today - AEMO and the AEMC find the same for Australia, and nothing
+    here is fitted to that result. At scenario year 2026 the panel returns R3.59 against
+    Homepower's actual R3.56.
 
-    **Fix scoped 10 Sep 2026 in `scope_retail_gaps.md`**, against NREL ATB, CSIRO GenCost,
-    AEMO's target-year snapshots and Ofgem's RAB roll-forward. The decision is a
-    `scenarioYear` control; once it exists all three fixes are small, and two of them close
-    in one change by switching the panel from `acap*` to `BLD_COST` via `bldAnnuity()`. The
-    validation that matters: a gas-firmed 2035 build should land near zero, which is the
-    Australian result and the panel's only external check.
+    Three gaps closed: new build now uses `BLD_COST` decline curves through `bldAnnuity()`
+    at the midpoint vintage; the asset base runs off; one-offs expire. `acap*` is retired
+    for this purpose - it had no provenance note and disagreed with `BLD_COST`.
+
+    Remaining, and recorded rather than fixed: the new-grid line is about a third of what
+    the TDP implies, so scenario grid costs are a floor; the municipal markup double-counts
+    Eskom distribution for a municipal customer and should become a switch; the RAB run-off
+    is a linear approximation where NERSA publishes an actual schedule.
 29. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
     4 Sep 2026.** The gate the scope set - does Eskom publish CSP separately - was answered
     by a dataset the user obtained: **ESK19679, 38,736 hours from April 2022 to August 2026**,

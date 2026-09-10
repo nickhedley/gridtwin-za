@@ -128,6 +128,19 @@
   "decommissioning_r_per_kw": 1500,
   "decommissioning_basis": "Closure and rehabilitation of retired coal plant, annualised. Komati was budgeted at roughly R8bn for a 1 GW station including repurposing, but most of that is the repurposing. Bare closure and rehabilitation is nearer R1,000-2,000/kW. Someone pays it in both the stranded and written-off cases; it is added to both. ASSUMPTION - no South African fleet-wide figure is published.",
   "opex_coal_share": 0.6,
-  "opex_coal_share_basis": "ASSUMPTION. Of Eskom's operating costs, R37bn is employee benefits and the rest is largely maintenance, both concentrated in generation. 60% is taken as coal-station-specific and falls with retirement; 40% is the network and corporate base that does not. Plausible, unsourced, and moves the result by less than the items above."
+  "opex_coal_share_basis": "ASSUMPTION. Of Eskom's operating costs, R37bn is employee benefits and the rest is largely maintenance, both concentrated in generation. 60% is taken as coal-station-specific and falls with retirement; 40% is the network and corporate base that does not. Plausible, unsourced, and moves the result by less than the items above.",
+  "scenario_year": {
+   "description": "Parameters that key off the panel's scenario year. Reference practice: AEMO's ISP reports target-year snapshots; Ofgem rolls the regulated asset base forward annually; NERSA's MYPD does it in three-year windows. GridTwin's dispatch stays a single representative year at the chosen date.",
+   "base_year": 2026,
+   "rca_ends_fy": 2028,
+   "rca_basis": "The regulatory clearing account claws back past variances over a fixed window. The current tranche - including the R54bn RAB correction recovered over three years - ends with MYPD6 in 2027/28. NERSA settlement, April 2026.",
+   "arrears_in_tariff": false,
+   "arrears_basis": "Municipal arrear debt is a transfer from paying customers to non-paying ones, not a cost of supplying electricity. Reference cost-reflective tariff models exclude it. Exposed as a toggle rather than deleted; default excluded.",
+   "existing_rab_runoff_floor_share": 0.35,
+   "existing_rab_runoff_to_year": 2045,
+   "runoff_basis": "The existing fleet's depreciation and return run off as plant ages. Most coal is past half its regulatory life; Medupi and Kusile are not, and neither are the wires. A linear run-off from 100% in 2026 to a 35% floor by 2045 approximates the long-lived residual. ASSUMPTION - NERSA publishes the RAB by business in each MYPD decision and the schedule should be read from there.",
+   "build_vintage": "midpoint",
+   "vintage_basis": "A fleet costed at 2035 was not all bought in 2035. Reference practice prices each vintage at its commissioning year and sums. Without a build pathway the honest approximation is the midpoint between the base year and the scenario year. Stated on the panel."
+  }
  }
 }

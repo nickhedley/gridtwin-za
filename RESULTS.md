@@ -3516,6 +3516,41 @@ schemes and the wires stay either way. On the Future mix the choice is worth abo
 bill, not the 25% the unreviewed panel showed. Still a regulatory decision rather than a
 physical one, and still a control.
 
+### costed at a scenario year, which is what closed the gap
+
+Added 10 Sep 2026 after `scope_retail_gaps.md`. Every reference model that projects a tariff
+forward is anchored to a year: AEMO's ISP reports target-year snapshots, Ofgem rolls the asset
+base forward annually, NERSA's MYPD does it in three-year windows. The panel now has one.
+
+Three things key off it. New build is priced from `BLD_COST`'s decline curves at the midpoint
+vintage, through the same `bldAnnuity()` the capacity-expansion LPs use - `acap*` is retired
+for this purpose. The existing asset base runs off linearly toward a long-lived residual. And
+one-off recoveries expire: the regulatory clearing account tranche ends with MYPD6, and
+municipal arrears are excluded as a transfer rather than a cost of supply.
+
+```
+                                        retail   vs today
+today, costed at 2026                    R3.59          -
+gas-firmed 60% RE, 2035                  R3.61      +0.6%
+gas-firmed 2035, coal written off        R3.37        -6%
+no-gas Future mix, 2035                  R4.53       +26%
+```
+
+**A gas-firmed high-renewables build does not move a household bill.** AEMO and the AEMC both
+find that for Australia; this reproduces it from South African data with no parameter fitted
+to the result. It is the panel's only external validation and it now passes.
+
+The no-gas case remains the outlier at +26%, down from +52% before the year. Still a stress
+test.
+
+### the battery constant was not wrong, it was undocumented
+
+`acapBatt4h` at R1,500/kW-yr against a BLD_COST annuity of R947 looked like a 58% error.
+Wind, PV and rooftop agree within 20%; only storage was far apart. Augmentation and fixed O&M
+at ATB's 4% of capex a year is R324/kW-yr, which takes 947 to 1,271 - most of the gap. The
+constant was carrying them silently. The panel now carries them explicitly and `acap*` is no
+longer read.
+
 ### and then challenged against Australia, which changed it again
 
 ```

@@ -888,6 +888,72 @@ const num = t => {
               + `${gap.toFixed(0)}% apart. This is the method checking itself: no component is `
               + `calibrated to the tariff, so agreement means the components are right.`);
       }
+      // ── THE THREE VALIDATIONS FROM scope_retail_gaps.md ───────────────────
+      // Added 10 Sep 2026 with the scenario year. Each checks against something outside the
+      // panel, which is the only kind of check worth having here.
+      const vy = run(`
+        const m = a => a.reduce((x, y) => x + y, 0) / a.length;
+        const yr = document.getElementById('retYear'), st = document.getElementById('retStranded');
+        const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value, keepS = st.checked;
+        const fm = PRESETS['Future electricity mix'];
+        const reset = () => { for (const k of Object.keys(fm)) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k]; };
+        reset(); yr.value = 2026; st.checked = true; run();
+        const at2026 = m(retailHourly().dyn), homepower = m(retailHourly().flat);
+        reset();
+        Object.assign(state, { coalDecomMW: 32000, newWindMW: 20000, newPvMW: 25000,
+          newBattMW: 12000, newBattHours: 4, newCcgtMW: 8000, newRooftopMW: 5000, drShiftPct: 7.5 });
+        yr.value = 2035; run();
+        const gasFirmed = m(retailHourly().dyn);
+        Object.assign(state, keep); yr.value = keepY; st.checked = keepS; run();
+        return { at2026, homepower, gasFirmed };
+      `);
+      if (vy && !vy.err && vy.at2026){
+        check('at 2026 the panel reproduces the published tariff',
+              Math.abs(vy.at2026 / vy.homepower - 1) < 0.10,
+              `R${vy.at2026.toFixed(2)} at scenario year 2026 against Homepower's `
+              + `R${vy.homepower.toFixed(2)}. The year must add nothing at its origin - if it `
+              + `does, a run-off or expiry is firing when dy is zero.`);
+        const move = 100 * (vy.gasFirmed / vy.at2026 - 1);
+        check('a gas-firmed high-renewables build does not move the bill much',
+              Math.abs(move) < 15,
+              `gas-firmed 60% renewables at 2035 gives R${vy.gasFirmed.toFixed(2)} against `
+              + `R${vy.at2026.toFixed(2)} today, ${move.toFixed(0)}%. AEMO and the AEMC both `
+              + `find such a build does not raise prices materially, and reproducing that is `
+              + `this panel's only external validation. A large move means a cost line has `
+              + `drifted - check new build capital first.`);
+      }
+
+      // ── NEW-BUILD CAPITAL, PINNED AGAINST A HAND COMPUTATION ──────────────
+      // The Australian check above validates the METHOD and is deliberately loose at 15%.
+      // It is not a component detector: a tenfold error in battery augmentation moves the
+      // gas-firmed case only 4.4%, because that scenario carries just 12 GW of storage.
+      // Measured, not assumed.
+      //
+      // So this pins the largest cost line directly. Future mix at 2035, midpoint vintage
+      // 2030.5, hand-computed from BLD_COST and BLD_LIFE at 8%:
+      //
+      //   wind    45 GW x R18,429/kW, 25 yr -> R77.7bn      pv      52 GW -> R48.9bn
+      //   rooftop 20 GW -> R26.6bn                          batt    30 GW at 6h -> R33.8bn
+      //   total R187.1bn over 181 TWh = R1.033/kWh
+      //
+      // The panel reports 1.033. Any drift in a decline rate, a life, the discount rate or
+      // the vintage convention shows here first.
+      const ncap = run(`
+        const yr = document.getElementById('retYear');
+        const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value;
+        Object.assign(state, PRESETS['Future electricity mix']); yr.value = 2035; run();
+        const v = retailComponents(0.40, true, 2035);
+        Object.assign(state, keep); yr.value = keepY; run();
+        return { newCap: v.newCap, vintage: v.vintage };
+      `);
+      if (ncap && !ncap.err && ncap.newCap){
+        check('new-build capital matches the hand computation',
+              Math.abs(ncap.newCap - 1.033) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R1.033 for the Future `
+              + `mix at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
+              + `Australian one above is deliberately loose and will not catch a component.`);
+      }
+
       // ── NEW-BUILD COST MUST STAY NEAR WHAT THE MARKET BIDS ────────────────
       // Added 10 Sep 2026 after a review finding was reversed the same day. I added fixed
       // O&M on top of acap*, assuming acap was capex-only. acapWind 1650 R/kW-yr at a 35%
