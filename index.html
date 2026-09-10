@@ -701,14 +701,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
           <div class="panel" style="margin-top:18px">
             <div class="ph"><h2>The no-gas frontier</h2>
-              <span class="tag">modelled &middot; worst of ten weather years</span>
+              <span class="tag">modelled &middot; worst of twelve weather years</span>
               <button id="frontierBtn" onclick="runFrontier()"
                       style="font-size:10px;padding:3px 8px;margin-left:auto">Compute grid</button></div>
             <div class="pb">
               <div style="font-size:10.5px;line-height:1.5;margin-bottom:9px">
                 How much wind and solar removes the need for gas entirely. Only gas is
                 forced to zero &ndash; coal, storage, nuclear, imports and demand all follow
-                your scenario. Ten seconds: every cell is ten weather years and the worst
+                your scenario. Ten seconds: every cell is twelve weather years and the worst
                 is kept.
               </div>
               <div id="frontierBody"><div style="font-size:10.5px;color:var(--ink2)">Press
@@ -1126,10 +1126,19 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         simplification; the locational signal lands on curtailment and network charges instead.</p>
 
         <div style="font-weight:700;color:var(--ink);margin-top:11px">Resource and demand</div>
-        <p>Hourly wind and solar profiles are per supply area, from ERA5 via Open-Meteo, PVGIS and
-        NASA MERRA-2, across ten weather years so a scenario can be tested against a bad wind year
-        rather than an average one. Demand uses Eskom&rsquo;s actual hourly system profile, scaled
-        by the growth slider.</p>
+        <p>Hourly wind and solar profiles are per supply area across <strong>twelve weather years,
+        2014&ndash;2025</strong>, so a scenario can be tested against a bad wind year rather than an
+        average one. Wind comes from NASA MERRA-2 via Renewables.ninja, sampled at up to twelve
+        sites per region chosen from environmental authorisations and gazetted development zones,
+        then calibrated so the national mean matches Eskom&rsquo;s metered output. Solar is PVGIS
+        satellite data at 5&nbsp;km. Demand is Eskom&rsquo;s measured 2025 hourly profile, domestic
+        only, scaled by the growth slider.</p>
+        <p style="font-size:11px;color:var(--ink2)"><strong>Why the sampling matters.</strong> These
+        profiles used one point per region until September 2026. A single point in a province with a
+        coast, an escarpment and a dry interior is not a province: the national fleet ran out of wind
+        thirteen times more often than the country does, and KwaZulu-Natal&rsquo;s capacity factor was
+        understated by twelve percentage points. Anything drawn from the earlier version, here or
+        elsewhere, should be re-checked against this one.</p>
 
         <div style="font-weight:700;color:var(--ink);margin-top:11px">How it is checked</div>
         <p>Every change runs a test suite before it ships: per-carrier reconciliation against
@@ -2077,7 +2086,7 @@ let redzData = null;
           + `${(r.p90/r.p50*100).toFixed(1)}%</td></tr>`).join('')
       + '</table>'
       + '<div style="font-size:9.5px;color:var(--ink2);margin-top:6px;line-height:1.5">'
-      + `Capacity factor across ten weather years (2014\u20132023) for the ${reg} supply area. `
+      + `Capacity factor across twelve weather years (2014\u20132025) for the ${reg} supply area. `
       + '<strong>P90</strong> is the level exceeded in nine years out of ten \u2013 the number debt is '
       + 'sized against. '
       + rows.map(r => `${r.tech} ran worst in ${r.worst}, best in ${r.best}`).join('; ') + '. '
@@ -3860,11 +3869,16 @@ function printPrefeas() {
   }
   // ── THE NO-GAS FRONTIER ───────────────────────────────────────────────────
   // A 6x4 grid of unserved energy against wind and solar build, with gas removed. The
-  // published finding in RESULTS.md is the WORST of ten weather years, and this reproduces
-  // that basis rather than a cheaper single year: two authorities disagreeing about the
-  // same headline is worse than a slow panel.
+  // published finding in RESULTS.md is the WORST of TWELVE weather years, and this
+  // reproduces that basis rather than a cheaper single year: two authorities disagreeing
+  // about the same headline is worse than a slow panel.
+  //
+  // The count is read from meta.years, not hardcoded - it went from ten to twelve on
+  // 6 Sep 2026 and this comment said "ten" until 10 Sep, which is exactly the drift the
+  // paragraph above warns about.
   //
   // Cost measured 2 Sep 2026: 44 ms per run, 24 cells x 10 years = 240 runs, about 10.6 s.
+  // Twelve years makes that 288 runs, about 12.7 s.
   // Chunked with yields so the page stays responsive and the grid fills in visibly. Button
   // triggered - it must never run on a slider move.
   const FRONT_WIND  = [20000, 40000, 50000, 60000, 70000, 80000];
@@ -13877,7 +13891,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10a';
+const BUILD_STAMP = '2026-09-10b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -9367,6 +9367,40 @@ the export correction - four changes to its inputs, none of which touched it.
 Rewrite the table and the KwaZulu-Natal passage before publishing. The Gauteng-versus-Eastern
 Cape comparison still holds at 23.0% against 36.3%.
 
+## the site never mentioned the profile rebuild - 10 Sep 2026
+
+Asked whether the KwaZulu-Natal note appears anywhere on the site. It did not, and checking
+turned up worse: the methodology section still said **"across ten weather years"**, named
+ERA5, PVGIS and MERRA-2 without saying how they were sampled, and described demand as
+Eskom's system profile without the domestic-only correction.
+
+That text survived the profile rebuild, the demand rebuild, the solar timezone fix and the
+export correction - four changes to its own subject matter.
+
+Three more places said ten, including one citing 2014-2023, and a code comment claimed to
+reproduce "the WORST of ten weather years" as the published basis when RESULTS.md had moved
+to twelve.
+
+### what the page says now
+
+The methodology paragraph names twelve years, the multi-site sampling, the calibration
+against Eskom's metered output, PVGIS at 5 km, and domestic-only demand. Under it:
+
+  "These profiles used one point per region until September 2026. A single point in a
+   province with a coast, an escarpment and a dry interior is not a province: the national
+   fleet ran out of wind thirteen times more often than the country does, and
+   KwaZulu-Natal's capacity factor was understated by twelve percentage points. Anything
+   drawn from the earlier version, here or elsewhere, should be re-checked against this
+   one."
+
+**This matters more than an ordinary stale line.** The model's claim is that its inputs are
+checkable. Anyone who read a GridTwin figure before September 2026 got one built on
+single-point sampling, and had no way to know which version they were looking at.
+
+`validate_weather` 61 -> 63: the page must state the weather-year count and it must match
+the data, and it must disclose the September 2026 resampling. Verified by deleting the
+paragraph - it fires.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

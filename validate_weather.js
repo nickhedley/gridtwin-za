@@ -381,6 +381,33 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
     }
   }
 
+  // ── THE SITE MUST DISCLOSE THE PROFILE REBUILD ──────────────────────────
+  // Added 10 Sep 2026. The methodology section said "ten weather years" and named ERA5,
+  // PVGIS and MERRA-2 without saying how they were sampled - text that predated the
+  // 6 Sep rebuild and survived it, along with the demand rebuild, the solar timezone fix
+  // and the export correction.
+  //
+  // This matters more than an ordinary stale line. The model's whole claim is that its
+  // inputs are checkable, and anyone who read a GridTwin figure before September 2026 got
+  // one built on single-point sampling: the national fleet ran out of wind thirteen times
+  // more often than the country does, and KwaZulu-Natal was understated by twelve points.
+  // A reader has no way to know which version they saw unless the page says so.
+  {
+    let html = '';
+    try { html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'); } catch (e) {}
+    if (html){
+      check('the page states the weather-year count and it matches the data',
+            /twelve weather years/i.test(html) && !/across ten weather years/i.test(html),
+            'the methodology section must name the actual number of weather years. It read '
+            + '"ten" until 10 Sep 2026, two rebuilds after that stopped being true.');
+      check('the page discloses that profiles were resampled in Sep 2026',
+            /sites per region/i.test(html) && /September 2026/i.test(html),
+            'the methodology section must say the profiles used one point per region until '
+            + 'September 2026, so a reader can tell which version any earlier figure came '
+            + 'from. Removing that note makes prior published work unattributable.');
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} weather checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log(f)); }
   if (notes.length) { console.log('\nNOTES:'); notes.forEach(n => console.log('  ' + n)); }
