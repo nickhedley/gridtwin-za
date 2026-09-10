@@ -12076,8 +12076,13 @@ function renderQueuePressure(){
 
   host.innerHTML =
       '<div style="font-size:10.5px;color:var(--ink2);margin-bottom:9px;line-height:1.5">'
-    + 'Capacity already registered with NERSA against the connection headroom NTCSA publishes for each '
-    + 'supply area. A region above 100% has more projects queued than grid to take them.</div>'
+    + 'Capacity registered with NERSA against the connection headroom NTCSA publishes for each '
+    + 'supply area. A region above 100% has more registered than grid to take it. '
+    + '<strong>Registrations are cumulative since 2018 and include plant already built.</strong> '
+    + 'NERSA has confirmed it cannot track which registered projects were implemented, and a '
+    + 'certificate never expires \u2013 so this overstates the queue wherever registrations have '
+    + 'already connected. The Western Cape reads 253&#37; on all registrations and nearer 116&#37; '
+    + 'on those not yet operational.</div>'
     + '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
     + '<tr style="border-bottom:1px solid var(--line2)">'
     + '<th style="text-align:left;padding:4px 6px">Supply area</th>'

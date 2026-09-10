@@ -754,6 +754,38 @@ const num = t => {
     }
   }
 
+  // ── THE QUEUE PRESSURE PANEL MUST SAY WHAT ITS NUMERATOR IS ─────────────
+  // Added 10 Sep 2026. The panel divides NERSA registered capacity by NTCSA connection
+  // headroom and calls anything over 100% "more projects queued than grid to take them".
+  //
+  // The numerator is cumulative since 2018 and includes plant ALREADY BUILT AND CONNECTED.
+  // NERSA confirmed to Engineering News on 24 Aug 2026 that it cannot track which
+  // registrations were implemented, and a certificate never expires. So a region that
+  // successfully connected its queue still reads as congested.
+  //
+  // Measured: the Western Cape is 253% on all registrations and about 116% on those not
+  // yet operational. That is the difference between "twice the grid available" and
+  // "slightly over", on the same data.
+  //
+  // The panel is still worth having - the ratio bounds the problem from above - but it
+  // must say so. This asserts the caveat is present, because a panel rewrite that drops
+  // it leaves a number that reads as twice as alarming as the evidence supports.
+  {
+    const r = run(`
+      const el = document.getElementById('queueBody');
+      return { text: el ? (el.textContent || '') : '' };
+    `);
+    if (r && !r.err && r.text && r.text.length > 40){
+      const t = r.text.toLowerCase();
+      check('the queue pressure panel states that registrations include built plant',
+            t.includes('already built') || t.includes('cumulative since 2018'),
+            `the panel text does not say its numerator includes connected plant. `
+            + `Registered capacity is cumulative since 2018 with no expiry and no `
+            + `implementation tracking, so the ratio is an UPPER BOUND on queue pressure, `
+            + `not a measurement of it.`);
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

@@ -9290,6 +9290,40 @@ rollup that drifts silently is how the two stale rollups on 27 Aug happened.
 `validate_capacity` 29 -> 31. Verified by moving `meta.total_mw` to 20,800, as a quarterly
 update landing in one place would: the check fires.
 
+## the queue pressure panel was overstating by roughly double - 10 Sep 2026
+
+Direct follow-through from the NERSA correction. The panel divides registered capacity by
+NTCSA connection headroom and calls anything over 100% "more projects queued than grid to
+take them".
+
+**The numerator is cumulative since 2018 and includes plant already built and connected.**
+NERSA confirmed it cannot track which registrations were implemented, and a certificate
+never expires. A region that successfully connected its queue still reads as congested.
+
+```
+region            registered   operational   not yet built   headroom
+Western Cape           2,988         1,616           1,372      1,180
+  ratio on all registrations                                     253%
+  ratio on those not yet operational                             116%
+```
+
+**That is the difference between "twice the grid available" and "slightly over", on the
+same data.**
+
+The panel now says so. It is still worth having - the ratio bounds the problem from above -
+but as an upper bound rather than a measurement.
+
+### why the caveat rather than a corrected ratio
+
+Subtracting operational from registered is not safe everywhere. The Eastern Cape comes out
+NEGATIVE at -975 MW, because REIPPPP plant predates the 2018 registration regime and is
+licensed rather than registered. The two datasets do not align project for project, so a
+"corrected" ratio would be wrong in a different way. Stating the bound honestly beats
+computing a number that cannot be defended in every region.
+
+`validate_consistency` 57 -> 58 asserts the caveat is present. A panel rewrite that drops it
+leaves a number reading twice as alarming as the evidence supports.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
