@@ -95,7 +95,18 @@
   "retail_margin_r_per_kwh": 0.3,
   "retail_margin_basis": "IMPORTED. South Africa has no competitive retail supply, so there is no domestic margin to observe. European dynamic tariffs - Tibber, aWATTar, Octopus - add 1 to 3 euro-cents per kWh plus a monthly fee. At roughly R20 to the euro that is R0.20 to R0.60; R0.30 is the low-middle. This is the single most assumption-laden number in the panel and should be labelled as such wherever it appears.",
   "peak_uplift_note": "Octopus adds 10-14 p/kWh between 16:00 and 19:00 on top of wholesale, because the network cost of the evening peak is real and separate from the energy cost. We do NOT add one: our transmission cost is already carried in txRPerKWyr and the Eskom network capacity charge is in the fixed component, so adding an uplift would double-count. Stated here because its absence is a deliberate choice, not an oversight.",
-  "wind_shape_caveat": "The modelled wind profile's daily shape is imperfect - its trough sits four hours early against Eskom's metered fleet. Measured effect on this panel: applying the full three-hour correction moves the daily price shape by a 0.967 correlation and R18/MWh on a R808 mean, about 2%. Wind is only 12.9% of the daily net-load swing; demand and solar set the shape. Small, but state it."
+  "wind_shape_caveat": "The modelled wind profile's daily shape is imperfect - its trough sits four hours early against Eskom's metered fleet. Measured effect on this panel: applying the full three-hour correction moves the daily price shape by a 0.967 correlation and R18/MWh on a R808 mean, about 2%. Wind is only 12.9% of the daily net-load swing; demand and solar set the shape. Small, but state it.",
+  "retail_margin_sa_verified": {
+   "description": "The supply margin was imported from European dynamic tariffs and had no South African source. It now has one, from Eskom's own cost-to-serve study.",
+   "cts_retail_r_per_pod_day": 9.24,
+   "cts_retail_r_per_month": 280.9,
+   "cts_retail_r_per_kwh_at_900": 0.312,
+   "held_r_per_kwh": 0.3,
+   "gap_pct": 4,
+   "source": "Eskom 2024/25 cost-to-serve study, Table 42, category C12 urban residential <500V. The retail column covers metering, billing, vending and customer service, which the CTS separates from network costs.",
+   "why_this_is_the_like_for_like": "The CTS retail column is the retail FUNCTION only. Municipalities are also retailers in a sense, and their gross addition over Eskom bulk is observable - median R1.860/kWh at 900 kWh across 28 tariff families, against a bulk cost of R1.980. But that covers the municipal distribution network and their revenue surplus as well as the retail function, so it is an UPPER BOUND, not a measure. The CTS is the only source that splits them.",
+   "conclusion": "R0.312 derived against R0.30 held, 4% apart. The European anchor was sound and the constant is left unchanged rather than tuned to the new figure - moving it 4% to match would be fitting to a single source. What changed is that it is now corroborated instead of imported."
+  }
  },
  "allowed_revenue_2026_27": {
   "description": "NERSA's approved allowed revenue and Eskom's own decomposition of it. This is the skeleton of a retail tariff: a revenue requirement, split into components, recovered per kWh. The panel builds the shadow price bottom-up from these rather than anchoring to a published tariff.",

@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Fifty-four sections follow. This index exists because the file passed 1,400 lines and the
+Fifty-five sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -4157,3 +4157,39 @@ sides of the comparison.
 The database export carried an "Additional Energy Charge" of R0.06/kWh with no explanation,
 and the panel was applying it to every block. It does not appear in the published schedule.
 Removed - it was worth R62 a month at 900 kWh. Anything reinstated needs its source.
+
+---
+
+## The retail margin now has a South African source
+
+It was R0.30/kWh imported from European dynamic tariffs, and the last constant in the panel
+with no local corroboration. Eskom's cost-to-serve study has it.
+
+```
+CTS Table 42, category C12 urban residential
+  retail costs        R9.24/POD/day = R280.90/month
+  at 900 kWh                          R0.312/kWh
+  held                                R0.300/kWh      4% apart
+```
+
+The CTS retail column is the retail FUNCTION only - metering, billing, vending, customer
+service - separated from network costs. That is the like-for-like.
+
+### municipalities as retailers: an upper bound, not a measure
+
+Municipalities buy at bulk and sell at retail, so what they add is observable. At 900 kWh,
+ex VAT, across 28 tariff families:
+
+```
+Eskom bulk (Megaflex time-weighted, +9.01% municipal)   R1.980/kWh
+median municipal retail                                 R3.840/kWh
+median addition                                         R1.860/kWh
+```
+
+**But that addition covers the municipal distribution network and their revenue surplus as
+well as the retail function.** It bounds the retail margin from above; it does not measure it.
+The CTS is the only source that splits them.
+
+**The constant is left at R0.30 rather than tuned to R0.312.** Moving it 4% to match a single
+source would be fitting rather than checking. What changed is that it is corroborated instead
+of imported.

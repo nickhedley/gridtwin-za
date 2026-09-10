@@ -270,6 +270,28 @@ console.log('\nTariff constants against their published sources\n');
         + `per distributor rather than shifted as a block.`);
 }
 
+// ── 11. THE RETAIL MARGIN HAS A SOUTH AFRICAN SOURCE ───────────────────────
+// It was imported from European dynamic tariffs and was the last constant in the panel with
+// no local corroboration. Eskom's cost-to-serve study has it: Table 42 gives R9.24/POD/day of
+// retail cost for category C12 urban residential, which at 900 kWh is R0.312/kWh against the
+// R0.30 held.
+//
+// The constant is deliberately NOT tuned to 0.312 - moving it to match a single source would
+// be fitting rather than checking. The check asserts they agree within 20%.
+{
+  const sp = T.shadow_tariff_parameters || {};
+  const v = sp.retail_margin_sa_verified || {};
+  const derived = (v.cts_retail_r_per_pod_day || 0) * 30.4 / 900;
+  const held = sp.retail_margin_r_per_kwh;
+  check('the retail margin agrees with the CTS residential retail cost',
+        held > 0 && derived > 0 && Math.abs(held / derived - 1) < 0.20,
+        `held R${held}/kWh against R${derived.toFixed(3)} derived from `
+        + `R${v.cts_retail_r_per_pod_day}/POD/day at 900 kWh. The CTS retail column is the `
+        + `retail function only - metering, billing, vending, customer service - which is the `
+        + `like-for-like. What municipalities add over Eskom bulk, a median R1.86/kWh, also `
+        + `covers their network and surplus and is an upper bound, not a measure.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');
