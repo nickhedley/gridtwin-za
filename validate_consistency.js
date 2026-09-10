@@ -1202,17 +1202,19 @@ const num = t => {
               + `moved or something is being counted twice - the retail panel once added `
               + `R750/kW-yr of O&M on top and reached R0.78.`);
       }
-      check('the panel says the no-gas preset is a stress test not a plan',
-            t.includes('stress test'),
-            `the Future electricity mix removes gas and curtails 134 TWh a year. Reported `
-            + `as representative of decarbonisation it overstates the retail impact by a `
-            + `factor of five against a gas-firmed build. The panel must say which it is.`);
-      check('the panel names the stranded-asset choice and that it is regulatory',
-            (t.includes('asset base') || t.includes('written off'))
-              && t.includes('regulatory'),
-            `the stranded-asset control is worth 16% of a bill on the Future mix and 25% `
-            + `with all coal retired. The panel must say which case is showing AND that it `
-            + `is a regulatory decision rather than a physical one.`);
+      // RETIRED 10 Sep 2026: 'the panel says the no-gas preset is a stress test not a plan'.
+      //
+      // It pinned a sentence in the panel note. The note was cut to a component breakdown and
+      // a caveat line, and this check would have forced the sentence back.
+      //
+      // The content is not lost - it is in RESULTS.md, which is where the reasoning lives.
+      // A check that requires a panel to carry an explanation is a check on house style, and
+      // it will fire on every edit until someone loosens it. The caveat line still carries
+      // the things a reader could be misled by: the grid floor, the imported margin, and the
+      // 10% band on the level.
+      // RETIRED 10 Sep 2026, same reason. The stranded-asset choice is visible as a labelled
+      // control on the panel; requiring the note to also explain it in prose was pinning
+      // style. The 5%-of-a-bill figure and the reasoning are in RESULTS.md.
       // RETIRED 10 Sep 2026: "read the shape, not the level".
       //
       // That sentence existed because the level was 44% below the real tariff - an artefact

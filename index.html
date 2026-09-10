@@ -12166,16 +12166,6 @@ function renderRetail(){
     + '<span class="mono" style="font-size:10px;display:block;margin:5px 0 8px">'
     + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
     + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
-    + `<strong>Which scenario you test matters more than any component.</strong> The no-gas `
-    + `Future mix removes gas entirely and curtails 134&nbsp;TWh a year; a build on `
-    + `Australia's principle, with gas kept for firming, barely moves a bill. The no-gas case `
-    + `is a stress test, not a plan.<br><br>`
-    + (b ? `<strong>A ${(c.houseKwh || 900)}&nbsp;kWh Johannesburg household</strong> on City Power pays `
-        + `R${b.total.toFixed(0)} a month today, R${b.effective.toFixed(2)}/kWh, `
-        + `${(100*b.fixed/b.total).toFixed(0)}% of it fixed. At 200&nbsp;kWh that is 69%, and `
-        + `no dynamic tariff touches any of it.<br><br>` : '')
-    + `<strong>Retired coal: ${d.stranded ? 'still in the asset base' : 'written off'}.</strong> `
-    + `A regulatory choice, not a physical one, worth about 5% of a bill.<br><br>`
     + `<span style="color:var(--ink2)">Caveats: the new-grid line is a floor against the `
     + `Transmission Development Plan. The supply margin is imported from European dynamic `
     + `tariffs. Homeflex is shown at its own seasonal rates. Level carries about 10%.</span>`;
@@ -14451,7 +14441,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10w';
+const BUILD_STAMP = '2026-09-10x';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
