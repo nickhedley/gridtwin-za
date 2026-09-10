@@ -56,5 +56,16 @@
   "typical_consumption_kwh_per_year": 2700,
   "structure": "day-ahead wholesale, half-hourly, plus regional network costs, plus a peak uplift, plus margin, plus VAT, subject to a cap",
   "note": "The standing charge is NOT dynamic. That is the honest limit on what any dynamic tariff can shift, and it matters more in South Africa: a 200 kWh Homepower household is already at 43% fixed against Octopus's 24%."
+ },
+ "shadow_tariff_parameters": {
+  "description": "The four parameters the shadow dynamic tariff needs that Eskom does not publish. Each is sourced; two are South African observations and two are imported from markets that actually run dynamic tariffs.",
+  "municipal_markup_pct": 40,
+  "municipal_markup_basis": "Midpoint of the observed Cape Town range. A Cape Town household typically pays R3.80-5.20/kWh on the standard block against R3.22/kWh for an Eskom-direct Homepower customer, so 18-61%; the midpoint is 40%. For scale: PowerForum found Ekurhuleni at 86%, the highest in the country, and Steyn (2004) put cost-reflective distributor profit at 10-20% on roughly 10% technical losses. 40% therefore sits between what cost recovery justifies and what the worst case charges. EXPOSE THIS AS A SLIDER - the spread between metros is an order of magnitude and no single figure describes the country.",
+  "cap_r_per_kwh": 12.84,
+  "cap_basis": "Octopus Agile caps at 100 p/kWh against an Ofgem standard-variable cap of 27.69 p/kWh for Jan-Mar 2026, a ratio of 3.6x. Applying the same ratio to Homepower 4's flat energy rate of R3.5556/kWh gives R12.84. Octopus states the reason plainly: their wholesale can exceed 200 p/kWh at peak and without a cap 'the peak rates would get totally extortionate for a domestic customer'. Our shortage hours price at the value of lost load, around R80,000/MWh, so an uncapped pass-through would be absurd rather than merely high.",
+  "retail_margin_r_per_kwh": 0.3,
+  "retail_margin_basis": "IMPORTED. South Africa has no competitive retail supply, so there is no domestic margin to observe. European dynamic tariffs - Tibber, aWATTar, Octopus - add 1 to 3 euro-cents per kWh plus a monthly fee. At roughly R20 to the euro that is R0.20 to R0.60; R0.30 is the low-middle. This is the single most assumption-laden number in the panel and should be labelled as such wherever it appears.",
+  "peak_uplift_note": "Octopus adds 10-14 p/kWh between 16:00 and 19:00 on top of wholesale, because the network cost of the evening peak is real and separate from the energy cost. We do NOT add one: our transmission cost is already carried in txRPerKWyr and the Eskom network capacity charge is in the fixed component, so adding an uplift would double-count. Stated here because its absence is a deliberate choice, not an oversight.",
+  "wind_shape_caveat": "The modelled wind profile's daily shape is imperfect - its trough sits four hours early against Eskom's metered fleet. Measured effect on this panel: applying the full three-hour correction moves the daily price shape by a 0.967 correlation and R18/MWh on a R808 mean, about 2%. Wind is only 12.9% of the daily net-load swing; demand and solar set the shape. Small, but state it."
  }
 }
