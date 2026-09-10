@@ -3456,103 +3456,63 @@ schedule at 8.76%; the 2027/28 ERTSA at 8.83% moves the level, not the shape.
 
 ---
 
-## A cost-reflective dynamic tariff would be calmer than the one Eskom already sells
+## What decarbonisation does to a retail bill, built bottom-up
 
-Built 10 Sep 2026 as the shadow dynamic retail panel. Hourly, structured after Octopus Agile
-whose formula is published: wholesale plus transmission and distribution, a municipal markup,
-losses, levies, a supplier margin, then VAT, then capped.
+Rebuilt 10 Sep 2026 from NERSA's allowed revenue rather than anchored to a published tariff.
+Two earlier versions scaled to Homepower's rate; that could only show fuel moving, because
+everything else was folded into one factor.
 
-```
-tariff                  mean      cheapest      dearest    spread
-Homepower, flat        R3.56         R3.56        R3.56      1.0x
-Homeflex, time of use  R3.55         R1.91        R8.47      4.4x
-Shadow dynamic         R3.56    R3.32 @ 02    R5.29 @ 19    1.6x
-```
-
-**The dynamic tariff is the least volatile of the three.** Every component except energy is
-flat across the day, so adding them compresses the spread: a wholesale swing of roughly 5x
-becomes 1.6x at the meter, before the fixed charge is counted at all.
-
-**Homeflex is not a mild version of dynamic pricing. It is a sharper one.** Eskom already
-sells a tariff with a 4.4x winter peak-to-off-peak spread, and every household with rooftop
-PV is required to be on it. The question of whether South Africans could handle exposure to
-time-varying prices is already answered: some are.
-
-### what decarbonisation does to a household bill
-
-The reason the panel exists. Energy component, 900 kWh a month, fixed charge held at R536:
+### the components, R/kWh before losses, markup and VAT
 
 ```
-scenario                   energy R/kWh   spread   monthly bill   energy share
-today                              3.56    1.59x         R3,740            86%
-Future electricity mix             1.62    2.31x         R1,994            73%
-all coal retired, no gas           1.75    3.41x         R2,111            75%
+fuel and carbon              0.484      from the dispatch run
+generation opex              0.422      scales with retained coal
+existing fleet capital       0.496      the stranded-asset control
+new build capital            0.000      from newCapexR
+IPP purchase obligations     0.302      fixed - PPAs already signed
+transmission                 0.068
+imports, levies, arrears     0.114
 ```
 
-**The energy component falls 54% and the daily spread widens from 1.6x to 2.3x.** Cheaper
-power and more reason to time it, together.
+**At today's system this gives R3.92/kWh against Homepower's actual R3.56 - within 10% with
+no calibration.** That agreement is the only check the method has on itself, and it is the
+reason to trust the scenario results.
 
-The fixed charge does not move, so it grows as a share of what is left - the opposite
-direction to the tariff phase-in, and for a different reason.
-
-### the tariff is calibrated to today, then held
+### the stranded-asset question is worth a quarter of a bill
 
 ```
-tariff                  mean      cheapest      dearest    spread
-Homepower, flat        R3.56         R3.56        R3.56      1.0x
-Shadow dynamic         R3.56    R3.32 @ 02    R5.29 @ 19      1.6x
-underlying marginal    R1.98         R1.85        R2.95
+scenario                  stranded   written off   difference
+today                         3.92          3.92     none yet
+Future electricity mix        3.68          3.08         -16%
+all coal retired              3.54          2.65         -25%
 ```
 
-**Same average as Homepower at today's system, different distribution.** That is what a
-regulator does: the allowed revenue is a given and the tariff decides how to collect it.
+**Identical today, because nothing has retired.** Under the Future mix, R3.68 if consumers
+keep paying for closed plant and R3.08 if they do not.
 
-**The scale is calibrated once, on the default scenario, and then held fixed.** The first
-version recomputed it per scenario and that destroyed the panel: building 120 GW of
-renewables halved the underlying marginal cost and the mean still read R3.56, because the
-rescaling absorbed exactly the effect the panel exists to show. Holding it fixed treats it as
-what it is - a markup structure, which does not fall because the generation mix changed.
+That is a regulatory decision, not a physical one, and it is larger than anything the
+generation mix does on its own. Stranded is what a regulated asset base actually does, and
+NERSA's R54bn RAB correction in 2025-26 shows how live the question is.
 
-The underlying marginal cost sits 44% below the tariff because this model treats the existing
-fleet as sunk while a bill does not - roughly R67 billion of depreciation and R43 billion of
-return on assets a year, plus operating costs and IPP purchase obligations. **Scaling to
-Homepower's average puts that recovery back without pretending to itemise it**, which matters
-because itemising it invites double-counting: IPP purchases pay for energy this model already
-dispatches at near-zero marginal cost.
+### fuel is 30% of the requirement, which is the reason the spread is small
 
-The shape is modelled. The level is Eskom's.
+A scenario that removes fuel entirely leaves 70% of the cost standing and adds capital for
+whatever it builds. Everything except fuel is a capacity or obligation cost and is flat
+across the day, so the daily spread is only 1.18x - **narrower than Homeflex's 4.4x winter
+spread, and narrower than the earlier scaled version suggested.**
 
-Two checks in `validate_consistency`. The panel must say both that it is revenue-neutral and
-why the marginal cost sits below - without both, either the level reads as an accusation or
-the scaling reads as a fudge. And the mean itself is asserted against Homepower's, one-sided,
-because the price cap may legitimately clip it downward but nothing should push it above.
+A cost-reflective dynamic tariff in South Africa would be a calm instrument. Most of what a
+household pays is not decided by the hour.
 
-### what this comparison does not equalise
+### one error worth recording
 
-Two things, found by looking at the rendered panel rather than the numbers:
+The first bottom-up version scaled IPP purchase obligations with new renewable capacity -
+"more build, more PPAs". The Future mix came out at R10.33/kWh. It scaled an obligation by
+CAPACITY ratio, so twelve times the build gave thirteen times the cost per kWh while those
+plants also delivered far more energy, and it charged for new plant that `newCapexR` already
+costs.
 
-**Homeflex is shown at high-demand-season rates.** Eskom publishes six Homeflex rates - peak,
-standard and off-peak across a winter and a summer season - and only the winter pair are in
-the data file. So the 4.4x spread is a WINTER figure being set against an annual-average
-dynamic price, and Homeflex's annual spread is narrower. The other four rates were
-deliberately not estimated; they are published and should be read, not inferred.
+**That is exactly the double-count that argued against itemising in the first place**, and it
+appeared the moment the itemising was done. IPP purchases are an obligation on PPAs already
+signed and do not grow because a scenario builds more.
 
-**Homepower's R3.5556 is not pure energy.** It still carries a third of the service and
-administration charge and 70% of the generation capacity charge, both mid phase-in. Anchoring
-to it therefore imports some fixed-cost recovery into the energy component.
-
-Neither invalidates the panel and both would make it misleading if unstated, because a reader
-comparing three numbers in one table assumes they share a basis. Both are now on the panel
-and asserted in `validate_consistency`.
-
-### what is imported, and what is not
-
-Only the supply margin, R0.30/kWh, taken from European dynamic tariffs because South Africa
-has no competitive retail to observe one. The municipal markup of 40% is the midpoint of the
-observed Cape Town range and is a slider; Ekurhuleni has been measured at 86%. The cap of
-R12.84/kWh is the ratio Octopus Agile holds to Ofgem's cap, applied to Homepower's flat rate.
-Everything else is Eskom's published schedule or this model's own dispatch.
-
-No peak uplift is added, though Octopus adds 10-14 p/kWh at 16:00-19:00. Ours is already
-carried in the transmission cost and Eskom's network capacity charge; adding one would
-double-count. The absence is deliberate.

@@ -69,5 +69,52 @@
   "retail_margin_basis": "IMPORTED. South Africa has no competitive retail supply, so there is no domestic margin to observe. European dynamic tariffs - Tibber, aWATTar, Octopus - add 1 to 3 euro-cents per kWh plus a monthly fee. At roughly R20 to the euro that is R0.20 to R0.60; R0.30 is the low-middle. This is the single most assumption-laden number in the panel and should be labelled as such wherever it appears.",
   "peak_uplift_note": "Octopus adds 10-14 p/kWh between 16:00 and 19:00 on top of wholesale, because the network cost of the evening peak is real and separate from the energy cost. We do NOT add one: our transmission cost is already carried in txRPerKWyr and the Eskom network capacity charge is in the fixed component, so adding an uplift would double-count. Stated here because its absence is a deliberate choice, not an oversight.",
   "wind_shape_caveat": "The modelled wind profile's daily shape is imperfect - its trough sits four hours early against Eskom's metered fleet. Measured effect on this panel: applying the full three-hour correction moves the daily price shape by a 0.967 correlation and R18/MWh on a R808 mean, about 2%. Wind is only 12.9% of the daily net-load swing; demand and solar set the shape. Small, but state it."
+ },
+ "allowed_revenue_2026_27": {
+  "description": "NERSA's approved allowed revenue and Eskom's own decomposition of it. This is the skeleton of a retail tariff: a revenue requirement, split into components, recovered per kWh. The panel builds the shadow price bottom-up from these rather than anchoring to a published tariff.",
+  "source": "NERSA MYPD6 decision of 30 Jan 2025 and the 2026 settlement: approved total revenue R384,610m for 2025/26. The component split is Eskom's own published revenue build-up for the same year, which totals R444.7bn as APPLIED FOR; NERSA approved 86.5% of it, and each component below is scaled by that factor.",
+  "caveat": "CORRECTED 10 Sep 2026. The first version applied the build-up shares to NERSA's GENERATION allowance alone. That was wrong - Eskom's build-up is the whole company and already contains transmission and distribution. Applying whole-company shares to one business inflated every component by 1.72x. Check any component against the R2.016/kWh total before trusting it.",
+  "sales_twh": 190.81,
+  "sales_basis": "Eskom dispatchable energy sent out, 2025 calendar year, from the Weekly System Status Report annual table.",
+  "business_r_million": {
+   "generation": 258574,
+   "transmission": 109289,
+   "distribution": 127492
+  },
+  "how_each_responds_to_a_scenario": {
+   "primary_energy_fuel": "MODELLED. Taken from the dispatch run's fuelCost, not from this table.",
+   "carbon_tax": "MODELLED. From the run's carbonCost.",
+   "ipp_purchases": "Scales with renewable capacity - more build means more PPAs to honour.",
+   "operating_costs": "Scales with retained coal capacity. Fewer stations, less to operate.",
+   "depreciation": "Existing fleet: see stranded_asset_treatment. New build: from the run's newCapexR.",
+   "return_on_assets": "Same split as depreciation.",
+   "international_purchases": "Scales with the imports slider.",
+   "rca_recoveries": "Fixed. A historical clawback, unaffected by what is built.",
+   "arrear_debt": "Fixed. Municipal arrears, unaffected by what is built.",
+   "environmental_levy": "Fixed per kWh sold."
+  },
+  "stranded_asset_treatment": {
+   "description": "THE DECISION THAT DRIVES THE ANSWER. When coal retires early, what happens to the depreciation and return on assets still attached to it?",
+   "stranded": "Consumers keep paying until the asset base runs off. This is what a regulated asset base actually does, and NERSA's R54bn RAB correction in 2025-26 shows how live the question is. Retail prices RISE under aggressive decarbonisation.",
+   "written_off": "The cost leaves with the plant. Someone still pays, usually the fiscus. Retail prices FALL.",
+   "why_it_is_a_control": "Same physics, different regulatory assumption, opposite conclusions. Picking one quietly would make the panel an argument rather than a tool."
+  },
+  "approved_total_r_bn": 384.61,
+  "applied_total_r_bn": 444.7,
+  "approval_factor": 0.865,
+  "total_r_per_kwh": 2.016,
+  "components_r_per_kwh": {
+   "primary_energy_fuel": 0.58,
+   "operating_costs": 0.422,
+   "ipp_purchases": 0.302,
+   "depreciation": 0.303,
+   "return_on_assets": 0.193,
+   "rca_recoveries": 0.076,
+   "international_purchases": 0.045,
+   "arrear_debt": 0.04,
+   "environmental_levy": 0.029,
+   "carbon_tax": 0.025
+  },
+  "business_r_million_note": "Kept for reference only. Generation R258,574m and NTCSA R109,289m are NERSA's approved 2026/27 figures; distribution is the residual of Eskom's application and is NOT approved. The panel uses the component split above, not this three-way split, because the components are what respond to a scenario."
  }
 }

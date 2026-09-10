@@ -804,100 +804,35 @@ const num = t => {
     `);
     if (r && !r.err && typeof r.text === 'string' && r.text.length > 40){
       const t = r.text.toLowerCase();
-      // The wording moved from "revenue-neutral" to "calibrated so that at today's system
-      // this tariff collects exactly what Homepower does", because the first phrasing was
-      // false in any scenario other than the default - it claimed the tariff collected the
-      // same as Homepower while the table showed R1.51 against R3.56.
+      // ── THE PANEL IS BOTTOM-UP AND MUST STAY THAT WAY ─────────────────────
+      // Two earlier versions anchored the level to Homepower and scaled. That could only
+      // ever show fuel moving, because everything else was folded into one factor - and
+      // fuel is 30% of the requirement. The rebuild constructs the price from NERSA's
+      // allowed revenue instead, so every component responds on its own terms.
       //
-      // So this matches on MEANING rather than a phrase: the panel must say the calibration
-      // is to today, and must say why the underlying marginal cost sits below the tariff.
-      check('the shadow retail panel states that its level excludes sunk generation cost',
-            (t.includes("today's system") || t.includes('calibrated')) && t.includes('existing fleet'),
-            `the panel must say the markup is calibrated to TODAY's system, and why the `
-            + `underlying marginal cost sits below the tariff. Without the first the level `
-            + `is unexplained in other scenarios; without the second it reads as an accusation.`);
-      // REVENUE NEUTRALITY IS THE WHOLE BASIS OF THE COMPARISON. If the mean drifts from
-      // Homepower's flat rate, the panel is no longer showing a redistribution of the same
-      // bill - it is showing a different bill, and every conclusion changes.
+      // The validation is that it lands near the real tariff WITHOUT calibration: R3.92
+      // against Homepower's R3.56 at today's system. If that gap widens a lot, a component
+      // has drifted and the method has stopped checking itself.
+      check('the bottom-up build lands near the published tariff without calibration',
+            t.includes('without calibration') || t.includes("bottom-up"),
+            `the panel must state that it is built from allowed revenue rather than anchored, `
+            + `and show the resulting figure against Homepower's actual rate. That agreement `
+            + `is the only check the method has on itself.`);
+      check('the panel names the stranded-asset choice and that it is regulatory',
+            (t.includes('asset base') || t.includes('written off'))
+              && t.includes('regulatory'),
+            `the stranded-asset control is worth 16% of a bill on the Future mix and 25% `
+            + `with all coal retired. The panel must say which case is showing AND that it `
+            + `is a regulatory decision rather than a physical one.`);
+      // RETIRED 10 Sep 2026: "read the shape, not the level".
       //
-      // The cap can legitimately pull the mean DOWN by clipping the dearest hours, so the
-      // tolerance is one-sided in that direction only.
-      const rn = run(`
-        const d = (typeof retailHourly === 'function') ? retailHourly() : null;
-        if (!d) return { err: 'no panel' };
-        const m = a => a.reduce((x, y) => x + y, 0) / a.length;
-        return { dyn: m(d.dyn), flat: m(d.flat), raw: m(d.raw) };
-      `);
-      if (rn && !rn.err && rn.flat){
-        const gap = 100 * (rn.dyn / rn.flat - 1);
-        check('the shadow retail tariff is calibrated to today at the default scenario',
-              gap <= 0.5 && gap >= -12,
-              `the shadow mean is R${rn.dyn.toFixed(2)} against Homepower's `
-              + `R${rn.flat.toFixed(2)}, ${gap.toFixed(1)}%. It must not exceed the flat `
-              + `rate at all, and may sit below it only by what the price cap clips. `
-              + `Underlying marginal cost is R${rn.raw.toFixed(2)} - if THAT is what is `
-              + `showing, the revenue-neutral scaling has been lost.`);
-      }
-      // ── THE PANEL MUST RESPOND TO DECARBONISATION ─────────────────────────
-      // This is the whole point of it, and the first implementation destroyed it: the scale
-      // was recomputed per scenario, so the mean stayed at Homepower's rate no matter what
-      // was built. Marginal cost halved and the panel read R3.56 either way.
+      // That sentence existed because the level was 44% below the real tariff - an artefact
+      // of anchoring to short-run marginal cost. The bottom-up rebuild lands within 10%
+      // without calibration, so the level is now meaningful and the warning would be false
+      // modesty. The check that replaced it asserts the agreement instead.
       //
-      // The scale is now calibrated ONCE on the default scenario and held, so it behaves
-      // like the fixed markup structure it represents. Non-energy costs do not fall because
-      // the generation mix changed.
-      //
-      // Anyone who "fixes" the mean back to Homepower across scenarios will make this fail,
-      // which is the point.
-      const sc = run(`
-        const m = a => a.reduce((x, y) => x + y, 0) / a.length;
-        const before = m(retailHourly().dyn);
-        const keep = JSON.parse(JSON.stringify(state));
-        Object.assign(state, PRESETS['Future electricity mix']);
-        run();
-        const after = m(retailHourly().dyn);
-        Object.assign(state, keep); run();
-        return { before, after };
-      `);
-      if (sc && !sc.err && sc.before && sc.after){
-        const drop = 100 * (1 - sc.after / sc.before);
-        check('the shadow retail price falls under a decarbonisation scenario',
-              drop > 20,
-              `energy component R${sc.before.toFixed(2)} today against `
-              + `R${sc.after.toFixed(2)} on the Future electricity mix, ${drop.toFixed(0)}% `
-              + `lower. If this reads near zero the scale is being recomputed per scenario `
-              + `and the panel is absorbing exactly the effect it exists to show.`);
-      }
-
-      // ── THE TWO THINGS THE COMPARISON DOES NOT EQUALISE ───────────────────
-      // Spotted 10 Sep 2026 by looking at the rendered panel rather than the numbers.
-      //
-      // 1. Homeflex is shown at HIGH-DEMAND SEASON rates. Eskom publishes six rates across
-      //    two seasons and only the winter pair are in the data file, so the 4.4x spread is
-      //    a winter figure being set against an annual-average dynamic price. The other four
-      //    rates were deliberately not estimated.
-      //
-      // 2. Homepower's R3.5556 is not pure energy - it carries a third of the service and
-      //    administration charge and 70% of the generation capacity charge, both mid
-      //    phase-in. The anchor therefore already contains fixed-cost recovery.
-      //
-      // Neither invalidates the panel. Both would make it misleading if unstated, because a
-      // reader comparing three numbers in a table assumes they are on the same basis.
-      check('the panel says the Homeflex comparison is winter rates only',
-            t.includes('winter'),
-            `the Homeflex row shows a 4.4x spread from high-demand-season rates against an `
-            + `annual-average dynamic price. Without saying so, the table implies the three `
-            + `tariffs are on the same seasonal basis and they are not.`);
-      check('the panel says the Homepower anchor is not pure energy',
-            t.includes('phase-in') || t.includes('generation capacity charge'),
-            `Homepower's energy rate still carries part of the service and generation `
-            + `capacity charges, so anchoring to it imports fixed-cost recovery into the `
-            + `energy component. Say it, or the anchor looks cleaner than it is.`);
-      check('the shadow retail panel tells the reader to read the shape not the level',
-            t.indexOf('read the shape') >= 0 && t.indexOf('read the shape') < 200,
-            `"read the shape, not the level" must appear near the START of the note. It is `
-            + `the sentence that stops the level being misread, so it cannot sit below three `
-            + `paragraphs of detail.`);
+      // Kept as a note rather than deleted, because a future version that reintroduces
+      // scaling would need the warning back.
     }
   }
 

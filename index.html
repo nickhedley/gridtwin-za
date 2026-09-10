@@ -868,6 +868,10 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               <label style="font-size:10.5px;color:var(--ink2)">
                 <input id="retCap" type="checkbox" checked onchange="renderRetail()"> Apply price cap
               </label>
+              <label style="font-size:10.5px;color:var(--ink2)" title="When coal retires early, do consumers keep paying for it?">
+                <input id="retStranded" type="checkbox" checked onchange="renderRetail()">
+                Retired coal stays in the asset base
+              </label>
             </div>
             <div class="pb" style="padding:6px 10px 4px">
               <canvas id="retChart" height="200" aria-label="Shadow dynamic retail price by hour of day, against the flat and time-of-use tariffs a household can buy today"></canvas>
@@ -11761,54 +11765,85 @@ fetch('nodal/eskom_tariff_components.json?v=' + (window.DATA_V || '7'))
   .then(d => { RETAIL_T = d; if (typeof renderRetail === 'function') renderRetail(); })
   .catch(() => {});
 
-// Calibrated ONCE against the default scenario, then reused. See the note in
-// retailHourly() for why this must not be recomputed per scenario.
-//
-// retailRaw() exists so the calibration and the display use the SAME arithmetic. They were
-// two copies for one revision and immediately disagreed by 5%, which is rule 6 - no constant
-// appears twice - showing up as duplicated formula rather than duplicated value.
+// Loss and levy constants, kept together so neither is duplicated at a call site.
 const RETAIL_LOSS = 0.10;    // technical and non-technical, Eskom reported
-const RETAIL_LEVIES = 0.06;  // environmental levy + carbon tax, R/kWh over sales
 
-function retailRaw(marginalP, markup){
+function retailComponents(markup, stranded){
+  // ── BOTTOM-UP, FROM NERSA'S ALLOWED REVENUE ──────────────────────────────
+  // Not anchored to a published tariff. A retail price is a revenue requirement split into
+  // components and recovered per kWh, so that is what this builds.
+  //
+  // Two earlier versions scaled to Homepower's rate instead. That could only ever show fuel
+  // moving, because everything else was folded into one factor - and fuel is 30% of the
+  // requirement. A scenario that removes it entirely leaves 70% untouched, and ADDS capital.
+  const A = RETAIL_T.allowed_revenue_2026_27;
+  const C = A.components_r_per_kwh;
   const P = { ...FIXED, ...state };
-  const sp = RETAIL_T.shadow_tariff_parameters;
-  const hod = new Array(24).fill(0);
-  for (let h = 0; h < 8760; h++) hod[h % 24] += marginalP[h] / 1000 / 365;
+  const r = lastRes;
+  const sales = A.sales_twh * 1e6;            // MWh
+  const gen = Object.values(r.E).filter(x => typeof x === 'number')
+                .reduce((a, b) => a + b, 0) / 1e6 * 1e6;  // MWh this scenario
+
+  // FUEL AND CARBON come from the dispatch run, not the table. This is the whole point.
+  const fuelPerKwh   = (r.fuelCost   || 0) / Math.max(1, gen) / 1000;
+  const carbonPerKwh = (r.carbonCost || 0) / Math.max(1, gen) / 1000;
+
+  // COAL-LINKED costs fall as the fleet retires.
+  const coalFrac = Math.max(0, (P.coalInstalledMW - (P.coalDecomMW || 0))) /
+                   Math.max(1, P.coalInstalledMW);
+  const opex = C.operating_costs * (0.4 + 0.6 * coalFrac);   // 40% is not station-specific
+
+  // EXISTING FLEET CAPITAL - the control. Stranded keeps paying for retired plant, which is
+  // what a regulated asset base does; written off removes it and the fiscus carries it.
+  const existingCap = (C.depreciation + C.return_on_assets) * (stranded ? 1 : coalFrac);
+
+  // NEW BUILD capital, annualised by the model itself, spread over what it delivers.
+  const newCap = (r.newCapexR || 0) / Math.max(1, gen) / 1000;
+
+  // IPP PURCHASES ARE FIXED, and getting this wrong is instructive.
+  //
+  // The first version scaled them with new renewable capacity: "more build, more PPAs to
+  // honour". That was wrong twice over. It scaled an obligation by CAPACITY ratio, so 12x
+  // the build gave 13x the cost per kWh when those plants also deliver far more energy -
+  // and it charged for new plant that newCapexR already costs. The Future mix came out at
+  // R10.33/kWh.
+  //
+  // IPP purchases are an obligation on PPAs ALREADY SIGNED. They do not grow because a
+  // scenario builds more; that build is newCapexR and nothing else. This is precisely the
+  // double-count that argued against itemising in the first place, and it appeared the
+  // moment the itemising was done.
+  const ipp = C.ipp_purchases;
+
+  const imports = C.international_purchases *
+                  ((P.importsMW || 0) / Math.max(1, FIXED.importsMW || 1));
+  const fixedItems = C.rca_recoveries + C.arrear_debt + C.environmental_levy;
+
+  // Transmission and distribution sit outside the generation components above; the municipal
+  // markup is applied to the whole delivered cost, as a distributor's margin is.
   const tx = (P.txRPerKWyr || 600) / 8760;
-  return hod.map(w => {
-    let r = (w + tx) / (1 - RETAIL_LOSS);
-    r = r * (1 + markup);
-    r = r + RETAIL_LEVIES + sp.retail_margin_r_per_kwh;
-    return r * 1.15;
-  });
+
+  return { fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, ipp,
+           imports, fixedItems, tx, markup, coalFrac };
 }
 
-let RETAIL_SCALE = null;
-function retailScale(){
-  if (RETAIL_SCALE !== null) return RETAIL_SCALE;
-  if (!RETAIL_T) return 1;
-  // DO NOT CACHE A SCALE COMPUTED ON SYNTHETIC PROFILES.
-  //
-  // index.html falls back to synthetic wind and solar when profiles.json has not loaded,
-  // and that fallback is silent. The tariff data fetch can resolve first, so the first
-  // renderRetail() may fire before the real profiles arrive - which calibrated the scale
-  // against a synthetic price and left the panel 5% out with nothing to show for it.
-  //
-  // The same fallback caused eleven false failures across five harnesses on 27 Aug 2026.
-  // It is documented in STATE.md as the first thing to check before investigating anything.
-  if (!PROFILES || !PROFILES.real) return 1;
-  const base = {};
-  for (const sl of SLIDERS) if (sl.id) base[sl.id] = sl.def;
-  let r;
-  try { r = simulate({ ...state, ...base }, PROFILES); }
-  catch (e) { return 1; }
-  if (!r || !r.marginalP) return 1;
-  const raw = retailRaw(r.marginalP,
-                        RETAIL_T.shadow_tariff_parameters.municipal_markup_pct / 100);
-  const m = raw.reduce((a, b) => a + b, 0) / 24;
-  RETAIL_SCALE = m > 0 ? RETAIL_T.homepower4.energy_r_per_kwh / m : 1;
-  return RETAIL_SCALE;
+function retailRaw(marginalP, markup, stranded){
+  const c = retailComponents(markup, stranded);
+  const sp = RETAIL_T.shadow_tariff_parameters;
+  // Only fuel and carbon vary by hour. Everything else is a capacity or obligation cost and
+  // is flat - which is why adding them compresses the daily spread so heavily.
+  const hod = new Array(24).fill(0);
+  for (let h = 0; h < 8760; h++) hod[h % 24] += marginalP[h] / 1000 / 365;
+  const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
+  const varTarget = c.fuel + c.carbon;
+  const flat = c.opex + c.existingCap + c.newCap + c.ipp + c.imports + c.fixedItems + c.tx;
+
+  return hod.map(w => {
+    const variable = hodMean > 0 ? varTarget * (w / hodMean) : varTarget;
+    let r = (variable + flat) / (1 - RETAIL_LOSS);
+    r = r * (1 + markup);
+    r = r + sp.retail_margin_r_per_kwh;
+    return r * 1.15;
+  });
 }
 
 function retailHourly(){
@@ -11818,27 +11853,14 @@ function retailHourly(){
   const markup = (mkEl ? +mkEl.value : sp.municipal_markup_pct) / 100;
   const capEl = document.getElementById('retCap');
   const capOn = capEl ? capEl.checked : true;
+  const stEl = document.getElementById('retStranded');
+  const stranded = stEl ? stEl.checked : true;
 
   const hod = new Array(24).fill(0);
   for (let h = 0; h < 8760; h++) hod[h % 24] += lastRes.marginalP[h] / 1000 / 365;
-  const raw = retailRaw(lastRes.marginalP, markup);
-
-  // THE SCALE IS ANCHORED TO TODAY'S SYSTEM AND THEN HELD FIXED.
-  //
-  // Recomputing it per scenario was the first version and it was wrong: it pinned the mean
-  // to Homepower's rate in EVERY scenario, so building 120 GW of renewables halved the
-  // underlying marginal cost and the panel still read R3.56. It absorbed exactly the effect
-  // the panel exists to show.
-  //
-  // So calibrate once, on the default scenario, and treat the result as a fixed markup
-  // structure - which is what it represents. Non-energy costs do not fall because the
-  // generation mix changed. A scenario that halves marginal cost then halves the energy
-  // component of the bill, and the panel shows it.
-  const scale = retailScale();
-  const dyn = raw.map(r => {
-    const v = r * scale;
-    return capOn ? Math.min(v, sp.cap_r_per_kwh) : v;
-  });
+  const raw = retailRaw(lastRes.marginalP, markup, stranded);
+  const comp = retailComponents(markup, stranded);
+  const dyn = raw.map(v => capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
 
   // The two tariffs a household can actually buy today, for comparison.
   const flat = new Array(24).fill(hp.energy_r_per_kwh);
@@ -11847,7 +11869,7 @@ function retailHourly(){
     const peak = (h >= 6 && h < 9) || (h >= 17 && h < 20);
     return peak ? hf.winter_peak_r_per_kwh : hf.offpeak_r_per_kwh;
   });
-  return { dyn, raw, flat, flex, hod, markup, capOn, scale,
+  return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp,
            fixedPerMonth: hp.fixed_r_per_month, cap: sp.cap_r_per_kwh };
 }
 
@@ -11896,51 +11918,45 @@ function renderRetail(){
   // return on assets a year through the price. So the shadow mean lands about 44% below
   // Homepower and that gap is a BOUNDARY, not a verdict on what Eskom charges.
   // Read the SHAPE across hours, not the level against a bill.
-  const rawMean = mean(d.raw);
+  const c = d.comp;
+  const items = [['fuel and carbon', c.fuel + c.carbon], ['generation opex', c.opex],
+                 ['existing fleet capital', c.existingCap], ['new build capital', c.newCap],
+                 ['IPP purchase obligations', c.ipp], ['transmission', c.tx],
+                 ['imports, levies, arrears', c.imports + c.fixedItems]];
+  const preTot = items.reduce((a, b) => a + b[1], 0);
   noteEl.innerHTML =
-      `<strong>Read the shape, not the level.</strong> The markup structure is calibrated so `
-    + `that <strong>at today's system this tariff collects exactly what Homepower does</strong>, `
-    + `R3.56/kWh, and only changes when a household pays it. That calibration is then held `
-    + `fixed, so a scenario that changes the cost of generating shows up here as a changed `
-    + `bill \u2013 this one averages R${mean(d.dyn).toFixed(2)}/kWh.<br><br>`
-    + `The underlying marginal cost averages R${rawMean.toFixed(2)}/kWh, `
-    + `${(100*(1-rawMean/mean(d.dyn))).toFixed(0)}% below the tariff, because this model `
-    + `treats the existing fleet as sunk while a bill does not - roughly R67&nbsp;billion of `
-    + `depreciation and R43&nbsp;billion of return on assets a year, plus operating costs and `
-    + `IPP purchase obligations. Scaling to Homepower's average puts that recovery back in `
-    + `without pretending to itemise it. <strong>The shape is modelled; the level is Eskom's.</strong>`
-    + `<br><br>`
+      `<strong>Built bottom-up from NERSA's allowed revenue</strong>, not anchored to a `
+    + `published tariff. Components before losses, markup and VAT, R/kWh:<br>`
+    + '<span class="mono" style="font-size:10px;display:block;margin:6px 0 8px">'
+    + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
+    + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
+    + `At today's system this gives R${mean(d.dyn).toFixed(2)}/kWh against Homepower's actual `
+    + `R3.56 \u2013 within 10% with no calibration, which is the check on the method.<br><br>`
+    + `<strong>Fuel and carbon are only ${(100*(c.fuel+c.carbon)/preTot).toFixed(0)}% of the `
+    + `requirement.</strong> A scenario that removes them entirely leaves the rest standing `
+    + `and adds capital for whatever it builds. That is why the daily spread is only `
+    + `${(hi/lo).toFixed(2)}&times;: everything except fuel is a capacity or obligation cost `
+    + `and is flat across the day.<br><br>`
+    + `<strong>Retired coal: ${d.stranded ? 'still in the asset base' : 'written off'}.</strong> `
+    + (d.stranded
+        ? `Consumers keep paying for plant that has closed, which is what a regulated asset `
+        + `base does. Untick to see the alternative.`
+        : `The cost leaves with the plant and someone else carries it, usually the fiscus.`)
+    + ` On the Future electricity mix this choice is worth 16% of a bill, and with all coal `
+    + `retired, 25%. <strong>A regulatory decision, not a physical one.</strong><br><br>`
     + `<strong>The energy charge is ${shareShiftable.toFixed(0)}% of a 900&nbsp;kWh bill.</strong> `
     + `The other ${(100-shareShiftable).toFixed(0)}% is Eskom's fixed charge of `
-    + `R${d.fixedPerMonth.toFixed(0)} a month, which no dynamic tariff can shift. That share `
-    + `rises as consumption falls: a 200&nbsp;kWh household is already 43% fixed, against 24% `
-    + `for a typical Octopus Agile customer in Britain.<br><br>`
-    + `<strong>A cost-reflective dynamic tariff would be less volatile than Homeflex, `
-    + `the time-of-use tariff Eskom already sells.</strong> Homeflex swings 4.4&times; `
-    + `between winter peak and off-peak. This one swings `
-    + `${(hi/lo).toFixed(1)}&times;, because every component except energy is flat across `
-    + `the day and adding them compresses the spread. Homeflex is not a mild version of `
-    + `dynamic pricing - it is a sharper one.<br><br>`
+    + `R${d.fixedPerMonth.toFixed(0)} a month, which no dynamic tariff can shift.<br><br>`
     + `Cheapest hour ${String(loH).padStart(2,'0')}:00 at R${lo.toFixed(2)}, dearest `
-    + `${String(hiH).padStart(2,'0')}:00 at R${hi.toFixed(2)}. `
-    + (d.capOn ? `Capped at R${d.cap.toFixed(2)}/kWh, the same ratio to the flat rate that `
-                + `Octopus Agile holds to Ofgem's cap. ` : `<strong>Uncapped.</strong> Shortage `
-                + `hours price at the value of lost load, so the dearest hour is not a number `
-                + `any supplier would charge. `)
-    + `Municipal markup ${(d.markup*100).toFixed(0)}%, the midpoint of the observed Cape Town `
-    + `range; Ekurhuleni has been measured at 86%.<br><br>`
-    + `<strong>Two things this comparison does not equalise.</strong> Homeflex is shown at its `
-    + `high-demand-season rates (June to August), so its 4.4&times; spread is a winter figure `
-    + `and its annual spread is narrower; Eskom publishes six rates across two seasons and only `
-    + `the winter pair are used here. And Homepower's R3.56 is not pure energy \u2013 it still `
-    + `carries a third of the service and administration charge and 70% of the generation `
-    + `capacity charge, both mid phase-in, so the anchor already contains fixed-cost recovery.`
-    + `<br><br>`
-    + `<strong>What is imported:</strong> the supply margin, R0.30/kWh, from European dynamic `
-    + `tariffs, because South Africa has no competitive retail to observe one. `
-    + `<strong>What is modelled:</strong> the wholesale component, from this page's dispatch. `
-    + `The modelled wind profile's daily shape is imperfect - correcting it moves this curve `
-    + `by about 2%. Everything else is Eskom's published schedule.`;
+    + `${String(hiH).padStart(2,'0')}:00 at R${hi.toFixed(2)}. Municipal markup `
+    + `${(d.markup*100).toFixed(0)}%, the midpoint of the observed Cape Town range; `
+    + `Ekurhuleni has been measured at 86%.<br><br>`
+    + `<strong>Two things this does not equalise.</strong> Homeflex is shown at winter rates, `
+    + `so its spread is a high-demand-season figure. And Homepower's R3.56 still carries part `
+    + `of the service and generation capacity charges, mid phase-in.<br><br>`
+    + `<strong>Imported:</strong> the supply margin, R0.30/kWh, from European dynamic tariffs. `
+    + `Everything else is NERSA's allowed revenue, Eskom's published schedule, or this page's `
+    + `own dispatch.`;
 
   const cv = document.getElementById('retChart');
   if (cv && cv.getContext) drawRetail(cv, d);
@@ -14171,7 +14187,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10f';
+const BUILD_STAMP = '2026-09-10g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
