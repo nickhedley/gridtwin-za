@@ -6153,7 +6153,10 @@ panel rendering one sentence. A browser is the only instrument for these.
 
 ## Publication and outreach
 
-16. **`post_headroom.md`** - verified, ready, unpublished. The oldest unshipped item.
+16. **`post_headroom.md`** - **DO NOT PUBLISH AS DRAFTED.** Checked 10 Sep 2026: the central
+    table is pre-rebuild wind data and KwaZulu-Natal has moved 20.5% to 32.8%, which reverses
+    the passage built on it. Correlation weakens -0.91 to -0.72, so the core point holds and
+    the illustration does not. See the section above.
 17. **Wind Pioneers note** - three variants drafted, use the ten-year version.
 18. **EDMSA** - the boundary question above, plus whether "grid readiness adequate per TDP
     2023/24" reconciles with their own finding that grid absorption is binding.
@@ -9323,6 +9326,46 @@ computing a number that cannot be defended in every region.
 
 `validate_consistency` 57 -> 58 asserts the caveat is present. A panel rewrite that drops it
 leaves a number reading twice as alarming as the evidence supports.
+
+## post_headroom.md must not go out as drafted - 10 Sep 2026
+
+The oldest unshipped item, marked "verified, ready". Checked before publishing. **Its
+central table is the pre-rebuild single-centroid wind data**, replaced on 6 Sep.
+
+```
+region            post    now   change   headroom
+Kwazulu Natal     20.5   32.8   +12.3     16,500
+Free State        24.7   31.4    +6.7      4,260
+Eastern Cape      34.2   36.3    +2.1        400
+Limpopo           23.0   21.9    -1.1     10,080
+```
+
+**The post's argument does not survive KwaZulu-Natal.** It uses KZN as the flagship case of
+"the room is where the wind is worst" - 20.5% capacity factor against 5,500 MW of headroom.
+KZN is now **32.8%, fifth of ten on resource and first on headroom at 16,500 MW.** That is
+not the uncomfortable trade-off the post describes; it is an attractive proposition, which
+is the opposite conclusion.
+
+The headline correlation weakens too, from -0.91 to -0.72. Still strongly negative, so the
+CORE point - that grid availability runs against resource quality - holds. The illustration
+chosen to carry it does not.
+
+Two supporting figures also move: "7.3% of the room" becomes 2.6%, and "the four worst hold
+78%" becomes 64%.
+
+### the post was honest when written
+
+Reproducing -0.91 from the old table confirms the arithmetic was right at the time. This is
+not an error in the draft; it is a draft that outlived its inputs while sitting in the queue.
+
+**The lesson is about unpublished work specifically.** A finding in RESULTS.md gets re-run by
+`validate_findings` every session. A draft post sitting in the repo is checked by nothing, and
+the longer it waits the more likely it is to be wrong on publication. `post_headroom.md` has
+been "ready" since before the profile rebuild, the demand rebuild, the solar timezone fix and
+the export correction - four changes to its inputs, none of which touched it.
+
+Rewrite the table and the KwaZulu-Natal passage before publishing. The Gauteng-versus-Eastern
+Cape comparison still holds at 23.0% against 36.3%.
 
 ---
 
