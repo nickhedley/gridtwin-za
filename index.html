@@ -12218,10 +12218,10 @@ function drawRetailWeek(cv, d){
   line(new Array(168).fill(d.flat[0]), '#7A8A99', [2,3], 1.2);
   line(d.weekFlex, '#C4783C', [5,3], 1.2);
   line(d.week, '#0F5C32', [], 2);
-  ctx.font = '10px ui-monospace,monospace'; ctx.textAlign = 'left';
-  ctx.fillStyle = 'rgba(128,128,128,0.9)';
-  ctx.fillText((d.wkMode === 'S' ? 'summer' : 'winter') + ' week \u00b7 Homeflex shown at winter rates',
-               padL + 4, padT + 2);
+  ctx.font = '9px ui-monospace,monospace'; ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(128,128,128,0.75)';
+  ctx.fillText((d.wkMode === 'S' ? 'summer' : 'winter') + ' week \u00b7 Homeflex at winter rates',
+               padL + 4, 9);
 }
 
 function drawRetail(cv, d){
@@ -14466,7 +14466,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11j';
+const BUILD_STAMP = '2026-09-11k';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
