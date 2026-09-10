@@ -311,6 +311,26 @@ console.log('\nTariff constants against their published sources\n');
         + `reports a bounded number as if it were a modelled one.`);
 }
 
+// ── 13. CANVAS SIZING IS IDEMPOTENT ────────────────────────────────────────
+// Added 10 Sep 2026 after the retail charts grew on every redraw. Setting cv.height IS
+// setting the height attribute, so a draw function that reads its logical height back from
+// that attribute doubles the canvas each time it runs: 150, 300, 600, 1200. The first render
+// looked correct because the HTML value was still in place, and toggling the week revealed it.
+//
+// The fix is to read from data-h, which nothing writes. This check asserts the source file
+// never reads getAttribute('height') to size a canvas it is about to resize.
+{
+  const fsx = require('fs'), pth = require('path');
+  let html = '';
+  try { html = fsx.readFileSync(pth.join(ROOT, 'index.html'), 'utf8'); } catch (e) {}
+  const bad = /getAttribute\('height'\)/.test(html);
+  check('no canvas reads its logical height from the attribute it overwrites',
+        !bad,
+        `index.html reads getAttribute('height') to size a canvas. That value is overwritten `
+        + `by cv.height = H * dpr, so the next render reads the scaled figure back and the `
+        + `chart compounds. Use a data attribute nothing writes.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');

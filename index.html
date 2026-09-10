@@ -871,7 +871,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               </label>
             </div>
             <div class="pb" style="padding:6px 10px 18px">
-              <canvas id="retChart" height="150" aria-label="Shadow dynamic retail price by hour of day, against the flat and time-of-use tariffs a household can buy today"></canvas>
+              <canvas id="retChart" data-h="150" height="150" aria-label="Shadow dynamic retail price by hour of day, against the flat and time-of-use tariffs a household can buy today"></canvas>
             </div>
             <div class="pb" style="padding:14px 12px 0;display:flex;gap:10px;align-items:center;border-top:1px solid rgba(128,128,128,0.18)">
               <span class="tag" style="font-size:10.5px">Representative week</span>
@@ -883,7 +883,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               </label>
             </div>
             <div class="pb" style="padding:6px 10px 10px">
-              <canvas id="retWeek" height="150" aria-label="Shadow dynamic retail price across a representative 168-hour week, against Homeflex"></canvas>
+              <canvas id="retWeek" data-h="150" height="150" aria-label="Shadow dynamic retail price across a representative 168-hour week, against Homeflex"></canvas>
             </div>
             <div class="pb" id="retTable" style="padding:0 12px 6px"></div>
             <div class="pb" id="retNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.5"></div>
@@ -12177,8 +12177,14 @@ function drawRetailWeek(cv, d){
   //
   // Setting style.height explicitly keeps the backing store at device resolution, which is
   // what removes the fuzziness, while the element occupies H CSS pixels.
+  // The logical height comes from data-h, NOT from the height attribute.
+  //
+  // Setting cv.height IS setting the attribute, so reading it back on the next render
+  // returned the dpr-scaled value and the chart doubled every time it redrew. The first
+  // render looked right because the HTML value was still there; toggling the week made it
+  // 300px, then 600, then 1200.
   const dpr = window.devicePixelRatio || 1;
-  const W = cv.clientWidth || 600, H = +cv.getAttribute('height') || 200;
+  const W = cv.clientWidth || 600, H = +cv.dataset.h || 150;
   cv.width = W * dpr; cv.height = H * dpr;
   cv.style.height = H + 'px';
   const ctx = cv.getContext('2d');
@@ -12234,8 +12240,14 @@ function drawRetail(cv, d){
   //
   // Setting style.height explicitly keeps the backing store at device resolution, which is
   // what removes the fuzziness, while the element occupies H CSS pixels.
+  // The logical height comes from data-h, NOT from the height attribute.
+  //
+  // Setting cv.height IS setting the attribute, so reading it back on the next render
+  // returned the dpr-scaled value and the chart doubled every time it redrew. The first
+  // render looked right because the HTML value was still there; toggling the week made it
+  // 300px, then 600, then 1200.
   const dpr = window.devicePixelRatio || 1;
-  const W = cv.clientWidth || 600, H = +cv.getAttribute('height') || 200;
+  const W = cv.clientWidth || 600, H = +cv.dataset.h || 150;
   cv.width = W * dpr; cv.height = H * dpr;
   cv.style.height = H + 'px';
   const ctx = cv.getContext('2d');
@@ -14466,7 +14478,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11k';
+const BUILD_STAMP = '2026-09-11l';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
