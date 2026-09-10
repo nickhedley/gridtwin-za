@@ -676,5 +676,50 @@ try {
         `${_missing.length} without one: ${_missing.slice(0, 5).join(', ')}`);
 }
 
+// ── NERSA REGISTRATIONS: THE FILE MUST AGREE WITH ITSELF ────────────────────
+// Added 9 Sep 2026 while closing to-do item 14, which asked us to reconcile SAPVIA's
+// 20,131 MW against "NERSA 21,900 MW". THERE IS NOTHING TO RECONCILE: NERSA's own Q1
+// 2026/27 media statement gives 2,619 facilities and 20,131 MW, identical to this file.
+// SAPVIA reproduces NERSA rather than diverging from it, and the 21,900 was an unsourced
+// figure carried in our own notes - the same failure the calendar sourcing rule was
+// written for on 1 Sep 2026.
+//
+// What IS real is a gap INSIDE the file, which nothing was checking:
+//
+//   regional totals sum to      20,116 MW
+//   meta.total_mw says          20,131 MW      15 MW apart
+//   technologies sum to         19,803 MW      313 MW unclassified
+//
+// Fifteen megawatts is immaterial today. It will not stay fifteen across quarterly
+// updates, and a rollup that drifts silently is exactly how the two stale rollups on
+// 27 Aug happened.
+{
+  let nr = null;
+  try {
+    nr = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'nodal', 'nersa_registrations.json'), 'utf8'));
+  } catch (e) { nr = null; }
+  if (!nr) {
+    check('nersa_registrations.json is readable', false, 'missing or unparseable');
+  } else {
+    const byReg = nr.cumulative_by_region || {};
+    const regSum = Object.values(byReg).reduce((a, v) => a + (v.total_mw || 0), 0);
+    const stated = (nr.meta || {}).total_mw;
+    check('NERSA regional totals reconcile with meta.total_mw',
+          stated != null && Math.abs(regSum - stated) <= 20,
+          `regions sum to ${regSum} MW against meta.total_mw ${stated} - if a quarterly `
+          + `update landed in one place and not the other, this is where it shows`);
+
+    const techSum = Object.values(byReg).reduce((a, v) =>
+      a + (v.solar_mw || 0) + (v.wind_mw || 0) + (v.bess_mw || 0) + (v.coloc_mw || 0), 0);
+    const unclassified = regSum - techSum;
+    check('unclassified NERSA capacity stays a small residual',
+          unclassified >= -20 && unclassified <= 500,
+          `${unclassified} MW sits in a regional total but in no technology column. Some `
+          + `residual is expected - NERSA registers biomass, gas and hydro this file does `
+          + `not break out - but a growing one means a technology is dropped on ingest.`);
+  }
+}
+
 console.log(`\n${pass}/${pass + fail} checks passed` + (pending ? `, ${pending} pending` : ''));
 if (fail) process.exit(1);

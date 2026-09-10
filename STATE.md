@@ -6124,7 +6124,14 @@ panel rendering one sentence. A browser is the only instrument for these.
 
 13. **Named-project layer** - the IPP Office annual overview, the only route to project
     names and the Hydra Central split.
-14. **NERSA cumulative reconciliation** - SAPVIA 20,131 MW against NERSA 21,900 MW.
+14. ~~NERSA cumulative reconciliation.~~ **CLOSED 9 Sep 2026 - there was nothing to
+    reconcile.** NERSA's own Q1 2026/27 media statement gives 2,619 facilities and
+    20,131 MW, identical to our file. SAPVIA reproduces NERSA rather than diverging from it.
+    **The 21,900 appears once, in this note, with no source.**
+
+    A real gap was found INSIDE the file and is now asserted: regional totals sum to 20,116
+    against a stated 20,131, and 313 MW sits in no technology column. Both immaterial today,
+    neither checked before.
 15. ~~EDMSA boundary question.~~ **NARROWED 9 Sep 2026.** A decomposition that reconciles:
     sent-out 170.0 Mt, grossed up for 7.6% auxiliary consumption 181.2 (Stats SA measured,
     not assumed), plus coal-mining fugitive methane as CO2e at national-inventory scale
@@ -9205,6 +9212,36 @@ Two things fixed, both documentation rather than model:
 identity ever since. **The stale artefacts were the three places a human would look**: the
 open item, the file metadata and the page. A check that is right while every human-readable
 description of it is wrong is its own kind of failure.
+
+## to-do item 14 was chasing a number that does not exist - 9 Sep 2026
+
+The item read "SAPVIA 20,131 MW against NERSA 21,900 MW". NERSA's own media statement for
+Q1 2026/27, carried identically by SAnews, News24, allAfrica and four others:
+
+  "Since the inception of the registration regime in 2018, NERSA has registered 2 619
+   generation facilities, with a combined capacity of 20 131 MW and an estimated total
+   investment cost of approximately R409 billion."
+
+Our file: 20,131 MW, 2,619 projects, R409bn. **Identical.** SAPVIA is republishing NERSA.
+
+**The 21,900 has no source anywhere.** It appears once, in our own to-do note. This is
+precisely the failure the calendar sourcing rule was written for on 1 Sep - "an unsourced
+date is a guess wearing a deadline's clothes" - and the same applies to a figure. It survived
+because nobody tried to use it until now.
+
+### what the item did surface
+
+```
+regional totals sum to      20,116 MW
+meta.total_mw says          20,131 MW      15 MW apart
+technologies sum to         19,803 MW     313 MW in no technology column
+```
+
+Fifteen megawatts is immaterial today and will not stay fifteen across quarterly updates. A
+rollup that drifts silently is how the two stale rollups on 27 Aug happened.
+
+`validate_capacity` 29 -> 31. Verified by moving `meta.total_mw` to 20,800, as a quarterly
+update landing in one place would: the check fires.
 
 ---
 
