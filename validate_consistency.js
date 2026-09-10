@@ -786,6 +786,37 @@ const num = t => {
     }
   }
 
+  // ── THE SHADOW RETAIL PANEL MUST STATE ITS BOUNDARY ─────────────────────
+  // Added 10 Sep 2026 with the panel. Its mean lands about 44% below Homepower 4, and a
+  // reader who takes that as "electricity should cost 44% less" has been misled by us.
+  //
+  // The reason is a boundary, not a verdict: our energy component is SHORT-RUN MARGINAL
+  // COST, so it excludes recovery of the existing fleet - roughly R67bn of depreciation and
+  // R43bn of return on assets a year that a real tariff must collect. The model treats
+  // existing plant as sunk, which is correct for dispatch and wrong for a bill.
+  //
+  // This asserts the caveat is present and FIRST. A panel rewrite that drops it leaves a
+  // number that reads as an accusation.
+  {
+    const r = run(`
+      const el = document.getElementById('retNote');
+      return { text: el ? (el.textContent || '') : '' };
+    `);
+    if (r && !r.err && typeof r.text === 'string' && r.text.length > 40){
+      const t = r.text.toLowerCase();
+      check('the shadow retail panel states that its level excludes sunk generation cost',
+            t.includes('short-run marginal') || t.includes('existing fleet'),
+            `the panel does not say its energy component is short-run marginal cost. `
+            + `Without that, its mean reads as a claim that Eskom overcharges by 44% rather `
+            + `than as a stated boundary.`);
+      check('the shadow retail panel tells the reader to read the shape not the level',
+            t.indexOf('read the shape') >= 0 && t.indexOf('read the shape') < 200,
+            `"read the shape, not the level" must appear near the START of the note. It is `
+            + `the sentence that stops the level being misread, so it cannot sit below three `
+            + `paragraphs of detail.`);
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} cross-panel consistency checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
   if (notes.length)    { console.log('\nNOTES:');    notes.forEach(n => console.log('  ' + n)); }

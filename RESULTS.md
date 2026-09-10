@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Forty-three sections follow. This index exists because the file passed 1,400 lines and the
+Forty-four sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3453,3 +3453,51 @@ markup, and Homelight has no fixed charge at all - which is why it beats Homepow
 realistic consumption for eligible households. The revenue-neutral basis is 900 kWh a month;
 a different basis moves the crossover point but not the direction. Figures are the 2026/27
 schedule at 8.76%; the 2027/28 ERTSA at 8.83% moves the level, not the shape.
+
+---
+
+## A cost-reflective dynamic tariff would be calmer than the one Eskom already sells
+
+Built 10 Sep 2026 as the shadow dynamic retail panel. Hourly, structured after Octopus Agile
+whose formula is published: wholesale plus transmission and distribution, a municipal markup,
+losses, levies, a supplier margin, then VAT, then capped.
+
+```
+tariff                  mean      cheapest      dearest    spread
+Homepower, flat        R3.56         R3.56        R3.56      1.0x
+Homeflex, time of use  R3.55         R1.91        R8.47      4.4x
+Shadow dynamic         R1.98    R1.85 @ 02    R2.95 @ 19    1.6x
+```
+
+**The dynamic tariff is the least volatile of the three.** Every component except energy is
+flat across the day, so adding them compresses the spread: a wholesale swing of roughly 5x
+becomes 1.6x at the meter, before the fixed charge is counted at all.
+
+**Homeflex is not a mild version of dynamic pricing. It is a sharper one.** Eskom already
+sells a tariff with a 4.4x winter peak-to-off-peak spread, and every household with rooftop
+PV is required to be on it. The question of whether South Africans could handle exposure to
+time-varying prices is already answered: some are.
+
+### read the shape, not the level
+
+The mean lands 44% below Homepower and **that is a boundary, not a verdict**. Our energy
+component is short-run marginal cost, so it excludes recovery of the existing fleet - roughly
+R67 billion of depreciation and R43 billion of return on assets a year that a real tariff must
+collect and this one does not. The model treats existing plant as sunk, which is right for
+dispatch and wrong for a bill.
+
+Pinned in `validate_consistency`: the panel must state this, and must state it in the first
+200 characters of its note, because a caveat below three paragraphs of detail does not stop a
+number being misread.
+
+### what is imported, and what is not
+
+Only the supply margin, R0.30/kWh, taken from European dynamic tariffs because South Africa
+has no competitive retail to observe one. The municipal markup of 40% is the midpoint of the
+observed Cape Town range and is a slider; Ekurhuleni has been measured at 86%. The cap of
+R12.84/kWh is the ratio Octopus Agile holds to Ofgem's cap, applied to Homepower's flat rate.
+Everything else is Eskom's published schedule or this model's own dispatch.
+
+No peak uplift is added, though Octopus adds 10-14 p/kWh at 16:00-19:00. Ours is already
+carried in the transmission cost and Eskom's network capacity charge; adding one would
+double-count. The absence is deliberate.

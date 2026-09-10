@@ -847,6 +847,36 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
           </div>
 
 
+          <div id="nav-retail" class="panel" style="margin-top:18px">
+            <div class="ph"><h2>Shadow dynamic retail price</h2>
+              <span class="tag">hypothetical &middot; no such tariff exists in South Africa</span>
+            </div>
+            <div class="pb" style="padding:8px 12px 0;font-size:10.5px;color:var(--ink2);line-height:1.55">
+              What a household would pay by the hour if the retail price followed cost.
+              Built by adding the components a household actually pays to the modelled
+              wholesale price: transmission and distribution, a municipal markup, losses,
+              levies, a supplier margin and VAT. <strong>Nobody sells this tariff.</strong>
+              South Africa has no wholesale market until SAWEM and no dynamic retail product,
+              so this is what the hours are worth, not what anyone could charge.
+            </div>
+            <div class="pb" style="padding:8px 12px 2px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+              <label style="font-size:10.5px;color:var(--ink2)">Municipal markup
+                <input id="retMarkup" type="range" min="0" max="90" step="5" value="40"
+                       oninput="renderRetail()" style="vertical-align:middle;width:130px">
+                <span id="retMarkupVal" class="mono" style="font-size:11px">40%</span>
+              </label>
+              <label style="font-size:10.5px;color:var(--ink2)">
+                <input id="retCap" type="checkbox" checked onchange="renderRetail()"> Apply price cap
+              </label>
+            </div>
+            <div class="pb" style="padding:6px 10px 4px">
+              <canvas id="retChart" height="200" aria-label="Shadow dynamic retail price by hour of day, against the flat and time-of-use tariffs a household can buy today"></canvas>
+            </div>
+            <div class="pb" id="retTable" style="padding:0 12px 6px"></div>
+            <div class="pb" id="retNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.5"></div>
+          </div>
+
+
           <div id="nav-curtforecast" class="panel" style="margin-top:18px">
             <div class="ph"><h2>Curtailment forecast</h2><span class="tag">modelled</span>
               <span class="tag">what happens as the queue builds</span></div>
@@ -11702,6 +11732,191 @@ function attachChartHover(canvas){
 const DAY_NM = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 function hourLabel(i){ return DAY_NM[Math.floor(i/24)%7] + ' ' + String(i%24).padStart(2,'0') + ':00'; }
 
+// ── SHADOW DYNAMIC RETAIL PRICE ────────────────────────────────────────────
+// What a household would pay by the hour if the retail price followed cost. No such
+// tariff exists in South Africa: there is no wholesale market until SAWEM and no dynamic
+// retail product, so this is what the hours are WORTH, not what anyone could charge.
+//
+// STRUCTURE, after Octopus Agile, whose formula is published:
+//
+//   hourly rate = wholesale shadow price
+//               + transmission and distribution
+//               + municipal markup
+//               + losses
+//               + levies
+//               + supplier margin
+//               then VAT, then capped
+//
+// NO PEAK UPLIFT. Octopus adds 10-14 p/kWh at 16:00-19:00 because the network cost of the
+// evening peak is separate from the energy cost. Ours is already carried in txRPerKWyr and
+// in Eskom's network capacity charge, which sits in the FIXED component below. Adding an
+// uplift would double-count it. The absence is deliberate.
+//
+// THE FIXED CHARGE IS SHOWN ALONGSIDE AND IS NOT DYNAMIC. That is the honest limit on what
+// any dynamic tariff can shift, and it matters more here than in Britain: a 200 kWh
+// Homepower household is already 43% fixed against Octopus's 24%.
+let RETAIL_T = null;
+fetch('nodal/eskom_tariff_components.json?v=' + (window.DATA_V || '7'))
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { RETAIL_T = d; if (typeof renderRetail === 'function') renderRetail(); })
+  .catch(() => {});
+
+function retailHourly(){
+  if (!RETAIL_T || !lastRes || !lastRes.marginalP) return null;
+  const P = { ...FIXED, ...state };
+  const t = RETAIL_T, sp = t.shadow_tariff_parameters, hp = t.homepower4;
+  const markup = (+(document.getElementById('retMarkup') || {}).value || sp.municipal_markup_pct) / 100;
+  const capOn  = !(document.getElementById('retCap') || {}).checked === false;
+
+  // Wholesale is R/MWh from the dispatch model; everything else is R/kWh.
+  const mp = lastRes.marginalP;
+  const hod = new Array(24).fill(0);
+  for (let h = 0; h < 8760; h++) hod[h % 24] += mp[h] / 1000 / 365;
+
+  // Transmission: txRPerKWyr is R/kW-yr on peak capacity. Spread over the hours a
+  // household actually draws, not all 8760, or it under-recovers.
+  const txPerKwh = (P.txRPerKWyr || 600) / 8760;
+  // Losses inflate every upstream cost, because a kWh delivered needs more than a kWh sent.
+  const LOSS = 0.10;
+  // Levies: environmental levy and carbon tax, from Eskom's revenue build-up over sales.
+  const LEVIES = 0.06;
+  const margin = sp.retail_margin_r_per_kwh;
+  const VAT = 1.15;
+
+  const dyn = hod.map(w => {
+    let r = (w + txPerKwh) / (1 - LOSS);   // energy and wires, grossed up for losses
+    r = r * (1 + markup);                  // municipal distribution and markup
+    r = r + LEVIES + margin;               // levies and supply margin
+    r = r * VAT;
+    return capOn ? Math.min(r, sp.cap_r_per_kwh) : r;
+  });
+
+  // The two tariffs a household can actually buy today, for comparison.
+  const flat = new Array(24).fill(hp.energy_r_per_kwh);
+  const hf = t.homeflex;
+  const flex = hod.map((_, h) => {
+    const peak = (h >= 6 && h < 9) || (h >= 17 && h < 20);
+    return peak ? hf.winter_peak_r_per_kwh : hf.offpeak_r_per_kwh;
+  });
+  return { dyn, flat, flex, hod, markup, capOn,
+           fixedPerMonth: hp.fixed_r_per_month, cap: sp.cap_r_per_kwh };
+}
+
+function renderRetail(){
+  const el = document.getElementById('retTable');
+  const noteEl = document.getElementById('retNote');
+  const mv = document.getElementById('retMarkupVal');
+  if (!el) return;
+  const d = retailHourly();
+  if (mv && document.getElementById('retMarkup'))
+    mv.textContent = document.getElementById('retMarkup').value + '%';
+  if (!d){ el.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Run the model to see '
+    + 'the shadow retail price.</p>'; return; }
+
+  const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+  const lo = Math.min(...d.dyn), hi = Math.max(...d.dyn);
+  const loH = d.dyn.indexOf(lo), hiH = d.dyn.indexOf(hi);
+
+  el.innerHTML = '<table class="mono" style="width:100%;font-size:11px;border-collapse:collapse">'
+    + '<tr style="border-bottom:1px solid var(--line2)">'
+    + '<th style="text-align:left;padding:4px 6px">Tariff</th>'
+    + '<th style="text-align:right;padding:4px 6px">Mean</th>'
+    + '<th style="text-align:right;padding:4px 6px">Cheapest hour</th>'
+    + '<th style="text-align:right;padding:4px 6px">Dearest hour</th>'
+    + '<th style="text-align:right;padding:4px 6px">Spread</th></tr>'
+    + [['Homepower, flat', d.flat, 'what most Eskom-direct homes pay'],
+       ['Homeflex, time of use', d.flex, 'required for any home with rooftop PV'],
+       ['Shadow dynamic', d.dyn, 'hypothetical']].map(row => {
+        const a = row[1], mn = Math.min(...a), mx = Math.max(...a);
+        return '<tr style="border-bottom:1px solid var(--line2)">'
+          + `<td style="padding:4px 6px">${row[0]}<br><span style="color:var(--ink2);font-size:9.5px">${row[2]}</span></td>`
+          + `<td style="text-align:right;padding:4px 6px">R${mean(a).toFixed(2)}</td>`
+          + `<td style="text-align:right;padding:4px 6px">R${mn.toFixed(2)}<br>`
+          + `<span style="color:var(--ink2);font-size:9.5px">${String(a.indexOf(mn)).padStart(2,'0')}:00</span></td>`
+          + `<td style="text-align:right;padding:4px 6px">R${mx.toFixed(2)}<br>`
+          + `<span style="color:var(--ink2);font-size:9.5px">${String(a.indexOf(mx)).padStart(2,'0')}:00</span></td>`
+          + `<td style="text-align:right;padding:4px 6px">${mn > 0 ? (mx/mn).toFixed(1) + '\u00d7' : '\u2013'}</td></tr>`;
+       }).join('')
+    + '</table>';
+
+  const shareShiftable = 100 * (mean(d.dyn) * 900) / (mean(d.dyn) * 900 + d.fixedPerMonth);
+  // THE LEVEL IS NOT COMPARABLE TO A BILL, AND THE PANEL MUST SAY SO FIRST.
+  // Our wholesale component is short-run marginal cost: fuel, carbon, start-up and
+  // new-build capex. It excludes recovery of the EXISTING fleet, which the model treats as
+  // sunk and a tariff does not - Eskom recovers roughly R67bn of depreciation and R43bn of
+  // return on assets a year through the price. So the shadow mean lands about 44% below
+  // Homepower and that gap is a BOUNDARY, not a verdict on what Eskom charges.
+  // Read the SHAPE across hours, not the level against a bill.
+  noteEl.innerHTML =
+      `<strong>Read the shape, not the level.</strong> The energy component here is `
+    + `short-run marginal cost, so it excludes recovery of the existing fleet - roughly `
+    + `R67&nbsp;billion of depreciation and R43&nbsp;billion of return on assets a year that `
+    + `a real tariff must collect and this one does not. That is why the mean sits below `
+    + `Homepower. <strong>It is a boundary, not a claim that electricity should cost less.</strong>`
+    + `<br><br>`
+    + `<strong>The energy charge is ${shareShiftable.toFixed(0)}% of a 900&nbsp;kWh bill.</strong> `
+    + `The other ${(100-shareShiftable).toFixed(0)}% is Eskom's fixed charge of `
+    + `R${d.fixedPerMonth.toFixed(0)} a month, which no dynamic tariff can shift. That share `
+    + `rises as consumption falls: a 200&nbsp;kWh household is already 43% fixed, against 24% `
+    + `for a typical Octopus Agile customer in Britain.<br><br>`
+    + `<strong>A cost-reflective dynamic tariff would be less volatile than Homeflex, `
+    + `the time-of-use tariff Eskom already sells.</strong> Homeflex swings 4.4&times; `
+    + `between winter peak and off-peak. This one swings `
+    + `${(hi/lo).toFixed(1)}&times;, because every component except energy is flat across `
+    + `the day and adding them compresses the spread. Homeflex is not a mild version of `
+    + `dynamic pricing - it is a sharper one.<br><br>`
+    + `Cheapest hour ${String(loH).padStart(2,'0')}:00 at R${lo.toFixed(2)}, dearest `
+    + `${String(hiH).padStart(2,'0')}:00 at R${hi.toFixed(2)}. `
+    + (d.capOn ? `Capped at R${d.cap.toFixed(2)}/kWh, the same ratio to the flat rate that `
+                + `Octopus Agile holds to Ofgem's cap. ` : `<strong>Uncapped.</strong> Shortage `
+                + `hours price at the value of lost load, so the dearest hour is not a number `
+                + `any supplier would charge. `)
+    + `Municipal markup ${(d.markup*100).toFixed(0)}%, the midpoint of the observed Cape Town `
+    + `range; Ekurhuleni has been measured at 86%.<br><br>`
+    + `<strong>What is imported:</strong> the supply margin, R0.30/kWh, from European dynamic `
+    + `tariffs, because South Africa has no competitive retail to observe one. `
+    + `<strong>What is modelled:</strong> the wholesale component, from this page's dispatch. `
+    + `The modelled wind profile's daily shape is imperfect - correcting it moves this curve `
+    + `by about 2%. Everything else is Eskom's published schedule.`;
+
+  const cv = document.getElementById('retChart');
+  if (cv && cv.getContext) drawRetail(cv, d);
+}
+
+function drawRetail(cv, d){
+  const ctx = cv.getContext('2d');
+  const W = cv.width = cv.clientWidth || 600, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  const padL = 42, padR = 10, padT = 10, padB = 22;
+  const all = d.dyn.concat(d.flat, d.flex);
+  const mx = Math.max(...all) * 1.08, mn = 0;
+  const x = i => padL + (W - padL - padR) * i / 23;
+  const y = v => H - padB - (H - padT - padB) * (v - mn) / (mx - mn);
+  ctx.strokeStyle = 'rgba(128,128,128,0.25)'; ctx.lineWidth = 1;
+  ctx.font = '9px ui-monospace,monospace'; ctx.fillStyle = 'rgba(128,128,128,0.9)';
+  for (let g = 0; g <= 4; g++){
+    const v = mn + (mx - mn) * g / 4;
+    ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(W - padR, y(v)); ctx.stroke();
+    ctx.textAlign = 'right'; ctx.fillText('R' + v.toFixed(0), padL - 5, y(v) + 3);
+  }
+  ctx.textAlign = 'center';
+  for (let h = 0; h < 24; h += 4) ctx.fillText(String(h).padStart(2,'0'), x(h), H - 7);
+  const line = (a, col, dash) => {
+    ctx.strokeStyle = col; ctx.lineWidth = dash ? 1.4 : 2.2;
+    ctx.setLineDash(dash || []);
+    ctx.beginPath();
+    a.forEach((v, i) => i ? ctx.lineTo(x(i), y(v)) : ctx.moveTo(x(i), y(v)));
+    ctx.stroke(); ctx.setLineDash([]);
+  };
+  line(d.flex, '#C4783C', [5,3]);
+  line(d.flat, '#7A8A99', [2,3]);
+  line(d.dyn,  '#2E6F9E');
+  ctx.font = '10px ui-monospace,monospace'; ctx.textAlign = 'left';
+  [['Shadow dynamic','#2E6F9E'],['Homeflex','#C4783C'],['Homepower flat','#7A8A99']]
+    .forEach((L, i) => { ctx.fillStyle = L[1];
+      ctx.fillText('\u2014 ' + L[0], padL + 4 + i * 118, padT + 10); });
+}
+
 let spWeekMode = 'W';
 const SP_TECH_LABEL = { unserved:'Unserved (VoLL)', diesel:'Diesel OCGT', ccgt:'Gas CCGT',
                         // Still one label here BY design: the hourly dispatch chart draws
@@ -13891,7 +14106,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10b';
+const BUILD_STAMP = '2026-09-10c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -14314,7 +14529,7 @@ document.getElementById('shareBtn').addEventListener('click',()=>{
   } else { fallback(); }
 });
 
-function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
+function run(){lastRes=simulate(state,PROFILES);window.lastRes=lastRes;render(lastRes);if(typeof updateVppTotal==='function'){try{updateVppTotal();}catch(e){}}if(typeof renderRegionalCapture==='function'){try{renderRegionalCapture(lastRes);}catch(e){console.error('capture:',e);}}if(typeof renderCapacityPayment==='function'){try{renderCapacityPayment(lastRes);}catch(e){console.error('cappay:',e);}}if(typeof renderRetail==='function'){try{renderRetail();}catch(e){console.error('retail:',e);}}if(typeof renderExternalComparison==='function'){try{renderExternalComparison();}catch(e){console.error('external:',e);}}if(typeof renderBessStack==='function'){try{renderBessStack(lastRes); renderBessSaturation(lastRes);}catch(e){console.error('bessStack:',e);}}if(typeof renderCarbonBudget==='function')renderCarbonBudget(lastRes);if(typeof renderPricePanel==='function'){renderPricePanel(lastRes);}if(typeof drawShadowPriceWeek==='function')drawShadowPriceWeek(lastRes);if(typeof renderCaptureForecast==='function'&&!captureForecast)renderCaptureForecast();if(typeof renderCCS==='function')renderCCS(lastRes);if(typeof renderBess==='function'){renderBess(lastRes);if(typeof drawBessWeek==='function')drawBessWeek(lastRes);}if(typeof window.renderH2==='function')window.renderH2(lastRes);if(typeof window.renderGets==='function')window.renderGets();if(typeof window.renderHeat==='function')window.renderHeat();if(typeof scheduleAdequacy==='function')scheduleAdequacy();if(typeof scheduleCaptureCurve==='function')scheduleCaptureCurve();if(typeof renderLocationalBess==='function')renderLocationalBess();if(typeof renderValidation==='function')renderValidation();if(typeof bldShowInherit==='function')bldShowInherit();if(typeof renderComparison==='function'&&pinnedResult)renderComparison();;syncURL();scheduleMC();}
 function scheduleRun(){if(rafPending)return;rafPending=true;requestAnimationFrame(()=>{rafPending=false;run();});}
 window.addEventListener('resize',()=>{if(lastRes)draw(lastRes);});
 run();

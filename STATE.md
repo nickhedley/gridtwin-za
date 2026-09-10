@@ -6352,27 +6352,15 @@ a source; at present it has neither.
     markets is an assumption, not a measurement.
 
 
-28. **Shadow dynamic retail price.** Scoped 10 Sep 2026, `scope_dynamic_retail_price.md`.
-    What a household would pay at 02:00 against 18:00 if the price followed cost - a
-    question nobody in South Africa can currently answer.
+28. ~~Shadow dynamic retail price.~~ **BUILT 10 Sep 2026.** Panel `nav-retail`, hourly,
+    three tariffs side by side. Both blockers cleared first: the wind diurnal error moves it
+    2%, and the ERTSA components are ingested as `nodal/eskom_tariff_components.json`.
 
-    **The hard half exists**: hourly wholesale shadow price, the TOU classifier, and a
-    TDP-calibrated transmission cost. Only ONE component is a genuine import - the retail
-    supply margin, because there is no competitive retail here to observe one. Octopus Agile
-    is the reference because its formula is published.
+    **The finding: a cost-reflective dynamic tariff would be calmer than Homeflex.** 1.6x
+    against 4.4x, because every component except energy is flat across the day.
 
-    **Blocked on two things.** Ingesting the Eskom ERTSA tariff schedules, which is the
-    largest missing piece and is published in the 2027/28 consultation paper. And item 18:
-    a dynamic price is a claim about WHEN power is cheap, and the diurnal shape is exactly
-    where our data is weakest.
-
-    **The fixed/variable half is already computed** and needs no model. Homepower 4 today
-    runs 33% fixed at 300 kWh a month and 7% at 2,000 - already regressive. Completing the
-    glide path moves R159/month from energy to fixed, revenue-neutral at 900 kWh: a 200 kWh
-    home pays R124 more and reaches **51% fixed**, a 2,000 kWh home pays R194 less.
-    Octopus Agile sits at about 24% fixed for comparison.
-
-    That is submittable to the ERTSA consultation on its own, without the hourly price.
+    Still open: the panel is Eskom-direct only. A municipal customer buys from a distributor
+    with its own structure, and the markup slider approximates that rather than modelling it.
 29. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
     4 Sep 2026.** The gate the scope set - does Eskom publish CSP separately - was answered
     by a dataset the user obtained: **ESK19679, 38,736 hours from April 2022 to August 2026**,
