@@ -1964,6 +1964,28 @@ The bias correction applied in September fixed the LEVEL and the calm-hour distr
 both checked against Eskom and both pass. **Neither test looks at time of day**, so this
 survived a rebuild that was specifically about wind profile quality.
 
+### the cause, tested 10 Sep 2026
+
+Four modelled hub heights at the Northern Cape centroid, against Eskom's metered fleet:
+
+```
+hub     mean CF   trough hr  peak hr  night/day  corr vs Eskom
+ 80 m     34.3%           6       20      0.999          0.435
+100 m     36.5%           6       20      1.033          0.510
+120 m     38.4%           6       20      1.058          0.553
+140 m     39.9%           6       20      1.078          0.579
+Eskom     35.5%          10       18      1.026
+```
+
+**The night/day ratio responds to hub height; the timing does not.** Trough at hour 6 and
+peak at hour 20 at every height from 80 to 140 m. A four-hour displacement identical across
+a 60 m range is not a configuration choice - it is MERRA-2 reproducing a diurnal cycle the
+real fleet does not have.
+
+Our profiles are modelled at 80 m. South Africa has been building at 105-148 m since 2021,
+so the ratio error is partly ours and is fixable; the timing error is the dataset's and is
+not.
+
 Anything in this file that depends on WHEN wind blows rather than how much, over a day
 rather than a season, should be treated as unverified until the diurnal shape is resolved.
 The seasonal and calm-hour results are unaffected: those were checked directly.

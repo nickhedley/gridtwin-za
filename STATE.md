@@ -6162,11 +6162,30 @@ panel rendering one sentence. A browser is the only instrument for these.
     in ZERO of twelve on the rebuilt profiles, and Eskom's metered fleet shows night running
     1% above day. The drafts were never staged to the repo, so nothing needs unpublishing.
 
-18. **Fix the diurnal wind shape.** Our profile's trough is four hours early against Eskom's
-    metered fleet and lacks the morning minimum the real fleet shows. Amplitude is right at
-    13.3 points against 14.4; correlation is 0.60. Pinned as a floor in `validate_weather`
-    so it cannot widen. Likely a MERRA-2 boundary-layer limitation rather than a bug in our
-    processing, but not established.
+18. **The diurnal wind shape - PARTLY DIAGNOSED 10 Sep 2026, and it splits in two.**
+    Tested at four hub heights, four API calls at the Northern Cape centroid:
+
+    ```
+    hub     mean CF   trough hr  peak hr  night/day  corr vs Eskom
+     80 m     34.3%           6       20      0.999          0.435
+    100 m     36.5%           6       20      1.033          0.510
+    120 m     38.4%           6       20      1.058          0.553
+    140 m     39.9%           6       20      1.078          0.579
+    Eskom     35.5%          10       18      1.026
+    ```
+
+    **Hub height fixes the night/day RATIO and does nothing for the TIMING.** The trough
+    sits at hour 6 and the peak at hour 20 at EVERY height tested; Eskom is 10 and 18. That
+    four-hour trough displacement is MERRA-2's diurnal cycle, not our configuration, and no
+    refetch will move it.
+
+    **A refetch at 100 m is still worth considering**, for a reason unrelated to shape: our
+    raw 80 m mean is 34.3% against a measured 35.5%, so the bias correction scales UP by
+    1.075. At 100 m the raw value is 36.5% and the correction becomes 0.97 - a much smaller
+    fitted adjustment, and 80 m sits below most of South Africa's fleet anyway. Cost is
+    1,176 calls, about 24 hours.
+
+    **Not urgent.** The floor in `validate_weather` holds the gap where it is.
 19. **EDMSA** - the boundary question above, plus whether "grid readiness adequate per TDP
     2023/24" reconciles with their own finding that grid absorption is binding.
 20. **Energy Brokers** - the solar ceiling is directly useful to their offtakers.
@@ -9455,6 +9474,46 @@ Raise the floor when it is fixed; do not delete the check.
 
 **Anything in RESULTS.md that depends on WHEN wind blows within a day should be treated as
 unverified.** Seasonal and calm-hour results are unaffected - those were checked directly.
+
+## hub height fixes half of it - 10 Sep 2026
+
+Four API calls, testing whether the diurnal shape error is configuration or physics. The
+answer is both, in separable parts.
+
+```
+hub     mean CF   trough hr  peak hr  night/day  corr vs Eskom
+ 80 m     34.3%           6       20      0.999          0.435
+100 m     36.5%           6       20      1.033          0.510
+120 m     38.4%           6       20      1.058          0.553
+140 m     39.9%           6       20      1.078          0.579
+Eskom     35.5%          10       18      1.026
+```
+
+**The night/day ratio responds to height and lands closest at 100 m** - 1.033 against a
+measured 1.026. Correlation rises steadily. So hub height is a real part of the story, and
+80 m was too low: South Africa's fleet has been building at 105-148 m since 2021.
+
+**The timing does not respond at all.** Trough at hour 6 and peak at hour 20 at every height
+from 80 to 140. Eskom's are 10 and 18. **A four-hour displacement that is identical across a
+60 m range is not a configuration error** - it is MERRA-2 reproducing a diurnal cycle the
+real fleet does not have, and no refetch fixes it.
+
+### the argument for refetching anyway
+
+Not the shape - the LEVEL. Our raw 80 m mean is 34.3% against Eskom's 35.5%, so
+`bias_correct_wind.py` scales UP by 1.0753. At 100 m the raw value is 36.5% and the
+correction becomes 0.97.
+
+**That matters because a smaller correction is a smaller fitted adjustment.** The bias
+correction was defensible when it was closing a residual after fixing the shape; the less of
+the answer it carries, the more of the level is earned rather than imposed. Cost is 1,176
+calls, about 24 hours of quota, and it is not urgent.
+
+### what the test cost, and why it was worth doing first
+
+Four calls against a possible 1,176. Had the correlation been flat across heights, a day of
+quota would have bought nothing. It was not flat, but it also did not fix what the item was
+opened to fix - and knowing which half is fixable is worth more than either answer alone.
 
 ---
 
