@@ -3466,7 +3466,7 @@ losses, levies, a supplier margin, then VAT, then capped.
 tariff                  mean      cheapest      dearest    spread
 Homepower, flat        R3.56         R3.56        R3.56      1.0x
 Homeflex, time of use  R3.55         R1.91        R8.47      4.4x
-Shadow dynamic         R1.98    R1.85 @ 02    R2.95 @ 19    1.6x
+Shadow dynamic         R3.56    R3.32 @ 02    R5.29 @ 19    1.6x
 ```
 
 **The dynamic tariff is the least volatile of the three.** Every component except energy is
@@ -3478,17 +3478,54 @@ sells a tariff with a 4.4x winter peak-to-off-peak spread, and every household w
 PV is required to be on it. The question of whether South Africans could handle exposure to
 time-varying prices is already answered: some are.
 
-### read the shape, not the level
+### what decarbonisation does to a household bill
 
-The mean lands 44% below Homepower and **that is a boundary, not a verdict**. Our energy
-component is short-run marginal cost, so it excludes recovery of the existing fleet - roughly
-R67 billion of depreciation and R43 billion of return on assets a year that a real tariff must
-collect and this one does not. The model treats existing plant as sunk, which is right for
-dispatch and wrong for a bill.
+The reason the panel exists. Energy component, 900 kWh a month, fixed charge held at R536:
 
-Pinned in `validate_consistency`: the panel must state this, and must state it in the first
-200 characters of its note, because a caveat below three paragraphs of detail does not stop a
-number being misread.
+```
+scenario                   energy R/kWh   spread   monthly bill   energy share
+today                              3.56    1.59x         R3,740            86%
+Future electricity mix             1.62    2.31x         R1,994            73%
+all coal retired, no gas           1.75    3.41x         R2,111            75%
+```
+
+**The energy component falls 54% and the daily spread widens from 1.6x to 2.3x.** Cheaper
+power and more reason to time it, together.
+
+The fixed charge does not move, so it grows as a share of what is left - the opposite
+direction to the tariff phase-in, and for a different reason.
+
+### the tariff is calibrated to today, then held
+
+```
+tariff                  mean      cheapest      dearest    spread
+Homepower, flat        R3.56         R3.56        R3.56      1.0x
+Shadow dynamic         R3.56    R3.32 @ 02    R5.29 @ 19      1.6x
+underlying marginal    R1.98         R1.85        R2.95
+```
+
+**Same average as Homepower at today's system, different distribution.** That is what a
+regulator does: the allowed revenue is a given and the tariff decides how to collect it.
+
+**The scale is calibrated once, on the default scenario, and then held fixed.** The first
+version recomputed it per scenario and that destroyed the panel: building 120 GW of
+renewables halved the underlying marginal cost and the mean still read R3.56, because the
+rescaling absorbed exactly the effect the panel exists to show. Holding it fixed treats it as
+what it is - a markup structure, which does not fall because the generation mix changed.
+
+The underlying marginal cost sits 44% below the tariff because this model treats the existing
+fleet as sunk while a bill does not - roughly R67 billion of depreciation and R43 billion of
+return on assets a year, plus operating costs and IPP purchase obligations. **Scaling to
+Homepower's average puts that recovery back without pretending to itemise it**, which matters
+because itemising it invites double-counting: IPP purchases pay for energy this model already
+dispatches at near-zero marginal cost.
+
+The shape is modelled. The level is Eskom's.
+
+Two checks in `validate_consistency`. The panel must say both that it is revenue-neutral and
+why the marginal cost sits below - without both, either the level reads as an accusation or
+the scaling reads as a fudge. And the mean itself is asserted against Homepower's, one-sided,
+because the price cap may legitimately clip it downward but nothing should push it above.
 
 ### what is imported, and what is not
 

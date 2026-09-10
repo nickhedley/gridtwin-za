@@ -805,10 +805,63 @@ const num = t => {
     if (r && !r.err && typeof r.text === 'string' && r.text.length > 40){
       const t = r.text.toLowerCase();
       check('the shadow retail panel states that its level excludes sunk generation cost',
-            t.includes('short-run marginal') || t.includes('existing fleet'),
-            `the panel does not say its energy component is short-run marginal cost. `
-            + `Without that, its mean reads as a claim that Eskom overcharges by 44% rather `
-            + `than as a stated boundary.`);
+            t.includes('revenue-neutral') && t.includes('existing fleet'),
+            `the panel must say it is revenue-neutral against Homepower AND why the `
+            + `underlying marginal cost sits below it. Without both, either the level reads `
+            + `as an accusation or the scaling reads as a fudge.`);
+      // REVENUE NEUTRALITY IS THE WHOLE BASIS OF THE COMPARISON. If the mean drifts from
+      // Homepower's flat rate, the panel is no longer showing a redistribution of the same
+      // bill - it is showing a different bill, and every conclusion changes.
+      //
+      // The cap can legitimately pull the mean DOWN by clipping the dearest hours, so the
+      // tolerance is one-sided in that direction only.
+      const rn = run(`
+        const d = (typeof retailHourly === 'function') ? retailHourly() : null;
+        if (!d) return { err: 'no panel' };
+        const m = a => a.reduce((x, y) => x + y, 0) / a.length;
+        return { dyn: m(d.dyn), flat: m(d.flat), raw: m(d.raw) };
+      `);
+      if (rn && !rn.err && rn.flat){
+        const gap = 100 * (rn.dyn / rn.flat - 1);
+        check('the shadow retail tariff is calibrated to today at the default scenario',
+              gap <= 0.5 && gap >= -12,
+              `the shadow mean is R${rn.dyn.toFixed(2)} against Homepower's `
+              + `R${rn.flat.toFixed(2)}, ${gap.toFixed(1)}%. It must not exceed the flat `
+              + `rate at all, and may sit below it only by what the price cap clips. `
+              + `Underlying marginal cost is R${rn.raw.toFixed(2)} - if THAT is what is `
+              + `showing, the revenue-neutral scaling has been lost.`);
+      }
+      // ── THE PANEL MUST RESPOND TO DECARBONISATION ─────────────────────────
+      // This is the whole point of it, and the first implementation destroyed it: the scale
+      // was recomputed per scenario, so the mean stayed at Homepower's rate no matter what
+      // was built. Marginal cost halved and the panel read R3.56 either way.
+      //
+      // The scale is now calibrated ONCE on the default scenario and held, so it behaves
+      // like the fixed markup structure it represents. Non-energy costs do not fall because
+      // the generation mix changed.
+      //
+      // Anyone who "fixes" the mean back to Homepower across scenarios will make this fail,
+      // which is the point.
+      const sc = run(`
+        const m = a => a.reduce((x, y) => x + y, 0) / a.length;
+        const before = m(retailHourly().dyn);
+        const keep = JSON.parse(JSON.stringify(state));
+        Object.assign(state, PRESETS['Future electricity mix']);
+        run();
+        const after = m(retailHourly().dyn);
+        Object.assign(state, keep); run();
+        return { before, after };
+      `);
+      if (sc && !sc.err && sc.before && sc.after){
+        const drop = 100 * (1 - sc.after / sc.before);
+        check('the shadow retail price falls under a decarbonisation scenario',
+              drop > 20,
+              `energy component R${sc.before.toFixed(2)} today against `
+              + `R${sc.after.toFixed(2)} on the Future electricity mix, ${drop.toFixed(0)}% `
+              + `lower. If this reads near zero the scale is being recomputed per scenario `
+              + `and the panel is absorbing exactly the effect it exists to show.`);
+      }
+
       check('the shadow retail panel tells the reader to read the shape not the level',
             t.indexOf('read the shape') >= 0 && t.indexOf('read the shape') < 200,
             `"read the shape, not the level" must appear near the START of the note. It is `

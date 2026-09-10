@@ -9637,6 +9637,45 @@ A bigger fitted adjustment is a worse position even when it buys a better shape.
 `test_era5_openmeteo.py` is kept. It is free to run, needs no token, and is the reference for
 what the diurnal shape SHOULD look like if anyone revisits this.
 
+## the retail panel absorbed the effect it was built to show - 10 Sep 2026
+
+Asked whether the panel could test an aggressive decarbonisation scenario. It could not, and
+the reason was something I had introduced an hour earlier.
+
+Making the tariff revenue-neutral against Homepower meant rescaling the hourly series so its
+mean matched R3.5556. **Recomputed per scenario, that pins the mean at R3.5556 in every
+scenario.** Marginal cost halved on the Future electricity mix and the panel read R3.56
+either way.
+
+```
+scenario                   energy R/kWh   spread
+today                              3.56    1.59x
+Future electricity mix             1.62    2.31x
+all coal retired, no gas           1.75    3.41x
+```
+
+Fixed by calibrating the scale ONCE, on the default scenario, and holding it. That is what it
+represents - a markup structure, which does not fall because the generation mix changed.
+
+### two bugs found on the way, both from rules already written down
+
+**Duplicated arithmetic.** The calibration and the display computed the raw series
+separately and disagreed by 5%. Rule 6 is "no constant appears twice"; this was the same
+failure as duplicated formula. Refactored to one `retailRaw()`.
+
+**Calibrating on synthetic profiles.** The tariff JSON fetch resolved before `profiles.json`,
+so the first render calibrated against the silent synthetic fallback. `retailScale()` now
+refuses to cache unless `PROFILES.real` is set. This is the fallback that caused eleven false
+failures across five harnesses on 27 Aug, and STATE.md already says to check it first.
+
+### pinned
+
+`validate_consistency` 61 -> 62 asserts the price falls more than 20% under the Future mix.
+Verified by reverting to per-scenario rescaling: it fires with both figures at R3.56.
+
+Anyone who "fixes" the mean back to Homepower across scenarios will make it fail, which is
+the point.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.
