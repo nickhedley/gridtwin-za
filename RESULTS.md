@@ -3456,88 +3456,68 @@ schedule at 8.76%; the 2027/28 ERTSA at 8.83% moves the level, not the shape.
 
 ---
 
-## What decarbonisation does to a retail bill, built bottom-up
+## What decarbonisation does to a retail bill - reviewed and reversed
 
-Rebuilt 10 Sep 2026 from NERSA's allowed revenue rather than anchored to a published tariff.
-Two earlier versions scaled to Homepower's rate; that could only show fuel moving, because
-everything else was folded into one factor.
+Built bottom-up from NERSA's allowed revenue on 10 Sep 2026, then reviewed line by line the
+same day. **The review reversed the conclusion.** Full findings in
+`review_retail_methodology.md`.
+
+```
+                            before review    after review
+today                              R3.92           R3.66     Homepower actual R3.56
+Future mix, stranded               R3.68           R6.16
+Future mix, written off            R3.08           R5.86
+```
+
+Today moved closer to the real tariff - within 3% with no calibration - while the scenario
+figures moved far. That is what fixing a denominator and adding missing costs should do.
 
 ### the components, R/kWh before losses, markup and VAT
 
 ```
-                          today   Future mix
-fuel and carbon           0.484        0.049   from the dispatch run
-generation opex           0.422        0.422   scales with retained coal
-existing fleet capital    0.496        0.496   the stranded-asset control
-new build capital         0.000        0.506   from newCapexR
-new grid for the build    0.000        0.070   from the scenario's transmission capex
-IPP purchase obligations  0.302        0.302   fixed - PPAs already signed
-imports, levies, arrears  0.114        0.114
+component                   today    Future mix
+fuel and carbon             0.529         0.138   from the dispatch run
+existing fleet capital      0.452         0.452   stranded; only the 54% coal share moves
+new build capital           0.000         1.423   from newCapexR, R258bn a year
+new build fixed O&M         0.000         0.339   was missing entirely
+new grid                    0.000         0.070   a floor - the TDP implies about 0.23
+generation opex             0.384         0.384
+IPP obligations             0.275         0.275   fixed - PPAs already signed
+closure and rehabilitation  0.000         0.018   an assumption, R1,500/kW
+sales base, TWh               204           181   generation less rooftop, storage, exports
 ```
 
-**At today's system this gives R3.92/kWh against Homepower's actual R3.56 - within 10% with
-no calibration.** That agreement is the only check the method has on itself, and it is the
-reason to trust the scenario results.
+**Fuel is cheap to remove. The capital that replaces it is not**, and it is spread over fewer
+kWh because the same scenario adds 20 GW of rooftop and sells 11% less.
 
-### the stranded-asset question is worth a quarter of a bill
+### what the review found
 
-```
-scenario                  stranded   written off   difference
-today                         3.92          3.92     none yet
-Future electricity mix        3.68          3.08         -16%
-all coal retired              3.54          2.65         -25%
-```
+Four material errors, all fixed: model costs divided by generation while Eskom components
+were per kWh sent out, two bases in one sum and the second wrong; the written-off case scaled
+whole-company asset costs by the coal fraction and so retired the transmission network along
+with the coal; new-build fixed O&M was absent, the largest omission by value; and the sales
+calculation summed curtailment and exports as generation.
 
-**Identical today, because nothing has retired.** Under the Future mix, R3.68 if consumers
-keep paying for closed plant and R3.08 if they do not.
+Three assumptions recorded: the municipal markup double-counts Eskom distribution for a
+municipal customer, carbon is pinned 62% high, and the opex split is unsourced.
 
-That is a regulatory decision, not a physical one, and it is larger than anything the
-generation mix does on its own. Stranded is what a regulated asset base actually does, and
-NERSA's R54bn RAB correction in 2025-26 shows how live the question is.
+### what held
 
-### fuel is 30% of the requirement, which is the reason the spread is small
+The modelled fuel spend is R107.7bn against Eskom's approved R110.7bn - 2.7% apart, an
+independent validation of the dispatch model. New-build capital reconciles by hand and
+matches the model's own system cost of R1,445/MWh for the scenario. IPP purchases held
+fixed. The hourly shape is defensible: only fuel and carbon vary by hour, and that is why the
+daily spread is narrow.
 
-A scenario that removes fuel entirely leaves 70% of the cost standing and adds capital for
-whatever it builds. Everything except fuel is a capacity or obligation cost and is flat
-across the day, so the daily spread is only 1.18x - **narrower than Homeflex's 4.4x winter
-spread, and narrower than the earlier scaled version suggested.**
+### the stranded-asset question, resized
 
-A cost-reflective dynamic tariff in South Africa would be a calm instrument. Most of what a
-household pays is not decided by the hour.
+Only the coal share of asset costs - about 54% - is at stake. Koeberg, the pumped storage
+schemes and the wires stay either way. On the Future mix the choice is worth about 5% of a
+bill, not the 25% the unreviewed panel showed. Still a regulatory decision rather than a
+physical one, and still a control.
 
-### the grid figure is a floor, and was absent entirely at first
+### the scenario tested is the extreme one
 
-Asked whether the panel included the grid a heavy renewables scenario needs. It did not, and
-there were two faults at once.
-
-It added `txRPerKWyr`/8760 as "transmission", R0.068/kWh, **on top of a component table that
-already contains transmission**. Eskom's build-up is whole-company: its opex, depreciation
-and return on assets cover the wires as well as the stations. The adder was also eight times
-too small against NERSA's approved NTCSA revenue of R0.573/kWh.
-
-And the grid BUILT BY THE SCENARIO was missing. The model computes it as `_txCapexR` and used
-it only for a display table, so a 97 GW build implied no new wires on a household bill.
-
-Now included, and still low:
-
-```
-model, scenario transmission capex        R0.070/kWh
-TDP-implied, R390bn for 56 GW scaled      R0.227/kWh
-```
-
-The model's own cost decomposition already labels transmission "partial", so this is a known
-incompleteness rather than a new error. **The panel says so, because otherwise it makes heavy
-renewables look cheaper than the wires allow.**
-
-### one error worth recording
-
-The first bottom-up version scaled IPP purchase obligations with new renewable capacity -
-"more build, more PPAs". The Future mix came out at R10.33/kWh. It scaled an obligation by
-CAPACITY ratio, so twelve times the build gave thirteen times the cost per kWh while those
-plants also delivered far more energy, and it charged for new plant that `newCapexR` already
-costs.
-
-**That is exactly the double-count that argued against itemising in the first place**, and it
-appeared the moment the itemising was done. IPP purchases are an obligation on PPAs already
-signed and do not grow because a scenario builds more.
-
+The Future electricity mix is a no-gas build sized for adequacy at 110-120 GW. A moderate
+decarbonisation that kept gas as backup would carry far less capital and is the more useful
+next test. The panel makes that test available; this section reports only the extreme.

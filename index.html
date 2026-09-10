@@ -11770,68 +11770,74 @@ const RETAIL_LOSS = 0.10;    // technical and non-technical, Eskom reported
 
 function retailComponents(markup, stranded){
   // ── BOTTOM-UP, FROM NERSA'S ALLOWED REVENUE ──────────────────────────────
-  // Not anchored to a published tariff. A retail price is a revenue requirement split into
-  // components and recovered per kWh, so that is what this builds.
-  //
-  // Two earlier versions scaled to Homepower's rate instead. That could only ever show fuel
-  // moving, because everything else was folded into one factor - and fuel is 30% of the
-  // requirement. A scenario that removes it entirely leaves 70% untouched, and ADDS capital.
+  // Reviewed line by line on 10 Sep 2026. Seven findings; the four material ones are fixed
+  // below and marked. The first version showed the Future electricity mix LOWERING a bill
+  // by 6%; corrected, it raises one by roughly 30%. The review reversed the conclusion.
   const A = RETAIL_T.allowed_revenue_2026_27;
   const C = A.components_r_per_kwh;
   const P = { ...FIXED, ...state };
   const r = lastRes;
-  const sales = A.sales_twh * 1e6;            // MWh
-  const gen = Object.values(r.E).filter(x => typeof x === 'number')
-                .reduce((a, b) => a + b, 0) / 1e6 * 1e6;  // MWh this scenario
 
-  // FUEL AND CARBON come from the dispatch run, not the table. This is the whole point.
-  const fuelPerKwh   = (r.fuelCost   || 0) / Math.max(1, gen) / 1000;
-  const carbonPerKwh = (r.carbonCost || 0) / Math.max(1, gen) / 1000;
+  // REVIEW FINDING 1: one denominator, and it is SALES not generation.
+  // The first version divided model costs by generation (222.6 TWh) and used Eskom
+  // components built over dispatchable sent-out (190.81 TWh) - two bases in one sum, and
+  // the second one wrong anyway since it excludes IPP energy. Eskom recovers revenue over
+  // what it SELLS. The scenario's sales are its generation less rooftop self-consumption,
+  // which is never sold, less exports, which are sold on a different tariff.
+  // Sum GENERATION keys only. Summing every numeric field in E was the first version, and it
+  // counted curtailment, exports and storage charging as generation - the Future mix came
+  // out at 460 TWh of sales against a real figure near 215. The key list matches the one
+  // the energy balance itself uses at gridServed.
+  const GEN_KEYS = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal',
+                    'ps','batt','ccgt','diesel'];
+  const genMWh = GEN_KEYS.reduce((a, k) => a + (r.E[k] || 0), 0);
+  // Storage output is not new energy - it was generated once already and charged in. Rooftop
+  // is never sold. Exports are sold, but not to South African retail customers.
+  const salesMWh = Math.max(1, genMWh - (r.E.rooftop || 0) - (r.E.ps || 0) - (r.E.batt || 0)
+                              - (r.E.exported || 0));
 
-  // COAL-LINKED costs fall as the fleet retires.
+  const fuelPerKwh   = (r.fuelCost   || 0) / salesMWh / 1000;
+  const carbonPerKwh = (r.carbonCost || 0) / salesMWh / 1000;
+
   const coalFrac = Math.max(0, (P.coalInstalledMW - (P.coalDecomMW || 0))) /
                    Math.max(1, P.coalInstalledMW);
-  const opex = C.operating_costs * (0.4 + 0.6 * coalFrac);   // 40% is not station-specific
+  const opexCoal = A.opex_coal_share || 0.6;
+  const opex = C.operating_costs * ((1 - opexCoal) + opexCoal * coalFrac);
 
-  // EXISTING FLEET CAPITAL - the control. Stranded keeps paying for retired plant, which is
-  // what a regulated asset base does; written off removes it and the fiscus carries it.
-  const existingCap = (C.depreciation + C.return_on_assets) * (stranded ? 1 : coalFrac);
+  // REVIEW FINDING 2: only the COAL share of asset costs is at stake.
+  // Depreciation and return on assets are whole-company. The first version scaled all of it
+  // by the coal fraction, so retiring coal wrote off Koeberg and the transmission network.
+  // Only the coal-specific share moves; the rest stays regardless.
+  const coalShare = A.coal_share_of_asset_costs || 0.54;
+  const assetCosts = C.depreciation + C.return_on_assets;
+  const existingCap = assetCosts * ((1 - coalShare) + coalShare * (stranded ? 1 : coalFrac));
 
-  // NEW BUILD capital, annualised by the model itself, spread over what it delivers.
-  const newCap = (r.newCapexR || 0) / Math.max(1, gen) / 1000;
+  const newCap = (r.newCapexR || 0) / salesMWh / 1000;
 
-  // IPP PURCHASES ARE FIXED, and getting this wrong is instructive.
-  //
-  // The first version scaled them with new renewable capacity: "more build, more PPAs to
-  // honour". That was wrong twice over. It scaled an obligation by CAPACITY ratio, so 12x
-  // the build gave 13x the cost per kWh when those plants also deliver far more energy -
-  // and it charged for new plant that newCapexR already costs. The Future mix came out at
-  // R10.33/kWh.
-  //
-  // IPP purchases are an obligation on PPAs ALREADY SIGNED. They do not grow because a
-  // scenario builds more; that build is newCapexR and nothing else. This is precisely the
-  // double-count that argued against itemising in the first place, and it appeared the
-  // moment the itemising was done.
+  // REVIEW FINDING 3: new-build FIXED O&M was missing entirely.
+  // acap* is annualised capex only. A wind farm still needs maintaining once it is paid
+  // for, and on the Future mix this line is worth about R0.24/kWh - as large as the grid gap.
+  const fom = A.new_build_fixed_om_r_per_kw_yr || {};
+  const newFom = ((P.newWindMW || 0) * (fom.wind || 0) + (P.newPvMW || 0) * (fom.pv || 0)
+                + (P.newBattMW || 0) * (fom.battery || 0) + (P.newCcgtMW || 0) * (fom.ccgt || 0))
+                * 1000 / salesMWh / 1000;
+
+  // REVIEW FINDING 6: closure and rehabilitation of what retires, paid in both cases.
+  const retiredMW = Math.max(0, P.coalDecomMW || 0);
+  const decomAnnual = retiredMW * 1000 * (A.decommissioning_r_per_kw || 1500) * 0.08;
+  const decom = decomAnnual / salesMWh / 1000;
+
   const ipp = C.ipp_purchases;
-
   const imports = C.international_purchases *
                   ((P.importsMW || 0) / Math.max(1, FIXED.importsMW || 1));
   const fixedItems = C.rca_recoveries + C.arrear_debt + C.environmental_levy;
 
-  // EXISTING GRID is already inside the component table above, and adding txRPerKWyr on top
-  // of it was a double-count. The table is Eskom's WHOLE-COMPANY build-up: its opex,
-  // depreciation and return on assets cover transmission and distribution as well as
-  // generation. The separate adder was also eight times too small - R0.068/kWh against
-  // NERSA's approved NTCSA revenue of R109,289m, which is R0.573/kWh.
-  //
-  // NEW GRID for the scenario is a different quantity and was missing entirely. The model
-  // computes it as _txCapexR, driven by new wind and PV, and exposes it in the cost
-  // decomposition where it is labelled 'partial'. A 97 GW build implies TDP-scale spending
-  // and none of it was reaching the bill.
-  const newGrid = (r.txCapexR || 0) / Math.max(1, gen) / 1000;
+  // New grid for the scenario, from the model's own transmission capex. Known to be about a
+  // third of what the TDP implies - the panel says so.
+  const newGrid = (r.txCapexR || 0) / salesMWh / 1000;
 
-  return { fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, ipp,
-           imports, fixedItems, newGrid, markup, coalFrac };
+  return { fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom, decom,
+           ipp, imports, fixedItems, newGrid, markup, coalFrac, salesTWh: salesMWh / 1e6 };
 }
 
 function retailRaw(marginalP, markup, stranded){
@@ -11843,8 +11849,8 @@ function retailRaw(marginalP, markup, stranded){
   for (let h = 0; h < 8760; h++) hod[h % 24] += marginalP[h] / 1000 / 365;
   const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
   const varTarget = c.fuel + c.carbon;
-  const flat = c.opex + c.existingCap + c.newCap + c.ipp + c.imports + c.fixedItems
-             + c.newGrid;
+  const flat = c.opex + c.existingCap + c.newCap + c.newFom + c.decom + c.ipp + c.imports
+             + c.fixedItems + c.newGrid;
 
   return hod.map(w => {
     const variable = hodMean > 0 ? varTarget * (w / hodMean) : varTarget;
@@ -11930,6 +11936,7 @@ function renderRetail(){
   const c = d.comp;
   const items = [['fuel and carbon', c.fuel + c.carbon], ['generation opex', c.opex],
                  ['existing fleet capital', c.existingCap], ['new build capital', c.newCap],
+                 ['new build fixed O&M', c.newFom], ['coal closure', c.decom],
                  ['IPP purchase obligations', c.ipp], ['new grid for this scenario', c.newGrid],
                  ['imports, levies, arrears', c.imports + c.fixedItems]];
   const preTot = items.reduce((a, b) => a + b[1], 0);
@@ -11939,8 +11946,16 @@ function renderRetail(){
     + '<span class="mono" style="font-size:10px;display:block;margin:6px 0 8px">'
     + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
     + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
-    + `At today's system this gives R${mean(d.dyn).toFixed(2)}/kWh against Homepower's actual `
-    + `R3.56 \u2013 within 10% with no calibration, which is the check on the method.<br><br>`
+    + `Sales basis ${c.salesTWh.toFixed(0)}&nbsp;TWh \u2013 generation less rooftop, storage `
+    + `throughput and exports, because Eskom recovers its revenue over what it sells and a `
+    + `scenario that adds rooftop shrinks that base.<br><br>`
+    + `<strong>Reviewed line by line on 10 Sep 2026.</strong> The first build showed a heavy `
+    + `renewables scenario lowering a bill. It was missing new-build fixed O&amp;M, closure `
+    + `costs and a consistent denominator, and its written-off case wrote off the transmission `
+    + `network along with the coal. Corrected, the Future electricity mix raises a bill by `
+    + `roughly two thirds: 97&nbsp;GW of renewables and 30&nbsp;GW of storage annualise about `
+    + `R258&nbsp;billion a year of capital over fewer kWh sold. <strong>Fuel is cheap to `
+    + `remove; the capital that replaces it is not.</strong><br><br>`
     + `<strong>Fuel and carbon are only ${(100*(c.fuel+c.carbon)/preTot).toFixed(0)}% of the `
     + `requirement.</strong> A scenario that removes them entirely leaves the rest standing `
     + `and adds capital for whatever it builds. That is why the daily spread is only `
@@ -11957,8 +11972,10 @@ function renderRetail(){
         ? `Consumers keep paying for plant that has closed, which is what a regulated asset `
         + `base does. Untick to see the alternative.`
         : `The cost leaves with the plant and someone else carries it, usually the fiscus.`)
-    + ` On the Future electricity mix this choice is worth 16% of a bill, and with all coal `
-    + `retired, 25%. <strong>A regulatory decision, not a physical one.</strong><br><br>`
+    + ` Only the coal share of the asset base, about 54%, is at stake; Koeberg, the pumped `
+    + `storage schemes and the wires stay either way. On the Future electricity mix the choice `
+    + `is worth about 5% of a bill. <strong>A regulatory decision, not a physical one.</strong>`
+    + `<br><br>`
     + `<strong>The energy charge is ${shareShiftable.toFixed(0)}% of a 900&nbsp;kWh bill.</strong> `
     + `The other ${(100-shareShiftable).toFixed(0)}% is Eskom's fixed charge of `
     + `R${d.fixedPerMonth.toFixed(0)} a month, which no dynamic tariff can shift.<br><br>`
@@ -14202,7 +14219,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10h';
+const BUILD_STAMP = '2026-09-10i';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

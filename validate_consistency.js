@@ -840,6 +840,54 @@ const num = t => {
             `the scenario grid cost is roughly a third of what the Transmission Development `
             + `Plan implies. Without saying so, the panel understates the cost of exactly `
             + `the scenario it exists to test.`);
+      // ── THE PANEL MUST RESPOND, AND AGREE WITH THE SYSTEM COST ────────────
+      // RESTORED 10 Sep 2026. This check existed, then vanished when the surrounding block
+      // was replaced during the bottom-up rebuild, and nothing noticed because everything
+      // still passed. That is the disappearing-check failure STATE.md describes for eng5.
+      //
+      // It also used to assert the price FALLS by more than 20%. That was the conclusion of
+      // a build with four missing or mis-scaled components. Corrected, the Future mix RAISES
+      // a bill by roughly two thirds - 97 GW of renewables and 30 GW of storage annualise
+      // R258bn a year over fewer kWh sold. A check that encodes a conclusion gets edited when
+      // the conclusion changes, so this one asserts only that the panel moves, and that it
+      // moves the same way as the model's own system cost.
+      const sc = run(`
+        const m = a => a.reduce((x, y) => x + y, 0) / a.length;
+        const before = m(retailHourly().dyn), avgBefore = lastRes.avgCost;
+        const keep = JSON.parse(JSON.stringify(state));
+        Object.assign(state, PRESETS['Future electricity mix']);
+        run();
+        const after = m(retailHourly().dyn), avgAfter = lastRes.avgCost;
+        Object.assign(state, keep); run();
+        return { before, after, avgBefore, avgAfter };
+      `);
+      if (sc && !sc.err && sc.before && sc.after){
+        const move = 100 * Math.abs(sc.after / sc.before - 1);
+        check('the shadow retail price responds to a decarbonisation scenario',
+              move > 20,
+              `R${sc.before.toFixed(2)} today against R${sc.after.toFixed(2)} on the Future `
+              + `electricity mix, ${move.toFixed(0)}% apart. Near zero means the panel is `
+              + `absorbing the effect it exists to show.`);
+        check('the retail price moves the same way as the system cost',
+              Math.sign(sc.after - sc.before) === Math.sign(sc.avgAfter - sc.avgBefore),
+              `retail R${sc.before.toFixed(2)} -> R${sc.after.toFixed(2)}, system cost `
+              + `R${sc.avgBefore.toFixed(0)} -> R${sc.avgAfter.toFixed(0)}/MWh. The same `
+              + `costs on two bases must not disagree in direction.`);
+      }
+      // The build must land near the real tariff WITHOUT calibration - that agreement is
+      // the only check the method has on itself.
+      const rn = run(`
+        const d = retailHourly(); const m = a => a.reduce((x, y) => x + y, 0) / a.length;
+        return d ? { dyn: m(d.dyn), flat: m(d.flat) } : { err: 'no panel' };
+      `);
+      if (rn && !rn.err && rn.flat){
+        const gap = 100 * Math.abs(rn.dyn / rn.flat - 1);
+        check('the bottom-up build lands within 15% of Homepower at today\'s system',
+              gap < 15,
+              `R${rn.dyn.toFixed(2)} bottom-up against Homepower's actual R${rn.flat.toFixed(2)}, `
+              + `${gap.toFixed(0)}% apart. This is the method checking itself: no component is `
+              + `calibrated to the tariff, so agreement means the components are right.`);
+      }
       check('the panel names the stranded-asset choice and that it is regulatory',
             (t.includes('asset base') || t.includes('written off'))
               && t.includes('regulatory'),

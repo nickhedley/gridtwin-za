@@ -74,8 +74,8 @@
   "description": "NERSA's approved allowed revenue and Eskom's own decomposition of it. This is the skeleton of a retail tariff: a revenue requirement, split into components, recovered per kWh. The panel builds the shadow price bottom-up from these rather than anchoring to a published tariff.",
   "source": "NERSA MYPD6 decision of 30 Jan 2025 and the 2026 settlement: approved total revenue R384,610m for 2025/26. The component split is Eskom's own published revenue build-up for the same year, which totals R444.7bn as APPLIED FOR; NERSA approved 86.5% of it, and each component below is scaled by that factor.",
   "caveat": "CORRECTED 10 Sep 2026. The first version applied the build-up shares to NERSA's GENERATION allowance alone. That was wrong - Eskom's build-up is the whole company and already contains transmission and distribution. Applying whole-company shares to one business inflated every component by 1.72x. Check any component against the R2.016/kWh total before trusting it.",
-  "sales_twh": 190.81,
-  "sales_basis": "Eskom dispatchable energy sent out, 2025 calendar year, from the Weekly System Status Report annual table.",
+  "sales_twh": 209.55,
+  "sales_basis": "CORRECTED 10 Sep 2026. Was 190.81, which is DISPATCHABLE energy sent out and excludes wind and solar IPPs. Eskom recovers its revenue over what it sells: RSA contracted energy demand, 2025, from the Weekly System Status Report annual table. The change lowers every per-kWh component by 9%.",
   "business_r_million": {
    "generation": 258574,
    "transmission": 109289,
@@ -102,19 +102,32 @@
   "approved_total_r_bn": 384.61,
   "applied_total_r_bn": 444.7,
   "approval_factor": 0.865,
-  "total_r_per_kwh": 2.016,
+  "total_r_per_kwh": 1.836,
   "components_r_per_kwh": {
-   "primary_energy_fuel": 0.58,
-   "operating_costs": 0.422,
-   "ipp_purchases": 0.302,
-   "depreciation": 0.303,
-   "return_on_assets": 0.193,
-   "rca_recoveries": 0.076,
-   "international_purchases": 0.045,
-   "arrear_debt": 0.04,
-   "environmental_levy": 0.029,
-   "carbon_tax": 0.025
+   "primary_energy_fuel": 0.528,
+   "operating_costs": 0.384,
+   "ipp_purchases": 0.275,
+   "depreciation": 0.276,
+   "return_on_assets": 0.176,
+   "rca_recoveries": 0.069,
+   "international_purchases": 0.041,
+   "arrear_debt": 0.037,
+   "environmental_levy": 0.027,
+   "carbon_tax": 0.023
   },
-  "business_r_million_note": "Kept for reference only. Generation R258,574m and NTCSA R109,289m are NERSA's approved 2026/27 figures; distribution is the residual of Eskom's application and is NOT approved. The panel uses the component split above, not this three-way split, because the components are what respond to a scenario."
+  "business_r_million_note": "Kept for reference only. Generation R258,574m and NTCSA R109,289m are NERSA's approved 2026/27 figures; distribution is the residual of Eskom's application and is NOT approved. The panel uses the component split above, not this three-way split, because the components are what respond to a scenario.",
+  "coal_share_of_asset_costs": 0.54,
+  "coal_share_basis": "Generation is R258,574m of NERSA's R384,610m allowed revenue, 67%. Coal is roughly 80% of generation assets by value once Koeberg, pumped storage and the peakers are taken out. So about 54% of depreciation and return on assets is coal-specific. The written-off case scales ONLY this share with the coal fraction; the first version scaled all of it and wrote off the transmission network when coal retired.",
+  "new_build_fixed_om_r_per_kw_yr": {
+   "wind": 750,
+   "pv": 300,
+   "battery": 400,
+   "ccgt": 300
+  },
+  "new_build_fixed_om_basis": "Fixed O&M, NOT in acap* which is annualised capex only. Mid-range of NREL ATB and South African REIPPPP disclosures: wind R600-900, utility PV R250-400, batteries R300-500, CCGT R250-350 per kW-year. Missing from the first build entirely; on the Future electricity mix it is worth about R0.24/kWh.",
+  "decommissioning_r_per_kw": 1500,
+  "decommissioning_basis": "Closure and rehabilitation of retired coal plant, annualised. Komati was budgeted at roughly R8bn for a 1 GW station including repurposing, but most of that is the repurposing. Bare closure and rehabilitation is nearer R1,000-2,000/kW. Someone pays it in both the stranded and written-off cases; it is added to both. ASSUMPTION - no South African fleet-wide figure is published.",
+  "opex_coal_share": 0.6,
+  "opex_coal_share_basis": "ASSUMPTION. Of Eskom's operating costs, R37bn is employee benefits and the rest is largely maintenance, both concentrated in generation. 60% is taken as coal-station-specific and falls with retirement; 40% is the network and corporate base that does not. Plausible, unsourced, and moves the result by less than the items above."
  }
 }
