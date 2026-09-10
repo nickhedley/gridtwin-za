@@ -406,6 +406,19 @@
   "markup_was_wrong": "The panel previously applied a flat 40% municipal markup to Eskom's cost. That was wrong in CONCEPT, not just in value. Municipalities buy at Eskom BULK rates, far below Homepower, then add their own charges - so a municipal bill is a different tariff built on a cheaper input, not a margin on a retail price. Measured against Homepower 4 at 900 kWh, the premium across distributors runs -44% to +96% with a median of -25%: most are CHEAPER than Eskom direct.",
   "fixed_charge_finding": "The spread is dominated by fixed charges, not energy. Energy rates run R1.25 to R4.53 across distributors, a factor of 3.6. Fixed charges run R0 to R5,463 a month. For a 200 kWh household the fixed share is 12% in Msunduzi, 69% on City Power and 83% in Emakhazeni - none of which any dynamic tariff, time-of-use signal or rooftop panel can touch.",
   "inclining_blocks_note": "City Power's residential blocks RISE with consumption: R2.88, R3.31, R3.55, R3.75, R3.93. That is a price climbing with VOLUME while a dynamic tariff would have it climb with SCARCITY, and the two partly cancel - cheap midday solar hours are exactly when a heavy user sits in the dear block. NERSA approved removing inclining blocks from Eskom's Homepower and Homelight in Feb 2025 on the grounds they no longer protect the poor; municipal customers still face them.",
-  "coverage_caveat": "33 distributors after filtering to true residential single-phase. Rows naming non-domestic, commercial, reseller, three-phase or indigent tariffs are excluded - an unfiltered pass caught Tshwane and Emakhazeni COMMERCIAL tariffs and would have put them in a residential comparison."
+  "coverage_caveat": "33 distributors after filtering to true residential single-phase. Rows naming non-domestic, commercial, reseller, three-phase or indigent tariffs are excluded - an unfiltered pass caught Tshwane and Emakhazeni COMMERCIAL tariffs and would have put them in a residential comparison.",
+  "bulk_purchase_verified": {
+   "description": "The claim that municipalities buy below Homepower, verified rather than reasoned.",
+   "megaflex_300km_66kv_r_per_kwh": {
+    "peak": 2.9889,
+    "standard": 1.6805,
+    "offpeak": 1.2003
+   },
+   "time_weighted_average": 1.816,
+   "homepower_energy_excl_vat": 3.092,
+   "bulk_discount_pct": 41,
+   "basis": "Eskom Megaflex <=300 km <66kV, the structure Municflex is built from - NERSA's Retail Tariff Plan decision states Municflex rates are calculated by combining Megaflex, Miniflex, Nightsave and Ruraflex costs for local authority supplies. Crude time weighting: peak 3h, standard 10h, off-peak 11h. AMMP database, FY2026/27.",
+   "conclusion": "Bulk is 41% below Homepower's energy charge excluding VAT. That is why most municipalities can price below Eskom direct while still adding their own margin, and it confirms that a 'municipal markup on Eskom's retail cost' was the wrong construction."
+  }
  }
 }

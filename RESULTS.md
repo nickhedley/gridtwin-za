@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Forty-five sections follow. This index exists because the file passed 1,400 lines and the
+Forty-six sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3607,6 +3607,21 @@ add their own charges. A municipal bill is a different tariff built on a cheaper
 a margin on a retail price - so no percentage applied to Eskom's retail cost can represent
 it.
 
+### the bulk discount, verified rather than reasoned
+
+I asserted that municipalities can price below Eskom direct because they buy at bulk rates.
+Checked against Eskom Megaflex <=300 km <66kV, the structure NERSA's decision says Municflex
+is built from:
+
+```
+peak      R2.9889        time-weighted average   R1.816
+standard  R1.6805        Homepower excl VAT      R3.092
+off-peak  R1.2003        bulk discount              41%
+```
+
+**41% below Homepower's energy charge.** That is the mechanism, and it confirms a markup on
+Eskom's retail cost was the wrong construction rather than merely the wrong number.
+
 ### the spread is a fixed-charge story
 
 ```
@@ -3759,3 +3774,44 @@ A 168-hour representative week, winter or summer, on the same basis as the daily
 daily average flattens a still winter evening into a mild bump; hour by hour the same tariff
 runs R3.57 to R10.44, a 2.9x spread against the daily 1.2x. That spread is what a household
 would actually respond to, and this scenario was sized with no demand response at all.
+
+---
+
+## Three checks the panel had been missing
+
+Added 10 Sep 2026 after asking what would strengthen the methodology.
+
+### the hourly shape, against a real time-varying tariff
+
+**The only check here that borrows nothing from the tariff it tests against.** Homeflex is
+Eskom pricing its own wholesale purchase structure through to a household; the shadow price
+models the same system from dispatch. They should agree on shape.
+
+```
+shadow, winter week      2.9x
+Homeflex, high season    3.9x
+Homeflex, low season     1.9x
+```
+
+The shadow sits between Eskom's two seasons. They should not match exactly - Homeflex is a
+three-block administered approximation and NERSA sets its peak-to-standard ratio at 1:6 by
+decision rather than measurement - so the bar is agreement within a factor of two.
+
+Verified by flattening the shape tenfold while holding the mean exactly: the shape check
+fires at 1.2x and every level check stays green. That separation is what makes it worth
+having.
+
+### the sales denominator
+
+Every per-kWh component divides by it and nothing was checking it. Eskom publishes three
+candidates for 2025 that differ by 10%:
+
+```
+RSA contracted energy demand      209.55 TWh   what Eskom sells
+residual energy demand            191.38 TWh   net of renewables
+dispatchable energy sent out      190.81 TWh   excludes wind and solar IPPs
+```
+
+The panel wants the first. An earlier version used the third and every component was 9% high
+as a result. Modelled sales are 204 TWh - generation less rooftop self-consumption, storage
+throughput and exports - which is 2.6% off the right basis and now asserted.

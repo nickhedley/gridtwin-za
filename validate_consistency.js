@@ -1008,6 +1008,85 @@ const num = t => {
         }
       }
 
+      // ── THE SALES DENOMINATOR ─────────────────────────────────────────────
+      // Added 10 Sep 2026. Every per-kWh component divides by it, so an error here is
+      // proportional across the whole panel - and nothing was checking it.
+      //
+      // Eskom publishes three candidate denominators for 2025 and they differ by 10%:
+      //   RSA contracted energy demand      209.55 TWh   what Eskom sells, incl IPP energy
+      //   residual energy demand            191.38 TWh   net of renewables
+      //   dispatchable energy sent out      190.81 TWh   excludes wind and solar IPPs
+      //
+      // The panel wants the first: Eskom recovers its allowed revenue over what it SELLS.
+      // An earlier version used 190.81 and every component was 9% high as a result.
+      //
+      // The modelled figure is generation less rooftop self-consumption, storage throughput
+      // and exports - none of which is sold to a South African retail customer.
+      {
+        const sd = run(`
+          const yr = document.getElementById('retYear'); const keepY = yr.value;
+          const keep = JSON.parse(JSON.stringify(state));
+          yr.value = 2026; run();
+          const c = retailComponents(0, true, 2026, false, 900);
+          yr.value = keepY; Object.assign(state, keep); run();
+          return { salesTWh: c.salesTWh };
+        `);
+        if (sd && !sd.err && sd.salesTWh){
+          const gap = 100 * (sd.salesTWh / 209.55 - 1);
+          check('the sales denominator matches what Eskom actually sells',
+                Math.abs(gap) < 12,
+                `${sd.salesTWh.toFixed(0)} TWh modelled against 209.55 TWh of RSA contracted `
+                + `energy demand for 2025, ${gap.toFixed(1)}%. Every per-kWh component divides `
+                + `by this, so an error is proportional across the panel. If it drifts toward `
+                + `191 the rooftop or export deduction has changed - that is dispatchable `
+                + `energy sent out, a different quantity, and using it made every component `
+                + `9% high once already.`);
+          console.log(`  sales basis   ${sd.salesTWh.toFixed(0)} TWh vs Eskom contracted 209.6`);
+        }
+      }
+
+      // ── THE HOURLY SHAPE, AGAINST A REAL TIME-VARYING TARIFF ──────────────
+      // Added 10 Sep 2026. The strongest check available and the last one built, because
+      // all six Homeflex rates only arrived from NERSA's decision document that day.
+      //
+      // Homeflex is Eskom pricing its OWN wholesale purchase structure through to a
+      // household. Our shadow prices the same system from a dispatch model. They should
+      // agree on SHAPE - and unlike the level check, which leans on Homepower, NOTHING in
+      // the shadow build derives from Homeflex. This is the only fully independent test of
+      // the axis the panel exists to show.
+      //
+      // Measured 10 Sep 2026: winter week spread 2.9x against Homeflex high season 3.9x.
+      // They should not match exactly - Homeflex is a three-block administered approximation
+      // of an hourly cost, and NERSA sets its peak-to-standard ratio at 1:6 by decision
+      // rather than by measurement. Agreement within a factor of two is the right bar.
+      {
+        const sh = run(`
+          const yr = document.getElementById('retYear'); const keepY = yr.value;
+          const keep = JSON.parse(JSON.stringify(state));
+          yr.value = 2026; run();
+          const d = retailHourly();
+          const R = RETAIL_T.homeflex.rates_r_per_kwh_2024_25;
+          const out = d ? { shadowSpread: Math.max(...d.week) / Math.min(...d.week),
+                            hfHigh: R.high_season_peak / R.high_season_offpeak,
+                            hfLow: R.low_season_peak / R.low_season_offpeak,
+                            wk: d.wkMode } : { err: 'no panel' };
+          yr.value = keepY; Object.assign(state, keep); run();
+          return out;
+        `);
+        if (sh && !sh.err && sh.shadowSpread){
+          const ratio = sh.shadowSpread / sh.hfHigh;
+          check('the shadow hourly shape agrees with Homeflex on how much prices vary',
+                ratio > 0.5 && ratio < 2.0,
+                `shadow week spread ${sh.shadowSpread.toFixed(1)}x against Homeflex high `
+                + `season ${sh.hfHigh.toFixed(1)}x, ratio ${ratio.toFixed(2)}. Eskom sets `
+                + `Homeflex from its own wholesale purchase structure, so a dispatch model `
+                + `of the same system should land near it. This is the ONLY check here that `
+                + `borrows nothing from the tariff it tests against.`);
+          console.log(`  shape         shadow ${sh.shadowSpread.toFixed(1)}x vs Homeflex `
+            + `${sh.hfHigh.toFixed(1)}x high / ${sh.hfLow.toFixed(1)}x low season`);
+        }
+      }
+
       // ── NEW-BUILD CAPITAL, PINNED AGAINST A HAND COMPUTATION ──────────────
       // The Australian check above validates the METHOD and is deliberately loose at 15%.
       // It is not a component detector: a tenfold error in battery augmentation moves the
