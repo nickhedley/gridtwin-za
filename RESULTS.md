@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Fifty-one sections follow. This index exists because the file passed 1,400 lines and the
+Fifty-two sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -4038,3 +4038,38 @@ does not touch it.
 
 **The Homepower error was a rate used stale. This is a ratio, which is a different and far
 safer thing.**
+
+---
+
+## Inclining blocks are the national norm, not a Johannesburg quirk
+
+Checked 10 Sep 2026, in data already held. Every residential tariff family in the AMMP
+database with a parseable block structure, across 21 distributors:
+
+```
+rising with consumption     24
+falling                      0
+neither                      4
+                            28 families
+```
+
+**None fall.** So the finding that municipal households face a price climbing with VOLUME
+while a dynamic tariff climbs with SCARCITY generalises well beyond the reference household.
+
+```
+City Power        2.88 -> 3.31 -> 3.55 -> 3.75 -> 3.93     1.36x across five blocks
+Emakhazeni        2.12 -> 2.71 -> 3.82 -> 4.50             2.12x across four
+```
+
+City Power starts higher and climbs less steeply. Both are inclining, which is the
+structural point; the steepness difference is a distributor choice, not an error.
+
+### this is a better check than opening the schedule
+
+The published City Power schedule would confirm one distributor's numbers were transcribed
+correctly. **Twenty-one distributors agreeing on structure tests something a transcription
+check cannot** - that the pattern the panel reports is real rather than an artefact of one
+export.
+
+Both are worth doing. This one was available in data already on disk and went undone until
+someone asked why a second municipality needed sourcing.

@@ -468,6 +468,17 @@
    },
    "finding": "Municipal residential tariffs rose 9.0% into 2026/27 against NERSA's 8.76% approved for Eskom - within a quarter of a point. Municipalities pass Eskom's bulk increase through closely, which supports treating the bulk purchase price as the driver of municipal retail prices. The 2024 to 2025 transition has ONE matched tariff and is not evidence. The 2026 to 2027 figure of 19.2% rests on 22 tariffs and is far above the approved 8.83%; it may be sample composition or early municipal filings and should not be quoted without checking which municipalities.",
    "fixed_charges_track_energy": "Fixed charges rose 9.0% into 2026/27, the same as energy rates - so the fixed-charge SHARE of a bill held steady rather than climbing. Eskom's own phase-in is moving its share up; municipal distributors in this sample were not doing the same in that year."
+  },
+  "peer_block_validation": {
+   "description": "The reference household's block structure, cross-checked against every other municipality in the database rather than against a single PDF.",
+   "families_with_parseable_blocks": 28,
+   "rising": 24,
+   "falling": 0,
+   "neither": 4,
+   "finding": "24 of 28 residential tariff families across 21 distributors have blocks that RISE with consumption. NONE fall. So City Power's rising blocks are the national norm, not an artefact of one export - and the finding that municipal households face a price climbing with VOLUME while a dynamic tariff climbs with SCARCITY generalises well beyond Johannesburg.",
+   "city_power_vs_peers": "City Power runs 2.88 -> 3.31 -> 3.55 -> 3.75 -> 3.93, a 1.36x spread across five blocks. A typical peer such as Emakhazeni runs 2.12 -> 2.71 -> 3.82 -> 4.50, a 2.12x spread. City Power starts HIGHER and climbs LESS steeply. Both are inclining, which is the structural point; the difference in steepness is a real distributor choice, not an error.",
+   "why_this_beats_opening_the_pdf": "The published City Power schedule would confirm one distributor's numbers were transcribed correctly. Twenty-one distributors agreeing on STRUCTURE tests something a transcription check cannot: that the pattern the panel reports is real. Both are worth doing; this one was available in data already held and was not done until asked.",
+   "source_for_transcription_check": "City Power Schedule of Approved Tariffs FY26/27, named in the CSV export: api.citypower.co.za/ftp-service/download-pdf/ with filepath Customer_Services/Tariffs/2026.27 Tariffs charges.pdf"
   }
  },
  "escalation": {

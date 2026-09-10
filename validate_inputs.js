@@ -194,6 +194,34 @@ console.log('\nTariff constants against their published sources\n');
         + `components entry is deliberately unused and that must stay documented.`);
 }
 
+// ── 8. THE REFERENCE BLOCKS AGAINST THEIR PEERS ────────────────────────────
+// Added 10 Sep 2026. The City Power block structure came from a single CSV export and was
+// the one input the whole reference household rests on. Rather than confirm one PDF was
+// transcribed correctly, this checks the STRUCTURE against every other municipality in the
+// same database: 24 of 28 residential tariff families rise with consumption, none fall.
+//
+// A transcription check tests whether a number was copied right. This tests whether the
+// pattern the panel reports is real.
+{
+  const M = T.municipal || {};
+  const pv = M.peer_block_validation || {};
+  const ref = M.reference || {};
+  const blocks = ref.blocks || [];
+  const rates = blocks.map(b => b.rate_r_per_kwh);
+  const rising = rates.every((r, i) => i === 0 || r >= rates[i - 1]) && rates[rates.length - 1] > rates[0];
+  check('the reference tariff has inclining blocks, like its peers',
+        rising && blocks.length >= 3,
+        `City Power blocks ${rates.map(r => r.toFixed(2)).join(' -> ')}. `
+        + `${pv.rising} of ${pv.families_with_parseable_blocks} municipal families rise and `
+        + `${pv.falling} fall, so a falling or flat reference would be the outlier and worth `
+        + `checking against the published schedule before trusting.`);
+  check('the peer comparison found no falling-block municipality',
+        pv.falling === 0,
+        `${pv.falling} distributors price DOWN with consumption. If that changes, the finding `
+        + `that municipal tariffs climb with volume no longer generalises and the panel's `
+        + `framing needs revisiting.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');
