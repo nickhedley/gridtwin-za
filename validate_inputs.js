@@ -253,6 +253,23 @@ console.log('\nTariff constants against their published sources\n');
         + `900 kWh. Anything reinstated needs its source.`);
 }
 
+// ── 10. THE DISTRIBUTOR COMPARISON KNOWS ITS OWN VAT BASIS ─────────────────
+// The -39% to +113% spread across municipalities was computed against a VAT-inclusive Eskom
+// tariff from municipal rates that are VAT-exclusive. Audited 10 Sep 2026: of 34 distributors
+// with residential tariffs, five state ex-VAT, NONE state inclusive, 29 say nothing.
+//
+// The working assumption is that all are ex-VAT. That is an inference for the 29, and it must
+// stay visible rather than harden into a fact.
+{
+  const a = (T.municipal || {}).vat_basis_audit || {};
+  check('the distributor VAT audit is recorded and no distributor claims VAT-inclusive',
+        a.distributors > 0 && a.state_vat_inclusive === 0,
+        `${a.state_ex_vat} of ${a.distributors} state ex-VAT, ${a.state_vat_inclusive} state `
+        + `inclusive, ${a.state_nothing} say nothing. If a distributor turns up stating `
+        + `VAT-inclusive, the uniform assumption breaks and the spread must be recomputed `
+        + `per distributor rather than shifted as a block.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');

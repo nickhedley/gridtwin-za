@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Fifty-three sections follow. This index exists because the file passed 1,400 lines and the
+Fifty-four sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -4075,6 +4075,53 @@ Both are worth doing. This one was available in data already on disk and went un
 someone asked why a second municipality needed sourcing.
 
 ---
+
+## Both downstream consequences resolved
+
+### the distributor spread survives, shifted
+
+Audited every distributor's VAT basis across all periods of each tariff. Of 34 with
+residential tariffs: **five state ex-VAT, none state inclusive, 29 say nothing.** City
+Power's published schedule confirms the same, and South African municipal schedules are
+conventionally published excluding VAT.
+
+The error is UNIFORM, so the ranking between municipalities does not move. What moves is
+every premium against Eskom, which is measured against a VAT-inclusive tariff:
+
+```
+                    as reported    with VAT
+Emakhazeni                 113%        145%
+Tshwane                     33%         53%
+City Power                  13%         30%
+Langeberg                  -19%         -6%
+Msunduzi                   -39%        -30%
+
+range              -39% to 113%   -30% to 145%
+median                     -19%         -6%
+cheaper than Eskom       4 of 7       4 of 7
+```
+
+**Still four of seven cheaper than Eskom direct.** The finding holds; the margin narrows.
+
+For the 29 that say nothing this is an inference, not a verified fact, and
+`validate_inputs` now asserts that no distributor claims VAT-inclusive - if one appears, the
+uniform assumption breaks and the spread has to be recomputed per distributor.
+
+### the fixed-charge finding does not move at all
+
+VAT is proportional and applies to energy and fixed charges alike, so the SHARE is unchanged:
+
+```
+200 kWh household        fixed share
+Msunduzi                         12%
+Eskom Homepower                  45%
+City Power                       69%
+Emakhazeni                       83%
+```
+
+What changes is the absolute bill, and it strengthens the argument. **A 200 kWh Johannesburg
+household pays R2,146 a month against R1,180 on Eskom - an 82% premium, with 69% owed before
+a unit is used.**
 
 ## The transcription was perfect and the basis was wrong
 

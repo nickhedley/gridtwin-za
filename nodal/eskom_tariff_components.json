@@ -489,7 +489,25 @@
    "why_this_beats_opening_the_pdf": "The published City Power schedule would confirm one distributor's numbers were transcribed correctly. Twenty-one distributors agreeing on STRUCTURE tests something a transcription check cannot: that the pattern the panel reports is real. Both are worth doing; this one was available in data already held and was not done until asked.",
    "source_for_transcription_check": "City Power Schedule of Approved Tariffs FY26/27, named in the CSV export: api.citypower.co.za/ftp-service/download-pdf/ with filepath Customer_Services/Tariffs/2026.27 Tariffs charges.pdf"
   },
-  "premium_over_eskom_corrected": "At 900 kWh a City Power household pays R4,724 a month against R3,435 on Eskom Homepower 4, a 38% premium - not the 4% previously reported. The distributor comparison across 33 municipalities carries the same VAT question and has NOT been rechecked: those rates come from the same database and their VAT basis is unverified per distributor."
+  "premium_over_eskom_corrected": "At 900 kWh a City Power household pays R4,724 a month against R3,435 on Eskom Homepower 4, a 38% premium - not the 4% previously reported. The distributor comparison across 33 municipalities carries the same VAT question and has NOT been rechecked: those rates come from the same database and their VAT basis is unverified per distributor.",
+  "vat_basis_audit": {
+   "description": "Whether each distributor's rates in the AMMP database include VAT, audited 10 Sep 2026 after City Power's schedule turned out to be VAT-exclusive.",
+   "method": "Searched every notes and source field across ALL periods of each residential tariff - a tariff's VAT basis is a property of the tariff, not of the year.",
+   "distributors": 34,
+   "state_ex_vat": 5,
+   "state_vat_inclusive": 0,
+   "state_nothing": 29,
+   "named_ex_vat": [
+    "Mogalakwena",
+    "Magareng",
+    "Moqhaka",
+    "KwaDukuza",
+    "Enoch Mgijima"
+   ],
+   "conclusion": "NOT ONE distributor states VAT-inclusive, and five state exclusive. City Power's published schedule confirms the same. South African municipal tariff schedules are conventionally published excluding VAT, so the working assumption is that all 34 are ex-VAT. THAT IS AN INFERENCE, not a verified fact for the 29 that say nothing.",
+   "why_the_spread_survives": "The error is UNIFORM across distributors, so the ranking between municipalities is unchanged. What moves is every premium against Eskom, which is measured against a VAT-inclusive tariff. At 900 kWh the range shifts from -39%/+113% to -30%/+145% and the median from -19% to -6%. Four of seven are still cheaper than Eskom direct.",
+   "why_the_fixed_charge_finding_survives": "VAT is proportional and applies to energy and fixed charges alike, so the fixed SHARE of a bill does not move at all: 12% Msunduzi, 45% Eskom, 69% City Power, 83% Emakhazeni at 200 kWh. The absolute bill rises 15%, which strengthens rather than weakens the argument - a 200 kWh Johannesburg household pays R2,146 a month against R1,180 on Eskom, an 82% premium, with 69% of it owed before a unit is used."
+  }
  },
  "escalation": {
   "description": "Approved Eskom increases, used to bring NERSA's 2024/25 proposed rates to 2026/27.",
