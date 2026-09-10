@@ -408,6 +408,88 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
     }
   }
 
+  // ── DIURNAL SHAPE, THE THING NO CHECK WAS LOOKING AT ────────────────────
+  // Added 10 Sep 2026. The September rebuild fixed the wind LEVEL and the CALM-HOUR
+  // distribution, both verified against Eskom. Neither looks at time of day, and a
+  // published finding about when wind blows survived the rebuild that reversed it:
+  // "Northern Cape wind peaks at night in every one of ten weather years" held in ZERO of
+  // twelve afterwards.
+  //
+  // Measured against Eskom's metered fleet, capacity-weighted, 2025:
+  //
+  //   peak hour     ours 17   Eskom 18      amplitude  13.3 vs 14.4 points
+  //   trough hour   ours 06   Eskom 10      correlation 0.60 unshifted
+  //
+  // A timezone error would displace peak and trough equally. These differ by one hour and
+  // four, so it is a waveform difference - our profile lacks the morning minimum the real
+  // fleet shows. The amplitude is right; the shape is not.
+  //
+  // This check does NOT assert the shape is correct - it is not, today. It pins the
+  // correlation so the gap cannot widen unnoticed and so a future fix is measurable.
+  // Raise the floor when the shape is fixed; do not delete the check.
+  {
+    let j = null, rows = null;
+    try {
+      j = JSON.parse(fs.readFileSync(
+        path.join(ROOT, 'nodal/profiles_regional_multiyear.json'), 'utf8'));
+      const csv = fs.readFileSync(path.join(ROOT, 'ESK19679.csv'), 'utf8').split('\n');
+      rows = { hdr: csv[0].split(','), body: csv.slice(1) };
+    } catch (e) { j = null; }
+    if (j && rows){
+      const sc = j.scale || 1;
+      let cap = null;
+      try {
+        const c = JSON.parse(fs.readFileSync(
+          path.join(ROOT, 'nodal/regional_renewable_capacity.json'), 'utf8'));
+        cap = {};
+        for (const src of Object.values(c.by_source || {}))
+          for (const [r, v] of Object.entries(src.wind_mw || {}))
+            cap[r] = (cap[r] || 0) + (v || 0);
+      } catch (e) { cap = null; }
+      const regs = cap ? Object.keys(j.wind_pu).filter(r => (cap[r] || 0) > 0) : [];
+      if (regs.length && j.wind_pu[regs[0]]['2025']){
+        const tot = regs.reduce((a, r) => a + cap[r], 0);
+        const ours = new Array(24).fill(0);
+        for (let h = 0; h < 8760; h++){
+          let v = 0;
+          for (const r of regs) v += j.wind_pu[r]['2025'][h] / sc * cap[r];
+          ours[h % 24] += v / tot / 365;
+        }
+        const iD = rows.hdr.indexOf('Date Time Hour Beginning');
+        const iG = rows.hdr.indexOf('Wind'), iC = rows.hdr.indexOf('Wind Installed Capacity');
+        const sum = new Array(24).fill(0), n = new Array(24).fill(0);
+        for (const line of rows.body){
+          const p2 = line.split(',');
+          if (p2.length <= iC || (p2[iD] || '').slice(0, 4) !== '2025') continue;
+          let h = parseInt((p2[iD] || '').slice(11, 13), 10);
+          const ap = (p2[iD] || '').trim().slice(-2);
+          if (ap === 'PM' && h !== 12) h += 12;
+          if (ap === 'AM' && h === 12) h = 0;
+          const g = parseFloat(p2[iG]), c2 = parseFloat(p2[iC]);
+          if (!isFinite(g) || !isFinite(c2) || c2 <= 0 || !(h >= 0 && h < 24)) continue;
+          sum[h] += g / c2; n[h]++;
+        }
+        const esk = sum.map((v, k) => n[k] ? v / n[k] : 0);
+        const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+        const mo = mean(ours), me = mean(esk);
+        let cov = 0, so = 0, se = 0;
+        for (let k = 0; k < 24; k++){
+          cov += (ours[k] - mo) * (esk[k] - me);
+          so += (ours[k] - mo) ** 2; se += (esk[k] - me) ** 2;
+        }
+        const r = cov / Math.sqrt(so * se);
+        check('the modelled diurnal wind shape has not drifted further from Eskom',
+              r >= 0.55,
+              `hour-of-day correlation with Eskom's metered fleet is ${r.toFixed(2)}, `
+              + `measured at 0.60 on 10 Sep 2026. This is a FLOOR, not a pass mark - the `
+              + `shape is known to be wrong, with our trough four hours early. Do not treat `
+              + `a pass here as the shape being right.`);
+        notes.push(`diurnal wind shape: correlation ${r.toFixed(2)} with Eskom 2025 `
+          + `(known gap, morning minimum missing)`);
+      }
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} weather checks passed`);
   if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log(f)); }
   if (notes.length) { console.log('\nNOTES:'); notes.forEach(n => console.log('  ' + n)); }

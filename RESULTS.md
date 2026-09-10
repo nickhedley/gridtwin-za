@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Forty-one sections follow. This index exists because the file passed 1,400 lines and the
+Forty-two sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -73,11 +73,10 @@ exactly (119,225 both ways). The EPP submission described a fiftyfold spread; it
 sixty-six-fold. Levels moved with the recalibration, ratios did not.
 → "Locational transmission signal"
 
-**Northern Cape wind peaks at night in every one of ten weather years**, with a 25-40%
-day-night swing, and has the best wind-solar complementarity in the country at -0.180.
-Independently confirms two of three published Wind Pioneers observations on a different
-dataset. Western Cape does not hold - it flips by year, so a single-year study finds
-either answer.
+**WITHDRAWN 10 Sep 2026.** This read "Northern Cape wind peaks at night in every one of ten
+weather years". On the rebuilt profiles it holds in ZERO of twelve, and Eskom's metered
+national fleet shows night running 1% above day - essentially flat. Our diurnal shape does
+not match the measurement well enough to support a claim about time of day either way.
 → "Wind Pioneers' diurnal observation"
 
 **Demand response has an optimum near 7.5% and is counterproductive past 15%**, in every
@@ -1930,7 +1929,48 @@ calls it tight, that is where it will show.
 
 ---
 
-## Wind Pioneers' diurnal observation, tested across ten weather years
+## Wind Pioneers' diurnal observation - WITHDRAWN, and why
+
+**This finding is withdrawn as of 10 Sep 2026.** It is kept here rather than deleted because
+the reason it failed is more useful than the finding was.
+
+It stated that Northern Cape wind peaks at night in all ten weather years, with a 25-40%
+day-night swing. On the rebuilt multi-site profiles it holds in **none of twelve**:
+
+```
+                                  night higher than day
+old single-centroid profiles           10 of 10
+rebuilt multi-site profiles             0 of 12
+Eskom metered national fleet       night +1%, flat
+```
+
+### the diurnal shape is where our wind profiles are weakest
+
+Capacity-weighted national, 2025, against Eskom's metered fleet:
+
+```
+                 ours    Eskom
+peak hour          17       18
+trough hour        06       10
+amplitude      13.3 pt  14.4 pt
+correlation    0.60 unshifted, 0.94 shifted three hours
+```
+
+**A timezone error would displace peak and trough equally.** These differ by one hour and
+four. The amplitude is close, so the size of the daily swing is right; its shape is not. Our
+profile lacks the morning minimum the real fleet shows around 09:00-11:00.
+
+The bias correction applied in September fixed the LEVEL and the calm-hour distribution -
+both checked against Eskom and both pass. **Neither test looks at time of day**, so this
+survived a rebuild that was specifically about wind profile quality.
+
+Anything in this file that depends on WHEN wind blows rather than how much, over a day
+rather than a season, should be treated as unverified until the diurnal shape is resolved.
+The seasonal and calm-hour results are unaffected: those were checked directly.
+
+---
+
+## The original finding, retained for reference
 
 Wind Pioneers published a South African prospecting study in Aug 2026 arguing that wind
 prospecting should answer "is the wind right for our project?" rather than "where is the

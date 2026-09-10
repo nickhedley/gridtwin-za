@@ -6157,16 +6157,25 @@ panel rendering one sentence. A browser is the only instrument for these.
     table is pre-rebuild wind data and KwaZulu-Natal has moved 20.5% to 32.8%, which reverses
     the passage built on it. Correlation weakens -0.91 to -0.72, so the core point holds and
     the illustration does not. See the section above.
-17. **Wind Pioneers note** - three variants drafted, use the ten-year version.
-18. **EDMSA** - the boundary question above, plus whether "grid readiness adequate per TDP
+17. **Wind Pioneers note - DO NOT SEND.** The finding it rests on is WITHDRAWN as of
+    10 Sep 2026. "Northern Cape wind peaks at night in every one of ten weather years" held
+    in ZERO of twelve on the rebuilt profiles, and Eskom's metered fleet shows night running
+    1% above day. The drafts were never staged to the repo, so nothing needs unpublishing.
+
+18. **Fix the diurnal wind shape.** Our profile's trough is four hours early against Eskom's
+    metered fleet and lacks the morning minimum the real fleet shows. Amplitude is right at
+    13.3 points against 14.4; correlation is 0.60. Pinned as a floor in `validate_weather`
+    so it cannot widen. Likely a MERRA-2 boundary-layer limitation rather than a bug in our
+    processing, but not established.
+19. **EDMSA** - the boundary question above, plus whether "grid readiness adequate per TDP
     2023/24" reconciles with their own finding that grid absorption is binding.
-19. **Energy Brokers** - the solar ceiling is directly useful to their offtakers.
-20. **Findings ready**, Tier 1 and 2 only: the solar 49% ceiling, inverted tariff seasons,
+20. **Energy Brokers** - the solar ceiling is directly useful to their offtakers.
+21. **Findings ready**, Tier 1 and 2 only: the solar 49% ceiling, inverted tariff seasons,
     curtailment priced, hydrogen needing overbuild first, heat acting through demand.
 
 ## Repo
 
-21. Remove `HANDOVER.md` from `.gitignore`; add the four custom instructions to Project
+22. Remove `HANDOVER.md` from `.gitignore`; add the four custom instructions to Project
     settings.
 
 ## Data figures needing verification - raised 2 Sep 2026
@@ -6214,11 +6223,11 @@ a source; at present it has neither.
 
 ## Long term - not queued, recorded so it is not re-litigated
 
-22. ~~Resample the multi-year SOLAR profiles.~~ **DONE 6 Sep 2026.** PVGIS SARAH3 at 5 km,
+23. ~~Resample the multi-year SOLAR profiles.~~ **DONE 6 Sep 2026.** PVGIS SARAH3 at 5 km,
     ten of twelve years fetched, 2024-25 borrowed and marked in the metadata. Regional
     spread 1.07x to 1.24x. See the section below.
 
-23. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
+24. **Extend the model into the Southern African Power Pool.** Assessed 2 Sep 2026.
 
     **The code lift is small.** The engine is already region-generic: `REGIONS` is an
     array, `REGIONS.length` is used 15 times, and there are ZERO hardcoded region counts.
@@ -6255,7 +6264,7 @@ a source; at present it has neither.
     reason beyond completeness.
 
 
-24. **Satellite detection of project status.** Raised 2 Sep 2026 from Robin Hawkes'
+25. **Satellite detection of project status.** Raised 2 Sep 2026 from Robin Hawkes'
     demonstration that Sentinel-2 captures its spectral bands about a second apart, so a
     turbine's blades are displaced between bands and its ROTATION can be extracted from a
     single pass.
@@ -6291,7 +6300,7 @@ a source; at present it has neither.
     imagery is the right tool and a separate exercise: panels are highly reflective and
     geometrically regular, which is an easier target than blade rotation.
 
-25. **Bring your own series.** Scoped 3 Sep 2026 in `scope_bring_your_own_series.md`, not
+26. **Bring your own series.** Scoped 3 Sep 2026 in `scope_bring_your_own_series.md`, not
     built. A paste-your-own generation or curtailment series, analysed against the
     scenario's prices, with nothing leaving the browser.
 
@@ -6307,7 +6316,7 @@ a source; at present it has neither.
     valuable one and puts our numbers into someone else's commercial dispute.** It needs a
     named developer who wants it, not a speculative build.
 
-26. **Price-elastic demand.** The model computes hourly shadow prices, but demand does not
+27. **Price-elastic demand.** The model computes hourly shadow prices, but demand does not
     respond to them. `drShiftPct` sorts each day by NET LOAD and moves load from the top six
     hours to the bottom six - a good proxy, and not the same thing. Net load and price
     diverge exactly where dynamic pricing matters: a scarcity hour at R87,000 and a merely
@@ -6327,7 +6336,7 @@ a source; at present it has neither.
     and state which market each number came from, because transferring an elasticity across
     markets is an assumption, not a measurement.
 
-27. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
+28. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
     4 Sep 2026.** The gate the scope set - does Eskom publish CSP separately - was answered
     by a dataset the user obtained: **ESK19679, 38,736 hours from April 2022 to August 2026**,
     with Wind, PV, CSP and Other RE separated and installed capacity for each.
@@ -9400,6 +9409,52 @@ single-point sampling, and had no way to know which version they were looking at
 `validate_weather` 61 -> 63: the page must state the weather-year count and it must match
 the data, and it must disclose the September 2026 resampling. Verified by deleting the
 paragraph - it fires.
+
+## a published finding reversed and nothing noticed - 10 Sep 2026
+
+Checking to-do item 17, the Wind Pioneers note, because it said "use the ten-year version"
+and I had just found the same staleness in `post_headroom.md`.
+
+**The finding it rests on has reversed:**
+
+```
+"Northern Cape wind peaks at night in every one of ten weather years"
+  old single-centroid profiles       night higher in 10 of 10
+  rebuilt multi-site profiles        night higher in  0 of 12
+  Eskom metered national fleet       night +1%, essentially flat
+```
+
+Withdrawn in RESULTS.md, kept rather than deleted because the reason it failed is more
+useful than the finding was.
+
+### the diurnal shape is the weakest part of our wind data
+
+Capacity-weighted national, 2025, against Eskom's metered fleet:
+
+```
+peak hour       ours 17    Eskom 18
+trough hour     ours 06    Eskom 10
+amplitude       13.3 pt    14.4 pt
+correlation     0.60 unshifted, 0.94 at three hours
+```
+
+**A timezone error would displace peak and trough equally. These differ by one hour and
+four**, so it is a waveform difference, not a clock. The size of the daily swing is right;
+its shape is not. Our profile lacks the morning minimum the real fleet shows around
+09:00-11:00.
+
+### how it survived a rebuild that was about wind profiles
+
+The September rebuild checked the LEVEL against Eskom and the CALM-HOUR distribution against
+Eskom. Both pass. **Neither looks at time of day.** The multi-site resampling and the bias
+correction both changed the diurnal shape substantially and no test was watching.
+
+`validate_weather` 63 -> 64 now pins the hour-of-day correlation at a FLOOR of 0.55, with the
+message stating explicitly that this is not a pass mark - the shape is known to be wrong.
+Raise the floor when it is fixed; do not delete the check.
+
+**Anything in RESULTS.md that depends on WHEN wind blows within a day should be treated as
+unverified.** Seasonal and calm-hour results are unaffected - those were checked directly.
 
 ---
 
