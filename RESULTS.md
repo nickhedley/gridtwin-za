@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Forty-eight sections follow. This index exists because the file passed 1,400 lines and the
+Forty-nine sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3880,3 +3880,47 @@ moving its share up; municipal distributors in this sample were not.
 
 The 2026 to 2027 figure of 19.2% rests on 22 tariffs against an approved 8.83% and should not
 be quoted without checking which municipalities filed early.
+
+---
+
+## Homepower is not blended, and our figure is 9% high
+
+Asked whether the Homepower rate the panel cites blends the usage blocks. It does not, and
+checking exposed a separate problem.
+
+### the blocks are gone, correctly
+
+NERSA approved removing the inclining block structure from Homepower and Homelight in
+February 2025, finding it no longer protected the poor: affluent households with rooftop PV
+had fallen into the low-usage blocks and were being subsidised by those without.
+
+Verified from NERSA's Table 6, implied rates between consumption steps:
+
+```
+current structure       R2.455/kWh to 600 kWh, then R3.950 above    blocks
+proposed structure      R2.305/kWh at every step from 0 to 1,600    flat
+```
+
+So a single flat rate is right for 2026/27.
+
+### but our figure does not reconcile
+
+```
+NERSA approved flat rate, 2024/25 rands      R2.3050
+x 12.7% to 2025/26                           R2.5977
+x 8.76% to 2026/27                           R2.8253
+plus VAT                                     R3.2491
+
+our figure                                   R3.5556      +9%
+```
+
+Candidates, none verified: a different Homepower sub-tariff; the legacy or ancillary charges
+NERSA unbundled being folded back in; a pre-restructure rate still carrying block loading; or
+the fixed-charge phase-in having moved less than assumed.
+
+**Our figure came from a web summary rather than Eskom's Schedule of Standard Prices**, which
+is published and would settle it.
+
+This matters because Homepower is the panel's independent level check. A 9% error in it means
+the 1% agreement reported above is measured against the wrong target - the panel could be
+1% from a figure that is itself 9% out.
