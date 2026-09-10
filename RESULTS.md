@@ -3465,13 +3465,14 @@ everything else was folded into one factor.
 ### the components, R/kWh before losses, markup and VAT
 
 ```
-fuel and carbon              0.484      from the dispatch run
-generation opex              0.422      scales with retained coal
-existing fleet capital       0.496      the stranded-asset control
-new build capital            0.000      from newCapexR
-IPP purchase obligations     0.302      fixed - PPAs already signed
-transmission                 0.068
-imports, levies, arrears     0.114
+                          today   Future mix
+fuel and carbon           0.484        0.049   from the dispatch run
+generation opex           0.422        0.422   scales with retained coal
+existing fleet capital    0.496        0.496   the stranded-asset control
+new build capital         0.000        0.506   from newCapexR
+new grid for the build    0.000        0.070   from the scenario's transmission capex
+IPP purchase obligations  0.302        0.302   fixed - PPAs already signed
+imports, levies, arrears  0.114        0.114
 ```
 
 **At today's system this gives R3.92/kWh against Homepower's actual R3.56 - within 10% with
@@ -3503,6 +3504,30 @@ spread, and narrower than the earlier scaled version suggested.**
 
 A cost-reflective dynamic tariff in South Africa would be a calm instrument. Most of what a
 household pays is not decided by the hour.
+
+### the grid figure is a floor, and was absent entirely at first
+
+Asked whether the panel included the grid a heavy renewables scenario needs. It did not, and
+there were two faults at once.
+
+It added `txRPerKWyr`/8760 as "transmission", R0.068/kWh, **on top of a component table that
+already contains transmission**. Eskom's build-up is whole-company: its opex, depreciation
+and return on assets cover the wires as well as the stations. The adder was also eight times
+too small against NERSA's approved NTCSA revenue of R0.573/kWh.
+
+And the grid BUILT BY THE SCENARIO was missing. The model computes it as `_txCapexR` and used
+it only for a display table, so a 97 GW build implied no new wires on a household bill.
+
+Now included, and still low:
+
+```
+model, scenario transmission capex        R0.070/kWh
+TDP-implied, R390bn for 56 GW scaled      R0.227/kWh
+```
+
+The model's own cost decomposition already labels transmission "partial", so this is a known
+incompleteness rather than a new error. **The panel says so, because otherwise it makes heavy
+renewables look cheaper than the wires allow.**
 
 ### one error worth recording
 

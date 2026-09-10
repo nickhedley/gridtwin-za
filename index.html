@@ -7526,7 +7526,7 @@ function simulate(u, prof, outPath){
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
   E.vreCurtailed=vreCurtMW.reduce((a,b)=>a+b,0);
-  return {E,tierDis,tierChg,tierDrift,deratedMW,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,tierDis,tierChg,tierDrift,deratedMW,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -11818,12 +11818,20 @@ function retailComponents(markup, stranded){
                   ((P.importsMW || 0) / Math.max(1, FIXED.importsMW || 1));
   const fixedItems = C.rca_recoveries + C.arrear_debt + C.environmental_levy;
 
-  // Transmission and distribution sit outside the generation components above; the municipal
-  // markup is applied to the whole delivered cost, as a distributor's margin is.
-  const tx = (P.txRPerKWyr || 600) / 8760;
+  // EXISTING GRID is already inside the component table above, and adding txRPerKWyr on top
+  // of it was a double-count. The table is Eskom's WHOLE-COMPANY build-up: its opex,
+  // depreciation and return on assets cover transmission and distribution as well as
+  // generation. The separate adder was also eight times too small - R0.068/kWh against
+  // NERSA's approved NTCSA revenue of R109,289m, which is R0.573/kWh.
+  //
+  // NEW GRID for the scenario is a different quantity and was missing entirely. The model
+  // computes it as _txCapexR, driven by new wind and PV, and exposes it in the cost
+  // decomposition where it is labelled 'partial'. A 97 GW build implies TDP-scale spending
+  // and none of it was reaching the bill.
+  const newGrid = (r.txCapexR || 0) / Math.max(1, gen) / 1000;
 
   return { fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, ipp,
-           imports, fixedItems, tx, markup, coalFrac };
+           imports, fixedItems, newGrid, markup, coalFrac };
 }
 
 function retailRaw(marginalP, markup, stranded){
@@ -11835,7 +11843,8 @@ function retailRaw(marginalP, markup, stranded){
   for (let h = 0; h < 8760; h++) hod[h % 24] += marginalP[h] / 1000 / 365;
   const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
   const varTarget = c.fuel + c.carbon;
-  const flat = c.opex + c.existingCap + c.newCap + c.ipp + c.imports + c.fixedItems + c.tx;
+  const flat = c.opex + c.existingCap + c.newCap + c.ipp + c.imports + c.fixedItems
+             + c.newGrid;
 
   return hod.map(w => {
     const variable = hodMean > 0 ? varTarget * (w / hodMean) : varTarget;
@@ -11921,7 +11930,7 @@ function renderRetail(){
   const c = d.comp;
   const items = [['fuel and carbon', c.fuel + c.carbon], ['generation opex', c.opex],
                  ['existing fleet capital', c.existingCap], ['new build capital', c.newCap],
-                 ['IPP purchase obligations', c.ipp], ['transmission', c.tx],
+                 ['IPP purchase obligations', c.ipp], ['new grid for this scenario', c.newGrid],
                  ['imports, levies, arrears', c.imports + c.fixedItems]];
   const preTot = items.reduce((a, b) => a + b[1], 0);
   noteEl.innerHTML =
@@ -11937,6 +11946,12 @@ function renderRetail(){
     + `and adds capital for whatever it builds. That is why the daily spread is only `
     + `${(hi/lo).toFixed(2)}&times;: everything except fuel is a capacity or obligation cost `
     + `and is flat across the day.<br><br>`
+    + `<strong>The new-grid figure is understated.</strong> It comes from the model's `
+    + `connection-cost rate, which its own cost decomposition already labels partial. `
+    + `Eskom's Transmission Development Plan is R390&nbsp;billion for 56&nbsp;GW; annualised `
+    + `over 40 years and scaled to this scenario's build that is nearer R0.23/kWh against the `
+    + `R${c.newGrid.toFixed(3)} shown. <strong>Treat the grid cost of a heavy renewables `
+    + `scenario as a floor, not an estimate.</strong><br><br>`
     + `<strong>Retired coal: ${d.stranded ? 'still in the asset base' : 'written off'}.</strong> `
     + (d.stranded
         ? `Consumers keep paying for plant that has closed, which is what a regulated asset `
@@ -14187,7 +14202,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10g';
+const BUILD_STAMP = '2026-09-10h';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

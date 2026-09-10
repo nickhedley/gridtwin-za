@@ -818,6 +818,28 @@ const num = t => {
             `the panel must state that it is built from allowed revenue rather than anchored, `
             + `and show the resulting figure against Homepower's actual rate. That agreement `
             + `is the only check the method has on itself.`);
+      // ── THE GRID COST IS A FLOOR AND MUST SAY SO ──────────────────────────
+      // Added 10 Sep 2026 after the panel was asked whether it included the grid for a
+      // heavy renewables scenario. It did not - two faults at once.
+      //
+      // It added txRPerKWyr/8760 as "transmission", R0.068/kWh, on top of a component table
+      // that is Eskom's WHOLE-COMPANY build-up and already contains transmission inside
+      // opex, depreciation and return on assets. A double-count, and eight times too small
+      // against NERSA's approved NTCSA revenue of R0.573/kWh.
+      //
+      // And the grid BUILT BY THE SCENARIO was absent entirely. The model computes it as
+      // _txCapexR and used it only for a display table, so a 97 GW build implied no new
+      // wires on the bill.
+      //
+      // It is now included and still low: R0.07/kWh against roughly R0.23 implied by the
+      // TDP at R390bn for 56 GW. The model's own decomposition labels transmission partial,
+      // so this is a known incompleteness - but a reader must be told, or the panel makes
+      // heavy renewables look cheaper than the wires allow.
+      check('the panel says the new-grid cost is a floor',
+            t.includes('understated') || t.includes('floor'),
+            `the scenario grid cost is roughly a third of what the Transmission Development `
+            + `Plan implies. Without saying so, the panel understates the cost of exactly `
+            + `the scenario it exists to test.`);
       check('the panel names the stranded-asset choice and that it is regulatory',
             (t.includes('asset base') || t.includes('written off'))
               && t.includes('regulatory'),
