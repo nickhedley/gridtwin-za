@@ -860,13 +860,6 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               so this is what the hours are worth, not what anyone could charge.
             </div>
             <div class="pb" style="padding:8px 12px 2px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-              <label style="font-size:10.5px;color:var(--ink2)" id="retMarkupWrap">Household
-                <select id="retHouse" onchange="renderRetail()" style="font-size:10.5px">
-                  <option value="600">600 kWh/month</option>
-                  <option value="900" selected>900 kWh/month, medium</option>
-                  <option value="1400">1,400 kWh/month</option>
-                </select>
-              </label>
               <label style="font-size:10.5px;color:var(--ink2)">
                 <input id="retCap" type="checkbox" checked onchange="renderRetail()"> Apply price cap
               </label>
@@ -11802,35 +11795,16 @@ fetch('nodal/eskom_tariff_components.json?v=' + (window.DATA_V || '7'))
 // So the gross-up is technical only: about 2.5% transmission plus 5-6% distribution.
 const RETAIL_LOSS = 0.08;
 
-// Price a household on a real inclining-block municipal tariff. City Power's residential
-// blocks RISE with consumption - R2.88, R3.31, R3.55, R3.75, R3.93 - which is a price
-// climbing with VOLUME while a dynamic tariff climbs with SCARCITY. The two partly cancel:
-// cheap midday solar hours are exactly when a heavy user sits in the dear block.
-function muniBill(kwh, ref){
-  if (!ref || !ref.blocks || !ref.blocks.length) return null;
-  let energy = 0; let prev = 0;
-  for (const b of ref.blocks){
-    const cap = (b.to_kwh == null) ? Infinity : b.to_kwh;
-    const take = Math.max(0, Math.min(kwh, cap) - prev);
-    energy += take * (b.rate_r_per_kwh + (ref.additional_energy_charge_r_per_kwh || 0));
-    prev = cap;
-    if (kwh <= cap) break;
-  }
-  // VAT. City Power's schedule states "All charges are exclusive of VAT" and the panel was
-  // treating them as final prices, comparing them against Eskom Homepower which includes it.
-  // Every municipal figure was 15% low and the Johannesburg premium over Eskom read +4% when
-  // it is +38%. The transcription was perfect; the BASIS was wrong, which is a class of error
-  // no peer-structure check reaches.
-  const V = ref.rates_exclude_vat ? (1 + (ref.vat_rate ?? 0.15)) : 1;
-  energy *= V;
-  const fixed = (ref.fixed_r_per_month || 0) * V;
-  return { energy, fixed, total: energy + fixed,
-           effective: kwh > 0 ? (energy + fixed) / kwh : 0,
-           marginal: energy > 0 ? energy / kwh : 0 };
-}
+// The municipal block-pricing helper muniBill() lived here until 10 Sep 2026. It was removed
+// with the household-size control, which changed nothing visible once the household paragraph
+// came out of the note - a control with no output is worse than no control.
+//
+// Nothing is lost. City Power's five blocks and both fixed charges are in
+// nodal/eskom_tariff_components.json under municipal.reference, verified against the published
+// schedule to the cent and asserted by validate_inputs. The bills they produce are in
+// RESULTS.md. If a household view returns, the data and the arithmetic are both recorded.
 
-function retailComponents(markup, stranded, year, viaMuni, houseKwh){
-  houseKwh = houseKwh || 900;
+function retailComponents(markup, stranded, year, viaMuni){
   // ── BOTTOM-UP, FROM NERSA'S ALLOWED REVENUE, AT A SCENARIO YEAR ──────────
   // Reviewed twice on 10 Sep 2026; see review_retail_methodology.md and scope_retail_gaps.md.
   // The year is what the second review added: every reference model that projects a tariff
@@ -11982,13 +11956,13 @@ function retailComponents(markup, stranded, year, viaMuni, houseKwh){
   const resAllocTotal = A.residential_allocation_factor || 1.0;
   const resAlloc = resAllocTotal;
 
-  return { distAdj, resAlloc, subsidyPerKwh, muni: M, houseKwh, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
+  return { distAdj, resAlloc, subsidyPerKwh, muni: M, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
            decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
            viaMuni, salesTWh: salesMWh / 1e6 };
 }
 
-function retailRaw(marginalP, markup, stranded, year, viaMuni, houseKwh){
-  const c = retailComponents(markup, stranded, year, viaMuni, houseKwh);
+function retailRaw(marginalP, markup, stranded, year, viaMuni){
+  const c = retailComponents(markup, stranded, year, viaMuni);
   const sp = RETAIL_T.shadow_tariff_parameters;
   // Only fuel and carbon vary by hour. Everything else is a capacity or obligation cost and
   // is flat - which is why adding them compresses the daily spread so heavily.
@@ -12040,16 +12014,14 @@ function retailHourly(){
   const capOn = capEl ? capEl.checked : true;
   const stEl = document.getElementById('retStranded');
   const stranded = stEl ? stEl.checked : true;
-  const houseEl = document.getElementById('retHouse');
-  const houseKwh = houseEl ? +houseEl.value : 900;
   const yrEl = document.getElementById('retYear');
   const year = yrEl ? +yrEl.value : 2035;
   const yv = document.getElementById('retYearVal'); if (yv && yrEl) yv.textContent = yrEl.value;
 
   const hod = new Array(24).fill(0);
   for (let h = 0; h < 8760; h++) hod[h % 24] += lastRes.marginalP[h] / 1000 / 365;
-  const raw = retailRaw(lastRes.marginalP, markup, stranded, year, viaMuni, houseKwh);
-  const comp = retailComponents(markup, stranded, year, viaMuni, houseKwh);
+  const raw = retailRaw(lastRes.marginalP, markup, stranded, year, viaMuni);
+  const comp = retailComponents(markup, stranded, year, viaMuni);
   const dyn = raw.map(v => capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
 
   const hf = t.homeflex, R = hf.rates_r_per_kwh_2026_27 || {};
@@ -12165,8 +12137,6 @@ function renderRetail(){
                  ['IPP obligations', c.ipp], ['new grid', c.newGrid],
                  ['imports, levies, arrears', c.imports + c.fixedItems]];
   const preTot = items.reduce((a, b) => a + b[1], 0);
-  const refM = RETAIL_T.municipal && RETAIL_T.municipal.reference;
-  const b = refM ? muniBill(c.houseKwh || 900, refM) : null;
 
   noteEl.innerHTML =
       `<strong>Built from NERSA's allowed revenue</strong>, costed at ${c.year}, over `
@@ -14449,7 +14419,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10z';
+const BUILD_STAMP = '2026-09-11a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
