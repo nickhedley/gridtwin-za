@@ -213,3 +213,77 @@ Caveats. Homepower 4 only, 80 A single-phase, Eskom direct - municipal customers
 different structure and their own markup. The revenue-neutral basis is 900 kWh a month; a
 different basis moves the crossover but not the direction. Figures are the 2026/27 schedule
 at 8.76%, so the 2027/28 ERTSA at 8.83% shifts the level and not the shape.
+
+---
+
+## Rebuild as bottom-up, 10 Sep 2026
+
+The first build anchored the level to Homepower and scaled. That was a workaround for
+components not included, and it had two consequences: the level could not respond to a
+scenario except through fuel, and the anchor imported Homepower's own fixed-cost recovery.
+
+The right structure is the one NERSA already uses - three regulated businesses, each with an
+allowed revenue.
+
+### the skeleton
+
+MYPD6, 2026/27, over 190.8 TWh sent out:
+
+```
+business          R million      R/kWh   share of retail
+generation          258,574      1.355              52%
+transmission        109,289      0.573              22%
+distribution        127,492      0.668              26%
+                                 2.596      before losses, levies, margin, VAT
+```
+
+### generation, decomposed by what a scenario moves
+
+```
+component                  R bn   R/kWh   moves with scenario?
+primary energy (fuel)     128.0   0.390   YES, from dispatch
+operating costs            93.0   0.283   partly, with fleet size
+depreciation               66.9   0.204   partly, with new build
+IPP purchases              66.6   0.203   YES, new PPAs
+return on assets           42.6   0.130   partly, with new build
+RCA recoveries             16.7   0.051   no
+international purchases    10.0   0.030   partly, with imports
+arrear debt                 8.9   0.027   no
+environmental levy          6.5   0.020   no
+carbon tax                  5.5   0.017   YES, from dispatch
+```
+
+**Fuel and carbon together are 16% of a retail bill.** A scenario that eliminates fuel
+entirely removes a sixth of the cost - and adds capital, because every GW built carries
+depreciation and a return.
+
+That is the finding the scaled version could never have produced. It could only show fuel
+falling, because everything else was folded into one factor.
+
+### the decision that drives the answer
+
+**When coal retires early, what happens to its depreciation and return on assets?**
+
+  A. Stranded. Consumers keep paying for retired plant until the asset base runs off. This
+     is what a regulated asset base actually does, and NERSA's R54bn RAB correction in
+     2025-26 shows how live the question is.
+
+  B. Written off. The cost leaves with the plant. Cleaner, and someone still pays -
+     usually the fiscus.
+
+**A shows retail prices rising under aggressive decarbonisation. B shows them falling.**
+Same physics, different regulatory assumption. This is not a modelling detail to be picked
+quietly; it should be a control on the panel with both cases visible.
+
+### what is already in the model
+
+`newCapexR` annualises the capex of whatever the scenario builds, via `acap*`. So the
+new-build side of the capital question needs no new data - only dividing by the energy that
+build delivers.
+
+### what still has to be sourced
+
+The generation, transmission and distribution split above is from NERSA's MYPD6 decision and
+Eskom's revenue build-up. The Eskom build-up figures are the 2025/26 application, not the
+approved 2026/27 decision, so the proportions are right and the absolute figures need
+updating from the approved tables.
