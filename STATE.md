@@ -6366,8 +6366,12 @@ a source; at present it has neither.
     result. Scenario figures are upper bounds until these are fixed; the gas-firmed case is
     the one to quote.
 
-    The cost-base gap needs a year, a depreciation schedule and a demand trajectory. The
-    model is a single-year snapshot. That is an architectural decision to take deliberately.
+    **Fix scoped 10 Sep 2026 in `scope_retail_gaps.md`**, against NREL ATB, CSIRO GenCost,
+    AEMO's target-year snapshots and Ofgem's RAB roll-forward. The decision is a
+    `scenarioYear` control; once it exists all three fixes are small, and two of them close
+    in one change by switching the panel from `acap*` to `BLD_COST` via `bldAnnuity()`. The
+    validation that matters: a gas-firmed 2035 build should land near zero, which is the
+    Australian result and the panel's only external check.
 29. ~~Estimate curtailment by differencing against Eskom's reported output.~~ **DONE
     4 Sep 2026.** The gate the scope set - does Eskom publish CSP separately - was answered
     by a dataset the user obtained: **ESK19679, 38,736 hours from April 2022 to August 2026**,
