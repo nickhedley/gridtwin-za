@@ -199,7 +199,8 @@
    "source": "Eskom 2024/25 Standard tariffs cost-to-serve study, Table 42, page 57.",
    "caveat": "2024/25 study. NERSA's Reasons for Decision notes the CTS functionalises revenue as 86/4/10 across Generation, NTCSA and Distribution against its own MYPD6 apportionment of 62/28/10, calls that a material inconsistency and imposes ring-fencing conditions. The customer-category allocation is still the best published source for this factor; the business-level split is not."
   },
-  "cts_confirms_administered_ratio": "Table 18 of the CTS records that the 1:6 time-of-use ratio is 'proposed by the System Operator', with Annexure 9 giving the motivation. It is an administered signal, not a measured cost ratio - which is why Homeflex prices the winter peak about three times more steeply than modelled cost."
+  "cts_confirms_administered_ratio": "Table 18 of the CTS records that the 1:6 time-of-use ratio is 'proposed by the System Operator', with Annexure 9 giving the motivation. It is an administered signal, not a measured cost ratio - which is why Homeflex prices the winter peak about three times more steeply than modelled cost.",
+  "cts_currency_note": "The CTS is 2024/25 and there is no newer one - the Electricity Pricing Policy requires a cost-of-supply study every five years, and Eskom last revised structures in 2022 on the previous study. That is acceptable here BECAUSE THE FACTOR IS A RATIO, not a rate. Numerator and denominator escalate together under a uniform tariff increase, so 1.622 is far more stable than the 320.33 c/kWh it comes from. What WOULD move it: a change in allocation methodology, or a shift in residential load profile relative to other categories. The fixed-charge phase-in reallocates WITHIN residential and does not move it. The Homepower error was a RATE used stale, which is a different and more dangerous thing."
  },
  "cross_subsidies": {
   "description": "Eskom's tariffs contain explicit cross-subsidies. These are TRANSFERS between customer categories, not costs of supply, and a cost-reflective shadow tariff should show them separately rather than fold them into a cost.",
@@ -478,5 +479,13 @@
   "cumulative_2024_25_to_2026_27": 1.2257,
   "source": "NERSA MYPD6 decision and the R54bn settlement. Municipal bulk purchases rise 9.01% from 1 July 2026, direct customers 8.76% from 1 April 2026.",
   "why_this_exists": "Two inputs were held in 2024/25 rands and used as 2026/27 figures - Homeflex's six rates and both Homelight rates - each 22.6% low. NERSA's own document warns of exactly this: its proposed tariffs are in 2024/25 rand value and are adjusted through the ERTSA process. Any rate taken from the Reasons for Decision must be grown before use."
+ },
+ "loss_and_levies": {
+  "retail_loss_pct": 8.0,
+  "loss_basis": "TECHNICAL LOSSES ONLY. About 2.5% transmission plus 5-6% distribution. Traced 10 Sep 2026; it had been an untraced 0.10 described as 'technical and non-technical'. Eskom's FY2026 interim results put NON-TECHNICAL losses - theft, meter tampering, illegal prepaid tokens - at 7.9 TWh over six months, about 8% of sales and R17.5bn of lost revenue. A combined figure would therefore be 15-17%, not 10%. But a cost-reflective tariff does not gross up for non-technical loss: theft is recovered as a revenue requirement, inside the allowed revenue this panel already carries, the same way arrear debt is. Grossing up here would count it twice.",
+  "environmental_levy_r_per_kwh": 0.027,
+  "levy_verified": "Reconciles two independent ways. Eskom build-up R6.5bn applied x 0.865 approval over 209.55 TWh gives R0.0268/kWh. And the statutory rate of 3.5 c/kWh on non-renewable electricity, on roughly 161 TWh of coal generation, gives R5.6bn over the same sales, R0.0267/kWh. Held 0.027.",
+  "carbon_note": "Carbon comes from the dispatch run, not from the components table. components_r_per_kwh.carbon_tax is deliberately UNUSED - using both would double-count. Checked 10 Sep 2026.",
+  "orphan_removed": "A constant RETAIL_LEVIES = 0.06 was defined and never used, left over from a refactor. Rule 6: a constant that looks live and is not is how drift starts."
  }
 }

@@ -122,7 +122,14 @@ if _res:
               'thirty-six':36,'thirty-seven':37,'thirty-eight':38,'thirty-nine':39,
               'forty':40,'forty-one':41,'forty-two':42,'forty-three':43,'forty-four':44,
               'forty-five':45,'forty-six':46,'forty-seven':47,'forty-eight':48,
-              'forty-nine':49,'fifty':50}
+              'forty-nine':49,'fifty':50,
+              # Extended to seventy on 10 Sep 2026. The map has now run out twice, so
+              # this time it goes well past the current count rather than to it.
+              'fifty-one':51,'fifty-two':52,'fifty-three':53,'fifty-four':54,
+              'fifty-five':55,'fifty-six':56,'fifty-seven':57,'fifty-eight':58,
+              'fifty-nine':59,'sixty':60,'sixty-one':61,'sixty-two':62,
+              'sixty-three':63,'sixty-four':64,'sixty-five':65,'sixty-six':66,
+              'sixty-seven':67,'sixty-eight':68,'sixty-nine':69,'seventy':70}
     _m = re.search(r'([A-Za-z-]+) sections follow', _res)
     _stated = _words.get(_m.group(1).lower()) if _m else None
     check('RESULTS.md index states the right number of sections',

@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Fifty sections follow. This index exists because the file passed 1,400 lines and the
+Fifty-one sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3990,3 +3990,51 @@ on all six Homeflex rates unescalated.
 **A check that restates a constant proves nothing.** These work because NERSA published a
 base and a set of increases separately, so their product is an independent route to the same
 number.
+
+---
+
+## The loss constant was wrong in both directions
+
+Traced 10 Sep 2026. It had been 0.10, described in the code as "technical and non-technical,
+Eskom reported" - a figure I had never cited a source for.
+
+**Non-technical losses alone are about 8%.** Eskom's FY2026 interim results put theft, meter
+tampering and illegal prepaid tokens at 7.9 TWh over six months, roughly 8% of sales, R17.5bn
+of lost revenue. Technical losses in transmission and distribution are separate and
+additional, so a combined figure would be 15-17%.
+
+**But a cost-reflective tariff does not gross up for theft.** Non-technical loss is recovered
+as a revenue requirement, inside the allowed revenue this panel already carries, the same way
+arrear debt is. Grossing up here would count it twice.
+
+So the gross-up is technical only - about 2.5% transmission plus 5-6% distribution - and 8%
+is the right figure. The old 0.10 was simultaneously too high for technical loss and far too
+low for total loss, which is what happens when a round number is given a label rather than a
+source.
+
+### the levy reconciles two ways
+
+```
+Eskom build-up R6.5bn x 0.865 approval / 209.55 TWh      R0.0268/kWh
+statutory 3.5 c/kWh on ~161 TWh coal / 209.55 TWh        R0.0267/kWh
+held                                                     R0.027
+```
+
+Carbon comes from the dispatch run only; the components-table entry is deliberately unused,
+and that is now asserted so nobody wires it in and double-counts.
+
+A constant `RETAIL_LEVIES = 0.06` was defined and never used, left from a refactor. Removed -
+rule 6, a constant that looks live and is not is how drift starts.
+
+### and the cost-to-serve study is stale but sound
+
+The CTS is 2024/25 and there is no newer one; the Electricity Pricing Policy requires a study
+every five years. That is acceptable here **because the allocation is a RATIO**, not a rate:
+320.33 over 197.45, and both escalate together under a uniform increase.
+
+What would move it is a change in allocation methodology or in residential load profile
+relative to other categories. The fixed-charge phase-in reallocates within residential and
+does not touch it.
+
+**The Homepower error was a rate used stale. This is a ratio, which is a different and far
+safer thing.**

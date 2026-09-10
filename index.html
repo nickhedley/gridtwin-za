@@ -11785,7 +11785,22 @@ fetch('nodal/eskom_tariff_components.json?v=' + (window.DATA_V || '7'))
   .catch(() => {});
 
 // Loss and levy constants, kept together so neither is duplicated at a call site.
-const RETAIL_LOSS = 0.10;    // technical and non-technical, Eskom reported
+// TECHNICAL LOSSES ONLY, 8%. Traced 10 Sep 2026; it had been an untraced 0.10.
+//
+// The old comment said "technical and non-technical" and that was wrong twice over.
+//
+// Eskom's FY2026 interim results put NON-TECHNICAL losses - theft, meter tampering, illegal
+// prepaid tokens - at 7.9 TWh over six months, about 8% of sales, R17.5bn of lost revenue.
+// Technical losses in transmission and distribution are separate and additional, so a
+// combined figure would be 15-17%, not 10%.
+//
+// But a cost-reflective tariff does NOT gross up for non-technical loss. Theft is recovered
+// as a revenue requirement, inside Eskom's allowed revenue, the same way arrear debt is -
+// and this panel already carries that allowed revenue. Grossing up for it here would count
+// it twice.
+//
+// So the gross-up is technical only: about 2.5% transmission plus 5-6% distribution.
+const RETAIL_LOSS = 0.08;
 
 // Price a household on a real inclining-block municipal tariff. City Power's residential
 // blocks RISE with consumption - R2.88, R3.31, R3.55, R3.75, R3.93 - which is a price
@@ -14491,7 +14506,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10t';
+const BUILD_STAMP = '2026-09-10u';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

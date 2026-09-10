@@ -164,6 +164,36 @@ console.log('\nTariff constants against their published sources\n');
         + `weeks because it came from a summary nobody could check.`);
 }
 
+// ── 7. LOSSES AND LEVIES ARE TRACED, NOT ROUND ─────────────────────────────
+// Both were untraced round numbers until 10 Sep 2026. The loss figure was 0.10 described as
+// "technical and non-technical", which was wrong in both directions: Eskom's non-technical
+// losses alone are about 8% of sales, so a combined figure would be 15-17% - but a
+// cost-reflective tariff does not gross up for theft, which is recovered inside the allowed
+// revenue this panel already carries.
+{
+  const L = T.loss_and_levies || {};
+  check('the loss gross-up is technical only and in range',
+        L.retail_loss_pct >= 6 && L.retail_loss_pct <= 10,
+        `${L.retail_loss_pct}% held. Technical losses are about 2.5% transmission plus 5-6% `
+        + `distribution. Above 10% suggests non-technical loss has been folded in, which `
+        + `would double-count theft against the allowed revenue.`);
+
+  // The environmental levy reconciles two independent ways: from Eskom's revenue build-up,
+  // and from the statutory 3.5 c/kWh on non-renewable generation.
+  const A = T.allowed_revenue_2026_27 || {};
+  const held = (A.components_r_per_kwh || {}).environmental_levy;
+  const fromStatutory = 0.035 * 161 / (A.sales_twh || 209.55);
+  check('the environmental levy matches the statutory rate on coal generation',
+        Math.abs(held / fromStatutory - 1) < 0.15,
+        `held R${held}/kWh against R${fromStatutory.toFixed(4)} derived from 3.5 c/kWh on `
+        + `161 TWh of coal generation spread over ${A.sales_twh} TWh of sales.`);
+
+  check('carbon is not counted twice',
+        !!(L.carbon_note || '').match(/UNUSED/i),
+        `carbon must come from the dispatch run OR the components table, not both. The `
+        + `components entry is deliberately unused and that must stay documented.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');
