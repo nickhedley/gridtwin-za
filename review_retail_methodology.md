@@ -242,3 +242,46 @@ decision, not a component fix, and it should be taken deliberately.
 
 **Until then the scenario figures are upper bounds.** The panel should say so, and the
 gas-firmed case is the one to quote.
+
+---
+
+## Confidence after the gap fixes, 10 Sep 2026
+
+**The validation is now partly circular, and that is the most important thing on this page.**
+
+The residential allocation factor of 1.29 is Homepower's energy rate divided by Eskom's
+average price. Both are published, but one of them is the figure the panel is validated
+against. Before it existed, a 40% municipal markup was carrying the same job silently, so the
+check was passing for the wrong reason - this is better, and it is not what it was.
+
+```
+bottom-up components, no allocation      R2.66    independent
+x residential allocation 1.29            R3.43    one published ratio
+Homepower actual                         R3.56
+residual                                    -4%   the part that still tests something
+```
+
+The ratio that would close the gap exactly is 1.34. Using 1.29 leaves a few per cent
+unexplained, and that residual is the honest measure of what the check is worth. The band is
+8% and must not be tightened - doing so would fit the model to its own validation.
+
+**What I would still say with confidence:**
+
+- the structure, which is how a regulated tariff is actually built
+- the component decomposition, each line sourced to NERSA or Eskom
+- fuel and carbon, from dispatch, within 2.7% of Eskom's approved spend
+- new-build capital, hand-reconciled to R1.033/kWh and pinned
+- the direction and rough magnitude under different mixes
+- that a gas-firmed build moves a bill far less than a no-gas one
+
+**What I would not:**
+
+- the level to better than about 10%
+- the no-gas scenario, which depends on assumptions that compound
+- anything resting on the RAB run-off, which is a straight line where a schedule exists
+- the residential allocation, which is one ratio doing a lot of work
+
+**And the largest uncertainty is not in the model.** The gas-firmed scenario assumes 8 GW of
+new CCGT is procurable and connected by 2035, with LNG import capacity for 15.5 TWh a year.
+South African gas-to-power procurement has stalled for a decade. If that gas does not arrive,
+the no-gas case is not a stress test - it is the outcome.

@@ -916,8 +916,18 @@ const num = t => {
         // was added. Before it, the panel matched Homepower only because a 40% "municipal
         // markup" was silently carrying the residential cost-to-serve allocation as well as
         // a municipal margin. Removing the markup for an Eskom-direct customer exposed a 25%
-        // shortfall, which is how the missing factor was found. The check passed for the
-        // wrong reason until then.
+        // shortfall, which is how the missing factor was found.
+        //
+        // THIS CHECK IS NOW PARTLY CIRCULAR AND THE TOLERANCE MUST NOT BE TIGHTENED FURTHER.
+        // The residential allocation of 1.29 is Homepower's energy rate over Eskom's average
+        // price - a ratio of two published figures, but one of them is the thing being
+        // checked against. The bottom-up components below it are independent, built from
+        // NERSA's revenue decomposition and this model's dispatch, so the residual does test
+        // something. It tests less than it did.
+        //
+        // The ratio that would close the gap exactly is 1.34. Using 1.29 leaves 6%
+        // unexplained, and that 6% is the honest measure of what this check is worth.
+        // Tightening the band would be fitting the model to its own validation.
         check('at 2026 the panel reproduces the published tariff, Eskom direct',
               Math.abs(vy.at2026 / vy.homepower - 1) < 0.08,
               `R${vy.at2026.toFixed(2)} at scenario year 2026 against Homepower's `
