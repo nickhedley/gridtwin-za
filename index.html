@@ -12142,98 +12142,43 @@ function renderRetail(){
   // Homepower and that gap is a BOUNDARY, not a verdict on what Eskom charges.
   // Read the SHAPE across hours, not the level against a bill.
   const c = d.comp;
+  // ── THE NOTE ─────────────────────────────────────────────────────────────
+  // Trimmed from 731 words to about 150 on 10 Sep 2026. It had accumulated a paragraph per
+  // methodology fix and read as a changelog. Three claims were also stale: R3.59 against
+  // Homepower's R3.56 (both figures since corrected), and "raises a bill by about half"
+  // (now a third at 2035 prices).
+  //
+  // What a panel note is for: what the number is, what moves it, and the one thing that
+  // would mislead a reader who took it at face value. Everything else belongs in
+  // RESULTS.md and review_retail_methodology.md, which is where it now lives.
   const items = [['fuel and carbon', c.fuel + c.carbon], ['generation opex', c.opex],
                  ['existing fleet capital', c.existingCap], ['new build capital', c.newCap],
-                 ['new build fixed O&M', c.newFom], ['coal closure', c.decom],
-                 ['IPP purchase obligations', c.ipp], ['new grid for this scenario', c.newGrid],
+                 ['storage O&M', c.newFom], ['coal closure', c.decom],
+                 ['IPP obligations', c.ipp], ['new grid', c.newGrid],
                  ['imports, levies, arrears', c.imports + c.fixedItems]];
   const preTot = items.reduce((a, b) => a + b[1], 0);
+  const refM = RETAIL_T.municipal && RETAIL_T.municipal.reference;
+  const b = refM ? muniBill(c.houseKwh || 900, refM) : null;
+
   noteEl.innerHTML =
-      `<strong>Built bottom-up from NERSA's allowed revenue</strong>, not anchored to a `
-    + `published tariff. Components before losses, markup and VAT, R/kWh:<br>`
-    + '<span class="mono" style="font-size:10px;display:block;margin:6px 0 8px">'
+      `<strong>Built from NERSA's allowed revenue</strong>, costed at ${c.year}, over `
+    + `${c.salesTWh.toFixed(0)}&nbsp;TWh of sales. Components before losses and VAT, R/kWh:`
+    + '<span class="mono" style="font-size:10px;display:block;margin:5px 0 8px">'
     + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
     + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
-    + `Sales basis ${c.salesTWh.toFixed(0)}&nbsp;TWh \u2013 generation less rooftop, storage `
-    + `throughput and exports, because Eskom recovers its revenue over what it sells and a `
-    + `scenario that adds rooftop shrinks that base.<br><br>`
-    + `<strong>Which scenario you test matters more than any component.</strong> The Future `
-    + `electricity mix preset removes gas entirely and buys adequacy with 97&nbsp;GW of build `
-    + `and 134&nbsp;TWh a year of curtailment; it raises a bill by about half. A build on `
-    + `Australia's principle \u2013 60% renewables, gas kept for firming, demand response on `
-    + `\u2013 moves it by about 10%, or not at all if retired coal is written off. `
-    + `<strong>The no-gas case is a stress test, not a decarbonisation plan.</strong><br><br>`
-    + `<strong>Costed at ${c.year}.</strong> New build is priced from the model's own decline `
-    + `curves at the ${c.vintage.toFixed(0)} midpoint vintage, because a fleet standing in `
-    + `${c.year} was not all bought that year. The existing asset base has run off to `
-    + `${(c.runoff*100).toFixed(0)}% of its 2026 value. One-off recoveries have expired: the `
-    + `regulatory clearing account tranche ends with MYPD6, and municipal arrears are a `
-    + `transfer rather than a cost of supply and are excluded. Set the year to 2026 and the `
-    + `panel returns to today \u2013 R3.59 against Homepower's R3.56, which is the method `
-    + `checking itself.<br><br>`
-    + `<strong>The week view shows what the daily curve hides.</strong> Averaging every day of `
-    + `the year into 24 points flattens a still winter evening into a mild bump. Hour by hour, `
-    + `the same tariff runs from R${Math.min(...d.week).toFixed(2)} to `
-    + `R${Math.max(...d.week).toFixed(2)} across the week shown \u2013 `
-    + `${(Math.max(...d.week)/Math.min(...d.week)).toFixed(1)}&times; against the daily `
-    + `${(hi/lo).toFixed(1)}&times;. That spread is what a household would actually respond to, `
-    + `and this scenario was sized with no demand response at all.<br><br>`
-    + `<strong>Fuel and carbon are only ${(100*(c.fuel+c.carbon)/preTot).toFixed(0)}% of the `
-    + `requirement.</strong> A scenario that removes them entirely leaves the rest standing `
-    + `and adds capital for whatever it builds. That is why the daily spread is only `
-    + `${(hi/lo).toFixed(2)}&times;: everything except fuel is a capacity or obligation cost `
-    + `and is flat across the day.<br><br>`
-    + `<strong>The new-grid figure is understated.</strong> It comes from the model's `
-    + `connection-cost rate, which its own cost decomposition already labels partial. `
-    + `Eskom's Transmission Development Plan is R390&nbsp;billion for 56&nbsp;GW; annualised `
-    + `over 40 years and scaled to this scenario's build that is nearer R0.23/kWh against the `
-    + `R${c.newGrid.toFixed(3)} shown. <strong>Treat the grid cost of a heavy renewables `
-    + `scenario as a floor, not an estimate.</strong><br><br>`
+    + `<strong>Which scenario you test matters more than any component.</strong> The no-gas `
+    + `Future mix removes gas entirely and curtails 134&nbsp;TWh a year; a build on `
+    + `Australia's principle, with gas kept for firming, barely moves a bill. The no-gas case `
+    + `is a stress test, not a plan.<br><br>`
+    + (b ? `<strong>A ${(c.houseKwh || 900)}&nbsp;kWh Johannesburg household</strong> on City Power pays `
+        + `R${b.total.toFixed(0)} a month today, R${b.effective.toFixed(2)}/kWh, `
+        + `${(100*b.fixed/b.total).toFixed(0)}% of it fixed. At 200&nbsp;kWh that is 69%, and `
+        + `no dynamic tariff touches any of it.<br><br>` : '')
     + `<strong>Retired coal: ${d.stranded ? 'still in the asset base' : 'written off'}.</strong> `
-    + (d.stranded
-        ? `Consumers keep paying for plant that has closed, which is what a regulated asset `
-        + `base does. Untick to see the alternative.`
-        : `The cost leaves with the plant and someone else carries it, usually the fiscus.`)
-    + ` Only the coal share of the asset base, about 54%, is at stake; Koeberg, the pumped `
-    + `storage schemes and the wires stay either way. On the Future electricity mix the choice `
-    + `is worth about 5% of a bill. <strong>A regulatory decision, not a physical one.</strong>`
-    + `<br><br>`
-    + `<strong>The energy charge is ${shareShiftable.toFixed(0)}% of a 900&nbsp;kWh bill.</strong> `
-    + `The other ${(100-shareShiftable).toFixed(0)}% is Eskom's fixed charge of `
-    + `R${d.fixedPerMonth.toFixed(0)} a month, which no dynamic tariff can shift.<br><br>`
-    + `Cheapest hour ${String(loH).padStart(2,'0')}:00 at R${lo.toFixed(2)}, dearest `
-    + `${String(hiH).padStart(2,'0')}:00 at R${hi.toFixed(2)}.<br><br>`
-    + (function(){
-        const M = RETAIL_T.municipal, ref = M && M.reference;
-        const houseKwh = d.comp.houseKwh || 900;
-        const b = ref ? muniBill(houseKwh, ref) : null;
-        if (!b) return '';
-        const HP = RETAIL_T.homepower4;
-        const esk = houseKwh * HP.energy_r_per_kwh + HP.fixed_r_per_month;
-        return `<strong>Reference household: ${houseKwh}&nbsp;kWh a month in Johannesburg, `
-          + `on City Power's Residential Single Phase 80A.</strong> `
-          + `R${b.total.toFixed(0)} a month \u2013 R${b.energy.toFixed(0)} of energy across five `
-          + `inclining blocks plus R${b.fixed.toFixed(0)} fixed, an effective `
-          + `R${b.effective.toFixed(2)}/kWh. The same household on Eskom Homepower&nbsp;4 would `
-          + `pay R${esk.toFixed(0)}.<br><br>`
-          + `<strong>${(100*b.fixed/b.total).toFixed(0)}% of that bill is fixed</strong>, and `
-          + `no dynamic tariff, time-of-use signal or rooftop panel touches any of it. At `
-          + `200&nbsp;kWh it is 69%. Across 33 distributors the fixed charge runs from R0 to `
-          + `R5,463 a month while energy rates vary only threefold \u2013 <strong>the spread `
-          + `between South African municipalities is a fixed-charge story, not an energy `
-          + `one.</strong><br><br>`
-          + `<strong>City Power's blocks rise with volume:</strong> R2.88, R3.31, R3.55, R3.75, `
-          + `R3.93. A dynamic price rises with scarcity, and the two partly cancel \u2013 cheap `
-          + `midday solar hours are exactly when a heavy user sits in the dear block. NERSA `
-          + `removed inclining blocks from Eskom's residential tariffs in Feb 2025; municipal `
-          + `customers still face them.<br><br>`;
-      })()
-    + `<strong>Two things this does not equalise.</strong> Homeflex is shown at winter rates, `
-    + `so its spread is a high-demand-season figure. And Homepower's R3.56 still carries part `
-    + `of the service and generation capacity charges, mid phase-in.<br><br>`
-    + `<strong>Imported:</strong> the supply margin, R0.30/kWh, from European dynamic tariffs. `
-    + `Everything else is NERSA's allowed revenue, Eskom's published schedule, or this page's `
-    + `own dispatch.`;
+    + `A regulatory choice, not a physical one, worth about 5% of a bill.<br><br>`
+    + `<span style="color:var(--ink2)">Caveats: the new-grid line is a floor against the `
+    + `Transmission Development Plan. The supply margin is imported from European dynamic `
+    + `tariffs. Homeflex is shown at its own seasonal rates. Level carries about 10%.</span>`;
 
   const cv = document.getElementById('retChart');
   if (cv && cv.getContext) drawRetail(cv, d);
@@ -14506,7 +14451,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10u';
+const BUILD_STAMP = '2026-09-10v';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

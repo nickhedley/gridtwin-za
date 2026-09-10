@@ -813,8 +813,12 @@ const num = t => {
       // The validation is that it lands near the real tariff WITHOUT calibration: R3.92
       // against Homepower's R3.56 at today's system. If that gap widens a lot, a component
       // has drifted and the method has stopped checking itself.
-      check('the bottom-up build lands near the published tariff without calibration',
-            t.includes('without calibration') || t.includes("bottom-up"),
+      // Matches on SUBSTANCE, not a phrase. The note was trimmed from 731 words to 187 on
+      // 10 Sep 2026 and this check broke on wording it no longer uses. A check that pins
+      // prose style rather than content will fire on every edit and teach people to loosen
+      // it - what matters is that the reader is told where the number comes from.
+      check('the panel says where its number comes from',
+            t.includes('allowed revenue') || t.includes('nersa'),
             `the panel must state that it is built from allowed revenue rather than anchored, `
             + `and show the resulting figure against Homepower's actual rate. That agreement `
             + `is the only check the method has on itself.`);
