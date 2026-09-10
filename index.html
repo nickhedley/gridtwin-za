@@ -99,7 +99,19 @@ header{border-bottom:2px solid #3a5668; background:#517180; box-shadow:var(--sha
   .brand h1{font-size:22px}
   .brand p{font-size:11px}
   .wrap{box-sizing:border-box;width:100%;max-width:100%}
-  .panel{max-width:100%;box-sizing:border-box}
+  .panel{max-width:100%;box-sizing:border-box;min-width:0}
+/* MOBILE OVERFLOW, fixed 10 Sep 2026.
+   Grid and flex children default to min-width:auto and refuse to shrink below their content
+   width, so one wide table pushed its whole column past the viewport. .wrap already used
+   minmax(0,1fr) for this; .main2 and .duo did not, and body{overflow-x:clip} then hid the
+   result rather than letting anyone scroll to it - hence boxes bleeding off an edge you
+   could not reach.
+   The grids are fixed above. This lets a genuinely wide table scroll INSIDE its own panel
+   instead of dragging the layout with it. */
+@media(max-width:700px){
+  .panel .pb{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  .panel table{max-width:100%}
+}
 }
 .lamps{display:flex; gap:5px; align-items:center; padding:0 14px}
 .lamp{width:17px; height:26px; border:1px solid #454F49; border-radius:2px; background:#2C3431; display:flex; align-items:flex-end; justify-content:center; font-family:'IBM Plex Mono'; font-size:9px; color:#7d877e; padding-bottom:2px; transition:background .25s, box-shadow .25s}
@@ -230,7 +242,7 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 
 /* map + charts area */
 .main2{display:grid; grid-template-columns:minmax(300px,4fr) minmax(300px,5fr); gap:18px}
-@media(max-width:1150px){.main2{grid-template-columns:1fr}}
+@media(max-width:1150px){.main2{grid-template-columns:minmax(0,1fr)}}
 .mapbox svg{width:100%; height:auto; display:block}
 canvas{width:100%; display:block}
 .legend{display:flex; flex-wrap:wrap; gap:5px 12px; padding:8px 14px 12px; font-size:11px; font-family:'IBM Plex Mono'}
@@ -242,7 +254,7 @@ canvas{width:100%; display:block}
 .wkbtns button.active{background:var(--ink); color:var(--panel)}
 
 .duo{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px}
-@media(max-width:560px){.duo{grid-template-columns:1fr}}
+@media(max-width:560px){.duo{grid-template-columns:minmax(0,1fr)}}
 .mixrow{display:flex; align-items:center; gap:9px; margin-bottom:6px; font-size:12px}
 .mixrow .nm{width:118px; flex:none; font-weight:600}
 .mixrow .barwrap{flex:1; height:15px; background:var(--panel2); border:1px solid var(--line2); position:relative}
@@ -14499,7 +14511,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11m';
+const BUILD_STAMP = '2026-09-11n';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
