@@ -6045,20 +6045,30 @@ twice. The sections above keep the full reasoning.
 
 ## Dated, and the only one open
 
-1. **8 Sep - NERSA market inquiry into fixed and generation capacity charges.**
-   `nersa_market_inquiry_submission.md` is drafted and ready, to
-   electricity.marketinquiry@nersa.org.za. **Read the draft report before sending** - the
-   submission states openly that we have not seen it, which is honest but weaker than
-   responding to the document. Section 3 is the part built on reported findings rather
-   than primary text and should be checked against what the report actually says.
-2. **10 Sep - Seriti Green trading licence hearing.** Verified: Microsoft Teams, 13:30 to
-   16:30. Attendance only; oral representations closed 28 Aug. Seriti is an outreach
-   target and their July 2026 simulation is already a differential test in RESULTS.md.
+1. ~~8 Sep - NERSA market inquiry.~~ **SENT AND SUPERSEDED 8 Sep 2026.** The original went
+   in error to `EPP.Comments@dee.gov.za`, the Department's Electricity Pricing Policy
+   address, so NERSA never received it and asked for a copy. `NERSA_revised_submission.docx`
+   consolidates the original, the correction note and the resubmission into one document.
+   Two findings withdrawn, one figure corrected.
+2. ~~10 Sep - Seriti Green trading licence hearing.~~ **CANCELLED**, NERSA notice of
+   2 Sep 2026. Our entry read "VERIFIED 1 Sep" and it was - the day before. Verification
+   has a shelf life, and a stale verified entry reads as more trustworthy than an
+   unverified one.
+
+2b. **2 OCT - ESKOM ERTSA 2027/28. THE LIVE ONE.** Gazetted 4 Sep 2026, written submissions
+   close 16:00 on 2 October, hearing 8 October, decision 26 November. To
+   `ertsa@nersa.org.za`. Average increase 8.83%, fixed charges moving from 66.6% to 100% of
+   their glide path, service and administration charge up nearly 50%.
+
+   `ertsa_submission_draft.md` exists - written in August against a process that did not
+   then exist, kept because the analysis holds. **Rework it against the actual consultation
+   paper before sending.** The August error was drafting against an assumed process; sending
+   the unrevised draft into a real one would repeat it from the other direction.
 3. **Oct - Price and Tariff Rule consultation.** The most consequential dated item, and the
    direct follow-on from the EPP submission. Watch for the consultation paper.
-4. **Three calendar entries remain UNVERIFIED** and are marked as such in place: the Eskom
-   RCA hearing, the TDP Rules target, the four instruments at 31 Oct. None is actionable,
-   so the exposure is low.
+4. **Two calendar entries remain UNVERIFIED**: the TDP Rules target and the four
+   instruments at 31 Oct. The Eskom RCA hearing was verified 8 Sep 2026 - comments closed
+   14 Aug, hearing 10 Sep, attendance only. None of the remainder is actionable.
 
 ## Needs the browser
 
@@ -6107,13 +6117,11 @@ panel rendering one sentence. A browser is the only instrument for these.
 
 ## Data
 
-12. **The solar gap is not what this item says, and four sources disagree.** Investigated
-   2 Sep 2026 - see below. `FIXED.pvUtilityMW` is 3,271 and equals the data file total
-   exactly, so the 1,823 MW gap does not exist in the arithmetic. But the data file still
-   instructs that the constant must NOT be re-derived from it, and the documentation row
-   in the page gives a third figure. **Needs a decision, not more data.**
+12. ~~The solar gap.~~ **CLOSED 9 Sep 2026.** All four figures now agree: constant 3,271,
+   data file 3,271, Eskom Week 36 within 3 MW. The page documentation row and the data
+   file metadata instruction were the stale parts and are corrected;
+   `validate_capacity` had the identity strict since 15 Aug and needed no change.
 
-   The SunCentral candidate is also weaker than recorded: 114 MW is energised, not 342.
 13. **Named-project layer** - the IPP Office annual overview, the only route to project
     names and the Hydra Central split.
 14. **NERSA cumulative reconciliation** - SAPVIA 20,131 MW against NERSA 21,900 MW.
@@ -8965,9 +8973,18 @@ grid demand. Worth resolving; not resolved here.
 
 ## Eskom Week 36 checked against the model - 8 Sep 2026
 
-### it closes a five-week-old open item
+### it re-confirms an identity the HARNESS already had
 
-Eskom publishes installed capacity directly. Both grid-supply identities reconcile:
+CORRECTED 9 Sep 2026: I described this as closing a five-week-old open item. It is not.
+`validate_capacity` made the solar identity STRICT on 15 Aug 2026 using Eskom's Week 32
+report, and its comment says so. Week 36 re-confirms it against a later edition.
+
+What WAS stale is everything around the check: STATE.md open item 1, the data file's
+metadata instruction that `pvUtilityMW` "must NOT be re-derived", and the page's own
+documentation row. All three still described a 1,823 MW gap that the harness had closed
+three weeks earlier.
+
+Both grid-supply identities reconcile:
 
 ```
 wind        Eskom 4,142.6 + private 470 = 4,612.6   ours 4,612   gap 0.6 MW
@@ -9149,6 +9166,35 @@ A fuzzer over 60 random scenarios and 130 slider boundaries found NO invariant v
 the model is robust. This came from a separate check on profile ALIGNMENT, asking whether
 demand and renewables sit on the same clock. That question was worth asking precisely because
 nothing in the suite asks it.
+
+## to-do item 12 closed: the solar gap needed a decision, not data - 9 Sep 2026
+
+Four figures for one quantity, and the check was right all along:
+
+```
+FIXED.pvUtilityMW                            3,271 MW
+data file, reipppp 2,783 + private 488       3,271 MW
+Eskom Week 36, NTCSA-contracted 2,780.2 + 488  3,268.2 MW
+documentation row on the page                3.2 GW (REIPPPP 2.66 + wheeled 0.49)
+```
+
+**The data file matches Eskom to 3 MW, not the IPP Office.** That is correct rather than
+worrying: Eskom counts everything with an NTCSA contract, including RMIPPPP and Eskom-owned
+plant the IPP Office does not, and the 120 MW difference is roughly the RMIPPPP solar
+component.
+
+Two things fixed, both documentation rather than model:
+
+- the page row now reads "Utility PV 3.27 GW (grid-contracted 2.78 + wheeled 0.49)". It
+  carried the IPP Office figure the data file had moved past.
+- the data file's metadata instructed that `pvUtilityMW` "must NOT be re-derived from this
+  file yet" on the strength of a 1.8 GW gap that no longer exists. Replaced with what
+  settled it.
+
+`validate_capacity` needed no change - it went strict on 15 Aug and has been asserting the
+identity ever since. **The stale artefacts were the three places a human would look**: the
+open item, the file metadata and the page. A check that is right while every human-readable
+description of it is wrong is its own kind of failure.
 
 ---
 

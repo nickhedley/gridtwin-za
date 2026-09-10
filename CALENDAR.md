@@ -3,7 +3,7 @@
 Things that expire. Checked at the start of every session; anything past its date
 either moves to log.md as done or gets a new date and a reason.
 
-Last reviewed: 31 Aug 2026.
+Last reviewed: 8 Sep 2026.
 
 ---
 
@@ -42,6 +42,26 @@ submission drafted against it. There was no open ERTSA process: NERSA decided th
 application on 5 March 2026. An unsourced date is a guess wearing a deadline's clothes.
 
 ```
+ 2 Oct 2026    ESKOM RETAIL TARIFF STRUCTURAL ADJUSTMENT (ERTSA) 2027/28.
+               WRITTEN SUBMISSIONS CLOSE 16:00. Gazetted 4 Sep 2026.
+               Public hearing 8 Oct. NERSA decision expected 26 Nov.
+               To ertsa@nersa.org.za, or Kulawula House, 526 Madiba Street, Arcadia.
+               Mark clearly that comments relate to the 2027/28 ERTSA application.
+
+               THIS IS THE ONE TO ACT ON. `ertsa_submission_draft.md` was written in
+               August against a process that did not then exist and was kept because
+               the analysis holds. The process now exists. Rework the draft against
+               the actual consultation paper before sending - the 2026/27 mistake was
+               drafting against an assumed process, and sending an unrevised draft
+               into a real one would be the same error twice.
+
+               What is in scope, from the reporting: average increase 8.83% Eskom
+               direct and 8.84% municipal; fixed charges moving from 66.6% to 100% of
+               their glide path; the service and administration charge up nearly 50%.
+               A tariff STRUCTURE consultation - how revenue is split between fixed
+               and variable - which is squarely what GridTwin's block analysis speaks
+               to, and what the NERSA market inquiry submission already argued.
+
 8 Sep 2026     NEAREST DATE, and the only one open for comment. NERSA DRAFT MARKET
                INQUIRY into fixed charges and generation capacity charges applied by
                electricity distributors. Written submissions to
@@ -64,31 +84,19 @@ application on 5 March 2026. An unsourced date is a guess wearing a deadline's c
                it names does not exist.
 
 10 Sep 2026    Eskom Regulating Clearing Account (RCA) FY2024/25, public hearing.
-               Written comments closed 14 Aug 2026, so this is attendance only.
-               UNVERIFIED - carried from an earlier session without a cited source.
-               Confirm against NERSA's site before relying on it.
+               VERIFIED 8 Sep 2026. NERSA's seven-projects announcement confirms
+               comments closed 14 Aug and the hearing set for 10 Sep. Attendance
+               only. Was carried UNVERIFIED for several sessions.
 
-10 Sep 2026    VERIFIED 1 Sep 2026. NERSA public hearing on Seriti Green Energy's
-               electricity trading licence application, for proposed trading
-               operations in Mpumalanga where Eskom is the distributor. VIRTUAL, on
-               Microsoft Teams, 13:30 to 16:30. Registration to make oral
-               representations closed 28 Aug; attendance may still be possible.
-               Seriti is already an outreach target and their July 2026 simulation is
-               the differential test in RESULTS.md.
-31 Oct 2026    NERSA target completion for the Trading Rules. NOT a comment deadline -
-               see above. The date to watch for the final text, not to submit against.
-               CORRECTED 31 Aug 2026 from 30 Sep: NERSA's own Electricity Regulation
-               Projects Dashboard (Issue 03, 15 Aug 2026) gives 31 October. A member
-               workshop is planned for September, so the text may move before then.
-Oct 2026       PRICE AND TARIFF RULE - consultation paper. THE DIRECT FOLLOW-ON FROM
-               THE EPP SUBMISSION. The ERA as amended requires NERSA to set unbundled
-               prices and tariffs by rule, and the dashboard states the consultation
-               paper will be published FOLLOWING PUBLICATION OF THE EPP, with the rule
-               targeted for October and completion by 30 Nov 2026.
-               So the EPP comments already filed feed directly into this. Policy
-               Position 20 (locational transmission cost) and section 4 (published
-               disaggregation of price components) are both squarely in scope.
-               WATCH FOR the consultation paper - this is the one to comment on.
+10 Sep 2026    CANCELLED. NERSA published a notice of cancellation on 2 Sep 2026
+               for the Seriti Green Energy trading licence hearing. Our entry read
+               "VERIFIED 1 Sep 2026" and it WAS - the day before the cancellation.
+               Nothing to attend. Seriti remains an outreach target and their July
+               2026 simulation is still a differential test in RESULTS.md.
+
+               THE LESSON: verification has a shelf life. An entry verified nine
+               days ago against a source that has since moved is no better than an
+               unverified one, and reads as more trustworthy.
 
 30 Sep 2026    TDP Rules - NERSA target completion. Submitted to the Minister for
                comments; finalisation depends on receiving them, so it may slip.
