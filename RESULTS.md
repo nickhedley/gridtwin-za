@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Forty sections follow. This index exists because the file passed 1,400 lines and the
+Forty-one sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -3251,3 +3251,36 @@ Both models put the 2030 baseload cliff in the same place and give it the same s
 of coal and 1.15 GW of Cahora Bassa leave inside two years; if the 6 GW of CCGT slips, the
 gap is real in both. NTCSA reach that from a nodal Monte Carlo, GridTwin from an hourly
 single-node dispatch, and neither shares code, data pipeline or authorship with the other.
+
+---
+
+## Why our CO2 is 170 Mt and EDMSA's is 195
+
+To-do item 15 asked what produces the gap. Three numbers measuring three things, and EDMSA
+states no boundary. A decomposition that reconciles arithmetically, each step checked against
+a published quantity:
+
+```
+GridTwin, sent-out CO2                              170.0 Mt
++ gross-up for auxiliary consumption at 7.6%        181.2      Stats SA P4141 Table 7
++ coal-mining fugitive methane as CO2e, 10-15 Mt     ~195      national inventory scale
+```
+
+The 7.6% is measured, not assumed: Stats SA reports 9,646 GWh consumed in power stations
+against 127,161 generated over January to July 2026, and the same ratio for July alone.
+
+**Our 1.04 t/MWh is a SENT-OUT factor** - emissions per unit delivered to the grid. A gross
+factor, per unit generated, is 1.04/(1-0.076) = 1.126. That single distinction is 11 Mt, or
+44% of the gap.
+
+### this is a hypothesis, not a reconciliation
+
+It is arithmetically consistent and every component is independently sourced, but two
+plausible stories can share an answer. What would settle it: EDMSA's methodology note, or a
+single year where they publish generation alongside emissions so the implied factor can be
+read directly.
+
+**Our number is not wrong.** It is sent-out CO2 from the electricity sector, which is the
+right boundary for a dispatch model. Adjusting `emisCoal` to close the gap would make the
+model agree with a figure whose definition we cannot see - and the CO2 benchmark against
+Eskom's own reported 175 Mt would then break.

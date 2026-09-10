@@ -52,6 +52,31 @@ const EXTERNAL = {
   // without a full technology breakdown, so the split below is inferred. Varying wind and
   // solar by +/-25% moves the answer from 28 to 131 GWh - their 86 sits inside that range
   // and so does our central 79. Treat agreement here as ORDER OF MAGNITUDE, not precision.
+  // ── THE EDMSA BOUNDARY, NARROWED 9 Sep 2026 ─────────────────────────────
+  // To-do item 15 asked what produces EDMSA's 195 Mt for 2025 against our 170. Three
+  // numbers measuring three things, and EDMSA does not state its boundary. A decomposition
+  // that reconciles arithmetically, with each step checked against a published quantity:
+  //
+  //   GridTwin, sent-out CO2                                   170.0 Mt
+  //   + gross-up for auxiliary consumption at 7.6%             181.2      Stats SA P4141
+  //   + coal-mining fugitive methane as CO2e, 10-15 Mt          ~195       national inventory
+  //
+  // The 7.6% is measured, not assumed: Stats SA Table 7 gives 9,646 GWh consumed in power
+  // stations against 127,161 generated over Jan-Jul 2026, and the same ratio for July alone.
+  //
+  // Our 1.04 t/MWh is a SENT-OUT factor. A gross factor - emissions per unit generated
+  // rather than delivered - is 1.04/(1-0.076) = 1.126, which is the first line of the gap.
+  //
+  // THIS IS A HYPOTHESIS, NOT A RECONCILIATION. It is arithmetically consistent and each
+  // component is independently sourced, but EDMSA has published no boundary statement and
+  // two plausible stories can share an answer. What would settle it: their methodology
+  // note, or a single year where they publish generation alongside emissions so the
+  // implied factor can be read directly.
+  //
+  // Practical consequence: OUR NUMBER IS NOT WRONG. It is sent-out CO2 from the electricity
+  // sector, which is the right boundary for a dispatch model. Do not adjust emisCoal to
+  // close this gap - that would make the model agree with a number whose definition we
+  // cannot see.
   mtsao2030GasDelayed: {
     source: 'NTCSA Medium-Term System Adequacy Outlook 2026-2030, Oct 2025, section 7.4.1.2',
     published: 86,           // GWh unserved in 2030

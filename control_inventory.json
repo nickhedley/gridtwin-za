@@ -24,6 +24,7 @@
   "drShiftPct",
   "exportCapMW",
   "exportPriceR",
+  "exportsMW",
   "getsEnabled",
   "gridBeyondGccaPct",
   "importsMW",
@@ -64,5 +65,5 @@
   "vppEnrolPct",
   "vppGeyserPoolMW"
  ],
- "count": 63
+ "count": 64
 }

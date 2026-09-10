@@ -6125,8 +6125,18 @@ panel rendering one sentence. A browser is the only instrument for these.
 13. **Named-project layer** - the IPP Office annual overview, the only route to project
     names and the Hydra Central split.
 14. **NERSA cumulative reconciliation** - SAPVIA 20,131 MW against NERSA 21,900 MW.
-15. **EDMSA boundary question** - what produces 195 Mt for 2025 against our 174.5. Three
-    numbers measure three different things; theirs is unstated.
+15. ~~EDMSA boundary question.~~ **NARROWED 9 Sep 2026.** A decomposition that reconciles:
+    sent-out 170.0 Mt, grossed up for 7.6% auxiliary consumption 181.2 (Stats SA measured,
+    not assumed), plus coal-mining fugitive methane as CO2e at national-inventory scale
+    gives ~195. **The sent-out versus gross distinction alone is 11 Mt, 44% of the gap.**
+
+    Recorded as a hypothesis rather than closed: EDMSA publishes no boundary statement and
+    two plausible stories can share an answer. Their methodology note, or one year with
+    generation alongside emissions, would settle it.
+
+    **Do not adjust `emisCoal` to close this.** Our figure is sent-out electricity-sector
+    CO2, which is right for a dispatch model, and moving it would break the Eskom 175 Mt
+    benchmark that currently passes.
 
 ## Publication and outreach
 
