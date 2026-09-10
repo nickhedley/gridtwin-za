@@ -3516,8 +3516,29 @@ schemes and the wires stay either way. On the Future mix the choice is worth abo
 bill, not the 25% the unreviewed panel showed. Still a regulatory decision rather than a
 physical one, and still a control.
 
-### the scenario tested is the extreme one
+### and then challenged against Australia, which changed it again
 
-The Future electricity mix is a no-gas build sized for adequacy at 110-120 GW. A moderate
-decarbonisation that kept gas as backup would carry far less capital and is the more useful
-next test. The panel makes that test available; this section reports only the extreme.
+```
+scenario                                   retail   vs today
+today                                       R3.66          -
+Future mix, no gas, 134 TWh curtailed       R5.55       +52%
+Australia-like: 60% RE, gas firming, DR     R4.01       +10%
+same, retired coal written off              R3.66        +0%
+NTCSA 2030 base, 6 GW gas                   R3.71        +1%
+```
+
+The review's O&M addition double-counted - `acapWind` alone reproduces the REIPPPP bid price,
+so nothing was missing. Removed, and the market price is now pinned as a bound.
+
+**The scenario is the whole story.** The Future mix removes gas entirely and curtails 134 TWh
+a year. A build on Australia's principle - 60% renewables, gas kept for firming, demand
+response on - moves a bill by 10%, or not at all if retired coal is written off. That is the
+Australian result, reproduced here. The no-gas case is a stress test, and the panel now says
+so.
+
+### the week view
+
+A 168-hour representative week, winter or summer, on the same basis as the daily curve. The
+daily average flattens a still winter evening into a mild bump; hour by hour the same tariff
+runs R3.57 to R10.44, a 2.9x spread against the daily 1.2x. That spread is what a household
+would actually respond to, and this scenario was sized with no demand response at all.

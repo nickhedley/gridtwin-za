@@ -876,6 +876,18 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" style="padding:6px 10px 4px">
               <canvas id="retChart" height="200" aria-label="Shadow dynamic retail price by hour of day, against the flat and time-of-use tariffs a household can buy today"></canvas>
             </div>
+            <div class="pb" style="padding:2px 12px 0;display:flex;gap:10px;align-items:center">
+              <span class="tag" style="font-size:10.5px">Representative week</span>
+              <label style="font-size:10.5px;color:var(--ink2)">
+                <input type="radio" name="retWeek" value="W" checked onchange="renderRetail()"> Winter week
+              </label>
+              <label style="font-size:10.5px;color:var(--ink2)">
+                <input type="radio" name="retWeek" value="S" onchange="renderRetail()"> Summer week
+              </label>
+            </div>
+            <div class="pb" style="padding:6px 10px 4px">
+              <canvas id="retWeek" height="190" aria-label="Shadow dynamic retail price across a representative 168-hour week, against Homeflex"></canvas>
+            </div>
             <div class="pb" id="retTable" style="padding:0 12px 6px"></div>
             <div class="pb" id="retNote" style="padding:0 12px 12px;font-size:9.5px;color:var(--ink2);line-height:1.5"></div>
           </div>
@@ -11814,13 +11826,17 @@ function retailComponents(markup, stranded){
 
   const newCap = (r.newCapexR || 0) / salesMWh / 1000;
 
-  // REVIEW FINDING 3: new-build FIXED O&M was missing entirely.
-  // acap* is annualised capex only. A wind farm still needs maintaining once it is paid
-  // for, and on the Future mix this line is worth about R0.24/kWh - as large as the grid gap.
-  const fom = A.new_build_fixed_om_r_per_kw_yr || {};
-  const newFom = ((P.newWindMW || 0) * (fom.wind || 0) + (P.newPvMW || 0) * (fom.pv || 0)
-                + (P.newBattMW || 0) * (fom.battery || 0) + (P.newCcgtMW || 0) * (fom.ccgt || 0))
-                * 1000 / salesMWh / 1000;
+  // REVIEW FINDING 3, REVERSED the same day: fixed O&M is already inside acap*.
+  //
+  // I added it on the assumption acap was capex-only. The market says otherwise. acapWind
+  // 1650 R/kW-yr at a 35% capacity factor is R0.54/kWh, which is what REIPPPP developers
+  // actually bid all-in - BW5 R0.50, BW6 R0.58. Adding R750/kW-yr of O&M on top gave
+  // R0.78/kWh, 35-55% above any winning bid. A constant that reproduces the market price
+  // on its own is not missing anything.
+  //
+  // Kept at zero rather than deleted so the reasoning survives. The Future mix retail
+  // figure fell from R6.16 to R5.71 when this was removed.
+  const newFom = 0;
 
   // REVIEW FINDING 6: closure and rehabilitation of what retires, paid in both cases.
   const retiredMW = Math.max(0, P.coalDecomMW || 0);
@@ -11877,6 +11893,36 @@ function retailHourly(){
   const comp = retailComponents(markup, stranded);
   const dyn = raw.map(v => capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
 
+  // A REPRESENTATIVE WEEK, hour by hour, on the same basis as the daily curve. The daily
+  // curve averages every day of the year into 24 points and hides the thing a household
+  // actually experiences: a still winter evening against a windy summer night. Same start
+  // hours as the wholesale panel's week so the two line up.
+  const wkSel = document.querySelector('input[name="retWeek"]:checked');
+  const wkMode = wkSel ? wkSel.value : 'W';
+  const wkStart = (wkMode === 'S') ? 7848 : 3264;
+  const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
+  const varTarget = comp.fuel + comp.carbon;
+  const flatSum = comp.opex + comp.existingCap + comp.newCap + comp.newFom + comp.decom
+                + comp.ipp + comp.imports + comp.fixedItems + comp.newGrid;
+  const week = [];
+  for (let i = 0; i < 168; i++){
+    const w = (lastRes.marginalP[wkStart + i] || 0) / 1000;
+    const variable = hodMean > 0 ? varTarget * (w / hodMean) : varTarget;
+    let v = (variable + flatSum) / (1 - RETAIL_LOSS);
+    v = v * (1 + markup) + sp.retail_margin_r_per_kwh;
+    v = v * 1.15;
+    week.push(capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
+  }
+  const hfw = t.homeflex;
+  const weekFlex = [];
+  for (let i = 0; i < 168; i++){
+    const h = (wkStart + i) % 24, dow = Math.floor((wkStart + i) / 24) % 7;
+    const weekday = dow < 5;
+    const peak = weekday && ((h >= 6 && h < 9) || (h >= 17 && h < 20));
+    // Only the winter pair is in the data file; the summer week reuses them and says so.
+    weekFlex.push(peak ? hfw.winter_peak_r_per_kwh : hfw.offpeak_r_per_kwh);
+  }
+
   // The two tariffs a household can actually buy today, for comparison.
   const flat = new Array(24).fill(hp.energy_r_per_kwh);
   const hf = t.homeflex;
@@ -11884,7 +11930,7 @@ function retailHourly(){
     const peak = (h >= 6 && h < 9) || (h >= 17 && h < 20);
     return peak ? hf.winter_peak_r_per_kwh : hf.offpeak_r_per_kwh;
   });
-  return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp,
+  return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp, week, weekFlex, wkMode,
            fixedPerMonth: hp.fixed_r_per_month, cap: sp.cap_r_per_kwh };
 }
 
@@ -11949,13 +11995,19 @@ function renderRetail(){
     + `Sales basis ${c.salesTWh.toFixed(0)}&nbsp;TWh \u2013 generation less rooftop, storage `
     + `throughput and exports, because Eskom recovers its revenue over what it sells and a `
     + `scenario that adds rooftop shrinks that base.<br><br>`
-    + `<strong>Reviewed line by line on 10 Sep 2026.</strong> The first build showed a heavy `
-    + `renewables scenario lowering a bill. It was missing new-build fixed O&amp;M, closure `
-    + `costs and a consistent denominator, and its written-off case wrote off the transmission `
-    + `network along with the coal. Corrected, the Future electricity mix raises a bill by `
-    + `roughly two thirds: 97&nbsp;GW of renewables and 30&nbsp;GW of storage annualise about `
-    + `R258&nbsp;billion a year of capital over fewer kWh sold. <strong>Fuel is cheap to `
-    + `remove; the capital that replaces it is not.</strong><br><br>`
+    + `<strong>Which scenario you test matters more than any component.</strong> The Future `
+    + `electricity mix preset removes gas entirely and buys adequacy with 97&nbsp;GW of build `
+    + `and 134&nbsp;TWh a year of curtailment; it raises a bill by about half. A build on `
+    + `Australia's principle \u2013 60% renewables, gas kept for firming, demand response on `
+    + `\u2013 moves it by about 10%, or not at all if retired coal is written off. `
+    + `<strong>The no-gas case is a stress test, not a decarbonisation plan.</strong><br><br>`
+    + `<strong>The week view shows what the daily curve hides.</strong> Averaging every day of `
+    + `the year into 24 points flattens a still winter evening into a mild bump. Hour by hour, `
+    + `the same tariff runs from R${Math.min(...d.week).toFixed(2)} to `
+    + `R${Math.max(...d.week).toFixed(2)} across the week shown \u2013 `
+    + `${(Math.max(...d.week)/Math.min(...d.week)).toFixed(1)}&times; against the daily `
+    + `${(hi/lo).toFixed(1)}&times;. That spread is what a household would actually respond to, `
+    + `and this scenario was sized with no demand response at all.<br><br>`
     + `<strong>Fuel and carbon are only ${(100*(c.fuel+c.carbon)/preTot).toFixed(0)}% of the `
     + `requirement.</strong> A scenario that removes them entirely leaves the rest standing `
     + `and adds capital for whatever it builds. That is why the daily spread is only `
@@ -11992,6 +12044,48 @@ function renderRetail(){
 
   const cv = document.getElementById('retChart');
   if (cv && cv.getContext) drawRetail(cv, d);
+  const wv = document.getElementById('retWeek');
+  if (wv && wv.getContext) drawRetailWeek(wv, d);
+}
+
+function drawRetailWeek(cv, d){
+  const ctx = cv.getContext('2d');
+  const W = cv.width = cv.clientWidth || 600, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  const padL = 42, padR = 10, padT = 12, padB = 24;
+  const all = d.week.concat(d.weekFlex, d.flat);
+  const mx = Math.max(...all) * 1.06;
+  const x = i => padL + (W - padL - padR) * i / 167;
+  const y = v => H - padB - (H - padT - padB) * v / mx;
+  ctx.strokeStyle = 'rgba(128,128,128,0.25)'; ctx.lineWidth = 1;
+  ctx.font = '9px ui-monospace,monospace'; ctx.fillStyle = 'rgba(128,128,128,0.9)';
+  for (let g = 0; g <= 4; g++){
+    const v = mx * g / 4;
+    ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(W - padR, y(v)); ctx.stroke();
+    ctx.textAlign = 'right'; ctx.fillText('R' + v.toFixed(0), padL - 5, y(v) + 3);
+  }
+  // day boundaries and labels
+  const DN = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  ctx.textAlign = 'center';
+  for (let dd = 0; dd < 7; dd++){
+    const xi = x(dd * 24);
+    ctx.strokeStyle = 'rgba(128,128,128,0.18)';
+    ctx.beginPath(); ctx.moveTo(xi, padT); ctx.lineTo(xi, H - padB); ctx.stroke();
+    ctx.fillText(DN[dd], x(dd * 24 + 12), H - 8);
+  }
+  const line = (a, col, dash, wid) => {
+    ctx.strokeStyle = col; ctx.lineWidth = wid; ctx.setLineDash(dash || []);
+    ctx.beginPath();
+    a.forEach((v, i) => i ? ctx.lineTo(x(i), y(v)) : ctx.moveTo(x(i), y(v)));
+    ctx.stroke(); ctx.setLineDash([]);
+  };
+  line(new Array(168).fill(d.flat[0]), '#7A8A99', [2,3], 1.2);
+  line(d.weekFlex, '#C4783C', [5,3], 1.2);
+  line(d.week, '#0F5C32', [], 2);
+  ctx.font = '10px ui-monospace,monospace'; ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(128,128,128,0.9)';
+  ctx.fillText((d.wkMode === 'S' ? 'summer' : 'winter') + ' week \u00b7 Homeflex shown at winter rates',
+               padL + 4, padT + 2);
 }
 
 function drawRetail(cv, d){
@@ -14219,7 +14313,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10i';
+const BUILD_STAMP = '2026-09-10j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

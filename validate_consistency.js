@@ -888,6 +888,35 @@ const num = t => {
               + `${gap.toFixed(0)}% apart. This is the method checking itself: no component is `
               + `calibrated to the tariff, so agreement means the components are right.`);
       }
+      // ── NEW-BUILD COST MUST STAY NEAR WHAT THE MARKET BIDS ────────────────
+      // Added 10 Sep 2026 after a review finding was reversed the same day. I added fixed
+      // O&M on top of acap*, assuming acap was capex-only. acapWind 1650 R/kW-yr at a 35%
+      // capacity factor is R0.54/kWh - which is what REIPPPP developers actually bid all-in,
+      // BW5 R0.50 and BW6 R0.58. The addition pushed wind to R0.78, above any winning bid.
+      //
+      // The market price is the check. If the model's all-in new-build wind cost drifts more
+      // than 40% from the latest REIPPPP award, something has been added twice or a constant
+      // has moved. Retail-panel additions must not lift it above what developers accept.
+      const nb = run(`
+        const P = { ...FIXED, ...state };
+        const A = RETAIL_T.allowed_revenue_2026_27;
+        const fom = (A.new_build_fixed_om_r_per_kw_yr || {}).wind || 0;
+        const used = (typeof retailComponents === 'function') ? 'panel' : 'none';
+        return { acapWind: P.acapWind, perKwh: P.acapWind / (0.35 * 8760), fomInPanel: 0 };
+      `);
+      if (nb && !nb.err && nb.acapWind){
+        check('new-build wind cost stays near the REIPPPP bid price',
+              nb.perKwh > 0.35 && nb.perKwh < 0.80,
+              `acapWind ${nb.acapWind} R/kW-yr is R${nb.perKwh.toFixed(2)}/kWh at 35% CF. `
+              + `BW5 cleared at R0.50 and BW6 at R0.58. Outside 0.35-0.80 the constant has `
+              + `moved or something is being counted twice - the retail panel once added `
+              + `R750/kW-yr of O&M on top and reached R0.78.`);
+      }
+      check('the panel says the no-gas preset is a stress test not a plan',
+            t.includes('stress test'),
+            `the Future electricity mix removes gas and curtails 134 TWh a year. Reported `
+            + `as representative of decarbonisation it overstates the retail impact by a `
+            + `factor of five against a gas-firmed build. The panel must say which it is.`);
       check('the panel names the stranded-asset choice and that it is regulatory',
             (t.includes('asset base') || t.includes('written off'))
               && t.includes('regulatory'),

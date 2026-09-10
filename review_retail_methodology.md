@@ -3,10 +3,11 @@
 10 September 2026. Requested because the panel exists to show how retail tariffs move under
 different energy mixes, and that claim has to hold.
 
-**The headline: the review reversed the conclusion.** The panel as first built showed the
-Future electricity mix lowering a household bill by 6%. Corrected, it raises one by roughly
-two thirds. Four of the seven findings were material and are fixed; three are recorded as
-assumptions.
+**The headline, after review and challenge.** The panel as first built showed the Future
+electricity mix lowering a bill by 6%. The review found four material errors and moved it to
+a two-thirds rise. A challenge against Australia's experience then found the review had
+double-counted O&M, that demand response was off, and - decisively - that the scenario is a
+no-gas stress test. **A gas-firmed 60% renewables build moves a bill by 10%, or nothing.**
 
 ```
                             before review    after review
@@ -48,13 +49,18 @@ roughly 80% of generation assets; so about 54% of asset costs are at stake. The 
 
 **Effect:** the stranded-versus-written-off gap fell from 25% of a bill to about 5%.
 
-### 3. New-build fixed O&M was absent - FIXED
+### 3. New-build fixed O&M - ADDED, THEN REVERSED THE SAME DAY
 
-`acap*` is annualised capex only. A wind farm still needs maintaining once it is paid for.
-Wind R750, PV R300, batteries R400, CCGT R300 per kW-year, mid-range of NREL ATB and REIPPPP
-disclosures. On the Future mix: R61bn a year, R0.34/kWh on the corrected sales base.
+I added R750/kW-yr of wind O&M on the assumption that `acap*` was capex-only. Challenged
+against the market, that was wrong. `acapWind` 1650 R/kW-yr at a 35% capacity factor is
+R0.54/kWh - which is what REIPPPP developers actually bid all-in: BW5 R0.50, BW6 R0.58. The
+addition pushed wind to R0.78/kWh, above any winning bid.
 
-**Effect:** the largest single omission by value.
+A constant that reproduces the market price on its own is not missing anything. Removed. The
+Future mix fell from R6.16 to R5.55.
+
+**This was my error inside the review**, and the market price is now pinned as a bound in
+`validate_consistency` so it cannot be added again.
 
 ### 4. Generation sales counted curtailment - FIXED
 
@@ -113,6 +119,32 @@ to recover their annual spend. Everything else is a capacity or obligation cost 
 Defensible, and the reason the daily spread is so narrow.
 
 ---
+
+## The challenge that mattered more than the review
+
+Asked whether retail prices could really rise by two thirds under a renewables scenario when
+Australia targets 82% without expecting much price movement. Three things, tested:
+
+```
+scenario                                   retail   vs today
+today                                       R3.66          -
+Future mix, no gas, 134 TWh curtailed       R5.55       +52%
+Australia-like: 60% RE, gas firming, DR     R4.01       +10%
+same, retired coal written off              R3.66        +0%
+NTCSA 2030 base, 6 GW gas                   R3.71        +1%
+```
+
+**The scenario is the whole story.** The Future electricity mix preset removes gas entirely
+and buys adequacy with 97 GW of build and 134 TWh a year of curtailment. Australia keeps
+roughly 10 GW of gas for firming. A South African build on that principle moves a bill by
+10%, or not at all with coal written off - which is the Australian result.
+
+The no-gas case is a stress test, and the panel had been reporting it as if it were a plan.
+
+**Demand response was off.** `drShiftPct` is 0 in the preset. The panel assumes dynamic
+pricing exists while the system underneath was sized with no response to it. Enabling it
+cuts cost only if it lets you build less; with a leaner build it takes another 10% off.
+Real, and secondary to the gas question.
 
 ## What the corrected panel says
 
