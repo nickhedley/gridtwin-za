@@ -804,11 +804,18 @@ const num = t => {
     `);
     if (r && !r.err && typeof r.text === 'string' && r.text.length > 40){
       const t = r.text.toLowerCase();
+      // The wording moved from "revenue-neutral" to "calibrated so that at today's system
+      // this tariff collects exactly what Homepower does", because the first phrasing was
+      // false in any scenario other than the default - it claimed the tariff collected the
+      // same as Homepower while the table showed R1.51 against R3.56.
+      //
+      // So this matches on MEANING rather than a phrase: the panel must say the calibration
+      // is to today, and must say why the underlying marginal cost sits below the tariff.
       check('the shadow retail panel states that its level excludes sunk generation cost',
-            t.includes('revenue-neutral') && t.includes('existing fleet'),
-            `the panel must say it is revenue-neutral against Homepower AND why the `
-            + `underlying marginal cost sits below it. Without both, either the level reads `
-            + `as an accusation or the scaling reads as a fudge.`);
+            (t.includes("today's system") || t.includes('calibrated')) && t.includes('existing fleet'),
+            `the panel must say the markup is calibrated to TODAY's system, and why the `
+            + `underlying marginal cost sits below the tariff. Without the first the level `
+            + `is unexplained in other scenarios; without the second it reads as an accusation.`);
       // REVENUE NEUTRALITY IS THE WHOLE BASIS OF THE COMPARISON. If the mean drifts from
       // Homepower's flat rate, the panel is no longer showing a redistribution of the same
       // bill - it is showing a different bill, and every conclusion changes.
@@ -862,6 +869,30 @@ const num = t => {
               + `and the panel is absorbing exactly the effect it exists to show.`);
       }
 
+      // ── THE TWO THINGS THE COMPARISON DOES NOT EQUALISE ───────────────────
+      // Spotted 10 Sep 2026 by looking at the rendered panel rather than the numbers.
+      //
+      // 1. Homeflex is shown at HIGH-DEMAND SEASON rates. Eskom publishes six rates across
+      //    two seasons and only the winter pair are in the data file, so the 4.4x spread is
+      //    a winter figure being set against an annual-average dynamic price. The other four
+      //    rates were deliberately not estimated.
+      //
+      // 2. Homepower's R3.5556 is not pure energy - it carries a third of the service and
+      //    administration charge and 70% of the generation capacity charge, both mid
+      //    phase-in. The anchor therefore already contains fixed-cost recovery.
+      //
+      // Neither invalidates the panel. Both would make it misleading if unstated, because a
+      // reader comparing three numbers in a table assumes they are on the same basis.
+      check('the panel says the Homeflex comparison is winter rates only',
+            t.includes('winter'),
+            `the Homeflex row shows a 4.4x spread from high-demand-season rates against an `
+            + `annual-average dynamic price. Without saying so, the table implies the three `
+            + `tariffs are on the same seasonal basis and they are not.`);
+      check('the panel says the Homepower anchor is not pure energy',
+            t.includes('phase-in') || t.includes('generation capacity charge'),
+            `Homepower's energy rate still carries part of the service and generation `
+            + `capacity charges, so anchoring to it imports fixed-cost recovery into the `
+            + `energy component. Say it, or the anchor looks cleaner than it is.`);
       check('the shadow retail panel tells the reader to read the shape not the level',
             t.indexOf('read the shape') >= 0 && t.indexOf('read the shape') < 200,
             `"read the shape, not the level" must appear near the START of the note. It is `

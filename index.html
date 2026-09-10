@@ -11873,9 +11873,9 @@ function renderRetail(){
     + '<th style="text-align:right;padding:4px 6px">Cheapest hour</th>'
     + '<th style="text-align:right;padding:4px 6px">Dearest hour</th>'
     + '<th style="text-align:right;padding:4px 6px">Spread</th></tr>'
-    + [['Homepower, flat', d.flat, 'what most Eskom-direct homes pay'],
-       ['Homeflex, time of use', d.flex, 'required for any home with rooftop PV'],
-       ['Shadow dynamic', d.dyn, 'hypothetical']].map(row => {
+    + [['Homepower, flat', d.flat, 'energy charge only; R536/month of fixed charges sit outside it'],
+       ['Homeflex, time of use', d.flex, 'winter rates only \u2013 the annual spread is narrower'],
+       ['Shadow dynamic', d.dyn, 'hypothetical, annual average']].map(row => {
         const a = row[1], mn = Math.min(...a), mx = Math.max(...a);
         return '<tr style="border-bottom:1px solid var(--line2)">'
           + `<td style="padding:4px 6px">${row[0]}<br><span style="color:var(--ink2);font-size:9.5px">${row[2]}</span></td>`
@@ -11898,10 +11898,11 @@ function renderRetail(){
   // Read the SHAPE across hours, not the level against a bill.
   const rawMean = mean(d.raw);
   noteEl.innerHTML =
-      `<strong>Read the shape, not the level.</strong> This is <strong>revenue-neutral</strong> `
-    + `against Homepower: it collects the same R${mean(d.dyn).toFixed(2)}/kWh on average and `
-    + `only changes when a household pays it. That is what a regulator does - the allowed `
-    + `revenue is a given and the tariff decides how to collect it.<br><br>`
+      `<strong>Read the shape, not the level.</strong> The markup structure is calibrated so `
+    + `that <strong>at today's system this tariff collects exactly what Homepower does</strong>, `
+    + `R3.56/kWh, and only changes when a household pays it. That calibration is then held `
+    + `fixed, so a scenario that changes the cost of generating shows up here as a changed `
+    + `bill \u2013 this one averages R${mean(d.dyn).toFixed(2)}/kWh.<br><br>`
     + `The underlying marginal cost averages R${rawMean.toFixed(2)}/kWh, `
     + `${(100*(1-rawMean/mean(d.dyn))).toFixed(0)}% below the tariff, because this model `
     + `treats the existing fleet as sunk while a bill does not - roughly R67&nbsp;billion of `
@@ -11928,6 +11929,13 @@ function renderRetail(){
                 + `any supplier would charge. `)
     + `Municipal markup ${(d.markup*100).toFixed(0)}%, the midpoint of the observed Cape Town `
     + `range; Ekurhuleni has been measured at 86%.<br><br>`
+    + `<strong>Two things this comparison does not equalise.</strong> Homeflex is shown at its `
+    + `high-demand-season rates (June to August), so its 4.4&times; spread is a winter figure `
+    + `and its annual spread is narrower; Eskom publishes six rates across two seasons and only `
+    + `the winter pair are used here. And Homepower's R3.56 is not pure energy \u2013 it still `
+    + `carries a third of the service and administration charge and 70% of the generation `
+    + `capacity charge, both mid phase-in, so the anchor already contains fixed-cost recovery.`
+    + `<br><br>`
     + `<strong>What is imported:</strong> the supply margin, R0.30/kWh, from European dynamic `
     + `tariffs, because South Africa has no competitive retail to observe one. `
     + `<strong>What is modelled:</strong> the wholesale component, from this page's dispatch. `
@@ -11963,11 +11971,13 @@ function drawRetail(cv, d){
     a.forEach((v, i) => i ? ctx.lineTo(x(i), y(v)) : ctx.moveTo(x(i), y(v)));
     ctx.stroke(); ctx.setLineDash([]);
   };
+  // Shadow dynamic is the series the panel is about, so it gets the one saturated colour.
+  // It was blue and sat too close to the grey Homepower line to separate at a glance.
   line(d.flex, '#C4783C', [5,3]);
   line(d.flat, '#7A8A99', [2,3]);
-  line(d.dyn,  '#2E6F9E');
+  line(d.dyn,  '#0F5C32');
   ctx.font = '10px ui-monospace,monospace'; ctx.textAlign = 'left';
-  [['Shadow dynamic','#2E6F9E'],['Homeflex','#C4783C'],['Homepower flat','#7A8A99']]
+  [['Shadow dynamic','#0F5C32'],['Homeflex','#C4783C'],['Homepower flat','#7A8A99']]
     .forEach((L, i) => { ctx.fillStyle = L[1];
       ctx.fillText('\u2014 ' + L[0], padL + 4 + i * 118, padT + 10); });
 }
@@ -14161,7 +14171,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-10e';
+const BUILD_STAMP = '2026-09-10f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -3527,6 +3527,24 @@ why the marginal cost sits below - without both, either the level reads as an ac
 the scaling reads as a fudge. And the mean itself is asserted against Homepower's, one-sided,
 because the price cap may legitimately clip it downward but nothing should push it above.
 
+### what this comparison does not equalise
+
+Two things, found by looking at the rendered panel rather than the numbers:
+
+**Homeflex is shown at high-demand-season rates.** Eskom publishes six Homeflex rates - peak,
+standard and off-peak across a winter and a summer season - and only the winter pair are in
+the data file. So the 4.4x spread is a WINTER figure being set against an annual-average
+dynamic price, and Homeflex's annual spread is narrower. The other four rates were
+deliberately not estimated; they are published and should be read, not inferred.
+
+**Homepower's R3.5556 is not pure energy.** It still carries a third of the service and
+administration charge and 70% of the generation capacity charge, both mid phase-in. Anchoring
+to it therefore imports some fixed-cost recovery into the energy component.
+
+Neither invalidates the panel and both would make it misleading if unstated, because a reader
+comparing three numbers in one table assumes they share a basis. Both are now on the panel
+and asserted in `validate_consistency`.
+
 ### what is imported, and what is not
 
 Only the supply margin, R0.30/kWh, taken from European dynamic tariffs because South Africa

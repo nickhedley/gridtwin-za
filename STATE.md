@@ -9676,6 +9676,35 @@ Verified by reverting to per-scenario rescaling: it fires with both figures at R
 Anyone who "fixes" the mean back to Homepower across scenarios will make it fail, which is
 the point.
 
+## three faults in the retail panel, found by looking at it - 10 Sep 2026
+
+All three came from a screenshot of the rendered page, not from the numbers. The suite was
+green throughout.
+
+**The note was false away from the default scenario.** It read "revenue-neutral against
+Homepower: it collects the same R1.51/kWh" while the table above showed Homepower at R3.56.
+The behaviour was right - the tariff is calibrated to today and this scenario is 58% cheaper -
+and the sentence describing it was wrong. Reworded to say the calibration is to today's
+system and held fixed.
+
+**Homeflex was compared on winter rates.** Eskom publishes six rates across two seasons; the
+data file holds the winter pair, so a 4.4x winter spread was being set against an
+annual-average dynamic price. Labelled on the panel and in the data file. The missing four
+rates were NOT estimated - they are published and should be read.
+
+**The anchor is not pure energy.** Homepower's R3.5556 carries a third of the service and
+administration charge and 70% of the generation capacity charge, both mid phase-in. Anchoring
+to it imports fixed-cost recovery into the energy component. Now stated.
+
+**Also: the shadow line was too close to Homepower's grey.** Changed to #0F5C32, which
+separates by hue and by luminance - 2.28 against the grey, 2.35 against the orange, 7.05 on
+the cream background. The previous blue was 1.55 against grey, so the two lines would not
+have separated in greyscale or for a colour-blind reader.
+
+`validate_consistency` 62 -> 64. The check on the old wording had to be updated too: it
+matched the phrase "revenue-neutral", which was the phrase that was wrong. It now matches on
+meaning rather than wording.
+
 ---
 
 *GridTwin ZA. Code and documentation © 2026 Nick Hedley, released under CC BY-NC-ND 4.0.

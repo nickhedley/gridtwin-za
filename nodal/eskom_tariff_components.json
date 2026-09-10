@@ -26,14 +26,16 @@
    "network_capacity_fixed_pct": 100.0,
    "note": "At 100% the service and administration charge is R9.90/day and the generation capacity charge R2.73/day. R5.21/day, about R159/month, has still to move from energy to fixed."
   },
-  "fixed_r_per_month_note": "R17.86/day x 30 = R535.8, quoted as R536. Eskom bills per day, so a 31-day month is R553.7 and a 28-day month R500.1. The monthly figure is a convenience for comparison, not a charge - use fixed_r_per_day for anything computed."
+  "fixed_r_per_month_note": "R17.86/day x 30 = R535.8, quoted as R536. Eskom bills per day, so a 31-day month is R553.7 and a 28-day month R500.1. The monthly figure is a convenience for comparison, not a charge - use fixed_r_per_day for anything computed.",
+  "energy_is_not_pure_energy": "R3.5556/kWh still carries 33.34% of the service and administration charge and 70% of the generation capacity charge, both mid phase-in. So any tariff anchored to this rate inherits some fixed-cost recovery inside its energy component. That is not an error - it is what a household actually pays per unit today - but it means the anchor is not a pure energy price."
  },
  "homeflex": {
   "description": "Time-of-use residential. REQUIRED for any household with grid-tied generation, so every rooftop PV customer is on it.",
   "winter_peak_r_per_kwh": 8.471,
   "offpeak_r_per_kwh": 1.9083,
   "peak_definition": "June to August, 06:00-09:00 and 17:00-20:00 on weekdays",
-  "note": "The existing evidence that South African households CAN be exposed to time-varying prices. The winter peak is 4.4x the off-peak rate, a wider spread than most dynamic tariffs abroad."
+  "note": "The existing evidence that South African households CAN be exposed to time-varying prices. The winter peak is 4.4x the off-peak rate, a wider spread than most dynamic tariffs abroad.",
+  "season_caveat": "ONLY THE HIGH-DEMAND SEASON RATES ARE HERE. Eskom publishes six Homeflex rates - peak, standard and off-peak across a high-demand season (June to August) and a low-demand season (September to May). The 4.4x spread quoted from these two is therefore a WINTER figure; the annual spread is narrower. Do not compare it against an annual-average dynamic price without saying so. The missing four rates were deliberately not estimated - they are published in Eskom's Schedule of Standard Prices and should be read from there, not inferred."
  },
  "homelight60a": {
   "description": "Prepaid, 60 A, no fixed charge at all.",
