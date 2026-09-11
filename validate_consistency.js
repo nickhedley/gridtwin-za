@@ -1105,6 +1105,30 @@ const num = t => {
         }
       }
 
+      // ── ADEQUACY METRICS MUST NOT BE MISLABELLED ──────────────────────────
+      // Added 10 Sep 2026 after reading Eshan Singh's Grid Reliability Lab. Our headline metric
+      // counted HOURS with unserved load and called it LOLE. NERC calls that LOLH; LOLE counts
+      // DAYS containing at least one shortfall hour, and the standard everyone quotes - one day
+      // in ten years - is in days. On a stressed scenario ours read 8,458 hours against 365
+      // days, so the two are not interchangeable by any factor a reader could guess.
+      //
+      // Their documentation states the trap directly: "0.1 day/year does not mean 2.4
+      // hours/year".
+      {
+        const fsq = require('fs'), pq = require('path');
+        let src = '';
+        try { src = fsq.readFileSync(pq.join(ROOT, 'index.html'), 'utf8'); } catch (e) {}
+        check('the hours metric is labelled LOLH, not LOLE',
+              /LOLH &middot; h\/yr/.test(src) && !/LOLE &middot; h\/yr/.test(src),
+              `a metric counting hours must not be called LOLE. Anyone comparing it against the `
+              + `one-day-in-ten-years planning standard would be comparing hours against days.`);
+        check('zero observed events reports a bound, not a bare zero',
+              /Poisson/i.test(src) && /300\s*\/\s*N/.test(src),
+              `P(shed) read a flat 0% whenever no draw exceeded the threshold, which claims more `
+              + `certainty than 60 draws support. With no events the Poisson 95% upper bound is `
+              + `3/N - 5% at 60 draws.`);
+      }
+
       // ── CONTROLS THAT DO NOTHING AT DEFAULTS MUST SHOW IT ─────────────────
       // Three controls on this panel are inert at panel defaults, each correctly: the price cap
       // never binds and was removed; the stranded-coal control needs coal to have retired; the

@@ -476,7 +476,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         </div>
 
           <div id="nav-results" class="panel">
-  <div class="ph"><h2>System adequacy</h2><span class="tag">modelled &middot; reserve margin &middot; LOLE &middot; EUE</span></div>
+  <div class="ph"><h2>System adequacy</h2><span class="tag">modelled &middot; reserve margin &middot; LOLE d/yr &middot; LOLH h/yr &middot; EUE</span></div>
   <div class="pb" id="adequacyBody" style="padding:12px 14px"><p style="font-size:11px;color:var(--ink2);margin:0">Run the model to compute adequacy statistics.</p></div>
 </div>
 
@@ -9329,9 +9329,22 @@ function bldStressTest(){
   };
   const run = extra => {
     const r = simulate({ ...state, ...over, ...extra }, PROFILES);
-    let lole = 0;
-    for (let h = 0; h < 8760; h++) if (r.stack.unserved[h] > 1) lole++;
-    return { lole, eue: r.E.unserved/1000, cost: r.avgCost };
+    // LOLH AND LOLE ARE DIFFERENT METRICS AND WE WERE REPORTING ONE AS THE OTHER.
+    //
+    // This loop counts HOURS with unserved load. NERC calls that LOLH. LOLE counts DAYS
+    // containing at least one shortfall hour, and the planning standard everyone quotes -
+    // one day in ten years, 0.1 days/yr - is in days.
+    //
+    // So a reader comparing our figure against that standard was comparing hours against
+    // days. Corrected 10 Sep 2026 after reading Eshan Singh's Grid Reliability Lab, which
+    // states the trap directly: "0.1 day/year does not mean 2.4 hours/year".
+    let lolh = 0, lole = 0;
+    let dayHasShortfall = false;
+    for (let h = 0; h < 8760; h++){
+      if (r.stack.unserved[h] > 1){ lolh++; dayHasShortfall = true; }
+      if (h % 24 === 23){ if (dayHasShortfall) lole++; dayHasShortfall = false; }
+    }
+    return { lole, lolh, eue: r.E.unserved/1000, cost: r.avgCost };
   };
   // As planned, then with the coal fleet 10 points worse - the tight years are
   // the ones where availability disappoints too, and a plan that only works at
@@ -14460,11 +14473,12 @@ function renderAdequacy(r){
     +p.ocgtDieselMW+(p.ccgtMW||0)+(p.newCcgtMW||0)
     +p.psPowerMW+p.battPowerMW+(p.newBattMW||0)
     +p.hybridMW*p.hybridCF;
-  let lole=0, h0=0; const mPeak=new Array(12).fill(0);
+  let lolh=0, lole=0, dayShort=false, h0=0; const mPeak=new Array(12).fill(0);
   for(let m=0;m<12;m++){
     const hrs=MONTH_D[m]*24;
     for(let h=h0;h<h0+hrs&&h<8760;h++){
-      if(r.stack.unserved[h]>1) lole++;
+      if(r.stack.unserved[h]>1){ lolh++; dayShort=true; }
+          if(h%24===23){ if(dayShort) lole++; dayShort=false; }
       if(r.loadS[h]>mPeak[m]) mPeak[m]=r.loadS[h];
     }
     h0+=hrs;
@@ -14475,8 +14489,8 @@ function renderAdequacy(r){
   const rmCol=v=>v>=15?'var(--ok,#4A8C5C)':v>=8?'#f5c518':'var(--alert,#C4785A)';
   el.innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
-      <div><div style="font-size:19px;font-weight:700;color:${lole>0?'var(--alert,#C4785A)':'var(--ok,#4A8C5C)'}">${lole.toLocaleString()}</div>
-        <div style="font-size:9.5px;color:var(--ink2)">LOLE &middot; h/yr with unserved load</div></div>
+      <div><div style="font-size:19px;font-weight:700;color:${lolh>0?'var(--alert,#C4785A)':'var(--ok,#4A8C5C)'}">${lolh.toLocaleString()}</div>
+        <div style="font-size:9.5px;color:var(--ink2)">LOLH &middot; h/yr with unserved load</div></div>
       <div><div style="font-size:19px;font-weight:700;color:${eueGWh>0.5?'var(--alert,#C4785A)':'var(--ok,#4A8C5C)'}">${eueGWh<0.05?'0':eueGWh.toFixed(1)}</div>
         <div style="font-size:9.5px;color:var(--ink2)">EUE &middot; GWh/yr unserved</div></div>
       <div><div style="font-size:19px;font-weight:700;color:${rmCol(rm[worst])}">${rm[worst].toFixed(0)}%</div>
@@ -14727,7 +14741,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-12b';
+const BUILD_STAMP = '2026-09-12d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -15052,7 +15066,17 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
     }
   }
   document.getElementById('riskHead').innerHTML= nodalCallout +
-    '<div class="rk"><div class="k">P(shed &gt;100 GWh)</div><div class="v" style="color:'+(pAny>0.5?'var(--alert)':pAny>0.05?'var(--coal2)':'var(--veld)')+'">'+Math.round(pAny*100)+'%</div></div>'+
+    // ZERO EVENTS IS NOT ZERO PROBABILITY.
+    //
+    // This read a flat 0% whenever no draw shed more than 100 GWh, which states more certainty
+    // than 60 draws can support. With no events observed, the Poisson 95% upper bound is 3/N -
+    // 5% at 60 draws. Adopted 10 Sep 2026 from Eshan Singh's Grid Reliability Lab, which uses
+    // the same zero-count limit rather than reporting zero uncertainty.
+    '<div class="rk"><div class="k">P(shed &gt;100 GWh)</div><div class="v" style="color:'+(pAny>0.5?'var(--alert)':pAny>0.05?'var(--coal2)':'var(--veld)')+'">'
+      + (pAny === 0
+          ? '0<span style="font-size:11px;opacity:.75"> &lt;' + (300/N).toFixed(0) + '%</span>'
+          : Math.round(pAny*100)+'%')
+      + (pAny === 0 ? '' : '') + '</div></div>'+
     '<div class="rk"><div class="k">Expected shed</div><div class="v">'+_shedFmt(meanShed)+' GWh</div></div>'+
     '<div class="rk"><div class="k">P90 shed</div><div class="v">'+_shedFmt(p90)+' GWh</div></div>'+
     '<div class="rk"><div class="k">E[diesel]</div><div class="v">'+meanDiesel.toFixed(1)+' TWh</div></div>';
