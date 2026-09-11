@@ -553,6 +553,43 @@ setTimeout(()=>{
       + `${smallAfter.toFixed(0)}% fixed \u00b7 ${delta200 >= 0 ? '+' : ''}R${delta200.toFixed(0)}/mo`);
   }
 
+  // ── GRID DELAY IS AN EMISSIONS EVENT, NOT A PRICE EVENT ──────────────────
+  // Added 10 Sep 2026. The Grid delay preset mirrors the IRP 2030 preset exactly and then
+  // applies the delay: curtailment ceiling 4% -> 10%, wind and solar held back 40%.
+  //
+  //   renewable energy        89 -> 68 TWh    -24%
+  //   coal                   140 -> 157 TWh   +12%
+  //   retail                R3.91 -> R3.96    +1.3%
+  //
+  // The household barely notices. The mix moves a quarter. That asymmetry is the finding, and
+  // it is why delay goes unaddressed: nobody on the bill feels it.
+  {
+    const gd = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      const pick = nm => {
+        for (const k of Object.keys(PRESETS['Grid delay'])) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k];
+        Object.assign(state, PRESETS[nm]); run();
+        const E = lastRes.E;
+        return { re: ((E.wind||0)+(E.pv||0)+(E.rooftop||0)+(E.csp||0))/1e6, coal: (E.coal||0)/1e6 };
+      };
+      const irp = pick("Latest IRP's 2030 targets");
+      const dly = pick('Grid delay');
+      for (const k of Object.keys(state)) delete state[k];
+      Object.assign(state, saved); run();
+      return { irp, dly };
+    `);
+    if (gd && !gd.error && gd.irp && gd.irp.re){
+      const reDrop = 100 * (1 - gd.dly.re / gd.irp.re);
+      const coalRise = 100 * (gd.dly.coal / gd.irp.coal - 1);
+      check('grid delay moves the generation mix, not the bill',
+            reDrop > 10 && coalRise > 5,
+            `renewables ${reDrop.toFixed(0)}% lower and coal ${coalRise.toFixed(0)}% higher under `
+            + `a delayed corridor. The energy still gets served - by coal - so the consumer sees `
+            + `almost nothing. That asymmetry is why delay goes unaddressed.`);
+      console.log(`  grid delay    renewables -${reDrop.toFixed(0)}% \u00b7 coal +${coalRise.toFixed(0)}%`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

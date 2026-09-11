@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Sixty-two sections follow. This index exists because the file passed 1,400 lines and the
+Sixty-three sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -4505,3 +4505,45 @@ still pre-FID with operation targeted for 2029-30, is **1.2 GW**.
 
 So the full-monetisation case implies more than twenty Coegas. The panel reports the implied
 capacity alongside the result rather than leaving the reader to work it out.
+
+---
+
+## Grid delay is an emissions event, not a price event
+
+Added 10 Sep 2026 after Aurora's Australian grid-delay work, where Project EnergyConnect
+Stage 2 ran a year late and $1.5bn over, and HumeLink, Western Renewables Link and VNI West
+all slipped. AEMO's 2025 Electricity Network Options Report names three causes: supply-chain
+pressure on equipment, difficulty securing skilled labour, and projects sited in remote areas.
+
+All three apply here. The Northern Cape has had no spare connection capacity since 2022, a
+wind bid window failed outright because the projects could not be connected, and the
+Transmission Development Plan needs 1,450 km a year against a slower current pace.
+
+The scenario mirrors the IRP 2030 preset exactly and then applies the delay - curtailment
+ceiling 4% to 10%, wind and solar held back 40% - so a comparison measures the DELAY and not
+the difference between two unrelated builds.
+
+```
+                        IRP 2030    delay    change
+renewable energy           89 TWh   68 TWh     -24%
+coal                      140 TWh  157 TWh     +12%
+congestion curtailment    5.4 TWh  9.8 TWh     +81%
+retail                    R3.91    R3.96      +1.3%
+```
+
+**The household barely notices. The mix moves a quarter.**
+
+A delayed corridor is not primarily a price event. The energy still gets served - by coal -
+and the consumer sees almost nothing. **That asymmetry is why delay goes unaddressed: nobody
+on the bill feels it.**
+
+### what this cannot do
+
+Aurora's findings are locational: Wagga Wagga solar assets diverging, assets near one
+substation losing while others gain, marginal loss factors moving. Our congestion curtailment
+is a flat national haircut in the engine the panels read, so we can answer what delay costs a
+household and not which projects win and lose. The nodal MIP carries regional curtailment but
+the retail panel does not use it.
+
+No engine change was needed. `congestionCurtailPct` already existed as a live slider, on by
+default because curtailment is happening today.
