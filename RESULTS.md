@@ -4358,9 +4358,34 @@ Future mix, 181 TWh sold   R0.310/kWh
 
 About 1% of the bill, and correctly signed.
 
-### what is still missing
+### curtailment compensation: modellable after all
 
-Curtailment compensation paid to IPPs as a separate settlement, where a contract provides for
-it. South Africa publishes no figure for this and the model has no channel for it. It would
-raise high-renewables scenarios further, so its absence is conservative in the same direction
-as the flat counterfactual.
+Recorded as unmodellable, wrongly. The framework is published and specific.
+
+REIPPPP BW1-6 PPAs treat curtailment as a system event with a right to claim DEEMED ENERGY
+for output the IPP was instructed not to deliver. The March 2024 Addendum deleted the
+allowable grid unavailability period that previously gated those claims; in exchange Eskom
+holds a **10% curtailment right**. Below it the IPP bears the loss, above it Eskom pays at the
+PPA price.
+
+```
+scenario                VRE curtailed   curtailment payment   retail
+today                              0%                     0    R3.62
+gas-firmed 60% RE                  7%                     0    R3.94
+Future mix, no gas                50%               R0.327    R5.45
+```
+
+Nothing below the threshold, R0.33/kWh where half the renewable output is thrown away. Priced
+at R0.55/kWh, the midpoint of BW5 at R0.50 and BW6 at R0.58.
+
+**And there is a real-world check.** In H1 2026 IPPs reported project revenues 9 to 10% below
+budget from curtailment and slow reimbursement, with an Eskom backlog approaching R1 billion.
+The mechanism is live and material at today's curtailment levels, not a contractual
+theoretical.
+
+**One approximation stated.** The threshold applies per project per year and the model curtails
+system-wide, so applying it to an aggregate share understates the payment - an average hides
+projects curtailed far above it. Conservative in the same direction as the rest of the panel.
+
+A separate Congestion Curtailment Framework runs a 4% limit as a 2025-2028 pilot. The panel
+uses the 10% PPA threshold because that is where the obligation on the contracted fleet sits.

@@ -394,6 +394,30 @@ console.log('\nTariff constants against their published sources\n');
         + `at a flat R/kWh quietly assumed the opposite.`);
 }
 
+// ── 17. CURTAILMENT COMPENSATION HAS A SOURCED THRESHOLD ───────────────────
+// Recorded as unmodellable until 10 Sep 2026, wrongly. REIPPPP BW1-6 treat curtailment as a
+// system event with a right to claim deemed energy, and the March 2024 Addendum removed the
+// grid-unavailability gate in exchange for Eskom holding a 10% curtailment right.
+//
+// The threshold is what makes this modellable rather than a guess. If it ever goes to zero the
+// panel starts charging for every curtailed kWh, which is not what the PPAs say.
+{
+  const cc = T.curtailment_compensation || {};
+  check('the curtailment threshold is sourced',
+        cc.threshold_pct > 0 && /Addendum/i.test(cc.threshold_basis || ''),
+        `threshold ${cc.threshold_pct}% must trace to the PPA Addendum. Below it the IPP bears `
+        + `the curtailment; above it Eskom pays deemed energy. A zero threshold would charge `
+        + `consumers for curtailment the contracts do not compensate.`);
+  check('the PPA price used for deemed energy matches the awards',
+        cc.ppa_price_r_per_kwh >= 0.45 && cc.ppa_price_r_per_kwh <= 0.65,
+        `R${cc.ppa_price_r_per_kwh}/kWh against BW5 at R0.50 and BW6 at R0.58. Outside that `
+        + `band it is no longer the price the contracted fleet is paid.`);
+  check('the real-world check on curtailment payments survives',
+        /backlog/i.test(cc.real_world_check || ''),
+        `H1 2026 has IPPs reporting revenue 9-10% below budget and an Eskom backlog approaching `
+        + `R1bn. That is the evidence the mechanism is live and material, not theoretical.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');

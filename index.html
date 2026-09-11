@@ -11885,6 +11885,23 @@ function retailComponents(markup, stranded, year, viaMuni){
   const battCapex = (P.newBattMW || 0) * 1000 * costAt('batt') * ((P.newBattHours || 4) / 4);
   const battAug = battCapex * 0.04 / salesMWh / 1000;
 
+  // CURTAILMENT COMPENSATION. Deemed energy paid to IPPs curtailed beyond the PPA threshold.
+  //
+  // Recorded as unmodellable until 10 Sep 2026, wrongly. REIPPPP BW1-6 treat curtailment as a
+  // system event with a right to claim deemed energy, and the March 2024 Addendum removed the
+  // grid-unavailability gate in exchange for Eskom holding a 10% curtailment right. So: below
+  // 10% the IPP bears it, above 10% Eskom pays at the PPA price.
+  //
+  // The threshold is per project per year and this applies it to a system-wide share, which
+  // UNDERSTATES the payment - an average hides projects curtailed far above it.
+  const CC = RETAIL_T.curtailment_compensation || {};
+  const curtMWh = (r.E.curtailed || r.E.vreCurtailed || 0);
+  const vrePotential = (r.E.wind || 0) + (r.E.pv || 0) + (r.E.csp || 0) + curtMWh;
+  const curtFrac = vrePotential > 0 ? curtMWh / vrePotential : 0;
+  const overThreshold = Math.max(0, curtFrac - (CC.threshold_pct || 10) / 100);
+  const curtComp = overThreshold * vrePotential * (CC.ppa_price_r_per_kwh || 0.55) * 1000
+                   / salesMWh / 1000;
+
   const retiredMW = Math.max(0, P.coalDecomMW || 0);
   const decom = retiredMW * 1000 * (A.decommissioning_r_per_kw || 1500) * 0.08 / salesMWh / 1000;
 
@@ -11974,7 +11991,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   const resAllocTotal = A.residential_allocation_factor || 1.0;
   const resAlloc = resAllocTotal;
 
-  return { distAdj, resAlloc, subsidyPerKwh, muni: M, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
+  return { distAdj, resAlloc, subsidyPerKwh, muni: M, curtComp, curtFrac, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
            decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
            viaMuni, salesTWh: salesMWh / 1e6 };
 }
@@ -11989,7 +12006,7 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
   const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
   const varTarget = c.fuel + c.carbon;
   const flat = c.opex + c.existingCap + c.newCap + c.newFom + c.decom + c.ipp + c.imports
-             + c.fixedItems + c.newGrid + (c.distAdj || 0);
+             + c.fixedItems + c.newGrid + (c.curtComp || 0) + (c.distAdj || 0);
 
   return hod.map(w => {
     const variable = hodMean > 0 ? varTarget * (w / hodMean) : varTarget;
@@ -12082,7 +12099,7 @@ function retailHourly(){
   const varTarget = comp.fuel + comp.carbon;
   const flatSum = comp.opex + comp.existingCap + comp.newCap + comp.newFom + comp.decom
                 + comp.ipp + comp.imports + comp.fixedItems + comp.newGrid
-                + (comp.distAdj || 0);
+                + (comp.curtComp || 0) + (comp.distAdj || 0);
   const week = [];
   for (let i = 0; i < 168; i++){
     const w = (lastRes.marginalP[wkStart + i] || 0) / 1000;
@@ -12166,7 +12183,8 @@ function renderRetail(){
   const items = [['fuel and carbon', c.fuel + c.carbon], ['generation opex', c.opex],
                  ['existing fleet capital', c.existingCap], ['new build capital', c.newCap],
                  ['storage O&M', c.newFom], ['coal closure', c.decom],
-                 ['IPP obligations', c.ipp], ['new grid', c.newGrid],
+                 ['IPP obligations', c.ipp], ['curtailment payments', c.curtComp],
+                 ['new grid', c.newGrid],
                  ['imports, levies, arrears', c.imports + c.fixedItems]];
   const preTot = items.reduce((a, b) => a + b[1], 0);
 
@@ -14523,7 +14541,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11s';
+const BUILD_STAMP = '2026-09-11t';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

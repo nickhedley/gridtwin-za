@@ -609,5 +609,16 @@
   "size_of_the_effect": "The Future mix builds 2.3x the capacity of the gas-firmed case but carries 2.0x the capital per kWh. The gap IS curtailment. If it sold everything it generated - 240 TWh rather than 181 - new capital would be R0.779/kWh instead of R1.033. That R0.254 is about 22% of the bill, one of the larger single effects in the panel and entirely invisible as a line.",
   "take_or_pay": "REIPPPP contracts are take-or-pay: Eskom pays for contracted energy whether or not it takes it, which index.html already notes at the dispatch benchmark block. So curtailing an IPP does not save the payment, it only removes the kWh from sales. CORRECTED 10 Sep 2026: the IPP obligation line was held at a flat R/kWh, which quietly assumed the opposite. It is a fixed number of RANDS and now scales with the sales base - the Future mix sells 181 TWh against today's 204, so the line rises about 13%, from R0.275 to R0.310.",
   "what_is_still_not_captured": "Curtailment compensation paid to IPPs as a separate settlement, where a contract provides for it. South Africa has no published figure for this and the model has no channel for it. It would raise high-renewables scenarios further, so its absence is conservative in the same direction as the flat counterfactual."
+ },
+ "curtailment_compensation": {
+  "description": "Deemed energy payments to curtailed IPPs. Previously recorded as unmodellable; it is not - the framework is published and specific.",
+  "rule": "Curtailment up to a threshold is uncompensated and the IPP bears it. Above the threshold Eskom pays deemed energy at the PPA price.",
+  "threshold_pct": 10,
+  "threshold_basis": "REIPPPP BW1-6 PPAs define curtailment as a system event, with a right to claim deemed energy for output the IPP was instructed not to deliver. The March 2024 Addendum DELETED the allowable grid unavailability period that previously gated those claims; in exchange Eskom holds a 10% curtailment right. Cliffe Dekker Hofmeyr corporate alert, 20 March 2024.",
+  "congestion_framework_note": "A separate Congestion Curtailment Framework runs a 4% curtailment limit as a 2025-2028 pilot, unlocking about 1.1 GW of hosting capacity in the Western Cape and 400 MW in the Eastern Cape. Compensation there is confined to the pilot period. SAPVIA, Nov 2025. The panel uses the 10% PPA threshold because it applies to the contracted fleet the obligation actually sits on.",
+  "ppa_price_r_per_kwh": 0.55,
+  "ppa_price_basis": "Midpoint of REIPPPP BW5 at R0.50 and BW6 at R0.58, the awards the contracted fleet is priced on.",
+  "real_world_check": "H1 2026: IPPs report project revenues 9 to 10% below budget, attributed to curtailed energy and to delays in reimbursement, with an Eskom backlog approaching R1 billion. Daily Maverick, 15 June 2026. So the mechanism is live and material at today's curtailment levels, not a theoretical provision.",
+  "caveat": "The threshold applies PER PROJECT PER YEAR and the model curtails system-wide, so applying it to an aggregate share is an approximation. It understates compensation, because a system-wide average hides projects curtailed far above it. Conservative in the same direction as the rest of the panel."
  }
 }
