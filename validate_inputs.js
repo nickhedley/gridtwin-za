@@ -331,6 +331,69 @@ console.log('\nTariff constants against their published sources\n');
         + `chart compounds. Use a data attribute nothing writes.`);
 }
 
+// ── 14. THE REAL-TERMS BASIS IS CONSISTENT AND DECLARED ────────────────────
+// Asked 10 Sep 2026 whether the panel should inflation-link its 2040 projections. It should
+// not: everything is already in constant 2026 rands. BLD_COST declines are real, BLD_DISC is
+// a real discount rate, and every comparison tariff is 2026/27 - so a 2035 scenario is real
+// against real.
+//
+// Mixing a nominal figure in would be silent and serious: it would make a scenario look
+// dearer for reasons that have nothing to do with the electricity system.
+{
+  const rt = T.real_terms_basis || {};
+  check('the real-terms basis is recorded',
+        /constant 2026 rands/i.test(rt.description || ''),
+        `the panel must state that it works in constant rands. A figure labelled "costed at `
+        + `2035" reads as a 2035 price otherwise - at 4.5% inflation the nominal equivalent `
+        + `is about 50% higher.`);
+  check('the flat counterfactual is recorded as conservative',
+        /conservative/i.test(JSON.stringify(rt.the_real_issue || {})),
+        `the panel compares a decarbonised 2035 against a FLAT real 2026 tariff, while Eskom's `
+        + `approved increases have run 4-8 points above inflation. Against a 2% real trend the `
+        + `gas-firmed build goes from +6% to -12%. The distortion runs AGAINST decarbonisation `
+        + `and must be stated, since choosing an escalation would embed a view.`);
+}
+
+// ── 15. THE APPROVED PATH IS SEPARATED FROM EXTRAPOLATION ──────────────────
+// NERSA has approved increases only to 2027/28. MYPD7 covers FY2029 onward and has not been
+// filed. The panel's scenario year of 2035 sits well past any approved determination, so the
+// distinction between "approved" and "extrapolated" has to survive in the data.
+{
+  const e = T.escalation || {};
+  const ap = e.approved_path || {};
+  check('the approved tariff path names its limit',
+        /HAS NOT BEEN FILED/i.test(ap.beyond_2027_28 || ''),
+        `the data must record that nothing is approved beyond 2027/28. Without that, an `
+        + `extrapolated figure reads as a regulatory decision.`);
+  check('the secondary-source warning survives',
+        /Schedule of Standard Prices/i.test(e.secondary_source_warning || ''),
+        `aggregator sites disagree with Eskom on the size of the April 2026 increase - one `
+        + `claims 13.67% against Eskom's official 8.76% - and one of them is where the `
+        + `Homepower rate came from. The rate holds because NERSA's progression confirms it, `
+        + `not because the site said so. That distinction must stay written down.`);
+}
+
+// ── 16. CURTAILMENT REACHES THE BILL THROUGH THE DENOMINATOR ───────────────
+// Curtailment is not a line item. Capital and fixed obligations are recovered over SALES, and
+// curtailed energy never becomes a sale - so the rands stay and the kWh shrink. On the Future
+// mix that is worth about R0.25/kWh, roughly 22% of the bill, and it is invisible.
+//
+// The check is that the mechanism survives: if sales ever stop shrinking when curtailment
+// rises, the denominator has been changed to something that does not respond and the effect
+// has been silently removed.
+{
+  const cr = T.curtailment_and_retail || {};
+  check('the curtailment mechanism is recorded',
+        /DENOMINATOR/i.test(cr.mechanism || ''),
+        `curtailment must be documented as a denominator effect. It has no line of its own, so `
+        + `nothing on the panel would show if it stopped working.`);
+  check('take-or-pay treatment of IPP obligations is recorded',
+        /take-or-pay/i.test(cr.take_or_pay || ''),
+        `REIPPPP contracts are take-or-pay, so curtailing an IPP does not save the payment. The `
+        + `obligation is a fixed number of rands and must scale with the sales base - holding it `
+        + `at a flat R/kWh quietly assumed the opposite.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');

@@ -11888,7 +11888,16 @@ function retailComponents(markup, stranded, year, viaMuni){
   const retiredMW = Math.max(0, P.coalDecomMW || 0);
   const decom = retiredMW * 1000 * (A.decommissioning_r_per_kw || 1500) * 0.08 / salesMWh / 1000;
 
-  const ipp = C.ipp_purchases;
+  // IPP PURCHASES ARE A FIXED RAND OBLIGATION, SPREAD OVER SALES.
+  //
+  // The obligation does not grow when a scenario builds more - that plant is newCapexR, and
+  // scaling it with capacity was an early error that put the Future mix at R10.33/kWh.
+  //
+  // But it is a fixed number of RANDS, not a fixed rate per kWh, and REIPPPP contracts are
+  // take-or-pay: Eskom pays for contracted energy whether or not it takes it. A scenario that
+  // sells fewer kWh therefore recovers the same obligation over a smaller base. The Future
+  // mix sells 181 TWh against today's 204, so the line rises about 13%.
+  const ipp = C.ipp_purchases * (A.sales_twh / Math.max(1, salesMWh / 1e6));
   const imports = C.international_purchases *
                   ((P.importsMW || 0) / Math.max(1, FIXED.importsMW || 1));
 
@@ -12169,9 +12178,12 @@ function renderRetail(){
     + '<span class="mono" style="font-size:10px;display:block;margin:5px 0 8px">'
     + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
     + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
-    + `<span style="color:var(--ink2)">Caveats: the new-grid line is a floor against the `
-    + `Transmission Development Plan. Homeflex is shown at its own seasonal rates. Level `
-    + `carries about 10%.</span>`;
+    + `<span style="color:var(--ink2)">Constant 2026 rands, so a scenario year and today sit on `
+    + `the same basis. The comparison holds the counterfactual flat in real terms, which matches `
+    + `Eskom's stated aim of inflation-linked increases; the CSIR measures 4.6% a year real over `
+    + `2014&ndash;25, against which a decarbonised build is cheaper, not dearer. The new-grid `
+    + `line is a floor against the Transmission Development Plan. Homeflex is shown at its own `
+    + `seasonal rates. Level carries about 10%.</span>`;
 
   const cv = document.getElementById('retChart');
   if (cv && cv.getContext) drawRetail(cv, d);
@@ -14511,7 +14523,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11o';
+const BUILD_STAMP = '2026-09-11s';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

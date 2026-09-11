@@ -528,7 +528,21 @@
   "municipal_fy2026_27_pct": 9.01,
   "cumulative_2024_25_to_2026_27": 1.2257,
   "source": "NERSA MYPD6 decision and the R54bn settlement. Municipal bulk purchases rise 9.01% from 1 July 2026, direct customers 8.76% from 1 April 2026.",
-  "why_this_exists": "Two inputs were held in 2024/25 rands and used as 2026/27 figures - Homeflex's six rates and both Homelight rates - each 22.6% low. NERSA's own document warns of exactly this: its proposed tariffs are in 2024/25 rand value and are adjusted through the ERTSA process. Any rate taken from the Reasons for Decision must be grown before use."
+  "why_this_exists": "Two inputs were held in 2024/25 rands and used as 2026/27 figures - Homeflex's six rates and both Homelight rates - each 22.6% low. NERSA's own document warns of exactly this: its proposed tariffs are in 2024/25 rand value and are adjusted through the ERTSA process. Any rate taken from the Reasons for Decision must be grown before use.",
+  "fy2027_28_source_conflict": "Sources differ: we hold 8.83% and PowerOptimal reports 9.19% for 2027/28. A 0.36 point gap, immaterial here because the escalation only converts 2024/25 published rates to 2026/27 and the RCA schedule ends before any scenario year. Recorded rather than silently resolved.",
+  "approved_path": {
+   "description": "What NERSA has actually approved, as distinct from what anyone projects.",
+   "mypd6_covers": "FY2026, FY2027, FY2028 - the three years from 2025/26.",
+   "approved": {
+    "2025_26": 12.7,
+    "2026_27": 8.76,
+    "2027_28": 8.83
+   },
+   "primary_source": "Eskom implementation notice, 16 Mar 2026: NERSA approved 8.76% for direct customers from 1 April 2026 and 9.01% for municipal bulk purchasers from 1 July 2026, following NERSA's decision of 5 March 2026.",
+   "beyond_2027_28": "MYPD7 covers FY2029 onward and HAS NOT BEEN FILED. Eskom applied for MYPD6 in September 2024 for the three years from 2025/26, so an MYPD7 application would be expected around late 2027. Any figure for 2029 or beyond is extrapolation, not a projection anyone has published.",
+   "so_the_honest_position": "A firm approved path two more years out, then nothing. The panel's scenario year of 2035 sits well past the end of any approved or applied-for determination, which is why the counterfactual is left flat and the CSIR's measured 4.6% real trend is offered as the alternative rather than embedded."
+  },
+  "secondary_source_warning": "SOURCES DISAGREE WITH EACH OTHER AND WITH ESKOM. Collected 10 Sep 2026: 12.74% for 2024/25 (PMG committee briefing), 11.75% for 2025/26 and separately 13.67% in April 2026 (EnergyBee, the same site, in two articles), against Eskom's official 8.76% from 1 April 2026. EnergyBee is where the Homepower rate of R3.2206 came from. That rate was independently verified against NERSA's own published progression and sits 0.9% from it, so it stands - but it stands because of the NERSA check, not because of its source. Use Eskom's Schedule of Standard Prices and NERSA decisions; treat aggregator sites as leads, not evidence."
  },
  "loss_and_levies": {
   "retail_loss_pct": 8.0,
@@ -537,5 +551,63 @@
   "levy_verified": "Reconciles two independent ways. Eskom build-up R6.5bn applied x 0.865 approval over 209.55 TWh gives R0.0268/kWh. And the statutory rate of 3.5 c/kWh on non-renewable electricity, on roughly 161 TWh of coal generation, gives R5.6bn over the same sales, R0.0267/kWh. Held 0.027.",
   "carbon_note": "Carbon comes from the dispatch run, not from the components table. components_r_per_kwh.carbon_tax is deliberately UNUSED - using both would double-count. Checked 10 Sep 2026.",
   "orphan_removed": "A constant RETAIL_LEVIES = 0.06 was defined and never used, left over from a refactor. Rule 6: a constant that looks live and is not is how drift starts."
+ },
+ "real_terms_basis": {
+  "description": "Everything in this panel is in CONSTANT 2026 RANDS. Stated explicitly because a figure labelled 'costed at 2035' invites being read as a 2035 price.",
+  "why_real": "BLD_COST decline rates are real cost reductions and say so in the code. BLD_DISC of 8% is a real discount rate. NERSA's allowed revenue is 2026/27, which is the base year, and every comparison tariff - Homepower, Homeflex, Homelight, City Power - is 2026/27 too. So a 2035 scenario figure is real 2026 rands compared against a 2026 tariff: real against real. That is the standard basis and what AEMO's ISP, NREL's ATB and CSIRO's GenCost all use. Inflation-linking would change nothing, because both sides would move together.",
+  "nominal_equivalent_note": "At roughly 4.5% inflation a real R4.03/kWh in 2035 is about R5.99 nominal. The panel does not report nominal figures and should not start: a nominal series would make every scenario look dearer than today for reasons that have nothing to do with the electricity system.",
+  "the_real_issue": {
+   "description": "The counterfactual, not the inflation basis.",
+   "problem": "The panel compares a decarbonised 2035 against a FLAT real 2026 tariff. Eskom is not on a flat real path: NERSA approved 12.7%, 8.76% and 8.83% against inflation of roughly 4.5%, so the real tariff has been rising 4-8% a year.",
+   "effect_on_the_conclusion": {
+    "flat_real_counterfactual": "gas-firmed 2035 costs +6% against 2026",
+    "2pct_real_trend": "-12%",
+    "4pct_real_trend": "-26%"
+   },
+   "conclusion": "The distortion runs AGAINST decarbonisation. Against a counterfactual nobody believes - a real tariff frozen for nine years - the gas-firmed build looks slightly dearer. Against the trend Eskom is actually on it is materially cheaper. NOT FIXED: choosing a counterfactual real escalation is a judgement about future regulatory decisions, not a modelling parameter, and picking one would embed a view in the panel. Recorded so the flat comparison is read as the conservative case it is.",
+   "published_evidence": {
+    "description": "What is actually published on the future Eskom tariff path, gathered 10 Sep 2026.",
+    "finding": "NOBODY PUBLISHES A 2035 ESKOM TARIFF PROJECTION. What exists is a measured historical trend, approved increases three years out, and a stated intention. They bracket the question rather than settle it.",
+    "csir_historical": {
+     "real_pct_per_year": 4.6,
+     "basis": "CSIR utility-scale power generation statistics, 2025: the national average tariff rose 10% a year from 2014 to 2025 against inflation averaging 5.2%. Eleven years, so a trend rather than a run of bad years. CSIR is already a source in this project, feeding validate_external.",
+     "note": "CSIR also observes that Eskom's tariffs are now ABOVE the utility-scale solar PV levelised cost."
+    },
+    "nersa_approved_near_term": {
+     "real_pct_per_year": 4.1,
+     "basis": "12.7%, 8.76% and 8.83% approved against CPI of roughly 4.5%. Only three years, and it ends in 2027/28."
+    },
+    "eskom_stated_intention": {
+     "real_pct_per_year": 0.0,
+     "basis": "Eskom chairman Mteto Nyati, Sep 2025: future tariff hikes should be in line with inflation. A statement of intent from the board, not a regulatory commitment or a forecast.",
+     "why_it_matters": "It is the only credible argument for the flat counterfactual the panel currently uses, and it comes from Eskom itself rather than from an outside analyst."
+    },
+    "what_the_bracket_does_to_the_conclusion": {
+     "0pct_real_Nyati": "gas-firmed 2035 is 6% dearer than 2026",
+     "4.1pct_real_NERSA": "26% cheaper",
+     "4.6pct_real_CSIR": "30% cheaper"
+    },
+    "conclusion": "The flat counterfactual is not a neutral choice - it is the most favourable case for the status quo, and it happens to match Eskom's own stated aspiration. Under any continuation of the measured trend, a gas-firmed decarbonised build is materially CHEAPER than doing nothing. Still not embedded as a parameter: an eleven-year trend is evidence, not a forecast, and picking one would put a view about future NERSA decisions into the model."
+   }
+  }
+ },
+ "curtailment_and_retail": {
+  "description": "How curtailment reaches a retail bill in this panel. Asked 10 Sep 2026.",
+  "mechanism": "Curtailment is NOT a line item. It works through the DENOMINATOR: capital and fixed obligations are recovered over SALES, and curtailed energy never becomes a sale. The rands stay the same and the kWh shrink.",
+  "measured": {
+   "gas_firmed_60pct_re": {
+    "curtailed_twh": 9,
+    "share_pct": 3.6,
+    "new_capital_r_per_kwh": 0.511
+   },
+   "future_mix_no_gas": {
+    "curtailed_twh": 134,
+    "share_pct": 35.8,
+    "new_capital_r_per_kwh": 1.033
+   }
+  },
+  "size_of_the_effect": "The Future mix builds 2.3x the capacity of the gas-firmed case but carries 2.0x the capital per kWh. The gap IS curtailment. If it sold everything it generated - 240 TWh rather than 181 - new capital would be R0.779/kWh instead of R1.033. That R0.254 is about 22% of the bill, one of the larger single effects in the panel and entirely invisible as a line.",
+  "take_or_pay": "REIPPPP contracts are take-or-pay: Eskom pays for contracted energy whether or not it takes it, which index.html already notes at the dispatch benchmark block. So curtailing an IPP does not save the payment, it only removes the kWh from sales. CORRECTED 10 Sep 2026: the IPP obligation line was held at a flat R/kWh, which quietly assumed the opposite. It is a fixed number of RANDS and now scales with the sales base - the Future mix sells 181 TWh against today's 204, so the line rises about 13%, from R0.275 to R0.310.",
+  "what_is_still_not_captured": "Curtailment compensation paid to IPPs as a separate settlement, where a contract provides for it. South Africa has no published figure for this and the model has no channel for it. It would raise high-renewables scenarios further, so its absence is conservative in the same direction as the flat counterfactual."
  }
 }
