@@ -590,6 +590,50 @@ setTimeout(()=>{
     }
   }
 
+  // ── TURN-UP IS THE LARGER HALF OF CONSTRAINT COST ────────────────────────
+  // Added 10 Sep 2026 after NESO's reporting of Britain's record constraint day: 8 Sep 2026
+  // cost GBP 28.9m of which 88% was turn-up, and that day ranked only SEVENTH by curtailed
+  // volume. Volume and cost are related, not the same thing.
+  //
+  // Measured here: turn-up is 42% of constraint cost today, 65% under the IRP 2030 build.
+  // It grows because the replacement gets dearer, not because more is curtailed - the
+  // turn-up rate goes from R395/MWh to R1,010/MWh as coal gives way to gas and storage on
+  // the margin.
+  //
+  // The turn-up cost is already inside fuelCost. This is a reporting split, not a charge.
+  {
+    const cs = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      const pick = nm => {
+        for (const k of Object.keys(PRESETS['Grid delay'])) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k];
+        Object.assign(state, PRESETS[nm]); run();
+        const r = lastRes, cc = RETAIL_T.curtailment_compensation || {};
+        const cong = r.congestTot || 0;
+        return { cong, comp: cong * (cc.ppa_price_r_per_kwh || 0.55) * 1000,
+                 tu: r.congestTurnUpR || 0 };
+      };
+      const today = pick('Today 2026');
+      const irp = pick("Latest IRP's 2030 targets");
+      for (const k of Object.keys(state)) delete state[k];
+      Object.assign(state, saved); run();
+      return { today, irp };
+    `);
+    if (cs && !cs.error && cs.today && cs.today.cong > 0){
+      const shareNow = 100 * cs.today.tu / (cs.today.tu + cs.today.comp);
+      const shareIrp = 100 * cs.irp.tu / (cs.irp.tu + cs.irp.comp);
+      const rateNow = cs.today.tu / cs.today.cong, rateIrp = cs.irp.tu / cs.irp.cong;
+      check('turn-up is a growing share of constraint cost',
+            shareIrp > shareNow && shareIrp > 50,
+            `turn-up is ${shareNow.toFixed(0)}% of constraint cost today and `
+            + `${shareIrp.toFixed(0)}% under the IRP build, as the replacement rate rises from `
+            + `R${rateNow.toFixed(0)} to R${rateIrp.toFixed(0)}/MWh. Curtailed VOLUME and `
+            + `constraint COST are not the same thing - NESO's most expensive day ranked `
+            + `seventh by volume.`);
+      console.log(`  constraint    turn-up ${shareNow.toFixed(0)}% -> ${shareIrp.toFixed(0)}% of cost `
+        + `\u00b7 R${rateNow.toFixed(0)} -> R${rateIrp.toFixed(0)}/MWh`);
+    }
+  }
+
   console.log(`\n${npass}/${npass+nfail} published findings still hold`);
   if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
   process.exit(nfail?1:0);

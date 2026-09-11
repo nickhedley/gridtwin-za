@@ -6306,7 +6306,7 @@ function simulate(u, prof, outPath){
   // Congestion curtailment, kept apart from curtailMW so the price engine
   // never mistakes it for national oversupply. See the note at the hour loop.
   const congestMW=new Float64Array(HOURS);
-  let congestTot=0;  // wasted renewable potential per hour - REAL load on the system.
+  let congestTot=0, congestTurnUpR = 0;  // wasted renewable potential per hour - REAL load on the system.
   // Previously untracked, so charging was invisible: the demand line ignored it and the stack
   // deliberately excluded the generation serving it. A battery-heavy scenario therefore couldn't
   // show the thing that actually matters about it - that storage creates midday load, which is
@@ -6452,6 +6452,7 @@ function simulate(u, prof, outPath){
       const _lost = (windGen + pvGen) * _cgp;
       windGen *= (1 - _cgp); pvGen *= (1 - _cgp);
       congestMW[h] = _lost; congestTot += _lost;
+
     };
     // dispatch ORDER IS deliberate, NOT A shortcut (settled 14 Aug 2026).
     // Nuclear, hydro and imports are FIXED infeeds, not dispatched: Cahora Bassa
@@ -7560,7 +7561,25 @@ function simulate(u, prof, outPath){
     if(chg > peakChargeMW) peakChargeMW = chg;
   }
   E.vreCurtailed=vreCurtMW.reduce((a,b)=>a+b,0);
-  return {E,tierDis,tierChg,tierDrift,deratedMW,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+    // ── CONSTRAINT COST HAS TWO HALVES, AND THEY BEHAVE DIFFERENTLY ────────────
+  //
+  // NESO reports them separately and the distinction matters: on 8 Sep 2026, Britain's most
+  // expensive constraint day, TURN-UP was 88% of a record GBP 28.9m - and that day ranked only
+  // seventh by curtailed volume. Volume and cost are related, not the same thing.
+  //
+  // The payment to CURTAIL is the PPA obligation, tracked in the retail panel. The payment to
+  // TURN UP is what the replacement energy costs: the megawatt-hours displaced times the
+  // marginal price in the hour they were displaced.
+  //
+  // Computed HERE, after the dispatch, not inside it - marginalP does not exist yet at the
+  // point congestion is applied, and a first attempt there silently returned zero.
+  //
+  // This is a REPORTING split, not an extra charge. The turn-up cost is already inside
+  // fuelCost, because the dispatch burns more coal to fill the gap. Adding it to a bill would
+  // double-count.
+  for (let h = 0; h < HOURS; h++) congestTurnUpR += (congestMW[h] || 0) * (marginalP[h] || 0);
+
+  return {E,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -14768,7 +14787,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-12h';
+const BUILD_STAMP = '2026-09-12i';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
