@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Sixty sections follow. This index exists because the file passed 1,400 lines and the
+Sixty-two sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -4437,3 +4437,45 @@ R3bn a month, against the R7.8bn a year this panel carries. Different things: ou
 NERSA ALLOWS Eskom to recover, theirs is what municipalities fail to pay. The roughly R28bn a
 year gap is absorbed by Eskom, not by consumers - and the panel excludes it anyway as a
 transfer.
+
+---
+
+## An electrolyser's willingness to pay, derived
+
+The curtailment toggle previously credited spilled kWh at whatever a household pays, by adding
+them to the sales denominator. That valued them near R3.62 and made the Future mix look 37%
+cheaper. Rebuilt 10 Sep 2026 with a derived offtake price.
+
+**The derivation cross-checks itself.** Electricity is 73% of green hydrogen LCOH - multiple
+studies concur - and every $10/MWh moves hydrogen cost by about $0.45/kg, which implies
+45 kWh/kg. That matches the 40-50 kWh/kg range in the electrolyser literature independently.
+
+```
+LCOH target                          $/kWh    R/kWh
+$3/kg, 2050 industry target         0.0487     0.79
+$4/kg, 2030 industry target         0.0649     1.05
+$5/kg, Dutch GROWH maximum WTP      0.0811     1.31
+```
+
+**R1.05/kWh** at the 2030 target - far above the spill value of zero, far below what a
+household pays.
+
+### modelled as revenue, not as sales
+
+A hydrogen buyer is a different customer on a different tariff, so the curtailed kWh do NOT
+join the household sales base. The offtake is revenue against the system, reducing what
+households must cover.
+
+```
+Future mix 2035, regulated basis     R5.44/kWh
+  with hydrogen offtake              R3.20/kWh     sales unchanged at 181 TWh
+```
+
+### and the scale is the caveat
+
+134 TWh of curtailment is 15.3 GW of average draw, arriving in about 56% of hours - roughly
+**31 GW of electrolysers**. Hive Hydrogen's Coega project, the most advanced in Africa and
+still pre-FID with operation targeted for 2029-30, is **1.2 GW**.
+
+So the full-monetisation case implies more than twenty Coegas. The panel reports the implied
+capacity alongside the result rather than leaving the reader to work it out.

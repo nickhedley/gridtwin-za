@@ -11914,10 +11914,11 @@ function retailComponents(markup, stranded, year, viaMuni){
   // exactly why it is being spilled.
   const csEl = document.getElementById('retCurtSold');
   const curtSold = csEl ? csEl.checked : false;
+  const H2 = RETAIL_T.curtailment_monetised || {};
   const genMWh = GEN_KEYS.reduce((a, k) => a + (r.E[k] || 0), 0);
   const salesMWh = Math.max(1, genMWh - (r.E.rooftop || 0) - (r.E.ps || 0) - (r.E.batt || 0)
                               - (r.E.exported || 0)
-                              + (curtSold ? (r.E.curtailed || 0) : 0));
+                              );
 
   const fuelPerKwh   = (r.fuelCost   || 0) / salesMWh / 1000;
   const carbonPerKwh = (r.carbonCost || 0) / salesMWh / 1000;
@@ -11984,6 +11985,22 @@ function retailComponents(markup, stranded, year, viaMuni){
   const curtComp = curtSold ? 0
                  : overThreshold * vrePotential * (CC.ppa_price_r_per_kwh || 0.55) * 1000
                    / salesMWh / 1000;
+
+  // HYDROGEN OFFTAKE as a REVENUE OFFSET, not as extra household sales.
+  //
+  // An electrolyser is a different customer on a different tariff. Crediting spilled kWh at the
+  // average cost a household pays - which the first version did, by adding them to the
+  // denominator - valued them at about R3.62 against a willingness to pay near R1.05.
+  //
+  // That R1.05 is derived, not assumed: electricity is 73% of green hydrogen LCOH and every
+  // $10/MWh moves hydrogen by $0.45/kg, implying 45 kWh/kg. At the industry's $4/kg 2030 target
+  // the electricity budget is 0.73 x 4 / 45 = $0.065/kWh.
+  const h2Revenue = curtSold
+    ? curtMWh * 1000 * (H2.electrolyser_wtp_r_per_kwh || 1.05) / salesMWh / 1000
+    : 0;
+  const h2ImpliedGW = curtSold && curtFrac > 0
+    ? (curtMWh / 8760) / Math.max(0.05, 1 - (1 - curtFrac)) / 1000
+    : 0;
 
   const retiredMW = Math.max(0, P.coalDecomMW || 0);
   const decom = retiredMW * 1000 * (A.decommissioning_r_per_kw || 1500) * 0.08 / salesMWh / 1000;
@@ -12074,7 +12091,8 @@ function retailComponents(markup, stranded, year, viaMuni){
   const resAllocTotal = A.residential_allocation_factor || 1.0;
   const resAlloc = resAllocTotal;
 
-  return { distAdj, resAlloc, subsidyPerKwh, muni: M, curtComp, curtFrac, curtSold, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
+  return { distAdj, resAlloc, subsidyPerKwh, muni: M, curtComp, curtFrac, curtSold,
+           h2Revenue, h2ImpliedGW, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
            decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
            viaMuni, salesTWh: salesMWh / 1e6 };
 }
@@ -12095,7 +12113,8 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
   const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
   let varTarget = c.fuel + c.carbon;
   let flat = c.opex + c.existingCap + c.newCap + c.newFom + c.decom + c.ipp + c.imports
-             + c.fixedItems + c.newGrid + (c.curtComp || 0) + (c.distAdj || 0);
+             + c.fixedItems + c.newGrid + (c.curtComp || 0) + (c.distAdj || 0)
+             - (c.h2Revenue || 0);
 
   // ── MARKET BASIS ──────────────────────────────────────────────────────────
   // Under a market-indexed tariff the household pays the hourly wholesale price, which in an
@@ -12212,7 +12231,7 @@ function retailHourly(){
   const varTarget = comp.fuel + comp.carbon;
   const flatSum = comp.opex + comp.existingCap + comp.newCap + comp.newFom + comp.decom
                 + comp.ipp + comp.imports + comp.fixedItems + comp.newGrid
-                + (comp.curtComp || 0) + (comp.distAdj || 0);
+                + (comp.curtComp || 0) + (comp.distAdj || 0) - (comp.h2Revenue || 0);
   const week = [];
   for (let i = 0; i < 168; i++){
     const w = (lastRes.marginalP[wkStart + i] || 0) / 1000;
@@ -12310,9 +12329,12 @@ function renderRetail(){
     + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
     + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
     + (c.curtSold
-        ? `<strong>Curtailed energy counted as sold.</strong> An upper bound: the spilled kWh `
-        + `are credited at the same average cost a household pays, and an electrolyser buying `
-        + `surplus would pay a fraction of that.<br><br>`
+        ? `<strong>Curtailed energy sold to electrolysers</strong> at R1.05/kWh, derived from a `
+        + `$4/kg hydrogen target: electricity is 73% of LCOH at about 45&nbsp;kWh/kg. Counted as `
+        + `revenue against the system, not as household sales \u2013 a hydrogen buyer is a `
+        + `different customer on a different tariff. <strong>Implies about `
+        + `${c.h2ImpliedGW.toFixed(0)}&nbsp;GW of electrolysers</strong>; Hive's Coega project, `
+        + `the most advanced in Africa and still pre-FID, is 1.2&nbsp;GW.<br><br>`
         : '')
     + `<span style="color:var(--ink2)">Constant 2026 rands, so a scenario year and today sit on `
     + `the same basis. The comparison holds the counterfactual flat in real terms, which matches `
@@ -14659,7 +14681,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11w';
+const BUILD_STAMP = '2026-09-11x';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

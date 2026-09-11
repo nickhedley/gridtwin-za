@@ -694,14 +694,12 @@
   }
  },
  "curtailment_monetised": {
-  "description": "A toggle treating curtailed renewable output as sold - to electrolysers, for instance - rather than spilled.",
-  "effects": "The sales base grows and the deemed-energy payments disappear, since nothing is curtailed.",
-  "measured_future_mix": {
-   "sales_twh_before": 181,
-   "sales_twh_after": 315,
-   "regulated_r_per_kwh_before": 5.44,
-   "regulated_r_per_kwh_after": 3.42
-  },
-  "it_is_an_upper_bound": "The curtailed kWh are credited at the same average cost a household pays. A hydrogen offtaker buying surplus would pay a small fraction of that - the energy is worth near zero at the moment it is spilled, which is exactly why it is being spilled. So the 37% fall in the Future mix bill is the most favourable possible reading, not an expectation. The panel says so whenever the toggle is on."
+  "description": "Curtailed renewable output sold to electrolysers rather than spilled. Rebuilt 10 Sep 2026 with a derived offtake price instead of an implicit assumption that hydrogen pays what a household pays.",
+  "electrolyser_wtp_r_per_kwh": 1.05,
+  "wtp_derivation": "Electricity is 73% of green hydrogen LCOH - multiple studies concur - and every $10/MWh shifts hydrogen cost by about $0.45/kg, which implies 45 kWh/kg. That matches the 40-50 kWh/kg range in the electrolyser literature independently, so the two cross-check. At a $4/kg LCOH target, the 2030 industry goal, the electricity budget is 0.73 x 4 / 45 = $0.065/kWh, or R1.05 at R16.21/USD. Bracket: R0.79/kWh at a $3/kg 2050 target, R1.31 at the $5/kg maximum willingness to pay recorded for the Dutch GROWH project.",
+  "how_it_is_modelled": "As a REVENUE OFFSET, not as extra household sales. Curtailed MWh times the offtake price is revenue the system earns, which reduces what households must cover. The curtailed kWh do NOT join the household sales base - a hydrogen buyer is a different customer on a different tariff. The previous version added them to the denominator, which credited them at the same average cost a household pays, roughly R3.62. That was three times any electrolyser's willingness to pay and made the Future mix look 37% cheaper.",
+  "deemed_energy_also_disappears": "Nothing is curtailed, so the take-or-pay compensation goes to zero.",
+  "scale_caveat": "134 TWh of curtailment is 15.3 GW of average draw, and because it arrives in about 56% of hours, roughly 27 GW of electrolyser capacity. Hive Hydrogen's Coega project - the most advanced in Africa, and still pre-FID with commercial operation targeted for 2029-30 - is 1.2 GW. So the full-monetisation case implies more than twenty Coegas. The panel reports the implied capacity alongside the result so the reader can judge it.",
+  "sources": "IEA Hydrogen Review 2026; Global Hydrogen Hub LCOH targets 2026; Dutch GROWH electrolyser contracting study, arXiv 2502.09748; Hive Hydrogen Coega project, Mining Weekly May 2026."
  }
 }
