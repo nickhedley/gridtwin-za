@@ -1105,6 +1105,27 @@ const num = t => {
         }
       }
 
+      // ── CONTROLS THAT DO NOTHING AT DEFAULTS MUST SHOW IT ─────────────────
+      // Three controls on this panel are inert at panel defaults, each correctly: the price cap
+      // never binds and was removed; the stranded-coal control needs coal to have retired; the
+      // electrolyser control needs curtailment to exist, and today's system curtails nothing.
+      //
+      // Each was reported as broken before it was reported as subtle. A control that silently
+      // does nothing is indistinguishable from one that is wired wrong, so the panel dims them.
+      {
+        const fsz = require('fs'), pz = require('path');
+        let src = '';
+        try { src = fsz.readFileSync(pz.join(ROOT, 'index.html'), 'utf8'); } catch (e) {}
+        const dimsH2 = /retH2GW[\s\S]{0,900}?style\.opacity/.test(src);
+        const dimsCoal = /retStrandedLbl[\s\S]{0,400}?style\.opacity/.test(src);
+        check('inert controls dim rather than silently doing nothing',
+              dimsH2 && dimsCoal,
+              `electrolysers dim: ${dimsH2}, stranded coal dims: ${dimsCoal}. Both controls do `
+              + `nothing until a scenario creates curtailment or retires coal - correct, and `
+              + `indistinguishable from broken. Each was reported as broken before it was `
+              + `understood as subtle.`);
+      }
+
       // ── THE WEEK MUST FOLLOW THE BASIS AND THE ELECTROLYSER SETTING ───────
       // Added 10 Sep 2026. The week series read marginalP and the regulated flat block
       // regardless of basis, so switching to market-indexed changed the daily curve and left
