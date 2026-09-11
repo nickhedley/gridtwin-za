@@ -214,7 +214,14 @@
    "caveat": "2024/25 study. NERSA's Reasons for Decision notes the CTS functionalises revenue as 86/4/10 across Generation, NTCSA and Distribution against its own MYPD6 apportionment of 62/28/10, calls that a material inconsistency and imposes ring-fencing conditions. The customer-category allocation is still the best published source for this factor; the business-level split is not."
   },
   "cts_confirms_administered_ratio": "Table 18 of the CTS records that the 1:6 time-of-use ratio is 'proposed by the System Operator', with Annexure 9 giving the motivation. It is an administered signal, not a measured cost ratio - which is why Homeflex prices the winter peak about three times more steeply than modelled cost.",
-  "cts_currency_note": "The CTS is 2024/25 and there is no newer one - the Electricity Pricing Policy requires a cost-of-supply study every five years, and Eskom last revised structures in 2022 on the previous study. That is acceptable here BECAUSE THE FACTOR IS A RATIO, not a rate. Numerator and denominator escalate together under a uniform tariff increase, so 1.622 is far more stable than the 320.33 c/kWh it comes from. What WOULD move it: a change in allocation methodology, or a shift in residential load profile relative to other categories. The fixed-charge phase-in reallocates WITHIN residential and does not move it. The Homepower error was a RATE used stale, which is a different and more dangerous thing."
+  "cts_currency_note": "The CTS is 2024/25 and there is no newer one - the Electricity Pricing Policy requires a cost-of-supply study every five years, and Eskom last revised structures in 2022 on the previous study. That is acceptable here BECAUSE THE FACTOR IS A RATIO, not a rate. Numerator and denominator escalate together under a uniform tariff increase, so 1.622 is far more stable than the 320.33 c/kWh it comes from. What WOULD move it: a change in allocation methodology, or a shift in residential load profile relative to other categories. The fixed-charge phase-in reallocates WITHIN residential and does not move it. The Homepower error was a RATE used stale, which is a different and more dangerous thing.",
+  "carbon_statutory_path": {
+   "r_per_tonne": {
+    "2026": 308,
+    "2030": 462
+   },
+   "note": "Phase 2 of the carbon tax began 1 Jan 2026, raising the headline rate from R236 to R308 a tonne, with R462 scheduled by 2030. The model pins CARBON at R550/t - STATE.md open item 2, a known disconnection. At R308 the modelled carbon cost falls 44%, worth about R0.013/kWh. Small, but the path is now sourced and the item can be closed rather than left open."
+  }
  },
  "cross_subsidies": {
   "description": "Eskom's tariffs contain explicit cross-subsidies. These are TRANSFERS between customer categories, not costs of supply, and a cost-reflective shadow tariff should show them separately rather than fold them into a cost.",
@@ -620,5 +627,35 @@
   "ppa_price_basis": "Midpoint of REIPPPP BW5 at R0.50 and BW6 at R0.58, the awards the contracted fleet is priced on.",
   "real_world_check": "H1 2026: IPPs report project revenues 9 to 10% below budget, attributed to curtailed energy and to delays in reimbursement, with an Eskom backlog approaching R1 billion. Daily Maverick, 15 June 2026. So the mechanism is live and material at today's curtailment levels, not a theoretical provision.",
   "caveat": "The threshold applies PER PROJECT PER YEAR and the model curtails system-wide, so applying it to an aggregate share is an approximation. It understates compensation, because a system-wide average hides projects curtailed far above it. Conservative in the same direction as the rest of the panel."
- }
+ },
+ "irp2025_anchor": {
+  "description": "The Cabinet-approved IRP 2025 as an external check on the panel's SCENARIOS, not just its costing.",
+  "irp_new_capacity_gw_by_2039": 105,
+  "irp_new_wind_and_solar_gw": 59,
+  "source": "Integrated Resource Plan 2025, Cabinet-approved, via FOTW South African Energy Market Research & Investment Outlook, August 2026.",
+  "comparison": {
+   "gas_firmed_60pct_re": {
+    "new_wind_pv_gw": 45,
+    "vs_irp_pct": -24,
+    "reading": "45 GW by 2035 against the IRP's 59 GW by 2039 - roughly the same trajectory."
+   },
+   "future_mix_no_gas": {
+    "new_wind_pv_gw": 97,
+    "vs_irp_pct": 64,
+    "reading": "64% above the IRP and four years earlier. Not a plan anyone has proposed."
+   }
+  },
+  "why_this_matters": "The no-gas case has been called a stress test on the strength of its 134 TWh of curtailment. There is now a published, Cabinet-approved plan to say so against: it builds far more than government intends, on a shorter timeline. The gas-firmed case is the IRP-consistent one, which is the scenario whose result should be quoted."
+ },
+ "sales_decline_risk": {
+  "description": "Eskom's grid sales are falling, and the panel holds the sales base fixed except for rooftop.",
+  "observed": "Eskom grid sales fell 5.6% in Q1 2026 against the prior year, as customers self-generate. FOTW, Aug 2026, citing Eskom.",
+  "effect_if_sustained": {
+   "2pct_per_year_to_2035": "-17% sales",
+   "5.6pct_per_year_to_2035": "-40% sales"
+  },
+  "why_it_matters": "Every fixed cost in this panel is recovered over sales. A shrinking base raises the per-kWh figure for the SAME rands - the death spiral that is itself the mechanism behind the above-inflation increases. The panel captures rooftop-driven decline WITHIN a scenario but not a secular fall.",
+  "not_modelled_deliberately": "Like the counterfactual escalation, choosing a demand trajectory is a judgement rather than a parameter. And it cuts both ways: a falling base raises every scenario, including the status quo. Holding it flat alongside a flat real tariff is doubly conservative and both are now recorded."
+ },
+ "arrear_debt_reconciliation": "The report gives municipal debt to Eskom above R110bn, growing about R3bn a month - some R36bn a year - against the R7.8bn a year this panel carries. They measure different things: ours is what NERSA ALLOWS Eskom to recover through tariffs, theirs is what municipalities fail to pay. The roughly R28bn a year gap is absorbed by Eskom, not by consumers. So the tariff figure is the right one here, and the panel excludes it anyway as a transfer rather than a cost of supply."
 }

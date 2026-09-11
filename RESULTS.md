@@ -26,7 +26,7 @@
 
 ## The findings, ranked by how well they would survive a hostile reviewer
 
-Fifty-eight sections follow. This index exists because the file passed 1,400 lines and the
+Sixty sections follow. This index exists because the file passed 1,400 lines and the
 strongest results were no longer findable. Ranked by evidential strength, not by how
 interesting they are - the two are not the same, and the difference matters when
 choosing what to say in public.
@@ -4389,3 +4389,51 @@ projects curtailed far above it. Conservative in the same direction as the rest 
 
 A separate Congestion Curtailment Framework runs a 4% limit as a 2025-2028 pilot. The panel
 uses the 10% PPA threshold because that is where the obligation on the contracted fleet sits.
+
+---
+
+## The no-gas scenario now has an external check
+
+From a market research note, Aug 2026, citing the Cabinet-approved IRP 2025.
+
+```
+IRP 2025: 105 GW new capacity by 2039, of which 59 GW new wind and solar
+
+scenario                  new wind+PV   vs IRP
+gas-firmed 60% RE               45 GW     -24%
+Future mix, no gas              97 GW     +64%
+```
+
+**The gas-firmed case builds 45 GW by 2035 against the IRP's 59 GW by 2039 - roughly the same
+trajectory.** The no-gas case builds 97 GW, 64% above the IRP and four years earlier.
+
+Until now the no-gas case was called a stress test on the strength of its 134 TWh of
+curtailment. **There is now a published, Cabinet-approved plan to say it against**, and the
+gas-firmed case is the IRP-consistent one. That is the scenario whose result should be quoted.
+
+## Eskom's sales are falling, and the panel holds them flat
+
+Grid sales fell **5.6% in Q1 2026** against the prior year as customers self-generate.
+
+Every fixed cost in this panel is recovered over sales, so a shrinking base raises the per-kWh
+figure for the same rands - the death spiral that is itself the mechanism behind the
+above-inflation increases. Sustained, it is worth -17% of sales by 2035 at 2% a year, or -40%
+at the observed rate.
+
+**Not modelled, deliberately.** Like the counterfactual escalation, a demand trajectory is a
+judgement rather than a parameter, and it cuts both ways: a falling base raises every scenario
+including the status quo. Holding it flat alongside a flat real tariff is doubly conservative,
+and both are now recorded.
+
+### two smaller items from the same source
+
+**Carbon has its path.** Phase 2 began 1 Jan 2026, lifting the headline rate from R236 to R308
+a tonne, with R462 scheduled by 2030. The model pins CARBON at R550 - STATE.md open item 2, a
+known disconnection. At R308 the modelled carbon cost falls 44%, worth about R0.013/kWh. The
+item can now be closed rather than left open.
+
+**Arrear debt reconciles, on inspection.** The note gives municipal debt above R110bn growing
+R3bn a month, against the R7.8bn a year this panel carries. Different things: ours is what
+NERSA ALLOWS Eskom to recover, theirs is what municipalities fail to pay. The roughly R28bn a
+year gap is absorbed by Eskom, not by consumers - and the panel excludes it anyway as a
+transfer.

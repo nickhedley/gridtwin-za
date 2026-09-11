@@ -418,6 +418,27 @@ console.log('\nTariff constants against their published sources\n');
         + `R1bn. That is the evidence the mechanism is live and material, not theoretical.`);
 }
 
+// ── 18. SCENARIOS ARE CHECKED AGAINST THE OFFICIAL PLAN ────────────────────
+// Added 10 Sep 2026. The no-gas case has been called a stress test on the strength of its
+// curtailment. IRP 2025 is Cabinet-approved and commits to 59 GW of new wind and solar by
+// 2039 - so there is now a published plan to say it against.
+//
+// The gas-firmed case builds 45 GW by 2035, roughly the same trajectory. The no-gas case
+// builds 97 GW, 64% above the IRP and four years earlier.
+{
+  const irp = T.irp2025_anchor || {};
+  check('the IRP anchor is recorded with both scenarios',
+        irp.irp_new_wind_and_solar_gw > 0 && !!(irp.comparison || {}).gas_firmed_60pct_re,
+        `IRP 2025 commits to ${irp.irp_new_wind_and_solar_gw} GW of new wind and solar by 2039. `
+        + `Without this the claim that one scenario is a stress test rests on curtailment alone.`);
+  check('the sales-decline risk is recorded',
+        /death spiral/i.test((T.sales_decline_risk || {}).why_it_matters || ''),
+        `Eskom grid sales fell 5.6% in Q1 2026. Every fixed cost here is recovered over sales, `
+        + `so a shrinking base raises the per-kWh figure for the same rands. Held flat `
+        + `deliberately, alongside a flat real tariff - doubly conservative, and both must stay `
+        + `written down.`);
+}
+
 console.log(`\n${pass}/${pass + fail} input checks passed`);
 if (failures.length){
   console.log('\nFAILURES:');
