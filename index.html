@@ -872,6 +872,16 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
               so this is what the hours are worth, not what anyone could charge.
             </div>
             <div class="pb" style="padding:8px 12px 2px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+              <label style="font-size:10.5px;color:var(--ink2)" title="Regulated: NERSA's allowed revenue, recovered as a flat adder over sales - South Africa today. Market-indexed: the household pays the hourly wholesale price including scarcity, with only network and retail costs added - what an Octopus Agile-type tariff does, and what ERAA makes possible from H2 2026.">Basis
+                <select id="retBasis" onchange="renderRetail()" style="font-size:10.5px">
+                  <option value="reg" selected>Regulated (NERSA)</option>
+                  <option value="mkt">Market-indexed (post-ERAA)</option>
+                </select>
+              </label>
+              <label style="font-size:10.5px;color:var(--ink2)" title="Treats curtailed renewable energy as sold rather than spilled - to electrolysers, for instance. Spreads fixed costs over more kWh and removes the deemed-energy payments. An upper bound: it assumes the buyer pays the full average cost, and a hydrogen offtaker would not.">
+                <input id="retCurtSold" type="checkbox" onchange="renderRetail()">
+                Curtailed energy monetised
+              </label>
               <label style="font-size:10.5px;color:var(--ink2)" title="Ticked: consumers keep paying for closed plant until its asset base runs off, which is what a regulated asset base does. Unticked: the cost leaves with the plant and the fiscus carries it. Worth about 5% of a bill.">
                 <input id="retStranded" type="checkbox" checked onchange="renderRetail()">
                 <span id="retStrandedLbl">Retired coal still repaid via tariffs</span>
@@ -11894,9 +11904,20 @@ function retailComponents(markup, stranded, year, viaMuni){
   // reading, and it means the Future mix preset's 5% needs revisiting.
   const GEN_KEYS = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal',
                     'ps','batt','ccgt','diesel'];
+  // CURTAILED ENERGY MONETISED. If spilled renewable output finds a buyer - electrolysers are
+  // the usual candidate - it stops being a loss and starts being volume. Two effects: the
+  // sales base grows, and the deemed-energy payments disappear because nothing is curtailed.
+  //
+  // This is an upper bound and the panel says so. It credits the curtailed kWh at the same
+  // average cost as a household pays, and a hydrogen offtaker buying surplus would pay a small
+  // fraction of that - the energy is worth near zero at the moment it is spilled, which is
+  // exactly why it is being spilled.
+  const csEl = document.getElementById('retCurtSold');
+  const curtSold = csEl ? csEl.checked : false;
   const genMWh = GEN_KEYS.reduce((a, k) => a + (r.E[k] || 0), 0);
   const salesMWh = Math.max(1, genMWh - (r.E.rooftop || 0) - (r.E.ps || 0) - (r.E.batt || 0)
-                              - (r.E.exported || 0));
+                              - (r.E.exported || 0)
+                              + (curtSold ? (r.E.curtailed || 0) : 0));
 
   const fuelPerKwh   = (r.fuelCost   || 0) / salesMWh / 1000;
   const carbonPerKwh = (r.carbonCost || 0) / salesMWh / 1000;
@@ -11960,7 +11981,8 @@ function retailComponents(markup, stranded, year, viaMuni){
   const vrePotential = (r.E.wind || 0) + (r.E.pv || 0) + (r.E.csp || 0) + curtMWh;
   const curtFrac = vrePotential > 0 ? curtMWh / vrePotential : 0;
   const overThreshold = Math.max(0, curtFrac - (CC.threshold_pct || 10) / 100);
-  const curtComp = overThreshold * vrePotential * (CC.ppa_price_r_per_kwh || 0.55) * 1000
+  const curtComp = curtSold ? 0
+                 : overThreshold * vrePotential * (CC.ppa_price_r_per_kwh || 0.55) * 1000
                    / salesMWh / 1000;
 
   const retiredMW = Math.max(0, P.coalDecomMW || 0);
@@ -12052,10 +12074,16 @@ function retailComponents(markup, stranded, year, viaMuni){
   const resAllocTotal = A.residential_allocation_factor || 1.0;
   const resAlloc = resAllocTotal;
 
-  return { distAdj, resAlloc, subsidyPerKwh, muni: M, curtComp, curtFrac, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
+  return { distAdj, resAlloc, subsidyPerKwh, muni: M, curtComp, curtFrac, curtSold, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
            decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
            viaMuni, salesTWh: salesMWh / 1e6 };
 }
+
+// NETWORK AND RETAIL SHARE of the regulated cost stack. Generation is 67% of NERSA's allowed
+// revenue - R258,574m of R384,610m - so network and retail are the remaining 33%. Under a
+// market basis the generation third is recovered through the hourly price instead of through
+// the flat adder, and only this share stays flat.
+const NETWORK_RETAIL_SHARE = 0.33;
 
 function retailRaw(marginalP, markup, stranded, year, viaMuni){
   const c = retailComponents(markup, stranded, year, viaMuni);
@@ -12065,12 +12093,36 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
   const hod = new Array(24).fill(0);
   for (let h = 0; h < 8760; h++) hod[h % 24] += marginalP[h] / 1000 / 365;
   const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
-  const varTarget = c.fuel + c.carbon;
-  const flat = c.opex + c.existingCap + c.newCap + c.newFom + c.decom + c.ipp + c.imports
+  let varTarget = c.fuel + c.carbon;
+  let flat = c.opex + c.existingCap + c.newCap + c.newFom + c.decom + c.ipp + c.imports
              + c.fixedItems + c.newGrid + (c.curtComp || 0) + (c.distAdj || 0);
 
-  return hod.map(w => {
-    const variable = hodMean > 0 ? varTarget * (w / hodMean) : varTarget;
+  // ── MARKET BASIS ──────────────────────────────────────────────────────────
+  // Under a market-indexed tariff the household pays the hourly wholesale price, which in an
+  // energy-only market carries generators' capital through scarcity hours. So the generation
+  // share comes OUT of the flat adder and the hourly series carries it instead. Only network
+  // and retail stay flat, exactly as Octopus Agile's standing charge and fixed adder do.
+  const bEl = document.getElementById('retBasis');
+  const marketBasis = bEl ? bEl.value === 'mkt' : false;
+  let mkt = null;
+  if (marketBasis && typeof marketPriceSeries === 'function'){
+    mkt = marketPriceSeries(lastRes, { ...FIXED, ...state });
+    if (mkt){
+      for (let h = 0; h < 8760; h++) hod[h % 24] += 0;   // shape comes from mkt, not marginalP
+      flat = flat * NETWORK_RETAIL_SHARE;
+      varTarget = mkt.p.reduce((a, b) => a + b, 0) / 8760;
+    }
+  }
+
+  const shapeSrc = (marketBasis && mkt) ? (() => {
+    const h24 = new Array(24).fill(0);
+    for (let h = 0; h < 8760; h++) h24[h % 24] += mkt.p[h] / 365;
+    return h24;
+  })() : hod;
+  const shapeMean = shapeSrc.reduce((a, b) => a + b, 0) / 24;
+
+  return shapeSrc.map(w => {
+    const variable = shapeMean > 0 ? varTarget * (w / shapeMean) : varTarget;
     let r = (variable + flat) / (1 - RETAIL_LOSS);
     r = r * (c.resAlloc || 1);        // residential cost-to-serve, before any municipal margin
     r = r * (1 + markup);
@@ -12257,6 +12309,11 @@ function renderRetail(){
     + '<span class="mono" style="font-size:10px;display:block;margin:5px 0 8px">'
     + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
     + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
+    + (c.curtSold
+        ? `<strong>Curtailed energy counted as sold.</strong> An upper bound: the spilled kWh `
+        + `are credited at the same average cost a household pays, and an electrolyser buying `
+        + `surplus would pay a fraction of that.<br><br>`
+        : '')
     + `<span style="color:var(--ink2)">Constant 2026 rands, so a scenario year and today sit on `
     + `the same basis. The comparison holds the counterfactual flat in real terms, which matches `
     + `Eskom's stated aim of inflation-linked increases; the CSIR measures 4.6% a year real over `
@@ -14602,7 +14659,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11v';
+const BUILD_STAMP = '2026-09-11w';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

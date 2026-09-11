@@ -673,6 +673,35 @@
    "future_mix_no_gas_pct": 35
   },
   "recovery_is_the_finding": "Recovery is NOT expected to be 100% and should not be tuned to it. An energy-only market with a large renewables overbuild and no expensive marginal plant cannot recover its costs: prices are zero 56% of the year and nothing sets a high price. That is the revenue-sufficiency problem that capacity markets and CfDs exist to solve, and 35% is the measurement of it. The gas-firmed case over-recovers at 132% because gas sets a high price often and everything below it earns inframarginal rent.",
-  "status": "BUILT AND MEASURED, not yet wired into the panel as a selectable mode."
+  "status": "WIRED IN as a selectable basis, 10 Sep 2026.",
+  "panel_results_2035": {
+   "regulated_basis": {
+    "today": 3.62,
+    "gas_firmed": 3.94,
+    "future_mix": 5.44
+   },
+   "market_basis": {
+    "today": 3.71,
+    "gas_firmed": 6.29,
+    "future_mix": 3.46
+   },
+   "daily_spread": {
+    "regulated_future_mix": "1.1x",
+    "market_gas_firmed": "4.7x",
+    "market_future_mix": "2.3x"
+   },
+   "reading": "The market basis INVERTS the ranking. Under regulation the no-gas Future mix is dearest at R5.44 because its capital is recovered flat over few sales. Under a market it is CHEAPEST at R3.46, because prices are zero 56% of the year and the market simply fails to recover that capital - the 35% revenue recovery measured earlier. The household pays less; the capital does not get paid. And the gas-firmed case goes the other way, R3.94 regulated against R6.29 market, because gas sets a high price often and every inframarginal unit earns rent on it. The spread behaves as expected too: 4.7x on the gas-firmed market basis against 1.1x regulated. That is the Agile shape, and it needed an expensive marginal plant to appear."
+  }
+ },
+ "curtailment_monetised": {
+  "description": "A toggle treating curtailed renewable output as sold - to electrolysers, for instance - rather than spilled.",
+  "effects": "The sales base grows and the deemed-energy payments disappear, since nothing is curtailed.",
+  "measured_future_mix": {
+   "sales_twh_before": 181,
+   "sales_twh_after": 315,
+   "regulated_r_per_kwh_before": 5.44,
+   "regulated_r_per_kwh_after": 3.42
+  },
+  "it_is_an_upper_bound": "The curtailed kWh are credited at the same average cost a household pays. A hydrogen offtaker buying surplus would pay a small fraction of that - the energy is worth near zero at the moment it is spilled, which is exactly why it is being spilled. So the 37% fall in the Future mix bill is the most favourable possible reading, not an expectation. The panel says so whenever the toggle is on."
  }
 }
