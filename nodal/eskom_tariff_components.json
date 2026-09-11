@@ -220,7 +220,7 @@
     "2026": 308,
     "2030": 462
    },
-   "note": "Phase 2 of the carbon tax began 1 Jan 2026, raising the headline rate from R236 to R308 a tonne, with R462 scheduled by 2030. The model pins CARBON at R550/t - STATE.md open item 2, a known disconnection. At R308 the modelled carbon cost falls 44%, worth about R0.013/kWh. Small, but the path is now sourced and the item can be closed rather than left open."
+   "note": "CORRECTED 10 Sep 2026. An earlier note here said the model pins CARBON at R550/t per STATE.md open item 2. IT DOES NOT - that was fixed at some point and the item was never closed. CARBON now reads carbonTaxRPerT, which is 46 R/t: an EFFECTIVE rate after free allowances rather than the R308 headline, which is the right basis. A REAL discrepancy remains, smaller and different: modelled carbon is R7.8bn against Eskom's approved R4.8bn, implying an effective rate nearer R28/t in Eskom's own allowance. So 46 may be about twice what is actually recovered, worth roughly R0.012/kWh. Phase 2 began 1 Jan 2026 at a R308 headline, rising to R462 by 2030, so the effective rate should climb with the allowance phase-down - which the panel does not model."
   }
  },
  "cross_subsidies": {
