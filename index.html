@@ -12326,7 +12326,9 @@ function retailHourly(){
   // The two tariffs a household can actually buy today, for comparison.
   const flat = new Array(24).fill(hp.energy_r_per_kwh);
   const flex = hod.map((_, h) => 0.25 * flexAt(h, true) + 0.75 * flexAt(h, false));
-  return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp, week, weekFlex, wkMode, wkStart, viaMuni,
+  return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp, week, weekFlex, wkMode, wkStart,
+           marketBasis: (document.getElementById('retBasis') || {}).value === 'mkt',
+           mktVarTarget: mkt2 ? srcMean : 0, viaMuni,
            fixedPerMonth: hp.fixed_r_per_month, cap: sp.cap_r_per_kwh };
 }
 
@@ -12385,12 +12387,26 @@ function renderRetail(){
   // What a panel note is for: what the number is, what moves it, and the one thing that
   // would mislead a reader who took it at face value. Everything else belongs in
   // RESULTS.md and review_retail_methodology.md, which is where it now lives.
-  const items = [['fuel and carbon', c.fuel + c.carbon], ['generation opex', c.opex],
-                 ['existing fleet capital', c.existingCap], ['new build capital', c.newCap],
-                 ['storage O&M', c.newFom], ['coal closure', c.decom],
-                 ['IPP obligations', c.ipp], ['curtailment payments', c.curtComp],
-                 ['new grid', c.newGrid],
-                 ['imports, levies, arrears', c.imports + c.fixedItems]];
+  // THE BREAKDOWN MUST FOLLOW THE BASIS.
+  //
+  // It did not until 10 Sep 2026: the same component list was shown on both bases while the
+  // bill moved R5.45 to R3.51, so a reader would conclude the basis changes the level and not
+  // the structure. It changes both. Under a market-indexed tariff the generation share leaves
+  // the flat block entirely and is recovered through the hourly price - that IS the switch.
+  //
+  // Found by building a breakdown for an analyst and noticing the two columns were identical.
+  const mktBasis = d.marketBasis;
+  const items = mktBasis
+    ? [['hourly market price', d.mktVarTarget || 0],
+       ['network and retail', (c.opex + c.existingCap + c.newCap + c.newFom + c.decom + c.ipp
+          + c.imports + c.fixedItems + c.newGrid + (c.curtComp || 0) - (c.h2Revenue || 0))
+          * NETWORK_RETAIL_SHARE]]
+    : [['fuel and carbon', c.fuel + c.carbon], ['generation opex', c.opex],
+       ['existing fleet capital', c.existingCap], ['new build capital', c.newCap],
+       ['storage O&M', c.newFom], ['coal closure', c.decom],
+       ['IPP obligations', c.ipp], ['curtailment payments', c.curtComp],
+       ['new grid', c.newGrid],
+       ['imports, levies, arrears', c.imports + c.fixedItems]];
   const preTot = items.reduce((a, b) => a + b[1], 0);
 
   noteEl.innerHTML =
@@ -14787,7 +14803,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-12j';
+const BUILD_STAMP = '2026-09-12k';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

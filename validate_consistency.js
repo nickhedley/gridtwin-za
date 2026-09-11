@@ -1150,6 +1150,39 @@ const num = t => {
               + `understood as subtle.`);
       }
 
+      // ── THE COMPONENT BREAKDOWN MUST FOLLOW THE BASIS ─────────────────────
+      // It did not until 10 Sep 2026. The same component list was shown on both bases while
+      // the bill moved R5.45 to R3.51, so a reader would conclude the basis changes the level
+      // and not the structure. It changes both: under a market-indexed tariff the generation
+      // share leaves the flat block entirely and is recovered through the hourly price.
+      //
+      // Found by building a breakdown for an analyst and noticing the two columns were
+      // identical - not by the suite, which compared each basis only against itself.
+      {
+        const bd = run(`
+          const yr = document.getElementById('retYear'), B = document.getElementById('retBasis');
+          if (!B) return { err: 'no basis control' };
+          const keep = JSON.parse(JSON.stringify(state)), kY = yr.value, kB = B.value;
+          const grab = b => {
+            Object.assign(state, PRESETS['Future electricity mix']);
+            yr.value = '2035'; B.value = b; run();
+            const n = document.getElementById('retNote').textContent.replace(/\s+/g, ' ');
+            const i = n.indexOf('R/kWh:');
+            return i < 0 ? '' : n.slice(i + 6, i + 160);
+          };
+          const reg = grab('reg'), mkt = grab('mkt');
+          Object.assign(state, keep); yr.value = kY; B.value = kB; run();
+          return { reg, mkt };
+        `);
+        if (bd && !bd.err && bd.reg){
+          check('the component breakdown differs between the two bases',
+                bd.reg !== bd.mkt && /market price/i.test(bd.mkt),
+                `both bases printed the same component list. Under market-indexed the `
+                + `generation share is carried by the hourly price, not the flat block, so the `
+                + `breakdown must show that or it contradicts the number beside it.`);
+        }
+      }
+
       // ── THE WEEK MUST FOLLOW THE BASIS AND THE ELECTROLYSER SETTING ───────
       // Added 10 Sep 2026. The week series read marginalP and the regulated flat block
       // regardless of basis, so switching to market-indexed changed the daily curve and left
