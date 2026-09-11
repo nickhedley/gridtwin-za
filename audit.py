@@ -270,6 +270,12 @@ def check_shouting(src):
 # because the first version silently overrode the user's coal settings; a grid that does
 # not say what it assumed is the defect that line prevents.
 # 4170 -> 4200 on 8 Sep 2026: the wheeling panel now shows BOTH reconciliation bases and
+# 4200 -> 4250 on 10 Sep 2026: the load-shedding panel gained a fidelity label naming what
+# the Monte Carlo does NOT model - unit commitment, transmission deliverability,
+# maintenance scheduling, emergency procedures - and a line separating outage draws from
+# weather years. Both were adopted from Eshan Singh's Grid Reliability Lab, which labels
+# capability by fidelity rather than implying parity with a regulatory study. A reader who
+# knows where to stop trusting a number is worth fifty words.
 # names the four policy constraints it does not price - no network charge offset, losses on
 # wheeling but not offset, credit forfeited above the maximum export capacity, and no load
 # shedding exemption. Eskom's wheeling and net-billing policy, revision 2, July 2026.
@@ -277,7 +283,7 @@ def check_shouting(src):
 # That content is worth 30 words because the two bases differ by 14-24 points of coverage
 # and the reader has to know which applies to them. Four other blocks were trimmed first -
 # capture rate, clean coal, rooftop cost, interruptible load - which paid for most of it.
-PROSE_CEILING = 4200        # measured 8 Sep 2026: 4,183
+PROSE_CEILING = 4250        # measured 10 Sep 2026: 4,225
 
 def check_prose(src):
     blocks = re.findall(r'font-size:9\.5px;color:var\(--ink2\)[^>]*>(.*?)</div>', src, re.S)

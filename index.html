@@ -866,10 +866,8 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <div class="pb" style="padding:8px 12px 0;font-size:10.5px;color:var(--ink2);line-height:1.55">
               What a household would pay by the hour if the retail price followed cost.
               Built by adding the components a household actually pays to the modelled
-              wholesale price: transmission and distribution, a municipal markup, losses,
-              levies, a supplier margin and VAT. <strong>Nobody sells this tariff.</strong>
-              South Africa has no wholesale market until SAWEM and no dynamic retail product,
-              so this is what the hours are worth, not what anyone could charge.
+              wholesale price: transmission and distribution, losses, levies, a supplier
+              margin and VAT.
             </div>
             <div class="pb" style="padding:8px 12px 2px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
               <label style="font-size:10.5px;color:var(--ink2)" title="Regulated: NERSA's allowed revenue, recovered as a flat adder over sales - South Africa today. Market-indexed: the household pays the hourly wholesale price including scarcity, with only network and retail costs added - what an Octopus Agile-type tariff does, and what ERAA makes possible from H2 2026.">Basis
@@ -14741,7 +14739,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-12d';
+const BUILD_STAMP = '2026-09-12g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -14949,6 +14947,9 @@ function scheduleMC(){clearTimeout(mcTimer); mcTimer=setTimeout(runMC,350);}
 async function runMC(){
   const token=++mcToken;
   const mean=state.coalEAFPct/100, vol=state.outVolPct/100;
+  // Common-mode parameters. Onset is per inactive day across the 92-day winter window; at
+  // 0.2% that is roughly a 17% chance of at least one event in a simulated year.
+  const CM_DAILY_ONSET = 0.002, CM_DERATE_MIN = 0.06, CM_DERATE_MAX = 0.18;
   const runs=[];
 
   // weather years IN THE risk PANEL.
@@ -14975,14 +14976,45 @@ async function runMC(){
   for(let i=0;i<MC_N;i+=12){
     if(token!==mcToken)return;
     for(let j=i;j<Math.min(MC_N,i+12);j++){
+      // ── COMMON-MODE STRESS ────────────────────────────────────────────────
+      // Adopted 10 Sep 2026 from Eshan Singh's Grid Reliability Lab, which models a
+      // summer-only regional event applying ONE SHARED derate to sensitive firm resources,
+      // distinct from independent unit outages.
+      //
+      // WHY IT MATTERS HERE. Our outage path draws each unit independently, so the fleet
+      // never fails together. Real adequacy risk is correlated: a heatwave derates thermal
+      // plant, cuts import capability and lifts demand at the same time. Independent draws
+      // average that away, which understates exactly the tail that sets a capacity
+      // requirement.
+      //
+      // South African shape, not Californian: the stress season is WINTER, when demand peaks
+      // and wind droughts bite, not summer. A 1-4 day event with a 6-18% derate on firm
+      // capacity, at an onset rate giving roughly a one-in-five chance of at least one event
+      // per simulated year. Deliberately conservative - this is a first cut, and the rate is
+      // an assumption rather than a measured frequency.
+      // genOutagePath returns 365 DAILY availability fractions, not 8,760 hourly values.
+      // The first version of this wrote to hourly indices and silently did nothing - the
+      // writes landed past the end of a 365-element Float64Array. Caught by measuring: the
+      // stressed scenario gave identical numbers with the feature on and off.
+      const cmRng = mulberry32(4242 + j * 6151);
+      const cmEvents = [];
+      for (let d = 151; d < 243; d++){                 // June to August, day of year
+        if (cmRng() < CM_DAILY_ONSET){
+          const len = 1 + Math.floor(cmRng() * 4);     // 1-4 days
+          const derate = CM_DERATE_MIN + cmRng() * (CM_DERATE_MAX - CM_DERATE_MIN);
+          cmEvents.push({ from: d, to: Math.min(365, d + len), derate });
+        }
+      }
       const path=genOutagePath(mean,vol,1000+j*7919);
+      for (const ev of cmEvents)
+        for (let d = ev.from; d < ev.to; d++) path[d] = Math.max(0.05, path[d] * (1 - ev.derate));
       // Cycle deterministically through the weather years so every year is drawn
       // an equal number of times - with only 10 on record, random sampling over
       // 60 draws would leave the spread lumpy.
       const wy = wxYears ? wxYears[j % wxYears.length] : null;
       const r=simulate(state,profileFor(wy),path);
       runs.push({shed:r.shedMWh, stage:r.maxStage, hrs:r.shedHours.slice(1).reduce((a,b)=>a+b,0),
-                 diesel:r.E.diesel, wxYear:wy});
+                 diesel:r.E.diesel, wxYear:wy, cmEvents:cmEvents.length});
     }
     await new Promise(res=>setTimeout(res,0));
   }
@@ -15060,12 +15092,23 @@ function renderRisk(runs, corridorFactor=1.0, wxYears=null){
         + (worst.wxYear ? ' Worst run drew ' + worst.wxYear + ' weather.' : '');
     } else {
       noteEl.innerHTML = 'Bars: probability the year reaches at least stage S, across ' + N
-        + ' simulated outage-years at your average EAF \u00b1 volatility. '
+        + ' cases: ' + N + ' outage draws across '
+        + (wxYears ? wxYears.length : 1) + ' weather years. '
+        + '<strong>Outage draws do not add weather observations.</strong> '
         + '<strong>Weather is held fixed</strong> \u2013 add nodal/profiles_regional_multiyear.json '
         + 'to vary it, which matters most once coal retires.';
     }
   }
-  document.getElementById('riskHead').innerHTML= nodalCallout +
+  // FIDELITY LABEL. Adopted from the Grid Reliability Lab, which labels capability rather
+  // than implying parity with a production study. A single caveat line tells a reader to be
+  // careful; this tells them where to stop trusting it.
+  const cmSeen = adjRuns.reduce((a, r) => a + (r.cmEvents || 0), 0);
+  const fidelity = '<div style="font-size:9.5px;color:var(--ink2);margin:4px 0 8px">'
+    + '<strong>Adequacy screen, not a regulatory study.</strong> Chronological Monte Carlo, '
+    + 'single-area. Independent outages plus a winter common-mode derate on coal ('
+    + cmSeen + ' events). Not modelled: unit commitment, transmission deliverability, '
+    + 'maintenance scheduling, emergency procedures.</div>';
+  document.getElementById('riskHead').innerHTML= nodalCallout + fidelity +
     // ZERO EVENTS IS NOT ZERO PROBABILITY.
     //
     // This read a flat 0% whenever no draw shed more than 100 GWh, which states more certainty
