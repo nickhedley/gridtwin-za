@@ -885,9 +885,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                   <option value="20">20 GW</option>
                 </select>
               </label>
-              <label style="font-size:10.5px;color:var(--ink2)" title="Ticked: consumers keep paying for closed plant until its asset base runs off, which is what a regulated asset base does. Unticked: the cost leaves with the plant and the fiscus carries it. Worth about 5% of a bill.">
+              <label style="font-size:10.5px;color:var(--ink2)" title="Depreciation and return on assets on the coal-specific share of the regulated asset base - the money still owed on the plant itself. Ticked: consumers keep paying it until the asset base runs off, which is what a regulated asset base does. Unticked: it leaves with the plant and the fiscus carries it. NOT covered: decommissioning, which is a separate line paid either way; Eskom's wider debt; and take-or-pay coal supply contracts, which are not modelled at all - fuel cost simply falls when coal retires, assuming those contracts unwind for free.">
                 <input id="retStranded" type="checkbox" checked onchange="renderRetail()">
-                <span id="retStrandedLbl">Retired coal still repaid via tariffs</span>
+                <span id="retStrandedLbl">Retired coal asset base still in tariffs</span>
               </label>
               <label style="font-size:10.5px;color:var(--ink2)" title="The year the scenario's system is costed at. Technology costs decline to it, the existing asset base runs off toward it, one-off recoveries expire before it.">Scenario year
                 <input id="retYear" type="range" min="2026" max="2040" step="1" value="2035"
@@ -14787,7 +14787,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-12i';
+const BUILD_STAMP = '2026-09-12j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
