@@ -4471,6 +4471,32 @@ Future mix 2035, regulated basis     R5.44/kWh
   with hydrogen offtake              R3.20/kWh     sales unchanged at 181 TWh
 ```
 
+### capture is computed, not assumed
+
+Crediting ALL curtailment was excessive. An electrolyser can only take surplus that is there
+when it runs - min(curtailment, capacity) in each hour - so short, shallow spills are missed.
+Capture now comes from the model's own hourly curtailment series against a chosen capacity.
+
+```
+electrolysers   captured   capacity factor   retail R/kWh
+none                   0%                 -           5.45
+2 GW                   8%               62%           5.26
+5 GW                  19%               57%           5.03
+10 GW                 34%               52%           4.69
+20 GW                 58%               45%           4.14
+```
+
+**The capacity factor is the constraint, and it falls as capacity rises.** The literature puts
+a viable factor at 45-60%; below about 40% the capital swamps the cheap power. Capturing 91%
+of this curtailment needs 40 GW at a 35% factor - past that limit, and not a business anyone
+would build.
+
+So there is a natural ceiling: roughly 20 GW and 58% of the surplus, not all of it. The panel
+reports the resulting factor and says when it falls below the viable range.
+
+**Deemed energy falls proportionally, not to zero.** Curtailment an electrolyser does not
+capture is still curtailment and still compensated: R0.327/kWh with none, R0.137 at 20 GW.
+
 ### and the scale is the caveat
 
 134 TWh of curtailment is 15.3 GW of average draw, arriving in about 56% of hours - roughly

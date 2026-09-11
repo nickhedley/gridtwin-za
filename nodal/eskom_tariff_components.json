@@ -700,6 +700,35 @@
   "how_it_is_modelled": "As a REVENUE OFFSET, not as extra household sales. Curtailed MWh times the offtake price is revenue the system earns, which reduces what households must cover. The curtailed kWh do NOT join the household sales base - a hydrogen buyer is a different customer on a different tariff. The previous version added them to the denominator, which credited them at the same average cost a household pays, roughly R3.62. That was three times any electrolyser's willingness to pay and made the Future mix look 37% cheaper.",
   "deemed_energy_also_disappears": "Nothing is curtailed, so the take-or-pay compensation goes to zero.",
   "scale_caveat": "134 TWh of curtailment is 15.3 GW of average draw, and because it arrives in about 56% of hours, roughly 27 GW of electrolyser capacity. Hive Hydrogen's Coega project - the most advanced in Africa, and still pre-FID with commercial operation targeted for 2029-30 - is 1.2 GW. So the full-monetisation case implies more than twenty Coegas. The panel reports the implied capacity alongside the result so the reader can judge it.",
-  "sources": "IEA Hydrogen Review 2026; Global Hydrogen Hub LCOH targets 2026; Dutch GROWH electrolyser contracting study, arXiv 2502.09748; Hive Hydrogen Coega project, Mining Weekly May 2026."
+  "sources": "IEA Hydrogen Review 2026; Global Hydrogen Hub LCOH targets 2026; Dutch GROWH electrolyser contracting study, arXiv 2502.09748; Hive Hydrogen Coega project, Mining Weekly May 2026.",
+  "capture_is_computed_not_assumed": "REBUILT AGAIN 10 Sep 2026. The previous version credited ALL curtailment, which was excessive: an electrolyser can only take surplus that is there when it runs, min(curtailment, capacity) in each hour, and short shallow spills are missed. Capture is now computed hour by hour from the model's own curtailMW series against a chosen electrolyser capacity.",
+  "capture_curve_future_mix_2035": {
+   "2_GW": {
+    "captured_pct": 8,
+    "capacity_factor_pct": 62,
+    "retail_r_per_kwh": 5.26
+   },
+   "5_GW": {
+    "captured_pct": 19,
+    "capacity_factor_pct": 57,
+    "retail_r_per_kwh": 5.03
+   },
+   "10_GW": {
+    "captured_pct": 34,
+    "capacity_factor_pct": 52,
+    "retail_r_per_kwh": 4.69
+   },
+   "20_GW": {
+    "captured_pct": 58,
+    "capacity_factor_pct": 45,
+    "retail_r_per_kwh": 4.14
+   },
+   "none": {
+    "captured_pct": 0,
+    "retail_r_per_kwh": 5.45
+   }
+  },
+  "viable_capacity_factor": "The electrolyser literature puts a viable capacity factor at 45-60%. Below about 40% the capital swamps the cheap power and the hydrogen cost stops working, so the low-CF end of the curve is not a business anyone would build. Capturing 91% of the Future mix's curtailment needs 40 GW at a 35% factor - past that limit. The panel reports the resulting factor and says when it falls below the viable range.",
+  "deemed_energy_falls_proportionally": "Curtailment an electrolyser does not capture is still curtailment and still compensated. The take-or-pay payment now falls by the captured share rather than to zero: R0.327/kWh with no electrolysers, R0.137 at 20 GW."
  }
 }

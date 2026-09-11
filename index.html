@@ -878,9 +878,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                   <option value="mkt">Market-indexed (post-ERAA)</option>
                 </select>
               </label>
-              <label style="font-size:10.5px;color:var(--ink2)" title="Treats curtailed renewable energy as sold rather than spilled - to electrolysers, for instance. Spreads fixed costs over more kWh and removes the deemed-energy payments. An upper bound: it assumes the buyer pays the full average cost, and a hydrogen offtaker would not.">
-                <input id="retCurtSold" type="checkbox" onchange="renderRetail()">
-                Curtailed energy monetised
+              <label style="font-size:10.5px;color:var(--ink2)" title="Electrolysers buying curtailed output at R1.05/kWh, derived from a $4/kg hydrogen target. Capture is computed hour by hour from the actual curtailment profile, so only surplus deep enough and long enough to fill the plant counts. The rest is still spilled at zero. Hive's Coega project, the most advanced in Africa, is 1.2 GW.">Electrolysers
+                <select id="retH2GW" onchange="renderRetail()" style="font-size:10.5px">
+                  <option value="0" selected>none</option>
+                  <option value="2">2 GW</option>
+                  <option value="5">5 GW</option>
+                  <option value="10">10 GW</option>
+                  <option value="20">20 GW</option>
+                </select>
               </label>
               <label style="font-size:10.5px;color:var(--ink2)" title="Ticked: consumers keep paying for closed plant until its asset base runs off, which is what a regulated asset base does. Unticked: the cost leaves with the plant and the fiscus carries it. Worth about 5% of a bill.">
                 <input id="retStranded" type="checkbox" checked onchange="renderRetail()">
@@ -11912,8 +11917,9 @@ function retailComponents(markup, stranded, year, viaMuni){
   // average cost as a household pays, and a hydrogen offtaker buying surplus would pay a small
   // fraction of that - the energy is worth near zero at the moment it is spilled, which is
   // exactly why it is being spilled.
-  const csEl = document.getElementById('retCurtSold');
-  const curtSold = csEl ? csEl.checked : false;
+  const h2El = document.getElementById('retH2GW');
+  const h2GW = h2El ? +h2El.value : 0;
+  const curtSold = h2GW > 0;
   const H2 = RETAIL_T.curtailment_monetised || {};
   const genMWh = GEN_KEYS.reduce((a, k) => a + (r.E[k] || 0), 0);
   const salesMWh = Math.max(1, genMWh - (r.E.rooftop || 0) - (r.E.ps || 0) - (r.E.batt || 0)
@@ -11982,9 +11988,32 @@ function retailComponents(markup, stranded, year, viaMuni){
   const vrePotential = (r.E.wind || 0) + (r.E.pv || 0) + (r.E.csp || 0) + curtMWh;
   const curtFrac = vrePotential > 0 ? curtMWh / vrePotential : 0;
   const overThreshold = Math.max(0, curtFrac - (CC.threshold_pct || 10) / 100);
-  const curtComp = curtSold ? 0
-                 : overThreshold * vrePotential * (CC.ppa_price_r_per_kwh || 0.55) * 1000
-                   / salesMWh / 1000;
+  // CAPTURE IS COMPUTED HOUR BY HOUR, not assumed. An electrolyser can only take surplus that
+  // is there when it runs: min(curtailment, its capacity) in each hour. Short, shallow spills
+  // are missed, which is why capturing everything needs far more plant than capturing most of
+  // it - 40 GW for 91% of the Future mix's curtailment at a 35% capacity factor, against 20 GW
+  // for 58% at 45%.
+  //
+  // That matters because the electrolyser literature puts a viable capacity factor at 45-60%.
+  // Below about 40% the capital swamps the cheap power and the hydrogen cost stops working, so
+  // the low-CF end of this curve is not a business anyone would build. The panel reports the
+  // resulting factor so an implausible setting is visible rather than silent.
+  let h2CapturedMWh = 0;
+  if (curtSold && r.curtailMW){
+    const capMW = h2GW * 1000;
+    for (let h = 0; h < 8760; h++) h2CapturedMWh += Math.min(r.curtailMW[h] || 0, capMW);
+  }
+  const h2Revenue = h2CapturedMWh * 1000 * (H2.electrolyser_wtp_r_per_kwh || 1.05)
+                    / salesMWh / 1000;
+  const h2CF = (curtSold && h2GW > 0) ? h2CapturedMWh / (h2GW * 1000 * 8760) : 0;
+  const h2SharePct = curtMWh > 0 ? 100 * h2CapturedMWh / curtMWh : 0;
+
+  // Deemed energy falls only by what is actually taken. Curtailment that no electrolyser
+  // captures is still curtailment, and still compensated.
+  const curtRemaining = Math.max(0, curtMWh - h2CapturedMWh);
+  const fracRemaining = curtMWh > 0 ? curtRemaining / curtMWh : 1;
+  const curtComp = overThreshold * vrePotential * (CC.ppa_price_r_per_kwh || 0.55) * 1000
+                   / salesMWh / 1000 * fracRemaining;
 
   // HYDROGEN OFFTAKE as a REVENUE OFFSET, not as extra household sales.
   //
@@ -11995,12 +12024,6 @@ function retailComponents(markup, stranded, year, viaMuni){
   // That R1.05 is derived, not assumed: electricity is 73% of green hydrogen LCOH and every
   // $10/MWh moves hydrogen by $0.45/kg, implying 45 kWh/kg. At the industry's $4/kg 2030 target
   // the electricity budget is 0.73 x 4 / 45 = $0.065/kWh.
-  const h2Revenue = curtSold
-    ? curtMWh * 1000 * (H2.electrolyser_wtp_r_per_kwh || 1.05) / salesMWh / 1000
-    : 0;
-  const h2ImpliedGW = curtSold && curtFrac > 0
-    ? (curtMWh / 8760) / Math.max(0.05, 1 - (1 - curtFrac)) / 1000
-    : 0;
 
   const retiredMW = Math.max(0, P.coalDecomMW || 0);
   const decom = retiredMW * 1000 * (A.decommissioning_r_per_kw || 1500) * 0.08 / salesMWh / 1000;
@@ -12092,7 +12115,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   const resAlloc = resAllocTotal;
 
   return { distAdj, resAlloc, subsidyPerKwh, muni: M, curtComp, curtFrac, curtSold,
-           h2Revenue, h2ImpliedGW, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
+           h2Revenue, h2GW, h2CF, h2SharePct, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
            decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
            viaMuni, salesTWh: salesMWh / 1e6 };
 }
@@ -12329,12 +12352,15 @@ function renderRetail(){
     + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
     + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
     + (c.curtSold
-        ? `<strong>Curtailed energy sold to electrolysers</strong> at R1.05/kWh, derived from a `
-        + `$4/kg hydrogen target: electricity is 73% of LCOH at about 45&nbsp;kWh/kg. Counted as `
-        + `revenue against the system, not as household sales \u2013 a hydrogen buyer is a `
-        + `different customer on a different tariff. <strong>Implies about `
-        + `${c.h2ImpliedGW.toFixed(0)}&nbsp;GW of electrolysers</strong>; Hive's Coega project, `
-        + `the most advanced in Africa and still pre-FID, is 1.2&nbsp;GW.<br><br>`
+        ? `<strong>${c.h2GW}&nbsp;GW of electrolysers</strong> take `
+        + `${c.h2SharePct.toFixed(0)}% of the curtailed energy at R1.05/kWh, derived from a `
+        + `$4/kg hydrogen target. They run at a ${(c.h2CF*100).toFixed(0)}% capacity factor`
+        + (c.h2CF < 0.40
+            ? ` \u2013 <strong>below the 45&ndash;60% the literature treats as viable</strong>, `
+            + `so this is more plant than the surplus can keep busy.`
+            : `, within the viable range.`)
+        + ` The rest is still spilled. Hive's Coega project, the most advanced in Africa and `
+        + `still pre-FID, is 1.2&nbsp;GW.<br><br>`
         : '')
     + `<span style="color:var(--ink2)">Constant 2026 rands, so a scenario year and today sit on `
     + `the same basis. The comparison holds the counterfactual flat in real terms, which matches `
@@ -14681,7 +14707,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-11x';
+const BUILD_STAMP = '2026-09-11y';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
