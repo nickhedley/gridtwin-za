@@ -657,5 +657,22 @@
   "why_it_matters": "Every fixed cost in this panel is recovered over sales. A shrinking base raises the per-kWh figure for the SAME rands - the death spiral that is itself the mechanism behind the above-inflation increases. The panel captures rooftop-driven decline WITHIN a scenario but not a secular fall.",
   "not_modelled_deliberately": "Like the counterfactual escalation, choosing a demand trajectory is a judgement rather than a parameter. And it cuts both ways: a falling base raises every scenario, including the status quo. Holding it flat alongside a flat real tariff is doubly conservative and both are now recorded."
  },
- "arrear_debt_reconciliation": "The report gives municipal debt to Eskom above R110bn, growing about R3bn a month - some R36bn a year - against the R7.8bn a year this panel carries. They measure different things: ours is what NERSA ALLOWS Eskom to recover through tariffs, theirs is what municipalities fail to pay. The roughly R28bn a year gap is absorbed by Eskom, not by consumers. So the tariff figure is the right one here, and the panel excludes it anyway as a transfer rather than a cost of supply."
+ "arrear_debt_reconciliation": "The report gives municipal debt to Eskom above R110bn, growing about R3bn a month - some R36bn a year - against the R7.8bn a year this panel carries. They measure different things: ours is what NERSA ALLOWS Eskom to recover through tariffs, theirs is what municipalities fail to pay. The roughly R28bn a year gap is absorbed by Eskom, not by consumers. So the tariff figure is the right one here, and the panel excludes it anyway as a transfer rather than a cost of supply.",
+ "market_price_scarcity": {
+  "description": "A market-indexed price series alongside the regulated shadow price, built 10 Sep 2026 after asking what professional models do.",
+  "why": "The regulated shadow price shapes only fuel and carbon and recovers capital through a flat adder - correct for South Africa today. It is NOT what Octopus Agile does, and the gap is measurable: wholesale revenue at short-run cost covers 157% of system cost today but 16% on the Future mix. Our price distribution runs -R0.23 to R0.79 and never higher, all year. ERAA opens a competitive wholesale market in H2 2026 with retail competition to follow, so this is the series that becomes the relevant one.",
+  "what_the_professionals_do": {
+   "pypsa": "Energy price is the DUAL of the nodal balance constraint. Where capacity is endogenous the duals carry investment cost, so scarcity rent emerges without being added - their documentation notes non-zero prices even with all marginal costs set to zero.",
+   "plexos": "A Value of Reserve Shortage, an ADMINISTRATIVELY SET penalty, applied whenever a reserve constraint is violated. Energy price becomes the marginal unit's variable cost plus that scarcity component. NREL's reserve-rules study uses a $1,000/MW base, a $4,000/MW high case, and a stepped penalty curve rising with the deficiency.",
+   "we_follow": "PLEXOS. Our hourly dispatch is a merit-order heuristic, not an LP, so there is no dual to read. The stepped curve is the NREL shape, keyed to the depth of the reserve shortfall, with VOLL in hours that actually shed load."
+  },
+  "failed_attempt_recorded": "A first version read an ERCOT-style ORDC off reserveMW directly. It fired in all 8,760 hours and recovered 5,000% of system cost. reserveMW is the reserve HELD - a policy input, not a measure of tightness, and nearly constant at 4.4 to 6.8% of load. What discriminates is the DEPTH of shortfall against the requirement: zero deeply-short hours today, 1,656 on the Future mix.",
+  "revenue_recovery": {
+   "today_pct": 76,
+   "gas_firmed_pct": 132,
+   "future_mix_no_gas_pct": 35
+  },
+  "recovery_is_the_finding": "Recovery is NOT expected to be 100% and should not be tuned to it. An energy-only market with a large renewables overbuild and no expensive marginal plant cannot recover its costs: prices are zero 56% of the year and nothing sets a high price. That is the revenue-sufficiency problem that capacity markets and CfDs exist to solve, and 35% is the measurement of it. The gas-firmed case over-recovers at 132% because gas sets a high price often and everything below it earns inframarginal rent.",
+  "status": "BUILT AND MEASURED, not yet wired into the panel as a selectable mode."
+ }
 }
