@@ -1105,6 +1105,42 @@ const num = t => {
         }
       }
 
+      // ── THE WEEK MUST FOLLOW THE BASIS AND THE ELECTROLYSER SETTING ───────
+      // Added 10 Sep 2026. The week series read marginalP and the regulated flat block
+      // regardless of basis, so switching to market-indexed changed the daily curve and left
+      // the week identical. Found by looking at the panel; nothing in the suite compared the
+      // two series, so nothing caught it.
+      {
+        const wb = run(`
+          const m = a => a.reduce((x, y) => x + y, 0) / a.length;
+          const yr = document.getElementById('retYear'), B = document.getElementById('retBasis');
+          const H = document.getElementById('retH2GW');
+          if (!B || !H) return { err: 'controls missing' };
+          const keep = JSON.parse(JSON.stringify(state)), kY = yr.value, kB = B.value, kH = H.value;
+          Object.assign(state, PRESETS['Future electricity mix']); yr.value = '2035';
+          B.value = 'reg'; H.value = '0'; run();
+          const regWk = m(retailHourly().week);
+          B.value = 'mkt'; run();
+          const mktWk = m(retailHourly().week);
+          B.value = 'reg'; H.value = '20'; run();
+          const h2Wk = m(retailHourly().week);
+          Object.assign(state, keep); yr.value = kY; B.value = kB; H.value = kH; run();
+          return { regWk, mktWk, h2Wk };
+        `);
+        if (wb && !wb.err && wb.regWk){
+          check('the representative week responds to the tariff basis',
+                Math.abs(wb.mktWk / wb.regWk - 1) > 0.05,
+                `week mean R${wb.regWk.toFixed(2)} regulated against R${wb.mktWk.toFixed(2)} `
+                + `market-indexed. If these match, the week is reading marginalP and the `
+                + `regulated flat block regardless of basis - which it did until 10 Sep 2026.`);
+          check('the representative week responds to the electrolyser setting',
+                Math.abs(wb.h2Wk / wb.regWk - 1) > 0.05,
+                `week mean R${wb.regWk.toFixed(2)} with no electrolysers against `
+                + `R${wb.h2Wk.toFixed(2)} at 20 GW. Hydrogen offtake is a revenue offset in the `
+                + `flat block, so a week that ignores it is reading a stale figure.`);
+        }
+      }
+
       // ── THE HOURLY SHAPE, AGAINST A REAL TIME-VARYING TARIFF ──────────────
       // Added 10 Sep 2026. The strongest check available and the last one built, because
       // all six Homeflex rates only arrived from NERSA's decision document that day.
