@@ -2540,6 +2540,94 @@ let redzData = null;
   }
 
 
+  // ── BUILT PROJECTS, SATELLITE-DERIVED ──────────────────────────────────────
+  //
+  // The substation dots show the grid. This shows what is actually ON it - 73 utility solar
+  // arrays and 49 wind farms, located and sized from satellite inventories rather than from
+  // any register.
+  //
+  // WHY IT IS NOT FROM A REGISTER. Nothing in South Africa publishes this. NERSA registers
+  // projects and has no system tracking which were built; the certificate never expires. The
+  // IPP Office quarterly is aggregate throughout with zero project names. REEA gives 2,597
+  // authorisations - 226.8 GW against roughly 8 GW built - with no outcome recorded.
+  //
+  // SOURCES. Solar from TransitionZero's Solar Asset Mapper, 2025Q3, CC-BY-NC-4.0. Wind from
+  // Microsoft and TNC's Global Renewables Watch, MIT, which maps individual turbines rather
+  // than footprints and ends Q2 2024.
+  //
+  // THREE THINGS THE POPUP HAS TO SAY, because each was learned the hard way:
+  //   the DATE IS COMPLETION, not commercial operation. Grootfontein was complete in Dec 2024
+  //     and reached COD in Dec 2025 - a year apart. Labelling it a COD would be wrong.
+  //   the APPLICATION COUNT is the phasing signature. One array carries 31 separate REEA
+  //     authorisations; 116 of 179 matched assets carry more than one. Any project count
+  //     drawn from REEA is inflated, at the top end by an order of magnitude.
+  //   ABSENCE IS NOT ABSENCE OF A PROJECT. Mooi Plaats is 240 MW, visibly built, and missing
+  //     from both inventories. This map shows what the inventories have, not what exists.
+  let projLayer = null, projShow = true;
+
+  function addProjectLayer(reg) {
+    if (projLayer) { map.removeLayer(projLayer); projLayer = null; }
+    if (!projShow || !reg) return;
+    const markers = [];
+
+    // Radius from capacity, on a square root so a 400 MW array is not 40 times the area of a
+    // 10 MW one. Solar uses MEASURED capacity; wind has none, so it uses authorised MW and
+    // the popup says so.
+    const rad = mw => Math.max(4, Math.min(16, Math.sqrt(Math.max(mw, 1)) * 0.75));
+
+    (reg.solar || []).forEach(p => {
+      const yr = (p.to || '').slice(0, 4);
+      // Colour by completion year. The 2017 band is TZ-SAM's own data boundary, not a date -
+      // anything finished before Q4 2017 is stamped there, which is 34 of the 73.
+      const col = !yr ? '#8FA3AC'
+                : yr <= '2017' ? '#7A8A99'
+                : yr <= '2020' ? '#517180'
+                : yr <= '2023' ? '#F5C518'
+                : '#3EA055';
+      const dateLine = !p.to ? 'completion date not estimated'
+        : (p.to.slice(0, 4) <= '2017'
+            ? 'complete before Dec 2017 <span style="opacity:.7">(inventory start, not a date)</span>'
+            : 'array complete ' + p.from + ' to ' + p.to);
+      const popup = `<div style="font-size:11px;min-width:190px">
+        <div style="font-weight:700;font-size:13px">${p.mw.toLocaleString()} MW solar</div>
+        <div style="color:#666;margin-bottom:5px">${dateLine}</div>
+        <div style="font-size:10px;color:#888">Completion, NOT commercial operation. One
+          verified case ran a year between the two.</div>
+        ${p.napp > 0 ? `<div style="margin-top:6px;font-size:10px">
+          <strong>${p.napp}</strong> REEA authorisation${p.napp > 1 ? 's' : ''} claim this array,
+          ${p.claimed.toLocaleString()} MW authorised against ${p.mw.toLocaleString()} measured
+          <div style="color:#888;margin-top:3px">${p.names}</div></div>`
+        : `<div style="margin-top:6px;font-size:10px;color:#888">No REEA authorisation in the
+           2-to-8-year band matches this array.</div>`}
+      </div>`;
+      markers.push(L.circleMarker([p.lat, p.lng], {
+        radius: rad(p.mw), fillColor: col, color: '#2b2b2b', weight: 1,
+        fillOpacity: 0.8, interactive: true, bubblingMouseEvents: false
+      }).bindPopup(popup, {maxWidth: 260}));
+    });
+
+    (reg.wind || []).forEach(p => {
+      const popup = `<div style="font-size:11px;min-width:190px">
+        <div style="font-weight:700;font-size:13px">wind farm</div>
+        <div style="color:#666">${p.turbines} turbines within 10 km</div>
+        <div style="font-size:10px;color:#888;margin-bottom:5px">Turbine counts overlap between
+          adjacent farms, so this sizes a marker rather than a fleet.</div>
+        <div style="font-size:10px"><strong>${p.napp}</strong> authorisation${p.napp > 1 ? 's' : ''},
+          ${p.claimed.toLocaleString()} MW authorised
+          <div style="color:#888;margin-top:3px">${p.names}</div></div>
+        <div style="font-size:9px;color:#aaa;margin-top:5px">Global Renewables Watch ends Q2 2024 -
+          anything commissioned since is absent.</div>
+      </div>`;
+      markers.push(L.circleMarker([p.lat, p.lng], {
+        radius: Math.max(4, Math.min(14, Math.sqrt(p.turbines) * 1.6)),
+        fillColor: '#6FA8A0', color: '#2b2b2b', weight: 1,
+        fillOpacity: 0.75, interactive: true, bubblingMouseEvents: false
+      }).bindPopup(popup, {maxWidth: 260}));
+    });
+
+    projLayer = L.layerGroup(markers).addTo(map);
+  }
+
   // ── Planned transmission (TDP 2024) ──────────────────────────────────────
   // The substation dots above show the grid as it is today. For a developer
   // choosing a site, the more useful question is what the grid becomes: a region
@@ -2661,6 +2749,36 @@ let redzData = null;
   function maybeAddSubLayer() {
     if(substationData && headroomData) addSubstationLayer(substationData, headroomData);
   }
+
+  // ── FETCH AND WIRE THE BUILT-PROJECT LAYER ─────────────────────────────────
+  // Separate fetch and its own toggle, so a missing file degrades to no layer rather than
+  // breaking the map. The file is optional by design - it is derived data, regenerated when a
+  // new TZ-SAM or GRW release lands, and the map has to work without it.
+  let projectRegister = null;
+  fetch('nodal/project_register.json?v=' + (window.DATA_V || '7'))
+    .then(r => r.json())
+    .then(d => {
+      projectRegister = d;
+      addProjectLayer(d);
+      const n = (d.solar || []).length, w = (d.wind || []).length;
+      const mw = (d.solar || []).reduce((a, p) => a + p.mw, 0);
+      const b = document.getElementById('projToggleBtn');
+      if (b) {
+        b.style.display = 'inline-block';
+        b.title = n + ' solar arrays totalling ' + Math.round(mw).toLocaleString()
+          + ' MW measured from satellite, and ' + w + ' wind farms. Satellite-derived, not a '
+          + 'register - completion dates are when the array was first seen finished, which ran '
+          + 'a year ahead of commercial operation on the one case verified against a press release.';
+      }
+    })
+    .catch(() => {});
+
+  window.toggleProjects = function () {
+    projShow = !projShow;
+    addProjectLayer(projectRegister);
+    const b = document.getElementById('projToggleBtn');
+    if (b) b.textContent = projShow ? 'Built projects on' : 'Built projects off';
+  };
 
   // Invalidate map size on container resize (fixes mobile layout shift)
   if(window.ResizeObserver){
@@ -4615,6 +4733,7 @@ function printPrefeas() {
       <span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#9AA69B;border:1px solid #7a8a85;vertical-align:middle"></span> 132&nbsp;kV</span>
       <span style="color:var(--ink2)">&nbsp;&ndash;&nbsp;filled dots are the <strong>existing</strong> network</span>
       <button id="tdpToggleBtn" onclick="toggleTdp()" style="display:none;margin-left:auto;padding:3px 10px;border:1.5px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:11px;font-weight:600;border-radius:2px;white-space:nowrap">Show planned build (TDP)</button>
+      <button id="projToggleBtn" onclick="toggleProjects()" style="display:none;padding:3px 10px;border:1.5px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:11px;font-weight:600;border-radius:2px;white-space:nowrap">Built projects on</button>
     </div>
     <div id="tdpYearRow" style="display:none;gap:9px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:var(--ink2);padding:0 14px 8px">
       <span style="display:inline-block;width:18px;height:0;border-top:2.5px dashed #FF3B30;vertical-align:middle"></span>
