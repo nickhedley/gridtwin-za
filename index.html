@@ -5586,13 +5586,22 @@ const FIXED = {
   exportCapMW:0, exportPriceR:450, exportMaxMW:5000,
   // exportPriceFirmR is the FIRM bilateral contract price, distinct from exportPriceR,
   // which is the surplus pool rate paid for energy that would otherwise be spilled.
-  // ASSUMED, NOT SOURCED: 550 mirrors costImports, the Cahora Bassa contracted basis,
-  // on the argument that a firm cross-border contract prices like its reverse. Nobody
-  // has a published figure for what Namibia, Botswana and Zimbabwe pay Eskom under firm
-  // contract. Treat it as a placeholder with a defensible order of magnitude, and note
-  // that at 450 the model would have sold firm energy below what it pays for firm
-  // imports - the asymmetry is what made 450 the wrong constant to reuse here.
-  exportPriceFirmR:550,
+  //
+  // SOURCED 15 Sep 2026, replacing an assumed 550 that mirrored costImports. Implied from
+  // a same-financial-year pair:
+  //   volume   ~14,100 GWh international sales, 7% of 201,953 GWh, Eskom integrated report
+  //            FY2026, energy breakdown by destination
+  //   revenue  R18.8bn, Minister of Electricity and Energy, reply to question NW1551,
+  //            7 May 2026, for the year ending 31 March 2026
+  //   implied  R1,333/MWh
+  //
+  // TWO CAVEATS, both pointing the same way. The 7% is read off a rounded pie chart, so
+  // the volume carries about a point either side: 6.5% to 7.5% gives R1,241 to R1,432.
+  // And the figure BLENDS firm bilateral with emergency and opportunistic sales, which
+  // price higher - Eskom's international volume rose 40% in FY2025 on emergency support to
+  // drought-hit neighbours. A pure firm contract price is therefore likely BELOW 1,330,
+  // and this constant is an upper bound on it rather than a measurement of it.
+  exportPriceFirmR:1330,
   // ── capacity payment ─────────────────────────────────────────────────────
   // The revised Electricity Pricing Policy (DEE, 18 Aug 2026) states that
   // "capacity charges are necessary to incentivize and ensure reliable
@@ -7408,7 +7417,11 @@ function simulate(u, prof, outPath){
   // it is not incremental revenue on a sunk loss - it is the price of a contract. Booked
   // 15 Sep 2026; until then firm exports carried fuel and carbon into avgCost with no
   // offsetting revenue, spreading roughly R3.6bn across every South African kWh.
-  const firmExportRevenueR = (E.exportedFirm || 0) * (p.exportPriceFirmR ?? 550);
+  // No `?? literal` here. The fallback was 550 and survived the constant moving to 1330,
+  // which validate_structure caught within a minute - rule 6's exact shape. `p` resolves as
+  // { ...FIXED, ...state }, so the key is always defined and the fallback was never doing
+  // work; it was only waiting to disagree.
+  const firmExportRevenueR = (E.exportedFirm || 0) * p.exportPriceFirmR;
 
   // Capacity payment on DE-rated MW. Paid for being available, whether or not the
   // plant runs - which is the entire point, and why it changes the economics of
