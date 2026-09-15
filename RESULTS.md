@@ -207,6 +207,57 @@ of 10 cuts unserved from 15,206 to 768 GWh. Retaining 30 GW takes it to zero.
 
 ---
 
+## The retail headline, and the sign flip the old pair hid
+
+Build `2026-09-15a`. Shadow dynamic row, ANNUAL average, not a week. Panel controls
+are `retBasis`, `retYear`, `retStranded` and nothing else; no electrolyser or
+curtailment-sale setting reaches this panel.
+
+```
+preset                 year  stranded  basis   mean    spread   salesTWh  newCap
+Deep decarbonisation   2035  on        reg     R5.38    1.1x     181.09   1.033
+Deep decarbonisation   2035  on        mkt     R3.71    2.6x     181.09   1.033
+Deep decarbonisation   2035  off       reg     R5.14    1.2x     181.09   1.033
+Deep decarbonisation   2035  off       mkt     R3.63    2.7x     181.09   1.033
+Deep decarbonisation   2026  on        reg     R6.22    1.1x     181.09   1.223
+Deep decarbonisation   2026  on        mkt     R3.98    2.4x     181.09   1.223
+Today 2026             2035  on        reg     R3.66    1.9x     213.61   0.000
+Today 2026             2035  on        mkt     R4.54    2.6x     213.61   0.000
+Today 2026             2026  on        reg     R4.08    1.8x     213.61   0.000
+Today 2026             2026  on        mkt     R4.68    2.5x     213.61   0.000
+```
+
+THE MARKET BASIS CHANGES SIGN AGAINST THE REGULATED ONE. Higher on Today 2026,
+R4.54 against R3.66. Lower on Deep decarbonisation, R3.71 against R5.38. With coal
+and gas setting the price a market recovers more than the regulated allowance;
+with zero-price hours over half the year it recovers far less. Quote both presets
+or neither.
+
+### The superseded pair
+
+HANDOVER recorded R5.45 regulated and R3.51 market-indexed. Neither appears in any
+of the sixteen states above. They are NOT REPRODUCIBLE on this build and should not
+be reissued. They predate the 12 Sep `salesMWh` break and its 15 Sep repair, and
+rescaling does not recover them either: 5.45 x 181.09/197.24 = 5.00.
+
+### Why the denominator looks wrong and is not
+
+Checked 15 Sep 2026 and rejected. `sales_twh` is 209.55, while Eskom reports
+electricity sales of 189,723 GWh for FY2025 and 178,032 GWh for FY2026 - apparently
+10% apart. The panel grosses up by `RETAIL_LOSS` of 8% at index.html:12386 and
+12494, so the constant sits at the system level and the output sits at the meter:
+
+```
+384,610 / 209.55 = R1.8354   grossed up 8%  ->  R1.9950 at the meter
+384,610 / 189.72 = R2.0272   already at the meter
+denominators     209.55 x 0.92 = 192.8  against a reported 189.7
+```
+
+1.6% apart, not 10%. Moving to reported sales without also removing the gross-up
+would double-count losses.
+
+---
+
 ## Battery saturation in South Africa
 
 SUPERSEDED 15 Sep 2026. The claim below is wrong and the correction inverts it.
