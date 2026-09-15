@@ -117,6 +117,28 @@ function readKpis(doc) {
   };
 }
 
+// In-page probe. Every other read in this harness comes off the rendered DOM,
+// and the DOM carries GENERATION only - the page renders no demand total. The
+// grid-served check below needs the served-load series the engine actually
+// dispatched against, so it injects a script rather than parsing a panel.
+function probe(w, src) {
+  const s = w.document.createElement('script');
+  s.textContent = 'window.__probe = null;\n'
+    + 'try { window.__probe = JSON.stringify((function(){ ' + src + ' })()); }\n'
+    + 'catch (e) { window.__probe = JSON.stringify({ error: String(e) }); }';
+  w.__probe = null;
+  w.document.body.appendChild(s);
+  return new Promise(res => {
+    let waited = 0;
+    const tick = () => {
+      if (w.__probe) return res(JSON.parse(w.__probe));
+      if ((waited += 50) > 20000) return res({ error: 'probe timed out' });
+      setTimeout(tick, 50);
+    };
+    tick();
+  });
+}
+
 (async () => {
   const dom = boot();
   await new Promise(r => setTimeout(r, 4000));
@@ -149,15 +171,45 @@ function readKpis(doc) {
   checkRange('Total energy supplied', totalTwh, 170, 250,
     'Eskom MTSAO 2026-30: 243 TWh (2024) → 264 TWh (2030)', 'TWh/yr');
 
-  // Sharper test: Eskom publishes RESIDUAL demand - what the grid actually serves,
-  // net of behind-the-meter rooftop. 191.4 TWh over calendar 2025; the first 29
-  // weeks of 2026 ran 9.1% below the equivalent 2025 period, annualising to about
-  // 177 TWh. Subtract rooftop from the app's total to compare like with like.
-  // This is falling fast as rooftop displaces grid purchases, so the band is wide.
+  // CORRECTED 15 Sep 2026. Eskom's RESIDUAL DEMAND is not demand net of rooftop.
+  // Verified on all 8,760 hours of calendar 2025 in ESK19679.csv:
+  //
+  //     RSA Contracted Demand - Residual Demand - Total RE = 8.4 MW mean, 121 MW max
+  //
+  // Residual demand is contracted demand with ALL utility renewables removed -
+  // 18.1 TWh of wind, PV, CSP and other RE in 2025. The check used to subtract
+  // rooftop from the model and compare the result against that, so utility wind
+  // and PV sat on one side of the comparison and not the other. It reported the
+  // model 15% high on a definitional gap.
+  //
+  // Two things changed. The comparator is now RSA Contracted Demand: 209.6 TWh
+  // calendar 2025, 198.1 TWh annualised off the first 5,832 hours of 2026. And
+  // the model side is SERVED LOAD rather than generation - generation runs about
+  // 10 TWh above load on network losses plus 4.9 TWh of storage charging, and
+  // comparing it against a demand figure carried that gap as model error too.
+  //
+  // THE BAND IS DELIBERATELY UNCHANGED at 170-215. Nothing here was widened to
+  // get green; only the quantity measured and the source it is measured against
+  // have moved. Contracted demand is falling fast as rooftop displaces grid
+  // purchases, which is why the band was wide to begin with.
   const rooftopTwh = mix['Rooftop PV'] ? mix['Rooftop PV'].twh : 0;
-  const gridServed = totalTwh - rooftopTwh;
-  checkRange('Grid-served demand (net of rooftop)', gridServed, 170, 215,
-    'Eskom residual demand: 191.4 TWh (2025), ~177 TWh annualised (2026)', 'TWh/yr');
+  const bal = await probe(w, `
+    const r = simulate(state, PROFILES);
+    const sum = a => (a && typeof a.reduce === 'function')
+      ? Array.prototype.reduce.call(a, (x, y) => x + (+y || 0), 0) / 1e6 : null;
+    return { loadTwh: sum(r.loadS), chargeTwh: sum(r.chargeMW) };`);
+  if (bal && !bal.error && bal.loadTwh) {
+    const gridServed = bal.loadTwh - rooftopTwh;
+    checkRange('Grid-served demand (served load, net of rooftop)', gridServed, 170, 215,
+      'Eskom RSA Contracted Demand: 209.6 TWh (2025), 198.1 annualised (2026)', 'TWh/yr');
+    console.log(`  note: served load ${bal.loadTwh.toFixed(1)} TWh, rooftop ${rooftopTwh.toFixed(1)}, `
+      + `generation net of rooftop ${(totalTwh - rooftopTwh).toFixed(1)}, storage charging `
+      + `${(bal.chargeTwh || 0).toFixed(1)} - the generation basis is NOT comparable to a demand figure`);
+  } else {
+    checkRange('Grid-served demand (served load, net of rooftop)', -1, 170, 215,
+      'probe failed: ' + ((bal && bal.error) || 'no load series') + ' - not scored rather than '
+      + 'scored on the wrong quantity', 'TWh/yr');
+  }
 
   // Rooftop generation must be consistent with the model's own installed
   // capacity at a physically realistic capacity factor.
