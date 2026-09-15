@@ -5584,6 +5584,15 @@ const FIXED = {
   // - 3% lower under Full Regional Integration, 8% lower under Renewable Energy -
   // because everyone's surplus arrives in the same hours.
   exportCapMW:0, exportPriceR:450, exportMaxMW:5000,
+  // exportPriceFirmR is the FIRM bilateral contract price, distinct from exportPriceR,
+  // which is the surplus pool rate paid for energy that would otherwise be spilled.
+  // ASSUMED, NOT SOURCED: 550 mirrors costImports, the Cahora Bassa contracted basis,
+  // on the argument that a firm cross-border contract prices like its reverse. Nobody
+  // has a published figure for what Namibia, Botswana and Zimbabwe pay Eskom under firm
+  // contract. Treat it as a placeholder with a defensible order of magnitude, and note
+  // that at 450 the model would have sold firm energy below what it pays for firm
+  // imports - the asymmetry is what made 450 the wrong constant to reuse here.
+  exportPriceFirmR:550,
   // ── capacity payment ─────────────────────────────────────────────────────
   // The revised Electricity Pricing Policy (DEE, 18 Aug 2026) states that
   // "capacity charges are necessary to incentivize and ensure reliable
@@ -6425,7 +6434,7 @@ function simulate(u, prof, outPath){
   const storageBid=new Float64Array(HOURS);
   const thermalP=new Float64Array(HOURS);
   const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
-  const E={rooftop:0,wind:0,pv:0,csp:0,hybrid:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0,dr:0,exported:0};
+  const E={rooftop:0,wind:0,pv:0,csp:0,hybrid:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0,dr:0,exported:0,exportedFirm:0};
   // VRE curtailed, tracked separately from curtailMW. curtailMW also carries forced
   // coal surplus, so it cannot be used to reconstruct how much wind and solar was
   // spilled - which is what the reserve requirement needs. Added 28 Aug 2026.
@@ -6812,6 +6821,13 @@ function simulate(u, prof, outPath){
     const rawDemand=demandDR[h]*growth;   // same shaped series the UC saw
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
+    // FIRM EXPORT VOLUME, booked 15 Sep 2026. expAt(h) had been added to the load line
+    // since 8 Sep and recorded nowhere: 6.62 TWh a year served by the fleet, carrying fuel
+    // and carbon, earning nothing. E.exported is NOT this - it is the surplus channel, fed
+    // from exportCapMW at 6930 and 7002, and it is correctly zero while that defaults to 0.
+    // Two channels, two accumulators. Merging them would price firm contracts at the
+    // surplus pool rate and pull firm volume out of the retail sales base.
+    E.exportedFirm+=expAt(h);
     E.rooftop+=rooftopGen; loadS[h]=load;
     let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Own accumulator, deliberately - see the note at
@@ -7387,6 +7403,12 @@ function simulate(u, prof, outPath){
   // which is the whole point of the lever: it is what turns curtailment from a
   // pure loss into a capture-rate question.
   const exportRevenueR = E.exported * (p.exportPriceR ?? 450);
+  // FIRM export revenue, separate line. The surplus channel above sells energy that was
+  // going to be spilled; this sells energy the fleet was built and fuelled to produce, so
+  // it is not incremental revenue on a sunk loss - it is the price of a contract. Booked
+  // 15 Sep 2026; until then firm exports carried fuel and carbon into avgCost with no
+  // offsetting revenue, spreading roughly R3.6bn across every South African kWh.
+  const firmExportRevenueR = (E.exportedFirm || 0) * (p.exportPriceFirmR ?? 550);
 
   // Capacity payment on DE-rated MW. Paid for being available, whether or not the
   // plant runs - which is the entire point, and why it changes the economics of
@@ -7557,7 +7579,7 @@ function simulate(u, prof, outPath){
   // A capacity payment is a transfer from consumers to generators, not a resource
   // cost, so it does NOT reduce the whole-economy total. It changes who pays and
   // therefore what gets built, which is exactly what we want to model.
-  const totalCost=fuelCost+carbonCost+newCapexR+drCostR+startUpCostR-exportRevenueR;  // whole-economy view
+  const totalCost=fuelCost+carbonCost+newCapexR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
   // start-UP costs ARE NOW included, 30 Aug 2026. They were accumulated and used
   // nowhere - found by summing the cost decomposition against avgCost and getting a
   // gap of exactly startUpCostR.
@@ -7579,7 +7601,7 @@ function simulate(u, prof, outPath){
   const gridCost=fuelCost+carbonCost+gridCapexR+drCostR+startUpCostR;  // what the grid bears
   // drCostR included: compensation paid to interruptible customers is part of
   // what the system costs to run, and omitting it made demand response look free.
-  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+drCostR+startUpCostR-exportRevenueR)/Math.max(1,gridServed);
+  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
 
   // ── cost decomposition ────────────────────────────────────────────────────
   // Added 30 Aug 2026, structured against NERSA's OWN wholesale price component list
@@ -7618,7 +7640,7 @@ function simulate(u, prof, outPath){
       { k:'buildTx',    nersa:'Transmission network',      v: per(_txCapexR),                  have:'partial' },
       { k:'buildGen',   nersa:'(generation capex)',        v: per(gridCapexR - _txCapexR),     have:'outside' },
       { k:'dr',         nersa:'Demand response',           v: per(drCostR),                    have:true },
-      { k:'exports',    nersa:'(export revenue, offset)',  v: -per(exportRevenueR),            have:'outside' },
+      { k:'exports',    nersa:'(export revenue, offset)',  v: -per(exportRevenueR+firmExportRevenueR), have:'outside' },
       { k:'capacity',   nersa:'Capacity prices',           v: 0, have:false, why:'no capacity market in SA' },
       { k:'ancillary',  nersa:'Ancillary services',        v: 0, have:false, why:'modelled, off by default' },
       { k:'reserve',    nersa:'Reserve prices',            v: 0, have:false, why:'modelled, off by default' },
@@ -7713,7 +7735,7 @@ function simulate(u, prof, outPath){
   // double-count.
   for (let h = 0; h < HOURS; h++) congestTurnUpR += (congestMW[h] || 0) * (marginalP[h] || 0);
 
-  return {E,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: p.ocgtDieselMW, socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -12099,7 +12121,9 @@ function retailComponents(markup, stranded, year, viaMuni){
   // in this panel fell by the same ratio: 197.24 TWh instead of 181.09 on the Future mix
   // at 2035, and newCap R0.948 instead of R1.033.
   // Note this does NOT net out rooftop-served load, deliberately - salesMWh is the utility
-  // sales base, not end-use demand.
+  // sales base, not end-use demand. Nor does it subtract E.exportedFirm: Eskom's contracted
+  // demand includes its exports, so the denominator has to match the revenue it divides.
+  // Only E.exported comes off, which is the surplus channel.
   const chargeMWh = (r.chargeMW && typeof r.chargeMW.reduce === 'function')
     ? Array.prototype.reduce.call(r.chargeMW, (a, b) => a + (+b || 0), 0) : 0;
   const salesMWh = Math.max(1, genMWh - (r.E.rooftop || 0) - (r.E.ps || 0) - (r.E.batt || 0)
