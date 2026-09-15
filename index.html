@@ -12092,8 +12092,19 @@ function retailComponents(markup, stranded, year, viaMuni){
   const curtSold = h2GW > 0;
   const H2 = RETAIL_T.curtailment_monetised || {};
   const genMWh = GEN_KEYS.reduce((a, k) => a + (r.E[k] || 0), 0);
+  // Storage charging is not sold to anyone. It was subtracted here until 12 Sep 2026,
+  // when a revert of the electrolyser work removed it alongside the curtailment term it
+  // had been added next to - the empty continuation line below was what that revert left
+  // behind. The denominator grew by exactly the charging volume, and every per-kWh figure
+  // in this panel fell by the same ratio: 197.24 TWh instead of 181.09 on the Future mix
+  // at 2035, and newCap R0.948 instead of R1.033.
+  // Note this does NOT net out rooftop-served load, deliberately - salesMWh is the utility
+  // sales base, not end-use demand.
+  const chargeMWh = (r.chargeMW && typeof r.chargeMW.reduce === 'function')
+    ? Array.prototype.reduce.call(r.chargeMW, (a, b) => a + (+b || 0), 0) : 0;
   const salesMWh = Math.max(1, genMWh - (r.E.rooftop || 0) - (r.E.ps || 0) - (r.E.batt || 0)
                               - (r.E.exported || 0)
+                              - chargeMWh
                               );
 
   const fuelPerKwh   = (r.fuelCost   || 0) / salesMWh / 1000;
