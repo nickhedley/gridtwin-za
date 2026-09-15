@@ -351,7 +351,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       <div class="cell hide-mobile" style="justify-content:center"><span class="lbl">Load shedding &middot; typical year</span>
         <div class="lamps" id="lamps" style="padding:4px 0 0"></div>
       </div>
-      <div class="cell"><span class="lbl">Peak demand</span><span class="val" id="bdPeak">–</span></div>
+      <div class="cell"><span class="lbl">Peak demand, net of interruptible load</span><span class="val" id="bdPeak">–</span></div>
       <div class="cell"><span class="lbl">Expected shed &middot; per year</span><span class="val" id="bdShed">–</span></div>
       <div class="cell"><span class="lbl">Data</span><span class="statusword" id="bdData" style="font-size:15px; color:#9AA69B">synthetic</span></div>
     </div>
@@ -14981,7 +14981,7 @@ function render(r){
       +[['Coal',E.coal],['Nuclear',E.nuclear],['Wind',E.wind],['Solar PV',E.pv+(E.rooftop||0)],['CSP',E.csp],
         ['Hydro / Imports',E.hydro+E.imports],['Storage',E.ps+E.batt],['Gas / Diesel',E.ccgt+E.diesel],['Unserved',E.unserved]]
        .filter(([,v])=>v>1e4).map(([n,v])=>'<tr><td>'+n+'</td><td>'+(v/1e6).toFixed(1)+'</td><td>'+(100*v/(tot*1e6)).toFixed(1)+'%</td></tr>').join('')
-      +'</tbody></table><p>Peak demand: '+(r.peak/1000).toFixed(1)+' GW'+((r.peakGridLoad-r.peak)>1000 ? ', peak grid load '+(r.peakGridLoad/1000).toFixed(1)+' GW including up to '+(r.peakChargeMW/1000).toFixed(1)+' GW of storage charging' : '')+'. Load shedding: '+(E.unserved>1e4?(E.unserved/1e6).toFixed(2)+' TWh/yr.':'none.')+'</p>';}
+      +'</tbody></table><p>Peak demand, net of interruptible load: '+(r.peak/1000).toFixed(1)+' GW'+((r.peakGridLoad-r.peak)>1000 ? ', peak grid load '+(r.peakGridLoad/1000).toFixed(1)+' GW including up to '+(r.peakChargeMW/1000).toFixed(1)+' GW of storage charging' : '')+'. Load shedding: '+(E.unserved>1e4?(E.unserved/1e6).toFixed(2)+' TWh/yr.':'none.')+'</p>';}
 }
 
 /* ==================== RUN LOOP ==================== */
