@@ -572,7 +572,7 @@
     "2pct_real_trend": "-12%",
     "4pct_real_trend": "-26%"
    },
-   "conclusion": "The distortion runs AGAINST decarbonisation. Against a counterfactual nobody believes - a real tariff frozen for nine years - the gas-firmed build looks slightly dearer. Against the trend Eskom is actually on it is materially cheaper. NOT FIXED: choosing a counterfactual real escalation is a judgement about future regulatory decisions, not a modelling parameter, and picking one would embed a view in the panel. Recorded so the flat comparison is read as the conservative case it is.",
+   "conclusion": "The panel holds today's tariff flat in real terms, and that is GENEROUS TO THE STATUS QUO rather than neutral. The approved path runs 5.8 points real for two more years; the CSIR's measured trend is 4.6% real sustained over eleven. Against either, a gas-firmed decarbonised build is materially cheaper than doing nothing, and the flat comparison understates that. Still not embedded as a parameter - an approved path two years out and an eleven-year trend are evidence, not a forecast to 2035, and picking one would put a view about future NERSA decisions into the model. What changed is that the flat case is now labelled conservative rather than matched to anyone's aspiration.",
    "published_evidence": {
     "description": "What is actually published on the future Eskom tariff path, gathered 10 Sep 2026.",
     "finding": "NOBODY PUBLISHES A 2035 ESKOM TARIFF PROJECTION. What exists is a measured historical trend, approved increases three years out, and a stated intention. They bracket the question rather than settle it.",
@@ -588,10 +588,11 @@
     "eskom_stated_intention": {
      "real_pct_per_year": 0.0,
      "basis": "Eskom chairman Mteto Nyati, Sep 2025: future tariff hikes should be in line with inflation. A statement of intent from the board, not a regulatory commitment or a forecast.",
-     "why_it_matters": "It is the only credible argument for the flat counterfactual the panel currently uses, and it comes from Eskom itself rather than from an outside analyst."
+     "why_it_matters": "It is the only credible argument for the flat counterfactual the panel currently uses, and it comes from Eskom itself rather than from an outside analyst.",
+     "status": "DROPPED as a counterfactual, 12 Sep 2026. It was never a forecast - a board chairman's stated aim, and his term ends in October 2026. More to the point it is already contradicted by approved fact: NERSA has approved 12.7%, 8.76% and 8.83% against a 3% inflation target, so 5.8 points REAL is law for the year after next. A zero-real counterfactual would have to assume the approved path reverses immediately after it ends. It is retained here as a record of why it was considered, not as a case the panel offers."
     },
     "what_the_bracket_does_to_the_conclusion": {
-     "0pct_real_Nyati": "gas-firmed 2035 is 6% dearer than 2026",
+     "0pct_real_Nyati": "DROPPED - see eskom_stated_intention.status. Was: gas-firmed 2035 is 6% dearer than 2026.",
      "4.1pct_real_NERSA": "26% cheaper",
      "4.6pct_real_CSIR": "30% cheaper"
     },

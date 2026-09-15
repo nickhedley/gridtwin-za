@@ -12563,11 +12563,12 @@ function renderRetail(){
         + `still pre-FID, is 1.2&nbsp;GW.<br><br>`
         : '')
     + `<span style="color:var(--ink2)">Constant 2026 rands, so a scenario year and today sit on `
-    + `the same basis. The comparison holds the counterfactual flat in real terms, which matches `
-    + `Eskom's stated aim of inflation-linked increases; the CSIR measures 4.6% a year real over `
-    + `2014&ndash;25, against which a decarbonised build is cheaper, not dearer. The new-grid `
-    + `line is a floor against the Transmission Development Plan. Homeflex is shown at its own `
-    + `seasonal rates. Level carries about 10%.</span>`;
+    + `the same basis. The comparison holds today's tariff flat in real terms and that is `
+    + `<strong>generous to the status quo</strong>: NERSA has already approved 8.76% and 8.83% `
+    + `against a 3% inflation target, and the CSIR measures 4.6% a year real over 2014&ndash;25. `
+    + `Against any of those a decarbonised build is cheaper, not dearer. The new-grid line is a `
+    + `floor against the Transmission Development Plan. Homeflex is shown at its own seasonal `
+    + `rates. Level carries about 10%.</span>`;
 
   const cv = document.getElementById('retChart');
   if (cv && cv.getContext) drawRetail(cv, d);
@@ -14937,7 +14938,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-12m';
+const BUILD_STAMP = '2026-09-12n';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
