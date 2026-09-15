@@ -171,27 +171,41 @@ function probe(w, src) {
   checkRange('Total energy supplied', totalTwh, 170, 250,
     'Eskom MTSAO 2026-30: 243 TWh (2024) → 264 TWh (2030)', 'TWh/yr');
 
-  // CORRECTED 15 Sep 2026. Eskom's RESIDUAL DEMAND is not demand net of rooftop.
-  // Verified on all 8,760 hours of calendar 2025 in ESK19679.csv:
+  // CORRECTED 15 Sep 2026, twice in one session. Two separate faults.
+  //
+  // FIRST: Eskom's RESIDUAL DEMAND is not demand net of rooftop. Verified on all
+  // 8,760 hours of calendar 2025 in ESK19679.csv:
   //
   //     RSA Contracted Demand - Residual Demand - Total RE = 8.4 MW mean, 121 MW max
   //
   // Residual demand is contracted demand with ALL utility renewables removed -
-  // 18.1 TWh of wind, PV, CSP and other RE in 2025. The check used to subtract
-  // rooftop from the model and compare the result against that, so utility wind
-  // and PV sat on one side of the comparison and not the other. It reported the
-  // model 15% high on a definitional gap.
+  // 18.1 TWh of wind, PV, CSP and other RE in 2025. The check used to compare the
+  // model's generation net of rooftop against that, so utility wind and PV sat on
+  // one side of the comparison and not the other.
   //
-  // Two things changed. The comparator is now RSA Contracted Demand: 209.6 TWh
-  // calendar 2025, 198.1 TWh annualised off the first 5,832 hours of 2026. And
-  // the model side is SERVED LOAD rather than generation - generation runs about
-  // 10 TWh above load on network losses plus 4.9 TWh of storage charging, and
-  // comparing it against a demand figure carried that gap as model error too.
+  // SECOND, and this was a correction to the first correction: `loadS` is ALREADY
+  // net of rooftop by construction. index.html:6572 reads
   //
-  // THE BAND IS DELIBERATELY UNCHANGED at 170-215. Nothing here was widened to
-  // get green; only the quantity measured and the source it is measured against
-  // have moved. Contracted demand is falling fast as rooftop displaces grid
-  // purchases, which is why the band was wide to begin with.
+  //     load = rawDemand - rooftopGen + expAt(h)
+  //
+  // so subtracting rooftop from it again double-subtracts. The measured quantity
+  // is `loadS` itself: grid demand, including firm exports, excluding behind-the-
+  // meter rooftop. That is the same universe as RSA Contracted Demand.
+  //
+  // THE COMPARATOR. 209.6 TWh calendar 2025; 198.1 TWh annualised off the first
+  // 5,832 hours of 2026. 198.1 is the working anchor, and it rests on two things
+  // that should be argued rather than inherited: an annualisation that assumes the
+  // last third of 2026 behaves like the first two thirds, and a judgement that the
+  // industrial decline is structural rather than cyclical. Q1 2026 was -5.6% and
+  // the part-year is -6.2%, so the decline was still steepening when the series
+  // ends.
+  //
+  // THIS CHECK IS EXPECTED TO FAIL at 222.4 TWh, and the failure is the finding:
+  // the demand series is calibrated to a demand level the system no longer has.
+  // THE BAND IS UNCHANGED at 170-215. It was not widened to absorb 222, which is
+  // precisely what it is here to stop. Any new bound would be a number chosen to
+  // fit rather than sourced, so the band moves only when the baseline year is
+  // settled, and then deliberately.
   const rooftopTwh = mix['Rooftop PV'] ? mix['Rooftop PV'].twh : 0;
   const bal = await probe(w, `
     const r = simulate(state, PROFILES);
@@ -199,14 +213,14 @@ function probe(w, src) {
       ? Array.prototype.reduce.call(a, (x, y) => x + (+y || 0), 0) / 1e6 : null;
     return { loadTwh: sum(r.loadS), chargeTwh: sum(r.chargeMW) };`);
   if (bal && !bal.error && bal.loadTwh) {
-    const gridServed = bal.loadTwh - rooftopTwh;
-    checkRange('Grid-served demand (served load, net of rooftop)', gridServed, 170, 215,
-      'Eskom RSA Contracted Demand: 209.6 TWh (2025), 198.1 annualised (2026)', 'TWh/yr');
-    console.log(`  note: served load ${bal.loadTwh.toFixed(1)} TWh, rooftop ${rooftopTwh.toFixed(1)}, `
+    checkRange('Grid-served demand (loadS, already net of rooftop)', bal.loadTwh, 170, 215,
+      'Eskom RSA Contracted Demand: 198.1 TWh annualised (2026), 209.6 (2025)', 'TWh/yr');
+    console.log(`  note: loadS ${bal.loadTwh.toFixed(1)} TWh, rooftop ${rooftopTwh.toFixed(1)}, `
       + `generation net of rooftop ${(totalTwh - rooftopTwh).toFixed(1)}, storage charging `
-      + `${(bal.chargeTwh || 0).toFixed(1)} - the generation basis is NOT comparable to a demand figure`);
+      + `${(bal.chargeTwh || 0).toFixed(1)}. generation - loadS = rooftop, exactly; there is no `
+      + `loss term in this accounting`);
   } else {
-    checkRange('Grid-served demand (served load, net of rooftop)', -1, 170, 215,
+    checkRange('Grid-served demand (loadS, already net of rooftop)', -1, 170, 215,
       'probe failed: ' + ((bal && bal.error) || 'no load series') + ' - not scored rather than '
       + 'scored on the wrong quantity', 'TWh/yr');
   }
