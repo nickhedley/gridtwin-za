@@ -537,7 +537,7 @@
   "cumulative_2024_25_to_2026_27": 1.2257,
   "source": "NERSA MYPD6 decision and the R54bn settlement. Municipal bulk purchases rise 9.01% from 1 July 2026, direct customers 8.76% from 1 April 2026.",
   "why_this_exists": "Two inputs were held in 2024/25 rands and used as 2026/27 figures - Homeflex's six rates and both Homelight rates - each 22.6% low. NERSA's own document warns of exactly this: its proposed tariffs are in 2024/25 rand value and are adjusted through the ERTSA process. Any rate taken from the Reasons for Decision must be grown before use.",
-  "fy2027_28_source_conflict": "Sources differ: we hold 8.83% and PowerOptimal reports 9.19% for 2027/28. A 0.36 point gap, immaterial here because the escalation only converts 2024/25 published rates to 2026/27 and the RCA schedule ends before any scenario year. Recorded rather than silently resolved.",
+  "fy2027_28_source_conflict": "RESOLVED 12 Sep 2026. We held 8.83% against PowerOptimal's 9.19%. NERSA's redetermination of Eskom's MYPD6 revenue allows an average 8.83% from 1 April 2027 - confirming ours and making it double-sourced. The redetermination also CORRECTS an earlier NERSA error in the regulatory-asset-base calculation, which matters here because existingCap is built on depreciation and return on assets over that base.",
   "approved_path": {
    "description": "What NERSA has actually approved, as distinct from what anyone projects.",
    "mypd6_covers": "FY2026, FY2027, FY2028 - the three years from 2025/26.",
@@ -650,13 +650,14 @@
  },
  "sales_decline_risk": {
   "description": "Eskom's grid sales are falling, and the panel holds the sales base fixed except for rooftop.",
-  "observed": "Eskom grid sales fell 5.6% in Q1 2026 against the prior year, as customers self-generate. FOTW, Aug 2026, citing Eskom.",
+  "observed": "Q1 2026 grid sales fell 5.6% year on year. The FULL YEAR is worse: Eskom sold 178 TWh in 2025/26, down 6.2%, with INDUSTRIAL sales down 22.5%. Revenue still rose 4.1% to R354.7bn, entirely on the 12.74% tariff increase rather than volume. That is the death spiral with numbers on it: prices up, volumes down, revenue held by price alone.",
   "effect_if_sustained": {
    "2pct_per_year_to_2035": "-17% sales",
    "5.6pct_per_year_to_2035": "-40% sales"
   },
   "why_it_matters": "Every fixed cost in this panel is recovered over sales. A shrinking base raises the per-kWh figure for the SAME rands - the death spiral that is itself the mechanism behind the above-inflation increases. The panel captures rooftop-driven decline WITHIN a scenario but not a secular fall.",
-  "not_modelled_deliberately": "Like the counterfactual escalation, choosing a demand trajectory is a judgement rather than a parameter. And it cuts both ways: a falling base raises every scenario, including the status quo. Holding it flat alongside a flat real tariff is doubly conservative and both are now recorded."
+  "not_modelled_deliberately": "Like the counterfactual escalation, choosing a demand trajectory is a judgement rather than a parameter. And it cuts both ways: a falling base raises every scenario, including the status quo. Holding it flat alongside a flat real tariff is doubly conservative and both are now recorded.",
+  "eskom_response": "Eskom is trying to monetise 2 to 3 GW of surplus capacity through DISCOUNTED negotiated pricing agreements for ferrochrome and manganese smelters, and targeting data centres, EV charging, exports and flexible bitcoin-mining loads. So the counter to falling volumes is discounted price, which pushes the burden further onto the customers who cannot negotiate - the residential base this panel models. Not modelled: the panel has no mechanism for a discounted industrial tariff."
  },
  "arrear_debt_reconciliation": "The report gives municipal debt to Eskom above R110bn, growing about R3bn a month - some R36bn a year - against the R7.8bn a year this panel carries. They measure different things: ours is what NERSA ALLOWS Eskom to recover through tariffs, theirs is what municipalities fail to pay. The roughly R28bn a year gap is absorbed by Eskom, not by consumers. So the tariff figure is the right one here, and the panel excludes it anyway as a transfer rather than a cost of supply.",
  "market_price_scarcity": {
