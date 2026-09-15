@@ -229,18 +229,44 @@ const num = t => {
   // panel AGREED with every other, because they all read the same mislabelled
   // quantity - so panel-versus-panel checks passed while the figure was wrong.
   // Agreement is not correctness when the shared source is misnamed.
+  // CORRECTED 15 Sep 2026. This read 15.9% and failed its own +-4 band, and the cause
+  // was in the quantity, not the model. `peak` is the maximum of loadS, and loadS
+  // SUBTRACTS interruptible load at index.html:7205 - the customer stopped consuming, so
+  // the demand line dips where DR was called. At +20% the system is short, 1,200 MW of DR
+  // is called at the annual peak hour, and the peak read is 1,200 MW below the demand that
+  // was actually there.
+  //
+  //   peak hour 5010, both runs      0%          +20%
+  //   demand x growth            32,526.18    39,031.41
+  //   fixed term (exports less        +835.13      +835.13
+  //     rooftop at that hour)
+  //   interruptible load                0.00    -1,200.00
+  //   loadS peak                 33,361.31    38,666.55   ratio 1.1590
+  //   adding DR back                           39,866.55   ratio 1.1950
+  //
+  // So the check now adds DR back before taking the ratio. The half point still missing is
+  // the 835 MW fixed term, which does not scale with demand and should not.
   const growth = run(`
+    const pk = (r) => {
+      let hi = 0;
+      for (let h = 0; h < r.loadS.length; h++) {
+        const v = r.loadS[h] + (r.drMW[h] || 0);
+        if (v > hi) hi = v;
+      }
+      return hi / 1000;
+    };
     const a = simulate({ ...state, demandGrowthPct: 0,  newBattMW: 30000 }, PROFILES);
     const b = simulate({ ...state, demandGrowthPct: 20, newBattMW: 30000 }, PROFILES);
-    return { p0: a.peak/1000, p20: b.peak/1000 };
+    return { p0: pk(a), p20: pk(b) };
   `);
   if (growth && !growth.err) {
     const implied = 100 * (growth.p20 / growth.p0 - 1);
     check('peak demand scales with the demand-growth slider, not with storage',
           Math.abs(implied - 20) < 4,
           `+20% demand growth moved peak by ${implied.toFixed(1)}% ` +
-          `(${growth.p0.toFixed(1)} -> ${growth.p20.toFixed(1)} GW) — if this is far off, ` +
-          `the reported peak is picking up something other than demand`);
+          `(${growth.p0.toFixed(1)} -> ${growth.p20.toFixed(1)} GW, interruptible load added ` +
+          `back) — if this is far off, the reported peak is picking up something other than ` +
+          `demand`);
   }
 
   // ── 4. regional capacity must sum to the national constants ───────────────
@@ -722,7 +748,7 @@ const num = t => {
   // ── NEGATIVE PRICES MUST STAY IN THE OBSERVED RANGE ─────────────────────
   // The negative-price rule prices coal-forced curtailment at the avoided restart cost.
   // Its premise - that EVERY curtailment hour is coal-forced - held at today's penetration
-  // and failed at high VRE: on the Future electricity mix preset it produced 5,614 negative
+  // and failed at high VRE: on the Deep decarbonisation preset it produced 5,614 negative
   // hours, 64% of the year, against roughly 460 in Germany in 2024, the most
   // negative-price-prone system in Europe.
   //
@@ -734,7 +760,7 @@ const num = t => {
   // shipped. No real system spends most of its year paying people to consume.
   {
     const r = run(`
-      const base = { ...state, ...PRESETS['Future electricity mix'] };
+      const base = { ...state, ...PRESETS['Deep decarbonisation'] };
       const rr = simulate(base, PROFILES);
       const p = Array.from(rr.marginalP || []);
       const neg = p.filter(x => x < 0).length;
@@ -859,7 +885,7 @@ const num = t => {
         const m = a => a.reduce((x, y) => x + y, 0) / a.length;
         const before = m(retailHourly().dyn), avgBefore = lastRes.avgCost;
         const keep = JSON.parse(JSON.stringify(state));
-        Object.assign(state, PRESETS['Future electricity mix']);
+        Object.assign(state, PRESETS['Deep decarbonisation']);
         run();
         const after = m(retailHourly().dyn), avgAfter = lastRes.avgCost;
         Object.assign(state, keep); run();
@@ -915,7 +941,7 @@ const num = t => {
         const m = a => a.reduce((x, y) => x + y, 0) / a.length;
         const yr = document.getElementById('retYear'), st = document.getElementById('retStranded');
         const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value, keepS = st.checked;
-        const fm = PRESETS['Future electricity mix'];
+        const fm = PRESETS['Deep decarbonisation'];
         // RESTORE EVERY KEY, not just the preset's. The first version reset only the Future
         // mix keys, so coalDecomMW set by an earlier check survived into this one and moved
         // the 2026 figure from R3.34 to R2.99. It read as a component error and was
@@ -1164,7 +1190,7 @@ const num = t => {
           if (!B) return { err: 'no basis control' };
           const keep = JSON.parse(JSON.stringify(state)), kY = yr.value, kB = B.value;
           const grab = b => {
-            Object.assign(state, PRESETS['Future electricity mix']);
+            Object.assign(state, PRESETS['Deep decarbonisation']);
             yr.value = '2035'; B.value = b; run();
             const n = document.getElementById('retNote').textContent.replace(/\s+/g, ' ');
             const i = n.indexOf('R/kWh:');
@@ -1195,7 +1221,7 @@ const num = t => {
           const H = document.getElementById('retH2GW');
           if (!B || !H) return { err: 'controls missing' };
           const keep = JSON.parse(JSON.stringify(state)), kY = yr.value, kB = B.value, kH = H.value;
-          Object.assign(state, PRESETS['Future electricity mix']); yr.value = '2035';
+          Object.assign(state, PRESETS['Deep decarbonisation']); yr.value = '2035';
           B.value = 'reg'; H.value = '0'; run();
           const regWk = m(retailHourly().week);
           B.value = 'mkt'; run();
@@ -1279,7 +1305,7 @@ const num = t => {
       const ncap = run(`
         const yr = document.getElementById('retYear');
         const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value;
-        Object.assign(state, PRESETS['Future electricity mix']); yr.value = 2035; run();
+        Object.assign(state, PRESETS['Deep decarbonisation']); yr.value = 2035; run();
         const v = retailComponents(0.40, true, 2035);
         Object.assign(state, keep); yr.value = keepY; run();
         return { newCap: v.newCap, vintage: v.vintage };

@@ -7259,7 +7259,7 @@ function simulate(u, prof, outPath){
       //
       // The original test was "curtailing while coal runs", on the stated premise that
       // every curtailment hour in this model is coal-forced. That premise held at today's
-      // penetration and FAILS at high VRE. Measured on the Future electricity mix preset,
+      // penetration and FAILS at high VRE. Measured on the Deep decarbonisation preset,
       // 8 Sep 2026: retiring the entire coal fleet leaves 103 of 134 TWh of curtailment
       // in place. That spill is VRE surplus and no unit is avoiding a cycle in it.
       //
@@ -7700,7 +7700,7 @@ function simulate(u, prof, outPath){
   // to sell back later, and it is discretionary in a way demand is not.
   //
   // Reporting the combined figure as "peak demand" was badly misleading in
-  // exactly the scenarios storage exists for: the Future electricity mix preset
+  // exactly the scenarios storage exists for: the Deep decarbonisation preset
   // showed 50.5 GW against a true peak of 33.2 GW, because 30 GW of new
   // batteries charge off surplus solar at 09:00. A user reasonably read 5% demand
   // growth and a 60% jump in peak and concluded the demand model was broken.
@@ -12020,7 +12020,7 @@ const RETAIL_LOSS = 0.08;
 // through a flat regulated adder - right for South Africa today, where Eskom recovers a
 // NERSA-approved revenue requirement and there is no wholesale market. It is NOT what Octopus
 // Agile does, and the gap was measured on 10 Sep 2026: wholesale revenue at short-run cost
-// covers 157% of system cost today but 16% on the Future electricity mix. That is the missing
+// covers 157% of system cost today but 16% on Deep decarbonisation. That is the missing
 // money problem. Our price distribution runs -R0.23 to R0.79 and never higher, all year.
 //
 // HOW THE PROFESSIONAL MODELS DO IT. Two approaches, and they agree on the principle:
@@ -13635,7 +13635,7 @@ const PRESETS={
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
   'Latest IRP\'s 2030 targets':{demandGrowthPct:16,coalEAFPct:68,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
-  'Future electricity mix':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:52000,newRooftopMW:20000,newBattMW:30000,newBattHours:6,newCcgtMW:0},
+  'Deep decarbonisation':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:52000,newRooftopMW:20000,newBattMW:30000,newBattHours:6,newCcgtMW:0},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'

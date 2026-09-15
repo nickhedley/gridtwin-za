@@ -538,7 +538,7 @@ function probe(w, src) {
   // mix" retires 21 GW of coal and builds 28.5 GW wind + 42.5 GW solar, so wind
   // and solar together should dominate and coal should fall well below today's
   // ~80%. This replaces a check against a since-removed PyPSA preset.
-  const future = pressPreset('Future electricity mix');
+  const future = pressPreset('Deep decarbonisation');
   if (future) {
     const vre = ['Wind','Utility PV','Rooftop PV','CSP']
       .reduce((a, k) => a + (future[k] ? future[k].pct : 0), 0);
