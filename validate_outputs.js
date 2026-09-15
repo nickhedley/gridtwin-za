@@ -247,6 +247,53 @@ function probe(w, src) {
       + 'scored on the wrong quantity', 'TWh/yr');
   }
 
+  // ── avgCost: THE HEADLINE NUMBER NOBODY ASSERTED ──────────────────────────
+  // Added 15 Sep 2026. On that day firm export revenue was booked into avgCost and it
+  // moved R588.36 -> R571.70, a 2.8% shift in the model's headline cost figure, and ALL
+  // FIFTEEN HARNESSES PASSED. Nothing anywhere in the suite looked at avgCost. Same class
+  // of hole as the retail denominator, which sat 8.9% wrong for three days for the same
+  // reason: a number quoted externally with nothing asserting it.
+  //
+  // TWO CHECKS, because they fail on different things.
+  //
+  // 1. IDENTITY. avgCost must reconcile to the components it is built from. This catches
+  //    a term added to one site and not another - which is exactly the shape of the
+  //    salesMWh break on 12 Sep, where a revert removed a subtraction from one expression
+  //    and every downstream figure moved with no error anywhere. Only valid while
+  //    curtailment is zero, because curtailFuelCost is not returned by simulate(); the
+  //    check asserts that precondition rather than assuming it.
+  //
+  // 2. RATCHET. A recorded value with a 1% tolerance. It WILL fire on a legitimate cost
+  //    update, and that is the point: update it deliberately, with a dated line saying
+  //    what moved and why, exactly as audit.py's PROSE_CEILING is handled. Do not widen
+  //    the tolerance to make a change pass.
+  const cost = await probe(w, `
+    const r = simulate(state, PROFILES); const E = r.E;
+    const GK = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal',
+                'ps','batt','ccgt','diesel'];
+    const gridServed = GK.reduce((a, k) => a + (E[k] || 0), 0) - E.rooftop - E.ps - E.batt;
+    return { avgCost: r.avgCost, gridCost: r.gridCost, gridServed,
+             exportRevenueR: r.exportRevenueR, firmExportRevenueR: r.firmExportRevenueR,
+             curtailedTWh: (E.curtailed || 0) / 1e6 };`);
+  if (cost && !cost.error && cost.avgCost) {
+    checkRange('Curtailment is zero at defaults, so the avgCost identity is valid',
+      cost.curtailedTWh, 0, 0.001,
+      'curtailFuelCost is not returned by simulate(); with spill the identity below needs it',
+      'TWh/yr');
+    const recomputed = (cost.gridCost - cost.exportRevenueR - (cost.firmExportRevenueR || 0))
+                       / cost.gridServed;
+    check('avgCost reconciles to its own components', recomputed, cost.avgCost, 0.01,
+      'gridCost less export revenue, over gridServed. A term added to avgCost and not to '
+      + 'gridCost, or the reverse, shows here and nowhere else', 'R/MWh');
+    check('avgCost has not moved without a decision', cost.avgCost, 571.70, 5.72,
+      'RECORDED 15 Sep 2026 at R571.70/MWh, defaults, build 2026-09-15a, after firm export '
+      + 'revenue was booked. 1% tolerance. If this fires, find what moved and update the '
+      + 'figure here with a dated note - do not widen the tolerance', 'R/MWh');
+  } else {
+    check('avgCost reconciles to its own components', -1, 0, 0,
+      'probe failed: ' + ((cost && cost.error) || 'no avgCost'), 'R/MWh');
+  }
+
   // Rooftop generation must be consistent with the model's own installed
   // capacity at a physically realistic capacity factor.
   //
