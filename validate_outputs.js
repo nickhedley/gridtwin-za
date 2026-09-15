@@ -268,30 +268,52 @@ function probe(w, src) {
   //    what moved and why, exactly as audit.py's PROSE_CEILING is handled. Do not widen
   //    the tolerance to make a change pass.
   const cost = await probe(w, `
-    const r = simulate(state, PROFILES); const E = r.E;
     const GK = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal',
                 'ps','batt','ccgt','diesel'];
-    const gridServed = GK.reduce((a, k) => a + (E[k] || 0), 0) - E.rooftop - E.ps - E.batt;
-    return { avgCost: r.avgCost, gridCost: r.gridCost, gridServed,
-             exportRevenueR: r.exportRevenueR, firmExportRevenueR: r.firmExportRevenueR,
-             curtailFuelCost: r.curtailFuelCost,
-             curtailedTWh: (E.curtailed || 0) / 1e6 };`);
-  if (cost && !cost.error && cost.avgCost) {
+    const one = (st) => {
+      const r = simulate(st, PROFILES); const E = r.E;
+      const gridServed = GK.reduce((a, k) => a + (E[k] || 0), 0) - E.rooftop - E.ps - E.batt;
+      return { avgCost: r.avgCost, gridCost: r.gridCost, gridServed,
+               exportRevenueR: r.exportRevenueR, firmExportRevenueR: r.firmExportRevenueR,
+               curtailFuelCost: r.curtailFuelCost,
+               curtailedTWh: (E.curtailed || 0) / 1e6 };
+    };
+    // The coal-curtailment corner. curtailFuelCost is surplus AFTER storage and AFTER every
+    // renewable is cut to zero, index.html:6964, so ordinary oversupply never reaches it -
+    // 226.9 TWh of spill with rigid coal and 20 GW of new coal still leaves it at zero. It
+    // needs a synchronous floor forcing coal into a market that cannot take the energy.
+    const SPILL = { ...state, demandGrowthPct: -10, coalEAFPct: 100, coalDecomMW: 0,
+                    syncMinMW: 25000, newWindMW: 60000, newPvMW: 80000, newBattMW: 0 };
+    return { base: one(state), spill: one(SPILL) };`);
+  if (cost && !cost.error && cost.base && cost.base.avgCost) {
+    const recon = (c) => (c.gridCost - (c.curtailFuelCost || 0) - c.exportRevenueR
+                          - (c.firmExportRevenueR || 0)) / c.gridServed;
     checkRange('Curtailment is zero at defaults, a diagnostic for the identity below',
-      cost.curtailedTWh, 0, 0.001,
+      cost.base.curtailedTWh, 0, 0.001,
       'not a limit any more - curtailFuelCost is returned as of 15 Sep 2026, so the identity '
       + 'holds with spill. Kept because spill appearing at DEFAULTS would itself be news',
       'TWh/yr');
-    const recomputed = (cost.gridCost - (cost.curtailFuelCost || 0) - cost.exportRevenueR
-                        - (cost.firmExportRevenueR || 0)) / cost.gridServed;
-    check('avgCost reconciles to its own components', recomputed, cost.avgCost, 0.01,
+    check('avgCost reconciles to its own components', recon(cost.base), cost.base.avgCost, 0.01,
       'gridCost less curtailed coal fuel and both export revenue lines, over gridServed. '
       + 'A term added to avgCost and not to '
       + 'gridCost, or the reverse, shows here and nowhere else', 'R/MWh');
-    check('avgCost has not moved without a decision', cost.avgCost, 571.70, 5.72,
+    check('avgCost has not moved without a decision', cost.base.avgCost, 571.70, 5.72,
       'RECORDED 15 Sep 2026 at R571.70/MWh, defaults, build 2026-09-15a, after firm export '
       + 'revenue was booked. 1% tolerance. If this fires, find what moved and update the '
       + 'figure here with a dated note - do not widen the tolerance', 'R/MWh');
+    // The identity at defaults cannot see curtailFuelCost, because it is zero there. This
+    // scenario is the only one found that makes it non-zero: R6.34bn over 194.9 TWh, so
+    // dropping the term moves the recomputation R32.54/MWh against a R0.01 tolerance.
+    // Without this the term is plumbed and untested, which is how avgCost drifted 2.8%
+    // through fifteen green harnesses in the first place.
+    check('curtailFuelCost is non-zero in the coal-curtailment scenario',
+      cost.spill.curtailFuelCost / 1e9, 6.342, 0.7,
+      'R bn. If this reads zero the scenario has stopped producing coal curtailment and the '
+      + 'identity below is no longer exercising the term - fix the scenario, not the check',
+      'R bn');
+    check('avgCost reconciles with curtailed coal fuel in play',
+      recon(cost.spill), cost.spill.avgCost, 0.01,
+      'same identity, on the scenario where curtailFuelCost actually bites', 'R/MWh');
   } else {
     check('avgCost reconciles to its own components', -1, 0, 0,
       'probe failed: ' + ((cost && cost.error) || 'no avgCost'), 'R/MWh');
