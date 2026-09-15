@@ -45,6 +45,21 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
+## Instrument the loop before proposing a cause
+
+When a quantity disagrees with expectation, add a temporary accumulator inside
+the loop that builds it and read the sums. Do not reason about what the code
+should produce.
+
+On 15 Sep 2026 a 6.6 TWh gap in the energy balance took five hypotheses. Four
+died to measurement after being argued first: a growth factor, a netting defect,
+a missing key in GEN_KEYS, and storage round-trip loss. The fifth was found in
+one instrumented run on a throwaway copy of index.html, which printed the loop's
+own sums and named it immediately - firm exports, added to the load line.
+
+The two findings that mattered came from instrumenting a loop and from reading
+two variable definitions side by side. Neither came from inference.
+
 ## Harness style - panels before probes
 
 A harness that reads the rendered page tests what a user sees. A harness that

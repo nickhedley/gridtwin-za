@@ -200,27 +200,49 @@ function probe(w, src) {
   // the part-year is -6.2%, so the decline was still steepening when the series
   // ends.
   //
-  // THIS CHECK IS EXPECTED TO FAIL at 222.4 TWh, and the failure is the finding:
-  // the demand series is calibrated to a demand level the system no longer has.
-  // THE BAND IS UNCHANGED at 170-215. It was not widened to absorb 222, which is
-  // precisely what it is here to stop. Any new bound would be a number chosen to
-  // fit rather than sourced, so the band moves only when the baseline year is
-  // settled, and then deliberately.
+  // WHICH SIDE OF WHAT, because this check has had three units faults in one
+  // session and every one was a convention nobody had written down:
+  //
+  //   PROFILES.demand   225.85   GROSS. meta says "gross grid demand + est
+  //                              rooftop gen, app nets rooftop internally"
+  //   less rooftop      -15.00   behind the meter, index.html:6571-6572
+  //   plus firm exports  +6.62   IN, deliberately. exportsMW 745 shaped by
+  //                              exportShapePeak. A firm contract is a real load
+  //                              on the SA system, and Eskom's contracted demand
+  //                              carries its exports too.
+  //   = 217.47                   what this check measures
+  //   plus charging      +4.94   OUT. loadS adds it back at index.html:7205.
+  //                              Eskom nets pumping off as negative generation,
+  //                              so it must not be on this side.
+  //   less DR            -0.01   OUT, same reason: loadS subtracts it at 7205.
+  //   = loadS           222.39
+  //
+  // Neither side carries network losses: generation minus loadS equals rooftop
+  // exactly, so there is no loss term anywhere in this accounting.
+  //
+  // THIS CHECK IS EXPECTED TO FAIL at 217.5, and the failure is the finding: the
+  // demand series is calibrated to a demand level the system no longer has, 3.8%
+  // above 2025 and 9.8% above the 2026 annualisation. THE BAND IS UNCHANGED at
+  // 170-215. It was not widened to absorb the overshoot, which is precisely what
+  // it is here to stop. Any new bound would be a number chosen to fit rather than
+  // sourced, so the band moves only when the baseline year is settled, and then
+  // deliberately.
   const rooftopTwh = mix['Rooftop PV'] ? mix['Rooftop PV'].twh : 0;
   const bal = await probe(w, `
     const r = simulate(state, PROFILES);
     const sum = a => (a && typeof a.reduce === 'function')
       ? Array.prototype.reduce.call(a, (x, y) => x + (+y || 0), 0) / 1e6 : null;
-    return { loadTwh: sum(r.loadS), chargeTwh: sum(r.chargeMW) };`);
+    return { loadTwh: sum(r.loadS), chargeTwh: sum(r.chargeMW), drTwh: sum(r.drMW) };`);
   if (bal && !bal.error && bal.loadTwh) {
-    checkRange('Grid-served demand (loadS, already net of rooftop)', bal.loadTwh, 170, 215,
+    const gridDemand = bal.loadTwh - (bal.chargeTwh || 0) + (bal.drTwh || 0);
+    checkRange('Grid demand (net of rooftop and charging, exports in)', gridDemand, 170, 215,
       'Eskom RSA Contracted Demand: 198.1 TWh annualised (2026), 209.6 (2025)', 'TWh/yr');
-    console.log(`  note: loadS ${bal.loadTwh.toFixed(1)} TWh, rooftop ${rooftopTwh.toFixed(1)}, `
-      + `generation net of rooftop ${(totalTwh - rooftopTwh).toFixed(1)}, storage charging `
-      + `${(bal.chargeTwh || 0).toFixed(1)}. generation - loadS = rooftop, exactly; there is no `
-      + `loss term in this accounting`);
+    console.log(`  note: loadS ${bal.loadTwh.toFixed(2)}, less charging ${(bal.chargeTwh || 0).toFixed(2)}, `
+      + `plus DR ${(bal.drTwh || 0).toFixed(2)} = ${gridDemand.toFixed(2)} TWh. rooftop `
+      + `${rooftopTwh.toFixed(2)} already netted inside loadS; firm exports are IN and are not `
+      + `E.exported, which holds the surplus channel and is zero while exportCapMW is 0`);
   } else {
-    checkRange('Grid-served demand (loadS, already net of rooftop)', -1, 170, 215,
+    checkRange('Grid demand (net of rooftop and charging, exports in)', -1, 170, 215,
       'probe failed: ' + ((bal && bal.error) || 'no load series') + ' - not scored rather than '
       + 'scored on the wrong quantity', 'TWh/yr');
   }
