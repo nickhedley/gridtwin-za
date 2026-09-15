@@ -12543,6 +12543,35 @@ function renderRetail(){
        ['imports, levies, arrears', c.imports + c.fixedItems]];
   const preTot = items.reduce((a, b) => a + b[1], 0);
 
+  // ── WHAT YOUR LAST CHANGE DID ──────────────────────────────────────────────
+  //
+  // One line, no chart. The panel reports a total and a component stack, but never the DELTA
+  // between two states - so moving a control changed a number with no indication of which
+  // component moved it. On the grid delay scenario the bill goes R3.91 to R3.96 and the
+  // interesting part is entirely in which lines made up that 5 cents.
+  //
+  // Against the PREVIOUS RENDER, not a fixed baseline. Cheaper - no second model run - and it
+  // answers the question actually being asked, which is what the control you just moved did.
+  // It says nothing on first render, and nothing when the change is below a cent, so it stays
+  // quiet unless it has something to say.
+  const prev = window.__retPrev;
+  let deltaLine = '';
+  if (prev && Math.abs(preTot - prev.tot) > 0.005) {
+    const moved = items
+      .map(x => [x[0], x[1] - (prev.map[x[0]] || 0)])
+      .filter(x => Math.abs(x[1]) > 0.004)
+      .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+      .slice(0, 3)
+      .map(x => `${x[0]} ${x[1] > 0 ? '+' : '&minus;'}${Math.abs(x[1]).toFixed(2)}`);
+    if (moved.length) {
+      const d = preTot - prev.tot;
+      deltaLine = `<div style="font-size:10px;color:var(--ink2);margin:4px 0 8px">`
+        + `<strong>${d > 0 ? '+' : '&minus;'}R${Math.abs(d).toFixed(2)}</strong> on your last `
+        + `change &middot; ${moved.join(' &middot; ')}</div>`;
+    }
+  }
+  window.__retPrev = { tot: preTot, map: Object.fromEntries(items) };
+
   noteEl.innerHTML =
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
     + `${c.year}. Built from NERSA's allowed revenue over ${c.salesTWh.toFixed(0)}&nbsp;TWh of `
@@ -12551,6 +12580,7 @@ function renderRetail(){
     + '<span class="mono" style="font-size:10px;display:block;margin:5px 0 8px">'
     + items.map(x => `${x[0]} ${x[1].toFixed(3)}`).join(' &middot; ')
     + ` &middot; <strong>total ${preTot.toFixed(3)}</strong></span>`
+    + deltaLine
     + (c.curtSold
         ? `<strong>${c.h2GW}&nbsp;GW of electrolysers</strong> take `
         + `${c.h2SharePct.toFixed(0)}% of the curtailed energy at R1.05/kWh, derived from a `
@@ -14938,7 +14968,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-12n';
+const BUILD_STAMP = '2026-09-12o';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
