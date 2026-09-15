@@ -283,12 +283,18 @@ The ancillary column reproduces at R150/MWh and falls 73.8% across the range
 rather than 61.6%, starting between 0.5 and 3 GW rather than staying flat to 3.8.
 The TOTAL column does not reproduce: it now reads about R2.6m/MW/yr against a
 published R304,165, a factor of 23. The old entry says arbitrage is held flat.
-That was true when it was written and is not true now, and WHEN OR WHY IT CHANGED
-HAS NOT BEEN ESTABLISHED.
+That was true when it was written and is not true now.
 
-So no replacement table is published here. One column is explained and one is not,
-and issuing a corrected table containing an unexplained 23x would repeat the
-original error in a new form. See STATE.md open items.
+CAUSE ESTABLISHED 15 Sep 2026, and it is not a defect. The marginal price series
+gained a scarcity tail from the VoRS work of 11-12 Sep. Capping the series
+reproduces the old figure: at R1,500 arbitrage is 189,560 and at R1,000 it is
+33,357, against a backed-out published 125,959. Uncapped it is 2,135,964, and six
+hours above R20,000 carry 20% of that. See STATE.md open item 7.
+
+No replacement table is published here, and that is now a PUBLISHING DECISION
+rather than an open question. A battery revenue figure resting 20% on six hours of
+an administratively set shortage price is a number about an assumption. If it is
+reissued it must carry the VoRS shape with it.
 
 REQUIRES `asReserveOn`. At defaults the panel shows a flat line and says so,
 because South Africa prices no ancillary services today.
