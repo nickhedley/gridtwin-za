@@ -259,9 +259,9 @@ function probe(w, src) {
   // 1. IDENTITY. avgCost must reconcile to the components it is built from. This catches
   //    a term added to one site and not another - which is exactly the shape of the
   //    salesMWh break on 12 Sep, where a revert removed a subtraction from one expression
-  //    and every downstream figure moved with no error anywhere. Only valid while
-  //    curtailment is zero, because curtailFuelCost is not returned by simulate(); the
-  //    check asserts that precondition rather than assuming it.
+  //    and every downstream figure moved with no error anywhere. curtailFuelCost was made
+  //    a returned field on 15 Sep so this holds on spill scenarios too; the zero-spill
+  //    precondition below is kept as a diagnostic, not as a limit on the identity.
   //
   // 2. RATCHET. A recorded value with a 1% tolerance. It WILL fire on a legitimate cost
   //    update, and that is the point: update it deliberately, with a dated line saying
@@ -274,16 +274,19 @@ function probe(w, src) {
     const gridServed = GK.reduce((a, k) => a + (E[k] || 0), 0) - E.rooftop - E.ps - E.batt;
     return { avgCost: r.avgCost, gridCost: r.gridCost, gridServed,
              exportRevenueR: r.exportRevenueR, firmExportRevenueR: r.firmExportRevenueR,
+             curtailFuelCost: r.curtailFuelCost,
              curtailedTWh: (E.curtailed || 0) / 1e6 };`);
   if (cost && !cost.error && cost.avgCost) {
-    checkRange('Curtailment is zero at defaults, so the avgCost identity is valid',
+    checkRange('Curtailment is zero at defaults, a diagnostic for the identity below',
       cost.curtailedTWh, 0, 0.001,
-      'curtailFuelCost is not returned by simulate(); with spill the identity below needs it',
+      'not a limit any more - curtailFuelCost is returned as of 15 Sep 2026, so the identity '
+      + 'holds with spill. Kept because spill appearing at DEFAULTS would itself be news',
       'TWh/yr');
-    const recomputed = (cost.gridCost - cost.exportRevenueR - (cost.firmExportRevenueR || 0))
-                       / cost.gridServed;
+    const recomputed = (cost.gridCost - (cost.curtailFuelCost || 0) - cost.exportRevenueR
+                        - (cost.firmExportRevenueR || 0)) / cost.gridServed;
     check('avgCost reconciles to its own components', recomputed, cost.avgCost, 0.01,
-      'gridCost less export revenue, over gridServed. A term added to avgCost and not to '
+      'gridCost less curtailed coal fuel and both export revenue lines, over gridServed. '
+      + 'A term added to avgCost and not to '
       + 'gridCost, or the reverse, shows here and nowhere else', 'R/MWh');
     check('avgCost has not moved without a decision', cost.avgCost, 571.70, 5.72,
       'RECORDED 15 Sep 2026 at R571.70/MWh, defaults, build 2026-09-15a, after firm export '
