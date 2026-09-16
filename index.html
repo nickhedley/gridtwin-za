@@ -7993,7 +7993,22 @@ const BLD_COST = {
   // commercial iron-air project was findable as of 21 Aug 2026 - the first
   // gigafactory only began shipping this year. If iron-air starts winning in
   // the optimiser, check this number before believing the result.
-  ironair: { c2026: 39000, decl:  0.0600 },
+  // CHANGED 16 Sep 2026, R39,000 -> R127,050/kW. The old figure was USD ~24/kWh, which is
+  // Form Energy's stated USD 20/kWh TARGET plus a little, and the comment above said to check
+  // it if iron-air ever started winning in the optimiser. It now does: on a no-gas 50 GW wind
+  // / 60 GW solar build, 10 GW of 100-hour storage takes unserved energy to zero, and at full
+  // coal retirement 20 GW replaces the entire fleet's adequacy contribution.
+  //
+  // The new figure is the one FIXED.acapIronAir already used and sourced: 100h at USD 77/kWh
+  // = USD 7,700/kW = R127,050/kW at R16.50, the pre-incentive price implied by the Form
+  // Energy / Google / Xcel 30 GWh deal. South Africa gets no 45X credit, so pre-incentive is
+  // the right side of it. That constant was sourced, FX-pinned and annuitised; this one was a
+  // target with a decline rate and no working, and the two differed more than three-fold in
+  // the one place the model decides what to BUILD.
+  //
+  // The USD 20/kWh target is now the optimistic bound, not the default. If it is realised,
+  // R33,000/kW is the figure, and iron-air gets cheaper than this by a factor of four.
+  ironair: { c2026: 127050, decl:  0.0600 },
   ccgt:    { c2026: 34965, decl: -0.0200 },
 };
 // vrfb gets 25 years: 20,000-30,000 cycles and a 25-30 year calendar life, with
@@ -12759,7 +12774,17 @@ function renderRetail(){
     + 'Every new plant here is paid for through Eskom\u2019s revenue. The more of it that goes '
     + 'instead to private offtakers, the smaller the base left carrying the legacy cost \u2013 '
     + 'at a 50% private share the residual bill rises about 40%. Not modelled.</span>';
-  noteEl.innerHTML = capLine + ppaNote +
+  // WHAT THE FIVE ROWS ARE, in plain terms. Added 16 Sep 2026 because the distinction is not
+  // obvious from the labels: all five are Eskom customers, two are tariffs you can buy, and
+  // the last three share one price series and differ only in when the household consumes.
+  const rowsNote = '<span style="display:block;margin:5px 0 8px;color:var(--ink2)">'
+    + '<strong>Reading the table.</strong> Homepower and Homeflex are real Eskom tariffs. The '
+    + 'other three do not exist: they are the same customer paying a price that follows cost '
+    + 'by the hour. Shadow dynamic is that price averaged flat. The two Agile-style rows are '
+    + 'the same price weighted by when a household actually uses electricity \u2013 which is why '
+    + 'all three share a cheapest hour, a dearest hour and a spread, and differ only in the '
+    + 'mean.</span>';
+  noteEl.innerHTML = capLine + rowsNote + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
     + `${c.year}. Built from NERSA's allowed revenue over ${c.salesTWh.toFixed(0)}&nbsp;TWh of `
     + `sales, allocated to that customer category at 1.62&times; the system average using `
