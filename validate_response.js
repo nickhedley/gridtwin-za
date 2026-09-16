@@ -131,6 +131,11 @@ const CONTEXT = {
   // Paid for AVAILABILITY, not energy - acts on the build LP via bldNetAnnuity(),
   // so a dispatch sweep cannot see it. Verified in stress_deep F1b/F1c instead.
   capacityPaymentRkWyr: { __skip: true },
+  // Same reason, added 16 Sep 2026. A separate rate for iron-air and vanadium, so it is
+  // doubly invisible to a dispatch sweep: it is an availability payment AND the default
+  // scenario carries no long-duration storage for it to price. Not a dead control - see
+  // the capacity panel and bldNetAnnuity(), both of which read it through capPayRate().
+  capacityPaymentLdsRkWyr: { __skip: true },
   // Revenue stream, not a dispatch signal - see stress_deep for the same note.
   asInertiaRkWyr: { __skip: true },
   // GATED BY TOGGLES (added 20 Aug 2026). All three market-design levers default
