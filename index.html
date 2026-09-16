@@ -9870,8 +9870,13 @@ function renderCapacityPayment(res){
   const _capexPerKW = (tech) => (BLD_COST[tech] && BLD_LIFE[tech])
     ? bldAnnuity(BLD_COST[tech].c2026 * Math.pow(1 - BLD_COST[tech].decl, _vint - 2026), BLD_LIFE[tech])
     : null;
+  // Pumped storage duration comes from its ENERGY, not a duration constant: FIXED.psEnergyMWh
+  // 60,000 over FIXED.psPowerMW 2,724 is about 22 hours, not the 14 the row label says. The
+  // label is not changed here - that is a separate question about which figure is right - but
+  // the cycle count uses the energy the engine actually dispatches against.
   const _hoursFor = { batt: (state.newBattHours || FIXED.battHours || 4),
-                      vrfb: (state.newVrfbHours ?? 8), ironair: (state.newIronAirHours ?? 100) };
+                      vrfb: (state.newVrfbHours ?? 8), ironair: (state.newIronAirHours ?? 100),
+                      ps: (FIXED.psPowerMW > 0 ? FIXED.psEnergyMWh / FIXED.psPowerMW : null) };
   const body = rows.map(x => {
     const revR = x.mw * x.der * 1000 * capPayRate(x.tech);
     const perMWh = x.mwh > 1 ? revR / x.mwh : null;
@@ -9891,7 +9896,13 @@ function renderCapacityPayment(res){
     // some merely displaces cheaper generation. South Africa sets no fixed reliability
     // threshold and instead uses a NERSA-approved Cost of Unserved Energy, so this is the
     // figure that is directly comparable to how the country actually decides.
-    const breakEven = (capexKW != null && x.mwh > 1)
+    // THREE cases, not two. An asset can have no build cost (existing plant, not a build
+    // option - pumped storage has no BLD_COST entry and correctly so), or it can have a cost
+    // and never run. Those were briefly collapsed into one message on 16 Sep 2026, which
+    // labelled 5.2 TWh of pumped storage discharge as "paid, never runs".
+    const noCapex = (capexKW == null);
+    const neverRuns = (x.mwh <= 1);
+    const breakEven = (!noCapex && !neverRuns)
       ? (capexKW * x.mw * 1000) / x.mwh / 1000 : null;
     return '<tr>'
       + '<td style="padding:3px 5px">' + x.nm + '</td>'
@@ -9900,14 +9911,15 @@ function renderCapacityPayment(res){
       + '<td class="mono" style="text-align:right;padding:3px 5px">' + (x.mw*x.der/1000).toFixed(1) + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px">R' + (revR/1e9).toFixed(2) + 'bn</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px;font-weight:600">'
-        + (breakEven === null ? '<span style="color:var(--alert,#C4785A)">paid, never runs</span>'
+        + (neverRuns ? '<span style="color:var(--alert,#C4785A)">paid, never runs</span>'
+           : noCapex ? '<span style="color:var(--ink2)">existing plant</span>'
            : 'R' + (breakEven >= 100 ? breakEven.toFixed(0) : breakEven.toFixed(2))) + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px;color:var(--ink2)">'
         + (cycles === null ? '\u2013' : cycles.toFixed(cycles < 10 ? 2 : 0)) + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px">'
-        + (needKW === null
-            ? '<span style="color:var(--ink2)">not needed here</span>'
-            : 'R' + needKW.toFixed(0)) + '</td></tr>';
+        + (needKW !== null ? 'R' + needKW.toFixed(0)
+           : noCapex ? '<span style="color:var(--ink2)">no build cost</span>'
+           : '<span style="color:var(--ink2)">not needed here</span>') + '</td></tr>';
   }).join('');
 
   host.innerHTML =
@@ -9924,7 +9936,9 @@ function renderCapacityPayment(res){
     + 'on the same de-rated basis the payment is made on \u2013 capex only, no fixed O&amp;M and '
     + 'no energy margin netted, so it overstates the need for anything that cycles often. It is '
     + 'left blank where the asset barely runs, because a rate to procure storage the system does '
-    + 'not need is a cost with nothing on the other side of it.</p>'
+    + 'not need is a cost with nothing on the other side of it. Existing plant that is not a '
+    + 'build option, such as the pumped storage fleet, has no build cost to recover and is '
+    + 'marked as such rather than scored.</p>'
     + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
     + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
     + '<th style="text-align:left;padding:3px 5px">Technology</th>'
