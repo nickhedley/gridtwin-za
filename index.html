@@ -9879,7 +9879,20 @@ function renderCapacityPayment(res){
     const cycles = (hrs && x.mw > 0) ? (x.mwh / (x.mw * hrs)) : null;
     const capexKW = _capexPerKW(x.tech);
     // Paid on de-rated MW, so the rate needed is the annuity grossed up by the de-rate.
-    const needKW = (capexKW != null && x.der > 0) ? capexKW / x.der : null;
+    // GATED on the asset actually doing something. A rate to procure storage the system does
+    // not need is a cost with no value beside it, and the figure does not vary with the
+    // scenario - only the cycles column does - so it would read the same whether the asset
+    // was essential or pointless. Below a hundredth of a cycle it says so instead.
+    const needKW = (capexKW != null && x.der > 0 && cycles != null && cycles >= 0.01)
+      ? capexKW / x.der : null;
+    // BREAK-EVEN cost of unserved energy: the annual capital divided by what the asset
+    // delivers. A LOWER BOUND on the value the system must place on unserved energy for this
+    // to be worth procuring, because not every megawatt-hour it discharges avoids an outage -
+    // some merely displaces cheaper generation. South Africa sets no fixed reliability
+    // threshold and instead uses a NERSA-approved Cost of Unserved Energy, so this is the
+    // figure that is directly comparable to how the country actually decides.
+    const breakEven = (capexKW != null && x.mwh > 1)
+      ? (capexKW * x.mw * 1000) / x.mwh / 1000 : null;
     return '<tr>'
       + '<td style="padding:3px 5px">' + x.nm + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px">' + (x.mw/1000).toFixed(1) + '</td>'
@@ -9887,12 +9900,14 @@ function renderCapacityPayment(res){
       + '<td class="mono" style="text-align:right;padding:3px 5px">' + (x.mw*x.der/1000).toFixed(1) + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px">R' + (revR/1e9).toFixed(2) + 'bn</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px;font-weight:600">'
-        + (perMWh === null ? '<span style="color:var(--alert,#C4785A)">paid, never runs</span>'
-                           : 'R' + perMWh.toFixed(0)) + '</td>'
+        + (breakEven === null ? '<span style="color:var(--alert,#C4785A)">paid, never runs</span>'
+           : 'R' + (breakEven >= 100 ? breakEven.toFixed(0) : breakEven.toFixed(2))) + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px;color:var(--ink2)">'
         + (cycles === null ? '\u2013' : cycles.toFixed(cycles < 10 ? 2 : 0)) + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px">'
-        + (needKW === null ? '\u2013' : 'R' + needKW.toFixed(0)) + '</td></tr>';
+        + (needKW === null
+            ? '<span style="color:var(--ink2)">not needed here</span>'
+            : 'R' + needKW.toFixed(0)) + '</td></tr>';
   }).join('');
 
   host.innerHTML =
@@ -9900,13 +9915,16 @@ function renderCapacityPayment(res){
     + (pay === 0
         ? 'No capacity payment is set, so nothing here earns anything for being available. '
         : 'At R' + pay + '/kW/yr, paid on de-rated MW. ')
-    + 'The R/MWh column is what that payment is worth per MWh actually delivered. '
-    + '<strong>Cycles/yr</strong> is how many full discharges the asset manages in a year, and '
-    + '<strong>needs R/kW-yr</strong> is the capacity rate that would cover its capital, on the '
-    + 'same de-rated basis the payment is made on. Capex only \u2013 no fixed O&amp;M, and no '
-    + 'energy margin netted off \u2013 so it overstates the need for anything that cycles often '
-    + 'and understates nothing. An asset running a fraction of a cycle a year cannot be paid by '
-    + 'an energy price at any scarcity level, which is what the two columns together show.</p>'
+    + '<strong>Break-even R/kWh</strong> is what the system would have to value unserved energy '
+    + 'at for this asset to be worth its capital \u2013 a lower bound, since not every MWh it '
+    + 'discharges avoids an outage. South Africa sets no fixed reliability threshold and uses a '
+    + 'NERSA-approved cost of unserved energy instead, so this is the number that is comparable '
+    + 'to how the country actually decides. <strong>Cycles/yr</strong> is full discharges per '
+    + 'year. <strong>Needs R/kW-yr</strong> is the capacity rate that would cover the capital, '
+    + 'on the same de-rated basis the payment is made on \u2013 capex only, no fixed O&amp;M and '
+    + 'no energy margin netted, so it overstates the need for anything that cycles often. It is '
+    + 'left blank where the asset barely runs, because a rate to procure storage the system does '
+    + 'not need is a cost with nothing on the other side of it.</p>'
     + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
     + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
     + '<th style="text-align:left;padding:3px 5px">Technology</th>'
@@ -9914,7 +9932,7 @@ function renderCapacityPayment(res){
     + '<th style="text-align:right;padding:3px 5px">de-rate</th>'
     + '<th style="text-align:right;padding:3px 5px">firm GW</th>'
     + '<th style="text-align:right;padding:3px 5px">revenue</th>'
-    + '<th style="text-align:right;padding:3px 5px">R/MWh</th>'
+    + '<th style="text-align:right;padding:3px 5px">break-even R/kWh</th>'
     + '<th style="text-align:right;padding:3px 5px">cycles/yr</th>'
     + '<th style="text-align:right;padding:3px 5px">needs R/kW-yr</th></tr>'
     + body + '</table>'
