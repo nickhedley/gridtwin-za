@@ -572,7 +572,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                    <option value="vpp">Virtual power plant</option>
                   <option value="nuclear">Nuclear</option>
                   <option value="batt">Lithium-ion battery (4h)</option>
-                  <option value="ps">Pumped storage (14h)</option>
+                  <option value="ps">Pumped storage (22h)</option>
                   <option value="vrfb">Vanadium flow (8h)</option>
                   <option value="ironair">Iron-air (100h)</option>
                 </select>
@@ -9841,7 +9841,14 @@ function renderCapacityPayment(res){
       mwh: (r.tierDis ? r.tierDis.vrfb : 0) },
     { nm:'Iron-air (100h)', tech:'ironair', mw: state.newIronAirMW || 0, der: FIXED.derateIronAir,
       mwh: (r.tierDis ? r.tierDis.fe : 0) },
-    { nm:'Pumped storage (14h)', tech:'ps', mw: (FIXED.psPowerMW + (state.newPsMW || 0)) * ((state.capPayPs ?? FIXED.capPayPs) ? 1 : 0),
+    // DURATION CORRECTED 16 Sep 2026, 14h -> 22h. Nothing supported 14. FIXED.psEnergyMWh of
+    // 60,000 over FIXED.psPowerMW of 2,724 is 22.0 hours, and the two schemes Eskom publishes
+    // energy for agree: Drakensberg 1,000 MW holding 25.5 GWh (Eskom's own fact sheet puts the
+    // full dam at four units for 25.5 hours) and Ingula 1,332 MW holding 21 GWh (Eskom, up to
+    // 16 hours). That is 46.5 GWh over 2,332 MW, about 20 hours, with Palmiet's 400 MW
+    // unpublished. So the constant may be slightly generous but is the right order; the label
+    // was simply wrong and the cycle count below reads the constant, not the label.
+    { nm:'Pumped storage (22h)', tech:'ps', mw: (FIXED.psPowerMW + (state.newPsMW || 0)) * ((state.capPayPs ?? FIXED.capPayPs) ? 1 : 0),
       der: FIXED.derateePs, mwh: (r.E.ps || 0) },
   ].filter(x => x.mw > 0);
 
