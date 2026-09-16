@@ -79,9 +79,11 @@ out = {
                   'recovered from the installer asset cache. DPET is documented in Heunis & '
                   'Dekenah, Manual for Distribution PET 2012, DOI 10.25375/uct.7246673, and '
                   'its profile sub-model is derived from the NRS Load Research database.',
-        'basis': 'Average of all five DPET weather stations at a consumption level of '
-                 '%.1f kWh/day per household, mapped to calendar %d by month and day type.'
-                 % (LEVEL, YEAR),
+        'basis': 'Average of all five DPET weather stations at %.1f kWh/day per household, '
+                 'DPET\u2019s ceiling, mapped to calendar %d by month and day type. Intended to '
+                 'represent a suburban home of roughly 900 kWh/month - NOT the national average, '
+                 'which is about 185-215 kWh/month, but the kind of customer a retailer would '
+                 'approach.' % (LEVEL, YEAR),
         'day_types': 'W0 weekday, W1 Saturday, W2 Sunday. Codes are unlabelled in the source '
                      'and were identified by physical signature - W0 has the pre-work morning '
                      'peak and deep midday trough, W2 the latest start and highest midday.',
@@ -90,9 +92,13 @@ out = {
             'DPET is calibrated on NRS Load Research data collected 1994-2014. It predates '
             'sustained load shedding, the prepaid rollout at scale, rooftop PV and the current '
             'appliance mix.',
-            'DPET tops out at 10 kWh/day per household, about 300 kWh/month. Eskom Homepower '
-            'customers commonly use more, so this shape represents a modest urban household '
-            'rather than the upper end of the residential range.',
+            'DPET tops out at 10 kWh/day, about 300 kWh/month, so a 900 kWh/month home is '
+            'three times outside the fitted range and the shape here is its ceiling shape. '
+            'Shape flattens with consumption and is converging: peak/mean runs 2.21 at '
+            '15 kWh/month, 1.67 at 182, 1.64 at 243, 1.62 at 304, with steps of 0.033 then '
+            '0.019. Extrapolated to 900 it would be near 1.57. A real 900 kWh household '
+            'therefore carries relatively MORE midday load than this shape, so this shape '
+            'UNDERSTATES how well midday solar matches it. The bias runs against the PPA.',
             'DPET model boundaries: average household income R100-R25,000/month in 2014 rands, '
             'and 1-15 years since electrification.',
             'Weather stations carry a climatic severity index; averaging all five gives a '
