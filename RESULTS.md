@@ -145,23 +145,30 @@ storage are ABSENT from `newCapexR` - see STATE.md open items.
 
 ## The no-gas frontier
 
-SUPERSEDED 15 Sep 2026. The curtailment figure does not reproduce. Kept because it
-was published.
+SUPERSEDED 15 Sep 2026. The curtailment figure does not reproduce, though by less
+than first reported. Kept because it was published.
 
 Measured on the entry's own settings - Seriti scenario, `newCcgtMW` 0,
-`coalDecomMW` 32000 leaving about 10 GW, `coalFlexPct` 100, 20 GW at 10 hours:
+`coalDecomMW` 32000 leaving about 10 GW, `coalFlexPct` 100, 20 GW at 10 hours, and
+wind and solar read as TOTALS so `newWindMW = 50000 - FIXED.windMW`:
 
 ```
 50 GW wind / 60 GW solar     published        measured 15 Sep
-curtailment                   94.7 TWh              121.8 TWh
-unserved                         0 GWh                 52 GWh
+curtailment                   94.7 TWh              101.7 TWh
+unserved                         0 GWh                 79 GWh
 ```
 
-29% apart. RULED OUT BY MEASUREMENT, not by argument:
+7.4% apart. A FIRST MEASUREMENT REPORTED 29%, and that was an error in the
+measurement, not the model: `newWindMW` was passed as 50000 rather than
+50000 - FIXED.windMW, giving 54.6 GW of wind and 63.3 of solar against the intended
+50 and 60, and 121.8 TWh of spill. Recorded because the entry's own notation is what
+made it easy to get wrong.
+
+RULED OUT BY MEASUREMENT, not by argument, on the oversized run:
 
 ```
                           curtail TWh   unserved TWh
-frontier as above               121.8          0.052
+oversized frontier              121.8          0.052
 reserve requirement off         121.7          0.050
 reserveVrePct 0                 121.5          0.050
 congestion derate off           133.5          0.042
@@ -172,15 +179,16 @@ The gross requirement is larger at this build than at defaults, 2,322 MW against
 1,309, but switching reserve off entirely moves curtailment 0.1 TWh. Congestion runs
 the OTHER WAY: removing the 4% derate raises spill to 133.5 TWh.
 
-PROBABLE CAUSE, UNPROVEN: the profile set. This file's own opening caveat says every
-entry was measured on one synthetic-normal weather year. The model now runs real
-2025 Eskom profiles from `profiles.json`, which carries no version history, so the
-August inputs cannot be reconstructed.
+PROBABLE CAUSE OF THE REMAINING 7.4%, UNPROVEN: the profile set. This file's own
+opening caveat says every entry was measured on one synthetic-normal weather year.
+The model now runs real 2025 Eskom profiles from `profiles.json`, which carries no
+version history, so the August inputs cannot be reconstructed.
 
-WHAT SURVIVES AND WHAT DOES NOT. The unserved-energy grid below is the frontier's
-substance and has not been re-run. The 110 to 120 GW combined-build conclusion, and
-the "two and a half times the build to remove the gas" claim that rests on it, are
-UNVERIFIED on this build. Re-run before quoting either.
+WHAT SURVIVES AND WHAT DOES NOT. The unserved-energy grid below has not been re-run.
+The 110 to 120 GW combined-build conclusion, and the "two and a half times the build
+to remove the gas" claim that rests on it, are UNVERIFIED on this build. At 7.4% on
+curtailment the conclusion probably holds, but unserved moved from zero to 79 GWh at
+the frontier point, and unserved is what the grid is drawn on. Re-run before quoting.
 
 Seriti scenario with `newCcgtMW: 0`, 10 GW coal flexibilised, 20 GW / 10h storage.
 Unserved energy, GWh/yr:
