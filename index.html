@@ -889,6 +889,10 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <input id="retStranded" type="checkbox" checked onchange="renderRetail()">
                 <span id="retStrandedLbl">Retired coal asset base still in tariffs</span>
               </label>
+              <label style="font-size:10.5px;color:var(--ink2)" title="A retail price cap of R12.84/kWh, the Octopus Agile cap scaled to South Africa. Real dynamic retail tariffs carry one; it is a consumer protection instrument and is separate from the wholesale offer cap already in the scarcity pricing. Untick to see the uncapped series. Where it binds, the panel says so under the chart.">
+                <input id="retCap" type="checkbox" checked onchange="renderRetail()">
+                <span>Retail price cap</span>
+              </label>
               <label style="font-size:10.5px;color:var(--ink2)" title="The year the scenario's system is costed at. Technology costs decline to it, the existing asset base runs off toward it, one-off recoveries expire before it.">Scenario year
                 <input id="retYear" type="range" min="2026" max="2040" step="1" value="2035"
                        oninput="renderRetail()" style="vertical-align:middle;width:110px">
@@ -12342,7 +12346,15 @@ function retailComponents(markup, stranded, year, viaMuni){
 // revenue - R258,574m of R384,610m - so network and retail are the remaining 33%. Under a
 // market basis the generation third is recovered through the hourly price instead of through
 // the flat adder, and only this share stays flat.
+// NETWORK_RETAIL_SHARE is the share of Eskom's allowed revenue that is NOT generation, and
+// therefore the share of the flat block that survives on a market basis. Generation is
+// R258,574m of R384,610m in the NERSA MYPD6 allowance for 2025/26, so network and retail are
+// R126,036m, 32.8%. Both figures written out 15 Sep 2026 because the quotient alone was not
+// traceable and this constant decides the regulated-versus-market comparison the panel is for.
 const NETWORK_RETAIL_SHARE = 0.33;
+// VAT, declared once. It was a bare 1.15 at two sites, which is rule 6: a rate that has to be
+// found twice is a rate that will be changed once.
+const RETAIL_VAT = 1.15;
 
 function retailRaw(marginalP, markup, stranded, year, viaMuni){
   const c = retailComponents(markup, stranded, year, viaMuni);
@@ -12351,7 +12363,6 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
   // is flat - which is why adding them compresses the daily spread so heavily.
   const hod = new Array(24).fill(0);
   for (let h = 0; h < 8760; h++) hod[h % 24] += marginalP[h] / 1000 / 365;
-  const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
   let varTarget = c.fuel + c.carbon;
   let flat = c.opex + c.existingCap + c.newCap + c.newFom + c.decom + c.ipp + c.imports
              + c.fixedItems + c.newGrid + (c.curtComp || 0) + (c.distAdj || 0)
@@ -12368,7 +12379,10 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
   if (marketBasis && typeof marketPriceSeries === 'function'){
     mkt = marketPriceSeries(lastRes, { ...FIXED, ...state });
     if (mkt){
-      for (let h = 0; h < 8760; h++) hod[h % 24] += 0;   // shape comes from mkt, not marginalP
+      // The hour-of-day shape comes from mkt below, so hod is simply not used on this
+      // branch. A loop adding zero 8,760 times stood here until 15 Sep 2026, with a comment
+      // explaining why it did nothing - which is how a reader concludes a dead line is
+      // deliberate. Removed.
       flat = flat * NETWORK_RETAIL_SHARE;
       varTarget = mkt.p.reduce((a, b) => a + b, 0) / 8760;
     }
@@ -12387,7 +12401,7 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
     r = r * (c.resAlloc || 1);        // residential cost-to-serve, before any municipal margin
     r = r * (1 + markup);
     r = r + sp.retail_margin_r_per_kwh;
-    return r * 1.15;
+    return r * RETAIL_VAT;
   });
 }
 
@@ -12418,15 +12432,40 @@ function retailHourly(){
   const supEl = document.getElementById('retSupply');
   const viaMuni = supEl ? supEl.value === 'muni' : true;
   const markup = 0;   // retained as a parameter so the arithmetic below is unchanged
-  // THE CAP TOGGLE WAS REMOVED 10 Sep 2026 because it never bound. It sits at R12.84/kWh
-  // and the dearest hour in any scenario the panel offers is R11.29, at defaults - every
-  // decarbonisation scenario LOWERS the peak, so ticking or unticking it changed nothing
-  // anywhere. It was derived as 3.6x Homepower from Octopus Agile's ratio to Ofgem, and fell
-  // further when Homepower was corrected down 10%.
+  // THE CAP. Off on the market basis, on for the regulated one. Changed 15 Sep 2026.
   //
-  // The cap is still APPLIED, so a future scenario with a genuine scarcity spike is still
-  // bounded. What is gone is a control that implied a choice the user did not have.
-  const capOn = true;
+  // The toggle was removed on 10 Sep 2026 on a measurement that the cap never bound - the
+  // dearest hour in any scenario was R11.29 against a cap of R12.84. THE VoRS SCARCITY
+  // PRICING LANDED ON 11-12 SEP and took the marginal price to R87/kWh. The measurement was
+  // two days older than the thing that invalidated it, and the comment then told every
+  // reader they had no reason to check.
+  //
+  // What it was doing by 15 Sep: on Crisis 2023, market basis, ALL 24 day-curve points and
+  // 154 of 168 week hours sat exactly at R12.84 against an uncapped peak of R172.55/kWh. The
+  // panel rendered a flat line and called it a shadow dynamic price. That is the cap with a
+  // label on it, not a degraded result.
+  //
+  // THE CAP APPLIES ON BOTH BASES, and the control is back. It was briefly dropped on the
+  // market basis on the argument that a retail cap does not belong on a market-indexed
+  // series. That argument fails against its own source: OCTOPUS AGILE IS A MARKET-INDEXED
+  // DYNAMIC RETAIL TARIFF AND IT IS CAPPED, at 100p/kWh, which is where R12.84 came from.
+  // The wholesale offer cap is a separate instrument and the model already has one - the
+  // VoRS curve tops out at R87,000/MWh, in line with ERCOT's $5,000/MWh system-wide cap.
+  // Two caps, two purposes. Removing the retail one leaves a household series governed by a
+  // wholesale ceiling, which is the wrong instrument.
+  //
+  // Uncapped, Crisis 2023 on the market basis reaches R172.55/kWh with a day-curve mean of
+  // R116.43. Arithmetically right, and not a retail price any regulator would permit.
+  //
+  // WHAT WAS ACTUALLY WRONG was never the cap. It was that the cap bound silently: the
+  // toggle had been removed on 10 Sep 2026 on a measurement that it never binds, the VoRS
+  // work landed on 11-12 Sep and invalidated that, and the comment went on telling readers
+  // they had no reason to check. On Crisis 2023 all 24 day points and 154 of 168 week hours
+  // sat exactly at R12.84 and nothing said so.
+  //
+  // So: cap on by default, control restored, and capBinding below reports where it bites.
+  const capEl = document.getElementById('retCap');
+  const capOn = capEl ? capEl.checked : true;
   const stEl = document.getElementById('retStranded');
   const stranded = stEl ? stEl.checked : true;
   // The stranded control does nothing until coal has actually retired: with coalDecomMW at
@@ -12468,7 +12507,6 @@ function retailHourly(){
   const wkSel = document.querySelector('input[name="retWeek"]:checked');
   const wkMode = wkSel ? wkSel.value : 'W';
   const wkStart = (wkMode === 'S') ? 7848 : 3264;
-  const hodMean = hod.reduce((a, b) => a + b, 0) / 24;
   // THE WEEK MUST FOLLOW THE BASIS TOO.
   //
   // It read marginalP and the regulated flat block regardless, so switching to a market basis
@@ -12494,21 +12532,35 @@ function retailHourly(){
     let v = (variable + flatSum) / (1 - RETAIL_LOSS);
     v = v * (comp.resAlloc || 1);
     v = v * (1 + markup) + sp.retail_margin_r_per_kwh;
-    v = v * 1.15;
+    v = v * RETAIL_VAT;
     week.push(capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
   }
   // The week now uses the season it is actually showing, with all six rates.
   const weekHigh = (wkMode === 'W');
+  // WEEKEND RATES ARE NOT MODELLED, and until 15 Sep 2026 a ternary here pretended they
+  // were: both branches called flexAt with identical arguments. Eskom's time-of-use tariffs
+  // do treat Saturday and Sunday differently from weekdays, so this comparator overstates
+  // the Homeflex cost on two days in seven. The dead branch is gone rather than filled,
+  // because the weekend windows have not been sourced from the NERSA schedule and inventing
+  // them would be worse than the gap. See open items.
   const weekFlex = [];
   for (let i = 0; i < 168; i++){
-    const h = (wkStart + i) % 24, dow = Math.floor((wkStart + i) / 24) % 7;
-    weekFlex.push(dow < 5 ? flexAt(h, weekHigh) : flexAt(h, weekHigh));
+    const h = (wkStart + i) % 24;
+    weekFlex.push(flexAt(h, weekHigh));
   }
 
   // The two tariffs a household can actually buy today, for comparison.
   const flat = new Array(24).fill(hp.energy_r_per_kwh);
   const flex = hod.map((_, h) => 0.25 * flexAt(h, true) + 0.75 * flexAt(h, false));
+  // A CAPPED RESULT MUST ANNOUNCE ITSELF. The failure this panel had was not the cap, it was
+  // a flat line at the cap presented as a shadow dynamic price.
+  const capBinding = {
+    day: capOn ? dyn.filter(v => v >= sp.cap_r_per_kwh - 1e-9).length : 0,
+    week: capOn ? week.filter(v => v >= sp.cap_r_per_kwh - 1e-9).length : 0,
+    rawMax: raw.reduce((a, b) => Math.max(a, b), 0),
+  };
   return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp, week, weekFlex, wkMode, wkStart,
+           capBinding,
            marketBasis: (document.getElementById('retBasis') || {}).value === 'mkt',
            mktVarTarget: mkt2 ? srcMean : 0, viaMuni,
            fixedPerMonth: hp.fixed_r_per_month, cap: sp.cap_r_per_kwh };
@@ -12620,7 +12672,16 @@ function renderRetail(){
   }
   window.__retPrev = { tot: preTot, map: Object.fromEntries(items) };
 
-  noteEl.innerHTML =
+  // THE CAP ANNOUNCES ITSELF. A flat line at R12.84 presented as a shadow dynamic price is
+  // what this panel was doing on Crisis 2023, market basis, until 16 Sep 2026.
+  const cb = d.capBinding || { day: 0, week: 0, rawMax: 0 };
+  const capLine = (cb.day || cb.week)
+    ? `<span style="display:block;margin:5px 0 8px;color:var(--warn,#B4531A)"><strong>The `
+      + `R${d.cap.toFixed(2)}/kWh retail cap is binding.</strong> ${cb.day} of 24 hours on the `
+      + `daily curve and ${cb.week} of 168 in the week sit at it. Uncapped the peak is `
+      + `R${cb.rawMax.toFixed(2)}/kWh. Untick the cap to see the series underneath.</span>`
+    : "";
+  noteEl.innerHTML = capLine +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
     + `${c.year}. Built from NERSA's allowed revenue over ${c.salesTWh.toFixed(0)}&nbsp;TWh of `
     + `sales, allocated to that customer category at 1.62&times; the system average using `
@@ -15016,7 +15077,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-15a';
+const BUILD_STAMP = '2026-09-16a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
