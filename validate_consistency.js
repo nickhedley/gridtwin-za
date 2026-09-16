@@ -1297,8 +1297,13 @@ const num = t => {
       // vintage 2030.5, hand-computed from BLD_COST and BLD_LIFE at 8%:
       //
       //   wind    45 GW x R18,429/kW, 25 yr -> R77.7bn      pv      52 GW -> R48.9bn
-      //   batt    30 GW at 6h -> R33.8bn
-      //   total R160.4bn over 181 TWh = R0.886/kWh
+      //   batt    20 GW at 6h -> R22.6bn
+      //   total R149.2bn over 181 TWh = R0.823/kWh
+      //
+      // UPDATED AGAIN 16 Sep 2026, R0.886 -> R0.823. The Deep decarbonisation preset's lithium
+      // moved 30 GW -> 20 GW, which is the measured optimum: discharge saturates at about
+      // 8.1 TWh, and going 20 -> 30 costs R22.2bn/yr to avoid 51 GWh of unserved energy, which
+      // needs a cost of unserved energy above R435/kWh to justify. Deliberate scenario change.
       //
       // UPDATED 16 Sep 2026, from R1.033. ROOFTOP CAME OUT, R26.6bn of it. Behind-the-meter
       // capital is paid for by the household that installs the panels, not recovered through
@@ -1319,8 +1324,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 0.886) < 0.05,
-              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R0.886 for Deep `
+              Math.abs(ncap.newCap - 0.823) < 0.05,
+              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R0.823 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

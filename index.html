@@ -13932,7 +13932,31 @@ const PRESETS={
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
   'Latest IRP\'s 2030 targets':{demandGrowthPct:16,coalEAFPct:68,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
-  'Deep decarbonisation':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:52000,newRooftopMW:20000,newBattMW:30000,newBattHours:6,newCcgtMW:0},
+  // LITHIUM MOVED 30 GW -> 20 GW, 16 Sep 2026. The 30 was hand-set and past the point where
+  // more storage does anything. Swept on this preset at 6 hours, system cost already carrying
+  // new-build capex:
+  //
+  //   lithium   system cost   unserved GWh   cycles/yr
+  //     2 GW      R231.9bn          1,052         189
+  //    10 GW      R236.2bn            334         113
+  //    20 GW      R255.3bn             78          65
+  //    30 GW      R277.5bn             27          44
+  //    45 GW      R311.1bn              0          30
+  //
+  // With unserved energy priced, the optimum is 8 GW at R20/kWh, 12 at R50, and 20 GW at
+  // R100 and above, where it stops moving. Going 20 -> 30 costs R22.2bn/yr and avoids 51 GWh,
+  // which needs a cost of unserved energy above R435/kWh to justify. South Africa uses a
+  // NERSA-approved cost of unserved energy rather than a fixed reliability threshold, so the
+  // R100-and-above region is the one that matters and it picks 20.
+  //
+  // Discharge SATURATES here: it reaches about 8.1 TWh and stops, so 20 -> 45 GW more than
+  // doubles the fleet for 2% more delivered energy. Cycling rises 44 -> 65/yr at 20 GW. A
+  // 1 GW fleet on this preset cycles 203 times, which is what advanced markets see.
+  //
+  // CAVEATS. One weather year, the capacity-weighted composite; 2016 is three times worse on
+  // unserved energy and would push the optimum up. Duration is fixed at 6 hours throughout,
+  // so fewer gigawatts for longer has not been tested.
+  'Deep decarbonisation':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:52000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
