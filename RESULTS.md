@@ -23,14 +23,22 @@ wind year is exactly what sets a capacity requirement.
 
 Their July 2026 published simulation, reproduced 27-28 Aug 2026.
 
+CAPACITIES ARE TOTALS. The control is `newWindMW`, which carries NEW BUILD ONLY, so
+the value to enter is the total less the existing fleet. Both are written out below,
+because the expression form caused a mis-set scenario on 15 Sep 2026 and because it
+DRIFTS: `FIXED.windMW` was 4,458 when this entry was written and is 4,612 now, so
+the same expression gives a different new-build figure while the total does not move.
+Enter the total, derive the control value, and check the result.
+
 ```
-newWindMW    20000 - FIXED.windMW        20 GW total wind
-newPvMW      25000 - FIXED.pvUtilityMW   25 GW total utility PV
-newBattMW    20000, newBattHours 10      20 GW / 200 GWh
-coalDecomMW  32000                       leaves ~10 GW = Medupi + Kusile
-newNuclearMW 0
-coalEAFPct   70
-newCcgtMW    25000                       gas as backup
+control        enter          total          note
+newWindMW      15,388         20,000 MW      total less FIXED.windMW 4,612
+newPvMW        21,729         25,000 MW      total less FIXED.pvUtilityMW 3,271
+newBattMW      20,000         20 GW / 200 GWh   newBattHours 10
+coalDecomMW    32,000                        leaves ~10 GW = Medupi + Kusile
+newNuclearMW   0
+coalEAFPct     70
+newCcgtMW      25,000                        gas as backup
 ```
 
 ### Where the two models agree
@@ -150,7 +158,7 @@ than first reported. Kept because it was published.
 
 Measured on the entry's own settings - Seriti scenario, `newCcgtMW` 0,
 `coalDecomMW` 32000 leaving about 10 GW, `coalFlexPct` 100, 20 GW at 10 hours, and
-wind and solar read as TOTALS so `newWindMW = 50000 - FIXED.windMW`:
+and wind and solar read as TOTALS: enter newWindMW 45,388 for 50,000 MW total, newPvMW 56,729 for 60,000 MW total.
 
 ```
 50 GW wind / 60 GW solar     published        measured 15 Sep
@@ -181,17 +189,94 @@ the OTHER WAY: removing the 4% derate raises spill to 133.5 TWh.
 
 PROBABLE CAUSE OF THE REMAINING 7.4%, UNPROVEN: the profile set. This file's own
 opening caveat says every entry was measured on one synthetic-normal weather year.
-The model now runs real 2025 Eskom profiles from `profiles.json`, which carries no
-version history, so the August inputs cannot be reconstructed.
+The model now runs real 2025 Eskom profiles from `profiles.json`, and the regional
+weather set went from ten years to twelve. A frontier is defined by its worst week,
+which is exactly what changes when the weather set changes. `profiles.json` carries
+no version history, so the August inputs cannot be reconstructed and this stays a
+candidate rather than a finding. A 7.4% unexplained gap reads differently from the
+29% first reported: the 110 to 120 GW conclusion probably survives it.
 
-WHAT SURVIVES AND WHAT DOES NOT. The unserved-energy grid below has not been re-run.
-The 110 to 120 GW combined-build conclusion, and the "two and a half times the build
-to remove the gas" claim that rests on it, are UNVERIFIED on this build. At 7.4% on
-curtailment the conclusion probably holds, but unserved moved from zero to 79 GWh at
-the frontier point, and unserved is what the grid is drawn on. Re-run before quoting.
+WHAT SURVIVES. The grid below has been RE-RUN on this build, 15 Sep 2026. The 110 to
+120 GW combined-build conclusion and the "two and a half times the build to remove
+the gas" claim are THRESHOLD-DEPENDENT and do not stand on their own: at the Australian
+0.002% standard the same grid gives 160 GW. The August
+grid drew the frontier where unserved read exactly zero, and on this build nothing
+reaches zero anywhere. See the re-run below.
 
-Seriti scenario with `newCcgtMW: 0`, 10 GW coal flexibilised, 20 GW / 10h storage.
+RE-RUN 15 Sep 2026, build `2026-09-15a`. The conclusion survives, the method does not.
+
+Settings as above: `newCcgtMW` 0, `coalDecomMW` 32000 leaving about 10 GW,
+`coalEAFPct` 70, `coalFlexPct` 100, `newBattMW` 20000, `newBattHours` 10,
+`newNuclearMW` 0. Capacities are TOTALS; the control takes new build, so each cell
+enters total less `FIXED.windMW` 4,612 or `FIXED.pvUtilityMW` 3,271.
+
 Unserved energy, GWh/yr:
+
+```
+wind\solar     25 GW     40 GW     60 GW     80 GW
+   20 GW       22,528    12,338     3,498     1,045
+   30 GW        9,591     3,731       620       184
+   40 GW        3,441     1,013       182        59
+   50 GW        1,200       361        79        41
+   60 GW          476       168        49        23
+   70 GW          270       124        37        15
+   80 GW          164       102        23         4
+```
+
+Curtailment, TWh/yr, same grid:
+
+```
+wind\solar     25 GW     40 GW     60 GW     80 GW
+   20 GW          0.0       3.2      24.0      60.8
+   30 GW          1.7      14.3      47.7      88.6
+   40 GW         12.5      34.9      74.4     115.7
+   50 GW         32.8      60.4     101.7     144.0
+   60 GW         58.9      88.9     130.3     172.7
+   70 GW         87.0     117.6     159.2     201.5
+   80 GW        116.2     147.3     189.4     231.7
+```
+
+NOTHING REACHES ZERO. Every cell is higher than the August run, between 1.5x and
+12x, and the minimum anywhere in the grid is 4 GWh at 80W/80S. The frontier as the
+August entry drew it - the locus where unserved becomes exactly zero - does not
+exist on this build.
+
+But exact zero was never a reliability standard. It is a rounding. The answer depends
+entirely on the threshold, and THE THRESHOLD IS NOT A DETAIL - it moves the
+conclusion by 40 GW:
+
+```
+threshold                            frontier              combined build
+0.002% unserved energy, 4.3 GWh      80W / 80S only              160 GW
+100 GWh, 0.046%                      50W/60S and 40W/80S      110-120 GW
+exactly zero (August run)            several cells            110-120 GW
+```
+
+SOUTH AFRICA HAS NO PUBLISHED FIXED THRESHOLD, and that is deliberate. The Grid Code
+and the Distribution Network Code require a NERSA-approved Cost of Unserved Energy,
+approved 2015 with levels updated 2016, and COUE is an IRP input parameter. The
+intended test is ECONOMIC: build until the marginal cost of avoiding unserved energy
+equals COUE. Not a fixed ceiling.
+
+The 0.002% line is the Australian NEM reliability standard, alongside the usual
+0.1 days/yr LOLE and 2.4 h/yr LOLH. It is the only published standard cited here and
+it is not South Africa's.
+
+The 100 GWh line is MINE, chosen on 15 Sep 2026 AFTER seeing the grid, and it happens
+to reproduce the August conclusion. That is a reason to distrust it, not to rely on
+it. It is 23x looser than the Australian standard.
+
+WHAT TO QUOTE. Not "110 to 120 GW". Either quote the grid with the threshold attached,
+or do the COUE comparison properly - the model carries costs, so the economic test is
+available and has not been run. Until then the two-and-a-half-times claim is a
+function of a number nobody sourced.
+
+THE PRICE IS CURTAILMENT. At 50 GW wind / 60 GW solar the system throws away
+101.7 TWh a year, against 94.7 in August, more than 45% of demand. Building for the
+worst week and wasting the output the rest of the year. Gas is almost certainly
+cheaper - but that comparison needs the storage capex fix first.
+
+### The August grid, for reference
 
 ```
 wind\solar     25 GW     40 GW     60 GW     80 GW
@@ -203,14 +288,6 @@ wind\solar     25 GW     40 GW     60 GW     80 GW
    70 GW          102         0         0         0
    80 GW           26         0         0         0
 ```
-
-The frontier runs 40W/80S through 50W/60S to 70W/40S. So roughly 110 to 120 GW
-combined, against Seriti's 45 GW. Two and a half times the build to remove the gas.
-
-THE PRICE IS CURTAILMENT. At 50 GW wind / 60 GW solar the system throws away
-94.7 TWh a year, more than 40% of demand. Building for the worst week and wasting
-the output the rest of the year. Gas is almost certainly cheaper - but that
-comparison needs the storage capex fix first.
 
 ---
 
