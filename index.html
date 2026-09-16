@@ -12182,8 +12182,14 @@ function retailComponents(markup, stranded, year, viaMuni){
     if (!mw || typeof bldAnnuity !== 'function' || typeof BLD_LIFE === 'undefined') return 0;
     return mw * 1000 * bldAnnuity(costAt(k) * (hoursMult || 1), BLD_LIFE[k] || 25);
   };
+  // ROOFTOP IS NOT IN HERE. Removed 16 Sep 2026. Behind-the-meter rooftop capital is paid
+  // for by the household that installs the panels, not recovered through Eskom's allowed
+  // revenue. Including it was a DOUBLE PENALTY: the capex sat in the numerator while the
+  // generation was already subtracted from salesMWh below, so the sales base was charged for
+  // capital it does not own and denied the energy that capital produces. Worth R26.64bn/yr
+  // on Deep decarbonisation, R0.147/kWh of a R1.033 new-build term.
+  // The engine already draws this line - btmCapexR and gridCapexR at index.html:7408-7409.
   const newCapR = annuity('wind', P.newWindMW) + annuity('pv', P.newPvMW)
-                + annuity('rooftop', P.newRooftopMW)
                 + annuity('batt', P.newBattMW, (P.newBattHours || 4) / 4)
                 + annuity('ccgt', P.newCcgtMW)
                 + annuity('vrfb', P.newVrfbMW) + annuity('ironair', P.newIronAirMW);
@@ -12681,7 +12687,21 @@ function renderRetail(){
       + `daily curve and ${cb.week} of 168 in the week sit at it. Uncapped the peak is `
       + `R${cb.rawMax.toFixed(2)}/kWh. Untick the cap to see the series underneath.</span>`
     : "";
-  noteEl.innerHTML = capLine +
+  // WHO PAYS FOR THE NEW BUILD. Added 16 Sep 2026. Every new plant in this panel is
+  // recovered through Eskom's allowed revenue. In reality a large and growing share of new
+  // capacity is contracted to private offtakers - PFL's H1 2026 monitor has 958 MW of
+  // 1,920 MW reaching commercial operation as wheeled - and that capital never enters the
+  // regulated base. Measured on Deep decarbonisation at 2035, moving a share out TOGETHER
+  // WITH THE ENERGY IT DELIVERS: 25% raises the residual bill 15.5%, 50% raises it 41.3%,
+  // 75% raises it 92.6%. The direction is the opposite of the intuitive one because the new
+  // renewables are cheap - R0.878/kWh of capital against a R2.335 residual - so what is left
+  // behind is the expensive part spread over a smaller base. NOT MODELLED; stated so it is
+  // not mistaken for an omission.
+  const ppaNote = '<span style="display:block;margin:5px 0 8px;color:var(--ink2)">'
+    + 'Every new plant here is paid for through Eskom\u2019s revenue. The more of it that goes '
+    + 'instead to private offtakers, the smaller the base left carrying the legacy cost \u2013 '
+    + 'at a 50% private share the residual bill rises about 40%. Not modelled.</span>';
+  noteEl.innerHTML = capLine + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
     + `${c.year}. Built from NERSA's allowed revenue over ${c.salesTWh.toFixed(0)}&nbsp;TWh of `
     + `sales, allocated to that customer category at 1.62&times; the system average using `

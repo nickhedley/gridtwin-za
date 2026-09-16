@@ -225,7 +225,7 @@ const num = t => {
 
   // ── 3b. peak demand must track the demand-growth slider ───────────────────
   // Added after "peak demand" was found to include storage charging: at 5%
-  // growth the Future mix preset reported 50.5 GW against a true 33.2 GW. Every
+  // growth the Deep decarbonisation preset reported 50.5 GW against a true 33.2 GW. Every
   // panel AGREED with every other, because they all read the same mislabelled
   // quantity - so panel-versus-panel checks passed while the figure was wrong.
   // Agreement is not correctness when the shared source is misnamed.
@@ -770,12 +770,12 @@ const num = t => {
     if (r && !r.err && typeof r.neg === 'number'){
       check('negative-price hours stay within observed international range',
             r.pct < 20,
-            `${r.neg} hours below zero, ${r.pct.toFixed(1)}% of the year, on the Future mix `
+            `${r.neg} hours below zero, ${r.pct.toFixed(1)}% of the year, on Deep decarbonisation `
             + `preset. Germany ran about 460 hours (5.3%) in 2024 and is the most `
             + `negative-price-prone system in Europe. Above 20% the model is asserting `
             + `something no market has done, and the likely cause is curtailment being `
             + `priced as coal-forced when it is VRE surplus.`);
-      console.log(`  neg prices    ${r.neg} hours (${r.pct.toFixed(1)}%) on the Future mix, `
+      console.log(`  neg prices    ${r.neg} hours (${r.pct.toFixed(1)}%) on Deep decarbonisation, `
         + `median R${r.median.toFixed(0)}`);
     }
   }
@@ -876,7 +876,7 @@ const num = t => {
       // still passed. That is the disappearing-check failure STATE.md describes for eng5.
       //
       // It also used to assert the price FALLS by more than 20%. That was the conclusion of
-      // a build with four missing or mis-scaled components. Corrected, the Future mix RAISES
+      // a build with four missing or mis-scaled components. Corrected, Deep decarbonisation RAISES
       // a bill by roughly two thirds - 97 GW of renewables and 30 GW of storage annualise
       // R258bn a year over fewer kWh sold. A check that encodes a conclusion gets edited when
       // the conclusion changes, so this one asserts only that the panel moves, and that it
@@ -1293,14 +1293,21 @@ const num = t => {
       // gas-firmed case only 4.4%, because that scenario carries just 12 GW of storage.
       // Measured, not assumed.
       //
-      // So this pins the largest cost line directly. Future mix at 2035, midpoint vintage
-      // 2030.5, hand-computed from BLD_COST and BLD_LIFE at 8%:
+      // So this pins the largest cost line directly. Deep decarbonisation at 2035, midpoint
+      // vintage 2030.5, hand-computed from BLD_COST and BLD_LIFE at 8%:
       //
       //   wind    45 GW x R18,429/kW, 25 yr -> R77.7bn      pv      52 GW -> R48.9bn
-      //   rooftop 20 GW -> R26.6bn                          batt    30 GW at 6h -> R33.8bn
-      //   total R187.1bn over 181 TWh = R1.033/kWh
+      //   batt    30 GW at 6h -> R33.8bn
+      //   total R160.4bn over 181 TWh = R0.886/kWh
       //
-      // The panel reports 1.033. Any drift in a decline rate, a life, the discount rate or
+      // UPDATED 16 Sep 2026, from R1.033. ROOFTOP CAME OUT, R26.6bn of it. Behind-the-meter
+      // capital is paid for by the household that installs the panels, not recovered through
+      // Eskom's allowed revenue, and its generation was already subtracted from salesMWh -
+      // so including it charged the sales base for capital it does not own AND removed the
+      // energy that capital produces. Deliberate model change, recorded here rather than
+      // absorbed by a wider tolerance.
+      //
+      // The panel reports 0.886. Any drift in a decline rate, a life, the discount rate or
       // the vintage convention shows here first.
       const ncap = run(`
         const yr = document.getElementById('retYear');
@@ -1312,9 +1319,9 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.033) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R1.033 for the Future `
-              + `mix at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
+              Math.abs(ncap.newCap - 0.886) < 0.05,
+              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R0.886 for Deep `
+              + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }
 
