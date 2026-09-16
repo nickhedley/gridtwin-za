@@ -291,6 +291,57 @@ wind\solar     25 GW     40 GW     60 GW     80 GW
 
 ---
 
+## The electrolyser panel answers a different question from the hydrogen pipeline
+
+NOT A FINDING. A scope note, written 16 Sep 2026 to stop one being written by mistake.
+It sits here because the 101.7 TWh of spill above is exactly what makes a reader reach
+for electrolysers as the answer.
+
+WHAT THE MODEL DOES. The panel treats hydrogen as a BUYER OF CURTAILED ENERGY: a
+flexible sink that runs when there is spill, priced at R1.05/kWh from a $4/kg target.
+It answers "what would curtailed energy be worth if something could absorb it".
+
+WHAT IS ACTUALLY BEING BUILT. South Africa's National Green Hydrogen Deal Book, first
+wave announced 15 Sep 2026, is six projects:
+
+```
+Phelan Green e-SAF, Saldanha Bay        construction Q1 2027, first export Q1 2029
+Hive Energy green ammonia, Coega        early prep done, not at FID
+Saldanha hydrogen DRI                   prefeasibility
+Prieska Power Reserve, Northern Cape    development, domestic ammonia
+Green e-Fuels methanol, Gauteng         prefeasibility, European demand
+Green Hydrogen Solutions, Eastern Cape  FEED complete, domestic, smaller scale
+```
+
+Export ammonia, e-SAF, methanol and direct reduced iron. Every one is a FIRM
+INDUSTRIAL LOAD with heavy capital and downstream chemistry that does not cycle
+freely. They will contract dedicated generation, not grid spill. So the two are not
+the same thing and the panel's number must NOT be quoted as what these projects would
+pay or absorb.
+
+THREE THINGS THAT FOLLOW.
+
+The modelled load is flexible and the real one is not, so the panel's curtailment
+capture is an upper bound on what a firm plant could take.
+
+The panel is NATIONAL and the pipeline is at Saldanha, Coega, Prieska and Gauteng. A
+multi-gigawatt load at Saldanha changes corridor flows. The model has ten regions and
+corridor limits and could carry this; it does not yet.
+
+Nothing is at scale before 2029. One project has a construction date. Any scenario
+leaning on electrolyser demand before 2030 is ahead of the pipeline.
+
+NO PUBLISHED ELECTROLYSER CAPACITY. Neither the announcement nor the coverage gives
+MW, so `h2GW` has nothing to calibrate against. The Deal Book itself may carry them.
+
+The minister's own framing is worth keeping, because it is this file's discipline in
+someone else's words: inclusion in a Deal Book is not FID, priority status is not
+construction, a memorandum of understanding is not a bankable customer agreement, an
+expression of investment interest is not committed capital, and none of these on its
+own constitutes a gigawatt.
+
+---
+
 ## Flexibilising the coal fleet does NOT improve adequacy
 
 Requested as a hypothesis; the test returned the opposite. No gas, 10 GW coal:
