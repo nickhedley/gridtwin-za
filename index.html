@@ -9856,9 +9856,30 @@ function renderCapacityPayment(res){
   //
   // Each row also takes its own rate, so a long-duration premium shows on the rows it applies
   // to rather than being spread across the table.
+  // WHAT WOULD IT TAKE. Added 16 Sep 2026. The panel priced capacity at whatever rate was set
+  // and never said whether that rate covers anything. For an asset that exists for rare hours
+  // the two numbers that matter are how often it runs and what it needs to be paid.
+  //
+  // CAPEX ONLY, and deliberately so. Fixed O&M does not exist in the model for any storage
+  // class, and energy margin is not netted off, so this is the payment needed to cover CAPITAL
+  // before the asset earns anything from energy. For lithium, which cycles hundreds of times a
+  // year, energy is most of the answer and this number overstates the need badly. For iron-air
+  // at a quarter of a cycle it is close to the whole answer. The ratio of the two columns is
+  // the point rather than either figure alone.
+  const _vint = 2026 + ((+(document.getElementById('retYear') || {}).value || 2035) - 2026) / 2;
+  const _capexPerKW = (tech) => (BLD_COST[tech] && BLD_LIFE[tech])
+    ? bldAnnuity(BLD_COST[tech].c2026 * Math.pow(1 - BLD_COST[tech].decl, _vint - 2026), BLD_LIFE[tech])
+    : null;
+  const _hoursFor = { batt: (state.newBattHours || FIXED.battHours || 4),
+                      vrfb: (state.newVrfbHours ?? 8), ironair: (state.newIronAirHours ?? 100) };
   const body = rows.map(x => {
     const revR = x.mw * x.der * 1000 * capPayRate(x.tech);
     const perMWh = x.mwh > 1 ? revR / x.mwh : null;
+    const hrs = _hoursFor[x.tech];
+    const cycles = (hrs && x.mw > 0) ? (x.mwh / (x.mw * hrs)) : null;
+    const capexKW = _capexPerKW(x.tech);
+    // Paid on de-rated MW, so the rate needed is the annuity grossed up by the de-rate.
+    const needKW = (capexKW != null && x.der > 0) ? capexKW / x.der : null;
     return '<tr>'
       + '<td style="padding:3px 5px">' + x.nm + '</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px">' + (x.mw/1000).toFixed(1) + '</td>'
@@ -9867,7 +9888,11 @@ function renderCapacityPayment(res){
       + '<td class="mono" style="text-align:right;padding:3px 5px">R' + (revR/1e9).toFixed(2) + 'bn</td>'
       + '<td class="mono" style="text-align:right;padding:3px 5px;font-weight:600">'
         + (perMWh === null ? '<span style="color:var(--alert,#C4785A)">paid, never runs</span>'
-                           : 'R' + perMWh.toFixed(0)) + '</td></tr>';
+                           : 'R' + perMWh.toFixed(0)) + '</td>'
+      + '<td class="mono" style="text-align:right;padding:3px 5px;color:var(--ink2)">'
+        + (cycles === null ? '\u2013' : cycles.toFixed(cycles < 10 ? 2 : 0)) + '</td>'
+      + '<td class="mono" style="text-align:right;padding:3px 5px">'
+        + (needKW === null ? '\u2013' : 'R' + needKW.toFixed(0)) + '</td></tr>';
   }).join('');
 
   host.innerHTML =
@@ -9875,7 +9900,13 @@ function renderCapacityPayment(res){
     + (pay === 0
         ? 'No capacity payment is set, so nothing here earns anything for being available. '
         : 'At R' + pay + '/kW/yr, paid on de-rated MW. ')
-    + 'The last column is what that payment is worth per MWh actually delivered.</p>'
+    + 'The R/MWh column is what that payment is worth per MWh actually delivered. '
+    + '<strong>Cycles/yr</strong> is how many full discharges the asset manages in a year, and '
+    + '<strong>needs R/kW-yr</strong> is the capacity rate that would cover its capital, on the '
+    + 'same de-rated basis the payment is made on. Capex only \u2013 no fixed O&amp;M, and no '
+    + 'energy margin netted off \u2013 so it overstates the need for anything that cycles often '
+    + 'and understates nothing. An asset running a fraction of a cycle a year cannot be paid by '
+    + 'an energy price at any scarcity level, which is what the two columns together show.</p>'
     + '<table style="width:100%;border-collapse:collapse;font-size:10.5px">'
     + '<tr style="border-bottom:1px solid var(--line2);color:var(--ink2)">'
     + '<th style="text-align:left;padding:3px 5px">Technology</th>'
@@ -9883,7 +9914,9 @@ function renderCapacityPayment(res){
     + '<th style="text-align:right;padding:3px 5px">de-rate</th>'
     + '<th style="text-align:right;padding:3px 5px">firm GW</th>'
     + '<th style="text-align:right;padding:3px 5px">revenue</th>'
-    + '<th style="text-align:right;padding:3px 5px">R/MWh</th></tr>'
+    + '<th style="text-align:right;padding:3px 5px">R/MWh</th>'
+    + '<th style="text-align:right;padding:3px 5px">cycles/yr</th>'
+    + '<th style="text-align:right;padding:3px 5px">needs R/kW-yr</th></tr>'
     + body + '</table>'
     + '<div style="font-size:9.5px;color:var(--ink2);line-height:1.5;margin-top:7px">'
     + 'De-rating follows Ireland\u2019s all-island market, which pays on de-rated MW using factors set '
