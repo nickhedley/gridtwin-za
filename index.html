@@ -9881,14 +9881,27 @@ function renderCapacityPayment(res){
   if (!r) return;
   const pay = Math.max(0, state.capacityPaymentOn ? (state.capacityPaymentRkWyr || 0) : 0);
 
+  // STORAGE DURATIONS, read from the controls rather than hardcoded. Declared here, above the
+  // rows, because the row LABELS use them too - they were hardcoded strings until 17 Sep 2026
+  // and drifted from the sliders. Pumped storage takes its duration from ENERGY rather than a
+  // duration constant: FIXED.psEnergyMWh 60,000 over FIXED.psPowerMW 2,724 is about 22 hours,
+  // which is what the label now says after the 14h it carried was found to match nothing.
+  const _hoursFor = { batt: (state.newBattHours || FIXED.battHours || 4),
+                      vrfb: (state.newVrfbHours ?? 8), ironair: (state.newIronAirHours ?? 100),
+                      ps: (FIXED.psPowerMW > 0 ? FIXED.psEnergyMWh / FIXED.psPowerMW : null) };
   const rows = [
     { nm:'Gas CCGT', tech:'ccgt',  mw: state.newCcgtMW || 0,    der: FIXED.derateCcgt,
       mwh: (r.E.ccgt || 0) },
-    { nm:'Lithium-ion (4h)', tech:'batt', mw: FIXED.battPowerMW + (state.newBattMW || 0), der: FIXED.derateBattLi,
+    // DURATION READS THE CONTROL, not a hardcoded string. Corrected 17 Sep 2026: this said
+    // "(4h)" while newBattHours is a live slider, so Deep decarbonisation displayed 4h on a
+    // 6h fleet and a user moving the slider to 10h still saw 4h. Same fault as the pumped
+    // storage "(14h)" corrected earlier the same day. Vanadium and iron-air have no slider
+    // yet, so they read their constants and will follow if one is added.
+    { nm:'Lithium-ion ('+(_hoursFor.batt||4)+'h)', tech:'batt', mw: FIXED.battPowerMW + (state.newBattMW || 0), der: FIXED.derateBattLi,
       mwh: (r.tierDis ? r.tierDis.li : 0) },
-    { nm:'Vanadium flow (8h)', tech:'vrfb', mw: state.newVrfbMW || 0,    der: FIXED.derateVrfb,
+    { nm:'Vanadium flow ('+(_hoursFor.vrfb||8)+'h)', tech:'vrfb', mw: state.newVrfbMW || 0,    der: FIXED.derateVrfb,
       mwh: (r.tierDis ? r.tierDis.vrfb : 0) },
-    { nm:'Iron-air (100h)', tech:'ironair', mw: state.newIronAirMW || 0, der: FIXED.derateIronAir,
+    { nm:'Iron-air ('+(_hoursFor.ironair||100)+'h)', tech:'ironair', mw: state.newIronAirMW || 0, der: FIXED.derateIronAir,
       mwh: (r.tierDis ? r.tierDis.fe : 0) },
     // DURATION CORRECTED 16 Sep 2026, 14h -> 22h. Nothing supported 14. FIXED.psEnergyMWh of
     // 60,000 over FIXED.psPowerMW of 2,724 is 22.0 hours, and the two schemes Eskom publishes
@@ -9926,13 +9939,6 @@ function renderCapacityPayment(res){
   const _capexPerKW = (tech) => (BLD_COST[tech] && BLD_LIFE[tech])
     ? bldAnnuity(BLD_COST[tech].c2026 * Math.pow(1 - BLD_COST[tech].decl, _vint - 2026), BLD_LIFE[tech])
     : null;
-  // Pumped storage duration comes from its ENERGY, not a duration constant: FIXED.psEnergyMWh
-  // 60,000 over FIXED.psPowerMW 2,724 is about 22 hours, not the 14 the row label says. The
-  // label is not changed here - that is a separate question about which figure is right - but
-  // the cycle count uses the energy the engine actually dispatches against.
-  const _hoursFor = { batt: (state.newBattHours || FIXED.battHours || 4),
-                      vrfb: (state.newVrfbHours ?? 8), ironair: (state.newIronAirHours ?? 100),
-                      ps: (FIXED.psPowerMW > 0 ? FIXED.psEnergyMWh / FIXED.psPowerMW : null) };
   const body = rows.map(x => {
     const revR = x.mw * x.der * 1000 * capPayRate(x.tech);
     const perMWh = x.mwh > 1 ? revR / x.mwh : null;
@@ -13857,7 +13863,14 @@ const SLIDERS=[
    note:'Contracted large industrial load that Eskom can drop in a shortage (for a fee) \u2013 historically the aluminium smelters and other energy-intensive users. Eskom called it in 252 hours of 2025, peaking at 1,021 MW. Called before anything is shed, because the customer is compensated at far less than the cost of a blackout. Reported separately from unserved energy: a managed reduction under contract is not load shedding.'},
   {id:'drInterruptCostR',label:'Interruptible load compensation',min:0,max:20000,step:250,def:FIXED.drInterruptCostR,fmt:v=>'R'+v.toLocaleString()+'/MWh',ctrlStyle:SUB_CTRL,
    note:'What a customer is paid to reduce their power use. At the default it sits below diesel (R6,136/MWh) and far below the cost of unserved energy (R87,000/MWh), which is why it is called before either.'},
-  {id:'drShiftPct',label:'Shiftable load',min:0,max:30,step:1,def:FIXED.drShiftPct,fmt:v=>v+' % of daily load',
+  // LABEL CORRECTED 17 Sep 2026. It read "% of daily load", which is not what the control
+  // does: the dispatch takes this share of EACH of the six highest net-load hours, so the
+  // share of ANNUAL energy actually moved is about a quarter of the slider value. Measured
+  // on a fossil-free build: slider 10% moves 2.2% of load, 20% moves 4.5%, and the maximum
+  // of 30% moves 6.8%. A user setting 10 and believing they had modelled 10% flexibility
+  // had modelled 2.2%. The formatter now shows both numbers.
+  {id:'drShiftPct',label:'Shiftable load',min:0,max:30,step:1,def:FIXED.drShiftPct,
+   fmt:v=>v+' % of each peak hour \u2248 '+(v*0.227).toFixed(1)+' % of annual load',
    note:'Load moved within the day rather than dropped. I.e., loads including water heating, pumping, irrigation and EV charging are shifted out of the six highest net-load hours into the six lowest (i.e. midday solar). Strictly energy-neutral per day. Defaults to zero because this barely exists at scale in South Africa yet but is a potential policy lever.'},
   {id:'vppGeyserPoolMW',label:'Virtual power plants \u2013 national potential',min:0,max:12000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(2)+' GW',
    note:'How much behind-the-meter load could be aggregated nationally. 4 GW is our estimate for electric geysers, which drive the morning and evening peaks. Raise the slider above 4 GW to include pool pumps, air conditioning and EV charging as those fleets grow. Nothing happens until you set an enrolment share below. To place VPPs in specific municipalities rather than nationally, use the Where To Build panel and pick Virtual power plant as the technology \u2013 you can site several at once.'},

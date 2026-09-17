@@ -19,6 +19,227 @@ wind year is exactly what sets a capacity requirement.
 
 ---
 
+## A fossil-free South Africa, scored on its worst year
+
+Build `2026-09-17a`, 17 Sep 2026. 72 builds x 12 weather years, 864 dispatches.
+
+CONSTRAINTS. All coal retired (`coalDecomMW` 42,000 against 39,692 MW installed), all
+diesel retired (`dieselDecomMW` 3,400), no new gas, no new nuclear. Kept: Koeberg
+1,880 MW, hydro 602 MW, CSP 600 MW, the 1,150 MW Cahora Bassa import at 85% (hydro),
+existing wind, solar, rooftop and pumped storage. NO BUILD BURNS ANY DIESEL IN ANY
+YEAR, so the constraint holds rather than being approximated.
+
+SCORED ON THE BINDING YEAR, not the average. A build that works in a good year and
+fails in a bad one is not a plan.
+
+```
+zero unserved energy in EVERY one of twelve years - 22 of 72 builds
+  cheapest   80 GW wind / 100 GW solar / 40 GW lithium at 8h
+             R421.5bn/yr, 234.9 TWh curtailed
+
+worst year under 100 GWh/yr
+  cheapest   60 GW wind / 100 GW solar / 40 GW lithium at 8h
+             R373.8bn/yr, 83 GWh in its worst year, 8 GWh on average
+```
+
+INSURANCE AGAINST THE TWELFTH YEAR COSTS R48BN A YEAR, 13%, to go from 83 GWh of
+unserved energy to none.
+
+### The binding year is 2018 and 2014, not 2016
+
+```
+year   builds it binds for
+2018                    23
+2014                    22
+2020                    16
+2016                     9
+2015                     2
+```
+
+An earlier single-year run used 2016 because it was worst at one specific build. It is
+not the worst year generally. SINGLE-WORST-YEAR DESIGN OPTIMISES AGAINST THE WRONG YEAR
+for two thirds of builds.
+
+### The mean is useless here
+
+The best builds average 4 to 8 GWh of unserved energy a year while their worst year runs
+39 to 94. An average would describe a system that fails.
+
+### Iron-air appears in none of the 22 robust builds
+
+At `BLD_COST.ironair` R127,050/kW it loses to overbuilding wind in every weather year
+tested. This is now a twelve-year result rather than a single-year artefact, and it
+rests entirely on the cost: at Form Energy's USD 20/kWh target the figure is R33,000/kW
+and the conclusion reverses.
+
+### Duration substitutes for power, and is worth about 8%
+
+20 GW at 12 hours appears repeatedly among the cheapest robust builds against 40 GW at
+8 hours. Same energy, fewer inverters. On the 2018 binding year, 20 GW at 12h costs
+R355.9bn with 97 GWh unserved against R385.8bn at 40 GW / 8h with none.
+
+CAVEATS. One dispatch model, national, with a flat 4% congestion derate rather than
+real siting. Nuclear is an uncurtailable flat block contributing 11.5 TWh it can never
+back off in a system spilling 235 TWh. And the twelve weather years are reanalysis, not
+twelve realised South African years, so the tails may be understated.
+
+---
+
+## What a capacity payment for long-duration storage would have to be
+
+Build `2026-09-17a`, 17 Sep 2026. Iron-air, 100 hours, vintage 2030.5, worst weather year.
+
+```
+overnight cost                        R127,050/kW   (R96,172 at the 2030.5 vintage)
+annualised, 20 yr at 8%                 R9,795/kW-yr
+model's capacity payment default           R300/kW-yr
+
+build    discharge   energy revenue   annual capex   payment needed
+10 GW     0.44 TWh          R4.14bn        R98.0bn      R9,382/kW-yr
+20 GW     0.50 TWh          R2.25bn       R195.9bn      R9,683/kW-yr
+```
+
+THIRTY-TWO TIMES THE MODEL'S DEFAULT RATE, and that is a FLOOR: iron-air has no fixed
+O&M anywhere in the model.
+
+TWO THINGS SHARPER THAN THE HEADLINE.
+
+Energy revenue FALLS as you build more, R4.14bn at 10 GW to R2.25bn at 20 GW, because
+the second tranche removes the scarcity hours the first was earning in. INSURANCE
+DESTROYS ITS OWN REVENUE. That is the clearest statement of why this cannot be an
+energy-market asset.
+
+And the payment needed per kW RISES with the build, R9,382 to R9,683, for the same
+reason. There is no volume discount; it gets worse.
+
+### The cost constant was wrong by a factor of three
+
+`BLD_COST.ironair` read R39,000/kW until 17 Sep 2026, which is Form Energy's stated
+USD 20/kWh TARGET plus a little. Its own comment said to check the figure if iron-air
+ever started winning in the optimiser. It had started winning. Corrected to R127,050/kW,
+the pre-incentive price implied by the Form Energy / Google / Xcel 30 GWh deal at
+USD 77/kWh, which is what `FIXED.acapIronAir` already used and sourced. ANY EARLIER
+RESULT WHERE IRON-AIR WON THE OPTIMISER IS SUSPECT.
+
+### South Africa has no reliability threshold to compare this against
+
+The Grid Code and Distribution Network Code require a NERSA-approved Cost of Unserved
+Energy, approved 2015 and updated 2016, and COUE is an IRP input. So the test is
+ECONOMIC, not a fixed ceiling, and the right comparison is the break-even cost of
+unserved energy rather than a capacity rate. On Deep decarbonisation that break-even is
+R7,929/kWh at 27 GW of coal retired and R154/kWh with the coal gone - a fiftyfold
+improvement, because the asset finally has something to do. PRICING A CAPACITY PAYMENT
+FOR LONG DURATION IN TODAY'S SYSTEM ANSWERS A QUESTION NOBODY HAS.
+
+---
+
+## Daily demand flexibility substitutes for about 20 GW of renewables
+
+Build `2026-09-17a`, 17 Sep 2026. Binding year 2018, all coal and diesel retired,
+cheapest build with zero unserved energy at each level of `drShiftPct`.
+
+```
+flexibility, % of annual load      cheapest build                     cost R bn   curtail TWh
+0.0                                60 GW W / 100 GW S / 40 GW batt        373.8         171.7
+2.2                                60 GW W / 100 GW S / 40 GW batt        373.8         172.0
+4.5                                80 GW W /  60 GW S / 40 GW batt        350.0         159.9
+6.8                                60 GW W /  80 GW S / 40 GW batt        338.0         134.9
+```
+
+6.8% of annual load shifted within the day buys 20 GW OF RENEWABLES, R35.8BN A YEAR
+AND 36.8 TWH LESS CURTAILMENT - about 10% of system cost.
+
+THREE THINGS THE TABLE SAYS.
+
+The return is NON-LINEAR and starts at nothing. 2.2% changes the build not at all and
+makes curtailment marginally worse. Gains appear above about 4%, because flexibility
+has to be large enough to move the binding hour.
+
+It substitutes SOLAR, not wind. Every step down removes solar while wind holds or
+rises. Shifting load within a day aligns it with the midday solar peak; it does nothing
+for a multi-day wind drought, which is what wind capacity is there to cover.
+
+The CURTAILMENT gain is the larger prize: R35.8bn of cost against 36.8 TWh of avoided
+spill.
+
+### The control cannot express more than 6.8%
+
+`drShiftPct` is labelled as a share of daily load but takes that share of each of the
+SIX HIGHEST NET-LOAD HOURS, so the share of annual energy moved is about a quarter of
+the slider value. Its maximum of 30% reaches 6.8% of annual load. The label was
+corrected on 17 Sep 2026 to show both numbers.
+
+For context, NREL puts demand response at about 5% of annual demand made flexible in a
+decarbonised US grid by 2035, so 6.8% is already at the optimistic end and 15% would be
+three times a published estimate.
+
+REBOUND IS MODELLED. The dispatch water-fills the shifted load into the twelve lowest
+net-load hours rather than dumping it in blocks, because dumping produced an artificial
+05:00 rebound spike where returning load collided with storage charging.
+
+---
+
+## Lithium saturates, and the Deep decarbonisation preset was three times past it
+
+Build `2026-09-17a`, 17 Sep 2026. Swept on Deep decarbonisation at 6 hours; system cost
+already carries new-build capex.
+
+```
+new lithium   system cost   new capex   unserved GWh   curtail TWh   cycles/yr
+0 GW             R233.2bn    R190.1bn          1,481         129.1         234
+2 GW             R231.9bn    R194.6bn          1,052         127.0         189
+5 GW             R232.1bn    R201.4bn            657         124.6         157
+10 GW            R236.2bn    R212.6bn            334         122.1         113
+15 GW            R244.8bn    R223.9bn            189         121.1          84
+20 GW            R255.3bn    R235.1bn             78         120.8          65
+30 GW            R277.5bn    R257.6bn             27         120.5          44
+45 GW            R311.1bn    R291.4bn              0         120.4          30
+```
+
+DISCHARGE SATURATES AT ABOUT 8.1 TWH. Going 20 to 45 GW more than doubles the fleet and
+adds 2% more delivered energy. Curtailment barely moves across a thirty-fold increase in
+storage, 128 to 120 TWh, because the spill is SEASONAL and a six-hour asset cannot reach it.
+
+With unserved energy priced, the optimum is 8 GW at R20/kWh, 12 at R50, and 20 GW at
+R100 and above, where it stops moving. Going 20 to 30 GW costs R22.2bn/yr to avoid
+51 GWh, needing a cost of unserved energy above R435/kWh.
+
+THE PRESET CARRIED 30 GW AND WAS MOVED TO 20 ON 17 SEP 2026. Everything that rested on
+it moved with it: new-build capital R0.886 to R0.823/kWh, the retail headline R5.08 to
+R4.91 regulated and R3.61 to R3.29 market-indexed, and both spreads WIDENED because less
+storage means less price-smoothing.
+
+Cycling at 1 GW on this preset is 203 times a year, which is what advanced markets see.
+The 44 at 30 GW was saturation, not a dispatch fault.
+
+---
+
+## The storage endowment, and why it mattered only at long duration
+
+Fixed 17 Sep 2026. Storage used to start each year at a flat 70% for pumped and 50% for
+batteries, with no cyclic close, so the year opened with free stored energy that appeared
+in no balance. The dispatch now runs the year TWICE, the second pass starting where the
+first finished.
+
+```
+scenario                  endowment   avgCost with / without   unserved GWh with / without
+defaults                     44 GWh          548 / 548                    3 / 3
+Crisis 2023                  44 GWh        1296 / 1296             17,504 / 17,522
+Deep decarbonisation        104 GWh        1179 / 1179                   78 / 87
+plus 20 GW iron-air       1,104 GWh        2459 / 2432                    0 / 9
+```
+
+AT PRESET SCALE IT MOVED NOTHING, so no published figure needed rebasing. It bit only
+where the endowment was large relative to the gap, which is exactly long-duration
+storage: half of 100 hours is 50 hours of free energy.
+
+It also diverged from this project's own cross-validation. `validation_README` records
+the PyPSA comparison's initial state of charge as computed with CYCLIC INITIALISATION
+rather than hardcoded, so the browser model and the comparison were not starting from
+the same system, and the 0.42% agreement between them was measured across that difference.
+
+---
+
 ## The Seriti Green scenario
 
 Their July 2026 published simulation, reproduced 27-28 Aug 2026.
@@ -103,7 +324,7 @@ Eskom-owned plant.
 
 ---
 
-## Long-duration storage does not solve a winter wind drought
+## Long-duration storage in a system that has gas - SCOPE CORRECTED
 
 Their conclusion is that the deficit needs firm wind or SEASONAL STORAGE. Tested
 directly. July gas energy, Seriti scenario:
@@ -120,11 +341,52 @@ iron-air 20 GW, no lithium          3,015 GWh    19.6 GW peak
 Twenty gigawatts of 100-hour iron-air is two TERAWATT-hours of storage and it
 changes July by NOTHING, to three significant figures. Iron-air alone makes it
 worse. There is no surplus to store; the deficit is an energy shortage, not a
-shifting problem. SEASONAL STORAGE DOES NOT SOLVE IT EITHER - a stronger claim
-than Seriti's own.
+shifting problem.
 
 Annual effect is real but happens in other months: gas 30.7 to 29.7 TWh,
 curtailment to zero.
+
+### SCOPE CORRECTED 17 Sep 2026. This does not generalise.
+
+The entry originally ended "SEASONAL STORAGE DOES NOT SOLVE IT EITHER - a stronger
+claim than Seriti's own". That claim was wrong and has been removed.
+
+It was measured on the Seriti scenario, which carries 25 GW OF GAS and spills NOTHING.
+Of course a store did nothing: there was no surplus to put in it. In a high-renewables
+build there is over 100 TWh of spill a year, and the same technology behaves completely
+differently. Measured on build `2026-09-17a`, all coal retired, Deep decarbonisation:
+
+```
+coal retired   iron-air   unserved GWh   Fe discharge TWh
+27 GW             0 GW              78               0.00
+27 GW            20 GW               0               0.16
+32 GW             0 GW             368               0.00
+32 GW            20 GW               0               0.64
+37 GW             0 GW           1,257               0.00
+37 GW            20 GW               0               2.18
+42 GW             0 GW           2,359               0.00
+42 GW            20 GW               0               3.99
+```
+
+LONG-DURATION STORAGE REPLACES COAL'S ADEQUACY ROLE COMPLETELY, at every level of
+retirement, up to and including the whole fleet. On the worst weather year at 50 GW
+wind / 60 GW solar, 20 GW of 100-hour storage takes 250 GWh of unserved energy to zero.
+
+And it does it at UNDER TWO CYCLES A YEAR. 3.99 TWh discharged against 2 TWh of
+installed energy is 0.84 cycles at full coal retirement; 0.25 cycles on the worst
+weather year. Discharge is 92% in July and 8% in August, nothing in the other ten
+months - it fills over summer and empties into the winter, which is the seasonal
+insurance behaviour the technology is for.
+
+THE NUMBER TO QUOTE IS THE CYCLE COUNT, NOT THE MEGAWATT-HOURS. An asset that runs
+less than once a year cannot be paid by an energy price at any scarcity level, because
+it is not there for the energy. That is the capacity-payment argument as a measurement
+rather than an assertion.
+
+CAVEAT ON THE OLD FIGURES ABOVE. The July table predates the cyclic storage fix of
+17 Sep 2026, when storage stopped being handed a free half-tank at hour zero. At
+long-duration scale that endowment was up to 1 TWh against gaps of tens of GWh. The
+figures below the correction are post-fix; the July table is not.
 
 ---
 
