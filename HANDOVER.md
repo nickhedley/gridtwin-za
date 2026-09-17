@@ -3,6 +3,14 @@
 Build `2026-09-12o`. Suite clean. This session ran long; what follows is what a new session
 needs to pick up without re-deriving it.
 
+> SUPERSEDED IN PART, 17 Sep 2026. The current build is `2026-09-17a`, five days and two long
+> sessions later, and the suite counts, the retail headline and the cost-recovery figures below
+> have all moved. Individual figures are marked where they are known not to reproduce, but
+> TREAT ANY UNMARKED NUMBER IN THIS FILE AS UNVERIFIED against the current build. What survives
+> reliably is the METHOD sections - the working method, the satellite-work errors, and the
+> "measure before concluding" note at the end - none of which depend on a build. RESULTS.md is
+> the current record of findings.
+
 ---
 
 ## Read first
@@ -60,13 +68,24 @@ varying by hour. **Market-indexed** is Agile - the hourly price carries generato
 through scarcity, so generation's 67% share leaves the flat block.
 
 ```
-Future mix 2035        regulated    market-indexed
-mean                       R5.45             R3.51
-week spread                 1.3x              3.8x
+Deep decarbonisation 2035   regulated    market-indexed
+mean, build 2026-09-17a         R4.91             R3.29
+day spread                       1.3x              3.1x
 ```
 
-The market number is LOWER and that is not good news: it recovers **35%** of system cost
-against 76% today and 132% gas-firmed. Prices are zero 56% of the year. The household pays
+RETIRED 17 Sep 2026: this table read R5.45 and R3.51 against a preset called "Future mix".
+Neither figure reproduces on any current state and both predate three changes - the 12 Sep
+`salesMWh` break and its 15 Sep repair, the rooftop capex removal, and the preset's lithium
+moving 30 GW to 20 GW. The preset was renamed to Deep decarbonisation on 15 Sep 2026. Do not
+reissue the old pair; RESULTS.md carries the current matrix with its full control state.
+
+The market number is LOWER and that is not good news. THE MAGNITUDES OF THAT UNDER-RECOVERY
+ARE NOT CURRENTLY QUOTABLE: this paragraph claimed 35% of system cost against 76% today and
+132% gas-firmed, with prices zero 56% of the year, and none of those reproduce either. The
+denominator is the problem - `totalCost` excludes the existing fleet, which a tariff does not -
+and Crisis 2023 returns 4,904% of system cost, which looks like a regression of the ORDC
+failure recorded as fixed on 12 Sep. Measured 17 Sep: prices are zero 38% of the year under
+Deep decarbonisation. The DIRECTION holds and is well founded. The household pays
 less; the capital does not get paid. That is the missing-money problem, and it is why capacity
 markets exist.
 
@@ -97,8 +116,9 @@ against 1.029 in the six dearest - the cheap hours are overnight coal, the dear 
 evening gas and storage. Under the IRP 2030 build the sign flips back. So the divergence is
 TRANSITIONAL, which argues for fixing the signal now.
 
-**Curtailment reaches the bill through the denominator**, worth about 22% of the Future mix
-bill and invisible as a line.
+**Curtailment reaches the bill through the denominator**, worth about 22% of the Deep
+decarbonisation bill and invisible as a line. The 22% is on the pre-15 Sep build and has
+not been re-measured since the charging fix or the preset change.
 
 **Inflation is not the problem, the counterfactual is.** Everything is constant 2026 rands.
 Holding today's tariff flat is GENEROUS to the status quo: NERSA has approved 8.76% and 8.83%
