@@ -50,35 +50,68 @@ OUT.mkdir(exist_ok=True)
 YEARS = list(range(2014, 2026))          # matches profiles_regional_multiyear.json
 TURBINE = "Vestas V164 8000"
 HUB_M = 150                              # the height ESMAP assessed the resource at
+# HEIGHTS DIFFER BETWEEN THE REPORT'S OWN FIGURES. The executive summary quotes 9 to
+# 10.6 m/s at 150 m hub height; Table 68's metocean wind is 5.9 to 8.5 m/s, which is
+# almost certainly the 10 m standard reference. At an offshore shear exponent near 0.11,
+# 6.0 m/s at 10 m becomes about 8.0 at 150 m and 8.2 becomes about 11.0, so the two
+# reconcile. Do not compare a Table 68 figure with a summary figure directly.
 
 # name: (lat, lon, ESMAP description the centroid was derived from)
 SITES = {
+    # COORDINATES ARE NOW SOURCED, not estimated. Each is the AREA-WEIGHTED CENTROID of
+    # ESMAP's own fixed-foundation suitable-area polygons for that stretch of coast, taken
+    # from the Sub-Saharan Africa KML published on energydata.info (Offshore Wind Technical
+    # Potential, World Bank Group Offshore Wind Development Program, CRS 4326). 3,345 South
+    # African polygons, grouped to the nearest of the 2026 report's regions and averaged by
+    # area.
+    #
+    # WHY THIS REPLACED THE GUESSES. The first run used centroids I derived from the 2026
+    # report's prose, because neither Figure 98 (a map in RSA Albers Equal Area Conic) nor
+    # Table 68 (site characteristics) carries coordinates. Two of those guesses were wrong:
+    # Boegoebaai sat about 60 km west of the suitable water and Coega West sat south of it
+    # into deeper water, and those two returned the lowest capacity factors of the seven,
+    # 0.410 and 0.396. Sampling the wrong water looks exactly like a poorer resource.
+    #
+    # TWO CAVEATS ON THE SOURCE. It is the 2019 GLOBAL technical-potential exercise, which
+    # screens depth and wind speed only - not the environmental, social and shipping
+    # constraints the 2026 study applies - so these are the right water but a superset of
+    # the report's regions. And the FLOATING-foundation centroids from the same KML are
+    # unusable: Coega returns 215,347 km2 spread over a 210 km radius, which is the deep
+    # water screen picking up most of the continental slope. Fixed centroids only.
+    #
+    # First-run capacity factors at the guessed points, for comparison when this reruns:
+    #   Cape Point West 0.494, Cape Point South 0.485, Saldanha 0.472, Coega East 0.433,
+    #   Durban 0.416, Boegoebaai 0.410, Coega West 0.396.
     "Boegoebaai West Coast": (
-        -29.30, 16.30,
-        "over 13,000 km2 west of Port Nolloth and the proposed Port of Boegoebaai; "
-        "mean wind 9.2-9.7 m/s; 75-500 m; ~40 GW floating"),
+        -29.520, 16.912,
+        "ESMAP fixed-foundation centroid, 671 polygons, 877 km2. The 2026 report gives this "
+        "region 9.2-9.7 m/s and 40 GW of the national 95, the largest single resource, but "
+        "its own Table 68 metocean data puts Port Nolloth at 6.0 and 6.7 m/s against "
+        "Saldanha's 5.9 - so the summary's ranking of Boegoebaai above Saldanha is not "
+        "supported by the report's measured wind. Treat the 9.2-9.7 with suspicion."),
     "Saldanha Bay West Coast": (
-        -32.60, 17.40,
-        "over 8,600 km2 northwest of Saldanha Bay; mean wind ~8.8 m/s; 0-500 m; "
-        "24 GW floating plus 1.4 GW fixed"),
-    "Cape Point West": (
-        -34.35, 18.10,
-        "1,282 km2 west of Cape Point; mean wind 9.9-10.6 m/s; 75-500 m"),
-    "Cape Point South": (
-        -34.75, 18.50,
-        "932 km2 south of Cape Point; mean wind 9.9-10.6 m/s; 75-500 m"),
-    "Coega West": (
-        -34.05, 25.45,
-        "1,365 km2 west of the Port of Ngqura; mean wind ~9 m/s; ~750 MW fixed "
-        "plus over 3 GW floating"),
-    "Coega East": (
-        -33.90, 26.05,
-        "537 km2 east of the Port of Ngqura; mean wind ~9 m/s; ~550 MW fixed "
-        "plus ~1 GW floating"),
+        -32.808, 18.115,
+        "ESMAP fixed-foundation centroid, 644 polygons, 2,105 km2. Report: ~8.8 m/s, "
+        "24 GW floating plus 1.4 GW fixed. Table 68: Saldanha Bay 1 and 2 at 5.9 m/s, "
+        "Saldanha Bay 3 at 7.1."),
+    "Cape Point": (
+        -34.544, 19.695,
+        "ESMAP fixed-foundation centroid, 744 polygons, 3,418 km2. Report: 9.9-10.6 m/s, "
+        "the best in the country, 6.5 GW floating. Table 68 Cape Point 1 at 7.6 m/s. "
+        "Combines the report's separate Cape Point West and South."),
+    "Coega Gqeberha": (
+        -33.636, 26.257,
+        "ESMAP fixed-foundation centroid, 768 polygons, 2,862 km2. Report: ~9 m/s, about "
+        "1.3 GW fixed plus 4 GW floating across Coega West and East. Table 68 Ngqura 1 at "
+        "8.1 m/s. Combines the report's separate West and East."),
     "Durban Richards Bay": (
-        -29.40, 31.60,
-        "nearly 2,900 km2 between the Port of Durban and Port of Richards Bay; "
-        "mean wind ~9.4 m/s; over 17 GW floating"),
+        -29.737, 31.264,
+        "ESMAP fixed-foundation centroid, 518 polygons, 4,011 km2, the largest fixed area "
+        "in the country. Report: ~9.4 m/s, over 17 GW floating. Table 68 Durban 1 and 2 at "
+        "8.2 and 8.5 m/s, the highest measured wind of any site in the table. KwaZulu-Natal "
+        "onshore is only 0.216 CF and over 30% of provincial land is in communal trusts, so "
+        "this is where offshore substitutes for a resource that barely exists onshore."),
+
 }
 
 SESSION = requests.session()
@@ -98,6 +131,11 @@ def fetch(name, lat, lon, year):
     if r.status_code == 429:
         print("  rate limited, sleeping 10 min")
         time.sleep(600)
+        return fetch(name, lat, lon, year)
+    if r.status_code >= 500:
+        # Their server, not ours. The first run died on a 502 after 58 of 84 files.
+        print("  server error %d, retrying in 2 min" % r.status_code)
+        time.sleep(120)
         return fetch(name, lat, lon, year)
     r.raise_for_status()
     dest.write_text(r.text)
