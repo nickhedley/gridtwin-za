@@ -5277,6 +5277,25 @@ const FIXED = {
   // Checked 2 Sep 2026 against the report. NOT an error - a different boundary. State the
   // boundary whenever this constant is compared against an Eskom figure.
   ocgtDieselMW:3400, windMW:4612, pvUtilityMW:3271, rooftopMW:8942.1, cspMW:600,
+  // OFFSHORE WIND. Nothing built; South Africa has no offshore wind at all.
+  offshoreMW:0, newOffshoreMW:0,
+  // The national technical potential from ESMAP Tables 16 and 17, which sum to 94,954 MW
+  // against the report's 95 GW headline: 2,667 MW fixed and 92,287 MW floating. By region:
+  // Boegoebaai 39,674, Saldanha 25,831, Durban-Richards Bay 17,363, Cape Point 6,489,
+  // Coega 5,597. The slider is capped there because it is a PHYSICAL limit, unlike the
+  // onshore sliders which are capped by judgement.
+  offshoreCapMW:95000,
+  // Subsea export cable, R/kW-yr, ON TOP of the onshore transmission rate every generator
+  // pays. ESMAP gives distance to transmission of 22.7 to 94.5 km per sub-area, and the
+  // export cable is the cost onshore wind does not have.
+  //
+  // SET TO ZERO BY DEFAULT AND DELIBERATELY. BLD_COST.offshore is back-solved from ESMAP's
+  // LCOE, and offshore LCOE conventions differ on whether the export cable sits inside that
+  // number - in Great Britain transmission is separated out to an OFTO, in most continental
+  // markets it is not. If ESMAP included it, adding a cable charge here DOUBLE COUNTS. Zero
+  // is the safe default until the report's LCOE methodology is checked. Raise it only after
+  // confirming the cable is NOT in BLD_COST.offshore.
+  offshoreGridRPerKWyr:0,
   // DIESEL DECOMMISSIONING. Added 17 Sep 2026. Coal, imports and new nuclear all had
   // controls; the 3,400 MW of OCGT diesel did not, so a fossil-free system could only be
   // FOUND BY SEARCH - hunting for combinations the dispatch happens not to reach diesel in -
@@ -5514,6 +5533,23 @@ const FIXED = {
   // default, so moving any CCS slider to zero changed nothing at all. Same
   // class of bug as the coalEAFPct one found on 15 Aug.
   ccsEnabled:false, ccsPenaltyPct:25, ccsCaptureRatePct:90,
+  // WHAT SHARE OF THE FLEET IS RETROFITTED. Added 18 Sep 2026. Until then CCS was
+  // all-or-nothing across all 39,692 MW, which is not a programme anyone would run: no
+  // country retrofits an entire coal fleet, and in South Africa only Medupi and Kusile are
+  // plausible candidates - together about 9,600 MW, or 24% of installed coal.
+  //
+  // Measured at 100%, the switch does two things at once and the second dominates. The 25%
+  // parasitic load takes 39.7 GW of coal down to 29.8 GW effective, the system reaches for
+  // diesel - 540 GWh to 10,955 - and unserved energy appears from nothing. That is a CAPACITY
+  // SHOCK, not a carbon result. Setting the penalty to zero still leaves avgCost at R1,600
+  // against R548, so the parasitic load explains the shortfall and about a fifth of the cost;
+  // the rest is the CCS cost itself. A control run retiring 25% of the fleet with no CCS
+  // reproduces the same shape, which confirms the capacity loss is doing the work.
+  //
+  // A share slider separates the two. At 24% the model answers what Medupi and Kusile with
+  // capture would cost; at 100% it answers what it would cost to retrofit everything, which
+  // is the question nobody is asking.
+  ccsSharePct:100,
   // ccsTsR 900. Revised down TO 810 ON 23 AUG AND reverted ON 27 AUG.
   //
   // The 23 Aug cut rested on Leandra: 34 Gt characterised in Ventersdorp basalt,
@@ -6172,8 +6208,16 @@ function simulate(u, prof, outPath, _soc0){
   //     South Africa's power sector, and the model reproduces it from the
   //     arithmetic rather than asserting it.
   if (p.ccsEnabled) {
-    const pen = (p.ccsPenaltyPct ?? 25) / 100;
-    const cap = (p.ccsCaptureRatePct ?? 90) / 100;
+    // SHARE-WEIGHTED. The penalty, the capture and the cost all apply to the retrofitted
+    // share only; the rest of the fleet runs untouched. A fleet-average is the right
+    // treatment here because the dispatch carries one coal block with one cost and one
+    // emissions factor - modelling capture on named stations would need the unit-commitment
+    // fleet to carry a per-station CCS flag, which is a larger change and probably the right
+    // one eventually, since Medupi and Kusile are newer and cheaper to run than the units
+    // that would be displaced.
+    const shr = Math.max(0, Math.min(100, p.ccsSharePct ?? 100)) / 100;
+    const pen = ((p.ccsPenaltyPct ?? 25) / 100) * shr;
+    const cap = ((p.ccsCaptureRatePct ?? 90) / 100) * shr;
     const keep = Math.max(0.4, 1 - pen);
     // note: the capacity penalty is applied further down, to the fleet that
     // remains after decommissioning and new build - see coalInstRem. Applying it
@@ -6192,10 +6236,35 @@ function simulate(u, prof, outPath, _soc0){
   // Retire nameplate, add nameplate, then take the capture penalty off whatever
   // fleet is left - existing and new alike. A new station with capture loses the
   // same fraction of its output to the capture plant as a retrofitted one.
-  const ccsKeep = p.ccsEnabled ? Math.max(0.4, 1 - (p.ccsPenaltyPct ?? 25)/100) : 1;
+  // Share-weighted, matching the block above. Written once here and once at the cost site
+  // below; both read ccsSharePct so they cannot drift apart.
+  const ccsKeep = p.ccsEnabled
+    ? Math.max(0.4, 1 - ((p.ccsPenaltyPct ?? 25)/100) * (Math.max(0, Math.min(100, p.ccsSharePct ?? 100))/100))
+    : 1;
   const coalInstRem=(Math.max(0,p.coalInstalledMW-p.coalDecomMW)+p.newCoalMW)*ccsKeep;
   const coalAvail=coalInstRem*p.coalEAFPct/100;
   const windCap=p.windMW+p.newWindMW, pvCap=p.pvUtilityMW+p.newPvMW, rooftopCap=p.rooftopMW+p.newRooftopMW;
+  // OFFSHORE WIND. Added to the onshore wind block rather than carried as its own carrier:
+  // the dispatch treats it as wind, because it is wind, and the merit order does not
+  // distinguish them. What it needs and does NOT yet have is its own hourly profile -
+  // nodal/profiles_offshore_regional.json exists but is not fetched by index.html. Until it
+  // is, offshore runs on the ONSHORE shape, which understates its energy by about 40% and,
+  // more importantly, gives it the wrong variability. See the offshore section of
+  // RESULTS.md: offshore spends 18.2% of hours below 10% of rating against onshore's 14.1%,
+  // so borrowing the onshore shape makes it look STEADIER than it is.
+  const offshoreCap = Math.max(0, Math.min(p.offshoreCapMW ?? 95000,
+                                           (p.offshoreMW || 0) + (p.newOffshoreMW || 0)));
+  // Its own profile if loaded, the onshore wind shape if not. The fallback is WRONG and
+  // flatters offshore - it understates energy about 40% and, worse, hands offshore onshore's
+  // variability, which is the thing the profile exists to measure. Loud rather than silent:
+  // anything reading this fallback should not be quoted.
+  const _offPu = (typeof OFFSHORE_PU !== 'undefined' && OFFSHORE_PU
+                  && OFFSHORE_PU.length === 8760) ? OFFSHORE_PU : null;
+  if (offshoreCap > 0 && !_offPu && !simulate._offWarned) {
+    simulate._offWarned = true;
+    console.warn('[GridTwin] offshore built but nodal/profiles_offshore_regional.json did not '
+      + 'load - running on the onshore wind shape. Wrong energy and wrong variability.');
+  }
   // Enrolled VPP batteries join the dispatchable fleet - turning a scattered
   // household fleet into one plant is exactly what a VPP is for. Sized at 4h,
   // the usual residential configuration.
@@ -6521,8 +6590,9 @@ function simulate(u, prof, outPath, _soc0){
   // Carry the capture cost into the marginal price. The merit curve holds each
   // unit's own fuel cost, so the energy penalty scales it and the capture costs
   // add on top - the same build-up p.costCoal gets, applied per unit.
-  const ccsCostMult = p.ccsEnabled ? 1/Math.max(0.4, 1-(p.ccsPenaltyPct ?? 25)/100) : 1;
-  const ccsCostAdd  = p.ccsEnabled ? ((p.ccsOpexR ?? 180)+(p.ccsCapexR ?? 260)+(p.ccsTsR ?? 900)) : 0; // TOTAL coal generation per hour, including any off-peak
+  const _ccsShr = Math.max(0, Math.min(100, p.ccsSharePct ?? 100)) / 100;
+  const ccsCostMult = p.ccsEnabled ? 1/Math.max(0.4, 1-((p.ccsPenaltyPct ?? 25)/100)*_ccsShr) : 1;
+  const ccsCostAdd  = p.ccsEnabled ? ((p.ccsOpexR ?? 180)+(p.ccsCapexR ?? 260)+(p.ccsTsR ?? 900))*_ccsShr : 0; // TOTAL coal generation per hour, including any off-peak
   // charging bonus - unlike stack.coal (load-serving only, for the chart), this is what real fuel
   // cost/emissions and any external cost comparison (e.g. an LP solve) should use
   const loadS=new Float64Array(HOURS);
@@ -6556,7 +6626,7 @@ function simulate(u, prof, outPath, _soc0){
   const demandDR = new Float64Array(HOURS);
   for (let h = 0; h < HOURS; h++) demandDR[h] = demand[h];
   if (drShift > 0 || vppGeyserMW > 0){
-    const vreCap = { w: windCap, p: pvCap };
+    const vreCap = { w: windCap + offshoreCap, p: pvCap };
     for (let d = 0; d < 365; d++){
       const h0 = d*24; if (h0+24 > HOURS) break;
       const idx = [];
@@ -6638,7 +6708,9 @@ function simulate(u, prof, outPath, _soc0){
     const rawDemand=demandDR[h]*growth;
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
-    let windGen=windCap*wind[h], pvGen=pvCap*solar[h];
+    // Offshore on its OWN shape where the profile loaded, onshore's where it did not.
+    let windGen=windCap*wind[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
+        pvGen=pvCap*solar[h];
     const cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Its OWN accumulator, deliberately - the price
     // engine reads curtailMW as an oversupply signal and zeroes the marginal
@@ -6888,7 +6960,8 @@ function simulate(u, prof, outPath, _soc0){
     // surplus pool rate and pull firm volume out of the retail sales base.
     E.exportedFirm+=expAt(h);
     E.rooftop+=rooftopGen; loadS[h]=load;
-    let windGen=windCap*wind[h], pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
+    let windGen=windCap*wind[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
+        pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Own accumulator, deliberately - see the note at
     // the other declaration. The price engine reads curtailMW as an oversupply
     // signal and zeroes the marginal price wherever it is non-zero.
@@ -7444,7 +7517,22 @@ function simulate(u, prof, outPath, _soc0){
   // The transmission slice of newCapexR, kept separately so the cost decomposition can
   // report it against NERSA's "transmission network charges" component. It is a BUILD
   // cost, not a use-of-system charge, which is why the decomposition marks it partial.
-  const _txCapexR = (u.newWindMW+pvAdderMW)*txRateFor(u.newWindMW+pvAdderMW, p.txRPerKWyr)*1000;
+  // Offshore pays the same onshore transmission rate as everything else, because it still
+  // needs the same reinforcement once it reaches the coast, PLUS an optional subsea export
+  // cable charge. offshoreGridRPerKWyr stays 0, and this is now SETTLED rather than cautious:
+  // ESMAP's Figure 36 breaks the LCOE into components and EXPORT CABLES, OFFSHORE SUBSTATION
+  // and INSTALLATION OF TRANSMISSION ASSETS are line items in it. So the subsea cable is
+  // inside BLD_COST.offshore, which is back-solved from that LCOE, and charging it again here
+  // would double count. What is NOT in the LCOE is onshore reinforcement beyond the landing
+  // point, which is why offshore still pays txRateFor at the same rate as onshore wind.
+  //
+  // For scale if it is ever wanted: ESMAP Tables 16 and 17 give distance to transmission per
+  // sub-area, capacity-weighting to 63.5 km. The full 95 GW is about 6,000 GW-km of
+  // connection; 20 GW is about 1,270 GW-km. Our screened points sit further offshore than
+  // those sub-area centroids, so treat both as floors.
+  const _offMW = (u.newOffshoreMW || 0);
+  const _txCapexR = (u.newWindMW+pvAdderMW+_offMW)*txRateFor(u.newWindMW+pvAdderMW+_offMW, p.txRPerKWyr)*1000
+                  + _offMW * (p.offshoreGridRPerKWyr || 0) * 1000;
   // 'hybrid' added 15 Aug 2026: it serves the grid, so excluding it from the
     // denominator while its costs sat in the numerator overstated avgCost ~0.9%.
     const genKeys=['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
@@ -8074,12 +8162,30 @@ const BLD_COST = {
   // The USD 20/kWh target is now the optimistic bound, not the default. If it is realised,
   // R33,000/kW is the figure, and iron-air gets cheaper than this by a factor of four.
   ironair: { c2026: 127050, decl:  0.0600 },
+  // OFFSHORE WIND, added 18 Sep 2026. BACK-SOLVED FROM ESMAP'S LCOE, because the report
+  // gives levelised cost rather than overnight capex:
+  //
+  //   floating, 2035, medium scenario   USD 97-126/MWh -> take USD 110 = R1,815/MWh
+  //   capacity factor                   0.52, the capacity-weighted mean of Tables 16 and 17
+  //   capex = LCOE x CF x 8760 / CRF    CRF 0.0937 at 25 years and 8%
+  //                                     = R88,200/kW
+  //
+  // THIS IS AN OVERESTIMATE and knowingly so: the back-solve puts the whole LCOE into capex
+  // because fixed O&M is not separated in the report, and offshore O&M is a larger share than
+  // onshore. Treat R88,200 as a ceiling. It is 4.2x onshore wind at R21,000, which is the
+  // right order - global floating offshore runs USD 3,000-5,000/kW against onshore's 1,300.
+  //
+  // DECLINE RATE 6%: ESMAP's own trajectory takes floating from about USD 110/MWh in 2035 to
+  // USD 65-84 by 2050 in the medium scenario and USD 47-60 in the high one, which is 3% to 6%
+  // a year. 6% is the high-growth path and therefore optimistic; it is the same rate used for
+  // iron-air, and for the same reason - a technology whose cost is a forecast, not a price.
+  offshore:{ c2026: 88200, decl:  0.0600 },
   ccgt:    { c2026: 34965, decl: -0.0200 },
 };
 // vrfb gets 25 years: 20,000-30,000 cycles and a 25-30 year calendar life, with
 // no depth-of-discharge limit, so it outlives lithium by a decade. Iron-air at 20
 // is a judgement - no fleet has run long enough to know.
-const BLD_LIFE = { wind:25, pv:25, rooftop:25, batt:15, vrfb:25, ironair:20, ccgt:30 };
+const BLD_LIFE = { wind:25, pv:25, rooftop:25, batt:15, vrfb:25, ironair:20, ccgt:30, offshore:25 };
 const BLD_DISC = 0.08;
 
 // Build-rate presets, each grounded in something real rather than assumed.
@@ -8129,7 +8235,13 @@ function bldAnnuity(capexPerKW, life){
 // capacity mechanism credits them at anything close to nameplate.
 // Matches the dispatch-side de-rating: duration decides how much firm capacity a
 // store can actually be credited with through a long event.
-const BLD_DERATE = { wind:0, pv:0, rooftop:0, batt:0.25, vrfb:0.45, ironair:0.90, ccgt:0.90 };
+// Offshore gets the same zero capacity credit as onshore wind. That is not because its
+// capacity factor is low - at 0.52 it is the best variable resource in the country - but
+// because MEASURED ON TWELVE WEATHER YEARS it spends 18.2% of hours below 10% of rating
+// against onshore's 14.1%, its longest drought is 83 hours against 35, and six of seven
+// regions trough in May. A resource that fails in the same month everywhere earns no
+// capacity credit however much energy it delivers. See RESULTS.md.
+const BLD_DERATE = { wind:0, pv:0, rooftop:0, batt:0.25, vrfb:0.45, ironair:0.90, ccgt:0.90, offshore:0 };
 
 // WHICH TECHNOLOGIES COUNT AS LONG DURATION for the capacity payment. Named here once so
 // the rule is not written out at each of the four sites that price capacity - that is how
@@ -12373,7 +12485,8 @@ function retailComponents(markup, stranded, year, viaMuni){
   // capital it does not own and denied the energy that capital produces. Worth R26.64bn/yr
   // on Deep decarbonisation, R0.147/kWh of a R1.033 new-build term.
   // The engine already draws this line - btmCapexR and gridCapexR at index.html:7408-7409.
-  const newCapR = annuity('wind', P.newWindMW) + annuity('pv', P.newPvMW)
+  const newCapR = annuity('wind', P.newWindMW) + annuity('offshore', P.newOffshoreMW)
+                + annuity('pv', P.newPvMW)
                 + annuity('batt', P.newBattMW, (P.newBattHours || 4) / 4)
                 + annuity('ccgt', P.newCcgtMW)
                 + annuity('vrfb', P.newVrfbMW) + annuity('ironair', P.newIronAirMW);
@@ -13661,7 +13774,8 @@ function renderCCS(r){
   if (!host || !r) return;
   const on = !!state.ccsEnabled;
   const pen = (state.ccsPenaltyPct ?? 25) / 100;
-  const cap = (state.ccsCaptureRatePct ?? 90) / 100;
+  const cap = ((state.ccsCaptureRatePct ?? 90) / 100)
+            * (Math.max(0, Math.min(100, state.ccsSharePct ?? 100)) / 100);
   const keep = Math.max(0.4, 1 - pen);
   const base = FIXED.costCoal;
   const withCcs = base/keep + (state.ccsOpexR ?? 180) + (state.ccsCapexR ?? 260) + (state.ccsTsR ?? 900);
@@ -13843,6 +13957,25 @@ const SLIDERS=[
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit R223/kW/yr (Weisweiler). SA fleet ramps ~24&#37;/hr today (Agora 2017), ~100&#37;/hr once flexibilised (IRENA). Applies to the non-decommissioned fleet.'},
   {grp:'New build (national view/region agnostic)'},
   {id:'newWindMW',label:'New wind',min:0,max:140000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4.6 GW existing (4 GW from REIPPPP + 470 MW wheeled + 100 MW Eskom’s Sere farm).'},
+  {id:'newOffshoreMW',label:'New offshore wind',min:0,max:95000,step:1000,def:FIXED.newOffshoreMW,
+   fmt:v=>v===0?'none':(v/1000).toFixed(0)+' GW',
+   note:'South Africa has no offshore wind today. The cap is the national technical potential '
+     + 'from the World Bank and ESMAP strategic framework of September 2026, 95 GW across five '
+     + 'regions: Boegoebaai 40 GW, Saldanha 26, Durban-Richards Bay 17, Cape Point 6.5 and '
+     + 'Coega 5.6. Almost all of it is floating, in 82 to 952 m of water, 48 to 210 km from '
+     + 'port. Mean wind is 8.7 to 10.6 m/s at 100 m, against 8.8 to 9.7 in the Netherlands, '
+     + 'Germany and the UK, so the resource is competitive with the established markets. '
+     + 'First commissioning is not expected before 2035.'
+     + '<br><br>Two things this control does not yet do. Offshore runs on the onshore wind '
+     + 'shape, because nodal/profiles_offshore_regional.json is built but not yet fetched by '
+     + 'the page - that understates its energy by about 40% and makes it look steadier than it '
+     + 'is. And its cost is back-solved from ESMAP levelised cost rather than a quoted capex, '
+     + 'which makes R88,200/kW a ceiling.'
+     + '<br><br>It earns no capacity credit, and that is a measurement rather than a '
+     + 'convention. Across twelve weather years the seven candidate regions spend 18.2% of '
+     + 'hours below 10% of rating against onshore wind\u2019s 14.1%, the longest lull runs 83 '
+     + 'hours against 35, and six of the seven trough in May. The report describes offshore as '
+     + 'near baseload; on these profiles it is not.'},
   {id:'newPvMW',label:'New utility solar PV',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.2 GW existing (2.7 GW from REIPPPP + 488 MW wheeled).'},
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.6 GW existing, behind the meter. Eskom estimates 9.1 GW; 0.49 GW of that is wheeled plant, modelled as utility supply.'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing (4h).'},
@@ -13941,6 +14074,17 @@ const SLIDERS=[
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
    ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that.'},
   {id:'ccsEnabled',toggle:true,def:false,label:'Apply carbon capture &amp; storage to the coal fleet',note:'Retrofits the existing fleet and includes capture on new build.'},
+  {id:'ccsSharePct',label:'\u2013 share of the fleet retrofitted',min:0,max:100,step:2,
+   def:FIXED.ccsSharePct,ctrlStyle:SUB_CTRL,
+   fmt:v=>v+' % of coal ('+((v/100)*39.7).toFixed(1)+' GW)',
+   note:'How much of the 39.7 GW coal fleet carries capture. The default of 100% is not a '
+     + 'programme anyone would run \u2013 no country retrofits an entire coal fleet, and here only '
+     + 'Medupi and Kusile are plausible candidates, about 9.6 GW or 24%. At 100% the switch '
+     + 'does two things at once and the second dominates: the 25% parasitic load takes 39.7 GW '
+     + 'of coal down to 29.8 GW effective, the system reaches for diesel at R6,100/MWh, and '
+     + 'unserved energy appears from nothing. That is a capacity shock, not a carbon result. '
+     + 'Retiring a quarter of the fleet with no capture at all reproduces the same shape. '
+     + 'Set 24% to ask what Medupi and Kusile with capture would cost.'},
   {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'R1,968 = $18.50/MMBtu delivered LNG &#215; R16.21/USD &#215; 52&#37; efficiency. Each $1/MMBtu \u2248 R106/MWh. Fuel only; build cost is the Gas CCGT slider.'},
   {grp:'LCOE assumptions (R/kWh) \u2013 full lifecycle build cost'},
   {id:'lcoePv',label:'Utility solar PV',min:300,max:1500,step:10,def:FIXED.lcoePv,fmt:v=>'R'+(v/1000).toFixed(2),note:'BW7 bids averaged R0.46; anchor R0.55.'},
@@ -15391,7 +15535,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-17a';
+const BUILD_STAMP = '2026-09-18a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -15880,6 +16024,63 @@ bldShowInherit();
 // RESIDENTIAL LOAD SHAPE, for the Agile-style rows in the retail panel. Absent, those rows
 // simply do not render - the panel degrades rather than falling back to the national shape,
 // which peaks at 10:00 against a household's 19:00 and would flatter a dynamic tariff badly.
+// OFFSHORE WIND SHAPE. Until 18 Sep 2026 offshore ran on the ONSHORE wind profile, which
+// understated its energy by about 40% and gave it the wrong variability - the one question
+// the profile exists to answer. Source is Renewables.ninja / MERRA-2 at seven ESMAP regions,
+// same source and same twelve years as the onshore profiles, so the two are comparable by
+// construction rather than by assertion.
+//
+// ONE NATIONAL SHAPE, capacity-weighted by ESMAP's potential per region (Tables 16 and 17,
+// summing to 94,954 MW against their 95 GW headline). The engine carries offshore as a single
+// national block, so a single weighted shape is the honest reduction; regional offshore siting
+// would need the nodal path to carry it.
+//
+// LEVELS SCALED TO ESMAP, shape kept as measured. Our Vestas V164 8000 at 379 W/m2 understates
+// against a modern machine - we measure 0.437 to 0.508 by region against ESMAP's 49.0 to 56.0%.
+// Same split the onshore file already uses; see bias_corrected in profiles_regional_multiyear.
+// Scaling moves the level and not the shape, so it cannot manufacture the variability answer.
+var OFFSHORE_PU = null;
+var OFFSHORE_ESMAP = {
+  'Boegoebaai West Coast':   { mw: 39674, cf: 0.524 },
+  'Saldanha Bay West Coast': { mw: 25831, cf: 0.494 },
+  'Durban Richards Bay':     { mw: 17363, cf: 0.523 },
+  'Cape Point West':         { mw:  3846, cf: 0.546 },
+  'Cape Point South':        { mw:  2643, cf: 0.581 },
+  'Coega West':              { mw:  3987, cf: 0.486 },
+  'Coega East':              { mw:  1610, cf: 0.507 },
+};
+fetch('nodal/profiles_offshore_regional.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
+  .then(d=>{
+    if (!d || !d.wind_pu) return;
+    const sc = d.scale || 1;
+    let totMW = 0, cfTarget = 0;
+    const acc = new Float64Array(8760);
+    for (const reg of Object.keys(d.wind_pu)) {
+      const meta = OFFSHORE_ESMAP[reg];
+      if (!meta) continue;
+      const yrs = d.wind_pu[reg], keys = Object.keys(yrs);
+      if (!keys.length) continue;
+      for (const y of keys) { const v = yrs[y];
+        for (let h = 0; h < 8760; h++) acc[h] += (v[h] || 0) / sc / keys.length * meta.mw; }
+      totMW += meta.mw; cfTarget += meta.cf * meta.mw;
+    }
+    if (totMW <= 0) return;
+    for (let h = 0; h < 8760; h++) acc[h] /= totMW;
+    cfTarget /= totMW;
+    let cfRaw = 0; for (let h = 0; h < 8760; h++) cfRaw += acc[h] / 8760;
+    const k = cfRaw > 0 ? cfTarget / cfRaw : 1;
+    for (let h = 0; h < 8760; h++) acc[h] = Math.min(1, acc[h] * k);
+    OFFSHORE_PU = acc;
+    console.log('[GridTwin] Offshore profile: ' + Object.keys(d.wind_pu).length
+      + ' regions, CF ' + cfRaw.toFixed(3) + ' scaled x' + k.toFixed(3)
+      + ' to ESMAP ' + cfTarget.toFixed(3));
+    // NO run() HERE. It was calling a full simulate and render on load, which queued ahead of
+    // the weather-year fetch and starved it - validate_weather went from 64/64 to a fatal
+    // "multi-year file not loaded". Offshore defaults to zero, so nothing needs recomputing
+    // when this lands; by the time anyone moves the slider the shape is long since built.
+  })
+  .catch(()=>{});
+
 var RES_PU = null;
 fetch('nodal/residential_profile.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
   .then(d=>{ if (d && Array.isArray(d.load_pu) && d.load_pu.length === 8760) RES_PU = d.load_pu;

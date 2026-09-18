@@ -45,6 +45,15 @@ TURBINE = "Vestas V164 8000"
 HUB_M = 150
 SCREEN_YEAR = 2018
 YEARS = list(range(2014, 2026))
+def safe(name):
+    """A label or region name as a filename fragment. Labels contain "m/s", so replacing
+    only spaces produced a path with a directory separator in it and the write failed with
+    FileNotFoundError. Every slash, backslash and space goes."""
+    out = name
+    for ch in "/\\ ":
+        out = out.replace(ch, "_")
+    return out
+
 SCREEN = Path("screen_offshore")
 BEST = Path("raw_offshore_best")
 
@@ -165,7 +174,7 @@ def cmd_screen():
     for reg, cands in CANDIDATES.items():
         for lbl, lat, lon in cands:
             i += 1
-            dest = SCREEN / ("%s__%s.csv" % (reg.replace(" ", "_"), lbl.replace(" ", "_")))
+            dest = SCREEN / ("%s__%s.csv" % (safe(reg), safe(lbl)))
             got = get(lat, lon, SCREEN_YEAR, dest)
             print("[%d/%d] %-26s %-18s %s" % (i, n, reg, lbl, "fetched" if got else "had it"))
             if got: time.sleep(75)
@@ -178,7 +187,7 @@ def cmd_pick():
         best = None
         print("  %s" % reg)
         for lbl, lat, lon in cands:
-            p = SCREEN / ("%s__%s.csv" % (reg.replace(" ", "_"), lbl.replace(" ", "_")))
+            p = SCREEN / ("%s__%s.csv" % (safe(reg), safe(lbl)))
             if not p.exists():
                 print("    %-18s MISSING" % lbl); continue
             cf, nh = read_cf(p)
@@ -221,7 +230,7 @@ def cmd_fetch():
     for reg, s in sites.items():
         for y in YEARS:
             i += 1
-            dest = BEST / ("%s_%d.csv" % (reg.replace(" ", "_"), y))
+            dest = BEST / ("%s_%d.csv" % (safe(reg), y))
             got = get(s["lat"], s["lon"], y, dest)
             print("[%d/%d] %-26s %d  %s" % (i, n, reg, y, "fetched" if got else "had it"))
             if got: time.sleep(75)

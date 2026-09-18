@@ -18,5 +18,48 @@
  "screen_year": 2018,
  "source": "Renewables.ninja / MERRA-2",
  "method": "Three candidates per region screened on 2018, highest capacity factor kept. Reproduces developer site selection, so the offshore-versus-onshore variability comparison is best-available against best-available rather than arbitrary water against REIPPPP plant centroids.",
- "sites": {}
+ "sites": {
+  "Boegoebaai West Coast": {
+   "label": "EBSA-clear offshore",
+   "lat": -29.3,
+   "lon": 15.9,
+   "screen_cf_2018": 0.4111
+  },
+  "Saldanha Bay West Coast": {
+   "label": "EBSA-clear offshore",
+   "lat": -32.6,
+   "lon": 16.9,
+   "screen_cf_2018": 0.4721
+  },
+  "Cape Point West": {
+   "label": "EBSA-clear offshore",
+   "lat": -34.35,
+   "lon": 17.6,
+   "screen_cf_2018": 0.4864
+  },
+  "Cape Point South": {
+   "label": "EBSA-clear offshore",
+   "lat": -35.15,
+   "lon": 18.5,
+   "screen_cf_2018": 0.4748
+  },
+  "Coega West": {
+   "label": "EBSA-clear offshore",
+   "lat": -34.45,
+   "lon": 25.45,
+   "screen_cf_2018": 0.4519
+  },
+  "Coega East": {
+   "label": "in EBSA, further offshore",
+   "lat": -34.3,
+   "lon": 26.2,
+   "screen_cf_2018": 0.4747
+  },
+  "Durban Richards Bay": {
+   "label": "in EBSA, further offshore",
+   "lat": -29.4,
+   "lon": 32.0,
+   "screen_cf_2018": 0.476
+  }
+ }
 }

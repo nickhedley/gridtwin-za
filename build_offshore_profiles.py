@@ -18,7 +18,7 @@ import json, csv, statistics
 from pathlib import Path
 from collections import OrderedDict
 
-RAW = Path("raw_offshore")
+RAW = Path("raw_offshore_best")
 OUT = Path("profiles_offshore_regional.json")
 SCALE = 1000
 
