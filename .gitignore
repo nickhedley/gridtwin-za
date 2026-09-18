@@ -20,3 +20,8 @@ profiles_regional_multisite.json
 profiles_regional_rebuilt.json
 ninja_multiyear_cache.json
 raw_offshore/
+raw_offshore/
+raw_offshore_cappedcoords/
+raw_offshore_guessed_coords/
+raw_offshore_best/
+screen_offshore/
