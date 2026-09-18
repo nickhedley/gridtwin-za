@@ -13198,7 +13198,11 @@ function renderRetail(){
     + '<th style="text-align:right;padding:4px 6px">Spread</th></tr>'
     + [['Homepower, flat', d.flat, 'energy charge only; R536/month of fixed charges sit outside it'],
        ['Homeflex, time of use', d.flex, 'winter rates only \u2013 the annual spread is narrower'],
-       ['Shadow dynamic', d.dyn, 'hypothetical, annual average'],
+       // NO 'Shadow dynamic' ROW. It was the simple mean of d.dyn, which is a step toward
+       // the Agile rows rather than a tariff anyone could be on: nobody consumes flat across
+       // 8,760 hours, so an unweighted average of an hourly price describes no customer. The
+       // two Agile rows below are the same series weighted by a real residential load shape,
+       // which is the question the row was reaching for. d.dyn itself is untouched.
        ...(d.agileFixed != null
          ? [['Agile-style, habits unchanged', d.dyn,
              'same price, weighted by a real residential load shape', d.agileFixed],
@@ -13315,11 +13319,10 @@ function renderRetail(){
   // the last three share one price series and differ only in when the household consumes.
   const rowsNote = '<span style="display:block;margin:5px 0 8px;color:var(--ink2)">'
     + '<strong>Reading the table.</strong> Homepower and Homeflex are real Eskom tariffs. The '
-    + 'other three do not exist: they are the same customer paying a price that follows cost '
-    + 'by the hour. Shadow dynamic is that price averaged flat. The two Agile-style rows are '
-    + 'the same price weighted by when a household actually uses electricity \u2013 which is why '
-    + 'all three share a cheapest hour, a dearest hour and a spread, and differ only in the '
-    + 'mean.</span>';
+    + 'other two do not exist: they are the same customer paying a price that follows cost by '
+    + 'the hour, weighted by when a household actually uses electricity \u2013 which is why both '
+    + 'share a cheapest hour, a dearest hour and a spread, and differ only in the mean. The '
+    + 'gap between them is what shifting the geyser is worth.</span>';
   noteEl.innerHTML = capLine + rowsNote + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
     + `${c.year}. Built from NERSA's allowed revenue over ${c.salesTWh.toFixed(0)}&nbsp;TWh of `
