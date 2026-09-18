@@ -5301,27 +5301,49 @@ const FIXED = {
   // without changing anything real. Fixed O&M IS avoidable - it is exactly what coalDecomMW
   // and dieselDecomMW stop paying - so it belongs in the objective and in the reported cost.
   //
-  // SOURCES, and these are BENCHMARKS rather than Eskom figures. The European vintage study
-  // (Which model features matter?, 2020) gives EUR2015/kW-yr: nuclear 264, coal 55-60,
-  // CCGT 34, OCGT 17, PV 8-15, pumped hydro 5.3, offshore wind 76-131. EIA's AEO new-build
-  // figures run lower for thermal, about USD 41/kW-yr for coal. Eskom's fleet is older than
-  // either sample - more than half is over 40 years - and an ageing fleet costs more to
-  // maintain, so these sit at or above the international range rather than below it.
+  // CALIBRATED TO ESKOM'S OWN FILING, not to international benchmarks. Source: Eskom
+  // Generation Licensee MYPD 6 Revenue Application FY2026-FY2028, submission to NERSA,
+  // August 2024, Table 1 (allowable revenue) and Table 4 (existing capacity).
   //
-  // THE RIGHT SOURCE EXISTS AND IS NOT THIS ONE. EPRI produced "Supply-Side Cost and
-  // Performance Data for Eskom" for the IRP, hosted on the DMRE site. It is South African,
-  // station-level and it is what the IRP itself uses. Replace these with its figures.
+  //   employee benefits                        R14,281 m
+  //   maintenance                              R21,742 m
+  //   other operating costs                    R19,070 m
+  //   Generation opex, FY2026 application      R55,093 m
+  //
+  // over the 46,686 MW nominal fleet that Table 4 lists: 39,099 MW coal, 1,854 nuclear,
+  // 2,409 gas turbines, 600 hydro, 2,724 pumped storage. That is R1,180/kW-yr fleet-average.
+  //
+  // METHOD. The filing gives the TOTAL but not the split by technology, so the relative
+  // weights come from international benchmarks - the European vintage study gives
+  // EUR2015/kW-yr of nuclear 264, coal 55-60, CCGT 34, OCGT 17, pumped hydro 5.3 - and the
+  // LEVEL is scaled so the whole set reproduces Eskom's published total on Eskom's own
+  // fleet. Benchmarks alone came to R42,685 m, 77.5% of the filing, so everything is scaled
+  // by 1.291. Shape from the literature, level from the utility. That is the same split used
+  // for the offshore profile, and for the same reason.
+  //
+  // THREE THINGS THIS FIGURE IS NOT.
+  //   It is not efficient cost. It is what Eskom applied for. NERSA applies a prudency and
+  //   efficiency test and has historically cut such applications, so this is an upper bound
+  //   on what a well-run fleet would spend.
+  //   It includes CENTRALISED SERVICES allocated to Generation - finance, HR, commercial,
+  //   security, stakeholder management, sustainability. A pure plant-level O&M figure would
+  //   be lower. For system cost that allocation is right, because someone pays it.
+  //   It is an APPLICATION for FY2026, not an outturn.
+  //
+  // The per-technology split is the weakest part. Table 54 of the same filing is "Benchmark
+  // O&M costs" and Figure 35 compares benchmark against real USD/kW for coal only; neither
+  // was legible in the fetched text. Those two would replace the international weights and
+  // leave the total unchanged.
   //
   // Renewables reuse BLD_FOM so new and existing plant of the same technology cost the same
   // to maintain, which is the point of the family.
-  fomCoal:900,        // ~USD 55/kW-yr. Between EIA new-build and the European figure,
-                      //   at the upper end because the fleet is old.
-  fomNuclear:3300,    // ~USD 200/kW-yr. Koeberg is 40 years old and in long-term operation.
-  fomCcgt:560,        // ~USD 34/kW-yr, the European CCGT figure.
-  fomDiesel:280,      // ~USD 17/kW-yr, European OCGT. Peakers are cheap to hold.
-  fomHydro:400,
-  fomPs:170,          // pumped storage, close to the European 5.3 EUR figure
-  fomCsp:1150,        // higher than PV: a solar field, receiver and thermal store
+  fomCoal:1160,       // was 900 on benchmarks alone
+  fomNuclear:4260,    // was 3300. Koeberg is 40 years old and in long-term operation.
+  fomCcgt:720,        // was 560
+  fomDiesel:360,      // was 280. Peakers are cheap to hold relative to their rating.
+  fomHydro:520,       // was 400
+  fomPs:220,          // was 170
+  fomCsp:1480,        // was 1150. Higher than PV: a solar field, receiver and thermal store.
   // ── end fixed O&M ─────────────────────────────────────────────────────────────────────
   // OFFSHORE WIND. Nothing built; South Africa has no offshore wind at all.
   offshoreMW:0, newOffshoreMW:0,
