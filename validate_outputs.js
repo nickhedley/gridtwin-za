@@ -297,13 +297,21 @@ function probe(w, src) {
       'gridCost less curtailed coal fuel and both export revenue lines, over gridServed. '
       + 'A term added to avgCost and not to '
       + 'gridCost, or the reverse, shows here and nowhere else', 'R/MWh');
-    check('avgCost has not moved without a decision', cost.base.avgCost, 548.06, 5.48,
-      'RECORDED 15 Sep 2026 at R548.06/MWh, defaults, build 2026-09-15a. UPDATED the same '
-      + 'day from R571.70: exportPriceFirmR went 550 (assumed, mirrored from costImports) '
-      + 'to 1330 (implied from Eskom FY2026 international sales, ~14,100 GWh against R18.8bn '
-      + 'per parliamentary reply NW1551), so firm export revenue rose R3.64bn to R8.81bn and '
-      + 'avgCost fell 4.1%. 1% tolerance. If this fires, find what moved and update the '
-      + 'figure here with a dated note - do not widen the tolerance', 'R/MWh');
+    check('avgCost has not moved without a decision', cost.base.avgCost, 771.19, 5.48,
+      'UPDATED 18 Sep 2026, R548.06 -> R771.19, defaults, build 2026-09-18a. FIXED O&M FOR '
+      + 'THE EXISTING FLEET was added to totalCost, gridCost and avgCost - R48.8bn a year, '
+      + '29% of system cost at defaults. Until then NO system-cost aggregate carried any '
+      + 'operating cost for plant already built: Medupi cost fuel and carbon, Koeberg cost '
+      + 'essentially nothing. The bias ran ONE WAY - retiring coal appeared to save only fuel '
+      + 'and carbon when it also stops a maintenance bill that does not fall with output, so '
+      + 'every coal-versus-renewables comparison the model has produced understated the case '
+      + 'for replacement. Constants are international benchmarks (European vintage study, '
+      + 'EIA AEO) pending the EPRI Supply-Side Cost and Performance Data for Eskom, which is '
+      + 'the South African source and what the IRP itself uses. DELIBERATE, not drift. '
+      + 'PREVIOUSLY R548.06 recorded 15 Sep 2026 on build 2026-09-15a, itself updated that '
+      + 'day from R571.70 when exportPriceFirmR went 550 to 1330. '
+      + 'If this fires, find what moved and update the figure here with a dated note - '
+      + 'do not widen the tolerance', 'R/MWh');
     // The identity at defaults cannot see curtailFuelCost, because it is zero there. This
     // scenario is the only one found that makes it non-zero: R6.34bn over 194.9 TWh, so
     // dropping the term moves the recomputation R32.54/MWh against a R0.01 tolerance.

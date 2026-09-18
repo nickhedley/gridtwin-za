@@ -5283,6 +5283,46 @@ const FIXED = {
   // Checked 2 Sep 2026 against the report. NOT an error - a different boundary. State the
   // boundary whenever this constant is compared against an Eskom figure.
   ocgtDieselMW:3400, windMW:4612, pvUtilityMW:3271, rooftopMW:8942.1, cspMW:600,
+  // ── FIXED O&M FOR THE EXISTING FLEET, R/kW-yr ─────────────────────────────────────────
+  // Added 18 Sep 2026. Until now NO system-cost aggregate carried any operating cost for
+  // plant already built. totalCost and gridCost were fuel + carbon + new-build capital +
+  // demand response + start-up. Medupi cost fuel and carbon; Koeberg cost essentially
+  // nothing. Staff, maintenance, overhauls, insurance and rates were absent for 42 GW of
+  // coal, 1.9 GW of nuclear and everything else on the system.
+  //
+  // THE BIAS RAN ONE WAY. Retiring coal appeared to save only fuel and carbon, when it also
+  // stops a maintenance bill that does not fall with output. Every coal-versus-renewables
+  // comparison the model has produced understated the case for replacement.
+  //
+  // WHY FIXED O&M AND NOT SUNK CAPITAL. PyPSA's convention, which is the one to follow here:
+  // capital_cost is annuity plus FOM, and for existing plant (p_nom_extendable false) the
+  // annuity is a CONSTANT in the objective while the FOM is not. Sunk capex cannot be
+  // avoided by any decision the model makes, so including it would change reported cost
+  // without changing anything real. Fixed O&M IS avoidable - it is exactly what coalDecomMW
+  // and dieselDecomMW stop paying - so it belongs in the objective and in the reported cost.
+  //
+  // SOURCES, and these are BENCHMARKS rather than Eskom figures. The European vintage study
+  // (Which model features matter?, 2020) gives EUR2015/kW-yr: nuclear 264, coal 55-60,
+  // CCGT 34, OCGT 17, PV 8-15, pumped hydro 5.3, offshore wind 76-131. EIA's AEO new-build
+  // figures run lower for thermal, about USD 41/kW-yr for coal. Eskom's fleet is older than
+  // either sample - more than half is over 40 years - and an ageing fleet costs more to
+  // maintain, so these sit at or above the international range rather than below it.
+  //
+  // THE RIGHT SOURCE EXISTS AND IS NOT THIS ONE. EPRI produced "Supply-Side Cost and
+  // Performance Data for Eskom" for the IRP, hosted on the DMRE site. It is South African,
+  // station-level and it is what the IRP itself uses. Replace these with its figures.
+  //
+  // Renewables reuse BLD_FOM so new and existing plant of the same technology cost the same
+  // to maintain, which is the point of the family.
+  fomCoal:900,        // ~USD 55/kW-yr. Between EIA new-build and the European figure,
+                      //   at the upper end because the fleet is old.
+  fomNuclear:3300,    // ~USD 200/kW-yr. Koeberg is 40 years old and in long-term operation.
+  fomCcgt:560,        // ~USD 34/kW-yr, the European CCGT figure.
+  fomDiesel:280,      // ~USD 17/kW-yr, European OCGT. Peakers are cheap to hold.
+  fomHydro:400,
+  fomPs:170,          // pumped storage, close to the European 5.3 EUR figure
+  fomCsp:1150,        // higher than PV: a solar field, receiver and thermal store
+  // ── end fixed O&M ─────────────────────────────────────────────────────────────────────
   // OFFSHORE WIND. Nothing built; South Africa has no offshore wind at all.
   offshoreMW:0, newOffshoreMW:0,
   // The national technical potential from ESMAP Tables 16 and 17, which sum to 94,954 MW
@@ -7757,7 +7797,27 @@ function simulate(u, prof, outPath, _soc0){
   // A capacity payment is a transfer from consumers to generators, not a resource
   // cost, so it does NOT reduce the whole-economy total. It changes who pays and
   // therefore what gets built, which is exactly what we want to model.
-  const totalCost=fuelCost+carbonCost+newCapexR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
+  // Fixed O&M on what is actually on the system, after decommissioning and including new
+  // build. Charged on CAPACITY, not output - that is what makes it fixed, and what makes
+  // retiring a plant save it. New-build renewables are already inside newCapexR via acap*,
+  // so only the EXISTING renewable fleet is added here; adding both would double count.
+  const _coalOnMW = Math.max(0, (p.coalInstalledMW||0) - (u.coalDecomMW||0)) + (u.newCoalMW||0);
+  const _dieselOnMW = Math.max(0, (p.ocgtDieselMW||0) - (u.dieselDecomMW||0));
+  // Fallbacks are the CONSTANTS, not zero. validate_structure caught `?? 0` here within one
+  // run: a fallback that disagrees with its constant is rule 6, and a fallback of zero on an
+  // operating cost is rule 7 - it would silently remove R48.8bn a year and still draw a
+  // plausible chart, which is the FIXED.psMW failure exactly.
+  const fixedOMR =
+      _coalOnMW               * (p.fomCoal    ?? FIXED.fomCoal)    * 1000
+    + (p.nuclearMW||0)        * (p.fomNuclear ?? FIXED.fomNuclear) * 1000
+    + _dieselOnMW             * (p.fomDiesel  ?? FIXED.fomDiesel)  * 1000
+    + (p.ccgtMW||0)           * (p.fomCcgt    ?? FIXED.fomCcgt)    * 1000
+    + (p.hydroMW||0)          * (p.fomHydro   ?? FIXED.fomHydro)   * 1000
+    + (p.psPowerMW||0)        * (p.fomPs      ?? FIXED.fomPs)      * 1000
+    + (p.cspMW||0)            * (p.fomCsp     ?? FIXED.fomCsp)     * 1000
+    + (p.windMW||0)           * (BLD_FOM.wind || 0) * 1000
+    + (p.pvUtilityMW||0)      * (BLD_FOM.pv   || 0) * 1000;
+  const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
   // start-UP costs ARE NOW included, 30 Aug 2026. They were accumulated and used
   // nowhere - found by summing the cost decomposition against avgCost and getting a
   // gap of exactly startUpCostR.
@@ -7776,10 +7836,15 @@ function simulate(u, prof, outPath, _soc0){
   // magnitude: R3.54/MWh today, 0.6% of avgCost. It scales with coal cycling, which is
   // the regime a high-renewables system pushes coal into - so it grows in exactly the
   // scenarios this model exists to study.
-  const gridCost=fuelCost+carbonCost+gridCapexR+drCostR+startUpCostR;  // what the grid bears
+  const gridCost=fuelCost+carbonCost+gridCapexR+fixedOMR+drCostR+startUpCostR;  // what the grid bears
   // drCostR included: compensation paid to interruptible customers is part of
   // what the system costs to run, and omitting it made demand response look free.
-  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
+  // fixedOMR added 18 Sep 2026. avgCost is summed EXPLICITLY here rather than divided out of
+  // totalCost, so a new cost term has to be added in three places - totalCost, gridCost and
+  // this line - and the decomposition below asserts they agree. That assertion is what caught
+  // this one: the term went into the two aggregates, avgCost did not move, and the
+  // reconciliation would have failed on the next run.
+  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+fixedOMR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
 
   // ── cost decomposition ────────────────────────────────────────────────────
   // Added 30 Aug 2026, structured against NERSA's OWN wholesale price component list
@@ -7817,6 +7882,7 @@ function simulate(u, prof, outPath, _soc0){
       { k:'carbon',     nersa:'Carbon pricing',            v: per(carbonCost),                 have:true },
       { k:'buildTx',    nersa:'Transmission network',      v: per(_txCapexR),                  have:'partial' },
       { k:'buildGen',   nersa:'(generation capex)',        v: per(gridCapexR - _txCapexR),     have:'outside' },
+      { k:'fixedom',    nersa:'Operating costs (fixed O&M)', v: per(fixedOMR),                 have:true },
       { k:'dr',         nersa:'Demand response',           v: per(drCostR),                    have:true },
       { k:'exports',    nersa:'(export revenue, offset)',  v: -per(exportRevenueR+firmExportRevenueR), have:'outside' },
       { k:'capacity',   nersa:'Capacity prices',           v: 0, have:false, why:'no capacity market in SA' },
@@ -7927,7 +7993,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,fixedOMR,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
