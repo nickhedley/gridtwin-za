@@ -1117,16 +1117,15 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <p style="margin-bottom:8px"><strong>Unit commitment:</strong> coal is committed at <strong>individual unit level</strong> – 85 units across 31 stations – in 4-hour blocks, respecting each unit&rsquo;s minimum stable level (0.50&ndash;0.65 of capacity, fleet-weighted 0.563), minimum up and down times, and ramp limits. This is what produces the &ldquo;Buffalo curve&rdquo;: coal that cannot drop far enough at midday to make room for solar while remaining available for the morning and evening peaks. A fully committed fleet has a floor of roughly 23&nbsp;GW that cannot move. The heuristic is benchmarked against the full MIP optimiser and lands within about 1&nbsp;% of optimal for today&rsquo;s system, widening as new solar is added.</p>
 
         <table class="mono" style="font-size:11.5px">
-          <tr><td>Coal</td><td>R546/MWh fuel (Eskom FY2025 primary energy) &middot; 1.04&nbsp;tCO&#8322;/MWh &middot; 42&nbsp;GW installed &middot; real per-unit retirement dates to 2051</td></tr>
-          <tr><td>Diesel OCGT</td><td>R6&nbsp;100/MWh fuel &middot; 0.78&nbsp;tCO&#8322;/MWh &middot; 3.4&nbsp;GW</td></tr>
-          <tr><td>Gas CCGT</td><td>R1&nbsp;968/MWh fuel &middot; 0.37&nbsp;tCO&#8322;/MWh &middot; LNG-fired. FY2026 JKM reference: $18.50/MMBtu delivered &times; R16.21/USD &divide; 52% efficiency. Carbon added separately. Use the Gas running cost slider for spot ($23 &asymp; R2&nbsp;450) or pre-Hormuz consensus ($12 &asymp; R1&nbsp;280)</td></tr>
+          <tr><td>Coal</td><td>R546/MWh fuel (Eskom FY2025 primary energy) &middot; +R80 VOM &middot; 1.04&nbsp;tCO&#8322;/MWh &middot; 42&nbsp;GW installed &middot; real per-unit retirement dates to 2051</td></tr>
+          <tr><td>Diesel OCGT</td><td>R6&nbsp;100/MWh fuel &middot; +R70 VOM &middot; 0.78&nbsp;tCO&#8322;/MWh &middot; 3.4&nbsp;GW</td></tr>
+          <tr><td>Gas CCGT</td><td>R1&nbsp;968/MWh fuel &middot; +R35 VOM &middot; 0.37&nbsp;tCO&#8322;/MWh &middot; LNG-fired. FY2026 JKM reference: $18.50/MMBtu delivered &times; R16.21/USD &divide; 52% efficiency. Carbon added separately. Use the Gas running cost slider for spot ($23 &asymp; R2&nbsp;450) or pre-Hormuz consensus ($12 &asymp; R1&nbsp;280)</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; 1&nbsp;150&nbsp;MW @ 85&nbsp;%</td></tr>
-          <tr><td>Variable O&amp;M</td><td>Not applied. These fuel costs are Eskom\u2019s primary energy
-            figures, which are fuel only, and carbon is added separately. A full short-run marginal
-            cost would add roughly R80/MWh for coal, R70 for diesel and R35 for gas. Until 18 Sep 2026
-            this table listed those adders as though they were applied and the dispatch never used
-            them. Adding them would move merit order for all six thermal sources at once, so it is a
-            deliberate decision rather than a correction, and it is not made here.</td></tr>
+          <tr><td>Variable O&amp;M</td><td>Applied, and shown above per source. Thermal only:
+            wind, solar and battery carry their O&amp;M as fixed R/kW-yr instead, which is the
+            standard convention rather than an omission. Anchored to NREL ATB figures. Hydro and
+            imports get no adder \u2013 hydro has no fuel so its R30/MWh already is consumables, and
+            the import price is contracted and embeds the supplier\u2019s own O&amp;M.</td></tr>
           <tr><td>Existing fleet</td><td>Wind 4.6&nbsp;GW (REIPPPP 4.0 + wheeled 0.47 + Eskom Sere 0.1) &middot; Utility PV 3.27&nbsp;GW (grid-contracted 2.78 + wheeled 0.49) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, contracted dispatchable 05:00&ndash;21:30; modelled hourly as 05:00&ndash;22:00) &middot; Rooftop 8.6&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
           <tr><td>New-build capex</td><td>Wind R21&nbsp;000 &middot; PV R12&nbsp;000 &middot; Rooftop R17&nbsp;000 &middot; Battery&nbsp;(4h) R10&nbsp;500 &middot; CCGT R18&nbsp;000 /kW. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT rises, having hit a record high in 2025</td></tr>
           <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region &middot; 11 Renewable Energy Development Zones (GN&nbsp;114 / Gazette&nbsp;41445 2018 and GN&nbsp;142/144/145 / Gazette&nbsp;44191 2021), held as centre points and equivalent-area radii rather than gazetted polygons. Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &ndash; they are not published by Eskom or NTCSA.</td></tr>
@@ -5926,10 +5925,17 @@ const FIXED = {
   //                    agree by construction.
   //   costDiesel 6100  Eskom OCGT: recent runs reported at ~R6,011/MWh
   //                    (Mar 2026). Fuel-only.
-  // VOM is deliberately absent from all six (professional SRMC would add
-  // R20-80/MWh thermal). Adding it is a live decision - it raises coal-set
-  // prices ~12% and must be done for ALL technologies at once or the LP tilts.
-  // Do not add VOM to one constant in passing.
+  // SUPERSEDED 14 Aug 2026, corrected here 18 Sep 2026. This block used to read "VOM is
+  // deliberately absent from all six". It no longer is - see the vom* block immediately
+  // below, which added it following the ATB convention and applies it in both engines and
+  // both LPs. The two comments sat four lines apart contradicting each other for a month,
+  // and on 18 Sep the stale one was believed over the live one and the user-facing
+  // assumptions table was rewritten to match it. A superseded comment is worse than no
+  // comment: it carries the authority of the file.
+  //
+  // The warning it carried is still right and still applies to any FUTURE change: VOM must
+  // move for all technologies at once or the merit order tilts. Do not add or remove it for
+  // one constant in passing.
   costCoal:546, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
   costCcgt:1968, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
   // Variable O&M, R/MWh, thermal only - added 14 Aug 2026 following the
@@ -19209,7 +19215,13 @@ function applyMIPResult(m, mode, quiet) {
 
   const genKeys = ['rooftop','wind','pv','csp','hybrid','nuclear','hydro','imports','coal','ps','batt','ccgt','diesel'];
   const gridServed = genKeys.reduce((s,k)=>s+(E[k]||0),0) - (E.rooftop||0) - (E.ps||0) - (E.batt||0);
-  const totalCost = fuelCost + carbonCost + lastRes.newCapexR;
+  // FIXED O&M, added 18 Sep 2026. This is the FOURTH place system cost is assembled - the
+  // heuristic has totalCost, gridCost and avgCost, and the MIP path has this. It was the one
+  // that missed the term, so switching solver moved avgCost from R830 to R548 on the same
+  // system: a 34% difference that depended only on which engine ran. Taken from lastRes
+  // rather than recomputed, because the fleet is identical - the MIP changes dispatch, not
+  // what is installed - and recomputing would be a second definition to drift from the first.
+  const totalCost = fuelCost + carbonCost + lastRes.newCapexR + (lastRes.fixedOMR || 0);
   const co2 = (E.coal*p.emisCoal + E.ccgt*p.emisCcgt + E.diesel*p.emisDiesel) / 1e6;
 
   const mipRes = { ...lastRes, E, stack, fuelCost, carbonCost, totalCost, co2,
