@@ -297,8 +297,10 @@ function probe(w, src) {
       'gridCost less curtailed coal fuel and both export revenue lines, over gridServed. '
       + 'A term added to avgCost and not to '
       + 'gridCost, or the reverse, shows here and nowhere else', 'R/MWh');
-    check('avgCost has not moved without a decision', cost.base.avgCost, 830.20, 8.30,
-      'UPDATED 18 Sep 2026, R548.06 -> R830.20, defaults, build 2026-09-18a. FIXED O&M FOR '
+    check('avgCost has not moved without a decision', cost.base.avgCost, 883.50, 8.84,
+      'UPDATED 18 Sep 2026, R548.06 -> R883.50, defaults, build 2026-09-18a. TWO COSTS THE '
+      + 'SYSTEM VIEW HAD NEVER CARRIED were added in one session. R830.20 was the figure '
+      + 'after the first; this is after both. FIRST, FIXED O&M FOR '
       + 'THE EXISTING FLEET was added to totalCost, gridCost and avgCost - R48.8bn a year, '
       + '34% of system cost at defaults, CALIBRATED to Eskom Generation MYPD 6 Table 1 '
       + '(R55,093 m opex, FY2026 application) over its Table 4 fleet - the model reproduces '
@@ -308,7 +310,13 @@ function probe(w, src) {
       + 'and carbon when it also stops a maintenance bill that does not fall with output, so '
       + 'every coal-versus-renewables comparison the model has produced understated the case '
       + 'for replacement. Relative weights across technologies are international benchmarks; '
-      + 'the LEVEL is Eskom. DELIBERATE, not drift. '
+      + 'the LEVEL is Eskom. SECOND, the REIPPPP PPA obligation - R11.7bn a year. Existing '
+      + 'wind and solar cost the system NOTHING before this: no costWind or costPv exists '
+      + 'so their fuel and carbon are zero, and newCapexR covers new build only, so 7.9 GW '
+      + 'of IPP renewables generated free electricity. Charged on DELIVERED output at the '
+      + 'PPA price for the 4,042 MW wind and 2,783 MW solar under REIPPPP contract only - '
+      + 'private wheeled and Eskom-owned plant carry fixed O&M like every other existing '
+      + 'asset. Rolls off 2034-2041 as twenty-year PPAs expire. DELIBERATE, not drift. '
       + 'PREVIOUSLY R548.06 recorded 15 Sep 2026 on build 2026-09-15a, itself updated that '
       + 'day from R571.70 when exportPriceFirmR went 550 to 1330. '
       + 'If this fires, find what moved and update the figure here with a dated note - '

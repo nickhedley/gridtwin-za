@@ -5343,6 +5343,56 @@ const FIXED = {
   fomHydro:520,       // was 400
   fomPs:220,          // was 170
   fomCsp:1480,        // was 1150. Higher than PV: a solar field, receiver and thermal store.
+  // ── REIPPPP PPA OBLIGATION ────────────────────────────────────────────────────────────
+  // Added 18 Sep 2026. Existing wind and solar cost the system NOTHING before this: no
+  // costWind or costPv exists, so their fuel and carbon are zero, and newCapexR covers new
+  // build only. 7.9 GW of IPP renewables generated free electricity.
+  //
+  // ONLY REIPPPP IS CHARGED HERE, and the reason is not sunk cost. Three ownership classes
+  // sit inside FIXED.windMW and FIXED.pvUtilityMW, and by_source in
+  // regional_renewable_capacity.json separates them exactly - the split below reconciles to
+  // the constants to the megawatt:
+  //
+  //             solar MW   wind MW   who pays
+  //   reipppp     2,783     4,042    Eskom, under contract
+  //   private       488       470    a corporate offtaker, wheeled
+  //   eskom           0       100    Eskom itself (Sere)
+  //   total       3,271     4,612    = FIXED.pvUtilityMW, FIXED.windMW
+  //
+  // Private wheeled and Eskom-owned plant carry FIXED O&M ONLY, which is what every other
+  // existing asset carries - coal, nuclear, hydro and pumped storage all do. Their capital
+  // is sunk, and PyPSA's convention, adopted here on 18 Sep, keeps sunk capital out of the
+  // objective because no decision can avoid it. Charging private renewables an LCOE would
+  // give them capital service that the coal fleet does not carry, and make them look
+  // expensive for a purely accounting reason.
+  //
+  // A REIPPPP PPA IS NOT AN ASSET, IT IS A CONTRACT. Eskom pays because it signed. The plant
+  // being already built does not make the payment go away, so it is a live cash cost in the
+  // year it falls - exactly what gridCost means by "what the grid bears".
+  //
+  // CHARGED ON DELIVERED OUTPUT, NOT CONTRACTED. The PPAs are not pure take-or-pay: per the
+  // March 2024 Addendum, curtailment up to 10% is uncompensated and the IPP bears it, and
+  // above that Eskom pays deemed energy at the PPA price. That deemed-energy mechanism is
+  // already modelled in curtailment_compensation in eskom_tariff_components.json. Charging
+  // contracted output here would count the curtailed portion twice.
+  //
+  // PRICES are REIPPPP-weighted averages across bid windows in 2026 rands. Later windows
+  // cleared far below earlier ones - BW4 wind around R620/MWh against BW1 above R1,500 - so
+  // a single average hides a wide spread. Refine per window when the IPP Office publishes
+  // the tariff table.
+  reipppWindMW:4042, reipppSolarMW:2783,
+  ppaWindR:682, ppaSolarR:591,
+  // THE OBLIGATION EXPIRES. BW1 reached commercial operation in 2014 on twenty-year PPAs, so
+  // those contracts roll off from about 2034, BW2 and BW3 through the later 2030s, BW4 into
+  // the early 2040s. A run at 2035 or 2050 must not charge Eskom a PPA that has ended; after
+  // expiry the plant becomes merchant or re-contracts at market rates, which is a different
+  // cost this model does not yet carry. Linear roll-off between these two years.
+  ppaRollOffStart:2034, ppaRollOffEnd:2041,
+  // The year the scenario represents. The engine had no year concept - the only year in the
+  // model was a retail-panel DOM control, which simulate() must not read. Default 2026 means
+  // "today's system", where every REIPPPP contract is live.
+  scenarioYear:2026,
+  // ── end REIPPPP ───────────────────────────────────────────────────────────────────────
   // ── end fixed O&M ─────────────────────────────────────────────────────────────────────
   // OFFSHORE WIND. Nothing built; South Africa has no offshore wind at all.
   offshoreMW:0, newOffshoreMW:0,
@@ -7845,7 +7895,27 @@ function simulate(u, prof, outPath, _soc0){
     + (p.cspMW||0)            * (p.fomCsp     ?? FIXED.fomCsp)     * 1000
     + (p.windMW||0)           * (BLD_FOM.wind || 0) * 1000
     + (p.pvUtilityMW||0)      * (BLD_FOM.pv   || 0) * 1000;
-  const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
+  // REIPPPP PPA obligation. Only the EXISTING fleet is under contract, so the share of wind
+  // and solar output that carries a PPA falls as new capacity is added - a scenario with
+  // 45 GW of new wind pays the PPA on 4,042 MW of it and capital plus O&M on the rest, via
+  // newCapexR. That is why the changing public-private procurement mix needs no assumption
+  // here: the split applies to a fixed, measured stock and new build is costed as an asset
+  // whoever procures it.
+  const _liveFrac = (() => {
+    const y = p.scenarioYear ?? 2026;
+    const a = p.ppaRollOffStart ?? 2034, b = p.ppaRollOffEnd ?? 2041;
+    if (y <= a) return 1;
+    if (y >= b) return 0;
+    return (b - y) / (b - a);
+  })();
+  const _windTotMW = (p.windMW || 0) + (u.newWindMW || 0);
+  const _pvTotMW   = (p.pvUtilityMW || 0) + (u.newPvMW || 0);
+  // Fallbacks are the CONSTANTS, not zero - rule 6, and the same mistake made with the fomXxx
+  // fallbacks earlier the same day and caught by the same check within one run.
+  const ppaCostR = _liveFrac * (
+      (E.wind || 0) * Math.min(1, (p.reipppWindMW  || 0) / Math.max(1, _windTotMW)) * (p.ppaWindR  ?? FIXED.ppaWindR)
+    + (E.pv   || 0) * Math.min(1, (p.reipppSolarMW || 0) / Math.max(1, _pvTotMW))   * (p.ppaSolarR ?? FIXED.ppaSolarR));
+  const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+ppaCostR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
   // start-UP costs ARE NOW included, 30 Aug 2026. They were accumulated and used
   // nowhere - found by summing the cost decomposition against avgCost and getting a
   // gap of exactly startUpCostR.
@@ -7864,7 +7934,7 @@ function simulate(u, prof, outPath, _soc0){
   // magnitude: R3.54/MWh today, 0.6% of avgCost. It scales with coal cycling, which is
   // the regime a high-renewables system pushes coal into - so it grows in exactly the
   // scenarios this model exists to study.
-  const gridCost=fuelCost+carbonCost+gridCapexR+fixedOMR+drCostR+startUpCostR;  // what the grid bears
+  const gridCost=fuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+drCostR+startUpCostR;  // what the grid bears
   // drCostR included: compensation paid to interruptible customers is part of
   // what the system costs to run, and omitting it made demand response look free.
   // fixedOMR added 18 Sep 2026. avgCost is summed EXPLICITLY here rather than divided out of
@@ -7872,7 +7942,7 @@ function simulate(u, prof, outPath, _soc0){
   // this line - and the decomposition below asserts they agree. That assertion is what caught
   // this one: the term went into the two aggregates, avgCost did not move, and the
   // reconciliation would have failed on the next run.
-  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+fixedOMR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
+  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
 
   // ── cost decomposition ────────────────────────────────────────────────────
   // Added 30 Aug 2026, structured against NERSA's OWN wholesale price component list
@@ -7911,6 +7981,7 @@ function simulate(u, prof, outPath, _soc0){
       { k:'buildTx',    nersa:'Transmission network',      v: per(_txCapexR),                  have:'partial' },
       { k:'buildGen',   nersa:'(generation capex)',        v: per(gridCapexR - _txCapexR),     have:'outside' },
       { k:'fixedom',    nersa:'Operating costs (fixed O&M)', v: per(fixedOMR),                 have:true },
+      { k:'ppa',        nersa:'REIPPPP PPA obligation',     v: per(ppaCostR),                   have:true },
       { k:'dr',         nersa:'Demand response',           v: per(drCostR),                    have:true },
       { k:'exports',    nersa:'(export revenue, offset)',  v: -per(exportRevenueR+firmExportRevenueR), have:'outside' },
       { k:'capacity',   nersa:'Capacity prices',           v: 0, have:false, why:'no capacity market in SA' },
@@ -8021,7 +8092,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,fixedOMR,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,fixedOMR,ppaCostR,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
