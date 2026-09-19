@@ -14417,7 +14417,34 @@ const PRESETS={
   // CAVEATS. One weather year, the capacity-weighted composite; 2016 is three times worse on
   // unserved energy and would push the optimum up. Duration is fixed at 6 hours throughout,
   // so fewer gigawatts for longer has not been tested.
-  'Deep decarbonisation':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:52000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0},
+  // SOLAR 52 -> 45 GW, OFFSHORE 0 -> 1 GW, 19 Sep 2026. Measured across twelve weather years
+  // against the previous 45/52/0 mix, coal -27 GW, rooftop 20 GW, lithium 20 GW at 6h:
+  //
+  //                      total GW   worst yr GWh   curtail TWh   cost R bn   Mt CO2
+  //   45 W / 52 S / 0 off      97            197         112.3        294.1       40
+  //   45 W / 45 S / 1 off      91            184         103.1        290.4       39
+  //
+  // BETTER ON EVERY DIMENSION AT ONCE, which is rare enough to be worth stating: cheaper by
+  // R3.7bn/yr, more reliable in its worst year, 9.2 TWh less spill, 1 Mt less CO2, and 6 GW
+  // less capacity built.
+  //
+  // WHY IT WORKS. 1 GW of offshore at CF 0.516 delivers about 4.5 TWh; the 7 GW of solar it
+  // replaces delivers about 14.7 TWh at CF 0.24, but concentrated in the middle of the day
+  // where this system is ALREADY SPILLING. The solar was buying energy the system throws
+  // away. Every build in the set that SWAPS solar for offshore beats the old preset on
+  // curtailment; the one that ADDS offshore without removing anything, 45/52/1, costs
+  // R8.3bn more and spills more.
+  //
+  // 1 GW IS THE DEPLOYABLE NUMBER. ESMAP's own scenarios put 1 GW offshore by 2035 in both
+  // the medium and high cases and 500 MW in the low. An earlier version of this search
+  // stepped 0, 5, 10, 20 GW and concluded offshore did not belong here - 5 GW is five times
+  // ESMAP's high case at a date when they say first commissioning has not happened. The
+  // grid missed the only level that is both buildable and better.
+  //
+  // BINDING YEAR 2016, for seven of eight builds tested. That differs from the fossil-free
+  // search, where 2014, 2018, 2020 and 2022 all bind: a system retaining 12.7 GW of coal
+  // fails on a different weather pattern than one with none.
+  'Deep decarbonisation':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'

@@ -1296,9 +1296,27 @@ const num = t => {
       // So this pins the largest cost line directly. Deep decarbonisation at 2035, midpoint
       // vintage 2030.5, hand-computed from BLD_COST and BLD_LIFE at 8%:
       //
-      //   wind    45 GW x R18,429/kW, 25 yr -> R77.7bn      pv      52 GW -> R48.9bn
-      //   batt    20 GW at 6h -> R22.6bn
-      //   total R149.2bn over 181 TWh = R0.823/kWh
+      //   wind      45 GW: capital R77.7bn + FOM 45 x R693/kW-yr = R31.2bn -> R108.9bn
+      //   pv        45 GW: capital R42.3bn + FOM 45 x R396/kW-yr = R17.8bn -> R 60.1bn
+      //   offshore   1 GW: capital R 6.6bn + FOM  1 x R1,403      = R 1.4bn -> R  8.0bn
+      //   batt      20 GW at 6h: capital R22.6bn + FOM R3.2bn             -> R 25.8bn
+      //   total R202.8bn over 181.6 TWh = R1.116/kWh
+      //
+      // UPDATED 19 Sep 2026, R1.129 -> R1.116. The Deep decarbonisation preset swapped 7 GW
+      // of solar for 1 GW of offshore, nearly cost-neutral here - offshore's R8.0bn against
+      // the R9.4bn of solar it replaced. The preset moved because that swap is better on
+      // EVERY dimension at once across twelve weather years: R3.7bn/yr cheaper in system
+      // cost, more reliable in its worst year, 9.2 TWh less curtailment, 1 Mt less CO2 and
+      // 6 GW less capacity. The solar it replaced was generating into hours the system
+      // already spills.
+      //
+      // UPDATED 18 Sep 2026, R0.823 -> R1.129, a 37% rise. FIXED O&M WAS ADDED, and
+      // until then the model had NONE for any generating technology - a wind farm's whole
+      // cost was its capital. That was tolerable while every technology was treated the same
+      // way, and stopped being tolerable when offshore arrived with its O&M inside a
+      // back-solved capex, carrying its full lifetime cost against a fleet carrying capital
+      // only. See BLD_FOM in index.html for the sources. This is a correction, not an
+      // inflation: the earlier figures understated the cost of every build.
       //
       // UPDATED AGAIN 16 Sep 2026, R0.886 -> R0.823. The Deep decarbonisation preset's lithium
       // moved 30 GW -> 20 GW, which is the measured optimum: discharge saturates at about
@@ -1324,8 +1342,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 0.823) < 0.05,
-              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R0.823 for Deep `
+              Math.abs(ncap.newCap - 1.116) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R1.116 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }
