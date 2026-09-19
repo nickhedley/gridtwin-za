@@ -8373,11 +8373,18 @@ const BLD_COST = {
   // their 2035 floating range of USD 97-126. Same answer, right structure, and the capacity
   // factor is now an output of the profile rather than an input to the cost.
   //
-  // DECLINE RATE 6%: ESMAP's trajectory takes floating from about USD 110/MWh in 2035 to
-  // USD 65-84 by 2050 in the medium scenario and USD 47-60 in the high one, which is 3% to 6%
-  // a year. 6% is the high-growth path and therefore optimistic; same rate as iron-air, and
-  // for the same reason - a technology whose cost is a forecast rather than a price.
-  offshore:{ c2026: 79200, decl:  0.0600 },
+  // DECLINE RATE 2.6%, was 6% until 19 Sep 2026. Derived from ESMAP's own floating LCOE
+  // trajectory rather than read off the end of a range: USD 110/MWh in 2035 to USD 74 by 2050
+  // in the MEDIUM scenario is 2.6%/yr; their HIGH scenario, 110 to 53, is 4.8%. 6% was above
+  // even their optimistic path, and compounding it over a 2050 run made offshore
+  // progressively cheaper than the source believes it will be - which would have flattered
+  // every fossil-free result it appears in.
+  //
+  // Medium is the right default here, unlike iron-air where the fast rate is defensible: iron
+  // air has no deployed fleet and its cost is a manufacturer forecast, while offshore wind has
+  // three decades of installed capacity behind its learning curve and ESMAP's medium path
+  // already assumes a functioning South African supply chain.
+  offshore:{ c2026: 79200, decl:  0.0260 },
   ccgt:    { c2026: 34965, decl: -0.0200 },
 };
 // vrfb gets 25 years: 20,000-30,000 cycles and a 25-30 year calendar life, with
