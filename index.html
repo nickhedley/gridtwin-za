@@ -5135,6 +5135,21 @@ function buildProfiles(real){
 // rules. Nuclear (1,854 MW) + hydro (600 MW) + imports (850 MW) = 3,304 MW of always-synchronous
 // plant, so additional coal/gas must make up the rest to reach 6,000 MW.
 const SYNC_MIN_MW = 6000;
+// WHAT CAN MEET THAT FLOOR. Until 19 Sep 2026 only coal, nuclear, hydro and imports counted,
+// so in a no-coal run the deficit term collapsed to Math.min(cAvail, syncDeficit) = 0 and the
+// floor was SILENTLY NOT MET - the model ran at 3,460 MW of synchronous plant against a 6,000
+// MW requirement and said nothing. That is the case the fossil-free preset is in.
+//
+// Two things meet it without burning anything, and both are in service today:
+//   GRID-FORMING BATTERIES. AEMO has accredited grid-forming BESS for system strength in
+//   South Australia; National Grid ESO procures virtual inertia through its stability
+//   pathfinders. Only the grid-forming SHARE counts - most installed BESS is grid-following
+//   and contributes nothing.
+//   SYNCHRONOUS CONDENSERS. A retired coal unit with the boiler removed, spinning on the
+//   grid. Eskom has studied exactly this for decommissioned Komati units, and it is the
+//   standard retirement path where system strength binds.
+const SYNC_GFM_SHARE = 0.30;   // share of battery power that is grid-forming
+const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme exists
 // IMPORTS_CF is defined in nodal_engine.js, which loads at line 1124 - BEFORE this
 // constant block. So FIXED can read it, and does. That direction is deliberate: the
 // nodal engine is also loaded as a plain script by four harnesses with no access to
@@ -5522,6 +5537,16 @@ const FIXED = {
   // hours. At meaningful scale this barely exists in South Africa yet, so it
   // defaults to zero and is a scenario lever rather than a description of today.
   drInterruptMW:1200, drInterruptCostR:4000, drShiftPct:0,
+  // Shifting load is NOT free. A geyser reheated six hours later has lost standing heat; a
+  // pre-cooled building cools space that did not need it. Until 19 Sep 2026 the shift was
+  // energy-neutral, which made demand response a lossless store in the dispatch - an
+  // artificial free-lunch mechanism, and the substitution finding (6.8% of load buying 20 GW
+  // of renewables) was measured with it.
+  //
+  // 6%: water heating sits low in the range, LBNL measures 10-20% for pre-cooling because
+  // more space is conditioned than needed. South African shiftable load is geyser-dominated,
+  // so the low end applies. NOT a measured South African figure - a bracket.
+  drShiftLossPct:6,
   // ── virtual power PLANT ──────────────────────────────────────────────────
   // Distinct from the demand response above, which is large industrial load
   // under contract. A VPP aggregates behind-THE-meter assets the utility does
@@ -5767,6 +5792,12 @@ const FIXED = {
   // not a fitted value. Defaults ON: it is happening now and at scale, unlike
   // the market-design levers below which model things South Africa does not do.
   congestionCurtailOn: true, congestionCurtailPct: 4,
+  // National connection headroom, MW. Sum of nodal/headroom_summary.json across ten regions:
+  // what the grid can absorb without reinforcement. Source GCCA 2025 plus the Oct 2025
+  // curtailment update. congestionCurtailPct is the rate AT this headroom, and curtailment
+  // scales with how far a build exceeds it. Capped at 4x so a very large build does not
+  // curtail everything.
+  congestHeadroomMW: 19940,
   asReserveOn: false, asInertiaOn: false, capacityPaymentOn: false,
   asReserveRMWh: 150,           // R/MWh on reserve capacity held
   asInertiaRkWyr: 100,          // R/kW/yr, grid-forming and synchronous only
@@ -6734,8 +6765,10 @@ function simulate(u, prof, outPath, _soc0){
       //
       // Fill the lowest hours up toward a common level, so the trough rises
       // evenly instead of six hours spiking.
+      // Return MORE than was taken: shifted energy is lost, not stored. drShiftLossPct at 6%
+      // means 100 MWh out of the peak becomes 106 MWh into the trough.
       const cand = idx.slice().sort((a,b) => a.net - b.net).slice(0, 12);
-      let left = moved;
+      let left = moved * (1 + Math.max(0, Math.min(50, p.drShiftLossPct ?? FIXED.drShiftLossPct)) / 100);
       for (let pass = 0; pass < 24 && left > 1e-6; pass++){
         const lvl = Math.min(...cand.map(c => demandDR[c.h]));
         const at  = cand.filter(c => demandDR[c.h] <= lvl + 1e-6);
@@ -6799,7 +6832,30 @@ function simulate(u, prof, outPath, _soc0){
     //
     // NERSA approved a 4% ceiling in September 2025, expected to unlock 1,180 MW
     // of Western Cape wind. Published, not fitted.
-    const _cgp = p.congestionCurtailOn ? Math.max(0, (p.congestionCurtailPct ?? 4)) / 100 : 0;
+    // SCALES WITH THE BUILD, from 19 Sep 2026. Until then this was a flat 4% haircut on wind
+    // and solar in every hour regardless of how much was built - 10 GW and 100 GW both lost
+    // 4%. Worse, the 4% is NERSA's Congestion Curtailment Framework CEILING, the most an IPP
+    // may be curtailed before compensation, used as though it were the expected rate.
+    //
+    // Now: near zero while the build fits inside available connection headroom, rising above
+    // it. Headroom is the national sum from nodal/headroom_summary.json, 19,940 MW, which is
+    // what the grid can absorb without reinforcement. The published 4% is the rate AT
+    // headroom, so a build sitting exactly at capacity reproduces the old number.
+    //
+    // STILL NATIONAL, NOT NODAL. A build concentrated in the Eastern Cape, where headroom is
+    // 400 MW against a national 19,940, would congest far harder than this shows. Macro
+    // regional assignment for the national sliders is the real fix; this removes the worst of
+    // the flat assumption without pretending to site anything.
+    const _cgHead = (p.congestHeadroomMW ?? 19940);
+    // TOTAL installed VRE, not just new. The first version counted new build only, which made
+    // congestion curtailment ZERO at defaults - and South Africa curtails for congestion today,
+    // with 7.9 GW of existing wind and solar on constrained corridors. validate_findings caught
+    // it within one run.
+    const _cgVre  = (p.windMW || 0) + (p.pvUtilityMW || 0)
+                  + (u.newWindMW || 0) + (u.newPvMW || 0) + (u.newOffshoreMW || 0);
+    const _cgScale = _cgHead > 0 ? Math.min(4, _cgVre / _cgHead) : 1;
+    const _cgp = p.congestionCurtailOn
+      ? Math.max(0, (p.congestionCurtailPct ?? 4)) / 100 * _cgScale : 0;
     if (_cgp > 0){
       const _lost = (windGen + pvGen) * _cgp;
       windGen *= (1 - _cgp); pvGen *= (1 - _cgp);
@@ -6878,6 +6934,7 @@ function simulate(u, prof, outPath, _soc0){
   // Part-load multiplier actually applied each hour, kept for the marginal
   // price and for reporting.
   const partLoadF=new Float64Array(HOURS).fill(1);
+  let syncUnmetH = 0;   // hours the synchronous floor could not be met at all
   let coalFuelMWh=0;   // coal output x part-load multiplier = fuel-equivalent MWh
   // Interruptible load actually called each hour, and its contracted size.
   const drMW=new Float64Array(HOURS);
@@ -7135,8 +7192,15 @@ function simulate(u, prof, outPath, _soc0){
     // Synchronous generation floor. Synchronous plant = coal + nuclear + hydro + imports.
     // Nuclear, hydro and imports are already must-take at fixed output, so we only need to
     // lift coal if the sum still falls short of the required minimum.
-    const syncPlantNonCoal=p.nuclearMW+p.hydroMW+p.importsMW*IMPORTS_CF;
+    // Grid-forming storage and synchronous condensers count toward the floor alongside the
+    // always-synchronous plant. Only the grid-forming share of battery power qualifies.
+    const syncGfm = battPower * (p.syncGfmShare ?? SYNC_GFM_SHARE)
+                  + (p.syncCondenserMW ?? SYNC_CONDENSER_MW);
+    const syncPlantNonCoal=p.nuclearMW+p.hydroMW+p.importsMW*IMPORTS_CF+syncGfm;
     const syncDeficit=Math.max(0,(p.syncFloorMW||0)-syncPlantNonCoal);
+    // The floor can still go unmet when there is no coal left to lift and not enough
+    // grid-forming capacity. Record it rather than let it pass silently.
+    if (syncDeficit > 0 && cAvail <= 0) syncUnmetH++;
     const coalFloorBase=Math.max(ucMSL, rampAwareFloor, Math.min(cAvail, syncDeficit));
     if(residual<0){
       let surplus=-residual;
@@ -8048,7 +8112,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,fixedOMR,ppaCostR,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,fixedOMR,ppaCostR,syncUnmetH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -14152,6 +14216,13 @@ const SLIDERS=[
   // on a fossil-free build: slider 10% moves 2.2% of load, 20% moves 4.5%, and the maximum
   // of 30% moves 6.8%. A user setting 10 and believing they had modelled 10% flexibility
   // had modelled 2.2%. The formatter now shows both numbers.
+  {id:'drShiftLossPct',label:'\u2013 energy lost in shifting',min:0,max:25,step:1,
+   def:FIXED.drShiftLossPct,ctrlStyle:SUB_CTRL,fmt:v=>v+' %',
+   note:'Shifted load returns larger than it left. A geyser reheated hours later has lost '
+     + 'standing heat; a pre-cooled building conditions space that did not need it. LBNL '
+     + 'measures 10\u201320% for pre-cooling; water heating sits lower, and South African '
+     + 'shiftable load is geyser-dominated. Zero makes demand response a lossless store, '
+     + 'which is what this model assumed until 19 Sep 2026.'},
   {id:'drShiftPct',label:'Shiftable load',min:0,max:30,step:1,def:FIXED.drShiftPct,
    fmt:v=>v+' % of each peak hour \u2248 '+(v*0.227).toFixed(1)+' % of annual load',
    note:'Load moved within the day rather than dropped. I.e., loads including water heating, pumping, irrigation and EV charging are shifted out of the six highest net-load hours into the six lowest (i.e. midday solar). Strictly energy-neutral per day. Defaults to zero because this barely exists at scale in South Africa yet but is a potential policy lever.'},

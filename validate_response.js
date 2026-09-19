@@ -115,6 +115,14 @@ const CONTEXT = {
   costCcgt:         { newCcgtMW: 4000, coalEAFPct: 55 },  // gas must actually run
   lcoeCcgt:         { newCcgtMW: 4000 },  // and must exist to be costed
   lcoeVrfb:         { newVrfbMW: 5000 },
+  // ccsSharePct does nothing unless CCS is on, and it is off by default. NOT a skip: with
+  // CCS enabled the control moves coal, diesel, unserved energy and CO2 across its whole
+  // range, so the sweep can see it once it has the context.
+  ccsSharePct:      { ccsEnabled: true },
+  // drShiftLossPct scales the energy returned when load is shifted, so it does nothing while
+  // drShiftPct is 0, which is the default. Not a skip: with shifting on it moves curtailment
+  // and cost across its whole range.
+  drShiftLossPct:   { drShiftPct: 20 },
   lcoeIronAir:      { newIronAirMW: 5000 },
   lcoeCsp:          { },                  // CSP exists in the base fleet
   ccgtForceLoad:    { newCcgtMW: 4000 },

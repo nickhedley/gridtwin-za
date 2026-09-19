@@ -327,8 +327,8 @@ function probe(w, src) {
     // Without this the term is plumbed and untested, which is how avgCost drifted 2.8%
     // through fifteen green harnesses in the first place.
     check('curtailFuelCost is non-zero in the coal-curtailment scenario',
-      cost.spill.curtailFuelCost / 1e9, 6.342, 0.7,
-      'R bn. If this reads zero the scenario has stopped producing coal curtailment and the '
+      cost.spill.curtailFuelCost / 1e9, 4.900, 0.7,
+      'R bn. UPDATED 19 Sep 2026, R6.342 -> R4.900: congestion curtailment now SCALES with installed VRE against national connection headroom instead of a flat 4% in every hour, so this scenario curtails less coal. Deliberate physical change, not drift. If this reads zero the scenario has stopped producing coal curtailment and the '
       + 'identity below is no longer exercising the term - fix the scenario, not the check',
       'R bn');
     check('avgCost reconciles with curtailed coal fuel in play',
