@@ -14213,26 +14213,15 @@ const SLIDERS=[
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:39692,step:1000,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'of 39.7 GW installed (Eskom FY2026 nominal).'},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit R223/kW/yr (Weisweiler). SA fleet ramps ~24&#37;/hr today (Agora 2017), ~100&#37;/hr once flexibilised (IRENA). Applies to the non-decommissioned fleet.'},
   {grp:'New build (national view/region agnostic)'},
-  {id:'newWindMW',label:'New wind',min:0,max:140000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4.6 GW existing (4 GW from REIPPPP + 470 MW wheeled + 100 MW Eskom’s Sere farm).'},
+  {id:'newWindMW',label:'New onshore wind',min:0,max:140000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 4.6 GW existing (4 GW from REIPPPP + 470 MW wheeled + 100 MW Eskom’s Sere farm).'},
   {id:'newOffshoreMW',label:'New offshore wind',min:0,max:95000,step:1000,def:FIXED.newOffshoreMW,
    fmt:v=>v===0?'none':(v/1000).toFixed(0)+' GW',
-   note:'South Africa has no offshore wind today. The cap is the national technical potential '
-     + 'from the World Bank and ESMAP strategic framework of September 2026, 95 GW across five '
-     + 'regions: Boegoebaai 40 GW, Saldanha 26, Durban-Richards Bay 17, Cape Point 6.5 and '
-     + 'Coega 5.6. Almost all of it is floating, in 82 to 952 m of water, 48 to 210 km from '
-     + 'port. Mean wind is 8.7 to 10.6 m/s at 100 m, against 8.8 to 9.7 in the Netherlands, '
-     + 'Germany and the UK, so the resource is competitive with the established markets. '
-     + 'First commissioning is not expected before 2035.'
-     + '<br><br>Two things this control does not yet do. Offshore runs on the onshore wind '
-     + 'shape, because nodal/profiles_offshore_regional.json is built but not yet fetched by '
-     + 'the page - that understates its energy by about 40% and makes it look steadier than it '
-     + 'is. And its cost is back-solved from ESMAP levelised cost rather than a quoted capex, '
-     + 'which makes R88,200/kW a ceiling.'
-     + '<br><br>It earns no capacity credit, and that is a measurement rather than a '
-     + 'convention. Across twelve weather years the seven candidate regions spend 18.2% of '
-     + 'hours below 10% of rating against onshore wind\u2019s 14.1%, the longest lull runs 83 '
-     + 'hours against 35, and six of the seven trough in May. The report describes offshore as '
-     + 'near baseload; on these profiles it is not.'},
+   note:'None built. Cap is the 95 GW technical potential in the World Bank and ESMAP '
+     + 'framework, Sep 2026; mostly floating, first commissioning not before 2035. Capacity '
+     + 'factor 0.516 against onshore\u2019s 0.368. Capex R79,200/kW plus R1,403/kW-yr fixed '
+     + 'O&M \u2013 the subsea cable is in that, onshore reinforcement is not and is charged '
+     + 'separately. The report calls offshore near baseload; on twelve years of these profiles '
+     + 'it is not, spending more hours below 10% of rating than onshore does.'},
   {id:'newPvMW',label:'New utility solar PV',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.2 GW existing (2.7 GW from REIPPPP + 488 MW wheeled).'},
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.6 GW existing, behind the meter. Eskom estimates 9.1 GW; 0.49 GW of that is wheeled plant, modelled as utility supply.'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing (4h).'},
@@ -15792,7 +15781,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-18a';
+const BUILD_STAMP = '2026-09-19a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
