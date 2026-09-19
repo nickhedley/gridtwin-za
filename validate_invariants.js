@@ -37,7 +37,7 @@ const close = (a, b, rel = REL) => Math.abs(a - b) <= rel * Math.max(1, Math.abs
 // fleet that cannot meet load, and a system drowning in surplus.
 const SCENARIOS = {
   'default':            {},
-  'preset: deep decarbonisation': 'PRESET:Deep decarbonisation',
+  'preset: deep decarbonisation': 'PRESET:Deep decarbonisation 2035',
   'coal retired 27 GW': { coalDecomMW: 27000, coalFlexPct: 1 },
   'high VRE':           { newWindMW: 50000, newPvMW: 50000, newRooftopMW: 20000 },
   'high VRE + storage': { newWindMW: 50000, newPvMW: 50000, newBattMW: 30000,

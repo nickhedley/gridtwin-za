@@ -33,7 +33,7 @@ CHECKS = [
     # Presets & costs
     ("Latest IRP",                                                 'IRP preset name'),
     ('coalDecomMW:8000,newWindMW:7340,newPvMW:10300',              'IRP preset values'),
-    ('Deep decarbonisation',                                     'deep decarbonisation preset'),
+    ('Deep decarbonisation 2035',                                     'deep decarbonisation preset'),
     ('costCoal:546',                                               'coal cost R546/MWh'),
     ('costCcgt:1968',                                              'CCGT dispatch R1968/MWh, FY2026 JKM reference'),
     # Engine features

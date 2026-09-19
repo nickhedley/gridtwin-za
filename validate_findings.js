@@ -408,7 +408,7 @@ setTimeout(()=>{
   {
     const r = probe(`
       const saved = JSON.parse(JSON.stringify(state));
-      Object.assign(state, PRESETS['Deep decarbonisation']);
+      Object.assign(state, PRESETS['Deep decarbonisation 2035']);
       const P = { ...FIXED, ...state };
       const out = { wind: P.newWindMW, pv: P.newPvMW, batt: P.newBattMW,
                     hours: P.newBattHours, ccgt: P.newCcgtMW };

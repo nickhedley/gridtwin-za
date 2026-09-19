@@ -89,8 +89,8 @@ const check = (name, ok, detail) => {
   if (!w.__loaded) { report(); return; }
 
   run(`try {
-    if (typeof PRESETS !== 'undefined' && PRESETS[${JSON.stringify(process.env.PRESET || 'Deep decarbonisation')}])
-      applyState(PRESETS[${JSON.stringify(process.env.PRESET || 'Deep decarbonisation')}]);
+    if (typeof PRESETS !== 'undefined' && PRESETS[${JSON.stringify(process.env.PRESET || 'Deep decarbonisation 2035')}])
+      applyState(PRESETS[${JSON.stringify(process.env.PRESET || 'Deep decarbonisation 2035')}]);
     const rate = BLD_PACE[${JSON.stringify(PACE)}] || BLD_PACE.masterplan;
     const built = bldBuildRegionalLP({ growth:0.05, eaf:65, rate, carbonCap:null, state:state });
     window.__lp = built.lp;

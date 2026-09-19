@@ -225,7 +225,7 @@ const num = t => {
 
   // ── 3b. peak demand must track the demand-growth slider ───────────────────
   // Added after "peak demand" was found to include storage charging: at 5%
-  // growth the Deep decarbonisation preset reported 50.5 GW against a true 33.2 GW. Every
+  // growth the Deep decarbonisation 2035 preset reported 50.5 GW against a true 33.2 GW. Every
   // panel AGREED with every other, because they all read the same mislabelled
   // quantity - so panel-versus-panel checks passed while the figure was wrong.
   // Agreement is not correctness when the shared source is misnamed.
@@ -748,7 +748,7 @@ const num = t => {
   // ── NEGATIVE PRICES MUST STAY IN THE OBSERVED RANGE ─────────────────────
   // The negative-price rule prices coal-forced curtailment at the avoided restart cost.
   // Its premise - that EVERY curtailment hour is coal-forced - held at today's penetration
-  // and failed at high VRE: on the Deep decarbonisation preset it produced 5,614 negative
+  // and failed at high VRE: on the Deep decarbonisation 2035 preset it produced 5,614 negative
   // hours, 64% of the year, against roughly 460 in Germany in 2024, the most
   // negative-price-prone system in Europe.
   //
@@ -760,7 +760,7 @@ const num = t => {
   // shipped. No real system spends most of its year paying people to consume.
   {
     const r = run(`
-      const base = { ...state, ...PRESETS['Deep decarbonisation'] };
+      const base = { ...state, ...PRESETS['Deep decarbonisation 2035'] };
       const rr = simulate(base, PROFILES);
       const p = Array.from(rr.marginalP || []);
       const neg = p.filter(x => x < 0).length;
@@ -770,12 +770,12 @@ const num = t => {
     if (r && !r.err && typeof r.neg === 'number'){
       check('negative-price hours stay within observed international range',
             r.pct < 20,
-            `${r.neg} hours below zero, ${r.pct.toFixed(1)}% of the year, on Deep decarbonisation `
+            `${r.neg} hours below zero, ${r.pct.toFixed(1)}% of the year, on Deep decarbonisation 2035 `
             + `preset. Germany ran about 460 hours (5.3%) in 2024 and is the most `
             + `negative-price-prone system in Europe. Above 20% the model is asserting `
             + `something no market has done, and the likely cause is curtailment being `
             + `priced as coal-forced when it is VRE surplus.`);
-      console.log(`  neg prices    ${r.neg} hours (${r.pct.toFixed(1)}%) on Deep decarbonisation, `
+      console.log(`  neg prices    ${r.neg} hours (${r.pct.toFixed(1)}%) on Deep decarbonisation 2035, `
         + `median R${r.median.toFixed(0)}`);
     }
   }
@@ -876,7 +876,7 @@ const num = t => {
       // still passed. That is the disappearing-check failure STATE.md describes for eng5.
       //
       // It also used to assert the price FALLS by more than 20%. That was the conclusion of
-      // a build with four missing or mis-scaled components. Corrected, Deep decarbonisation RAISES
+      // a build with four missing or mis-scaled components. Corrected, Deep decarbonisation 2035 RAISES
       // a bill by roughly two thirds - 97 GW of renewables and 30 GW of storage annualise
       // R258bn a year over fewer kWh sold. A check that encodes a conclusion gets edited when
       // the conclusion changes, so this one asserts only that the panel moves, and that it
@@ -885,7 +885,7 @@ const num = t => {
         const m = a => a.reduce((x, y) => x + y, 0) / a.length;
         const before = m(retailHourly().dyn), avgBefore = lastRes.avgCost;
         const keep = JSON.parse(JSON.stringify(state));
-        Object.assign(state, PRESETS['Deep decarbonisation']);
+        Object.assign(state, PRESETS['Deep decarbonisation 2035']);
         run();
         const after = m(retailHourly().dyn), avgAfter = lastRes.avgCost;
         Object.assign(state, keep); run();
@@ -941,7 +941,7 @@ const num = t => {
         const m = a => a.reduce((x, y) => x + y, 0) / a.length;
         const yr = document.getElementById('retYear'), st = document.getElementById('retStranded');
         const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value, keepS = st.checked;
-        const fm = PRESETS['Deep decarbonisation'];
+        const fm = PRESETS['Deep decarbonisation 2035'];
         // RESTORE EVERY KEY, not just the preset's. The first version reset only the Future
         // mix keys, so coalDecomMW set by an earlier check survived into this one and moved
         // the 2026 figure from R3.34 to R2.99. It read as a component error and was
@@ -1190,7 +1190,7 @@ const num = t => {
           if (!B) return { err: 'no basis control' };
           const keep = JSON.parse(JSON.stringify(state)), kY = yr.value, kB = B.value;
           const grab = b => {
-            Object.assign(state, PRESETS['Deep decarbonisation']);
+            Object.assign(state, PRESETS['Deep decarbonisation 2035']);
             yr.value = '2035'; B.value = b; run();
             const n = document.getElementById('retNote').textContent.replace(/\s+/g, ' ');
             const i = n.indexOf('R/kWh:');
@@ -1221,7 +1221,7 @@ const num = t => {
           const H = document.getElementById('retH2GW');
           if (!B || !H) return { err: 'controls missing' };
           const keep = JSON.parse(JSON.stringify(state)), kY = yr.value, kB = B.value, kH = H.value;
-          Object.assign(state, PRESETS['Deep decarbonisation']); yr.value = '2035';
+          Object.assign(state, PRESETS['Deep decarbonisation 2035']); yr.value = '2035';
           B.value = 'reg'; H.value = '0'; run();
           const regWk = m(retailHourly().week);
           B.value = 'mkt'; run();
@@ -1293,7 +1293,7 @@ const num = t => {
       // gas-firmed case only 4.4%, because that scenario carries just 12 GW of storage.
       // Measured, not assumed.
       //
-      // So this pins the largest cost line directly. Deep decarbonisation at 2035, midpoint
+      // So this pins the largest cost line directly. Deep decarbonisation 2035 at 2035, midpoint
       // vintage 2030.5, hand-computed from BLD_COST and BLD_LIFE at 8%:
       //
       //   wind      45 GW: capital R77.7bn + FOM 45 x R693/kW-yr = R31.2bn -> R108.9bn
@@ -1302,7 +1302,7 @@ const num = t => {
       //   batt      20 GW at 6h: capital R22.6bn + FOM R3.2bn             -> R 25.8bn
       //   total R202.8bn over 181.6 TWh = R1.116/kWh
       //
-      // UPDATED 19 Sep 2026, R1.129 -> R1.116. The Deep decarbonisation preset swapped 7 GW
+      // UPDATED 19 Sep 2026, R1.129 -> R1.116. The Deep decarbonisation 2035 preset swapped 7 GW
       // of solar for 1 GW of offshore, nearly cost-neutral here - offshore's R8.0bn against
       // the R9.4bn of solar it replaced. The preset moved because that swap is better on
       // EVERY dimension at once across twelve weather years: R3.7bn/yr cheaper in system
@@ -1318,7 +1318,7 @@ const num = t => {
       // only. See BLD_FOM in index.html for the sources. This is a correction, not an
       // inflation: the earlier figures understated the cost of every build.
       //
-      // UPDATED AGAIN 16 Sep 2026, R0.886 -> R0.823. The Deep decarbonisation preset's lithium
+      // UPDATED AGAIN 16 Sep 2026, R0.886 -> R0.823. The Deep decarbonisation 2035 preset's lithium
       // moved 30 GW -> 20 GW, which is the measured optimum: discharge saturates at about
       // 8.1 TWh, and going 20 -> 30 costs R22.2bn/yr to avoid 51 GWh of unserved energy, which
       // needs a cost of unserved energy above R435/kWh to justify. Deliberate scenario change.
@@ -1335,7 +1335,7 @@ const num = t => {
       const ncap = run(`
         const yr = document.getElementById('retYear');
         const keep = JSON.parse(JSON.stringify(state)), keepY = yr.value;
-        Object.assign(state, PRESETS['Deep decarbonisation']); yr.value = 2035; run();
+        Object.assign(state, PRESETS['Deep decarbonisation 2035']); yr.value = 2035; run();
         const v = retailComponents(0.40, true, 2035);
         Object.assign(state, keep); yr.value = keepY; run();
         return { newCap: v.newCap, vintage: v.vintage };

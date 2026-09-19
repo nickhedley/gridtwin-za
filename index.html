@@ -7469,7 +7469,7 @@ function simulate(u, prof, outPath, _soc0){
       //
       // The original test was "curtailing while coal runs", on the stated premise that
       // every curtailment hour in this model is coal-forced. That premise held at today's
-      // penetration and FAILS at high VRE. Measured on the Deep decarbonisation preset,
+      // penetration and FAILS at high VRE. Measured on the Deep decarbonisation 2035 preset,
       // 8 Sep 2026: retiring the entire coal fleet leaves 103 of 134 TWh of curtailment
       // in place. That spill is VRE surplus and no unit is avoiding a cycle in it.
       //
@@ -7600,6 +7600,11 @@ function simulate(u, prof, outPath, _soc0){
   // decision and wrong for a capex report.
   //
   // ps, coal, nuclear and coalFlex have no BLD_COST entry and keep their acap* constants.
+  // Build vintage is the MIDPOINT of 2026 and the scenario year, not the scenario year.
+  // A 2040 scenario is a fleet built progressively from 2026, so its average capex is the
+  // midpoint - pricing it all at 2040 would assume nothing was built until the final year.
+  // ASSUMES A LINEAR BUILD-OUT. A real transition is usually back-loaded, which would push
+  // the average vintage later and the cost slightly lower, so this is mildly conservative.
   const _vint = 2026 + Math.max(0, (p.scenarioYear ?? 2026) - 2026) / 2;
   const acapAt = (tech, flat) => (typeof BLD_COST === 'undefined' || !BLD_COST[tech])
     ? flat
@@ -7994,7 +7999,7 @@ function simulate(u, prof, outPath, _soc0){
   // to sell back later, and it is discretionary in a way demand is not.
   //
   // Reporting the combined figure as "peak demand" was badly misleading in
-  // exactly the scenarios storage exists for: the Deep decarbonisation preset
+  // exactly the scenarios storage exists for: the Deep decarbonisation 2035 preset
   // showed 50.5 GW against a true peak of 33.2 GW, because 30 GW of new
   // batteries charge off surplus solar at 09:00. A user reasonably read 5% demand
   // growth and a 60% jump in peak and concluded the demand model was broken.
@@ -10158,7 +10163,7 @@ function renderCapacityPayment(res){
     { nm:'Gas CCGT', tech:'ccgt',  mw: state.newCcgtMW || 0,    der: FIXED.derateCcgt,
       mwh: (r.E.ccgt || 0) },
     // DURATION READS THE CONTROL, not a hardcoded string. Corrected 17 Sep 2026: this said
-    // "(4h)" while newBattHours is a live slider, so Deep decarbonisation displayed 4h on a
+    // "(4h)" while newBattHours is a live slider, so Deep decarbonisation 2035 displayed 4h on a
     // 6h fleet and a user moving the slider to 10h still saw 4h. Same fault as the pumped
     // storage "(14h)" corrected earlier the same day. Vanadium and iron-air have no slider
     // yet, so they read their constants and will follow if one is added.
@@ -12486,7 +12491,7 @@ const RETAIL_LOSS = 0.08;
 // through a flat regulated adder - right for South Africa today, where Eskom recovers a
 // NERSA-approved revenue requirement and there is no wholesale market. It is NOT what Octopus
 // Agile does, and the gap was measured on 10 Sep 2026: wholesale revenue at short-run cost
-// covers 157% of system cost today but 16% on Deep decarbonisation. That is the missing
+// covers 157% of system cost today but 16% on Deep decarbonisation 2035. That is the missing
 // money problem. Our price distribution runs -R0.23 to R0.79 and never higher, all year.
 //
 // HOW THE PROFESSIONAL MODELS DO IT. Two approaches, and they agree on the principle:
@@ -12639,7 +12644,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   // revenue. Including it was a DOUBLE PENALTY: the capex sat in the numerator while the
   // generation was already subtracted from salesMWh below, so the sales base was charged for
   // capital it does not own and denied the energy that capital produces. Worth R26.64bn/yr
-  // on Deep decarbonisation, R0.147/kWh of a R1.033 new-build term.
+  // on Deep decarbonisation 2035, R0.147/kWh of a R1.033 new-build term.
   // The engine already draws this line - btmCapexR and gridCapexR at index.html:7408-7409.
   const newCapR = annuity('wind', P.newWindMW) + annuity('offshore', P.newOffshoreMW)
                 + annuity('pv', P.newPvMW)
@@ -13206,7 +13211,7 @@ function renderRetail(){
   // recovered through Eskom's allowed revenue. In reality a large and growing share of new
   // capacity is contracted to private offtakers - PFL's H1 2026 monitor has 958 MW of
   // 1,920 MW reaching commercial operation as wheeled - and that capital never enters the
-  // regulated base. Measured on Deep decarbonisation at 2035, moving a share out TOGETHER
+  // regulated base. Measured on Deep decarbonisation 2035 at 2035, moving a share out TOGETHER
   // WITH THE ENERGY IT DELIVERS: 25% raises the residual bill 15.5%, 50% raises it 41.3%,
   // 75% raises it 92.6%. The direction is the opposite of the intuitive one because the new
   // renewables are cheap - R0.878/kWh of capital against a R2.335 residual - so what is left
@@ -14325,7 +14330,7 @@ const PRESETS={
   //
   // 1 GW is the deployable level: ESMAP put 1 GW offshore by 2035 in their medium and high
   // scenarios. Binding year 2016, seven of eight builds tested.
-  'Deep decarbonisation':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0,scenarioYear:2035},
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0,scenarioYear:2035},
   // Fossil free, 2040. All 39.7 GW of coal and all 3.4 GW of diesel retired, no gas - which
   // means Medupi and Kusile retired around 16 and 19 years into a 50-year design life. Kept:
   // Koeberg, hydro, CSP, the Cahora Bassa import. Zero unserved energy in all twelve weather
@@ -14349,9 +14354,9 @@ const PRESETS={
   // read it. Nor is stranding charged: the retail panel has a stranded basis, system cost
   // does not.
   //
-  // Binding year 2014, as for every fossil-free build tested; Deep decarbonisation binds on
+  // Binding year 2014, as for every fossil-free build tested; Deep decarbonisation 2035 binds on
   // 2016. A system with no coal fails on a different weather pattern than one keeping 12.7 GW.
-  'Fossil free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:55000,newPvMW:90000,newOffshoreMW:5000,newRooftopMW:20000,newBattMW:40000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040},
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:55000,newPvMW:90000,newOffshoreMW:5000,newRooftopMW:20000,newBattMW:40000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
