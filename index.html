@@ -5282,60 +5282,20 @@ const FIXED = {
   // Checked 2 Sep 2026 against the report. NOT an error - a different boundary. State the
   // boundary whenever this constant is compared against an Eskom figure.
   ocgtDieselMW:3400, windMW:4612, pvUtilityMW:3271, rooftopMW:8942.1, cspMW:600,
-  // ── FIXED O&M FOR THE EXISTING FLEET, R/kW-yr ─────────────────────────────────────────
-  // Added 18 Sep 2026. Until now NO system-cost aggregate carried any operating cost for
-  // plant already built. totalCost and gridCost were fuel + carbon + new-build capital +
-  // demand response + start-up. Medupi cost fuel and carbon; Koeberg cost essentially
-  // nothing. Staff, maintenance, overhauls, insurance and rates were absent for 42 GW of
-  // coal, 1.9 GW of nuclear and everything else on the system.
+  // Fixed O&M for the existing fleet, R/kW-yr. Added 18 Sep 2026; before that no
+  // system-cost aggregate carried any operating cost for plant already built, so
+  // retiring coal appeared to save only fuel and carbon.
   //
-  // THE BIAS RAN ONE WAY. Retiring coal appeared to save only fuel and carbon, when it also
-  // stops a maintenance bill that does not fall with output. Every coal-versus-renewables
-  // comparison the model has produced understated the case for replacement.
+  // Level calibrated to Eskom Generation MYPD 6 (NERSA, Aug 2024), Table 1: R55,093m
+  // opex over the Table 4 fleet of 46,686 MW. These reproduce that to 99.9%. Relative
+  // weights across technologies are international benchmarks (European vintage study)
+  // because the filing gives no split; Table 54 of the same filing would replace them.
   //
-  // WHY FIXED O&M AND NOT SUNK CAPITAL. PyPSA's convention, which is the one to follow here:
-  // capital_cost is annuity plus FOM, and for existing plant (p_nom_extendable false) the
-  // annuity is a CONSTANT in the objective while the FOM is not. Sunk capex cannot be
-  // avoided by any decision the model makes, so including it would change reported cost
-  // without changing anything real. Fixed O&M IS avoidable - it is exactly what coalDecomMW
-  // and dieselDecomMW stop paying - so it belongs in the objective and in the reported cost.
+  // Sunk capital deliberately excluded - PyPSA convention: it cannot be avoided by any
+  // decision the model makes, whereas fixed O&M is what coalDecomMW stops paying.
   //
-  // CALIBRATED TO ESKOM'S OWN FILING, not to international benchmarks. Source: Eskom
-  // Generation Licensee MYPD 6 Revenue Application FY2026-FY2028, submission to NERSA,
-  // August 2024, Table 1 (allowable revenue) and Table 4 (existing capacity).
-  //
-  //   employee benefits                        R14,281 m
-  //   maintenance                              R21,742 m
-  //   other operating costs                    R19,070 m
-  //   Generation opex, FY2026 application      R55,093 m
-  //
-  // over the 46,686 MW nominal fleet that Table 4 lists: 39,099 MW coal, 1,854 nuclear,
-  // 2,409 gas turbines, 600 hydro, 2,724 pumped storage. That is R1,180/kW-yr fleet-average.
-  //
-  // METHOD. The filing gives the TOTAL but not the split by technology, so the relative
-  // weights come from international benchmarks - the European vintage study gives
-  // EUR2015/kW-yr of nuclear 264, coal 55-60, CCGT 34, OCGT 17, pumped hydro 5.3 - and the
-  // LEVEL is scaled so the whole set reproduces Eskom's published total on Eskom's own
-  // fleet. Benchmarks alone came to R42,685 m, 77.5% of the filing, so everything is scaled
-  // by 1.291. Shape from the literature, level from the utility. That is the same split used
-  // for the offshore profile, and for the same reason.
-  //
-  // THREE THINGS THIS FIGURE IS NOT.
-  //   It is not efficient cost. It is what Eskom applied for. NERSA applies a prudency and
-  //   efficiency test and has historically cut such applications, so this is an upper bound
-  //   on what a well-run fleet would spend.
-  //   It includes CENTRALISED SERVICES allocated to Generation - finance, HR, commercial,
-  //   security, stakeholder management, sustainability. A pure plant-level O&M figure would
-  //   be lower. For system cost that allocation is right, because someone pays it.
-  //   It is an APPLICATION for FY2026, not an outturn.
-  //
-  // The per-technology split is the weakest part. Table 54 of the same filing is "Benchmark
-  // O&M costs" and Figure 35 compares benchmark against real USD/kW for coal only; neither
-  // was legible in the fetched text. Those two would replace the international weights and
-  // leave the total unchanged.
-  //
-  // Renewables reuse BLD_FOM so new and existing plant of the same technology cost the same
-  // to maintain, which is the point of the family.
+  // An application, not an outturn, and it includes centralised services allocated to
+  // Generation. Treat as an upper bound.
   fomCoal:1160,       // was 900 on benchmarks alone
   fomNuclear:4260,    // was 3300. Koeberg is 40 years old and in long-term operation.
   fomCcgt:720,        // was 560
@@ -5343,43 +5303,21 @@ const FIXED = {
   fomHydro:520,       // was 400
   fomPs:220,          // was 170
   fomCsp:1480,        // was 1150. Higher than PV: a solar field, receiver and thermal store.
-  // ── REIPPPP PPA OBLIGATION ────────────────────────────────────────────────────────────
-  // Added 18 Sep 2026. Existing wind and solar cost the system NOTHING before this: no
-  // costWind or costPv exists, so their fuel and carbon are zero, and newCapexR covers new
-  // build only. 7.9 GW of IPP renewables generated free electricity.
+  // REIPPPP PPA obligation. Added 18 Sep 2026; before that existing wind and solar cost
+  // the system nothing - no costWind or costPv exists and newCapexR covers new build
+  // only, so 7.9 GW of IPP renewables generated free electricity.
   //
-  // ONLY REIPPPP IS CHARGED HERE, and the reason is not sunk cost. Three ownership classes
-  // sit inside FIXED.windMW and FIXED.pvUtilityMW, and by_source in
-  // regional_renewable_capacity.json separates them exactly - the split below reconciles to
-  // the constants to the megawatt:
+  // Only REIPPPP is charged. by_source in regional_renewable_capacity.json splits the
+  // existing fleet to the megawatt: reipppp 4,042 wind / 2,783 solar, private 470 / 488,
+  // eskom 100 / 0. Private wheeled and Eskom-owned carry fixed O&M like every other
+  // existing asset; a PPA is a contract rather than a sunk asset, so it is charged.
   //
-  //             solar MW   wind MW   who pays
-  //   reipppp     2,783     4,042    Eskom, under contract
-  //   private       488       470    a corporate offtaker, wheeled
-  //   eskom           0       100    Eskom itself (Sere)
-  //   total       3,271     4,612    = FIXED.pvUtilityMW, FIXED.windMW
+  // On DELIVERED output, not contracted. Curtailment up to 10% is uncompensated per the
+  // March 2024 Addendum, and deemed energy above that is already in
+  // curtailment_compensation - charging contracted output would double count.
   //
-  // Private wheeled and Eskom-owned plant carry FIXED O&M ONLY, which is what every other
-  // existing asset carries - coal, nuclear, hydro and pumped storage all do. Their capital
-  // is sunk, and PyPSA's convention, adopted here on 18 Sep, keeps sunk capital out of the
-  // objective because no decision can avoid it. Charging private renewables an LCOE would
-  // give them capital service that the coal fleet does not carry, and make them look
-  // expensive for a purely accounting reason.
-  //
-  // A REIPPPP PPA IS NOT AN ASSET, IT IS A CONTRACT. Eskom pays because it signed. The plant
-  // being already built does not make the payment go away, so it is a live cash cost in the
-  // year it falls - exactly what gridCost means by "what the grid bears".
-  //
-  // CHARGED ON DELIVERED OUTPUT, NOT CONTRACTED. The PPAs are not pure take-or-pay: per the
-  // March 2024 Addendum, curtailment up to 10% is uncompensated and the IPP bears it, and
-  // above that Eskom pays deemed energy at the PPA price. That deemed-energy mechanism is
-  // already modelled in curtailment_compensation in eskom_tariff_components.json. Charging
-  // contracted output here would count the curtailed portion twice.
-  //
-  // PRICES are REIPPPP-weighted averages across bid windows in 2026 rands. Later windows
-  // cleared far below earlier ones - BW4 wind around R620/MWh against BW1 above R1,500 - so
-  // a single average hides a wide spread. Refine per window when the IPP Office publishes
-  // the tariff table.
+  // Prices are REIPPPP-weighted averages across bid windows; BW4 wind cleared near
+  // R620/MWh against BW1 above R1,500, so the spread is wide.
   reipppWindMW:4042, reipppSolarMW:2783,
   ppaWindR:682, ppaSolarR:591,
   // THE OBLIGATION EXPIRES. BW1 reached commercial operation in 2014 on twenty-year PPAs, so
@@ -8349,41 +8287,16 @@ const BLD_COST = {
   // The USD 20/kWh target is now the optimistic bound, not the default. If it is realised,
   // R33,000/kW is the figure, and iron-air gets cheaper than this by a factor of four.
   ironair: { c2026: 127050, decl:  0.0600 },
-  // OFFSHORE WIND. CHANGED 18 Sep 2026, R88,200 -> R79,200/kW, and the reason is a rule
-  // violation rather than a better estimate.
+  // Offshore wind, floating. Overnight capex, USD 4,800/kW at R16.50. Brackets: IRENA
+  // 2018 global floating USD 5,605/kW, NREL ATB advanced 2050 USD 3,956.
   //
-  // It was BACK-SOLVED FROM ESMAP'S LCOE: USD 110/MWh at a 0.52 capacity factor, divided by
-  // the capital recovery factor, giving R88,200/kW. RULES.md says LCOE is reporting only and
-  // NEVER an optimisation input, because LCOE bakes in an assumed capacity factor, which is
-  // what a model is supposed to solve for. BLD_COST is documented in that same table as what
-  // gets built. So the back-solve put an assumed capacity factor inside the build decision,
-  // which is exactly what the rule forbids and for exactly the reason it gives.
+  // Rebuilt 18-19 Sep 2026 from a back-solve of ESMAP's LCOE, which broke RULES.md:
+  // LCOE is reporting only, never an optimisation input, and BLD_COST governs what gets
+  // built. Fixed O&M is in BLD_FOM, not here.
   //
-  // It also made offshore the only technology carrying its WACC, fixed O&M, contingency and
-  // decommissioning inside "capex", because ESMAP's Figure 36 shows all of those as LCOE
-  // components. Onshore wind carried capital only. Every comparison between them was biased.
-  //
-  // NOW: published overnight capex, USD 4,800/kW for floating, which brackets IRENA's global
-  // capacity-weighted USD 5,605/kW for floating in 2018 and NREL's more recent reference
-  // range as the technology matures. Floating because ESMAP's own split is 92,287 MW floating
-  // against 2,667 MW fixed. R79,200 at R16.50.
-  //
-  // VALIDATED BACK AGAINST ESMAP rather than derived from it. Our implied LCOE is
-  // (79,200 x 0.0937 + 1,403 FOM) / (0.52 x 8760) x 1000 = R1,937/MWh = USD 117/MWh, inside
-  // their 2035 floating range of USD 97-126. Same answer, right structure, and the capacity
-  // factor is now an output of the profile rather than an input to the cost.
-  //
-  // DECLINE RATE 2.6%, was 6% until 19 Sep 2026. Derived from ESMAP's own floating LCOE
-  // trajectory rather than read off the end of a range: USD 110/MWh in 2035 to USD 74 by 2050
-  // in the MEDIUM scenario is 2.6%/yr; their HIGH scenario, 110 to 53, is 4.8%. 6% was above
-  // even their optimistic path, and compounding it over a 2050 run made offshore
-  // progressively cheaper than the source believes it will be - which would have flattered
-  // every fossil-free result it appears in.
-  //
-  // Medium is the right default here, unlike iron-air where the fast rate is defensible: iron
-  // air has no deployed fleet and its cost is a manufacturer forecast, while offshore wind has
-  // three decades of installed capacity behind its learning curve and ESMAP's medium path
-  // already assumes a functioning South African supply chain.
+  // Cost boundary, agreed by ESMAP Figure 36 and the ATB: array cables, export cable,
+  // offshore substation and the spur to the nearest grid feature are INSIDE; onshore
+  // reinforcement is not and is charged via txRateFor.
   offshore:{ c2026: 79200, decl:  0.0260 },
   ccgt:    { c2026: 34965, decl: -0.0200 },
 };
@@ -8393,44 +8306,13 @@ const BLD_COST = {
 const BLD_LIFE = { wind:25, pv:25, rooftop:25, batt:15, vrfb:25, ironair:20, ccgt:30, offshore:25 };
 const BLD_DISC = 0.08;
 
-// FIXED O&M, R/kW-yr, real 2026. ADDED 18 Sep 2026, and it closes a gap that had been
-// invisible because it applied to everything equally: the model had NO fixed O&M for any
-// generating technology. Capital was the whole cost of a wind farm.
-//
-// That was tolerable while every technology was treated the same way. It stopped being
-// tolerable when offshore arrived with its O&M inside a back-solved capex, because offshore
-// then carried its full lifetime cost against an onshore fleet carrying capital only.
-//
-// This is the NREL ATB structure and the one RULES.md already claims the model follows:
-// overnight capex and life for investment, fixed O&M per kW-yr, variable O&M and fuel per
-// MWh for dispatch, LCOE as an output. LCOE = (FCR x CAPEX + FOM) / (CF x 8760) + VOM + fuel.
-//
-// SOURCES, converted at R16.50/USD:
-//   wind      USD 42/kW-yr   LBNL "Assessing Wind Power Operating Costs in the United
-//                            States": all-in lifetime OpEx in the low to mid USD 40s for
-//                            recent projects, down from about USD 80 in the late 1990s.
-//   pv        USD 24/kW-yr   NREL ATB 2024 utility-scale PV, USD 24/kW-AC-yr in 2022 dollars,
-//                            from Ramasamy et al. bottom-up pricing for a 100 MW-DC tracker.
-//   rooftop   USD 30/kW-yr   ATB residential and commercial PV run higher per kW than utility
-//                            scale. Weakest figure here; rooftop O&M is also borne by the
-//                            household, so it does not reach the tariff either way.
-//   offshore  USD 85/kW-yr   WIDE RANGE AND THE LEAST CERTAIN NUMBER IN THIS BLOCK. ATB 2019
-//                            put fixed-bottom at USD 121/kW-yr average, USD 87-127 across
-//                            resource groups; a European system study uses EUR 49/kW-yr.
-//                            ESMAP's Figure 36 shows operation and planned maintenance plus
-//                            unplanned service as roughly a tenth of an LCOE bar, implying
-//                            USD 40-75/kW-yr at these capacity factors. USD 85 sits above
-//                            the European figure and below the ATB one. If offshore's
-//                            economics turn on this, say so rather than quoting the result.
-//   ccgt      USD 28/kW-yr   ATB combined cycle, and the least consequential here because
-//                            CCGT cost is dominated by fuel.
-//   batt      2.5% of capex  The ATB convention for utility storage, applied to BLD_COST.batt
-//                            rather than stated flat, so it scales with duration and with the
-//                            capex decline. R8,105/kW at 4h gives about R203/kW-yr.
-//
-// vrfb and ironair are ZERO AND KNOWINGLY SO. No published fixed O&M exists for either at
-// utility scale - iron-air has no commercial operating fleet at all. Zero understates them,
-// which flatters long-duration storage, and the long-duration findings should carry that.
+  // Fixed O&M for new build, R/kW-yr real 2026, from NREL ATB. Added 18 Sep 2026; until
+  // then every technology was built on capital alone, which understated the ones with
+  // high O&M - offshore above all.
+  //
+  // Battery is computed from capex rather than fixed, so it scales with duration.
+  // Vanadium and iron-air are 0: no published figure exists for either at fleet scale,
+  // and a zero biases the optimiser TOWARD long duration. Flagged rather than guessed.
 const BLD_FOM = {
   wind: 693, pv: 396, rooftop: 495, offshore: 1403, ccgt: 462,
   batt: null,          // computed from capex, see bldFom()
@@ -14424,26 +14306,12 @@ const PRESETS={
   //   45 W / 52 S / 0 off      97            197         112.3        294.1       40
   //   45 W / 45 S / 1 off      91            184         103.1        290.4       39
   //
-  // BETTER ON EVERY DIMENSION AT ONCE, which is rare enough to be worth stating: cheaper by
-  // R3.7bn/yr, more reliable in its worst year, 9.2 TWh less spill, 1 Mt less CO2, and 6 GW
-  // less capacity built.
+  // Better on all four, which is why it moved. THE GAIN IS THE SMALLER SOLAR FLEET, NOT THE
+  // OFFSHORE - holding solar at 45 GW and adding offshore makes solar worse: spill 61.1% ->
+  // 62.2%, capture price R155 -> R135/MWh. Solar spills 61% of its potential here either way.
   //
-  // WHY IT WORKS. 1 GW of offshore at CF 0.516 delivers about 4.5 TWh; the 7 GW of solar it
-  // replaces delivers about 14.7 TWh at CF 0.24, but concentrated in the middle of the day
-  // where this system is ALREADY SPILLING. The solar was buying energy the system throws
-  // away. Every build in the set that SWAPS solar for offshore beats the old preset on
-  // curtailment; the one that ADDS offshore without removing anything, 45/52/1, costs
-  // R8.3bn more and spills more.
-  //
-  // 1 GW IS THE DEPLOYABLE NUMBER. ESMAP's own scenarios put 1 GW offshore by 2035 in both
-  // the medium and high cases and 500 MW in the low. An earlier version of this search
-  // stepped 0, 5, 10, 20 GW and concluded offshore did not belong here - 5 GW is five times
-  // ESMAP's high case at a date when they say first commissioning has not happened. The
-  // grid missed the only level that is both buildable and better.
-  //
-  // BINDING YEAR 2016, for seven of eight builds tested. That differs from the fossil-free
-  // search, where 2014, 2018, 2020 and 2022 all bind: a system retaining 12.7 GW of coal
-  // fails on a different weather pattern than one with none.
+  // 1 GW is the deployable level: ESMAP put 1 GW offshore by 2035 in their medium and high
+  // scenarios. Binding year 2016, seven of eight builds tested.
   'Deep decarbonisation':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};

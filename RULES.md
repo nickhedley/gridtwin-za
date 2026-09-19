@@ -45,28 +45,83 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
-## Instrument the loop before proposing a cause
+## Comments: value, source, date. Nothing else.
 
-When a quantity disagrees with expectation, add a temporary accumulator inside
-the loop that builds it and read the sums. Do not reason about what the code
-should produce.
+A constant needs what it is, where it came from, and when it was last checked. It does not
+need the reasoning that produced it.
 
-On 15 Sep 2026 a 6.6 TWh gap in the energy balance took five hypotheses. Four
-died to measurement after being argued first: a growth factor, a netting defect,
-a missing key in GEN_KEYS, and storage round-trip loss. The fifth was found in
-one instrumented run on a throwaway copy of index.html, which printed the loop's
-own sums and named it immediately - firm exports, added to the load line.
+On 18-19 Sep 2026 four constants acquired comment blocks of 35 to 54 lines. Cut to 6-15 they
+lost nothing: the sources, the dates and the traps worth recording all survived. 118 lines of
+prose went.
 
-The two findings that mattered came from instrumenting a loop and from reading
-two variable definitions side by side. Neither came from inference.
+THE TEST: would the next person need this to avoid making a mistake? Sources, dates, units,
+and a trap - "sunk capital deliberately excluded", "the fallback is the constant, not zero" -
+pass. Derivation walk-throughs, the history of how a figure was reached, and explanations of
+why a result happens do not. Those belong in RESULTS.md as findings, or nowhere.
 
-## Harness style - panels before probes
+**A wrong explanation is worse than none.** The Deep decarbonisation preset carried a comment
+saying offshore displaced solar from already-spilled hours. Measured: holding solar fixed and
+adding offshore makes solar WORSE - spill 61.1% to 62.2%, capture price R155 to R135/MWh. The
+gain came from the smaller solar fleet. The next reader would have taken a wrong mechanism as
+settled, which is how the superseded VOM comment cost a day the week before.
 
-A harness that reads the rendered page tests what a user sees. A harness that
-injects a probe tests what the code holds. The first survives a rewrite of the
-internals; the second does not. validate_outputs crossed that line once, on
-15 Sep 2026, because the page renders no demand total and the check needed one.
-Prefer the panel where a panel exists.
+---
+
+## Share before reporting
+
+A file is not delivered until the tool call that shares it has run. Copying it to the output
+directory is not delivery.
+
+Three times on 17-18 Sep 2026 a file was described as shared when only the copy had happened.
+The sentence was true of the intent and false of the conversation, and it took a third
+correction to notice the pattern.
+
+THE FIX IS MECHANICAL, not a resolution to be careful. Share the file, then write the report,
+and never write "above" or "below" in prose - end the turn with the file card and stop. If a
+message ends with text, no file was shared in it. The claim cannot then be wrong, because
+there is no claim.
+
+This is the delivery version of "measure before concluding". Both say the same thing: do not
+let the description run ahead of the act.
+
+---
+
+## A key that does not exist returns nothing, and nothing looks like a finding
+
+Rule 7 covers `X || <literal>` in code. The same fault appears in ANALYSIS, and it bit three
+times on 17 Sep 2026:
+
+```
+read as            real name          what happened
+E.ironair          tierDis.fe         0.00 TWh - "the store never discharges"
+r.tierSeries       r.battByTier       null - "the diagnostic is broken"
+<Placemark>        <Placemark id=...> 0 polygons - "every point is clear of protected areas"
+```
+
+Every one returned empty rather than erroring, and every one looked like a result. The third
+was the worst: it would have cleared candidate sites that are inside protected areas.
+
+BEFORE BELIEVING A ZERO OR A NULL, confirm the key exists. `Object.keys()` on the object, or
+grep the writer for the name, costs seconds. A quantity that is genuinely zero and a name that
+is genuinely absent are indistinguishable at the point of use.
+
+---
+
+## The output without its inputs is not a record
+
+On 17 Sep 2026 six published figures failed to reproduce. In every case the number had been
+written down and the settings that produced it had not, so each failure had to be diagnosed
+from scratch before anyone could tell a model change from a scenario difference.
+
+RECORD THE BUILD STAMP WITH EVERY FIGURE. That single addition tells you which of the two you
+are looking at, which is the distinction that was missing every time.
+
+Where a scenario is described by an expression rather than a value - `newWindMW = 20000 -
+FIXED.windMW` - write BOTH the control value and the total. The expression drifts when the
+constant does: the same line yielded 15,542 in August and 15,388 in September while the total
+never moved.
+
+---
 
 ## Reporting conventions
 
