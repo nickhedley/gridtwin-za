@@ -14313,6 +14313,32 @@ const PRESETS={
   // 1 GW is the deployable level: ESMAP put 1 GW offshore by 2035 in their medium and high
   // scenarios. Binding year 2016, seven of eight builds tested.
   'Deep decarbonisation':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0},
+  // Fossil free, 2040. All 39.7 GW of coal and all 3.4 GW of diesel retired, no gas - which
+  // means Medupi and Kusile retired around 16 and 19 years into a 50-year design life. Kept:
+  // Koeberg, hydro, CSP, the Cahora Bassa import. Zero unserved energy in all twelve weather
+  // years, zero diesel in any of them.
+  //
+  // Cheapest build that holds across twelve years. The offshore level is set by DEPLOYABILITY,
+  // not by cost: ESMAP's medium path is 5 GW by 2040, 15 GW by 2050.
+  //
+  //                                   total GW   curtail TWh   cost R bn
+  //   55 W / 90 S /  5 offshore           150         199.2       442.3
+  //   45 W / 90 S /  8 offshore           143         180.9       444.9
+  //   40 W / 90 S / 10 offshore           140         174.0       450.6   (the 2050 mix)
+  //
+  // More offshore buys less curtailment and costs more; less offshore buys cheaper onshore
+  // wind and spills more. Move scenarioYear to 2050 and the 40/90/10 row becomes available.
+  //
+  // GOING EARLY COSTS ALMOST NOTHING HERE, AND THAT IS PARTLY A DEFECT. 2040 against 2050 is
+  // R1.2bn, all of it residual REIPPPP PPA not yet expired. newCapexR uses the flat acap*
+  // constants and sees NO technology learning, so ten years of cost reduction is invisible to
+  // the headline - BLD_COST does decline with vintage but only the build LP and retail panel
+  // read it. Nor is stranding charged: the retail panel has a stranded basis, system cost
+  // does not.
+  //
+  // Binding year 2014, as for every fossil-free build tested; Deep decarbonisation binds on
+  // 2016. A system with no coal fails on a different weather pattern than one keeping 12.7 GW.
+  'Fossil free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:55000,newPvMW:90000,newOffshoreMW:5000,newRooftopMW:20000,newBattMW:40000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
