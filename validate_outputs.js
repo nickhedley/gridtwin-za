@@ -553,6 +553,36 @@ function probe(w, src) {
     const cfCrisis = crisis['Coal'].twh * 1e6 / (42000 * 0.50 * 8760) * 100;
     checkRange('Crisis coal utilisation of available fleet', cfCrisis, 60, 100,
       'Structural: at 50% EAF the remaining fleet should run near flat out', '%');
+
+    // THE SCARCITY CIRCUIT BREAKER MUST TRIP HERE, and nothing asserted it until now.
+    // Crisis 2023 has 5,430 unserved hours. Pricing every one at the full value of lost
+    // load is the textbook energy-only rule and it is right for an EVENT; for a system
+    // that is structurally short it compounded to R14 TRILLION of wholesale revenue,
+    // 3,862% of system cost. ERCOT drops its offer cap to the low cap for the rest of the
+    // year once cumulative peaker net margin passes 3x the cost of new entry, and that is
+    // what is implemented.
+    //
+    // This is a STRUCTURAL assertion, not a calibrated figure: if the breaker is removed
+    // or stops binding, hours at the ceiling go back above a thousand and this fails.
+    // Do not relax it to accommodate a change - the breaker either binds or it does not.
+    const res = (typeof w.lastRes === 'object' && w.lastRes) ? w.lastRes : null;
+    if (res && res.marginalP) {
+      const voll = (w.FIXED && w.FIXED.voll) || 87000;
+      let atCeiling = 0;
+      for (let h = 0; h < res.marginalP.length; h++)
+        if (res.marginalP[h] >= voll - 1) atCeiling++;
+      results.push({ name: 'Crisis 2023 scarcity breaker binds',
+        actual: `${atCeiling} h at the value of lost load`, expected: '< 1000',
+        tol: null, pass: atCeiling < 1000,
+        source: 'ERCOT drops the offer cap to LCAP for the rest of the year once peaker net '
+              + 'margin exceeds 3x CONE. Without a breaker this reads 5,430 h and wholesale '
+              + 'revenue reaches R14tn against a R364bn system cost.', unit: '' });
+      results.push({ name: 'Crisis 2023 breaker actually tripped',
+        actual: res.pnmCapped ? `tripped at hour ${res.pnmCappedH}` : 'never tripped',
+        expected: 'tripped', tol: null, pass: !!res.pnmCapped,
+        source: 'Structural: a year with thousands of unserved hours must exceed 3x CONE '
+              + 'of peaker net margin long before it ends.', unit: '' });
+    }
   }
   // A high-renewables scenario must actually shift the mix. "Future electricity
   // mix" retires 21 GW of coal and builds 28.5 GW wind + 42.5 GW solar, so wind

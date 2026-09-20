@@ -5442,6 +5442,10 @@ const FIXED = {
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
   voll:87000,
+  // Scarcity circuit breaker. ERCOT drops its offer cap from high to low for the rest of the
+  // year once cumulative peaker net margin exceeds 3x the cost of new entry; their low cap is
+  // 40% of the high one, USD 2,000 against 5,000.
+  pnmConeMultiple:3, pnmLowCapFrac:0.40,
   // operating RESERVE. Eskom carries reserve in several products (instantaneous,
   // regulating, ten-minute, supplemental). The model represents the binding
   // physical requirement rather than the product split:
@@ -6694,8 +6698,8 @@ function simulate(u, prof, outPath, _soc0){
   const _pnmCone = (typeof bldNetAnnuity === 'function')
     ? bldNetAnnuity('ccgt', 2026 + Math.max(0, (p.scenarioYear ?? 2026) - 2026) / 2) * 1000
     : 350000;
-  const _pnmThreshold = (p.pnmConeMultiple ?? 3) * _pnmCone;
-  const _pnmLowCap = (p.voll ?? 87000) * (p.pnmLowCapFrac ?? 0.40);
+  const _pnmThreshold = (p.pnmConeMultiple ?? FIXED.pnmConeMultiple) * _pnmCone;
+  const _pnmLowCap = (p.voll ?? FIXED.voll) * (p.pnmLowCapFrac ?? FIXED.pnmLowCapFrac);
   let _pnm = 0, _pnmCapped = false, _pnmCappedH = -1;
   const socAtWeekStart={}; // captures true SoC at each representative week's start hour - used so an LP solve starts from the same real state the heuristic actually had, not an assumed value
   const E={rooftop:0,wind:0,pv:0,csp:0,hybrid:0,nuclear:0,hydro:0,imports:0,coal:0,ps:0,batt:0,ccgt:0,diesel:0,unserved:0,curtailed:0,dr:0,exported:0,exportedFirm:0};
@@ -12681,14 +12685,18 @@ const VORS_STEPS = [
 //
 // CONE IS DERIVED, not a second constant: the annualised cost of a new peaker, from
 // BLD_COST.ccgt through the same bldNetAnnuity the build LP uses. Rule 6.
-const PNM_CONE_MULTIPLE = 3;          // ERCOT's threshold
-const PNM_LOW_CAP_FRAC  = 0.40;       // LCAP/HCAP in ERCOT is 2,000/5,000
+//
+// THE THRESHOLD AND LOW CAP LIVE IN FIXED, read by both this function and the engine. They
+// were briefly declared here as PNM_CONE_MULTIPLE and PNM_LOW_CAP_FRAC while the engine read
+// p.pnmConeMultiple and p.pnmLowCapFrac - keys that did not exist, so both fell through to
+// hardcoded literals. One mechanism, two implementations, and a fallback for an absent key:
+// rules 6 and 7 in a single change. Corrected the same day.
 
 function marketPriceSeries(r, P){
   if (!r || !r.marginalP || !r.reserveMW || !r.loadS || !r.stack) return null;
   const N = 8760;
   const VOLL = P.voll ?? 87000;                       // R/MWh
-  const LOWCAP = VOLL * PNM_LOW_CAP_FRAC;
+  const LOWCAP = VOLL * (P.pnmLowCapFrac ?? FIXED.pnmLowCapFrac);
   const req = (P.asReserveFrac || 0.06) * (r.peakGridLoad || 32000);
   const unserved = r.stack.unserved || [];
   const out = new Array(N);
@@ -12700,7 +12708,7 @@ function marketPriceSeries(r, P){
   const cone = (typeof bldNetAnnuity === 'function')
     ? bldNetAnnuity('ccgt', 2026 + Math.max(0, (P.scenarioYear ?? 2026) - 2026) / 2) * 1000
     : 350000;                                          // R/MW-yr fallback
-  const pnmThreshold = PNM_CONE_MULTIPLE * cone;
+  const pnmThreshold = (P.pnmConeMultiple ?? FIXED.pnmConeMultiple) * cone;
   let pnm = 0, capped = false, cappedFromH = -1;
 
   for (let h = 0; h < N; h++){
