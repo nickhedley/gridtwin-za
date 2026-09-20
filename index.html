@@ -12983,7 +12983,7 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
 
   // THE SAME RATE, HOUR BY HOUR ACROSS THE YEAR. The 24-point curve above is an hour-of-day
   // average and cannot answer what a household PAYS - that depends on when it consumes, which
-  // is the entire premise of a dynamic tariff. This series exists so the Agile-style rows can
+  // is the entire premise of a dynamic tariff. This series exists so the dynamic-pricing rows can
   // weight the rate by a real residential load shape instead of averaging it flat.
   const srcFull = (marketBasis && mkt) ? mkt.p : Array.from(marginalP, v => v / 1000);
   const out = shapeSrc.map(toRate);
@@ -13155,29 +13155,44 @@ function retailHourly(){
   // 39% of it, which is this customer. A geyser timer is the ordinary way that load moves.
   // The four-hour window is a choice, not a source. Perfect within-day foresight is a fair
   // assumption because Agile publishes a day ahead, but it is still the optimistic end.
+  //
+  // A SECOND, LARGER SHARE. 39% is the water heater alone. A household that also moves its
+  // pool pump and charges an electric vehicle overnight has much more to shift: pool pumps
+  // run 6-8 hours a day at 0.75-1.5 kW and are pure deferrable load, and an EV adds 200-300
+  // kWh a month that only has to be there by morning. 65% is the sum of those three on a
+  // household that has all of them - which is a minority of South African households today
+  // and the direction of travel. NOT a measured figure: 39% is sourced, the increment is
+  // reasoned from appliance loads.
   const AGILE_SHIFT_SHARE = 0.39, AGILE_SHIFT_HOURS = 4;
-  let agileFixed = null, agileShift = null;
+  const FLEX_SHIFT_SHARE = 0.65, FLEX_SHIFT_HOURS = 6;
+  let agileFixed = null, agileShift = null, agileFlex = null;
   if (RES_PU && raw && raw.hourly && raw.hourly.length === 8760){
     const rate = raw.hourly, L = RES_PU;
     let num = 0, den = 0;
     for (let h = 0; h < 8760; h++){ num += rate[h] * L[h]; den += L[h]; }
     agileFixed = num / den;
 
-    const Ls = L.slice();
-    for (let d0 = 0; d0 < 365; d0++){
-      const i0 = d0 * 24;
-      let dayE = 0;
-      for (let h = 0; h < 24; h++) dayE += L[i0 + h];
-      const move = dayE * AGILE_SHIFT_SHARE;
-      for (let h = 0; h < 24; h++) Ls[i0 + h] = L[i0 + h] * (1 - AGILE_SHIFT_SHARE);
-      const order = [];
-      for (let h = 0; h < 24; h++) order.push([rate[i0 + h], h]);
-      order.sort((a, b) => a[0] - b[0]);
-      for (let k = 0; k < AGILE_SHIFT_HOURS; k++) Ls[i0 + order[k][1]] += move / AGILE_SHIFT_HOURS;
-    }
-    let num2 = 0, den2 = 0;
-    for (let h = 0; h < 8760; h++){ num2 += rate[h] * Ls[h]; den2 += Ls[h]; }
-    agileShift = num2 / den2;
+    // One function, two parameter sets - the rows differ ONLY in how much moves and into how
+    // many hours, so any difference between them is the flexibility and not the method.
+    const shiftedMean = (share, hours) => {
+      const Ls = L.slice();
+      for (let d0 = 0; d0 < 365; d0++){
+        const i0 = d0 * 24;
+        let dayE = 0;
+        for (let h = 0; h < 24; h++) dayE += L[i0 + h];
+        const move = dayE * share;
+        for (let h = 0; h < 24; h++) Ls[i0 + h] = L[i0 + h] * (1 - share);
+        const order = [];
+        for (let h = 0; h < 24; h++) order.push([rate[i0 + h], h]);
+        order.sort((a, b) => a[0] - b[0]);
+        for (let k = 0; k < hours; k++) Ls[i0 + order[k][1]] += move / hours;
+      }
+      let nn = 0, dd = 0;
+      for (let h = 0; h < 8760; h++){ nn += rate[h] * Ls[h]; dd += Ls[h]; }
+      return nn / dd;
+    };
+    agileShift = shiftedMean(AGILE_SHIFT_SHARE, AGILE_SHIFT_HOURS);
+    agileFlex  = shiftedMean(FLEX_SHIFT_SHARE,  FLEX_SHIFT_HOURS);
   }
 
   // A CAPPED RESULT MUST ANNOUNCE ITSELF. The failure this panel had was not the cap, it was
@@ -13188,7 +13203,7 @@ function retailHourly(){
     rawMax: raw.reduce((a, b) => Math.max(a, b), 0),
   };
   return { dyn, raw, flat, flex, hod, markup, capOn, stranded, comp, week, weekFlex, wkMode, wkStart,
-           capBinding, agileFixed, agileShift,
+           capBinding, agileFixed, agileShift, agileFlex,
            marketBasis: (document.getElementById('retBasis') || {}).value === 'mkt',
            mktVarTarget: mkt2 ? srcMean : 0, viaMuni,
            fixedPerMonth: hp.fixed_r_per_month, cap: sp.cap_r_per_kwh };
@@ -13224,10 +13239,15 @@ function renderRetail(){
        // two Agile rows below are the same series weighted by a real residential load shape,
        // which is the question the row was reaching for. d.dyn itself is untouched.
        ...(d.agileFixed != null
-         ? [['Agile-style, habits unchanged', d.dyn,
+         ? [['Dynamic pricing, habits unchanged', d.dyn,
              'same price, weighted by a real residential load shape', d.agileFixed],
-            ['Agile-style, geyser shifted', d.dyn,
-             '39% of the day moved to its four cheapest hours', d.agileShift]]
+            ['Dynamic pricing, geyser shifted', d.dyn,
+             '39% of the day moved to its four cheapest hours', d.agileShift],
+            ...(d.agileFlex != null
+              ? [['Dynamic pricing, fully flexible', d.dyn,
+                  'geyser, pool pump and EV charging \u2013 65% moved to the six cheapest hours',
+                  d.agileFlex]]
+              : [])]
          : [])].map(row => {
         const a = row[1], mn = Math.min(...a), mx = Math.max(...a);
         const mv = (row[3] != null) ? row[3] : mean(a);
@@ -13339,10 +13359,11 @@ function renderRetail(){
   // the last three share one price series and differ only in when the household consumes.
   const rowsNote = '<span style="display:block;margin:5px 0 8px;color:var(--ink2)">'
     + '<strong>Reading the table.</strong> Homepower and Homeflex are real Eskom tariffs. The '
-    + 'other two do not exist: they are the same customer paying a price that follows cost by '
-    + 'the hour, weighted by when a household actually uses electricity \u2013 which is why both '
-    + 'share a cheapest hour, a dearest hour and a spread, and differ only in the mean. The '
-    + 'gap between them is what shifting the geyser is worth.</span>';
+    + 'other three do not exist: they are the same customer paying a price that follows cost '
+    + 'by the hour, weighted by when a household actually uses electricity \u2013 which is why '
+    + 'all three share a cheapest hour, a dearest hour and a spread, and differ only in the '
+    + 'mean. The gaps between them are what shifting load is worth: first the geyser, then a '
+    + 'pool pump and an electric vehicle as well.</span>';
   noteEl.innerHTML = capLine + rowsNote + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
     + `${c.year}. Built from NERSA's allowed revenue over ${c.salesTWh.toFixed(0)}&nbsp;TWh of `
@@ -16338,7 +16359,7 @@ bldInitRates();
 bldShowInherit();
 
 /* --- Load real Eskom profiles if profiles.json is present, then re-solve --- */
-// RESIDENTIAL LOAD SHAPE, for the Agile-style rows in the retail panel. Absent, those rows
+// RESIDENTIAL LOAD SHAPE, for the dynamic-pricing rows in the retail panel. Absent, those rows
 // simply do not render - the panel degrades rather than falling back to the national shape,
 // which peaks at 10:00 against a household's 19:00 and would flatter a dynamic tariff badly.
 // OFFSHORE WIND SHAPE. Until 18 Sep 2026 offshore ran on the ONSHORE wind profile, which
