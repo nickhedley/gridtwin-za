@@ -6832,30 +6832,21 @@ function simulate(u, prof, outPath, _soc0){
     //
     // NERSA approved a 4% ceiling in September 2025, expected to unlock 1,180 MW
     // of Western Cape wind. Published, not fitted.
-    // SCALES WITH THE BUILD, from 19 Sep 2026. Until then this was a flat 4% haircut on wind
-    // and solar in every hour regardless of how much was built - 10 GW and 100 GW both lost
-    // 4%. Worse, the 4% is NERSA's Congestion Curtailment Framework CEILING, the most an IPP
-    // may be curtailed before compensation, used as though it were the expected rate.
+    // FLAT 4%, and the national scaling built here on 19 Sep 2026 was REMOVED the same day.
+    // It divided capacity in the Cape by headroom in Gauteng, and the headroom data says
+    // those are not interchangeable: every region holding existing wind - Northern Cape,
+    // Eastern Cape, Western Cape, Hydra Central - has ZERO headroom, and all 19,940 MW of it
+    // sits in regions with almost no renewables and the worst wind, KwaZulu-Natal at CF
+    // 0.216, Gauteng 0.247, Limpopo 0.235. Headroom is where the wind is not.
     //
-    // Now: near zero while the build fits inside available connection headroom, rising above
-    // it. Headroom is the national sum from nodal/headroom_summary.json, 19,940 MW, which is
-    // what the grid can absorb without reinforcement. The published 4% is the rate AT
-    // headroom, so a build sitting exactly at capacity reproduces the old number.
+    // A national average cannot represent that, and a scaled national figure looks more
+    // authoritative than a flat one while resting on no better foundation. Flat is at least
+    // visibly a placeholder.
     //
-    // STILL NATIONAL, NOT NODAL. A build concentrated in the Eastern Cape, where headroom is
-    // 400 MW against a national 19,940, would congest far harder than this shows. Macro
-    // regional assignment for the national sliders is the real fix; this removes the worst of
-    // the flat assumption without pretending to site anything.
-    const _cgHead = (p.congestHeadroomMW ?? 19940);
-    // TOTAL installed VRE, not just new. The first version counted new build only, which made
-    // congestion curtailment ZERO at defaults - and South Africa curtails for congestion today,
-    // with 7.9 GW of existing wind and solar on constrained corridors. validate_findings caught
-    // it within one run.
-    const _cgVre  = (p.windMW || 0) + (p.pvUtilityMW || 0)
-                  + (u.newWindMW || 0) + (u.newPvMW || 0) + (u.newOffshoreMW || 0);
-    const _cgScale = _cgHead > 0 ? Math.min(4, _cgVre / _cgHead) : 1;
-    const _cgp = p.congestionCurtailOn
-      ? Math.max(0, (p.congestionCurtailPct ?? 4)) / 100 * _cgScale : 0;
+    // The 4% is NERSA's Congestion Curtailment Framework CEILING - the most an IPP may be
+    // curtailed before compensation - used here as an expected rate. Regional allocation with
+    // resource-weighted siting and a TDP headroom path is the real fix; see the to-do.
+    const _cgp = p.congestionCurtailOn ? Math.max(0, (p.congestionCurtailPct ?? 4)) / 100 : 0;
     if (_cgp > 0){
       const _lost = (windGen + pvGen) * _cgp;
       windGen *= (1 - _cgp); pvGen *= (1 - _cgp);
