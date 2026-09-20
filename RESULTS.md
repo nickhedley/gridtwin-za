@@ -19,7 +19,313 @@ wind year is exactly what sets a capacity requirement.
 
 ---
 
-## A fossil-free South Africa, scored on its worst year
+## The system cost was missing a third of itself
+
+Build `2026-09-20a`, 18-19 Sep 2026. Two costs that no system-cost aggregate had ever carried
+were added in one session. `avgCost` at defaults went R548.06 to R883.50/MWh.
+
+**Fixed O&M for the existing fleet, R61.6bn/yr, 34% of system cost at defaults.** Before this,
+`totalCost` and `gridCost` were fuel plus carbon plus new-build capital. Medupi cost fuel and
+carbon; Koeberg cost essentially nothing. Staff, maintenance, overhauls, insurance and rates
+were absent for 39.7 GW of coal and everything else already built.
+
+THE BIAS RAN ONE WAY. Retiring coal appeared to save only fuel and carbon when it also stops a
+maintenance bill that does not fall with output. Every coal-versus-renewables comparison this
+model has produced understated the case for replacement. Retiring 27 GW now saves R31.4bn of
+O&M the model previously could not see.
+
+Calibrated to Eskom's own filing, not to benchmarks: Generation MYPD 6 (NERSA, Aug 2024)
+Table 1 gives R55,093m of opex over the Table 4 fleet of 46,686 MW. Our constants reproduce
+that to 99.9% on that fleet. Relative weights across technologies are international
+(European vintage study) because the filing gives no split.
+
+  THREE CAVEATS. It is an APPLICATION, not an outturn, and NERSA applies a prudency test, so
+  it is an upper bound. It includes CENTRALISED SERVICES allocated to Generation. And the
+  per-technology split is the weakest part - Table 54 of the same filing would replace it.
+
+**The REIPPPP PPA obligation, R11.7bn/yr.** Existing wind and solar cost the system NOTHING
+before this: there is no `costWind` or `costPv`, so their fuel and carbon are zero, and
+`newCapexR` covers new build only. Nearly 8 GW of IPP renewables generated free electricity in
+every scenario the model had ever run.
+
+Only REIPPPP is charged - 4,042 MW wind and 2,783 MW solar. `by_source` separates the fleet to
+the megawatt, and private wheeled (470/488) and Eskom-owned (100/0) carry fixed O&M like every
+other existing asset. The distinction is not sunk cost: a PPA is a CONTRACT, not an asset, and
+Eskom pays because it signed.
+
+CHARGED ON DELIVERED OUTPUT. Curtailment up to 10% is uncompensated per the March 2024
+Addendum and deemed energy above that is already modelled, so charging contracted output would
+count the curtailed portion twice. Rolls off 2034-2041 as the twenty-year PPAs expire.
+
+### Sunk capital stays out, and that is deliberate
+
+PyPSA's convention: for existing plant the annuity is a constant in the objective and cannot be
+avoided by any decision, while fixed O&M is exactly what `coalDecomMW` stops paying. Same
+reasoning excludes stranded assets from system cost - retiring Medupi early consumes no
+additional resources, it means capital is not recovered from customers. That is a transfer and
+it belongs in the retail panel, which has a stranded basis.
+
+---
+
+## New-build capex was blind to ten years of learning
+
+Build `2026-09-20a`, 19 Sep 2026. `newCapexR` read the flat `acap*` constants, which hold the
+same quantity as `BLD_COST` + `BLD_FOM` and never decline. Rule 6: no constant appears twice.
+
+Now derived from `bldCapex` at the scenario vintage. The same fossil-free build:
+
+```
+build year   newCapex R bn   totalCost R bn   avgCost R/MWh
+2026                 520.7            537.5          2,609
+2035                 462.6            478.4          2,309
+2040                 434.5            445.7          2,143
+2050                 386.1            396.4          1,893
+```
+
+GOING EARLY COSTS R49.3bn A YEAR, about 12%, between 2040 and 2050. BEFORE THIS FIX THE MODEL
+SAID R1.2bn, all of it residual PPA. An answer to a live policy question was an artefact of a
+duplicated constant.
+
+Decline rates were already sourced - BNEF 2035: solar -30%, storage -25%, onshore wind -23%,
+CCGT rising on the 16% jump BNEF recorded in 2025. Offshore's 2.6% comes from ESMAP instead, so
+the table mixes sources.
+
+VINTAGE IS THE MIDPOINT and that is correct, not a simplification. A 2040 scenario is a fleet
+built progressively from 2026, so its average capex is the midpoint; pricing it all at 2040
+would assume nothing was built until the final year. Assumes a LINEAR build-out - a real
+transition is back-loaded, so this is mildly conservative.
+
+---
+
+## Offshore wind is not near baseload
+
+Build `2026-09-20a`, 18 Sep 2026. Twelve weather years, Renewables.ninja / MERRA-2 at seven
+ESMAP regions, levels scaled to ESMAP Tables 16 and 17, shapes as measured.
+
+```
+group        CF      hours below 10% of rating   longest drought   CV
+offshore     0.516                       18.2%              83 h   0.69
+onshore      0.368                       14.1%              35 h   0.67
+```
+
+The ESMAP report describes offshore as having lower variability and providing near baseload
+capacity. ON THESE PROFILES IT DOES NOT. Offshore delivers 40% more energy and spends MORE of
+the year effectively absent. Droughts run 62 to 103 hours against 22 to 45 onshore. Every
+offshore region has a first-percentile hour of exactly zero; every onshore region has a
+positive floor.
+
+AND SIX OF SEVEN REGIONS TROUGH IN MAY, the seventh in June, while onshore troughs spread
+across February and March. Seven sites over 2,000 km of coastline and three weather systems,
+all failing in the same month. Whatever spatial diversity offshore buys, it does not buy
+SEASONAL diversity - and seasonal is what the winter wind drought is about.
+
+### The siting objection, tested and dismissed
+
+The first measurement compared developer-selected onshore sites (capacity-weighted centroids of
+real REIPPPP plants) against arbitrary offshore water, which is not a fair test. Three
+candidates per region were screened on 2018 and the best kept. Result: 18.3% -> 18.2%, drought
+79 h -> 83 h. NOT A SITING ARTEFACT.
+
+The turbine cuts the same way and strengthens it: a V164 8000 has LOWER specific power than the
+onshore V90 2000, so it should be flatter. It is not.
+
+CAVEAT: MERRA-2 is reanalysis at about 50 km and will understate short sharp lulls at every
+site, so absolute drought lengths are soft. The comparison between them is not.
+
+---
+
+## Headroom is where the wind is not
+
+Build `2026-09-20a`, 19 Sep 2026. `headroom_summary.json` against `regional_renewable_capacity`:
+
+```
+region            headroom MW   existing wind   existing solar   wind CF
+Northern Cape               0             790           1,283      0.379
+Eastern Cape                0           1,896               0      0.367
+Western Cape                0           1,257             359      0.365
+Hydra Central               0             669             460      0.425
+KwaZulu-Natal           5,500               0               0      0.216
+Gauteng                 4,680               0              50      0.247
+Limpopo                 3,360               0             506      0.235
+Mpumalanga              3,320               0               0      0.255
+North West              1,660               0             445      0.332
+Free State              1,420               0             169      0.268
+```
+
+EVERY REGION HOLDING EXISTING WIND HAS ZERO HEADROOM. All 19,940 MW of it sits in regions with
+almost no renewables and the worst resource in the country.
+
+That is the South African grid problem in one table, and it is why a national average cannot
+represent congestion: a national figure divides capacity in the Cape by headroom in Gauteng.
+A scaled national derate was built on 19 Sep and REMOVED the same day for exactly this reason -
+it looked more authoritative than a flat 4% while resting on no better foundation.
+
+The 4% itself is NERSA's Congestion Curtailment Framework CEILING, the most an IPP may be
+curtailed before compensation, used as though it were an expected rate.
+
+---
+
+## A fossil-free system fails a stability constraint the model was not checking
+
+Build `2026-09-20a`, 19 Sep 2026. `SYNC_MIN_MW` is 6,000 MW and only coal, nuclear, hydro and
+imports counted toward it. Non-coal synchronous plant is 3,460 MW, so the balance came from
+coal via `Math.min(cAvail, syncDeficit)`.
+
+WITH NO COAL THAT TERM IS ZERO AND THE FLOOR WAS SILENTLY UNMET. The fossil-free build ran at
+3,460 MW against a 6,000 MW requirement in every hour and reported nothing.
+
+Grid-forming batteries and synchronous condensers now count:
+
+```
+Fossil-free 2040, 30% grid-forming        floor met in all 8,760 hours
+Fossil-free, 0% grid-forming              floor UNMET in all 8,760 hours
+Fossil-free + 2 GW synchronous condensers floor met
+```
+
+SO A FOSSIL-FREE SOUTH AFRICA IS FEASIBLE ON SYSTEM STRENGTH ONLY IF ABOUT 30% OF THE STORAGE
+FLEET IS GRID-FORMING - 12 GW at this build. If none of it is, the system fails every hour
+regardless of how much energy it has.
+
+### Do not add synchronous condensers
+
+AEMO is moving AWAY from them: a July 2026 report has them turning to battery inverters because
+syncons are proving expensive and hard to find. South Australia, past 50% renewables, installed
+four totalling about 508 MVA for AUD 166m, with 1,670 MVA more identified - and the pivot to
+inverters came before the next tranche was built.
+
+AEMO ALSO SAYS INERTIA IS NOT THE PROBLEM. Declaring shortfalls under an 80%-renewables-by-2030
+scenario they foresaw no issues on inertia; what binds is SYSTEM STRENGTH, the fault level at a
+node, in MVA. Our single national MW floor stands in for both, which is the same category of
+error as a national congestion derate.
+
+### Inertia is worth R4.6bn a year to storage, and it was invisible
+
+Pricing reserve and inertia in Fossil-free 2040:
+
+```
+reserve revenue   R0.24bn/yr
+inertia revenue   R4.59bn/yr        totalCost unchanged at R445.7bn in all cases
+```
+
+Nineteen times the reserve revenue, essentially all of it to the battery fleet. Both are pure
+TRANSFERS - system cost does not move - so pricing them reveals who gets paid without changing
+what the system costs. Both toggles now default ON in the two high-renewables presets: leaving
+inertia unpriced in a 2040 system models a market that cannot exist. They stay OFF for Today
+2026 and Crisis 2023, where South Africa genuinely prices nothing.
+
+---
+
+## Fossil free, re-measured
+
+Build `2026-09-20a`, 19 Sep 2026. Replaces the superseded entry at the top of this file.
+
+```
+Fossil-free 2040
+55 GW onshore wind, 90 solar, 5 offshore, 20 rooftop, 40 GW lithium at 8h
+all 39.7 GW coal and all 3.4 GW diesel retired, no gas
+zero unserved energy in all twelve weather years, zero diesel burned in any
+R442.3bn/yr, 199 TWh curtailed, 150 GW of new capacity
+```
+
+THE OFFSHORE LEVEL IS SET BY DEPLOYABILITY, NOT COST. ESMAP's medium path is 5 GW by 2040 and
+15 GW by 2050, and the mix follows:
+
+```
+                              total GW   curtail TWh   cost R bn
+55 W / 90 S /  5 offshore          150         199.2       442.3   2040
+45 W / 90 S /  8 offshore          143         180.9       444.9
+40 W / 90 S / 10 offshore          140         174.0       450.6   2050
+```
+
+More offshore buys less curtailment and costs more. Ten gigawatts of offshore replaces forty of
+onshore wind - the same ratio in every fossil-free run.
+
+BINDING YEAR 2014 for every fossil-free build, against 2016 for Deep decarbonisation. A system
+with no coal fails on a different weather pattern than one retaining 12.7 GW.
+
+### Single-year screening picked the wrong build FOUR TIMES
+
+Four builds showed zero unserved on 2018 alone; the worst of them failed at 969 GWh across
+twelve years. The binding year has now come out as 2014, 2016, 2018, 2020 and 2022 depending
+on the build, which is the point: THE BINDING YEAR DEPENDS ON THE BUILD, not on the weather
+alone. Wind-heavy builds fail in a wind drought; offshore-leaning builds fail when the coast
+is calm.
+
+### And the grid missed the winning level three times
+
+Offshore stepped 0/5/10/20 in one search and 0/10/20 in another. The winner was 1 GW in Deep
+decarbonisation and 5 GW in fossil-free, and neither was tested. The ESMAP shapefile's wind
+classes are integer bins that could not rank within a class either. THE STEP SIZE KEEPS
+EXCLUDING THE INTERESTING REGION - screen coarsely, then refine locally.
+
+---
+
+## Deep decarbonisation, re-optimised with offshore
+
+> RENAMED 19 Sep 2026: the preset key is now `Deep decarbonisation 2035`, and the fossil-free
+> one is `Fossil-free 2040`. Entries dated before then use the old names and are left as they
+> were written.
+
+
+Build `2026-09-20a`, 19 Sep 2026. Now 45 GW onshore wind, 45 solar, 1 offshore, 20 rooftop,
+20 GW lithium at 6h, scenarioYear 2035. Twelve weather years:
+
+```
+                     total GW   worst yr GWh   curtail TWh   cost R bn   Mt CO2
+45 W / 52 S / 0 off        97            197         112.3        294.1       40
+45 W / 45 S / 1 off        91            184         103.1        290.4       39
+```
+
+Better on cost, reliability, curtailment, emissions and total capacity at once.
+
+THE GAIN IS THE SMALLER SOLAR FLEET, NOT THE OFFSHORE. Holding solar at 45 GW and ADDING
+offshore makes solar worse:
+
+```
+                          solar spilled   capture R/MWh
+45 solar, no offshore             61.1%             155
+45 solar + 1 GW offshore          62.2%             135
+45 solar + 5 GW offshore          66.2%              95
+```
+
+Offshore competes with solar for the same headroom despite peaking at different times, because
+the system is already saturated - any additional energy displaces something. A first version of
+this entry claimed offshore displaced solar from already-spilled hours. It does not, and the
+measurement is the other way round.
+
+SOLAR SPILLS 61% OF ITS POTENTIAL in this preset either way. A 45 GW solar fleet delivers about
+what a 17 GW one would if it could sell everything.
+
+1 GW is the only deployable level: ESMAP put 1 GW offshore by 2035 in their medium and high
+scenarios.
+
+---
+
+## Demand response was free storage
+
+Build `2026-09-20a`, 19 Sep 2026. The shift was energy-neutral - 100 MWh out of the peak
+returned 100 MWh into the trough - which made demand response a lossless store in the dispatch.
+
+A geyser reheated six hours later has lost standing heat; a pre-cooled building conditions space
+that did not need it. Now 6%, so 100 MWh returns 106. LBNL measures 10-20% for pre-cooling;
+water heating sits lower and South African shiftable load is geyser-dominated. A BRACKET, not a
+South African measurement.
+
+Effect is small at Deep decarbonisation levels - curtailment 101.5 to 100.9 TWh - because the
+returned energy lands in hours that were spilling anyway. It matters where the trough is tight.
+
+THE SUBSTITUTION FINDING ABOVE (6.8% of load buying 20 GW of renewables) WAS MEASURED WITHOUT
+IT and is therefore optimistic.
+
+---
+
+## SUPERSEDED - A fossil-free South Africa, scored on its worst year
+
+> Every figure below predates 18-19 Sep 2026 and is stale on FOUR counts: fixed O&M for the
+> existing fleet was absent, the REIPPPP PPA obligation was absent, offshore wind did not
+> exist in the model, and BLD_COST.offshore was back-solved from an LCOE. See "Fossil free,
+> re-measured" below. The METHOD survives - score on the binding year, never a single year -
+> and it is the method that mattered.
 
 Build `2026-09-17a`, 17 Sep 2026. 72 builds x 12 weather years, 864 dispatches.
 
