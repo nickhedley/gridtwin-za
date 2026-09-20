@@ -46,7 +46,7 @@ const EXTERNAL = [
   'IMPORTS_CF', 'CORRIDORS', 'REGIONS', 'getNodalMIPInputs', 'loadHeadroomLookup', 'loadFirmHeadroomLookup',
   'FIRM_TECHS', 'substationData', 'CARRIER_NM', 'BTM_BATT_R_PER_KWH', 'BTM_DISPLACED_EF',
   // defined in nodal/capacity_siting.js, shared with the engine since 20 Sep 2026
-  'gridBuildChargeFor', 'REEA_SHARE', 'LINE_MW_PER_CIRCUIT',
+  'gridBuildChargeFor', 'REEA_SHARE', 'LINE_MW_PER_CIRCUIT', 'tdpHeadroomMW',
   // third-party libraries loaded from CDN
   'L', 'deck', 'maplibregl', 'google', 'highs', 'loadHighs', 'Chart',
 ];

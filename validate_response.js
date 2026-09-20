@@ -123,6 +123,10 @@ const CONTEXT = {
   // drShiftPct is 0, which is the default. Not a skip: with shifting on it moves curtailment
   // and cost across its whole range.
   drShiftLossPct:   { drShiftPct: 20 },
+  // tdpConfidencePct scales headroom growth, which only bites when there is new build to
+  // connect. At defaults nothing is built, so nothing needs reinforcing. Not a skip: with
+  // 20 GW of wind it moves avgCost across its whole range.
+  tdpConfidencePct: { newWindMW: 20000 },
   lcoeIronAir:      { newIronAirMW: 5000 },
   lcoeCsp:          { },                  // CSP exists in the base fleet
   ccgtForceLoad:    { newCcgtMW: 4000 },

@@ -5798,6 +5798,10 @@ const FIXED = {
   // scales with how far a build exceeds it. Capped at 4x so a very large build does not
   // curtail everything.
   congestHeadroomMW: 19940,
+  // How much of the Transmission Development Plan actually gets built, as a share of the
+  // phase-weighted figure. 100 means the TDP delivers on its own published phases; 0 means
+  // headroom stays at today's GCCA snapshot forever.
+  tdpConfidencePct: 100,
   asReserveOn: false, asInertiaOn: false, capacityPaymentOn: false,
   asReserveRMWh: 150,           // R/MWh on reserve capacity held
   asInertiaRkWyr: 100,          // R/kW/yr, grid-forming and synchronous only
@@ -7965,7 +7969,16 @@ function simulate(u, prof, outPath, _soc0){
       for (const reg of Object.keys(shares)) {
         const entry = (HEADROOM_LOOKUP[reg] || {})[tech];
         if (!entry) continue;
-        const r = gridBuildChargeFor(entry, nat * shares[reg], _opts);
+        // Headroom at the SCENARIO YEAR, not 2025. The TDP builds 10,209 km of line,
+        // concentrated where headroom is zero, and a 2040 run that ignores it pays to build
+        // transmission that is already planned. Phase-weighted: only 17% of it is committed.
+        const tdpMW = (TDP_PROJECTS && typeof tdpHeadroomMW === 'function')
+          ? tdpHeadroomMW(TDP_PROJECTS, reg, (p.scenarioYear ?? 2026),
+                          Math.max(0, Math.min(100, p.tdpConfidencePct ?? 100)) / 100)
+          : 0;
+        const grown = Object.assign({}, entry,
+                                    { headroom_mw: (entry.headroom_mw || 0) + tdpMW });
+        const r = gridBuildChargeFor(grown, nat * shares[reg], _opts);
         gridReinforceR += r.annualR || 0;
       }
     }
@@ -14287,6 +14300,14 @@ const SLIDERS=[
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar &amp; batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder \u2013 up to the MW of coal retired.'},
   {id:'congestionCurtailOn',toggle:true,def:true,label:'Congestion curtailment',
    note:'On by default because it is happening today. Curtailment in the first half of 2026 ran roughly an order of magnitude above all of 2025, and IPPs report revenues about 9&#37; below budget. Turn off to see what the fleet would produce on an unconstrained network.'},
+  {id:'tdpConfidencePct',label:'Transmission plan delivery',min:0,max:100,step:5,
+   def:FIXED.tdpConfidencePct,fmt:v=>v+' % of planned',
+   note:'How much of the NTCSA Transmission Development Plan gets built. It plans 10,209 km '
+     + 'of line, concentrated where connection headroom is already zero \u2013 Northern Cape '
+     + '4,737 km, Western Cape 1,159. The plan is explicitly not an investment decision, and '
+     + 'only 17% of it is in execution, so projects are weighted by their published phase '
+     + 'before this scales them. At zero, headroom stays at the 2025 snapshot and new build '
+     + 'pays to construct every line itself.'},
   {id:'congestionCurtailPct',label:'Curtailment ceiling',min:0,max:15,step:0.5,def:FIXED.congestionCurtailPct,fmt:v=>v+'&#37; of wind and solar',
    note:'NERSA approved 4&#37; congestion curtailment in September 2025, expected to unlock 1,180&#160;MW of Western Cape wind. Compensation runs only to 2028 under the pilot. The single-node engine applies it nationally rather than to the corridors that actually bind.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
@@ -16339,6 +16360,11 @@ bldShowInherit();
 // Fetched here rather than awaited in the siting panel because simulate() cannot await.
 // Absent, regional reinforcement is not charged and says so once.
 var HEADROOM_LOOKUP = null;
+var TDP_PROJECTS = null;
+fetch('nodal/tdp_projects.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
+  .then(d=>{ if (d && d.projects) { TDP_PROJECTS = d.projects;
+    console.log('[GridTwin] TDP loaded: ' + d.projects.length + ' projects'); } })
+  .catch(()=>{});
 fetch('nodal/region_headroom_lookup.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
   .then(d=>{ if (d) { HEADROOM_LOOKUP = d;
     console.log('[GridTwin] Headroom lookup loaded: '

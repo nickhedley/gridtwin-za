@@ -80,6 +80,44 @@ function gridBuildChargeFor(entry, mw, opts) {
            chargeRPerMWh: energyMwh > 0 ? annualR / energyMwh : 0 };
 }
 
+// ── HEADROOM GROWS. THE TDP BUILDS LINE. ─────────────────────────────────────────────────
+// Added 20 Sep 2026. Until then the reinforcement charge used a 2025 GCCA snapshot for every
+// scenario year, so a 2040 run paid to build transmission the Transmission Development Plan
+// has already planned. 10,209 km of it, concentrated exactly where headroom is zero -
+// Northern Cape 4,737 km, Western Cape 1,159, Eastern Cape 1,047.
+//
+// CIRCUIT CAPACITY, not route length. A 300 km line and a 30 km line each carry one circuit;
+// kilometres drive COST, circuits drive CAPACITY. 400 kV at 900 MW matches LINE_MW_PER_CIRCUIT
+// derived from corridor_electrical.json; 765 kV carries roughly three times that.
+const TDP_KV_MW = { 400: 900, 765: 3000, 275: 600 };
+
+// PHASE CONFIDENCE. The TDP's own metadata says it is explicitly NOT an investment decision:
+// Execution is committed and under way, Definition is in detailed design, and Concept and
+// Pre-Concept are indicative and likely to change, with NTCSA stating the first five years
+// carry high certainty and beyond 2030 is more uncertain.
+//
+// Only 17% of the planned capacity is in Execution. Counting all 103 GW as delivered would be
+// as wrong as ignoring it. These weights are a JUDGEMENT, not a published probability - they
+// are here to be argued with, and the tdpConfidencePct control scales all of them at once.
+const TDP_PHASE_CONF = { 'Execution':1.0, 'Definition':0.8, 'Planned':0.6,
+                         'Concept':0.3, 'Pre-Concept':0.15 };
+
+// Headroom a region has gained from TDP lines commissioned by `year`, MW.
+function tdpHeadroomMW(projects, region, year, confidenceFrac) {
+  if (!projects || !projects.length) return 0;
+  const scale = (confidenceFrac == null ? 1 : confidenceFrac);
+  let mw = 0;
+  for (const p of projects) {
+    if (p.kind !== 'line') continue;
+    if (p.prov !== region) continue;
+    if ((p.year || 9999) > year) continue;
+    const cap  = TDP_KV_MW[p.kv] || TDP_KV_MW[400];
+    const conf = TDP_PHASE_CONF[p.phase];
+    mw += cap * (conf == null ? 0.6 : conf) * scale;
+  }
+  return mw;
+}
+
 // ── WHERE NATIONAL BUILD GOES ────────────────────────────────────────────────────────────
 // Share of new capacity by province, from the 2,597 DFFE REEA environmental authorisations
 // in nodal/reea_projects.json - where developers have actually applied to build.
