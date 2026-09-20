@@ -7872,12 +7872,19 @@ function simulate(u, prof, outPath, _soc0){
   // machine types that hold it, on roughly the South African thermal mix.
   const _thermalH = 0.70 * H_CONST.coal + 0.12 * H_CONST.nuclear
                   + 0.10 * H_CONST.ccgt + 0.08 * H_CONST.hydro;
-  // Grid-forming batteries provide synthetic inertia, credited at half the
-  // effective H of a steam set: the response is faster, but it is emulated from
-  // a control loop and a finite reservoir rather than stored in a rotor.
-  const inertiaCapableMW = (p.syncMinMW ?? 0) + battPower * 0.5;
+  // Grid-forming batteries provide synthetic inertia, credited at half the effective H of a
+  // steam set: the response is faster, but it is emulated from a control loop and a finite
+  // reservoir rather than stored in a rotor.
+  //
+  // SHARE READS SYNC_GFM_SHARE, 19 Sep 2026. This block assumed 0.5 while the synchronous
+  // floor added the same day assumed 0.30 - two constants for one physical quantity,
+  // disagreeing by two thirds, which is rule 6. 0.30 is the kept figure: most installed BESS
+  // is grid-following and contributes nothing, so half the fleet being grid-forming is the
+  // optimistic end. Both sites now move together.
+  const _gfmShare = (p.syncGfmShare ?? SYNC_GFM_SHARE);
+  const inertiaCapableMW = (p.syncMinMW ?? 0) + battPower * _gfmShare;
   const inertiaGVAs = ((p.syncMinMW ?? 0) * _thermalH
-                     + battPower * 0.5 * _thermalH * 0.5) / 1000;
+                     + battPower * _gfmShare * _thermalH * 0.5) / 1000;
   // asInertiaRkWyr is now read as R per MVA-second per year. GB's pathfinder
   // implies roughly R100,000 per MVAs per year, so the slider's 0-400 range
   // covers a plausible fraction of that.
@@ -14392,7 +14399,7 @@ const PRESETS={
   //
   // 1 GW is the deployable level: ESMAP put 1 GW offshore by 2035 in their medium and high
   // scenarios. Binding year 2016, seven of eight builds tested.
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0,scenarioYear:2035},
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All 39.7 GW of coal and all 3.4 GW of diesel retired, no gas - which
   // means Medupi and Kusile retired around 16 and 19 years into a 50-year design life. Kept:
   // Koeberg, hydro, CSP, the Cahora Bassa import. Zero unserved energy in all twelve weather
@@ -14418,7 +14425,7 @@ const PRESETS={
   //
   // Binding year 2014, as for every fossil-free build tested; Deep decarbonisation 2035 binds on
   // 2016. A system with no coal fails on a different weather pattern than one keeping 12.7 GW.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:55000,newPvMW:90000,newOffshoreMW:5000,newRooftopMW:20000,newBattMW:40000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040},
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:55000,newPvMW:90000,newOffshoreMW:5000,newRooftopMW:20000,newBattMW:40000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -15786,7 +15793,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-19a';
+const BUILD_STAMP = '2026-09-20a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
