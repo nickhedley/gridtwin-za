@@ -1,200 +1,170 @@
-# GridTwin ZA - handover, 12 September 2026
+# GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-12o`. Suite clean. This session ran long; what follows is what a new session
-needs to pick up without re-deriving it.
-
-> SUPERSEDED IN PART, 17 Sep 2026. The current build is `2026-09-17a`, five days and two long
-> sessions later, and the suite counts, the retail headline and the cost-recovery figures below
-> have all moved. Individual figures are marked where they are known not to reproduce, but
-> TREAT ANY UNMARKED NUMBER IN THIS FILE AS UNVERIFIED against the current build. What survives
-> reliably is the METHOD sections - the working method, the satellite-work errors, and the
-> "measure before concluding" note at the end - none of which depend on a build. RESULTS.md is
-> the current record of findings.
+Build `2026-09-20a`. Suite 727/730, two deliberate failures. Three sessions ran long and the
+COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
+stale.
 
 ---
 
 ## Read first
 
-`RULES.md` in full - it is short by design. Then `STATE.md`. Then this.
-
-The one rule that governed most of today: **when a result contradicts the question, say so
-first.** It happened repeatedly and the contradictions were the findings.
+`RULES.md` in full, it is short by design. Then `STATE.md`. Then this. `RESULTS.md` is current
+and carries every finding with its settings; this file is state and direction.
 
 ---
 
 ## Where the suite stands
 
 ```
-validate_lint            2/2
-validate_structure      24/25     three data files lost to a container reset, see below
-validate_consistency    78/78
-validate_inputs         33/33     was 10 at the start of the day
-validate_capacity       31/31
-validate_findings       32/32
-validate_weather        64/64
-audit.py                87/87     prose ceiling raised 4200 -> 4250, deliberately
+validate_lint             2/2
+validate_structure       24/24
+validate_geo             43/43
+validate_capacity        32/33     standing: backup profile file has no licence field
+validate_inputs          33/33
+validate_findings        31/32
+validate_invariants     146/146
+validate_response        85/85
+validate_weather         64/64
+validate_lp              50/50
+validate_consistency     79/79
+validate_outputs         37/38     DELIBERATE: grid demand 217.5 TWh, pending baseline vintage
+validate_solve            6/6
+audit.py                 87/87
 ```
-
-**Three data files are missing from the sandbox only, not from the repo:**
-`headroom_summary.json`, `tdp_projects.json`, `provincial_mix.json`. They were never staged to
-outputs before the container reset. `validate_structure` reads 24/25 because of it. Locally it
-will pass.
 
 ---
 
-## The retail panel - what changed today
+## The cost basis changed. This invalidates figures.
 
-It began the day with 10 input checks and a 731-word note. It now has 33 checks, a 98-word
-note, two selectable bases and a delta line.
-
-### errors found and corrected
-
-| what | was | is |
-|---|---|---|
-| technical loss | 0.10, labelled "technical and non-technical" | 0.08, technical only |
-| City Power tariffs | treated as VAT-inclusive | **exclusive** - every municipal figure was 15% low |
-| additional energy charge | R0.06/kWh applied to every block | removed, absent from the published schedule |
-| IPP obligations | flat R/kWh | scales with sales - REIPPPP is take-or-pay |
-| curtailment compensation | absent | 10% PPA threshold, sourced to the March 2024 Addendum |
-| retail margin | imported from Europe, unsourced | R0.312/kWh from the CTS, 4% from the R0.30 held |
-| LOLE | counted HOURS, called LOLE | LOLH and LOLE computed separately |
-| P(shed) | flat 0% | `0 <5%`, the Poisson zero-count bound |
-| breakdown | identical on both bases | follows the basis |
-
-### the two bases
-
-**Regulated** is Eskom under NERSA - a revenue requirement over kWh, only fuel and carbon
-varying by hour. **Market-indexed** is Agile - the hourly price carries generators' capital
-through scarcity, so generation's 67% share leaves the flat block.
+`avgCost` at defaults: R548.06 -> R883.50/MWh. Two costs that NO system-cost aggregate had ever
+carried were added, and new-build capex started seeing technology learning.
 
 ```
-Deep decarbonisation 2035   regulated    market-indexed
-mean, build 2026-09-17a         R4.91             R3.29
-day spread                       1.3x              3.1x
+                                    was              is
+fixed O&M, existing fleet        absent         R61.6bn/yr   Eskom MYPD 6 calibrated
+REIPPPP PPA obligation           absent         R11.7bn/yr   delivered output, expires 2034-41
+newCapexR                     flat acap*    derived from BLD_COST at vintage
+BLD_COST.offshore          R88,200/kW LCOE    R79,200/kW overnight + BLD_FOM
+BLD_COST.offshore decl            6.0%            2.6%       ESMAP medium, was above their high
+FIXED.rooftopMW                8,731.6          8,942.1      NTCSA Aug-26 less 488 wheeled
+Deep decarb solar                52 GW            45 GW      swapped for 1 GW offshore
 ```
 
-RETIRED 17 Sep 2026: this table read R5.45 and R3.51 against a preset called "Future mix".
-Neither figure reproduces on any current state and both predate three changes - the 12 Sep
-`salesMWh` break and its 15 Sep repair, the rooftop capex removal, and the preset's lithium
-moving 30 GW to 20 GW. The preset was renamed to Deep decarbonisation on 15 Sep 2026. Do not
-reissue the old pair; RESULTS.md carries the current matrix with its full control state.
-
-The market number is LOWER and that is not good news. THE MAGNITUDES OF THAT UNDER-RECOVERY
-ARE NOT CURRENTLY QUOTABLE: this paragraph claimed 35% of system cost against 76% today and
-132% gas-firmed, with prices zero 56% of the year, and none of those reproduce either. The
-denominator is the problem - `totalCost` excludes the existing fleet, which a tariff does not -
-and Crisis 2023 returns 4,904% of system cost, which looks like a regression of the ORDC
-failure recorded as fixed on 12 Sep. Measured 17 Sep: prices are zero 38% of the year under
-Deep decarbonisation. The DIRECTION holds and is well founded. The household pays
-less; the capital does not get paid. That is the missing-money problem, and it is why capacity
-markets exist.
-
-### what the scarcity pricing follows
-
-PLEXOS, not PyPSA. PyPSA takes price from the dual of the nodal balance constraint, and our
-hourly dispatch is a merit-order heuristic with no dual to read. PLEXOS applies an
-administratively set Value of Reserve Shortage when a reserve constraint is violated; the
-stepped curve here is NREL's shape.
-
-**A first attempt read an ERCOT-style ORDC off `reserveMW` and recovered 5,000% of system
-cost.** `reserveMW` is the reserve HELD - a policy input, nearly constant at 4.4 to 6.8% of
-load, not a measure of tightness. What discriminates is the DEPTH of shortfall.
+The consequential one for policy work: going fossil-free by 2040 rather than 2050 costs
+**R49.3bn a year**, about 12%. Before the `newCapexR` fix the model said R1.2bn, because the
+headline could not see ten years of learning. See RESULTS.md.
 
 ---
 
-## Findings worth quoting
+## Engine changes since 17 Sep
 
-**Grid delay is an emissions event, not a price event.** Renewables 89 to 68 TWh, coal 140 to
-157, retail R3.91 to R3.96. The household barely notices; the mix moves a quarter. That
-asymmetry is why delay goes unaddressed - nobody on the bill feels it.
+**Offshore wind runs on its own profile.** `nodal/profiles_offshore_regional.json`,
+Renewables.ninja / MERRA-2 at seven ESMAP regions, twelve years, levels scaled to ESMAP Tables
+16/17 and shapes as measured. Falls back to the ONSHORE shape with a console warning if the
+file is missing - that fallback is wrong in energy and in variability and must not be quoted.
 
-**Turn-up is the larger half of constraint cost**, 43% today and 65% under the IRP build, as
-the replacement rate goes R412 to R1,012/MWh. Volume and cost are not the same thing.
+**The synchronous floor can be met without coal.** Grid-forming batteries at `SYNC_GFM_SHARE`
+0.30 and `SYNC_CONDENSER_MW` count toward `SYNC_MIN_MW`. Before this a no-coal run failed the
+6,000 MW floor in all 8,760 hours SILENTLY. `syncUnmetH` is returned so it cannot happen again.
 
-**Today's cheapest hours are the dirtiest.** Marginal carbon 1.040 in the six cheapest hours
-against 1.029 in the six dearest - the cheap hours are overnight coal, the dear ones are
-evening gas and storage. Under the IRP 2030 build the sign flips back. So the divergence is
-TRANSITIONAL, which argues for fixing the signal now.
+**Demand shifting is lossy.** `drShiftLossPct` 6%: 100 MWh out of the peak returns 106 into the
+trough. It was energy-neutral, which made demand response a free store.
 
-**Curtailment reaches the bill through the denominator**, worth about 22% of the Deep
-decarbonisation bill and invisible as a line. The 22% is on the pre-15 Sep build and has
-not been re-measured since the charging fix or the preset change.
+**CCS applies to a share of the fleet.** `ccsSharePct`, default 100. At 100% the 25% parasitic
+load removes about 10 GW of effective capacity and pushes the system onto diesel - a capacity
+shock, not a carbon result. Set 24% for Medupi and Kusile.
 
-**Inflation is not the problem, the counterfactual is.** Everything is constant 2026 rands.
-Holding today's tariff flat is GENEROUS to the status quo: NERSA has approved 8.76% and 8.83%
-against a 3% target, and CSIR measures 4.6% real over 2014-25.
+**Diesel can be retired.** `dieselDecomMW`, 0-3,400 MW. NOTE: this control, the offshore wiring
+and `BLD_FOM` all appeared during the 17-18 Sep session and I cannot account for their
+provenance. They work and their comments are accurate. Check them against repo history.
 
 ---
 
-## The satellite work - a full day, and the ending is not where it started
-
-**The question:** which of South Africa's registered projects were actually built. NERSA has no
-system tracking it, the IPP Office quarterly is aggregate with no names, REEA gives 2,597
-authorisations with no outcome.
-
-**What was built:** a register of **67 solar arrays and 49 wind farms**, with construction date
-brackets, matched to the authorisations claiming each. In `nodal/project_register.json` and on
-the map behind a "Built projects" toggle.
+## Presets
 
 ```
-clean PV assets    59    5,128 MW    CSP, duplicates and unverified excluded
-named              57 of 67
+Deep decarbonisation 2035   45 onshore / 45 solar / 1 offshore / 20 rooftop / 20 GW at 6h
+                            coal -27 GW, no new gas, reserve and inertia priced
+Fossil-free 2040            55 onshore / 90 solar / 5 offshore / 20 rooftop / 40 GW at 8h
+                            all coal and diesel retired, zero unserved in 12 years
 ```
 
-**Do not repeat the detector work.** Four versions of a spectral change detector were built
-before searching the literature. **TransitionZero's TZ-SAM and Microsoft's Global Renewables
-Watch already exist, are in the Earth Engine catalog, and are far better.** The detector only
-earns its place on what those miss.
+Both renamed 19 Sep and both now price reserve and inertia, because leaving inertia unpriced in
+a 2040 system models a market that cannot exist. Preset names are referenced by DISPLAY STRING
+in twenty harness checks across six files, so renaming one is a coordinated edit.
 
-**What the detector did establish**, and it holds:
-- NDBI detects a complete array where there is vegetation; brightness where there is not.
-  Grootspruit fired on NDBI at +0.0825, Mooi Plaats on brightness at -0.0114, neither on the
-  other. Terrain decides which index works.
-- **Under-construction cannot be detected at 10 m.** Calibrated three states from TZ-SAM's own
-  date brackets: complete separates perfectly, during does not separate from nothing.
-- An offset search turned 0 false alarms into 11. Taking the minimum of 25 windows finds a
-  negative by chance - the approach is structurally wrong, not badly tuned.
+---
 
-**Errors that cost real time, so they are not repeated:**
-- A bounding box `[16,-35,33,-22]` was used in every script and takes in Namibia, Lesotho and
-  Eswatini. Five assets were foreign. Now `FAO/GAUL/2015/level0`.
-- `ee.Join.saveAll` defaults to an INNER join. Three chained joins turned 973 sites into 20.
-- **TZ-SAM's capacity model is trained on PV and overstates CSP badly** - Khi Solar One reads
-  252 MW against an actual 50. CSP assets carry `capacity_unreliable`.
-- Building median composites over 12 km boxes exhausts memory. Reduce each image to numbers
-  over the region FIRST, then average the numbers.
+## Three patterns, each seen repeatedly. Read these before searching anything.
 
-**Licence, and it is a decision not a detail.** Solar derives from TZ-SAM, **CC-BY-NC** - it
-cannot go into a commercial product. Wind derives from GRW, MIT, and is clean. OpenStreetMap
-was rejected for names because ODbL share-alike is incompatible with CC BY-NC-ND.
+**Single-year screening picks the wrong build. Four times now.** Four fossil-free builds showed
+zero unserved on 2018; the worst failed at 969 GWh across twelve years. Always score on the
+binding year across all twelve.
+
+**The binding year depends on the BUILD, not the weather.** It has come out as 2014, 2016, 2018,
+2020 and 2022 in different searches. Wind-heavy builds fail in a wind drought; offshore-leaning
+builds fail when the coast is calm.
+
+**The grid keeps missing the winning level. Three times.** Offshore stepped 0/5/10/20 and
+0/10/20; the winners were 1 GW and 5 GW. Screen coarsely, then REFINE LOCALLY around the best
+few - a uniform finer grid over five dimensions is unaffordable and still misses edges.
 
 ---
 
 ## Open, in the order I would take them
 
-1. **The EPP comment closes 28 September.** Nearest binding date, and it covers exactly what
-   the retail panel models - unbundled charges, cost-reflective tariffs, cross-subsidies, and
-   whether solar customers contribute to network costs. We hold numbers on the last two that
-   are not published anywhere.
-2. **Province comparison against NERSA.** 20,131 MW registered across nine provinces against
-   satellite-measured built capacity. Says where registration and construction diverge - the
-   gap NERSA admits it cannot track. Needs no new data.
-3. **A refresh procedure in `SOURCES.md`.** TZ-SAM is quarterly, GRW stopped at Q2 2024.
-   Without writing down which quarter and what to re-run, the register ages silently.
-4. **19 unnamed arrays**, of which 10 have no authorisation text. Diminishing returns below the
-   two Upington sites.
-5. **Nothing since build `2026-09-11j` has been seen rendered** except by report. Many of
-   today's defects were invisible to the suite - jsdom stubs the canvas and does no layout.
+1. **Regional congestion assignment.** The flat 4% derate is a NERSA compensation CEILING used
+   as an expected rate, and a national scaling built on 19 Sep was removed the same day: every
+   region holding existing wind has ZERO headroom, and all 19,940 MW of it sits where the wind
+   is worst. A national average cannot represent that. The job: route slider capacity through
+   regional allocation weighted by revealed developer preference (existing capacity plus the
+   2,597 REEA authorisations); congestion per region against regional headroom; a headroom
+   growth path from `tdp_projects.json`, currently unused, so a 2040 run does not use a 2025
+   snapshot; reconcile with the siting panel, which currently bumps the sliders rather than the
+   reverse; then re-measure every curtailment figure.
+2. **Nothing since `2026-09-11j` has been seen rendered.** Six controls and several panel
+   changes have gone in since. jsdom stubs the canvas and does no layout. A temporal-dead-zone
+   error on 17 Sep parsed cleanly, passed a parse check, and was caught only by rendering.
+3. **`bessBenchmark` is a price-taker with no capture cap.** Reports R28m/MW-yr arbitrage on a
+   R0.75m asset in high-renewables builds. The 284% and 134% cover figures come from it.
+4. **Cost-recovery magnitudes not quotable.** Crisis 2023 returns 4,904% of system cost.
+5. **Municipal customers are not modelled.** Roughly half of households buy from a
+   municipality. Largest scope gap and it blocks the PARI Gauteng work.
+6. **Baseline vintage.** Grid demand 217.5 TWh against 209.6 for 2025 and 198.1 annualised for
+   2026. Structural decline or cyclical? It blocks the band on the grid-served check.
+7. **Re-run both presets with a finer search**, per the pattern above.
+8. **`SYNC_MIN_MW` conflates inertia with system strength.** AEMO treats them separately:
+   inertia adequate, system strength short and NODAL in MVA. Same category of error as a
+   national congestion derate.
 
 ---
 
-## Working method, since it mattered
+## Assumptions that are brackets, not measurements
 
-Every substantive correction today came from a question, not from the suite. The checks test
-what was thought to test. Three controls were reported broken and all three were correct but
-inert; four orphaned functions were left defined and uncalled; a check was written with
-`|| true` and could never fail.
+Flagged because each currently carries a published figure:
 
-**Measure before concluding.** The habit that worked was running the thing and reading the
-number, not reasoning about what it should do. The habit that failed was the reverse, every
-time.
+```
+SYNC_GFM_SHARE 0.30        grid-forming share of storage. Used in two places since 19 Sep,
+                           when they disagreed at 0.30 and 0.50.
+drShiftLossPct 6%          LBNL measures 10-20% for pre-cooling; geysers sit lower. Not SA.
+fom* per-technology split  international weights; the LEVEL is Eskom. MYPD 6 Table 54 would
+                           replace the split and leave the total unchanged.
+ppaWindR / ppaSolarR       one average across bid windows. BW4 wind cleared near R620/MWh
+                           against BW1 above R1,500.
+BLD_COST decl rates        BNEF 2035 for most, ESMAP for offshore. Mixed sources in one table.
+```
+
+---
+
+## Working method
+
+**Measure before concluding** still holds, and this week it caught three of my own reversals:
+offshore does NOT improve solar economics, the midpoint vintage is MORE accurate rather than a
+simplification, and going early DOES cost materially once the headline could see learning.
+
+**A wrong explanation is worse than none.** A comment saying offshore displaced solar from
+already-spilled hours was the reverse of what the measurement showed. A superseded comment four
+lines from live code cost a day the week before. Both are in RULES.md now.
+
+**Share before reporting.** Three times files were described as delivered when only the copy had
+run. The fix is mechanical: end the turn with the file, never write "above" in prose.
