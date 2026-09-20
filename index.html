@@ -7933,7 +7933,44 @@ function simulate(u, prof, outPath, _soc0){
   const ppaCostR = _liveFrac * (
       (E.wind || 0) * Math.min(1, (p.reipppWindMW  || 0) / Math.max(1, _windTotMW)) * (p.ppaWindR  ?? FIXED.ppaWindR)
     + (E.pv   || 0) * Math.min(1, (p.reipppSolarMW || 0) / Math.max(1, _pvTotMW))   * (p.ppaSolarR ?? FIXED.ppaSolarR));
-  const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+ppaCostR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
+  // ── REGIONAL GRID REINFORCEMENT ──────────────────────────────────────────────────────
+  // National slider capacity allocated to provinces by REEA_SHARE - where developers have
+  // actually applied to build - then charged against each region's connection headroom using
+  // the SAME formula the siting panel uses. Added 20 Sep 2026.
+  //
+  // Before this the sliders assumed a COPPERPLATE: Fossil-free 2040 puts 130 GW beyond
+  // available headroom, 87% of everything it builds, and connected it for free. Northern Cape
+  // takes 58 GW against ZERO published headroom; KwaZulu-Natal and Gauteng hold 10 GW of
+  // headroom between them and receive 5 GW, because almost nobody has applied there.
+  //
+  // REINFORCEMENT, NOT CURTAILMENT. Above headroom a developer builds line or is refused; the
+  // congestion derate elsewhere is the residual before reinforcement, not a substitute for it.
+  //
+  // HEADROOM IS A 2025 SNAPSHOT. The Transmission Development Plan builds line, so a 2040 run
+  // should have more headroom than this assumes and this overstates the charge. tdp_projects
+  // .json is in the repo and unused; wiring a growth path to scenarioYear is the next step.
+  let gridReinforceR = 0;
+  if (typeof HEADROOM_LOOKUP !== 'undefined' && HEADROOM_LOOKUP
+      && typeof gridBuildChargeFor === 'function' && typeof REEA_SHARE !== 'undefined') {
+    const _opts = { getsOn: !!u.getsEnabled,
+                    getUpliftFrac: (typeof SITING_GET_UPLIFT_FRAC !== 'undefined' ? SITING_GET_UPLIFT_FRAC : 0),
+                    getCostPerKm: (typeof GET_COST_PER_KM !== 'undefined' ? GET_COST_PER_KM : 0),
+                    getLifeYears: (typeof GET_LIFETIME_YEARS !== 'undefined' ? GET_LIFETIME_YEARS : 1) };
+    for (const tech of ['wind', 'solar']) {
+      const nat = tech === 'wind'
+        ? (u.newWindMW || 0) + (u.newOffshoreMW || 0)   // offshore lands on the coast and uses the same corridors
+        : (u.newPvMW || 0);
+      if (nat <= 0) continue;
+      const shares = REEA_SHARE[tech] || {};
+      for (const reg of Object.keys(shares)) {
+        const entry = (HEADROOM_LOOKUP[reg] || {})[tech];
+        if (!entry) continue;
+        const r = gridBuildChargeFor(entry, nat * shares[reg], _opts);
+        gridReinforceR += r.annualR || 0;
+      }
+    }
+  }
+  const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+ppaCostR+gridReinforceR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
   // start-UP costs ARE NOW included, 30 Aug 2026. They were accumulated and used
   // nowhere - found by summing the cost decomposition against avgCost and getting a
   // gap of exactly startUpCostR.
@@ -7952,7 +7989,7 @@ function simulate(u, prof, outPath, _soc0){
   // magnitude: R3.54/MWh today, 0.6% of avgCost. It scales with coal cycling, which is
   // the regime a high-renewables system pushes coal into - so it grows in exactly the
   // scenarios this model exists to study.
-  const gridCost=fuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+drCostR+startUpCostR;  // what the grid bears
+  const gridCost=fuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+gridReinforceR+drCostR+startUpCostR;  // what the grid bears
   // drCostR included: compensation paid to interruptible customers is part of
   // what the system costs to run, and omitting it made demand response look free.
   // fixedOMR added 18 Sep 2026. avgCost is summed EXPLICITLY here rather than divided out of
@@ -7960,7 +7997,7 @@ function simulate(u, prof, outPath, _soc0){
   // this line - and the decomposition below asserts they agree. That assertion is what caught
   // this one: the term went into the two aggregates, avgCost did not move, and the
   // reconciliation would have failed on the next run.
-  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
+  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+gridReinforceR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
 
   // ── cost decomposition ────────────────────────────────────────────────────
   // Added 30 Aug 2026, structured against NERSA's OWN wholesale price component list
@@ -8000,6 +8037,7 @@ function simulate(u, prof, outPath, _soc0){
       { k:'buildGen',   nersa:'(generation capex)',        v: per(gridCapexR - _txCapexR),     have:'outside' },
       { k:'fixedom',    nersa:'Operating costs (fixed O&M)', v: per(fixedOMR),                 have:true },
       { k:'ppa',        nersa:'REIPPPP PPA obligation',     v: per(ppaCostR),                   have:true },
+      { k:'reinforce',  nersa:'Grid reinforcement',        v: per(gridReinforceR),             have:true },
       { k:'dr',         nersa:'Demand response',           v: per(drCostR),                    have:true },
       { k:'exports',    nersa:'(export revenue, offset)',  v: -per(exportRevenueR+firmExportRevenueR), have:'outside' },
       { k:'capacity',   nersa:'Capacity prices',           v: 0, have:false, why:'no capacity market in SA' },
@@ -8110,7 +8148,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,fixedOMR,ppaCostR,syncUnmetH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -16297,6 +16335,16 @@ bldShowInherit();
 // against a modern machine - we measure 0.437 to 0.508 by region against ESMAP's 49.0 to 56.0%.
 // Same split the onshore file already uses; see bias_corrected in profiles_regional_multiyear.
 // Scaling moves the level and not the shape, so it cannot manufacture the variability answer.
+// Headroom lookup, for costing national slider capacity against regional connection capacity.
+// Fetched here rather than awaited in the siting panel because simulate() cannot await.
+// Absent, regional reinforcement is not charged and says so once.
+var HEADROOM_LOOKUP = null;
+fetch('nodal/region_headroom_lookup.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
+  .then(d=>{ if (d) { HEADROOM_LOOKUP = d;
+    console.log('[GridTwin] Headroom lookup loaded: '
+      + Object.keys(d).filter(k=>k!=='meta').length + ' regions'); } })
+  .catch(()=>{});
+
 var OFFSHORE_PU = null;
 var OFFSHORE_ESMAP = {
   'Boegoebaai West Coast':   { mw: 39674, cf: 0.524 },
