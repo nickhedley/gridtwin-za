@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-20a`. Suite 727/730, two deliberate failures. Three sessions ran long and the
+Build `2026-09-20a`. Suite 729/732, two deliberate failures. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -23,11 +23,11 @@ validate_capacity        32/33     standing: backup profile file has no licence 
 validate_inputs          33/33
 validate_findings        31/32
 validate_invariants     146/146
-validate_response        85/85
+validate_response        86/86
 validate_weather         64/64
 validate_lp              50/50
 validate_consistency     79/79
-validate_outputs         37/38     DELIBERATE: grid demand 217.5 TWh, pending baseline vintage
+validate_outputs         39/40     DELIBERATE: grid demand 217.5 TWh, pending baseline vintage
 validate_solve            6/6
 audit.py                 87/87
 ```
@@ -80,6 +80,55 @@ provenance. They work and their comments are accurate. Check them against repo h
 
 ---
 
+## Later on 20 Sep. Six changes and a finding.
+
+**Grid reinforcement is charged.** National slider capacity is allocated to provinces by the
+2,597 REEA authorisations - revealed developer preference, not planning - then charged against
+each region's headroom through the siting panel's own formula, now extracted as the shared
+`gridBuildChargeFor`. Before this the sliders assumed a COPPERPLATE: Fossil-free 2040 put 130
+GW beyond headroom, 87% of everything it builds, and connected it free.
+
+**And headroom grows with the transmission plan.** `tdpHeadroomMW` phases in 221 TDP projects
+by commissioning year, weighted by published phase because only 17% is in Execution.
+`tdpConfidencePct` scales them all.
+
+```
+                                    reinforcement   avgCost
+Deep decarbonisation 2035, TDP built      R2.35bn    R1,553
+Deep decarbonisation 2035, TDP at zero    R9.82bn    R1,591
+Fossil-free 2040, TDP built               R7.93bn    R2,185
+Fossil-free 2040, TDP at zero            R17.38bn    R2,232
+```
+
+Delivering the plan is worth R9.5bn/yr to a fossil-free system.
+
+**Scarcity pricing rebuilt, twice.** A peaker-net-margin circuit breaker on ERCOT's rule - the
+cap drops for the rest of the year once cumulative margin passes 3x the cost of new entry.
+Crisis 2023 went from 5,430 hours at the ceiling and R14tn of wholesale revenue to 125 hours
+and R6.1bn. Then the three-step curve was replaced with the canonical CONTINUOUS form, a
+price adder of LOLP x VOLL with LOLP from the normal CDF of reserve forecast error and
+ERCOT's half-sigma conservative shift. Two checks now assert the breaker binds and trips.
+
+**Retail rows renamed** from Agile-style, which is Octopus Energy's product name, to Dynamic
+pricing, with a third row added: geyser, pool pump and EV charging, 65% moved to the six
+cheapest hours. On Today 2026 the three read R3.81, R3.60 and R3.45 - the second increment
+moves 26 more points of the day and buys 70% of what the first did.
+
+### The finding: cost recovery was never the right metric
+
+Crisis 2023 recovering 3,862% of system cost was flagged for days as a probable regression. It
+was not one. Pricing every unserved hour at the value of lost load is the correct energy-only
+rule; the fault was that the system had no EXIT from it, and separately that a system-wide
+percentage was never the professional measure. PJM defines missing money per megawatt-year as
+the gap between a unit's total costs and its energy and ancillary revenues. Net cost of new
+entry is the right statistic and the model now returns the pieces for it.
+
+Also corrected: our R87,000/MWh ceiling is USD 5,273, essentially ERCOT's offer cap, and
+ERCOT sets the VOLL in its own curve EQUAL to that cap rather than to consumer interruption
+cost. The model was already at the international level.
+
+---
+
 ## Presets
 
 ```
@@ -113,7 +162,14 @@ few - a uniform finer grid over five dimensions is unaffordable and still misses
 
 ## Open, in the order I would take them
 
-1. **Regional congestion assignment.** The flat 4% derate is a NERSA compensation CEILING used
+1. **Regional congestion is PROVINCIAL, not nodal.** Allocation and headroom are both by
+   province, so the model cannot see which corridor within a province binds. The flat 4%
+   congestion derate remains alongside the reinforcement charge and is still a NERSA
+   compensation ceiling used as an expected rate.
+2. **Offer cap versus economic VOLL.** Both are R87,000 here. ERCOT cut its parameter from
+   USD 9,000 to 5,000 after February 2021; MISO caps its curve below its administrative
+   load-shed price. Treating it as a policy lever is a scenario we do not offer.
+3. **Superseded: regional congestion assignment.** The flat 4% derate is a NERSA compensation CEILING used
    as an expected rate, and a national scaling built on 19 Sep was removed the same day: every
    region holding existing wind has ZERO headroom, and all 19,940 MW of it sits where the wind
    is worst. A national average cannot represent that. The job: route slider capacity through
@@ -146,6 +202,15 @@ Flagged because each currently carries a published figure:
 ```
 SYNC_GFM_SHARE 0.30        grid-forming share of storage. Used in two places since 19 Sep,
                            when they disagreed at 0.30 and 0.50.
+ORDC_SIGMA_FRAC 0.21       reserve forecast error sd. ERCOT measures it by season and time
+                           block; no SA equivalent is published. CALIBRATED so a met
+                           requirement costs nothing and an empty one approaches the cap.
+TDP_PHASE_CONF             Execution 1.0 down to Pre-Concept 0.15. A judgement, not a
+                           published probability.
+REEA_SHARE                 where new build goes. Revealed preference from authorisations,
+                           recompute when the REEA file refreshes.
+FLEX_SHIFT_SHARE 0.65      geyser plus pool pump plus EV. The 39% geyser figure is sourced;
+                           this increment is reasoned from appliance loads.
 drShiftLossPct 6%          LBNL measures 10-20% for pre-cooling; geysers sit lower. Not SA.
 fom* per-technology split  international weights; the LEVEL is Eskom. MYPD 6 Table 54 would
                            replace the split and leave the total unchanged.
