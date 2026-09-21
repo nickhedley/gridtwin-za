@@ -59,7 +59,8 @@ reipppp_online = {
 # Both sit in one continuous behind-the-meter series that this model already
 # tracks as FIXED.rooftopMW:
 #     Aug 2022  2,264 MW (Eskom) -> Oct 2024  6,165 MW (SAPVIA)
-#  -> Sep 2025  7,300 MW (NTCSA) -> Jun 2026  9,107 MW (NTCSA) = rooftopMW 9,100
+#  -> Sep 2025  7,300 MW (NTCSA) -> Aug 2026  9,430.1 MW (NTCSA Week 37)
+#     less 488 MW wheeled = rooftopMW 8,942.1
 # Adding SAPVIA's private aggregate to pvUtilityMW would therefore double-count
 # almost all of it against rooftopMW - the same class of error the whole rebuild
 # was undertaken to remove.
@@ -318,18 +319,7 @@ regional = {
             "register. Establish that the register is COMPLETE for the area being split before "
             "trusting it further."
         ),
-        "known_gaps": (
-            "(1) by_source.private covers H1 2026 ONLY (958 MW wheeled). Private and wheeled "
-            "plant commissioned before January 2026 is not in the PFL H1 monitor and is missing "
-            "here - roughly 1.8 GW of solar remains unexplained against FIXED.pvUtilityMW, so "
-            "identity 3 stays PENDING and pvUtilityMW must NOT be re-derived from this file yet. "
-            "Wind is NOT affected by this gap - see meta.WIND_PROVENANCE. (2) RMIPPPP contributes about 225 MW of "
-            "contracted operational capacity across Northern Cape, Eastern Cape and Western Cape; "
-            "the report does not give the provincial split, so it is excluded rather than guessed. "
-            "(3) CSP is reported here at 600 MW (Northern Cape) - index.html FIXED.cspMW of 500 "
-            "is understated. (4) Peakers (Avon 670 MW KZN, Dedisa 335 MW Eastern Cape, diesel "
-            "OCGT) are not renewable and are out of scope for this file."
-        ),
+        "known_gaps": "(1) by_source.private covers H1 2026 ONLY (958 MW wheeled). Private and wheeled plant commissioned before January 2026 is not in the PFL H1 monitor and is missing here - RESOLVED 8 Sep 2026. The 1.8 GW solar gap no longer exists: the file totals 3,271 MW and FIXED.pvUtilityMW is 3,271. Eskom's Weekly System Status Report Week 36 corroborates independently - NTCSA-contracted PV 2,780.2 MW plus this file's 488 MW of wheeled plant is 3,268.2, within 3 MW. Identity 3 PASSES for solar and pvUtilityMW IS now derived from this file, as wind already was. The earlier gap was against a constant of 4,974 that has since been corrected. Wind is NOT affected by this gap - see meta.WIND_PROVENANCE. (2) RMIPPPP contributes about 225 MW of contracted operational capacity across Northern Cape, Eastern Cape and Western Cape; the report does not give the provincial split, so it is excluded rather than guessed. (3) CSP is reported here at 600 MW (Northern Cape), matching index.html FIXED.cspMW of 600. (4) Peakers (Avon 670 MW KZN, Dedisa 335 MW Eastern Cape, diesel OCGT) are not renewable and are out of scope for this file.",
         "WIND_PROVENANCE": (
             "FIXED.windMW is DERIVED from this file: 4042 MW REIPPPP (IPP Office Q4 2025/26) "
             "+ 470 MW private/wheeled (PFL H1 2026) = 4512 MW. It previously read 4458, built as "
@@ -341,7 +331,7 @@ regional = {
             "later found, which is correct - re-derive the constant rather than patching it."
         ),
         "region_key_note": "Region keys follow GridTwin ZA convention: 'Kwazulu Natal', and 'Hydra Central' is a supply area, not a province.",
-        "licence": "CC BY-NC-ND 4.0",
+        "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ . Changed from CC BY-NC-ND on 6 Sep 2026: this file is a compilation of uncopyrightable facts (project name, MW, technology, location, COD), so nothing upstream constrains the licence, and NC-ND blocked both reuse by researchers and ingestion of BY-SA sources such as PowerTracker.",
         "copyright": "(c) 2026 Nick Hedley",
     },
 }
@@ -510,7 +500,7 @@ pipeline = {
             "approximate": "province from a ministerial press release, not the quarterly report",
             "carried_over": "province retained from the previous file; not verified against the report",
         },
-        "licence": "CC BY-NC-ND 4.0",
+        "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/ . Changed from CC BY-NC-ND on 6 Sep 2026: this file is a compilation of uncopyrightable facts (project name, MW, technology, location, COD), so nothing upstream constrains the licence, and NC-ND blocked both reuse by researchers and ingestion of BY-SA sources such as PowerTracker.",
         "copyright": "(c) 2026 Nick Hedley",
     },
 }
