@@ -207,11 +207,45 @@ reserve revenue   R0.24bn/yr
 inertia revenue   R4.59bn/yr        totalCost unchanged at R445.7bn in all cases
 ```
 
-Nineteen times the reserve revenue, essentially all of it to the battery fleet. Both are pure
-TRANSFERS - system cost does not move - so pricing them reveals who gets paid without changing
-what the system costs. Both toggles now default ON in the two high-renewables presets: leaving
+Nineteen times the reserve revenue, essentially all of it to the battery fleet. Both were
+recorded as pure TRANSFERS - system cost does not move. That was verified on Fossil-free 2040
+only, where unserved energy is zero either way, and it does not generalise. See the correction
+below. Both toggles now default ON in the two high-renewables presets: leaving
 inertia unpriced in a 2040 system models a market that cannot exist. They stay OFF for Today
 2026 and Crisis 2023, where South Africa genuinely prices nothing.
+
+
+### Correction, 21 Sep 2026: reserve pricing changes dispatch
+
+Build `2026-09-21a`, 21 Sep 2026. Default weather year, preset as
+stored, reserve and inertia toggled together.
+
+The ancillary hold withheld 15% of storage power and energy in every hour, including hours that
+shed load. Before the fix, pricing reserve raised unserved energy in Deep decarbonisation 2035
+from 83.6 to 134.1 GWh. The held share is now released when residual demand would otherwise go
+unserved.
+
+```
+                              pricing off   pricing on   pricing on
+                                            before fix   after fix
+Deep decarbonisation 2035
+  unserved GWh                       83.6        134.1         71.2
+  totalCost R bn                    327.7        328.0        328.0
+Fossil-free 2040
+  unserved GWh                        0.0          0.0          0.0
+  totalCost R bn                    453.6        453.6        453.6
+```
+
+Pricing reserve now lowers unserved energy below the unpriced case, 83.6 to 71.2 GWh, with
+81.2 GWh of held reserve deployed. Caveat: the release is perfect-foresight within the hour,
+so this is an upper bound on what a held reserve can recover.
+
+Reserve and inertia pricing are not pure transfers on Deep decarbonisation 2035: totalCost moves
+R0.3bn. They remain transfers on Fossil-free 2040. The R445.7bn figure above predates the 18-20
+Sep cost basis; on this build Fossil-free 2040 reads R453.6bn.
+
+`validate_invariants` now asserts that pricing reserve cannot increase unserved energy, on six
+cases. Against the pre-fix code it fails four of them.
 
 ---
 

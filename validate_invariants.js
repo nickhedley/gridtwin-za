@@ -348,6 +348,41 @@ const SCENARIOS = {
           R.peak > 10000 && R.peak < 120000, `${(R.peak/1000).toFixed(1)} GW`);
   }
 
+  // ── pricing reserve cannot increase unserved energy ─────────────────────
+  // Added 21 Sep 2026. The ancillary hold withheld 15% of storage power and energy
+  // in every hour, including hours that shed load, so turning reserve pricing on
+  // raised unserved energy in Deep decarbonisation 2035 from 84 to 134 GWh.
+  // Reserve is deployed before load is shed, so the priced case can never be worse.
+  {
+    const CASES = {
+      'Today 2026': 'PRESET:Today 2026',
+      'Crisis 2023': 'PRESET:Crisis 2023',
+      'Deep decarbonisation 2035': 'PRESET:Deep decarbonisation 2035',
+      'Deep decarbonisation 2035, 50% held': ['PRESET:Deep decarbonisation 2035', { asReserveShare: 0.5 }],
+      'Fossil-free 2040': 'PRESET:Fossil-free 2040',
+      'fleet collapse': { coalEAFPct: 40 },
+    };
+    for (const [label, spec] of Object.entries(CASES)) {
+      const probe = w.document.createElement('script');
+      probe.textContent = `window.__rsv = (() => { try {
+        const spec = ${JSON.stringify(spec)};
+        const base0 = Array.isArray(spec) ? spec[0] : spec, extra = Array.isArray(spec) ? spec[1] : {};
+        const base = (typeof base0 === 'string') ? { ...state, ...PRESETS[base0.slice(7)], ...extra }
+                                                 : { ...state, ...base0, ...extra };
+        const rate = base.asReserveRMWh || 150;
+        const off = simulate({ ...base, asReserveOn: 0, asReserveRMWh: rate }, PROFILES).E.unserved || 0;
+        const on  = simulate({ ...base, asReserveOn: 1, asReserveRMWh: rate }, PROFILES).E.unserved || 0;
+        return { off, on };
+      } catch (e) { return { err: String(e) }; } })();`;
+      w.document.body.appendChild(probe);
+      const R = w.__rsv;
+      if (!R || R.err) { check(`[${label}] pricing reserve cannot increase unserved energy`, false, R ? R.err : 'no result'); continue; }
+      check(`[${label}] pricing reserve cannot increase unserved energy`,
+            R.on <= R.off + 1,
+            `unserved ${(R.off/1000).toFixed(1)} GWh unpriced, ${(R.on/1000).toFixed(1)} GWh priced`);
+    }
+  }
+
   // ── report ────────────────────────────────────────────────────────────────
 
   console.log(`\n${pass}/${pass + fail} invariant checks passed across ` +

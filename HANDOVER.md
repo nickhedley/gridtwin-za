@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-20a`. Suite 743/752 plus eng5 6/6, measured 21 Sep 2026. Three sessions ran long and the
+Build `2026-09-21a`. Suite 750/758 plus eng5 6/6, measured 21 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,17 +15,17 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 21 Sep 2026 on build `2026-09-20a`, `profiles.json` at the root, current `nodal/`.
+Measured 21 Sep 2026 on build `2026-09-21a`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
 validate_lint             2/2
-validate_structure       23/24     build stamp one day old, bump on delivery
+validate_structure       24/24
 validate_geo             43/43
 validate_capacity        30/31     standing: backup profile file has no licence field
 validate_inputs          33/33
 validate_findings        31/32     restart finding, 17.1 vs 2.9 GWh, undiagnosed
-validate_invariants     146/146
+validate_invariants     152/152   six added: pricing reserve cannot increase unserved
 validate_response        86/86
 validate_weather         61/62     ESK19679.csv missing from the upload set
 validate_lp              50/50
@@ -35,7 +35,7 @@ validate_external         4/5      not previously tracked: baseline, not a regre
 validate_outputs         39/40     deliberate: grid demand 217.1 TWh, pending baseline vintage
 validate_solve            6/6
 audit.py                 87/87
-total                   743/752
+total                   750/758
 
 eng5.js                   6/6      run from the parent; check 6 is flat at its setting
 ```

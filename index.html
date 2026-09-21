@@ -6456,6 +6456,7 @@ function simulate(u, prof, outPath, _soc0){
   // energy. Zero unless a reserve price is set.
   const _asHold = (p.asReserveOn ? (p.asReserveRMWh || 0) : 0) > 0
     ? Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15)) : 0;
+  let _asReleasedMWh = 0;   // held reserve deployed to avoid shedding
   // ── opportunity-value gate ────────────────────────────────────────────────
   // TWO-pass price-taker, added 30 Aug 2026. This is the piece the reverted
   // ordering attempt was missing: a test of whether a charge is worth making, not
@@ -6587,13 +6588,16 @@ function simulate(u, prof, outPath, _soc0){
   // changing tierDischarge's signature at every call site. -1 means "do not record",
   // which is what the pre-loop and any future non-hourly caller should leave it at.
   let _disHour = -1;
-  const tierDischarge = (mw) => {
+  // release = true deploys the held reserve share: power up to t.mw * _asHold, energy
+  // down to empty. Called only when the alternative is unserved energy.
+  const tierDischarge = (mw, release = false) => {
     let got = 0;
     for (const t of battTiers){
       // Power held back AND energy held behind it: reserve you cannot deliver is
       // not reserve. The SOC floor is what makes the trade-off bite.
-      const floor = t.mwh * _asHold;
-      const give = Math.min(mw - got, t.mw * (1 - _asHold), Math.max(0, t.soc - floor));
+      const floor = release ? 0 : t.mwh * _asHold;
+      const cap = release ? t.mw * _asHold : t.mw * (1 - _asHold);
+      const give = Math.min(mw - got, cap, Math.max(0, t.soc - floor));
       if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give;
         if (_disHour >= 0 && tierSeries[t.k]) tierSeries[t.k][_disHour] += give; }
       if (got >= mw - 1e-9) break;
@@ -7446,6 +7450,18 @@ function simulate(u, prof, outPath, _soc0){
       // shortfall is not load shedding, and counting it would put a stage-1 event in the
       // record for a rounding residual. So the energy is now always recorded and only the
       // stage counting keeps the threshold.
+      // Reserve is deployed before load is shed. The held share of storage power and
+      // energy is released only when residual demand would otherwise go unserved.
+      // Fixed 21 Sep 2026: the hold previously applied in every hour, so pricing reserve
+      // raised unserved energy in Deep decarbonisation 2035 from 84 to 134 GWh.
+      if(residual>0 && _asHold>0 && !_forceTwoSided){
+        const psRel=Math.min(residual, psPowerTot*_asHold, Math.max(0, psSoc-psPeakFloor[h]));
+        if(psRel>0){ psSoc-=psRel; residual-=psRel; E.ps+=psRel; stack.ps[h]=(stack.ps[h]||0)+psRel; _asReleasedMWh+=psRel; }
+        if(residual>0){
+          _disHour=h; const btRel=tierDischarge(residual, true); _disHour=-1; syncBattSoc();
+          if(btRel>0){ residual-=btRel; E.batt+=btRel; stack.batt[h]=(stack.batt[h]||0)+btRel; _asReleasedMWh+=btRel; }
+        }
+      }
       if(residual>0){
         E.unserved+=residual; shedMWh+=residual;
         stack.unserved[h]=residual;
@@ -8194,7 +8210,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,asReleasedMWh:_asReleasedMWh,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -16001,7 +16017,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-20a';
+const BUILD_STAMP = '2026-09-21a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
