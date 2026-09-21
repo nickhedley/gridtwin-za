@@ -217,35 +217,35 @@ inertia unpriced in a 2040 system models a market that cannot exist. They stay O
 
 ### Correction, 21 Sep 2026: reserve pricing changes dispatch
 
-Build `2026-09-21a`, 21 Sep 2026. Default weather year, preset as
-stored, reserve and inertia toggled together.
+Build `2026-09-21b`, 21 Sep 2026. Presets as stored, reserve at R150/MWh, default weather year
+and worst of twelve.
 
 The ancillary hold withheld 15% of storage power and energy in every hour, including hours that
-shed load. Before the fix, pricing reserve raised unserved energy in Deep decarbonisation 2035
-from 83.6 to 134.1 GWh. The held share is now released when residual demand would otherwise go
-unserved.
+shed load. Now held storage is backed by one hour of energy (`asHoldHours` 1, ERCOT RRS) and is
+released before shedding down to a 2,200 MW system floor (`asReleaseFloorMW`, NTCSA operating
+reserve, ASTR 2026/27-2030/31 Table 7).
 
 ```
-                              pricing off   pricing on   pricing on
-                                            before fix   after fix
-Deep decarbonisation 2035
-  unserved GWh                       83.6        134.1         71.2
-  totalCost R bn                    327.7        328.0        328.0
-Fossil-free 2040
-  unserved GWh                        0.0          0.0          0.0
-  totalCost R bn                    453.6        453.6        453.6
+unserved GWh                    pricing off   on, before fix   on, build 21b
+Today 2026         default year         2.7              2.9             2.7
+                   worst of 12           23               24              23
+Deep decarb 2035   default year        83.6            134.1            85.3
+                   worst of 12          203              259             196
+Fossil-free 2040   default year           0                0               0
+                   worst of 12            0               46               0
 ```
 
-Pricing reserve now lowers unserved energy below the unpriced case, 83.6 to 71.2 GWh, with
-81.2 GWh of held reserve deployed. Caveat: the release is perfect-foresight within the hour,
-so this is an upper bound on what a held reserve can recover.
+Fossil-free 2040 is zero in all twelve years with pricing on. Deep decarbonisation 2035 is
+1.7 GWh worse than unpriced on the default year and 7 GWh better on its worst year.
 
-Reserve and inertia pricing are not pure transfers on Deep decarbonisation 2035: totalCost moves
-R0.3bn. They remain transfers on Fossil-free 2040. The R445.7bn figure above predates the 18-20
-Sep cost basis; on this build Fossil-free 2040 reads R453.6bn.
+Reserve and inertia pricing are not pure transfers: totalCost moves up to R0.3bn and unserved
+energy moves in both directions. The R445.7bn figure above predates the 18-20 Sep cost basis;
+on this build Fossil-free 2040 reads R453.6bn.
 
-`validate_invariants` now asserts that pricing reserve cannot increase unserved energy, on six
-cases. Against the pre-fix code it fails four of them.
+Caveat: the unpriced case holds no storage reserve at all, so the two sides are not the same
+physical system. Open item.
+
+Unexplained: Today 2026 p95 price falls from R6,206 unpriced to R763 priced. Do not quote.
 
 ---
 

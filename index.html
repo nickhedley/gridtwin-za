@@ -5810,6 +5810,12 @@ const FIXED = {
   asReserveRMWh: 150,           // R/MWh on reserve capacity held
   asInertiaRkWyr: 100,          // R/kW/yr, grid-forming and synchronous only
   asReserveShare: 0.15,         // share of A BATTERY'S OWN power held back for reserve
+  // Held reserve is backed by energy for this many hours, not a share of the store.
+  // ERCOT RRS 1 h (ECRS 2 h); NTCSA instantaneous reserve sustains 10 min. 21 Sep 2026.
+  asHoldHours: 1,
+  // System reserve kept while shedding load: NTCSA operating reserve, ASTR 2026/27-2030/31
+  // Table 7, flat to 2030/31. Held storage is released only above it. 21 Sep 2026.
+  asReleaseFloorMW: 2200,
   // operating RESERVE. The requirement itself lives with the unit commitment
   // (reserveContingencyMW / reserveRegulatingPct / reserveVrePct, ~line 4980) and is
   // shared - it is one physical quantity and must have one definition.
@@ -6457,6 +6463,8 @@ function simulate(u, prof, outPath, _soc0){
   const _asHold = (p.asReserveOn ? (p.asReserveRMWh || 0) : 0) > 0
     ? Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15)) : 0;
   let _asReleasedMWh = 0;   // held reserve deployed to avoid shedding
+  const _asHoldH = Math.max(0, p.asHoldHours);
+  const _asRelFloor = Math.max(0, p.asReleaseFloorMW);
   // ── opportunity-value gate ────────────────────────────────────────────────
   // TWO-pass price-taker, added 30 Aug 2026. This is the piece the reverted
   // ordering attempt was missing: a test of whether a charge is worth making, not
@@ -6595,7 +6603,7 @@ function simulate(u, prof, outPath, _soc0){
     for (const t of battTiers){
       // Power held back AND energy held behind it: reserve you cannot deliver is
       // not reserve. The SOC floor is what makes the trade-off bite.
-      const floor = release ? 0 : t.mwh * _asHold;
+      const floor = release ? 0 : Math.min(t.mwh, t.mw * _asHold * _asHoldH);
       const cap = release ? t.mw * _asHold : t.mw * (1 - _asHold);
       const give = Math.min(mw - got, cap, Math.max(0, t.soc - floor));
       if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give;
@@ -7345,8 +7353,8 @@ function simulate(u, prof, outPath, _soc0){
       // marginal, and the next unit up sets the price. `slack` captures that.
       // Floor is the GREATER of the ancillary holdback and the peak reservation.
       const psLim=Math.min(psPowerTot*(1-_asHold),
-        Math.max(0, psSoc - Math.max(psEnergyTot*_asHold, psPeakFloor[h]))),
-            btLim=Math.min(battPower*(1-_asHold),Math.max(0,battSoc-battEnergy*_asHold));
+        Math.max(0, psSoc - Math.max(Math.min(psEnergyTot, psPowerTot*_asHold*_asHoldH), psPeakFloor[h]))),
+            btLim=Math.min(battPower*(1-_asHold),Math.max(0,battSoc-Math.min(battEnergy, battPower*_asHold*_asHoldH)));
       if(isExpensiveHour){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
@@ -7450,15 +7458,17 @@ function simulate(u, prof, outPath, _soc0){
       // shortfall is not load shedding, and counting it would put a stage-1 event in the
       // record for a rounding residual. So the energy is now always recorded and only the
       // stage counting keeps the threshold.
-      // Reserve is deployed before load is shed. The held share of storage power and
-      // energy is released only when residual demand would otherwise go unserved.
-      // Fixed 21 Sep 2026: the hold previously applied in every hour, so pricing reserve
-      // raised unserved energy in Deep decarbonisation 2035 from 84 to 134 GWh.
+      // Held reserve is deployed before load is shed, down to asReleaseFloorMW, which
+      // the operator keeps even while shedding. Other plant has no headroom in a shed
+      // hour, so the floor is met from held storage. 21 Sep 2026.
       if(residual>0 && _asHold>0 && !_forceTwoSided){
-        const psRel=Math.min(residual, psPowerTot*_asHold, Math.max(0, psSoc-psPeakFloor[h]));
+        const _psAv=Math.min(psPowerTot*_asHold, Math.max(0, psSoc-psPeakFloor[h]));
+        const _btAv=battTiers.reduce((a,t)=>a+Math.min(t.mw*_asHold, Math.max(0,t.soc)),0);
+        let _allow=Math.max(0, _psAv+_btAv-_asRelFloor);
+        const psRel=Math.min(residual, _psAv, _allow); _allow-=psRel;
         if(psRel>0){ psSoc-=psRel; residual-=psRel; E.ps+=psRel; stack.ps[h]=(stack.ps[h]||0)+psRel; _asReleasedMWh+=psRel; }
         if(residual>0){
-          _disHour=h; const btRel=tierDischarge(residual, true); _disHour=-1; syncBattSoc();
+          _disHour=h; const btRel=tierDischarge(Math.min(residual,_allow), true); _disHour=-1; syncBattSoc();
           if(btRel>0){ residual-=btRel; E.batt+=btRel; stack.batt[h]=(stack.batt[h]||0)+btRel; _asReleasedMWh+=btRel; }
         }
       }
@@ -16017,7 +16027,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-21a';
+const BUILD_STAMP = '2026-09-21b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
