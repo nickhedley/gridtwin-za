@@ -5467,7 +5467,9 @@ const FIXED = {
   // Chosen because 12 h is where the benefit saturates and there is no measured cost
   // to it anywhere else - not because 4 h was wrong.
   coalLookaheadH:12,
-  reserveEnabled:1, reserveContingencyMW:794, reserveRegulatingPct:2.0, reserveVrePct:5.0,
+  // Operating reserve: NTCSA ASTR 2026/27-2030/31 Table 7, 2,200 MW, flat to 2030/31 and
+  // held flat beyond it. Held every hour whether priced or not. 21 Sep 2026.
+  reserveEnabled:1, reserveOperatingMW:2200,
   // Unit-level forced outages. forcedSharePct is the portion of total
   // unavailability that is UNPLANNED - Eskom's UCLF is roughly 15 points of a
   // ~32 point gap at EAF 68, hence 47%. mttrHours is the mean repair time for a
@@ -5810,14 +5812,11 @@ const FIXED = {
   asReserveRMWh: 150,           // R/MWh on reserve capacity held
   asInertiaRkWyr: 100,          // R/kW/yr, grid-forming and synchronous only
   asReserveShare: 0.15,         // share of A BATTERY'S OWN power held back for reserve
-  // Held reserve is backed by energy for this many hours, not a share of the store.
+  // Storage counts toward operating reserve only as far as it can sustain it this long.
   // ERCOT RRS 1 h (ECRS 2 h); NTCSA instantaneous reserve sustains 10 min. 21 Sep 2026.
   asHoldHours: 1,
-  // System reserve kept while shedding load: NTCSA operating reserve, ASTR 2026/27-2030/31
-  // Table 7, flat to 2030/31. Held storage is released only above it. 21 Sep 2026.
-  asReleaseFloorMW: 2200,
   // operating RESERVE. The requirement itself lives with the unit commitment
-  // (reserveContingencyMW / reserveRegulatingPct / reserveVrePct, ~line 4980) and is
+  // (reserveOperatingMW since 21 Sep 2026) and is
   // shared - it is one physical quantity and must have one definition.
   //
   // A duplicate set of constants was introduced here on 28 Aug 2026 and removed
@@ -6458,13 +6457,9 @@ function simulate(u, prof, outPath, _soc0){
 
   // Charge across tiers, best round trip first. Returns MW actually taken, which
   // the caller uses so the scalar and the tiers stay in step.
-  // Share of each tier's power reserved for ancillary services, unavailable for
-  // energy. Zero unless a reserve price is set.
-  const _asHold = (p.asReserveOn ? (p.asReserveRMWh || 0) : 0) > 0
-    ? Math.min(0.5, Math.max(0, p.asReserveShare ?? 0.15)) : 0;
-  let _asReleasedMWh = 0;   // held reserve deployed to avoid shedding
-  const _asHoldH = Math.max(0, p.asHoldHours);
-  const _asRelFloor = Math.max(0, p.asReleaseFloorMW);
+  // Demand shed to keep operating reserve whole, and the storage sustain time.
+  let _resShedMWh = 0;
+  const _asHoldH = Math.max(0.25, p.asHoldHours);
   // ── opportunity-value gate ────────────────────────────────────────────────
   // TWO-pass price-taker, added 30 Aug 2026. This is the piece the reverted
   // ordering attempt was missing: a test of whether a charge is worth making, not
@@ -6596,16 +6591,10 @@ function simulate(u, prof, outPath, _soc0){
   // changing tierDischarge's signature at every call site. -1 means "do not record",
   // which is what the pre-loop and any future non-hourly caller should leave it at.
   let _disHour = -1;
-  // release = true deploys the held reserve share: power up to t.mw * _asHold, energy
-  // down to empty. Called only when the alternative is unserved energy.
-  const tierDischarge = (mw, release = false) => {
+  const tierDischarge = (mw) => {
     let got = 0;
     for (const t of battTiers){
-      // Power held back AND energy held behind it: reserve you cannot deliver is
-      // not reserve. The SOC floor is what makes the trade-off bite.
-      const floor = release ? 0 : Math.min(t.mwh, t.mw * _asHold * _asHoldH);
-      const cap = release ? t.mw * _asHold : t.mw * (1 - _asHold);
-      const give = Math.min(mw - got, cap, Math.max(0, t.soc - floor));
+      const give = Math.min(mw - got, t.mw, Math.max(0, t.soc));
       if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give;
         if (_disHour >= 0 && tierSeries[t.k]) tierSeries[t.k][_disHour] += give; }
       if (got >= mw - 1e-9) break;
@@ -6941,9 +6930,9 @@ function simulate(u, prof, outPath, _soc0){
     _vreMW[h] = (p.windMW + p.newWindMW) * wind[h] + (p.pvUtilityMW + p.newPvMW) * solar[h];
   const RESERVE = {
     on: !!(p.reserveEnabled ?? 1),
-    contingencyMW: p.reserveContingencyMW ?? 794,
-    regPct: p.reserveRegulatingPct ?? 2.0,
-    vrePct: p.reserveVrePct ?? 5.0,
+    contingencyMW: p.reserveOperatingMW,
+    regPct: 0,
+    vrePct: 0,
     vreMW: _vreMW,
   };
   const reserveMWAt = h => RESERVE.on
@@ -7351,10 +7340,22 @@ function simulate(u, prof, outPath, _soc0){
       // A resource is marginal only if it is the last one dispatched AND it still had
       // room to give more. Storage at its power or energy limit is constrained, not
       // marginal, and the next unit up sets the price. `slack` captures that.
-      // Floor is the GREATER of the ancillary holdback and the peak reservation.
-      const psLim=Math.min(psPowerTot*(1-_asHold),
-        Math.max(0, psSoc - Math.max(Math.min(psEnergyTot, psPowerTot*_asHold*_asHoldH), psPeakFloor[h]))),
-            btLim=Math.min(battPower*(1-_asHold),Math.max(0,battSoc-Math.min(battEnergy, battPower*_asHold*_asHoldH)));
+      // Operating reserve is held every hour, priced or not. Energy dispatch may not take
+      // spare capacity below the requirement; demand beyond that is shed, which is what an
+      // operator does at the last emergency stage. Storage counts only as far as it can
+      // sustain its output for asHoldHours. 21 Sep 2026.
+      let _resShed = 0;
+      if (RESERVE.on && !_forceTwoSided){
+        const _spare = Math.max(0, coalCeiling - coalGen)
+          + Math.min(psPowerTot, Math.max(0, psSoc) / _asHoldH)
+          + Math.min(battPower, Math.max(0, battSoc) / _asHoldH)
+          + Math.max(0, ccgtCap) + dieselAvailMW(p);
+        const _allow = Math.max(0, _spare - reserveMWAt(h));
+        if (residual > _allow){ _resShed = residual - _allow; residual = _allow; }
+      }
+      // psPeakFloor can be negative; the old ancillary floor clamped it at zero.
+      const psLim=Math.min(psPowerTot, Math.max(0, psSoc - Math.max(0, psPeakFloor[h]))),
+            btLim=Math.min(battPower, Math.max(0, battSoc));
       if(isExpensiveHour){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
@@ -7434,6 +7435,7 @@ function simulate(u, prof, outPath, _soc0){
       // it. Booked separately from unserved because it is a managed reduction
       // under contract, not a blackout, and conflating the two would overstate
       // both reliability and its cost.
+      residual += _resShed; _resShedMWh += _resShed;
       if (residual > 1 && DR_INT > 0){
         const drUse = Math.min(residual, DR_INT);
         drMW[h] = drUse; E.dr += drUse; residual -= drUse;
@@ -7458,20 +7460,6 @@ function simulate(u, prof, outPath, _soc0){
       // shortfall is not load shedding, and counting it would put a stage-1 event in the
       // record for a rounding residual. So the energy is now always recorded and only the
       // stage counting keeps the threshold.
-      // Held reserve is deployed before load is shed, down to asReleaseFloorMW, which
-      // the operator keeps even while shedding. Other plant has no headroom in a shed
-      // hour, so the floor is met from held storage. 21 Sep 2026.
-      if(residual>0 && _asHold>0 && !_forceTwoSided){
-        const _psAv=Math.min(psPowerTot*_asHold, Math.max(0, psSoc-psPeakFloor[h]));
-        const _btAv=battTiers.reduce((a,t)=>a+Math.min(t.mw*_asHold, Math.max(0,t.soc)),0);
-        let _allow=Math.max(0, _psAv+_btAv-_asRelFloor);
-        const psRel=Math.min(residual, _psAv, _allow); _allow-=psRel;
-        if(psRel>0){ psSoc-=psRel; residual-=psRel; E.ps+=psRel; stack.ps[h]=(stack.ps[h]||0)+psRel; _asReleasedMWh+=psRel; }
-        if(residual>0){
-          _disHour=h; const btRel=tierDischarge(Math.min(residual,_allow), true); _disHour=-1; syncBattSoc();
-          if(btRel>0){ residual-=btRel; E.batt+=btRel; stack.batt[h]=(stack.batt[h]||0)+btRel; _asReleasedMWh+=btRel; }
-        }
-      }
       if(residual>0){
         E.unserved+=residual; shedMWh+=residual;
         stack.unserved[h]=residual;
@@ -7845,8 +7833,8 @@ function simulate(u, prof, outPath, _soc0){
   // adequacy questions.
   // consolidated 29 Aug 2026. This block previously defined its OWN reserve structure
   // - sysContingencyMW 930, sysResDemandShare 0.03, sysResVreShare 0.05 - in parallel
-  // with the one the unit commitment already used at line ~4980: reserveContingencyMW
-  // 794, reserveRegulatingPct 2.0, reserveVrePct 5.0, driven by reserveMWAt(h).
+  // with the one the unit commitment already used. Since 21 Sep 2026 that is the flat
+  // reserveOperatingMW, driven by reserveMWAt(h).
   //
   // Two constants for the same physical quantity (largest single credible loss, 930 vs
   // 794) and two definitions of the same requirement. Found by audit. The commitment
@@ -8220,7 +8208,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,asReleasedMWh:_asReleasedMWh,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,reserveShedMWh:_resShedMWh,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -14457,14 +14445,10 @@ const SLIDERS=[
   {id:'vppTotalReadout',readout:true,ctrlStyle:SUB_CTRL},
   {grp:'System operation'},
   {id:'reserveEnabled',label:'Operating reserve',toggle:true,def:1,
-   note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Reserve = largest unit (N-1) + a share of load + a share of wind and solar output.'},
+   note:'Hold capacity in reserve for a unit trip or forecast error, instead of dispatching every committed MW. Pricing reserve changes who is paid, not how much is held.'},
   {subgrp:'Reserve settings'},
-  {id:'reserveContingencyMW',label:'N-1 contingency reserve',min:0,max:1600,step:20,def:FIXED.reserveContingencyMW,fmt:v=>v+' MW',
-   ctrlStyle:SUB_CTRL,note:'Cover for the largest single unit tripping. 794 MW is a Medupi/Kusile set, the biggest on the system.'},
-  {id:'reserveRegulatingPct',label:'Regulating reserve',min:0,max:8,step:0.5,def:FIXED.reserveRegulatingPct,fmt:v=>v+' % of load',
-   ctrlStyle:SUB_CTRL,note:'Cover for demand forecast error and normal minute-to-minute variability.'},
-  {id:'reserveVrePct',label:'Wind & solar following reserve',min:0,max:25,step:1,def:FIXED.reserveVrePct,fmt:v=>v+' % of VRE output',
-   ctrlStyle:SUB_CTRL,note:'Forecast error scales with how much variable generation is actually running, so this term grows as wind and solar do \u2013 which is why reserve costs rise with a high-renewables fleet.'},
+  {id:'reserveOperatingMW',label:'Operating reserve requirement',min:0,max:5000,step:100,def:FIXED.reserveOperatingMW,fmt:v=>v.toLocaleString()+' MW',
+   ctrlStyle:SUB_CTRL,note:'Held every hour, priced or not. 2,200 MW is NTCSA\u2019s operating reserve requirement to 2030/31. Load is shed before reserve falls below it.'},
   {endsub:true},
   {id:'syncMinMW',label:'Synchronous generation floor',min:0,max:8000,step:500,def:6000,fmt:v=>v===0?'OFF':(v/1000).toFixed(1)+' GW',note:'Baseline is 6 GW, or ~15&#37; of SA\u2019s peak \u2013 Eskom\u2019s historical practice. 0 GW models a scenario where inverters and other tech take over.'},
   {grp:'Grid'},
@@ -16027,7 +16011,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-21b';
+const BUILD_STAMP = '2026-09-21c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -19438,7 +19422,7 @@ function runMIP(mode) {
       // so it is deliberately EXCLUDED - this understates the requirement rather than
       // inventing a conversion. Zero unless the user prices reserve.
       resFrac: (state.asReserveOn
-        ? (((FIXED.reserveRegulatingPct || 0) + (FIXED.reserveVrePct || 0)) / 100)
+        ? (FIXED.reserveOperatingMW / (PROFILES.demand.reduce((x, y) => x + y, 0) / PROFILES.demand.length))
         : 0)
     });
   }).catch(err => {

@@ -348,21 +348,17 @@ const SCENARIOS = {
           R.peak > 10000 && R.peak < 120000, `${(R.peak/1000).toFixed(1)} GW`);
   }
 
-  // ── pricing reserve cannot increase unserved energy ─────────────────────
-  // Added 21 Sep 2026. The ancillary hold withheld 15% of storage power and energy
-  // in every hour, including hours that shed load, so turning reserve pricing on
-  // raised unserved energy in Deep decarbonisation 2035 from 84 to 134 GWh.
-  // Reserve is deployed before load is shed. Asserted at asReleaseFloorMW 0, where the
-  // priced case can never be worse. At the shipped 2,200 MW floor the operator keeps
-  // reserve while shedding, so pricing can legitimately cost some adequacy (Deep
-  // decarbonisation 2035, 21 Sep 2026: 85.3 GWh priced vs 83.6 unpriced). That is
-  // covered by the floor-monotonicity check below, not by widening this one.
+  // ── pricing reserve does not change how much is held ────────────────────
+  // Added 21 Sep 2026, tightened the same day. Reserve is held every hour whether or
+  // not it is priced; the price decides who is paid. So unserved energy must be the
+  // same priced and unpriced. Before this, pricing withheld 15% of storage in every
+  // hour and raised unserved energy in Deep decarbonisation 2035 from 84 to 134 GWh.
   {
     const CASES = {
       'Today 2026': 'PRESET:Today 2026',
       'Crisis 2023': 'PRESET:Crisis 2023',
       'Deep decarbonisation 2035': 'PRESET:Deep decarbonisation 2035',
-      'Deep decarbonisation 2035, 50% held': ['PRESET:Deep decarbonisation 2035', { asReserveShare: 0.5 }],
+      'Deep decarbonisation 2035, 4,000 MW reserve': ['PRESET:Deep decarbonisation 2035', { reserveOperatingMW: 4000 }],
       'Fossil-free 2040': 'PRESET:Fossil-free 2040',
       'fleet collapse': { coalEAFPct: 40 },
     };
@@ -374,34 +370,34 @@ const SCENARIOS = {
         const base = (typeof base0 === 'string') ? { ...state, ...PRESETS[base0.slice(7)], ...extra }
                                                  : { ...state, ...base0, ...extra };
         const rate = base.asReserveRMWh || 150;
-        const off = simulate({ ...base, asReserveOn: 0, asReserveRMWh: rate, asReleaseFloorMW: 0 }, PROFILES).E.unserved || 0;
-        const on  = simulate({ ...base, asReserveOn: 1, asReserveRMWh: rate, asReleaseFloorMW: 0 }, PROFILES).E.unserved || 0;
+        const off = simulate({ ...base, asReserveOn: 0, asReserveRMWh: rate }, PROFILES).E.unserved || 0;
+        const on  = simulate({ ...base, asReserveOn: 1, asReserveRMWh: rate }, PROFILES).E.unserved || 0;
         return { off, on };
       } catch (e) { return { err: String(e) }; } })();`;
       w.document.body.appendChild(probe);
       const R = w.__rsv;
-      if (!R || R.err) { check(`[${label}] pricing reserve with full release cannot increase unserved energy`, false, R ? R.err : 'no result'); continue; }
-      check(`[${label}] pricing reserve with full release cannot increase unserved energy`,
-            R.on <= R.off + 1,
+      const name = `[${label}] pricing reserve does not change unserved energy`;
+      if (!R || R.err) { check(name, false, R ? R.err : 'no result'); continue; }
+      check(name, Math.abs(R.on - R.off) <= 1,
             `unserved ${(R.off/1000).toFixed(1)} GWh unpriced, ${(R.on/1000).toFixed(1)} GWh priced`);
     }
   }
 
-  // ── a higher release floor cannot reduce unserved energy ────────────────
-  // Keeping more reserve while shedding can only leave more demand unserved. A floor
-  // that is not being read would make all three values equal and pass silently, so the
-  // top of the range must also bind on Deep decarbonisation 2035.
+  // ── a larger reserve requirement cannot reduce unserved energy ──────────
+  // Holding more reserve can only leave more demand unserved. A requirement that is not
+  // being read would make all three values equal and pass silently, so the top of the
+  // range must also bind on Deep decarbonisation 2035.
   {
     const probe = w.document.createElement('script');
     probe.textContent = `window.__flr = (() => { try {
-      const base = { ...state, ...PRESETS['Deep decarbonisation 2035'], asReserveOn: 1 };
-      return [0, 2200, 6000].map(f => simulate({ ...base, asReleaseFloorMW: f }, PROFILES).E.unserved || 0);
+      const base = { ...state, ...PRESETS['Deep decarbonisation 2035'] };
+      return [0, 2200, 6000].map(f => simulate({ ...base, reserveOperatingMW: f }, PROFILES).E.unserved || 0);
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const F = w.__flr;
     const ok = Array.isArray(F) && F[0] <= F[1] + 1 && F[1] <= F[2] + 1 && F[2] > F[0] + 1;
-    check('[Deep decarbonisation 2035] unserved energy rises with the reserve release floor', ok,
-          Array.isArray(F) ? `floor 0 / 2,200 / 6,000 MW: ${F.map(x => (x/1000).toFixed(1)).join(' / ')} GWh`
+    check('[Deep decarbonisation 2035] unserved energy rises with the reserve requirement', ok,
+          Array.isArray(F) ? `requirement 0 / 2,200 / 6,000 MW: ${F.map(x => (x/1000).toFixed(1)).join(' / ')} GWh`
                            : (F ? F.err : 'no result'));
   }
 

@@ -130,9 +130,8 @@ const CONTEXT = {
   lcoeIronAir:      { newIronAirMW: 5000 },
   lcoeCsp:          { },                  // CSP exists in the base fleet
   ccgtForceLoad:    { newCcgtMW: 4000 },
-  reserveContingencyMW: { reserveEnabled: 1, coalEAFPct: 55 },
-  reserveRegulatingPct: { reserveEnabled: 1, coalEAFPct: 55 },
-  reserveVrePct:        { reserveEnabled: 1, newWindMW: 30000 },
+  // Replaced 21 Sep 2026: the three component controls became one flat requirement.
+  reserveOperatingMW:   { reserveEnabled: 1, coalEAFPct: 55 },
   outageForcedSharePct: { outageUnitLevel: 1, coalEAFPct: 55 },
   outageMttrH:          { outageUnitLevel: 1, coalEAFPct: 55 },
   ccsCaptureRatePct:{ ccsEnabled: 1 }, ccsPenaltyPct: { ccsEnabled: 1 },
@@ -153,7 +152,11 @@ const CONTEXT = {
   // GATED BY TOGGLES (added 20 Aug 2026). All three market-design levers default
   // OFF, since South Africa procures none of them today. The slider cannot move
   // anything until its toggle is on, so the sweep must enable it first.
-  asReserveRMWh: { asReserveOn: true, newBattMW: 4000, newWindMW: 30000 },
+  // Revenue levers since 21 Sep 2026: reserve is held every hour whether priced or not,
+  // so pricing moves who is paid, not dispatch. validate_invariants asserts unserved is
+  // unchanged by pricing; asReserveRevenueR is the output these move.
+  asReserveRMWh: { __skip: true },
+  asReserveOn:   { __skip: true },
   // The toggles themselves are revenue/build levers, not dispatch signals - same
   // reason their sliders are skipped above.
   asInertiaOn:       { __skip: true },

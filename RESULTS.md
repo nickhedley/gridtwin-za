@@ -215,37 +215,43 @@ inertia unpriced in a 2040 system models a market that cannot exist. They stay O
 2026 and Crisis 2023, where South Africa genuinely prices nothing.
 
 
-### Correction, 21 Sep 2026: reserve pricing changes dispatch
+### Correction, 21 Sep 2026: reserve is now held whether priced or not
 
-Build `2026-09-21b`, 21 Sep 2026. Presets as stored, reserve at R150/MWh, default weather year
-and worst of twelve.
+Build `2026-09-21c`, 21 Sep 2026. Presets as stored, default weather year and worst of twelve.
 
-The ancillary hold withheld 15% of storage power and energy in every hour, including hours that
-shed load. Now held storage is backed by one hour of energy (`asHoldHours` 1, ERCOT RRS) and is
-released before shedding down to a 2,200 MW system floor (`asReleaseFloorMW`, NTCSA operating
-reserve, ASTR 2026/27-2030/31 Table 7).
+Operating reserve is a flat 2,200 MW (`reserveOperatingMW`, NTCSA ASTR 2026/27-2030/31 Table 7),
+held every hour priced or not. Dispatch may not take spare capacity below it; demand beyond that
+is shed. Storage counts only as far as it can sustain output for one hour (`asHoldHours`).
+Pricing now changes payments only: unserved energy is identical priced and unpriced.
 
 ```
-unserved GWh                    pricing off   on, before fix   on, build 21b
-Today 2026         default year         2.7              2.9             2.7
-                   worst of 12           23               24              23
-Deep decarb 2035   default year        83.6            134.1            85.3
-                   worst of 12          203              259             196
-Fossil-free 2040   default year           0                0               0
-                   worst of 12            0               46               0
+unserved GWh                   build 21b     build 21b     build 21c
+                              pricing off    pricing on
+Today 2026         default           2.7           2.7          50.4
+                   worst of 12        23            23           205
+Deep decarb 2035   default          83.6          85.3         112.9
+                   worst of 12       203           196           268
+Fossil-free 2040   default             0             0             0
+                   worst of 12         0             0             0
+Crisis 2023        default        17,281        17,281        29,817
 ```
 
-Fossil-free 2040 is zero in all twelve years with pricing on. Deep decarbonisation 2035 is
-1.7 GWh worse than unpriced on the default year and 7 GWh better on its worst year.
+Fossil-free 2040 stays at zero in all twelve years. Today 2026 reaches Stage 4 in the default
+year, against Stage 2 before; mean wholesale price R1,101 to R1,440/MWh.
 
-Reserve and inertia pricing are not pure transfers: totalCost moves up to R0.3bn and unserved
-energy moves in both directions. The R445.7bn figure above predates the 18-20 Sep cost basis;
-on this build Fossil-free 2040 reads R453.6bn.
+Caveat: Today 2026 has not been checked against Eskom's 2025 load-shedding record. Do not quote
+it until it has.
 
-Caveat: the unpriced case holds no storage reserve at all, so the two sides are not the same
-physical system. Open item.
+Caveat: totalCost carries no cost of unserved energy, so Crisis 2023 falls from R363.6bn to
+R282.1bn while shedding 12.5 TWh more. Do not compare system cost across runs that shed
+different amounts.
 
-Unexplained: Today 2026 p95 price falls from R6,206 unpriced to R763 priced. Do not quote.
+Reserve and inertia pricing are now pure transfers: unserved energy, totalCost and avgCost are
+identical priced and unpriced on Today 2026, Deep decarbonisation 2035 and Fossil-free 2040.
+The R445.7bn figure above predates the 18-20 Sep cost basis; Fossil-free 2040 reads R453.6bn.
+
+`validate_invariants` asserts on six cases that pricing leaves unserved energy unchanged, and
+that unserved energy rises with the requirement.
 
 ---
 
