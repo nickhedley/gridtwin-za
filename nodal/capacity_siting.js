@@ -5,6 +5,9 @@
 
 const LINE_COST_PER_KM = 31_000_000;   // R, blended national average (DEE Minister, Apr 2025)
 const LINE_LIFETIME_YEARS = 45;
+// MW a single transmission circuit carries. From corridor_electrical.json, which gives MVA
+// and line counts per corridor: 825 to 1,040 MVA a circuit across the network.
+const LINE_MW_PER_CIRCUIT = 900;
 const HOURS_PER_YEAR = 8760;
 const FIRM_TECHS = ['coal', 'ccgt', 'nuclear', 'batt'];
 
@@ -24,6 +27,117 @@ async function loadFirmHeadroomLookup() {
   firmHeadroomLookup = await res.json();
   return firmHeadroomLookup;
 }
+
+// ── SHARED GRID-BUILD FORMULA ────────────────────────────────────────────────────────────
+// Extracted 20 Sep 2026. The same arithmetic existed in evaluateDeployment below and in
+// index.html's evaluateAgainstRemaining, and the engine needed a third copy to cost national
+// slider capacity. Rule 6: no constant appears twice, and that applies to formulas.
+//
+// PURE AND SYNCHRONOUS. The async in the callers is only the data fetch; the logic never
+// needed to be. simulate() cannot await, so it needs this shape.
+//
+// @param entry  a region/tech record from region_headroom_lookup.json
+// @param mw     capacity seeking connection
+// @param opts   { alreadyMw, getsOn, getUpliftFrac, getCostPerKm, getLifeYears }
+function gridBuildChargeFor(entry, mw, opts) {
+  opts = opts || {};
+  if (!entry || !(mw > 0)) return { shortfallMw: 0, getPortionMw: 0, annualR: 0, chargeRPerMWh: 0 };
+  const remaining = Math.max(0, (entry.headroom_mw || 0) - (opts.alreadyMw || 0));
+  const uplift    = opts.getsOn ? (opts.getUpliftFrac || 0) : 0;
+  const boosted   = remaining * (1 + uplift);
+  const km        = entry.corridor_length_km || 300;
+  const cf        = entry.avg_capacity_factor || 0.3;
+
+  if (mw <= remaining) return { shortfallMw: 0, getPortionMw: 0, annualR: 0, chargeRPerMWh: 0 };
+
+  const getPortionMw = opts.getsOn ? Math.min(mw, boosted) - remaining : 0;
+  const shortfallMw  = Math.max(0, mw - boosted);
+
+  // Grid-enhancing technologies are cheap uplift on an existing corridor; beyond them the
+  // corridor needs new line at LINE_COST_PER_KM over LINE_LIFETIME_YEARS.
+  //
+  // LINES SCALE WITH THE SHORTFALL, from 20 Sep 2026. This charged exactly ONE line however
+  // large the shortfall, which is right for a single siting request of a few hundred MW and
+  // absurd for a national build: Deep decarbonisation and Fossil-free 2040 came out with an
+  // identical R1.21bn despite one putting 77 GW beyond headroom and the other 130 GW.
+  //
+  // LINE_MW_PER_CIRCUIT is derived from the model's own corridor data rather than assumed:
+  // corridor_electrical.json gives MVA and line counts together - Hydra to Northern Cape
+  // 3,300 MVA on 4 lines, Gauteng to North West 6,800 on 7, Gauteng to Mpumalanga 14,600 on
+  // 14 - which is 825 to 1,040 MVA a circuit. 900 is the middle.
+  //
+  // Fractional circuits are kept rather than rounded up: a national figure is a blend of many
+  // corridors, so rounding every one up would overstate systematically.
+  const circuits = shortfallMw / LINE_MW_PER_CIRCUIT;
+  const getAnnualR  = getPortionMw > 0
+    ? km * (opts.getCostPerKm || 0) / (opts.getLifeYears || 1) : 0;
+  const lineAnnualR = shortfallMw > 0
+    ? circuits * km * LINE_COST_PER_KM / LINE_LIFETIME_YEARS : 0;
+  const annualR = getAnnualR + lineAnnualR;
+
+  const energyMwh = (getPortionMw + shortfallMw) * cf * HOURS_PER_YEAR;
+  return { shortfallMw, getPortionMw, annualR,
+           chargeRPerMWh: energyMwh > 0 ? annualR / energyMwh : 0 };
+}
+
+// ── HEADROOM GROWS. THE TDP BUILDS LINE. ─────────────────────────────────────────────────
+// Added 20 Sep 2026. Until then the reinforcement charge used a 2025 GCCA snapshot for every
+// scenario year, so a 2040 run paid to build transmission the Transmission Development Plan
+// has already planned. 10,209 km of it, concentrated exactly where headroom is zero -
+// Northern Cape 4,737 km, Western Cape 1,159, Eastern Cape 1,047.
+//
+// CIRCUIT CAPACITY, not route length. A 300 km line and a 30 km line each carry one circuit;
+// kilometres drive COST, circuits drive CAPACITY. 400 kV at 900 MW matches LINE_MW_PER_CIRCUIT
+// derived from corridor_electrical.json; 765 kV carries roughly three times that.
+const TDP_KV_MW = { 400: 900, 765: 3000, 275: 600 };
+
+// PHASE CONFIDENCE. The TDP's own metadata says it is explicitly NOT an investment decision:
+// Execution is committed and under way, Definition is in detailed design, and Concept and
+// Pre-Concept are indicative and likely to change, with NTCSA stating the first five years
+// carry high certainty and beyond 2030 is more uncertain.
+//
+// Only 17% of the planned capacity is in Execution. Counting all 103 GW as delivered would be
+// as wrong as ignoring it. These weights are a JUDGEMENT, not a published probability - they
+// are here to be argued with, and the tdpConfidencePct control scales all of them at once.
+const TDP_PHASE_CONF = { 'Execution':1.0, 'Definition':0.8, 'Planned':0.6,
+                         'Concept':0.3, 'Pre-Concept':0.15 };
+
+// Headroom a region has gained from TDP lines commissioned by `year`, MW.
+function tdpHeadroomMW(projects, region, year, confidenceFrac) {
+  if (!projects || !projects.length) return 0;
+  const scale = (confidenceFrac == null ? 1 : confidenceFrac);
+  let mw = 0;
+  for (const p of projects) {
+    if (p.kind !== 'line') continue;
+    if (p.prov !== region) continue;
+    if ((p.year || 9999) > year) continue;
+    const cap  = TDP_KV_MW[p.kv] || TDP_KV_MW[400];
+    const conf = TDP_PHASE_CONF[p.phase];
+    mw += cap * (conf == null ? 0.6 : conf) * scale;
+  }
+  return mw;
+}
+
+// ── WHERE NATIONAL BUILD GOES ────────────────────────────────────────────────────────────
+// Share of new capacity by province, from the 2,597 DFFE REEA environmental authorisations
+// in nodal/reea_projects.json - where developers have actually applied to build.
+//
+// REVEALED PREFERENCE, NOT PLANNING. Allocating by headroom would assume perfect siting and
+// make congestion vanish; developers chase resource, which is exactly why the Cape is full.
+// 90% of authorised WIND is in the three Cape provinces, all with ZERO headroom. Solar is far
+// more spread, and Free State, North West and Limpopo hold both pipeline and headroom.
+//
+// Computed 20 Sep 2026 from 56,848 MW of authorised wind and 160,212 MW of solar. Recompute
+// when the REEA file is refreshed - shares, not absolutes, so the file growing does not
+// invalidate them, but the distribution shifting does.
+const REEA_SHARE = {
+  wind: { 'Northern Cape':0.4563,'Western Cape':0.2530,'Eastern Cape':0.1950,'Mpumalanga':0.0472,
+          'Limpopo':0.0211,'Kwazulu Natal':0.0168,'Free State':0.0073,'Gauteng':0.0018,
+          'North West':0.0018 },
+  solar:{ 'Northern Cape':0.3688,'Free State':0.1938,'North West':0.1180,'Western Cape':0.1178,
+          'Limpopo':0.1023,'Gauteng':0.0414,'Mpumalanga':0.0276,'Eastern Cape':0.0239,
+          'Kwazulu Natal':0.0064 },
+};
 
 /**
  * Evaluate a user's proposed deployment.

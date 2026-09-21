@@ -1,0 +1,733 @@
+{
+ "meta": {
+  "description": "Eskom residential tariff components, used by the shadow dynamic retail price panel. Every figure is from Eskom's published Schedule of Standard Prices; nothing here is modelled.",
+  "source": "Eskom Schedule of Standard Prices for the 2026/27 financial year, effective 1 April 2026, published after NERSA's MYPD6 decision of 5 March 2026. Direct-customer rates, 8.76% average increase.",
+  "vat": "All figures INCLUDE VAT at 15% unless a field name says otherwise.",
+  "phase_in": "Eskom is moving residential cost recovery from energy charges to fixed charges over three years. Service and administration went from 33.33% fixed in FY2026 to 66.66% in FY2027. The Generation Capacity Charge went from 20% to 30%. The remainder of each sits inside the energy charge. The ERTSA application for 2027/28, gazetted 4 Sep 2026, continues this.",
+  "why_this_file_exists": "The shadow retail price needs the components a household actually pays, not a single average rate. It also lets the fixed/variable split be modelled as a scenario rather than asserted - see the frozen and completed cases in RESULTS.md.",
+  "caveat_municipal": "Homepower and Homelight are ESKOM DIRECT tariffs. Municipal customers buy from their distributor at a bulk rate and pay that distributor's own structure and markup, which varies by an order of magnitude between metros. Do not present an Eskom-direct figure as a national household price.",
+  "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "GridTwin ZA - nickhedley.github.io/gridtwin-za"
+ },
+ "homepower4": {
+  "description": "Standard residential, 80 A single-phase, no grid-tied generation. The most common Eskom-direct residential tariff.",
+  "energy_r_per_kwh": 3.2206,
+  "energy_is_flat": true,
+  "energy_note": "Flat rate. The same at 03:00 as at 18:00, and the same in July as in January. Homepower 1-4 share this rate; only the fixed daily charge differs by supply size. This is the quantity a dynamic tariff would replace.",
+  "fixed_r_per_day": {
+   "network_capacity": 10.44,
+   "service_and_admin": 6.6,
+   "generation_capacity": 0.82
+  },
+  "fixed_r_per_month": 536.0,
+  "phase_in_status": {
+   "service_and_admin_fixed_pct": 66.66,
+   "generation_capacity_fixed_pct": 30.0,
+   "network_capacity_fixed_pct": 100.0,
+   "note": "At 100% the service and administration charge is R9.90/day and the generation capacity charge R2.73/day. R5.21/day, about R159/month, has still to move from energy to fixed."
+  },
+  "fixed_r_per_month_note": "R17.86/day x 30 = R535.8, quoted as R536. Eskom bills per day, so a 31-day month is R553.7 and a 28-day month R500.1. The monthly figure is a convenience for comparison, not a charge - use fixed_r_per_day for anything computed.",
+  "energy_is_not_pure_energy": "R3.5556/kWh still carries 33.34% of the service and administration charge and 70% of the generation capacity charge, both mid phase-in. So any tariff anchored to this rate inherits some fixed-cost recovery inside its energy component. That is not an error - it is what a household actually pays per unit today - but it means the anchor is not a pure energy price.",
+  "blocks_removed": "NO, it is not blended. NERSA approved REMOVING the inclining block structure from Homepower and Homelight in Feb 2025, finding it no longer protected the poor - affluent households with rooftop PV had fallen into the low-usage blocks and were being subsidised by those without. So a single flat energy rate is correct for 2026/27. Verified from NERSA's Table 6: the CURRENT structure implies R2.455/kWh to 600 kWh then R3.95 above it, clear blocks; the PROPOSED structure implies a flat R2.305 at every consumption level tested from 0 to 1,600 kWh.",
+  "reconciliation_gap": "RESOLVED. See 'corrected'. Our figure now reconciles with NERSA's approved progression to under one per cent, and Homepower is a sound independent check on the panel's level again.",
+  "corrected": "CORRECTED 10 Sep 2026 from R3.5556 to R3.2206, a 10.4% overstatement. The old figure came from a web summary; this one is the Schedule of Standard Prices for 2026/27, effective 1 April 2026, published after NERSA's MYPD6 ruling of 5 March 2026. The error was caught by asking whether the tariff blends usage blocks, then testing our figure against NERSA's own published progression: R2.305 in 2024/25 rands grown by the approved 12.7% and 8.76% with VAT gives R3.2491, which is 0.9% from the published R3.2206 and 9% from our old number. The progression was right and we were wrong.",
+  "vat_basis": "INCLUDES VAT at 15%. R3.2206/kWh is the VAT-inclusive rate from Eskom's Schedule of Standard Prices 2026/27. The fixed charges of R536/month are likewise VAT-inclusive. Stated explicitly on 10 Sep 2026 after a municipal tariff on the OPPOSITE basis was compared against it and every municipal figure came out 15% low."
+ },
+ "homeflex": {
+  "description": "Time-of-use residential. Required for any household with grid-tied generation, so every rooftop PV customer is on it. Same network, retail and ancillary charges as Homepower; only the energy charges differ.",
+  "source": "NERSA Reasons for Decision, Eskom Electricity Retail Tariff Plan, 18 Feb 2025, Table 7. Proposed rates in 2024/25 rand, adjusted to 2026/27 by the approved ERTSA increases.",
+  "high_season": "June to August",
+  "peak_hours": "high season 06:00-08:00 and 17:00-20:00; low season 07:00-09:00 and 18:00-21:00",
+  "peak_to_standard_ratio": 6,
+  "ratio_note": "NERSA approved a change from 1:8 to 1:6 in Feb 2025. The 4.4x spread previously quoted here came from two rates only and was a winter figure; the full six-rate table is now present and the annual spread can be computed properly.",
+  "all_six_rates_note": "PREVIOUSLY ONLY THE WINTER PAIR WAS HELD, and the panel had to caveat that its Homeflex comparison was a high-demand-season figure. Resolved 10 Sep 2026 from the NERSA decision document.",
+  "rates_r_per_kwh_2026_27": {
+   "high_season_peak": 7.5386,
+   "high_season_standard": 2.5355,
+   "high_season_offpeak": 1.9522,
+   "low_season_peak": 3.6907,
+   "low_season_standard": 2.419,
+   "low_season_offpeak": 1.9522
+  },
+  "rates_r_per_kwh_2024_25_original": {
+   "high_season_peak": 6.1503,
+   "high_season_standard": 2.0686,
+   "high_season_offpeak": 1.5927,
+   "low_season_peak": 3.011,
+   "low_season_standard": 1.9735,
+   "low_season_offpeak": 1.5927
+  },
+  "escalation_note": "CORRECTED 10 Sep 2026. The rates held were NERSA's PROPOSED figures in 2024/25 rands, taken straight from Table 7 of the Reasons for Decision, and used as if they were 2026/27 rates. They were 22.6% low. NERSA's own document says so plainly: 'The proposed rates in the submission were based on 2024/25 revenues. The proposed tariffs in 2024/25 Rand value would be adjusted as per the NERSA 2025/26 tariff increase decision through the ERTSA process.' Grown by the approved 12.7% and 8.76%. Same error as the Homepower one found an hour earlier, in a different table of the same document.",
+  "vat_basis": "Includes VAT at 15%, on the same basis as Homepower."
+ },
+ "homelight60a": {
+  "description": "Residential prepaid, 60A. No fixed charge. Also cross-subsidised, less than the 20A.",
+  "energy_r_per_kwh": 2.9868,
+  "fixed_r_per_month": 0.0,
+  "source": "NERSA Reasons for Decision, 18 Feb 2025, Table 11.",
+  "note": "Beats Homepower at every realistic consumption for eligible households because it has no fixed charge to absorb - and because it is subsidised.",
+  "energy_r_per_kwh_2024_25": 2.4368,
+  "escalation_note": "CORRECTED 10 Sep 2026. Held NERSA's 2024/25 proposed rate as if it were 2026/27. Grown by the approved 12.7% and 8.76%, a 22.6% correction.",
+  "vat_basis": "Includes VAT at 15%, on the same basis as Homepower."
+ },
+ "reference_octopus_agile": {
+  "description": "Britain's most-cited dynamic tariff, included as a published comparator rather than a target. Its formula is public, which is the standard this model holds itself to.",
+  "standing_charge_p_per_day": [
+   40,
+   65
+  ],
+  "peak_uplift_p_per_kwh": [
+   10,
+   14
+  ],
+  "peak_window": "16:00-19:00 daily, regional",
+  "fixed_share_typical_household_pct": 24,
+  "typical_consumption_kwh_per_year": 2700,
+  "structure": "day-ahead wholesale, half-hourly, plus regional network costs, plus a peak uplift, plus margin, plus VAT, subject to a cap",
+  "note": "The standing charge is NOT dynamic. That is the honest limit on what any dynamic tariff can shift, and it matters more in South Africa: a 200 kWh Homepower household is already at 43% fixed against Octopus's 24%."
+ },
+ "shadow_tariff_parameters": {
+  "description": "The four parameters the shadow dynamic tariff needs that Eskom does not publish. Each is sourced; two are South African observations and two are imported from markets that actually run dynamic tariffs.",
+  "municipal_markup_pct": 40,
+  "municipal_markup_basis": "Midpoint of the observed Cape Town range. A Cape Town household typically pays R3.80-5.20/kWh on the standard block against R3.22/kWh for an Eskom-direct Homepower customer, so 18-61%; the midpoint is 40%. For scale: PowerForum found Ekurhuleni at 86%, the highest in the country, and Steyn (2004) put cost-reflective distributor profit at 10-20% on roughly 10% technical losses. 40% therefore sits between what cost recovery justifies and what the worst case charges. EXPOSE THIS AS A SLIDER - the spread between metros is an order of magnitude and no single figure describes the country.",
+  "cap_r_per_kwh": 12.84,
+  "cap_basis": "Octopus Agile caps at 100 p/kWh against an Ofgem standard-variable cap of 27.69 p/kWh for Jan-Mar 2026, a ratio of 3.6x. Applying the same ratio to Homepower 4's flat energy rate of R3.5556/kWh gives R12.84. Octopus states the reason plainly: their wholesale can exceed 200 p/kWh at peak and without a cap 'the peak rates would get totally extortionate for a domestic customer'. Our shortage hours price at the value of lost load, around R80,000/MWh, so an uncapped pass-through would be absurd rather than merely high.",
+  "retail_margin_r_per_kwh": 0.3,
+  "retail_margin_basis": "IMPORTED. South Africa has no competitive retail supply, so there is no domestic margin to observe. European dynamic tariffs - Tibber, aWATTar, Octopus - add 1 to 3 euro-cents per kWh plus a monthly fee. At roughly R20 to the euro that is R0.20 to R0.60; R0.30 is the low-middle. This is the single most assumption-laden number in the panel and should be labelled as such wherever it appears.",
+  "peak_uplift_note": "Octopus adds 10-14 p/kWh between 16:00 and 19:00 on top of wholesale, because the network cost of the evening peak is real and separate from the energy cost. We do NOT add one: our transmission cost is already carried in txRPerKWyr and the Eskom network capacity charge is in the fixed component, so adding an uplift would double-count. Stated here because its absence is a deliberate choice, not an oversight.",
+  "wind_shape_caveat": "The modelled wind profile's daily shape is imperfect - its trough sits four hours early against Eskom's metered fleet. Measured effect on this panel: applying the full three-hour correction moves the daily price shape by a 0.967 correlation and R18/MWh on a R808 mean, about 2%. Wind is only 12.9% of the daily net-load swing; demand and solar set the shape. Small, but state it.",
+  "retail_margin_sa_verified": {
+   "description": "The supply margin was imported from European dynamic tariffs and had no South African source. It now has one, from Eskom's own cost-to-serve study.",
+   "cts_retail_r_per_pod_day": 9.24,
+   "cts_retail_r_per_month": 280.9,
+   "cts_retail_r_per_kwh_at_900": 0.312,
+   "held_r_per_kwh": 0.3,
+   "gap_pct": 4,
+   "source": "Eskom 2024/25 cost-to-serve study, Table 42, category C12 urban residential <500V. The retail column covers metering, billing, vending and customer service, which the CTS separates from network costs.",
+   "why_this_is_the_like_for_like": "The CTS retail column is the retail FUNCTION only. Municipalities are also retailers in a sense, and their gross addition over Eskom bulk is observable - median R1.860/kWh at 900 kWh across 28 tariff families, against a bulk cost of R1.980. But that covers the municipal distribution network and their revenue surplus as well as the retail function, so it is an UPPER BOUND, not a measure. The CTS is the only source that splits them.",
+   "conclusion": "R0.312 derived against R0.30 held, 4% apart. The European anchor was sound and the constant is left unchanged rather than tuned to the new figure - moving it 4% to match would be fitting to a single source. What changed is that it is now corroborated instead of imported."
+  }
+ },
+ "allowed_revenue_2026_27": {
+  "description": "NERSA's approved allowed revenue and Eskom's own decomposition of it. This is the skeleton of a retail tariff: a revenue requirement, split into components, recovered per kWh. The panel builds the shadow price bottom-up from these rather than anchoring to a published tariff.",
+  "source": "NERSA MYPD6 decision of 30 Jan 2025 and the 2026 settlement: approved total revenue R384,610m for 2025/26. The component split is Eskom's own published revenue build-up for the same year, which totals R444.7bn as APPLIED FOR; NERSA approved 86.5% of it, and each component below is scaled by that factor.",
+  "caveat": "CORRECTED 10 Sep 2026. The first version applied the build-up shares to NERSA's GENERATION allowance alone. That was wrong - Eskom's build-up is the whole company and already contains transmission and distribution. Applying whole-company shares to one business inflated every component by 1.72x. Check any component against the R1.836/kWh total before trusting it. CORRECTED AGAIN 15 Sep 2026: this line still said R2.016/kWh, which is R384,610m over the OLD sales_twh of 190.81. The same-day change to 209.55 rescaled the components but not this check. The table now sums to 1.8360 against 384,610/209.55 = 1.8354.",
+  "sales_twh": 209.55,
+  "sales_basis": "CORRECTED 10 Sep 2026. Was 190.81, which is DISPATCHABLE energy sent out and excludes wind and solar IPPs. Eskom recovers its revenue over what it sells: RSA contracted energy demand, 2025, from the Weekly System Status Report annual table. The change lowers every per-kWh component by 9%. DO NOT MOVE THIS TO ESKOM'S REPORTED SALES. Checked 15 Sep 2026 and rejected. Eskom reports electricity sales of 189,723 GWh (FY2025) and 178,032 GWh (FY2026), which makes this figure look 10% too high. It is not. 209.55 is measured at the SYSTEM level, and the retail panel grosses up by RETAIL_LOSS of 8% at index.html:12386 and 12494 to reach the meter. The two routes agree: 384,610/209.55 = R1.8354 grossed up to R1.9950, against 384,610/189.72 = R2.0272 already at the meter, 1.6% apart. The denominators bridge the same way, 209.55 x 0.92 = 192.8 against a reported 189.7. Switching to reported sales WITHOUT also removing the gross-up double-counts losses and lifts every per-kWh figure by about 10%. The residual 1.6% is the gap between 8% technical loss and Eskom's total losses, which include non-technical losses recovered as a revenue requirement rather than as a gross-up.",
+  "how_each_responds_to_a_scenario": {
+   "primary_energy_fuel": "MODELLED. Taken from the dispatch run's fuelCost, not from this table.",
+   "carbon_tax": "MODELLED. From the run's carbonCost.",
+   "ipp_purchases": "Scales with renewable capacity - more build means more PPAs to honour.",
+   "operating_costs": "Scales with retained coal capacity. Fewer stations, less to operate.",
+   "depreciation": "Existing fleet: see stranded_asset_treatment. New build: from the run's newCapexR.",
+   "return_on_assets": "Same split as depreciation.",
+   "international_purchases": "Scales with the imports slider.",
+   "rca_recoveries": "Fixed. A historical clawback, unaffected by what is built.",
+   "arrear_debt": "Fixed. Municipal arrears, unaffected by what is built.",
+   "environmental_levy": "Fixed per kWh sold."
+  },
+  "stranded_asset_treatment": {
+   "description": "THE DECISION THAT DRIVES THE ANSWER. When coal retires early, what happens to the depreciation and return on assets still attached to it?",
+   "stranded": "Consumers keep paying until the asset base runs off. This is what a regulated asset base actually does, and NERSA's R54bn RAB correction in 2025-26 shows how live the question is. Retail prices RISE under aggressive decarbonisation.",
+   "written_off": "The cost leaves with the plant. Someone still pays, usually the fiscus. Retail prices FALL.",
+   "why_it_is_a_control": "Same physics, different regulatory assumption, opposite conclusions. Picking one quietly would make the panel an argument rather than a tool."
+  },
+  "approved_total_r_bn": 384.61,
+  "applied_total_r_bn": 444.7,
+  "approval_factor": 0.865,
+  "total_r_per_kwh": 1.836,
+  "components_r_per_kwh": {
+   "primary_energy_fuel": 0.528,
+   "operating_costs": 0.384,
+   "ipp_purchases": 0.275,
+   "depreciation": 0.276,
+   "return_on_assets": 0.176,
+   "rca_recoveries": 0.069,
+   "international_purchases": 0.041,
+   "arrear_debt": 0.037,
+   "environmental_levy": 0.027,
+   "carbon_tax": 0.023
+  },
+  "business_r_million_note": "Kept for reference only. Generation R258,574m and NTCSA R109,289m are NERSA's approved 2026/27 figures; distribution is the residual of Eskom's application and is NOT approved. The panel uses the component split above, not this three-way split, because the components are what respond to a scenario.",
+  "coal_share_of_asset_costs": 0.54,
+  "coal_share_basis": "Generation is R258,574m of NERSA's R384,610m allowed revenue, 67%. Coal is roughly 80% of generation assets by value once Koeberg, pumped storage and the peakers are taken out. So about 54% of depreciation and return on assets is coal-specific. The written-off case scales ONLY this share with the coal fraction; the first version scaled all of it and wrote off the transmission network when coal retired.",
+  "new_build_fixed_om_r_per_kw_yr": {
+   "wind": 750,
+   "pv": 300,
+   "battery": 400,
+   "ccgt": 300
+  },
+  "new_build_fixed_om_basis": "Fixed O&M, NOT in acap* which is annualised capex only. Mid-range of NREL ATB and South African REIPPPP disclosures: wind R600-900, utility PV R250-400, batteries R300-500, CCGT R250-350 per kW-year. Missing from the first build entirely; on the Future electricity mix it is worth about R0.24/kWh.",
+  "decommissioning_r_per_kw": 1500,
+  "decommissioning_basis": "Closure and rehabilitation of retired coal plant, annualised. Komati was budgeted at roughly R8bn for a 1 GW station including repurposing, but most of that is the repurposing. Bare closure and rehabilitation is nearer R1,000-2,000/kW. Someone pays it in both the stranded and written-off cases; it is added to both. ASSUMPTION - no South African fleet-wide figure is published.",
+  "opex_coal_share": 0.6,
+  "opex_coal_share_basis": "ASSUMPTION. Of Eskom's operating costs, R37bn is employee benefits and the rest is largely maintenance, both concentrated in generation. 60% is taken as coal-station-specific and falls with retirement; 40% is the network and corporate base that does not. Plausible, unsourced, and moves the result by less than the items above.",
+  "scenario_year": {
+   "description": "Parameters that key off the panel's scenario year. Reference practice: AEMO's ISP reports target-year snapshots; Ofgem rolls the regulated asset base forward annually; NERSA's MYPD does it in three-year windows. GridTwin's dispatch stays a single representative year at the chosen date.",
+   "base_year": 2026,
+   "rca_ends_fy": 2028,
+   "rca_basis": "The regulatory clearing account claws back past variances over a fixed window. The current tranche - including the R54bn RAB correction recovered over three years - ends with MYPD6 in 2027/28. NERSA settlement, April 2026.",
+   "arrears_in_tariff": false,
+   "arrears_basis": "Municipal arrear debt is a transfer from paying customers to non-paying ones, not a cost of supplying electricity. Reference cost-reflective tariff models exclude it. Exposed as a toggle rather than deleted; default excluded.",
+   "existing_rab_runoff_floor_share": 0.35,
+   "existing_rab_runoff_to_year": 2045,
+   "runoff_basis": "The existing fleet's depreciation and return run off as plant ages. Most coal is past half its regulatory life; Medupi and Kusile are not, and neither are the wires. A linear run-off from 100% in 2026 to a 35% floor by 2045 approximates the long-lived residual. ASSUMPTION - NERSA publishes the RAB by business in each MYPD decision and the schedule should be read from there.",
+   "build_vintage": "midpoint",
+   "vintage_basis": "A fleet costed at 2035 was not all bought in 2035. Reference practice prices each vintage at its commissioning year and sums. Without a build pathway the honest approximation is the midpoint between the base year and the scenario year. Stated on the panel."
+  },
+  "eskom_retail_distribution_r_per_kwh": 0.3,
+  "eskom_retail_distribution_basis": "The last-mile share of Eskom Distribution: the reticulation, metering and customer service a municipal distributor provides for itself. NERSA's approved distribution allowance is about R0.61/kWh over 209.55 TWh; roughly half is sub-transmission and bulk supply that a municipality still buys from Eskom, and roughly half is the retail function it replaces. Removed from the cost base for a municipal customer, who pays their own municipality for it through the markup. ASSUMPTION on the 50/50 split - NERSA publishes distribution allowances but not this cut.",
+  "tdp_grid_r_per_kw_of_re": 6964,
+  "tdp_grid_basis": "Eskom's Transmission Development Plan is R390bn for 56 GW of connection capacity, R6,964m per GW. The model's own connection rate gives about a third of that, and its cost decomposition already labels transmission 'partial'. The panel now annualises the TDP rate over 40 years at 8% against the scenario's new wind and PV, which is the published figure rather than an inferred one.",
+  "residential_allocation_factor": 1.622,
+  "residential_allocation_basis": "FROM ESKOM'S OWN COST TO SERVE STUDY, 2024/25, Table 42. Category C12 '500 U RES' - urban residential below 500V - carries a total average unit cost of 320.33 c/kWh against a system total of 197.45 c/kWh. That ratio is 1.622. Allocation is on cost-causation principles: supply voltage, location density, load profile and points of delivery. REPLACES a factor of 1.29 derived as Homepower's energy rate over Eskom's average price - two published figures, but one of them was the tariff the panel is validated against. That was partly circular and is now not: the allocation comes from a cost study and Homepower stays free as an independent check. The new factor is 26% higher, so the panel had been understating residential cost.",
+  "cts_allocation": {
+   "description": "Eskom's Cost to Serve study allocates NERSA's allowable revenue to customer categories on cost-causation principles: supply voltage, location density, load profile, and number of points of delivery.",
+   "source": "NERSA Reasons for Decision, Eskom Retail Tariff Plan, 18 Feb 2025, sections 8.1 and 8.9.",
+   "generation_capacity_allocated_r_bn": 19.05,
+   "generation_capacity_share_of_generation_cost": 0.07,
+   "legacy_charge_share_of_energy_charge": 0.11,
+   "legacy_charge_note": "The premium paid to section 34 REIPPPP contracts above Eskom's own generation cost. Ring-fenced as a separate c/kWh charge from 2025/26, and not applied to Homelight.",
+   "nersa_concern": "NERSA found the CTS functionalises allowable revenue as 86/4/10 across Generation, NTCSA and Distribution, against its own MYPD6 apportionment of 62/28/10. It called this a material inconsistency and imposed ring-fencing conditions. So the CTS allocation is published but NOT endorsed by the regulator as consistent with MYPD6 - use it for the customer-category split, not for the business split."
+  },
+  "rca_liquidation_schedule_r_bn": {
+   "2027": 12.0,
+   "2028": 23.0,
+   "2029": 19.7
+  },
+  "rca_schedule_basis": "The R54bn RAB settlement is liquidated on a PUBLISHED schedule, not a single expiry: R12bn in 2026/27, R23bn in 2027/28 and R19.7bn thereafter. Parliament's Committee on Electricity and Energy briefing, NERSA, 2026. Tariff impact 3.4% in 2026/27 and 2.64% in 2027/28 - the difference between the original 5.36% and the final 8.76%. Replaces the single rca_ends_fy cutoff, which treated a three-year taper as a cliff.",
+  "rab_note": "The generation RAB itself is still not published at a level that supports a real depreciation schedule. NERSA's redetermination approved the depreciated replacement cost approach and revalued the generation RAB, but the Reasons for Decision give the revenue effect rather than the asset base and its remaining life. So the run-off below stays a linear approximation. What WOULD close it: the MYPD6 revenue decision tables, which are a separate document from the Retail Tariff Plan.",
+  "cts_residential_detail": {
+   "category": "C12 : 500 U RES, urban residential <500V",
+   "energy_tou_c_per_kwh": 182.51,
+   "legacy_charge_c_per_kwh": 20.21,
+   "total_avg_unit_cost_c_per_kwh": 320.33,
+   "dx_network_r_per_kva": 59.7,
+   "retail_r_per_pod_day": 9.24,
+   "system_total_c_per_kwh": 197.45,
+   "source": "Eskom 2024/25 Standard tariffs cost-to-serve study, Table 42, page 57.",
+   "caveat": "2024/25 study. NERSA's Reasons for Decision notes the CTS functionalises revenue as 86/4/10 across Generation, NTCSA and Distribution against its own MYPD6 apportionment of 62/28/10, calls that a material inconsistency and imposes ring-fencing conditions. The customer-category allocation is still the best published source for this factor; the business-level split is not."
+  },
+  "cts_confirms_administered_ratio": "Table 18 of the CTS records that the 1:6 time-of-use ratio is 'proposed by the System Operator', with Annexure 9 giving the motivation. It is an administered signal, not a measured cost ratio - which is why Homeflex prices the winter peak about three times more steeply than modelled cost.",
+  "cts_currency_note": "The CTS is 2024/25 and there is no newer one - the Electricity Pricing Policy requires a cost-of-supply study every five years, and Eskom last revised structures in 2022 on the previous study. That is acceptable here BECAUSE THE FACTOR IS A RATIO, not a rate. Numerator and denominator escalate together under a uniform tariff increase, so 1.622 is far more stable than the 320.33 c/kWh it comes from. What WOULD move it: a change in allocation methodology, or a shift in residential load profile relative to other categories. The fixed-charge phase-in reallocates WITHIN residential and does not move it. The Homepower error was a RATE used stale, which is a different and more dangerous thing.",
+  "carbon_statutory_path": {
+   "r_per_tonne": {
+    "2026": 308,
+    "2030": 462
+   },
+   "note": "CORRECTED 10 Sep 2026. An earlier note here said the model pins CARBON at R550/t per STATE.md open item 2. IT DOES NOT - that was fixed at some point and the item was never closed. CARBON now reads carbonTaxRPerT, which is 46 R/t: an EFFECTIVE rate after free allowances rather than the R308 headline, which is the right basis. A REAL discrepancy remains, smaller and different: modelled carbon is R7.8bn against Eskom's approved R4.8bn, implying an effective rate nearer R28/t in Eskom's own allowance. So 46 may be about twice what is actually recovered, worth roughly R0.012/kWh. Phase 2 began 1 Jan 2026 at a R308 headline, rising to R462 by 2030, so the effective rate should climb with the allowance phase-down - which the panel does not model."
+  },
+  "stranded_control_scope": "WHAT THE CONTROL ACTUALLY MOVES, clarified 10 Sep 2026 after an energy professional asked whether it covers decommissioning, legacy debt or coal contract unwind. Measured: it moves ONE line, existingCap, R0.313 to R0.198/kWh on the Future mix. Everything else is identical. That line is depreciation and return on assets on the coal-specific share of the regulated asset base - the money still owed on the plant itself. NOT COVERED: decommissioning, which is a separate line paid in both branches; Eskom's wider debt, of which only the part attached to those coal assets moves and not identifiably; and TAKE-OR-PAY COAL SUPPLY CONTRACTS, which are not modelled at all. Fuel cost comes from dispatch, so retiring coal reduces fuel proportionally - implicitly assuming long-term coal supply agreements unwind at no cost. In reality Eskom holds contracts with committed offtake and early retirement means paying for coal it does not burn or negotiating out. That cost sits in neither branch. The label was 'Retired coal still repaid via tariffs', which read as covering everything stranded by closure. Now 'Retired coal asset base still in tariffs'.",
+  "business_r_million_removed": "Removed 15 Sep 2026. Read by nothing - index.html takes its component table from components_r_per_kwh. Its three figures summed to R495,355m against an applied-for R444.7bn and an approved R384.6bn in this same block, and none reconciled against the R2.016/kWh the caveat says to check components against. A dead field that looks authoritative is worse than an absent one."
+ },
+ "cross_subsidies": {
+  "description": "Eskom's tariffs contain explicit cross-subsidies. These are TRANSFERS between customer categories, not costs of supply, and a cost-reflective shadow tariff should show them separately rather than fold them into a cost.",
+  "source": "NERSA Reasons for Decision, Eskom Retail Tariff Plan, 18 Feb 2025, Table 15 and section 8.14.",
+  "total_r_bn": 10.9,
+  "basis_year": "2024/25 revenues",
+  "recipients": [
+   "Homelight 20A",
+   "Homelight 60A",
+   "Landrate",
+   "Ruraflex",
+   "Nightsave Rural"
+  ],
+  "payers": "Urban large power users pay the electrification and rural subsidy; non-local-authority urban LPUs pay the affordability subsidy.",
+  "homepower_is_a_payer": true,
+  "homepower_note": "HOMEPOWER IS NOT ON THE SUBSIDISED LIST. It contributes to the affordability subsidy rather than receiving it. So part of the residential premium over Eskom's average price is Homepower funding Homelight - a transfer, not a cost to serve. This corrects an assumption made on 10 Sep 2026 that attributed the whole premium to cost causation.",
+  "nersa_reduction": "NERSA approved reducing the electrification and rural subsidy by 69% and the affordability subsidy by 53%, to relieve large power users."
+ },
+ "homelight20a": {
+  "description": "Residential lifeline tariff, 20A prepaid. No fixed charge. The largest recipient of cross-subsidy.",
+  "energy_r_per_kwh": 2.3496,
+  "fixed_r_per_month": 0.0,
+  "source": "NERSA Reasons for Decision, 18 Feb 2025, Table 11. Flat rate replacing the inclining block structure.",
+  "note": "The legacy charge is NOT applied to Homelight, so REIPPPP premium costs are borne by other categories.",
+  "energy_r_per_kwh_2024_25": 1.9169,
+  "escalation_note": "CORRECTED 10 Sep 2026. Held NERSA's 2024/25 proposed rate as if it were 2026/27. Grown by the approved 12.7% and 8.76%, a 22.6% correction.",
+  "vat_basis": "Includes VAT at 15%, on the same basis as Homepower."
+ },
+ "municipal": {
+  "description": "Real municipal residential tariffs, replacing the inferred markup slider. The panel's reference household is a medium-sized Johannesburg home on City Power's Residential Single Phase 80A tariff.",
+  "source": "AMMP SA Electricity Tariff Database, export of 11 Aug 2026, electricity-tariffs.co.za. City Power figures trace to the Schedule of Approved Tariffs FY26/27; the fixed charge is service R304.12 plus capacity R985.11.",
+  "why_a_reference_household": "A national average describes nobody. Municipal residential tariffs vary by a factor of 62 on fixed charges and 2.1 on energy rates, so one named distributor with a real block structure is more useful and more honest than a percentage.",
+  "reference": {
+   "distributor": "City Power Johannesburg",
+   "tariff": "Residential Single Phase 80A",
+   "blocks": [
+    {
+     "from_kwh": 0,
+     "to_kwh": 500,
+     "rate_r_per_kwh": 2.8827
+    },
+    {
+     "from_kwh": 501,
+     "to_kwh": 1000,
+     "rate_r_per_kwh": 3.3082
+    },
+    {
+     "from_kwh": 1001,
+     "to_kwh": 2000,
+     "rate_r_per_kwh": 3.5523
+    },
+    {
+     "from_kwh": 2001,
+     "to_kwh": 3000,
+     "rate_r_per_kwh": 3.7479
+    },
+    {
+     "from_kwh": 3000,
+     "to_kwh": null,
+     "rate_r_per_kwh": 3.9319
+    }
+   ],
+   "fixed_r_per_month": 1289.23,
+   "additional_energy_charge_r_per_kwh": 0.0,
+   "rates_exclude_vat": true,
+   "vat_rate": 0.15,
+   "transcription_verified": "VERIFIED against City Power's Schedule of Approved Tariffs FY26/27 on 10 Sep 2026. All five block rates and both fixed charges match to the cent: 288.27, 330.82, 355.23, 374.79, 393.19 c/kWh; service R304.12 and capacity R985.11 per month, R1,289.23 total.",
+   "vat_correction": "THE SCHEDULE STATES 'All charges are exclusive of VAT' AND THE PANEL WAS TREATING THEM AS FINAL PRICES. It compared them against Eskom Homepower at R3.2206, which INCLUDES VAT - so every municipal figure was 15% low and the Johannesburg premium over Eskom was reported as +4% when it is +38%. Corrected 10 Sep 2026. The transcription was perfect and the basis was wrong, which no peer-structure check could have caught.",
+   "additional_charge_removed": "The AMMP export carried an 'Additional Energy Charge' of R0.06/kWh with no explanation, and the panel was adding it to every block. It does NOT appear in the published schedule extract. Removed rather than kept on an unverified basis; worth R62/month at 900 kWh. If it is a real charge from another part of the schedule it should come back WITH its source."
+  },
+  "comparison_r": {
+   "Greater Tzaneen Municipality": {
+    "lowest_rate": 1.7589,
+    "max_fixed": 5288.0,
+    "tariffs": 6
+   },
+   "Enoch Mgijima Local Municipality": {
+    "lowest_rate": 1.2541,
+    "max_fixed": 1850.0,
+    "tariffs": 6
+   },
+   "City of Mbombela": {
+    "lowest_rate": 2.1869,
+    "max_fixed": 0.0,
+    "tariffs": 4
+   },
+   "Breede Valley Municipality": {
+    "lowest_rate": 2.18,
+    "max_fixed": 0.0,
+    "tariffs": 4
+   },
+   "KwaDukuza Local Municipality": {
+    "lowest_rate": 2.7145,
+    "max_fixed": 1090.0,
+    "tariffs": 6
+   },
+   "Magareng Local Municipality": {
+    "lowest_rate": 2.121,
+    "max_fixed": 0.0,
+    "tariffs": 4
+   },
+   "Moqhaka Local Municipality": {
+    "lowest_rate": 2.51,
+    "max_fixed": 407.0,
+    "tariffs": 6
+   },
+   "Emakhazeni Local Municipality": {
+    "lowest_rate": 2.117,
+    "max_fixed": 651.0,
+    "tariffs": 12
+   },
+   "Lekwa Local Municipality": {
+    "lowest_rate": 2.1291,
+    "max_fixed": 269.0,
+    "tariffs": 8
+   },
+   "Buffalo City Metro Municipality": {
+    "lowest_rate": 3.12,
+    "max_fixed": 0.0,
+    "tariffs": 2
+   },
+   "Mangaung Metropolitan Municipality": {
+    "lowest_rate": 3.0442,
+    "max_fixed": 325.0,
+    "tariffs": 9
+   },
+   "Langeberg Municipality": {
+    "lowest_rate": 2.1269,
+    "max_fixed": 406.0,
+    "tariffs": 8
+   },
+   "Overstrand Municipality": {
+    "lowest_rate": 2.506,
+    "max_fixed": 421.0,
+    "tariffs": 6
+   },
+   "George Municipality": {
+    "lowest_rate": 3.7111,
+    "max_fixed": 0.0,
+    "tariffs": 1
+   },
+   "Govan Mbeki Municipality": {
+    "lowest_rate": 2.1736,
+    "max_fixed": 358.0,
+    "tariffs": 5
+   },
+   "Drakenstein Municipality": {
+    "lowest_rate": 2.3254,
+    "max_fixed": 4680.0,
+    "tariffs": 18
+   },
+   "City of Cape Town": {
+    "lowest_rate": 3.0922,
+    "max_fixed": 595.0,
+    "tariffs": 7
+   },
+   "City of Tshwane Metropolitan Municipality": {
+    "lowest_rate": 2.4889,
+    "max_fixed": 1228.0,
+    "tariffs": 2
+   },
+   "Stellenbosch Municipality": {
+    "lowest_rate": 2.0664,
+    "max_fixed": 513.0,
+    "tariffs": 16
+   },
+   "Mogalakwena Local Municipality": {
+    "lowest_rate": 2.9515,
+    "max_fixed": 600.0,
+    "tariffs": 2
+   },
+   "Msunduzi Municipality": {
+    "lowest_rate": 2.0213,
+    "max_fixed": 402.0,
+    "tariffs": 13
+   },
+   "City Power Johannesburg": {
+    "lowest_rate": 2.6703,
+    "max_fixed": 1531.0,
+    "tariffs": 34
+   },
+   "Emalahleni Local Municipality": {
+    "lowest_rate": 2.1864,
+    "max_fixed": 1047.0,
+    "tariffs": 13
+   },
+   "City of Ekurhuleni": {
+    "lowest_rate": 1.9478,
+    "max_fixed": 0.0,
+    "tariffs": 4
+   },
+   "City of Matlosana Local Municipality": {
+    "lowest_rate": 2.1266,
+    "max_fixed": 274.0,
+    "tariffs": 10
+   },
+   "Nelson Mandela Bay": {
+    "lowest_rate": 2.62,
+    "max_fixed": 201.0,
+    "tariffs": 16
+   },
+   "Inkosi Langalibalele Local Municipality": {
+    "lowest_rate": 2.4988,
+    "max_fixed": 0.0,
+    "tariffs": 1
+   },
+   "Matjhabeng Local Municipality": {
+    "lowest_rate": 2.43,
+    "max_fixed": 188.0,
+    "tariffs": 12
+   },
+   "Polokwane Local Municipality": {
+    "lowest_rate": 1.9936,
+    "max_fixed": 205.0,
+    "tariffs": 4
+   },
+   "Sol Plaatje Local Municipality": {
+    "lowest_rate": 2.7642,
+    "max_fixed": 98.0,
+    "tariffs": 4
+   },
+   "Steve Tshwete Local Municipality": {
+    "lowest_rate": 2.1847,
+    "max_fixed": 151.0,
+    "tariffs": 8
+   },
+   "Makhado Local Municipality": {
+    "lowest_rate": 2.1643,
+    "max_fixed": 456.0,
+    "tariffs": 8
+   },
+   "Greater Kokstad Local Municipality": {
+    "lowest_rate": 2.0604,
+    "max_fixed": 0.0,
+    "tariffs": 8
+   }
+  },
+  "markup_was_wrong": "The panel previously applied a flat 40% municipal markup to Eskom's cost. That was wrong in CONCEPT, not just in value. Municipalities buy at Eskom BULK rates, far below Homepower, then add their own charges - so a municipal bill is a different tariff built on a cheaper input, not a margin on a retail price. Measured against Homepower 4 at 900 kWh, the premium across distributors runs -44% to +96% with a median of -25%: most are CHEAPER than Eskom direct.",
+  "fixed_charge_finding": "The spread is dominated by fixed charges, not energy. Energy rates run R1.25 to R4.53 across distributors, a factor of 3.6. Fixed charges run R0 to R5,463 a month. For a 200 kWh household the fixed share is 12% in Msunduzi, 69% on City Power and 83% in Emakhazeni - none of which any dynamic tariff, time-of-use signal or rooftop panel can touch.",
+  "inclining_blocks_note": "City Power's residential blocks RISE with consumption: R2.88, R3.31, R3.55, R3.75, R3.93. That is a price climbing with VOLUME while a dynamic tariff would have it climb with SCARCITY, and the two partly cancel - cheap midday solar hours are exactly when a heavy user sits in the dear block. NERSA approved removing inclining blocks from Eskom's Homepower and Homelight in Feb 2025 on the grounds they no longer protect the poor; municipal customers still face them.",
+  "coverage_caveat": "33 distributors after filtering to true residential single-phase. Rows naming non-domestic, commercial, reseller, three-phase or indigent tariffs are excluded - an unfiltered pass caught Tshwane and Emakhazeni COMMERCIAL tariffs and would have put them in a residential comparison.",
+  "bulk_purchase_verified": {
+   "description": "The claim that municipalities buy below Homepower, verified rather than reasoned.",
+   "megaflex_300km_66kv_r_per_kwh": {
+    "peak": 2.9889,
+    "standard": 1.6805,
+    "offpeak": 1.2003
+   },
+   "time_weighted_average": 1.816,
+   "homepower_energy_excl_vat": 3.092,
+   "bulk_discount_pct": 41,
+   "basis": "Eskom Megaflex <=300 km <66kV, the structure Municflex is built from - NERSA's Retail Tariff Plan decision states Municflex rates are calculated by combining Megaflex, Miniflex, Nightsave and Ruraflex costs for local authority supplies. Crude time weighting: peak 3h, standard 10h, off-peak 11h. AMMP database, FY2026/27.",
+   "conclusion": "Bulk is 41% below Homepower's energy charge excluding VAT. That is why most municipalities can price below Eskom direct while still adding their own margin, and it confirms that a 'municipal markup on Eskom's retail cost' was the wrong construction."
+  },
+  "tariff_trend": {
+   "description": "Same-tariff year-on-year increases across the database, residential only. Matched by tariff ID so the comparison is the SAME tariff over time, not a shifting sample - comparing medians across years measures which tariffs happen to be in the database, not what prices did.",
+   "same_tariff_median_increase_pct": {
+    "2024_to_2025": 12.4,
+    "2025_to_2026": 9.0,
+    "2026_to_2027": 19.2
+   },
+   "matched_tariffs": {
+    "2024_to_2025": 1,
+    "2025_to_2026": 42,
+    "2026_to_2027": 22
+   },
+   "nersa_approved_eskom_pct": {
+    "2025_26": 12.7,
+    "2026_27": 8.76,
+    "2027_28": 8.83
+   },
+   "finding": "Municipal residential tariffs rose 9.0% into 2026/27 against NERSA's 8.76% approved for Eskom - within a quarter of a point. Municipalities pass Eskom's bulk increase through closely, which supports treating the bulk purchase price as the driver of municipal retail prices. The 2024 to 2025 transition has ONE matched tariff and is not evidence. The 2026 to 2027 figure of 19.2% rests on 22 tariffs and is far above the approved 8.83%; it may be sample composition or early municipal filings and should not be quoted without checking which municipalities.",
+   "fixed_charges_track_energy": "Fixed charges rose 9.0% into 2026/27, the same as energy rates - so the fixed-charge SHARE of a bill held steady rather than climbing. Eskom's own phase-in is moving its share up; municipal distributors in this sample were not doing the same in that year."
+  },
+  "peer_block_validation": {
+   "description": "The reference household's block structure, cross-checked against every other municipality in the database rather than against a single PDF.",
+   "families_with_parseable_blocks": 28,
+   "rising": 24,
+   "falling": 0,
+   "neither": 4,
+   "finding": "24 of 28 residential tariff families across 21 distributors have blocks that RISE with consumption. NONE fall. So City Power's rising blocks are the national norm, not an artefact of one export - and the finding that municipal households face a price climbing with VOLUME while a dynamic tariff climbs with SCARCITY generalises well beyond Johannesburg.",
+   "city_power_vs_peers": "City Power runs 2.88 -> 3.31 -> 3.55 -> 3.75 -> 3.93, a 1.36x spread across five blocks. A typical peer such as Emakhazeni runs 2.12 -> 2.71 -> 3.82 -> 4.50, a 2.12x spread. City Power starts HIGHER and climbs LESS steeply. Both are inclining, which is the structural point; the difference in steepness is a real distributor choice, not an error.",
+   "why_this_beats_opening_the_pdf": "The published City Power schedule would confirm one distributor's numbers were transcribed correctly. Twenty-one distributors agreeing on STRUCTURE tests something a transcription check cannot: that the pattern the panel reports is real. Both are worth doing; this one was available in data already held and was not done until asked.",
+   "source_for_transcription_check": "City Power Schedule of Approved Tariffs FY26/27, named in the CSV export: api.citypower.co.za/ftp-service/download-pdf/ with filepath Customer_Services/Tariffs/2026.27 Tariffs charges.pdf"
+  },
+  "premium_over_eskom_corrected": "At 900 kWh a City Power household pays R4,724 a month against R3,435 on Eskom Homepower 4, a 38% premium - not the 4% previously reported. The distributor comparison across 33 municipalities carries the same VAT question and has NOT been rechecked: those rates come from the same database and their VAT basis is unverified per distributor.",
+  "vat_basis_audit": {
+   "description": "Whether each distributor's rates in the AMMP database include VAT, audited 10 Sep 2026 after City Power's schedule turned out to be VAT-exclusive.",
+   "method": "Searched every notes and source field across ALL periods of each residential tariff - a tariff's VAT basis is a property of the tariff, not of the year.",
+   "distributors": 34,
+   "state_ex_vat": 5,
+   "state_vat_inclusive": 0,
+   "state_nothing": 29,
+   "named_ex_vat": [
+    "Mogalakwena",
+    "Magareng",
+    "Moqhaka",
+    "KwaDukuza",
+    "Enoch Mgijima"
+   ],
+   "conclusion": "NOT ONE distributor states VAT-inclusive, and five state exclusive. City Power's published schedule confirms the same. South African municipal tariff schedules are conventionally published excluding VAT, so the working assumption is that all 34 are ex-VAT. THAT IS AN INFERENCE, not a verified fact for the 29 that say nothing.",
+   "why_the_spread_survives": "The error is UNIFORM across distributors, so the ranking between municipalities is unchanged. What moves is every premium against Eskom, which is measured against a VAT-inclusive tariff. At 900 kWh the range shifts from -39%/+113% to -30%/+145% and the median from -19% to -6%. Four of seven are still cheaper than Eskom direct.",
+   "why_the_fixed_charge_finding_survives": "VAT is proportional and applies to energy and fixed charges alike, so the fixed SHARE of a bill does not move at all: 12% Msunduzi, 45% Eskom, 69% City Power, 83% Emakhazeni at 200 kWh. The absolute bill rises 15%, which strengthens rather than weakens the argument - a 200 kWh Johannesburg household pays R2,146 a month against R1,180 on Eskom, an 82% premium, with 69% of it owed before a unit is used."
+  }
+ },
+ "escalation": {
+  "description": "Approved Eskom increases, used to bring NERSA's 2024/25 proposed rates to 2026/27.",
+  "fy2025_26_pct": 12.7,
+  "fy2026_27_pct": 8.76,
+  "fy2027_28_pct": 8.83,
+  "municipal_fy2026_27_pct": 9.01,
+  "cumulative_2024_25_to_2026_27": 1.2257,
+  "source": "NERSA MYPD6 decision and the R54bn settlement. Municipal bulk purchases rise 9.01% from 1 July 2026, direct customers 8.76% from 1 April 2026.",
+  "why_this_exists": "Two inputs were held in 2024/25 rands and used as 2026/27 figures - Homeflex's six rates and both Homelight rates - each 22.6% low. NERSA's own document warns of exactly this: its proposed tariffs are in 2024/25 rand value and are adjusted through the ERTSA process. Any rate taken from the Reasons for Decision must be grown before use.",
+  "fy2027_28_source_conflict": "RESOLVED 12 Sep 2026. We held 8.83% against PowerOptimal's 9.19%. NERSA's redetermination of Eskom's MYPD6 revenue allows an average 8.83% from 1 April 2027 - confirming ours and making it double-sourced. The redetermination also CORRECTS an earlier NERSA error in the regulatory-asset-base calculation, which matters here because existingCap is built on depreciation and return on assets over that base.",
+  "approved_path": {
+   "description": "What NERSA has actually approved, as distinct from what anyone projects.",
+   "mypd6_covers": "FY2026, FY2027, FY2028 - the three years from 2025/26.",
+   "approved": {
+    "2025_26": 12.7,
+    "2026_27": 8.76,
+    "2027_28": 8.83
+   },
+   "primary_source": "Eskom implementation notice, 16 Mar 2026: NERSA approved 8.76% for direct customers from 1 April 2026 and 9.01% for municipal bulk purchasers from 1 July 2026, following NERSA's decision of 5 March 2026.",
+   "beyond_2027_28": "MYPD7 covers FY2029 onward and HAS NOT BEEN FILED. Eskom applied for MYPD6 in September 2024 for the three years from 2025/26, so an MYPD7 application would be expected around late 2027. Any figure for 2029 or beyond is extrapolation, not a projection anyone has published.",
+   "so_the_honest_position": "A firm approved path two more years out, then nothing. The panel's scenario year of 2035 sits well past the end of any approved or applied-for determination, which is why the counterfactual is left flat and the CSIR's measured 4.6% real trend is offered as the alternative rather than embedded."
+  },
+  "secondary_source_warning": "SOURCES DISAGREE WITH EACH OTHER AND WITH ESKOM. Collected 10 Sep 2026: 12.74% for 2024/25 (PMG committee briefing), 11.75% for 2025/26 and separately 13.67% in April 2026 (EnergyBee, the same site, in two articles), against Eskom's official 8.76% from 1 April 2026. EnergyBee is where the Homepower rate of R3.2206 came from. That rate was independently verified against NERSA's own published progression and sits 0.9% from it, so it stands - but it stands because of the NERSA check, not because of its source. Use Eskom's Schedule of Standard Prices and NERSA decisions; treat aggregator sites as leads, not evidence."
+ },
+ "loss_and_levies": {
+  "retail_loss_pct": 8.0,
+  "loss_basis": "TECHNICAL LOSSES ONLY. About 2.5% transmission plus 5-6% distribution. Traced 10 Sep 2026; it had been an untraced 0.10 described as 'technical and non-technical'. Eskom's FY2026 interim results put NON-TECHNICAL losses - theft, meter tampering, illegal prepaid tokens - at 7.9 TWh over six months, about 8% of sales and R17.5bn of lost revenue. A combined figure would therefore be 15-17%, not 10%. But a cost-reflective tariff does not gross up for non-technical loss: theft is recovered as a revenue requirement, inside the allowed revenue this panel already carries, the same way arrear debt is. Grossing up here would count it twice.",
+  "environmental_levy_r_per_kwh": 0.027,
+  "levy_verified": "Reconciles two independent ways. Eskom build-up R6.5bn applied x 0.865 approval over 209.55 TWh gives R0.0268/kWh. And the statutory rate of 3.5 c/kWh on non-renewable electricity, on roughly 161 TWh of coal generation, gives R5.6bn over the same sales, R0.0267/kWh. Held 0.027.",
+  "carbon_note": "Carbon comes from the dispatch run, not from the components table. components_r_per_kwh.carbon_tax is deliberately UNUSED - using both would double-count. Checked 10 Sep 2026.",
+  "orphan_removed": "A constant RETAIL_LEVIES = 0.06 was defined and never used, left over from a refactor. Rule 6: a constant that looks live and is not is how drift starts."
+ },
+ "real_terms_basis": {
+  "description": "Everything in this panel is in CONSTANT 2026 RANDS. Stated explicitly because a figure labelled 'costed at 2035' invites being read as a 2035 price.",
+  "why_real": "BLD_COST decline rates are real cost reductions and say so in the code. BLD_DISC of 8% is a real discount rate. NERSA's allowed revenue is 2026/27, which is the base year, and every comparison tariff - Homepower, Homeflex, Homelight, City Power - is 2026/27 too. So a 2035 scenario figure is real 2026 rands compared against a 2026 tariff: real against real. That is the standard basis and what AEMO's ISP, NREL's ATB and CSIRO's GenCost all use. Inflation-linking would change nothing, because both sides would move together.",
+  "nominal_equivalent_note": "At roughly 4.5% inflation a real R4.03/kWh in 2035 is about R5.99 nominal. The panel does not report nominal figures and should not start: a nominal series would make every scenario look dearer than today for reasons that have nothing to do with the electricity system.",
+  "the_real_issue": {
+   "description": "The counterfactual, not the inflation basis.",
+   "problem": "The panel compares a decarbonised 2035 against a FLAT real 2026 tariff. Eskom is not on a flat real path: NERSA approved 12.7%, 8.76% and 8.83% against inflation of roughly 4.5%, so the real tariff has been rising 4-8% a year.",
+   "effect_on_the_conclusion": {
+    "flat_real_counterfactual": "gas-firmed 2035 costs +6% against 2026",
+    "2pct_real_trend": "-12%",
+    "4pct_real_trend": "-26%"
+   },
+   "conclusion": "The panel holds today's tariff flat in real terms, and that is GENEROUS TO THE STATUS QUO rather than neutral. The approved path runs 5.8 points real for two more years; the CSIR's measured trend is 4.6% real sustained over eleven. Against either, a gas-firmed decarbonised build is materially cheaper than doing nothing, and the flat comparison understates that. Still not embedded as a parameter - an approved path two years out and an eleven-year trend are evidence, not a forecast to 2035, and picking one would put a view about future NERSA decisions into the model. What changed is that the flat case is now labelled conservative rather than matched to anyone's aspiration.",
+   "published_evidence": {
+    "description": "What is actually published on the future Eskom tariff path, gathered 10 Sep 2026.",
+    "finding": "NOBODY PUBLISHES A 2035 ESKOM TARIFF PROJECTION. What exists is a measured historical trend, approved increases three years out, and a stated intention. They bracket the question rather than settle it.",
+    "csir_historical": {
+     "real_pct_per_year": 4.6,
+     "basis": "CSIR utility-scale power generation statistics, 2025: the national average tariff rose 10% a year from 2014 to 2025 against inflation averaging 5.2%. Eleven years, so a trend rather than a run of bad years. CSIR is already a source in this project, feeding validate_external.",
+     "note": "CSIR also observes that Eskom's tariffs are now ABOVE the utility-scale solar PV levelised cost."
+    },
+    "nersa_approved_near_term": {
+     "real_pct_per_year": 4.1,
+     "basis": "12.7%, 8.76% and 8.83% approved against CPI of roughly 4.5%. Only three years, and it ends in 2027/28."
+    },
+    "eskom_stated_intention": {
+     "real_pct_per_year": 0.0,
+     "basis": "Eskom chairman Mteto Nyati, Sep 2025: future tariff hikes should be in line with inflation. A statement of intent from the board, not a regulatory commitment or a forecast.",
+     "why_it_matters": "It is the only credible argument for the flat counterfactual the panel currently uses, and it comes from Eskom itself rather than from an outside analyst.",
+     "status": "DROPPED as a counterfactual, 12 Sep 2026. It was never a forecast - a board chairman's stated aim, and his term ends in October 2026. More to the point it is already contradicted by approved fact: NERSA has approved 12.7%, 8.76% and 8.83% against a 3% inflation target, so 5.8 points REAL is law for the year after next. A zero-real counterfactual would have to assume the approved path reverses immediately after it ends. It is retained here as a record of why it was considered, not as a case the panel offers."
+    },
+    "what_the_bracket_does_to_the_conclusion": {
+     "0pct_real_Nyati": "DROPPED - see eskom_stated_intention.status. Was: gas-firmed 2035 is 6% dearer than 2026.",
+     "4.1pct_real_NERSA": "26% cheaper",
+     "4.6pct_real_CSIR": "30% cheaper"
+    },
+    "conclusion": "The flat counterfactual is not a neutral choice - it is the most favourable case for the status quo, and it happens to match Eskom's own stated aspiration. Under any continuation of the measured trend, a gas-firmed decarbonised build is materially CHEAPER than doing nothing. Still not embedded as a parameter: an eleven-year trend is evidence, not a forecast, and picking one would put a view about future NERSA decisions into the model."
+   }
+  }
+ },
+ "curtailment_and_retail": {
+  "description": "How curtailment reaches a retail bill in this panel. Asked 10 Sep 2026.",
+  "mechanism": "Curtailment is NOT a line item. It works through the DENOMINATOR: capital and fixed obligations are recovered over SALES, and curtailed energy never becomes a sale. The rands stay the same and the kWh shrink.",
+  "measured": {
+   "gas_firmed_60pct_re": {
+    "curtailed_twh": 9,
+    "share_pct": 3.6,
+    "new_capital_r_per_kwh": 0.511
+   },
+   "future_mix_no_gas": {
+    "curtailed_twh": 134,
+    "share_pct": 35.8,
+    "new_capital_r_per_kwh": 1.033
+   }
+  },
+  "size_of_the_effect": "The Future mix builds 2.3x the capacity of the gas-firmed case but carries 2.0x the capital per kWh. The gap IS curtailment. If it sold everything it generated - 240 TWh rather than 181 - new capital would be R0.779/kWh instead of R1.033. That R0.254 is about 22% of the bill, one of the larger single effects in the panel and entirely invisible as a line.",
+  "take_or_pay": "REIPPPP contracts are take-or-pay: Eskom pays for contracted energy whether or not it takes it, which index.html already notes at the dispatch benchmark block. So curtailing an IPP does not save the payment, it only removes the kWh from sales. CORRECTED 10 Sep 2026: the IPP obligation line was held at a flat R/kWh, which quietly assumed the opposite. It is a fixed number of RANDS and now scales with the sales base - the Future mix sells 181 TWh against today's 204, so the line rises about 13%, from R0.275 to R0.310.",
+  "what_is_still_not_captured": "Curtailment compensation paid to IPPs as a separate settlement, where a contract provides for it. South Africa has no published figure for this and the model has no channel for it. It would raise high-renewables scenarios further, so its absence is conservative in the same direction as the flat counterfactual."
+ },
+ "curtailment_compensation": {
+  "description": "Deemed energy payments to curtailed IPPs. Previously recorded as unmodellable; it is not - the framework is published and specific.",
+  "rule": "Curtailment up to a threshold is uncompensated and the IPP bears it. Above the threshold Eskom pays deemed energy at the PPA price.",
+  "threshold_pct": 10,
+  "threshold_basis": "REIPPPP BW1-6 PPAs define curtailment as a system event, with a right to claim deemed energy for output the IPP was instructed not to deliver. The March 2024 Addendum DELETED the allowable grid unavailability period that previously gated those claims; in exchange Eskom holds a 10% curtailment right. Cliffe Dekker Hofmeyr corporate alert, 20 March 2024.",
+  "congestion_framework_note": "A separate Congestion Curtailment Framework runs a 4% curtailment limit as a 2025-2028 pilot, unlocking about 1.1 GW of hosting capacity in the Western Cape and 400 MW in the Eastern Cape. Compensation there is confined to the pilot period. SAPVIA, Nov 2025. The panel uses the 10% PPA threshold because it applies to the contracted fleet the obligation actually sits on.",
+  "ppa_price_r_per_kwh": 0.55,
+  "ppa_price_basis": "Midpoint of REIPPPP BW5 at R0.50 and BW6 at R0.58, the awards the contracted fleet is priced on.",
+  "real_world_check": "H1 2026: IPPs report project revenues 9 to 10% below budget, attributed to curtailed energy and to delays in reimbursement, with an Eskom backlog approaching R1 billion. Daily Maverick, 15 June 2026. So the mechanism is live and material at today's curtailment levels, not a theoretical provision.",
+  "caveat": "The threshold applies PER PROJECT PER YEAR and the model curtails system-wide, so applying it to an aggregate share is an approximation. It understates compensation, because a system-wide average hides projects curtailed far above it. Conservative in the same direction as the rest of the panel."
+ },
+ "irp2025_anchor": {
+  "description": "The Cabinet-approved IRP 2025 as an external check on the panel's SCENARIOS, not just its costing.",
+  "irp_new_capacity_gw_by_2039": 105,
+  "irp_new_wind_and_solar_gw": 59,
+  "source": "Integrated Resource Plan 2025, Cabinet-approved, via FOTW South African Energy Market Research & Investment Outlook, August 2026.",
+  "comparison": {
+   "gas_firmed_60pct_re": {
+    "new_wind_pv_gw": 45,
+    "vs_irp_pct": -24,
+    "reading": "45 GW by 2035 against the IRP's 59 GW by 2039 - roughly the same trajectory."
+   },
+   "future_mix_no_gas": {
+    "new_wind_pv_gw": 97,
+    "vs_irp_pct": 64,
+    "reading": "64% above the IRP and four years earlier. Not a plan anyone has proposed."
+   }
+  },
+  "why_this_matters": "The no-gas case has been called a stress test on the strength of its 134 TWh of curtailment. There is now a published, Cabinet-approved plan to say so against: it builds far more than government intends, on a shorter timeline. The gas-firmed case is the IRP-consistent one, which is the scenario whose result should be quoted."
+ },
+ "sales_decline_risk": {
+  "description": "Eskom's grid sales are falling, and the panel holds the sales base fixed except for rooftop.",
+  "observed": "Q1 2026 grid sales fell 5.6% year on year. The FULL YEAR is worse: Eskom sold 178 TWh in 2025/26, down 6.2%, with INDUSTRIAL sales down 22.5%. Revenue still rose 4.1% to R354.7bn, entirely on the 12.74% tariff increase rather than volume. That is the death spiral with numbers on it: prices up, volumes down, revenue held by price alone.",
+  "effect_if_sustained": {
+   "2pct_per_year_to_2035": "-17% sales",
+   "5.6pct_per_year_to_2035": "-40% sales"
+  },
+  "why_it_matters": "Every fixed cost in this panel is recovered over sales. A shrinking base raises the per-kWh figure for the SAME rands - the death spiral that is itself the mechanism behind the above-inflation increases. The panel captures rooftop-driven decline WITHIN a scenario but not a secular fall.",
+  "not_modelled_deliberately": "Like the counterfactual escalation, choosing a demand trajectory is a judgement rather than a parameter. And it cuts both ways: a falling base raises every scenario, including the status quo. Holding it flat alongside a flat real tariff is doubly conservative and both are now recorded.",
+  "eskom_response": "Eskom is trying to monetise 2 to 3 GW of surplus capacity through DISCOUNTED negotiated pricing agreements for ferrochrome and manganese smelters, and targeting data centres, EV charging, exports and flexible bitcoin-mining loads. So the counter to falling volumes is discounted price, which pushes the burden further onto the customers who cannot negotiate - the residential base this panel models. Not modelled: the panel has no mechanism for a discounted industrial tariff."
+ },
+ "arrear_debt_reconciliation": "The report gives municipal debt to Eskom above R110bn, growing about R3bn a month - some R36bn a year - against the R7.8bn a year this panel carries. They measure different things: ours is what NERSA ALLOWS Eskom to recover through tariffs, theirs is what municipalities fail to pay. The roughly R28bn a year gap is absorbed by Eskom, not by consumers. So the tariff figure is the right one here, and the panel excludes it anyway as a transfer rather than a cost of supply.",
+ "market_price_scarcity": {
+  "description": "A market-indexed price series alongside the regulated shadow price, built 10 Sep 2026 after asking what professional models do.",
+  "why": "The regulated shadow price shapes only fuel and carbon and recovers capital through a flat adder - correct for South Africa today. It is NOT what Octopus Agile does, and the gap is measurable: wholesale revenue at short-run cost covers 157% of system cost today but 16% on the Future mix. Our price distribution runs -R0.23 to R0.79 and never higher, all year. ERAA opens a competitive wholesale market in H2 2026 with retail competition to follow, so this is the series that becomes the relevant one.",
+  "what_the_professionals_do": {
+   "pypsa": "Energy price is the DUAL of the nodal balance constraint. Where capacity is endogenous the duals carry investment cost, so scarcity rent emerges without being added - their documentation notes non-zero prices even with all marginal costs set to zero.",
+   "plexos": "A Value of Reserve Shortage, an ADMINISTRATIVELY SET penalty, applied whenever a reserve constraint is violated. Energy price becomes the marginal unit's variable cost plus that scarcity component. NREL's reserve-rules study uses a $1,000/MW base, a $4,000/MW high case, and a stepped penalty curve rising with the deficiency.",
+   "we_follow": "PLEXOS. Our hourly dispatch is a merit-order heuristic, not an LP, so there is no dual to read. The stepped curve is the NREL shape, keyed to the depth of the reserve shortfall, with VOLL in hours that actually shed load."
+  },
+  "failed_attempt_recorded": "A first version read an ERCOT-style ORDC off reserveMW directly. It fired in all 8,760 hours and recovered 5,000% of system cost. reserveMW is the reserve HELD - a policy input, not a measure of tightness, and nearly constant at 4.4 to 6.8% of load. What discriminates is the DEPTH of shortfall against the requirement: zero deeply-short hours today, 1,656 on the Future mix.",
+  "revenue_recovery": {
+   "today_pct": 76,
+   "gas_firmed_pct": 132,
+   "future_mix_no_gas_pct": 35
+  },
+  "recovery_is_the_finding": "Recovery is NOT expected to be 100% and should not be tuned to it. An energy-only market with a large renewables overbuild and no expensive marginal plant cannot recover its costs: prices are zero 56% of the year and nothing sets a high price. That is the revenue-sufficiency problem that capacity markets and CfDs exist to solve, and 35% is the measurement of it. The gas-firmed case over-recovers at 132% because gas sets a high price often and everything below it earns inframarginal rent.",
+  "status": "WIRED IN as a selectable basis, 10 Sep 2026.",
+  "panel_results_2035": {
+   "regulated_basis": {
+    "today": 3.62,
+    "gas_firmed": 3.94,
+    "future_mix": 5.44
+   },
+   "market_basis": {
+    "today": 3.71,
+    "gas_firmed": 6.29,
+    "future_mix": 3.46
+   },
+   "daily_spread": {
+    "regulated_future_mix": "1.1x",
+    "market_gas_firmed": "4.7x",
+    "market_future_mix": "2.3x"
+   },
+   "reading": "The market basis INVERTS the ranking. Under regulation the no-gas Future mix is dearest at R5.44 because its capital is recovered flat over few sales. Under a market it is CHEAPEST at R3.46, because prices are zero 56% of the year and the market simply fails to recover that capital - the 35% revenue recovery measured earlier. The household pays less; the capital does not get paid. And the gas-firmed case goes the other way, R3.94 regulated against R6.29 market, because gas sets a high price often and every inframarginal unit earns rent on it. The spread behaves as expected too: 4.7x on the gas-firmed market basis against 1.1x regulated. That is the Agile shape, and it needed an expensive marginal plant to appear."
+  }
+ },
+ "curtailment_monetised": {
+  "description": "Curtailed renewable output sold to electrolysers rather than spilled. Rebuilt 10 Sep 2026 with a derived offtake price instead of an implicit assumption that hydrogen pays what a household pays.",
+  "electrolyser_wtp_r_per_kwh": 1.05,
+  "wtp_derivation": "Electricity is 73% of green hydrogen LCOH - multiple studies concur - and every $10/MWh shifts hydrogen cost by about $0.45/kg, which implies 45 kWh/kg. That matches the 40-50 kWh/kg range in the electrolyser literature independently, so the two cross-check. At a $4/kg LCOH target, the 2030 industry goal, the electricity budget is 0.73 x 4 / 45 = $0.065/kWh, or R1.05 at R16.21/USD. Bracket: R0.79/kWh at a $3/kg 2050 target, R1.31 at the $5/kg maximum willingness to pay recorded for the Dutch GROWH project.",
+  "how_it_is_modelled": "As a REVENUE OFFSET, not as extra household sales. Curtailed MWh times the offtake price is revenue the system earns, which reduces what households must cover. The curtailed kWh do NOT join the household sales base - a hydrogen buyer is a different customer on a different tariff. The previous version added them to the denominator, which credited them at the same average cost a household pays, roughly R3.62. That was three times any electrolyser's willingness to pay and made the Future mix look 37% cheaper.",
+  "deemed_energy_also_disappears": "Nothing is curtailed, so the take-or-pay compensation goes to zero.",
+  "scale_caveat": "134 TWh of curtailment is 15.3 GW of average draw, and because it arrives in about 56% of hours, roughly 27 GW of electrolyser capacity. Hive Hydrogen's Coega project - the most advanced in Africa, and still pre-FID with commercial operation targeted for 2029-30 - is 1.2 GW. So the full-monetisation case implies more than twenty Coegas. The panel reports the implied capacity alongside the result so the reader can judge it.",
+  "sources": "IEA Hydrogen Review 2026; Global Hydrogen Hub LCOH targets 2026; Dutch GROWH electrolyser contracting study, arXiv 2502.09748; Hive Hydrogen Coega project, Mining Weekly May 2026.",
+  "capture_is_computed_not_assumed": "REBUILT AGAIN 10 Sep 2026. The previous version credited ALL curtailment, which was excessive: an electrolyser can only take surplus that is there when it runs, min(curtailment, capacity) in each hour, and short shallow spills are missed. Capture is now computed hour by hour from the model's own curtailMW series against a chosen electrolyser capacity.",
+  "capture_curve_future_mix_2035": {
+   "2_GW": {
+    "captured_pct": 8,
+    "capacity_factor_pct": 62,
+    "retail_r_per_kwh": 5.26
+   },
+   "5_GW": {
+    "captured_pct": 19,
+    "capacity_factor_pct": 57,
+    "retail_r_per_kwh": 5.03
+   },
+   "10_GW": {
+    "captured_pct": 34,
+    "capacity_factor_pct": 52,
+    "retail_r_per_kwh": 4.69
+   },
+   "20_GW": {
+    "captured_pct": 58,
+    "capacity_factor_pct": 45,
+    "retail_r_per_kwh": 4.14
+   },
+   "none": {
+    "captured_pct": 0,
+    "retail_r_per_kwh": 5.45
+   }
+  },
+  "viable_capacity_factor": "The electrolyser literature puts a viable capacity factor at 45-60%. Below about 40% the capital swamps the cheap power and the hydrogen cost stops working, so the low-CF end of the curve is not a business anyone would build. Capturing 91% of the Future mix's curtailment needs 40 GW at a 35% factor - past that limit. The panel reports the resulting factor and says when it falls below the viable range.",
+  "deemed_energy_falls_proportionally": "Curtailment an electrolyser does not capture is still curtailment and still compensated. The take-or-pay payment now falls by the captured share rather than to zero: R0.327/kWh with no electrolysers, R0.137 at 20 GW."
+ }
+}

@@ -1,0 +1,196 @@
+{
+ "meta": {
+  "description": "Installed generation capacity by province, MW. Thermal from the station-level fleet register (BASE scenario); wind and utility solar from the regional renewable capacity compilation; rooftop from the distributed PV estimate.",
+  "note": "CAPACITY, not generation. A province with 30 GW of coal produces far more energy than one with 3 GW of solar at the same nameplate, because the capacity factors differ by a factor of four or five. Read the energy shares alongside, never the megawatts alone.",
+  "licence": "CC BY-NC-ND 4.0",
+  "attribution": "GridTwin ZA - gridtwinza.org",
+  "generation_note": "Generation is MODELLED, not measured. Capacity factors for wind and solar come from the regional hourly profiles, so a Hydra Central wind MW is credited at 42.5% and a Kwazulu Natal one at 21.6%. Thermal factors are derived from the model's own base-case dispatch rather than assumed: coal at 0.434 reproduces the 160.7 TWh the engine actually produces. An assumed 60% put national generation 27% above national demand, which is how you know it was wrong. National total reconciles to 98% of demand; the gap is imports and pumped storage, which are not allocated by province.",
+  "demand_note": "Provincial demand is national demand apportioned by the load shares the regional model uses. It is an allocation, not a measurement."
+ },
+ "capacity_mw": {
+  "Eastern Cape": {
+   "coal": 0,
+   "nuclear": 0,
+   "hydro": 0,
+   "gas": 532.5,
+   "wind": 1896.0,
+   "solar": 0.0,
+   "rooftop": 680.2
+  },
+  "Free State": {
+   "coal": 0,
+   "nuclear": 0,
+   "hydro": 0,
+   "gas": 0,
+   "wind": 0.0,
+   "solar": 168.9,
+   "rooftop": 556.6
+  },
+  "Gauteng": {
+   "coal": 3718.0,
+   "nuclear": 0,
+   "hydro": 0,
+   "gas": 424.6,
+   "wind": 0.0,
+   "solar": 50.0,
+   "rooftop": 2961.4
+  },
+  "Hydra Central": {
+   "coal": 0,
+   "nuclear": 0,
+   "hydro": 600.0,
+   "gas": 75.0,
+   "wind": 669.0,
+   "solar": 459.5,
+   "rooftop": 136.5
+  },
+  "Kwazulu Natal": {
+   "coal": 0,
+   "nuclear": 0,
+   "hydro": 0,
+   "gas": 670.0,
+   "wind": 0.0,
+   "solar": 0.0,
+   "rooftop": 1375.1
+  },
+  "Limpopo": {
+   "coal": 8007.0,
+   "nuclear": 0,
+   "hydro": 0,
+   "gas": 0,
+   "wind": 0.0,
+   "solar": 506.0,
+   "rooftop": 561.8
+  },
+  "Mpumalanga": {
+   "coal": 30533.0,
+   "nuclear": 0,
+   "hydro": 0,
+   "gas": 0,
+   "wind": 0.0,
+   "solar": 0.0,
+   "rooftop": 704.9
+  },
+  "North West": {
+   "coal": 0,
+   "nuclear": 0,
+   "hydro": 0,
+   "gas": 0,
+   "wind": 0.0,
+   "solar": 445.0,
+   "rooftop": 681.2
+  },
+  "Northern Cape": {
+   "coal": 0,
+   "nuclear": 0,
+   "hydro": 0,
+   "gas": 348.5,
+   "wind": 790.1,
+   "solar": 1282.6,
+   "rooftop": 621.9
+  },
+  "Western Cape": {
+   "coal": 0,
+   "nuclear": 1854.0,
+   "hydro": 0,
+   "gas": 2371.0,
+   "wind": 1256.9,
+   "solar": 359.0,
+   "rooftop": 827.8
+  }
+ },
+ "generation_twh": {
+  "Eastern Cape": {
+   "wind": 6.1,
+   "solar": 1.33,
+   "nuclear": 0.0,
+   "hydro": 0.0,
+   "coal": 0.0,
+   "gas": 0.0
+  },
+  "Free State": {
+   "wind": 0.0,
+   "solar": 1.44,
+   "nuclear": 0.0,
+   "hydro": 0.0,
+   "coal": 0.0,
+   "gas": 0.0
+  },
+  "Gauteng": {
+   "wind": 0.0,
+   "solar": 5.65,
+   "nuclear": 0.0,
+   "hydro": 0.0,
+   "coal": 14.14,
+   "gas": 0.0
+  },
+  "Hydra Central": {
+   "wind": 2.49,
+   "solar": 1.23,
+   "nuclear": 0.0,
+   "hydro": 1.31,
+   "coal": 0.0,
+   "gas": 0.0
+  },
+  "Kwazulu Natal": {
+   "wind": 0.0,
+   "solar": 2.35,
+   "nuclear": 0.0,
+   "hydro": 0.0,
+   "coal": 0.0,
+   "gas": 0.0
+  },
+  "Limpopo": {
+   "wind": 0.0,
+   "solar": 1.98,
+   "nuclear": 0.0,
+   "hydro": 0.0,
+   "coal": 30.44,
+   "gas": 0.0
+  },
+  "Mpumalanga": {
+   "wind": 0.0,
+   "solar": 1.3,
+   "nuclear": 0.0,
+   "hydro": 0.0,
+   "coal": 116.08,
+   "gas": 0.0
+  },
+  "North West": {
+   "wind": 0.0,
+   "solar": 2.23,
+   "nuclear": 0.0,
+   "hydro": 0.0,
+   "coal": 0.0,
+   "gas": 0.0
+  },
+  "Northern Cape": {
+   "wind": 2.62,
+   "solar": 3.95,
+   "nuclear": 0.0,
+   "hydro": 0.0,
+   "coal": 0.0,
+   "gas": 0.0
+  },
+  "Western Cape": {
+   "wind": 4.02,
+   "solar": 2.37,
+   "nuclear": 13.8,
+   "hydro": 0.0,
+   "coal": 0.0,
+   "gas": 0.01
+  }
+ },
+ "demand_twh": {
+  "Eastern Cape": 9.2,
+  "Free State": 12.0,
+  "Gauteng": 69.0,
+  "Hydra Central": 1.3,
+  "Kwazulu Natal": 33.9,
+  "Limpopo": 10.5,
+  "Mpumalanga": 38.3,
+  "North West": 16.4,
+  "Northern Cape": 3.1,
+  "Western Cape": 25.2
+ }
+}
