@@ -408,8 +408,14 @@ const SCENARIOS = {
   {
     const probe = w.document.createElement('script');
     probe.textContent = `window.__flr = (() => { try {
+      // Averaged over three outage draws from 22 Sep 2026. One seeded outage path put a few
+      // GWh of noise on figures of the same size, and at the calibrated 480-hour repair time
+      // that was enough to invert the first two: 7.7 / 5.0 / 227.3 on the base seed.
       const base = { ...state, coalEAFPct: 55 };
-      return [0, 2200, 6000].map(f => simulate({ ...base, reserveOperatingMW: f }, PROFILES).E.unserved || 0);
+      const seeds = [20260816, 20260816 + 7919, 20260816 + 15838];
+      return [0, 2200, 6000].map(f => seeds
+        .map(sd => simulate({ ...base, reserveOperatingMW: f, outageSeed: sd }, PROFILES).E.unserved || 0)
+        .reduce((x, y) => x + y, 0) / seeds.length);
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const F = w.__flr;

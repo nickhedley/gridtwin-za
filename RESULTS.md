@@ -1427,6 +1427,130 @@ The EAF conversion decides the check. The engine sheds with peakers at full outp
 its available ceiling, so the shortfall is real in the model. Still missing: the MTSAO's
 transmission component, which would raise its figure relative to a national model, not lower it.
 
+### Where the NTCSA gap comes from, 22 Sep 2026
+
+Build `2026-09-22ag`, no code change. Rebuilt MTSAO case, mean of twelve weather years x two
+outage draws, against NTCSA's 86 GWh:
+
+```
+                                                    mean shed GWh
+rebuilt check as it stands                              240.7
++ Cahora Bassa at 1,150 MW all year                      79.9
++ non-Eskom firm plant, 2,100 MW                         43.3
++ both                                                   12.1
++ non-Eskom firm and Cahora Bassa pro-rata (288 MW)      32.0
++ the same at coal EAF 67 instead of 64                   9.1
+```
+
+Two inputs, not the EAF conversion, carry most of it:
+
+- Cahora Bassa. The check zeroes imports for all of 2030; the MTSAO has the contract running to
+  March 2030. A quarter of it, 288 MW on an annual average, is worth 55 GWh of shed energy here.
+- Non-Eskom plant. The MTSAO counts 2,387 MW of non-Eskom generation contributing 10.5 TWh -
+  1,328 MW coal, 582 gas, 198 cogeneration, 180 pumped storage. The model's fleet is Eskom's
+  only, so that capacity is absent from every scenario, not just this check.
+
+The old check read 13 GWh because its 8 GW of surplus new renewables offset the missing firm
+capacity. Two errors cancelling.
+
+Open question before the check is fixed: whether the demand series covers the load those
+non-Eskom plants serve. Eskom contracted demand is 210.5 TWh in this case against the MTSAO's
+264 TWh national figure, and the difference is losses, exports, rooftop self-consumption and
+possibly that load. Adding their generation without their demand would flatter the model.
+
+### NTCSA check rebuilt on a robust case; outage share measured, 22 Sep 2026
+
+Build `2026-09-22ah`.
+
+The non-Eskom fleet stays out, and the energy balance says why. Eskom's hourly dataset for 2025:
+coal 170.4 TWh, nuclear 10.2, Eskom OCGT 1.9, hydro 1.8, pumped storage 4.5, imports 6.6,
+contracted IPP renewables 18.1 and the DoE peakers 1.5, summing to 214.9 TWh, which after 6.0 TWh
+of pumping matches contracted demand of 209.6. It is a closed Eskom-plus-contracted-IPP balance
+with no non-Eskom coal in it, so those stations and the load they serve are both outside the
+model's universe. Adding their capacity without their demand would flatter every scenario.
+
+The 86 GWh comparison is retired. It sits at the edge of adequacy, where the answer moves faster
+than the inputs are known: 5% more demand took the same case from 186 to 635 GWh, and a flat
+availability derate in place of the unit-level outage model took it from 186 to 43.
+
+Replaced by the MTSAO's risk-adjusted 2030 case, whose two published outputs are far from zero:
+
+```
+                        model (12 years x 2 draws)   MTSAO
+unserved energy                   4.5 TWh            more than 4 TWh
+OCGT utilisation                   47.6%             about 45%
+```
+
+The demand mapping is what makes it line up, and it is the sensitive input. Eskom contracted
+demand ex-exports was about 204.7 TWh in 2024 against the MTSAO's national 243 TWh, a ratio of
+1.187; their 264 TWh in 2030 is then 222.4 TWh on this model's basis, +15% on its base, against
+the +8.6% the check used before. Coal EAF 56, from their 60% fleet figure.
+
+Forced-outage share measured, from ESK19679, unplanned over total capability loss:
+
+```
+2022   2023   2024   2025   2026 Jan-Aug
+ 73     73     66     67      61
+```
+
+It falls as availability recovers, so it is now taken from the same year as coalEAFPct: 61, was
+67 against a 2026 EAF. Deep decarbonisation's mean shed energy goes 2.97 to 2.34 GWh a year;
+Fossil-free is unchanged, having no coal. The peaker-seasonality benchmark, which had been
+failing, now passes: 28/28.
+
+Not measured: the 72-hour mean repair time. ESK19679 carries fleet capability loss, not per-unit
+outage events, so it cannot be derived from it, and it is worth a factor of four on shed energy
+in a tight case.
+
+### Outage repair time sourced and calibrated, 22 Sep 2026
+
+Build `2026-09-22ai`. The 72-hour mean repair time was unsourced. Two routes were tried.
+
+Published figures do not fit this fleet. Deakin et al. (2022), comparing outage models against
+ENTSO-E data, use 40 hours for coal with 0.86 availability, after Edwards et al. (2017). The same
+paper finds those Markov models far less persistent than the real data they represent: European
+fleets show a week-lag autocorrelation of 0.27 to 0.70 against about zero in the model.
+
+So the value is calibrated to persistence instead, from Eskom's own hourly series. Unplanned
+capability loss in 2025 has an autocorrelation of 0.91 at a day, 0.70 at a week and 0.44 at a
+month; total fleet availability, 0.92 and 0.79. The modelled availability path against those:
+
+```
+repair time h      24 h lag    1 week lag
+ 40                  0.54         0.21
+ 72 (was)            0.77         0.29
+120                  0.84         0.34
+240                  0.88         0.47
+480 (now)            0.96         0.74
+observed                0.92         0.79
+```
+
+It changes little: a 2025 backcast goes 4 to 7 GWh of shed energy, the NTCSA risk-adjusted case
+4.8 to 4.5 TWh. What matters is unit-level outages at all, not their length - the same case reads
+43 GWh with a flat availability derate against 186 with unit-level outages. Both presets still
+meet the reliability standard: Deep decarbonisation 3.35 GWh mean shed against its 3.67 limit,
+Fossil-free 3.09 against 3.46.
+
+Two checks were reading one outage draw and now average three, because at 480 hours a single path
+carries several GWh of noise: the reserve-requirement invariant (7.7 / 5.0 / 227.3 GWh on the base
+seed, which inverts the first two) and the 2026 surplus benchmark (8.6 GW on the base seed, 6.5 as
+a three-draw mean).
+
+### The 2025 backcast, and what it says
+
+Bigger than the repair time: at 2025 conditions the model sheds 4 to 7 GWh where Eskom shed
+390 GWh (the same figure the MTSAO reports for the year to September). Demand is not the reason -
+the model's 196.1 TWh and 29.6 GW peak match contracted demand ex-exports of 194.7 TWh and 30.5 GW.
+Nor is diesel: the model burns 0.26 TWh against Eskom's 3.4 TWh of OCGT, so Eskom shed load while
+burning more fuel than the model uses.
+
+What is left is the shape of availability. Real 2025 fleet availability has a fifth percentile of
+54.5% and a minimum of 46.7% around a 62.4% mean, and those troughs persist for weeks. The
+modelled path has a similar spread but disperses faster. The fix that professional models use is
+to drive the simulation with historical availability traces rather than synthetic draws - MISO
+builds hourly outage adders from GADS history, AEMO uses historical reference years. ESK19679
+carries the hourly series to do it.
+
 ---
 
 ## Fossil free, re-measured

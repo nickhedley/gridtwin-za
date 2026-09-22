@@ -291,7 +291,15 @@ const check = (name, ok, detail) => {
             + P.ocgtDieselMW + P.importsMW * P.importsCF;
           return (firm - pk) / 1000;
         };
-        return { surplusGW: sur(r, S25), surplus2026GW: sur(simulate(state, PROFILES), state) };
+        // Averaged over three outage draws from 22 Sep 2026. The surplus is read at ONE hour,
+        // so a single seeded outage path made it a draw from a distribution: at the calibrated
+        // 480-hour repair time it read 8.6 GW on the base seed and 6.5 GW as a three-draw mean.
+        const meanSur = (ov) => {
+          const seeds = [20260816, 20260816 + 7919, 20260816 + 15838];
+          const v = seeds.map(sd => sur(simulate({ ...state, ...(ov || {}), outageSeed: sd }, PROFILES), state));
+          return v.reduce((x, y) => x + y, 0) / v.length;
+        };
+        return { surplusGW: sur(r, S25), surplus2026GW: meanSur() };
       })(),
       // Grid generation excluding rooftop, which is behind the meter and never reaches
       // the distribution network. Compare against energy AVAILABLE, not sales.
