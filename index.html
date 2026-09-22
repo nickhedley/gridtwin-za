@@ -9365,9 +9365,6 @@ const RESERVE_COOPT = false;
 // could not see the value of banking energy across days, so it overbuilt VRE to
 // brute-force through the bad ones instead.
 const STORAGE_CHRONO = true;
-const RES_CONTINGENCY_MW = 794;   // largest unit, a Medupi/Kusile set
-const RES_LOAD_PCT = 2.0;
-const RES_VRE_PCT  = 5.0;
 
 const TX_R_PER_MW_KM = 10000;
 const TX_LIFE_YEARS  = 40;
@@ -9706,26 +9703,15 @@ function bldBuildRegionalLP(opts){
   // market would pay, and almost nobody here can currently put a figure on it.
   if (RESERVE_COOPT) {
     for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
-      const i = r.d*24 + h;
-      const dgy = Math.pow(1+growth, y-2026);   // dg is scoped to the year loop above
       const terms = [];
-      let dem = 0;
       for (let ri = 0; ri < BLD_REGIONS.length; ri++){
-        const R = BLD_REGIONS[ri], k = ri+'_'+y+'_'+r.d+'_'+h;
-        dem += PROFILES.demand[i]*dgy*(BLD_LOAD_SHARE[R]||0);
+        const k = ri+'_'+y+'_'+r.d+'_'+h;
         terms.push('rc_'+k, 'rdz_'+k, 'rb_'+k);
-        // The VRE-following term scales with wind and solar actually built AND
-        // dispatched, which are decision variables - so they belong on the left
-        // hand side, not in a precomputed constant. This also means the optimiser
-        // sees that building more renewables raises the reserve requirement,
-        // which is a real cost of a high-VRE system and one that a fixed
-        // right-hand side would hide from it.
-        const f = RES_VRE_PCT/100;
-        const sp = bldRegProfiles.solar_pu[R][i], wp = bldRegProfiles.wind_pu[R][i];
-        cum('wind',ri,y).forEach(v => terms.push('- ' + (f*wp).toFixed(5) + ' ' + v));
-        cum('pv',ri,y).forEach(v   => terms.push('- ' + (f*sp).toFixed(5) + ' ' + v));
       }
-      const need = RES_CONTINGENCY_MW + dem*RES_LOAD_PCT/100;
+      // The same flat requirement the dispatch engine holds: reserveOperatingMW, NTCSA ASTR.
+      // Was 794 MW + 2% of load + 5% of VRE here, a second definition that disagreed with
+      // the engine from 21 Sep. 22 Sep 2026.
+      const need = S.reserveOperatingMW;
       L.push(' resq_'+y+'_'+r.d+'_'+h+': '
         + terms.join(' + ').replace(/\+ - /g, '- ') + ' >= ' + need.toFixed(1));
     }
@@ -16055,7 +16041,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22k';
+const BUILD_STAMP = '2026-09-22l';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
