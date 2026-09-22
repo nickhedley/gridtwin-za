@@ -426,6 +426,36 @@ setTimeout(()=>{
   //
   // Pinned so the choice cannot drift back silently. If a future change moves it, the
   // question to ask is whether the trade was re-decided, not whether the number moved.
+  // ── COAL UTILISATION UNDER THE IRP'S OWN BUILD ────────────────────────────
+  // Measured 22 Sep 2026. On the IRP's 2030 targets the model dispatches 110.9 TWh of coal,
+  // 62% of what that fleet has available at 64% EAF, and emits 129 Mt. The IRP's own published
+  // 160 Mt implies about 144 TWh, which is coal running roughly as hard as it does today
+  // despite the plan's renewables. Removing the plan's new wind and solar from this preset
+  // takes the model to 156 TWh and 175 Mt, so the difference is displacement, not the fleet.
+  // The check exists so that if our dispatch drifts back toward the IRP's number, someone
+  // notices it is a change rather than a confirmation.
+  {
+    const c = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      Object.assign(state, PRESETS["Latest IRP's 2030 targets"]);
+      const P = { ...FIXED, ...state };
+      const r = simulate(state, PROFILES);
+      const avail = (P.coalInstalledMW - P.coalDecomMW) * P.coalEAFPct / 100 * 8760 / 1e6;
+      const out = { coalTWh: r.E.coal / 1e6, availTWh: avail, co2: r.co2,
+                    curtTWh: r.E.curtailed / 1e6 };
+      Object.assign(state, saved);
+      return out;
+    `);
+    if (c && !c.error){
+      const util = 100 * c.coalTWh / c.availTWh;
+      check('the IRP build pushes coal below 70% of its available energy',
+            util > 52 && util < 72,
+            `coal ${c.coalTWh.toFixed(1)} TWh, ${util.toFixed(0)}% of ${c.availTWh.toFixed(0)} TWh `
+            + `available, ${c.co2.toFixed(0)} Mt CO2 against the IRP's 160; only `
+            + `${c.curtTWh.toFixed(1)} TWh is spilled, so the coal is displaced rather than the wind`);
+    }
+  }
+
   {
     const r = probe(`
       const saved = JSON.parse(JSON.stringify(state));
