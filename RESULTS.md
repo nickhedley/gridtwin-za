@@ -1655,6 +1655,58 @@ never binds, so the value is not worth arguing about.
 The Backcast 2025 preset now carries its own caveat: it sheds about 6 GWh against Eskom's actual
 390, the difference is peaker delivery, and it should not be read as a validation.
 
+### Storage dispatch: a state-of-charge floor does not help, and the benchmark is biased
+
+Build `2026-09-22am`. Hourly state of charge per tier is now returned (socByTier), diagnostic
+only. The storage questions of this session could not be settled without it: only throughput was
+visible.
+
+What it shows on Deep decarbonisation 2035 in 2016, the worst year. Lithium runs at 84% of its
+200 GWh on 20 January and falls to 63% by the 495th hour, 28% by the 510th and empty by the
+530th, where the system sheds 38 GWh. The event needs about 150 GWh over 40 hours and only
+36 GWh of surplus arrives in the middle of it.
+
+A strategic floor was built and removed. Holding back a share of lithium, released when the
+forecast shows a shortfall in the lookahead window, made things worse:
+
+```
+floor share of lithium energy    0     15%    25%    40%    60%
+Deep decarbonisation 2016       38      38    43.7   48.4   72.8
+Fossil-free 2020                37.1   37.1   37.7   64.4  119.0
+```
+
+In these systems the release condition is true in most hours, so the floor is either inert or it
+blocks discharge in hours that genuinely need it. Conserving energy does not help when the calls
+on the store are real: the engine discharges 9.25 TWh and every megawatt-hour of it is covering
+residual demand.
+
+Charging is not the problem either. Only 0.5 TWh of the year's 61.6 TWh of spill occurs while the
+store has room, across 90 hours. The store is full whenever there is surplus to take.
+
+And the benchmark flatters the optimum. Its surplus series is the engine's charging plus its
+curtailment, and the engine's charging includes pumped storage pumping - about 2.8 TWh a year that
+the LP is free to put into the battery instead. Part of the measured gap is that. The benchmark
+should net out pumping before the gap is quantified again, which is the next step rather than
+another dispatch rule.
+
+Sizing is the honest reading in the meantime: doubling duration to 16 hours, or power to 50 GW,
+removes the 2016 shedding entirely.
+
+### Iron-air already behaves seasonally
+
+Build `2026-09-22am`, default weather year:
+
+```
+                            iron-air discharge   cycles/yr   months
+Deep decarbonisation 2035         33 GWh            0.33      July only
+Fossil-free 2040                   0                0         none this year
+```
+
+It fills through the year and empties into the winter, which is what the technology is for and
+what the earlier 20 GW measurement found (92% July, 8% August). At a third of a cycle a year it
+cannot be paid by an energy price: the capacity-payment argument in this file's long-duration
+entry is the same finding at preset scale.
+
 ---
 
 ## Fossil free, re-measured
