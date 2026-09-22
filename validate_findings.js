@@ -399,13 +399,18 @@ setTimeout(()=>{
       // It passed this morning for the wrong reason and broke today for the right one,
       // which is how it was found. Replaced by the arithmetic it should have checked.
       const af = 0.08 / (1 - Math.pow(1.08, -40));
-      check('locational transmission: R6,964/kW annuitises to R584/kW-yr',
-            Math.abs(6964 * af - 584) < 2,
-            `R${(6964 * af).toFixed(0)}/kW-yr - RESULTS.md derives R584 from R6,964/kW over `
-            + `40 years at 8%, and uses it to argue R600 is a sound national average`);
-      check('locational transmission: the tariff constant is R600/kW-yr',
-            Math.abs(r.tx - 600) < 1,
-            `R${r.tx}/kW-yr against the R600 the same section is built on`);
+      // UPDATED 22 Sep 2026. The rate was re-derived from what the TDP buys: TDP 2024 Table 4,
+      // generation integration R54.3bn of R112.5bn (51% with land pro rata); 51% of R440bn over
+      // 46.9 GW of grid-connected new generation is R4,800/kW, R402/kW-yr over 40 years at 8%.
+      const gi = (54277 + 4880 * 54277 / 80707) / 112534;
+      const perKw = gi * 440e9 / 46.9e6;
+      check('transmission: TDP generation integration annuitises to R402/kW-yr',
+            Math.abs(perKw * af - 402) < 1,
+            `${(100 * gi).toFixed(1)}% of R440bn over 46.9 GW is R${perKw.toFixed(0)}/kW, `
+            + `R${(perKw * af).toFixed(0)}/kW-yr`);
+      check('transmission: the engine constant is R402/kW-yr',
+            Math.abs(r.tx - 402) < 1,
+            `R${r.tx}/kW-yr against the R402 derived from TDP 2024 Table 4`);
       console.log(`  locational   avgCost R${r.avgCost.toFixed(0)}/MWh \u00b7 tx R${r.tx}/kW-yr`);
     }
   }

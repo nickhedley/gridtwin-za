@@ -6025,7 +6025,15 @@ const FIXED = {
   // neither gets a separate adder. CSP never sets a price in this model, so
   // its ATB VOM (~$4) is omitted rather than carried dead.
   vomCoal:80, vomCcgt:35, vomDiesel:70, vomNuclear:45,
-  acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350, txRPerKWyr:600,
+  acapWind:1650, acapPv:1050, acapRooftop:1150, acapBatt4h:1500, acapCcgt:1350,
+  // Transmission for new generation, R/kW-yr, re-derived 22 Sep 2026 from what the TDP buys.
+  // TDP 2024 Table 4 (first five years, R112.5bn): new generation integration R54.3bn, network
+  // strengthening for load R26.4bn, land R4.9bn, refurbishment R17.8bn, other R9.1bn. With land
+  // shared pro rata, generation integration is 51% of the plan; 51% of the decade's R440bn is
+  // R225bn for 46.9 GW of grid-connected new generation (the TDP's 56 GW less 9 GW rooftop):
+  // R4,800/kW, R402/kW-yr over 40 years at 8%. The old R600 was the whole TDP over 56 GW,
+  // refurbishment and load strengthening included.
+  txRPerKWyr:402,
   // long-duration storage capex, added 28 Aug 2026. Until then vanadium, iron-air and
   // pumped storage appeared in newCapexR nowhere, so the model showed 20 GW of 100-hour
   // iron-air as costing zero and slightly reducing average cost. Same annuity method as
@@ -10783,6 +10791,11 @@ async function buildTxCurve(){
 // first. Beyond total available headroom the most expensive regional rate applies,
 // because that capacity requires new corridors rather than spare bays.
 function txRateFor(newMW, baseRate){
+  // FLAT from 22 Sep 2026. The curve filled cheapest headroom first whatever the technology,
+  // so new wind was priced as if it could connect in Gauteng at a quarter of the average. The
+  // TDP average already reflects where the TDP expects generation to be sited. The national
+  // sliders have no location; the curve below is kept for a located build and is not used here.
+  return baseRate;
   if (!bldTxCurve || !(newMW > 0)) return baseRate;
   let left = newMW, cost = 0;
   for (const r of bldTxCurve.rows){
@@ -13077,18 +13090,11 @@ function retailComponents(markup, stranded, year, viaMuni){
   const arrears = Y.arrears_in_tariff ? C.arrear_debt : 0;
   const fixedItems = rca + arrears + C.environmental_levy;
 
-  // NEW GRID at the TDP's own published rate, not the model's connection rate.
-  //
-  // The model computes _txCapexR from txRPerKWyr, which gave R0.07/kWh for a 97 GW build
-  // against R0.23 implied by the Transmission Development Plan - and its own cost
-  // decomposition already labels that line 'partial'. R390bn for 56 GW is R6,964m per GW,
-  // annualised over 40 years at 8%. Worth R0.15/kWh on a gas-firmed 2035 bill.
-  const tdpPerKw = A.tdp_grid_r_per_kw_of_re || 6964;
-  const newReMW = (P.newWindMW || 0) + (P.newPvMW || 0);
-  const gridCrf = 0.08 / (1 - Math.pow(1.08, -40));
-  // R/yr = kW x R/kW x CRF; per kWh = / (MWh x 1000). An extra / 1000 here made this line
-  // 1,000 times too small, about R0.0003/kWh, until 22 Sep 2026.
-  const newGrid = newReMW * 1000 * tdpPerKw * gridCrf / salesMWh / 1000;
+  // One method from 22 Sep 2026: the engine's own transmission charge (txRPerKWyr on new wind,
+  // utility solar not on retired-coal sites, and offshore, plus offshore export grid) and its
+  // regional reinforcement. Until then this line charged R6,964 per kW of new wind and solar,
+  // the whole TDP over 56 GW, refurbishment and load strengthening included.
+  const newGrid = ((r.txCapexR || 0) + (r.gridReinforceR || 0)) / salesMWh / 1000;
   // Network and retail, both bases: today's rand amount over scenario sales, plus new transmission.
   const network = netBase * fixedScale + newGrid;
 
@@ -14633,7 +14639,7 @@ const SLIDERS=[
   {grp:'Grid'},
   {id:'gridBeyondGccaPct',label:'Grid built beyond current plan',min:0,max:150,step:10,def:FIXED.gridBeyondGccaPct,fmt:v=>v===0?'GCCA plan only':'+'+v+'% headroom',
    note:'Scales every region\u2019s connection headroom in the build optimiser. Zero means the network Eskom currently plans to build. Raise it to ask what a larger build programme would unlock; the transmission cost slider below prices the network. Without this the optimiser simply stops at GCCA headroom, which is why it builds no new corridors in high-renewables scenarios.'},
-  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind and utility PV. Two published routes bracket it: the TDP gives ~R700/kW&middot;yr gross, Eskom&rsquo;s FY2027-31 capex plan implies ~R490. R600 sits between them and nets off the committed share. Rooftop solar avoids new grid.'},
+  {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind, utility PV and offshore. TDP 2024: generation integration is 51% of the plan, R225bn of R440bn for 46.9 GW, R4,800/kW, R402/kW&middot;yr. Rooftop solar avoids new grid.'},
   {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Adds 20&#37; capacity to corridors above 30&#37; utilisation, at R1.55m/km \u2013 about a twentieth of a new line (DOE 2024). Nodal simulation only.'},
   {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar &amp; batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder \u2013 up to the MW of coal retired.'},
   {id:'congestionCurtailOn',toggle:true,def:true,label:'Congestion curtailment',
@@ -16161,7 +16167,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22ac';
+const BUILD_STAMP = '2026-09-22ad';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

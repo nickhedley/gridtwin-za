@@ -1135,6 +1135,63 @@ Network and retail rises only through falling grid sales as rooftop grows (191.8
 
 Against the right today: Deep decarbonisation +21%, Fossil-free +42%.
 
+### Transmission reconciled to what the TDP buys; offshore and iron-air tested, 22 Sep 2026
+
+Build `2026-09-22ad`.
+
+What the TDP buys. TDP 2024 (NTCSA public report, Rev 2) Table 4, first five years, R112.5bn:
+new generation integration R54.3bn, network strengthening R26.4bn, land and rights R4.9bn,
+refurbishment R17.8bn, telecoms, real estate, IT and equipment R9.1bn. The decade total is R440bn
+(not R390bn). Its 56 GW of new generation includes 9 GW of rooftop solar and 15.9 GW of gas.
+Generation integration with land pro rata is 51.1% of the plan: R225bn for 46.9 GW of
+grid-connected generation, R4,800/kW, R402/kW-yr over 40 years at 8%.
+
+Both old methods were off. The retail line charged R6,964/kW (the whole TDP over all 56 GW,
+refurbishment and load strengthening included) to wind and solar only. The engine's R600/kW-yr
+was the same whole-TDP figure, and its curve filled the cheapest headroom first whatever the
+technology, pricing new wind as if it could connect in Gauteng at a quarter of the average.
+
+One method now: txRPerKWyr R402/kW-yr, flat, on new wind, utility solar not on retired-coal
+sites, and offshore (plus its export grid), with the engine's regional reinforcement. The retail
+panel reads the engine's figure.
+
+```
+R/kWh, regulated / market   before        after
+Today 2026                3.75 / 3.69   3.75 / 3.69
+Deep decarbonisation 2035 4.55 / 4.48   4.34 / 4.28   +16%
+Fossil-free 2040          5.31 / 5.24   5.06 / 4.99   +35%
+```
+
+Offshore on Fossil-free, twelve weather years, NEM standard 3.5 GWh:
+
+```
+offshore / wind / solar / lithium GW   mean cost R bn   mean shed GWh   worst
+10 / 30 / 55 / 45  (preset)                 359.4             2.2        26 (2020)
+ 5 / 40 / 55 / 50                           355.4             3.3        39 (2020)
+ 5 / 35 / 60 / 50                           350.6             3.7        44      misses
+ 0 / 55 / 60 / 50                           366.1             2.8        33 (2020)
+ 0 / 50 / 55 / 50                           344.0            15.5       101      misses
+```
+
+5 GW of offshore meets the standard R4.0bn a year cheaper than 10 GW; none costs R6.7bn more
+than 10 GW. Offshore's steadier output is worth something, but less than 10 GW of it.
+
+Iron-air (100h, R127,050/kW in 2026) in place of lithium, twelve years:
+
+```
+Deep decarbonisation, 35 wind / 35 solar         mean cost   mean shed   worst
+35 GW lithium (preset)                              306.6        2.7       19.6
+25 GW lithium + 2 GW iron-air                       308.4        4.5       23.8
+20 GW lithium + 3 GW iron-air                       309.1        6.0       26.6
+Fossil-free, 10 off / 30 wind / 55 solar
+45 GW lithium (preset)                              359.4        2.2       25.8
+35 GW lithium + 2 GW iron-air                       360.2       11.6       64.6
+```
+
+In every swap tested, iron-air costs more and sheds more. 1 GW of iron-air costs about as much a
+year as 5 GW of 8-hour lithium. Caveat: the engine's long-duration dispatch has not been checked
+against a perfect-foresight benchmark, so this is a finding about the model as built.
+
 ---
 
 ## Fossil free, re-measured
