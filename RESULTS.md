@@ -502,6 +502,22 @@ actual, on today's fleet. The checks that used it now run the same settings inli
 scenario, so none were lost: removing the preset had silently taken validate_outputs from 40/40
 to 36/36, because a missing preset button returns null and its checks were skipped.
 
+### Peak surplus matches Eskom on Eskom's convention, 22 Sep 2026
+
+Build `2026-09-22k`. Eskom reports surplus as available capacity against demand net of wind and
+solar, with no reserve deducted (29 Aug 2025: 29,132 MW available against 25,797 MW demand). The
+engine now returns hourly coal availability (`coalAvailableMW`), and the benchmark reads it at the
+hour residual demand peaks.
+
+```
+                          model     Eskom
+2025 conditions           3.4 GW    2-3 GW stated for FY2026; 3.3 GW on 29 Aug 2025
+Today 2026                7.1 GW    about 6 GW, winter 2026 outlook (22 Apr 2026)
+```
+
+After the 2,200 MW operating reserve the same figures are 1.2 and 4.9 GW. The previous check
+deducted reserve and ignored wind and solar at the peak; it read -0.9 GW.
+
 ---
 
 ## Fossil free, re-measured

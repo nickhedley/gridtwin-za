@@ -188,13 +188,13 @@ const CF_BENCH = {
   //
   // The bound is not removed: below 1.2 GW something is wrong with the fleet or the demand.
   surplusGW: { lo: 1.2, hi: 4.0, unit: 'GW', why:
-      'OUR CONVENTION: firm capacity only, AFTER holding operating reserve, at the hour of '
-    + 'peak net load. That is the conservative definition and it is why this reads about '
-    + '1.5 GW against Eskom FY2026\'s stated 2-3 GW. The gap is definitional, not a '
-    + 'disagreement about the system: adding back the 1.4 GW of reserve we hold gives '
-    + '2.96 GW, and counting the VRE actually generating at that hour gives 2.94 GW - '
-    + 'either convention lands inside Eskom\'s range. Eskom has not published its method. '
-    + 'Do not reach for a physical explanation of the 1 GW; there is not one to find.' },
+      'Available firm capacity minus residual peak demand, no reserve deducted, at 2025 '
+    + 'conditions: Eskom stated 2-3 GW for FY2026, and reported 29,132 MW available against '
+    + '25,797 MW demand on 29 Aug 2025. Before 22 Sep 2026 this deducted operating reserve and '
+    + 'ignored wind and solar at the peak, which is not how Eskom reports it.' },
+  surplus2026GW: { lo: 4.0, hi: 8.0, unit: 'GW', why:
+      'Same convention at 2026 defaults, against Eskom\'s winter 2026 outlook (22 Apr 2026): '
+    + 'surplus peak capacity of about 6 GW over the winter.' },
   gridGenTWh: { lo: 190, hi: 222, unit: 'TWh', why: 'Eskom FY2026 audited: energy available for distribution '
     + '206.0 TWh. NOT sales, which are 178.0 TWh - losses of 23.9 TWh sit between them' },
   cfPv:      { lo: 19, hi: 27, why: 'SA fixed-tilt utility PV, 21-24% typical; tracking reaches 26-28%' },
@@ -270,27 +270,28 @@ const check = (name, ok, detail) => {
         const q1 = bym[0] + bym[1] + bym[2], q3 = bym[6] + bym[7] + bym[8];
         return q3 > 0 ? q1 / q3 : null;
       })(),
-      surplusGW: (() => {
-        const L = r.loadS; let ph = 0, pk = -1;
-        for (let h = 0; h < L.length; h++) if (L[h] > pk){ pk = L[h]; ph = h; }
-        const st = r.stack;
-        const avail = (FIXED.coalInstalledMW - (st._decom || 0)) * S25.coalEAFPct / 100
-          + FIXED.nuclearMW * 0.9 + FIXED.hydroMW + FIXED.psPowerMW + FIXED.battPowerMW
-          + FIXED.ocgtDieselMW + FIXED.importsMW * FIXED.importsCF;
-        const res = (r.reserveMW || [])[ph] || r.resReqMeanMW || 0;
-        // FIRM ONLY. This used to add wind, solar and CSP output in the peak hour, which
-        // is the one thing the benchmark it is compared against excludes: Eskom's 2-3 GW
-        // surplus is FIRM capacity, and the model's own adequacy panel says wind and solar
-        // do not count as firm - they lower the load firm plant must meet.
-        //
-        // The distinction was invisible while wind was understated. The profile rebuild
-        // raised VRE at the peak hour to 2.55 GW and pushed the figure to 5.0 GW, outside
-        // the band. Firm-only reads 2.45 GW, inside Eskom's estimate.
-        //
-        // So the rebuild did not break this check. It exposed that the check was measuring
-        // something other than what it claimed, and passing only because one of its terms
-        // was too small to notice.
-        return (avail - pk - res) / 1000;
+      // SURPLUS ON ESKOM'S CONVENTION, rebuilt 22 Sep 2026: available firm capacity minus
+      // demand net of wind, solar and CSP, at the hour that residual demand peaks, with NO
+      // reserve deducted. Eskom reports it that way ("available generation capacity 29,132 MW
+      // against demand of 25,797 MW", 29 Aug 2025). Coal is the engine's hourly availability
+      // at that hour, and Koeberg the scenario's nuclearCF. surplusGW is 2025 conditions, the
+      // winter inside FY2026; surplus2026GW is today's defaults against Eskom's winter 2026
+      // outlook.
+      ...(() => {
+        const sur = (rr, st) => {
+          const P = { ...FIXED, ...st };
+          let ph = 0, pk = -Infinity;
+          for (let h = 0; h < rr.loadS.length; h++){
+            const d = rr.loadS[h] - (rr.chargeMW[h] || 0) + (rr.drMW[h] || 0)
+                    - (rr.stack.wind[h] || 0) - (rr.stack.pv[h] || 0) - (rr.stack.csp[h] || 0);
+            if (d > pk){ pk = d; ph = h; }
+          }
+          const firm = (rr.coalAvailableMW ? rr.coalAvailableMW[ph] : NaN)
+            + P.nuclearMW * P.nuclearCF + P.hydroMW + P.psPowerMW + P.battPowerMW
+            + P.ocgtDieselMW + P.importsMW * P.importsCF;
+          return (firm - pk) / 1000;
+        };
+        return { surplusGW: sur(r, S25), surplus2026GW: sur(simulate(state, PROFILES), state) };
       })(),
       // Grid generation excluding rooftop, which is behind the meter and never reaches
       // the distribution network. Compare against energy AVAILABLE, not sales.

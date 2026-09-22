@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-22j`. Suite 772/777 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
+Build `2026-09-22k`. Suite 774/778 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,7 +15,7 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 22 Sep 2026 on build `2026-09-22j`, `profiles.json` at the root, current `nodal/`.
+Measured 22 Sep 2026 on build `2026-09-22k`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
@@ -31,13 +31,13 @@ validate_weather         64/64
 validate_lp              50/50
 validate_consistency     80/80     tariff-shape checks run at 2025 conditions; one run of
                                    three panels failed on load timing and passed on rerun
-validate_benchmarks      25/27     run at 2025 conditions and trade; peakerSeasonRatio confounded by
-                                   2025 fleet trend; surplusGW uses annual, not peak-hour, EAF
+validate_benchmarks      27/28     2025 conditions; surplus on Eskom's convention, 2025 and 2026;
+                                   peakerSeasonRatio confounded by 2025 fleet trend
 validate_external         4/5      not previously tracked: baseline, not a regression
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            7/7
 audit.py                 87/87
-total                   772/777
+total                   774/778
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 
