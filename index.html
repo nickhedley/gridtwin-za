@@ -7059,6 +7059,22 @@ function simulate(u, prof, outPath, _soc0){
     ? genUnitOutagePath(eafFraction, p.outageForcedSharePct,
                         p.outageMttrH, p.outageSeed, p.outagePlannedSeason)
     : null;
+  // HISTORICAL AVAILABILITY TRACE, 22 Sep 2026. A synthetic outage draw reproduces the spread
+  // of Eskom's availability but not its persistence: real troughs last weeks, which is when
+  // load is shed. MISO builds hourly outage shapes from its outage history and AEMO uses
+  // historical reference years for the same reason. With p.outageTraceYear set to a year in
+  // nodal/coal_availability_trace.json, coal availability follows that year's measured hourly
+  // shape, scaled to coalEAFPct, instead of the Markov draw. The shape is the year's coal-only
+  // availability over its own mean, so the level is still the scenario's.
+  const traceOutage = (() => {
+    if (outPath || !p.outageTraceYear) return null;
+    const T = (typeof COAL_TRACE !== 'undefined' && COAL_TRACE && COAL_TRACE.years)
+      ? COAL_TRACE.years[String(p.outageTraceYear)] : null;
+    if (!T || !T.shape || T.shape.length !== HOURS) return null;
+    const a = new Float64Array(HOURS);
+    for (let h = 0; h < HOURS; h++) a[h] = Math.max(0, Math.min(1, eafFraction * T.shape[h]));
+    return a;
+  })();
 
   // Forward-looking signal for off-peak coal-charging: how much real coal-insufficient need
   // (net load exceeding what coal alone can cover) is coming over the next 24 hours. Used so
@@ -7207,7 +7223,8 @@ function simulate(u, prof, outPath, _soc0){
     // one was passed, otherwise the unit-level Markov path when enabled, else
     // the UC commitment on its own (the old smooth-derate behaviour).
     const availFrac = outPath ? outPath[Math.floor(h/24)]
-                    : (unitOutage ? unitOutage[h] : null);
+                    : (traceOutage ? traceOutage[h]
+                    : (unitOutage ? unitOutage[h] : null));
     const cAvailRaw = (availFrac != null)
       ? Math.min(ucCommitted, coalInstRem * availFrac)
       : ucCommitted;
@@ -16240,7 +16257,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22ai';
+const BUILD_STAMP = '2026-09-22aj';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -16801,6 +16818,14 @@ const P_OFF = fetch('nodal/profiles_offshore_regional.json',{cache:'no-cache'}).
   })
   .catch(()=>{});
 
+// Measured coal availability shapes by year, for outageTraceYear. Absent, the Markov draw
+// stands and nothing changes.
+var COAL_TRACE = null;
+const P_TRACE = fetch('nodal/coal_availability_trace.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
+  .then(d=>{ if (d && d.years) { COAL_TRACE = d;
+    console.log('[GridTwin] Coal availability traces: ' + Object.keys(d.years).join(', ')); } })
+  .catch(()=>{});
+
 var RES_PU = null;
 fetch('nodal/residential_profile.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
   .then(d=>{ if (d && Array.isArray(d.load_pu) && d.load_pu.length === 8760) RES_PU = d.load_pu;
@@ -16829,7 +16854,7 @@ const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():n
 // the engine's inputs are complete.
 window.GTZA_READY = false;
 const P_TX = (typeof buildTxCurve === 'function') ? buildTxCurve().catch(() => {}) : Promise.resolve();
-Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX]).then(() => {
+Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE]).then(() => {
   window.GTZA_READY = true;
   run();
 });

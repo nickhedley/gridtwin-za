@@ -1551,6 +1551,36 @@ to drive the simulation with historical availability traces rather than syntheti
 builds hourly outage adders from GADS history, AEMO uses historical reference years. ESK19679
 carries the hourly series to do it.
 
+### Historical availability traces built; the backcast gap is not availability, 22 Sep 2026
+
+Build `2026-09-22aj`. `nodal/coal_availability_trace.json` holds measured coal-only availability
+for 2023, 2024 and 2025 from ESK19679: Eskom installed capacity less planned, unplanned and other
+capability loss, less nuclear at its measured output and the other 5,758 MW at 90%, over coal
+capacity. Each year is divided by its own mean, so the file carries shape and the level stays
+the scenario's coalEAFPct. Set outageTraceYear and coal availability follows that year's measured
+hours instead of the Markov draw; unset, nothing changes. A check asserts both the level and the
+persistence.
+
+Correction to the entry above: that 2025 backcast ran the 2026 fleet against 2025 availability -
+wind 4,512 MW rather than about 3,900, solar 3,271 against 2,600, rooftop 8,942 against 6,900,
+batteries 800 against 500, Medupi 4 and Kusile 6 already back. On the 2025 fleet it sheds 13 GWh
+rather than 7.
+
+The trace does not close the gap. On the 2025 fleet and the measured 2025 shape the model sheds
+1.6 GWh, against 13 for the Markov draw and Eskom's actual 390 GWh of load shedding.
+
+What the Eskom data says about those hours. Load was reduced in 1,048 hours of 2025, and in them
+demand averaged 26.2 GW while coal generated 20.0 GW - against roughly 23 GW of coal that was
+nominally available at that year's availability. Eskom reduced load with about 3 GW of available
+coal not generating, and burned 3.4 TWh of OCGT doing it, against this model's 0.6 TWh. So the
+binding difference is not how much plant is available but how much of it can actually be
+delivered in the hour: minimum stable levels, ramp limits, units available but not synchronised,
+and reserve protection. The model treats available capacity as dispatchable up to its commitment
+schedule.
+
+The trace is worth having regardless - it is the right input for backcasts and removes a
+synthetic assumption from them - but the calibration item stays open and now has a direction.
+
 ---
 
 ## Fossil free, re-measured

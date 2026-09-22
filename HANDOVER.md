@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-22ai`. Suite 784/787 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
+Build `2026-09-22aj`. Suite 785/788 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,7 +15,7 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 22 Sep 2026 on build `2026-09-22ai`, `profiles.json` at the root, current `nodal/`.
+Measured 22 Sep 2026 on build `2026-09-22aj`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
@@ -27,7 +27,7 @@ validate_inputs          33/33
 validate_findings        32/33     ancillary knee
 validate_invariants     171/171   shed-energy cost; ORDC reads available reserve; market-basis cost recovery; curtailment compensation
 validate_response        84/84     diesel budget and Koeberg controls added
-validate_weather         65/65
+validate_weather         66/66
 validate_lp              50/50
 validate_consistency     80/80     gas-firmed band re-derived from AEMC 2025
                                    three panels failed on load timing and passed on rerun
@@ -37,7 +37,7 @@ validate_external         5/6      EDMSA CO2 (known); MTSAO now the risk-adjuste
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            7/7
 audit.py                 87/87
-total                   784/787
+total                   785/788
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 

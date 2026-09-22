@@ -121,6 +121,38 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
     return JSON.parse(w.__p);
   };
 
+  // ── THE HISTORICAL AVAILABILITY TRACE IS WIRED IN ──────────────────────────────
+  // Added 22 Sep 2026. With outageTraceYear set, coal availability must follow that year's
+  // measured shape at the scenario's level. Two things to assert: the mean lands on
+  // coalEAFPct, and the series keeps the persistence the trace exists for - Eskom's 2025
+  // series has a one-week autocorrelation of 0.79 against 0.29 for the Markov draw.
+  {
+    const T = probe(`
+      const base = { ...state, coalEAFPct: 58.4, demandGrowthPct: 0 };
+      const P = { ...FIXED, ...base };
+      const inst = P.coalInstalledMW - (P.coalDecomMW || 0);
+      const ac = (a, lag) => {
+        const m = a.reduce((x, y) => x + y, 0) / a.length;
+        let n = 0, d = 0;
+        for (let h = 0; h + lag < a.length; h++) n += (a[h] - m) * (a[h + lag] - m);
+        for (let h = 0; h < a.length; h++) d += (a[h] - m) * (a[h] - m);
+        return n / d;
+      };
+      const r = simulate({ ...base, outageTraceYear: 2025 }, PROFILES);
+      const a = Array.from(r.coalAvailableMW);
+      return { loaded: typeof COAL_TRACE !== 'undefined' && !!COAL_TRACE,
+               meanPct: 100 * (a.reduce((x, y) => x + y, 0) / a.length) / inst,
+               ac168: ac(a, 168) };
+    `);
+    if (T && !T.error && T.loaded)
+      check('the historical availability trace drives coal availability',
+            Math.abs(T.meanPct - 58.4) < 2 && T.ac168 > 0.6,
+            `mean ${T.meanPct.toFixed(1)}% against the 58.4% asked for, one-week `
+            + `autocorrelation ${T.ac168.toFixed(2)} against 0.79 measured and 0.29 for the Markov draw`);
+    else check('the historical availability trace drives coal availability', false,
+               T ? (T.error || 'nodal/coal_availability_trace.json not loaded') : 'no result');
+  }
+
   // ── LONG-DURATION STORAGE AGAINST THE PERFECT-FORESIGHT BENCHMARK ──────────────
   // Added 22 Sep 2026. Fossil-free 2040 at 30/55/10 GW, 16.8 GW new rooftop, 35 GW lithium plus
   // 2 GW iron-air, weather year 2020: the LP (ldes_lp.js) sheds 0 GWh; the engine shed 64.6 GWh
