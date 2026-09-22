@@ -756,6 +756,50 @@ which also takes the gas-firmed consistency check back under 15%.
 Open: Eskom's IPP bill in the retail stack is R0.275/kWh, about R58bn a year; the engine's REIPPPP
 charge is R11.7bn. The engine prices PPAs at bid-year tariffs without CPI indexation.
 
+### Network held in both retail bases; REIPPPP priced at Eskom's indexed cost, 22 Sep 2026
+
+Build `2026-09-22t`.
+
+REIPPPP PPA. The engine priced wind at R682/MWh and solar at R591, bid-year tariffs never
+indexed, and left CSP out. Now one rate, Eskom's average cost of renewable IPP energy in FY2025,
+R2,189/MWh (Eskom results presentation 2025), on REIPPPP wind, solar and CSP output. The charge at
+today's defaults goes R11.7bn to R42.6bn, on 19.5 TWh.
+
+```
+                          system cost R bn   PPA R bn   avgCost R/MWh
+Today 2026                      204.6            42.6          1,059
+Grid delay                      305.7            40.1          1,221
+IRP 2030                        312.9            42.6          1,238
+Deep decarbonisation 2035       335.1            15.9          1,846
+Fossil-free 2040                390.9            13.6          2,160
+```
+
+The retail IPP line is now the engine's charge, re-timed to the panel's year. It was Eskom's whole
+IPP allowance, R0.275/kWh, which also carried IPP OCGT diesel (already in the fuel line), never
+expired, and included other programmes. Not carried now: the DoE peakers' capacity charges, other
+IPP programmes (R833/MWh in FY2025), RMIPPPP. That is most of the R0.08/kWh fall in today's line.
+
+Network. Both bases now hold network and retail at today's R126.0bn, spread over scenario sales,
+plus new transmission. In the regulated basis only generation's share of operating costs and
+existing capital runs off or scales with the coal fleet, and all fixed costs are spread over
+scenario sales relative to today's.
+
+```
+R/kWh                     regulated   market
+Today 2026                   3.95      3.70
+Deep decarbonisation 2035    6.68      6.23
+Fossil-free 2040             8.20      7.95
+```
+
+Regulated today is R3.95 against R4.12 before, from the IPP line.
+
+Two checks now fail and were not relaxed:
+- validate_consistency, gas-firmed 60% renewables at 2035: R4.98 against R3.95, +26% (limit 15%).
+  The benchmark (AEMO/AEMC finding no material price rise) needs re-deriving before it can judge
+  a bill that now carries held network costs and new transmission.
+- validate_findings, demand response reverses at high shift: R1,058.31 at 30% against R1,059.09
+  at zero. The published margin was about R1/MWh either way; the finding is not robust.
+
 ---
 
 ## Fossil free, re-measured
