@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-22i`. Suite 771/776 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
+Build `2026-09-22j`. Suite 772/777 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,11 +15,11 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 22 Sep 2026 on build `2026-09-22i`, `profiles.json` at the root, current `nodal/`.
+Measured 22 Sep 2026 on build `2026-09-22j`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
-validate_lint             2/2
+validate_lint             3/3     phantom keys (peakMW, asReserveFrac, psMW, battMW)
 validate_structure       24/24
 validate_geo             43/43
 validate_capacity        30/31     standing: backup profile file has no licence field
@@ -37,7 +37,7 @@ validate_external         4/5      not previously tracked: baseline, not a regre
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            7/7
 audit.py                 87/87
-total                   771/776
+total                   772/777
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 

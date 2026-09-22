@@ -102,6 +102,16 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
 
   await new Promise(r => setTimeout(r, 6000));
   const w = dom.window;
+  // Wait for the multi-year file itself rather than trusting the fixed pause. Added 22 Sep
+  // 2026: under load the 6 s wait expired first and the harness reported the file missing.
+  {
+    const s0 = w.document.createElement('script');
+    s0.textContent = `window.__wyDone = false; Promise.resolve(typeof loadWeatherYears === 'function'
+      ? loadWeatherYears() : null).then(() => { window.__wyDone = true; }, () => { window.__wyDone = true; });`;
+    w.document.body.appendChild(s0);
+    for (let waited = 0; !w.__wyDone && waited < 60000; waited += 250)
+      await new Promise(r => setTimeout(r, 250));
+  }
   const probe = (src) => {
     const s = w.document.createElement('script');
     w.__p = null;

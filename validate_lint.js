@@ -175,7 +175,23 @@ try {
     console.log('\n  Do NOT add these to FIXED to make the check pass. Find the real key name.');
   }
 
-  const checks = 2, failed = (findings.length ? 1 : 0) + (bad.size ? 1 : 0);
+  // ── CHECK 3: known phantom keys, read on any object ──────────────────────
+  // Added 22 Sep 2026. Check 2 sees only FIXED.<key>. The same fault recurs on merged
+  // objects (S = { ...FIXED, ...state }, p = { ...FIXED, ...u }): S.peakMW ?? 32000 in the
+  // regional LP and P.asReserveFrac || 0.06 in the ORDC both read keys that never existed,
+  // so the literal always won. These names have each caused one; none may be read again.
+  const PHANTOM = ['peakMW', 'asReserveFrac', 'psMW', 'battMW'];
+  const phantomHits = [];
+  for (const k of PHANTOM) {
+    // Only on the objects that carry model constants; a local object may use the name.
+    const n = (codeOnly.match(new RegExp('\\b(?:FIXED|state|S|P|p|u)\\.' + k + '\\b', 'g')) || []).length;
+    if (n) phantomHits.push(`${k} x${n}`);
+  }
+  console.log(`\nPHANTOM KEYS  (${PHANTOM.join(', ')})`);
+  console.log(phantomHits.length ? '  FAILURES: read again - ' + phantomHits.join(', ')
+                                 : '  none read');
+
+  const checks = 3, failed = (findings.length ? 1 : 0) + (bad.size ? 1 : 0) + (phantomHits.length ? 1 : 0);
   console.log(`\n${checks - failed}/${checks} lint checks passed`);
   cleanup();
   process.exit(failed ? 1 : 0);
