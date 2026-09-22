@@ -518,6 +518,55 @@ Today 2026                7.1 GW    about 6 GW, winter 2026 outlook (22 Apr 2026
 After the 2,200 MW operating reserve the same figures are 1.2 and 4.9 GW. The previous check
 deducted reserve and ignored wind and solar at the peak; it read -0.9 GW.
 
+### Earlier findings re-measured on build 2026-09-22n
+
+Everything below changed after 19 Sep: the reserve rebuild, the 2026 demand anchor, exports and
+wheeled plant counted once, imports, outage calibration, and shed energy costed. Default weather
+year unless stated.
+
+Offshore swap, Deep decarbonisation 2035. No longer better on all four.
+
+```
+                        cost R bn   curtail TWh   Mt CO2   worst of 12 years
+45 W / 52 S / 0 off        331.8        140.1      21.1     6.1 GWh (2020)
+45 W / 45 S / 1 off        324.6        129.0      20.3    14.3 GWh (2020)
+```
+
+Lithium saturation, Deep decarbonisation 2035 at 6h. Still saturates, now at about 3.5 TWh of
+discharge (was 8.1). The system-cost optimum moved down from 20 GW:
+
+```
+new lithium   system cost R bn   unserved GWh   curtail TWh   discharge TWh
+ 5 GW                 311.0           146          132.6          2.68
+10 GW                 312.3            42          129.5          3.34
+20 GW (preset)        324.6             0          129.0          3.54
+```
+
+At the R9.53/kWh cost of load shedding the optimum is 5 GW; at the IRP's COUE of R87.85/kWh it
+is 10 GW. 10 -> 20 GW costs R12.3bn a year to avoid 42 GWh, R293/kWh.
+
+Fossil-free 2040: zero unserved energy in all twelve years still holds. The offshore ranking
+reversed: more offshore is now cheaper, not dearer.
+
+```
+                          cost R bn   curtail TWh
+55 W / 90 S /  5 off         456.1        252.2     (preset)
+45 W / 90 S /  8 off         447.9        235.2
+40 W / 90 S / 10 off         447.7        228.9
+```
+
+The preset's 5 GW rests on deployability (ESMAP's medium path, 5 GW by 2040), which stands.
+The 19 Sep claim that more offshore costs more does not.
+
+Going fossil-free by 2040 rather than 2050 still costs about R49bn a year: R456.1bn against
+R407.0bn (was R49.3bn).
+
+IRP and Grid delay presets: their +16% demand was set to reach the IRP's 255 TWh for 2030 on the
+old base, and reached only 216 TWh after the re-anchor, so both read Stable. Now +35% (254.3 TWh):
+the IRP build sheds 47 GWh (Stage 4 peak) and Grid delay 77 GWh; both read Constrained. Caveat:
+that the IRP's 255 TWh is the same measure as the model's grid demand including exports is
+inherited from the original calibration, not re-verified.
+
 ---
 
 ## Fossil free, re-measured
