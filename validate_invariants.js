@@ -423,6 +423,33 @@ const SCENARIOS = {
                       : (U ? U.err : 'no result'));
   }
 
+  // ── the ORDC reads available reserve, not the requirement ───────────────
+  // Added 22 Sep 2026. marketPriceSeries compared the engine's reserve REQUIREMENT, read as
+  // availability, against 6% of peak through a key that does not exist, and priced scarcity
+  // in every hour of Deep decarbonisation 2035 and Fossil-free 2040 (R12.36/kWh mean on
+  // Fossil-free against an engine marginal price of R0.11). A system with ample reserve must
+  // price scarcity in few hours, and its market price must sit close to the engine's.
+  for (const pre of ['Today 2026', 'Deep decarbonisation 2035', 'Fossil-free 2040']) {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__ordc = (() => { try {
+      const st = { ...state, ...PRESETS[${JSON.stringify(pre)}] };
+      const r = simulate(st, PROFILES);
+      const m = marketPriceSeries(r, { ...FIXED, ...st });
+      if (!m) return { err: 'marketPriceSeries returned null' };
+      const eng = Array.from(r.marginalP).reduce((a, b) => a + b, 0) / 8760 / 1000;
+      const mkt = m.p.reduce((a, b) => a + b, 0) / 8760;
+      return { hours: m.scarcityHours, voll: m.vollHours, eng, mkt };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const O = w.__ordc;
+    if (!O || O.err) { check(`[${pre}] ORDC prices scarcity in few hours`, false, O ? O.err : 'no result'); continue; }
+    check(`[${pre}] ORDC prices scarcity in few hours`, O.hours <= 438,
+          `${O.hours} hours with a scarcity adder, limit 438 (5% of the year)`);
+    check(`[${pre}] market price mean is close to the engine's marginal price`,
+          Math.abs(O.mkt - O.eng) <= 0.05 * Math.max(O.eng, 0.1),
+          `market R${O.mkt.toFixed(3)}/kWh against engine R${O.eng.toFixed(3)}/kWh`);
+  }
+
   // ── report ────────────────────────────────────────────────────────────────
 
   console.log(`\n${pass}/${pass + fail} invariant checks passed across ` +

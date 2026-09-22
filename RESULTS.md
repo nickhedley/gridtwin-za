@@ -395,6 +395,40 @@ Crisis 2023 at coal EAF     unserved TWh   coal TWh
 actual 2023                        16.6      165.6
 ```
 
+### ORDC read the requirement as availability, 22 Sep 2026
+
+Build `2026-09-22f`. `marketPriceSeries` compared the engine's reserve requirement, read as if it
+were reserve available, against 6% of peak through `asReserveFrac`, a key that does not exist.
+The engine now returns `reserveAvailMW` per hour (committed coal headroom within its ramp, storage
+discharge headroom sustainable for one hour, and charging that can stop), and the ORDC compares it
+with the hourly requirement. The only callers are the retail panel's market basis: the annual
+shadow rows (`retailRaw`) and the week chart (`retailHourly`).
+
+```
+                        scarcity hours      market R/kWh     engine R/kWh
+                        before   after      before   after
+Today 2026                   0     268       0.822   0.822        0.821
+Deep decarb 2035         8,760       0       0.850   0.153        0.153
+Fossil-free 2040         8,760       0      12.359   0.105        0.105
+Crisis 2023              3,138   1,777      24.01    24.00        21.15   (5,622 VoLL hours)
+```
+
+Retail, shadow dynamic row, annual, panel year 2035, regulated / market basis:
+
+```
+Today 2026              R3.75 / R2.81
+Deep decarb 2035        R6.02 / R2.44     was R3.85 on the market basis
+Fossil-free 2040        R8.78 / R3.31     was R28.15
+Crisis 2023             R3.95 / R54.76    VoLL hours, not ORDC; not a tariff
+```
+
+On this build Today 2026 read zero scarcity hours before the fix only by coincidence: the 2,200 MW
+requirement happened to exceed the 1,764 MW that 6% of peak gave. Every market-basis figure in
+this file dated before 22 Sep 2026, including the retail headline table below, is superseded.
+
+Caveat: Crisis 2023's market basis is set by 5,622 hours of load actually shed at the price cap.
+That is the energy-only rule, not a usable tariff.
+
 ---
 
 ## Fossil free, re-measured
@@ -1131,6 +1165,9 @@ of 10 cuts unserved from 15,206 to 768 GWh. Retaining 30 GW takes it to zero.
 ---
 
 ## The retail headline, and the sign flip the old pair hid
+
+> SUPERSEDED 22 Sep 2026: every market-basis figure below was produced by an ORDC that read
+> the reserve requirement as availability. See "ORDC read the requirement as availability".
 
 Build `2026-09-15a`. Shadow dynamic row, ANNUAL average, not a week. Panel controls
 are `retBasis`, `retYear`, `retStranded` and nothing else; no electrolyser or
