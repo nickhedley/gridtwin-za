@@ -644,9 +644,42 @@ onshore / solar / lithium    worst of 12    cost R bn
 R32bn a year cheaper than 25/90/40 at the same standard, curtailment 150.1 TWh against 182.5.
 
 Discount rate: new build is annualised at 8% real over each technology's life (bldAnnuity), as
-PyPSA and PLEXOS annualise at a WACC. The IRP uses 11.3%. At 11.3% total cost rises R47.7bn (+15%)
+PyPSA and PLEXOS annualise at a WACC. At 11.3% (withdrawn as an IRP figure; see below) total cost rises R47.7bn (+15%)
 on Deep decarbonisation, R68.2bn (+18%) on Fossil-free and R16.0bn on the IRP preset. 8% is not
-sourced in the code.
+sourced in the code (sourced later the same day).
+
+### Deep decarbonisation: no offshore, 20 GW lithium; discount rate sourced, 22 Sep 2026
+
+Build `2026-09-22q`. Deep decarbonisation 2035 with no offshore, twelve years each:
+
+```
+lithium   default yr   mean    worst of 12      cost R bn
+16 GW        19.8       5.1    24.9 (2020)        311.8
+18 GW         6.6       2.7    21.4               314.4
+19 GW         4.3       2.2    20.0               315.7
+20 GW         0.5       1.7    18.6 (preset)      317.1
+```
+
+Each gigawatt costs about R1.3bn a year and removes about 1 GWh of mean shed energy. The worst
+year stays near 19-25 GWh at every level: 2020 is short of energy, which 6-hour lithium cannot
+cover.
+
+Discount rate. Correction: the 22 Sep note that the IRP uses 11.3% is withdrawn; no discount rate
+appears in the IRP 2025 gazette text, and the figure was not sourced. The 11.3% results stand as a
+sensitivity only. Evidence for South Africa:
+
+```
+source                                               basis                   rate
+IEA Cost of Capital Observatory 2025, SA, 2024       nominal after tax       solar 11.0-13.5%, batteries 11.0-13.5%
+  same, breakdown                                    equity IRR / debt       12.5-13.5% / 11.0-13.0%, 65-70% debt
+  same, hydro                                        nominal after tax       13.0-16.0%
+REIPPPP bid window 1 -> 4                            real equity IRR         17% -> about 9.5%
+PyPSA-ZA (CSIR, FIAS)                                annualisation           8%
+IRP 2023 (per D Nicholls, former Eskom CNO)          real                    above 8%
+OECD NEA/IEA Projected Costs                         real                    3, 7, 10%
+```
+
+At 3-4.5% inflation the IEA nominal range is about 6.5-10% real; the model's 8% real sits in it.
 
 ---
 

@@ -1334,6 +1334,7 @@ const num = t => {
       // UPDATED 22 Sep 2026, R1.279 -> R1.180. The preset's lithium moved 20 -> 10 GW, the
       // system-cost optimum at the IRP's cost of unserved energy. Deliberate scenario change.
       // R1.180 is MEASURED on the new preset; the hand derivation above was not redone for 10 GW.
+      // UPDATED again 22 Sep 2026, R1.180 -> R1.217: back to 20 GW, offshore 1 -> 0 GW. Measured.
       //
       // UPDATED 22 Sep 2026, R1.188 -> R1.279. Exports taken out of the demand series, where
       // they were counted twice: sales 170.6 -> 158.6 TWh. Capital unchanged at R202.8bn.
@@ -1381,8 +1382,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.180) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R1.180 for Deep `
+              Math.abs(ncap.newCap - 1.217) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.217 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }
