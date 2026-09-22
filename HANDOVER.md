@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-22i`. Suite 766/771 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
+Build `2026-09-22i`. Suite 771/776 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -24,22 +24,24 @@ validate_structure       24/24
 validate_geo             43/43
 validate_capacity        30/31     standing: backup profile file has no licence field
 validate_inputs          33/33
-validate_findings        31/32     ancillary knee no longer holds under the 2,200 MW requirement
-validate_invariants     163/163   shed-energy cost; ORDC reads available reserve
+validate_findings        32/33     ancillary knee no longer holds under the 2,200 MW requirement
+validate_invariants     164/164   shed-energy cost; ORDC reads available reserve
 validate_response        84/84     diesel budget and Koeberg controls added
 validate_weather         64/64
 validate_lp              50/50
-validate_consistency     79/79     tariff-shape checks run at 2025 conditions; one run of
+validate_consistency     80/80     tariff-shape checks run at 2025 conditions; one run of
                                    three panels failed on load timing and passed on rerun
 validate_benchmarks      25/27     run at 2025 conditions and trade; peakerSeasonRatio confounded by
                                    2025 fleet trend; surplusGW uses annual, not peak-hour, EAF
 validate_external         4/5      not previously tracked: baseline, not a regression
-validate_outputs         41/41     Crisis 2023 checks now an inline stress scenario
-validate_solve            6/6
+validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
+validate_solve            7/7
 audit.py                 87/87
-total                   766/771
+total                   771/776
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
+
+Every harness that names a preset now asserts it exists (one check each, 22 Sep 2026).
 ```
 
 Benchmarks fails on coal against Ember (6.8% vs a 6% band), total generation (233.6 vs

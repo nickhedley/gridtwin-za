@@ -55,6 +55,18 @@ const SCENARIOS = {
   'demand −20%':        { demandGrowthPct: -20 },
 };
 
+// EVERY PRESET THIS HARNESS NAMES MUST EXIST. Added 22 Sep 2026. A missing preset spreads as
+// undefined and runs the defaults, or its button lookup returns null and the checks are
+// skipped - either way with no error. Deleting Crisis 2023 took validate_outputs from 40/40 to
+// 36/36 while it still reported green.
+{
+  const _src = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const _i = _src.indexOf('const PRESETS={');
+  const _blk = _src.slice(_i, _src.indexOf('\n};', _i));
+  const _have = new Set([..._blk.matchAll(/^\s*'((?:[^'\\]|\\.)+)'\s*:\s*\{/gm)].map(m => m[1].replace(/\\'/g, "'")));
+  const _miss = ['Today 2026', 'Deep decarbonisation 2035', 'Fossil-free 2040'].filter(n => !_have.has(n));
+  check('every preset this harness uses exists', _miss.length === 0, 'missing: ' + _miss.join(', '));
+}
 (async () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const dom = new JSDOM(html, {

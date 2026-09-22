@@ -43,6 +43,18 @@ const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToB
    return{ok:true,json:async()=>JSON.parse(t),text:async()=>t};}
    catch(e){return{ok:false,json:async()=>{throw e},text:async()=>{throw e}};}}; }});
 
+// EVERY PRESET THIS HARNESS NAMES MUST EXIST. Added 22 Sep 2026. A missing preset spreads as
+// undefined and runs the defaults, or its button lookup returns null and the checks are
+// skipped - either way with no error. Deleting Crisis 2023 took validate_outputs from 40/40 to
+// 36/36 while it still reported green.
+{
+  const _src = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const _i = _src.indexOf('const PRESETS={');
+  const _blk = _src.slice(_i, _src.indexOf('\n};', _i));
+  const _have = new Set([..._blk.matchAll(/^\s*'((?:[^'\\]|\\.)+)'\s*:\s*\{/gm)].map(m => m[1].replace(/\\'/g, "'")));
+  const _miss = ['Deep decarbonisation 2035', 'Grid delay', 'Today 2026'].filter(n => !_have.has(n));
+  check('every preset this harness uses exists', _miss.length === 0, 'missing: ' + _miss.join(', '));
+}
 setTimeout(()=>{
   const w=dom.window;
   const probe=(src)=>{const s=w.document.createElement('script'); w.__p=null;
