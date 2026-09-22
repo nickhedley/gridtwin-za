@@ -542,8 +542,22 @@ function probe(w, src) {
     return readMix(doc);
   };
 
+  // A structurally short system, set inline. It was the Crisis 2023 preset until that was
+  // deleted on 22 Sep 2026; pressPreset returns null for a missing button, and these four
+  // checks then vanished silently (40/40 became 36/36). Inline, they cannot.
+  const STRESS = { coalEAFPct: 50, demandGrowthPct: 15, nuclearCF: 0.49, outageForcedSharePct: 73,
+                   importsMW: 1400, exportsMW: 1300, dieselBudgetTWh: 5.25 };
+  const applyScenario = (ov) => {
+    if (typeof w.applyState !== 'function') return null;
+    w.applyState(ov);
+    try { if (w.run) w.run(); } catch (e) {}
+    return readMix(doc);
+  };
   const baseShed = doc.getElementById('shed').textContent.replace(/\s+/g,' ');
-  const crisis = pressPreset('Crisis 2023');
+  const crisis = applyScenario(STRESS);
+  results.push({ name: 'stress scenario runs', actual: crisis ? 'ran' : 'did not run',
+    expected: 'ran', tol: null, pass: !!crisis,
+    source: 'Guard: the four checks below must not be skipped silently', unit: '' });
   if (crisis) {
     // Crisis 2023 sets EAF to 50% AND demand +14%. Coal OUTPUT can legitimately
     // rise in absolute terms (higher demand pulls harder on a less available
@@ -553,7 +567,7 @@ function probe(w, src) {
     const num = t => parseFloat((t.match(/([\d.]+)\s*GWh/) || [0,'0'])[1]);
     const dieselBase = 0;   // baseline diesel is zero in the mix above
     const dieselCrisis = crisis['Diesel OCGT'] ? crisis['Diesel OCGT'].twh : 0;
-    results.push({ name: 'Crisis 2023 forces diesel peaking',
+    results.push({ name: 'stress scenario forces diesel peaking',
       actual: `${dieselCrisis.toFixed(2)} TWh diesel`, expected: '> 0',
       tol: null, pass: dieselCrisis > 0,
       source: 'Structural: EAF 50% + demand +14% must pull in expensive peaking', unit: '' });
@@ -579,13 +593,13 @@ function probe(w, src) {
       let atCeiling = 0;
       for (let h = 0; h < res.marginalP.length; h++)
         if (res.marginalP[h] >= voll - 1) atCeiling++;
-      results.push({ name: 'Crisis 2023 scarcity breaker binds',
+      results.push({ name: 'stress scenario scarcity breaker binds',
         actual: `${atCeiling} h at the value of lost load`, expected: '< 1000',
         tol: null, pass: atCeiling < 1000,
         source: 'ERCOT drops the offer cap to LCAP for the rest of the year once peaker net '
               + 'margin exceeds 3x CONE. Without a breaker this reads 5,430 h and wholesale '
               + 'revenue reaches R14tn against a R364bn system cost.', unit: '' });
-      results.push({ name: 'Crisis 2023 breaker actually tripped',
+      results.push({ name: 'stress scenario breaker actually tripped',
         actual: res.pnmCapped ? `tripped at hour ${res.pnmCappedH}` : 'never tripped',
         expected: 'tripped', tol: null, pass: !!res.pnmCapped,
         source: 'Structural: a year with thousands of unserved hours must exceed 3x CONE '

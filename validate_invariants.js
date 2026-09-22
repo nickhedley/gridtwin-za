@@ -356,7 +356,8 @@ const SCENARIOS = {
   {
     const CASES = {
       'Today 2026': 'PRESET:Today 2026',
-      'Crisis 2023': 'PRESET:Crisis 2023',
+      // Was the Crisis 2023 preset, deleted 22 Sep 2026; the same settings inline.
+      'stress, 2023 conditions': { coalEAFPct: 50, demandGrowthPct: 15, nuclearCF: 0.49, outageForcedSharePct: 73, importsMW: 1400, exportsMW: 1300, dieselBudgetTWh: 5.25 },
       'Deep decarbonisation 2035': 'PRESET:Deep decarbonisation 2035',
       'Deep decarbonisation 2035, 4,000 MW reserve': ['PRESET:Deep decarbonisation 2035', { reserveOperatingMW: 4000 }],
       'Fossil-free 2040': 'PRESET:Fossil-free 2040',
@@ -412,13 +413,13 @@ const SCENARIOS = {
   {
     const probe = w.document.createElement('script');
     probe.textContent = `window.__use = (() => { try {
-      const r = simulate({ ...state, ...PRESETS['Crisis 2023'] }, PROFILES);
+      const r = simulate({ ...state, ...{ coalEAFPct: 50, demandGrowthPct: 15, nuclearCF: 0.49, outageForcedSharePct: 73, importsMW: 1400, exportsMW: 1300, dieselBudgetTWh: 5.25 } }, PROFILES);
       return { u: r.E.unserved, uc: r.unservedCostR, sc: r.systemCostR, tc: r.totalCost, rate: FIXED.costUnservedR };
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const U = w.__use;
     const ok = U && !U.err && U.u > 0 && Math.abs(U.uc - U.u * U.rate) < 1 && Math.abs(U.sc - U.tc - U.uc) < 1;
-    check('[Crisis 2023] system cost includes shed energy at costUnservedR', ok,
+    check('[stress, 2023 conditions] system cost includes shed energy at costUnservedR', ok,
           U && !U.err ? `unserved ${(U.u/1e6).toFixed(1)} TWh, cost R${(U.uc/1e9).toFixed(1)}bn, system R${(U.sc/1e9).toFixed(1)}bn`
                       : (U ? U.err : 'no result'));
   }

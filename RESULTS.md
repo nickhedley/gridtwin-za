@@ -494,6 +494,14 @@ the model has no within-year fleet improvement.
 Not fixed: wind, solar and RMIPPPP hybrids run at today's fleet in every scenario, about 6 TWh a
 year above 2023. There is no control for the existing renewable fleet by year.
 
+### Crisis 2023 preset deleted, 22 Sep 2026
+
+Build `2026-09-22i`. The preset is gone; every Crisis 2023 figure in this file is historical. Its
+last calibration stands as recorded above: 15.8 TWh of shed and interruptible load against 16.75
+actual, on today's fleet. The checks that used it now run the same settings inline as a stress
+scenario, so none were lost: removing the preset had silently taken validate_outputs from 40/40
+to 36/36, because a missing preset button returns null and its checks were skipped.
+
 ---
 
 ## Fossil free, re-measured
