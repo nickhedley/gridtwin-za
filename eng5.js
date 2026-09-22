@@ -36,8 +36,9 @@ setTimeout(()=>{
  console.log('3. unserved falls as EAF rises:', uns.map(x=>x.toFixed(2)).join(' -> '), mono3?'ok':'*** NOT MONOTONIC ***');
  if(!mono3) fails.push('unserved vs EAF');
 
- // 4. higher demand must raise system cost
- const cost=sweep('demandGrowthPct',[-10,0,20,50,80],r=>r.totalCost/1e9);
+ // 4. higher demand must raise system cost, including the cost of energy shed (22 Sep 2026:
+ // supply cost alone can fall when demand is shed instead of served)
+ const cost=sweep('demandGrowthPct',[-10,0,20,50,80],r=>r.systemCostR/1e9);
  const mono4=cost.every((v,i)=>i===0||v>=cost[i-1]-1);
  console.log('4. cost rises with demand     :', cost.map(x=>x.toFixed(0)).join(' -> '), mono4?'ok':'*** NOT MONOTONIC ***');
  if(!mono4) fails.push('cost vs demand');

@@ -364,6 +364,37 @@ diesel TWh               20.4    5.25                                     5.25
 Crisis 2023 now overshoots by 17% in the default year and 28% on the twelve-year mean. Today
 2026 and 2025 conditions are unchanged: the budget does not bind outside a crisis.
 
+### Load shedding now costed; coal EAF is coal-only, 22 Sep 2026
+
+Build `2026-09-22e`.
+
+System cost: `systemCostR` = supply cost + unserved energy at `costUnservedR`, R9.53/kWh, Eskom's
+Cost of Loadshedding (COUE methodology review and 2020 update, NERSA 2022). The IRP's COUE of
+R87.85/kWh values short unplanned outages; load shedding is scheduled and partly mitigated.
+Supply cost (`totalCost`, `avgCost`) is unchanged.
+
+```
+R bn/yr                         supply   shed energy   system
+Today 2026                       172.5           0.0    172.5
+Crisis 2023, diesel budget       237.7         184.8    422.5
+Crisis 2023, unlimited diesel    321.2          65.7    386.9
+```
+
+The budget-limited crisis now costs more than the unlimited one; on supply cost alone it looked
+R84bn cheaper.
+
+Coal EAF: `coalEAFPct` applies to coal only, while Eskom's published EAF covers the whole fleet
+and runs 4-5 points higher. ESK19679 estimates: 2023 coal 49.7 (fleet 54.7), 2025 58.4 (62.4),
+2026 Jan-Aug 65.3 (68.1). Entering the fleet figure for Crisis 2023 halves shedding:
+
+```
+Crisis 2023 at coal EAF     unserved TWh   coal TWh
+50 (coal-only estimate)            19.4      162.2
+52                                 13.9      169.0
+54.7 (fleet EAF)                    8.2      176.8
+actual 2023                        16.6      165.6
+```
+
 ---
 
 ## Fossil free, re-measured

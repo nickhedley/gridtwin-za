@@ -407,7 +407,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
     <div id="wxResult" style="margin-bottom:10px"></div>
     <div class="kpis" id="kpis"></div>
-    <p class="kpinote"><strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up and new-build capex only &ndash; existing plants are sunk, rooftop PV and REIPPPP curtailment payments are excluded. Replacement cost instead prices every MWh at full lifecycle cost, as if the mix were built new today. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
+    <p class="kpinote"><strong>Cost figures:</strong> system cost and avg energy cost cover fuel, carbon, start-up, new-build capital, fixed O&amp;M for the existing fleet, REIPPPP payments and grid reinforcement; rooftop PV is excluded. Load shedding is costed separately at R9.53/kWh, Eskom&rsquo;s cost-of-loadshedding figure, and shown beneath system cost when it occurs. Replacement cost instead prices every MWh at full lifecycle cost, as if the mix were built new today. <strong>Neither is a tariff.</strong> Methodology in the <a href="README.md" target="_blank">README</a>.</p>
 
 
     <div class="panel" id="mipSection" style="margin-bottom:18px">
@@ -5208,10 +5208,12 @@ const FIXED = {
   // three `?? 68` fallbacks - with no FIXED entry at all, so the quantity had no single
   // source. Rule 6: no constant appears twice.
   //
-  // 65 is Eskom's AUDITED FY2026 outturn of 65.16%. The 68 it replaces was a part-year
-  // "FY2026 to date" figure, and part-year EAF is biased because availability is
-  // seasonal - it overstated the full year by three points. FY2024 54.6, FY2025 60.6,
-  // FY2026 65.2, Eskom's medium-term target 70.
+  // COAL-ONLY availability. Eskom's published EAF covers the whole fleet, including
+  // nuclear, OCGT, hydro and pumped storage, and runs about 4-5 points above coal alone.
+  // Coal-only estimated from ESK19679 (fleet availability less nuclear at its output and
+  // the other 5,758 MW at 90%): 2023 49.7 (fleet 54.7), 2025 58.4 (62.4), FY2026 61.4
+  // (65.3), 2026 Jan-Aug 65.3 (68.1). 65 is the 2026 figure. 22 Sep 2026; previously
+  // justified as the fleet EAF for FY2026, which is a different measure.
   coalEAFPct:65,
   nuclearMW:1880, hydroMW:602,
   importsMW:1150,
@@ -5443,6 +5445,11 @@ const FIXED = {
   // unserved demand. R87,000/MWh is mid-range for South African planning
   // studies (NERSA/CSIR cost-of-unserved-energy work sits near R80-100k).
   voll:87000,
+  // Cost of energy shed, for system cost only; not a price. Eskom's Cost of Loadshedding
+  // study, R9.53/kWh (Eskom COUE methodology review and 2020 update, NERSA 2022). The
+  // COUE of R87.85/kWh (IRP) values short unplanned outages; load shedding is scheduled
+  // and partly mitigated, so the lower figure applies. 22 Sep 2026.
+  costUnservedR:9530,
   // Scarcity circuit breaker. ERCOT drops its offer cap from high to low for the rest of the
   // year once cumulative peaker net margin exceeds 3x the cost of new entry; their low cap is
   // 40% of the high one, USD 2,000 against 5,000.
@@ -8040,6 +8047,10 @@ function simulate(u, prof, outPath, _soc0){
     }
   }
   const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+ppaCostR+gridReinforceR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
+  // Supply cost above; system cost adds the economic cost of energy not served, so a run
+  // that sheds more cannot look cheaper. 22 Sep 2026.
+  const unservedCostR = (E.unserved || 0) * p.costUnservedR;
+  const systemCostR = totalCost + unservedCostR;
   // start-UP costs ARE NOW included, 30 Aug 2026. They were accumulated and used
   // nowhere - found by summing the cost decomposition against avgCost and getting a
   // gap of exactly startUpCostR.
@@ -8217,7 +8228,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -15891,7 +15902,8 @@ function render(r){
   const nonFossilShare=100*(r.E.wind+r.E.pv+r.E.csp+(r.E.hybrid||0)+r.E.rooftop+r.E.nuclear+r.E.hydro+r.E.imports)/(genTWh*1e6);
   const kpis=[
     {k:'Energy supplied',v:genTWh.toFixed(0),u:'TWh/yr'},
-    {k:'System cost',v:(r.totalCost/1e9).toFixed(0),u:'R bn/yr'},
+    {k:'System cost',v:(r.totalCost/1e9).toFixed(0),u:'R bn/yr',
+     sub:(r.unservedCostR>5e8?('+R'+(r.unservedCostR/1e9).toFixed(0)+'bn load shed'):undefined)},
     {k:'Avg energy cost*',v:(r.avgCost/1000).toFixed(2),u:'R/kWh'},
     {k:'Replacement cost',v:(r.replAvg/1000).toFixed(2),u:'R/kWh'},
     {k:'Carbon intensity',v:Math.round(r.co2>0&&r.E?r.co2*1e9/Math.max(1,Object.values(r.E).reduce((s,v)=>s+v,0)-r.E.curtailed):0).toLocaleString(),u:'gCO₂/kWh',uLong:true},
@@ -16027,7 +16039,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22d';
+const BUILD_STAMP = '2026-09-22e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

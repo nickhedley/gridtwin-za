@@ -406,6 +406,23 @@ const SCENARIOS = {
                            : (F ? F.err : 'no result'));
   }
 
+  // ── system cost carries the cost of energy shed ─────────────────────────
+  // Added 22 Sep 2026. Supply cost alone fell when a crisis shed more, so a worse run
+  // looked cheaper. systemCostR must equal totalCost plus shed energy at costUnservedR.
+  {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__use = (() => { try {
+      const r = simulate({ ...state, ...PRESETS['Crisis 2023'] }, PROFILES);
+      return { u: r.E.unserved, uc: r.unservedCostR, sc: r.systemCostR, tc: r.totalCost, rate: FIXED.costUnservedR };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const U = w.__use;
+    const ok = U && !U.err && U.u > 0 && Math.abs(U.uc - U.u * U.rate) < 1 && Math.abs(U.sc - U.tc - U.uc) < 1;
+    check('[Crisis 2023] system cost includes shed energy at costUnservedR', ok,
+          U && !U.err ? `unserved ${(U.u/1e6).toFixed(1)} TWh, cost R${(U.uc/1e9).toFixed(1)}bn, system R${(U.sc/1e9).toFixed(1)}bn`
+                      : (U ? U.err : 'no result'));
+  }
+
   // ── report ────────────────────────────────────────────────────────────────
 
   console.log(`\n${pass}/${pass + fail} invariant checks passed across ` +

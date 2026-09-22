@@ -20,7 +20,9 @@ CHECKS = [
     # reason: the exclusion was still stated, in fewer words. A regression check on prose
     # should assert the CLAIM survives, not that the wording is frozen, or every edit
     # trips it and people learn to re-pin without reading.
-    ('REIPPPP curtailment payments are excluded',                   'cost note: REIPPPP exclusion stated'),
+    # 22 Sep 2026: the note said REIPPPP payments and existing plant were excluded; both
+    # have been in system cost since 18-20 Sep. Pinned to the corrected wording.
+    ('fixed O&amp;M for the existing fleet, REIPPPP payments',     'cost note: states what system cost includes'),
     ('Neither is a tariff',                                        'cost note: not-a-tariff warning'),
     # KPI labels
     ('Carbon intensity',                                           'carbon intensity KPI'),
@@ -111,7 +113,7 @@ CHECKS = [
     ('Load shedding &middot; typical year',                        'lamp label matches the median'),
     # No shouted emphasis in the KPI note. "NEW-build capex" read as a shout in a header
     # a reader sees before anything else; the surrounding prose uses bold for emphasis.
-    ('start-up and new-build capex only',                          'KPI note not shouted'),
+    ('start-up, new-build capital',                                'KPI note not shouted'),
     # Wheeling coverage. The panel priced transport and never answered what share of the
     # load a contract covers - the question an offtaker asks first.
     ('What share of the load does it actually cover',              'wheeling coverage table'),
