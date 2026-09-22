@@ -458,13 +458,39 @@ const SCENARIOS = {
     if (!O || O.err) { check(`[${pre}] ORDC prices scarcity in few hours`, false, O ? O.err : 'no result'); continue; }
     check(`[${pre}] ORDC prices scarcity in few hours`, O.hours <= 438,
           `${O.hours} hours with a scarcity adder, limit 438 (5% of the year)`);
-    // Only where the system is not short. Since 22 Sep 2026 Deep decarbonisation 2035 runs
-    // 10 GW of lithium and sheds 42 GWh; its 48 thin-reserve hours carry a legitimate ORDC
-    // adder, R0.10/kWh on the annual mean. The scarcity-hours check above still covers it.
-    if (pre !== 'Deep decarbonisation 2035')
+    // Deep decarbonisation was excluded while it ran 10 GW of lithium and shed 42 GWh; back
+    // at 20 GW (0.5 GWh) from 22 Sep 2026, so it is checked again.
+    {
       check(`[${pre}] market price mean is close to the engine's marginal price`,
             Math.abs(O.mkt - O.eng) <= 0.05 * Math.max(O.eng, 0.1),
             `market R${O.mkt.toFixed(3)}/kWh against engine R${O.eng.toFixed(3)}/kWh`);
+    }
+  }
+
+  // ── MARKET-BASIS RETAIL RECOVERS THE COST OF THE BUILD ─────────────────────
+  // Added 22 Sep 2026. The market basis priced energy at the hourly wholesale price and kept
+  // 33% of every other line, so on Fossil-free 2040 it came to R3.14 against R7.86 regulated:
+  // the wholesale market recovered 9% of system cost and the contracts that built the system
+  // went unpaid. A market-indexed tariff must still pay for the contracted plant. Fails on the
+  // previous build.
+  for (const [pre, yr] of [['Deep decarbonisation 2035', 2035], ['Fossil-free 2040', 2040]]) {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__rb = (function(){ try {
+      applyState(PRESETS[${JSON.stringify(pre)}]); run();
+      const el = document.getElementById('retBasis'); if (!el) return { err: 'no retBasis control' };
+      const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+      el.value = 'reg'; const reg = mean(retailRaw(lastRes.marginalP, 0, true, ${yr}, false).hourly);
+      el.value = 'mkt'; const mkt = mean(retailRaw(lastRes.marginalP, 0, true, ${yr}, false).hourly);
+      el.value = 'reg';
+      return { reg, mkt, levy: (typeof out_mktParts !== 'undefined' && out_mktParts) ? out_mktParts.levy : null };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const R = w.__rb;
+    if (!R || R.err) { check(`[${pre}] market-basis retail recovers contracted costs`, false, R ? R.err : 'no result'); continue; }
+    check(`[${pre}] market-basis retail recovers contracted costs`,
+          R.mkt >= 0.8 * R.reg && R.levy != null && R.levy > 0,
+          `market R${R.mkt.toFixed(2)} against regulated R${R.reg.toFixed(2)}/kWh; contract levy `
+          + `${R.levy == null ? 'absent' : 'R' + R.levy.toFixed(2)}`);
   }
 
   // ── report ────────────────────────────────────────────────────────────────

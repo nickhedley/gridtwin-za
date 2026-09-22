@@ -720,6 +720,42 @@ price that recovers the cost of the build.
 Consequence for validate_consistency: the gas-firmed 60% renewables check moves from under 15% to
 +15.3% (R4.75 against R4.12) with the transmission cost restored. Left failing; not relaxed.
 
+### Market basis rebuilt; REIPPPP expiry by bid window, 22 Sep 2026
+
+Build `2026-09-22s`. Retail annual hourly mean, R/kWh, stranded on, scenario years 2026 / 2035 / 2040.
+
+REIPPPP contracts now expire by bid window, twenty years after commercial operation
+(REIPPPP_VINTAGES): BW1 2034, BW2 2035, BW3 2037, BW3.5 2039, BW4 2041, BW5-6 2045. Share still
+running: 100% in 2026, 67% in 2035, 45% in 2040. It replaces a linear roll-off to zero by 2041,
+which ended BW5-6 contracts too early and BW1-3 too late; the engine and the retail IPP line now
+read the same schedule. The retail IPP line had no expiry at all.
+
+Market basis: hourly wholesale energy, plus network and retail as a fixed R126.0bn (32.8% of
+NERSA's 2025/26 allowance) over scenario sales plus new transmission, plus a contract levy:
+new-build capital and fixed O&M under two-sided contracts for difference, REIPPPP PPAs while they
+run, curtailment compensation, stranded coal when that toggle is on, decommissioning and legacy
+items, less the market revenue those contracted plants earn. The existing Eskom fleet is merchant.
+
+```
+                          regulated   market   energy   network   contract levy
+Today 2026                   4.12      4.01     0.80      0.68        0.33
+Deep decarbonisation 2035    6.31      6.81     0.18      1.12        1.89
+Fossil-free 2040             7.44      8.42     0.17      1.19        2.62
+```
+
+Before this: market 2.83 / 2.66 / 3.14. The market basis now pays for the build.
+
+The market basis now reads above the regulated one in both high-renewables presets. Most of it is
+network: the market basis holds network at today's rand amount, while the regulated basis runs
+all existing asset costs, network included, off towards a 35% floor by 2045. The two bases treat
+the same network differently; not yet reconciled.
+
+The regulated means also moved (Deep 6.55 to 6.31, Fossil-free 7.86 to 7.44) with the PPA expiry,
+which also takes the gas-firmed consistency check back under 15%.
+
+Open: Eskom's IPP bill in the retail stack is R0.275/kWh, about R58bn a year; the engine's REIPPPP
+charge is R11.7bn. The engine prices PPAs at bid-year tariffs without CPI indexation.
+
 ---
 
 ## Fossil free, re-measured

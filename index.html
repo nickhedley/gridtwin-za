@@ -5190,6 +5190,24 @@ const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme e
 // THE STANDING RISK is class 1, and it is not the numbers. IMPORTS_CF's four copies never
 // drifted; the COMMENT about them did, still claiming 0.85 five hours after the value
 // changed. Prose about a constant rots faster than the constant.
+// REIPPPP contracts by bid window, MW online, and the first year each twenty-year PPA no
+// longer runs (COD + 20). BW1-BW4 contracted capacity from the IPP Office (BW1 1,415 and BW2
+// 1,033 at grid connection; BW3 1,428; BW3.5 200 CSP) and grantZA (BW4 2,205). BW5/6 online is
+// the residual to the IPP Office's 7,355 MW online at 31 March 2026. COD years are the
+// midpoints of each window's commissioning. 22 Sep 2026; replaces a linear 2034-2041 roll-off
+// that ended BW5/6 contracts two decades early.
+const REIPPPP_VINTAGES = [
+  { bw:'1',   mw:1415, expires:2034 }, { bw:'2',   mw:1033, expires:2035 },
+  { bw:'3',   mw:1428, expires:2037 }, { bw:'3.5', mw:200,  expires:2039 },
+  { bw:'4',   mw:2205, expires:2041 }, { bw:'5-6', mw:1074, expires:2045 },
+];
+function reipppLiveFrac(year){
+  const y = year ?? 2026;
+  let live = 0, tot = 0;
+  for (const v of REIPPPP_VINTAGES){ tot += v.mw; if (y < v.expires) live += v.mw; }
+  return tot > 0 ? live / tot : 1;
+}
+
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -5334,12 +5352,7 @@ const FIXED = {
   // R620/MWh against BW1 above R1,500, so the spread is wide.
   reipppWindMW:4042, reipppSolarMW:2783,
   ppaWindR:682, ppaSolarR:591,
-  // THE OBLIGATION EXPIRES. BW1 reached commercial operation in 2014 on twenty-year PPAs, so
-  // those contracts roll off from about 2034, BW2 and BW3 through the later 2030s, BW4 into
-  // the early 2040s. A run at 2035 or 2050 must not charge Eskom a PPA that has ended; after
-  // expiry the plant becomes merchant or re-contracts at market rates, which is a different
-  // cost this model does not yet carry. Linear roll-off between these two years.
-  ppaRollOffStart:2034, ppaRollOffEnd:2041,
+  // PPAs expire twenty years after commercial operation, by bid window: see REIPPPP_VINTAGES.
   // The year the scenario represents. The engine had no year concept - the only year in the
   // model was a retail-panel DOM control, which simulate() must not read. Default 2026 means
   // "today's system", where every REIPPPP contract is live.
@@ -7997,13 +8010,7 @@ function simulate(u, prof, outPath, _soc0){
   // newCapexR. That is why the changing public-private procurement mix needs no assumption
   // here: the split applies to a fixed, measured stock and new build is costed as an asset
   // whoever procures it.
-  const _liveFrac = (() => {
-    const y = p.scenarioYear ?? 2026;
-    const a = p.ppaRollOffStart ?? 2034, b = p.ppaRollOffEnd ?? 2041;
-    if (y <= a) return 1;
-    if (y >= b) return 0;
-    return (b - y) / (b - a);
-  })();
+  const _liveFrac = reipppLiveFrac(p.scenarioYear ?? 2026);
   const _windTotMW = (p.windMW || 0) + (u.newWindMW || 0);
   const _pvTotMW   = (p.pvUtilityMW || 0) + (u.newPvMW || 0);
   // Fallbacks are the CONSTANTS, not zero - rule 6, and the same mistake made with the fomXxx
@@ -12904,6 +12911,8 @@ function retailComponents(markup, stranded, year, viaMuni){
   const coalShare = A.coal_share_of_asset_costs || 0.54;
   const assetCosts = (C.depreciation + C.return_on_assets) * runoff;
   const existingCap = assetCosts * ((1 - coalShare) + coalShare * (stranded ? 1 : coalFrac));
+  // The part of existingCap that is retired coal still being paid for; a levy on a market basis.
+  const strandedPart = stranded ? assetCosts * coalShare * (1 - coalFrac) : 0;
 
   // NEW BUILD CAPITAL from BLD_COST with its decline rates, through the same bldAnnuity()
   // the capacity-expansion LPs use. acap* is retired here: it had no provenance note, no
@@ -13007,7 +13016,9 @@ function retailComponents(markup, stranded, year, viaMuni){
   // take-or-pay: Eskom pays for contracted energy whether or not it takes it. A scenario that
   // sells fewer kWh therefore recovers the same obligation over a smaller base. The Future
   // mix sells 181 TWh against today's 204, so the line rises about 13%.
-  const ipp = C.ipp_purchases * (A.sales_twh / Math.max(1, salesMWh / 1e6));
+  // Eskom's IPP bill, scaled by the share of REIPPPP contracts still running in the year.
+  // Same schedule as the engine's PPA charge. 22 Sep 2026; before that it never expired.
+  const ipp = C.ipp_purchases * (A.sales_twh / Math.max(1, salesMWh / 1e6)) * reipppLiveFrac(year);
   const imports = C.international_purchases *
                   ((P.importsMW || 0) / Math.max(1, FIXED.importsMW || 1));
 
@@ -13089,7 +13100,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   return { distAdj, resAlloc, subsidyPerKwh, muni: M, curtComp, curtFrac, curtSold,
            h2Revenue, h2GW, h2CF, h2SharePct, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
            decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
-           viaMuni, salesTWh: salesMWh / 1e6 };
+           strandedPart, newCapR, viaMuni, salesMWh, salesTWh: salesMWh / 1e6 };
 }
 
 // NETWORK AND RETAIL SHARE of the regulated cost stack. Generation is 67% of NERSA's allowed
@@ -13102,10 +13113,13 @@ function retailComponents(markup, stranded, year, viaMuni){
 // R126,036m, 32.8%. Both figures written out 15 Sep 2026 because the quotient alone was not
 // traceable and this constant decides the regulated-versus-market comparison the panel is for.
 const NETWORK_RETAIL_SHARE = 0.33;
+
+
 // VAT, declared once. It was a bare 1.15 at two sites, which is rule 6: a rate that has to be
 // found twice is a rate that will be changed once.
 const RETAIL_VAT = 1.15;
 
+let out_mktParts = null;   // market-basis breakdown from the last retailRaw call, for inspection
 function retailRaw(marginalP, markup, stranded, year, viaMuni){
   const c = retailComponents(markup, stranded, year, viaMuni);
   const sp = RETAIL_T.shadow_tariff_parameters;
@@ -13119,22 +13133,52 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
              - (c.h2Revenue || 0);
 
   // ── MARKET BASIS ──────────────────────────────────────────────────────────
-  // Under a market-indexed tariff the household pays the hourly wholesale price, which in an
-  // energy-only market carries generators' capital through scarcity hours. So the generation
-  // share comes OUT of the flat adder and the hourly series carries it instead. Only network
-  // and retail stay flat, exactly as Octopus Agile's standing charge and fixed adder do.
+  // Rebuilt 22 Sep 2026. The household pays the hourly wholesale price for energy, plus:
+  //   network and retail, a fixed rand amount (32.8% of NERSA's 2025/26 allowance, R126.0bn)
+  //     spread over the scenario's sales, plus new transmission for new wind and solar;
+  //   a contract levy: what contracted plant costs less what it earns in the market. New build
+  //     is assumed procured under two-sided contracts for difference, as in Britain's CfD levy
+  //     or NSW's LTESAs; REIPPPP PPAs while they run; curtailment compensation; stranded coal
+  //     capital when that toggle is on; decommissioning and legacy regulatory items.
+  // The existing Eskom fleet is merchant: paid the market price, no levy.
+  // It replaced NETWORK_RETAIL_SHARE applied to the flat stack, which kept a third of new-build
+  // capital as though it were network and dropped two thirds of the contracts.
   const bEl = document.getElementById('retBasis');
   const marketBasis = bEl ? bEl.value === 'mkt' : false;
   let mkt = null;
   if (marketBasis && typeof marketPriceSeries === 'function'){
     mkt = marketPriceSeries(lastRes, { ...FIXED, ...state });
     if (mkt){
-      // The hour-of-day shape comes from mkt below, so hod is simply not used on this
-      // branch. A loop adding zero 8,760 times stood here until 15 Sep 2026, with a comment
-      // explaining why it did nothing - which is how a reader concludes a dead line is
-      // deliberate. Removed.
-      flat = flat * NETWORK_RETAIL_SHARE;
+      const r = lastRes, P = { ...FIXED, ...state }, st = r.stack;
+      const sales = c.salesMWh;                                  // MWh
+      const perKwh = (R) => R / (sales * 1000);
+      const A = RETAIL_T.allowed_revenue_2026_27;
+      const network = perKwh((A.approved_total_r_bn || 384.61) * 1e9 * NETWORK_RETAIL_SHARE) + c.newGrid;
+      // Market revenue of contracted plant, R. Wind includes offshore in the stack.
+      const wTot = (P.windMW || 0) + (P.newWindMW || 0) + (P.newOffshoreMW || 0);
+      const pvTot = (P.pvUtilityMW || 0) + (P.newPvMW || 0);
+      const wNew = ((P.newWindMW || 0) + (P.newOffshoreMW || 0)) / Math.max(1, wTot);
+      const pvNew = (P.newPvMW || 0) / Math.max(1, pvTot);
+      const live = reipppLiveFrac(c.year);
+      const wIpp = Math.min(1 - wNew, (P.reipppWindMW || 0) / Math.max(1, wTot)) * live;
+      const pvIpp = Math.min(1 - pvNew, (P.reipppSolarMW || 0) / Math.max(1, pvTot)) * live;
+      const bTot = (P.battPowerMW || 0) + (P.newBattMW || 0);
+      const bNew = (P.newBattMW || 0) / Math.max(1, bTot);
+      const bChgShare = bTot / Math.max(1, bTot + (P.psPowerMW || 0));
+      let revContract = 0;
+      for (let h = 0; h < 8760; h++){
+        const p = mkt.p[h] * 1000;                              // R/MWh
+        const w = st.wind[h] || 0, pv = st.pv[h] || 0;
+        const batt = (st.batt[h] || 0) - (r.chargeMW[h] || 0) * bChgShare;
+        revContract += p * (w * (wNew + wIpp) + pv * (pvNew + pvIpp) + batt * bNew);
+      }
+      const contractCost = c.newCap + c.newFom + c.ipp + (c.curtComp || 0);
+      const levy = contractCost - perKwh(revContract)
+                 + c.strandedPart + c.decom + c.fixedItems - (c.h2Revenue || 0);
+      flat = network + levy + (c.distAdj || 0);
       varTarget = mkt.p.reduce((a, b) => a + b, 0) / 8760;
+      out_mktParts = { network, levy, contractCost, contractRevenue: perKwh(revContract),
+                       energy: varTarget };
     }
   }
 
@@ -16003,7 +16047,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22r';
+const BUILD_STAMP = '2026-09-22s';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
