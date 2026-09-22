@@ -1343,6 +1343,51 @@ External check now failing: NTCSA MTSAO 2030 with 6 GW of gas delayed publishes 
 the engine reads 4.4, outside the 55 GWh band. Cause established: the adequacy hold. Without it
 the check passes. Not widened.
 
+### The NTCSA MTSAO mismatch: professional practice and what the 86 GWh assumes, 22 Sep 2026
+
+Build `2026-09-22af`, no code change.
+
+How professional adequacy models dispatch storage:
+
+```
+AEMO ESOO        storage fully optimised to reduce unserved energy, perfect foresight;
+                 AEMO notes the risk is greatest for very short storage and penalises
+                 2-hour batteries for it
+ENTSO-E ERAA     sequential Monte Carlo (Antares, among others), perfect foresight one week
+                 ahead; a share of capacity is reserved for balancing and not dispatched
+NTCSA MTSAO      Monte Carlo on demand, wind, solar and unplanned outages, "dispatching
+                 available generators optimally", multi-nodal, results the mean of samples
+```
+
+All three dispatch storage to minimise shortfall with foresight longer than 48 hours. The
+adequacy hold is in line with practice and more conservative than it; selling ahead of coal
+regardless of a coming shortfall was the outlier.
+
+What the 86 GWh is (MTSAO 2026-2030, section 7.4.1.2): high EAF (67%), moderate demand
+(264 TWh in 2030, Mozal assumed to 2030), all new capacity with the 6 GW of CCGT delayed,
+8.4 GW of coal and Cahora Bassa's 1.15 GW gone by March 2030, reserves of 3,800 MW held,
+Monte Carlo mean, transmission-constrained.
+
+The engine on the harness scenario, with and without the hold:
+
+```
+                                          with hold   without
+default weather, one outage path             4.4        54.1
+20 outage draws, mean                        4.6        39.6
+12 weather years x 3 draws, mean            13.0        37.9
+same, 3.8 GW less utility solar             22.9           -
+```
+
+The old agreement came from dispatch that sold storage ahead of coal, which none of the
+professional models do. What the engine still lacks against the MTSAO:
+- Monte Carlo averaging in the check: the mean over weather years and outage draws is three
+  times the single run.
+- Transmission: the MTSAO is multi-nodal and attributes part of its unserved energy to
+  network constraints; the engine is national.
+- The capacity mapping: the MTSAO's all-new category is 29.7 GW in 2030 including the 6 GW
+  of gas, so about 23.7 GW without it, rooftop included. The harness enters 27.5 GW. Not
+  confirmed; the category breakdown is in figures that do not extract as text.
+
 ---
 
 ## Fossil free, re-measured
