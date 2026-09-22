@@ -46,6 +46,9 @@ Last reviewed: 12 Sep 2026.
                and the named entry must be REMOVED. See RULES.md rule 5.
 ~Feb 2027      PFL IPP monitor, H2 2026 update. Replaces by_source.private
                wholesale. Same removal discipline.
+Jan 2027       Full calendar 2026 RSA Contracted Demand (ESK19679). Replace the
+               provisional Jan-Aug ratio 0.938 in build_demand_2026.py, re-run it,
+               then re-measure every preset.
 annual         IPP Office "An Overview of the IPPPP" - the named-project layer.
                The only published route to the Hydra Central split.
 monthly        Seriti Green grid simulation. Published since Jan 2026; the

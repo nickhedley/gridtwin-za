@@ -171,7 +171,11 @@ const num = t => {
           agrees(kRepl*1000, E.replAvg, 0.02), `panel R${kRepl}/kWh vs engine R${E.replAvg.toFixed(0)}/MWh`);
 
   // ── 2. peak demand, wherever it appears ───────────────────────────────────
-  const bodyTxt = d.body.textContent.replace(/\s+/g, ' ');
+  // Script elements excluded, 21 Sep 2026: inline code comments are part of body
+  // textContent, and one quoting an old 33.2 GW peak was read as a page figure.
+  const _bodyClone = d.body.cloneNode(true);
+  _bodyClone.querySelectorAll('script, style').forEach(e => e.remove());
+  const bodyTxt = _bodyClone.textContent.replace(/\s+/g, ' ');
   // Tightly anchored: the loose version matched "firm capacity 39.2 GW" and the
   // reserve-margin figures simply because the word "peak" appeared within forty
   // characters, and reported both as peak-demand disagreements.
@@ -180,7 +184,9 @@ const num = t => {
   // such passages exist and both name Eskom explicitly, so exclude any match
   // whose surrounding text does. The remaining figures must all agree.
   const peakMentions = [...bodyTxt.matchAll(/peak(?:\s+demand)?[^.\d]{0,12}([\d.]+)\s*GW/gi)]
-    .filter(m => !/eskom|observed|reported/i.test(bodyTxt.slice(Math.max(0, m.index - 120), m.index + 60)))
+    // Window ends 20 chars after the figure, 21 Sep 2026: at 60 it reached the "2025 Eskom"
+    // data badge beside the headline KPI and excluded the one figure this check exists for.
+    .filter(m => !/eskom|observed|reported/i.test(bodyTxt.slice(Math.max(0, m.index - 120), m.index + m[0].length + 20)))
     .map(m => parseFloat(m[1])).filter(v => v > 15 && v < 60);
   if (peakMentions.length) {
     const bad = peakMentions.filter(v => !agrees(v, E.peakGW, 0.05));
@@ -577,7 +583,7 @@ const num = t => {
   //
   // Checks the notes that quote their own default in rands. Not exhaustive - it cannot be,
   // since prose is free text - but it pins the ones that carry a figure today.
-  const notes = run(`
+  const sliderNotes = run(`
     const out = {};
     for (const sl of SLIDERS){
       if (!sl.id || !sl.note) continue;
@@ -585,13 +591,13 @@ const num = t => {
     }
     return { s: out, lcoeCcgt: FIXED.lcoeCcgt, costCcgt: FIXED.costCcgt };
   `);
-  if (notes && !notes.err){
+  if (sliderNotes && !sliderNotes.err){
     // the gas LCOE note must not quote a rand-per-kWh figure that is not the default
-    const g = notes.s.lcoeCcgt;
+    const g = sliderNotes.s.lcoeCcgt;
     if (g){
       const quoted = (g.note.match(/R([0-9]+\.[0-9]{2})\/kWh/g) || [])
         .map(x => Math.round(parseFloat(x.slice(1)) * 1000));
-      const defK = notes.lcoeCcgt;
+      const defK = sliderNotes.lcoeCcgt;
       const stale = quoted.filter(q => Math.abs(q - defK) > 5 && Math.abs(q - 1968) > 5);
       check('the gas LCOE note quotes no stale rand figure',
             stale.length === 0,
@@ -1300,7 +1306,10 @@ const num = t => {
       //   pv        45 GW: capital R42.3bn + FOM 45 x R396/kW-yr = R17.8bn -> R 60.1bn
       //   offshore   1 GW: capital R 6.6bn + FOM  1 x R1,403      = R 1.4bn -> R  8.0bn
       //   batt      20 GW at 6h: capital R22.6bn + FOM R3.2bn             -> R 25.8bn
-      //   total R202.8bn over 181.6 TWh = R1.116/kWh
+      //   total R202.8bn over 170.6 TWh = R1.188/kWh
+      //
+      // UPDATED 21 Sep 2026, R1.116 -> R1.188. Demand re-anchored to 2026 (profiles.json,
+      // build_demand_2026.py): sales 181.6 -> 170.6 TWh. Capital unchanged at R202.8bn.
       //
       // UPDATED 19 Sep 2026, R1.129 -> R1.116. The Deep decarbonisation 2035 preset swapped 7 GW
       // of solar for 1 GW of offshore, nearly cost-neutral here - offshore's R8.0bn against
@@ -1342,8 +1351,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.116) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R1.116 for Deep `
+              Math.abs(ncap.newCap - 1.188) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R1.188 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

@@ -220,7 +220,11 @@ function probe(w, src) {
   // Neither side carries network losses: generation minus loadS equals rooftop
   // exactly, so there is no loss term anywhere in this accounting.
   //
-  // THIS CHECK IS EXPECTED TO FAIL at 217.5, and the failure is the finding: the
+  // RESOLVED 21 Sep 2026: demand re-anchored to 2026 by build_demand_2026.py (Jan-Aug
+  // year-on-year ratio 0.938). Reads 204.1, of which 6.6 TWh is firm exports. Kept below
+  // as the record of why.
+  //
+  // THIS CHECK WAS EXPECTED TO FAIL at 217.5, and the failure was the finding: the
   // demand series is calibrated to a demand level the system no longer has, 3.8%
   // above 2025 and 9.8% above the 2026 annualisation. THE BAND IS UNCHANGED at
   // 170-215. It was not widened to absorb the overshoot, which is precisely what
@@ -327,7 +331,9 @@ function probe(w, src) {
     // Without this the term is plumbed and untested, which is how avgCost drifted 2.8%
     // through fifteen green harnesses in the first place.
     check('curtailFuelCost is non-zero in the coal-curtailment scenario',
-      cost.spill.curtailFuelCost / 1e9, 6.342, 0.7,
+      // UPDATED 21 Sep 2026, 6.342 -> 9.651: demand re-anchored to 2026 (build_demand_2026.py);
+      // the lower base leaves more forced coal with nowhere to go. Deliberate, not drift.
+      cost.spill.curtailFuelCost / 1e9, 9.651, 0.7,
       'R bn. If this reads zero the scenario has stopped producing coal curtailment and the identity below is no longer exercising the term - fix the scenario, not the check'
       + 'identity below is no longer exercising the term - fix the scenario, not the check',
       'R bn');

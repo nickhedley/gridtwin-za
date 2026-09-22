@@ -253,6 +253,27 @@ The R445.7bn figure above predates the 18-20 Sep cost basis; Fossil-free 2040 re
 `validate_invariants` asserts on six cases that pricing leaves unserved energy unchanged, and
 that unserved energy rises with the requirement.
 
+### Demand re-anchored to 2026, 21 Sep 2026
+
+Build `2026-09-21d`. Grid-served demand scaled by 0.938, the Jan-Aug 2026 vs Jan-Aug 2025 ratio
+of RSA Contracted Demand (ESK19679); rooftop left at the engine's level; 2025 hourly shape kept.
+Generator: `build_demand_2026.py`. Grid-served demand 210.5 -> 197.4 TWh.
+
+```
+                        unserved GWh default   worst of 12      avgCost R/MWh
+                        build 21c   21d        21c    21d       21c      21d
+Today 2026                  50.4    3.5        205     40       880      886
+Deep decarb 2035           112.9   41.0        268     80     1,549    1,655
+Fossil-free 2040               0      0          0      0     2,184    2,354
+```
+
+Today 2026 against reality: no load shedding for 476 days to September 2026. The model still
+sheds in all twelve weather years, mean 24.9 GWh. OCGT load factor 0.15% against Eskom's 1.1%.
+
+Caveat: avgCost rises because fixed costs are spread over less energy, not because the system
+costs more. Caveat: the ratio is provisional, from eight months; replace with the full-year
+2026 figure. Caveat: Crisis 2023 now runs on 2026 demand, lower than 2023's.
+
 ---
 
 ## Fossil free, re-measured

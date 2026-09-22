@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-21c`. Suite 744/755 plus eng5 6/6, measured 21 Sep 2026. Three sessions ran long and the
+Build `2026-09-21d`. Suite 750/756 plus eng5 5/6, measured 21 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,7 +15,7 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 21 Sep 2026 on build `2026-09-21c`, `profiles.json` at the root, current `nodal/`.
+Measured 21 Sep 2026 on build `2026-09-21d`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
@@ -24,20 +24,21 @@ validate_structure       24/24
 validate_geo             43/43
 validate_capacity        30/31     standing: backup profile file has no licence field
 validate_inputs          33/33
-validate_findings        29/32     restart finding; ancillary knee and demand shifting moved with the reserve change
-validate_invariants     153/153   seven added: pricing leaves unserved unchanged; requirement binds
-validate_response        82/82     three reserve sliders became one; reserve pricing exempted as a revenue lever
+validate_findings        29/32     restart; ancillary knee and demand shifting moved with the reserve change
+validate_invariants     154/154
+validate_response        82/82
 validate_weather         61/62     ESK19679.csv missing from the upload set
 validate_lp              50/50
-validate_consistency     79/79
-validate_benchmarks      22/26     not previously tracked; gridGenTWh 222.1 now 0.1 over its band
+validate_consistency     79/79     peak check now reads the page, not script comments
+validate_benchmarks      26/26     now a 2026 demand level against 2025 references
 validate_external         4/5      not previously tracked: baseline, not a regression
-validate_outputs         39/40     deliberate: grid demand 217.1 TWh, pending baseline vintage
+validate_outputs         40/40     grid demand 204.1 TWh after the 2026 re-anchor
 validate_solve            6/6
 audit.py                 87/87
-total                   744/755
+total                   750/756
 
-eng5.js                   6/6      run from the parent; check 6 is flat at its setting
+eng5.js                   5/6      check 4 fails: cost falls as demand rises, because
+                                   totalCost carries no cost of unserved energy
 ```
 
 Benchmarks fails on coal against Ember (6.8% vs a 6% band), total generation (233.6 vs
