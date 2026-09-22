@@ -3,29 +3,47 @@
 Things that expire. Checked at the start of every session; anything past its date
 either moves to LOG.md as done or gets a new date and a reason.
 
-Last reviewed: 12 Sep 2026.
+Last reviewed: 22 Sep 2026, against NERSA's Electricity Regulation Projects Dashboard,
+Issue 04 (September 2026, last updated 15 Sep 2026).
 
 ---
 
 ## Hard deadlines
 
 ```
-28 Sep 2026    DRAFT ELECTRICITY PRICING POLICY - comment closes. Gazetted
-               28 Aug 2026, replaces the 2008 policy. NEAREST BINDING DATE,
-               and more directly in scope than the Trading Rules two days
-               later.
-               It covers, item for item, what the retail panel already
-               models: unbundled charges across generation, transmission,
-               distribution and retail; cost-reflective tariffs; EXPLICIT
-               cross-subsidies; protection for vulnerable households; and
-               whether solar-equipped customers using the grid for backup
-               make a fair contribution to network costs.
-               We hold numbers on the last two that are not published
-               anywhere else - the fixed-charge share at 200 kWh, the 62x
-               spread in fixed charges across distributors, and the finding
-               that today's cheapest hours are the dirtiest.
-30 Sep 2026    NERSA Trading Rules - comment submission. HARD DEADLINE, no
-               extension assumed.
+28 Sep 2026    NERSA Trading Rules - written comments close. Extended to this
+               date (NERSA dashboard Issue 04); member workshop in October,
+               target completion 31 Oct 2026. Governs how wheeling and trading
+               clear. Six days from this review. The Megaflex ordering claim
+               holds at 2025 conditions only - date it if it is quoted.
+29 Sep 2026    Draft Rule on Mediation and Arbitration - written comments close.
+               Public hearing 8 Oct 2026. Low relevance to the model.
+30 Sep 2026    TDP Rules (content of the TDP, section 35(3A)) - with the
+               Minister, target 30 Sep. Watch: tdp_projects.json and the
+               headroom growth path rest on the TDP.
+6 Oct 2026     EMAF workshop on the Vesting Contract Framework and the
+               Wholesale Tariff Methodology, both in finalisation, target
+               31 Oct 2026. The methodology is the cross-check on the
+               price-component mapping; vesting contracts bear on the
+               market-indexed retail basis.
+8 Oct 2026     Public hearings: Eskom Retail Tariff Structural Adjustment
+               (ERTSA; written comments closed about 7 Sep) and the Mediation
+               and Arbitration rule. ERTSA is directly relevant to the retail
+               panel's Homeflex and Homepower comparisons.
+Oct 2026       Price and Tariff Rule - consultation paper to be published in
+               October, subject to the Electricity Pricing Policy; target
+               30 Nov 2026. Sets unbundled prices and tariffs, which is what
+               the retail panel models. The most relevant open consultation.
+31 Oct 2026    Market Code - Energy Regulator decision expected (member
+               workshop held 15 Sep). KPIs for Municipalities Rules - target
+               completion; hearing held 14 Aug, Treasury engagement under way.
+               Bears on the municipal-customer gap and the PARI work.
+Nov 2026       Two-year Pilot Tariff for Crypto Currency Mining and Other
+               Customers - to ELS and the Energy Regulator in November; comment
+               and hearing dates to be confirmed.
+TBC            Market Surveillance Framework - revisions requested by ELS
+               after 1 Sep submission.
+Underway       CoS Framework Review; Compliance Enforcement Rules. No dates.
 31 Dec 2027    INDEPENDENT TSO, state-owned, outside Eskom. Treasury's RFP
                for a transaction adviser names this date, and the mandate
                explicitly EXCLUDES reconsidering the policy - the TSO owns
@@ -35,6 +53,14 @@ Last reviewed: 12 Sep 2026.
                Bears on the market-indexed basis in the retail panel: that
                mode assumes a competitive wholesale market, and this is when
                its counterparty exists.
+```
+
+## Recently closed
+
+```
+20 Sep 2026    Draft Electricity Pricing Policy - comment closed (this file
+               said 28 Sep; corrected). The Price and Tariff Rule above follows
+               from it.
 ```
 
 ## Expected publications - watch for these
