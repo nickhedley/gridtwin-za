@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-22c`. Suite 756/761 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
+Build `2026-09-22d`. Suite 757/762 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,7 +15,7 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 22 Sep 2026 on build `2026-09-22c`, `profiles.json` at the root, current `nodal/`.
+Measured 22 Sep 2026 on build `2026-09-22d`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
@@ -26,7 +26,7 @@ validate_capacity        30/31     standing: backup profile file has no licence 
 validate_inputs          33/33
 validate_findings        31/32     ancillary knee no longer holds under the 2,200 MW requirement
 validate_invariants     156/156
-validate_response        82/82
+validate_response        83/83     diesel budget control added
 validate_weather         64/64
 validate_lp              50/50
 validate_consistency     79/79     tariff-shape checks run at 2025 conditions; one run of
@@ -37,7 +37,7 @@ validate_external         4/5      not previously tracked: baseline, not a regre
 validate_outputs         40/40
 validate_solve            6/6
 audit.py                 87/87
-total                   756/761
+total                   757/762
 
 eng5.js                   6/6      check 4 passes again now peakers serve before shedding;
                                    the missing cost of unserved energy is still open

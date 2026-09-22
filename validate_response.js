@@ -116,6 +116,7 @@ const CONTEXT = {
   // ccgtForceLoad added 22 Sep 2026: on the 2026 demand base 4 GW of CCGT runs 0.01 TWh,
   // too little for its LCOE to move replacement cost past the threshold.
   lcoeCcgt:         { newCcgtMW: 4000, ccgtForceLoad: 1 },  // and must exist to be costed
+  dieselBudgetTWh:   { coalEAFPct: 50 },   // added 22 Sep 2026; binds only when diesel is used
   lcoeVrfb:         { newVrfbMW: 5000 },
   // ccsSharePct does nothing unless CCS is on, and it is off by default. NOT a skip: with
   // CCS enabled the control moves coal, diesel, unserved energy and CO2 across its whole

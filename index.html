@@ -5370,6 +5370,10 @@ const FIXED = {
   // burned no diesel, which is a weaker guarantee than saying there is none to burn.
   // Default 0 changes nothing.
   dieselDecomMW:0,
+  // Annual diesel budget, spread evenly by month. 30 TWh is above the fleet's physical
+  // maximum (3.4 GW x 8,760 h = 29.8 TWh), so by default it never binds. ESK19679 2023 OCGT
+  // output was flat across the year, not winter-weighted, hence even months. 22 Sep 2026.
+  dieselBudgetTWh:30,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -6458,6 +6462,11 @@ function simulate(u, prof, outPath, _soc0){
   // the caller uses so the scalar and the tiers stay in step.
   // Energy passed from coal and storage to peakers to keep operating reserve whole.
   let _resShedMWh = 0;
+  // Diesel budget: flat monthly cap, used from the start of each month.
+  const _dslMonthCap = Math.max(0, p.dieselBudgetTWh) * 1e6 / 12;
+  const _dslUsed = new Float64Array(12);
+  const _monthOfHour = (() => { const a = new Uint8Array(8760), MD = [31,28,31,30,31,30,31,31,30,31,30,31];
+    let h = 0; for (let m = 0; m < 12; m++) for (let k = 0; k < MD[m] * 24; k++) a[h++] = m; return a; })();
   const _asHoldH = Math.max(0.25, p.asHoldHours);
   // ── opportunity-value gate ────────────────────────────────────────────────
   // TWO-pass price-taker, added 30 Aug 2026. This is the piece the reverted
@@ -7387,7 +7396,8 @@ function simulate(u, prof, outPath, _soc0){
         residual=Math.max(0,residual-forced);
       }
       const g=Math.min(residual,ccgtCap-ccgtMustRun); residual-=g; E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*(p.costCcgt+p.vomCcgt); carbonCost+=g*cG;
-      const dsl=Math.min(residual,dieselAvailMW(p)); residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
+      const _mo=_monthOfHour[h % 8760];
+      const dsl=Math.max(0, Math.min(residual,dieselAvailMW(p), _dslMonthCap - _dslUsed[_mo])); _dslUsed[_mo]+=dsl; residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
       // stack.coal is set from coalGenTotal in the shared block below, after the off-peak charging
       // bonus, so it reflects every MWh coal actually generated. That is correct now the demand
       // line includes storage charging: coal burned to charge storage is real generation meeting
@@ -14390,6 +14400,10 @@ const SLIDERS=[
    note:'Eskom\u2019s open-cycle diesel fleet is 3,400 MW. Retiring all of it is what makes a '
      + 'fossil-free system a constraint rather than a hope \u2013 without this control the only '
      + 'way to get there is to find a build the dispatch happens never to reach diesel in.'},
+  {id:'dieselBudgetTWh',label:'Diesel budget',min:0.5,max:30,step:0.25,def:FIXED.dieselBudgetTWh,
+   fmt:v=>v>=29.8?'no limit':(v.toFixed(2)+' TWh/yr'),
+   note:'Fuel Eskom can buy and deliver in a year, spread evenly by month. Unlimited by default. '
+     + 'In 2023 the OCGT fleet ran 5.25 TWh (ESK19679), an 18% load factor, while the country shed load.'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:39692,step:1000,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'of 39.7 GW installed (Eskom FY2026 nominal).'},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit R223/kW/yr (Weisweiler). SA fleet ramps ~24&#37;/hr today (Agora 2017), ~100&#37;/hr once flexibilised (IRENA). Applies to the non-decommissioned fleet.'},
   {grp:'New build (national view/region agnostic)'},
@@ -14540,7 +14554,8 @@ const PRESETS={
   // plus MLR, ILS and IOS) = 231.4 TWh, reached from the 2026 base at +24%. 22 Sep 2026.
   // Forced share of outages 73%: ESK19679 UCLF share for calendar 2023. 22 Sep 2026.
   // Trade 2023, ESK19679: imports 1,233 MW mean (1,400 x 0.88), exports 1,284 MW incl. Mozal.
-  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:24,outVolPct:6,outageForcedSharePct:73,importsMW:1400,exportsMW:1300},
+  // Diesel 2023, ESK19679: Eskom OCGT 3.57 + IPP OCGT 1.68 = 5.25 TWh.
+  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:24,outVolPct:6,outageForcedSharePct:73,importsMW:1400,exportsMW:1300,dieselBudgetTWh:5.25},
   // ── GRID DELAY ────────────────────────────────────────────────────────────
   // Transmission slipping behind the build programme. Added 10 Sep 2026 after reading
   // Aurora's Australian grid-delay work, where Project EnergyConnect Stage 2 ran a year late
@@ -16012,7 +16027,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22c';
+const BUILD_STAMP = '2026-09-22d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

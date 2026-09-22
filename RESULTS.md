@@ -345,7 +345,24 @@ price is 1.55x the night price at 2026 conditions, against 1.03x before.
 
 Crisis 2023 moves away from it: with no fuel limit the OCGTs run at 68% load factor against
 18% in 2023. A diesel budget of the actual 5.24 TWh, spread evenly by month, gives 19.4 TWh
-unserved (tested, not shipped). Do not quote Crisis 2023 adequacy until a budget is in.
+unserved. Shipped in build 2026-09-22d; see the entry below.
+
+### Diesel budget, 22 Sep 2026
+
+Build `2026-09-22d`. `dieselBudgetTWh`, spread evenly by month; unlimited by default (30 TWh,
+above the fleet's 29.8 TWh physical maximum). Crisis 2023 carries 2023's actual 5.25 TWh
+(ESK19679: Eskom OCGT 3.57 + IPP OCGT 1.68). 2023 OCGT output was flat across the year, not
+winter-weighted, hence even months.
+
+```
+Crisis 2023            before    22d                              actual 2023
+unserved TWh              6.9   19.4 (12 years: mean 21.2, worst 22.7)   16.6
+shed hours              3,204   5,620                                    6,837
+diesel TWh               20.4    5.25                                     5.25
+```
+
+Crisis 2023 now overshoots by 17% in the default year and 28% on the twelve-year mean. Today
+2026 and 2025 conditions are unchanged: the budget does not bind outside a crisis.
 
 ---
 
