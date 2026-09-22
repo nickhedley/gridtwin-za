@@ -7102,6 +7102,9 @@ function simulate(u, prof, outPath, _soc0){
   // be needed soon, rather than blindly chasing a fixed SoC target every night regardless of
   // proportionality - see the off-peak charging block below for how this is used.
   // Reserve actually carried each hour, kept for the adequacy panel and CSV.
+  // Megawatt-hours of the must-run gas floor the system could not absorb; see the block that
+  // dispatches it. Zero unless ccgtForceLoad is on.
+  let _ccgtFloorUnmet = 0;
   const reserveMWArr=new Float64Array(HOURS);
   // Reserve actually AVAILABLE after dispatch each hour: committed coal headroom within its
   // ramp, plus storage discharge headroom it can sustain for asHoldHours, plus charging it
@@ -7548,13 +7551,39 @@ function simulate(u, prof, outPath, _soc0){
       if(storageMarginal[h]==='batt'){ storageBid[h]=battBasis+p.battCycleCostR; basisLog.push({t:'bid',h,which:'batt'}); }
       else if(storageMarginal[h]==='ps'){ storageBid[h]=psBasis+p.psCycleCostR; basisLog.push({t:'bid',h,which:'ps'}); }
       residual += _resShed; _resShedMWh += _resShed;
-      // IRP 50% annual load factor: if toggled, treat half of CCGT capacity as must-run
+      // IRP 50% annual load factor: if toggled, treat half of CCGT capacity as must-run.
+      //
+      // ENERGY THAT GOES SOMEWHERE, 22 Sep 2026. This used to add the forced output to
+      // generation and then clamp the residual at zero, so in any hour where the system did not
+      // need it the energy was burned, counted and emitted with nothing on the other side of the
+      // balance: 27.3 TWh of phantom gas on an IRP-style 2035 build, against 34 TWh of gas
+      // generation. Forced output now serves the residual, then displaces coal down to its
+      // floor, then charges storage; what still cannot be absorbed is not generated, and the
+      // unmet floor is recorded rather than hidden.
       const ccgtMustRun = p.ccgtForceLoad ? Math.round(ccgtCap*0.5) : 0;
       if(ccgtMustRun>0){
         const forced=Math.min(ccgtMustRun,ccgtCap);
-        E.ccgt+=forced; stack.ccgt[h]=(stack.ccgt[h]||0)+forced;
-        fuelCost+=forced*(p.costCcgt+p.vomCcgt); carbonCost+=forced*cG;
-        residual=Math.max(0,residual-forced);
+        const take=Math.min(forced,Math.max(0,residual));
+        let excess=forced-take;
+        if(excess>0){
+          const back=Math.min(excess,Math.max(0,coalGen-coalFloorBase));
+          coalGen-=back; excess-=back;
+        }
+        const _gasChgCost=p.costCcgt+p.vomCcgt+cG;
+        if(excess>0){
+          const psChg=Math.min(excess,psPowerTot,psEnergyTot-psSoc);
+          addCharge(h,'ps',psChg,_gasChgCost); psSoc+=psChg*psEffTot; excess-=psChg; chargeMW[h]+=psChg;
+        }
+        if(excess>0){
+          let btChg=Math.min(excess,battPower,battEnergy-battSoc);
+          btChg=tierChargeAt(btChg,h,_gasChgCost); addCharge(h,'batt',btChg,_gasChgCost);
+          syncBattSoc(); excess-=btChg; chargeMW[h]+=btChg;
+        }
+        const gen=forced-excess;
+        E.ccgt+=gen; stack.ccgt[h]=(stack.ccgt[h]||0)+gen;
+        fuelCost+=gen*(p.costCcgt+p.vomCcgt); carbonCost+=gen*cG;
+        residual-=take;
+        _ccgtFloorUnmet+=excess;
       }
       const g=Math.min(residual,ccgtCap-ccgtMustRun); residual-=g; E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*(p.costCcgt+p.vomCcgt); carbonCost+=g*cG;
       const _mo=_monthOfHour[h % 8760];
@@ -8340,7 +8369,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -14908,6 +14937,24 @@ const PRESETS={
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
   'Latest IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:64,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
+  // IRP path 2035. The counterfactual the two transition presets should be read against: what
+  // the published plan builds by 2035, on the same demand and the same weather, so a retail
+  // comparison measures the transition rather than the passage of time. Comparing either of
+  // them with Today 2026 flatters today, whose coal is largely paid off and still running.
+  //
+  // COAL. Eskom's Generation Continued Operations schedule retires 8.4 GW by 2030; the MTSAO
+  // puts about 17 GW of coal and gas out by 2035. 16 GW of coal here.
+  // BUILD. The IRP's 2030 targets are published - 7,340 MW wind, 11,270 solar, 6,000 gas,
+  // 3,100 storage, 5,400 distributed - and its horizon totals are 34 GW wind, 25 GW solar,
+  // 8.5 GW storage and 16 GW gas by 2039. The 2035 figures here are a STRAIGHT-LINE
+  // interpolation between the two, which the IRP does not publish: wind 22.2 GW, solar 18.9,
+  // storage 6.1, gas 11.6. Rooftop is held at Deep decarbonisation's 10.8 GW so the two
+  // presets differ only in what is built on the grid side.
+  // GAS RUNS AT 50%. The IRP raised the minimum load factor for the first gas plants to 50%,
+  // which is what ccgtForceLoad does here.
+  'IRP path 2035':{demandGrowthPct:5,coalEAFPct:64,coalDecomMW:16000,newWindMW:22200,newPvMW:18900,
+                   newRooftopMW:10800,newBattMW:6100,newBattHours:4,newCcgtMW:11600,lcoeCcgt:2500,
+                   ccgtForceLoad:1,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
   // (expected unserved energy at most 0.002% of demand, mean of twelve weather years), re-run
   // 22 Sep 2026 after the long-duration lookahead: 35 GW wind, 35 GW solar, 25 GW lithium at
@@ -16319,7 +16366,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22ap';
+const BUILD_STAMP = '2026-09-22ar';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

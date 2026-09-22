@@ -1795,6 +1795,42 @@ the panel returns no annual charge at all.
 capacity_siting.js still holds its own copy for a path the page does not use; the allowed-orphan
 entry now says so.
 
+### A 2035 counterfactual, and 27 TWh of phantom gas it exposed, 22 Sep 2026
+
+Build `2026-09-22ar`.
+
+New preset, IRP path 2035: what the published plan builds by 2035, on the same demand, rooftop
+and weather as Deep decarbonisation 2035, so a comparison measures the transition rather than the
+passage of time. Coal down 16 GW (Eskom's shutdown schedule to 2030 plus the MTSAO's 17 GW of
+coal and gas by 2035); build straight-line interpolated between the IRP's published 2030 targets
+and its 2039 totals - wind 22.2 GW, solar 18.9, storage 6.1 at 4h, gas 11.6 - with the IRP's 50%
+minimum gas load factor on. The interpolation is mine; the IRP does not publish 2035 capacities.
+
+```
+                            R/kWh reg / mkt   system R bn   CO2 Mt   gas TWh   spill TWh
+Today 2026                    3.75 / 3.70        210.4       155        0         0
+IRP path 2035                 4.16 / 4.03        284.6        62       13.5      32.6
+Deep decarbonisation 2035     4.24 / 4.17        291.2        29        0        65.7
+Fossil-free 2040              4.93 / 4.86        346.8         0        0       120.4
+```
+
+Read against the plan rather than against today, Deep decarbonisation costs 2% more at retail and
+halves the emissions. Against today it looked 13% dearer, which was comparing a 2035 system with
+a 2026 one whose coal is largely paid off.
+
+The defect it exposed. With the 50% gas floor on, forced output was added to generation and the
+residual then clamped at zero, so in any hour the system did not need it the energy was burned,
+counted and emitted with nothing on the other side of the balance. On this build that was 27.3
+TWh of phantom gas against 34 TWh of gas generation. Forced output now serves the residual, then
+displaces coal to its floor, then charges storage; what cannot be absorbed is not generated and
+is recorded as an unmet floor. An invariant asserts the balance and fails on the old build by
+36.6 TWh.
+
+What moved: IRP path gas 34.0 to 13.5 TWh and CO2 74 to 62 Mt; the IRP 2030 preset 129 Mt against
+the 148 recorded in the open items, so that comparison against the IRP's own 168 Mt needs redoing.
+And the 50% floor is not reachable at this build: 20.4 TWh of it goes unmet, which is a finding
+about the policy rather than the model.
+
 ---
 
 ## Fossil free, re-measured

@@ -530,6 +530,32 @@ const SCENARIOS = {
                       + `transmission ${F.tx.toFixed(3)}; zero stack prices at R${F.zero.toFixed(2)}`) : 'no result');
   }
 
+  // ── MUST-RUN GAS ENERGY GOES SOMEWHERE ─────────────────────────────────────
+  // Added 22 Sep 2026. With ccgtForceLoad on, forced output was added to generation and the
+  // residual clamped at zero, so unneeded gas was burned and emitted against nothing: 27.3 TWh
+  // of it on an IRP-style 2035 build. Grid generation must now balance what is served, exported
+  // and charged, to within storage losses.
+  {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__gas = (function(){ try {
+      const r = simulate({ ...state, ...PRESETS['IRP path 2035'] }, PROFILES);
+      let load = 0, chg = 0;
+      for (let h = 0; h < 8760; h++){ load += r.loadS[h]; chg += r.chargeMW[h] || 0; }
+      const E = r.E;
+      const gen = E.wind + E.pv + E.csp + (E.hybrid || 0) + E.nuclear + E.hydro + E.imports
+                + E.coal + E.ps + E.batt + E.ccgt + E.diesel;
+      return { gapTWh: (gen - (load - chg) - (E.exportedFirm || 0)) / 1e6,
+               chargeTWh: chg / 1e6, unmetTWh: (r.ccgtFloorUnmetMWh || 0) / 1e6 };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const G = w.__gas;
+    if (!G || G.err) check('must-run gas energy goes somewhere', false, G ? G.err : 'no result');
+    else check('must-run gas energy goes somewhere', G.gapTWh < 0.25 * G.chargeTWh + 1,
+               `generation exceeds served, exported and charged energy by ${G.gapTWh.toFixed(1)} TWh `
+               + `against ${G.chargeTWh.toFixed(1)} TWh charged; the 50% gas floor went unmet by `
+               + `${G.unmetTWh.toFixed(1)} TWh`);
+  }
+
   // ── THE SITING PANEL PRICES A MEGAWATT AS THE ENGINE DOES ──────────────────
   // Added 22 Sep 2026. The panel used to run its own corridor arithmetic while the engine used
   // the tiered regional charge, so the same megawatt had two prices. Both now call txTierCharge:
