@@ -7889,7 +7889,7 @@ function simulate(u, prof, outPath, _soc0){
   const acapAt = (tech, flat) => (typeof BLD_COST === 'undefined' || !BLD_COST[tech])
     ? flat
     : bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech]) + bldFom(tech, _vint);
-  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*p.newBattHours/4)+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+(u.newWindMW+pvAdderMW)*txRateFor(u.newWindMW+pvAdderMW, p.txRPerKWyr))*1000;
+  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*p.newBattHours/4)+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000;   // tiered regional charge, R/yr
   // The transmission slice of newCapexR, kept separately so the cost decomposition can
   // report it against NERSA's "transmission network charges" component. It is a BUILD
   // cost, not a use-of-system charge, which is why the decomposition marks it partial.
@@ -7907,7 +7907,7 @@ function simulate(u, prof, outPath, _soc0){
   // connection; 20 GW is about 1,270 GW-km. Our screened points sit further offshore than
   // those sub-area centroids, so treat both as floors.
   const _offMW = (u.newOffshoreMW || 0);
-  const _txCapexR = (u.newWindMW+pvAdderMW+_offMW)*txRateFor(u.newWindMW+pvAdderMW+_offMW, p.txRPerKWyr)*1000
+  const _txCapexR = txChargeFor(u.newWindMW, pvAdderMW, _offMW, p)
                   + _offMW * (p.offshoreGridRPerKWyr || 0) * 1000;
   // 'hybrid' added 15 Aug 2026: it serves the grid, so excluding it from the
     // denominator while its costs sat in the numerator overstated avgCost ~0.9%.
@@ -8153,53 +8153,12 @@ function simulate(u, prof, outPath, _soc0){
     + (E.csp  || 0);
   const ppaCostR = reipppOutputMWh * reipppRate(p.scenarioYear ?? 2026);
   const otherIppCostR = otherIppR(p.scenarioYear ?? 2026);
-  // ── REGIONAL GRID REINFORCEMENT ──────────────────────────────────────────────────────
-  // National slider capacity allocated to provinces by REEA_SHARE - where developers have
-  // actually applied to build - then charged against each region's connection headroom using
-  // the SAME formula the siting panel uses. Added 20 Sep 2026.
-  //
-  // Before this the sliders assumed a COPPERPLATE: Fossil-free 2040 puts 130 GW beyond
-  // available headroom, 87% of everything it builds, and connected it for free. Northern Cape
-  // takes 58 GW against ZERO published headroom; KwaZulu-Natal and Gauteng hold 10 GW of
-  // headroom between them and receive 5 GW, because almost nobody has applied there.
-  //
-  // REINFORCEMENT, NOT CURTAILMENT. Above headroom a developer builds line or is refused; the
-  // congestion derate elsewhere is the residual before reinforcement, not a substitute for it.
-  //
-  // HEADROOM IS A 2025 SNAPSHOT. The Transmission Development Plan builds line, so a 2040 run
-  // should have more headroom than this assumes and this overstates the charge. tdp_projects
-  // .json is in the repo and unused; wiring a growth path to scenarioYear is the next step.
-  let gridReinforceR = 0;
-  if (typeof HEADROOM_LOOKUP !== 'undefined' && HEADROOM_LOOKUP
-      && typeof gridBuildChargeFor === 'function' && typeof REEA_SHARE !== 'undefined') {
-    const _opts = { getsOn: !!u.getsEnabled,
-                    getUpliftFrac: (typeof SITING_GET_UPLIFT_FRAC !== 'undefined' ? SITING_GET_UPLIFT_FRAC : 0),
-                    getCostPerKm: (typeof GET_COST_PER_KM !== 'undefined' ? GET_COST_PER_KM : 0),
-                    getLifeYears: (typeof GET_LIFETIME_YEARS !== 'undefined' ? GET_LIFETIME_YEARS : 1) };
-    for (const tech of ['wind', 'solar']) {
-      const nat = tech === 'wind'
-        ? (u.newWindMW || 0) + (u.newOffshoreMW || 0)   // offshore lands on the coast and uses the same corridors
-        : (u.newPvMW || 0);
-      if (nat <= 0) continue;
-      const shares = REEA_SHARE[tech] || {};
-      for (const reg of Object.keys(shares)) {
-        const entry = (HEADROOM_LOOKUP[reg] || {})[tech];
-        if (!entry) continue;
-        // Headroom at the SCENARIO YEAR, not 2025. The TDP builds 10,209 km of line,
-        // concentrated where headroom is zero, and a 2040 run that ignores it pays to build
-        // transmission that is already planned. Phase-weighted: only 17% of it is committed.
-        const tdpMW = (TDP_PROJECTS && typeof tdpHeadroomMW === 'function')
-          ? tdpHeadroomMW(TDP_PROJECTS, reg, (p.scenarioYear ?? 2026),
-                          Math.max(0, Math.min(100, p.tdpConfidencePct ?? 100)) / 100)
-          : 0;
-        const grown = Object.assign({}, entry,
-                                    { headroom_mw: (entry.headroom_mw || 0) + tdpMW });
-        const r = gridBuildChargeFor(grown, nat * shares[reg], _opts);
-        gridReinforceR += r.annualR || 0;
-      }
-    }
-  }
-  const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+ppaCostR+otherIppCostR+gridReinforceR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
+  // Regional grid reinforcement used to be charged here, on the MW beyond each region's
+  // headroom, while every MW also paid the flat TDP-average transmission rate. Both priced the
+  // same deep network, so capacity beyond headroom paid twice: R2.1bn a year on Deep
+  // decarbonisation 2035 and R4.7bn on Fossil-free 2040. The tiered charge in txChargeFor now
+  // does the whole job, region by region. 22 Sep 2026.
+  const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+ppaCostR+otherIppCostR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
   // Supply cost above; system cost adds the economic cost of energy not served, so a run
   // that sheds more cannot look cheaper. 22 Sep 2026.
   const unservedCostR = (E.unserved || 0) * p.costUnservedR;
@@ -8222,7 +8181,7 @@ function simulate(u, prof, outPath, _soc0){
   // magnitude: R3.54/MWh today, 0.6% of avgCost. It scales with coal cycling, which is
   // the regime a high-renewables system pushes coal into - so it grows in exactly the
   // scenarios this model exists to study.
-  const gridCost=fuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+otherIppCostR+gridReinforceR+drCostR+startUpCostR;  // what the grid bears
+  const gridCost=fuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+otherIppCostR+drCostR+startUpCostR;  // what the grid bears
   // drCostR included: compensation paid to interruptible customers is part of
   // what the system costs to run, and omitting it made demand response look free.
   // fixedOMR added 18 Sep 2026. avgCost is summed EXPLICITLY here rather than divided out of
@@ -8230,7 +8189,7 @@ function simulate(u, prof, outPath, _soc0){
   // this line - and the decomposition below asserts they agree. That assertion is what caught
   // this one: the term went into the two aggregates, avgCost did not move, and the
   // reconciliation would have failed on the next run.
-  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+otherIppCostR+gridReinforceR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
+  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+otherIppCostR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
 
   // ── cost decomposition ────────────────────────────────────────────────────
   // Added 30 Aug 2026, structured against NERSA's OWN wholesale price component list
@@ -8271,7 +8230,6 @@ function simulate(u, prof, outPath, _soc0){
       { k:'fixedom',    nersa:'Operating costs (fixed O&M)', v: per(fixedOMR),                 have:true },
       { k:'ppa',        nersa:'REIPPPP PPA obligation',     v: per(ppaCostR),                   have:true },
       { k:'ippOther',   nersa:'Other IPP contracts',        v: per(otherIppCostR),              have:true },
-      { k:'reinforce',  nersa:'Grid reinforcement',        v: per(gridReinforceR),             have:true },
       { k:'dr',         nersa:'Demand response',           v: per(drCostR),                    have:true },
       { k:'exports',    nersa:'(export revenue, offset)',  v: -per(exportRevenueR+firmExportRevenueR), have:'outside' },
       { k:'capacity',   nersa:'Capacity prices',           v: 0, have:false, why:'no capacity market in SA' },
@@ -8382,7 +8340,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -10899,6 +10857,53 @@ async function buildTxCurve(){
 // Effective R/kW-yr for a given volume of new wind + PV, filling cheapest headroom
 // first. Beyond total available headroom the most expensive regional rate applies,
 // because that capacity requires new corridors rather than spare bays.
+// TIERED REGIONAL CONNECTION COST, 22 Sep 2026. One charge per MW, replacing two that
+// overlapped: a flat TDP-average rate on every new MW, plus a separate regional reinforcement
+// charge on the MW beyond headroom, so that capacity paid both. National slider capacity is
+// allocated to regions by REEA_SHARE - where developers have actually applied - and each
+// region's allocation is charged in three tiers, the supply-curve treatment PyPSA and ReEDS use:
+//
+//   within today's GCCA headroom      TX_SHALLOW x base: a bay, a transformer, a short line.
+//                                     The deep network already exists.
+//   within headroom the TDP builds    base x the region's distance multiplier. This is what
+//                                     the TDP's R402/kW-yr average buys, and tdpConfidencePct
+//                                     decides how much of it arrives.
+//   beyond both                       TX_BEYOND x that. New corridors past the published plan.
+//                                     A judgement, not a published figure.
+//
+// Solar on retired-coal sites is exempt upstream (pvAdderMW), so it never reaches this.
+const TX_SHALLOW = 0.25, TX_BEYOND = 1.5;
+function txChargeFor(windMW, pvMW, offMW, p){
+  const base = p.txRPerKWyr, total = (windMW || 0) + (pvMW || 0) + (offMW || 0);
+  if (!(total > 0)) return 0;
+  const flat = () => total * base * 1000;
+  if (typeof REEA_SHARE === 'undefined' || typeof HEADROOM_LOOKUP === 'undefined'
+      || !HEADROOM_LOOKUP || !bldTxCurve) return flat();
+  const mult = {};
+  for (const r of bldTxCurve.rows) mult[r.region] = r.mult;
+  const conf = Math.max(0, Math.min(100, p.tdpConfidencePct ?? 100)) / 100;
+  let cost = 0;
+  const charge = (tech, mw) => {
+    const shares = REEA_SHARE[tech] || {};
+    for (const reg of Object.keys(shares)){
+      let left = mw * shares[reg];
+      if (!(left > 0)) continue;
+      const entry = (HEADROOM_LOOKUP[reg] || {})[tech] || {};
+      const existing = Math.max(0, entry.headroom_mw || 0);
+      const tdp = (TDP_PROJECTS && typeof tdpHeadroomMW === 'function')
+        ? tdpHeadroomMW(TDP_PROJECTS, reg, p.scenarioYear ?? 2026, conf) : 0;
+      const m = mult[reg] ?? 1;
+      const t1 = Math.min(left, existing); left -= t1;
+      const t2 = Math.min(left, tdp);      left -= t2;
+      cost += (t1 * TX_SHALLOW + t2 * m + left * m * TX_BEYOND) * base * 1000;
+    }
+  };
+  charge('wind', (windMW || 0) + (offMW || 0));   // offshore lands on the coast and uses those corridors
+  charge('solar', pvMW || 0);
+  return cost;
+}
+// Superseded by txChargeFor above and kept only for the regional multipliers it reads from
+// bldTxCurve; nothing calls it. Delete with the curve if that goes.
 function txRateFor(newMW, baseRate){
   // FLAT from 22 Sep 2026. The curve filled cheapest headroom first whatever the technology,
   // so new wind was priced as if it could connect in Gauteng at a quarter of the average. The
@@ -13203,7 +13208,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   // utility solar not on retired-coal sites, and offshore, plus offshore export grid) and its
   // regional reinforcement. Until then this line charged R6,964 per kW of new wind and solar,
   // the whole TDP over 56 GW, refurbishment and load strengthening included.
-  const newGrid = ((r.txCapexR || 0) + (r.gridReinforceR || 0)) / salesMWh / 1000;
+  const newGrid = (r.txCapexR || 0) / salesMWh / 1000;
   // Network and retail, both bases: today's rand amount over scenario sales, plus new transmission.
   const network = netBase * fixedScale + newGrid;
 
@@ -16294,7 +16299,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22an';
+const BUILD_STAMP = '2026-09-22ao';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

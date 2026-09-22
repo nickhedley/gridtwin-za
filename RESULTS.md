@@ -1736,6 +1736,42 @@ That also closes the entries above: the strategic floor was tested against an un
 and the "2 GWh a year against optimal" figure quoted earlier was measured the same way.
 ldes_bench_all.js now builds the corrected series.
 
+### Transmission charged once, region by region, 22 Sep 2026
+
+Build `2026-09-22ao`. Until now every new MW paid a flat TDP-average rate AND capacity beyond a
+region's headroom paid a separate reinforcement charge, both pricing the same deep network:
+R2.1bn a year of double charge on Deep decarbonisation 2035 and R4.7bn on Fossil-free 2040.
+
+One charge now, allocated to regions by REEA share and priced in three tiers, the supply-curve
+treatment PyPSA and ReEDS use:
+
+```
+within today's GCCA headroom     0.25 x base   a bay, a transformer, a short line
+within headroom the TDP builds   base x the region's distance multiplier
+beyond both                      1.5 x that    new corridors past the published plan
+```
+
+The 1.5 is a judgement; the rest is the TDP-derived R402/kW-yr and the distance curve the model
+already carried. Solar on retired-coal sites is exempt upstream and never reaches this.
+
+```
+                          transmission R bn/yr   was (flat + reinforcement)
+Deep decarbonisation 2035          14.5                    18.4
+Fossil-free 2040                   18.6                    24.1
+```
+
+How much of the TDP arrives now changes the bill, because it moves MW between the second tier and
+the third: Fossil-free pays R18.6bn with the plan delivered, R21.8bn at half confidence and
+R27.1bn with none of it. An invariant asserts both that response and the absence of the old
+reinforcement line.
+
+Retail, regulated / market R/kWh: Today 3.75 / 3.70; Deep decarbonisation 4.24 / 4.17;
+Fossil-free 4.93 / 4.86.
+
+The siting panel still carries its own inline copy of the old beyond-headroom arithmetic, and
+capacity_siting.js's shared version is now unwired and labelled as such. Wiring the panel to the
+tiered charge is the remaining half of this job.
+
 ---
 
 ## Fossil free, re-measured

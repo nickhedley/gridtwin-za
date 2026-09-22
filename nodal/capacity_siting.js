@@ -39,6 +39,9 @@ async function loadFirmHeadroomLookup() {
 // @param entry  a region/tech record from region_headroom_lookup.json
 // @param mw     capacity seeking connection
 // @param opts   { alreadyMw, getsOn, getUpliftFrac, getCostPerKm, getLifeYears }
+// UNWIRED from 22 Sep 2026: the engine now prices national slider capacity with the tiered
+// regional charge in index.html (txChargeFor), which supersedes this. The siting panel still
+// carries its own inline copy of the same arithmetic; wiring it here is the open job.
 function gridBuildChargeFor(entry, mw, opts) {
   opts = opts || {};
   if (!entry || !(mw > 0)) return { shortfallMw: 0, getPortionMw: 0, annualR: 0, chargeRPerMWh: 0 };

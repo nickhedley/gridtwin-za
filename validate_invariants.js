@@ -530,6 +530,28 @@ const SCENARIOS = {
                       + `transmission ${F.tx.toFixed(3)}; zero stack prices at R${F.zero.toFixed(2)}`) : 'no result');
   }
 
+  // ── TRANSMISSION IS CHARGED ONCE, AND THE PLAN'S DELIVERY MATTERS ──────────
+  // Added 22 Sep 2026 with the tiered regional charge. Two things must hold: capacity beyond
+  // headroom is no longer charged twice (the reinforcement line is gone, so the engine returns
+  // no gridReinforceR), and how much of the TDP arrives changes the bill, because it moves MW
+  // between the TDP tier and the beyond-the-plan tier.
+  {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__tx = (function(){ try {
+      const at = c => simulate({ ...state, ...PRESETS['Fossil-free 2040'], tdpConfidencePct: c }, PROFILES);
+      const full = at(100), none = at(0);
+      return { full: full.txCapexR / 1e9, none: none.txCapexR / 1e9,
+               reinforce: full.gridReinforceR === undefined };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const T = w.__tx;
+    if (!T || T.err) check('transmission is charged once and responds to the TDP', false, T ? T.err : 'no result');
+    else check('transmission is charged once and responds to the TDP',
+               T.reinforce && T.none > T.full * 1.2,
+               `R${T.full.toFixed(1)}bn a year with the TDP delivered against R${T.none.toFixed(1)}bn `
+               + `without it; separate reinforcement charge ${T.reinforce ? 'removed' : 'STILL PRESENT'}`);
+  }
+
   // ── THE RESERVE REQUIREMENT GROWS WITH VARIABLE GENERATION ─────────────────
   // Added 22 Sep 2026. The ASTR's 2,200 MW is sized to 2030/31 on today's fleet; NREL's 3+5
   // rule scales the regulating requirement at 5% of variable generation. A 2040 system with

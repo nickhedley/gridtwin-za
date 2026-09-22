@@ -173,6 +173,11 @@ const live = stripComments(src);
     // research entry point, called from the console and from probes, with a header
     // saying so. Wire it to a panel and this entry should be removed.
     'simulateTwoPass',
+    // The shared grid-build formula in capacity_siting.js. The engine stopped calling it on
+    // 22 Sep 2026 when the tiered regional charge (txChargeFor) replaced the flat rate plus a
+    // separate reinforcement charge; the siting panel still carries its own inline version of
+    // the same arithmetic. Remove this entry when the panel is wired to the tiered charge.
+    'gridBuildChargeFor',
   ];
   const unexpected = orphans.filter(o => !KNOWN.includes(o));
   check('no undocumented orphaned functions', unexpected.length === 0,
