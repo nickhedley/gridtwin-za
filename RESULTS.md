@@ -429,6 +429,41 @@ this file dated before 22 Sep 2026, including the retail headline table below, i
 Caveat: Crisis 2023's market basis is set by 5,622 hours of load actually shed at the price cap.
 That is the energy-only rule, not a usable tariff.
 
+### Shedding calibration: Crisis 2023 and 2025, 22 Sep 2026
+
+Build `2026-09-22g`. Model shedding is compared as unserved energy plus interruptible load, against
+Eskom's MLR + ILS + IOS, because the model's 1,200 MW interruptible block is used heavily (4.9 TWh
+in Crisis 2023) while Eskom's ILS was 0.07 TWh: its industrial curtailment sits inside MLR.
+
+Correction: RSA Contracted Demand already includes load shed. Residual demand counts MLR, ILS and
+IOS as resources (2023: 208.7 TWh of generation plus 16.8 TWh of reductions = 225.9 contracted).
+The Crisis 2023 demand set on 22 Sep added the shed load a second time. Fixed: 214.6 TWh domestic,
++16% on the 2026 base (was +24%).
+
+```
+                         shed + interruptible, TWh      actual 2023
+Crisis 2023, +24%               26.7                    16.75
+Crisis 2023, +16%               13.8
+```
+
+Diagnostic, not shipped: the same runs with Eskom's actual daily coal availability from ESK19679
+in place of the modelled outage path.
+
+```
+                         model outages   actual availability   actual
+2025 conditions, GWh          277               270              570
+Crisis 2023, TWh             14.3              10.7            16.75
+```
+
+With actual availability, 2025 shedding moves into January to May, as it happened; the modelled
+path spread it across the year because it has no within-year fleet improvement. The level stays
+at about half of actual in both years.
+
+The residual shortfall has identifiable sources: the scenarios run today's fleet, not the year's
+(Koeberg 11.5 TWh against 8.1 in 2023 and 10.2 in 2025; wind, solar and RMIPPPP hybrids about 6
+TWh above 2023), and wheeled private plant is probably counted twice, once as supply and once
+by its absence from contracted demand (about 2.5 TWh a year). Unverified.
+
 ---
 
 ## Fossil free, re-measured
