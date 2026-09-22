@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-22w`. Suite 777/781 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
+Build `2026-09-22x`. Suite 777/781 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,7 +15,7 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 22 Sep 2026 on build `2026-09-22w`, `profiles.json` at the root, current `nodal/`.
+Measured 22 Sep 2026 on build `2026-09-22x`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
@@ -147,10 +147,10 @@ cost. The model was already at the international level.
 ## Presets
 
 ```
-Deep decarbonisation 2035   45 onshore / 45 solar / 0 offshore / 20 rooftop / 20 GW at 6h
+Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 0 new rooftop / 15 GW at 6h (cost-optimal)
                             coal -27 GW, no new gas, reserve and inertia priced
-Fossil-free 2040            35 onshore / 60 solar / 10 offshore / 20 rooftop / 40 GW at 8h
-                            all coal and diesel retired, zero unserved in 12 years
+Fossil-free 2040            25 onshore / 60 solar / 10 offshore / 0 new rooftop / 35 GW at 8h (cost-optimal)
+                            all coal and diesel retired; sheds 108 GWh a year on average
 IRP 2030, Grid delay        demand +20% (IRP growth on contracted demand, Mozal out), coal EAF 64%
 ```
 

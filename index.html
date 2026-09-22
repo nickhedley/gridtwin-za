@@ -14750,17 +14750,18 @@ const PRESETS={
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
   'Latest IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:64,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
-  // Deep decarbonisation 2035. No offshore; 20 GW lithium at 6h, chosen for near-zero shedding
-  // (22 Sep 2026). Twelve weather years: 0.5 GWh in the default year, mean 1.7, worst 18.6 (2020);
-  // R317.1bn/yr. The cost optimum at the IRP's cost of unserved energy is 10 GW. Derivation in
-  // RESULTS.md.
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:0,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
-  // Fossil free, 2040. All 39.7 GW of coal and all 3.4 GW of diesel retired, no gas. Kept:
-  // Koeberg, hydro, CSP, the Cahora Bassa import. 10 GW offshore, deliberately above ESMAP's
-  // medium path of 5 GW by 2040. 35 GW onshore, 60 GW solar, 40 GW lithium at 8h: the cheapest
-  // build found with zero unserved energy in all twelve weather years (22 Sep 2026, screened
-  // coarsely then refined; derivation in RESULTS.md).
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:60000,newOffshoreMW:10000,newRooftopMW:20000,newBattMW:40000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  // Deep decarbonisation 2035. Re-optimised 22 Sep 2026 on system cost with shed energy at the
+  // IRP's cost of unserved energy, R87.85/kWh, across twelve weather years: 35 GW wind, 35 GW
+  // solar, 15 GW lithium at 6h, no offshore, no new rooftop. The optimum is flat; this build is
+  // within R0.3bn of the cheapest found. Sheds 197 GWh a year on average, 362 in the worst
+  // year (2022). Derivation in RESULTS.md.
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:0,newBattMW:15000,newBattHours:6,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
+  // kept. 10 GW offshore by choice, above ESMAP's medium path. Re-optimised 22 Sep 2026 on system
+  // cost with shed energy at R87.85/kWh, twelve weather years: 25 GW wind, 60 GW solar, 35 GW
+  // lithium at 8h, no new rooftop. Within R1bn of the cheapest build found and a third of its
+  // shed energy: 108 GWh a year on average, 412 in the worst year (2022). Derivation in RESULTS.md.
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:25000,newPvMW:60000,newOffshoreMW:10000,newRooftopMW:0,newBattMW:35000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -15138,8 +15139,14 @@ function applyState(overrides){
     else{ el.value=v; updateSliderFill(el);
           const cv=document.getElementById('cv_'+s.id); if(cv) cv.textContent=s.fmt(v); }
   });
+  // Preset keys that are not sliders. Until 22 Sep 2026 applyState set sliders only, so a preset
+  // button dropped scenarioYear and the page priced Deep decarbonisation and Fossil-free at 2026
+  // capex and 2026 contracts - R103bn a year higher on Fossil-free than the harnesses measured.
+  // Reset to the constant when a preset does not set it, so switching presets does not leak it.
+  for (const k of PRESET_NON_SLIDER_KEYS) state[k] = (k in overrides) ? overrides[k] : FIXED[k];
   updateGroupBadges(); if(typeof updateVppTotal==='function') updateVppTotal();
 }
+const PRESET_NON_SLIDER_KEYS = ['scenarioYear'];
 const presetsEl=document.getElementById('presets');
 Object.keys(PRESETS).forEach((name,i)=>{
   const b=document.createElement('button');b.textContent=name; if(i===0)b.classList.add('active');
@@ -16129,7 +16136,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22w';
+const BUILD_STAMP = '2026-09-22x';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

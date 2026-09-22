@@ -458,13 +458,35 @@ const SCENARIOS = {
     if (!O || O.err) { check(`[${pre}] ORDC prices scarcity in few hours`, false, O ? O.err : 'no result'); continue; }
     check(`[${pre}] ORDC prices scarcity in few hours`, O.hours <= 438,
           `${O.hours} hours with a scarcity adder, limit 438 (5% of the year)`);
-    // Deep decarbonisation was excluded while it ran 10 GW of lithium and shed 42 GWh; back
-    // at 20 GW (0.5 GWh) from 22 Sep 2026, so it is checked again.
-    {
+    // Only where the system is not short. Deep decarbonisation 2035, re-optimised on cost with
+    // shed energy at R87.85/kWh (22 Sep 2026), sheds 166 GWh in the default year, and its
+    // thin-reserve hours carry a legitimate scarcity adder. The scarcity-hours check covers it.
+    if (pre !== 'Deep decarbonisation 2035') {
       check(`[${pre}] market price mean is close to the engine's marginal price`,
             Math.abs(O.mkt - O.eng) <= 0.05 * Math.max(O.eng, 0.1),
             `market R${O.mkt.toFixed(3)}/kWh against engine R${O.eng.toFixed(3)}/kWh`);
     }
+  }
+
+  // ── A PRESET BUTTON APPLIES EVERY KEY OF ITS PRESET ────────────────────────
+  // Added 22 Sep 2026. applyState set sliders only, so the page dropped scenarioYear from the two
+  // high-renewables presets and showed 2026 costs, while every harness - which builds its state
+  // as { ...state, ...PRESETS[name] } - measured the scenario year. Page and harness disagreed.
+  {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__ap = (function(){ try {
+      const bad = [];
+      for (const [n, p] of Object.entries(PRESETS)) {
+        applyState(p);
+        for (const [k, v] of Object.entries(p)) if (state[k] !== v) bad.push(n + '.' + k + '=' + state[k]);
+      }
+      applyState(PRESETS['Today 2026']);
+      return { bad };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const A = w.__ap;
+    check('a preset button applies every key of its preset', A && !A.err && A.bad.length === 0,
+          A ? (A.err || (A.bad.length ? 'not applied: ' + A.bad.join(', ') : 'all keys applied')) : 'no result');
   }
 
   // ── CURTAILMENT COMPENSATION IS A REIPPPP TERM ─────────────────────────────

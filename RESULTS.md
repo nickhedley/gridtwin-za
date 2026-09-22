@@ -921,6 +921,57 @@ Open, not changed:
 - New transmission at R6,964 per kW of all new wind and solar is the TDP average; solar sited
   near load needs less.
 
+### Both high-renewables presets re-optimised on cost; preset buttons dropped the year, 22 Sep 2026
+
+Build `2026-09-22x`. Objective: mean system cost over twelve weather years plus shed energy at the
+IRP's cost of unserved energy, R87.85/kWh (R0.0879bn per GWh). Screened on the default year, then
+the best candidates run across all twelve.
+
+Deep decarbonisation 2035 (coal -27 GW, 6h lithium, no offshore):
+
+```
+rooftop / wind / solar / lithium GW   objective R bn   mean cost   mean shed GWh   worst
+0 / 25 / 45 / 20                            263.4          247.3            184       446 (2022)
+0 / 35 / 35 / 15   (preset)                 263.7          246.4            197       362 (2022)
+5 / 35 / 30 / 15                            264.8          245.6            218       400
+20 / 25 / 30 / 20                           267.3          253.3            160       403
+```
+
+Fossil-free 2040 (10 GW offshore held, 8h lithium):
+
+```
+rooftop / wind / solar / lithium GW   objective R bn   mean cost   mean shed GWh   worst
+0 / 20 / 60 / 35                            318.5          296.6            250       874 (2022)
+0 / 20 / 60 / 30                            318.9          288.6            345     1,173 (2022)
+0 / 25 / 60 / 35   (preset)                 319.5          310.0            108       412 (2022)
+8 / 25 / 60 / 35                            328.0          323.1             55       258 (2016)
+0 / 30 / 60 / 40                            334.6          332.3             26       123 (2016)
+```
+
+The optimum is flat in both; the presets take a build within R1bn of the cheapest with less shed
+energy. Against the near-zero-shedding builds they replace: Deep R382.2bn to R257.0bn a year on its
+default year including shed energy, Fossil-free R369.6bn to R311.5bn.
+
+Rooftop: less new rooftop lowers system cost, by about R4bn a year on Deep and R8.5bn on
+Fossil-free, because rooftop costs R17,000/kW against R12,000 for utility solar and adds midday
+energy these systems already spill. Households install it against a retail price, not a system
+cost; zero new rooftop is the cost optimum, not a forecast.
+
+Retail, regulated / market, R/kWh: Today 4.02 / 3.91; Deep decarbonisation 4.34 / 4.43;
+Fossil-free 5.49 / 5.41.
+
+Caveat on reliability: both builds shed at Stage 8 in some hours of the default year (166 and 20
+GWh). The IRP's cost of unserved energy values short interruptions; long, deep shortfalls cost
+more. The reliability standard is a policy choice these presets now make on cost alone.
+
+A defect found on the way: applyState set sliders only, so the preset buttons dropped scenarioYear
+and the page priced these two presets at 2026 capex and contracts, R103bn a year higher on
+Fossil-free than every harness measured. Fixed; an invariant checks every preset key is applied.
+
+Also found, not fixed: newCapexR depends on whether the weather-year file has finished loading
+(the transmission curve is built there). The same build read R180.1bn or R169.7bn of new capital
+depending on load timing.
+
 ---
 
 ## Fossil free, re-measured
