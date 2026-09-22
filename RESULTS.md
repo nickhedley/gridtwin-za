@@ -1581,6 +1581,52 @@ schedule.
 The trace is worth having regardless - it is the right input for backcasts and removes a
 synthetic assumption from them - but the calibration item stays open and now has a direction.
 
+### The 2025 backcast decomposed; a Backcast 2025 preset, 22 Sep 2026
+
+Build `2026-09-22ak`. Eskom shed 390 GWh in 2025 and burned 3.4 TWh of OCGT doing it. The 202
+hours in which it shed, against the model driven by the same measured availability:
+
+```
+                        Eskom actual   model
+demand                     24,645        23,634   (Eskom includes 1,566 MW of exports)
+coal available             19,588        19,865
+coal generated             18,943        17,975   (the model holds 2,200 MW of reserve)
+OCGT                          942           655
+pumped storage                390           423
+load shed                   1,931             8
+```
+
+Deliverability is not the problem: Eskom's coal generated 96.5% of its available capacity in
+those hours and 98.5% in the year's 200 highest-demand hours, so there is no systematic 3 GW of
+available-but-undeliverable plant. The earlier reading of that came from comparing those hours
+against the annual mean availability rather than the hour's own.
+
+Three inputs explain most of the rest, and two were again 2026 values on a 2025 run:
+
+- Exports. FIXED.exportsMW is 745 MW, the post-Mozal level. Exports averaged 1,705 MW in 2025
+  and 1,566 in the hours Eskom shed. Correcting it takes the backcast from 2 to 6 GWh.
+- Peakers. The model dispatches the full 3.06 GW OCGT fleet when short; Eskom managed 942 MW in
+  those hours while using 3.4 TWh over the year. Limiting the fleet to what Eskom delivered takes
+  the backcast to 131 GWh.
+- The rest is demand: the model's year is 204.5 TWh against contracted 209.6.
+
+```
+2025 backcast, cumulative              shed GWh
+as first run (2026 fleet)                    7
+2025 fleet                                  13
++ measured availability trace                2
++ 2025 export level                          6
++ peakers held to 1.4 GW                   131
+Eskom actual                               390
+```
+
+New preset, Backcast 2025: the 2025 fleet, demand, exports and measured coal availability in one
+place, so this cannot be run on today's fleet by accident again. It sheds 6 GWh.
+
+Open: why Eskom's peakers delivered under a gigawatt in its tightest hours while the model
+delivers three. Fuel logistics and station availability are the candidates, and neither is in
+ESK19679.
+
 ---
 
 ## Fossil free, re-measured
