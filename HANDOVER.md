@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-22ae`. Suite 782/786 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
+Build `2026-09-22af`. Suite 781/786 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,7 +15,7 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 22 Sep 2026 on build `2026-09-22ae`, `profiles.json` at the root, current `nodal/`.
+Measured 22 Sep 2026 on build `2026-09-22af`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
@@ -33,11 +33,11 @@ validate_consistency     80/80     gas-firmed band re-derived from AEMC 2025
                                    three panels failed on load timing and passed on rerun
 validate_benchmarks      27/28     2025 conditions; surplus on Eskom's convention, 2025 and 2026;
                                    peakerSeasonRatio confounded by 2025 fleet trend
-validate_external         4/5      not previously tracked: baseline, not a regression
+validate_external         3/5      EDMSA CO2 (known); NTCSA MTSAO 86 GWh vs 4.4 since the adequacy hold, 22 Sep
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            7/7
 audit.py                 87/87
-total                   782/786
+total                   781/786
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 
@@ -149,8 +149,8 @@ cost. The model was already at the international level.
 ```
 Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 10.8 GW new rooftop / 25 GW at 8h + 1 GW iron-air (NEM standard)
                             coal -27 GW, no new gas, reserve and inertia priced
-Fossil-free 2040            35 onshore / 55 solar / 7 offshore / 16.8 GW new rooftop / 35 GW at 8h + 2 GW iron-air (NEM standard)
-                            all coal and diesel retired; mean shed 2.5 GWh a year
+Fossil-free 2040            35 onshore / 55 solar / 7 offshore / 16.8 GW new rooftop / 42 GW at 8h + 1 GW iron-air (NEM standard)
+                            all coal and diesel retired; mean shed 3.1 GWh a year
 IRP 2030, Grid delay        demand +20% (IRP growth on contracted demand, Mozal out), coal EAF 64%
 ```
 

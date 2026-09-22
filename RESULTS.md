@@ -1289,6 +1289,60 @@ Supersedes the finding that iron-air appears in no robust build; that was the di
 Retail, regulated / market R/kWh: Today 3.75 / 3.69; Deep decarbonisation 4.27 / 4.21 (+14%);
 Fossil-free 4.96 / 4.89 (+32%).
 
+### Storage follow-ups: a dispatch bug, long-duration O&M, twelve-year benchmark, 22 Sep 2026
+
+Build `2026-09-22af`.
+
+Bug in the lookahead of build `2026-09-22ae`: the long tier could discharge in the lookahead
+pass and again in the ordinary pass in the same hour, up to twice its power. Fixed. Every
+iron-air figure in the entry above was flattered by it.
+
+Long-duration fixed O&M: vanadium and iron-air carried zero. Now R165/kW-yr, PNNL's Energy
+Storage Technology and Cost Characterization Report (July 2019), $10/kW-yr for all battery
+chemistries within a $6-20 range, at R16.50. Not chemistry-specific.
+
+Adequacy hold: in a projected shortfall within 48 hours, storage no longer sells ahead of coal.
+Small effect on these presets (Deep 2016 22.8 to 20.5 GWh, 2020 16.8 to 15.2).
+
+Benchmark, preset builds, all twelve weather years. Engine shed against perfect-foresight
+dispatch of the new storage on the same residual:
+
+```
+                      years shedding   engine GWh          optimal GWh
+Deep decarbonisation  2016, 2020       16.5, 8.3 (ae)      0, 0
+Fossil-free           2020             30.2 (ae)           2.0
+Fossil-free 2020, 30 W/55 S/10 off, 35 GW Li + 2 GW Fe:   64.6 before, 9.1 now, 0 optimal
+```
+
+In every other year both shed nothing. The remaining gap is lithium dispatch, not the
+long-duration rule: in Deep 2016 the optimum uses no iron-air at all and still sheds nothing.
+Mean over twelve years, the engine is about 2 GWh a year more pessimistic than optimal on both
+presets. Not yet explained; reserves account for part of it on Fossil-free only.
+
+Correction: the entry above said demand response returns 1,200 MW of shifted load into
+shortage hours. It does not. That series is interruptible load being called, which is right.
+
+Presets re-measured, twelve years:
+
+```
+Deep decarbonisation, unchanged build               mean cost 298.8   mean shed 2.97   passes 3.67
+Fossil-free, 7 off/35 W/55 S/35 Li/2 Fe (ae build)  mean cost 350.6   mean shed 3.68   misses 3.46
+Fossil-free candidates
+  42 GW Li + 1 GW iron-air  (new preset)                        353.3            3.09
+  37 GW Li + 2 GW iron-air                                      353.8            2.55
+  50 GW Li, no iron-air                                         357.5            2.22
+  40 GW Li + 1 GW iron-air                                      350.0            4.81   misses
+```
+
+Iron-air is worth R4.2bn a year on Fossil-free against lithium alone, down from R9.3bn before the
+bug and O&M corrections.
+
+Retail regulated / market R/kWh: Deep decarbonisation 4.27 / 4.21; Fossil-free 4.99 / 4.92.
+
+External check now failing: NTCSA MTSAO 2030 with 6 GW of gas delayed publishes 86 GWh unserved;
+the engine reads 4.4, outside the 55 GWh band. Cause established: the adequacy hold. Without it
+the check passes. Not widened.
+
 ---
 
 ## Fossil free, re-measured

@@ -124,7 +124,8 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
   // ── LONG-DURATION STORAGE AGAINST THE PERFECT-FORESIGHT BENCHMARK ──────────────
   // Added 22 Sep 2026. Fossil-free 2040 at 30/55/10 GW, 16.8 GW new rooftop, 35 GW lithium plus
   // 2 GW iron-air, weather year 2020: the LP (ldes_lp.js) sheds 0 GWh; the engine shed 64.6 GWh
-  // before the lookahead rule and 5.1 after. The limit sits between them.
+  // before the lookahead rule and 9.1 after (5.1 while a bug let iron-air discharge twice its
+  // power in an hour). The limit sits between them.
   {
     const L = probe(`
       if (!bldWeatherYears) return { missing: true };
