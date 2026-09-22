@@ -1091,6 +1091,50 @@ Known overlap: the 1.258 includes the study's ToU weighting of residential energ
 profile-weighted rows then apply the modelled hourly shape as well. On today's regulated basis
 that is 0.8%.
 
+### Retail panel, third sweep: the page compared scenarios against the wrong today, 22 Sep 2026
+
+Build `2026-09-22ac`.
+
+Defect fixed: the retail panel's year slider defaulted to 2035 whatever the preset. On the page,
+Today 2026 therefore read R3.29/kWh, today's fleet priced with 2035 contract expiries and asset
+run-off, against R3.75 at its own year. Every scenario looked 20-40% dearer than today by that
+comparison. The preset buttons now set the retail year to the scenario's year; an invariant
+checks it. The harnesses always passed the year explicitly and never saw it.
+
+Decomposition, regulated basis, R/kWh at retail (each line through the CTS factors, losses and
+VAT):
+
+```
+                       Today 2026   Deep 2035   Fossil-free 2040
+fuel and carbon            0.89        0.22          0.07
+existing generation opex   0.41        0.20          0.09
+existing capital           0.48        0.16          0.06
+stranded coal capital         -        0.19          0.22
+IPP contracts              0.40        0.16          0.11
+imports, levies, other     0.22        0.15          0.18
+new wind                      -        0.73          0.63
+new solar                     -        0.40          0.62
+new offshore                  -           -          0.69
+new lithium                   -        0.55          0.66
+new transmission              -        0.38          0.49
+network and retail         1.35        1.42          1.50
+total                      3.75        4.56          5.32
+```
+
+Four lines carry most of the rise, each a choice or a method question rather than an error:
+- Offshore on Fossil-free, R0.69: 10 GW, twice ESMAP's medium path, at R79,200/kW.
+- Lithium, R0.55-0.66: 35-45 GW at 8h to meet the NEM reliability standard.
+- Stranded coal, R0.19-0.22: the generation asset base keeps recovering on its run-off schedule.
+- New transmission, R0.38-0.49: the TDP average, R6,964 per kW of all new wind and solar. The
+  engine's own transmission charge for the same builds, filling existing headroom first on its
+  distance curve, is R16.8bn a year on Deep and R25.7bn on Fossil-free against the retail line's
+  R40.9bn and R49.6bn. Using the engine's figure would take R0.22-0.24/kWh off. Two methods for one
+  cost, not reconciled.
+
+Network and retail rises only through falling grid sales as rooftop grows (191.8 to 173.0 TWh).
+
+Against the right today: Deep decarbonisation +21%, Fossil-free +42%.
+
 ---
 
 ## Fossil free, re-measured

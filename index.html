@@ -894,9 +894,9 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <span>Retail price cap</span>
               </label>
               <label style="font-size:10.5px;color:var(--ink2)" title="The year the scenario's system is costed at. Technology costs decline to it, the existing asset base runs off toward it, one-off recoveries expire before it.">Scenario year
-                <input id="retYear" type="range" min="2026" max="2040" step="1" value="2035"
+                <input id="retYear" type="range" min="2026" max="2040" step="1" value="2026"
                        oninput="renderRetail()" style="vertical-align:middle;width:110px">
-                <span id="retYearVal" class="mono" style="font-size:11px">2035</span>
+                <span id="retYearVal" class="mono" style="font-size:11px">2026</span>
               </label>
             </div>
             <div class="pb" style="padding:6px 10px 18px">
@@ -15162,6 +15162,13 @@ function applyState(overrides){
   // capex and 2026 contracts - R103bn a year higher on Fossil-free than the harnesses measured.
   // Reset to the constant when a preset does not set it, so switching presets does not leak it.
   for (const k of PRESET_NON_SLIDER_KEYS) state[k] = (k in overrides) ? overrides[k] : FIXED[k];
+  // The retail panel prices the scenario's own year. Its year slider defaulted to 2035 whatever
+  // the preset, so Today 2026 read R3.29/kWh on the page against R3.75 at 2026, and every
+  // scenario looked 20-40% dearer than today by comparison. 22 Sep 2026. The slider still moves
+  // freely afterwards.
+  const _ry = document.getElementById('retYear');
+  if (_ry) { _ry.value = String(state.scenarioYear ?? FIXED.scenarioYear);
+             const _ryv = document.getElementById('retYearVal'); if (_ryv) _ryv.textContent = _ry.value; }
   updateGroupBadges(); if(typeof updateVppTotal==='function') updateVppTotal();
 }
 const PRESET_NON_SLIDER_KEYS = ['scenarioYear'];
@@ -16154,7 +16161,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22ab';
+const BUILD_STAMP = '2026-09-22ac';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

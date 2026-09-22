@@ -488,9 +488,13 @@ const SCENARIOS = {
     const probe = w.document.createElement('script');
     probe.textContent = `window.__ap = (function(){ try {
       const bad = [];
+      const ry = document.getElementById('retYear');
       for (const [n, p] of Object.entries(PRESETS)) {
         applyState(p);
         for (const [k, v] of Object.entries(p)) if (state[k] !== v) bad.push(n + '.' + k + '=' + state[k]);
+        // The retail panel must price the scenario's own year (22 Sep 2026: it sat at 2035).
+        const want = p.scenarioYear ?? FIXED.scenarioYear;
+        if (ry && +ry.value !== want) bad.push(n + ' retail year=' + ry.value);
       }
       applyState(PRESETS['Today 2026']);
       return { bad };
