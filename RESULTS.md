@@ -1388,6 +1388,45 @@ professional models do. What the engine still lacks against the MTSAO:
   of gas, so about 23.7 GW without it, rooftop included. The harness enters 27.5 GW. Not
   confirmed; the category breakdown is in figures that do not extract as text.
 
+### Lookahead window measured; NTCSA check rebuilt, 22 Sep 2026
+
+Build `2026-09-22ag`.
+
+Correction: the entries above describe a 48-hour lookahead. The code has run at 168 hours
+since build `2026-09-22af`, and every `af` preset figure was measured at 168. Its comment
+cited a personal communication from the System Operator that this project cannot source; it
+now cites ENTSO-E's week-ahead ERAA practice and the sweep below. The window is overridable as
+ldesLookaheadH.
+
+```
+Fossil-free, 2020, 35 GW Li + 2 GW Fe   window h:   1     12    24    48    96   168   336
+shed GWh                                          64.6  43.4  30.5   9.1   9.1   9.1  52.1
+
+Twelve-year mean shed, preset builds              48 h       96 h      168 h
+Fossil-free 2040 (limit 3.46)                     3.49       3.09      3.09
+Deep decarbonisation 2035 (limit 3.67)            3.65       2.97      2.97
+```
+
+Past about a week the rule spends iron-air too early. A longer window would need an
+optimisation, not this rule.
+
+NTCSA check rebuilt: mean over twelve weather years x three outage draws, as the MTSAO reports
+a Monte Carlo mean; capacity re-derived from the MTSAO's categories less the model's 2026 fleet
+(wind 4,400, PV 10,900, rooftop 1,800, batteries 2,150 MW, against 6,700 / 15,000 / 3,800 /
+2,000 entered before); coal EAF 64, the project's conversion of the MTSAO's 67% fleet EAF;
+0.34 GW of Acacia and Port Rex retired.
+
+```
+                                        engine GWh   NTCSA   band
+rebuilt, coal EAF 64 (the check)            211.7       86     55    fails, +125.7
+rebuilt, coal EAF 67                         76.1       86     55    passes
+old inputs, 36-draw mean                     13.0       86
+```
+
+The EAF conversion decides the check. The engine sheds with peakers at full output and coal at
+its available ceiling, so the shortfall is real in the model. Still missing: the MTSAO's
+transmission component, which would raise its figure relative to a national model, not lower it.
+
 ---
 
 ## Fossil free, re-measured

@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-22af`. Suite 781/786 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
+Build `2026-09-22ag`. Suite 781/786 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,7 +15,7 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 22 Sep 2026 on build `2026-09-22af`, `profiles.json` at the root, current `nodal/`.
+Measured 22 Sep 2026 on build `2026-09-22ag`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
@@ -33,7 +33,7 @@ validate_consistency     80/80     gas-firmed band re-derived from AEMC 2025
                                    three panels failed on load timing and passed on rerun
 validate_benchmarks      27/28     2025 conditions; surplus on Eskom's convention, 2025 and 2026;
                                    peakerSeasonRatio confounded by 2025 fleet trend
-validate_external         3/5      EDMSA CO2 (known); NTCSA MTSAO 86 GWh vs 4.4 since the adequacy hold, 22 Sep
+validate_external         3/5      EDMSA CO2 (known); NTCSA MTSAO rebuilt (36-draw mean, MTSAO capacity): 211.7 vs 86 GWh at coal EAF 64; 76.1 at 67
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            7/7
 audit.py                 87/87

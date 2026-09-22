@@ -169,6 +169,14 @@ function check(name, ok, detail) {
   });
 
   await new Promise(r => setTimeout(r, 4500));
+  {
+    const w0 = dom.window, s0 = w0.document.createElement('script');
+    s0.textContent = `window.__wyDone = false; Promise.resolve(typeof loadWeatherYears === 'function'
+      ? loadWeatherYears() : null).then(() => { window.__wyDone = true; }, () => { window.__wyDone = true; });`;
+    w0.document.body.appendChild(s0);
+    for (let waited = 0; !w0.__wyDone && waited < 60000; waited += 250)
+      await new Promise(r => setTimeout(r, 250));
+  }
   const w = dom.window;
 
   const run = (overrides) => {
@@ -216,9 +224,51 @@ function check(name, ok, detail) {
   // NTCSA's own adequacy study, run at ITS assumptions - see mtsao2030GasDelayed above.
   // Cahora Bassa is set to zero because their contract ends March 2030, and the 6 GW CCGT
   // to zero because the delay IS the sensitivity being reproduced.
-  const mtsao = run({ demandGrowthPct: 8.6, coalEAFPct: 67, coalDecomMW: 8400,
-    importsMW: 0, newWindMW: 6700, newPvMW: 15000, newRooftopMW: 3800,
-    newBattMW: 2000, newBattHours: 4, newCcgtMW: 0 });
+  // REBUILT 22 Sep 2026 to match the MTSAO's method and inputs, not a single run.
+  //
+  // METHOD. The MTSAO reports the mean of Monte Carlo samples over demand, wind, solar and
+  // unplanned outages. Here: the mean over all twelve weather years x three outage draws.
+  // A single default-weather run read a third of that mean.
+  //
+  // CAPACITY, from the MTSAO 2026-2030's own categories (all new capacity, 6 GW CCGT delayed),
+  // less what the model's 2026 fleet already holds:
+  //   REIPPPP to BW7: 11.29 GW cumulative, 54% PV, 37% wind -> 6.10 PV, 4.18 wind, against
+  //     the model's 2.66 PV and 4.04 wind -> +3.44 PV, +0.14 wind
+  //   private initiatives: 11.9 GW, 7.24 PV, 4.56 wind, against 0.49 and 0.47 -> +6.75, +4.09
+  //   Eskom RE: 1.89 GW, 39% PV, 14% wind, 47% BESS -> +0.74 PV, +0.16 wind (0.1 held), 0.89 BESS
+  //   IPP BESS BW1-3: 0.51 + 1.23 GW
+  //   SSEG: 6.9 GW in 2025 + 3.8 GW high projection = 10.7, against the model's 8.9 -> +1.8
+  //   -> wind 4,400, PV 10,900, rooftop 1,800; batteries 2.63 GW less the 457 MW of the model's
+  //   existing 800 that came online after 2025 (Eskom's 343 MW phase 1 predates it) -> 2,150
+  //   The harness entered 6,700 / 15,000 / 3,800 / 2,000 until today, about 8 GW too much.
+  // EAF. The MTSAO's 67% is Eskom's fleet EAF. This project converts fleet to coal as about
+  //   3 points lower (the IRP presets use 64 for the IRP's 66-68), so 64. At 67 the same run
+  //   reads 76 GWh; the conversion decides this check.
+  // DEMAND. 264 TWh in 2030 against 243 in 2024 includes Mozal to March 2030; the model's
+  //   base excludes it. Ex-Mozal the 2026-2030 growth is about 8.4%, so 8.6 stays.
+  // RETIREMENTS. 8.4 GW coal, Cahora Bassa ended (imports 0), 0.34 GW Acacia and Port Rex.
+  // NOT MODELLED. The MTSAO is multi-nodal and attributes part of its unserved energy to
+  //   transmission; the model is national. That component is missing from our figure.
+  const mtsao = (() => {
+    const s = w.document.createElement('script');
+    s.textContent = `
+      { const ov = { demandGrowthPct: 8.6, coalEAFPct: 64, coalDecomMW: 8400, importsMW: 0,
+                     dieselDecomMW: 340, newWindMW: 4400, newPvMW: 10900, newRooftopMW: 1800,
+                     newBattMW: 2150, newBattHours: 4, newCcgtMW: 0 };
+        const u = [];
+        if (typeof bldWeatherYears !== 'undefined' && bldWeatherYears) {
+          for (const y of bldWeatherYears.meta.years) {
+            const n = weatherYearNational(String(y));
+            const prof = { demand: PROFILES.demand, solar: n.solar, wind: n.wind, csp: PROFILES.csp, real: true };
+            for (let i = 0; i < 3; i++)
+              u.push(simulate({ ...state, ...ov, outageSeed: 20260816 + i * 7919 }, prof).E.unserved / 1000);
+          }
+        }
+        window.__mt = JSON.stringify({ unservedGWh: u.length ? u.reduce((a, b) => a + b, 0) / u.length : NaN,
+                                       draws: u.length }); }`;
+    w.document.body.appendChild(s);
+    return JSON.parse(w.__mt);
+  })();
 
   const gA = Math.round(100 * (Math.pow(1.02, 9) - 1));
   const edmsa = run({ coalEAFPct: 70, demandGrowthPct: gA,
