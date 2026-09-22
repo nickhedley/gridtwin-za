@@ -530,6 +530,41 @@ const SCENARIOS = {
                       + `transmission ${F.tx.toFixed(3)}; zero stack prices at R${F.zero.toFixed(2)}`) : 'no result');
   }
 
+  // ── THE SITING PANEL PRICES A MEGAWATT AS THE ENGINE DOES ──────────────────
+  // Added 22 Sep 2026. The panel used to run its own corridor arithmetic while the engine used
+  // the tiered regional charge, so the same megawatt had two prices. Both now call txTierCharge:
+  // a region with headroom pays the shallow rate, one without pays the beyond-the-plan rate.
+  {
+    const p1 = w.document.createElement('script');
+    p1.textContent = `window.__site = null;
+      Promise.all([evaluateAgainstRemaining('Kwazulu Natal', 'wind', 1000),
+                   evaluateAgainstRemaining('Northern Cape', 'wind', 1000)])
+        .then(([a, b]) => { try {
+            window.__site = { room: a, none: b,
+              base: ({ ...FIXED, ...state }).txRPerKWyr,
+              multNC: (typeof txRegionMult === 'function') ? txRegionMult('Northern Cape') : null };
+          } catch (e) { window.__site = { err: String(e) }; } },
+              e => { window.__site = { err: String(e) }; });`;
+    w.document.body.appendChild(p1);
+    for (let waited = 0; !w.__site && waited < 5000; waited += 100)
+      await new Promise(r => setTimeout(r, 100));
+    const S = w.__site;
+    if (!S || S.err) check('the siting panel prices a megawatt as the engine does', false,
+                           S ? S.err : 'no result within 5 s');
+    else if (S.multNC == null || S.room.annualChargeR === undefined)
+      check('the siting panel prices a megawatt as the engine does', false,
+            'the panel does not return an annual charge - it is still on its own arithmetic');
+    else {
+      const shallow = 0.25 * S.base * 1000 * 1000;                 // 1,000 MW at the shallow rate
+      const beyond = 1.5 * S.multNC * S.base * 1000 * 1000;        // 1,000 MW beyond the plan
+      check('the siting panel prices a megawatt as the engine does',
+            Math.abs(S.room.annualChargeR - shallow) < 0.02 * shallow
+            && Math.abs(S.none.annualChargeR - beyond) < 0.02 * beyond,
+            `KwaZulu-Natal R${(S.room.annualChargeR / 1e6).toFixed(0)}m against R${(shallow / 1e6).toFixed(0)}m `
+            + `expected; Northern Cape R${(S.none.annualChargeR / 1e6).toFixed(0)}m against R${(beyond / 1e6).toFixed(0)}m`);
+    }
+  }
+
   // ── TRANSMISSION IS CHARGED ONCE, AND THE PLAN'S DELIVERY MATTERS ──────────
   // Added 22 Sep 2026 with the tiered regional charge. Two things must hold: capacity beyond
   // headroom is no longer charged twice (the reinforcement line is gone, so the engine returns

@@ -1772,6 +1772,29 @@ The siting panel still carries its own inline copy of the old beyond-headroom ar
 capacity_siting.js's shared version is now unwired and labelled as such. Wiring the panel to the
 tiered charge is the remaining half of this job.
 
+### The siting panel now prices a megawatt as the engine does, 22 Sep 2026
+
+Build `2026-09-22ap`. The panel ran its own arithmetic - corridor length times R31m per km over
+45 years, with a grid-enhancing-technology uplift - while the engine priced the same megawatt
+with the tiered regional charge. Two formulas for one cost.
+
+Both now call txTierCharge, extracted for the purpose. The panel splits a proposed build across
+the same three tiers and reports the annual charge and its R/MWh, with grid-enhancing technology
+enlarging the headroom that pays the shallow rate rather than sitting in its own branch.
+
+```
+1,000 MW of wind            annual charge   R/MWh
+KwaZulu-Natal, headroom         R101m        57.4
+Northern Cape, none             R510m       139.0
+```
+
+An invariant checks the panel against the rates directly: a region with headroom must come out at
+the shallow rate, one without at the beyond-the-plan rate. It fails on the previous build, where
+the panel returns no annual charge at all.
+
+capacity_siting.js still holds its own copy for a path the page does not use; the allowed-orphan
+entry now says so.
+
 ---
 
 ## Fossil free, re-measured
