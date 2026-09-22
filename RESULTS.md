@@ -1627,6 +1627,34 @@ Open: why Eskom's peakers delivered under a gigawatt in its tightest hours while
 delivers three. Fuel logistics and station availability are the candidates, and neither is in
 ESK19679.
 
+### Reserve requirement now grows with variable generation, 22 Sep 2026
+
+Build `2026-09-22al`. The ASTR's 2,200 MW of operating reserve is sized to 2030/31 on today's
+fleet, and the model held exactly that in every scenario, so a 2040 system with 90 GW of wind
+and solar carried the same reserve as one with 8. NREL's Operating Reserves and Variable
+Generation (TP-5500-51978, 2011) sets out the planning rule: 3% of load plus 5% of variable
+generation. Only the variable-generation term is added, and only above the output the ASTR was
+written against, so today still comes out at 2,200 MW.
+
+```
+                          mean requirement MW   peak MW
+Today 2026                       2,237           2,415
+Backcast 2025                    2,221           2,360
+Deep decarbonisation 2035        3,283           5,211
+Fossil-free 2040                 3,535           6,012
+```
+
+Both presets still meet the reliability standard: Deep decarbonisation 3.42 GWh mean shed against
+3.67, Fossil-free 3.09 against 3.46. An invariant now requires the requirement to rise with the
+build; it fails on the previous build, where both read 2,200.
+
+Also measured and inert: asHoldHours, how long storage must be able to sustain reserve output,
+moves nothing between 0.25 and 2 hours on any preset. At these storage scales the energy test
+never binds, so the value is not worth arguing about.
+
+The Backcast 2025 preset now carries its own caveat: it sheds about 6 GWh against Eskom's actual
+390, the difference is peaker delivery, and it should not be read as a validation.
+
 ---
 
 ## Fossil free, re-measured

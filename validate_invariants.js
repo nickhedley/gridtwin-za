@@ -530,6 +530,25 @@ const SCENARIOS = {
                       + `transmission ${F.tx.toFixed(3)}; zero stack prices at R${F.zero.toFixed(2)}`) : 'no result');
   }
 
+  // ── THE RESERVE REQUIREMENT GROWS WITH VARIABLE GENERATION ─────────────────
+  // Added 22 Sep 2026. The ASTR's 2,200 MW is sized to 2030/31 on today's fleet; NREL's 3+5
+  // rule scales the regulating requirement at 5% of variable generation. A 2040 system with
+  // 90 GW of wind and solar cannot hold the same reserve as one with 8.
+  {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__rq = (function(){ try {
+      const mean = a => Array.from(a).reduce((x, y) => x + y, 0) / a.length;
+      const t = mean(simulate({ ...state, ...PRESETS['Today 2026'] }, PROFILES).reserveMW);
+      const f = mean(simulate({ ...state, ...PRESETS['Fossil-free 2040'] }, PROFILES).reserveMW);
+      return { today: t, fossil: f };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const Q = w.__rq;
+    if (!Q || Q.err) check('the reserve requirement grows with variable generation', false, Q ? Q.err : 'no result');
+    else check('the reserve requirement grows with variable generation', Q.fossil > Q.today + 500,
+               `${Math.round(Q.today)} MW mean on Today 2026 against ${Math.round(Q.fossil)} on Fossil-free 2040`);
+  }
+
   // ── RETAIL SALES EQUAL ENERGY SERVED ───────────────────────────────────────
   // Added 22 Sep 2026. The retail denominator subtracted storage discharge as well as charging,
   // so energy delivered from storage was never sold: 172.1 TWh against 183.3 served on Deep

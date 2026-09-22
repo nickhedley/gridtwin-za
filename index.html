@@ -5510,6 +5510,14 @@ const FIXED = {
   // Operating reserve: NTCSA ASTR 2026/27-2030/31 Table 7, 2,200 MW, flat to 2030/31 and
   // held flat beyond it. Held every hour whether priced or not. 21 Sep 2026.
   reserveEnabled:1, reserveOperatingMW:2200,
+  // Regulating reserve grows with variable generation, and the ASTR figure above does not:
+  // it is sized to 2030/31 on today's fleet. NREL's Operating Reserves and Variable Generation
+  // (TP-5500-51978, 2011) sets out the 3+5 rule, 3% of load plus 5% of variable generation,
+  // as the common planning rule for the regulating and following requirement. Only the VRE
+  // term is added here, and only ABOVE the variable generation the ASTR was written against
+  // (reserveVreBaseMW, the 2026 fleet's mean wind and solar output), so today's requirement
+  // still comes out at 2,200 MW. At Fossil-free 2040 levels it adds about 0.7 GW.
+  reserveVrePct:5, reserveVreBaseMW:2000,
   // Unit-level outages. outageForcedSharePct: UCLF / (PCLF+UCLF+OCLF), ESK19679 by calendar
   // year: 2022 73, 2023 73, 2024 66, 2025 67, 2026 Jan-Aug 61. The share falls as availability
   // recovers, so it is taken from the same year as coalEAFPct, which is the 2026 figure: 61.
@@ -7052,7 +7060,8 @@ function simulate(u, prof, outPath, _soc0){
     vreMW: _vreMW,
   };
   const reserveMWAt = h => RESERVE.on
-    ? RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100 + _vreMW[h] * RESERVE.vrePct/100
+    ? RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100
+      + Math.max(0, _vreMW[h] - p.reserveVreBaseMW) * p.reserveVrePct / 100   // no fallback: both are FIXED keys
     : 0;
   const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, Math.max(0, coalInstalled), eafFraction, RESERVE);
   // Lumpy unit availability. Skipped when an explicit Monte Carlo path is
@@ -14877,8 +14886,14 @@ const PRESETS={
   // the private wheeled plant of the time; rooftop 6,900 is the System Operator's own estimate;
   // exports 1,705 MW is the 2025 mean, against 745 today because Mozal has since stopped.
   // Coal availability 58.4% is the coal-only figure for 2025 and outageTraceYear puts its
-  // measured hourly shape behind it. It sheds 6 GWh, which is the open calibration item:
-  // the model's peakers deliver in the tight hours where Eskom's did not.
+  // measured hourly shape behind it.
+  //
+  // IT IS NOT A VALIDATION. It sheds about 6 GWh against the 390 GWh Eskom actually shed. The
+  // difference is peaker delivery: in the 202 hours Eskom shed, its OCGTs managed 942 MW while
+  // this model dispatches the full 3.06 GW fleet. Eskom's coal generated 96.5% of its available
+  // capacity in those hours, so availability and deliverability are not the gap. Read the preset
+  // as a fixed set of 2025 inputs, and read the model as optimistic about the last gigawatt or
+  // two of peaking in a crisis.
   'Backcast 2025':{demandGrowthPct:0,coalEAFPct:58.4,windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025,scenarioYear:2026},
   'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:25000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
@@ -16270,7 +16285,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22ak';
+const BUILD_STAMP = '2026-09-22al';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
