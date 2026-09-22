@@ -681,6 +681,45 @@ OECD NEA/IEA Projected Costs                         real                    3, 
 
 At 3-4.5% inflation the IEA nominal range is about 6.5-10% real; the model's 8% real sits in it.
 
+### Market-indexed retail prices vetted, 22 Sep 2026
+
+Build `2026-09-22r`. Annual hourly mean of the shadow dynamic row, R/kWh, stranded basis on,
+scenario years 2026 / 2035 / 2040.
+
+One model error, fixed. The new-transmission line in the retail stack (TDP cost of R6,964 per kW
+of new wind and solar, 40 years at 8%) divided by 1,000 once too often and read about
+R0.0003/kWh. Corrected:
+
+```
+                          newGrid R/kWh   regulated before / after   market before / after
+Today 2026                    0.000             4.12 / 4.12                2.83 / 2.83
+Deep decarbonisation 2035     0.328             5.88 / 6.55                2.44 / 2.66
+Fossil-free 2040              0.361             7.13 / 7.86                2.90 / 3.14
+```
+
+Offshore wind is not in the new-transmission count.
+
+One structural gap, not fixed. The market basis prices energy at the hourly wholesale price and
+keeps 33% (NETWORK_RETAIL_SHARE) of every other line in the stack. Wholesale revenue against
+system cost:
+
+```
+                          market mean R/kWh   zero-price hours   market revenue   system cost   recovered
+Today 2026                      0.80                 0            R156.3bn        R173.7bn        90%
+Deep decarbonisation 2035       0.18             6,205             R34.9bn        R317.1bn        11%
+Fossil-free 2040                0.17             5,384             R33.4bn        R369.6bn         9%
+```
+
+Lines the market basis drops at 67%, R/kWh, Deep / Fossil-free: new-build capital 1.22 / 1.89;
+REIPPPP PPA 0.36 / 0.38; curtailment compensation 0.35 / 0.43. These are contracts and annuities
+that do not lapse under a market. The 33% share is calibrated on today's revenue split and is
+applied to generation lines as well, so part of the new-build capital survives as if it were
+network. The market-indexed price in these presets is the energy-only wholesale price, not a
+price that recovers the cost of the build.
+
+Consequence for validate_consistency: the gas-firmed 60% renewables check moves from under 15% to
++15.3% (R4.75 against R4.12) with the transmission cost restored. Left failing; not relaxed.
+
 ---
 
 ## Fossil free, re-measured
