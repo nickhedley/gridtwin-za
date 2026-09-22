@@ -18,8 +18,10 @@ build_capacity.py           THE generator. Lives in nodal/ historically but RUNS
                             FROM THE ROOT and reads nodal/... relative to cwd.
                             421 lines. Has step 1b (the supply-area split) and
                             the eskom bucket.
-build_demand_2026.py        Rescales profiles.json demand to 2026. RUNS FROM THE ROOT.
-                            Keeps the original series as demand_2025_gross.
+build_demand_2026.py        Builds profiles.json demand from ESK19679.csv at the 2026
+                            level. RUNS FROM THE ROOT; needs ESK19679.csv there.
+ESK19679.csv                Eskom hourly data. Harness and generator input, not fetched
+                            by the page. Kept out of git.
 build_hydra_split.py        Builds the supply-area split draft. Same file as
 build_supply_area_split.py  build_supply_area_split.py - identical MD5, two names.
 ```

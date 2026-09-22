@@ -14539,7 +14539,9 @@ const SLIDERS=[
 ];
 const PRESETS={
   'Today 2026':{},
-  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:14,outVolPct:6},
+  // Crisis 2023 demand: 2023 domestic demand incl. load shed (ESK19679: contracted less exports
+  // plus MLR, ILS and IOS) = 231.4 TWh, reached from the 2026 base at +24%. 22 Sep 2026.
+  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:24,outVolPct:6},
   // ── GRID DELAY ────────────────────────────────────────────────────────────
   // Transmission slipping behind the build programme. Added 10 Sep 2026 after reading
   // Aurora's Australian grid-delay work, where Project EnergyConnect Stage 2 ran a year late
@@ -16011,7 +16013,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-21d';
+const BUILD_STAMP = '2026-09-22a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

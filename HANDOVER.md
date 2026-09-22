@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-21d`. Suite 750/756 plus eng5 5/6, measured 21 Sep 2026. Three sessions ran long and the
+Build `2026-09-22a`. Suite 752/760 plus eng5 5/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,7 +15,7 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 21 Sep 2026 on build `2026-09-21d`, `profiles.json` at the root, current `nodal/`.
+Measured 22 Sep 2026 on build `2026-09-22a`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
@@ -24,18 +24,18 @@ validate_structure       24/24
 validate_geo             43/43
 validate_capacity        30/31     standing: backup profile file has no licence field
 validate_inputs          33/33
-validate_findings        29/32     restart; ancillary knee and demand shifting moved with the reserve change
-validate_invariants     154/154
+validate_findings        31/32     ancillary knee no longer holds under the 2,200 MW requirement
+validate_invariants     155/155
 validate_response        82/82
-validate_weather         61/62     ESK19679.csv missing from the upload set
+validate_weather         64/64     ESK19679.csv now present
 validate_lp              50/50
-validate_consistency     79/79     peak check now reads the page, not script comments
-validate_benchmarks      26/26     now a 2026 demand level against 2025 references
+validate_consistency     77/79     two price-shape checks: prices near flat at 2026 demand
+validate_benchmarks      24/27     2026 model against 2025 references; no peakers run in winter
 validate_external         4/5      not previously tracked: baseline, not a regression
-validate_outputs         40/40     grid demand 204.1 TWh after the 2026 re-anchor
+validate_outputs         40/40
 validate_solve            6/6
 audit.py                 87/87
-total                   750/756
+total                   752/760
 
 eng5.js                   5/6      check 4 fails: cost falls as demand rises, because
                                    totalCost carries no cost of unserved energy

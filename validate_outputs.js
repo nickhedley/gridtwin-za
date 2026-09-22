@@ -221,7 +221,8 @@ function probe(w, src) {
   // exactly, so there is no loss term anywhere in this accounting.
   //
   // RESOLVED 21 Sep 2026: demand re-anchored to 2026 by build_demand_2026.py (Jan-Aug
-  // year-on-year ratio 0.938). Reads 204.1, of which 6.6 TWh is firm exports. Kept below
+  // year-on-year ratio 0.938). Reads 190.3 after exports came out of the series on 22 Sep
+  // (they were counted twice), of which 6.6 TWh is the engine's firm exports. Kept below
   // as the record of why.
   //
   // THIS CHECK WAS EXPECTED TO FAIL at 217.5, and the failure was the finding: the
@@ -301,8 +302,8 @@ function probe(w, src) {
       'gridCost less curtailed coal fuel and both export revenue lines, over gridServed. '
       + 'A term added to avgCost and not to '
       + 'gridCost, or the reverse, shows here and nowhere else', 'R/MWh');
-    check('avgCost has not moved without a decision', cost.base.avgCost, 883.50, 8.84,
-      'UPDATED 18 Sep 2026, R548.06 -> R883.50, defaults, build 2026-09-18a. TWO COSTS THE '
+    check('avgCost has not moved without a decision', cost.base.avgCost, 900.73, 9.01,
+      'UPDATED 22 Sep 2026, R883.50 -> R900.73, defaults, build 2026-09-22a: demand re-anchored to 2026 and exports removed from the demand series, where they were counted twice. Fixed costs over less energy. PREVIOUSLY: UPDATED 18 Sep 2026, R548.06 -> R883.50, defaults, build 2026-09-18a. TWO COSTS THE '
       + 'SYSTEM VIEW HAD NEVER CARRIED were added in one session. R830.20 was the figure '
       + 'after the first; this is after both. FIRST, FIXED O&M FOR '
       + 'THE EXISTING FLEET was added to totalCost, gridCost and avgCost - R48.8bn a year, '
@@ -331,9 +332,10 @@ function probe(w, src) {
     // Without this the term is plumbed and untested, which is how avgCost drifted 2.8%
     // through fifteen green harnesses in the first place.
     check('curtailFuelCost is non-zero in the coal-curtailment scenario',
-      // UPDATED 21 Sep 2026, 6.342 -> 9.651: demand re-anchored to 2026 (build_demand_2026.py);
-      // the lower base leaves more forced coal with nowhere to go. Deliberate, not drift.
-      cost.spill.curtailFuelCost / 1e9, 9.651, 0.7,
+      // UPDATED 22 Sep 2026, 6.342 -> 14.642: demand re-anchored to 2026 and exports removed
+      // from the series (build_demand_2026.py); the lower base leaves more forced coal with
+      // nowhere to go. Deliberate, not drift.
+      cost.spill.curtailFuelCost / 1e9, 14.642, 0.7,
       'R bn. If this reads zero the scenario has stopped producing coal curtailment and the identity below is no longer exercising the term - fix the scenario, not the check'
       + 'identity below is no longer exercising the term - fix the scenario, not the check',
       'R bn');

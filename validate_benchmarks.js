@@ -329,6 +329,13 @@ const check = (name, ok, detail) => {
   console.log('  metric           model     plausible band');
   for (const [k, b] of Object.entries(CF_BENCH)) {
     const v = M[k];
+    // A null is a failed measurement, not a crash. Added 22 Sep 2026: peakerSeasonRatio
+    // returns null when no peaker runs in Jul-Sep, and the harness died on toFixed.
+    if (typeof v !== 'number' || !isFinite(v)) {
+      console.log(`  ${k.padEnd(14)}    none   ${b.lo}–${b.hi} ${b.unit || '%'}   <-- NO VALUE`);
+      check(`${k} is physically plausible`, false, `no value returned. ${b.why}`);
+      continue;
+    }
     const ok = v >= b.lo && v <= b.hi;
     // Unit-aware. This block assumed every RANGE band was a percentage, so a TWh band
     // printed as "210.2%    190-222%". Harmless to the check, misleading to read - and

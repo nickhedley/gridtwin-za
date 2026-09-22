@@ -384,19 +384,24 @@ const SCENARIOS = {
   }
 
   // ── a larger reserve requirement cannot reduce unserved energy ──────────
-  // Holding more reserve can only leave more demand unserved. A requirement that is not
-  // being read would make all three values equal and pass silently, so the top of the
-  // range must also bind on Deep decarbonisation 2035.
+  // Holding more reserve can only leave more demand unserved where the requirement binds.
+  // A requirement that is not being read would make all three values equal and pass
+  // silently, so the top of the range must also bind.
+  //
+  // Moved 22 Sep 2026 from Deep decarbonisation 2035 to Today 2026 at 55% EAF. The
+  // requirement also sizes unit commitment, so on Deep decarbonisation more reserve
+  // commits more coal and can LOWER shedding: 2.1 / 0.0 / 0.0 GWh at 0 / 2,200 / 6,000 MW
+  // after the 2026 demand re-anchor. Not a defect, and not a case this check can assert on.
   {
     const probe = w.document.createElement('script');
     probe.textContent = `window.__flr = (() => { try {
-      const base = { ...state, ...PRESETS['Deep decarbonisation 2035'] };
+      const base = { ...state, coalEAFPct: 55 };
       return [0, 2200, 6000].map(f => simulate({ ...base, reserveOperatingMW: f }, PROFILES).E.unserved || 0);
     } catch (e) { return { err: String(e) }; } })();`;
     w.document.body.appendChild(probe);
     const F = w.__flr;
     const ok = Array.isArray(F) && F[0] <= F[1] + 1 && F[1] <= F[2] + 1 && F[2] > F[0] + 1;
-    check('[Deep decarbonisation 2035] unserved energy rises with the reserve requirement', ok,
+    check('[Today 2026, 55% EAF] unserved energy rises with the reserve requirement', ok,
           Array.isArray(F) ? `requirement 0 / 2,200 / 6,000 MW: ${F.map(x => (x/1000).toFixed(1)).join(' / ')} GWh`
                            : (F ? F.err : 'no result'));
   }

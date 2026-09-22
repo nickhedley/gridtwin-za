@@ -253,26 +253,37 @@ The R445.7bn figure above predates the 18-20 Sep cost basis; Fossil-free 2040 re
 `validate_invariants` asserts on six cases that pricing leaves unserved energy unchanged, and
 that unserved energy rises with the requirement.
 
-### Demand re-anchored to 2026, 21 Sep 2026
+### Demand re-anchored to 2026, exports counted once, 21-22 Sep 2026
 
-Build `2026-09-21d`. Grid-served demand scaled by 0.938, the Jan-Aug 2026 vs Jan-Aug 2025 ratio
-of RSA Contracted Demand (ESK19679); rooftop left at the engine's level; 2025 hourly shape kept.
-Generator: `build_demand_2026.py`. Grid-served demand 210.5 -> 197.4 TWh.
+Build `2026-09-22a`. Generator `build_demand_2026.py`, reading ESK19679 directly.
+
+RSA Contracted Demand includes exports (it equals Residual Demand plus Total RE, a supply-side
+measure), and the engine adds its own firm exports, so 6.6 TWh was counted twice. The series is
+now contracted demand less exports: calendar 2025 hourly shape, scaled by 0.9442, the Jan-Aug
+2026 vs Jan-Aug 2025 ratio of domestic demand. Domestic grid demand 194.6 -> 183.8 TWh.
+
+The 0.938 ratio used on 21 Sep came from a harness note and was not reproducible: contracted
+demand including exports falls by 0.920, domestic demand by 0.944. Exports fell 9.7 -> 5.7 TWh.
 
 ```
-                        unserved GWh default   worst of 12      avgCost R/MWh
-                        build 21c   21d        21c    21d       21c      21d
-Today 2026                  50.4    3.5        205     40       880      886
-Deep decarb 2035           112.9   41.0        268     80     1,549    1,655
-Fossil-free 2040               0      0          0      0     2,184    2,354
+                       unserved GWh default      worst of 12       avgCost R/MWh
+                       21c      21d     22a      21c   21d   22a     21c    22a
+Today 2026             50.4     3.5     0         205    40   5.4     880    901
+Deep decarb 2035      112.9    41.0     0         268    80  11.5   1,549  1,785
+Fossil-free 2040          0       0     0           0     0     0   2,184  2,563
 ```
 
-Today 2026 against reality: no load shedding for 476 days to September 2026. The model still
-sheds in all twelve weather years, mean 24.9 GWh. OCGT load factor 0.15% against Eskom's 1.1%.
+Today 2026 against reality, no load shedding in 2026: zero in the default year; 11 of 12
+weather years shed a little, mean 2.2 GWh, worst 5.4.
 
-Caveat: avgCost rises because fixed costs are spread over less energy, not because the system
-costs more. Caveat: the ratio is provisional, from eight months; replace with the full-year
-2026 figure. Caveat: Crisis 2023 now runs on 2026 demand, lower than 2023's.
+Crisis 2023 against reality: demand set to 2023 domestic demand including load shed (ESK19679:
+contracted less exports plus MLR, ILS and IOS, 231.4 TWh), +24% on the 2026 base. The model
+sheds 19.6 TWh against 16.6 TWh actually shed in 2023, and burns 13.3 TWh of diesel against
+5.2 TWh of OCGT generation.
+
+Caveat: OCGT use at 2026 is far below reality, 0.01 TWh against 3.4 TWh in 2025. Caveat: avgCost
+rises because fixed costs are spread over less energy. Caveat: provisional ratio from eight
+months; replace with the full-year 2026 figure.
 
 ---
 

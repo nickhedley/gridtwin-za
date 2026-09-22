@@ -1,24 +1,21 @@
 #!/usr/bin/env python3
-"""build_demand_2026.py - rescale the demand series in profiles.json to 2026.
+"""build_demand_2026.py - build the demand series in profiles.json at the 2026 level.
 
-Runs from the repo root. Reads profiles.json and index.html, writes profiles.json.
+Runs from the repo root. Reads ESK19679.csv, profiles.json and index.html; writes
+profiles.json.
 
-Method, agreed 21 Sep 2026:
-  - the grid-served part of demand (gross less the engine's own rooftop estimate) is
-    scaled by the year-on-year ratio of RSA Contracted Demand, Jan-Aug 2026 against
-    Jan-Aug 2025 (ESK19679);
-  - rooftop is left at the engine's level, so rooftop growth is not counted twice;
-  - the 2025 hourly shape is kept.
+Method, agreed 21-22 Sep 2026:
+  - domestic demand is RSA Contracted Demand less International Exports. Contracted
+    demand includes exports (Residual Demand + Total RE, supply-side), and the engine
+    adds its own firm exports, so leaving them in counted exports twice;
+  - calendar 2025 hourly shape, scaled by the year-on-year ratio of domestic demand,
+    Jan-Aug 2026 against Jan-Aug 2025;
+  - rooftop is added back with the engine's own formula and constants, so the engine
+    removes exactly what was added and rooftop growth is not counted twice.
 
-The original series is kept as demand_2025_gross and is always the input, so running
-this twice gives the same file. Replace YOY_RATIO with the full-year figure when
-calendar 2026 is complete.
+Re-run in January 2027 with the full calendar 2026 ratio.
 """
-import json, re, sys
-
-YOY_RATIO = 1 - 0.062   # RSA Contracted Demand, Jan-Aug 2026 vs Jan-Aug 2025, ESK19679.
-                        # Recorded in validate_outputs.js; not recomputed here because
-                        # ESK19679.csv was not in the upload set on 21 Sep 2026.
+import csv, json, re, sys, datetime as dt
 
 html = open('index.html').read()
 def fixed(key):
@@ -27,24 +24,42 @@ def fixed(key):
     return float(m.group(1))
 ROOF_MW, DERATE = fixed('rooftopMW'), fixed('rooftopDerate')
 
+rows = list(csv.reader(open('ESK19679.csv', newline='')))
+ix = {h: i for i, h in enumerate(rows[0])}
+rec = []
+for r in rows[1:]:
+    t = dt.datetime.strptime(r[0], '%Y-%m-%d %I:%M:%S %p')
+    rec.append((t, float(r[ix['RSA Contracted Demand']]), float(r[ix['International Exports']] or 0)))
+
+def dom(pred): return sum(c - x for t, c, x in rec if pred(t))
+y25 = [(c - x) for t, c, x in rec if t.year == 2025]
+assert len(y25) == 8760, len(y25)
+n26 = sum(1 for t, _, _ in rec if t.year == 2026 and t.month <= 8)
+n25 = sum(1 for t, _, _ in rec if t.year == 2025 and t.month <= 8)
+assert n26 == n25 == 5832, (n25, n26)
+RATIO = dom(lambda t: t.year == 2026 and t.month <= 8) / dom(lambda t: t.year == 2025 and t.month <= 8)
+
 p = json.load(open('profiles.json'))
-if 'demand_2025_gross' not in p:
-    p['demand_2025_gross'] = p['demand']
-G, S = p['demand_2025_gross'], p['solar_pu']
-assert len(G) == len(S) == 8760
-
-roof = [min(ROOF_MW * s * DERATE, g * 0.9) for g, s in zip(G, S)]
-new = [r + YOY_RATIO * (g - r) for g, r in zip(G, roof)]
-p['demand'] = [round(x, 3) for x in new]
-
-grid25 = sum(g - r for g, r in zip(G, roof)) / 1e6
-grid26 = sum(n - r for n, r in zip(new, roof)) / 1e6
-p['meta']['demand_2026'] = (
-    f'Built 21 Sep 2026 by build_demand_2026.py. Grid-served demand (gross less rooftop at '
-    f'rooftopMW {ROOF_MW:g}, derate {DERATE:g}) scaled by {YOY_RATIO:.3f}, the Jan-Aug 2026 vs '
-    f'Jan-Aug 2025 ratio of RSA Contracted Demand (ESK19679). 2025 hourly shape kept. '
-    f'Grid-served {grid25:.2f} -> {grid26:.2f} TWh. Original series in demand_2025_gross. '
-    f'Provisional: replace with the full-year 2026 ratio in January 2027.')
+p.pop('demand_2025_gross', None)          # superseded: the CSV is the source now
+S = p['solar_pu']
+dom26 = [RATIO * d for d in y25]
+# gross = domestic + rooftop, where the engine removes min(ROOF*S*DERATE, gross*0.9)
+gross = []
+for d, s in zip(dom26, S):
+    r = ROOF_MW * s * DERATE
+    g = d + r
+    if r > 0.9 * g: g = d / 0.1           # the cap binds: engine removes 0.9 x gross
+    gross.append(round(g, 3))
+p['demand'] = gross
+p['meta'].pop('demand_2026', None)
+p['meta']['demand_source'] = (
+    f'Built {dt.date.today():%d %b %Y} by build_demand_2026.py from ESK19679: RSA Contracted Demand '
+    f'less International Exports, calendar 2025 hourly shape, scaled by {RATIO:.4f}, the Jan-Aug '
+    f'2026 vs Jan-Aug 2025 ratio of that domestic demand. Rooftop added back at rooftopMW '
+    f'{ROOF_MW:g} x derate {DERATE:g}, the engine formula, so the engine removes exactly this. '
+    f'Domestic grid demand {sum(y25)/1e6:.2f} TWh (2025) -> {sum(dom26)/1e6:.2f} TWh. '
+    f'Exports are added by the engine, not carried here. Provisional: re-run with full-year 2026.')
+p['meta']['demand_note'] = 'See demand_source.'
 json.dump(p, open('profiles.json', 'w'))
-print(f'rooftop {ROOF_MW:g} MW x {DERATE:g}; ratio {YOY_RATIO:.3f}')
-print(f'grid-served demand {grid25:.2f} -> {grid26:.2f} TWh')
+print(f'domestic ratio Jan-Aug 2026/2025: {RATIO:.4f}')
+print(f'domestic grid demand 2025 {sum(y25)/1e6:.2f} -> 2026 {sum(dom26)/1e6:.2f} TWh')
