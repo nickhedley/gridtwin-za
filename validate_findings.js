@@ -84,20 +84,24 @@ setTimeout(()=>{
   }
 
   // ── 2. DEMAND RESPONSE HAS AN OPTIMUM ─────────────────────────────────────
-  // SCENARIO: the DASHBOARD default, sweeping drShiftPct. METRIC: AVERAGE COST.
-  // Measuring unserved energy in a no-gas system instead shows no optimum at all -
-  // that mistake was made on 31 Aug and nearly recorded as the finding breaking.
+  // SCENARIO: the DASHBOARD default, sweeping drShiftPct. METRIC: SYSTEM COST, R/yr.
+  // Changed 22 Sep 2026 from average cost. Shifted load returns with a 6% loss, so a large
+  // shift raises energy served as well as cost, and the ratio hid the reversal: at 30%,
+  // average cost read R1,089.05 against R1,090.03 while system cost was R1.7bn higher and the
+  // rebound peak 441 MW above the unshifted one. Measuring unserved energy in a no-gas
+  // system instead shows no optimum at all - that mistake was made on 31 Aug.
   {
-    const r=probe(`return [0,7.5,30].map(p=>({p,avg:simulate({...state,drShiftPct:p},PROFILES).avgCost}));`);
+    const r=probe(`return [0,7.5,30].map(p=>{const x=simulate({...state,drShiftPct:p},PROFILES);
+      return {p,sys:x.systemCostR/1e9,peak:x.peakGridLoad||0};});`);
     if(r.error) check('demand response finding runs', false, r.error);
     else {
       const [z,opt,hi]=r;
-      check('modest demand shifting lowers average cost', opt.avg < z.avg,
-            `7.5% shift gives ${opt.avg.toFixed(2)} against ${z.avg.toFixed(2)} at zero`);
-      check('demand response reverses at high shift', hi.avg > z.avg,
-            `30% shift gives ${hi.avg.toFixed(2)} against ${z.avg.toFixed(2)} at zero `
-            + `- the rebound peak is the finding`);
-      console.log(`  demand resp.   R${z.avg.toFixed(0)} at 0% · R${opt.avg.toFixed(0)} at 7.5% · R${hi.avg.toFixed(0)} at 30%`);
+      check('modest demand shifting lowers system cost', opt.sys < z.sys,
+            `7.5% shift gives R${opt.sys.toFixed(2)}bn against R${z.sys.toFixed(2)}bn at zero`);
+      check('demand response reverses at high shift', hi.sys > z.sys && hi.peak > z.peak,
+            `30% shift gives R${hi.sys.toFixed(2)}bn and a ${Math.round(hi.peak)} MW peak against `
+            + `R${z.sys.toFixed(2)}bn and ${Math.round(z.peak)} MW at zero - the rebound peak is the finding`);
+      console.log(`  demand resp.   R${z.sys.toFixed(1)}bn at 0% · R${opt.sys.toFixed(1)}bn at 7.5% · R${hi.sys.toFixed(1)}bn at 30%`);
     }
   }
 

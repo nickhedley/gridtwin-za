@@ -314,8 +314,8 @@ function probe(w, src) {
       'gridCost less curtailed coal fuel and both export revenue lines, over gridServed. '
       + 'A term added to avgCost and not to '
       + 'gridCost, or the reverse, shows here and nowhere else', 'R/MWh');
-    check('avgCost has not moved without a decision', cost.base.avgCost, 1059.1, 10.59,
-      'UPDATED 22 Sep 2026, R900.73 -> R1,059.1, defaults, build 2026-09-22t: the REIPPPP PPA is priced at Eskom\'s indexed average cost of renewable IPP energy, R2,189/MWh (FY2025), and CSP is included; it was bid-year tariffs never indexed, R11.7bn, now R42.6bn. PREVIOUSLY: UPDATED 22 Sep 2026, R883.50 -> R900.73, defaults, build 2026-09-22a: demand re-anchored to 2026 and exports removed from the demand series, where they were counted twice. Fixed costs over less energy. PREVIOUSLY: UPDATED 18 Sep 2026, R548.06 -> R883.50, defaults, build 2026-09-18a. TWO COSTS THE '
+    check('avgCost has not moved without a decision', cost.base.avgCost, 1090.0, 10.90,
+      'UPDATED 22 Sep 2026, R1,059.1 -> R1,090.0, build 2026-09-22u: REIPPPP priced by bid window from NERSA MYPD6 NTCSA Table 25 (R37.1bn at defaults), and other IPP contracts added (DoE peakers capital, RMIPPPP, short-term programmes, R11.4bn). PREVIOUSLY: R900.73 -> R1,059.1, defaults, build 2026-09-22t: the REIPPPP PPA is priced at Eskom\'s indexed average cost of renewable IPP energy, R2,189/MWh (FY2025), and CSP is included; it was bid-year tariffs never indexed, R11.7bn, now R42.6bn. PREVIOUSLY: UPDATED 22 Sep 2026, R883.50 -> R900.73, defaults, build 2026-09-22a: demand re-anchored to 2026 and exports removed from the demand series, where they were counted twice. Fixed costs over less energy. PREVIOUSLY: UPDATED 18 Sep 2026, R548.06 -> R883.50, defaults, build 2026-09-18a. TWO COSTS THE '
       + 'SYSTEM VIEW HAD NEVER CARRIED were added in one session. R830.20 was the figure '
       + 'after the first; this is after both. FIRST, FIXED O&M FOR '
       + 'THE EXISTING FLEET was added to totalCost, gridCost and avgCost - R48.8bn a year, '

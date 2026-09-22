@@ -800,6 +800,56 @@ Two checks now fail and were not relaxed:
 - validate_findings, demand response reverses at high shift: R1,058.31 at 30% against R1,059.09
   at zero. The published margin was about R1/MWh either way; the finding is not robust.
 
+### IPP contracts from NERSA's decision; network corrected; two checks re-derived, 22 Sep 2026
+
+Build `2026-09-22u`. Source for the IPP lines: NERSA MYPD6 NTCSA Reasons for Decision (June
+2025), Table 25, Eskom's FY2026 application by programme.
+
+REIPPPP is now priced by bid window with each window's own expiry: R50.3bn on 26.4 TWh in FY2026,
+R1,908/MWh, from R3,852/MWh for BW1 to R591 for BW6. The dearest windows expire first, so the
+rate on REIPPPP output falls to R1,060/MWh by 2035 and R531 by 2040. It replaces the single R2,189
+rate of the previous build.
+
+Other IPP contracts added to the engine and the retail line: DoE peakers' capital charge R2,174m
+to 2030 (their diesel is already in fuel), RMIPPPP R1,294m in FY2026 rising to R3,791m, and the
+short-term programmes R7,981m in FY2026. The short-term programmes are assumed to end with MYPD6;
+the table does not say. Storage contracts are left to new build.
+
+Network was wrong by more than half. It was 32.8% of NERSA's allowance, everything outside
+Generation, but NTCSA's R95.6bn carries R66.5bn of IPP purchases and R10.2bn of imports. Network
+and retail are NTCSA's wires business R17.0bn plus Distribution R39.3bn: R56.4bn, 14.7%. The
+generation opex left by the split is about R54bn, against R55.1bn in Eskom's Generation filing.
+
+```
+                          system cost R bn   REIPPPP   other IPP   avgCost
+Today 2026                      210.6          37.1        11.4       1,090
+Deep decarbonisation 2035       334.6          11.6         3.8       1,842
+Fossil-free 2040                388.5           7.4         3.8       2,146
+
+retail R/kWh              regulated   market   network
+Today 2026                   4.02      3.09      0.27
+Deep decarbonisation 2035    6.34      5.59      0.64
+Fossil-free 2040             7.65      7.27      0.69
+```
+
+Today's regulated R4.02 sits 5% above Homepower's R3.82 all-in, inside the 8% check.
+
+The market basis now reads below the regulated one because the existing Eskom fleet is merchant:
+it earns the wholesale price and no levy, and at today's defaults that leaves its fixed costs,
+about R0.57/kWh, unrecovered. South Africa's market design pairs trading with a vesting contract
+for the legacy fleet (NERSA's Wholesale Tariff Methodology and Vesting Contract consultation), so
+this basis probably understates. Not changed.
+
+Gas-firmed check re-derived. The old band, |move| under 15%, had no source. AEMC Residential
+Electricity Price Trends 2025, full cost stack on AEMO's Step Change: -5% to 2030, +13% to 2035,
+up to +20% in its delay case. Band now -10% to +20%; the build measures +14%. A plausibility
+check only: the NEM is not South Africa.
+
+Demand-response finding holds on the right metric. Average cost hid it: shifted load returns
+with a 6% loss, raising energy served. System cost, defaults: R210.57bn at 0%, R210.28bn at 7.5%,
+R212.23bn at 30%, peak 29,628 MW rising to 30,069 MW. At 2025 conditions the reversal is sharper:
+R224.65bn at 0% to R241.48bn at 30%, shed energy 90.5 to 175.5 GWh.
+
 ---
 
 ## Fossil free, re-measured

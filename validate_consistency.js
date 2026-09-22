@@ -1041,13 +1041,18 @@ const num = t => {
               + `add nothing at its origin - if it does, a run-off or expiry is firing when `
               + `dy is zero.`);
         const move = 100 * (vy.gasFirmed / vy.at2026 - 1);
-        check('a gas-firmed high-renewables build does not move the bill much',
-              Math.abs(move) < 15,
+        // BAND RE-DERIVED 22 Sep 2026 from the source. AEMC Residential Electricity Price Trends
+        // 2025 models the full stack - wholesale, network, retail, schemes - on AEMO's Step
+        // Change: -5% to 2030, then +13% to 2035 if renewables and transmission lag, about +7%
+        // over the decade; its delay case reaches +20%. The old test was |move| < 15%, a
+        // symmetric band nobody had sourced. The comparison is loose - the NEM is not South
+        // Africa - so this is a plausibility check, not a validation.
+        check('a gas-firmed high-renewables build stays within the AEMC outlook range',
+              move > -10 && move < 20,
               `gas-firmed 60% renewables at 2035 gives R${vy.gasFirmed.toFixed(2)} against `
-              + `R${vy.at2026.toFixed(2)} today, ${move.toFixed(0)}%. AEMO and the AEMC both `
-              + `find such a build does not raise prices materially, and reproducing that is `
-              + `this panel's only external validation. A large move means a cost line has `
-              + `drifted - check new build capital first.`);
+              + `R${vy.at2026.toFixed(2)} today, ${move.toFixed(0)}%; AEMC's 2025 outlook spans `
+              + `about -5% to +20% over a comparable decade. Outside that, check new-build capital `
+              + `and the network line first.`);
       }
 
       // ── MULTI-TARIFF VALIDATION ───────────────────────────────────────────

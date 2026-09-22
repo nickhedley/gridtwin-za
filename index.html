@@ -5190,22 +5190,41 @@ const SYNC_CONDENSER_MW = 0;   // converted retired units; 0 until a programme e
 // THE STANDING RISK is class 1, and it is not the numbers. IMPORTS_CF's four copies never
 // drifted; the COMMENT about them did, still claiming 0.85 five hours after the value
 // changed. Prose about a constant rots faster than the constant.
-// REIPPPP contracts by bid window, MW online, and the first year each twenty-year PPA no
-// longer runs (COD + 20). BW1-BW4 contracted capacity from the IPP Office (BW1 1,415 and BW2
-// 1,033 at grid connection; BW3 1,428; BW3.5 200 CSP) and grantZA (BW4 2,205). BW5/6 online is
-// the residual to the IPP Office's 7,355 MW online at 31 March 2026. COD years are the
-// midpoints of each window's commissioning. 22 Sep 2026; replaces a linear 2034-2041 roll-off
-// that ended BW5/6 contracts two decades early.
-const REIPPPP_VINTAGES = [
-  { bw:'1',   mw:1415, expires:2034 }, { bw:'2',   mw:1033, expires:2035 },
-  { bw:'3',   mw:1428, expires:2037 }, { bw:'3.5', mw:200,  expires:2039 },
-  { bw:'4',   mw:2205, expires:2041 }, { bw:'5-6', mw:1074, expires:2045 },
+// REIPPPP and other IPP contracts, from NERSA's MYPD6 NTCSA decision (Reasons for Decision, June
+// 2025), Table 25: Eskom's FY2026 application, cost R million and energy GWh, by bid window.
+// Expiry is COD + 20 years (BW4+ is the expedited fourth round). 22 Sep 2026; replaces an
+// MW-weighted schedule and a single blended rate. FY2026 average: R1,908/MWh on 26.4 TWh.
+const REIPPPP_WINDOWS = [
+  { bw:'1',   gwh:3753, costRm:14455, expires:2034 }, { bw:'2',   gwh:3047, costRm:7904, expires:2035 },
+  { bw:'3',   gwh:4617, costRm:9718,  expires:2037 }, { bw:'3.5', gwh:855,  costRm:4249, expires:2039 },
+  { bw:'4',   gwh:4063, costRm:5185,  expires:2041 }, { bw:'4+',  gwh:3498, costRm:4667, expires:2042 },
+  { bw:'5',   gwh:4770, costRm:3094,  expires:2045 }, { bw:'6',   gwh:1776, costRm:1050, expires:2046 },
 ];
+// Share of REIPPPP energy whose PPA still runs in the year.
 function reipppLiveFrac(year){
-  const y = year ?? 2026;
-  let live = 0, tot = 0;
-  for (const v of REIPPPP_VINTAGES){ tot += v.mw; if (y < v.expires) live += v.mw; }
+  const y = year ?? 2026; let live = 0, tot = 0;
+  for (const v of REIPPPP_WINDOWS){ tot += v.gwh; if (y < v.expires) live += v.gwh; }
   return tot > 0 ? live / tot : 1;
+}
+// Cost per MWh of ALL REIPPPP output in the year, expired windows contributing nothing. The
+// dearest contracts (BW1 solar, BW3.5 CSP) expire first, so this falls faster than live share.
+function reipppRate(year){
+  const y = year ?? 2026; let cost = 0, tot = 0;
+  for (const v of REIPPPP_WINDOWS){ tot += v.gwh; if (y < v.expires) cost += v.costRm; }
+  return tot > 0 ? cost * 1e6 / (tot * 1000) : 0;               // R/MWh
+}
+// Other IPP contracts, R/yr, same table. DoE peakers' capital charge R2,174m to 2030 (Avon and
+// Dedisa contracts expire 2030-31, IRP 2025 3.2.1.2.2); their fuel is in the engine's diesel.
+// RMIPPPP R1,294m in FY2026 rising to R3,791m as plants commission, 20-year contracts. Short-term
+// programmes (MTPPP emergency generation and the standard offer) R7,981m in FY2026, R9,787m by
+// FY2028; assumed to end with MYPD6, which the table does not state. Storage (BESIPPPP) is left
+// out: new batteries are costed as new build.
+function otherIppR(year){
+  const y = year ?? 2026;
+  const peakers = y < 2031 ? 2174 : 0;
+  const rmi = y <= 2026 ? 1294 : y === 2027 ? 3325 : (y < 2045 ? 3791 : 0);
+  const shortTerm = y <= 2026 ? 7981 : y === 2027 ? 9296 : y === 2028 ? 9787 : 0;
+  return (peakers + rmi + shortTerm) * 1e6;
 }
 
 const FIXED = {
@@ -5351,13 +5370,8 @@ const FIXED = {
   // Prices are REIPPPP-weighted averages across bid windows; BW4 wind cleared near
   // R620/MWh against BW1 above R1,500, so the spread is wide.
   reipppWindMW:4042, reipppSolarMW:2783,
-  // Eskom's average cost of renewable IPP energy, R/MWh, FY2025 (Eskom results presentation
-  // 2025: 2,189, from 2,029 in FY2024), blended across wind, solar PV, CSP and the smalls, and
-  // CPI-indexed as the PPAs are. Replaced 682 and 591 on 22 Sep 2026, which were bid-year
-  // tariffs never indexed and put the REIPPPP bill at R11.7bn. One rate for all technologies
-  // overstates later years a little, because the dearest contracts (BW1 PV, CSP) expire first.
-  ppaReipppR:2189,
-  // PPAs expire twenty years after commercial operation, by bid window: see REIPPPP_VINTAGES.
+  // REIPPPP PPA cost by bid window, with expiry: see REIPPPP_WINDOWS. Was a flat 682/591 R/MWh
+  // of bid-year tariffs until 22 Sep 2026, R11.7bn a year against NERSA's R50.3bn for FY2026.
   // The year the scenario represents. The engine had no year concept - the only year in the
   // model was a retail-panel DOM control, which simulate() must not read. Default 2026 means
   // "today's system", where every REIPPPP contract is live.
@@ -8015,16 +8029,15 @@ function simulate(u, prof, outPath, _soc0){
   // newCapexR. That is why the changing public-private procurement mix needs no assumption
   // here: the split applies to a fixed, measured stock and new build is costed as an asset
   // whoever procures it.
-  const _liveFrac = reipppLiveFrac(p.scenarioYear ?? 2026);
   const _windTotMW = (p.windMW || 0) + (u.newWindMW || 0);
   const _pvTotMW   = (p.pvUtilityMW || 0) + (u.newPvMW || 0);
-  // Fallbacks are the CONSTANTS, not zero - rule 6, and the same mistake made with the fomXxx
-  // fallbacks earlier the same day and caught by the same check within one run.
-  const ppaCostR = _liveFrac * (
+  // REIPPPP output: its share of wind and solar, and all 600 MW of CSP.
+  const reipppOutputMWh =
       (E.wind || 0) * Math.min(1, (p.reipppWindMW  || 0) / Math.max(1, _windTotMW))
     + (E.pv   || 0) * Math.min(1, (p.reipppSolarMW || 0) / Math.max(1, _pvTotMW))
-    + (E.csp  || 0)                                        // all 600 MW of CSP is REIPPPP
-    ) * (p.ppaReipppR ?? FIXED.ppaReipppR);
+    + (E.csp  || 0);
+  const ppaCostR = reipppOutputMWh * reipppRate(p.scenarioYear ?? 2026);
+  const otherIppCostR = otherIppR(p.scenarioYear ?? 2026);
   // ── REGIONAL GRID REINFORCEMENT ──────────────────────────────────────────────────────
   // National slider capacity allocated to provinces by REEA_SHARE - where developers have
   // actually applied to build - then charged against each region's connection headroom using
@@ -8071,7 +8084,7 @@ function simulate(u, prof, outPath, _soc0){
       }
     }
   }
-  const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+ppaCostR+gridReinforceR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
+  const totalCost=fuelCost+carbonCost+newCapexR+fixedOMR+ppaCostR+otherIppCostR+gridReinforceR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR;  // whole-economy view
   // Supply cost above; system cost adds the economic cost of energy not served, so a run
   // that sheds more cannot look cheaper. 22 Sep 2026.
   const unservedCostR = (E.unserved || 0) * p.costUnservedR;
@@ -8094,7 +8107,7 @@ function simulate(u, prof, outPath, _soc0){
   // magnitude: R3.54/MWh today, 0.6% of avgCost. It scales with coal cycling, which is
   // the regime a high-renewables system pushes coal into - so it grows in exactly the
   // scenarios this model exists to study.
-  const gridCost=fuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+gridReinforceR+drCostR+startUpCostR;  // what the grid bears
+  const gridCost=fuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+otherIppCostR+gridReinforceR+drCostR+startUpCostR;  // what the grid bears
   // drCostR included: compensation paid to interruptible customers is part of
   // what the system costs to run, and omitting it made demand response look free.
   // fixedOMR added 18 Sep 2026. avgCost is summed EXPLICITLY here rather than divided out of
@@ -8102,7 +8115,7 @@ function simulate(u, prof, outPath, _soc0){
   // this line - and the decomposition below asserts they agree. That assertion is what caught
   // this one: the term went into the two aggregates, avgCost did not move, and the
   // reconciliation would have failed on the next run.
-  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+gridReinforceR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
+  const avgCost=(fuelCost-curtailFuelCost+carbonCost+gridCapexR+fixedOMR+ppaCostR+otherIppCostR+gridReinforceR+drCostR+startUpCostR-exportRevenueR-firmExportRevenueR)/Math.max(1,gridServed);
 
   // ── cost decomposition ────────────────────────────────────────────────────
   // Added 30 Aug 2026, structured against NERSA's OWN wholesale price component list
@@ -8142,6 +8155,7 @@ function simulate(u, prof, outPath, _soc0){
       { k:'buildGen',   nersa:'(generation capex)',        v: per(gridCapexR - _txCapexR),     have:'outside' },
       { k:'fixedom',    nersa:'Operating costs (fixed O&M)', v: per(fixedOMR),                 have:true },
       { k:'ppa',        nersa:'REIPPPP PPA obligation',     v: per(ppaCostR),                   have:true },
+      { k:'ippOther',   nersa:'Other IPP contracts',        v: per(otherIppCostR),              have:true },
       { k:'reinforce',  nersa:'Grid reinforcement',        v: per(gridReinforceR),             have:true },
       { k:'dr',         nersa:'Demand response',           v: per(drCostR),                    have:true },
       { k:'exports',    nersa:'(export revenue, offset)',  v: -per(exportRevenueR+firmExportRevenueR), have:'outside' },
@@ -8253,7 +8267,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -12906,14 +12920,12 @@ function retailComponents(markup, stranded, year, viaMuni){
   const coalFrac = Math.max(0, (P.coalInstalledMW - (P.coalDecomMW || 0))) /
                    Math.max(1, P.coalInstalledMW);
   // NETWORK AND GENERATION SEPARATED, 22 Sep 2026. Operating costs, depreciation and return
-  // on assets are Eskom-wide. Network and retail are 32.8% of NERSA's allowance (R126.0bn of
-  // R384.6bn, 2025/26) and are held in rand: networks are replaced, not run down. Only the
+  // on assets are Eskom-wide. Network and retail, NETWORK_RETAIL_R, are held in rand: networks are replaced, not run down. Only the
   // generation remainder runs off and scales with the coal fleet. All of these are fixed rand
   // costs, so they are spread over the scenario's sales relative to today's. Before this the
   // run-off applied to the network too and fixed costs did not rise as sales fell.
   const fixedScale = retailBaseSalesMWh() / salesMWh;
-  const baseKwh = (A.approved_total_r_bn || 384.61) * 1e9 / (A.sales_twh * 1e9);
-  const netBase = NETWORK_RETAIL_SHARE * baseKwh;                // R/kWh at NERSA's base
+  const netBase = NETWORK_RETAIL_R / (A.sales_twh * 1e9);         // R/kWh at NERSA's base
   const pool = C.operating_costs + C.depreciation + C.return_on_assets;
   const genPool = Math.max(0, pool - netBase);                   // generation's share of the pool
   const genOpexBase = genPool * C.operating_costs / pool;
@@ -13036,8 +13048,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   // this panel's year. Replaced Eskom's whole IPP bill (NERSA allowance) on 22 Sep 2026, which
   // also carried IPP OCGT diesel - already in the fuel line - and never expired. Other IPP
   // programmes and the peakers' capacity charges are not carried.
-  const _engLive = reipppLiveFrac(P.scenarioYear ?? 2026);
-  const ipp = (r.ppaCostR || 0) / Math.max(1e-9, _engLive) * reipppLiveFrac(year) / salesMWh / 1000;
+  const ipp = ((r.reipppOutputMWh || 0) * reipppRate(year) + otherIppR(year)) / salesMWh / 1000;
   const imports = C.international_purchases *
                   ((P.importsMW || 0) / Math.max(1, FIXED.importsMW || 1));
 
@@ -13124,16 +13135,13 @@ function retailComponents(markup, stranded, year, viaMuni){
            strandedPart, network, newCapR, viaMuni, salesMWh, salesTWh: salesMWh / 1e6 };
 }
 
-// NETWORK AND RETAIL SHARE of the regulated cost stack. Generation is 67% of NERSA's allowed
-// revenue - R258,574m of R384,610m - so network and retail are the remaining 33%. Under a
-// market basis the generation third is recovered through the hourly price instead of through
-// the flat adder, and only this share stays flat.
-// NETWORK_RETAIL_SHARE is the share of Eskom's allowed revenue that is NOT generation, and
-// therefore the share of the flat block that survives on a market basis. Generation is
-// R258,574m of R384,610m in the NERSA MYPD6 allowance for 2025/26, so network and retail are
-// R126,036m, 32.8%. Both figures written out 15 Sep 2026 because the quotient alone was not
-// traceable and this constant decides the regulated-versus-market comparison the panel is for.
-const NETWORK_RETAIL_SHARE = 0.33;
+// NETWORK AND RETAIL, R/yr, 2025/26: NTCSA's wires business R17,032m (returns R4,489m, opex
+// R4,564m, depreciation R6,461m, ancillary services R1,518m; NERSA MYPD6 NTCSA decision, Table 1)
+// plus Distribution R39,334m (NERSA media statement, 30 Jan 2025). R56,366m, 14.7% of R384.6bn.
+// Replaced a 32.8% share on 22 Sep 2026: that took everything outside Generation as network, but
+// NTCSA's R95.6bn also carries IPP purchases (R66.5bn) and imports (R10.2bn). The split leaves
+// generation opex at about R54bn, against R55.1bn in Eskom's Generation MYPD6 application.
+const NETWORK_RETAIL_R = 56366e6;
 
 
 // VAT, declared once. It was a bare 1.15 at two sites, which is rule 6: a rate that has to be
@@ -13175,15 +13183,15 @@ function retailStack(c, mkt){
 
   // ── MARKET BASIS ──────────────────────────────────────────────────────────
   // Rebuilt 22 Sep 2026. The household pays the hourly wholesale price for energy, plus:
-  //   network and retail, a fixed rand amount (32.8% of NERSA's 2025/26 allowance, R126.0bn)
+  //   network and retail, a fixed rand amount (NETWORK_RETAIL_R, R56.4bn in 2025/26)
   //     spread over the scenario's sales, plus new transmission for new wind and solar;
   //   a contract levy: what contracted plant costs less what it earns in the market. New build
   //     is assumed procured under two-sided contracts for difference, as in Britain's CfD levy
   //     or NSW's LTESAs; REIPPPP PPAs while they run; curtailment compensation; stranded coal
   //     capital when that toggle is on; decommissioning and legacy regulatory items.
   // The existing Eskom fleet is merchant: paid the market price, no levy.
-  // It replaced NETWORK_RETAIL_SHARE applied to the flat stack, which kept a third of new-build
-  // capital as though it were network and dropped two thirds of the contracts.
+  // It replaced a flat one-third share of the stack, which kept a third of new-build capital
+  // as though it were network and dropped two thirds of the contracts.
   if (mkt){
     {
       const r = lastRes, P = { ...FIXED, ...state }, st = r.stack;
@@ -16089,7 +16097,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22t';
+const BUILD_STAMP = '2026-09-22u';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
