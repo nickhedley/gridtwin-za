@@ -652,7 +652,13 @@ const num = t => {
       tally[k] = (tally[k] || 0) + 1;
       if (t.weekend) weekend++;
     }
+    // Measured at 2025 conditions since 22 Sep 2026, the system the NERSA claim was made on:
+    // demand +5.5% (domestic 194.6 TWh) and coal EAF 58% (ESK19679). At the 2026 default
+    // coal sets the price in all but a handful of hours and no block separates.
+    const _keep = JSON.parse(JSON.stringify(state));
+    Object.assign(state, { demandGrowthPct: 5.5, coalEAFPct: 58 }); run();
     const rows = touCompare(lastRes);
+    Object.assign(state, _keep); run();
     const hp = rows.find(r => r.block === 'high peak');
     const lp = rows.find(r => r.block === 'low peak');
     // Anchor the calendar. Counting weekend hours proves nothing about ALIGNMENT: any
@@ -1269,6 +1275,8 @@ const num = t => {
         const sh = run(`
           const yr = document.getElementById('retYear'); const keepY = yr.value;
           const keep = JSON.parse(JSON.stringify(state));
+          // 2025 conditions since 22 Sep 2026, as for the TOU checks above.
+          Object.assign(state, { demandGrowthPct: 5.5, coalEAFPct: 58 });
           yr.value = 2026; run();
           const d = retailHourly();
           const R = RETAIL_T.homeflex.rates_r_per_kwh_2026_27;

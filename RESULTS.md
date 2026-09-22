@@ -285,6 +285,39 @@ Caveat: OCGT use at 2026 is far below reality, 0.01 TWh against 3.4 TWh in 2025.
 rises because fixed costs are spread over less energy. Caveat: provisional ratio from eight
 months; replace with the full-year 2026 figure.
 
+### Coal outages calibrated to Eskom's own data, 22 Sep 2026
+
+Build `2026-09-22b`. The planned-outage season was unsourced and three times as seasonal as
+Eskom's: peak to trough 3.0x against 1.8x in ESK19679 (2023-2025 PCLF). The forced share of
+outages was 47% against 67% measured for 2025 (73% in 2023, 61% in 2026 to August). Both now
+come from ESK19679; Crisis 2023 carries its own 73%.
+
+```
+coal availability, Feb / Jun      before          Eskom
+at 65% EAF                        54% / 76%       57% / 60% (2025)
+at 50% EAF                        37% / 66%       53% / 58% (2023)
+```
+
+```
+                      unserved, default year    12 weather years        actual
+Crisis 2023           19.6 -> 13.0 TWh          mean 15.3, worst 16.9   16.6 TWh (2023)
+2025 conditions        280 -> 125 GWh           mean 191, worst 247     390 GWh (2025)
+Today 2026                0 -> 0                mean 0.5, worst 2.5     0 (2026)
+```
+
+2025 conditions: demand +5.5% (domestic 194.6 TWh) and coal EAF 58%, which is ESK19679's 2025
+fleet EAF of 62.4% with nuclear, OCGT, hydro and pumped storage removed. On these settings coal
+reads 159.3 TWh against Ember's 164 sent-out, and grid generation 206.0 TWh against Eskom's
+audited 206.0 TWh for FY2026.
+
+Caveat: the model burns far less peaker fuel than Eskom does except in a crisis, where it burns
+far more. Diesel 0.5 TWh at 2025 conditions against 3.4 TWh of OCGT output; 14.0 TWh in Crisis
+2023 against 5.2 TWh. Open items: OCGTs count as reserve while idle, and no diesel budget.
+
+Caveat: the Megaflex ordering claim in the NERSA correction note (high-season off-peak the
+cheapest block) holds at 2025 conditions. At 2026 conditions coal sets the price in all but
+about 11 hours and no block separates.
+
 ---
 
 ## Fossil free, re-measured

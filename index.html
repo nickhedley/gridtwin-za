@@ -5470,11 +5470,13 @@ const FIXED = {
   // Operating reserve: NTCSA ASTR 2026/27-2030/31 Table 7, 2,200 MW, flat to 2030/31 and
   // held flat beyond it. Held every hour whether priced or not. 21 Sep 2026.
   reserveEnabled:1, reserveOperatingMW:2200,
-  // Unit-level forced outages. forcedSharePct is the portion of total
-  // unavailability that is UNPLANNED - Eskom's UCLF is roughly 15 points of a
-  // ~32 point gap at EAF 68, hence 47%. mttrHours is the mean repair time for a
-  // forced coal outage. Seed is fixed so the headline scenario is reproducible.
-  outageUnitLevel:1, outageForcedSharePct:47, outageMttrH:72, outageSeed:20260816,
+  // Unit-level outages. outageForcedSharePct: UCLF / (PCLF+UCLF+OCLF), ESK19679 calendar
+  // 2025 = 67% (2023 73%, 2026 Jan-Aug 61%). outagePlannedSeason: monthly PCLF over its
+  // annual mean, ESK19679 average of 2023-2025. Both 22 Sep 2026; previously 47% and an
+  // unsourced shape three times as seasonal. mttrHours is the mean forced-outage repair
+  // time. Seed is fixed so the headline scenario is reproducible.
+  outageUnitLevel:1, outageForcedSharePct:67, outageMttrH:72, outageSeed:20260816,
+  outagePlannedSeason:[1.23,1.14,1.03,1.12,0.80,0.75,0.72,0.89,0.98,1.01,1.07,1.27],
   // CARBON CAP in the build optimiser. Off by default so the headline answer
   // stays "least cost, carbon priced". Switched on, the LP must MEET the cap
   // rather than merely report against it - which is how the IRP and every
@@ -6943,8 +6945,8 @@ function simulate(u, prof, outPath, _soc0){
   // supplied (that path is already the outage draw for the run) and when the
   // toggle is off, which restores the smooth-derate behaviour exactly.
   const unitOutage = (!outPath && (p.outageUnitLevel ?? 1))
-    ? genUnitOutagePath(eafFraction, p.outageForcedSharePct ?? 47,
-                        p.outageMttrH ?? 72, p.outageSeed ?? 20260816)
+    ? genUnitOutagePath(eafFraction, p.outageForcedSharePct,
+                        p.outageMttrH, p.outageSeed, p.outagePlannedSeason)
     : null;
 
   // Forward-looking signal for off-peak coal-charging: how much real coal-insufficient need
@@ -8314,7 +8316,7 @@ function priceStatsOf(mp, stack, E){
  * reproducible and the validators stay meaningful; the Monte Carlo panel varies
  * the seed across its runs, which is where the distribution belongs.
  */
-function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed){
+function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed, season){
   const HOURS = 8760;
   const rnd = mulberry32(seed >>> 0);
 
@@ -8352,11 +8354,9 @@ function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed){
     avail[h] = mw / fleetMW;      // fraction of fleet forced-available
   }
 
-  // ---- planned: smooth, and pushed into the low-demand months ----------------
-  // Real maintenance is scheduled away from the winter peak. A simple seasonal
-  // shape does that: heavier Sep-Feb, lighter May-Aug.
+  // ---- planned: smooth, shaped by month from Eskom's own PCLF ----------------
   const MDAYS = [31,28,31,30,31,30,31,31,30,31,30,31];
-  const SEASON = [1.35,1.35,1.20,1.05,0.65,0.45,0.45,0.55,1.10,1.30,1.35,1.35];
+  const SEASON = season;
   let wsum = 0;
   for (let m = 0; m < 12; m++) wsum += SEASON[m] * MDAYS[m] * 24;
   const scale = wsum > 0 ? (plannedFrac * HOURS) / wsum : 0;
@@ -14381,7 +14381,7 @@ const SLIDERS=[
   {id:'outageUnitLevel',label:'Unit-level forced outages',toggle:true,def:1,
    ctrlStyle:SUB_CTRL,note:'When turned on, individual units trip and must be taken out for repairs (two-state Markov per unit, 85 units) instead of applying EAF as a flat derate to the whole fleet. Means the bad hours are more extreme. At an EAF of 55%, for example, this moves shedding from 3 hours to 207 hours.'},
   {id:'outageForcedSharePct',label:'Unplanned share of unavailability',min:0,max:100,step:1,def:FIXED.outageForcedSharePct,fmt:v=>v+' %',
-   ctrlStyle:SUB_CTRL,note:'How much of the EAF gap is unplanned trips rather than scheduled maintenance (Eskom\u2019s UCLF currently runs at about 47%). Planned outages in the model are smooth and pushed into the low-demand months, the way real maintenance is scheduled.'},
+   ctrlStyle:SUB_CTRL,note:'How much of the EAF gap is unplanned trips rather than scheduled maintenance. Eskom\u2019s UCLF was 67% of unavailability in 2025 and 73% in 2023. Planned outages follow Eskom\u2019s monthly maintenance pattern for 2023\u20132025.'},
   {id:'outageMttrH',label:'Mean time to repair',min:8,max:400,step:8,def:FIXED.outageMttrH,fmt:v=>v+' h',
    ctrlStyle:SUB_CTRL,note:'How long a forced outage lasts on average. Shorter repairs mean more frequent, shallower events; longer ones mean rarer but deeper troughs for the same annual EAF.'},
   {endsub:true},
@@ -14541,7 +14541,8 @@ const PRESETS={
   'Today 2026':{},
   // Crisis 2023 demand: 2023 domestic demand incl. load shed (ESK19679: contracted less exports
   // plus MLR, ILS and IOS) = 231.4 TWh, reached from the 2026 base at +24%. 22 Sep 2026.
-  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:24,outVolPct:6},
+  // Forced share of outages 73%: ESK19679 UCLF share for calendar 2023. 22 Sep 2026.
+  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:24,outVolPct:6,outageForcedSharePct:73},
   // ── GRID DELAY ────────────────────────────────────────────────────────────
   // Transmission slipping behind the build programme. Added 10 Sep 2026 after reading
   // Aurora's Australian grid-delay work, where Project EnergyConnect Stage 2 ran a year late
@@ -16013,7 +16014,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22a';
+const BUILD_STAMP = '2026-09-22b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

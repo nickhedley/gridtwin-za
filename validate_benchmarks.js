@@ -231,8 +231,14 @@ const check = (name, ok, detail) => {
   await new Promise(r => setTimeout(r, 4500));
   const w = dom.window;
   const el = w.document.createElement('script');
+  // THE 2025 SYSTEM, added 22 Sep 2026. The references here are 2025 (Ember) and FY2026
+  // (Eskom), while the default scenario is 2026. Demand +5.5% returns domestic grid demand to
+  // 2025's 194.6 TWh; coal EAF 58% is ESK19679's 2025 fleet EAF of 62.4% with nuclear,
+  // OCGT, hydro and pumped storage taken out. Comparing the 2026 system with 2025 data read
+  // coal 9% low for no reason but the year.
   el.textContent = `window.__bm = (() => { try {
-    const r = simulate(state, PROFILES); const E = r.E;
+    const S25 = { ...state, demandGrowthPct: 5.5, coalEAFPct: 58 };
+    const r = simulate(S25, PROFILES); const E = r.E;
     const cf = (twh, mw) => mw > 0 ? twh*1e6/(mw*8760)*100 : 0;
     return {
       coal: E.coal/1e6, nuclear: E.nuclear/1e6, wind: E.wind/1e6,
@@ -263,7 +269,7 @@ const check = (name, ok, detail) => {
         const L = r.loadS; let ph = 0, pk = -1;
         for (let h = 0; h < L.length; h++) if (L[h] > pk){ pk = L[h]; ph = h; }
         const st = r.stack;
-        const avail = (FIXED.coalInstalledMW - (st._decom || 0)) * FIXED.coalEAFPct / 100
+        const avail = (FIXED.coalInstalledMW - (st._decom || 0)) * S25.coalEAFPct / 100
           + FIXED.nuclearMW * 0.9 + FIXED.hydroMW + FIXED.psPowerMW + FIXED.battPowerMW
           + FIXED.ocgtDieselMW + FIXED.importsMW * FIXED.importsCF;
         const res = (r.reserveMW || [])[ph] || r.resReqMeanMW || 0;
