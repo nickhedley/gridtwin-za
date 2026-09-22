@@ -600,6 +600,54 @@ The new preset is R54bn a year cheaper than the 55/90/5 build (R456.1bn) with th
 zero shed energy in twelve years; curtailment 182.5 TWh against 252.2. Solar (90 GW) and lithium
 (40 GW at 8h) were not re-searched and are probably also above what the 2026 demand base needs.
 
+### IRP demand verified against the IRP; Fossil-free re-searched; discount rate, 22 Sep 2026
+
+Build `2026-09-22p`.
+
+IRP 2025 section 3.1: the forecast is consumption of all systems connected to the transmission
+and distribution grid, excluding pumping, battery charging and station auxiliaries, including
+network losses; cross-border sales are an input, and a MozalOut sensitivity is run. Figure 2 puts
+2024 at about 240 TWh against 219.7 TWh of Eskom contracted demand, so the IRP's level is not the
+model's. The presets now take the IRP's growth: 255/240 on 2024 contracted demand, less Mozal
+(stopped March 2026), about 225 TWh, +20%. The IRP's 66-68% EAF is the whole fleet; coal alone
+is about 64%.
+
+```
+                     demand TWh   coal EAF   unserved GWh   CO2 Mt   IRP
+IRP 2030             224.2        64%        1.2 (Stage 1)  148.3    unserved 0.00 TWh in 2030; 168 Mt
+Grid delay           224.2        64%        2.8 (Stage 2)  165.5
+```
+
+The 22 Sep +35% (254.3 TWh) read the IRP's level as the model's and overstated demand by about
+30 TWh. The IRP-consistent setting reproduces the IRP's own finding of an adequate system in 2030.
+
+Fossil-free 2040, re-searched with offshore fixed at 10 GW, twelve years each. Coarse screen:
+
+```
+solar \ lithium (8h)    20 GW          30 GW          40 GW
+50 GW                   872 GWh        378            205
+70 GW                   390            104             40
+90 GW                   215             47              0     R401.8bn (25 GW onshore)
+```
+
+Refined with onshore wind free:
+
+```
+onshore / solar / lithium    worst of 12    cost R bn
+30 / 60 / 40                 21.7 GWh          354.3
+35 / 55 / 40                 18.9              359.4
+35 / 60 / 40                  0 (all 12)       369.6   (preset)
+30 / 70 / 40                  0                374.9
+40 / 60 / 35                  0                377.1
+```
+
+R32bn a year cheaper than 25/90/40 at the same standard, curtailment 150.1 TWh against 182.5.
+
+Discount rate: new build is annualised at 8% real over each technology's life (bldAnnuity), as
+PyPSA and PLEXOS annualise at a WACC. The IRP uses 11.3%. At 11.3% total cost rises R47.7bn (+15%)
+on Deep decarbonisation, R68.2bn (+18%) on Fossil-free and R16.0bn on the IRP preset. 8% is not
+sourced in the code.
+
 ---
 
 ## Fossil free, re-measured
