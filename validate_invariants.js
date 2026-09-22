@@ -501,6 +501,27 @@ const SCENARIOS = {
           A ? (A.err || (A.bad.length ? 'not applied: ' + A.bad.join(', ') : 'all keys applied')) : 'no result');
   }
 
+  // ── RETAIL SALES EQUAL ENERGY SERVED ───────────────────────────────────────
+  // Added 22 Sep 2026. The retail denominator subtracted storage discharge as well as charging,
+  // so energy delivered from storage was never sold: 172.1 TWh against 183.3 served on Deep
+  // decarbonisation 2035. Every fixed cost per kWh was inflated by the storage throughput.
+  {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__sl = (function(){ try {
+      applyState(PRESETS['Fossil-free 2040']); run();
+      const c = retailComponents(0, true, 2040, false), r = lastRes;
+      let served = 0; for (let h = 0; h < 8760; h++) served += r.loadS[h] - (r.chargeMW[h] || 0);
+      served -= (r.E.unserved || 0);
+      applyState(PRESETS['Today 2026']); run();
+      return { sales: c.salesMWh / 1e6, served: served / 1e6 };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const S = w.__sl;
+    if (!S || S.err) check('retail sales equal energy served', false, S ? S.err : 'no result');
+    else check('retail sales equal energy served', Math.abs(S.sales / S.served - 1) < 0.01,
+               `sales ${S.sales.toFixed(1)} TWh against ${S.served.toFixed(1)} TWh served on Fossil-free 2040`);
+  }
+
   // ── CURTAILMENT COMPENSATION IS A REIPPPP TERM ─────────────────────────────
   // Added 22 Sep 2026. Deemed energy was paid on all curtailed wind and solar, including new
   // build whose capital newCap already recovers in full: R0.43/kWh on Fossil-free 2040. REIPPPP

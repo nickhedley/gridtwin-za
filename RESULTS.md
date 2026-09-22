@@ -1012,6 +1012,48 @@ Load timing fixed: the transmission-cost curve is built at start-up, the page ru
 engine inputs have settled, and window.GTZA_READY marks it. New-build cost for the same build is
 now stable across page loads (R169.72bn in four of four).
 
+### Retail panel vetted again: two errors, one method question, 22 Sep 2026
+
+Build `2026-09-22aa`. Regulated basis, Eskom-direct residential, R/kWh.
+
+Error 1, the sales denominator. Retail sales subtracted storage charging and storage discharge,
+so energy delivered from storage was never counted as sold. Sales read 172.1 TWh against 183.3
+served on Deep decarbonisation 2035 and 155.4 against 173.0 on Fossil-free 2040; today 187.1
+against 191.8. Every fixed cost per kWh was inflated by the storage throughput. An invariant now
+requires sales to equal energy served.
+
+Error 2, battery O&M counted twice. The ATB's 2.5% battery fixed O&M includes augmentation
+(ATB 2024), and a separate 4% of capex a year was added for augmentation on top. That 2.5% was
+also taken on 4-hour capex whatever the duration. Now 2.5% of capex at the built duration, no
+separate augmentation.
+
+```
+                          before   after   stranded coal off   today = 1
+Today 2026                 4.02     3.98         3.98             1.00
+Deep decarbonisation 2035  5.32     4.92         4.67             1.24
+Fossil-free 2040           6.57     5.81         5.53             1.46
+```
+
+Method question, not changed: the residential allocation (1.622) multiplies the whole stack.
+Applying a load-shape factor g to generation and new transmission, and calibrating the premium
+on existing network and retail so today still reads R3.98:
+
+```
+g      network factor   Deep 2035   Fossil-free 2040
+1.00        5.14           4.62          5.26
+1.15        4.29           4.69          5.39
+1.30        3.44           4.77          5.53
+whole stack (current)      4.92          5.81
+```
+
+g is not sourced; Eskom's cost-to-serve study would give it.
+
+What remains is real in the model: reliability to the NEM standard (35-45 GW of 8-hour lithium,
+65-119 TWh spilled), new transmission at the TDP average (R0.24-0.32/kWh before allocation), and
+retiring coal early while its capital is still being paid. The comparison is also against
+today's price, which rests on a largely depreciated fleet; the IRP's own counterfactual retires
+8 GW of coal by 2030 and 15 GW more by 2042 regardless.
+
 ---
 
 ## Fossil free, re-measured

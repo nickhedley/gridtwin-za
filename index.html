@@ -12909,10 +12909,12 @@ function retailComponents(markup, stranded, year, viaMuni){
   // Only E.exported comes off, which is the surplus channel.
   const chargeMWh = (r.chargeMW && typeof r.chargeMW.reduce === 'function')
     ? Array.prototype.reduce.call(r.chargeMW, (a, b) => a + (+b || 0), 0) : 0;
-  const salesMWh = Math.max(1, genMWh - (r.E.rooftop || 0) - (r.E.ps || 0) - (r.E.batt || 0)
-                              - (r.E.exported || 0)
-                              - chargeMWh
-                              );
+  // Utility sales = generation less rooftop, less surplus exports, less storage's NET draw
+  // (charging less discharge). Until 22 Sep 2026 both charging and discharge were subtracted,
+  // so energy delivered from storage was never counted as sold: sales read 172.1 TWh against
+  // 183.3 served on Deep decarbonisation 2035, and every fixed cost per kWh was 6.5% high
+  // (11% on Fossil-free 2040). It now matches energy served, 191.8 TWh at today's defaults.
+  const salesMWh = Math.max(1, genMWh - (r.E.rooftop || 0) - (r.E.exported || 0) - chargeMWh);
 
   const fuelPerKwh   = (r.fuelCost   || 0) / salesMWh / 1000;
   const carbonPerKwh = (r.carbonCost || 0) / salesMWh / 1000;
@@ -12955,7 +12957,8 @@ function retailComponents(markup, stranded, year, viaMuni){
     if (!mw || typeof bldAnnuity !== 'function' || typeof BLD_LIFE === 'undefined') return 0;
     // Capital plus fixed O&M, matching bldNetAnnuity. If the bill carried capital only while
     // the build decision carried both, the two would answer different questions.
-    const fom = (typeof bldFom === 'function') ? bldFom(k, vintage) : 0;
+    // Battery FOM is 2.5% of capex (NREL ATB), so it scales with duration as the capex does.
+    const fom = (typeof bldFom === 'function') ? bldFom(k, vintage) * (k === 'batt' ? (hoursMult || 1) : 1) : 0;
     return mw * 1000 * (bldAnnuity(costAt(k) * (hoursMult || 1), BLD_LIFE[k] || 25) + fom);
   };
   // ROOFTOP IS NOT IN HERE. Removed 16 Sep 2026. Behind-the-meter rooftop capital is paid
@@ -12977,7 +12980,9 @@ function retailComponents(markup, stranded, year, viaMuni){
   // to storage only - wind and PV capex at BLD_COST already reproduces the REIPPPP bid
   // price all-in, which the second review established the hard way.
   const battCapex = (P.newBattMW || 0) * 1000 * costAt('batt') * ((P.newBattHours || 4) / 4);
-  const battAug = battCapex * 0.04 / salesMWh / 1000;
+  // Augmentation is inside the ATB's 2.5% battery FOM ("the FOM costs include battery
+  // augmentation costs", ATB 2024). A separate 4% a year was added here until 22 Sep 2026.
+  const battAug = 0 * battCapex;
 
   // CURTAILMENT COMPENSATION. Deemed energy paid to IPPs curtailed beyond the PPA threshold.
   //
@@ -13160,7 +13165,7 @@ function retailSalesMWh(r){
   const gen = GEN.reduce((a, k) => a + (r.E[k] || 0), 0);
   const chg = (r.chargeMW && typeof r.chargeMW.reduce === 'function')
     ? Array.prototype.reduce.call(r.chargeMW, (a, b) => a + (+b || 0), 0) : 0;
-  return Math.max(1, gen - (r.E.rooftop || 0) - (r.E.ps || 0) - (r.E.batt || 0) - (r.E.exported || 0) - chg);
+  return Math.max(1, gen - (r.E.rooftop || 0) - (r.E.exported || 0) - chg);   // see retailComponents
 }
 // Sales at today's defaults: the base over which Eskom's fixed costs are spread today. Cached
 // per engine run, not for the session: a value cached at page load was taken on the synthetic
@@ -16136,7 +16141,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22z';
+const BUILD_STAMP = '2026-09-22aa';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
