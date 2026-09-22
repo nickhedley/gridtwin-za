@@ -1831,6 +1831,67 @@ the 148 recorded in the open items, so that comparison against the IRP's own 168
 And the 50% floor is not reachable at this build: 20.4 TWh of it goes unmet, which is a finding
 about the policy rather than the model.
 
+### The IRP emissions comparison, redone, 22 Sep 2026
+
+Build `2026-09-22as`. The open item recorded 148 Mt against the IRP's 168. Both figures are
+superseded: the phantom-gas fix moved ours, and the IRP's own published number is 160 Mt.
+
+```
+IRP's 2030 targets preset      model          IRP 2025 as announced
+grid demand                   224.2 TWh       255 TWh forecast (247 here with rooftop)
+coal                          110.9 TWh       about 144 implied
+gas                            24.7 TWh       about 26 at a 50% load factor on 6 GW
+wind, solar, rooftop           86.8 TWh
+CO2                            129 Mt         about 160 Mt
+```
+
+The IRP's 160 Mt implies roughly 144 TWh of coal at this model's 1.04 t/MWh, against the 110.9
+the model dispatches. The difference is not the renewable build, which is nearly the same 87 TWh
+either way, and only 3% is the demand level. It is that the model dispatches the remaining coal
+on merit against that renewable output and the new gas, while the IRP's trajectory implies the
+coal fleet running far harder. Whose coal utilisation is right is a real question and this is the
+number to put to them, rather than a discrepancy to reconcile away.
+
+Scope, stated rather than adjusted for: the model's universe is Eskom contracted demand excluding
+exports, so its Today 2026 emissions are 155 Mt against Eskom's own roughly 180 Mt on 170 TWh of
+coal. The gap above is larger than that scope difference.
+
+Not comparable: the IRP path 2035 preset emits 62 Mt, but it runs at the transition presets'
+demand (+5%) rather than the IRP's own (+20%), by design, so it cannot be read against the IRP's
+142 Mt for 2035. Its preset comment now says so.
+
+### Coal utilisation is where this model and the IRP disagree, 22 Sep 2026
+
+Build `2026-09-22as`, IRP's 2030 targets preset, default weather year. The emissions gap traced
+to one quantity: how hard the remaining coal fleet runs.
+
+```
+                               coal TWh   % of available   gas TWh   spill TWh   CO2 Mt
+as the preset stands              110.9        62             24.7       0.6       129
+at 68% EAF instead of 64          111.3        59             24.4       0.6       130
+at the IRP's 255 TWh demand       117.3        66             25.9       0.3       136
+with the plan's new wind and
+solar removed                     156.1        88             29.4       0         175
+IRP 2025 as announced             about 144    about 81       about 26              160
+```
+
+Available energy is the fleet after the plan's 8 GW of retirements at 64% availability, 177.7 TWh.
+
+What the table says. Neither availability nor demand moves the answer much: 4 points of EAF moves
+emissions by 1 Mt and the IRP's own demand level by 7. Removing the plan's renewables moves it by
+46. So the disagreement is displacement - whether 87 TWh of new wind, solar and rooftop pushes the
+coal fleet down to about 62% of its available energy, as the dispatch here does, or whether coal
+keeps running at roughly today's rate, which is what the IRP's 160 Mt implies.
+
+The model is not spilling to get there: 0.6 TWh of curtailment, so the renewables are absorbed and
+the coal backs off. The MTSAO expects the same behaviour in the same years - coal at minimum
+generation through the middle of the day and ramping up to 7 GW into the evening peak - and warns
+about what that does to plant wear.
+
+This is the question to put to the IRP team rather than a discrepancy to reconcile: at their build,
+does their model keep coal at 80% utilisation, and if so, what stops the renewables displacing it?
+A findings check now pins our side at 52-72% so that drift toward their figure is noticed.
+
 ---
 
 ## Fossil free, re-measured
