@@ -14609,43 +14609,10 @@ const PRESETS={
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
   'Latest IRP\'s 2030 targets':{demandGrowthPct:16,coalEAFPct:68,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
-  // LITHIUM MOVED 30 GW -> 20 GW, 16 Sep 2026. The 30 was hand-set and past the point where
-  // more storage does anything. Swept on this preset at 6 hours, system cost already carrying
-  // new-build capex:
-  //
-  //   lithium   system cost   unserved GWh   cycles/yr
-  //     2 GW      R231.9bn          1,052         189
-  //    10 GW      R236.2bn            334         113
-  //    20 GW      R255.3bn             78          65
-  //    30 GW      R277.5bn             27          44
-  //    45 GW      R311.1bn              0          30
-  //
-  // With unserved energy priced, the optimum is 8 GW at R20/kWh, 12 at R50, and 20 GW at
-  // R100 and above, where it stops moving. Going 20 -> 30 costs R22.2bn/yr and avoids 51 GWh,
-  // which needs a cost of unserved energy above R435/kWh to justify. South Africa uses a
-  // NERSA-approved cost of unserved energy rather than a fixed reliability threshold, so the
-  // R100-and-above region is the one that matters and it picks 20.
-  //
-  // Discharge SATURATES here: it reaches about 8.1 TWh and stops, so 20 -> 45 GW more than
-  // doubles the fleet for 2% more delivered energy. Cycling rises 44 -> 65/yr at 20 GW. A
-  // 1 GW fleet on this preset cycles 203 times, which is what advanced markets see.
-  //
-  // CAVEATS. One weather year, the capacity-weighted composite; 2016 is three times worse on
-  // unserved energy and would push the optimum up. Duration is fixed at 6 hours throughout,
-  // so fewer gigawatts for longer has not been tested.
-  // SOLAR 52 -> 45 GW, OFFSHORE 0 -> 1 GW, 19 Sep 2026. Measured across twelve weather years
-  // against the previous 45/52/0 mix, coal -27 GW, rooftop 20 GW, lithium 20 GW at 6h:
-  //
-  //                      total GW   worst yr GWh   curtail TWh   cost R bn   Mt CO2
-  //   45 W / 52 S / 0 off      97            197         112.3        294.1       40
-  //   45 W / 45 S / 1 off      91            184         103.1        290.4       39
-  //
-  // Better on all four, which is why it moved. THE GAIN IS THE SMALLER SOLAR FLEET, NOT THE
-  // OFFSHORE - holding solar at 45 GW and adding offshore makes solar worse: spill 61.1% ->
-  // 62.2%, capture price R155 -> R135/MWh. Solar spills 61% of its potential here either way.
-  //
-  // 1 GW is the deployable level: ESMAP put 1 GW offshore by 2035 in their medium and high
-  // scenarios. Binding year 2016, seven of eight builds tested.
+  // Deep decarbonisation 2035. Lithium 20 GW at 6h (16 Sep 2026: past this, discharge
+  // saturates). 45 GW solar and 1 GW offshore (19 Sep 2026: ESMAP's medium path). Derivations
+  // in RESULTS.md. Measured on build 2026-09-22l, twelve weather years: unserved 0 GWh in the
+  // default year, worst 14.3 GWh (2020); curtailment 129 TWh; 20.3 Mt CO2; R324.6bn/yr.
   'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All 39.7 GW of coal and all 3.4 GW of diesel retired, no gas - which
   // means Medupi and Kusile retired around 16 and 19 years into a 50-year design life. Kept:
@@ -16041,7 +16008,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22l';
+const BUILD_STAMP = '2026-09-22m';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
