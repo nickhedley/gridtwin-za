@@ -13017,8 +13017,14 @@ function retailComponents(markup, stranded, year, viaMuni){
   // captures is still curtailment, and still compensated.
   const curtRemaining = Math.max(0, curtMWh - h2CapturedMWh);
   const fracRemaining = curtMWh > 0 ? curtRemaining / curtMWh : 1;
-  const curtComp = overThreshold * vrePotential * (CC.ppa_price_r_per_kwh || 0.55) * 1000
-                   / salesMWh / 1000 * fracRemaining;
+  // Deemed-energy compensation is a REIPPPP contract term, so it applies to REIPPPP's share of
+  // the curtailed output only, while those contracts run. Until 22 Sep 2026 it applied to all
+  // wind and solar, including new build whose full capital is already in newCap - a double
+  // count worth R0.35/kWh on Deep decarbonisation 2035 and R0.43 on Fossil-free 2040.
+  const vreDelivered = (r.E.wind || 0) + (r.E.pv || 0) + (r.E.csp || 0);
+  const reipppShare = vreDelivered > 0 ? Math.min(1, (r.reipppOutputMWh || 0) / vreDelivered) : 0;
+  const curtComp = overThreshold * vrePotential * reipppShare * reipppLiveFrac(year)
+                   * (CC.ppa_price_r_per_kwh || 0.55) * 1000 / salesMWh / 1000 * fracRemaining;
 
   // HYDROGEN OFFTAKE as a REVENUE OFFSET, not as extra household sales.
   //
@@ -16123,7 +16129,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22v';
+const BUILD_STAMP = '2026-09-22w';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

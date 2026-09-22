@@ -871,6 +871,56 @@ The two bases now recover the same costs and differ by 2-3% in the mean; the mar
 in shape. validate_consistency's week check compared means and was changed to compare the hourly
 series (mean hourly gap above 1% of the mean); it fails on a copy with the week frozen to one basis.
 
+### Retail panel vetted: why high-renewables prices rise, 22 Sep 2026
+
+Build `2026-09-22w`. Regulated basis, Eskom-direct residential, stranded on.
+
+One error fixed: deemed-energy curtailment compensation was paid on all curtailed wind and solar,
+including new build whose capital newCap already recovers. It is a REIPPPP contract term; now
+REIPPPP's share only, while its contracts run. Deep decarbonisation 2035 R6.34 to R5.69/kWh,
+Fossil-free 2040 R7.65 to R6.82. An invariant now fails on the double count.
+
+Where Deep decarbonisation's R1.67/kWh rise over today's R4.02 comes from, at retail (each line
+before loss, allocation and VAT, times 2.03):
+
+```
+new-build capital and O&M          +2.57
+new transmission (TDP per kW)      +0.66
+network over fewer grid sales      +0.10
+fuel and carbon saved              -0.90
+REIPPPP expiry                     -0.33
+existing opex and capital          -0.37
+other                              -0.05
+```
+
+Build screen, Deep decarbonisation, 20 GW lithium, no offshore, default weather year:
+
+```
+wind / solar GW   shed GWh   spill TWh   system cost R bn   retail R/kWh
+25 / 20               370         29            290.3            4.79
+30 / 30                61         59            309.6            5.05
+35 / 30                35         70            321.4            5.12
+45 / 45 (preset)        1        125            382.2            5.69
+```
+
+The preset spills half its wind and solar potential: it was sized for higher demand and for
+near-zero shedding. Utility solar delivers a 7.5% capacity factor; 29 GW of rooftop takes the
+midday. Leaner builds cut R0.5-0.9/kWh.
+
+Why this differs from Australia's outlook: AEMC's falling prices come from renewables displacing
+wholesale prices of A$100/MWh and more. South Africa's baseline is depreciated coal at about
+R0.58/kWh of fuel and carbon. Unspilled new wind costs about R0.75/kWh (37% capacity factor) and
+solar R0.64 (24%) at this model's 2030 capex and 8%; that is roughly cost-neutral, but at 50% spill it doubles.
+
+Open, not changed:
+- The residential allocation (1.622, Eskom cost-to-serve C12 against the system) multiplies the
+  whole stack, so every generation cost increase is scaled by 62%. Residential's premium is
+  mostly network and retail. Needs the cost-to-serve study's component split.
+- Price per grid kWh is not the bill: 20 GW of new rooftop cuts grid sales and raises fixed cost
+  per kWh while rooftop households' bills fall. AEMC reports bills as well.
+- New transmission at R6,964 per kW of all new wind and solar is the TDP average; solar sited
+  near load needs less.
+
 ---
 
 ## Fossil free, re-measured

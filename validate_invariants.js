@@ -467,6 +467,24 @@ const SCENARIOS = {
     }
   }
 
+  // ── CURTAILMENT COMPENSATION IS A REIPPPP TERM ─────────────────────────────
+  // Added 22 Sep 2026. Deemed energy was paid on all curtailed wind and solar, including new
+  // build whose capital newCap already recovers in full: R0.43/kWh on Fossil-free 2040. REIPPPP
+  // is under a tenth of that fleet's wind and solar, so its compensation is a few cents at most.
+  {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__cc = (function(){ try {
+      applyState(PRESETS['Fossil-free 2040']); run();
+      const c = retailComponents(0, true, 2040, false);
+      return { cc: c.curtComp, frac: c.curtFrac };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const C = w.__cc;
+    if (!C || C.err) check('curtailment compensation is confined to REIPPPP', false, C ? C.err : 'no result');
+    else check('curtailment compensation is confined to REIPPPP', C.cc < 0.05,
+               `R${C.cc.toFixed(3)}/kWh on Fossil-free 2040 at ${(100 * C.frac).toFixed(0)}% curtailment, limit R0.05`);
+  }
+
   // ── MARKET-BASIS RETAIL RECOVERS THE COST OF THE BUILD ─────────────────────
   // Added 22 Sep 2026. The market basis priced energy at the hourly wholesale price and kept
   // 33% of every other line, so on Fossil-free 2040 it came to R3.14 against R7.86 regulated:
