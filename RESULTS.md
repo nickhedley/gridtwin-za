@@ -850,6 +850,27 @@ with a 6% loss, raising energy served. System cost, defaults: R210.57bn at 0%, R
 R212.23bn at 30%, peak 29,628 MW rising to 30,069 MW. At 2025 conditions the reversal is sharper:
 R224.65bn at 0% to R241.48bn at 30%, shed energy 90.5 to 175.5 GWh.
 
+### Vesting contract for Eskom's existing fleet on the market basis, 22 Sep 2026
+
+Build `2026-09-22v`. The existing Eskom fleet now sits under a two-sided vesting contract: its
+fixed costs (generation opex and existing capital, stranded coal when that toggle is on) less the
+margin it earns in the market over running costs, carried in the contract levy. Cahora Bassa
+imports are netted the same way. Precedents: Singapore, the Australian states in the 1990s,
+Ontario's regulated OPG assets; NERSA is consulting on a vesting contract alongside its Wholesale
+Tariff Methodology. Full coverage for the whole scenario, where real contracts usually cover a
+declining share.
+
+```
+R/kWh                     regulated   market   vesting   Eskom margin   contract levy
+Today 2026                   4.02      3.91     0.41         0.16           0.69
+Deep decarbonisation 2035    6.34      6.19     0.41        -0.02           2.07
+Fossil-free 2040             7.65      7.51     0.24         0.01           2.67
+```
+
+The two bases now recover the same costs and differ by 2-3% in the mean; the market basis differs
+in shape. validate_consistency's week check compared means and was changed to compare the hourly
+series (mean hourly gap above 1% of the mean); it fails on a copy with the week frozen to one basis.
+
 ---
 
 ## Fossil free, re-measured

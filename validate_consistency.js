@@ -1255,20 +1255,25 @@ const num = t => {
           const keep = JSON.parse(JSON.stringify(state)), kY = yr.value, kB = B.value, kH = H.value;
           Object.assign(state, PRESETS['Deep decarbonisation 2035']); yr.value = '2035';
           B.value = 'reg'; H.value = '0'; run();
-          const regWk = m(retailHourly().week);
+          const regArr = Array.from(retailHourly().week); const regWk = m(regArr);
           B.value = 'mkt'; run();
-          const mktWk = m(retailHourly().week);
+          const mktArr = Array.from(retailHourly().week); const mktWk = m(mktArr);
+          let dev = 0; for (let i = 0; i < regArr.length; i++) dev += Math.abs(mktArr[i] - regArr[i]);
+          dev /= regArr.length;
           B.value = 'reg'; H.value = '20'; run();
           const h2Wk = m(retailHourly().week);
           Object.assign(state, keep); yr.value = kY; B.value = kB; H.value = kH; run();
-          return { regWk, mktWk, h2Wk };
+          return { regWk, mktWk, h2Wk, dev };
         `);
         if (wb && !wb.err && wb.regWk){
+          // Tests the hour-by-hour series, not the mean. From 22 Sep 2026 the two bases recover
+          // the same costs (contract levy and vesting), so their means converge by design; what
+          // must differ is the hourly shape, which is what the 10 Sep bug froze.
           check('the representative week responds to the tariff basis',
-                Math.abs(wb.mktWk / wb.regWk - 1) > 0.05,
-                `week mean R${wb.regWk.toFixed(2)} regulated against R${wb.mktWk.toFixed(2)} `
-                + `market-indexed. If these match, the week is reading marginalP and the `
-                + `regulated flat block regardless of basis - which it did until 10 Sep 2026.`);
+                wb.dev > 0.01 * wb.regWk,     // the bug gave exactly zero; Deep 2035 gives 3%, as both bases are nearly all flat
+                `mean hourly difference R${wb.dev.toFixed(2)} between bases (means R${wb.regWk.toFixed(2)} `
+                + `regulated, R${wb.mktWk.toFixed(2)} market-indexed). If near zero, the week is reading `
+                + `marginalP and the regulated flat block regardless of basis - which it did until 10 Sep 2026.`);
           check('the representative week responds to the electrolyser setting',
                 Math.abs(wb.h2Wk / wb.regWk - 1) > 0.05,
                 `week mean R${wb.regWk.toFixed(2)} with no electrolysers against `

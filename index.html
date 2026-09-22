@@ -13188,8 +13188,8 @@ function retailStack(c, mkt){
   //   a contract levy: what contracted plant costs less what it earns in the market. New build
   //     is assumed procured under two-sided contracts for difference, as in Britain's CfD levy
   //     or NSW's LTESAs; REIPPPP PPAs while they run; curtailment compensation; stranded coal
-  //     capital when that toggle is on; decommissioning and legacy regulatory items.
-  // The existing Eskom fleet is merchant: paid the market price, no levy.
+  //     capital when that toggle is on; decommissioning and legacy regulatory items; and a
+  //     vesting contract for the existing Eskom fleet (below).
   // It replaced a flat one-third share of the stack, which kept a third of new-build capital
   // as though it were network and dropped two thirds of the contracts.
   if (mkt){
@@ -13209,22 +13209,48 @@ function retailStack(c, mkt){
       const bTot = (P.battPowerMW || 0) + (P.newBattMW || 0);
       const bNew = (P.newBattMW || 0) / Math.max(1, bTot);
       const bChgShare = bTot / Math.max(1, bTot + (P.psPowerMW || 0));
-      let revContract = 0;
+      // Eskom's existing fleet under a VESTING CONTRACT, added 22 Sep 2026: a two-sided
+      // contract that pays its fixed costs (generation opex and existing capital, stranded coal
+      // included when that toggle is on) less the margin it earns in the market over its
+      // running costs. The standard device when a vertically integrated utility enters a
+      // market (Singapore, the Australian states in the 1990s, Ontario's regulated OPG
+      // assets), and the one South Africa is consulting on in NERSA's Wholesale Tariff
+      // Methodology and Vesting Contract paper. Without it the fleet's fixed costs went unpaid
+      // on a market basis, about R0.57/kWh at today's defaults. Cahora Bassa imports are a
+      // contract too and are netted the same way. Full coverage for the whole scenario;
+      // real vesting contracts cover a declining share over a few years.
+      const tax = P.carbonTaxRPerT || 0;
+      const srmc = {
+        coal: (P.costCoal || 0) + (P.vomCoal || 0) + tax * (P.emisCoal || 0),
+        nuclear: (P.costNuclear || 0) + (P.vomNuclear || 0),
+        hydro: P.costHydro || 0,
+        diesel: (P.costDiesel || 0) + (P.vomDiesel || 0) + tax * (P.emisDiesel || 0),
+      };
+      const psChgShare = 1 - bChgShare;
+      let revContract = 0, rentEskom = 0, revImports = 0;
       for (let h = 0; h < 8760; h++){
         const p = mkt.p[h] * 1000;                              // R/MWh
-        const w = st.wind[h] || 0, pv = st.pv[h] || 0;
-        const batt = (st.batt[h] || 0) - (r.chargeMW[h] || 0) * bChgShare;
-        revContract += p * (w * (wNew + wIpp) + pv * (pvNew + pvIpp) + batt * bNew);
+        const w = st.wind[h] || 0, pv = st.pv[h] || 0, csp = st.csp[h] || 0;
+        const chg = r.chargeMW[h] || 0;
+        const batt = (st.batt[h] || 0) - chg * bChgShare;
+        revContract += p * (w * (wNew + wIpp) + pv * (pvNew + pvIpp) + csp * live + batt * bNew);
+        const coal = st.coal[h] || 0, nuc = st.nuclear[h] || 0, hyd = st.hydro[h] || 0,
+              dsl = st.diesel[h] || 0, ps = (st.ps[h] || 0) - chg * psChgShare;
+        rentEskom += (p - srmc.coal) * coal + (p - srmc.nuclear) * nuc + (p - srmc.hydro) * hyd
+                   + (p - srmc.diesel) * dsl + p * ps;
+        revImports += p * (st.imports[h] || 0);
       }
       const contractCost = c.newCap + c.newFom + c.ipp + (c.curtComp || 0);
-      const levy = contractCost - perKwh(revContract)
-                 + c.strandedPart + c.decom + c.fixedItems - (c.h2Revenue || 0);
+      const vesting = c.opex + c.existingCap - perKwh(rentEskom);
+      const importsNet = c.imports - perKwh(revImports);
+      const levy = contractCost - perKwh(revContract) + vesting + importsNet
+                 + c.decom + c.fixedItems - (c.h2Revenue || 0);
       flat = network + levy + (c.distAdj || 0);
       varTarget = mkt.p.reduce((a, b) => a + b, 0) / 8760;
       parts = [['hourly market price', varTarget], ['network and retail', network],
                ['contract levy', levy]];
       out_mktParts = { network, levy, contractCost, contractRevenue: perKwh(revContract),
-                       energy: varTarget };
+                       vesting, eskomRent: perKwh(rentEskom), importsNet, energy: varTarget };
     }
   }
 
@@ -16097,7 +16123,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22u';
+const BUILD_STAMP = '2026-09-22v';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
