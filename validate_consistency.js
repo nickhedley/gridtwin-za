@@ -256,7 +256,10 @@ const num = t => {
     const pk = (r) => {
       let hi = 0;
       for (let h = 0; h < r.loadS.length; h++) {
-        const v = r.loadS[h] + (r.drMW[h] || 0);
+        // Charging excluded, 22 Sep 2026: on the 2026 demand base, with 30 GW of batteries, the
+        // base run's highest loadS was a charging hour (hour 725, 23 GW demand + 8 GW charging),
+        // so the check read storage, which is what its name says it must not.
+        const v = r.loadS[h] + (r.drMW[h] || 0) - (r.chargeMW[h] || 0);
         if (v > hi) hi = v;
       }
       return hi / 1000;
@@ -653,10 +656,10 @@ const num = t => {
       if (t.weekend) weekend++;
     }
     // Measured at 2025 conditions since 22 Sep 2026, the system the NERSA claim was made on:
-    // demand +5.5% (domestic 194.6 TWh) and coal EAF 58% (ESK19679). At the 2026 default
+    // demand +4.6% (domestic 194.6 TWh), Koeberg 62% and coal EAF 58% (ESK19679). At the 2026 default
     // coal sets the price in all but a handful of hours and no block separates.
     const _keep = JSON.parse(JSON.stringify(state));
-    Object.assign(state, { demandGrowthPct: 5.5, coalEAFPct: 58, importsMW: 858, exportsMW: 1705 }); run();
+    Object.assign(state, { demandGrowthPct: 4.6, coalEAFPct: 58, importsMW: 858, exportsMW: 1705, nuclearCF: 0.62 }); run();
     const rows = touCompare(lastRes);
     Object.assign(state, _keep); run();
     const hp = rows.find(r => r.block === 'high peak');
@@ -1276,7 +1279,7 @@ const num = t => {
           const yr = document.getElementById('retYear'); const keepY = yr.value;
           const keep = JSON.parse(JSON.stringify(state));
           // 2025 conditions since 22 Sep 2026, as for the TOU checks above.
-          Object.assign(state, { demandGrowthPct: 5.5, coalEAFPct: 58, importsMW: 858, exportsMW: 1705 });
+          Object.assign(state, { demandGrowthPct: 4.6, coalEAFPct: 58, importsMW: 858, exportsMW: 1705, nuclearCF: 0.62 });
           yr.value = 2026; run();
           const d = retailHourly();
           const R = RETAIL_T.homeflex.rates_r_per_kwh_2026_27;

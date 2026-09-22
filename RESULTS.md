@@ -464,6 +464,36 @@ The residual shortfall has identifiable sources: the scenarios run today's fleet
 TWh above 2023), and wheeled private plant is probably counted twice, once as supply and once
 by its absence from contracted demand (about 2.5 TWh a year). Unverified.
 
+### Wheeled plant counted once; Koeberg by year, 22 Sep 2026
+
+Build `2026-09-22h`.
+
+Wheeled plant, verified: ESK19679's installed wind and PV in August 2026 (4,143 and 2,780 MW) sit
+469 and 491 MW below FIXED, matching the 470 and 488 MW wheeled. Contracted demand is the sum of
+resources Eskom contracts with, so load served by wheeled plant is absent from it, while the engine
+supplies that load from its private fleet. `build_demand_2026.py` now adds each wheeled plant's
+Jan-Aug 2026 output, from its COD in `pfl_cod_h1_2026.json`, to the 2026 side of the ratio: 1.03
+TWh, ratio 0.9442 -> 0.9519, domestic demand 183.8 -> 185.3 TWh. ARM Platinum has no published
+COD and is taken as April. Pre-2026 private wheeling is not sourced and is taken as zero.
+
+Koeberg: `nuclearCF` is now a control. Crisis 2023 sets 0.49 (8.13 TWh, unit 1 in its
+life-extension outage); the 2025 benchmark conditions set 0.62 (10.21 TWh). Demand re-solved to
+the same domestic targets: Crisis 2023 +15%, 2025 +4.6%. The unit-commitment forecast read a
+hardcoded 0.90 for nuclear; it now reads `nuclearCF`.
+
+```
+                        shed + interruptible          actual
+Crisis 2023             15.8 TWh (was 13.8)           16.75 TWh
+2025 conditions          266 GWh (was 277)             570 GWh
+Today 2026              0; twelve-year worst 0.6 GWh  0
+```
+
+Crisis 2023 is now 5% under actual. 2025 remains about half, and the timing test above shows why:
+the model has no within-year fleet improvement.
+
+Not fixed: wind, solar and RMIPPPP hybrids run at today's fleet in every scenario, about 6 TWh a
+year above 2023. There is no control for the existing renewable fleet by year.
+
 ---
 
 ## Fossil free, re-measured
