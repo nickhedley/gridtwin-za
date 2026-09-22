@@ -318,6 +318,35 @@ Caveat: the Megaflex ordering claim in the NERSA correction note (high-season of
 cheapest block) holds at 2025 conditions. At 2026 conditions coal sets the price in all but
 about 11 hours and no block separates.
 
+### Imports on the demand series' own basis; OCGTs moved to emergency reserve, 22 Sep 2026
+
+Build `2026-09-22c`.
+
+Imports: `IMPORTS_CF` 0.41 -> 0.88, ESK19679 Jan-Aug 2026 mean 1,012 MW on the 1,150 MW
+contract. The demand series comes from ESK19679, whose supply side counts these flows; Eskom's
+audited purchases (4.09 TWh FY2026) are 2.7 TWh narrower. Crisis 2023 and the 2025 benchmark
+scenario now carry their own year's trade (2023: imports 1,233 MW, exports 1,284; 2025: 755 and
+1,705, both including Mozal, which stopped in March 2026).
+
+Reserve: the ASTR puts gas turbines in emergency reserve and makes categories exclusive, so idle
+OCGT and CCGT no longer count toward the 2,200 MW operating reserve. Coal headroom and storage
+hold it; peakers serve the balance before any load is shed.
+
+```
+                         unserved GWh           diesel TWh            actual
+                         before   22c           before   22c          unserved / OCGT
+Today 2026                   0      0 (12y max 0.1)   0.00   0.08     0 / 1.2 annualised
+2025 conditions            280     96           0.83   2.37           390 / 3.4
+Crisis 2023             13,019  6,890           14.1   20.4           16,560 / 5.2
+```
+
+Normal years move toward reality on peaker use; winter peakers now run, and the winter evening
+price is 1.55x the night price at 2026 conditions, against 1.03x before.
+
+Crisis 2023 moves away from it: with no fuel limit the OCGTs run at 68% load factor against
+18% in 2023. A diesel budget of the actual 5.24 TWh, spread evenly by month, gives 19.4 TWh
+unserved (tested, not shipped). Do not quote Crisis 2023 adequacy until a budget is in.
+
 ---
 
 ## Fossil free, re-measured

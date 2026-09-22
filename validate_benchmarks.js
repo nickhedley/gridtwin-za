@@ -82,8 +82,11 @@ const BENCH = {
          'differently by different sources.',
   },
   imports: {
-    value: 4.09, tolPct: 12, unit: 'TWh',
-    source: 'Eskom integrated report FY2026, audited energy balance',
+    value: 6.61, tolPct: 12, unit: 'TWh',
+    source: 'ESK19679 International Imports, calendar 2025',
+    // 22 Sep 2026: from Eskom's audited 4.09 TWh (FY2026) to ESK19679 calendar 2025, the
+    // demand series' own source. The scenario now sets 2025 imports as an input, so this
+    // checks plumbing, not behaviour.
     why: 'REBASED 31 Aug 2026 from 8.56 TWh. The old figure came from CONTRACT capacity - ' +
          '1.15 GW firm at high availability - which is an assumption about utilisation, not a ' +
          'measurement. Eskom now publishes three years of audited imports: 9,150 GWh FY2024, ' +
@@ -237,7 +240,8 @@ const check = (name, ok, detail) => {
   // OCGT, hydro and pumped storage taken out. Comparing the 2026 system with 2025 data read
   // coal 9% low for no reason but the year.
   el.textContent = `window.__bm = (() => { try {
-    const S25 = { ...state, demandGrowthPct: 5.5, coalEAFPct: 58 };
+    // Trade 2025, ESK19679: imports 755 MW mean (858 x 0.88), exports 1,705 MW incl. Mozal.
+    const S25 = { ...state, demandGrowthPct: 5.5, coalEAFPct: 58, importsMW: 858, exportsMW: 1705 };
     const r = simulate(S25, PROFILES); const E = r.E;
     const cf = (twh, mw) => mw > 0 ? twh*1e6/(mw*8760)*100 : 0;
     return {

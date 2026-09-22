@@ -656,7 +656,7 @@ const num = t => {
     // demand +5.5% (domestic 194.6 TWh) and coal EAF 58% (ESK19679). At the 2026 default
     // coal sets the price in all but a handful of hours and no block separates.
     const _keep = JSON.parse(JSON.stringify(state));
-    Object.assign(state, { demandGrowthPct: 5.5, coalEAFPct: 58 }); run();
+    Object.assign(state, { demandGrowthPct: 5.5, coalEAFPct: 58, importsMW: 858, exportsMW: 1705 }); run();
     const rows = touCompare(lastRes);
     Object.assign(state, _keep); run();
     const hp = rows.find(r => r.block === 'high peak');
@@ -1276,7 +1276,7 @@ const num = t => {
           const yr = document.getElementById('retYear'); const keepY = yr.value;
           const keep = JSON.parse(JSON.stringify(state));
           // 2025 conditions since 22 Sep 2026, as for the TOU checks above.
-          Object.assign(state, { demandGrowthPct: 5.5, coalEAFPct: 58 });
+          Object.assign(state, { demandGrowthPct: 5.5, coalEAFPct: 58, importsMW: 858, exportsMW: 1705 });
           yr.value = 2026; run();
           const d = retailHourly();
           const R = RETAIL_T.homeflex.rates_r_per_kwh_2026_27;

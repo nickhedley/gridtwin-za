@@ -221,7 +221,10 @@ const IMPORTS_MW = 1150;      // matches the single-node app's assumption
 // Before that, the same number sat in both files plus two `?? 0.41` fallbacks - four
 // copies. They never drifted, which was luck; a COMMENT about them did, still claiming
 // 0.85 five hours after the value was corrected.
-const IMPORTS_CF = 0.41;
+// 22 Sep 2026: 0.41 -> 0.88. ESK19679 International Imports, Jan-Aug 2026 mean 1,012 MW on
+// the 1,150 MW contract. Same source as the demand series, whose supply side counts these
+// flows; Eskom's audited purchases (4,090 GWh FY2026) are a narrower measure, 2.7 TWh lower.
+const IMPORTS_CF = 0.88;
 const IMPORTS_COST = 550;     // R/MWh, matches the single-node app's costImports
 
 // CSP has thermal storage in reality; like the single-node engine, treat its output as

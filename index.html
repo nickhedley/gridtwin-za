@@ -5221,11 +5221,8 @@ const FIXED = {
   //
   //   FY2024  9,150 GWh -> 0.91      FY2025  7,570 -> 0.75      FY2026  4,090 -> 0.41
   //
-  // 0.85 was roughly right for FY2024 and is now DOUBLE the reality. Cahora Bassa
-  // deliveries have more than halved in two years. Set to the FY2026 outturn.
-  // If this is ever changed, change nodal_engine.js IMPORTS_CF with it - or better,
-  // make that read this.
-  // Reads nodal_engine.js rather than restating 0.41. No fallback on purpose: if that
+  // 22 Sep 2026: now 0.88 from ESK19679, the demand series' own source (see nodal_engine.js).
+  // Reads nodal_engine.js rather than restating the value. No fallback on purpose: if that
   // file fails to load the page should fail loudly, which it already does - four
   // harnesses die with "IMPORTS_CF is not defined" without it. A fallback here would
   // turn a loud failure into a plausible wrong answer, which is rule 7's whole lesson.
@@ -6459,7 +6456,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // Charge across tiers, best round trip first. Returns MW actually taken, which
   // the caller uses so the scalar and the tiers stay in step.
-  // Demand shed to keep operating reserve whole, and the storage sustain time.
+  // Energy passed from coal and storage to peakers to keep operating reserve whole.
   let _resShedMWh = 0;
   const _asHoldH = Math.max(0.25, p.asHoldHours);
   // ── opportunity-value gate ────────────────────────────────────────────────
@@ -7342,17 +7339,17 @@ function simulate(u, prof, outPath, _soc0){
       // A resource is marginal only if it is the last one dispatched AND it still had
       // room to give more. Storage at its power or energy limit is constrained, not
       // marginal, and the next unit up sets the price. `slack` captures that.
-      // Operating reserve is held every hour, priced or not. Energy dispatch may not take
-      // spare capacity below the requirement; demand beyond that is shed, which is what an
-      // operator does at the last emergency stage. Storage counts only as far as it can
-      // sustain its output for asHoldHours. 21 Sep 2026.
+      // Operating reserve is held every hour, priced or not, on coal headroom and storage
+      // (storage only as far as it can sustain output for asHoldHours). Coal and storage may
+      // not dispatch into it; the balance passes to CCGT and OCGT, then interruptible load,
+      // then load shedding. OCGTs are emergency reserve in the ASTR, and reserve categories
+      // are exclusive, so idle OCGT does not count toward operating reserve. 22 Sep 2026.
       let _resShed = 0;
       if (RESERVE.on && !_forceTwoSided){
-        const _spare = Math.max(0, coalCeiling - coalGen)
+        const _spin = Math.max(0, coalCeiling - coalGen)
           + Math.min(psPowerTot, Math.max(0, psSoc) / _asHoldH)
-          + Math.min(battPower, Math.max(0, battSoc) / _asHoldH)
-          + Math.max(0, ccgtCap) + dieselAvailMW(p);
-        const _allow = Math.max(0, _spare - reserveMWAt(h));
+          + Math.min(battPower, Math.max(0, battSoc) / _asHoldH);
+        const _allow = Math.max(0, _spin - reserveMWAt(h));
         if (residual > _allow){ _resShed = residual - _allow; residual = _allow; }
       }
       // psPeakFloor can be negative; the old ancillary floor clamped it at zero.
@@ -7380,6 +7377,7 @@ function simulate(u, prof, outPath, _soc0){
       // the cycling cost. Recorded now, while the basis is the one that applied.
       if(storageMarginal[h]==='batt'){ storageBid[h]=battBasis+p.battCycleCostR; basisLog.push({t:'bid',h,which:'batt'}); }
       else if(storageMarginal[h]==='ps'){ storageBid[h]=psBasis+p.psCycleCostR; basisLog.push({t:'bid',h,which:'ps'}); }
+      residual += _resShed; _resShedMWh += _resShed;
       // IRP 50% annual load factor: if toggled, treat half of CCGT capacity as must-run
       const ccgtMustRun = p.ccgtForceLoad ? Math.round(ccgtCap*0.5) : 0;
       if(ccgtMustRun>0){
@@ -7437,7 +7435,6 @@ function simulate(u, prof, outPath, _soc0){
       // it. Booked separately from unserved because it is a managed reduction
       // under contract, not a blackout, and conflating the two would overstate
       // both reliability and its cost.
-      residual += _resShed; _resShedMWh += _resShed;
       if (residual > 1 && DR_INT > 0){
         const drUse = Math.min(residual, DR_INT);
         drMW[h] = drUse; E.dr += drUse; residual -= drUse;
@@ -8210,7 +8207,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,reserveShedMWh:_resShedMWh,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,gridReinforceR,syncUnmetH,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -14542,7 +14539,8 @@ const PRESETS={
   // Crisis 2023 demand: 2023 domestic demand incl. load shed (ESK19679: contracted less exports
   // plus MLR, ILS and IOS) = 231.4 TWh, reached from the 2026 base at +24%. 22 Sep 2026.
   // Forced share of outages 73%: ESK19679 UCLF share for calendar 2023. 22 Sep 2026.
-  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:24,outVolPct:6,outageForcedSharePct:73},
+  // Trade 2023, ESK19679: imports 1,233 MW mean (1,400 x 0.88), exports 1,284 MW incl. Mozal.
+  'Crisis 2023':{coalEAFPct:50,demandGrowthPct:24,outVolPct:6,outageForcedSharePct:73,importsMW:1400,exportsMW:1300},
   // ── GRID DELAY ────────────────────────────────────────────────────────────
   // Transmission slipping behind the build programme. Added 10 Sep 2026 after reading
   // Aurora's Australian grid-delay work, where Project EnergyConnect Stage 2 ran a year late
@@ -16014,7 +16012,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22b';
+const BUILD_STAMP = '2026-09-22c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
