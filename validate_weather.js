@@ -121,6 +121,30 @@ const REANALYSIS_TOL_PCT = 9.0; // largest observed single-year gap is 7.5%, in 
     return JSON.parse(w.__p);
   };
 
+  // ── LONG-DURATION STORAGE AGAINST THE PERFECT-FORESIGHT BENCHMARK ──────────────
+  // Added 22 Sep 2026. Fossil-free 2040 at 30/55/10 GW, 16.8 GW new rooftop, 35 GW lithium plus
+  // 2 GW iron-air, weather year 2020: the LP (ldes_lp.js) sheds 0 GWh; the engine shed 64.6 GWh
+  // before the lookahead rule and 5.1 after. The limit sits between them.
+  {
+    const L = probe(`
+      if (!bldWeatherYears) return { missing: true };
+      const n = weatherYearNational('2020');
+      const prof = { demand: PROFILES.demand, solar: n.solar, wind: n.wind, csp: PROFILES.csp, real: true };
+      const st = { ...state, ...PRESETS['Fossil-free 2040'], newRooftopMW: 16800, newBattHours: 8,
+                   newOffshoreMW: 10000, newWindMW: 30000, newPvMW: 55000,
+                   newBattMW: 35000, newIronAirMW: 2000 };
+      const q = simulate(st, prof);
+      return { uns: q.E.unserved / 1000, fe: q.tierDis.fe / 1e6 };
+    `);
+    if (L && !L.missing && !L.error)
+      check('long-duration storage dispatch stays close to the perfect-foresight benchmark',
+            L.uns < 20,
+            `${L.uns.toFixed(1)} GWh shed against 0 in the LP (64.6 before the lookahead); `
+            + `iron-air discharged ${L.fe.toFixed(3)} TWh`);
+    else check('long-duration storage dispatch stays close to the perfect-foresight benchmark', false,
+               L ? (L.error || 'multi-year file not loaded') : 'no result');
+  }
+
   const r = probe(`
     const mean = a => { let t = 0; for (let i = 0; i < a.length; i++) t += a[i]; return t / a.length; };
     if (typeof weatherYearNational !== 'function') return { missing: 'weatherYearNational' };

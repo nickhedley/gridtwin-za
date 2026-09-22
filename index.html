@@ -6646,8 +6646,50 @@ function simulate(u, prof, outPath, _soc0){
   // changing tierDischarge's signature at every call site. -1 means "do not record",
   // which is what the pre-loop and any future non-hourly caller should leave it at.
   let _disHour = -1;
+  // LONG-DURATION LOOKAHEAD, 22 Sep 2026. Short-first is right on an ordinary evening and
+  // wrong at the start of a multi-day shortfall: lithium empties, and a low-power 100-hour
+  // store alone cannot cover the peak hours that follow. Benchmarked against a
+  // perfect-foresight LP (ldes_lp.js) on Fossil-free 2040, weather year 2020: 35 GW lithium
+  // plus 2 GW iron-air shed 64.6 GWh here and 0 in the LP. The rule: in a deficit hour, if
+  // lithium alone is projected to run short within LDES_LOOKAHEAD_H hours, the long tier
+  // (100 hours or more) discharges first at up to its power, keeping lithium for the peaks.
+  // The projection uses net load before storage less firm thermal capacity: a forecast, not
+  // the realised residual.
+  const LDES_LOOKAHEAD_H = 48;
+  let _fcDef = null, _fcSur = null;
+  const _buildForecast = () => {
+    _fcDef = new Float64Array(HOURS); _fcSur = new Float64Array(HOURS);
+    const firm = (typeof coalAvail === 'number' ? coalAvail : 0) + (p.ccgtMW || 0) + (p.newCcgtMW || 0)
+               + Math.max(0, (p.dieselMW || 0) - (p.dieselDecomMW || 0));
+    for (let k = 0; k < HOURS; k++){
+      _fcDef[k] = Math.max(0, netLoadPre[k] - firm);
+      _fcSur[k] = Math.max(0, -netLoadPre[k]);
+    }
+  };
+  const _liShortAhead = (li, h, mwNow) => {
+    let s = Math.max(0, li.soc);
+    for (let k = h; k < Math.min(HOURS, h + LDES_LOOKAHEAD_H); k++){
+      const need = (k === h) ? mwNow : _fcDef[k];
+      const g = Math.min(need, li.mw, s); s -= g;
+      if (need - g > 1) return true;
+      s += Math.min(_fcSur[k], li.mw, (li.mwh - s) / li.eff) * li.eff;
+    }
+    return false;
+  };
   const tierDischarge = (mw) => {
     let got = 0;
+    const _li = battTiers.find(t => t.k === 'li');
+    const _long = battTiers.filter(t => t.mwh >= 100 * t.mw - 1e-6 && t.soc > 0);
+    if (_disHour >= 0 && _li && _long.length){
+      if (!_fcDef) _buildForecast();
+      if (_liShortAhead(_li, _disHour, mw)){
+        for (const t of _long){
+          const give = Math.min(mw - got, t.mw, Math.max(0, t.soc));
+          if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give;
+            if (tierSeries[t.k]) tierSeries[t.k][_disHour] += give; }
+        }
+      }
+    }
     for (const t of battTiers){
       const give = Math.min(mw - got, t.mw, Math.max(0, t.soc));
       if (give > 0){ t.soc -= give; tierDis[t.k] += give; got += give;
@@ -14774,18 +14816,18 @@ const PRESETS={
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
   'Latest IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:64,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
-  // Deep decarbonisation 2035. Cheapest build found that meets the Australian NEM reliability
-  // standard, expected unserved energy at most 0.002% of demand, averaged over twelve weather
-  // years (22 Sep 2026): 35 GW wind, 35 GW solar, 35 GW lithium at 8h, no offshore. Rooftop
-  // grows 1.2 GW a year from 2026, 10.8 GW new by 2035, above the IRP's 0.9 GW. Mean shed
-  // 2.7 GWh a year, worst 19.6 GWh (2020). Derivation in RESULTS.md.
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:35000,newBattHours:8,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
+  // (expected unserved energy at most 0.002% of demand, mean of twelve weather years), re-run
+  // 22 Sep 2026 after the long-duration lookahead: 35 GW wind, 35 GW solar, 25 GW lithium at
+  // 8h, 1 GW iron-air, no offshore; rooftop 1.2 GW a year from 2026. Mean shed 2.4 GWh, worst
+  // 18.0 GWh (2016). Derivation in RESULTS.md.
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:25000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
-  // kept. 10 GW offshore by choice, above ESMAP's medium path. Cheapest build found meeting the
-  // NEM standard (expected unserved energy at most 0.002%, twelve weather years; 22 Sep 2026):
-  // 30 GW wind, 55 GW solar, 45 GW lithium at 8h. Rooftop 1.2 GW a year, 16.8 GW new by 2040.
-  // Mean shed 2.2 GWh a year, worst 25.8 GWh (2020). Derivation in RESULTS.md.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:30000,newPvMW:55000,newOffshoreMW:10000,newRooftopMW:16800,newBattMW:45000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
+  // long-duration lookahead: 7 GW offshore, 35 GW wind, 55 GW solar, 35 GW lithium at 8h,
+  // 2 GW iron-air; rooftop 1.2 GW a year. Mean shed 2.5 GWh, worst 30.2 GWh (2020).
+  // Offshore is flat from 5 to 8 GW within about R1bn. Derivation in RESULTS.md.
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:55000,newOffshoreMW:7000,newRooftopMW:16800,newBattMW:35000,newBattHours:8,newIronAirMW:2000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -16167,7 +16209,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22ad';
+const BUILD_STAMP = '2026-09-22ae';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

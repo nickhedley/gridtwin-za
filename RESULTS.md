@@ -1192,6 +1192,103 @@ In every swap tested, iron-air costs more and sheds more. 1 GW of iron-air costs
 year as 5 GW of 8-hour lithium. Caveat: the engine's long-duration dispatch has not been checked
 against a perfect-foresight benchmark, so this is a finding about the model as built.
 
+### Offshore level refined; storage dispatch benchmarked; transmission overlap sized, 22 Sep 2026
+
+Build `2026-09-22ad`, no code change.
+
+Offshore on Fossil-free 2040, twelve weather years, NEM limit 3.46 GWh. Cheapest build found at
+each level that passes:
+
+```
+offshore / wind / solar / lithium GW   mean cost R bn   mean shed GWh
+ 5 / 40 / 55 / 50                           355.4            3.3
+ 6 / 38 / 55 / 50                           357.8            2.5     37/55/49 misses (3.6)
+ 7 / 35 / 55 / 48                           354.3            3.4
+ 8 / 33 / 55 / 47                           355.1            3.1
+10 / 30 / 55 / 45  (preset)                 359.4            2.2
+```
+
+Flat from 5 to 8 GW, within R1.1bn; 7 GW is the cheapest found, R5.1bn below 10 GW. The search
+steps wind and lithium in 1-2 GW, so differences under about R1bn are within its resolution.
+
+Storage dispatch against perfect foresight (ldes_series.js, ldes_lp.js at the repo root).
+Fossil-free, weather year 2020 (its worst), 16.8 GW new rooftop. The surplus and deficit are taken
+from an engine run with no new storage; the LP then dispatches the new storage optimally against
+them, cyclic over the year, efficiencies as the engine's (lithium 0.88, iron-air 0.45).
+
+```
+new storage                        engine shed GWh   perfect-foresight shed GWh
+45 GW lithium 8h                         25.8                   0.0
+35 GW lithium 8h                            -                  58.1
+25 GW lithium 8h                            -                 138.1
+35 GW lithium + 2 GW iron-air            64.6                   0.0
+```
+
+The engine's rule-based dispatch leaves 26 GWh unserved that optimal dispatch avoids, and it
+handles iron-air badly: 2 GW of 100-hour storage discharged 27 GWh in the engine and took 58 GWh
+of shortfall to zero in the LP. The finding that iron-air never helps is a finding about the
+dispatch rule, not the technology. Perfect foresight is an upper bound: real operators forecast
+days, not a year. The LP also ignores reserve holding, which the engine does.
+
+Transmission overlap. The regional reinforcement charge prices capacity beyond existing plus
+TDP-built headroom; the flat R402/kW-yr prices every new MW at the TDP average. Capacity beyond
+headroom pays both:
+
+```
+                            within headroom   beyond   reinforcement   overlap at R402
+Deep decarbonisation 2035        64.8 GW       5.2 GW      R1.22bn         R2.08bn
+Fossil-free 2040                 83.4 GW      11.6 GW      R2.67bn         R4.65bn
+```
+
+The two charges also count different capacity: reinforcement includes the solar on retired-coal
+sites, which the flat charge exempts.
+
+### Long-duration dispatch fixed; both presets re-optimised with iron-air, 22 Sep 2026
+
+Build `2026-09-22ae`.
+
+The fix. In a deficit hour, if lithium alone is projected to run short within 48 hours, stores
+of 100 hours or more discharge first at up to their power, keeping lithium for the peak hours.
+The projection is net load before storage less firm thermal capacity. Otherwise lithium still
+goes first. Found by testing rules against the perfect-foresight LP on Fossil-free 2020: pure
+lithium-first leaves a low-power 100-hour store unable to cover the peaks once lithium is empty;
+long-first cycles iron-air daily at 45% and wastes it.
+
+```
+Fossil-free, weather year 2020        before   after   perfect foresight
+35 GW lithium + 2 GW iron-air         64.6      5.1           0
+25 GW lithium + 3 GW iron-air        105.6     10.4           0
+45 GW lithium only                    25.8     25.8           0
+```
+
+The lithium-only gap is not this rule. 29.7 GWh of that run's residual is operating reserve
+held on storage and passed to peakers that a fossil-free system does not have, which the LP
+ignores; with reserve holding off the engine still sheds 21.4 GWh in four hours against a greedy
+0 on the same residual. Open: in those four hours demand response returns 1,200 MW of shifted
+load into the shortage.
+
+Re-optimised, twelve weather years, NEM standard:
+
+```
+Deep decarbonisation 2035 (limit 3.67 GWh)     mean cost R bn   mean shed   worst
+35 W / 35 S / 35 GW Li                              306.6           2.7      19.6
+35 W / 35 S / 25 GW Li + 1 GW iron-air (preset)     298.6           2.4      18.0 (2016)
+35 W / 35 S / 20 GW Li + 2 GW iron-air              299.2           0.5       5.0
+35 W / 35 S / 20 GW Li + 1 GW iron-air              289.5           4.8      misses
+
+Fossil-free 2040 (limit 3.46 GWh)
+10 off / 30 W / 55 S / 45 GW Li                     359.5           2.2      25.8
+10 off / 30 W / 55 S / 30 GW Li + 2 GW iron-air     352.2           2.4      26.4
+ 7 off / 35 W / 55 S / 35 GW Li + 2 GW iron-air     350.2           2.5      30.2 (2020) preset
+ 5 off / 40 W / 55 S / 35 GW Li + 2 GW iron-air     348.2           3.9      misses
+```
+
+Iron-air now earns its place: R8.0bn a year off Deep decarbonisation and R9.3bn off Fossil-free.
+Supersedes the finding that iron-air appears in no robust build; that was the dispatch rule.
+
+Retail, regulated / market R/kWh: Today 3.75 / 3.69; Deep decarbonisation 4.27 / 4.21 (+14%);
+Fossil-free 4.96 / 4.89 (+32%).
+
 ---
 
 ## Fossil free, re-measured

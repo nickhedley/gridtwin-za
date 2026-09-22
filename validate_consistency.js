@@ -1349,6 +1349,8 @@ const num = t => {
       // lithium, no new rooftop). Measured.
       // UPDATED again 22 Sep 2026: rebuilt to the NEM reliability standard (35/35 GW, 35 GW lithium
       // at 8h, 10.8 GW new rooftop). Pin set to the measured value below.
+      // UPDATED again 22 Sep 2026, R1.102 -> R1.019: 25 GW lithium plus 1 GW iron-air after
+      // the long-duration lookahead, and sales now equal energy served. Measured.
       //
       // UPDATED 22 Sep 2026, R1.188 -> R1.279. Exports taken out of the demand series, where
       // they were counted twice: sales 170.6 -> 158.6 TWh. Capital unchanged at R202.8bn.
@@ -1396,8 +1398,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.102) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.102 for Deep `
+              Math.abs(ncap.newCap - 1.019) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.019 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }
