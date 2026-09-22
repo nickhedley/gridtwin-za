@@ -1707,6 +1707,35 @@ what the earlier 20 GW measurement found (92% July, 8% August). At a third of a 
 cannot be paid by an energy price: the capacity-payment argument in this file's long-duration
 entry is the same finding at preset scale.
 
+### The storage dispatch gap was mostly the benchmark, 22 Sep 2026
+
+Build `2026-09-22an`. Charging is now split by destination (chargePsMW, chargeBattMW),
+diagnostic only, and the benchmark rebuilt around it.
+
+The old comparison took the residual from a run with the new storage REMOVED - a different
+system, with different unit commitment and different pumped storage - and its surplus series was
+the engine's total charging, which credited the battery with pumped storage's pumping: 8.07 TWh
+of it on Deep decarbonisation 2035 in 2016.
+
+The fair test asks whether an optimal schedule of the same store could have covered what the
+engine actually asked of it, from what was actually available to charge it:
+
+```
+                                   engine shed   perfect foresight   gap
+Deep decarbonisation 2035, 2016        38.0            30.8          7.2 GWh
+Fossil-free 2040, 2020                 37.1            33.8          3.3 GWh
+old comparison, Deep 2016              38.0             0.0         38.0
+```
+
+So the engine's storage dispatch is within about 10% of optimal, not a factor of anything. Over
+twelve years the dispatch penalty is roughly 0.6 GWh a year on Deep decarbonisation and 0.3 on
+Fossil-free, against a reliability standard of 3.7 and 3.5. The shed energy in those years is the
+build being too small in a bad year, not the rule being wrong.
+
+That also closes the entries above: the strategic floor was tested against an unreachable target,
+and the "2 GWh a year against optimal" figure quoted earlier was measured the same way.
+ldes_bench_all.js now builds the corrected series.
+
 ---
 
 ## Fossil free, re-measured
