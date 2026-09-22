@@ -14750,18 +14750,18 @@ const PRESETS={
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
   'Latest IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:64,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
-  // Deep decarbonisation 2035. Re-optimised 22 Sep 2026 on system cost with shed energy at the
-  // IRP's cost of unserved energy, R87.85/kWh, across twelve weather years: 35 GW wind, 35 GW
-  // solar, 15 GW lithium at 6h, no offshore, no new rooftop. The optimum is flat; this build is
-  // within R0.3bn of the cheapest found. Sheds 197 GWh a year on average, 362 in the worst
-  // year (2022). Derivation in RESULTS.md.
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:0,newBattMW:15000,newBattHours:6,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // Deep decarbonisation 2035. Cheapest build found that meets the Australian NEM reliability
+  // standard, expected unserved energy at most 0.002% of demand, averaged over twelve weather
+  // years (22 Sep 2026): 35 GW wind, 35 GW solar, 35 GW lithium at 8h, no offshore. Rooftop
+  // grows 1.2 GW a year from 2026, 10.8 GW new by 2035, above the IRP's 0.9 GW. Mean shed
+  // 2.7 GWh a year, worst 19.6 GWh (2020). Derivation in RESULTS.md.
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:35000,newBattHours:8,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
-  // kept. 10 GW offshore by choice, above ESMAP's medium path. Re-optimised 22 Sep 2026 on system
-  // cost with shed energy at R87.85/kWh, twelve weather years: 25 GW wind, 60 GW solar, 35 GW
-  // lithium at 8h, no new rooftop. Within R1bn of the cheapest build found and a third of its
-  // shed energy: 108 GWh a year on average, 412 in the worst year (2022). Derivation in RESULTS.md.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:25000,newPvMW:60000,newOffshoreMW:10000,newRooftopMW:0,newBattMW:35000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  // kept. 10 GW offshore by choice, above ESMAP's medium path. Cheapest build found meeting the
+  // NEM standard (expected unserved energy at most 0.002%, twelve weather years; 22 Sep 2026):
+  // 30 GW wind, 55 GW solar, 45 GW lithium at 8h. Rooftop 1.2 GW a year, 16.8 GW new by 2040.
+  // Mean shed 2.2 GWh a year, worst 25.8 GWh (2020). Derivation in RESULTS.md.
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:30000,newPvMW:55000,newOffshoreMW:10000,newRooftopMW:16800,newBattMW:45000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -16136,7 +16136,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22x';
+const BUILD_STAMP = '2026-09-22z';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -16645,11 +16645,11 @@ bldShowInherit();
 // Absent, regional reinforcement is not charged and says so once.
 var HEADROOM_LOOKUP = null;
 var TDP_PROJECTS = null;
-fetch('nodal/tdp_projects.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
+const P_TDP = fetch('nodal/tdp_projects.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
   .then(d=>{ if (d && d.projects) { TDP_PROJECTS = d.projects;
     console.log('[GridTwin] TDP loaded: ' + d.projects.length + ' projects'); } })
   .catch(()=>{});
-fetch('nodal/region_headroom_lookup.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
+const P_HEAD = fetch('nodal/region_headroom_lookup.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
   .then(d=>{ if (d) { HEADROOM_LOOKUP = d;
     console.log('[GridTwin] Headroom lookup loaded: '
       + Object.keys(d).filter(k=>k!=='meta').length + ' regions'); } })
@@ -16665,7 +16665,7 @@ var OFFSHORE_ESMAP = {
   'Coega West':              { mw:  3987, cf: 0.486 },
   'Coega East':              { mw:  1610, cf: 0.507 },
 };
-fetch('nodal/profiles_offshore_regional.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
+const P_OFF = fetch('nodal/profiles_offshore_regional.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
   .then(d=>{
     if (!d || !d.wind_pu) return;
     const sc = d.scale || 1;
@@ -16703,7 +16703,7 @@ fetch('nodal/residential_profile.json',{cache:'no-cache'}).then(r=>r.ok?r.json()
              if (typeof renderRetail === 'function') try { renderRetail(); } catch(e){} })
   .catch(()=>{});
 
-fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=>{
+const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=>{
   if(!data||!data.demand||data.demand.length!==HOURS)return;
   PROFILES=buildProfiles(data);
   const badge=document.getElementById('bdData');
@@ -16714,8 +16714,21 @@ fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=
   // moment profile data loaded.
   const footLead=document.getElementById('footDataLine');
   if(footLead&&data.meta)footLead.innerHTML='Driven by actual Eskom hourly system data ('+data.meta.year+', Eskom Data Portal). Wind and solar profiles are real; demand keeps the '+data.meta.year+' hourly shape, scaled to 2026 levels; fleet mix, costs and outage volatility are modelled. All outputs indicative – educational tool, not planning advice.';
-  run();
 }).catch(()=>{});
+
+// ENGINE INPUTS READY, 22 Sep 2026. simulate() reads several files that load asynchronously:
+// profiles, the TDP list, the headroom lookup, the offshore shape and the transmission-cost
+// curve. Each used to trigger nothing or its own run, so a result depended on which had landed:
+// the same build read R180.1bn or R169.7bn of new capital depending on whether the transmission
+// curve was built. The curve is now built at start-up rather than only with the weather years,
+// and the page runs once when every input has settled. window.GTZA_READY tells a harness when
+// the engine's inputs are complete.
+window.GTZA_READY = false;
+const P_TX = (typeof buildTxCurve === 'function') ? buildTxCurve().catch(() => {}) : Promise.resolve();
+Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX]).then(() => {
+  window.GTZA_READY = true;
+  run();
+});
 
 </script>
 

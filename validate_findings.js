@@ -435,12 +435,14 @@ setTimeout(()=>{
       check('the deep decarbonisation preset keeps gas at zero',
             r.ccgt === 0,
             `newCcgtMW is ${r.ccgt} - this preset exists to show a no-gas build`);
-      check('the deep decarbonisation preset uses 6-hour storage',
-            r.hours === 6,
-            `newBattHours is ${r.hours}, chosen as 6 on 8 Sep 2026. At 4h the build leaves `
-            + `30 GWh unserved on the worst of twelve years; 6h takes it to 4 GWh for R23bn. `
-            + `Going all the way to zero costs R35bn more again. If this changed, confirm `
-            + `the trade was re-decided rather than the value edited.`);
+      // Re-derived 22 Sep 2026 in the rebuild to the NEM reliability standard, twelve years, at
+      // 35 GW wind and 35 GW solar: 35 GW at 8h R305.0bn, 2.7 GWh mean shed (meets 0.002%);
+      // 45 GW at 6h R302.7bn, 3.7 GWh (misses by 0.03 GWh); 40 GW at 6h with 40 GW solar
+      // R305.8bn, 2.6 GWh. The two durations are within R3bn; 8h is the cheapest that passes.
+      check('the deep decarbonisation preset uses 8-hour storage',
+            r.hours === 8,
+            `newBattHours is ${r.hours}, chosen as 8 on 22 Sep 2026 in the rebuild to the NEM `
+            + `reliability standard. If this changed, confirm the trade was re-derived.`);
       console.log(`  deep decarbonisation    ${r.wind/1000} GW wind \u00b7 ${r.pv/1000} GW solar \u00b7 `
         + `${r.batt/1000} GW / ${r.hours}h storage \u00b7 no gas`);
     }

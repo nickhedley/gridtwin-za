@@ -972,6 +972,46 @@ Also found, not fixed: newCapexR depends on whether the weather-year file has fi
 (the transmission curve is built there). The same build read R180.1bn or R169.7bn of new capital
 depending on load timing.
 
+### High-renewables presets rebuilt to the NEM reliability standard; rooftop 1.2 GW a year, 22 Sep 2026
+
+Build `2026-09-22z`. Supersedes the cost-with-COUE presets of build `2026-09-22x`, which shed at
+Stage 8 in some hours. Standard: the Australian NEM's, expected unserved energy at most 0.002% of
+demand, taken as the mean over twelve weather years. Objective: cheapest mean system cost meeting
+it. Rooftop grows 1.2 GW a year from 2026 (IRP: 0.9 GW): 10.8 GW new by 2035, 16.8 GW by 2040.
+
+Deep decarbonisation 2035 (coal -27 GW, no offshore), limit 3.7 GWh:
+
+```
+wind / solar / lithium GW, hours    mean cost R bn   mean shed GWh   worst
+25 / 40 / 35, 8h                          290.4             18.3        93 (2016)
+30 / 40 / 35, 8h                          302.3              4.0        31
+45 / 35 / 45, 6h                          302.7              3.7        23      misses by 0.03
+35 / 35 / 35, 8h  (preset)                305.0              2.7        20 (2020)
+35 / 40 / 40, 6h                          305.8              2.6        16
+35 / 40 / 35, 8h                          314.9              0.5         5
+```
+
+Fossil-free 2040 (10 GW offshore held, 8h lithium), limit 3.5 GWh:
+
+```
+wind / solar / lithium GW           mean cost R bn   mean shed GWh   worst
+30 / 50 / 45                              348.2              7.5        52 (2020)
+30 / 55 / 40                              349.8              7.9        61
+30 / 55 / 45  (preset)                    357.8              2.2        26 (2020)
+30 / 60 / 40                              359.9              2.9        35
+35 / 50 / 45                              362.4              2.0        24
+```
+
+Default weather year: no shedding in either. Retail regulated / market R/kWh: Today 4.02 / 3.91;
+Deep decarbonisation 5.32 / 5.19; Fossil-free 6.57 / 6.42. Grid demand 183.3 and 173.0 TWh.
+
+Reliability at the NEM standard costs R42bn a year on Deep decarbonisation (R305.0bn against
+R263.7bn at the cost optimum) and R38bn on Fossil-free (R357.8bn against R319.5bn).
+
+Load timing fixed: the transmission-cost curve is built at start-up, the page runs once when all
+engine inputs have settled, and window.GTZA_READY marks it. New-build cost for the same build is
+now stable across page loads (R169.72bn in four of four).
+
 ---
 
 ## Fossil free, re-measured

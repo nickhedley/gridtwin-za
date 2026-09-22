@@ -458,14 +458,26 @@ const SCENARIOS = {
     if (!O || O.err) { check(`[${pre}] ORDC prices scarcity in few hours`, false, O ? O.err : 'no result'); continue; }
     check(`[${pre}] ORDC prices scarcity in few hours`, O.hours <= 438,
           `${O.hours} hours with a scarcity adder, limit 438 (5% of the year)`);
-    // Only where the system is not short. Deep decarbonisation 2035, re-optimised on cost with
-    // shed energy at R87.85/kWh (22 Sep 2026), sheds 166 GWh in the default year, and its
-    // thin-reserve hours carry a legitimate scarcity adder. The scarcity-hours check covers it.
-    if (pre !== 'Deep decarbonisation 2035') {
+    // Deep decarbonisation was excluded while its preset shed load by design; from 22 Sep 2026
+    // both high-renewables presets meet the NEM reliability standard, so all are checked.
+    {
       check(`[${pre}] market price mean is close to the engine's marginal price`,
             Math.abs(O.mkt - O.eng) <= 0.05 * Math.max(O.eng, 0.1),
             `market R${O.mkt.toFixed(3)}/kWh against engine R${O.eng.toFixed(3)}/kWh`);
     }
+  }
+
+  // ── THE ENGINE'S INPUTS ARE COMPLETE BEFORE THE PAGE REPORTS ───────────────
+  // Added 22 Sep 2026. New-build cost depended on whether the transmission-cost curve had been
+  // built: R180.1bn or R169.7bn for the same build, by load timing. The curve is now built at
+  // start-up and the page runs once every input has settled, then sets GTZA_READY.
+  {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__rd = { ready: !!window.GTZA_READY, tx: typeof bldTxCurve !== 'undefined' && !!bldTxCurve };`;
+    w.document.body.appendChild(probe);
+    const R = w.__rd || {};
+    check('the engine inputs are loaded and the transmission curve is built', R.ready && R.tx,
+          `GTZA_READY ${R.ready}, transmission curve ${R.tx ? 'built' : 'missing'}`);
   }
 
   // ── A PRESET BUTTON APPLIES EVERY KEY OF ITS PRESET ────────────────────────
