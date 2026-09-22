@@ -501,6 +501,25 @@ const SCENARIOS = {
           A ? (A.err || (A.bad.length ? 'not applied: ' + A.bad.join(', ') : 'all keys applied')) : 'no result');
   }
 
+  // ── THE RESIDENTIAL PREMIUM IS APPLIED BY COMPONENT ────────────────────────
+  // Added 22 Sep 2026. One factor of 1.622 multiplied the whole stack, so every rand of new
+  // generation cost reached a household at the low-voltage network premium, and a R0.30/kWh
+  // retail margin counted the cost-to-serve retail cost a second time. Factors now come from
+  // the CTS Table 41 by component, and a zero-cost stack must price at zero.
+  {
+    const probe = w.document.createElement('script');
+    probe.textContent = `window.__rf = (function(){ try {
+      return { gen: RES_FACTOR_GEN, net: RES_FACTOR_NET, tx: RES_FACTOR_TX,
+               zero: residentialRate(0, 0, 0, 0, 0) };
+    } catch (e) { return { err: String(e) }; } })();`;
+    w.document.body.appendChild(probe);
+    const F = w.__rf;
+    check('the residential premium is applied by component', F && !F.err
+          && Math.abs(F.gen - 1.258) < 0.005 && Math.abs(F.net - 4.02) < 0.01 && F.zero === 0,
+          F ? (F.err || `generation ${F.gen.toFixed(3)}, network and retail ${F.net.toFixed(3)}, `
+                      + `transmission ${F.tx.toFixed(3)}; zero stack prices at R${F.zero.toFixed(2)}`) : 'no result');
+  }
+
   // ── RETAIL SALES EQUAL ENERGY SERVED ───────────────────────────────────────
   // Added 22 Sep 2026. The retail denominator subtracted storage discharge as well as charging,
   // so energy delivered from storage was never sold: 172.1 TWh against 183.3 served on Deep

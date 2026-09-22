@@ -13137,10 +13137,9 @@ function retailComponents(markup, stranded, year, viaMuni){
   // under strict cost reflectivity and the part a regulator can choose to keep.
   const subs = RETAIL_T.cross_subsidies || {};
   const subsidyPerKwh = (subs.total_r_bn || 0) * 1e9 * 0.35 / (A.sales_twh * 1e9);
-  const resAllocTotal = A.residential_allocation_factor || 1.0;
-  const resAlloc = resAllocTotal;
+  // The single residential factor (1.622) is retired; see RES_FACTOR_GEN / _NET / _TX.
 
-  return { distAdj, resAlloc, subsidyPerKwh, muni: M, curtComp, curtFrac, curtSold,
+  return { distAdj, subsidyPerKwh, muni: M, curtComp, curtFrac, curtSold,
            h2Revenue, h2GW, h2CF, h2SharePct, fuel: fuelPerKwh, carbon: carbonPerKwh, opex, existingCap, newCap, newFom: battAug,
            decom, ipp, imports, fixedItems, newGrid, markup, coalFrac, year, vintage, runoff,
            strandedPart, network, newCapR, viaMuni, salesMWh, salesTWh: salesMWh / 1e6 };
@@ -13265,9 +13264,29 @@ function retailStack(c, mkt){
     }
   }
 
-  return { varTarget, flat, parts };
+  return { varTarget, flat, netFlat: c.network - c.newGrid, txFlat: c.newGrid, parts };
 }
 
+// RESIDENTIAL COST-TO-SERVE BY COMPONENT, 22 Sep 2026. Eskom's 2024/25 cost-to-serve study,
+// Table 41 (allocated costs, R million) for C12 urban residential <500V against the system
+// total. Generation: energy ToU, energy capacity and legacy charge. Network and retail:
+// Transmission network and ancillary, Distribution network, retail. It replaces one factor of
+// 1.622 on the whole stack, which carried the network premium onto every generation cost, and
+// a separate R0.30/kWh retail margin that was the CTS retail cost counted a second time.
+const CTS_C12 = { gwh: 1409, gen: 2572 + 181 + 285, net: 81 + 5 + 1009 + 382 };
+const CTS_SYS = { gwh: 170947, gen: 241601 + 19050 + 32329, net: 7221 + 574 + 31480 + 5285 };
+const RES_FACTOR_GEN = (CTS_C12.gen / CTS_C12.gwh) / (CTS_SYS.gen / CTS_SYS.gwh);   // 1.258
+const RES_FACTOR_NET = (CTS_C12.net / CTS_C12.gwh) / (CTS_SYS.net / CTS_SYS.gwh);   // 4.02
+// New transmission is bulk network, allocated as the CTS allocates Transmission network capacity:
+// C12 R81m on 1,409 GWh against R7,221m on 170,947 GWh. Not at the low-voltage premium.
+const RES_FACTOR_TX = (81 / CTS_C12.gwh) / (7221 / CTS_SYS.gwh);                     // 1.36
+// A residential rate for one hour: generation and energy at the generation factor, network and
+// retail at the network factor, then losses, any markup and VAT. The one formula for the curve,
+// the rows and the week.
+function residentialRate(variable, genFlat, netFlat, markup, txFlat){
+  const pre = (variable + genFlat) * RES_FACTOR_GEN + netFlat * RES_FACTOR_NET + (txFlat || 0) * RES_FACTOR_TX;
+  return pre / (1 - RETAIL_LOSS) * (1 + (markup || 0)) * RETAIL_VAT;
+}
 let out_mktParts = null;   // market-basis breakdown from the last retailRaw call, for inspection
 function retailRaw(marginalP, markup, stranded, year, viaMuni){
   const c = retailComponents(markup, stranded, year, viaMuni);
@@ -13280,7 +13299,7 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
   const marketBasis = bEl ? bEl.value === 'mkt' : false;
   const mkt = (marketBasis && typeof marketPriceSeries === 'function')
     ? marketPriceSeries(lastRes, { ...FIXED, ...state }) : null;
-  const { varTarget, flat } = retailStack(c, mkt);
+  const { varTarget, flat, netFlat, txFlat } = retailStack(c, mkt);
 
   const shapeSrc = (marketBasis && mkt) ? (() => {
     const h24 = new Array(24).fill(0);
@@ -13291,11 +13310,7 @@ function retailRaw(marginalP, markup, stranded, year, viaMuni){
 
   const toRate = (w) => {
     const variable = shapeMean > 0 ? varTarget * (w / shapeMean) : varTarget;
-    let r = (variable + flat) / (1 - RETAIL_LOSS);
-    r = r * (c.resAlloc || 1);        // residential cost-to-serve, before any municipal margin
-    r = r * (1 + markup);
-    r = r + sp.retail_margin_r_per_kwh;
-    return r * RETAIL_VAT;
+    return residentialRate(variable, flat - netFlat - txFlat, netFlat, markup, txFlat);
   };
 
   // THE SAME RATE, HOUR BY HOUR ACROSS THE YEAR. The 24-point curve above is an hour-of-day
@@ -13424,15 +13439,13 @@ function retailHourly(){
   const varTarget = mkt2
     ? srcMean
     : comp.fuel + comp.carbon;
-  const flatSum = retailStack(comp, mkt2).flat;
+  const _stk2 = retailStack(comp, mkt2);
+  const flatSum = _stk2.flat, netSum = _stk2.netFlat, txSum = _stk2.txFlat;
   const week = [];
   for (let i = 0; i < 168; i++){
     const w = srcSeries[wkStart + i] || 0;
     const variable = srcMean > 0 ? varTarget * (w / srcMean) : varTarget;
-    let v = (variable + flatSum) / (1 - RETAIL_LOSS);
-    v = v * (comp.resAlloc || 1);
-    v = v * (1 + markup) + sp.retail_margin_r_per_kwh;
-    v = v * RETAIL_VAT;
+    const v = residentialRate(variable, flatSum - netSum - txSum, netSum, markup, txSum);
     week.push(capOn ? Math.min(v, sp.cap_r_per_kwh) : v);
   }
   // The week now uses the season it is actually showing, with all six rates.
@@ -16141,7 +16154,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22aa';
+const BUILD_STAMP = '2026-09-22ab';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -1054,6 +1054,43 @@ retiring coal early while its capital is still being paid. The comparison is als
 today's price, which rests on a largely depreciated fleet; the IRP's own counterfactual retires
 8 GW of coal by 2030 and 15 GW more by 2042 regardless.
 
+### Residential premium from the cost-to-serve study by component, 22 Sep 2026
+
+Build `2026-09-22ab`. Source: Eskom 2024/25 Standard tariffs cost-to-serve study (NERSA submission,
+July 2024), Table 41, allocated costs in R million, C12 urban residential <500V (1,409 GWh)
+against the system total (170,947 GWh).
+
+```
+component                         C12 c/kWh   system c/kWh   ratio
+energy ToU + capacity + legacy        215.6          171.4   1.258
+Transmission network                    5.7            4.2   1.36
+network and retail (Tx, Dx, retail)   104.8           26.1   4.02
+total                                 320.4          197.5   1.622
+```
+
+The earlier derivation in this conversation (1.19 and 4.26) was wrong: it assumed the system's
+energy cost from the study's 86% functionalisation and left energy capacity out of the
+residential side. The table itself gives 1.258 and 4.02.
+
+Two changes. The single 1.622 factor is replaced by these three: generation and hourly energy at
+1.258, new transmission at 1.36, existing network and retail at 4.02. And the separate R0.30/kWh
+retail margin is removed: it was the CTS retail cost (R9.24 per PoD per day), which is already in
+Eskom's allowed revenue and was already inside the 1.622.
+
+```
+R/kWh, regulated / market     before        after
+Today 2026                  3.98 / 3.91   3.75 / 3.69
+Deep decarbonisation 2035   4.92 / 4.83   4.55 / 4.48
+Fossil-free 2040            5.81 / 5.73   5.31 / 5.24
+```
+
+Today against Homepower's R3.82 all-in: 1.8% below, from 4% above. Weighting by the residential
+load profile adds 1% on either basis.
+
+Known overlap: the 1.258 includes the study's ToU weighting of residential energy, and the
+profile-weighted rows then apply the modelled hourly shape as well. On today's regulated basis
+that is 0.8%.
+
 ---
 
 ## Fossil free, re-measured
