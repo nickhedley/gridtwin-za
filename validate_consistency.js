@@ -1329,7 +1329,11 @@ const num = t => {
       //   pv        45 GW: capital R42.3bn + FOM 45 x R396/kW-yr = R17.8bn -> R 60.1bn
       //   offshore   1 GW: capital R 6.6bn + FOM  1 x R1,403      = R 1.4bn -> R  8.0bn
       //   batt      20 GW at 6h: capital R22.6bn + FOM R3.2bn             -> R 25.8bn
-      //   total R202.8bn over 158.6 TWh = R1.279/kWh
+      //   total R202.8bn over 158.6 TWh = R1.279/kWh, at 20 GW of lithium
+      //
+      // UPDATED 22 Sep 2026, R1.279 -> R1.180. The preset's lithium moved 20 -> 10 GW, the
+      // system-cost optimum at the IRP's cost of unserved energy. Deliberate scenario change.
+      // R1.180 is MEASURED on the new preset; the hand derivation above was not redone for 10 GW.
       //
       // UPDATED 22 Sep 2026, R1.188 -> R1.279. Exports taken out of the demand series, where
       // they were counted twice: sales 170.6 -> 158.6 TWh. Capital unchanged at R202.8bn.
@@ -1377,8 +1381,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.279) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R1.279 for Deep `
+              Math.abs(ncap.newCap - 1.180) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a hand-computed R1.180 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

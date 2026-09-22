@@ -567,6 +567,39 @@ the IRP build sheds 47 GWh (Stage 4 peak) and Grid delay 77 GWh; both read Const
 that the IRP's 255 TWh is the same measure as the model's grid demand including exports is
 inherited from the original calibration, not re-verified.
 
+### Preset changes: Deep decarbonisation lithium, Fossil-free offshore, 22 Sep 2026
+
+Build `2026-09-22o`.
+
+Deep decarbonisation 2035, lithium 20 -> 10 GW. Default weather year, cost with shed energy at
+the IRP's cost of unserved energy (R87.85/kWh):
+
+```
+offshore \ lithium      5 GW     8 GW    10 GW    12 GW    15 GW    20 GW
+0 GW                   318.6    311.1    309.7    310.1    312.5    317.1
+1 GW (preset)          322.4    315.8    315.7    316.7    319.4    324.6
+2 GW                   326.5    321.7    322.0    323.7    326.2    332.1
+```
+
+10 GW is the lithium optimum at every offshore level. Each gigawatt of offshore adds about R7bn a
+year and removes about 15 GWh of shed energy, R400-500/kWh; the cost optimum is 0 GW offshore.
+Twelve years at 10 GW lithium, 1 GW offshore: 42.5 GWh default year, mean 32.9, worst 73.1 (2018).
+
+Fossil-free 2040, offshore 5 -> 10 GW, above ESMAP's medium path by choice. Onshore wind searched
+at 10 GW offshore, twelve years each:
+
+```
+onshore wind    unserved, worst of 12     cost R bn
+20 GW           73 GWh (2022)                386.8
+25 GW (preset)  0 in all 12                  401.8
+30 GW           0                            416.8
+40 GW           0                            447.7
+```
+
+The new preset is R54bn a year cheaper than the 55/90/5 build (R456.1bn) with the same result of
+zero shed energy in twelve years; curtailment 182.5 TWh against 252.2. Solar (90 GW) and lithium
+(40 GW at 8h) were not re-searched and are probably also above what the 2026 demand base needs.
+
 ---
 
 ## Fossil free, re-measured

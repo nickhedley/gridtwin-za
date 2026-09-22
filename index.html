@@ -14611,37 +14611,18 @@ const PRESETS={
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
   'Latest IRP\'s 2030 targets':{demandGrowthPct:35,coalEAFPct:68,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
-  // Deep decarbonisation 2035. Lithium 20 GW at 6h (16 Sep 2026: past this, discharge
-  // saturates). 45 GW solar and 1 GW offshore (19 Sep 2026: ESMAP's medium path). Derivations
-  // in RESULTS.md. Measured on build 2026-09-22l, twelve weather years: unserved 0 GWh in the
-  // default year, worst 14.3 GWh (2020); curtailment 129 TWh; 20.3 Mt CO2; R324.6bn/yr.
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:20000,newBattHours:6,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
-  // Fossil free, 2040. All 39.7 GW of coal and all 3.4 GW of diesel retired, no gas - which
-  // means Medupi and Kusile retired around 16 and 19 years into a 50-year design life. Kept:
-  // Koeberg, hydro, CSP, the Cahora Bassa import. Zero unserved energy in all twelve weather
-  // years, zero diesel in any of them.
-  //
-  // Cheapest build that holds across twelve years. The offshore level is set by DEPLOYABILITY,
-  // not by cost: ESMAP's medium path is 5 GW by 2040, 15 GW by 2050.
-  //
-  //                                   total GW   curtail TWh   cost R bn
-  //   55 W / 90 S /  5 offshore           150         199.2       442.3
-  //   45 W / 90 S /  8 offshore           143         180.9       444.9
-  //   40 W / 90 S / 10 offshore           140         174.0       450.6   (the 2050 mix)
-  //
-  // More offshore buys less curtailment and costs more; less offshore buys cheaper onshore
-  // wind and spills more. Move scenarioYear to 2050 and the 40/90/10 row becomes available.
-  //
-  // GOING EARLY COSTS ALMOST NOTHING HERE, AND THAT IS PARTLY A DEFECT. 2040 against 2050 is
-  // R1.2bn, all of it residual REIPPPP PPA not yet expired. newCapexR uses the flat acap*
-  // constants and sees NO technology learning, so ten years of cost reduction is invisible to
-  // the headline - BLD_COST does decline with vintage but only the build LP and retail panel
-  // read it. Nor is stranding charged: the retail panel has a stranded basis, system cost
-  // does not.
-  //
-  // Binding year 2014, as for every fossil-free build tested; Deep decarbonisation 2035 binds on
-  // 2016. A system with no coal fails on a different weather pattern than one keeping 12.7 GW.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:55000,newPvMW:90000,newOffshoreMW:5000,newRooftopMW:20000,newBattMW:40000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  // Deep decarbonisation 2035. Lithium 10 GW at 6h (22 Sep 2026: the system-cost optimum at
+  // the IRP's cost of unserved energy, R87.85/kWh). 45 GW solar and 1 GW offshore (19 Sep 2026: ESMAP's medium
+  // path). Derivations in RESULTS.md. Measured on build 2026-09-22o, twelve weather years:
+  // unserved 42.5 GWh in the default year, worst 73.1 GWh (2018); curtailment 129.5 TWh;
+  // 20.6 Mt CO2; R311.9bn/yr.
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:45000,newPvMW:45000,newOffshoreMW:1000,newRooftopMW:20000,newBattMW:10000,newBattHours:6,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // Fossil free, 2040. All 39.7 GW of coal and all 3.4 GW of diesel retired, no gas. Kept:
+  // Koeberg, hydro, CSP, the Cahora Bassa import. 10 GW offshore, deliberately above ESMAP's
+  // medium path of 5 GW by 2040 (22 Sep 2026). Onshore wind 25 GW is the lowest level tested
+  // with zero unserved energy in all twelve weather years; 20 GW fails in 2022 (73 GWh).
+  // Measured on build 2026-09-22o: curtailment 182.5 TWh, R401.8bn/yr. Derivations in RESULTS.md.
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:25000,newPvMW:90000,newOffshoreMW:10000,newRooftopMW:20000,newBattMW:40000,newBattHours:8,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -16010,7 +15991,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22n';
+const BUILD_STAMP = '2026-09-22o';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

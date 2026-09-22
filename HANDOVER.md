@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-22n`. Suite 774/778 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
+Build `2026-09-22o`. Suite 773/777 plus eng5 6/6, measured 22 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -15,7 +15,7 @@ and carries every finding with its settings; this file is state and direction.
 
 ## Where the suite stands
 
-Measured 22 Sep 2026 on build `2026-09-22n`, `profiles.json` at the root, current `nodal/`.
+Measured 22 Sep 2026 on build `2026-09-22o`, `profiles.json` at the root, current `nodal/`.
 The previous version of this table was a running count and summed wrongly; this one is a run.
 
 ```
@@ -25,7 +25,7 @@ validate_geo             43/43
 validate_capacity        30/31     standing: backup profile file has no licence field
 validate_inputs          33/33
 validate_findings        32/33     ancillary knee no longer holds under the 2,200 MW requirement
-validate_invariants     164/164   shed-energy cost; ORDC reads available reserve
+validate_invariants     163/163   shed-energy cost; ORDC reads available reserve
 validate_response        84/84     diesel budget and Koeberg controls added
 validate_weather         64/64
 validate_lp              50/50
@@ -37,7 +37,7 @@ validate_external         4/5      not previously tracked: baseline, not a regre
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            7/7
 audit.py                 87/87
-total                   774/778
+total                   773/777
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 
@@ -147,10 +147,11 @@ cost. The model was already at the international level.
 ## Presets
 
 ```
-Deep decarbonisation 2035   45 onshore / 45 solar / 1 offshore / 20 rooftop / 20 GW at 6h
+Deep decarbonisation 2035   45 onshore / 45 solar / 1 offshore / 20 rooftop / 10 GW at 6h
                             coal -27 GW, no new gas, reserve and inertia priced
-Fossil-free 2040            55 onshore / 90 solar / 5 offshore / 20 rooftop / 40 GW at 8h
+Fossil-free 2040            25 onshore / 90 solar / 10 offshore / 20 rooftop / 40 GW at 8h
                             all coal and diesel retired, zero unserved in 12 years
+IRP 2030, Grid delay        demand +35% (254.3 TWh against the IRP's 255)
 ```
 
 Both renamed 19 Sep and both now price reserve and inertia, because leaving inertia unpriced in
