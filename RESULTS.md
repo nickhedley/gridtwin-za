@@ -2479,6 +2479,12 @@ R115,000-575,000. The model's inertia payment is R100,000/MW-yr, at the bottom o
 
 ### The bill, not the rate, 23 Sep 2026
 
+> CUT BACK the same day. The retail panel now shows only the translation from R/kWh to a monthly
+> bill, with the fixed charge and its share. The rooftop comparison was removed from the panel:
+> it needs a self-consumption share and an export-credit assumption that nothing else in that
+> panel uses, and the distributional finding belongs here, where the caveats sit beside it. The
+> numbers below stand; they are just no longer on screen.
+
 Build `2026-09-23s`. Every figure in the retail panel was R/kWh, and no household experiences
 R/kWh: it experiences a monthly bill with a fixed charge in it, which is precisely what the
 revised pricing policy is arguing about. The panel now shows both.

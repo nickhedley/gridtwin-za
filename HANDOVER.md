@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-23s`. Suite 795/797 plus eng5 6/6, measured 23 Sep 2026. Three sessions ran long and the
+Build `2026-09-23t`. Suite 795/797 plus eng5 6/6, measured 23 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -177,6 +177,44 @@ builds fail when the coast is calm.
 few - a uniform finer grid over five dimensions is unaffordable and still misses edges.
 
 ---
+
+## More than one chat edits this file
+
+Confirmed 23 Sep 2026. Content appeared in index.html twice this session that no session I can
+account for wrote: the 168-hour storage lookahead's comment citing a personal communication from
+the System Operator, and three rooftop-bill sliders with their constants. Both came from a
+parallel chat working on the same file.
+
+Two consequences, and the second is the one that bites. Unsourced content can arrive without
+anyone noticing, so a comment citing a source nobody can find is worth checking rather than
+trusting. And two chats editing one file will overwrite each other: whichever installs last wins,
+silently. Say which files a session touched, and install them before starting another chat on the
+same file.
+
+## The rooftop household view, removed and to be rebuilt
+
+Removed 23 Sep 2026 because nothing computed with it: three sliders and two constants existed but
+the calculation did not, so the controls changed nothing. Keeping the pieces here so the rebuild
+starts from them rather than from scratch.
+
+```
+billSelfConsumePct  60      share of consumption met at the moment it is generated. 60% is solar
+                            with a battery; solar alone sits nearer 30-40%, because most
+                            consumption falls outside the middle of the day
+billGenPct         100      system size, as a share of annual consumption. 100% is how most
+                            residential systems are sized. Anything above self-consumption is
+                            exported
+billFeedInR       1.53      R/kWh for an exported unit. Cape Town 2026/27 residential feed-in of
+                            R1.2418 plus its 28.75c incentive - CHECK THIS, it arrived unsourced.
+                            Eskom's Homeflex credits exports much closer to the energy rate
+```
+
+What it needs to be worth having: grid purchases fall by self-consumption; exports earn the
+feed-in rate; the fixed charge does not move. The distributional result is already measured and
+sits in RESULTS.md under "The bill, not the rate" - a 60% cut saves the 900 kWh household about
+half its bill and the 190 kWh household about a third, because the fixed charge is 43% of the
+smaller bill before any consumption. A municipal version using the City Power reference tariff in
+the tariff file would be the natural second step.
 
 ## Open, in the order I would take them
 
