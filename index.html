@@ -15294,7 +15294,7 @@ const PRESETS={
   // national programme rather than a marginal one.
   'Grid delay':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:4400,newPvMW:6200,
                 newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,
-                congestionCurtailPct:10},
+                congestionCurtailPct:10,scenarioYear:2030},
   // IRP 2025 (gazetted 28 Oct 2025), 2030 targets. Demand and EAF re-derived 22 Sep 2026 from
   // the IRP itself (section 3.1, Figure 2): its forecast is grid-connected consumption including
   // losses and cross-border sales, about 240 TWh in 2024 against 219.7 TWh of Eskom contracted
@@ -15313,7 +15313,10 @@ const PRESETS={
   //   coalEAFPct 68      : top of the IRP's stated 66-68% target band. For scale,
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
-  'Latest IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
+  // scenarioYear 2030 added 23 Sep 2026. Both this preset and Grid delay carried no year, so
+  // they defaulted to 2026: new build was priced at 2026 capital costs with no learning, and the
+  // retail panel charged them 2026 contract positions. A 2030 scenario should be priced at 2030.
+  'Latest IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,scenarioYear:2030},
   // IRP path 2035. The counterfactual the two transition presets should be read against: what
   // the published plan builds by 2035, on the same demand and the same weather, so a retail
   // comparison measures the transition rather than the passage of time. Comparing either of
@@ -16756,7 +16759,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23t';
+const BUILD_STAMP = '2026-09-23u';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

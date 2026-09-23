@@ -2533,6 +2533,27 @@ page being fast enough.
 Still on timers: validate_solve, which waits on a solver rather than on page load, and
 validate_external, which polls the weather-year load it triggers itself.
 
+### The two 2030 presets were priced at 2026, 23 Sep 2026
+
+Build `2026-09-23u`. The IRP's 2030 targets and Grid delay carried no scenario year, so both
+defaulted to 2026: their new build was priced at 2026 capital with no learning, and the retail
+panel charged them 2026 contract positions. A 2030 scenario should be priced at 2030.
+
+```
+                            new capex R bn    system R bn    avgCost R/MWh
+IRP's 2030 targets, at 2026        69.8           298.4          1,298
+                    at 2030        67.5           290.7          1,263
+Grid delay, at 2026                53.7           296.5          1,290
+            at 2030                52.5           289.9          1,261
+```
+
+About R8bn a year and 3% of average cost on each, all of it four years of technology learning the
+presets were not seeing. Retail comes out at R3.59 and R3.58/kWh regulated.
+
+Small in itself, and worth noting for the class of error rather than the size: a preset that
+names a year in its own title had no year set, and nothing checked. The two transition presets
+and IRP path 2035 all carry theirs.
+
 ---
 
 ## Fossil free, re-measured
