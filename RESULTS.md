@@ -2588,6 +2588,38 @@ comment behind it records the calibration: an earlier version priced every spill
 and produced 5,614 negative hours, 64% of the year, against roughly 460 in Germany in 2024. The
 current rule counts only hours where removing coal's floor would have absorbed the spill.
 
+### Housekeeping batch, 23 Sep 2026
+
+Build `2026-09-23w`. Five items cleared in one pass, and two of them were checks that could not
+fail.
+
+**A preset that names a year must set it.** Both IRP presets carried 2030 in their titles and no
+scenario year, which cost R8bn a year each in unpriced technology learning, and nothing was
+looking. A findings check now compares every preset's title against its scenarioYear. It caught
+two more: Today 2026 set none, and Backcast 2025 set 2026. Both fixed, and the retail year
+control now reaches back to 2025 so the backcast can express its own year.
+
+**eng5's storage check could not fail.** Its tolerance was an absolute 0.02 TWh, 20 GWh, against
+a total variation across the sweep of about 16 GWh - so a regression that RAISED unserved energy
+by anything up to 20 GWh passed. Now each step may rise by at most 2% of the starting value and
+the sweep as a whole must cut unserved energy by a tenth. Tested against synthetic series: a flat
+sweep and a rising sweep both fail the new rule and both passed the old one.
+
+**capacity_siting.js lost its own siting path.** gridBuildChargeFor and evaluateDeployment priced
+a connection with corridor length times a cost per km, while the engine and the panel priced the
+same megawatt with the tiered regional charge. Two formulas for one cost, and neither had a
+caller. Deleted, and the allowed-orphan entry in validate_structure deleted with them.
+
+Worth recording how that went wrong first: the deletion left a stray brace, the file stopped
+parsing, and the symptoms were FIRM_TECHS undefined in one harness and tdpConfidencePct reported
+as a dead control in another - neither of which points at a missing closing brace. The suite
+found it immediately; reading the two failures did not.
+
+**Two data files carry a licence now**, so validate_capacity is 31/31 with no standing flag.
+
+**SOURCES** gained the GCCA Annexure A substation limits as a watched source and the Northern
+Cape export-by-day pattern as the natural first regional validation test.
+
 ---
 
 ## Fossil free, re-measured

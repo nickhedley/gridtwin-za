@@ -895,7 +895,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                 <span>Retail price cap</span>
               </label>
               <label style="font-size:10.5px;color:var(--ink2)" title="The year the scenario's system is costed at. Technology costs decline to it, the existing asset base runs off toward it, one-off recoveries expire before it.">Scenario year
-                <input id="retYear" type="range" min="2026" max="2040" step="1" value="2026"
+                <input id="retYear" type="range" min="2025" max="2040" step="1" value="2026"
                        oninput="renderRetail()" style="vertical-align:middle;width:110px">
                 <span id="retYearVal" class="mono" style="font-size:11px">2026</span>
               </label>
@@ -15270,7 +15270,7 @@ const SLIDERS=[
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'R9.00 at a 5&#37; capacity factor; R13.20 at 2&#37;, R7.60 at 10&#37;. Floor is diesel\u2019s own SRMC, ~R6.2/kWh.'}
 ];
 const PRESETS={
-  'Today 2026':{},
+  'Today 2026':{scenarioYear:2026,},
   // ── GRID DELAY ────────────────────────────────────────────────────────────
   // Transmission slipping behind the build programme. Added 10 Sep 2026 after reading
   // Aurora's Australian grid-delay work, where Project EnergyConnect Stage 2 ran a year late
@@ -15370,7 +15370,7 @@ const PRESETS={
   // capacity in those hours, so availability and deliverability are not the gap. Read the preset
   // as a fixed set of 2025 inputs, and read the model as optimistic about the last gigawatt or
   // two of peaking in a crisis.
-  'Backcast 2025':{demandGrowthPct:0,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025,scenarioYear:2026},
+  'Backcast 2025':{demandGrowthPct:0,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
   'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:20000,newBattHours:12,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
@@ -16764,7 +16764,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23v';
+const BUILD_STAMP = '2026-09-23w';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

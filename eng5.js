@@ -65,7 +65,13 @@ setTimeout(()=>{
 
  // 6. more storage must not increase unserved energy
  const us=[0,10000,20000,30000].map(v=>{preset('Today 2026'); set('coalEAFPct',48); set('newBattMW',v); w.run(); return w.lastRes.E.unserved/M;});
- const mono6=us.every((v,i)=>i===0||v<=us[i-1]+0.02);
+ // TOLERANCE WAS LARGER THAN THE EFFECT, fixed 23 Sep 2026. The absolute 0.02 TWh allowance is
+ // 20 GWh, against a total variation across this sweep of about 16 GWh - so a regression that
+ // RAISED unserved energy by anything up to 20 GWh passed. The check could not fail.
+ // Now: each step may rise by at most 2% of the starting value, and the sweep as a whole must
+ // cut unserved energy by at least a tenth, which is what "storage cuts unserved" claims.
+ const tol6=Math.max(0.002, us[0]*0.02);
+ const mono6=us.every((v,i)=>i===0||v<=us[i-1]+tol6) && us[us.length-1] <= us[0]*0.9;
  console.log('6. storage cuts unserved      :', us.map(x=>x.toFixed(2)).join(' -> '), mono6?'ok':'*** NOT MONOTONIC ***');
  if(!mono6) fails.push('storage vs unserved');
 

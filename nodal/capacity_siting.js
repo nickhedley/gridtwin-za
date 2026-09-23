@@ -27,61 +27,16 @@ async function loadFirmHeadroomLookup() {
   firmHeadroomLookup = await res.json();
   return firmHeadroomLookup;
 }
-
-// ── SHARED GRID-BUILD FORMULA ────────────────────────────────────────────────────────────
-// Extracted 20 Sep 2026. The same arithmetic existed in evaluateDeployment below and in
-// index.html's evaluateAgainstRemaining, and the engine needed a third copy to cost national
-// slider capacity. Rule 6: no constant appears twice, and that applies to formulas.
+// RETIRED 23 Sep 2026: gridBuildChargeFor and evaluateDeployment.
 //
-// PURE AND SYNCHRONOUS. The async in the callers is only the data fetch; the logic never
-// needed to be. simulate() cannot await, so it needs this shape.
+// Both priced a connection with their own arithmetic - corridor length times a cost per km over
+// a line lifetime - while the engine and the siting panel priced the same megawatt with the
+// tiered regional charge in index.html. Two formulas for one cost is how they drift apart, and
+// neither had a caller left once the panel was wired to txTierCharge.
 //
-// @param entry  a region/tech record from region_headroom_lookup.json
-// @param mw     capacity seeking connection
-// @param opts   { alreadyMw, getsOn, getUpliftFrac, getCostPerKm, getLifeYears }
-// UNWIRED from 22 Sep 2026: the engine now prices national slider capacity with the tiered
-// regional charge in index.html (txChargeFor), which supersedes this. The siting panel still
-// carries its own inline copy of the same arithmetic; wiring it here is the open job.
-function gridBuildChargeFor(entry, mw, opts) {
-  opts = opts || {};
-  if (!entry || !(mw > 0)) return { shortfallMw: 0, getPortionMw: 0, annualR: 0, chargeRPerMWh: 0 };
-  const remaining = Math.max(0, (entry.headroom_mw || 0) - (opts.alreadyMw || 0));
-  const uplift    = opts.getsOn ? (opts.getUpliftFrac || 0) : 0;
-  const boosted   = remaining * (1 + uplift);
-  const km        = entry.corridor_length_km || 300;
-  const cf        = entry.avg_capacity_factor || 0.3;
+// What this file still provides, and what the page uses: loadHeadroomLookup,
+// loadFirmHeadroomLookup, tdpHeadroomMW and the FIRM_TECHS list.
 
-  if (mw <= remaining) return { shortfallMw: 0, getPortionMw: 0, annualR: 0, chargeRPerMWh: 0 };
-
-  const getPortionMw = opts.getsOn ? Math.min(mw, boosted) - remaining : 0;
-  const shortfallMw  = Math.max(0, mw - boosted);
-
-  // Grid-enhancing technologies are cheap uplift on an existing corridor; beyond them the
-  // corridor needs new line at LINE_COST_PER_KM over LINE_LIFETIME_YEARS.
-  //
-  // LINES SCALE WITH THE SHORTFALL, from 20 Sep 2026. This charged exactly ONE line however
-  // large the shortfall, which is right for a single siting request of a few hundred MW and
-  // absurd for a national build: Deep decarbonisation and Fossil-free 2040 came out with an
-  // identical R1.21bn despite one putting 77 GW beyond headroom and the other 130 GW.
-  //
-  // LINE_MW_PER_CIRCUIT is derived from the model's own corridor data rather than assumed:
-  // corridor_electrical.json gives MVA and line counts together - Hydra to Northern Cape
-  // 3,300 MVA on 4 lines, Gauteng to North West 6,800 on 7, Gauteng to Mpumalanga 14,600 on
-  // 14 - which is 825 to 1,040 MVA a circuit. 900 is the middle.
-  //
-  // Fractional circuits are kept rather than rounded up: a national figure is a blend of many
-  // corridors, so rounding every one up would overstate systematically.
-  const circuits = shortfallMw / LINE_MW_PER_CIRCUIT;
-  const getAnnualR  = getPortionMw > 0
-    ? km * (opts.getCostPerKm || 0) / (opts.getLifeYears || 1) : 0;
-  const lineAnnualR = shortfallMw > 0
-    ? circuits * km * LINE_COST_PER_KM / LINE_LIFETIME_YEARS : 0;
-  const annualR = getAnnualR + lineAnnualR;
-
-  const energyMwh = (getPortionMw + shortfallMw) * cf * HOURS_PER_YEAR;
-  return { shortfallMw, getPortionMw, annualR,
-           chargeRPerMWh: energyMwh > 0 ? annualR / energyMwh : 0 };
-}
 
 // ── HEADROOM GROWS. THE TDP BUILDS LINE. ─────────────────────────────────────────────────
 // Added 20 Sep 2026. Until then the reinforcement charge used a 2025 GCCA snapshot for every
@@ -149,42 +104,6 @@ const REEA_SHARE = {
  * @param {number} requestedMw
  * @returns {object} result with headroom, shortfall, and grid-build charge if any
  */
-async function evaluateDeployment(region, tech, requestedMw) {
-  const lookup = FIRM_TECHS.includes(tech) ? await loadFirmHeadroomLookup() : await loadHeadroomLookup();
-  const entry = lookup[region][tech];
-  const headroom = entry.headroom_mw;
-
-  if (requestedMw <= headroom) {
-    return {
-      region, tech, requestedMw, headroomMw: headroom,
-      gridBuildNeeded: false,
-      shortfallMw: 0,
-      gridBuildChargeRPerMWh: 0,
-      note: `Fits within existing grid headroom (${headroom} MW available) - no new transmission needed.`
-    };
-  }
-
-  const shortfallMw = requestedMw - headroom;
-  const lengthKm = entry.corridor_length_km || 300; // fallback if no corridor identified
-  const capex = lengthKm * LINE_COST_PER_KM;
-  const annualCapex = capex / LINE_LIFETIME_YEARS;
-  const annualEnergyMwh = shortfallMw * entry.avg_capacity_factor * HOURS_PER_YEAR;
-  const gridChargePerMwh = annualEnergyMwh > 0 ? annualCapex / annualEnergyMwh : NaN;
-
-  return {
-    region, tech, requestedMw, headroomMw: headroom,
-    gridBuildNeeded: true,
-    shortfallMw,
-    bindingCorridor: entry.binding_corridor,
-    corridorLengthKm: lengthKm,
-    newLineCapexR: Math.round(capex),
-    annualisedCapexRPerYear: Math.round(annualCapex),
-    gridBuildChargeRPerMWh: Math.round(gridChargePerMwh * 10) / 10,
-    note: `${shortfallMw.toFixed(0)} MW exceeds headroom on ${entry.binding_corridor || 'the export path'}. ` +
-          `Reinforcing that corridor (~${lengthKm} km) costs an estimated R${(capex/1e6).toFixed(0)}m, ` +
-          `adding R${gridChargePerMwh.toFixed(1)}/MWh to the shortfall portion's generation cost.`
-  };
-}
 
 // Example wiring for a simple form:
 //

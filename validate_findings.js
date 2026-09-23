@@ -464,6 +464,24 @@ setTimeout(()=>{
   //
   // Pinned so the choice cannot drift back silently. If a future change moves it, the
   // question to ask is whether the trade was re-decided, not whether the number moved.
+  // ── A PRESET THAT NAMES A YEAR SETS ONE ───────────────────────────────────
+  // Added 23 Sep 2026. Both IRP presets carried 2030 in their titles and no scenarioYear, so
+  // they priced new build at 2026 capital with no learning: R8bn a year each. Nothing caught it
+  // because nothing was looking.
+  {
+    const yr = probe(`
+      const bad = [];
+      for (const [name, p] of Object.entries(PRESETS)){
+        const m = name.match(/\\b(20[0-9]{2})\\b/);
+        if (m && String(p.scenarioYear || '') !== m[1]) bad.push(name + ' names ' + m[1] + ', sets ' + (p.scenarioYear || 'nothing'));
+      }
+      return { bad };`);
+    if (yr && !yr.error)
+      check('every preset that names a year sets that scenario year',
+            yr.bad.length === 0,
+            yr.bad.length ? yr.bad.join('; ') : 'all presets naming a year set it');
+  }
+
   // ── FLEET EAF TO COAL EAF ─────────────────────────────────────────────────
   // Added 23 Sep 2026 with coalEafFromFleet. Everyone else publishes availability for the whole
   // Eskom fleet; this model runs on coal alone. The function must reproduce the three pairs

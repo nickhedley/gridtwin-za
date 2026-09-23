@@ -54,6 +54,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | IRP 2025 | occasional | gazetted Oct 2025 | the `IRP path 2035` preset's build, interpolated between the published 2030 targets and the 2039 totals; and the emissions comparison, about 160 Mt for 2030 |
 | amaBhungane, Eskom station-by-station data | one-off | Feb 2026 | independent corroboration of the fleet-to-coal availability conversion: coal 58% in 2025 against the fleet's 62%, which implies non-coal availability of 89.9% against the 90% assumed |
 | Household consumption references | one-off | 2024 | the two reference households in the bill view: Eskom's own 30 kWh a day, and about 190 kWh a month for the average electrified household (Eskom residential demand over Statistics South Africa's household count, as MyBroadband calculated it) |
+| GCCA Annexure A substation limits | annual | as at 2026 | not yet loaded: the per-substation connection limits behind regional congestion, for the nodal work |
 
 | Eskom annual results and integrated report | annual | FY2026, **as at 31 March 2026** | EAF calibration, the `reShareResid` benchmark, fleet nominal capacity and the audited energy balance. year-end snapshot: the renewable register here runs to 30 June 2026, so three months sit on one side of any comparison and not the other |
 
@@ -115,6 +116,12 @@ industrial demand, embedded self-generation and energy efficiency.
 Eskom targets stabilisation at 178 TWh. **The recent trend is DOWN**, so any positive
 setting on the demand growth slider is a forward assumption rather than an extrapolation.
 Relevant whenever a demand-growth scenario is quoted.
+
+**Northern Cape exports by day and imports by night.** The regional profiles show the Northern
+Cape exporting through the middle of the day and importing after dark, which is what a
+solar-heavy region with little local demand does. Nothing asserts it yet; it is the natural
+first regional validation test when the nodal work resumes, because it is a pattern the data
+must reproduce rather than a number to calibrate.
 
 **Captive capacity is deliberately excluded.** 88 MW in the H1 2026 monitor. It
 sits behind the meter and suppresses demand rather than adding supply.
