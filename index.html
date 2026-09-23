@@ -5216,10 +5216,23 @@ function reipppRate(year){
 }
 // Other IPP contracts, R/yr, same table. DoE peakers' capital charge R2,174m to 2030 (Avon and
 // Dedisa contracts expire 2030-31, IRP 2025 3.2.1.2.2); their fuel is in the engine's diesel.
-// RMIPPPP R1,294m in FY2026 rising to R3,791m as plants commission, 20-year contracts. Short-term
-// programmes (MTPPP emergency generation and the standard offer) R7,981m in FY2026, R9,787m by
-// FY2028; assumed to end with MYPD6, which the table does not state. Storage (BESIPPPP) is left
-// out: new batteries are costed as new build.
+// RMIPPPP R1,294m in FY2026 rising to R3,791m as plants commission, 20-year contracts.
+//
+// SHORT-TERM PROGRAMMES, R7,981m in FY2026 and R9,787m by FY2028, ending after FY2028 here.
+// The MYPD 6 table does not say when they end, so the contract structure decides it, and that
+// is now sourced (NTCSA's own Short Term Energy Purchases page, checked 23 Sep 2026):
+//
+//   Standard Offer         three-year contracts with existing producers
+//   Emergency Generation   daily, weekly or monthly offers, dispatched on price
+//
+// So neither carries a tail: nothing is contracted beyond about three years, and the emergency
+// programme is not contracted beyond a month. Ending the cost after FY2028 is what the contracts
+// support. THE RISK IS THE OTHER WAY - these are re-procured rather than expired, and have been
+// since 2022. If they simply continue, the cost does not stop: R9,787m a year is about 5c/kWh
+// on the transition presets' 183 TWh of sales, which is larger than the entire new-transmission
+// line in the retail stack.
+//
+// Storage (BESIPPPP) is left out: new batteries are costed as new build.
 function otherIppR(year){
   const y = year ?? 2026;
   const peakers = y < 2031 ? 2174 : 0;
@@ -13453,9 +13466,35 @@ function retailComponents(markup, stranded, year, viaMuni){
   const runoff = Math.max(floor, 1 - (1 - floor) * dy / Math.max(1, toYr - base));
   const opex = genOpexBase * ((1 - coalOfGen) + coalOfGen * coalFrac) * fixedScale;
   const genAssets = genAssetBase * runoff * fixedScale;
-  const existingCap = genAssets * ((1 - coalOfGen) + coalOfGen * (stranded ? 1 : coalFrac));
+  // MEGAWATTS RETIRED IS NOT VALUE RETIRED, corrected 23 Sep 2026. With stranded cost switched
+  // off, the retired coal was removed from the asset base in proportion to MW - and the asset
+  // base was ALSO being run down by the RAB run-off above, so the same reduction was counted
+  // twice. Worse, it was the wrong proportion: retirement runs oldest first, and the oldest
+  // units are the most depreciated, so MW overstates the book value leaving the base.
+  //
+  // Value share instead, from the per-unit retirement dates in UC_FLEET. A unit's remaining
+  // book value is proportional to its remaining life, so a unit retiring in 2027 carries almost
+  // nothing and Medupi carries almost all of its capital. Retire oldest first, as the engine
+  // does, and weight by (retirement year - this year) x capacity.
+  const coalValueFrac = (() => {
+    if (typeof UC_FLEET === 'undefined' || !UC_FLEET.length) return coalFrac;
+    const units = UC_FLEET
+      .map(u => ({ cap: u.cap, dy: (u.decom === 'beyond 2050') ? 2055 : parseInt(u.decom, 10) }))
+      .filter(u => u.cap > 0 && isFinite(u.dy))
+      .sort((x, y) => x.dy - y.dy);
+    const life = (u) => Math.max(0, u.dy - base);
+    const total = units.reduce((s2, u) => s2 + u.cap * life(u), 0);
+    if (!(total > 0)) return coalFrac;
+    let toRetire = Math.max(0, P.coalDecomMW || 0), kept = 0;
+    for (const u of units){
+      const gone = Math.min(u.cap, toRetire); toRetire -= gone;
+      kept += (u.cap - gone) * life(u);
+    }
+    return Math.max(0, Math.min(1, kept / total));
+  })();
+  const existingCap = genAssets * ((1 - coalOfGen) + coalOfGen * (stranded ? 1 : coalValueFrac));
   // The part of existingCap that is retired coal still being paid for; a levy on a market basis.
-  const strandedPart = stranded ? genAssets * coalOfGen * (1 - coalFrac) : 0;
+  const strandedPart = stranded ? genAssets * coalOfGen * (1 - coalValueFrac) : 0;
 
   // NEW BUILD CAPITAL from BLD_COST with its decline rates, through the same bldAnnuity()
   // the capacity-expansion LPs use. acap* is retired here: it had no provenance note, no
@@ -16880,7 +16919,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23y';
+const BUILD_STAMP = '2026-09-23z';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

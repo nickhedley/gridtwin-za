@@ -2703,6 +2703,47 @@ industrial recovery against efficiency and continued grid defection. It is not t
 forecast and not a forecast of this project's own. It is held constant across the three so the
 comparison between them is about the build.
 
+### Megawatts retired is not value retired, 23 Sep 2026
+
+Build `2026-09-23z`. With the stranded-cost toggle off, retired coal was removed from the asset
+base in proportion to MW retired - while the regulated asset base was also being run down by its
+own run-off schedule. The same reduction twice, and in the wrong proportion: retirement runs
+oldest first, and the oldest units are the most depreciated, so megawatts overstate the book
+value leaving the base.
+
+Value share now, from the per-unit retirement dates the engine already carries. A unit's
+remaining book value is proportional to its remaining life, so a station retiring in 2027 carries
+almost nothing and Medupi carries almost all of its capital.
+
+```
+R/kWh in the retail stack        existing capital        stranded part
+Deep decarbonisation 2035
+  stranded on                     0.222 (unchanged)   0.121 -> 0.064
+  stranded off                    0.101 -> 0.158              0
+Fossil-free 2040
+  stranded on                     0.177 (unchanged)   0.142 (unchanged)
+  stranded off                    0.035 (unchanged)           0
+```
+
+Deep decarbonisation is where it bites, because it retires 27 GW of a 39.7 GW fleet - mostly old
+plant. Half the stranded cost it was carrying was not stranded at all: those assets were nearly
+written off. And with the toggle off, its existing-capital line rises by 5.7c/kWh, because the
+MW-proportional removal had been stripping out book value that is still in the base.
+
+Fossil-free does not move, which is the check on the correction: it retires everything, so value
+share and megawatt share are both zero.
+
+### The short-term IPP programmes, sourced
+
+Same build. The model ends their cost after FY2028 and the MYPD 6 table does not say when they
+end, so the contract structure decides it. NTCSA's own page: the Standard Offer is three-year
+contracts with existing producers, and Emergency Generation is daily, weekly or monthly offers
+dispatched on price. Neither carries a tail, so ending the cost is what the contracts support.
+
+The risk runs the other way, and the comment now says so: these are re-procured rather than
+expired, and have been since 2022. R9,787m a year is about 5c/kWh on the transition presets'
+183 TWh - larger than the entire new-transmission line in the retail stack.
+
 ---
 
 ## Fossil free, re-measured
