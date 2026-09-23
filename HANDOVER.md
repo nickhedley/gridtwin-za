@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-23h`. Suite 792/795 plus eng5 6/6, measured 23 Sep 2026. Three sessions ran long and the
+Build `2026-09-23i`. Suite 792/795 plus eng5 6/6, measured 23 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 

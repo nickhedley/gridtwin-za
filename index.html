@@ -9298,7 +9298,17 @@ function bldBuildLP(opts){
     // a 100-hour store can be relied on through a long event in a way a 4-hour
     // one cannot. Energy arbitrage for vrfb/ironair is not yet in this LP - see
     // the note in BLD_COST - so this understates them rather than flattering them.
-    L.push(' res_' + y + ': ' + cum('batt',y).join(' + ')
+    // CAPACITY CREDIT IS LIMITED BY DURATION, 23 Sep 2026. Once power and energy became
+    // separate decisions, the LP could buy inverters for the reserve margin and almost no cells:
+    // it built lithium at the 1-hour floor because a megawatt counted the same whatever it could
+    // sustain. A storage asset can only cover the evening peak for as long as its energy lasts,
+    // which is why capacity credit falls away below about four hours in every published ELCC
+    // study. cc_batt is the credited megawatts: no more than what is built, and no more than the
+    // energy divided by four hours.
+    L.push(' ccpow_' + y + ': cc_batt_' + y + ' - ' + cum('batt',y).join(' - ') + ' <= 0');
+    L.push(' ccnrg_' + y + ': cc_batt_' + y + ' - '
+      + cumE(y).map(v => '0.25 ' + v).join(' - ') + ' <= 0');
+    L.push(' res_' + y + ': cc_batt_' + y
       + ' + ' + cum('vrfb',y).map(v => (BLD_DERATE.vrfb / BLD_DERATE.batt).toFixed(2) + ' ' + v).join(' + ')
       + ' + ' + cum('ironair',y).map(v => (BLD_DERATE.ironair / BLD_DERATE.batt).toFixed(2) + ' ' + v).join(' + ')
       + ' + ' + cum('ccgt',y).join(' + ')
@@ -9306,16 +9316,18 @@ function bldBuildLP(opts){
   }
 
   // Lithium's duration stays inside the range the rest of the model offers, 1 to 12 hours, so
-  // the LP cannot answer with a 40-hour lithium system the dispatch could not run.
+  // the LP cannot answer with a 40-hour lithium system the dispatch could not run. Named
+  // battdur_ rather than dmin_/dmax_, which are the diesel rows' prefix.
   for (const y of Y){
-    L.push(' dmin_'+y+': ' + cumE(y).join(' + ') + ' - ' + cum('batt',y).join(' - ') + ' >= 0');
-    L.push(' dmax_'+y+': ' + cumE(y).join(' + ') + ' - '
+    L.push(' battdur_min_'+y+': ' + cumE(y).join(' + ') + ' - ' + cum('batt',y).join(' - ') + ' >= 0');
+    L.push(' battdur_max_'+y+': ' + cumE(y).join(' + ') + ' - '
       + cum('batt',y).map(v => '12 ' + v).join(' - ') + ' <= 0');
   }
 
   L.push('Bounds');
   for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + RATE[t].toFixed(1));
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
+  for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
   for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
     const k = y + '_' + r.d + '_' + h;
     L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
@@ -16518,7 +16530,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23h';
+const BUILD_STAMP = '2026-09-23i';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

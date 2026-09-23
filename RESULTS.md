@@ -2202,6 +2202,36 @@ formulation: the two coefficients must recombine to the 4-hour annuity, the powe
 match the constant, and the duration rows must exist. On the previous build it reports that
 lithium is still one build decision at a fixed duration.
 
+### Solving it found a second thing: capacity credit was free of duration
+
+Build `2026-09-23i`, 23 Sep 2026. With power and energy separated, the build LP was solved rather
+than just built - dumped from the page and run through HiGHS offline (lp_dump.js).
+
+The first solve built lithium at the one-hour floor: 550 MW of inverters a year and the minimum
+energy the duration rule allowed. The reason was in the reserve-margin row, which counted a
+megawatt of storage toward firm capacity whatever it could sustain. Free capacity credit for an
+asset with no energy behind it.
+
+Fixed by crediting storage at the lesser of what is built and its energy over four hours, which
+is where published ELCC work puts the knee. The LP now answers:
+
+```
+                     built GW   built GWh   hours   credited GW
+Deep decarbonisation 2035   2.75      11.0      4         2.75
+Fossil-free 2040            2.75      11.0      4         2.75
+```
+
+Four hours in both, and exactly at the knee: it buys the energy that earns full capacity credit
+and stops, because beyond that the marginal energy has no value at this margin in this LP. Both
+scenarios build the same because lithium is at its build-rate cap of 550 MW a year, which is the
+binding constraint rather than the economics - worth remembering before reading anything else
+into the number.
+
+Also fixed: the duration rows were named dmin_/dmax_, which is the diesel rows' prefix, so the
+harness check was matching diesel rows rather than the new ones and would have passed with the
+duration bounds missing entirely. Renamed battdur_min_/battdur_max_, and the check now requires
+the capacity-credit rows too.
+
 ---
 
 ## Fossil free, re-measured

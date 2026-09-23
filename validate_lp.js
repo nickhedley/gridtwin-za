@@ -127,16 +127,18 @@ function check(label, ok, detail) {
     const p = L.match(/([0-9.]+) b_batt_2030/), e = L.match(/([0-9.]+) eb_batt_2030/);
     return { power: p ? +p[1] : null, energy: e ? +e[1] : null,
              share: typeof BATT_POWER_SHARE === 'number' ? BATT_POWER_SHARE : null,
-             rows: /dmin_2030/.test(L) && /dmax_2030/.test(L) };`);
+             rows: /battdur_min_2030:/.test(L) && /battdur_max_2030:/.test(L),
+             credit: /ccpow_2030:/.test(L) && /ccnrg_2030:/.test(L) };`);
   {
     const four = (dur.power && dur.energy) ? dur.power + 4 * dur.energy : null;
     const share = four ? dur.power / four : null;
     check('the build LP splits lithium into power and energy and can choose duration',
-          !!four && dur.rows && dur.share != null && Math.abs(share - dur.share) < 0.005,
+          !!four && dur.rows && dur.credit && dur.share != null && Math.abs(share - dur.share) < 0.005,
           four
             ? `power R${Math.round(dur.power)}/MW-yr and energy R${Math.round(dur.energy)}/MWh-yr `
               + `recombine to R${Math.round(four)} at 4 hours, a power share of ${share.toFixed(3)} `
-              + `against ${dur.share}; duration rows ${dur.rows ? 'present' : 'MISSING'}`
+              + `against ${dur.share}; duration rows ${dur.rows ? 'present' : 'MISSING'}, `
+              + `duration-limited capacity credit ${dur.credit ? 'present' : 'MISSING'}`
             : `no energy variable in the LP: lithium is still one build decision at a fixed duration`);
   }
   check('bldBuildRegionalLP is reachable', avail.regional === true);
