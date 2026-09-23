@@ -2477,6 +2477,40 @@ Corroboration for a constant already in the model: GB stability contracts, which
 and short-circuit level from grid-forming batteries, cleared at GBP 5,000-25,000/MW-yr, about
 R115,000-575,000. The model's inertia payment is R100,000/MW-yr, at the bottom of that range.
 
+### The bill, not the rate, 23 Sep 2026
+
+Build `2026-09-23s`. Every figure in the retail panel was R/kWh, and no household experiences
+R/kWh: it experiences a monthly bill with a fixed charge in it, which is precisely what the
+revised pricing policy is arguing about. The panel now shows both.
+
+Two reference households, because South Africa does not have one. Eskom has used 30 kWh a day -
+900 kWh a month - in tariff work for years, and the Homepower fixed charge of R536 applies to
+that class. The average electrified household actually uses about 190 kWh a month, from Eskom's
+residential demand over Statistics South Africa's household count. Eskom's reference describes a
+minority, and the gap between the two IS the affordability argument.
+
+Monthly bills, regulated basis, rooftop covering 60% of consumption and no export credit:
+
+```
+                             900 kWh household          190 kWh household
+                          no roof   roof   saved      no roof   roof   saved
+Today 2026                 R3,909  R1,885   52%        R1,248   R821    34%
+IRP path 2035              R4,286  R2,036   52%        R1,328   R853    36%
+Deep decarbonisation 2035  R4,341  R2,058   53%        R1,339   R857    36%
+Fossil-free 2040           R4,898  R2,281   53%        R1,457   R904    38%
+```
+
+The finding is in the last column. Cutting 60% of consumption cuts the larger household's bill by
+about half, and the smaller one's by about a third, because the fixed charge is 43% of that
+household's bill before a single unit is bought. Rooftop pays a household that already uses a lot
+far better than one that does not, at the same self-consumption share, and the fixed charge is
+the reason.
+
+That is the same mechanism the pricing policy raises from the other side, asking whether
+solar-equipped households using the grid for backup contribute fairly to network costs. On these
+numbers the fixed charge is already doing most of that work for the small household and much less
+of it for the large one.
+
 ---
 
 ## Fossil free, re-measured

@@ -5897,6 +5897,10 @@ const FIXED = {
   // headroom stays at today's GCCA snapshot forever.
   tdpConfidencePct: 100,
   asReserveOn: false, asInertiaOn: false, capacityPaymentOn: false, asVoltageOn: false,
+  // Share of a rooftop household's consumption met by its own generation, for the bill view.
+  // 60% is a solar-plus-battery household; solar alone without storage sits nearer 30-40%,
+  // since most consumption is outside the middle of the day.
+  billSelfConsumePct: 60,
   // VOLTAGE SUPPORT, R/MW-yr, and the size of the pot it is paid from.
   //
   // 60,000 is Great Britain's Capenhurst voltage contract, the only long-term reactive-power
@@ -14170,7 +14174,55 @@ function renderRetail(){
     + 'all three share a cheapest hour, a dearest hour and a spread, and differ only in the '
     + 'mean. The gaps between them are what shifting load is worth: first the geyser, then a '
     + 'pool pump and an electric vehicle as well.</span>';
-  noteEl.innerHTML = capLine + rowsNote + ppaNote +
+  // THE BILL, added 23 Sep 2026. Every figure in this panel is R/kWh, and a household does not
+  // experience R/kWh - it experiences a monthly bill with a fixed charge in it, which is the
+  // whole point of the fixed-charge argument in the pricing policy. Two reference households,
+  // because South Africa does not have one:
+  //
+  //   900 kWh a month is ESKOM'S OWN reference household, the 30 kWh/day it has used in tariff
+  //   work for years. The Homepower fixed charge of R536 a month applies to that class.
+  //   190 kWh a month is what the AVERAGE electrified household actually uses, from Eskom's
+  //   residential demand over Statistics South Africa's household count - the calculation
+  //   MyBroadband published in 2024 put it at 185 to 214 kWh. Eskom's own figure describes a
+  //   minority of households, and the gap between the two is itself the affordability argument.
+  //
+  // The rooftop case reduces GRID purchases only. The fixed charge does not move, which is
+  // exactly what the revised pricing policy asks about: whether a solar household using the
+  // grid for backup contributes fairly to network costs. No export credit is included, because
+  // feed-in terms differ by distributor and most Eskom-direct customers have none.
+  const billHtml = (() => {
+    // The SCENARIO's price, not today's tariff. d.flat is Homepower, which does not move when
+    // the build does; d.dyn is the modelled cost-reflective price this panel exists to show.
+    const rate = mean(d.dyn);
+    const fixed = d.fixedPerMonth || 0;
+    const selfPct = Math.max(0, Math.min(90, state.billSelfConsumePct ?? FIXED.billSelfConsumePct));
+    const row = (kwh, label) => {
+      const grid = kwh * (1 - selfPct/100);
+      return `<tr><td style="padding:3px 6px">${label}</td>`
+        + `<td class="mono" style="text-align:right;padding:3px 6px">${kwh}</td>`
+        + `<td class="mono" style="text-align:right;padding:3px 6px">R${Math.round(kwh*rate + fixed).toLocaleString()}</td>`
+        + `<td class="mono" style="text-align:right;padding:3px 6px">R${Math.round(grid*rate + fixed).toLocaleString()}</td>`
+        + `<td class="mono" style="text-align:right;padding:3px 6px;color:var(--ink2)">`
+        + `${Math.round(100*(kwh - grid)*rate/(kwh*rate + fixed))}%</td></tr>`;
+    };
+    return '<div style="margin:8px 0;padding:7px 9px;border-left:3px solid var(--veld,#4A6B7A);'
+      + 'background:var(--panel2)"><strong>What that is a month</strong>'
+      + `<table class="mono" style="width:100%;font-size:10.5px;border-collapse:collapse;margin-top:4px">`
+      + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:3px 6px">Household</th>'
+      + '<th style="text-align:right;padding:3px 6px">kWh</th><th style="text-align:right;padding:3px 6px">No rooftop</th>'
+      + `<th style="text-align:right;padding:3px 6px">With rooftop</th>`
+      + '<th style="text-align:right;padding:3px 6px">Saved</th></tr>'
+      + row(900, 'Eskom\u2019s reference household')
+      + row(190, 'The average electrified household')
+      + '</table>'
+      + `<div style="font-size:10px;color:var(--ink2);line-height:1.5;margin-top:4px">`
+      + `At R${rate.toFixed(2)}/kWh on the regulated basis plus Homepower\u2019s R${Math.round(fixed)} `
+      + `fixed charge, with rooftop covering ${selfPct}% of consumption and no export credit. `
+      + `The fixed charge does not fall with rooftop, which is why the saving is well below `
+      + `${selfPct}% for the smaller household - it is ${Math.round(100*fixed/(190*rate+fixed))}% `
+      + `of that bill before a single unit is bought.</div></div>`;
+  })();
+  noteEl.innerHTML = capLine + rowsNote + billHtml + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
     + `${c.year}. Built from NERSA's allowed revenue over ${c.salesTWh.toFixed(0)}&nbsp;TWh of `
     + `sales, allocated to that customer category at 1.62&times; the system average using `
@@ -16709,7 +16761,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23r';
+const BUILD_STAMP = '2026-09-23s';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
