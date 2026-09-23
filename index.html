@@ -10931,10 +10931,17 @@ const TX_SHALLOW = 0.25, TX_BEYOND = 1.5;
 // so a fixed offset would be wrong. Pass the year's nuclear factor for a backcast; a forward
 // scenario takes FIXED.nuclearCF.
 //
-// EAF_NONCOAL_AVAIL IS AN ASSUMPTION, not a measurement: ESK19679 carries fleet capability loss,
-// not per-station availability, so hydro, pumped storage and OCGT availability cannot be read
-// from it. Five points on it moves the coal figure by about 0.8 points, which does not change
-// any scenario materially but would move a borderline external comparison.
+// EAF_NONCOAL_AVAIL cannot be read from ESK19679, which carries fleet capability loss rather
+// than per-station availability. It is corroborated instead, 23 Sep 2026: amaBhungane's
+// station-by-station Eskom data puts the COAL fleet at 58% in calendar 2025 against the 62%
+// Eskom quotes for the whole fleet. Solving this arithmetic for that pair - fleet 62.4%,
+// nuclear at its measured 0.620 - gives non-coal availability of 89.9%. Five points on it moves
+// the coal figure by about 0.8 points either way.
+//
+// KOEBERG SITS OUTSIDE IT. Nuclear enters at its own factor, measured at 0.620 in 2025 and
+// 0.609 in 2026, so its outages do not ride on the 90%. FIXED.nuclearCF is 0.70 for forward
+// scenarios, which is higher than either; that is a separate open item, and it moves a
+// conversion by 0.4 points.
 const EAF_NONCOAL_AVAIL = 0.90;
 function coalEafFromFleet(fleetPct, nuclearFactor, p){
   const P = p || FIXED;

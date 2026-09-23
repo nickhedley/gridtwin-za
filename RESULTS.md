@@ -1964,10 +1964,21 @@ Within 0.7 points, and a findings check holds it there. Nothing moves materially
 preset stays at 129 Mt, the backcast goes from 6 to 9 GWh of shed energy, and the MTSAO case
 stays inside its bands.
 
-The non-coal availability behind it, 90%, is still an assumption. ESK19679 carries fleet
-capability loss rather than per-station availability, so hydro, pumped storage and OCGT
-availability cannot be read from it. Five points on that figure moves the coal number by about
-0.8 points - immaterial for scenarios, but enough to matter in a borderline external comparison.
+The non-coal availability behind it, 90%, cannot be read from ESK19679, which carries fleet
+capability loss rather than per-station availability. It is corroborated instead, 23 Sep 2026.
+amaBhungane's station-by-station Eskom data puts the coal fleet at 58% in calendar 2025 against
+the 62% Eskom quotes for the whole fleet. Solving this arithmetic for that pair - fleet 62.4%,
+nuclear at its measured 0.620 - gives non-coal availability of 89.9%, against the 90% assumed.
+An independent, station-level number lands on the assumption to a tenth of a point.
+
+Koeberg sits outside it. Nuclear enters the conversion at its own factor, 0.620 in 2025 and
+0.609 in 2026 from the hourly data, so its stop-start does not ride on the 90%. What the
+non-coal figure covers is hydro, pumped storage and the OCGTs, and the hourly data shows all
+three reaching nameplate at some point in each year - pumped storage and hydro above it, the
+OCGTs at 94 to 97% - so a 90% annual availability is consistent with what they deliver.
+
+The live exposure is FIXED.nuclearCF at 0.70 for forward scenarios against 0.61 measured, which
+moves a conversion by 0.4 points and is a separate open item.
 
 ---
 
