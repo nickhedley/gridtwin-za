@@ -198,6 +198,24 @@ scenario they foresaw no issues on inertia; what binds is SYSTEM STRENGTH, the f
 node, in MVA. Our single national MW floor stands in for both, which is the same category of
 error as a national congestion derate.
 
+UPDATED 23 Sep 2026, AEMO's FY26 Engineering Roadmap webinar. Frequency, inertia and voltage
+control are now business as usual there, where inertia was the headline challenge a few years
+ago, and AEMO has opened a three-part workplan on whether grid-forming batteries can substitute
+for synchronous machines in meeting minimum system strength. The reason is ours: syncons have
+become expensive and slow to deliver while the grid-forming battery fleet has grown.
+
+BUT THE SUBSTITUTION IS NOT SETTLED. AEMO's 2025 position was that protection-quality fault
+current remains a key limitation of grid-forming inverters, and its own simulations and early
+hardware-in-the-loop relay testing find that misoperation of some protection elements is
+possible. Trials with market participants and an ARENA-funded UNSW project run through 2026,
+with the Transition Plan for System Security due in December.
+
+WHAT THIS MODEL CANNOT SEE, stated rather than modelled. The binding property is protection-
+quality fault current at a node, in MVA, and it depends on the control strategy of the inverters
+installed - responses are software, and they vary by manufacturer, where a synchronous machine's
+is physics and predictable. A national megawatt floor cannot represent that, and SYNC_GFM_SHARE
+0.30 is a bracket for a substitution ratio that the one market testing it has not yet fixed.
+
 ### Inertia is worth R4.6bn a year to storage, and it was invisible
 
 Pricing reserve and inertia in Fossil-free 2040:

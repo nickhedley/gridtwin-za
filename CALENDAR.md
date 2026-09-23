@@ -66,6 +66,11 @@ Underway       CoS Framework Review; Compliance Enforcement Rules. No dates.
 ## Expected publications - watch for these
 
 ```
+Dec 2026       AEMO Transition Plan for System Security. Absorbs the Engineering Roadmap and
+               carries workplans for system strength, oscillatory stability and system
+               restoration, plus a damping study due before it. The first published position
+               on whether grid-forming batteries can substitute for synchronous machines,
+               which is what SYNC_GFM_SHARE 0.30 and the no-syncons finding rest on.
 ~Nov 2026      IPP Office Q1 2026/27 quarterly (as at 30 Jun 2026).
                Will contain Mulilo Total Hydra if COD was H1; if COD is 2026-07
                it lands in Q2 instead. EITHER WAY the double-count guard fires
