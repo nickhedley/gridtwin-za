@@ -5292,6 +5292,15 @@ const FIXED = {
   //
   // This matters beyond the constant. Roughly 1 GW is now available to South Africa that
   // was not, and it returns if Mozal restarts. Use the Regional exports slider to test that.
+  //
+  // CONFIRMED against the settled months, 22 Sep 2026. Monthly means in ESK19679: 1,687 MW in
+  // January 2026, 1,703 in February, 987 in the transition month of March, then 684, 600, 652,
+  // 722 and 822 from April to August. The post-Mozal mean is about 700, and 745 sits inside it.
+  //
+  // EVERY SCENARIO HOLDS IT FLAT to 2040, including the 2035 and 2040 presets. That is an
+  // assumption about regional demand, not a projection: SAPP demand grows and the smelter may
+  // restart. At the pre-Mozal 1,705 MW, Deep decarbonisation 2035 absorbs 6.6 TWh of what it
+  // otherwise spills and starts shedding 5.7 GWh in the default weather year.
   exportsMW:745,
   // How exports scale with system stress. 1.0 is flat; 1.23 is the observed ratio of the
   // peak-hour export (1,642 MW) to the mean (1,340).
@@ -16373,7 +16382,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-22as';
+const BUILD_STAMP = '2026-09-23a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

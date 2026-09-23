@@ -1892,6 +1892,31 @@ This is the question to put to the IRP team rather than a discrepancy to reconci
 does their model keep coal at 80% utilisation, and if so, what stops the renewables displacing it?
 A findings check now pins our side at 52-72% so that drift toward their figure is noticed.
 
+### Export levels: today's constant is right, and every scenario holds it flat, 22 Sep 2026
+
+Build `2026-09-23a`. The backcast needed 1,705 MW where the model carries 745, which raised the
+question of whether other scenarios have the same vintage problem. They do not, but they do carry
+an assumption worth stating.
+
+Monthly export means in ESK19679: 1,687 MW in January 2026, 1,703 in February, 987 in the
+transition month of March as Mozal stopped, then 684, 600, 652, 722 and 822 from April to August.
+The settled post-Mozal level is about 700 MW, so the constant's 745 is right for 2026 and after.
+
+What is assumed rather than derived is that it stays at 745 through 2035 and 2040. At the
+pre-Mozal level instead:
+
+```
+                              spill TWh   shed GWh   system cost R bn   CO2 Mt
+Deep decarbonisation 2035        65.7 -> 59.1   0 -> 5.7    291.2 -> 282.1   29 -> 32
+IRP path 2035                    32.6 -> 29.6   0 -> 0      284.6 -> 279.8   62 -> 67
+```
+
+A restarted smelter, or SAPP demand growing into the same 1 GW, absorbs 6.6 TWh of what Deep
+decarbonisation otherwise spills and is worth R9bn a year of system cost - and it starts the
+preset shedding, so that build would need a little more capacity to stay inside the standard.
+Imports need no such correction: the model delivers about 1,016 MW on average against 962 to
+1,223 MW measured across the same post-Mozal months.
+
 ---
 
 ## Fossil free, re-measured
