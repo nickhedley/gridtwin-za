@@ -2479,6 +2479,11 @@ R115,000-575,000. The model's inertia payment is R100,000/MW-yr, at the bottom o
 
 ### The bill, not the rate, 23 Sep 2026
 
+> A BRIEFING VERSION of this finding was issued on 23 Sep 2026 for use outside the project -
+> self-contained, with the model, the scenarios and the caveats written out. It is a snapshot,
+> not a second source of truth: if any of the numbers below move, it needs reissuing, and the
+> copy in circulation should be replaced rather than corrected in place.
+>
 > RATE CORRECTED 23 Sep 2026. The box priced the bill off the unweighted mean of the hourly
 > series, which appears nowhere on screen - and which the table's own comment calls a figure
 > describing no customer, since nobody consumes flat across 8,760 hours. It now uses the
@@ -2560,6 +2565,28 @@ presets were not seeing. Retail comes out at R3.59 and R3.58/kWh regulated.
 Small in itself, and worth noting for the class of error rather than the size: a preset that
 names a year in its own title had no year set, and nothing checked. The two transition presets
 and IRP path 2035 all carry theirs.
+
+### Storage discharging at a zero price: does not reproduce, 23 Sep 2026
+
+Build `2026-09-23v`. A standing defect recorded 120 hours in Deep decarbonisation where batteries
+discharged into a zero price. Re-measured on both high-renewables presets:
+
+```
+                             hours discharging at a price under R10   discharging while spilling
+Deep decarbonisation 2035                      0                                 0
+Fossil-free 2040                               0                                 0
+```
+
+Nothing to fix. The storage dispatch has been rebuilt twice since that note - the long-duration
+lookahead, then the adequacy hold - and the presets themselves have changed shape. Closed by
+measurement rather than by a change.
+
+What the same measurement did show, and it is deliberate: Deep decarbonisation prices negative in
+772 hours, 8.8% of the year, as low as R225/MWh below zero. That is the coal-forced spill rule
+working as designed - coal pinned at its must-run floor while wind and solar spill - and the
+comment behind it records the calibration: an earlier version priced every spill hour negative
+and produced 5,614 negative hours, 64% of the year, against roughly 460 in Germany in 2024. The
+current rule counts only hours where removing coal's floor would have absorbed the spill.
 
 ---
 
