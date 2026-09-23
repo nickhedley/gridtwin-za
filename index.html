@@ -19711,6 +19711,24 @@ document.addEventListener('DOMContentLoaded', rtCalc);
 // main model so the KPIs, energy mix and dispatch chart show the optimum.
 const MIP_FLEET = [{"name":"Arnot*","cap":1050.0,"n":3,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":146236.9340034813,"marginal_cost":664.1402453697383},{"name":"Arnot**","cap":1050.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":146236.9340034813,"marginal_cost":675.4804253697383},{"name":"Camden*","cap":570.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":56320.930887372,"marginal_cost":702.0914453697383},{"name":"Camden**","cap":911.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":93868.21814561999,"marginal_cost":733.5367253697383},{"name":"Duvha*","cap":1150.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":183388.7508532424,"marginal_cost":633.5082053697383},{"name":"Duvha**","cap":1725.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":275083.12627986365,"marginal_cost":633.5082053697383},{"name":"Grootvlei*","cap":380.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":47428.2396745848,"marginal_cost":711.3985253697383},{"name":"Grootvlei**","cap":190.0,"n":1,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":23714.1198372924,"marginal_cost":664.1402453697383},{"name":"Hendrina*","cap":760.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":60075.6596131968,"marginal_cost":687.7242053697383},{"name":"Hendrina**","cap":338.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":30037.8298065984,"marginal_cost":733.5367253697383},{"name":"Kelvin","cap":160.0,"n":2,"msl":0.65,"min_up":8,"min_dn":8,"startup_cost":450165.44254835,"marginal_cost":658.5346505574515},{"name":"Kendal*","cap":1920.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383},{"name":"Kendal**","cap":1920.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383},{"name":"Komati","cap":114.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":8782.97661497838,"marginal_cost":771.6234653697383},{"name":"Kriel*","cap":1215.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383},{"name":"Kriel**","cap":1425.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383},{"name":"Kusile*","cap":2880.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":348234.678785074,"marginal_cost":587.550320932878},{"name":"Kusile**","cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878},{"name":"Kusile***","cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878},{"name":"Lethabo*","cap":1779.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":585.4818653697383},{"name":"Lethabo**","cap":1779.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":608.7947453697383},{"name":"Majuba*","cap":1818.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":482186.41170716693,"marginal_cost":620.6770853697383},{"name":"Majuba**","cap":1989.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":529614.236756997,"marginal_cost":586.7920853697383},{"name":"Matimba*","cap":1845.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":616.1590853697384},{"name":"Matimba**","cap":1845.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":608.7947453697383},{"name":"Matla*","cap":1725.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383},{"name":"Matla**","cap":1725.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383},{"name":"Medupi*","cap":3600.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":435293.3484813425,"marginal_cost":587.550320932878},{"name":"Medupi**","cap":717.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878},{"name":"Tutuka*","cap":1755.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383},{"name":"Tutuka**","cap":1755.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383}];
 
+// RESERVE IS PHYSICAL, NOT A PRICING CHOICE, corrected 23 Sep 2026. The nodal model used to
+// receive a reserve requirement only when the user had switched ancillary PRICING on, so at
+// defaults it dispatched with no reserve held while the national engine held 2,200 MW in every
+// hour of every scenario. Two models of the same system, one ignoring a requirement the other
+// treats as binding. Whether reserve is PAID FOR is a market question; whether it is HELD is not.
+//
+// A named function rather than an expression inside the postMessage call, so a harness can ask
+// what the nodal model is being told to hold without running a worker - validate_solve does.
+// The contingency term is a fixed MW and cannot be expressed as a share of load, so it is
+// excluded: this understates the requirement rather than inventing a conversion.
+function mipReserveFrac(){
+  const on = (typeof state !== 'undefined' && state.reserveEnabled != null)
+    ? state.reserveEnabled : FIXED.reserveEnabled;
+  if (!on || !PROFILES || !PROFILES.demand || !PROFILES.demand.length) return 0;
+  const meanLoad = PROFILES.demand.reduce((x, y) => x + y, 0) / PROFILES.demand.length;
+  return meanLoad > 0 ? FIXED.reserveOperatingMW / meanLoad : 0;
+}
+
 let mipNetworkOffsetTWh = 0;   // set by the last full model run
 let mipWorker = null, mipRunning = false;
 let mipActiveRes = null;   // set once an optimal solution has been applied
@@ -20347,15 +20365,7 @@ function runMIP(mode) {
       // defaults - this cannot move any published result without a deliberate act.
       // Built from the engine's OWN reserve components rather than a number chosen here:
       // a regulating share plus a VRE share, both already used to size reserve elsewhere.
-      // RESERVE IS PHYSICAL, NOT A PRICING CHOICE, corrected 23 Sep 2026. This read zero unless
-      // the user had switched ancillary PRICING on, so the nodal model dispatched with no reserve
-      // held at defaults while the national engine held 2,200 MW in every hour of every scenario.
-      // Two models of the same system, one of them ignoring a requirement the other treats as
-      // binding. Whether reserve is PAID FOR is a market question; whether it is HELD is not.
-      // It now follows reserveEnabled, which is what the engine itself uses.
-      resFrac: (state.reserveEnabled ?? FIXED.reserveEnabled)
-        ? (FIXED.reserveOperatingMW / (PROFILES.demand.reduce((x, y) => x + y, 0) / PROFILES.demand.length))
-        : 0
+      resFrac: mipReserveFrac()
     });
   }).catch(err => {
     document.getElementById('mipResult').innerHTML =

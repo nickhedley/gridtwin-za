@@ -118,6 +118,50 @@ const check = (name, ok, detail) => {
   check('regional LP builds', true, '');
   notes.push(`LP is ${b.chars.toLocaleString()} chars, ${b.rows.toLocaleString()} rows`);
 
+  // ── THE NODAL DAY MIP HOLDS RESERVE ───────────────────────────────────────
+  // Added 23 Sep 2026. Nothing in the suite exercised buildDayLP, and on 23 Sep the regional MIP
+  // turned out to be dispatching with NO reserve held unless the user had switched ancillary
+  // PRICING on - while the national engine held 2,200 MW in every hour of every scenario. The
+  // requirement now follows reserveEnabled. Three things to assert, all on the LP text, because
+  // solving a day MIP here would double this harness's runtime:
+  //   the reserve variables and rows exist when reserve is enabled,
+  //   they are absent when it is not, so the formulation is unchanged in that case,
+  //   and the requirement is the ASTR figure rather than something invented locally.
+  // buildDayLP lives inside MIP_WORKER_SRC, the string the page hands to its Web Worker, so it
+  // is not callable from here directly. Rebuild it from that same string: the harness then tests
+  // the code that actually runs, not a copy of it.
+  run(`try {
+    const buildDayLP = new Function(MIP_WORKER_SRC + '; return buildDayLP;')();
+    const mk = (on) => {
+      const units = [{ marginal_cost: 500, startup_cost: 1e5, cap: 1000, msl: 0.5, region: 0 }];
+      const sto = [{ power: 500, energy: 2000, eff: 0.88, region: 0 }];
+      const load = [[]]; for (let h = 0; h < 24; h++) load[0].push(20000);
+      const frac = on ? mipReserveFrac() : 0;
+      const out = buildDayLP(units, sto, [], 1, load, [0], [1000], 87000, null, frac);
+      return Array.isArray(out) ? out.join(String.fromCharCode(10)) : String(out);
+    };
+    window.__res = JSON.stringify({ on: mk(true), off: mk(false),
+                                    frac: mipReserveFrac(),
+                                    unpriced: (state.asReserveOn = false, mipReserveFrac()) });
+  } catch(e) { window.__resErr = String(e).slice(0,200); }`);
+  await new Promise(r => setTimeout(r, 400));
+  if (w.__resErr){
+    check('the nodal day MIP holds reserve when reserve is enabled', false, w.__resErr);
+  } else if (w.__res){
+    const R = JSON.parse(w.__res);
+    const hasRows = /rs_0_0/.test(R.on) && /rp_0_0/.test(R.on) && /rb_0_0/.test(R.on);
+    const clean = !/rs_0_0/.test(R.off);
+    // The defect was in the CALLER, not the builder: what the page TELLS the nodal model to hold.
+    // R.unpriced is that number with ancillary pricing switched off, which is the default and
+    // was zero until 23 Sep 2026.
+    check('the nodal day MIP holds reserve when reserve is enabled',
+          hasRows && clean && R.frac > 0.09 && R.frac < 0.11 && R.unpriced > 0.09,
+          `reserve rows ${hasRows ? 'present' : 'MISSING'} with reserve on and `
+          + `${clean ? 'absent' : 'STILL PRESENT'} with it off; requirement `
+          + `${(R.frac * 100).toFixed(1)}% of mean load, and `
+          + `${(R.unpriced * 100).toFixed(1)}% with ancillary pricing off`);
+  }
+
   const highs = await highsLoader({
     locateFile: (f) => path.join(__dirname, 'node_modules/highs/build', f) });
   const t0 = Date.now();

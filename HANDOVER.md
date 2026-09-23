@@ -35,9 +35,9 @@ validate_benchmarks      28/28
                                    peakerSeasonRatio confounded by 2025 fleet trend
 validate_external         5/7      EDMSA CO2 (known); MTSAO OCGT at the derived demand
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
-validate_solve            7/7
+validate_solve            8/8
 audit.py                 87/87
-total                   799/801
+total                   800/802
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 

@@ -2801,6 +2801,29 @@ The exports sensitivity is closed too, without a preset: the slider's own note n
 measurement. At the pre-Mozal 1,705 MW, Deep decarbonisation absorbs 6.6 TWh of what it otherwise
 spills and saves R9bn a year, but starts shedding 5.7 GWh in the default weather year.
 
+### A harness for the nodal MIP, and the shortcut it prices, 23 Sep 2026
+
+Build `2026-09-24a`. Nothing in the suite exercised the regional MIP, which is how it came to be
+dispatching with no reserve held at defaults. validate_solve now covers it, 8/8.
+
+The check rebuilds buildDayLP from MIP_WORKER_SRC - the same string the page hands to its Web
+Worker - so it tests the code that actually runs rather than a copy. It asserts the reserve
+variables and rows appear when reserve is enabled, are absent when it is not, and that the
+requirement is the ASTR figure rather than something invented locally.
+
+The first version of the check passed on the BROKEN build, which is the more useful lesson. It
+tested the builder, and the builder was always right: the defect was in the caller, which set the
+requirement to zero unless ancillary pricing was on. The requirement is now computed in a named
+function, mipReserveFrac, so a harness can ask what the nodal model is being told to hold without
+running a worker. The check reads that function with pricing off - the default - and fails on the
+previous build.
+
+Measured in the browser while testing this, and worth recording: on Today 2026 the average
+wholesale shadow price is R786 from the instant engine and R765 from the solved MIP, 2.7% apart.
+That gap is the cost of the instant model's block commitment - it commits coal in four-hour
+blocks where the MIP starts and stops on the hour. Small enough to justify the shortcut, and now
+a number rather than an assumption.
+
 ---
 
 ## Fossil free, re-measured
