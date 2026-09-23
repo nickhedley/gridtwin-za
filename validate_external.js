@@ -240,8 +240,15 @@ function check(name, ok, detail) {
   // INPUTS, and how each is derived:
   //   demand  MTSAO's 264 TWh in 2030 is a national figure. Eskom contracted demand ex-exports
   //           was about 204.7 TWh in 2024 against the MTSAO's 243 for the same year, a ratio of
-  //           1.187; 264 / 1.187 is 222.4 TWh, which is +15% on this model's base. The ratio is
-  //           assumed constant, and it is the single most sensitive input here.
+  //           1.187; 264 / 1.187 is 222.4 TWh on this model's basis. The ratio is assumed
+  //           constant, and it is the single most sensitive input here.
+  //
+  //           CORRECTED 23 Sep 2026, 15% to 18%. A GROWTH PERCENTAGE IS NOT A DEMAND MAPPING:
+  //           the same percentage lands on a different TWh in every scenario, because the base
+  //           moves with the rooftop fleet. 15% was derived once and then left, and on this
+  //           case it produces 217.1 TWh against the 222.4 the derivation asks for. 18% produces
+  //           224.3, which is the nearest whole point. The target is the TWh; the percentage is
+  //           just how this model is told to reach it.
   //   coal    moderate EAF 60% is Eskom's whole fleet. The conversion to coal alone is now
   //           coalEafFromFleet in index.html rather than a number typed here; at 60 it gives
   //           54.4 against the 56 this check used before.
@@ -256,7 +263,7 @@ function check(name, ok, detail) {
   const mtsao = (() => {
     const s = w.document.createElement('script');
     s.textContent = `
-      { const ov = { demandGrowthPct: 15, coalEAFPct: coalEafFromFleet(60), coalDecomMW: 8400, importsMW: 288,
+      { const ov = { demandGrowthPct: 18, coalEAFPct: coalEafFromFleet(60), coalDecomMW: 8400, importsMW: 288,
                      dieselDecomMW: 340, newWindMW: 3500, newPvMW: 7000, newRooftopMW: 1200,
                      newBattMW: 1900, newBattHours: 4, newCcgtMW: 0 };
         const u = [], cf = [];

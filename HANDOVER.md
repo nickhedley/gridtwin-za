@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-23x`. Suite 799/800 plus eng5 6/6, measured 23 Sep 2026. Three sessions ran long and the
+Build `2026-09-23y`. Suite 798/800 plus eng5 6/6, measured 23 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -33,11 +33,11 @@ validate_consistency     80/80     gas-firmed band re-derived from AEMC 2025
                                    three panels failed on load timing and passed on rerun
 validate_benchmarks      28/28
                                    peakerSeasonRatio confounded by 2025 fleet trend
-validate_external         5/6      EDMSA CO2 (known); MTSAO now the risk-adjusted case
+validate_external         4/6      EDMSA CO2 (known); MTSAO OCGT at the derived demand
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            7/7
 audit.py                 87/87
-total                   799/800
+total                   798/800
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 

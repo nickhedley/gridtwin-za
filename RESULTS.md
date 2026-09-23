@@ -2659,6 +2659,50 @@ one of them at the shortage price, so the mean is an administrative ceiling rath
 outcome. The panel says so, with the hour count, and points at the regulated basis. Tested on a
 forced-shedding scenario: 955 hours, warning shown.
 
+### A growth percentage is not a demand mapping, 23 Sep 2026
+
+Build `2026-09-23y`. The two demand derivations in this model looked inconsistent - the IRP
+preset at +20%, the NTCSA check at +15% - and reconciling them showed the percentage is the wrong
+thing to compare.
+
+The same setting lands on a different TWh in every scenario, because the base moves with the
+rooftop fleet:
+
+```
+preset                       demand setting   Eskom-served TWh
+Deep decarbonisation 2035          +5%             183.3
+IRP path 2035                      +5%             183.3
+Fossil-free 2040                   +5%             173.0
+IRP's 2030 targets                +20%             224.2
+```
+
+Ten terawatt-hours between two presets on the same setting, because Fossil-free builds 16.8 GW of
+new rooftop against 10.8 and rooftop is behind the meter.
+
+So the target is the TWh and the percentage is only how this model is told to reach it. On that
+basis the NTCSA check was wrong: its derivation asks for 222.4 TWh and +15% produces 217.1. It is
+now +18%, which produces 224.3.
+
+THAT CHANGES THE COMPARISON, and not in our favour:
+
+```
+                          unserved TWh   OCGT utilisation
+NTCSA risk-adjusted 2030   more than 4        about 45%
+this model at +15%             5.9              52.4%
+this model at +18%             7.9              58.9%
+```
+
+The unserved check still passes. The OCGT check now fails at 58.9% against a band topping out at
+58. That is the right outcome rather than a problem to fix: the demand figure was derived, the
+peakers work harder than NTCSA's at that demand, and the check says so. Tuning the demand back to
+15% to keep the check green would be fitting the input to the answer.
+
+Also documented, because it had never been written down: the +5% carried by the two transition
+presets and the IRP counterfactual is about half a percent a year to 2035 - electrification and
+industrial recovery against efficiency and continued grid defection. It is not the IRP's
+forecast and not a forecast of this project's own. It is held constant across the three so the
+comparison between them is about the build.
+
 ---
 
 ## Fossil free, re-measured
