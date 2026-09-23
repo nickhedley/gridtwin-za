@@ -2389,15 +2389,21 @@ held, against the 150 assumed. The rest of that table is not reserve and is not 
 reactive power R468m, system restoration R376m, Power Alert R78m.
 
 ```
-                          at R150 assumed   at R100 sourced
-ancillary revenue           R197,100/MW-yr   R131,400/MW-yr
-paid to the 3.5 GW fleet    R695m            R463m
-share of the R1.97bn pot    35%              24%
+                            assumed R150    applied R100    approved R52
+ancillary revenue          R197,100/MW-yr  R131,400/MW-yr  R68,328/MW-yr
+paid to the 3.5 GW fleet   R695m           R463m           R241m
+share of the reserve pot   35%             24%             24%
 ```
 
-Twenty-four per cent of the reserve budget going to storage, with the rest to coal and demand
+Which of the two derivations is the default matters, and it is the lower one. NTCSA APPLIED for
+R1,966m of reserve; NERSA APPROVED R1,518m of ancillary services in total, of which the
+application's reserve share is about R1,017m. An application is not an outturn and NERSA applies
+a prudency test - the same reasoning the fixed O&M block already carries - so the default is
+R52/MWh with R100 as the upper bound. Quote the range, not a point.
+
+Twenty-four per cent of the reserve pot going to storage, with the rest to coal and demand
 response, is the right order: Eskom Generation is still the largest reserve provider. A check
-now asserts the model never pays storage more than the whole published budget.
+now asserts the model never pays storage more than the whole approved allowance.
 
 The 15% held share stays a judgement and is labelled as one. ERCOT batteries offer far more than
 that, but they do it in a market that pays for it, and South Africa has none to bid into.
@@ -2408,6 +2414,68 @@ What this means for the ancillary recommendation: the saturation SHAPE was alway
 the revenue LEVEL is now defensible to within the one remaining assumption. The knee is
 unchanged at about 4.5 GW against a 3.5 GW fleet, because the knee depends on the requirement
 rather than on the price.
+
+### The rest of the ancillary budget: where it sits, and what is not modelled
+
+Build `2026-09-23q`, 23 Sep 2026. NTCSA's ancillary services are R2,946m in FY2026, of which
+this model prices only reserve. Checked where the others sit rather than assuming they were
+missing.
+
+They are already in the retail stack. NETWORK_RETAIL_R carries NTCSA's wires business including
+R1,518m of approved ancillary services, so reactive power, system restoration and Power Alert
+are inside the network line a household pays. They are correctly ABSENT from system cost, for
+the same reason reserve and inertia payments are: they are transfers to providers, not
+resources consumed.
+
+What is not modelled is the REVENUE side of two of them, and one is growing fast:
+
+```
+NTCSA application            FY2026    FY2027    FY2028    FY2030
+system restoration            R376m     R785m   R1,689m   R3,741m
+reactive power and voltage    R468m     R436m     R475m     R637m
+```
+
+System restoration spend is applied to rise nearly tenfold by FY2030, because a grid with less
+synchronous plant needs more black-start capability in more places, and NTCSA says so in its own
+risk section. Batteries and grid-forming inverters can provide both black start and reactive
+power. Neither is a revenue stream in the storage panel, so every storage business case here is
+missing them.
+
+That is a gap worth naming rather than filling badly: there is no South African price for either
+service yet, which is precisely what the ancillary market design work would settle.
+
+### Voltage support priced; system restoration deliberately not
+
+Build `2026-09-23r`, 23 Sep 2026. Checked first that neither service was hiding in a generic
+ancillary bucket: the model had exactly three ancillary levers - reserve, inertia and capacity
+payments - and no reactive power or black start anywhere.
+
+Reactive power is now a revenue line, off by default. A battery inverter can supply or absorb
+reactive power whether or not it is moving energy, and NTCSA buys R468m of it a year.
+
+```
+                        R/MW-yr
+GB obligatory service    34,500   about GBP 1,500/MW-yr, what batteries have actually earned
+GB Capenhurst contract   60,000   about GBP 2,600/MW-yr over nine years, the only long-term
+                                  reactive-power deal a battery has won - the default here
+```
+
+It saturates on the reserve principle, against NTCSA's own R468m budget: R60,000/MW-yr at
+today's 3.5 GW fleet, 45% of the budget, falling to R46,800 at 10 GW. A check asserts it can
+never exceed what the System Operator buys.
+
+Against a reserve line of R68,328/MW-yr, voltage support is nearly as large. That is the finding:
+a service South Africa already pays for, that storage can provide, and that no storage business
+case here has been counting.
+
+System restoration is NOT priced, deliberately. It is the bigger budget - R376m in FY2026 rising
+to R3,741m by FY2030 - but no battery anywhere has yet won a restoration contract; NESO has taken
+batteries only as far as feasibility studies. There is no price to put here and inventing one
+would be worse than the gap.
+
+Corroboration for a constant already in the model: GB stability contracts, which pay for inertia
+and short-circuit level from grid-forming batteries, cleared at GBP 5,000-25,000/MW-yr, about
+R115,000-575,000. The model's inertia payment is R100,000/MW-yr, at the bottom of that range.
 
 ---
 

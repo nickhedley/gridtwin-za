@@ -5896,19 +5896,48 @@ const FIXED = {
   // phase-weighted figure. 100 means the TDP delivers on its own published phases; 0 means
   // headroom stays at today's GCCA snapshot forever.
   tdpConfidencePct: 100,
-  asReserveOn: false, asInertiaOn: false, capacityPaymentOn: false,
-  // RESERVE CAPACITY PRICE, sourced 23 Sep 2026. Was 150 with no derivation. NTCSA's MYPD 6
-  // revenue application, Table 10, is what the System Operator actually pays for ancillary
-  // services: reserves R1,445m and demand-response reserves R521m in FY2026, against a
-  // reserve requirement whose hourly mean this model puts at 2,237 MW. R1.966bn over
-  // 2,237 MW x 8,760 h is R100/MWh of capacity held. The rest of that table - reactive power
-  // R468m, system restoration R376m, Power Alert R78m - is not reserve and is not in here.
+  asReserveOn: false, asInertiaOn: false, capacityPaymentOn: false, asVoltageOn: false,
+  // VOLTAGE SUPPORT, R/MW-yr, and the size of the pot it is paid from.
   //
-  // SANITY CHECK on the pair of assumptions below. At R100 and a 15% held share, the model
-  // pays the 3.5 GW storage fleet about R463m a year, 24% of the R1.97bn reserve budget. The
-  // rest goes to coal and to demand response, which is the right order: Eskom Generation is
-  // still the largest reserve provider. A figure above the budget would be an error.
-  asReserveRMWh: 100,           // R/MWh on reserve capacity held
+  // 60,000 is Great Britain's Capenhurst voltage contract, the only long-term reactive-power
+  // deal a battery has won: an availability payment of about GBP 2,600/MW-yr over nine years,
+  // at roughly R23/GBP. The obligatory reactive power service pays batteries less - about
+  // GBP 1,500/MW-yr, R34,500 - so this is the upper end of what has actually been paid.
+  // Neither is a South African price, because South Africa does not buy reactive power
+  // competitively; it is what the service is worth where it is bought.
+  //
+  // asVoltagePotRm is NTCSA's own reactive power and voltage control budget, R468m in FY2026
+  // (MYPD 6 application, Table 10). The fleet cannot earn more than the System Operator buys,
+  // which is what caps this line as the fleet grows - the same rule as reserve.
+  //
+  // NOT MODELLED, and it is the larger of the two: system restoration. NTCSA's budget for it
+  // rises from R376m in FY2026 to R3,741m by FY2030, and no battery anywhere has yet won a
+  // restoration contract - NESO has only taken batteries as far as feasibility studies. There
+  // is no price to put here, and inventing one would be worse than the gap.
+  asVoltageRMWyr: 60000, asVoltagePotRm: 468,
+  // RESERVE CAPACITY PRICE, sourced 23 Sep 2026. Was 150 with no derivation.
+  //
+  // NTCSA's MYPD 6 APPLICATION, Table 10, asks for R1,445m of reserves and R521m of
+  // demand-response reserves in FY2026, R1.966bn, out of R2,946m of ancillary services in
+  // total. NERSA APPROVED R1,518m of ancillary services in the same period (the figure behind
+  // NETWORK_RETAIL_R). Applying the application's reserve share of 67% to what was approved
+  // gives about R1,017m of reserve.
+  //
+  // Against a reserve requirement whose hourly mean this model puts at 2,237 MW - 19.6 TWh of
+  // capacity held a year - the two derivations bracket the price:
+  //
+  //   approved, apportioned   R1,017m / 19.6 TWh = R52/MWh     <- the default here
+  //   as applied for          R1,966m / 19.6 TWh = R100/MWh    <- upper bound
+  //
+  // The lower figure is the default for the same reason the fixed O&M block gives: an
+  // application is not an outturn, NERSA applies a prudency test, and the approved number is
+  // what is actually paid. Quote the range, not a point.
+  //
+  // SANITY CHECK on the pair of assumptions. At R52 and a 15% held share the model pays the
+  // 3.5 GW storage fleet about R241m a year, a quarter of the apportioned reserve allowance,
+  // with the rest going to coal and demand response. That is the right order: Eskom Generation
+  // is still the largest reserve provider. A figure above the whole allowance would be an error.
+  asReserveRMWh: 52,            // R/MWh on reserve capacity held
   asInertiaRkWyr: 100,          // R/kW/yr, grid-forming and synchronous only
   // Share of a battery's OWN power held back to offer as reserve - a bidding decision by the
   // asset, not a system property. 0.15 is a judgement and stays one: ERCOT batteries offer far
@@ -12429,10 +12458,22 @@ function bessRevenueStack(r, hours, fleetOverrideMW){
     reserve += v;
   }
   const inertia = Math.max(0, state.asInertiaOn ? (state.asInertiaRkWyr || 0) : 0) * 1000 * 0.5;
-  const anc = reserve + inertia;
+  // VOLTAGE SUPPORT, added 23 Sep 2026. A battery's inverter can supply and absorb reactive
+  // power whether or not it is moving energy, and NTCSA buys reactive power and voltage control
+  // - R468m in FY2026 - but this panel had no line for it, so every storage business case here
+  // was missing a revenue stream the System Operator already pays for.
+  //
+  // Saturates on the same principle as reserve: the pot is what the System Operator buys, so
+  // per-MW revenue falls once the fleet could supply the whole of it.
+  const _voltR = Math.max(0, state.asVoltageOn ? (state.asVoltageRMWyr || 0) : 0);
+  const _voltPot = Math.max(1, state.asVoltagePotRm ?? FIXED.asVoltagePotRm) * 1e6;
+  const voltage = _voltR > 0
+    ? _voltR * Math.min(1, _voltPot / Math.max(1, _voltR * _fleetMW))
+    : 0;
+  const anc = reserve + inertia + voltage;
 
   const tot = arb + anc + cap;
-  return { arb, anc, cap, tot, hours, products, reserve, inertia,
+  return { arb, anc, cap, tot, hours, products, reserve, inertia, voltage,
            pct: t => tot > 0 ? 100 * t / tot : 0 };
 }
 
@@ -15106,6 +15147,16 @@ const SLIDERS=[
   {id:'asInertiaRkWyr',label:'\u2013 inertia pricing',min:0,max:400,step:10,def:FIXED.asInertiaRkWyr,ctrlStyle:SUB_CTRL,
    fmt:v=>v===0?'none':'R'+v+'k/GVA\u00b7s/yr',
    note:'Paid-for inertia, which South Africa does not procure yet but will need as inverter-based generation grows. Earned only by plants that can provide it: synchronous machines inherently, grid-forming batteries synthetically. Priced in GVA\u00b7seconds.'},
+  {id:'asVoltageOn',toggle:true,def:false,label:'Price voltage support',
+   note:'Pay storage for reactive power and voltage control. NTCSA buys R468m of it a year today and a battery inverter can supply or absorb reactive power whether or not it is moving energy, but South Africa does not buy it competitively, so the default is off.'},
+  {subgrp:'Voltage settings'},
+  {id:'asVoltageRMWyr',label:'\u2013 voltage availability payment',min:0,max:150000,step:5000,def:FIXED.asVoltageRMWyr,ctrlStyle:SUB_CTRL,
+   fmt:v=>'R'+(v/1000).toFixed(0)+'k/MW\u00b7yr',
+   note:'R60,000/MW-yr is Great Britain\u2019s Capenhurst contract, the only long-term reactive-power deal a battery has won, at about GBP 2,600/MW-yr over nine years. The obligatory service pays batteries about half that. No South African price exists.'},
+  {id:'asVoltagePotRm',label:'\u2013 voltage budget',min:0,max:2000,step:50,def:FIXED.asVoltagePotRm,ctrlStyle:SUB_CTRL,
+   fmt:v=>'R'+v+'m/yr',
+   note:'What the System Operator buys in total, so the fleet cannot earn more than this. R468m is NTCSA\u2019s reactive power and voltage control line for FY2026 (MYPD 6, Table 10).'},
+  {endsub:true},
   {id:'capacityPaymentOn',toggle:true,def:false,label:'Capacity payments',
    note:'Off by default: South Africa has no capacity mechanism. The August 2026 Electricity Pricing Policy says capacity charges are needed; switch on to model one.'},
   {id:'capacityPaymentLdsRkWyr',label:'\u2013 long-duration premium',min:0,max:15000,step:250,
@@ -16658,7 +16709,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23p';
+const BUILD_STAMP = '2026-09-23r';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

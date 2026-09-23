@@ -157,15 +157,34 @@ setTimeout(()=>{
                    + `${(r.nowMW/1000).toFixed(1)} GW - approaching, not past`
                  : 'no knee found in the sweep');
       // The model must not pay storage more for reserve than the System Operator pays for
-      // reserve in total. NTCSA MYPD 6 Table 10, FY2026: reserves R1,445m plus demand-response
-      // reserves R521m, so R1.97bn. Added 23 Sep 2026 with the sourced reserve price.
+      // reserve in total. NERSA approved R1,518m of ancillary services for FY2026, of which the
+      // application's reserve share is about R1,017m. The band below is that, not the larger
+      // figure NTCSA applied for. Added 23 Sep 2026 with the sourced reserve price.
       const fleetPayRbn = r.pts.length
         ? (r.pts.find(p => Math.abs(p.mw - r.nowMW) < 600) || r.pts[0]).anc * r.nowMW / 1e9
         : 0;
+      // Voltage support, added 23 Sep 2026: the fleet cannot earn more than the System Operator
+      // buys. NTCSA MYPD 6 Table 10, FY2026: reactive power and voltage control R468m.
+      const volt = probe(`
+        state.asVoltageOn = true;
+        const r = simulate({ ...state }, PROFILES);
+        const now = (state.newBattMW||0) + FIXED.psPowerMW + FIXED.battPowerMW;
+        const a = bessRevenueStack(r, 4, now), b = bessRevenueStack(r, 4, 20000);
+        state.asVoltageOn = false;
+        return { perMWnow: a.voltage, perMW20: b.voltage, fleetMW: now,
+                 potRm: (state.asVoltagePotRm ?? FIXED.asVoltagePotRm) };`);
+      if (volt && !volt.error){
+        const paidRm = volt.perMWnow * volt.fleetMW / 1e6;
+        check('voltage support revenue stays inside the System Operator\'s reactive power budget',
+              paidRm > 0 && paidRm <= volt.potRm && volt.perMW20 < volt.perMWnow,
+              `R${paidRm.toFixed(0)}m a year to the ${(volt.fleetMW/1000).toFixed(1)} GW fleet `
+              + `against a R${volt.potRm}m budget, falling from R${Math.round(volt.perMWnow/1000)}k `
+              + `to R${Math.round(volt.perMW20/1000)}k per MW at 20 GW`);
+      }
       check('storage reserve revenue stays inside the published reserve budget',
-            fleetPayRbn > 0 && fleetPayRbn < 1.97,
+            fleetPayRbn > 0 && fleetPayRbn < 1.02,
             `R${fleetPayRbn.toFixed(2)}bn a year to the ${(r.nowMW/1000).toFixed(1)} GW fleet `
-            + `against NTCSA's R1.97bn reserve budget`);
+            + `against the R1.02bn of reserve inside NERSA's approved ancillary allowance`);
       console.log(`  ancillary      knee ~${knee?(knee.mw/1000).toFixed(1):'?'} GW · fleet `
         + `${(r.nowMW/1000).toFixed(1)} GW · reserve price R${r.price}/MWh`);
     }

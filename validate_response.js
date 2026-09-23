@@ -164,6 +164,13 @@ const CONTEXT = {
   // reason their sliders are skipped above.
   asInertiaOn:       { __skip: true },
   capacityPaymentOn: { __skip: true },
+  // Voltage support, added 23 Sep 2026. Same class as the two above: reactive power is a
+  // revenue stream for an inverter that is already there, not a dispatch signal, and the panel
+  // is where it lands. validate_findings asserts it cannot exceed the System Operator's own
+  // reactive power budget.
+  asVoltageOn:     { __skip: true },
+  asVoltageRMWyr:  { __skip: true },
+  asVoltagePotRm:  { __skip: true },
   exportPriceR: { exportCapMW: 3000, newWindMW: 45000, newPvMW: 52000, coalDecomMW: 27000 },
 };
 
