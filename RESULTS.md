@@ -2479,6 +2479,13 @@ R115,000-575,000. The model's inertia payment is R100,000/MW-yr, at the bottom o
 
 ### The bill, not the rate, 23 Sep 2026
 
+> RATE CORRECTED 23 Sep 2026. The box priced the bill off the unweighted mean of the hourly
+> series, which appears nowhere on screen - and which the table's own comment calls a figure
+> describing no customer, since nobody consumes flat across 8,760 hours. It now uses the
+> load-weighted "Dynamic pricing, habits unchanged" row, which a reader can find in the table
+> above it. Today 2026 moves R3.75 to R3.78/kWh; the 900 kWh bill R3,909 to R3,936, the 190 kWh
+> bill R1,248 to R1,254. The fixed shares, 14% and 43%, are unchanged.
+
 > CUT BACK the same day. The retail panel now shows only the translation from R/kWh to a monthly
 > bill, with the fixed charge and its share. The rooftop comparison was removed from the panel:
 > it needs a self-consumption share and an export-credit assumption that nothing else in that
