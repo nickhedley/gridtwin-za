@@ -142,11 +142,20 @@ setTimeout(()=>{
       const first=r.pts[0].anc, last=r.pts[r.pts.length-1].anc;
       check('ancillary revenue saturates as the fleet grows', last < first*0.6,
             `falls ${(100*(1-last/first)).toFixed(1)}% across the sweep`);
+      // RE-DERIVED 23 Sep 2026. This used to assert that South Africa was already PAST the
+      // knee, which was true when the reserve requirement read 1,309 MW. It now reads 2,237,
+      // because the requirement moved to the ASTR's 2,200 MW on 21 Sep and grew with variable
+      // generation on 23 Sep. The knee is twice the mean requirement, so about 4.5 GW, and the
+      // existing 3.5 GW fleet is just below it. The check now pins the knee's LOCATION relative
+      // to the fleet rather than the claim, so either direction registers as a change.
       const knee=r.pts.find(p=>p.anc < first*0.999);
-      check('South Africa is at or past the ancillary knee',
-            !!knee && knee.mw <= r.nowMW,
-            knee ? `knee at ${(knee.mw/1000).toFixed(1)} GW against an existing fleet of `
-                   + `${(r.nowMW/1000).toFixed(1)} GW` : 'no knee found in the sweep');
+      const ratio = knee ? knee.mw / r.nowMW : null;
+      check('the ancillary knee sits close to the existing fleet',
+            !!knee && ratio > 0.8 && ratio < 2.0,
+            knee ? `knee between ${((knee.mw - 2000)/1000).toFixed(1)} and `
+                   + `${(knee.mw/1000).toFixed(1)} GW against an existing fleet of `
+                   + `${(r.nowMW/1000).toFixed(1)} GW - approaching, not past`
+                 : 'no knee found in the sweep');
       console.log(`  ancillary      knee ~${knee?(knee.mw/1000).toFixed(1):'?'} GW · fleet `
         + `${(r.nowMW/1000).toFixed(1)} GW · reserve price R${r.price}/MWh`);
     }

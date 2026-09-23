@@ -3232,6 +3232,21 @@ THE KNEE IS 2,618 MW, NOT 3,800. The existing 3,700 MW fleet is already 41% PAST
 it, at a saturation factor of 0.71. A battery built today does not earn the full
 ancillary rate; that point passed some time ago.
 
+> CORRECTED AGAIN 23 Sep 2026, and it moves back the other way. The knee is twice the mean
+> reserve requirement, and that requirement has changed twice since: to the ASTR's 2,200 MW on
+> 21 Sep, and then growing with variable generation on 23 Sep. At defaults it now reads 2,237 MW,
+> so the knee is about 4.5 GW against an existing fleet of 3.5 GW - pumped storage 2,724 MW plus
+> 800 MW of batteries. South Africa is APPROACHING the knee, not past it: a battery built today
+> still earns the full ancillary rate, and the saturation factor is 1.0.
+>
+> The sweep confirms it: revenue is flat at R197,100/MW-yr to 4 GW, then falls to R146,972 at
+> 6 GW and R88,183 at 10 GW.
+>
+> The direction of the argument is unchanged and the urgency is lower than the September entry
+> claimed. What matters for policy is that the knee is close - one procurement round of storage
+> reaches it - so pricing ancillary services is worth settling before the fleet crosses it rather
+> than after.
+
 This points the same way as the old finding but harder. The case for pricing
 ancillary services is more urgent, not less, because the saturation is already
 here rather than approaching.
