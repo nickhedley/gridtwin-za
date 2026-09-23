@@ -426,6 +426,28 @@ setTimeout(()=>{
   //
   // Pinned so the choice cannot drift back silently. If a future change moves it, the
   // question to ask is whether the trade was re-decided, not whether the number moved.
+  // ── FLEET EAF TO COAL EAF ─────────────────────────────────────────────────
+  // Added 23 Sep 2026 with coalEafFromFleet. Everyone else publishes availability for the whole
+  // Eskom fleet; this model runs on coal alone. The function must reproduce the three pairs
+  // measured from ESK19679 with that year's nuclear output, or the presets and the external
+  // comparisons that now call it are drifting.
+  {
+    const e = probe(`
+      return { y2023: coalEafFromFleet(54.7, 0.493),
+               y2025: coalEafFromFleet(62.4, 0.620),
+               y2026: coalEafFromFleet(68.1, 0.609),
+               irp:   coalEafFromFleet(67) };
+    `);
+    if (e && !e.error){
+      const off = Math.max(Math.abs(e.y2023 - 49.7), Math.abs(e.y2025 - 58.4), Math.abs(e.y2026 - 65.3));
+      check('the fleet-to-coal availability conversion reproduces the measured years',
+            off < 1,
+            `2023 ${e.y2023.toFixed(1)} against 49.7, 2025 ${e.y2025.toFixed(1)} against 58.4, `
+            + `2026 ${e.y2026.toFixed(1)} against 65.3; the IRP's 67% fleet becomes `
+            + `${e.irp.toFixed(1)}% coal`);
+    }
+  }
+
   // ── COAL UTILISATION UNDER THE IRP'S OWN BUILD ────────────────────────────
   // Measured 22 Sep 2026. On the IRP's 2030 targets the model dispatches 110.9 TWh of coal,
   // 62% of what that fleet has available at 64% EAF, and emits 129 Mt. The IRP's own published

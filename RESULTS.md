@@ -1935,6 +1935,40 @@ preset shedding, so that build would need a little more capacity to stay inside 
 Imports need no such correction: the model delivers about 1,016 MW on average against 962 to
 1,223 MW measured across the same post-Mozal months.
 
+### Fleet availability to coal availability, in one function, 23 Sep 2026
+
+Build `2026-09-23b`. Eskom, NERSA, the IRP and the MTSAO all publish availability for the whole
+Eskom fleet; this model runs on coal alone, which is lower because nuclear, hydro, pumped storage
+and the OCGTs are more available. The conversion was done by hand each time - 64 for the IRP's
+66-68, 56 for the MTSAO's 60 - and hand conversions drift.
+
+coalEafFromFleet now does it, and the presets and the MTSAO check call it:
+
+```
+                                         was     now
+IRP 2030, Grid delay, IRP path 2035       64      63.0   (the IRP's 67% fleet)
+Backcast 2025                             58.4    57.7   (2025's 62.4% fleet, nuclear 0.620)
+MTSAO risk-adjusted check                 56      54.4   (the MTSAO's 60% fleet)
+```
+
+Against the years it can be measured on, with that year's nuclear output:
+
+```
+year         fleet   function   measured
+2023          54.7      49.0      49.7
+2025          62.4      57.7      58.4
+2026 to Aug   68.1      64.7      65.3
+```
+
+Within 0.7 points, and a findings check holds it there. Nothing moves materially: the IRP 2030
+preset stays at 129 Mt, the backcast goes from 6 to 9 GWh of shed energy, and the MTSAO case
+stays inside its bands.
+
+The non-coal availability behind it, 90%, is still an assumption. ESK19679 carries fleet
+capability loss rather than per-station availability, so hydro, pumped storage and OCGT
+availability cannot be read from it. Five points on that figure moves the coal number by about
+0.8 points - immaterial for scenarios, but enough to matter in a borderline external comparison.
+
 ---
 
 ## Fossil free, re-measured

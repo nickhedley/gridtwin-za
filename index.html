@@ -10914,6 +10914,36 @@ const TX_SHALLOW = 0.25, TX_BEYOND = 1.5;
 // One region's allocation, split across the three tiers. The engine calls it for every region
 // and the siting panel calls it for the one the user picked, so both price a megawatt the same
 // way. Returns rand a year and the megawatts in each tier.
+// FLEET EAF TO COAL-ONLY EAF, 23 Sep 2026. Eskom, NERSA, the IRP and the MTSAO all quote
+// availability for the whole Eskom fleet; this model's coalEAFPct is coal alone, which runs
+// lower because nuclear, hydro, pumped storage and the OCGTs are more available. The conversion
+// was done by hand each time it was needed - 64 for the IRP's 66-68, 56 for the MTSAO's 60 -
+// and hand conversions drift. One function now, and a findings check holds it to the measured
+// pairs below.
+//
+//   coal availability = (fleet availability x whole fleet - nuclear at its own factor
+//                        - everything else at EAF_NONCOAL_AVAIL) / coal capacity
+//
+// MEASURED PAIRS, from ESK19679 by the same arithmetic, with that year's nuclear output: 2023
+// fleet 54.7 coal 49.7 at a nuclear factor of 0.493; 2025 62.4 and 58.4 at 0.620; 2026 to
+// August 68.1 and 65.3 at 0.609. The function reproduces all three within 0.4 points. The gap
+// narrows as coal recovers, because it is the non-coal share times the availability difference,
+// so a fixed offset would be wrong. Pass the year's nuclear factor for a backcast; a forward
+// scenario takes FIXED.nuclearCF.
+//
+// EAF_NONCOAL_AVAIL IS AN ASSUMPTION, not a measurement: ESK19679 carries fleet capability loss,
+// not per-station availability, so hydro, pumped storage and OCGT availability cannot be read
+// from it. Five points on it moves the coal figure by about 0.8 points, which does not change
+// any scenario materially but would move a borderline external comparison.
+const EAF_NONCOAL_AVAIL = 0.90;
+function coalEafFromFleet(fleetPct, nuclearFactor, p){
+  const P = p || FIXED;
+  const other = P.hydroMW + P.psPowerMW + P.ocgtDieselMW;
+  const fleetMW = P.coalInstalledMW + P.nuclearMW + other;
+  const nuc = (nuclearFactor != null) ? nuclearFactor : P.nuclearCF;
+  const availMW = (fleetPct / 100) * fleetMW - P.nuclearMW * nuc - other * EAF_NONCOAL_AVAIL;
+  return 100 * availMW / P.coalInstalledMW;
+}
 function txTierCharge(mw, existingMW, tdpMW, mult, base){
   let left = Math.max(0, mw || 0);
   const t1 = Math.min(left, Math.max(0, existingMW || 0)); left -= t1;
@@ -14924,7 +14954,7 @@ const PRESETS={
   // Sized on the Northern Cape, where connection capacity has been full since 2022 and which
   // carries the best resource - so a corridor that slips there holds back a large share of a
   // national programme rather than a marginal one.
-  'Grid delay':{demandGrowthPct:20,coalEAFPct:64,coalDecomMW:8000,newWindMW:4400,newPvMW:6200,
+  'Grid delay':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:4400,newPvMW:6200,
                 newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,
                 congestionCurtailPct:10},
   // IRP 2025 (gazetted 28 Oct 2025), 2030 targets. Demand and EAF re-derived 22 Sep 2026 from
@@ -14945,7 +14975,7 @@ const PRESETS={
   //   coalEAFPct 68      : top of the IRP's stated 66-68% target band. For scale,
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
-  'Latest IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:64,coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
+  'Latest IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1},
   // IRP path 2035. The counterfactual the two transition presets should be read against: what
   // the published plan builds by 2035, on the same demand and the same weather, so a retail
   // comparison measures the transition rather than the passage of time. Comparing either of
@@ -14968,7 +14998,7 @@ const PRESETS={
   // preset runs at +20%, its published trajectory. So this preset's emissions are NOT
   // comparable with the IRP's own 142 Mt for 2035 - it is the IRP's build on this model's
   // demand, which is the comparison the retail panel needs.
-  'IRP path 2035':{demandGrowthPct:5,coalEAFPct:64,coalDecomMW:16000,newWindMW:22200,newPvMW:18900,
+  'IRP path 2035':{demandGrowthPct:5,coalEAFPct:coalEafFromFleet(67),coalDecomMW:16000,newWindMW:22200,newPvMW:18900,
                    newRooftopMW:10800,newBattMW:6100,newBattHours:4,newCcgtMW:11600,lcoeCcgt:2500,
                    ccgtForceLoad:1,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
@@ -14991,7 +15021,7 @@ const PRESETS={
   // capacity in those hours, so availability and deliverability are not the gap. Read the preset
   // as a fixed set of 2025 inputs, and read the model as optimistic about the last gigawatt or
   // two of peaking in a crisis.
-  'Backcast 2025':{demandGrowthPct:0,coalEAFPct:58.4,windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025,scenarioYear:2026},
+  'Backcast 2025':{demandGrowthPct:0,coalEAFPct:coalEafFromFleet(62.4,0.620),windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025,scenarioYear:2026},
   'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:25000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
@@ -16382,7 +16412,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23a';
+const BUILD_STAMP = '2026-09-23b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

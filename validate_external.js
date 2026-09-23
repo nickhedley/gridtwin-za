@@ -242,8 +242,9 @@ function check(name, ok, detail) {
   //           was about 204.7 TWh in 2024 against the MTSAO's 243 for the same year, a ratio of
   //           1.187; 264 / 1.187 is 222.4 TWh, which is +15% on this model's base. The ratio is
   //           assumed constant, and it is the single most sensitive input here.
-  //   coal    moderate EAF 60% is Eskom's whole fleet; coal alone runs lower by about the
-  //           non-coal share times the availability difference, so 56.
+  //   coal    moderate EAF 60% is Eskom's whole fleet. The conversion to coal alone is now
+  //           coalEafFromFleet in index.html rather than a number typed here; at 60 it gives
+  //           54.4 against the 56 this check used before.
   //   fleet   8.4 GW of coal shut, 0.34 GW of Acacia and Port Rex, Cahora Bassa at 288 MW -
   //           1,150 MW for the quarter it runs before the contract ends in March 2030.
   //   new     risk-adjusted category, about 13.2 GW by 2030, less what this model's 2026 fleet
@@ -255,7 +256,7 @@ function check(name, ok, detail) {
   const mtsao = (() => {
     const s = w.document.createElement('script');
     s.textContent = `
-      { const ov = { demandGrowthPct: 15, coalEAFPct: 56, coalDecomMW: 8400, importsMW: 288,
+      { const ov = { demandGrowthPct: 15, coalEAFPct: coalEafFromFleet(60), coalDecomMW: 8400, importsMW: 288,
                      dieselDecomMW: 340, newWindMW: 3500, newPvMW: 7000, newRooftopMW: 1200,
                      newBattMW: 1900, newBattHours: 4, newCcgtMW: 0 };
         const u = [], cf = [];
