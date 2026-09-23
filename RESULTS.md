@@ -2261,6 +2261,44 @@ is allowed to arrive fast enough. The same question the IRP is answering with 16
 Neither run is at the new cap, so these are economics rather than a constraint - which was the
 point of lifting it.
 
+### Gas and the build pace: the sensitivities, 23 Sep 2026
+
+Build `2026-09-23k`, Fossil-free 2040 through the build LP, solved offline with HiGHS.
+
+Storage pace is what decides it:
+
+```
+storage build rate MW/yr    batteries built GW   duration   gas built GW
+ 500                                2.5             4h          2.0
+1000                                5.0             4h          0.9
+1500                                7.5             4h          0
+2000                                8.7             4h          0
+2500 (the default)                  8.7             4h          0
+```
+
+Gas disappears between 1.0 and 1.5 GW a year of storage. Above 2 GW a year storage stops at 8.7
+GW on its own economics rather than the cap, so the answer is no longer pace-limited.
+
+Gas cost is not what decides it. At the deliverable pace the LP builds no gas at any fuel price
+from R1,000 to R2,800/MWh, and none at any capital cost from R12,000/kW - USD 727, below every
+current benchmark - up to the R34,965 the model carries. A four-hour battery is simply cheaper
+per kilowatt of firm capacity than a CCGT, and it earns arbitrage on top.
+
+So the finding is narrow and strong at the same time: on this model's costs, new gas is not
+economic for covering the evening peak at any plausible gas price, PROVIDED storage can be built
+at 1.5 GW a year or more. Below that, gas returns - which is the position the IRP's own storage
+schedule puts the country in.
+
+What this does not cover, and should be said whenever it is quoted: the model has no industrial
+gas demand, no Mozambique supply cliff, and no LNG import economics, and the IRP's gas case rests
+partly on gas plant anchoring that infrastructure. It also assumes the reliability standard on
+the twelve-year average, and the weather years are reanalysis.
+
+The CCGT capital constant, which carried no note, is now sourced: GridLab's September 2025 study
+of actual projects puts recent combined-cycle capital at USD 2,000/kW or more against USD
+1,116-1,427 for 2026 and 2027 completions, and the model's R34,965/kW is USD 2,119. The negative
+decline rate is deliberate: gas turbine capital is rising.
+
 ---
 
 ## Fossil free, re-measured

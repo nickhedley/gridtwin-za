@@ -8663,6 +8663,15 @@ const BLD_COST = {
   // offshore substation and the spur to the nearest grid feature are INSIDE; onshore
   // reinforcement is not and is charged via txRateFor.
   offshore:{ c2026: 79200, decl:  0.0260 },
+  // CCGT. R34,965/kW is USD 2,119 at R16.50, and the decline rate is NEGATIVE because gas
+  // turbine capital is rising: GridLab's September 2025 study of actual project data finds
+  // recent combined-cycle projects routinely at USD 2,000/kW or more, against USD 1,116-1,427
+  // for plants completing in 2026 and 2027 and the ATB's USD 1,638 for 2030. Sourced here
+  // 23 Sep 2026; the constant itself predates that and carried no note.
+  //
+  // It makes no difference to what gets built. At the deliverable build pace the LP builds no
+  // gas anywhere between USD 727/kW and this figure, because a 4-hour battery is cheaper per
+  // kilowatt of firm capacity and earns arbitrage on top. See RESULTS.md.
   ccgt:    { c2026: 34965, decl: -0.0200 },
 };
 // vrfb gets 25 years: 20,000-30,000 cycles and a 25-30 year calendar life, with
@@ -16543,7 +16552,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23j';
+const BUILD_STAMP = '2026-09-23k';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
