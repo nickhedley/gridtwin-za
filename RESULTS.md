@@ -2107,6 +2107,52 @@ lithium.
 Due a re-run on this pricing: the storage saturation table and the duration-substitutes-for-power
 finding, both measured when duration scaled linearly.
 
+### Storage saturation and duration, re-run on the power-and-energy split
+
+Build `2026-09-23f`, 23 Sep 2026. Both of the storage findings above were measured when battery
+capital scaled straight off duration. Re-run here on Deep decarbonisation 2035 with the preset's
+other settings held, shed energy priced at the IRP's cost of unserved energy, R87.85/kWh.
+
+Saturation, at 12 hours, default weather year:
+
+```
+new lithium GW   system R bn   + shed at COUE   shed GWh   spill TWh   discharge TWh   cycles/yr
+ 0                  268.4          344.6           867        77.6         0.04            4
+ 5                  262.8          271.6           100        69.6         2.24           32
+10                  269.2          270.2            11        66.2         4.72           36
+15                  279.1          279.2             1        65.2         6.14           32
+20                  290.2          290.2             0        65.2         6.20           25
+25                  301.4          301.4             0        65.2         6.28           20
+30                  312.5          312.5             0        65.2         6.28           17
+40                  334.8          334.8             0        65.2         6.28           13
+```
+
+Saturation survives and is sharper than the old table: discharge stops moving at about 6.3 TWh
+past 15 GW, spill stops moving at 65.2 TWh past 15 GW, and cycling falls from 36 a year to 13.
+On the default year alone the cost optimum against COUE is around 10 GW; the preset carries 20
+because it is sized on twelve weather years with a reliability margin, which the old entry's
+single-year sweep could not see.
+
+Duration, at equal stored energy of 240 GWh, twelve weather years:
+
+```
+                    mean cost R bn   mean shed GWh   worst
+20 GW at 12h             293.8            1.75       20.5 (2016)
+30 GW at 8h              296.3            1.75       20.5
+60 GW at 4h              303.9            1.75       20.5
+```
+
+The old claim was that duration substitutes for power and is worth about 8%. On the corrected
+pricing it is worth 3.3% between 4 and 12 hours, and the reliability is IDENTICAL to a tenth of a
+gigawatt-hour across all three - the same stored energy buys the same reliability whatever the
+power rating, because this system is energy-limited. The old 8% compared 20 GW at 12h with 40 GW
+at 8h, which is 240 GWh against 320, so it was partly measuring more storage rather than better
+storage.
+
+Method, for the record: twelve weather years rather than one binding year, both cost and
+reliability reported, shed energy priced rather than compared against zero, and no duration
+assumed - which is what the two superseded entries each lacked one of.
+
 ---
 
 ## Fossil free, re-measured
@@ -2272,7 +2318,7 @@ tested. This is now a twelve-year result rather than a single-year artefact, and
 rests entirely on the cost: at Form Energy's USD 20/kWh target the figure is R33,000/kW
 and the conclusion reverses.
 
-### Duration substitutes for power, and is worth about 8%
+### SUPERSEDED 23 Sep 2026 - Duration substitutes for power, and is worth about 8%
 
 20 GW at 12 hours appears repeatedly among the cheapest robust builds against 40 GW at
 8 hours. Same energy, fewer inverters. On the 2018 binding year, 20 GW at 12h costs
@@ -2379,7 +2425,11 @@ net-load hours rather than dumping it in blocks, because dumping produced an art
 
 ---
 
-## Lithium saturates, and the Deep decarbonisation preset was three times past it
+## SUPERSEDED 23 Sep 2026 - Lithium saturates, and the Deep decarbonisation preset was three times past it
+
+> Measured when battery capital scaled straight off duration, which priced an 8-hour system at
+> twice a 4-hour one and made inverters free. Re-run below. The saturation itself survives; the
+> cost column does not.
 
 Build `2026-09-17a`, 17 Sep 2026. Swept on Deep decarbonisation at 6 hours; system cost
 already carries new-build capex.
