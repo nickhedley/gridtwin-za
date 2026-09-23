@@ -344,10 +344,12 @@ function probe(w, src) {
     // Without this the term is plumbed and untested, which is how avgCost drifted 2.8%
     // through fifteen green harnesses in the first place.
     check('curtailFuelCost is non-zero in the coal-curtailment scenario',
+      // UPDATED 23 Sep 2026, 14.642 -> 13.9: Koeberg's factor moved to the latest rolling year
+      // (0.70 -> 0.66), so coal carries a little more and curtails a little less. Measured.
       // UPDATED 22 Sep 2026, 6.342 -> 14.642: demand re-anchored to 2026 and exports removed
       // from the series (build_demand_2026.py); the lower base leaves more forced coal with
       // nowhere to go. Deliberate, not drift.
-      cost.spill.curtailFuelCost / 1e9, 14.642, 0.7,
+      cost.spill.curtailFuelCost / 1e9, 13.9, 0.7,
       'R bn. If this reads zero the scenario has stopped producing coal curtailment and the identity below is no longer exercising the term - fix the scenario, not the check'
       + 'identity below is no longer exercising the term - fix the scenario, not the check',
       'R bn');
@@ -418,9 +420,14 @@ function probe(w, src) {
   // 2. PHYSICAL CONSISTENCY (must hold regardless of any external source)
   // ───────────────────────────────────────────────────────────────────────────
   const nuclearTwh = mix['Nuclear'] ? mix['Nuclear'].twh : 0;
-  // Koeberg is 1.86 GW. At a realistic 75-95% capacity factor that is 12-16 TWh.
-  checkRange('Nuclear output vs Koeberg capacity', nuclearTwh, 11, 16,
-    'Koeberg 1.86 GW at 75-95% CF = 12.2-15.5 TWh/yr', 'TWh/yr');
+  // REBASED 23 Sep 2026 against what Koeberg has actually delivered. The old band assumed a
+  // 75-95% capacity factor, which it has not reached since the steam generator replacements
+  // and life-extension outages. ESK19679, sent-out on 1,880 MW: 0.631 in 2022, 0.493 in 2023,
+  // 0.472 in 2024, 0.620 in 2025, 0.700 over the twelve months to May 2026 and 0.655 over the
+  // twelve to August. That is 7.8 to 11.5 TWh. The band below runs to 14 TWh so a genuine
+  // return to international performance still passes, and starts at 9 so a collapse does not.
+  checkRange('Nuclear output vs Koeberg capacity', nuclearTwh, 9, 14,
+    'Koeberg 1.88 GW at the 47-70% it has delivered since 2022 = 7.8-11.5 TWh/yr', 'TWh/yr');
 
   // Imports. REBASED 31 Aug 2026 against Eskom's audited energy balance.
   // The old band of 6-11 TWh came from the Cahora Bassa CONTRACT - 1.15 GW firm at high

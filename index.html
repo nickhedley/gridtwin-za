@@ -5570,6 +5570,21 @@ const FIXED = {
   // inconsistent carrier. 0.70 keeps the intended modest recovery allowance
   // while sitting on the right basis.
   //
+  // RE-MEASURED 23 Sep 2026 from ESK19679, and moved to 0.66. The 0.70 matches the twelve
+  // months to May 2026 exactly, which is the window it was derived from, but that window has
+  // since rolled past a refuelling outage:
+  //
+  //   calendar 2022  0.631     12m to May 2026  0.700
+  //   calendar 2023  0.493     12m to Aug 2026  0.655
+  //   calendar 2024  0.472     2026 to August   0.609
+  //   calendar 2025  0.620
+  //
+  // (Sent-out, on 1,880 MW. On the 1,854 MW sent-out rating each is about 1% higher.)
+  // The trend is a recovery from the steam generator replacements and life-extension outages
+  // of 2023 and 2024, so a forward figure above the worst years is right; 0.66 is the latest
+  // rolling twelve months rather than a judgement about how far the recovery runs. Re-read the
+  // rolling year when ESK19679 refreshes - a single calendar year lands on or off an outage.
+  //
   // NO windAvail / pvAvail DERATE. Availability and loss derates were briefly
   // added here and then removed as a double count. The national profiles are
   // Eskom Data Portal ESK19243 - actual metered hourly output - so availability,
@@ -5585,7 +5600,7 @@ const FIXED = {
   // that nameplate understates the true 2025 average operating fleet - a data
   // issue in profiles.json, listed in HANDOVER, not something to paper over with
   // a fabricated loss factor in the engine.
-  nuclearCF:0.70,
+  nuclearCF:0.66,
   // part-load heat RATE. A coal unit burns more fuel per MWh the further it is
   // backed off: auxiliaries, mill and fan power and boiler losses are largely
   // fixed, so they spread over less output. The model previously costed every
@@ -15028,7 +15043,7 @@ const PRESETS={
   // capacity in those hours, so availability and deliverability are not the gap. Read the preset
   // as a fixed set of 2025 inputs, and read the model as optimistic about the last gigawatt or
   // two of peaking in a crisis.
-  'Backcast 2025':{demandGrowthPct:0,coalEAFPct:coalEafFromFleet(62.4,0.620),windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025,scenarioYear:2026},
+  'Backcast 2025':{demandGrowthPct:0,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025,scenarioYear:2026},
   'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:25000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
@@ -16419,7 +16434,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23b';
+const BUILD_STAMP = '2026-09-23c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

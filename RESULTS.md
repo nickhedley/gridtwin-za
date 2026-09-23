@@ -1980,6 +1980,33 @@ OCGTs at 94 to 97% - so a 90% annual availability is consistent with what they d
 The live exposure is FIXED.nuclearCF at 0.70 for forward scenarios against 0.61 measured, which
 moves a conversion by 0.4 points and is a separate open item.
 
+### Koeberg's factor moved to the latest rolling year, 23 Sep 2026
+
+Build `2026-09-23c`. The constant read 0.70, and it was right for the window it came from - the
+twelve months to May 2026 measure exactly 0.700 sent-out on 1,880 MW. That window has since
+rolled past a refuelling outage.
+
+```
+calendar 2022   0.631        12m to May 2026   0.700
+calendar 2023   0.493        12m to Aug 2026   0.655
+calendar 2024   0.472        2026 to August    0.609
+calendar 2025   0.620
+```
+
+Now 0.66, the latest rolling twelve months, rather than a judgement about how far the recovery
+from the 2023 and 2024 steam generator and life-extension outages runs. Backcast 2025 takes its
+own year's 0.620. The rolling year is the figure to re-read when ESK19679 refreshes: a calendar
+year lands on or off an outage.
+
+What moved: nuclear 11.5 to 10.9 TWh a year, coal up by about the same, CO2 up 1 Mt on the coal
+presets, and the backcast from 9.2 to 12.3 GWh of shed energy. The fleet-to-coal availability
+conversion shifts 0.2 points, since it nets nuclear out at this factor.
+
+Two pinned checks moved with it, deliberately. The curtailed-coal-fuel identity goes 14.642 to
+13.9 R bn. And the physical check on Koeberg's output was assuming a 75-95% capacity factor,
+which it has not delivered since 2022: rebased to 9-14 TWh, wide enough that a real return to
+international performance still passes.
+
 ---
 
 ## Fossil free, re-measured
