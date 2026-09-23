@@ -2232,6 +2232,35 @@ harness check was matching diesel rows rather than the new ones and would have p
 duration bounds missing entirely. Renamed battdur_min_/battdur_max_, and the check now requires
 the capacity-credit rows too.
 
+### The build pace was the answer, not the economics, 23 Sep 2026
+
+Build `2026-09-23j`. The build LP defaulted to the IRP 2025 pace, whose 550 MW a year of storage
+comes from the plan's 8.5 GW by 2039. That cap bound in every scenario solved, so the LP was
+reporting the plan's procurement schedule rather than what the system wants. South Africa is
+already building faster than that: the storage windows alone have run near 0.6 GW each, with
+Eskom's own programme and private projects on top.
+
+A new default pace, Deliverable: Masterplan rates for wind, solar and gas with storage at 2.5 GW
+a year. The storage figure is a judgement about what can be delivered, not a published target,
+and it says so. The IRP pace stays as an option, which is the right constraint for questions
+about the plan.
+
+What the LP answers once the cap is lifted:
+
+```
+                            at the IRP pace              at the deliverable pace
+Deep decarbonisation 2035   2.75 GW batt, 4h, 2.5 gas    5.9 GW batt, 3.6h, no gas
+Fossil-free 2040            2.75 GW batt, 4h, 5.9 gas    8.7 GW batt, 4h, no gas
+```
+
+The gas is the finding. At 550 MW a year of storage the LP builds gas to cover the evening peak;
+at 2.5 GW a year it builds none in either scenario, because storage is cheaper than gas once it
+is allowed to arrive fast enough. The same question the IRP is answering with 16 GW of gas by
+2039, and the answer here turns on the procurement pace rather than the relative cost.
+
+Neither run is at the new cap, so these are economics rather than a constraint - which was the
+point of lifting it.
+
 ---
 
 ## Fossil free, re-measured
