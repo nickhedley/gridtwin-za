@@ -2153,6 +2153,30 @@ Method, for the record: twelve weather years rather than one binding year, both 
 reliability reported, shed energy priced rather than compared against zero, and no duration
 assumed - which is what the two superseded entries each lacked one of.
 
+### The build LP now prices lithium at the scenario's duration, 23 Sep 2026
+
+Build `2026-09-23g`. Both build LPs offered 4-hour lithium at a 4-hour price whatever the
+dispatch was running, so they were choosing between wind, solar, lithium, vanadium and iron-air
+on the wrong economics - and both high-renewables presets now build at 12 hours.
+
+bldStoreList hands each LP the same technology list with lithium at the scenario's duration and
+the matching capital multiplier. The build coefficient now moves with it:
+
+```
+newBattHours    4        8         12
+b_batt_2030   688,207  1,185,093  1,681,978
+ratio           1.000    1.722      2.444
+```
+
+A perturbation check in validate_lp asserts those ratios; it reads 1.000 at every duration on
+the previous build.
+
+Still fixed, and the next step: the LP cannot CHOOSE the duration, because power and energy are
+one build variable per technology. Splitting them - a variable in kilowatts and another in
+kilowatt-hours, with the state-of-charge cap on the second, as PyPSA does - is what would let it
+optimise duration rather than take it as given. The cost split that would price it now exists,
+so this is wiring rather than sourcing.
+
 ---
 
 ## Fossil free, re-measured

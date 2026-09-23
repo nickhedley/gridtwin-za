@@ -8781,6 +8781,21 @@ function capPayRate(tech, st){
 // `ex` is the EXISTING fleet in MW. Vanadium and iron-air are both zero in South
 // Africa today, which is the point: this is what it would take for either to be
 // worth building.
+// The lithium row's duration is the scenario's, not a fixed 4 hours. Both build LPs used to
+// offer only 4-hour lithium while the dispatch ran whatever the preset set - 12 hours in both
+// high-renewables presets since 23 Sep 2026 - so the LP was choosing between technologies on
+// the wrong economics. bldStoreList hands each LP the same list with lithium at the scenario's
+// duration and the matching capital multiplier; nothing else in the list moves.
+//
+// Still fixed: the LP cannot CHOOSE the duration, because power and energy are one build
+// variable per technology. Splitting them (a b_ for kilowatts and an e_ for kilowatt-hours,
+// as PyPSA does) is the next step, and the cost split that would price it now exists.
+function bldStoreList(S){
+  const hrs = (S && S.newBattHours) || FIXED.newBattHours;
+  return BLD_STORE.map(S2 => S2.t === 'batt'
+    ? { ...S2, hours: hrs, costMult: battDurationMult(hrs) }
+    : { ...S2, costMult: 1 });
+}
 const BLD_STORE = [
   { t:'batt',    dis:'bdis', chg:'bchg', eff:0.88, hours:4,   ex:(EX) => EX.batt },
   { t:'vrfb',    dis:'vdis', chg:'vchg', eff:0.75, hours:8,   ex:()   => 0 },
@@ -8801,6 +8816,12 @@ const BLD_STORE = [
 const BATT_POWER_SHARE = 0.278;
 function battDurationMult(hours){
   return BATT_POWER_SHARE + (1 - BATT_POWER_SHARE) * (hours || 4) / 4;
+}
+// The same annuity with a capital multiplier, for storage built at a duration other than the
+// one its constant is quoted at. The capacity payment is per kilowatt, so it is not multiplied.
+function bldNetAnnuityAt(tech, year, mult){
+  const gross = (bldAnnuity(bldCapex(tech, year), BLD_LIFE[tech]) + bldFom(tech, year)) * (mult || 1);
+  return Math.max(0, gross - capPayRate(tech) * (BLD_DERATE[tech] ?? 0));
 }
 function bldNetAnnuity(tech, year){
   // Capital recovery PLUS fixed O&M, less any capacity payment. Fixed O&M was absent until
@@ -9091,6 +9112,7 @@ function bldBuildLP(opts){
   // global - reading undefined fields here silently produces NaN coefficients and
   // an LP that HiGHS refuses to parse.
   const S = { ...FIXED, ...(opts.state || {}) };
+  const STORE = bldStoreList(S);   // lithium at the scenario's duration
   // VoLL comes from FIXED.voll (R87,000/MWh, CSIR cost of unserved energy) -
   // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
   // planning than the dispatch engine prices them in operations. One number.
@@ -9106,8 +9128,11 @@ function bldBuildLP(opts){
   const obj = [];
   for (const t of T) for (const y of Y){
     let cost = 0;
+    // Lithium's capital scales with the duration this scenario builds at: see bldStoreList.
+    // The capacity payment inside the annuity is per kilowatt and is not scaled.
+    const _m = (t === 'batt') ? battDurationMult(S.newBattHours) : 1;
     for (const yy of Y) if (yy >= y)
-      cost += bldNetAnnuity(t, y) / Math.pow(1+BLD_DISC, yy-2026);
+      cost += bldNetAnnuityAt(t, y, _m) / Math.pow(1+BLD_DISC, yy-2026);
     // x1000: bldNetAnnuity is R/kW/yr and b_ is in MW. Without this the whole
     // capex side is 1000x too cheap against the fuel terms, building is
     // effectively free, and the optimiser just overbuilds VRE and spills.
@@ -9142,7 +9167,7 @@ function bldBuildLP(opts){
       // built for slow seasonal cycling rather than daily wear. Charging them is
       // still costed through the energy they consume in the balance row.
       const WEAR = { batt: 1.0, vrfb: 0.25, ironair: 0.15 };
-      for (const S2 of BLD_STORE){
+      for (const S2 of STORE){
         obj.push((S.lpBattDischargeCostR*WEAR[S2.t]*r.weight*df).toFixed(3)
           + ' ' + S2.dis + '_' + k);
       }
@@ -9164,7 +9189,7 @@ function bldBuildLP(opts){
                   + EX.wind*wp + (EX.pv + EX.rooftop)*sp + EX.csp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k
         + ' + u_' + k + ' - crt_' + k
-        + BLD_STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
+        + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
         + ' + ' + cum('wind',y).map(v => wp.toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('pv',y).map(v => sp.toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => sp.toFixed(4)+' '+v).join(' + ')
@@ -9176,7 +9201,7 @@ function bldBuildLP(opts){
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       // Same power limits for vanadium and iron-air: neither can charge or
       // discharge faster than what has been built.
-      for (const S2 of BLD_STORE){
+      for (const S2 of STORE){
         if (S2.t === 'batt') continue;
         L.push(' ' + S2.dis + 'max_' + k + ': ' + S2.dis + '_' + k + ' - '
           + cum(S2.t,y).join(' - ') + ' <= ' + S2.ex(EX));
@@ -9220,7 +9245,7 @@ function bldBuildLP(opts){
     // 3-day wind lull, and returns prevD in calendar order - so the drought these
     // stores exist for is in the sample and reachable.
     for (const r of rd){
-      for (const S2 of BLD_STORE){
+      for (const S2 of STORE){
         const dis = [], chg = [];
         for (let h = 0; h < 24; h++){
           dis.push(S2.dis+'_'+y+'_'+r.d+'_'+h);
@@ -9272,7 +9297,7 @@ function bldBuildLP(opts){
     // Every storage technology needs bounds, or its variables are unbounded and
     // the solve fails. The real limits are the power constraints above; these are
     // just a ceiling.
-    for (const S2 of BLD_STORE){
+    for (const S2 of STORE){
       L.push(' 0 <= ' + S2.dis + '_' + k + ' <= 100000');
       L.push(' 0 <= ' + S2.chg + '_' + k + ' <= 100000');
     }
@@ -9280,7 +9305,7 @@ function bldBuildLP(opts){
   // Stored energy level at the end of each representative day - one per
   // technology per day, so it sits outside the hourly loop above. The binding
   // limit is the ecap_ constraint; this is just a ceiling.
-  for (const y of Y) for (const r of rd) for (const S2 of BLD_STORE)
+  for (const y of Y) for (const r of rd) for (const S2 of STORE)
     L.push(' 0 <= e_' + S2.t + '_' + y + '_' + r.d + ' <= 2000000');
   L.push('End');
   return { lp: L.join('\n'), rate: RATE };
@@ -9635,6 +9660,7 @@ function bldBuildRegionalLP(opts){
   const rd = bldRepDays(8);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   const S = { ...FIXED, ...(opts.state || {}) };
+  const STORE = bldStoreList(S);   // lithium at the scenario's duration
   // VoLL comes from FIXED.voll (R87,000/MWh, CSIR cost of unserved energy) -
   // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
   // planning than the dispatch engine prices them in operations. One number.
@@ -9647,8 +9673,9 @@ function bldBuildRegionalLP(opts){
   const L = ['Minimize',' obj:']; const obj = [];
   for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y){
     let c = 0;
+    const _m = (t === 'batt') ? battDurationMult(S.newBattHours) : 1;   // see bldStoreList
     for (const yy of Y) if (yy >= y)
-      c += bldNetAnnuity(t, y) / Math.pow(1+BLD_DISC, yy-2026);
+      c += bldNetAnnuityAt(t, y, _m) / Math.pow(1+BLD_DISC, yy-2026);
     // x1000: R/kW/yr against a variable in MW. See the note in bldBuildLP.
     obj.push((c * 1000).toFixed(3) + ' b_' + t + '_' + ri + '_' + y);
   }
@@ -9674,7 +9701,7 @@ function bldBuildRegionalLP(opts){
       // so discharging was free - which removed the only marginal cost
       // distinguishing an 88%-efficient store from a 45%-efficient one.
       const WEAR_R = { batt: 1.0, vrfb: 0.25, ironair: 0.15 };
-      for (const S2 of BLD_STORE){
+      for (const S2 of STORE){
         obj.push((S.lpBattDischargeCostR*WEAR_R[S2.t]*r.weight*df).toFixed(3)
           + ' ' + S2.dis + '_' + k);
       }
@@ -9704,7 +9731,7 @@ function bldBuildRegionalLP(opts){
         // 2.75 GW on the identical scenario. Two modes of the same tool gave
         // contradictory answers to the same question.
         L.push(' bal_'+k+': gc_'+k+' + gd_'+k+' + u_'+k+' - crt_'+k
-          + BLD_STORE.map(S2 => ' + ' + S2.dis+'_'+k + ' - ' + S2.chg+'_'+k).join('')
+          + STORE.map(S2 => ' + ' + S2.dis+'_'+k + ' - ' + S2.chg+'_'+k).join('')
           + ' + ' + cum('wind',ri,y).map(v => wp.toFixed(4)+' '+v).join(' + ')
           + ' + ' + cum('pv',ri,y).map(v => sp.toFixed(4)+' '+v).join(' + ')
           + ' ' + flows.join(' ')
@@ -9721,7 +9748,7 @@ function bldBuildRegionalLP(opts){
         // Power rating per technology. Lithium keeps the reserve co-optimisation
         // term (rb_) because it is the only one currently offered into reserve;
         // vanadium and iron-air are energy-shifting here, not reserve providers.
-        for (const S2 of BLD_STORE){
+        for (const S2 of STORE){
           const exMW = S2.t === 'batt' ? ((BLD_EX_BATT&&BLD_EX_BATT[R])||0) : 0;
           L.push(' '+S2.dis+'max_'+k+': '+S2.dis+'_'+k
             + ((RESERVE_COOPT && S2.t === 'batt') ? ' + rb_'+k : '')
@@ -9735,7 +9762,7 @@ function bldBuildRegionalLP(opts){
     // cannot discharge more than its 4-hour duration allows. Same formulation as
     // the national LP, applied per region.
     for (const r of rd) for (let ri = 0; ri < BLD_REGIONS.length; ri++)
-    for (const S2 of BLD_STORE){
+    for (const S2 of STORE){
       const R = BLD_REGIONS[ri], dis = [], chg = [];
       for (let h = 0; h < 24; h++){
         dis.push(S2.dis+'_'+ri+'_'+y+'_'+r.d+'_'+h);
@@ -9844,7 +9871,7 @@ function bldBuildRegionalLP(opts){
       const _regPeak = _bldPeakDemand * Math.pow(1+growth, y-2026) * (BLD_LOAD_SHARE[R] || 0);
       const _storeCap = Math.max(hr.batt_mw || 0, _regPeak);
       L.push(' hb_'+ri+'_'+y+': '
-        + BLD_STORE.map(S2 => cum(S2.t,ri,y).join(' + ')).join(' + ')
+        + STORE.map(S2 => cum(S2.t,ri,y).join(' + ')).join(' + ')
         + ' <= ' + _storeCap.toFixed(1));
     }
     // build rate, national AND PER REGION.
@@ -9929,7 +9956,7 @@ function bldBuildRegionalLP(opts){
       const k = ri+'_'+y+'_'+r.d+'_'+h;
       L.push(' 0 <= gc_'+k+' <= 60000'); L.push(' 0 <= gd_'+k+' <= 4000');
       L.push(' 0 <= u_'+k+' <= 60000');  L.push(' 0 <= crt_'+k+' <= 60000');
-      for (const S2 of BLD_STORE){
+      for (const S2 of STORE){
         L.push(' 0 <= '+S2.dis+'_'+k+' <= 60000');
         L.push(' 0 <= '+S2.chg+'_'+k+' <= 60000');
       }
@@ -9949,7 +9976,7 @@ function bldBuildRegionalLP(opts){
   // Stored energy level at the end of each representative day.
   if (STORAGE_CHRONO)
     for (const y of Y) for (const r of rd) for (let ri = 0; ri < BLD_REGIONS.length; ri++)
-    for (const S2 of BLD_STORE)
+    for (const S2 of STORE)
       L.push(' 0 <= e_'+S2.t+'_'+ri+'_'+y+'_'+r.d+' <= 2000000');
   L.push('End');
   return { lp: L.join('\n'), rate: RATE, regional: true };
@@ -16464,7 +16491,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23f';
+const BUILD_STAMP = '2026-09-23g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

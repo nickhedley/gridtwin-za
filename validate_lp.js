@@ -114,6 +114,25 @@ function check(label, ok, detail) {
                   defaultRegional: (document.getElementById('bldRegional')||{}).value };
     return out;`);
   check('bldBuildLP is reachable', avail.national === true);
+
+  // ── THE BUILD LP PRICES LITHIUM AT THE SCENARIO'S DURATION ────────────────
+  // Added 23 Sep 2026. Both build LPs offered 4-hour lithium at a 4-hour price whatever the
+  // dispatch was running, so they compared technologies on the wrong economics - and both
+  // high-renewables presets now build at 12 hours. With capital split into power and energy,
+  // 8 hours costs 1.72 times 4 and 12 hours 2.44, so the coefficient must move with it.
+  const dur = await runProbe(w, `
+    const at = h => {
+      const L = bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(),
+                             state: { ...state, newBattHours: h } }).lp;
+      const m = L.match(/([0-9.]+) b_batt_2030/);
+      return m ? +m[1] : null;
+    };
+    return { c4: at(4), c8: at(8), c12: at(12) };`);
+  check('the build LP prices lithium at the scenario duration',
+        dur.c4 && dur.c8 && dur.c12
+        && Math.abs(dur.c8 / dur.c4 - 1.722) < 0.02 && Math.abs(dur.c12 / dur.c4 - 2.444) < 0.02,
+        `4h ${dur.c4}, 8h ${dur.c8} (${(dur.c8 / dur.c4).toFixed(3)}x), `
+        + `12h ${dur.c12} (${(dur.c12 / dur.c4).toFixed(3)}x)`);
   check('bldBuildRegionalLP is reachable', avail.regional === true);
   check('Where To Build defaults to the regional LP', avail.defaultRegional === '1',
         `bldRegional = ${avail.defaultRegional}`);
