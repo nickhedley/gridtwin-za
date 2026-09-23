@@ -2620,6 +2620,45 @@ found it immediately; reading the two failures did not.
 **SOURCES** gained the GCCA Annexure A substation limits as a watched source and the Northern
 Cape export-by-day pattern as the natural first regional validation test.
 
+### Batch B: rooftop, municipal bills and a caveat the panel needed, 23 Sep 2026
+
+Build `2026-09-23x`.
+
+**The rooftop view, rebuilt with arithmetic behind it.** Three controls - self-consumption, system
+size and feed-in rate - now feed a calculation: grid purchases fall by what is used as generated,
+exports earn the feed-in rate, and the fixed charge does not move.
+
+**Municipal households are in it too**, at City Power Johannesburg's real Residential Single Phase
+80A tariff: five inclining blocks from R2.8827 to R3.9319 before VAT, plus R1,289.23 a month
+fixed. Those rows do not move with the scenario - they are what that household pays today, for
+comparison. A national municipal average would describe nobody, since fixed charges vary by a
+factor of 62 across distributors.
+
+At a system sized to 100% of annual use, 60% self-consumed, exporting at Cape Town's R1.53:
+
+```
+                        no rooftop   with rooftop   saved
+Today 2026
+  Eskom direct, 900 kWh    R3,936        R1,345      66%
+  Eskom direct, 190 kWh    R1,254          R707      44%
+  City Power, 900 kWh      R4,661        R2,125      54%
+  City Power, 190 kWh      R2,112        R1,618      23%
+Fossil-free 2040
+  Eskom direct, 900 kWh    R4,898        R1,730      65%
+  Eskom direct, 190 kWh    R1,457          R788      46%
+```
+
+The City Power rows are the sharper version of the earlier finding. That distributor's fixed
+charge is R1,482 a month with VAT, so a 190 kWh household saves 23% from a system covering its
+entire annual consumption, against 54% for the 900 kWh household on the same tariff. Blocks make
+it worse rather than better: the small household never reaches the higher blocks, so the units it
+displaces are the cheapest ones on the schedule.
+
+**And the market basis now says when it cannot be quoted.** Above 100 shed hours it prices every
+one of them at the shortage price, so the mean is an administrative ceiling rather than a market
+outcome. The panel says so, with the hour count, and points at the regulated basis. Tested on a
+forced-shedding scenario: 955 hours, warning shown.
+
 ---
 
 ## Fossil free, re-measured

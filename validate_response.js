@@ -173,6 +173,12 @@ const CONTEXT = {
   billSelfConsumePct: { __skip: true },
   billGenPct:         { __skip: true },
   billFeedInR:        { __skip: true },
+  // The rooftop bill controls, added 23 Sep 2026. They change a comparison in the retail panel,
+  // not the dispatch: a household's own generation is behind its meter and outside this model's
+  // demand series. renderRetail is what exercises them.
+  billSelfConsumePct: { __skip: true },
+  billGenPct:         { __skip: true },
+  billFeedInR:        { __skip: true },
   asVoltageOn:     { __skip: true },
   asVoltageRMWyr:  { __skip: true },
   asVoltagePotRm:  { __skip: true },

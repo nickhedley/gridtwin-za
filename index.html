@@ -5897,6 +5897,21 @@ const FIXED = {
   // headroom stays at today's GCCA snapshot forever.
   tdpConfidencePct: 100,
   asReserveOn: false, asInertiaOn: false, capacityPaymentOn: false, asVoltageOn: false,
+  // ROOFTOP HOUSEHOLD VIEW. Rebuilt 23 Sep 2026 with a calculation behind it; an earlier version
+  // had these three controls and no arithmetic, so they changed nothing and were removed.
+  //
+  // billSelfConsumePct  what the household uses at the moment it is generated. 60% is solar with
+  //                     a battery; solar alone sits nearer 30-40%, because most consumption falls
+  //                     outside the middle of the day.
+  // billGenPct          system size, as a share of annual consumption. 100% is how most
+  //                     residential systems are sized. Anything generated beyond what is
+  //                     self-consumed is exported.
+  // billFeedInR         what an exported unit earns. R1.53 is Cape Town's 2026/27 residential
+  //                     feed-in of R1.2418 plus its 28.75c incentive - the most generous scheme
+  //                     in the country. Most Eskom-direct customers have none, so set it to zero
+  //                     to see that case: it is the difference between a rooftop system that pays
+  //                     and one that only avoids.
+  billSelfConsumePct: 60, billGenPct: 100, billFeedInR: 1.53,
   // tariff of R1.2418 plus its 28.75c incentive, the clearest published residential rate in the
   // at the time-of-use energy charge less part of the generation capacity charge and the service
   // charge - and most municipalities pay nothing at all, so this sits between the two extremes
@@ -14221,7 +14236,87 @@ function renderRetail(){
       + `fixed charge. Eskom has used 30 kWh a day for years; the average electrified `
       + `household uses about a fifth of that, and pays the same fixed charge for it.</div></div>`;
   })();
-  noteEl.innerHTML = capLine + rowsNote + billHtml + ppaNote +
+  // WHAT ROOFTOP DOES TO THAT BILL, and what a municipal customer pays instead. Two things the
+  // panel could not show: a household that generates its own power, and the half of South African
+  // households that buy from a municipality rather than from Eskom.
+  //
+  // The municipal rows are City Power Johannesburg's real Residential Single Phase 80A tariff -
+  // five inclining blocks from R2.8827 to R3.9319 before VAT, plus R1,289.23 a month fixed - and
+  // they do NOT move with the scenario. They are what that household pays today, for comparison
+  // against what the modelled system would cost. A national municipal average would describe
+  // nobody: fixed charges vary by a factor of 62 across distributors.
+  const rooftopHtml = (() => {
+    const t = RETAIL_T, muni = t.municipal && t.municipal.reference;
+    const rate = (d.agileFixed != null) ? d.agileFixed : mean(d.dyn);
+    const fixed = d.fixedPerMonth || 0;
+    const selfPct = Math.max(0, Math.min(90, state.billSelfConsumePct)) / 100;
+    const genPct = Math.max(0, state.billGenPct) / 100;
+    const feed = Math.max(0, state.billFeedInR);
+    // Blocks are monthly and quoted before VAT.
+    const muniEnergy = (kwh) => {
+      if (!muni) return NaN;
+      let left = kwh, cost = 0;
+      for (const b of muni.blocks){
+        const width = (b.to_kwh == null) ? Infinity : b.to_kwh - b.from_kwh + (b.from_kwh === 0 ? 1 : 0);
+        const take = Math.min(left, width);
+        if (take <= 0) break;
+        cost += take * b.rate_r_per_kwh; left -= take;
+      }
+      return cost * (1 + (muni.vat_rate || 0));
+    };
+    const muniFixed = muni ? muni.fixed_r_per_month * (1 + (muni.vat_rate || 0)) : 0;
+    const row = (kwh, label, who) => {
+      const selfUse = Math.min(kwh * selfPct, kwh * genPct);
+      const exported = Math.max(0, kwh * genPct - selfUse);
+      const grid = kwh - selfUse;
+      const now = (who === 'eskom') ? kwh * rate + fixed : muniEnergy(kwh) + muniFixed;
+      const after = ((who === 'eskom') ? grid * rate + fixed : muniEnergy(grid) + muniFixed)
+                  - exported * feed;
+      return `<tr><td style="padding:3px 6px">${label}</td>`
+        + `<td class="mono" style="text-align:right;padding:3px 6px">${kwh}</td>`
+        + `<td class="mono" style="text-align:right;padding:3px 6px">R${Math.round(now).toLocaleString()}</td>`
+        + `<td class="mono" style="text-align:right;padding:3px 6px">R${Math.round(after).toLocaleString()}</td>`
+        + `<td class="mono" style="text-align:center;padding:3px 6px;color:var(--ink2)">${Math.round(100*(now-after)/now)}%</td></tr>`;
+    };
+    return '<div style="margin:8px 0;padding:7px 9px;border-left:3px solid var(--veld,#4A6B7A);'
+      + 'background:var(--panel2)"><strong>What rooftop does to that bill</strong>'
+      + '<table class="mono" style="width:100%;font-size:10.5px;border-collapse:collapse;margin-top:4px">'
+      + '<tr style="border-bottom:1px solid var(--line2)"><th style="text-align:left;padding:3px 6px">Household</th>'
+      + '<th style="text-align:right;padding:3px 6px">kWh</th>'
+      + '<th style="text-align:right;padding:3px 6px">No rooftop</th>'
+      + '<th style="text-align:right;padding:3px 6px">With rooftop</th>'
+      + '<th style="text-align:center;padding:3px 6px">Saved</th></tr>'
+      + row(900, 'Eskom direct, 900 kWh', 'eskom')
+      + row(190, 'Eskom direct, 190 kWh', 'eskom')
+      + (muni ? row(900, 'City Power, 900 kWh', 'muni') + row(190, 'City Power, 190 kWh', 'muni') : '')
+      + '</table>'
+      + `<div style="font-size:10px;color:var(--ink2);line-height:1.5;margin-top:4px">`
+      + `A system sized at ${Math.round(genPct*100)}% of annual use, ${Math.round(selfPct*100)}% of it `
+      + `used as generated, exports at R${feed.toFixed(2)}/kWh. The Eskom rows move with the scenario; `
+      + `the City Power rows are that distributor\u2019s real block tariff today, for comparison. `
+      + `Neither fixed charge falls, which is why the saving is always well below the share of `
+      + `consumption displaced - and why it is smaller for the household that uses less.</div></div>`;
+  })();
+
+  // The market basis prices every hour at what the system would clear at, including hours it
+  // cannot serve. Above about 100 shed hours that is a scarcity price doing the work rather than
+  // a market, and the mean stops describing a bill anyone could be charged. 23 Sep 2026.
+  const shedHrs = (() => {
+    if (!lastRes || !lastRes.stack || !lastRes.stack.unserved) return 0;
+    let n = 0;
+    for (let h = 0; h < 8760; h++) if ((lastRes.stack.unserved[h] || 0) > 1) n++;
+    return n;
+  })();
+  const shedWarn = (d.marketBasis && shedHrs > 100)
+    ? '<div style="margin:8px 0;padding:6px 9px;border-left:3px solid var(--alert,#C4785A);'
+      + 'background:rgba(196,120,90,0.07);font-size:10.5px;line-height:1.5">'
+      + `<strong>The market basis is not quotable on this scenario.</strong> Load is shed in `
+      + `${shedHrs.toLocaleString()} hours, and every one of them prices at the shortage price, `
+      + `so the mean is an administrative ceiling rather than a market outcome. Use the regulated `
+      + `basis, or quote both and say why they differ.</div>`
+    : '';
+
+  noteEl.innerHTML = capLine + shedWarn + rowsNote + billHtml + rooftopHtml + ppaNote +
       `<strong>An Eskom urban residential customer below 500&nbsp;V</strong>, costed at `
     + `${c.year}. Built from NERSA's allowed revenue over ${c.salesTWh.toFixed(0)}&nbsp;TWh of `
     + `sales, allocated to that customer category at 1.62&times; the system average using `
@@ -15199,6 +15294,14 @@ const SLIDERS=[
    fmt:v=>v===0?'none':'R'+v+'k/GVA\u00b7s/yr',
    note:'Paid-for inertia, which South Africa does not procure yet but will need as inverter-based generation grows. Earned only by plants that can provide it: synchronous machines inherently, grid-forming batteries synthetically. Priced in GVA\u00b7seconds.'},
   {grp:'Household bill'},
+  {id:'billSelfConsumePct',label:'Rooftop self-consumption',min:0,max:90,step:5,def:FIXED.billSelfConsumePct,fmt:v=>v+'% of use',
+   note:'Share of a household\u2019s consumption met at the moment it is generated, for the rooftop comparison in the retail panel. 60% is solar with a battery; solar alone sits nearer 30-40%, because most consumption falls outside the middle of the day.'},
+  {subgrp:'Rooftop settings'},
+  {id:'billGenPct',label:'\u2013 system size',min:0,max:250,step:10,def:FIXED.billGenPct,ctrlStyle:SUB_CTRL,fmt:v=>v+'% of annual use',
+   note:'How large the system is, as a share of what the household uses in a year. 100% is how most residential systems are sized. Anything generated beyond what is used as it is generated is exported.'},
+  {id:'billFeedInR',label:'\u2013 feed-in rate',min:0,max:4,step:0.05,def:FIXED.billFeedInR,ctrlStyle:SUB_CTRL,fmt:v=>'R'+v.toFixed(2)+'/kWh',
+   note:'What an exported unit earns. R1.53 is Cape Town\u2019s 2026/27 residential feed-in of R1.2418 plus its 28.75c incentive, the most generous scheme in the country. Most Eskom-direct customers have none: set it to zero to see that case.'},
+  {endsub:true},
   {id:'asVoltageOn',toggle:true,def:false,label:'Price voltage support',
    note:'Pay storage for reactive power and voltage control. NTCSA buys R468m of it a year today and a battery inverter can supply or absorb reactive power whether or not it is moving energy, but South Africa does not buy it competitively, so the default is off.'},
   {subgrp:'Voltage settings'},
@@ -16764,7 +16867,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23w';
+const BUILD_STAMP = '2026-09-23x';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
