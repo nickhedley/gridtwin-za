@@ -2007,6 +2007,56 @@ Two pinned checks moved with it, deliberately. The curtailed-coal-fuel identity 
 which it has not delivered since 2022: rebased to 9-14 TWh, wide enough that a real return to
 international performance still passes.
 
+### Iron-air: what is sourced, what is not, and how much it matters, 23 Sep 2026
+
+Build `2026-09-23d`.
+
+Round-trip efficiency corroborated. Trade analysis of aqueous iron-air puts it at 40-50% against
+85-90% for lithium, so the model's 0.45 is the midpoint of the published range. The build LP was
+reading a hardcoded 0.45 of its own; it now reads the same constant as the dispatch.
+
+Efficiency barely matters here, which is the point of the technology:
+
+```
+Deep decarbonisation, 35 W / 35 S / 25 GW Li + 1 GW Fe   mean cost R bn   mean shed GWh
+iron-air at 0.35                                             294.9            4.05
+iron-air at 0.45                                             294.9            3.83
+iron-air at 0.55                                             294.9            3.66
+```
+
+Cost does not move at all, because the charging energy is spill, and shedding moves by a tenth of
+a gigawatt-hour a year. A technology that runs a third of a cycle a year is not sensitive to how
+much energy it loses on the way in.
+
+Chemistry-specific O&M still does not exist at fleet scale. The one figure in circulation is
+$5-15/MWh of throughput, from trade commentary rather than a cost study, and at this cycle count
+it is about R5m a year against R165m of fixed O&M. The PNNL fixed figure stays.
+
+Degradation likewise has no usable source, and at a third of a cycle a year a cycle-life limit
+cannot bind inside a twenty-year life. Calendar degradation is the open question, and nobody has
+fleet data yet.
+
+Capex is where the answer lives. At the R127,050/kW this model uses, 1 GW of iron-air costs about
+R8.4bn a year at a 2030 vintage, and it beats the lithium-only build by about R2.4bn. Forty per
+cent dearer and the two are level; at Form Energy's USD 20/kWh target, R33,000/kW, iron-air wins
+by roughly R6bn a year instead.
+
+Lithium-only builds that meet the same standard, for anyone who wants to run without it: Deep
+decarbonisation 35 GW at 8h, R302.7bn against R300.3bn; Fossil-free 50 GW, R351.2bn against
+R348.5bn. Both preset comments now carry the alternative.
+
+### Presets nudged back inside the standard
+
+Koeberg's move from 0.70 to 0.66 took both presets marginally outside the NEM standard - Deep
+decarbonisation to 3.83 GWh mean shed against 3.67, Fossil-free to 3.47 against 3.46. Lithium
+raised 25 to 28 GW and 42 to 43 GW respectively:
+
+```
+                            mean cost R bn   mean shed GWh   worst
+Deep decarbonisation 2035        300.3            2.40       27.3 (2016)
+Fossil-free 2040                 348.5            2.90       34.8 (2020)
+```
+
 ---
 
 ## Fossil free, re-measured

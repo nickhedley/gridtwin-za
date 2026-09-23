@@ -5936,6 +5936,9 @@ const FIXED = {
   // on energy that would otherwise be curtailed and accepts the loss, because the
   // alternative is unserved load. Early commercial, so lenders price it as
   // unproven, and there is no South African presence yet.
+  // newIronAirEff corroborated 23 Sep 2026: trade analysis of aqueous iron-air puts round-trip
+  // efficiency at 40-50% against 85-90% for lithium, so 0.45 is the midpoint of the published
+  // range rather than a guess. The build LP read a hardcoded 0.45 of its own until today.
   newIronAirMW:0, newIronAirHours:100, newIronAirEff:0.45,
   // pvUtilityMW is derived, corrected 4,974 -> 3,151 on 15 Aug 2026:
   //   2,663 MW REIPPPP online at 31 Mar 2026 (IPP Office Q4 2025/26)
@@ -8685,6 +8688,11 @@ const BLD_FOM = {
   wind: 693, pv: 396, rooftop: 495, offshore: 1403, ccgt: 462,
   batt: null,          // computed from capex, see bldFom()
   vrfb: 165, ironair: 165, // PNNL 2019, $10/kW-yr; see the note above
+  // Nothing chemistry-specific exists for iron-air at fleet scale, checked again 23 Sep 2026.
+  // The one figure in circulation is $5-15/MWh of throughput, from trade commentary rather than
+  // a cost study, and at the cycle count this technology actually runs here - a third of a cycle
+  // a year on Deep decarbonisation 2035 - it comes to about R5m a year against R165m of fixed
+  // O&M. The fixed figure is what matters; the throughput one is noise.
 };
 // Fixed O&M for a technology in a given year, R/kW-yr. Declines with capex where it is
 // expressed as a share of capex, flat otherwise - which is the ATB's own treatment.
@@ -8776,7 +8784,7 @@ function capPayRate(tech, st){
 const BLD_STORE = [
   { t:'batt',    dis:'bdis', chg:'bchg', eff:0.88, hours:4,   ex:(EX) => EX.batt },
   { t:'vrfb',    dis:'vdis', chg:'vchg', eff:0.75, hours:8,   ex:()   => 0 },
-  { t:'ironair', dis:'idis', chg:'ichg', eff:0.45, hours:100, ex:()   => 0 },
+  { t:'ironair', dis:'idis', chg:'ichg', eff:FIXED.newIronAirEff, hours:100, ex:()   => 0 },   // rule 6: the dispatch reads the same key
 ];
 function bldNetAnnuity(tech, year){
   // Capital recovery PLUS fixed O&M, less any capacity payment. Fixed O&M was absent until
@@ -15026,9 +15034,10 @@ const PRESETS={
   // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
   // (expected unserved energy at most 0.002% of demand, mean of twelve weather years), re-run
   // 22 Sep 2026 after the long-duration lookahead: 35 GW wind, 35 GW solar, 25 GW lithium at
-  // 8h, 1 GW iron-air, no offshore; rooftop 1.2 GW a year from 2026. Re-measured after the
-  // iron-air power fix and long-duration O&M: mean shed 3.0 GWh, worst 20.5 GWh (2016).
-  // Derivation in RESULTS.md.
+  // 8h, 1 GW iron-air, no offshore; rooftop 1.2 GW a year from 2026. Lithium raised 25 to
+  // 28 GW on 23 Sep when Koeberg's factor moved to 0.66 and the preset drifted outside the
+  // standard: mean shed 2.4 GWh, worst 27.3 (2016), R300.3bn a year. The lithium-only build
+  // that meets the same standard is 35 GW and costs R302.7bn. Derivation in RESULTS.md.
   // Backcast 2025. The fleet, demand and measured coal availability of calendar 2025, so the
   // model can be scored against what actually happened: Eskom shed 390 GWh that year and burned
   // 3.4 TWh of OCGT. Wind 3,900 MW and solar 2,600 are the year's Eskom-visible capacity plus
@@ -15044,14 +15053,16 @@ const PRESETS={
   // as a fixed set of 2025 inputs, and read the model as optimistic about the last gigawatt or
   // two of peaking in a crisis.
   'Backcast 2025':{demandGrowthPct:0,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025,scenarioYear:2026},
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:25000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:28000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,
-  // 35 GW wind, 55 GW solar, 42 GW lithium at 8h, 1 GW iron-air; rooftop 1.2 GW a year.
-  // Mean shed 3.1 GWh, worst 37.1 GWh (2020).
+  // 35 GW wind, 55 GW solar, 43 GW lithium at 8h, 1 GW iron-air; rooftop 1.2 GW a year.
+  // Lithium raised 42 to 43 on 23 Sep for the same reason as Deep decarbonisation: mean shed
+  // 2.9 GWh, worst 34.8 (2020), R348.5bn a year. The lithium-only build that meets the standard
+  // is 50 GW at R351.2bn.
   // Offshore is flat from 5 to 8 GW within about R1bn. Derivation in RESULTS.md.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:55000,newOffshoreMW:7000,newRooftopMW:16800,newBattMW:42000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:55000,newOffshoreMW:7000,newRooftopMW:16800,newBattMW:43000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -16434,7 +16445,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23c';
+const BUILD_STAMP = '2026-09-23d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
