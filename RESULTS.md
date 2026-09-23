@@ -2289,15 +2289,56 @@ economic for covering the evening peak at any plausible gas price, PROVIDED stor
 at 1.5 GW a year or more. Below that, gas returns - which is the position the IRP's own storage
 schedule puts the country in.
 
-What this does not cover, and should be said whenever it is quoted: the model has no industrial
-gas demand, no Mozambique supply cliff, and no LNG import economics, and the IRP's gas case rests
-partly on gas plant anchoring that infrastructure. It also assumes the reliability standard on
+What this does not cover, and should be said whenever it is quoted. The FUEL price is derived
+from the LNG chain - a full-year JKM reference of about $18.50/MMBtu delivered, through
+efficiency and exchange rate to R1,968/MWh - so the gas price is not the weak point. What sits
+outside the model is the INFRASTRUCTURE case: the import terminal's capital as a lumpy
+investment rather than a per-unit adder, industrial gas demand to share those fixed costs, the
+Mozambique supply cliff that makes the terminal urgent, and the argument that gas plant anchors
+the terminal so industry can be supplied. A power-sector model cannot weigh that last one,
+because the benefit sits outside it. Corrected 23 Sep 2026: an earlier version of this entry said
+the model had no LNG import economics at all, which was wrong about the fuel price. It also assumes the reliability standard on
 the twelve-year average, and the weather years are reanalysis.
 
 The CCGT capital constant, which carried no note, is now sourced: GridLab's September 2025 study
 of actual projects puts recent combined-cycle capital at USD 2,000/kW or more against USD
 1,116-1,427 for 2026 and 2027 completions, and the model's R34,965/kW is USD 2,119. The negative
 decline rate is deliberate: gas turbine capital is rising.
+
+### What South Africa is actually building, against the pace the gas result needs
+
+Build `2026-09-23l`, 23 Sep 2026. The no-gas result holds above about 1.5 GW a year of storage,
+so the question is what the country has actually procured.
+
+```
+programme                         procured        note
+BESIPPPP, three windows        1,744 MW / 6,976 MWh   online by 2027/28, four-hour systems
+RMIPPPP hybrid storage           600 MW / 2,545 MWh
+Eskom's own projects             343 MW / 1,440 MWh   mostly slipped
+total                          about 2.7 GW           over roughly four years
+```
+
+That is 0.6 to 0.7 GW a year, close to the IRP's 550 MW rather than to the pace the default
+assumes. So the default is an ambition about three times the achieved rate, and the threshold the
+gas result needs, 1.5 GW a year, is still two to three times it.
+
+The default was trimmed from 2.5 to 2 GW a year on 23 Sep 2026, and nothing moved: 2 GW is the
+SMALLEST rate at which the build LP is not sitting at its cap. At 1.5 it builds exactly its
+five-year allowance of 7.5 GW, so the pace is answering; at 2 and at 2.5 it builds 8.7 GW on
+Fossil-free and 5.6 on Deep decarbonisation, and stops on cost. Choosing the smallest
+non-binding value leaves the assumption doing as little work as it can.
+
+This cuts both ways and both should be said. The IRP's storage schedule is not obviously too slow
+against what the country has delivered - it is roughly what is happening. But the consequence is
+that the plan's gas case is a consequence of its own storage pace: on this model's costs, storage
+at two to three times the current rate removes the need for new gas entirely, and storage at the
+current rate does not.
+
+One corroboration worth noting: every procured project is a four-hour system, which is the
+duration the build LP chooses when it is free to choose.
+
+The pace comment now carries this evidence, so the 2.5 GW figure cannot be mistaken for a
+measurement.
 
 ---
 

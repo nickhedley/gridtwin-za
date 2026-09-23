@@ -612,7 +612,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             <select id="bldPace" onchange="bldPaceChanged()" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
               <option value="historical">Historical &ndash; what SA has actually delivered</option>
               <option value="irp">IRP 2025 pace &ndash; the official plan</option>
-              <option value="deliverable" selected>Deliverable &ndash; Masterplan pace, storage at 2.5 GW/yr</option>
+              <option value="deliverable" selected>Deliverable &ndash; Masterplan pace, storage at 2 GW/yr</option>
               <option value="masterplan">Masterplan ambition &ndash; ~5 GW/yr renewables</option>
               <option value="eskomGreen">Eskom Green &ndash; Eskom's own plan, one builder only</option>
               <option value="grid">Grid-limited &ndash; all remaining GCCA headroom</option>
@@ -8726,11 +8726,25 @@ const BLD_PACE = {
   // with Eskom's own programme and private projects on top, so the country is already building
   // faster than the plan it is following.
   //
-  // 2.5 GW a year of storage is a JUDGEMENT about what is deliverable, not a published figure.
+  // 2 GW a year of storage is a JUDGEMENT about what is deliverable, not a published figure.
+  // It is the SMALLEST rate at which the build LP is not at the cap - at 1.5 the LP builds
+  // 7.5 GW, exactly its five-year allowance, so the pace is answering rather than the
+  // economics; at 2 and at 2.5 it builds 8.7 GW and stops on cost. Picking the smallest
+  // non-binding value means the assumption does as little work as possible. Was 2.5, trimmed
+  // 23 Sep 2026 with no change to any result.
   // Wind, solar and gas are the Masterplan's, which is the nearest thing to a stated national
   // ambition. Use the IRP pace when the question is about the plan.
-  deliverable: { wind:2500, pv:2000, rooftop:1000, batt:2500, vrfb: 250, ironair: 150, ccgt:1200,
-    note:'Masterplan pace for wind, solar and gas, with storage at 2.5 GW a year - a judgement about what is deliverable, not a published target. Switch to the IRP pace for questions about the plan.' },
+  //
+  // WHAT HAS ACTUALLY BEEN PROCURED, checked 23 Sep 2026, so the judgement is not mistaken for
+  // a measurement. The storage programme's three windows total about 1,744 MW and 6,976 MWh,
+  // to be online by 2027/28; the risk-mitigation programme adds 600 MW of hybrid storage; and
+  // Eskom's own 343 MW has mostly slipped. That is roughly 2.7 GW procured and delivering
+  // across about four years, so 0.6 to 0.7 GW a year - close to the IRP pace rather than to
+  // this one. 2 GW a year is therefore an ambition about three times the achieved rate, and
+  // the build LP stops building gas somewhere above 1.5, which is still two to three times it.
+  // Those procured projects are four-hour systems, which is the duration the LP chooses.
+  deliverable: { wind:2500, pv:2000, rooftop:1000, batt:2000, vrfb: 250, ironair: 150, ccgt:1200,
+    note:'Masterplan pace for wind, solar and gas, with storage at 2 GW a year - a judgement about what is deliverable, not a published target, and the smallest rate at which the build is decided by cost rather than by the cap. South Africa has procured about 0.6-0.7 GW a year. Switch to the IRP pace for questions about the plan.' },
   grid:        { wind:4300, pv:4000, rooftop:2000, batt:4000, vrfb: 500, ironair: 300, ccgt:2000,
     note:'All remaining GCCA headroom (21.5 GW wind, 19.9 GW solar) spread to 2030. Zero headroom remains in the Northern Cape, Hydra Central, or for Western Cape solar.' },
   // ESKOM GREEN, added 31 Aug 2026 from the FY2026 integrated report. The only pace here
@@ -16552,7 +16566,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23k';
+const BUILD_STAMP = '2026-09-23m';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
