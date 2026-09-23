@@ -2780,6 +2780,27 @@ pace: with little storage the system needs firm capacity, and the crossover in o
 somewhere above 1.5 GW a year of storage procurement. Two independent models, the same trade,
 resolved differently because they assume different storage volumes. Worth putting to them.
 
+### The nodal model held no reserve unless someone priced it, 23 Sep 2026
+
+Build `2026-09-24a`. The regional MIP has proper reserve constraints - discharge and reserve
+competing for the same megawatts, reserve backed by stored energy rather than promised - but they
+were only built when the reserve requirement passed in was above zero, and that requirement was
+set only when the user switched ancillary PRICING on.
+
+So at defaults the nodal model dispatched with no reserve held at all, while the national engine
+held 2,200 MW in every hour of every scenario. Two models of the same system, one ignoring a
+requirement the other treats as binding.
+
+Whether reserve is PAID FOR is a market question; whether it is HELD is not. The requirement now
+follows reserveEnabled, which is what the engine itself uses, so the nodal path is live at
+defaults: about 9.6% of mean load, the ASTR's 2,200 MW over 22,901 MW. The contingency term is a
+fixed megawatt figure that cannot be expressed as a share of load and is still excluded, which
+understates the requirement rather than inventing a conversion.
+
+The exports sensitivity is closed too, without a preset: the slider's own note now carries the
+measurement. At the pre-Mozal 1,705 MW, Deep decarbonisation absorbs 6.6 TWh of what it otherwise
+spills and saves R9bn a year, but starts shedding 5.7 GWh in the default weather year.
+
 ---
 
 ## Fossil free, re-measured

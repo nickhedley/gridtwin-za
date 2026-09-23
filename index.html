@@ -15373,7 +15373,10 @@ const SLIDERS=[
       + 'about 745 MW since, a step of roughly 1 GW caused by the suspension of South32\u2019s '
       + 'Mozal aluminium smelter in Mozambique over tariff terms. Set this near 1,750 MW to '
       + 'ask what a Mozal restart would cost South African adequacy; the model defaults to '
-      + 'the post-closure level because that is the system as it runs today.'},
+      + 'the post-closure level because that is the system as it runs today. Measured at 1,705 MW '
+      + 'on 23 September 2026: Deep decarbonisation 2035 absorbs 6.6 TWh of what it otherwise '
+      + 'spills and saves R9bn a year, but starts shedding 5.7 GWh in the default weather year, '
+      + 'so that build would need slightly more capacity to stay inside the reliability standard.'},
   {id:'exportCapMW',label:'Export capacity',min:0,max:5000,step:250,def:FIXED.exportCapMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
    note:'Capacity available to sell surplus into the region instead of curtailing it. Storage charges first, since stored energy fetches more in the domestic evening peak than the regional pool pays; only what storage cannot absorb is exported.'},
   {id:'exportPriceR',label:'\u2013 export price received',min:150,max:1200,step:25,def:FIXED.exportPriceR,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh',ctrlStyle:SUB_CTRL,
@@ -16919,7 +16922,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23z';
+const BUILD_STAMP = '2026-09-24a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -19725,7 +19728,11 @@ let highs = null;
 // Absent, the builder behaves exactly as before and emits the MIP.
 function buildDayLP(units, sto, corridors, nRegions, regionLoad, initialOn, soc0, slackCost, fixedOn, resFrac) {
   // resFrac: reserve requirement as a share of load. Zero or absent leaves every reserve
-  // constraint out of the LP entirely, so the formulation is unchanged when unpriced.
+  // constraint out of the LP entirely. From 23 Sep 2026 the caller passes it whenever reserve
+  // is ENABLED rather than whenever it is priced, so this path is live at defaults: about 9.6%
+  // of mean load, the ASTR's 2,200 MW over 22,901 MW. The contingency term is a fixed MW and
+  // is still excluded from the fraction, which understates the requirement rather than
+  // inventing a conversion.
   resFrac = (typeof resFrac === 'number' && resFrac > 0) ? resFrac : 0;
   const H = 24, L = ['Minimize', ' obj:'], obj = [];
   units.forEach((u, i) => {
@@ -20340,12 +20347,15 @@ function runMIP(mode) {
       // defaults - this cannot move any published result without a deliberate act.
       // Built from the engine's OWN reserve components rather than a number chosen here:
       // a regulating share plus a VRE share, both already used to size reserve elsewhere.
-      // The contingency term is a fixed MW and cannot be expressed as a fraction of load,
-      // so it is deliberately EXCLUDED - this understates the requirement rather than
-      // inventing a conversion. Zero unless the user prices reserve.
-      resFrac: (state.asReserveOn
+      // RESERVE IS PHYSICAL, NOT A PRICING CHOICE, corrected 23 Sep 2026. This read zero unless
+      // the user had switched ancillary PRICING on, so the nodal model dispatched with no reserve
+      // held at defaults while the national engine held 2,200 MW in every hour of every scenario.
+      // Two models of the same system, one of them ignoring a requirement the other treats as
+      // binding. Whether reserve is PAID FOR is a market question; whether it is HELD is not.
+      // It now follows reserveEnabled, which is what the engine itself uses.
+      resFrac: (state.reserveEnabled ?? FIXED.reserveEnabled)
         ? (FIXED.reserveOperatingMW / (PROFILES.demand.reduce((x, y) => x + y, 0) / PROFILES.demand.length))
-        : 0)
+        : 0
     });
   }).catch(err => {
     document.getElementById('mipResult').innerHTML =
