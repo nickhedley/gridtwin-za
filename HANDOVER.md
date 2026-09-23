@@ -191,6 +191,82 @@ trusting. And two chats editing one file will overwrite each other: whichever in
 silently. Say which files a session touched, and install them before starting another chat on the
 same file.
 
+## Finding named projects and their status
+
+The two oldest data gaps are the same problem: the published sources are aggregate. The Hydra
+Central split needs named operational plants matched to substations, and the 1,823 MW of solar
+unexplained in identity 3 is private wheeled plant commissioned before the PFL monitor starts.
+Both close with a project list carrying coordinates and a status.
+
+Checked 23 Sep 2026, in the order I would try them:
+
+1. Global Energy Monitor's Global Wind and Solar Power Trackers. Project-level, explicit status
+   field, coordinates, capacity, owner, free for research, refreshed twice a year.
+2. OpenStreetMap. Plant geometry with source and output tags. Good for existence and location,
+   weak for status: mappers follow imagery updates, and construction tags are often left behind
+   after completion. Use it for geometry and corroboration, not for commissioning dates.
+3. Wikipedia's South African power station pages, which carry status, coordinates, construction
+   start and expected commissioning, and are more complete than expected. Not a source to cite -
+   a fast way to build a candidate list to check against primary sources.
+4. #PowerTracker, identified 17 Aug 2026 and still not ingested. The South African source for
+   wheeled commissioning specifically.
+
+RenewMap, which prompted this, is Australia and New Zealand only. It is what a South African
+equivalent should look like and nothing more.
+
+The test for all of them is the same, and it is worth stating before starting: does the list
+close the 1,823 MW, and can it place named plants at Hydra rather than in the Northern Cape?
+
+## What this model does not answer about reliability
+
+Noted 23 Sep 2026 from RMI's grid reliability guide and the decade-of-data work behind it.
+Reliability is three things - resource adequacy, operational stability, and resilience - across
+both the bulk system and the distribution system. This model does the first, nationally.
+
+That is the right scope for South African load shedding, which is a generation shortfall, and it
+is the wrong scope for the outages a Johannesburg or Tshwane household actually experiences,
+which are mostly distribution: cable and transformer failures, theft, maintenance backlog. RMI's
+US finding is that most outages originate there and that extra generation supply does little for
+them. Do not let a distributed-generation case be argued from this model's adequacy results.
+
+Two things worth taking from it regardless. Sequence cheapest first: this project's own
+experience matches, since the storage lookahead and the adequacy hold removed gigawatt-hours of
+shed energy at no capital cost. And their data shows renewable deployment has not worsened
+reliability outcomes in the US, which is the empirical answer to the claim this model keeps
+meeting in South African debate.
+
+## An industrial electrification scenario, to be built
+
+Proposed 23 Sep 2026 after the IEA's Electrification special report. The question: what does
+electrifying South African industrial heat do to the price everyone else pays?
+
+The hypothesis is that it lowers it, because the network and the legacy asset base are fixed
+costs recovered over sales, and sales have been falling since 2012. More load spreads them. This
+model can test that directly - the retail stack already separates fixed from variable, and the
+sales denominator is already the thing that broke the retail figures in September.
+
+What it needs, roughly in order:
+
+1. A demand block with its own SHAPE, not a percentage on the existing curve. Industrial heat is
+   close to flat, which is the opposite of the residential evening peak, and a flat block is the
+   best thing that can happen to a system with 100 TWh of midday spill. Adding it as a growth
+   percentage would miss the entire point.
+2. A size, from the IEA's competitive potential: about 40% of fossil-based low- and
+   medium-temperature industrial heat is electrifiable at today's costs. South Africa's
+   industrial fuel use has to be sourced separately - the DMRE energy balance is the obvious
+   route.
+3. Heat pump efficiency of three to five units of heat per unit of electricity, so the
+   ELECTRICITY added is a third to a fifth of the fuel displaced. This is what makes the load
+   smaller than people expect.
+4. The retail read-through, which is the actual finding: the same fixed costs over more sales.
+   Watch the sales denominator, the network line and the fixed-charge share in the bill view.
+
+Two things to be honest about when it is built. New load needs new generation and new network,
+so the fixed-cost saving is not free - the question is whether a flat load that uses existing
+spill costs less to serve than it contributes. And the model has no industrial customer class:
+the retail panel is residential, so a price effect would have to be read at the wholesale and
+network level rather than off a household bill.
+
 ## Open, in the order I would take them
 
 1. **Regional congestion is PROVINCIAL, not nodal.** Allocation and headroom are both by
