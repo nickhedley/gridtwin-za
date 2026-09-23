@@ -9517,6 +9517,28 @@ function renderBuildResult(res, rate, opts){
   }
   html += '</table>';
 
+  // THE DURATION THE LP CHOSE, 23 Sep 2026. Lithium is two build variables now, so the answer
+  // includes a duration and the table above cannot show it. Read it out, and say when it is
+  // sitting on one of the 1 to 12 hour bounds rather than choosing.
+  let durHtml = '';
+  {
+    let ebMWh = 0;
+    for (const y of Y){ const v = res.Columns['eb_batt_' + y]; ebMWh += v ? v.Primal : 0; }
+    if (tot.batt > 1){
+      const hrs = ebMWh / tot.batt;
+      const atBound = (hrs < 1.02) ? 'the 1-hour floor' : (hrs > 11.8 ? 'the 12-hour ceiling' : null);
+      durHtml = '<div style="margin-top:8px;font-size:10.5px;line-height:1.5;border-left:3px solid '
+        + (atBound ? 'var(--alert,#C4785A)' : 'var(--ok,#4A8C5C)')
+        + ';padding:6px 9px;background:var(--panel2)">'
+        + '<strong>Lithium duration chosen: ' + hrs.toFixed(1) + ' hours</strong> &ndash; '
+        + (ebMWh/1000).toFixed(1) + '&nbsp;GWh across ' + (tot.batt/1000).toFixed(2) + '&nbsp;GW. '
+        + (atBound
+            ? 'This is at ' + atBound + ', so the bound is answering rather than the economics.'
+            : 'Inverters and cells are priced separately, so this is a cost choice.')
+        + '</div>';
+    }
+  }
+
   // The binding-constraint annotation. This is the real output: where a
   // technology sits at its cap, the answer is set by how fast we can build, not
   // by economics. Where it does not, the model has genuinely chosen.
@@ -9555,7 +9577,7 @@ function renderBuildResult(res, rate, opts){
   html += '</div>';
   html += bldApplyButton();
   html += '<div id="bldStress"></div>';
-  host.innerHTML = macNote + html;
+  host.innerHTML = macNote + durHtml + html;
   // The national optimiser uses the same 12 representative days, so its plan
   // needs the same full-year check.
   try { bldStressTest(); } catch(e){ console.error('stress test:', e); }
@@ -10144,6 +10166,42 @@ function renderBuildRegional(res, rate, opts){
   bldLastTotals = { wind:tot.wind, pv:tot.pv, batt:tot.batt,
                     vrfb:tot.vrfb, ironair:tot.ironair };
 
+  // BUILD-RATE FLAG, 23 Sep 2026. The national renderer has said for weeks which technologies
+  // sat at their cap; this one did not, so a regional answer could be read as economics when it
+  // was the pace. The national rate_ row is the one that binds the country as a whole.
+  const capFlag = (() => {
+    const hit = [];
+    for (const t of T){
+      let years = 0;
+      for (const y of BLD_YEARS){
+        const row = (res.Rows || []).find(r => r.Name === 'rate_' + t + '_' + y);
+        if (row && Math.abs(row.Dual || 0) > 1e-6) years++;
+      }
+      if (years > 0 && (rate[t] || 0) < 90000) hit.push(BLD_LABEL[t].toLowerCase() + ' (' + years + ' of 5 years)');
+    }
+    return hit.length
+      ? '<div style="border-left:3px solid var(--alert,#C4785A);padding:6px 9px;'
+        + 'background:rgba(196,120,90,0.07);margin-bottom:8px;font-size:10.5px;line-height:1.5">'
+        + '<strong>Limited by build rate, not economics:</strong> ' + hit.join(', ')
+        + '. The model would build more if it could - raise the pace to see how much.</div>'
+      : '';
+  })();
+
+  // The duration the LP chose, as in the national renderer.
+  const durFlag = (() => {
+    let ebMWh = 0;
+    for (const y of BLD_YEARS){ const v = res.Columns['eb_batt_' + y]; ebMWh += v ? v.Primal : 0; }
+    if (!(tot.batt > 1) || !(ebMWh > 0)) return '';
+    const hrs = ebMWh / tot.batt;
+    const atBound = (hrs < 1.02) ? 'the 1-hour floor' : (hrs > 11.8 ? 'the 12-hour ceiling' : null);
+    return '<div style="border-left:3px solid ' + (atBound ? 'var(--alert,#C4785A)' : 'var(--ok,#4A8C5C)')
+      + ';padding:6px 9px;background:var(--panel2);margin-bottom:8px;font-size:10.5px;line-height:1.5">'
+      + '<strong>Lithium duration chosen: ' + hrs.toFixed(1) + ' hours</strong> - '
+      + (ebMWh/1000).toFixed(1) + ' GWh across ' + (tot.batt/1000).toFixed(2) + ' GW.'
+      + (atBound ? ' This is at ' + atBound + ', so the bound is answering rather than the economics.' : '')
+      + '</div>';
+  })();
+
   // shadow PRICES. The solver already computes a dual on every constraint; the
   // dual on a headroom constraint is the annual system saving from one more MW
   // of connection capacity in that region. It is the number a transmission
@@ -10297,7 +10355,7 @@ function renderBuildRegional(res, rate, opts){
     + '</div></div>';
   html += bldApplyButton();
   html += '<div id="bldStress"></div>';
-  host.innerHTML = txHtml + html;
+  host.innerHTML = capFlag + durFlag + txHtml + html;
   // Run the plan against a real year straight away rather than waiting to be asked.
   try { bldStressTest(); } catch(e){ console.error('stress test:', e); }
 }
@@ -16566,7 +16624,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23m';
+const BUILD_STAMP = '2026-09-23n';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

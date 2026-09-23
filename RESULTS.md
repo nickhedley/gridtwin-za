@@ -2340,6 +2340,21 @@ duration the build LP chooses when it is free to choose.
 The pace comment now carries this evidence, so the 2.5 GW figure cannot be mistaken for a
 measurement.
 
+### The optimiser now says what it chose and what it was stopped by, 23 Sep 2026
+
+Build `2026-09-23n`. Two gaps in how the build LP reports itself, both of which could let a
+constrained answer read as an economic one.
+
+The regional optimiser - the default selection - never said when a technology was at its build
+rate. The national one has carried that flag for weeks. It now does too, read off the duals on
+the national build-rate rows rather than recomputed.
+
+And neither reported the duration the LP chose, which only became a decision yesterday. Both now
+read it out, in hours and in GWh across GW, and say when it is sitting on the 1-hour floor or the
+12-hour ceiling rather than choosing on cost. That is the distinction the whole exercise turned
+on: the first solve after the split sat on the floor, and without this line the only way to know
+was to dump the LP.
+
 ---
 
 ## Fossil free, re-measured
