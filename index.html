@@ -7945,7 +7945,7 @@ function simulate(u, prof, outPath, _soc0){
   const acapAt = (tech, flat) => (typeof BLD_COST === 'undefined' || !BLD_COST[tech])
     ? flat
     : bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech]) + bldFom(tech, _vint);
-  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*p.newBattHours/4)+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000;   // tiered regional charge, R/yr
+  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000;   // tiered regional charge, R/yr
   // The transmission slice of newCapexR, kept separately so the cost decomposition can
   // report it against NERSA's "transmission network charges" component. It is a BUILD
   // cost, not a use-of-system charge, which is why the decomposition marks it partial.
@@ -8786,6 +8786,22 @@ const BLD_STORE = [
   { t:'vrfb',    dis:'vdis', chg:'vchg', eff:0.75, hours:8,   ex:()   => 0 },
   { t:'ironair', dis:'idis', chg:'ichg', eff:FIXED.newIronAirEff, hours:100, ex:()   => 0 },   // rule 6: the dispatch reads the same key
 ];
+// LITHIUM COST SPLITS INTO POWER AND ENERGY, 23 Sep 2026. Battery capital was scaled straight
+// off duration - an 8-hour system cost exactly twice a 4-hour one of the same power - which
+// makes inverters and balance of plant free and prices 20 GW at 8h the same as 40 GW at 4h.
+// NREL's Cost Projections for Utility-Scale Battery Storage (2025 update) splits the 2024
+// benchmark into $241/kWh of energy capacity and about $372/kW of power capacity: at 4 hours
+// that is $1,336/kW, of which 27.8% is power. So capital at duration h is the 4-hour constant
+// times (0.278 + 0.722 x h/4), which leaves the 4-hour figure untouched and makes longer
+// duration cheaper per kilowatt-hour than the old scaling did - an 8-hour system is 1.72 times
+// a 4-hour one rather than 2.
+//
+// The findings on storage duration and saturation in RESULTS.md were measured on the old
+// scaling and are due a re-run.
+const BATT_POWER_SHARE = 0.278;
+function battDurationMult(hours){
+  return BATT_POWER_SHARE + (1 - BATT_POWER_SHARE) * (hours || 4) / 4;
+}
 function bldNetAnnuity(tech, year){
   // Capital recovery PLUS fixed O&M, less any capacity payment. Fixed O&M was absent until
   // 18 Sep 2026, so every technology was being built on capital alone and the technologies
@@ -13215,7 +13231,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   // The engine already draws this line - btmCapexR and gridCapexR at index.html:7408-7409.
   const newCapR = annuity('wind', P.newWindMW) + annuity('offshore', P.newOffshoreMW)
                 + annuity('pv', P.newPvMW)
-                + annuity('batt', P.newBattMW, (P.newBattHours || 4) / 4)
+                + annuity('batt', P.newBattMW, battDurationMult(P.newBattHours))
                 + annuity('ccgt', P.newCcgtMW)
                 + annuity('vrfb', P.newVrfbMW) + annuity('ironair', P.newIronAirMW);
   const newCap = newCapR / salesMWh / 1000;
@@ -13224,7 +13240,7 @@ function retailComponents(markup, stranded, year, viaMuni){
   // are replaced to hold capacity, about 2.5% of capex a year, plus 1.5% fixed O&M. Applied
   // to storage only - wind and PV capex at BLD_COST already reproduces the REIPPPP bid
   // price all-in, which the second review established the hard way.
-  const battCapex = (P.newBattMW || 0) * 1000 * costAt('batt') * ((P.newBattHours || 4) / 4);
+  const battCapex = (P.newBattMW || 0) * 1000 * costAt('batt') * battDurationMult(P.newBattHours);
   // Augmentation is inside the ATB's 2.5% battery FOM ("the FOM costs include battery
   // augmentation costs", ATB 2024). A separate 4% a year was added here until 22 Sep 2026.
   const battAug = 0 * battCapex;
@@ -15034,10 +15050,12 @@ const PRESETS={
   // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
   // (expected unserved energy at most 0.002% of demand, mean of twelve weather years), re-run
   // 22 Sep 2026 after the long-duration lookahead: 35 GW wind, 35 GW solar, 25 GW lithium at
-  // 8h, 1 GW iron-air, no offshore; rooftop 1.2 GW a year from 2026. Lithium raised 25 to
-  // 28 GW on 23 Sep when Koeberg's factor moved to 0.66 and the preset drifted outside the
-  // standard: mean shed 2.4 GWh, worst 27.3 (2016), R300.3bn a year. The lithium-only build
-  // that meets the same standard is 35 GW and costs R302.7bn. Derivation in RESULTS.md.
+  // 12h, 1 GW iron-air, no offshore; rooftop 1.2 GW a year from 2026. Rebuilt 23 Sep 2026 once
+  // battery capital split into power and energy, which made duration cheaper per kilowatt-hour:
+  // 20 GW at 12h costs R293.8bn against R296.3bn for 30 GW at 8h holding the same reliability.
+  // Sized to about half the NEM limit rather than just inside it, so an ordinary data refresh
+  // does not push the preset out of compliance: mean shed 1.75 GWh against a 3.67 limit, worst
+  // 20.5 (2016). Derivation in RESULTS.md.
   // Backcast 2025. The fleet, demand and measured coal availability of calendar 2025, so the
   // model can be scored against what actually happened: Eskom shed 390 GWh that year and burned
   // 3.4 TWh of OCGT. Wind 3,900 MW and solar 2,600 are the year's Eskom-visible capacity plus
@@ -15053,16 +15071,17 @@ const PRESETS={
   // as a fixed set of 2025 inputs, and read the model as optimistic about the last gigawatt or
   // two of peaking in a crisis.
   'Backcast 2025':{demandGrowthPct:0,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025,scenarioYear:2026},
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:28000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:20000,newBattHours:12,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,
-  // 35 GW wind, 55 GW solar, 43 GW lithium at 8h, 1 GW iron-air; rooftop 1.2 GW a year.
-  // Lithium raised 42 to 43 on 23 Sep for the same reason as Deep decarbonisation: mean shed
-  // 2.9 GWh, worst 34.8 (2020), R348.5bn a year. The lithium-only build that meets the standard
-  // is 50 GW at R351.2bn.
+  // 35 GW wind, 55 GW solar, 30 GW lithium at 12h, 1 GW iron-air; rooftop 1.2 GW a year.
+  // Rebuilt 23 Sep 2026 on the power-and-energy capital split and sized to about half the NEM
+  // limit: mean shed 1.77 GWh against 3.46, worst 21.2 (2020), R338.3bn a year. At the same
+  // stored energy, 45 GW at 8h costs R341.7bn and 36 GW at 10h R339.7bn - the shedding is
+  // identical in all three, so this system is energy-limited rather than power-limited.
   // Offshore is flat from 5 to 8 GW within about R1bn. Derivation in RESULTS.md.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:55000,newOffshoreMW:7000,newRooftopMW:16800,newBattMW:43000,newBattHours:8,newIronAirMW:1000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:55000,newOffshoreMW:7000,newRooftopMW:16800,newBattMW:30000,newBattHours:12,newIronAirMW:1000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -16445,7 +16464,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23d';
+const BUILD_STAMP = '2026-09-23f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

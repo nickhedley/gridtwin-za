@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-09-23d`. Suite 791/794 plus eng5 6/6, measured 23 Sep 2026. Three sessions ran long and the
+Build `2026-09-23f`. Suite 791/794 plus eng5 6/6, measured 23 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -149,9 +149,9 @@ cost. The model was already at the international level.
 ```
 IRP path 2035               22.2 onshore / 18.9 solar / 6.1 GW at 4h / 11.6 gas at a 50% floor
                             coal -16 GW; the counterfactual to read the two below against
-Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 10.8 GW new rooftop / 28 GW at 8h + 1 GW iron-air (NEM standard)
+Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 10.8 GW new rooftop / 20 GW at 12h + 1 GW iron-air (NEM standard, 2x margin)
                             coal -27 GW, no new gas, reserve and inertia priced
-Fossil-free 2040            35 onshore / 55 solar / 7 offshore / 16.8 GW new rooftop / 43 GW at 8h + 1 GW iron-air (NEM standard)
+Fossil-free 2040            35 onshore / 55 solar / 7 offshore / 16.8 GW new rooftop / 30 GW at 12h + 1 GW iron-air (NEM standard, 2x margin)
                             all coal and diesel retired; mean shed 3.1 GWh a year
 IRP 2030, Grid delay        demand +20% (IRP growth on contracted demand, Mozal out), coal EAF 64%
 ```

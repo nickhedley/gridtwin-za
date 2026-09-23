@@ -492,16 +492,16 @@ setTimeout(()=>{
       check('the deep decarbonisation preset keeps gas at zero',
             r.ccgt === 0,
             `newCcgtMW is ${r.ccgt} - this preset exists to show a no-gas build`);
-      // Re-derived 22 Sep 2026 in the rebuild to the NEM reliability standard, twelve years, at
-      // 35 GW wind and 35 GW solar: 35 GW at 8h R305.0bn, 2.7 GWh mean shed (meets 0.002%);
-      // 45 GW at 6h R302.7bn, 3.7 GWh (misses by 0.03 GWh); 40 GW at 6h with 40 GW solar
-      // R305.8bn, 2.6 GWh. The two durations are within R3bn; 8h is the cheapest that passes.
-      check('the deep decarbonisation preset uses 8-hour storage',
-            r.hours === 8,
-            `newBattHours is ${r.hours}, chosen as 8 on 22 Sep 2026 in the rebuild to the NEM `
-            + `reliability standard. If this changed, confirm the trade was re-derived.`);
-      console.log(`  deep decarbonisation    ${r.wind/1000} GW wind \u00b7 ${r.pv/1000} GW solar \u00b7 `
-        + `${r.batt/1000} GW / ${r.hours}h storage \u00b7 no gas`);
+      // RE-DERIVED 23 Sep 2026, 8h -> 12h, when battery capital split into power and energy.
+      // With inverters priced separately, duration is cheaper per kilowatt-hour than the old
+      // straight scaling made it: at the same reliability, 20 GW at 12h costs R293.8bn against
+      // R296.3bn for 30 GW at 8h and R294.8bn for 24 GW at 10h. Fossil-free 2040 shows the same
+      // ordering and identical shedding across 8, 10 and 12 hours, so that system is
+      // energy-limited rather than power-limited.
+      check('the deep decarbonisation preset uses 12-hour storage',
+            r.hours === 12,
+            `newBattHours is ${r.hours}, chosen as 12 on 23 Sep 2026 with the power and energy `
+            + `capital split. If this changed, confirm the trade was re-derived.`);
     }
   }
 

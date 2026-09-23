@@ -2057,6 +2057,56 @@ Deep decarbonisation 2035        300.3            2.40       27.3 (2016)
 Fossil-free 2040                 348.5            2.90       34.8 (2020)
 ```
 
+### Battery capital splits into power and energy, and both presets move to 12 hours
+
+Build `2026-09-23f`, 23 Sep 2026. Battery capital scaled straight off duration, so an 8-hour
+system cost exactly twice a 4-hour one of the same power. That makes inverters and balance of
+plant free, and prices 20 GW at 8h the same as 40 GW at 4h - the same stored energy with twice
+the power, for nothing.
+
+NREL's Cost Projections for Utility-Scale Battery Storage (2025 update) splits the 2024 benchmark
+into $241/kWh of energy capacity and about $372/kW of power capacity. At four hours that is
+$1,336/kW, of which 27.8% is power. Capital at duration h is now the 4-hour constant times
+(0.278 + 0.722 x h/4): unchanged at 4 hours, 1.72 times at 8 rather than 2.
+
+Longer duration is therefore cheaper than the old scaling made it, and both presets move:
+
+```
+Deep decarbonisation 2035, same 1.75 GWh mean shed     mean cost R bn
+20 GW at 12h + 1 GW iron-air  (preset)                     293.8
+24 GW at 10h                                               294.8
+30 GW at 8h                                                296.3
+
+Fossil-free 2040, same 1.77 GWh mean shed
+30 GW at 12h + 1 GW iron-air  (preset)                     338.3
+36 GW at 10h                                               339.7
+45 GW at 8h                                                341.7
+```
+
+Shedding is identical across 8, 10 and 12 hours on Fossil-free, so that system is energy-limited
+rather than power-limited. The duration finding has been re-derived from 8h to 12h.
+
+Both presets are now sized to about half the reliability limit rather than just inside it - 1.75
+GWh against 3.67 on Deep decarbonisation, 1.77 against 3.46 on Fossil-free. The last three
+sessions have twice pushed a preset out of compliance through an ordinary input refresh; the
+margin costs about 1% of system cost and stops that. The definition they now carry is the
+cheapest build meeting the standard with a 2x margin, which is still reproducible.
+
+```
+                          system R bn   retail regulated R/kWh
+Today 2026                    210.7             3.75
+Deep decarbonisation 2035     290.2             4.23
+Fossil-free 2040              338.1             4.85
+```
+
+Two classes of lithium, 4-hour and 8-hour, were considered and are not needed: the dispatch pools
+storage into one reservoir, and with power and energy now priced separately the build search can
+already choose duration on cost. What is still open is that the build LP only offers 4-hour
+lithium.
+
+Due a re-run on this pricing: the storage saturation table and the duration-substitutes-for-power
+finding, both measured when duration scaled linearly.
+
 ---
 
 ## Fossil free, re-measured
