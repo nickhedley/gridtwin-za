@@ -156,6 +156,16 @@ setTimeout(()=>{
                    + `${(knee.mw/1000).toFixed(1)} GW against an existing fleet of `
                    + `${(r.nowMW/1000).toFixed(1)} GW - approaching, not past`
                  : 'no knee found in the sweep');
+      // The model must not pay storage more for reserve than the System Operator pays for
+      // reserve in total. NTCSA MYPD 6 Table 10, FY2026: reserves R1,445m plus demand-response
+      // reserves R521m, so R1.97bn. Added 23 Sep 2026 with the sourced reserve price.
+      const fleetPayRbn = r.pts.length
+        ? (r.pts.find(p => Math.abs(p.mw - r.nowMW) < 600) || r.pts[0]).anc * r.nowMW / 1e9
+        : 0;
+      check('storage reserve revenue stays inside the published reserve budget',
+            fleetPayRbn > 0 && fleetPayRbn < 1.97,
+            `R${fleetPayRbn.toFixed(2)}bn a year to the ${(r.nowMW/1000).toFixed(1)} GW fleet `
+            + `against NTCSA's R1.97bn reserve budget`);
       console.log(`  ancillary      knee ~${knee?(knee.mw/1000).toFixed(1):'?'} GW · fleet `
         + `${(r.nowMW/1000).toFixed(1)} GW · reserve price R${r.price}/MWh`);
     }

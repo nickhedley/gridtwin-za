@@ -39,6 +39,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | SolarAfrica SunCentral | one-off | 342 MW energised of a planned 1 GW | candidate against the 1,823 MW unexplained solar in identity 3 — not loaded, press report only |
 | Aurora Energy Research | occasional | 2060 outlook, Aug 2026 | independent corroboration of the no-gas frontier: >120 GW new capacity |
 | AEMO Engineering Roadmap / Transition Plan for System Security | annual | FY26 roadmap, Sep 2026 | the syncon and grid-forming findings in results.md; the roadmap merges into the TPSS from Dec 2026 |
+| NTCSA MYPD 6 revenue application, Table 10 | three-yearly | FY2026-FY2028, Aug 2024 | what the System Operator pays for ancillary services: reserves R1,445m and demand response R521m in FY2026, behind asReserveRMWh 100 |
 
 | Eskom annual results and integrated report | annual | FY2026, **as at 31 March 2026** | EAF calibration, the `reShareResid` benchmark, fleet nominal capacity and the audited energy balance. year-end snapshot: the renewable register here runs to 30 June 2026, so three months sit on one side of any comparison and not the other |
 

@@ -2377,6 +2377,38 @@ Stated simplification: real effective load-carrying capability rises somewhat wi
 beyond four hours and falls as storage penetration grows. No South African study exists to
 calibrate either effect, so the rule is flat above four hours.
 
+### The reserve price is sourced now, and the ancillary numbers are quotable
+
+Build `2026-09-23p`, 23 Sep 2026. The ancillary revenue figures rested on two numbers with no
+derivation: a reserve price of R150/MWh and a 15% held-back share. The price now has a source.
+
+NTCSA's MYPD 6 revenue application, Table 10, is what the System Operator actually pays.
+FY2026: reserves R1,445m and demand-response reserves R521m, so R1.97bn for reserve. Against a
+reserve requirement whose hourly mean this model puts at 2,237 MW, that is R100/MWh of capacity
+held, against the 150 assumed. The rest of that table is not reserve and is not in the number:
+reactive power R468m, system restoration R376m, Power Alert R78m.
+
+```
+                          at R150 assumed   at R100 sourced
+ancillary revenue           R197,100/MW-yr   R131,400/MW-yr
+paid to the 3.5 GW fleet    R695m            R463m
+share of the R1.97bn pot    35%              24%
+```
+
+Twenty-four per cent of the reserve budget going to storage, with the rest to coal and demand
+response, is the right order: Eskom Generation is still the largest reserve provider. A check
+now asserts the model never pays storage more than the whole published budget.
+
+The 15% held share stays a judgement and is labelled as one. ERCOT batteries offer far more than
+that, but they do it in a market that pays for it, and South Africa has none to bid into.
+Sensitivity is linear, so any revenue figure quoted from this panel has to carry the share with
+it.
+
+What this means for the ancillary recommendation: the saturation SHAPE was always robust, and
+the revenue LEVEL is now defensible to within the one remaining assumption. The knee is
+unchanged at about 4.5 GW against a 3.5 GW fleet, because the knee depends on the requirement
+rather than on the price.
+
 ---
 
 ## Fossil free, re-measured
