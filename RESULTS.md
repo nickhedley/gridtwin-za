@@ -2744,6 +2744,42 @@ The risk runs the other way, and the comment now says so: these are re-procured 
 expired, and have been since 2022. R9,787m a year is about 5c/kWh on the transition presets'
 183 TWh - larger than the entire new-transmission line in the retail stack.
 
+### Cross-check against published least-cost work, 23 Sep 2026
+
+Build `2026-09-23z`. A full PyPSA-ZA comparison is not available - that model co-optimises
+investment and operation while this one dispatches a specified build, which is the reason it was
+kept out of the external checks in the first place. Two weaker but real comparisons instead.
+
+**A band check, now in the suite.** The CSIR's systems-analysis technical report gives least-cost
+installed capacity ranges across CO2 ambition levels: 15-40 GW of solar and 20-45 GW of wind by
+2030, rising to 30-75 and 35-70 by 2050, with no new nuclear, coal or CSP in any least-cost mix.
+Both presets sit inside:
+
+```
+                           wind GW   solar GW
+Deep decarbonisation 2035     39.6      38.3
+Fossil-free 2040              46.6      58.3
+CSIR 2030 range              20-45     15-40
+CSIR 2050 range              35-70     30-75
+```
+
+Not agreement - different horizons, different method - but a preset landing outside those ranges
+would be a claim no published South African least-cost study supports, and the check now says so.
+
+**A comparison worth more than the band.** An independent 2024 study of firm-dispatchable
+generation in South Africa finds a renewable-based system needs 49 GW of new wind, 14 GW of new
+utility solar, 24 GWh of new batteries and 15 GW of firm-dispatchable plant running at 5%
+utilisation, retaining 12.9 GW of baseload.
+
+Ours retains 12.7 GW of coal, which is the same answer on baseload. The difference is the last
+two lines: they carry 24 GWh of storage and 15 GW of peakers; we carry 243 GWh of storage and no
+gas at all.
+
+That is the storage-versus-firm trade this project measured from the other direction on the build
+pace: with little storage the system needs firm capacity, and the crossover in our model is
+somewhere above 1.5 GW a year of storage procurement. Two independent models, the same trade,
+resolved differently because they assume different storage volumes. Worth putting to them.
+
 ---
 
 ## Fossil free, re-measured

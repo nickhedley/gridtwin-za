@@ -294,6 +294,44 @@ function check(name, ok, detail) {
         mtsao.ocgtCFPct > 35 && mtsao.ocgtCFPct < 58,
         `${mtsao.ocgtCFPct.toFixed(1)}% against the MTSAO's about 45%`);
 
+  // ── THE PRESETS SIT INSIDE PUBLISHED LEAST-COST RANGES ────────────────────
+  // Added 23 Sep 2026 as the nearest available cross-check against an independent capacity
+  // expansion. The CSIR's systems-analysis technical report gives least-cost installed capacity
+  // ranges across CO2 ambition levels: 15-40 GW of solar PV and 20-45 GW of wind by 2030, rising
+  // to 30-75 and 35-70 by 2050, with no new nuclear, coal or CSP in any least-cost mix.
+  //
+  // This is a BAND check, not an agreement: their horizon is 2030 and 2050, ours 2035 and 2040,
+  // and their model co-optimises investment and operation while this one dispatches a specified
+  // build. A preset landing outside those ranges is not necessarily wrong, but it is a claim
+  // that no published South African least-cost study supports, and someone should know.
+  {
+    const capScript = w.document.createElement('script');
+    capScript.textContent = `window.__caps = (function(){ try {
+      const out = {};
+      for (const name of ['Deep decarbonisation 2035', 'Fossil-free 2040']){
+        const P = { ...FIXED, ...PRESETS[name] };
+        out[name] = { wind: (P.windMW + P.newWindMW + (P.newOffshoreMW || 0)) / 1000,
+                      solar: (P.pvUtilityMW + P.newPvMW) / 1000 };
+      }
+      return out;
+    } catch (e) { return { error: String(e) }; } })();`;
+    w.document.body.appendChild(capScript);
+    const caps = w.__caps;
+    if (caps && !caps.error){
+      const bad = [];
+      for (const [name, c] of Object.entries(caps)){
+        if (c.wind < 20 || c.wind > 70) bad.push(`${name} wind ${c.wind.toFixed(1)} GW`);
+        if (c.solar < 15 || c.solar > 75) bad.push(`${name} solar ${c.solar.toFixed(1)} GW`);
+      }
+      check('preset builds sit inside the CSIR least-cost capacity ranges',
+            bad.length === 0,
+            bad.length ? bad.join('; ')
+              : `Deep decarbonisation ${caps['Deep decarbonisation 2035'].wind.toFixed(1)} GW wind and `
+                + `${caps['Deep decarbonisation 2035'].solar.toFixed(1)} solar; Fossil-free `
+                + `${caps['Fossil-free 2040'].wind.toFixed(1)} and ${caps['Fossil-free 2040'].solar.toFixed(1)}`);
+    }
+  }
+
   const gA = Math.round(100 * (Math.pow(1.02, 9) - 1));
   const edmsa = run({ coalEAFPct: 70, demandGrowthPct: gA,
     newWindMW: 20000, newPvMW: 25000, newBattMW: 8000, newBattHours: 4,
