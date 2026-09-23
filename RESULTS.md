@@ -2517,6 +2517,22 @@ solar-equipped households using the grid for backup contribute fairly to network
 numbers the fixed charge is already doing most of that work for the small household and much less
 of it for the large one.
 
+### Four harnesses now wait on the page rather than a stopwatch, 23 Sep 2026
+
+No model change. validate_benchmarks, validate_consistency, validate_response and
+validate_outputs each slept a fixed 4 to 4.5 seconds before measuring anything. That is right
+until the day the page takes longer - a slower machine, one more data file - and then the harness
+measures a half-loaded page and reports failures that are not there. This project has already
+paid for that lesson once, in the eleven false failures a missing profiles.json produced.
+
+index.html sets GTZA_READY when every input has settled and the first run has finished. All four
+now poll it, keeping the old delay as a ceiling rather than as the wait. Counts are unchanged -
+28/28, 80/80, 84/84 and 42/42 - which is the point: the same answer, no longer resting on the
+page being fast enough.
+
+Still on timers: validate_solve, which waits on a solver rather than on page load, and
+validate_external, which polls the weather-year load it triggers itself.
+
 ---
 
 ## Fossil free, re-measured

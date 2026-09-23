@@ -168,6 +168,11 @@ const CONTEXT = {
   // revenue stream for an inverter that is already there, not a dispatch signal, and the panel
   // is where it lands. validate_findings asserts it cannot exceed the System Operator's own
   // reactive power budget.
+  // Household bill view, added 23 Sep 2026. These three describe one household's own system and
+  // tariff arithmetic in the retail panel; nothing in the national dispatch depends on them.
+  billSelfConsumePct: { __skip: true },
+  billGenPct:         { __skip: true },
+  billFeedInR:        { __skip: true },
   asVoltageOn:     { __skip: true },
   asVoltageRMWyr:  { __skip: true },
   asVoltagePotRm:  { __skip: true },
@@ -212,7 +217,19 @@ const BUILD_ONLY = {
     },
   });
 
-  await new Promise(r => setTimeout(r, 4500));
+  // WAIT ON THE PAGE, not on a stopwatch. 23 Sep 2026. A fixed delay is right until the day the
+  // page takes longer - a slower machine, one more data file - and then the harness measures a
+  // half-loaded page and reports failures that are not there. index.html sets GTZA_READY once
+  // every input has settled and the first run has finished, so poll that and keep the old delay
+  // only as a ceiling.
+  for (let waited = 0; waited < 4500; waited += 100){
+    const probe = dom.window.document.createElement('script');
+    probe.textContent = 'window.__ready = !!window.GTZA_READY;';
+    dom.window.document.body.appendChild(probe);
+    if (dom.window.__ready) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
+
   const w = dom.window;
 
   const run = src => {
