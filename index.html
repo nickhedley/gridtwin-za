@@ -9341,12 +9341,28 @@ function bldBuildLP(opts){
     // which is why capacity credit falls away below about four hours in every published ELCC
     // study. cc_batt is the credited megawatts: no more than what is built, and no more than the
     // energy divided by four hours.
+    // ONE RULE FOR EVERY STORE, 23 Sep 2026. Lithium was credited at what its energy could
+    // sustain while vanadium and iron-air were credited at fixed multiples of it - 1.8 and 3.6
+    // times a megawatt of lithium - so an iron-air megawatt counted as 3.6 MW of firm capacity.
+    // That was a relative derate from an era when lithium's duration was fixed at four hours;
+    // once lithium's duration became a decision the two treatments could not both stand.
+    //
+    // Every store is now credited at the lesser of its power and its energy over four hours,
+    // the same rule. A four-hour lithium, an eight-hour vanadium and a hundred-hour iron-air
+    // all count fully, and a shorter store counts proportionally. SIMPLIFICATION, stated: real
+    // ELCC rises somewhat with duration beyond four hours and falls as storage penetration
+    // grows, and no South African ELCC study exists to calibrate either effect.
     L.push(' ccpow_' + y + ': cc_batt_' + y + ' - ' + cum('batt',y).join(' - ') + ' <= 0');
     L.push(' ccnrg_' + y + ': cc_batt_' + y + ' - '
       + cumE(y).map(v => '0.25 ' + v).join(' - ') + ' <= 0');
+    for (const S2 of STORE){
+      if (S2.t === 'batt') continue;
+      const credit = Math.min(1, S2.hours / 4);
+      L.push(' cc' + S2.t + '_' + y + ': cc_' + S2.t + '_' + y + ' - '
+        + cum(S2.t,y).map(v => credit.toFixed(2) + ' ' + v).join(' - ') + ' <= 0');
+    }
     L.push(' res_' + y + ': cc_batt_' + y
-      + ' + ' + cum('vrfb',y).map(v => (BLD_DERATE.vrfb / BLD_DERATE.batt).toFixed(2) + ' ' + v).join(' + ')
-      + ' + ' + cum('ironair',y).map(v => (BLD_DERATE.ironair / BLD_DERATE.batt).toFixed(2) + ' ' + v).join(' + ')
+      + ' + ' + STORE.filter(S2 => S2.t !== 'batt').map(S2 => 'cc_' + S2.t + '_' + y).join(' + ')
       + ' + ' + cum('ccgt',y).join(' + ')
       + ' >= ' + Math.max(0, peak*1.10 - firm).toFixed(1));
   }
@@ -9364,6 +9380,8 @@ function bldBuildLP(opts){
   for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + RATE[t].toFixed(1));
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
+  for (const y of Y) for (const S2 of STORE) if (S2.t !== 'batt')
+    L.push(' 0 <= cc_'+S2.t+'_'+y+' <= 200000');
   for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
     const k = y + '_' + r.d + '_' + h;
     L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
@@ -16624,7 +16642,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23n';
+const BUILD_STAMP = '2026-09-23o';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

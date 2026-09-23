@@ -2355,6 +2355,28 @@ read it out, in hours and in GWh across GW, and say when it is sitting on the 1-
 on: the first solve after the split sat on the floor, and without this line the only way to know
 was to dump the LP.
 
+### One capacity-credit rule for every store, 23 Sep 2026
+
+Build `2026-09-23o`. Lithium was credited at what its energy could sustain from yesterday, while
+vanadium and iron-air were still credited at fixed multiples of a lithium megawatt - 1.8 and 3.6
+times. An iron-air megawatt therefore counted as 3.6 MW of firm capacity in the reserve margin.
+
+That was a relative derate from an era when lithium's duration was fixed at four hours. Once
+lithium's duration became a decision the two treatments could not both stand.
+
+Every store is now credited at the lesser of its power and its energy over four hours. A
+four-hour lithium, an eight-hour vanadium and a hundred-hour iron-air all count fully; a shorter
+store counts proportionally.
+
+Nothing moved in either scenario - neither long-duration technology is built at its current cost,
+and not at iron-air's optimistic USD 20/kWh either, so the inflated credit was never what kept it
+out. The point is that the next person changing a storage cost will get an answer from one rule
+rather than two.
+
+Stated simplification: real effective load-carrying capability rises somewhat with duration
+beyond four hours and falls as storage penetration grows. No South African study exists to
+calibrate either effect, so the rule is flat above four hours.
+
 ---
 
 ## Fossil free, re-measured

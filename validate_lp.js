@@ -128,17 +128,23 @@ function check(label, ok, detail) {
     return { power: p ? +p[1] : null, energy: e ? +e[1] : null,
              share: typeof BATT_POWER_SHARE === 'number' ? BATT_POWER_SHARE : null,
              rows: /battdur_min_2030:/.test(L) && /battdur_max_2030:/.test(L),
-             credit: /ccpow_2030:/.test(L) && /ccnrg_2030:/.test(L) };`);
+             credit: /ccpow_2030:/.test(L) && /ccnrg_2030:/.test(L),
+             // Every store must be credited by the same rule, not lithium by its energy and the
+             // others at fixed multiples of a lithium megawatt. Added 23 Sep 2026.
+             creditAll: /ccvrfb_2030:/.test(L) && /ccironair_2030:/.test(L)
+                        && !/BLD_DERATE/.test(L) && !/3\.60 b_ironair/.test(L) };`);
   {
     const four = (dur.power && dur.energy) ? dur.power + 4 * dur.energy : null;
     const share = four ? dur.power / four : null;
     check('the build LP splits lithium into power and energy and can choose duration',
-          !!four && dur.rows && dur.credit && dur.share != null && Math.abs(share - dur.share) < 0.005,
+          !!four && dur.rows && dur.credit && dur.creditAll
+          && dur.share != null && Math.abs(share - dur.share) < 0.005,
           four
             ? `power R${Math.round(dur.power)}/MW-yr and energy R${Math.round(dur.energy)}/MWh-yr `
               + `recombine to R${Math.round(four)} at 4 hours, a power share of ${share.toFixed(3)} `
               + `against ${dur.share}; duration rows ${dur.rows ? 'present' : 'MISSING'}, `
-              + `duration-limited capacity credit ${dur.credit ? 'present' : 'MISSING'}`
+              + `duration-limited capacity credit ${dur.credit ? 'present' : 'MISSING'}, `
+              + `same rule for every store ${dur.creditAll ? 'yes' : 'NO - the long-duration tiers are still on fixed multiples'}`
             : `no energy variable in the LP: lithium is still one build decision at a fixed duration`);
   }
   check('bldBuildRegionalLP is reachable', avail.regional === true);
