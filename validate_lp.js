@@ -115,24 +115,30 @@ function check(label, ok, detail) {
     return out;`);
   check('bldBuildLP is reachable', avail.national === true);
 
-  // ── THE BUILD LP PRICES LITHIUM AT THE SCENARIO'S DURATION ────────────────
-  // Added 23 Sep 2026. Both build LPs offered 4-hour lithium at a 4-hour price whatever the
-  // dispatch was running, so they compared technologies on the wrong economics - and both
-  // high-renewables presets now build at 12 hours. With capital split into power and energy,
-  // 8 hours costs 1.72 times 4 and 12 hours 2.44, so the coefficient must move with it.
+  // ── THE BUILD LP CHOOSES LITHIUM'S DURATION ───────────────────────────────
+  // Added 23 Sep 2026. Lithium is two build variables now: b_batt_<y> in megawatts for
+  // inverters and balance of plant, eb_batt_<y> in megawatt-hours for cells. Three things must
+  // hold, or the LP is either pricing duration wrongly or not free to choose it:
+  //   the two coefficients recombine to the 4-hour annuity the constant is quoted at,
+  //   the power share matches BATT_POWER_SHARE,
+  //   and the duration rows exist, so the answer stays inside 1 to 12 hours.
   const dur = await runProbe(w, `
-    const at = h => {
-      const L = bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(),
-                             state: { ...state, newBattHours: h } }).lp;
-      const m = L.match(/([0-9.]+) b_batt_2030/);
-      return m ? +m[1] : null;
-    };
-    return { c4: at(4), c8: at(8), c12: at(12) };`);
-  check('the build LP prices lithium at the scenario duration',
-        dur.c4 && dur.c8 && dur.c12
-        && Math.abs(dur.c8 / dur.c4 - 1.722) < 0.02 && Math.abs(dur.c12 / dur.c4 - 2.444) < 0.02,
-        `4h ${dur.c4}, 8h ${dur.c8} (${(dur.c8 / dur.c4).toFixed(3)}x), `
-        + `12h ${dur.c12} (${(dur.c12 / dur.c4).toFixed(3)}x)`);
+    const L = bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: state }).lp;
+    const p = L.match(/([0-9.]+) b_batt_2030/), e = L.match(/([0-9.]+) eb_batt_2030/);
+    return { power: p ? +p[1] : null, energy: e ? +e[1] : null,
+             share: typeof BATT_POWER_SHARE === 'number' ? BATT_POWER_SHARE : null,
+             rows: /dmin_2030/.test(L) && /dmax_2030/.test(L) };`);
+  {
+    const four = (dur.power && dur.energy) ? dur.power + 4 * dur.energy : null;
+    const share = four ? dur.power / four : null;
+    check('the build LP splits lithium into power and energy and can choose duration',
+          !!four && dur.rows && dur.share != null && Math.abs(share - dur.share) < 0.005,
+          four
+            ? `power R${Math.round(dur.power)}/MW-yr and energy R${Math.round(dur.energy)}/MWh-yr `
+              + `recombine to R${Math.round(four)} at 4 hours, a power share of ${share.toFixed(3)} `
+              + `against ${dur.share}; duration rows ${dur.rows ? 'present' : 'MISSING'}`
+            : `no energy variable in the LP: lithium is still one build decision at a fixed duration`);
+  }
   check('bldBuildRegionalLP is reachable', avail.regional === true);
   check('Where To Build defaults to the regional LP', avail.defaultRegional === '1',
         `bldRegional = ${avail.defaultRegional}`);

@@ -2177,6 +2177,31 @@ kilowatt-hours, with the state-of-charge cap on the second, as PyPSA does - is w
 optimise duration rather than take it as given. The cost split that would price it now exists,
 so this is wiring rather than sourcing.
 
+### The build LP now chooses lithium's duration, 23 Sep 2026
+
+Build `2026-09-23h`. Lithium is two build decisions rather than one: b_batt in megawatts for
+inverters and balance of plant, eb_batt in megawatt-hours for cells, which is the PyPSA
+formulation. The state-of-charge cap and the within-day discharge limit read the energy variable,
+so the LP sets the duration instead of being handed one.
+
+```
+                          R/MW-yr or R/MWh-yr
+power, b_batt_2030             191,322
+energy, eb_batt_2030           124,221
+recombined at 4 hours          688,207    the 4-hour annuity the constant is quoted at
+power share                      0.278    BATT_POWER_SHARE, from the NREL split
+```
+
+Duration is bounded to 1 to 12 hours, matching what the rest of the model offers, so the LP
+cannot answer with a 40-hour lithium system the dispatch could not run. Vanadium and iron-air
+keep fixed durations: neither has a published power and energy split, and inventing one would be
+worse than stating the limit.
+
+The perturbation check that asserted the old behaviour is replaced by one that asserts the new
+formulation: the two coefficients must recombine to the 4-hour annuity, the power share must
+match the constant, and the duration rows must exist. On the previous build it reports that
+lithium is still one build decision at a fixed duration.
+
 ---
 
 ## Fossil free, re-measured

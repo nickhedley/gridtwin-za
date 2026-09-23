@@ -9130,13 +9130,27 @@ function bldBuildLP(opts){
     let cost = 0;
     // Lithium's capital scales with the duration this scenario builds at: see bldStoreList.
     // The capacity payment inside the annuity is per kilowatt and is not scaled.
-    const _m = (t === 'batt') ? battDurationMult(S.newBattHours) : 1;
+    // LITHIUM IS TWO DECISIONS, 23 Sep 2026: b_batt_<y> is inverters and balance of plant in
+    // megawatts, eb_batt_<y> is cells in megawatt-hours, priced from the NREL split behind
+    // battDurationMult. The LP therefore CHOOSES the duration instead of being handed one, which
+    // is the PyPSA formulation. Vanadium and iron-air keep fixed durations: neither has a
+    // published power/energy split, and inventing one would be worse than stating the limit.
+    const _m = (t === 'batt') ? BATT_POWER_SHARE : 1;
     for (const yy of Y) if (yy >= y)
       cost += bldNetAnnuityAt(t, y, _m) / Math.pow(1+BLD_DISC, yy-2026);
     // x1000: bldNetAnnuity is R/kW/yr and b_ is in MW. Without this the whole
     // capex side is 1000x too cheap against the fuel terms, building is
     // effectively free, and the optimiser just overbuilds VRE and spills.
     obj.push((cost * 1000).toFixed(3) + ' b_' + t + '_' + y);
+  }
+  // The energy half of lithium, per MWh of cells: the 4-hour constant's energy share spread over
+  // its four hours, annuitised on the same life, with no capacity payment (that is per kilowatt).
+  for (const y of Y){
+    let ec = 0;
+    for (const yy of Y) if (yy >= y)
+      ec += (bldAnnuity(bldCapex('batt', y), BLD_LIFE.batt) + bldFom('batt', y))
+            * (1 - BATT_POWER_SHARE) / 4 / Math.pow(1+BLD_DISC, yy-2026);
+    obj.push((ec * 1000).toFixed(3) + ' eb_batt_' + y);
   }
   for (const y of Y){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
@@ -9177,6 +9191,7 @@ function bldBuildLP(opts){
   L.push('Subject To');
 
   const cum = (t,y) => Y.filter(yy => yy <= y).map(yy => 'b_' + t + '_' + yy);
+  const cumE = y => Y.filter(yy => yy <= y).map(yy => 'eb_batt_' + yy);   // lithium cells, MWh
 
   for (const y of Y){
     const dg = Math.pow(1+growth, y-2026);
@@ -9259,13 +9274,16 @@ function bldBuildLP(opts){
           + ' - ' + chg.map(v=>(S2.eff*r.weight).toFixed(4)+' '+v).join(' - ')
           + ' + ' + dis.map(v=>r.weight.toFixed(4)+' '+v).join(' + ')
           + ' = ' + (r.prevD === undefined ? (ex*S2.hours*0.5).toFixed(1) : '0'));
-        // Stored energy cannot exceed what is built plus what already exists.
-        L.push(' ecap_'+kk+': e_'+kk
-          + ' - ' + cum(S2.t,y).map(v=>S2.hours+' '+v).join(' - ')
+        // Stored energy cannot exceed what is built plus what already exists. For lithium the
+        // built energy is its own variable, so the LP sets the duration; for the others it is
+        // still power times their fixed duration.
+        const capTerms = (S2.t === 'batt')
+          ? cumE(y).map(v => '1 ' + v)
+          : cum(S2.t,y).map(v => S2.hours+' '+v);
+        L.push(' ecap_'+kk+': e_'+kk + ' - ' + capTerms.join(' - ')
           + ' <= ' + (ex*S2.hours).toFixed(1));
-        // Within-day discharge still cannot exceed the duration.
-        L.push(' dur_'+kk+': ' + dis.join(' + ') + ' - '
-          + cum(S2.t,y).map(v=>S2.hours+' '+v).join(' - ')
+        // Within-day discharge still cannot exceed the stored energy.
+        L.push(' dur_'+kk+': ' + dis.join(' + ') + ' - ' + capTerms.join(' - ')
           + ' <= ' + (ex*S2.hours));
       }
     }
@@ -9287,8 +9305,17 @@ function bldBuildLP(opts){
       + ' >= ' + Math.max(0, peak*1.10 - firm).toFixed(1));
   }
 
+  // Lithium's duration stays inside the range the rest of the model offers, 1 to 12 hours, so
+  // the LP cannot answer with a 40-hour lithium system the dispatch could not run.
+  for (const y of Y){
+    L.push(' dmin_'+y+': ' + cumE(y).join(' + ') + ' - ' + cum('batt',y).join(' - ') + ' >= 0');
+    L.push(' dmax_'+y+': ' + cumE(y).join(' + ') + ' - '
+      + cum('batt',y).map(v => '12 ' + v).join(' - ') + ' <= 0');
+  }
+
   L.push('Bounds');
   for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + RATE[t].toFixed(1));
+  for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
   for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
     const k = y + '_' + r.d + '_' + h;
     L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
@@ -16491,7 +16518,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-09-23g';
+const BUILD_STAMP = '2026-09-23h';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
