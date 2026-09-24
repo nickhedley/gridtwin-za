@@ -130,6 +130,32 @@ solar-heavy region with little local demand does. Nothing asserts it yet; it is 
 first regional validation test when the nodal work resumes, because it is a pattern the data
 must reproduce rather than a number to calibrate.
 
+**Named candidates for the 1,823 MW of unexplained solar**, gathered 23 Sep 2026 from trade
+press rather than from a register, so each still needs a commercial operation date from the PFL
+Knowledge Hub or the NERSA registrations before it is loaded:
+
+```
+Selemela 1 and 2, Lichtenburg, North West   256 MWp / 200 MW AC   COD 24 Apr 2024
+   SOLA for Tronox, wheeled to sites in the Western Cape and KwaZulu-Natal. The regional file
+   currently carries 100 MW of private solar in North West, so this one project is understated
+   by about 100 MW on its own.
+SolarAfrica SunCentral                       342 MW energised of a planned 1 GW
+   already recorded above as a press-report candidate
+Paarde Valley PV2, near De Aar               120 MW
+   Mulilo and TotalEnergies for Sasol and Air Liquide, alongside a 140 MW wind farm
+```
+
+SOLA stated 268 MWp of operational utility-scale wheeling in July 2024 with 325 MWp under
+construction, which brackets the pre-2026 total for that developer. Sasol and Air Liquide's PPAs
+reach about 690 MW in total but are mostly WIND - the Impofu triplet at 330 MW and De Aar 2 South
+at 140 - and the wind identity already balances, so those belong in the wind column if anywhere.
+
+Two things to hold in mind before treating this as the answer. These candidates sum to well under
+1,823 MW, so either more plant exists or FIXED.pvUtilityMW is overstated - it is 4,974 and has
+been known to be high since August. And a wheeled project's INSTALLED figure is usually quoted in
+MWp while the model works in MW AC: Selemela is 256 MWp and 200 MW AC, a 22% difference, which
+is large enough to matter across a portfolio.
+
 **Captive capacity is deliberately excluded.** 88 MW in the H1 2026 monitor. It
 sits behind the meter and suppresses demand rather than adding supply.
 

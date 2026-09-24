@@ -101,6 +101,26 @@ FY 2026/27     Eskom Group CFO Calib Cassim retires after 24 years. The
                from his finance function.
 ```
 
+## Waiting on someone else, nothing to do until it lands
+
+```
+Jan 2027       The annual data refresh, all in one pass: Koeberg's rolling twelve months, the
+               demand ratio against the full 2026 year, the imports factor, and wheeled output.
+               Each of these drifted separately during 2026 and each cost a re-measurement.
+when published Battery restoration contracts. System restoration is NTCSA's fastest-growing
+               ancillary line, R376m in FY2026 to R3,741m by FY2030, and no battery anywhere
+               has won a restoration contract yet - NESO has taken them only to feasibility.
+               There is no price to model until one is awarded.
+when published Iron-air calendar degradation. No fleet data exists. Cycle life cannot bind at
+               a third of a cycle a year, so calendar life is the open question.
+if needed      EDMSA scenario A. Our 90 Mt against their 124 Mt for 2035 is a real disagreement
+               between two models, correctly flagged by validate_external. Reconcile only if
+               their scenario is needed for something.
+if we publish  A worst-year or shedding-depth cap alongside the average reliability standard.
+               Only worth adding if a published claim invites the question "how bad is the
+               worst hour?"
+```
+
 ## Undated but time-sensitive
 
 ```
