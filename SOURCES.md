@@ -36,7 +36,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Eskom Tubatse pumped storage | one-off | R35.9bn, 1.5 GW / 21 GWh, jet plan | `acapPs` 2,360 R/kW-yr |
 | DFFE REEA, Red Cap / Impofu | rolling | as at last ingest | the Impofu and Koruson connector endpoints in `transmission_lines.geojson` |
 
-| SolarAfrica SunCentral | one-off | 342 MW energised of a planned 1 GW | candidate against the 1,823 MW unexplained solar in identity 3 — not loaded, press report only |
+| SolarAfrica SunCentral | one-off | 114 MW of a 342 MW phase 1 energised 26 Aug 2026, not yet at commercial operation | pipeline, not capacity. Corrected 23 Sep 2026: an earlier entry here said 342 MW energised, which was wrong on the figure and the status |
 | Aurora Energy Research | occasional | 2060 outlook, Aug 2026 | independent corroboration of the no-gas frontier: >120 GW new capacity |
 | AEMO Engineering Roadmap / Transition Plan for System Security | annual | FY26 roadmap, Sep 2026 | the syncon and grid-forming findings in results.md; the roadmap merges into the TPSS from Dec 2026 |
 | NTCSA MYPD 6 revenue application, Table 10 | three-yearly | FY2026-FY2028, Aug 2024 | what the System Operator pays for ancillary services: reserves R1,445m, demand response R521m, reactive power R468m, system restoration R376m in FY2026. Behind asReserveRMWh and asVoltagePotRm |
@@ -130,31 +130,45 @@ solar-heavy region with little local demand does. Nothing asserts it yet; it is 
 first regional validation test when the nodal work resumes, because it is a pattern the data
 must reproduce rather than a number to calibrate.
 
-**Named candidates for the 1,823 MW of unexplained solar**, gathered 23 Sep 2026 from trade
-press rather than from a register, so each still needs a commercial operation date from the PFL
-Knowledge Hub or the NERSA registrations before it is loaded:
+**Pre-2026 private solar, and why the 1,823 MW gap is gone.** Checked 23 Sep 2026 against the
+data file rather than against the note that described it. The solar identity BALANCES:
 
 ```
-Selemela 1 and 2, Lichtenburg, North West   256 MWp / 200 MW AC   COD 24 Apr 2024
-   SOLA for Tronox, wheeled to sites in the Western Cape and KwaZulu-Natal. The regional file
-   currently carries 100 MW of private solar in North West, so this one project is understated
-   by about 100 MW on its own.
-SolarAfrica SunCentral                       342 MW energised of a planned 1 GW
-   already recorded above as a press-report candidate
-Paarde Valley PV2, near De Aar               120 MW
-   Mulilo and TotalEnergies for Sasol and Air Liquide, alongside a 140 MW wind farm
+by_source          solar MW
+REIPPPP               2,783
+private                 488
+Eskom                     0
+rmipppp                   0
+sum                   3,271  =  FIXED.pvUtilityMW 3,271
 ```
 
-SOLA stated 268 MWp of operational utility-scale wheeling in July 2024 with 325 MWp under
-construction, which brackets the pre-2026 total for that developer. Sasol and Air Liquide's PPAs
-reach about 690 MW in total but are mostly WIND - the Impofu triplet at 330 MW and De Aar 2 South
-at 140 - and the wind identity already balances, so those belong in the wind column if anywhere.
+The 1,823 MW was measured when the constant read 4,974 and REIPPPP solar read 2,663. Both have
+since been corrected, and the note describing the gap outlived the gap - which is the failure
+mode state.md warns about in its own opening lines. Two turns of work today went into chasing
+it before anyone checked the file.
 
-Two things to hold in mind before treating this as the answer. These candidates sum to well under
-1,823 MW, so either more plant exists or FIXED.pvUtilityMW is overstated - it is 4,974 and has
-been known to be high since August. And a wheeled project's INSTALLED figure is usually quoted in
-MWp while the model works in MW AC: Selemela is 256 MWp and 200 MW AC, a 22% difference, which
-is large enough to matter across a portfolio.
+WHAT IS STILL MISSING, and it is a different thing. by_source.private covers H1 2026 only, so
+wheeled plant commissioned earlier is absent - not as an unexplained residual, but as capacity
+nobody has counted:
+
+```
+Selemela 1 and 2, North West     256 MWp / 200 MW AC   COD 24 Apr 2024   SOLA for Tronox
+Damlaagte, Free State                       97.5 MW    COD 23 Aug 2025   Mainstream for Sasol
+```
+
+Adding them BREAKS the identity unless the national constant rises with them, which is the right
+question to settle first: 3,271 is a grid-supply figure, and Eskom's own series exclude wheeled
+plant - ESK19679's installed wind matches the REIPPPP-only fleet exactly. If the constant shares
+that boundary, the model is understating national solar by roughly 300 MW of named plant plus
+whatever else predates the monitor. Load the plant and the constant in one commit, as rule 5 says.
+
+NOT pre-2026, and belonging in the pipeline rather than the capacity file: SunCentral, 114 MW of
+its 342 MW first phase energised 26 Aug 2026 and explicitly not yet at commercial operation; and
+Paarde Valley PV2, 120 MW, commercial operation targeted end of 2026.
+
+Two traps that caught this list out. Wheeled projects are quoted in MWp where the model works in
+MW AC - Selemela is 256 MWp and 200 MW AC, 22% apart. And ENERGISED is not COMMERCIAL OPERATION,
+the same distinction that settled Mulilo Total Hydra's placement in August.
 
 **Captive capacity is deliberately excluded.** 88 MW in the H1 2026 monitor. It
 sits behind the meter and suppresses demand rather than adding supply.
