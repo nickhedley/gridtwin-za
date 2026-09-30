@@ -2883,6 +2883,66 @@ and the build-rate caps apply per step rather than per year. And the LP screens 
 days with perfect foresight - 6.6 GW of gas is a proposal to be checked against twelve weather
 years, not a result, exactly as the presets were.
 
+### Meridian's own work says the same thing about gas, on the same horizon
+
+30 Sep 2026. A numerical cross-check against PyPSA-RSA is not available: it is a tool rather than
+a published results set, its multi-horizon runs need a commercial solver, and Meridian's scenario
+work now sits inside COMPASS, which is commercial. What is public is directional, and it lines up
+with this week's correction rather than with the claim it replaced.
+
+**A Vital Ambition (Meridian, with the CSIR technical report, July 2020).** An ambitious renewable
+build means the decision to build expensive new gas infrastructure "can be avoided for at least a
+decade and might not be necessary". Written in 2020, so their decade runs to about 2030.
+
+This model, measured this week: no new gas is built to 2030 at any plausible gas price, and about
+6.6 GW appears once the horizon runs to 2040. Two models, opposite methods - they co-optimise
+investment and operation, this one dispatches a specified build - reaching the same shape of
+answer, including its hedge. Their "might not be necessary" is the part our 2040 run does not
+support at four-hour storage.
+
+**Meridian's 2025 Power Market Report, from its published summary.** A 20% fall in costs in early
+2025 "supercharges solar-plus-storage", prioritises batteries for new capacity services and
+DELAYS THE NEED FOR NEW PEAKING PLANT, while reducing the scale of wind.
+
+Delay rather than remove is exactly the revision made here on 30 Sep: the storage build rate
+postpones the gas question rather than settling it. That two independent models built on different
+principles both land on "later, not never" is the strongest corroboration this finding has.
+
+What this does not give us is a number to check against. If a numerical cross-check is wanted, the
+CSIR capacity ranges already in validate_external are the closest public thing, and the rest would
+need Meridian to share scenario outputs.
+
+### The rooftop tool now counts modules, and knows a pitched roof is not flat
+
+Build `2026-09-30a`, 30 Sep 2026. Two changes prompted by a German roof-layout tool that packs
+real modules around real obstructions where ours multiplied area by a density.
+
+**Whole modules, and the packing loss made visible.** Capacity was area x 165 Wp/m2, a figure that
+is right in aggregate and hides what it is made of. It is now a module of 2.58 m2 and 620 Wp, at
+69% packing after walkways, edge setbacks and obstructions - which multiplies back to the same 165,
+so no result moved. The count rounds DOWN to whole modules, as a layout does: a 2,000 m2 flat roof
+gives 534 modules and 331.1 kWp, against 330 kWp before.
+
+**A pitched roof is not its footprint.** Satellite imagery measures the horizontal projection. On a
+flat roof that is what you build on; on a dual-pitch roof only one plane faces the sun usefully,
+about half the footprint, and the tilt gives back a few per cent of surface. The tool had no way to
+say so, so a pitched roof was being treated as though every square metre faced north:
+
+```
+2,000 m2 measured        modules   kWp
+flat                         534   331.1
+single pitch, north          508   315.0
+dual pitch, north plane      278   172.4
+complex or multi-facet       187   115.9
+```
+
+A dual-pitch house was overstated by about 1.9 times. The default is flat, which is what the tool
+has always assumed, so nothing changes unless the user says what they have - but the option to say
+it now exists, and the note under the control explains what was measured.
+
+Also added, from the same source: the tool now states what it does not do. No string design, no
+structural check, and an installer still has to survey the roof.
+
 ---
 
 ## Fossil free, re-measured
