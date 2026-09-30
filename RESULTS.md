@@ -2851,6 +2851,38 @@ Both look like casualties of the 21 to 22 Sep reserve rework, which introduced t
 series and the continuous LOLP curve. Recorded because a defect reported and silently fixed is
 indistinguishable from one still live.
 
+### The no-gas result is a five-year result. At 2040 the optimiser builds gas.
+
+Measured 30 Sep 2026 on build `2026-09-30a`, with BLD_YEARS extended to 2040 in a variant copy -
+eight two-year steps rather than five annual ones. Not installed; this is a scoping measurement
+for the least-cost path work.
+
+The horizon extension is CHEAP, which was the first thing worth knowing and the opposite of what
+the spec assumed: the LP goes from 31,056 rows to 49,686 and from 1.7 seconds to 2.3.
+
+The answer changes:
+
+```
+horizon to 2030 (installed)     8.7 GW batteries at 4h, no gas
+horizon to 2040                15.3 GW batteries at 4h, 6.8 GW gas
+   at 3 GW/yr storage          16.1 GW, 6.6 GW gas
+   at 4 GW/yr storage          16.1 GW, 6.6 GW gas
+```
+
+Storage saturates at 16.1 GW on its own economics - raising the pace past 3 GW a year changes
+nothing - and the optimiser still wants about 6.6 GW of gas. So the finding recorded earlier today,
+that no new gas is economic provided storage arrives fast enough, HOLDS ONLY TO 2030. Over fifteen
+years, with demand compounding and coal retiring on its own per-unit schedule, four-hour storage
+cannot cover the firm gap at any procurement rate, and gas returns.
+
+That is a correction to something this file asserted this morning, and it is the more interesting
+result: the gas question is not settled by the storage build rate, it is POSTPONED by it.
+
+Two caveats on the number itself. Two-year steps are a crude approximation of a fifteen-year path
+and the build-rate caps apply per step rather than per year. And the LP screens on representative
+days with perfect foresight - 6.6 GW of gas is a proposal to be checked against twelve weather
+years, not a result, exactly as the presets were.
+
 ---
 
 ## Fossil free, re-measured

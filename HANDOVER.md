@@ -235,6 +235,38 @@ shed energy at no capital cost. And their data shows renewable deployment has no
 reliability outcomes in the US, which is the empirical answer to the claim this model keeps
 meeting in South African debate.
 
+## Least-cost to 2040, with a build schedule
+
+Requested 30 Sep 2026. Every preset here is a hand-set END STATE: a build somebody chose, checked
+against twelve weather years. What the model cannot yet say is what the cheapest PATH looks like -
+how much of what, in which year, between now and 2040.
+
+Most of the machinery exists. The build LP co-optimises across years with build-rate caps, prices
+capital at each year's vintage, chooses lithium's duration, and credits storage by what its energy
+can sustain. What it does not do is reach 2040:
+
+1. **BLD_YEARS stops at 2030.** MEASURED 30 Sep 2026 in a variant copy: extending to 2040 in
+   two-year steps takes the LP from 31,056 rows to 49,686 and from 1.7 seconds to 2.3. The
+   horizon is not the obstacle. Whether annual steps to 2040 stay tractable is the open part.
+   And the answer moves: at 2040 the optimiser builds 15 GW of storage AND 6.6 GW of gas at any
+   storage pace, where at 2030 it builds no gas at all. See RESULTS.md - the no-gas finding is a
+   five-year finding.
+2. **Coal retirement should be a DECISION, not an input.** Today `coalDecomMW` is a slider the
+   scenario sets. In a least-cost path the LP should choose when each station goes, against its
+   own fixed O&M and the cost of replacing it - the per-unit dates in UC_FLEET are already there.
+3. **The answer must be checked, not trusted.** The LP screens on representative days with
+   perfect foresight; it is a proposal, not a result. Every path it produces goes through the
+   twelve-year dispatch against the NEM standard before it becomes a preset, which is how the
+   current two were built.
+4. **Report the schedule, not just the end state.** The output worth having is a table by year -
+   what is built, what retires, what it costs - because that is the thing a plan can be compared
+   against. The IRP publishes exactly that shape, and the IRP path preset would then have a
+   like-for-like counterpart rather than an end-state comparison.
+
+Worth knowing before starting: the build pace is what decided the gas question, and over fifteen
+years it will decide more. A least-cost path at 2 GW a year of storage and one at 0.6 GW are
+different plans, not different numbers, so the pace belongs in the output alongside the build.
+
 ## An industrial electrification scenario, to be built
 
 Proposed 23 Sep 2026 after the IEA's Electrification special report. The question: what does
