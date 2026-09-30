@@ -2824,6 +2824,33 @@ That gap is the cost of the instant model's block commitment - it commits coal i
 blocks where the MIP starts and stops on the hour. Small enough to justify the shortcut, and now
 a number rather than an assumption.
 
+### Two reported defects, both already fixed, 30 Sep 2026
+
+Build `2026-09-30a`. The parallel session reported two defects it had introduced and not fixed.
+Both are gone in this build, and the measurements say so rather than the code reading as though
+they should be.
+
+**The 15% reserve share does not withhold dispatch.** It was said to hold storage back in hours
+that shed load, taking Deep decarbonisation from 84 to 134 GWh unserved with reserve pricing on,
+and Fossil-free's worst of twelve years from 0 to 46. Here the held share appears in exactly two
+places, both inside the ancillary revenue loop, and pricing reserve changes nothing:
+
+```
+                                unserved GWh, reserve unpriced / priced
+Deep decarbonisation 2035, 2016            20.5 / 20.5
+Fossil-free 2040, 2020                     21.2 / 21.2
+twelve-year mean, Fossil-free              1.77 / 1.77
+```
+
+**The scarcity curve reads availability, not the requirement.** It was said to read the
+requirement as though it were available reserve, pricing scarcity in 8,754 of 8,760 hours. The two
+are separate arrays here - at hour 100, requirement 2,200 MW against 6,304 MW available, means of
+2,237 and 6,558 across the year - and Today 2026 prices above R2,000/MWh in 65 hours.
+
+Both look like casualties of the 21 to 22 Sep reserve rework, which introduced the availability
+series and the continuous LOLP curve. Recorded because a defect reported and silently fixed is
+indistinguishable from one still live.
+
 ---
 
 ## Fossil free, re-measured
