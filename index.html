@@ -4977,6 +4977,7 @@ function printPrefeas() {
     </details>
 
           <div id="rt_result"></div>
+          <div style="margin-top:10px"><button onclick="rtExportSheet()" style="padding:6px 12px;background:none;border:1px solid var(--line2);cursor:pointer;font-size:11px;border-radius:2px;color:var(--ink)">Save sizing sheet</button></div>
 
           <!-- ── SMARTEST NEXT STEP ────────────────────────────────────────
                South Africa is not Australia. There is almost no gas to get off:
@@ -18462,6 +18463,60 @@ function rankNextSteps(){
     + 'you heat in winter. Costs are mid-range retail and vary widely by installer.</div>';
 }
 
+// Writes what is on screen as a plain-text sheet the user can save and hand over. Every
+// assumption is named, because the point of the sheet is that an installer can disagree
+// with a specific line rather than with the number at the bottom.
+function rtExportSheet(){
+  const d = window._rtSheet;
+  if (!d) return;
+  const r = (n, dp) => Number(n).toFixed(dp === undefined ? 0 : dp);
+  const L = [];
+  L.push('GRIDTWIN ZA - ROOFTOP SOLAR SIZING SHEET');
+  L.push('Generated ' + new Date().toISOString().slice(0, 10) + ' - build ' + BUILD_STAMP);
+  L.push('');
+  L.push('THE ROOF');
+  L.push('  Measured footprint          ' + r(d.area) + ' m2');
+  L.push('  Roof form                   ' + d.formLabel);
+  L.push('  Facing the sun              ' + r(d.planeAreaM2) + ' m2');
+  L.push('  Share built on              ' + r(d.sharePct) + '%  -> ' + r(d.effectiveAreaM2) + ' m2');
+  L.push('  Obstructions                ' + d.obstruction + ' (' + r(d.packing * 100) + '% packing)');
+  L.push('');
+  L.push('THE SYSTEM');
+  L.push('  Modules                     ' + d.panels + ' x ' + d.moduleWp + ' Wp, '
+         + d.moduleAreaM2.toFixed(2) + ' m2 each');
+  L.push('  Capacity                    ' + r(d.kwp, 1) + ' kWp');
+  L.push('  Battery                     ' + (d.battKwh > 0 ? r(d.battKwh) + ' kWh' : 'none'));
+  L.push('  Capital cost                R' + r(d.totalCapex));
+  L.push('');
+  L.push('THE YIELD');
+  L.push('  Resource                    ' + d.location + ', capacity factor ' + r(d.adjCF * 100, 1) + '%');
+  L.push('  Orientation and shading     x' + d.tilt.toFixed(2) + ' and x' + d.shading.toFixed(2));
+  L.push('  Generated                   ' + r(d.annualKwh) + ' kWh a year');
+  L.push('  Used on site                ' + r(d.selfConsumeFrac * 100) + '% of generation');
+  L.push('  Exported                    ' + r(d.exportedKwh) + ' kWh a year');
+  L.push('');
+  L.push('THE CASE');
+  L.push('  Current bill                R' + r(d.bill) + ' a month at R' + d.tariff.toFixed(2) + '/kWh');
+  L.push('  Saving                      R' + r(d.annualSavings) + ' a year');
+  L.push('  Simple payback              ' + r(d.simplePayback, 1) + ' years');
+  L.push('  Tariff escalation assumed   ' + r(d.escal * 100, 1) + '% a year');
+  L.push('  CO2 avoided                 ' + r(d.co2T) + ' t a year');
+  L.push('');
+  L.push('WHAT THIS IS NOT');
+  L.push('  No string design, no inverter selection, no structural check on the roof.');
+  L.push('  Module count is a packing estimate, not a layout. An installer still has to');
+  L.push('  survey the site. Yield is modelled from satellite-derived resource data for');
+  L.push('  the location, not measured on this roof.');
+  L.push('');
+  L.push('Figures are reproducible from the assumptions above. GridTwin ZA, gridtwinza.org');
+  const blob = new Blob([L.join(String.fromCharCode(10))], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rooftop-sizing-' + r(d.kwp, 0) + 'kwp.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
 function rtCalc() {
   const el = document.getElementById('rt_result');
   if(!el) return;
@@ -18720,6 +18775,20 @@ function rtCalc() {
 
   const maxMS = Math.max.apply(null, monthlySavings);
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // EXPORT SHEET, 1 Oct 2026. The tool produced a screen and nothing a user could take to
+  // an installer. Everything a quote conversation needs is already computed here, so it is
+  // stashed and written out on demand. Deliberately plain text rather than a PDF: it has to
+  // be checkable line by line, and a PDF in this environment would be a dependency for
+  // formatting nobody asked for.
+  window._rtSheet = {
+    area, formLabel: form.label, obstruction: (RT_OBSTRUCTION[obsKey] || RT_OBSTRUCTION.typical).label,
+    sharePct, planeAreaM2, effectiveAreaM2, packing, panels, kwp,
+    moduleWp: RT_MODULE.wp, moduleAreaM2: RT_MODULE.areaM2,
+    tilt, shading, adjCF, location, annualKwh, usableKwh,
+    selfConsumeFrac, exportedKwh, battKwh, totalCapex, annualSavings, simplePayback, co2T,
+    bill, tariff, escal, type
+  };
+
   el.innerHTML =
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:16px">' +
     '<div style="background:var(--bg2,#eee);border-radius:4px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:#F5C518">' + kwp.toLocaleString() + ' kWp</div><div style="font-size:9.5px;color:var(--ink2)">System size &middot; ' + panels.toLocaleString() + ' panels</div></div>' +

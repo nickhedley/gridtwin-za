@@ -2987,6 +2987,23 @@ schedule to 2030" with no hint that the horizon is load-bearing - and this week'
 showed it is: the same optimiser builds no gas to 2030 and 6.6 GW to 2040. It now says so in six
 words. A scope stated without its consequence is not much better than an unstated one.
 
+### The rooftop tool produces something you can hand to an installer
+
+Build `2026-10-01a`, 1 Oct 2026. The tool computed a system, a yield and a payback and gave the
+user nothing to take away. A Save sizing sheet button now writes a plain-text sheet with every
+assumption named: measured footprint, roof form, the area facing the sun, share built on, the
+obstruction case and its packing factor, module count and size, capacity, battery, capital cost,
+resource and capacity factor, orientation and shading multipliers, generation, self-consumption,
+export, bill, saving, payback, escalation and avoided CO2.
+
+Plain text rather than PDF, deliberately. The sheet exists so an installer can disagree with a
+specific LINE rather than with the number at the bottom, and a PDF would add a formatting
+dependency nobody asked for. It ends with what the tool does not do: no string design, no inverter
+selection, no structural check, module count is a packing estimate rather than a layout, and the
+yield is modelled from satellite-derived resource data rather than measured on that roof.
+
+Nothing in the model moved. The sheet reads the figures already on screen.
+
 ---
 
 ## Fossil free, re-measured
