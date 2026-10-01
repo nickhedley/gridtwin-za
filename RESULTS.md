@@ -3083,6 +3083,35 @@ turns on being above 1.5. Against GreenCape's pipeline the whole 8.7 GW is nearl
 is investable today. The model is not claiming the market will do this; it is declining to forbid
 it.
 
+### A queue for named private projects, rather than losing them
+
+Build `2026-10-01a`, 1 Oct 2026. Six named private and wheeled projects have come out of trade
+press over the past week and none of them can be loaded. The pipeline file is IPP Office
+programmes only and says so in its own description; the private block comes from the Power Futures
+Lab monitor and is replaced wholesale every half year, so adding a press report to it is exactly
+the delta-adding rule 5 forbids; and adding solar would break identity 3 unless the national
+constant moves, which nobody can currently justify.
+
+So they sit in `nodal/private_pending_h2_2026.json`, named, with their dates, sources and the
+reason each is not loaded:
+
+```
+SunCentral 1                114 MW    commercial operation Oct 2026
+Selemela 1 and 2            200 MW    Apr 2024, pre-monitor
+Damlaagte                    97.5 MW  Aug 2025, pre-monitor
+Thakadu                     255 MW    under construction, 2027
+Paarde Valley PV2           120 MW    under construction, end 2026
+Discovery Green portfolio   740 MW    an aggregate, scale check only
+```
+
+The file carries its own instruction for February 2027: replace the private block from the new
+monitor, then DELETE from the queue whatever the monitor already carries. An entry the monitor
+omits is a question for Power Futures Lab rather than a licence to hand-edit. CALENDAR points at
+it on the monitor's date.
+
+The alternative was a note in a markdown file that nobody reads at the moment it matters, which is
+how the 1,823 MW gap outlived its own correction by a month.
+
 ---
 
 ## Fossil free, re-measured

@@ -132,6 +132,15 @@ solar-heavy region with little local demand does. Nothing asserts it yet; it is 
 first regional validation test when the nodal work resumes, because it is a pattern the data
 must reproduce rather than a number to calibrate.
 
+**The private-project queue.** Six named projects observed from trade press now sit in
+`nodal/private_pending_h2_2026.json`, deliberately NOT loaded: SunCentral 1 (114 MW, commercial
+operation Oct 2026), Selemela (200 MW AC, Apr 2024), Damlaagte (97.5 MW, Aug 2025), Thakadu
+(255 MW, 2027), Paarde Valley PV2 (120 MW, end 2026) and Discovery Green's 740 MW portfolio,
+which is an aggregate rather than a plant and is there as a scale check only. 1,526 MW in total.
+The file says what to do when the February 2027 monitor lands: replace `by_source.private` from
+it, then delete whatever the monitor already carries. An entry the monitor omits is a question
+for Power Futures Lab, not a licence to hand-edit.
+
 **Pre-2026 private solar, and why the 1,823 MW gap is gone.** Checked 23 Sep 2026 against the
 data file rather than against the note that described it. The solar identity BALANCES:
 

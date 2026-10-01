@@ -75,7 +75,12 @@ Dec 2026       AEMO Transition Plan for System Security. Absorbs the Engineering
                Will contain Mulilo Total Hydra if COD was H1; if COD is 2026-07
                it lands in Q2 instead. EITHER WAY the double-count guard fires
                and the named entry must be REMOVED. See RULES.md rule 5.
-~Feb 2027      PFL IPP monitor, H2 2026 update. Replaces by_source.private
+~Feb 2027      PFL IPP monitor, H2 2026 update. RECONCILE AGAINST
+               nodal/private_pending_h2_2026.json, which holds six named private projects
+               observed from trade press and deliberately not loaded - SunCentral 1,
+               Selemela, Damlaagte, Thakadu, Paarde Valley PV2 and the Discovery Green
+               portfolio. An entry the monitor carries gets DELETED from the queue, not
+               added anywhere; an entry it omits is a question for Power Futures Lab. Replaces by_source.private
                wholesale. Same removal discipline.
 Jan 2027       Full calendar 2026 RSA Contracted Demand (ESK19679). Replace the
                provisional Jan-Aug ratio (0.9442, domestic) by re-running

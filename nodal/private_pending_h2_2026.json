@@ -1,0 +1,89 @@
+{
+ "meta": {
+  "description": "Named private and wheeled projects observed from trade press, NOT loaded into any derived file. A holding queue to be reconciled against the next Power Futures Lab IPP monitor, expected February 2027, which replaces by_source.private wholesale.",
+  "why_a_queue": "Rule 5: when a new edition of a source lands, replace the whole block and re-derive rather than adding the delta. Press reports cannot be added to by_source.private without breaking that, and would also break identity 3 unless FIXED.pvUtilityMW moves with them - and what that constant represents is currently unknown. So these wait here, named, rather than being lost.",
+  "on_arrival": "When the H2 2026 monitor lands: replace by_source.private from it, then check each entry below against the monitor. An entry the monitor already carries is DELETED from this file, not added anywhere. An entry the monitor omits is a question for Power Futures Lab, not a licence to hand-edit.",
+  "compiled": "2026-10-01",
+  "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "GridTwin ZA, Nick Hedley"
+ },
+ "entries": [
+  {
+   "name": "SunCentral 1",
+   "tech": "solar",
+   "mw": 114,
+   "basis": "MW AC as reported",
+   "region_reported": "Northern Cape, between Hanover and De Aar",
+   "region_note": "Close to the Hydra Central supply area; the region needs settling against substations_compact.json before loading.",
+   "status": "commercial operation",
+   "cod": "2026-10-01 reported",
+   "energised": "2026-08",
+   "offtake": "one-to-many wheeling across multiple commercial and industrial customers",
+   "developer": "SolarAfrica, backed by African Infrastructure Investment Managers and Helios",
+   "source": "Green Building Africa, 1 Oct 2026"
+  },
+  {
+   "name": "Selemela 1 and 2",
+   "tech": "solar",
+   "mw": 200,
+   "basis": "MW AC; 256 MWp installed",
+   "region_reported": "North West, Lichtenburg",
+   "status": "operational",
+   "cod": "2024-04-24",
+   "offtake": "wheeled to Tronox sites in the Western Cape and KwaZulu-Natal",
+   "developer": "SOLA Group",
+   "source": "trade press, Jul 2024",
+   "note": "Pre-2026, so absent from the H1 2026 monitor. The regional file carries only 100 MW of private solar in North West."
+  },
+  {
+   "name": "Damlaagte",
+   "tech": "solar",
+   "mw": 97.5,
+   "basis": "MW as reported",
+   "region_reported": "Free State",
+   "status": "operational",
+   "cod": "2025-08-23",
+   "offtake": "Sasol and Air Liquide",
+   "developer": "Mainstream",
+   "source": "trade press, Oct 2025",
+   "note": "Pre-2026, so absent from the H1 2026 monitor."
+  },
+  {
+   "name": "Thakadu",
+   "tech": "solar",
+   "mw": 255,
+   "basis": "MW as reported",
+   "region_reported": "not stated",
+   "status": "under construction",
+   "cod": "2027 expected",
+   "offtake": "Lyra Energy, Scatec and Stanlib",
+   "developer": "Scatec",
+   "source": "Yelland newsletter, Sep 2026"
+  },
+  {
+   "name": "Paarde Valley PV2",
+   "tech": "solar",
+   "mw": 120,
+   "basis": "MW as reported",
+   "region_reported": "Northern Cape, near De Aar",
+   "status": "under construction",
+   "cod": "end 2026 targeted",
+   "offtake": "Sasol and Air Liquide",
+   "developer": "Mulilo and TotalEnergies",
+   "source": "trade press, Nov 2024"
+  },
+  {
+   "name": "Discovery Green portfolio",
+   "tech": "mixed",
+   "mw": 740,
+   "basis": "MW under construction, not a single project",
+   "region_reported": "not stated",
+   "status": "under construction",
+   "cod": "various",
+   "offtake": "more than 50 commercial and industrial customers",
+   "developer": "Discovery Green",
+   "source": "Yelland newsletter, Sep 2026",
+   "note": "An aggregate, not a named plant. Rule: never load an opaque bundle - this is here as a scale check on what the monitor should show, not as a loadable entry."
+  }
+ ]
+}
