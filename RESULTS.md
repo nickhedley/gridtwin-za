@@ -3118,6 +3118,36 @@ is REIPPPP solar 2,783 plus the H1 2026 wheeled 488 exactly. That is a hypothesi
 provenance - the repo history is still what would settle it - but it is the first explanation that
 fits.
 
+### What the reclassification would move, measured before deciding
+
+Build `2026-10-01a`, 1 Oct 2026. Moving 414 MW from rooftop to utility PV, measured rather than
+assumed, so the decision to do it now or wait for February rests on a number:
+
+```
+                              served TWh   rooftop TWh   utility PV TWh   system R bn
+Today 2026, as is                 191.83         15.36             6.92         210.7
+Today 2026, reclassified          192.54         14.65             7.79         210.8
+Deep decarbonisation, as is       183.31         33.91            44.02         290.2
+Deep decarbonisation, reclassified 184.02        33.20            44.65         290.4
+
+retail, Today 2026, regulated     R3.748/kWh  ->  R3.734/kWh
+sales                              191.83 TWh  ->  192.54 TWh
+```
+
+Small and in the direction the physics requires. Grid-served demand rises 0.7 TWh because
+generation that was suppressing demand behind a meter now supplies the grid, sales rise with it,
+and the retail price falls 1.4 cents because the same fixed costs spread over more units. System
+cost moves R0.1bn, emissions not at all.
+
+So: real, consistent, and below the threshold at which anything published would change. No reason
+to rush it ahead of the February monitor, which replaces the private block wholesale anyway and
+will carry SunCentral 1 and probably more. Doing it now would mean two edits to the same constants
+where one will do, and rule 5 says replace rather than add.
+
+The value of measuring it was not the decision. It was confirming the direction: if the
+reclassification had moved served demand DOWN, the model's accounting of behind-the-meter
+generation would have been backwards, and that would have mattered a great deal more than 0.7 TWh.
+
 ### A queue for named private projects, rather than losing them
 
 Build `2026-10-01a`, 1 Oct 2026. Six named private and wheeled projects have come out of trade
@@ -3146,6 +3176,35 @@ it on the monitor's date.
 
 The alternative was a note in a markdown file that nobody reads at the moment it matters, which is
 how the 1,823 MW gap outlived its own correction by a month.
+
+### System cost barely moves with the weather, so the distribution is not worth building
+
+Build `2026-10-01a`, 1 Oct 2026. Before building the cost-distribution view the Discovery Green
+framing suggested, the spread was measured. It is not there.
+
+```
+system cost, R bn a year, across twelve weather years
+                            min     median     max    spread
+Deep decarbonisation 2035   291.6     293.9   295.6      1.4%
+Fossil-free 2040            338.2     338.3   338.4      0.1%
+```
+
+Twelve real weather years, including the drought years that set the capacity requirement, and the
+cost of a fossil-free system moves by one part in a thousand.
+
+The reason is structural and worth stating: system cost in a high-renewables build is capital and
+fixed operating cost, neither of which cares what the wind did. Fuel is the only weather-sensitive
+line, and Fossil-free has almost none. The weather risk in these systems is not a cost risk at
+all - it is an ADEQUACY risk, and that is already reported as a mean and a worst year.
+
+So the feature is not worth building as specified, and the spec in handover.md has been corrected
+rather than left to be implemented by someone who would get the same flat answer. Where variability
+does live, and where a distribution would earn its place: the market-indexed retail price, which is
+set by scarcity hours rather than by annual cost, and curtailment. Neither has been measured across
+twelve years yet.
+
+Measuring before building cost nothing and saved a panel that would have shown a flat line with
+authority.
 
 ---
 

@@ -246,10 +246,15 @@ across twelve weather years and reported as a mean and a worst year. COST is not
 cost, retail price and payback in this model is a single number from a single year, and the
 weather spread behind it is thrown away.
 
-What to do, roughly in order of value:
+MEASURED FIRST, 1 Oct 2026, and the headline item turned out to be empty. System cost across
+twelve weather years spreads 1.4% on Deep decarbonisation and 0.1% on Fossil-free - because cost
+in these builds is capital and fixed O&M, and only fuel cares about the weather. The weather risk
+is an adequacy risk, not a cost risk, and adequacy is already reported as a mean and a worst year.
 
-1. **System cost across the twelve years**, reported as a median and a worst year alongside the
-   mean. The runs already happen for adequacy; the cost is computed and discarded.
+What is left, in order of value:
+
+1. ~~System cost across the twelve years~~ - DROPPED. The spread does not exist; a panel showing
+   it would display a flat line with authority.
 2. **The retail price the same way.** A price that holds in a normal year and moves 15% in a wind
    drought is a different proposition from one that does not, and the panel cannot say which it is.
 3. **The wheeling and rooftop paybacks the same way**, which is where it matters commercially:
