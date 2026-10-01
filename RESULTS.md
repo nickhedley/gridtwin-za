@@ -3032,6 +3032,40 @@ to City Power within 48 hours, out of which the distributor must cover Eskom pur
 costs, staff, maintenance, depreciation and reinvestment. That is a wedge between what a household
 pays and what reaches the network, not an addition to the bill.
 
+### Three more dead element reads, and a check so there is no fourth
+
+Build `2026-10-01a`, 1 Oct 2026. The retail flag found this morning was not alone. A sweep of every
+`getElementById` in the page against every id it defines:
+
+```
+retSupply      the retail supplier flag, read every render, pinned and labelled this morning
+retMarkup      the retail markup slider, removed when real tariff data arrived
+retMarkupVal   its readout, same
+vppTotal       the host for a VPP readout - and this one is different
+```
+
+**The VPP readout was computed and never shown.** `updateVppTotal` works out the controllable load
+that actually reaches the optimiser, splits it into the national programme and sited capacity, and
+writes it to an element that has never existed - so it returned at the first line on every call.
+The function is sound; nothing created its host. Sliders can now declare a readout host, the VPP
+enrolment slider declares one, and the line renders: at 40% enrolment, 1,600 MW of controllable
+load, all from the national programme.
+
+The markup pair was deleted. The flag stays, pinned and documented, for the reason given this
+morning.
+
+**And a structural check now asserts that every id read is an id defined**, with concatenated ids
+listed by prefix and renderer-created hosts named. It fails on this morning's build with all three.
+25/25 structural checks.
+
+Two process notes worth keeping. Deleting the markup lines took two working statements with them -
+the harness caught it immediately, consistency dropping 80 to 59 and lint failing on an undefined
+variable, which is the before-and-after rule earning its place again. And the readout property I
+added collided with a property name `validate_response` already uses to EXCLUDE readout-only
+controls from its sweep, which silently dropped the VPP enrolment slider from 70 controls to 69.
+Renamed. A harness that excludes by property name is a contract on the page's vocabulary, and
+nothing says so in either file.
+
 ---
 
 ## Fossil free, re-measured

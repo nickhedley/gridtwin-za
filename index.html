@@ -13897,7 +13897,6 @@ function retailHourly(){
   // Replaced by a real tariff: City Power Johannesburg, Residential Single Phase 80A, five
   // inclining blocks and R1,289.23/month fixed. One named household beats a national average
   // that describes nobody.
-  const supEl = document.getElementById('retSupply');
   // DEAD CONTROL, found 1 Oct 2026. There is no element with id retSupply anywhere in this
   // page, so this read always falls through to true and the flag has been pinned since the
   // control was removed. It is also INERT: passing true or false through retailComponents
@@ -14101,11 +14100,12 @@ function retailHourly(){
 function renderRetail(){
   const el = document.getElementById('retTable');
   const noteEl = document.getElementById('retNote');
-  const mv = document.getElementById('retMarkupVal');
+  // The retail markup slider and its readout were removed when the panel moved to real
+  // municipal tariff data; the code that filled them stayed, reading two elements that no
+  // longer exist. Deleted 1 Oct 2026 - the markup parameter itself is kept at zero, as its
+  // own comment explains, because the arithmetic downstream still takes it.
   if (!el) return;
   const d = retailHourly();
-  if (mv && document.getElementById('retMarkup'))
-    mv.textContent = document.getElementById('retMarkup').value + '%';
   if (!d){ el.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Run the model to see '
     + 'the shadow retail price.</p>'; return; }
 
@@ -15308,7 +15308,7 @@ const SLIDERS=[
    note:'Load moved within the day rather than dropped. I.e., loads including water heating, pumping, irrigation and EV charging are shifted out of the six highest net-load hours into the six lowest (i.e. midday solar). Strictly energy-neutral per day. Defaults to zero because this barely exists at scale in South Africa yet but is a potential policy lever.'},
   {id:'vppGeyserPoolMW',label:'Virtual power plants \u2013 national potential',min:0,max:12000,step:250,def:FIXED.vppGeyserPoolMW,fmt:v=>(v/1000).toFixed(2)+' GW',
    note:'How much behind-the-meter load could be aggregated nationally. 4 GW is our estimate for electric geysers, which drive the morning and evening peaks. Raise the slider above 4 GW to include pool pumps, air conditioning and EV charging as those fleets grow. Nothing happens until you set an enrolment share below. To place VPPs in specific municipalities rather than nationally, use the Where To Build panel and pick Virtual power plant as the technology \u2013 you can site several at once.'},
-  {id:'vppEnrolPct',label:'\u2013 share actually enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',ctrlStyle:SUB_CTRL,
+  {id:'vppEnrolPct',readoutHost:'vppTotal',label:'\u2013 share actually enrolled',min:0,max:100,step:5,def:FIXED.vppEnrolPct,fmt:v=>v+' % of the pool',ctrlStyle:SUB_CTRL,
    note:'The share of that national pool signed up and dispatchable, spread by default across regions by their share of electricity demand. For specific municipalities instead, site them in the Where To Build panel \u2013 those add on top of whatever is set here. Both Cape Town and eThekwini are working to implement city-wide VPPs. The slider defaults to zero because these are pilots.'},
   {id:'vppTotalReadout',readout:true,ctrlStyle:SUB_CTRL},
   {grp:'System operation'},
@@ -15818,7 +15818,13 @@ SLIDERS.forEach(s=>{
   if(s.ctrlStyle)d.style.cssText=s.ctrlStyle;
   d.innerHTML='<div class="row"><label for="in_'+s.id+'">'+s.label+'</label><span class="cv" id="cv_'+s.id+'">'+s.fmt(s.def)+'</span></div>'+
     '<input type="range" id="in_'+s.id+'" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+s.def+'" aria-label="'+s.label+'">'+
-    (s.note?'<small>'+s.note+'</small>':'');
+    (s.note?'<small>'+s.note+'</small>':'') +
+    // A READOUT HOST, added 1 Oct 2026. updateVppTotal computes the live VPP capacity that
+    // actually reaches the optimiser and then writes it to an element called vppTotal, which
+    // has never existed in the markup - so the function returned early on every call and the
+    // readout it was built for has never been seen. Any slider can now declare a readout and
+    // the function that fills it writes there.
+    (s.readoutHost ? '<div id="' + s.readoutHost + '" style="font-size:9.5px;color:var(--ink2);margin-top:3px"></div>' : '');
   (currentSub || currentGroup || controlsEl).appendChild(d);
   const inp = d.querySelector('input');
   // Defined inside the render closure, so applyState could not reach it - which

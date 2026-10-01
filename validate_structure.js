@@ -516,6 +516,32 @@ const live = stripComments(src);
           `factory defined ${wxFactory.length} times, ${wxCopies.length} private wxCache `
           + `copies - both ensembles must build weather years the same way`);
 
+    // ── EVERY ELEMENT READ EXISTS ─────────────────────────────────────────
+    // Added 1 Oct 2026, after two dead controls in one week: retSupply, read on every retail
+    // render and absent from the page since the control was removed, and vppTotal, the host
+    // for a VPP readout that was computed and never displayed because nothing created it.
+    // Both are rule 7's shape in the DOM - a read that resolves to nothing, guarded, so the
+    // page carries on and the feature silently is not there.
+    //
+    // Ids built by concatenation cannot be checked statically and are listed here by prefix.
+    {
+      const CONCAT_PREFIXES = ['rpanel_', 'tab_', 'in_', 'cv_', 'bldRate_'];
+      const CREATED = ['vppTotal'];   // written by the slider renderer from s.readout
+      const reads = new Set((src.match(/getElementById\(\s*['"]([^'"]+)['"]/g) || [])
+        .map(m => (m.match(/['"]([^'"]+)['"]/) || [])[1])
+        .filter(Boolean));
+      const defined = new Set((src.match(/\bid\s*=\s*["']([^"']+)["']/g) || [])
+        .map(m => (m.match(/["']([^"']+)["']/) || [])[1])
+        .filter(Boolean));
+      const missing = [...reads].filter(id =>
+        !defined.has(id) && !CREATED.includes(id)
+        && !CONCAT_PREFIXES.some(p => id === p || id.startsWith(p)));
+      check('every element read by getElementById exists in the page',
+            missing.length === 0,
+            missing.length ? 'read but never created: ' + missing.join(', ')
+                           : `${reads.size} ids read, all present`);
+    }
+
     const lits = (src.match(/importsCF\s*\?\?\s*[0-9.]+/g) || []);
     check('no numeric fallback duplicates the imports capacity factor',
           lits.length === 0,

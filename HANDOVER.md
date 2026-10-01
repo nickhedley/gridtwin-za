@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-10-01a`. Suite 798/800 plus eng5 6/6, measured 30 Sep 2026. Three sessions ran long and the
+Build `2026-10-01a`. Suite 799/801 plus eng5 6/6, measured 30 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -20,7 +20,7 @@ The previous version of this table was a running count and summed wrongly; this 
 
 ```
 validate_lint             3/3     phantom keys (peakMW, asReserveFrac, psMW, battMW)
-validate_structure       24/24
+validate_structure       25/25
 validate_geo             43/43
 validate_capacity        31/31
 validate_inputs          33/33
@@ -37,7 +37,7 @@ validate_external         5/7      EDMSA CO2 (known); MTSAO OCGT at the derived 
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            8/8
 audit.py                 87/87
-total                   800/802
+total                   799/801
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 
