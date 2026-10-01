@@ -522,6 +522,15 @@
    "conclusion": "NOT ONE distributor states VAT-inclusive, and five state exclusive. City Power's published schedule confirms the same. South African municipal tariff schedules are conventionally published excluding VAT, so the working assumption is that all 34 are ex-VAT. THAT IS AN INFERENCE, not a verified fact for the 29 that say nothing.",
    "why_the_spread_survives": "The error is UNIFORM across distributors, so the ranking between municipalities is unchanged. What moves is every premium against Eskom, which is measured against a VAT-inclusive tariff. At 900 kWh the range shifts from -39%/+113% to -30%/+145% and the median from -19% to -6%. Four of seven are still cheaper than Eskom direct.",
    "why_the_fixed_charge_finding_survives": "VAT is proportional and applies to energy and fixed charges alike, so the fixed SHARE of a bill does not move at all: 12% Msunduzi, 45% Eskom, 69% City Power, 83% Emakhazeni at 200 kWh. The absolute bill rises 15%, which strengthens rather than weakens the argument - a 200 kWh Johannesburg household pays R2,146 a month against R1,180 on Eskom, an 82% premium, with 69% of it owed before a unit is used."
+  },
+  "revenue_split_2026_27": {
+   "distributor_share_pct": 70,
+   "city_retained_share_pct": 30,
+   "transfer_window_hours": 48,
+   "effective_from": "2026-10-01",
+   "applies_to": "City of Johannesburg electricity revenue, ring-fenced to City Power",
+   "note": "City Power receives 70 per cent of electricity revenue collected within 48 hours; the city retains 30 per cent of gross. Out of its 70 per cent City Power must cover finance costs, Eskom purchases, staff, operations, maintenance, depreciation and reinvestment. This does not change what a household pays - it changes what reaches the distributor.",
+   "source": "City Power announcement, 21 September 2026, reported in Yelland's EE Business Intelligence newsletter"
   }
  },
  "escalation": {

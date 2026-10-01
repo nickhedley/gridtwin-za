@@ -13898,7 +13898,19 @@ function retailHourly(){
   // inclining blocks and R1,289.23/month fixed. One named household beats a national average
   // that describes nobody.
   const supEl = document.getElementById('retSupply');
-  const viaMuni = supEl ? supEl.value === 'muni' : true;
+  // DEAD CONTROL, found 1 Oct 2026. There is no element with id retSupply anywhere in this
+  // page, so this read always falls through to true and the flag has been pinned since the
+  // control was removed. It is also INERT: passing true or false through retailComponents
+  // changes no output - measured, every numeric component identical and the hourly mean
+  // R3.7481 either way - because the municipal comparison moved to RETAIL_T.municipal and the
+  // real City Power tariff, which does not consult this flag.
+  //
+  // Kept rather than deleted, pinned explicitly and labelled, because the question it was
+  // asking is real and unanswered: about half of South African households buy from a
+  // municipality, and the stack models an Eskom-direct customer. Deleting the flag would
+  // delete the reminder. Rule 7's exact shape - a read of a key that does not exist,
+  // resolving to a default that makes a plausible number rather than a crash.
+  const viaMuni = true;   // pinned: the control does not exist, and the flag changes nothing
   const markup = 0;   // retained as a parameter so the arithmetic below is unchanged
   // THE CAP. Off on the market basis, on for the regulated one. Changed 15 Sep 2026.
   //

@@ -16,9 +16,11 @@ superseded queue entries. Never add the delta. See rules.md.
 | IPP Office, *An Overview - ipppp* | quarterly | Q4 2025/26, as at 31 Mar 2026, p.18 | `by_source.reipppp`, both identities |
 | Power Futures Lab, UCT GSB, IPP monitor | half-yearly | H1 2026 | `by_source.private`, `pfl_cod_h1_2026.json` |
 | Ember, South Africa electricity | monthly-ish | 2025 full year + 12m to May 2026 | `validate_benchmarks.js` |
-| PyPSA-RSA fleet, `fleet_by_region_v2.csv` | static | 51 BASE plants | per-unit UC parameters, GPS, heat rates. Capacity-weighted coal CO2 1.008 t/MWh against our 1.04. THERMAL ONLY - not the wind/solar plant list |
+| PyPSA-RSA fleet (Meridian Economics), `fleet_by_region_v2.csv` | static | 51 BASE plants | per-unit UC parameters, GPS, heat rates. Capacity-weighted coal CO2 1.008 t/MWh against our 1.04. THERMAL ONLY - not the wind/solar plant list |
 | Renewables.ninja / MERRA-2 | static | 2014-2023, ten weather years | `profiles_regional_multiyear.json` |
 | PVGIS SARAH2 v5.2 | static | 739-point grid, 0.5 deg | `sa_solar_grid.json` - orphan, unused |
+| Meridian Economics, *A Vital Ambition* and the CSIR technical report behind it | one-off | Jul 2020 | the least-cost capacity band check in `validate_external.js`, and the directional comparison on gas in results.md |
+| Meridian Economics, South Africa Power Market Report | annual | 2025 edition, summary only | corroboration that cheaper solar-plus-storage delays new peaking plant. The report and COMPASS behind it are commercial; only the published summary is used |
 | CSIR least-cost study (plexos) | occasional | as cited in `validate_external.js` | external comparison, 2030 coal share |
 | Eskom weekly system status | weekly | drift detector only | `validate_capacity.js` |
 | Eskom hourly dataset ESK19679 | on request | Apr 2022 - Aug 2026, 38,736 h | curtailment estimate. Separates Wind, PV, CSP, Other RE with installed capacity per technology. Wind installed peaks at 4,143 MW, matching the REIPPPP-only fleet - it EXCLUDES wheeled plant |
@@ -162,13 +164,48 @@ plant - ESK19679's installed wind matches the REIPPPP-only fleet exactly. If the
 that boundary, the model is understating national solar by roughly 300 MW of named plant plus
 whatever else predates the monitor. Load the plant and the constant in one commit, as rule 5 says.
 
-NOT pre-2026, and belonging in the pipeline rather than the capacity file: SunCentral, 114 MW of
-its 342 MW first phase energised 26 Aug 2026 and explicitly not yet at commercial operation; and
-Paarde Valley PV2, 120 MW, commercial operation targeted end of 2026.
+NOT pre-2026, so not part of the identity question, but now LIVE and belonging in the capacity
+file at the next rebuild:
+
+```
+SunCentral 1, between Hanover and De Aar, Northern Cape   114 MW
+   COMMERCIAL OPERATION reached, reported 1 Oct 2026. Energised with its transmission
+   infrastructure in August; financial close Feb 2025, R1.8bn, Investec and RMB. SolarAfrica,
+   backed by African Infrastructure Investment Managers and Helios. 548,856 modules.
+   ONE-TO-MANY WHEELING: the plant is allocated across multiple commercial and industrial
+   customers rather than tied to a single offtaker, which is why it does not appear as any one
+   company's PPA. SunCentral 2 is in late construction and 3 starts shortly, for 342 MW in
+   phase one of a planned 1 GW.
+Paarde Valley PV2, near De Aar                            120 MW
+   Financial close Nov 2024, commercial operation targeted end of 2026. Still pipeline.
+```
+
+Two things to carry forward from SunCentral 1. It is a clean test of the energised-versus-COD
+distinction this register records: energised in August, commercial operation announced six weeks
+later, and only the second date puts capacity in the model. And the one-to-many model is a
+category the private data does not currently represent - the PFL monitor counts wheeled capacity
+by project, not by the number of offtakers behind it, so a plant like this is invisible in any
+source that works from corporate PPA announcements.
 
 Two traps that caught this list out. Wheeled projects are quoted in MWp where the model works in
 MW AC - Selemela is 256 MWp and 200 MW AC, 22% apart. And ENERGISED is not COMMERCIAL OPERATION,
 the same distinction that settled Mulilo Total Hydra's placement in August.
+
+**Municipal retail, from Yelland's newsletter, Sep 2026.** Two figures the retail panel's
+municipal path should carry. From 1 October 2026 City Power receives 70% of the City of
+Johannesburg's electricity revenue within 48 hours under a new ring-fencing arrangement, which
+means the CITY RETAINS 30% OF GROSS ELECTRICITY REVENUE - out of which City Power must cover
+finance costs, Eskom purchases, staff, operations, maintenance, depreciation and reinvestment.
+And municipal arrears to Eskom reached R120.26bn by July 2026, which Eskom projects could reach
+R358bn by 2030/31 without intervention. Neither is in the model; the first is the more useful,
+because it is a measurable wedge between what a Johannesburg household pays and what reaches the
+distributor.
+
+**Private pipeline, same source.** Scatec's 255 MW Thakadu solar is under construction for
+commercial operation in 2027. Discovery Green reports more than 740 MW under construction across
+50-plus business customers. GreenCape estimates 12.9 GW of investable new renewable generation to
+2030, R161.2bn. The last is a useful external check on this model's build-rate assumptions: 12.9
+GW over four years is about 3.2 GW a year across all technologies.
 
 **Captive capacity is deliberately excluded.** 88 MW in the H1 2026 monitor. It
 sits behind the meter and suppresses demand rather than adding supply.

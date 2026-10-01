@@ -3004,6 +3004,34 @@ yield is modelled from satellite-derived resource data rather than measured on t
 
 Nothing in the model moved. The sheet reads the figures already on screen.
 
+### A retail control that does not exist, and has not for some time
+
+Build `2026-10-01a`, 1 Oct 2026. Going to add City Power's new revenue split to the municipal path,
+I found there is no municipal path to add it to.
+
+`renderRetail` reads an element with id `retSupply` on every render to decide whether the household
+buys from a municipality or from Eskom. There is no such element anywhere in the page, so the read
+falls through to its default and the flag has been pinned to "municipal" since the control was
+removed.
+
+It is also inert. Measured: passing the flag either way leaves every numeric component of the cost
+stack identical and the hourly mean at R3.7481. The municipal comparison moved to the real City
+Power tariff in `RETAIL_T.municipal`, which does not consult the flag.
+
+Rule 7's exact shape, in the retail panel this time: a read of a key that does not exist, resolving
+to a default that makes a plausible number rather than a crash. Nothing caught it because nothing
+was looking at the panel's inputs, only at its outputs.
+
+Pinned explicitly and labelled rather than deleted, because the question it was asking is real and
+unanswered: about half of South African households buy from a municipality, and the stack models an
+Eskom-direct customer. Deleting the flag would delete the reminder.
+
+And City Power's split is in the tariff data rather than the stack, because it does not belong in a
+household price. From 1 October the city retains 30% of gross electricity revenue and transfers 70%
+to City Power within 48 hours, out of which the distributor must cover Eskom purchases, finance
+costs, staff, maintenance, depreciation and reinvestment. That is a wedge between what a household
+pays and what reaches the network, not an addition to the bill.
+
 ---
 
 ## Fossil free, re-measured
