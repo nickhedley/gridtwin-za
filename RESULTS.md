@@ -3177,6 +3177,24 @@ it on the monitor's date.
 The alternative was a note in a markdown file that nobody reads at the moment it matters, which is
 how the 1,823 MW gap outlived its own correction by a month.
 
+### The two presets' curtailment, reissued with ranges
+
+Build `2026-10-01a`, 1 Oct 2026. The figures most often quoted from this model are the two
+presets', and they now carry what they always needed:
+
+```
+                              curtailment TWh across twelve weather years
+                              min    median    max    spread
+Deep decarbonisation 2035    51.5      63.0   68.3     26.7%
+Fossil-free 2040             90.4     106.4  114.2     22.4%
+```
+
+Quote the median with the range, or the range alone. A single year from either distribution can
+be out by a sixth, and the handover's preset block now carries both.
+
+The older figures audited below are not reissued: two describe presets that no longer exist, and
+the other two are build comparisons where the comparison survives and only the levels are soft.
+
 ### Which published curtailment figures need a range, 1 Oct 2026
 
 Audited after the spread measurement below. Every curtailment figure in this file is a single

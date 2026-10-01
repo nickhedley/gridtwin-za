@@ -151,8 +151,10 @@ IRP path 2035               22.2 onshore / 18.9 solar / 6.1 GW at 4h / 11.6 gas 
                             coal -16 GW; the counterfactual to read the two below against
 Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 10.8 GW new rooftop / 20 GW at 12h + 1 GW iron-air (NEM standard, 2x margin)
                             coal -27 GW, no new gas, reserve and inertia priced
+                            curtailment 51 to 68 TWh across twelve weather years, median 63
 Fossil-free 2040            35 onshore / 55 solar / 7 offshore / 16.8 GW new rooftop / 30 GW at 12h + 1 GW iron-air (NEM standard, 2x margin)
                             all coal and diesel retired; mean shed 3.1 GWh a year
+                            curtailment 90 to 114 TWh across twelve weather years, median 106
 IRP 2030, Grid delay        demand +20% (IRP growth on contracted demand, Mozal out), coal EAF 64%
 ```
 
