@@ -2975,7 +2975,17 @@ moved; a reader can now tell whether the figure describes a market that exists.
 
 This is the second label in two weeks that outlived its own date, after the Eskom chair's term in
 CALENDAR. Dates in labels go stale silently, where dates in CALENDAR get checked every session.
-Worth keeping label dates to a minimum and pointing at CALENDAR instead.
+
+So the page was swept for the rest of them, 1 Oct 2026. Seventeen year references in visible text,
+and only two classes matter. Most are DATED INPUTS - "NTCSA estimates 9.1 GW at June 2026",
+"corrected on 6 September 2026", the TDP's own edition name - which date a source rather than make
+a claim about the future, and should stay. The new SAWEM label is the only forward date on the
+page, and CALENDAR now carries an instruction to change it on the day it launches.
+
+The sweep did find something else. The build optimiser's own description said "least-cost build
+schedule to 2030" with no hint that the horizon is load-bearing - and this week's measurement
+showed it is: the same optimiser builds no gas to 2030 and 6.6 GW to 2040. It now says so in six
+words. A scope stated without its consequence is not much better than an unstated one.
 
 ---
 

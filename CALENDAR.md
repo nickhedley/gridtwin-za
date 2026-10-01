@@ -109,7 +109,11 @@ Apr 2027       SAWEM LAUNCH. NTCSA is standing up a market surveillance unit as 
                preparations (Engineering News, 30 Sep 2026). This is the date the retail
                panel's market-indexed basis has been waiting for: that mode assumes a
                competitive wholesale market, and this is when its counterparty exists.
-               Until then the market basis is a counterfactual, and the panel should say so.
+               Until then the market basis is a counterfactual, and the panel says so.
+               WHEN IT LAUNCHES, change the label: the basis reads "Market-indexed (SAWEM,
+               from Apr 2027)" and its tooltip calls it a counterfactual. Both become wrong
+               on the day. This entry exists because two labels in two weeks outlived their
+               own dates - a date in a label goes stale silently, a date here gets read.
 ```
 
 ## Gas, and whether it can arrive before the model builds it
