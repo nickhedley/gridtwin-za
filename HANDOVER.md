@@ -235,6 +235,31 @@ shed energy at no capital cost. And their data shows renewable deployment has no
 reliability outcomes in the US, which is the empirical answer to the claim this model keeps
 meeting in South African debate.
 
+## Report distributions, not single numbers
+
+Prompted 30 Sep 2026 by Discovery Green's EnergyOS, which reframes renewable procurement as a
+RISK problem rather than a commodity purchase and prices it with 10,000 consumption simulations,
+87 million generation simulations and 200,000 forward price points.
+
+The reframing is the useful part, and this model is half way there already. Adequacy is scored
+across twelve weather years and reported as a mean and a worst year. COST is not: every system
+cost, retail price and payback in this model is a single number from a single year, and the
+weather spread behind it is thrown away.
+
+What to do, roughly in order of value:
+
+1. **System cost across the twelve years**, reported as a median and a worst year alongside the
+   mean. The runs already happen for adequacy; the cost is computed and discarded.
+2. **The retail price the same way.** A price that holds in a normal year and moves 15% in a wind
+   drought is a different proposition from one that does not, and the panel cannot say which it is.
+3. **The wheeling and rooftop paybacks the same way**, which is where it matters commercially:
+   a payback range beats a payback.
+
+What NOT to copy: their simulation counts. Ten thousand consumption simulations sounds impressive
+and this model has twelve REAL weather years behind its variability, which is a stronger basis
+than a synthetic distribution fitted to fewer. Report the spread we have rather than manufacturing
+a larger one.
+
 ## Least-cost to 2040, with a build schedule
 
 Requested 30 Sep 2026. Every preset here is a hand-set END STATE: a build somebody chose, checked

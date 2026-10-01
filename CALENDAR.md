@@ -89,7 +89,8 @@ monthly        Seriti Green grid simulation. Published since Jan 2026; the
 ## Leadership, because two model assumptions rest on people
 
 ```
-Oct 2026       Eskom chair Mteto Nyati's term ends. He was the source of the
+Nov 2029      Eskom chair Mteto Nyati REAPPOINTED for three years from 1 Nov 2026
+               (Yelland, Sep 2026), so the term does not end this month as recorded here. He was the source of the
                inflation-linked tariff aspiration the retail panel briefly
                used as a zero-real counterfactual. DROPPED 12 Sep 2026 -
                NERSA has approved 8.76% and 8.83% against a 3% inflation
@@ -100,6 +101,37 @@ FY 2026/27     Eskom Group CFO Calib Cassim retires after 24 years. The
                allowed-revenue decomposition this panel is built on comes
                from his finance function.
 ```
+
+## SAWEM
+
+```
+Apr 2027       SAWEM LAUNCH. NTCSA is standing up a market surveillance unit as part of its
+               preparations (Engineering News, 30 Sep 2026). This is the date the retail
+               panel's market-indexed basis has been waiting for: that mode assumes a
+               competitive wholesale market, and this is when its counterparty exists.
+               Until then the market basis is a counterfactual, and the panel should say so.
+```
+
+## Gas, and whether it can arrive before the model builds it
+
+```
+~2028          Sasol says Mozambican gas from Pande and Temane is increasingly needed for its
+               own operations, reducing what is available to South African customers. IGUA-SA
+               argues the cliff has effectively started. CMH reports 2025/26 cumulative sales
+               down 15.6%.
+2028           Richards Bay (Zululand Energy Terminal) targets FINAL INVESTMENT DECISION, with
+               commercial operation only after 2030. Eskom is signed as foundation customer for
+               a 3,000 MW gas-to-power programme.
+undated        Matola LNG could feed the existing Rompco pipeline to Gauteng but still needs
+               committed demand and financing. East London: Transnet has invited bids for a
+               privately financed small-to-medium LNG terminal on a 25-year concession.
+```
+
+THIS BEARS ON A MODEL RESULT. The build optimiser puts about 6.6 GW of gas into a least-cost
+2040 path. On these dates no import terminal is operating before 2030, and the largest is at
+FID in 2028. A least-cost path that leans on gas is leaning on infrastructure that does not
+exist and is not yet financed - which is an argument the model cannot make for itself, because
+it prices fuel and capital but not deliverability. Say so whenever the 2040 gas figure is quoted.
 
 ## Waiting on someone else, nothing to do until it lands
 
