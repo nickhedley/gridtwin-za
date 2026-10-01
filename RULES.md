@@ -151,6 +151,11 @@ figure from one source against a total from another. This single ambiguity is
 worth about five points and is the largest source of apparent disagreement
 between South African studies.
 
+**A curtailment figure needs a range, not just a year.** Measured 1 Oct 2026: curtailment spreads
+22 to 27% across twelve weather years where system cost spreads 1.4% and retail price 1.2%. So the
+weather-year rule below is not enough for spill - a single-year curtailment level can be out by a
+sixth of itself. Comparisons between builds on the same year are fine; levels need a range.
+
 **Always state the weather year and the period.** An annual figure and a July
 figure are not comparable. A synthetic-normal year and a realised bad year are
 not comparable.

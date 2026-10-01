@@ -3177,6 +3177,38 @@ it on the monitor's date.
 The alternative was a note in a markdown file that nobody reads at the moment it matters, which is
 how the 1,823 MW gap outlived its own correction by a month.
 
+### Which published curtailment figures need a range, 1 Oct 2026
+
+Audited after the spread measurement below. Every curtailment figure in this file is a single
+number; the ones that still describe the current model need a range, and several describe builds
+that no longer exist.
+
+```
+figure                                     status
+Fossil-free 2040, 199 TWh curtailed        STALE BUILD: that entry is the 55/90/5 build at
+                                           2026-09-20a. The preset is now 35/55/7 and today's
+                                           twelve-year range is 90 to 114 TWh
+Deep decarbonisation, 101.5 to 100.9 TWh   STALE BUILD: the 45/45 preset. Now 35/35, range
+  in the demand-response entry             51 to 68 TWh
+Fossil-free, 182.5 TWh against 252.2       CURRENT BUILD, single year. The comparison between
+  in the 22 Sep preset search              builds survives; the levels need the range
+Deep decarbonisation, 150.1 against 182.5  CURRENT BUILD, single year. Same.
+No-gas frontier, 101.7 TWh at 50W/60S      A SCENARIO, not a preset, and its own entry already
+                                           says the profile set is the probable cause of a 7.4%
+                                           unexplained gap. The twelve-year range is the better
+                                           explanation and was not available when it was written
+Electrolyser scope note, 101.7 TWh         Inherits the frontier figure above
+```
+
+THE RULE THAT FOLLOWS, and it belongs with the weather-year rule already in rules.md: a
+curtailment figure quoted without its weather year is a number with a sixth of itself missing. The
+comparisons between builds survive - they were run on the same year - but no single level should
+leave this file without either a year attached or a range beside it.
+
+Not reissued here, because reissuing six figures across three builds is a session of its own and
+two of them describe presets that no longer exist. Recorded so the next person reissues them
+knowingly rather than discovering the problem again.
+
 ### Where the weather spread actually is: curtailment, by a factor of twenty
 
 Build `2026-10-01a`, 1 Oct 2026. Having ruled out cost, the same twelve weather years were run for
