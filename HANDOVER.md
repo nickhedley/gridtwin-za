@@ -307,6 +307,35 @@ different plans, not different numbers, so the pace belongs in the output alongs
 
 ## An industrial electrification scenario, to be built
 
+SCOPE SET 1 Oct 2026: this is a research project, not a scenario switch, and it is parked until
+the data gathering can be done properly. The flat-block measurement in RESULTS.md is a first cut
+that says the price loop closes and the adequacy wall is near 3 GW. It is not the answer and
+should not be quoted as one.
+
+WHAT THE COMPREHENSIVE VERSION NEEDS, in the order it has to be built:
+
+1. **How much industrial energy use can be electrified, by sector and temperature band.** The
+   starting point is the DMRE energy balance - final consumption by sector and fuel - split into
+   process heat, motive power, and feedstock. Feedstock cannot be electrified and has to come out
+   first. Then heat by temperature: below 100C, 100 to 200C, 200 to 500C, above 500C, because
+   heat pumps reach the first two commercially, resistance and induction the third at a cost, and
+   the fourth is where the hard-to-abate argument lives. The IEA's 40% competitively electrifiable
+   share is a global figure and a placeholder until the South African split exists.
+2. **What each sector's load looks like.** Not one national block. Smelters are flat and enormous;
+   food and beverage follows shifts; cement and chemicals have their own patterns. Eskom's
+   Megaflex customer categories and the hourly dataset are the route to measured shapes, and this
+   is the step the whole argument turns on - a flat block and a shift-pattern block give different
+   adequacy answers and different prices.
+3. **The coefficient of performance by application**, because a heat pump delivering three to five
+   units of heat per unit of electricity is what makes the electricity demand smaller than the
+   fuel it replaces. Resistance heating is one for one and changes the arithmetic entirely.
+4. **The fuel side.** Industrial coal and gas prices, and the gas cliff from about 2028, which is
+   the forcing function nobody has priced: industry losing Mozambican gas has to go somewhere.
+5. **Where the load sits.** Mpumalanga, Richards Bay, the Vaal and Saldanha are not
+   interchangeable on a grid with regional headroom. This is where the nodal model earns its keep.
+6. **Only then the loop:** does the price fall enough, and does the fall make the next switch
+   cheaper than its fuel alternative.
+
 THE QUESTION, sharpened 1 Oct 2026: is there a virtuous circle? Electrifying industrial heat adds
 load; the network and the legacy asset base are fixed costs recovered over sales; so more sales
 should mean a lower price for everyone, which in turn should make the next factory's switch to
