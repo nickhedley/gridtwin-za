@@ -3316,6 +3316,90 @@ twelve years yet.
 Measuring before building cost nothing and saved a panel that would have shown a flat line with
 authority.
 
+### The virtuous circle is real, and it runs into a wall at about 3 GW
+
+Build `2026-10-01a`, 1 Oct 2026. A FIRST CUT at the industrial electrification question, measured
+before building anything: a flat block of extra load added to the demand series, which is what
+industrial heat looks like, and nothing else changed.
+
+```
+                        R/kWh reg   sales TWh   system R bn   shed GWh   curtail TWh
+Today 2026
+  as is                     3.748       191.8         210.7        0.0          0.0
+  +1 GW flat                3.640       200.6         216.7        1.9          0.0
+  +3 GW flat                3.453       218.1         228.8        4.3          0.0
+  +5 GW flat                3.314       235.5         243.9       30.7          0.0
+Deep decarbonisation 2035
+  as is                     2.838       183.3         290.2        0.0         65.2
+  +1 GW flat                2.723       192.5         292.5        0.0         58.1
+  +3 GW flat                2.529       210.8         297.6       81.0         44.0
+  +5 GW flat                2.392       228.4         306.0      675.7         30.6
+```
+
+THE LOOP CLOSES, and harder than expected. Three gigawatts of flat industrial load takes the
+regulated price from R3.75 to R3.45 on today's system, and from R2.84 to R2.53 on Deep
+decarbonisation - roughly 8% and 11% off the price EVERY customer pays, residential included.
+
+The mechanism is visible in the columns. System cost rises, because the energy has to be
+generated: R210.7bn to R228.8bn on today's system. Sales rise faster, because the fixed costs
+underneath - network, legacy capital, the IPP contracts - do not move at all. On Deep
+decarbonisation there is a second gain: curtailment falls 65.2 to 44.0 TWh, so a third of the new
+load is served by energy that was being thrown away.
+
+AND THE WALL IS ADEQUACY, not cost. Shed energy is the column that breaks: 0 to 81 GWh at +3 GW
+on Deep decarbonisation, and 676 GWh at +5 GW, which is far outside the reliability standard both
+presets are built to. Today's system holds longer - 30.7 GWh at +5 GW - because it still has coal.
+
+So the honest version of the big-picture argument: industrial electrification does lower the price
+for everyone, by about 3% per gigawatt added, and it does it partly by using spill that is
+currently wasted. But each gigawatt also has to be covered on the worst winter evening, and past
+about 3 GW the build has to grow with it. The question for the full scenario is whether the extra
+build costs less than the fixed-cost saving - which is exactly the test the handover spec now
+specifies, and this measurement does not answer.
+
+CAVEATS, and they are substantial. A flat block is a crude stand-in: real industrial heat has
+shift patterns and some of it could be flexible, which would change the adequacy wall completely.
+Nothing here models the heat pumps, their capital, or the fuel they displace, so this says nothing
+yet about whether the switch is worth making for the factory. And the load is national, with no
+regard for where the grid can take it.
+
+### The usable-area deduction was being taken twice, 1 Oct 2026
+
+Build `2026-10-01a`. Going to wire Google's Solar API into the rooftop tool, I found it was already
+wired - and that this week's packing-factor work had broken it.
+
+The Solar API path and the manual tracer both wrote a REDUCED area into the roof-area field:
+measured footprint times 0.72, a usable factor for walkways, plant, setbacks and obstructions.
+That was correct until 30 Sep, when rtCalc gained its own roof-form factor and its own packing
+factor - 0.69 typical, for exactly those losses. Since then a measured roof carried the deduction
+twice:
+
+```
+                        area written    then packed at    effective
+before 30 Sep              0.72            1.00              0.72
+since 30 Sep               0.72            0.69              0.50
+corrected                  1.00            0.69              0.69
+```
+
+A traced or auto-measured 1,000 m2 roof came out 28% smaller than the same roof typed in by hand,
+and nothing said so: both paths produced plausible numbers. Typed areas were never affected, which
+is why the figures published on 30 Sep stand - they were typed.
+
+The field now holds what it says it holds, the measured footprint, and the obstruction control
+does the reducing where the user can see it.
+
+WHAT THIS SAYS ABOUT THE CHANGE THAT CAUSED IT. Decomposing a constant into its parts is the right
+move and it is also where double-counting starts: the moment 165 Wp/m2 became module times packing,
+every OTHER place that had quietly applied a packing factor became a duplicate. Rule 6 says no
+constant appears twice; the corollary is that splitting a constant means hunting for the places
+that already did the splitting informally.
+
+The Solar API integration itself predates this session and is more complete than expected: it
+fetches building insights, converts each roof segment's real pitch and azimuth into the same yield
+multiplier the dropdown uses, draws the measured roof, and falls back to manual tracing where
+there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
+Insights is free to 10,000 calls a month and $0.01 a call after that.
+
 ---
 
 ## Fossil free, re-measured

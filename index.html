@@ -19080,11 +19080,17 @@ function rtFinishTrace() {
   if (btn) { btn.textContent = 'Start tracing'; btn.style.background = 'var(--alert,#C4785A)'; btn.style.color = '#fff'; }
   if (rtMap) rtMap.getContainer().style.cursor = '';
 
-  // Usable roof area: subtract space for walkways, plant, setbacks, obstructions
-  const usableFactor = 0.72;
-  const usableM2 = Math.round(areaM2 * usableFactor);
-
-  document.getElementById('rt_area').value = usableM2;
+  // THE FIELD TAKES THE MEASURED FOOTPRINT, NOT A REDUCED ONE. Corrected 1 Oct 2026.
+  // This used to write areaM2 x 0.72, a usable factor for walkways, plant, setbacks and
+  // obstructions. Since 30 Sep rtCalc applies its own roof-form factor and its own packing
+  // factor - 0.69 typical, for exactly those losses - so a traced roof had the deduction
+  // taken TWICE: 0.72 x 0.69 is 0.50, where 0.69 was intended. A traced 1,000 m2 roof came
+  // out 28% smaller than the same roof typed in by hand.
+  //
+  // The field is now what it says it is: the measured footprint. The obstruction control
+  // carries the deduction, where the user can see it and change it.
+  document.getElementById('rt_area').value = Math.round(areaM2);
+  const usableM2 = Math.round(areaM2 * (RT_OBSTRUCTION[(document.getElementById('rt_obstruction')||{}).value || 'typical'] || RT_OBSTRUCTION.typical).f);
   const traceMsg = `<strong>Traced area: ${Math.round(areaM2).toLocaleString()} m\u00b2</strong> \u00b7 usable after setbacks &amp; obstructions (72%): <strong>${usableM2.toLocaleString()} m\u00b2</strong> \u2013 applied to the calculator below.`;
 
   const centLat = rtPoints.reduce((s, p) => s + p[0], 0) / rtPoints.length;
@@ -19740,8 +19746,10 @@ function _rtApplyGoogleSolar(res) {
   // the same 72% usable factor the tracer applies is used here for consistency
   // (walkways, plant, setbacks, obstructions). Manual tracing still overrides it.
   const areaEl = document.getElementById('rt_area');
+  // Same correction as the tracer: the field takes Google's measured footprint, and the
+  // obstruction control does the reducing. Writing 0.72 here applied the deduction twice.
   if (areaEl && res.totalRoofM2 > 0 && !rtPoints.length) {
-    areaEl.value = Math.round(res.totalRoofM2 * 0.72);
+    areaEl.value = Math.round(res.totalRoofM2);
   }
 
   // Prominent confirmation in the step-1 box. This was previously a line of small
@@ -19750,7 +19758,9 @@ function _rtApplyGoogleSolar(res) {
   // before they trust the numbers below.
   const statusEl = document.getElementById('rt_status');
   if (statusEl) {
-    const usableM2 = Math.round(res.totalRoofM2 * 0.72);
+    const usableM2 = Math.round(res.totalRoofM2
+      * (RT_OBSTRUCTION[(document.getElementById('rt_obstruction')||{}).value || 'typical']
+         || RT_OBSTRUCTION.typical).f);
     statusEl.innerHTML =
       '<div style="background:rgba(74,140,92,0.12);border-left:4px solid var(--ok,#4A8C5C);'
       + 'padding:9px 11px;border-radius:2px">'
