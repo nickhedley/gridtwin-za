@@ -45,6 +45,21 @@ every session. Everything here was learned by getting it wrong at least once.
 
 ---
 
+## A harness that excludes by property name owns that name
+
+Found 1 Oct 2026. `validate_response` skips any slider carrying a `readout` property, on the
+reasoning that a readout writes a summary line and cannot move an output. Nothing in index.html
+says so. Adding a `readout` property to a REAL control - the VPP enrolment slider, which moves
+several outputs - silently dropped it from the sweep, 70 controls to 69, and the only sign was a
+count moving by one in a line nobody reads closely.
+
+THE RULE: a property name a harness keys on is part of the page's vocabulary, and both files must
+say so. Name it in the page where the property is read, name the page's constraint in the harness,
+and prefer excluding by ID over excluding by property - an id list is explicit about what it drops.
+
+WATCH THE COUNTS, not just the ratio. 84/84 and 83/83 both read as green; it was the controls
+figure beside them that said a control had vanished.
+
 ## Comments: value, source, date. Nothing else.
 
 A constant needs what it is, where it came from, and when it was last checked. It does not

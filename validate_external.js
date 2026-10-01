@@ -294,6 +294,33 @@ function check(name, ok, detail) {
         mtsao.ocgtCFPct > 35 && mtsao.ocgtCFPct < 58,
         `${mtsao.ocgtCFPct.toFixed(1)}% against the MTSAO's about 45%`);
 
+  // ── THE BUILD PACE AGAINST AN INDEPENDENT PIPELINE ESTIMATE ───────────────
+  // Added 1 Oct 2026. GreenCape puts investable new renewable generation to 2030 at 12.9 GW
+  // and R161.2bn, which is about 3.2 GW a year across all technologies - utility-scale and
+  // behind-the-meter together. That is a PIPELINE estimate rather than a capability limit, so
+  // it is a floor on what the market can absorb rather than a ceiling on what it could build.
+  //
+  // The check is deliberately loose, because the two numbers measure different things: the
+  // model's default pace is what it ALLOWS the optimiser to build, GreenCape's is what is
+  // currently investable. The default sitting far above it is defensible and recorded; the
+  // default sitting BELOW it would mean the model forbids a build the market already has
+  // money for, which would be a real error.
+  {
+    const paceScript = w.document.createElement('script');
+    paceScript.textContent = `window.__pace = (function(){ try {
+      const p = BLD_PACE['deliverable'] || {};
+      const keys = ['wind','pv','batt','ccgt','rooftop','offshore'];
+      return { totalGWyr: keys.reduce((a, k) => a + (p[k] || 0), 0) / 1000 };
+    } catch (e) { return { error: String(e) }; } })();`;
+    w.document.body.appendChild(paceScript);
+    const pace = w.__pace;
+    if (pace && !pace.error)
+      check('the default build pace is not below the investable pipeline',
+            pace.totalGWyr >= 3.2 && pace.totalGWyr < 20,
+            `${pace.totalGWyr.toFixed(1)} GW a year allowed against GreenCape's 12.9 GW to 2030, `
+            + `about 3.2 GW a year of investable pipeline`);
+  }
+
   // ── THE PRESETS SIT INSIDE PUBLISHED LEAST-COST RANGES ────────────────────
   // Added 23 Sep 2026 as the nearest available cross-check against an independent capacity
   // expansion. The CSIR's systems-analysis technical report gives least-cost installed capacity

@@ -3066,6 +3066,23 @@ controls from its sweep, which silently dropped the VPP enrolment slider from 70
 Renamed. A harness that excludes by property name is a contract on the page's vocabulary, and
 nothing says so in either file.
 
+### The build pace, against an independent pipeline estimate
+
+Build `2026-10-01a`, 1 Oct 2026. GreenCape puts investable new renewable generation to 2030 at
+12.9 GW and R161.2bn, about 3.2 GW a year across utility-scale and behind-the-meter together. The
+default build pace allows 8.7 GW a year.
+
+A loose check, because the two numbers measure different things: the model's pace is what it
+ALLOWS the optimiser to build, GreenCape's is what is currently investable. Sitting well above it
+is defensible and now recorded. Sitting BELOW it would mean the model forbids a build the market
+already has money for, and that is what the check catches.
+
+Worth holding against the storage figure specifically. The default allows 2 GW a year of storage,
+about three times the 0.6 to 0.7 GW South African procurement has achieved, and the gas result
+turns on being above 1.5. Against GreenCape's pipeline the whole 8.7 GW is nearly three times what
+is investable today. The model is not claiming the market will do this; it is declining to forbid
+it.
+
 ---
 
 ## Fossil free, re-measured
