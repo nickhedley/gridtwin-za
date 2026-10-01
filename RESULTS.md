@@ -3177,6 +3177,29 @@ it on the monitor's date.
 The alternative was a note in a markdown file that nobody reads at the moment it matters, which is
 how the 1,823 MW gap outlived its own correction by a month.
 
+### The default profile set spills more than the regional one, and it is not drift
+
+Build `2026-10-01a`, 1 Oct 2026. Pinning curtailment in the suite surfaced a discrepancy worth
+recording before someone treats it as a regression.
+
+```
+                              default profiles   twelve-year regional range
+Deep decarbonisation 2035             65.2 TWh                 51.5 to 68.3
+Fossil-free 2040                     119.7 TWh                 90.4 to 114.2
+```
+
+Deep decarbonisation sits inside its band. Fossil-free sits about 5% ABOVE the regional maximum.
+
+The two are different sources, not different years: the default set is national and Eskom-derived,
+the twelve-year set is regional MERRA-2 at capacity-weighted plant locations. Levels from one are
+not interchangeable with the other, and the project's own source register already records that
+reanalysis and satellite-derived irradiance differ by 10 to 15%. A 5% offset on spill, which is a
+residual between two large numbers, is well inside that.
+
+The practical consequence: say which profile set a curtailment figure came from, not just which
+year. The suite now pins both presets at their default-profile values within 15%, wide enough to
+absorb the offset and narrow enough to catch a build or dispatch change. 39/39 findings.
+
 ### The two presets' curtailment, reissued with ranges
 
 Build `2026-10-01a`, 1 Oct 2026. The figures most often quoted from this model are the two

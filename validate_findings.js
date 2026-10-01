@@ -464,6 +464,43 @@ setTimeout(()=>{
   //
   // Pinned so the choice cannot drift back silently. If a future change moves it, the
   // question to ask is whether the trade was re-decided, not whether the number moved.
+  // ── CURTAILMENT, PINNED WITH ITS WEATHER BAND ─────────────────────────────
+  // Added 1 Oct 2026. Spill is the one quantity in this model that moves materially with the
+  // weather year: 51 to 68 TWh on Deep decarbonisation and 90 to 114 on Fossil-free across
+  // twelve years, against 1.4% for system cost and under 1% for unserved energy. So a single
+  // default-year figure cannot be pinned tightly without failing on noise, and cannot be left
+  // unpinned without letting a real change pass.
+  //
+  // Pinned here on the DEFAULT profile set, which is a different source from the twelve-year
+  // regional set - national Eskom-derived against regional MERRA-2 - so the levels are not
+  // interchangeable. Deep decarbonisation's 65.2 TWh sits inside its regional band; Fossil-free's
+  // 119.7 sits about 5% ABOVE the regional maximum of 114.2. That offset is a property of the
+  // profile sets, not drift, and is recorded in RESULTS.md. The band below is +/-15%, wide
+  // enough to absorb the known offset and narrow enough to catch a build or dispatch change.
+  {
+    const curt = probe(`
+      const out = {};
+      for (const name of ['Deep decarbonisation 2035', 'Fossil-free 2040']){
+        const r = simulate({ ...state, ...PRESETS[name] }, PROFILES);
+        out[name] = (r.E.curtailed || 0) / 1e6;
+      }
+      return out;`);
+    if (curt && !curt.error){
+      const PIN = { 'Deep decarbonisation 2035': 65.2, 'Fossil-free 2040': 119.7 };
+      const bad = [];
+      for (const [name, pinned] of Object.entries(PIN)){
+        const got = curt[name];
+        if (!(got > pinned * 0.85 && got < pinned * 1.15))
+          bad.push(`${name} ${got ? got.toFixed(1) : 'missing'} against ${pinned} +/-15%`);
+      }
+      check('preset curtailment sits within its weather band',
+            bad.length === 0,
+            bad.length ? bad.join('; ')
+              : `Deep decarbonisation ${curt['Deep decarbonisation 2035'].toFixed(1)} TWh, `
+                + `Fossil-free ${curt['Fossil-free 2040'].toFixed(1)} TWh on the default profiles`);
+    }
+  }
+
   // ── A PRESET THAT NAMES A YEAR SETS ONE ───────────────────────────────────
   // Added 23 Sep 2026. Both IRP presets carried 2030 in their titles and no scenarioYear, so
   // they priced new build at 2026 capital with no learning: R8bn a year each. Nothing caught it

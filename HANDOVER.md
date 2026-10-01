@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-10-01a`. Suite 800/802 plus eng5 6/6, measured 30 Sep 2026. Three sessions ran long and the
+Build `2026-10-01a`. Suite 801/803 plus eng5 6/6, measured 30 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -24,7 +24,7 @@ validate_structure       25/25
 validate_geo             43/43
 validate_capacity        31/31
 validate_inputs          33/33
-validate_findings        38/38
+validate_findings        39/39
 validate_invariants     175/175   shed-energy cost; ORDC reads available reserve; market-basis cost recovery; curtailment compensation
 validate_response        84/84     diesel budget and Koeberg controls added
 validate_weather         66/66
@@ -37,7 +37,7 @@ validate_external         6/8      EDMSA CO2 (known); MTSAO OCGT at the derived 
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            8/8
 audit.py                 87/87
-total                   800/802
+total                   801/803
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 
@@ -306,6 +306,32 @@ years it will decide more. A least-cost path at 2 GW a year of storage and one a
 different plans, not different numbers, so the pace belongs in the output alongside the build.
 
 ## An industrial electrification scenario, to be built
+
+THE QUESTION, sharpened 1 Oct 2026: is there a virtuous circle? Electrifying industrial heat adds
+load; the network and the legacy asset base are fixed costs recovered over sales; so more sales
+should mean a lower price for everyone, which in turn should make the next factory's switch to
+electricity cheaper. If that loop closes, industrial electrification is not just a decarbonisation
+measure, it is a tariff measure, and it argues for itself.
+
+The model can test both halves, and the second half is the one nobody asks:
+
+**Does added industrial load lower the price for existing customers?** The retail stack already
+separates fixed from variable cost and divides by sales, so the mechanism is there to measure
+rather than assert. What it must also carry is the offsetting term: new load needs new generation
+and new network, and the reinforcement charge already prices the second. The question is net.
+
+**Does the lower price make electrification cheaper?** This is the feedback leg. A heat pump
+displacing coal or gas heat competes on a delivered-energy basis, so the switch gets cheaper as
+R/kWh falls, and at some point it crosses. The model carries the electricity side of that
+comparison; the fuel side needs industrial coal and gas prices, which the DMRE energy balance and
+the gas-cliff work can supply.
+
+WHAT WOULD FALSIFY IT, and this is the honest version to test first: the added load is not free to
+serve. If it lands on the evening peak it needs capacity, and the capacity cost per unit could
+exceed the fixed-cost saving per unit. The whole argument turns on the SHAPE - industrial heat is
+close to flat and the system spills 50 to 115 TWh a year at midday, so the load may be nearly free
+to serve or not, and only a dispatch with the real profile will say which. Do not build it as a
+percentage on the demand curve.
 
 Proposed 23 Sep 2026 after the IEA's Electrification special report. The question: what does
 electrifying South African industrial heat do to the price everyone else pays?
