@@ -3821,6 +3821,17 @@ The gross requirement is larger at this build than at defaults, 2,322 MW against
 1,309, but switching reserve off entirely moves curtailment 0.1 TWh. Congestion runs
 the OTHER WAY: removing the 4% derate raises spill to 133.5 TWh.
 
+> CAUSE CONFIRMED 1 Oct 2026, and the gap is smaller than the noise it sits in. The same
+> scenario run across twelve weather years gives curtailment of 99.8 to 123.5 TWh, median 115.8,
+> a spread of 20.5%. The August 94.7 and September 101.7 differ by 7.4%, which is a third of the
+> weather spread: two runs of the same build on different profile sets would be expected to
+> differ by about this much or more. The hypothesis below was right, and neither figure should
+> have been quoted as a level without a range.
+>
+> Note the unserved figure barely moves - 359 to 361 GWh across all twelve years - so the
+> adequacy side of this entry is robust where the spill side is not. That asymmetry is the
+> general finding: shortage is set by the build, spill by the weather.
+
 PROBABLE CAUSE OF THE REMAINING 7.4%, UNPROVEN: the profile set. This file's own
 opening caveat says every entry was measured on one synthetic-normal weather year.
 The model now runs real 2025 Eskom profiles from `profiles.json`, and the regional
