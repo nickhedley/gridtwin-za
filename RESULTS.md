@@ -2940,8 +2940,42 @@ A dual-pitch house was overstated by about 1.9 times. The default is flat, which
 has always assumed, so nothing changes unless the user says what they have - but the option to say
 it now exists, and the note under the control explains what was measured.
 
-Also added, from the same source: the tool now states what it does not do. No string design, no
-structural check, and an installer still has to survey the roof.
+**Obstructions are the user's to state.** Packing was a single 0.69 standing in for walkways,
+setbacks, chimneys, vents, skylights and rooftop plant at once - a property of the roof in front
+of you, not a constant. Four named cases now, typical still 0.69, so nothing moves by default:
+
+```
+2,000 m2 flat roof, share 100%     kWp
+clear, few penetrations          384.4
+typical                          331.1
+cluttered, HVAC and skylights    264.1
+heavily obstructed               215.8
+```
+
+The share-of-roof control was doing two jobs at once and is now one: a build choice about phasing
+or budget, with obstructions handled separately. Someone choosing 75% because the roof is cluttered
+was previously applying the clutter twice.
+
+Also added, from the same source: the tool states what it does not do. No string design, no
+structural check, and an installer still has to survey the roof. The model's own scope line now
+says it answers bulk adequacy rather than distribution reliability, and that nothing is uploaded.
+
+The prose ratchet caught this: the additions took always-visible text from 4,228 words to 4,257
+against a 4,250 ceiling. Trimmed to 4,240 by cutting two notes the option labels already said.
+
+### The market basis names its own start date, 1 Oct 2026
+
+Build `2026-10-01a`. The retail panel's second basis was labelled "post-ERAA" and its tooltip said
+ERAA made it possible from H2 2026, which has now passed without it. NTCSA is standing up a market
+surveillance unit for a SAWEM launch in April 2027, so that is the date.
+
+The option now reads "Market-indexed (SAWEM, from Apr 2027)" and the tooltip says what it is until
+then: a counterfactual that prices a market whose counterparty does not yet exist. No number
+moved; a reader can now tell whether the figure describes a market that exists.
+
+This is the second label in two weeks that outlived its own date, after the Eskom chair's term in
+CALENDAR. Dates in labels go stale silently, where dates in CALENDAR get checked every session.
+Worth keeping label dates to a minimum and pointing at CALENDAR instead.
 
 ---
 
