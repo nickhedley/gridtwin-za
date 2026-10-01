@@ -283,7 +283,9 @@ Most of the machinery exists. The build LP co-optimises across years with build-
 capital at each year's vintage, chooses lithium's duration, and credits storage by what its energy
 can sustain. What it does not do is reach 2040:
 
-1. **BLD_YEARS stops at 2030.** MEASURED 30 Sep 2026 in a variant copy: extending to 2040 in
+1. ~~BLD_YEARS stops at 2030~~ DONE 1 Oct 2026: the horizon is a control, 2030, 2035 or 2040,
+   and the schedule is in RESULTS.md. Annual steps to 2040 solve in 7.6 seconds. What remains is
+   below. The original note read: MEASURED 30 Sep 2026 in a variant copy: extending to 2040 in
    two-year steps takes the LP from 31,056 rows to 49,686 and from 1.7 seconds to 2.3. The
    horizon is not the obstacle. Whether annual steps to 2040 stay tractable is the open part.
    And the answer moves: at 2040 the optimiser builds 15 GW of storage AND 6.6 GW of gas at any

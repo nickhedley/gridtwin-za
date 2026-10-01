@@ -604,9 +604,18 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
       </div>
       <div style="padding:12px 14px">
         <p style="font-size:11.5px;color:var(--ink2);margin:0 0 10px;line-height:1.45">
-          Least-cost build schedule to 2030 &ndash; how much of each technology, in which year, and in regional mode where. Uses each coal unit&rsquo;s retirement date, technology costs and build-rate limits. The horizon drives the answer: to 2040 it builds gas.</p>
+          Least-cost build schedule &ndash; how much of each technology, in which year, and in regional mode where. Uses each coal unit&rsquo;s retirement date, technology costs and build-rate limits.</p>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:10px">
+          <div>
+            <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Horizon?</label>
+            <select id="bldHorizon" onchange="bldSetHorizon(this.value)" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
+              <option value="2030" selected>To 2030 &ndash; the next five years</option>
+              <option value="2035">To 2035</option>
+              <option value="2040">To 2040 &ndash; coal mostly gone</option>
+            </select>
+            <div style="font-size:9.5px;color:var(--ink2);margin-top:2px">No gas to 2030, gas by 2040.</div>
+          </div>
           <div>
             <label style="font-weight:600;font-size:11px;display:block;margin-bottom:3px">Build speed?</label>
             <select id="bldPace" onchange="bldPaceChanged()" style="width:100%;padding:5px 7px;border:1px solid var(--line2);background:var(--panel);font-size:11px;border-radius:2px;box-sizing:border-box">
@@ -8695,7 +8704,24 @@ function genOutagePath(meanFrac, volFrac, seed){
 // That last point matters: with a >= balance, surplus renewables spill for free
 // and the optimiser builds without limit.
 
-const BLD_YEARS = [2026, 2027, 2028, 2029, 2030];
+// THE HORIZON IS NOW A CHOICE, 1 Oct 2026. Five years was the only option, and the answer it
+// gives is a five-year answer: no gas is built to 2030 at any storage pace, and 2.9 GW appears
+// by 2040 once coal retires on its own schedule and demand compounds. A result that flips on the
+// window has to let the user see the window.
+//
+// let, not const, because the selector rewrites it. Every reader takes it at call time, which was
+// checked rather than assumed: fifteen references, all inside functions.
+//
+// MEASURED: fifteen annual steps to 2040 is 93,156 rows and solves in 7.6 seconds, against
+// 31,056 rows and 1.7 seconds to 2030. The horizon is not the constraint anyone expected it to be.
+let BLD_YEARS = [2026, 2027, 2028, 2029, 2030];
+
+function bldSetHorizon(endYear){
+  const end = Math.max(2030, Math.min(2040, parseInt(endYear, 10) || 2030));
+  BLD_YEARS = [];
+  for (let y = 2026; y <= end; y++) BLD_YEARS.push(y);
+  return BLD_YEARS;
+}
 const BLD_TECHS = ['wind', 'pv', 'rooftop', 'batt', 'vrfb', 'ironair', 'ccgt'];
 const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distributed',
                     batt:'Battery (4h)', vrfb:'Vanadium flow (8h)',

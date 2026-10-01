@@ -3400,6 +3400,49 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### The least-cost path to 2040, and the year it reaches for gas
+
+Build `2026-10-01a`, 1 Oct 2026. The build optimiser's horizon is now a control - 2030, 2035 or
+2040 - where it was fixed at five years. Fifteen annual steps is 93,156 rows and solves in 7.6
+seconds against 31,056 rows and 1.7 seconds, so the horizon was never the obstacle the spec
+assumed.
+
+The schedule, Fossil-free 2040 at the deliverable pace, MW built each year:
+
+```
+2026-2028   pv 2,000      batt 1,530-1,580                    rooftop from 2028
+2029-2032   pv 2,000      batt 1,830-2,000   rooftop 1,000
+2033        pv 2,000      batt   910         rooftop 1,000   wind   683   GAS 563
+2034        pv 2,000      batt 1,153         rooftop 1,000   wind 2,500   GAS 704
+2035        pv 2,000      batt   767         rooftop 1,000   wind   478
+2036        pv 2,000      batt 1,143         rooftop 1,000   wind 2,500   GAS 744
+2037        pv 2,000      batt   798         rooftop 1,000   wind 2,500
+2038        pv 2,000      batt 1,077         rooftop 1,000   wind 2,500   GAS 876
+2039-2040   pv 2,000      batt   880-1,410   rooftop 1,000   wind   257
+```
+
+THREE THINGS THE SCHEDULE SAYS that an end-state figure cannot.
+
+Solar and rooftop build at their caps in every single year, and wind at its cap in four. The
+answer is substantially "build as fast as you are allowed", which means the pace assumption is
+doing more work than the economics - and the pace is three times what South African procurement
+has achieved.
+
+Wind arrives in 2033 and not before. Solar and storage are cheaper per unit of energy early; wind
+earns its place only once the system is deep enough into coal retirement to need the winter
+energy. A plan that front-loads wind is not what least cost looks like here.
+
+Gas appears in four separate years and totals about 2.9 GW, less than half the 6.6 GW the
+two-year-step approximation gave. The coarser run overstated it, which is the right direction to
+be wrong in but worth recording: the 6.6 GW figure should not be quoted now that an annual run
+exists.
+
+CAVEATS. Coal retirement is still an INPUT, not a decision - the optimiser is told when stations
+go, and letting it choose would change the gas years. This is a screening run on representative
+days with perfect foresight, so the 2.9 GW of gas is a proposal to be tested against twelve
+weather years before it becomes a finding. And the gas it builds has nowhere to come from: no
+import terminal operates before 2030 and the first reaches FID in 2028.
+
 ---
 
 ## Fossil free, re-measured
