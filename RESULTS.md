@@ -3177,6 +3177,43 @@ it on the monitor's date.
 The alternative was a note in a markdown file that nobody reads at the moment it matters, which is
 how the 1,823 MW gap outlived its own correction by a month.
 
+### Where the weather spread actually is: curtailment, by a factor of twenty
+
+Build `2026-10-01a`, 1 Oct 2026. Having ruled out cost, the same twelve weather years were run for
+retail price and curtailment:
+
+```
+Deep decarbonisation 2035        min    median      max   spread
+system cost R bn              291.56    293.86   295.63     1.4%
+retail, regulated R/kWh         2.79      2.82     2.83     1.2%
+retail, market R/kWh            2.88      2.91     2.93     1.9%
+CURTAILMENT TWh                51.50     63.00    68.30    26.7%
+
+Fossil-free 2040
+system cost R bn              338.25    338.34   338.41     0.0%
+retail, regulated R/kWh         2.62      2.64     2.66     1.4%
+retail, market R/kWh            2.80      2.82     2.85     1.8%
+CURTAILMENT TWh                90.40    106.40   114.20    22.4%
+```
+
+Prices move about as little as cost, for the same reason. Curtailment moves TWENTY TIMES MORE than
+cost: 51 to 68 TWh on Deep decarbonisation, 90 to 114 on Fossil-free. A single-year curtailment
+figure can be out by a sixth of itself, and every curtailment number this project has published
+is from one year.
+
+That is where a distribution earns its place, and it is the one quantity nobody thought to ask
+about. The hydrogen and electrolyser work rests on spill; so does the case for long-duration
+storage; so does the 45% of demand thrown away in the no-gas frontier. All of it quoted from
+single years.
+
+The retail prices above are unweighted hourly means on a probe basis, not the panel's load-weighted
+figures - usable for SPREAD, not as levels.
+
+CURTAILMENT WAS ALSO NEARLY REPORTED AS ZERO. The first run read `E.curtail`, which is not a key;
+the real one is `E.curtailed`. It returned undefined, fell through to zero, and printed a tidy
+0.0% spread in all twelve years. Rule 7's shape again, caught only because a flat zero next to a
+26% spread looked wrong.
+
 ### System cost barely moves with the weather, so the distribution is not worth building
 
 Build `2026-10-01a`, 1 Oct 2026. Before building the cost-distribution view the Discovery Green

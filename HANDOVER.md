@@ -251,6 +251,12 @@ twelve weather years spreads 1.4% on Deep decarbonisation and 0.1% on Fossil-fre
 in these builds is capital and fixed O&M, and only fuel cares about the weather. The weather risk
 is an adequacy risk, not a cost risk, and adequacy is already reported as a mean and a worst year.
 
+MEASURED TOO, same day: retail price spreads 1.2 to 1.9% across the twelve years, so it is empty
+for the same reason. CURTAILMENT spreads 22 to 27% - 51 to 68 TWh on Deep decarbonisation, 90 to
+114 on Fossil-free - and that is where the distribution belongs. Every curtailment figure this
+project has published is from a single year, including the ones the hydrogen and long-duration
+storage arguments rest on.
+
 What is left, in order of value:
 
 1. ~~System cost across the twelve years~~ - DROPPED. The spread does not exist; a panel showing
