@@ -8873,8 +8873,26 @@ const BLD_PACE = {
   // this one. 2 GW a year is therefore an ambition about three times the achieved rate, and
   // the build LP stops building gas somewhere above 1.5, which is still two to three times it.
   // Those procured projects are four-hour systems, which is the duration the LP chooses.
-  deliverable: { wind:2500, pv:2000, rooftop:1000, batt:2000, vrfb: 250, ironair: 150, ccgt:1200,
-    note:'Masterplan pace for wind, solar and gas, with storage at 2 GW a year - a judgement about what is deliverable, not a published target, and the smallest rate at which the build is decided by cost rather than by the cap. South Africa has procured about 0.6-0.7 GW a year. Switch to the IRP pace for questions about the plan.' },
+  // SOLAR AND ROOFTOP RAISED 1 Oct 2026, pv 2,000 to 2,500 and rooftop 1,000 to 2,000. The
+  // evidence, with its disagreement left in rather than resolved away:
+  //
+  //   2023   South Africa's record year. Sources differ on what it counted: PV Magazine reports
+  //          2.6 GW of solar added in total, while SAPVIA-derived coverage attributes 2.6 GW to
+  //          residential rooftop alone. The lower reading is the one used here.
+  //   2024   1.1 GW added, after demand fell 60-80% when load shedding eased.
+  //   2025   1.6 GW added. SAPVIA had forecast 2.5-3 GW for the year, so its own forecast
+  //          overshot the outturn by about half.
+  //   AUS    1.9 GW of rooftop in six months, on annual demand close to South Africa's. That is
+  //          the benchmark for what a comparable system absorbs when the installer base, the
+  //          finance and the connection rules are in place - none of which South Africa has at
+  //          Australian scale, which is why this is a ceiling rather than an expectation.
+  //
+  // So 4.5 GW a year of solar across both lines is ABOVE every year South Africa has recorded
+  // and below what a comparable country is currently doing. A CAP IS PERMISSION, NOT A FORECAST:
+  // it says the optimiser may build this fast, not that the market will. The 2040 schedule is
+  // cap-bound in most years, so this assumption moves the answer more than the economics do.
+  deliverable: { wind:2500, pv:2500, rooftop:2000, batt:2000, vrfb: 250, ironair: 150, ccgt:1200,
+    note:'Wind and gas at Masterplan pace; solar 2.5 GW and rooftop 2 GW a year, above South Africa\u2019s 2.6 GW record and below Australia\u2019s current rate on similar demand; storage 2 GW. A judgement about what is deliverable, not a published target, and the smallest rate at which the build is decided by cost rather than by the cap. South Africa has procured about 0.6-0.7 GW a year. Switch to the IRP pace for questions about the plan.' },
   grid:        { wind:4300, pv:4000, rooftop:2000, batt:4000, vrfb: 500, ironair: 300, ccgt:2000,
     note:'All remaining GCCA headroom (21.5 GW wind, 19.9 GW solar) spread to 2030. Zero headroom remains in the Northern Cape, Hydra Central, or for Western Cape solar.' },
   // ESKOM GREEN, added 31 Aug 2026 from the FY2026 integrated report. The only pace here

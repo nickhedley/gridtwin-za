@@ -3400,6 +3400,39 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### Raising the solar caps nearly removes the gas, 1 Oct 2026
+
+Build `2026-10-01a`. The deliverable pace now allows 2.5 GW a year of utility solar and 2 GW of
+rooftop, against 2.0 and 1.0. The schedule below was cap-bound in almost every year, so this moves
+the answer more than any cost assumption does:
+
+```
+                      wind GW   solar GW   rooftop GW   batt GW   gas GW   objective R bn
+caps 2.0 / 1.0           11.4       30.0         12.2      20.5      2.9          1,155.9
+caps 2.5 / 2.0            4.1       37.5         17.2      25.6      0.8          1,127.4
+```
+
+Gas falls from 2.9 GW to 0.8, wind from 11.4 to 4.1, and the objective by R28.5bn. Building solar
+and storage faster removes most of the case for both gas and wind - which is the same trade the
+storage-pace work found, now with the solar side of it attached.
+
+THE EVIDENCE FOR THE CAPS, with its disagreement left in. South Africa added 2.6 GW of solar in
+2023, its record, though sources differ on whether that figure is all solar or residential rooftop
+alone; 1.1 GW in 2024 after demand fell 60 to 80% when load shedding eased; and 1.6 GW in 2025,
+against SAPVIA's own forecast of 2.5 to 3 GW for that year. Australia installed 1.9 GW of ROOFTOP
+in six months on annual demand close to South Africa's.
+
+So 4.5 GW a year across both lines is above every year South Africa has recorded and below what a
+comparable system currently absorbs. A cap is permission, not a forecast: it says the optimiser
+may build this fast, not that the market will. That distinction matters more here than usual,
+because the result moves R28.5bn on it.
+
+WHAT THIS DOES NOT SETTLE. Australia's rate rests on fifteen years of installer base, household
+finance and connection rules that South Africa does not have at that scale. And the schedule is
+STILL cap-bound: solar runs at 2,500 MW in all fifteen years and rooftop at 2,000 in eight, so
+the optimiser would take more if offered it. The binding constraint is the assumption, not the
+economics, and no run has yet found the level at which that stops being true.
+
 ### The least-cost path to 2040, and the year it reaches for gas
 
 Build `2026-10-01a`, 1 Oct 2026. The build optimiser's horizon is now a control - 2030, 2035 or
