@@ -5358,6 +5358,30 @@ const FIXED = {
   //
   // Checked 2 Sep 2026 against the report. NOT an error - a different boundary. State the
   // boundary whenever this constant is compared against an Eskom figure.
+  // ROOFTOP, AND WHAT IT IS ACTUALLY MEASURING. Documented 1 Oct 2026; the figure itself
+  // predates that and carried no note at all.
+  //
+  // NTCSA publishes weekly, by province and nationally, the installed PRIVATELY PROCURED
+  // solar PV - everything that is not REIPPPP or RMIPPPP. That total includes wheeled
+  // utility-scale plant AND behind-the-meter rooftop, residential through mining, ground
+  // mounted and roof mounted alike. It is a measured figure rather than an estimate, which
+  // makes it the best rooftop source available: registration data is hopelessly incomplete
+  // and will stay that way.
+  //
+  // So rooftop is derived by SUBTRACTION: the NTCSA private total less the wheeled plant.
+  // 8,942.1 is the August 2026 figure less the 488 MW of wheeled solar in by_source.private.
+  //
+  // THE SUBTRACTION IS INCOMPLETE, and this is the live issue. by_source.private covers H1
+  // 2026 only, so wheeled plant commissioned earlier is inside the NTCSA total and has NOT
+  // been taken out - about 300 MW of named plant so far (Selemela 200 MW AC, Apr 2024;
+  // Damlaagte 97.5 MW, Aug 2025), with SunCentral 1's 114 MW joining it from Oct 2026. That
+  // capacity is not missing from the model. It is MISCLASSIFIED: counted once, as rooftop,
+  // when it is grid-supply wheeled plant. The total is right and the two buckets are wrong,
+  // which matters because rooftop sits behind the meter and suppresses demand while a wheeled
+  // plant supplies the grid, and the two carry different profiles.
+  //
+  // See nodal/private_pending_h2_2026.json. When the next PFL monitor lands, every megawatt
+  // added to by_source.private must be SUBTRACTED from this constant in the same commit.
   ocgtDieselMW:3400, windMW:4612, pvUtilityMW:3271, rooftopMW:8942.1, cspMW:600,
   // Fixed O&M for the existing fleet, R/kW-yr. Added 18 Sep 2026; before that no
   // system-cost aggregate carried any operating cost for plant already built, so

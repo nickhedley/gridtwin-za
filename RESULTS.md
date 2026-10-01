@@ -3083,6 +3083,41 @@ turns on being above 1.5. Against GreenCape's pipeline the whole 8.7 GW is nearl
 is investable today. The model is not claiming the market will do this; it is declining to forbid
 it.
 
+### The missing wheeled plant is not missing. It is in the rooftop line.
+
+Build `2026-10-01a`, 1 Oct 2026. Practitioners describing how to measure South African solar
+confirmed the method this model already uses, and in doing so located a week's worth of
+"missing" capacity.
+
+NTCSA publishes, weekly and by province, the installed privately procured solar PV: everything
+that is not REIPPPP or RMIPPPP, wheeled and behind-the-meter together, ground and roof mounted,
+residential through mining. Measured rather than estimated. Rooftop is what is left after
+subtracting the wheeled plant from it, and `FIXED.rooftopMW` 8,942.1 is exactly that - the August
+2026 figure less the 488 MW of wheeled solar in `by_source.private`.
+
+THE SUBTRACTION IS INCOMPLETE. The private block covers H1 2026 only, so every wheeled plant
+commissioned earlier is still inside the NTCSA total and has never been taken out:
+
+```
+Selemela 1 and 2     200 MW AC   Apr 2024
+Damlaagte             97.5 MW    Aug 2025
+SunCentral 1         114 MW      Oct 2026
+```
+
+About 414 MW, counted once, as rooftop, when it is grid-supply wheeled plant. The national total
+is right and the two buckets are wrong. That matters because rooftop sits behind the meter and
+suppresses demand while a wheeled plant supplies the grid, and the two carry different profiles -
+so the model is slightly overstating behind-the-meter generation and understating grid supply.
+
+Loading one of these is a RECLASSIFICATION: add to `by_source.private`, subtract the same figure
+from `rooftopMW`, same commit. The queue file says so now, and the constant finally has a comment
+explaining where it comes from, which it did not before.
+
+One more thing falls out of the arithmetic: `FIXED.pvUtilityMW` 3,271, which nobody could source,
+is REIPPPP solar 2,783 plus the H1 2026 wheeled 488 exactly. That is a hypothesis rather than a
+provenance - the repo history is still what would settle it - but it is the first explanation that
+fits.
+
 ### A queue for named private projects, rather than losing them
 
 Build `2026-10-01a`, 1 Oct 2026. Six named private and wheeled projects have come out of trade

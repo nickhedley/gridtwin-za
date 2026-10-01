@@ -132,6 +132,25 @@ solar-heavy region with little local demand does. Nothing asserts it yet; it is 
 first regional validation test when the nodal work resumes, because it is a pattern the data
 must reproduce rather than a number to calibrate.
 
+**NTCSA's weekly privately-procured solar PV table is the rooftop source, and the model already
+uses it.** Confirmed 1 Oct 2026 from practitioners' own description, which matches the method in
+the code: the weekly table, by province and nationally, covers EVERYTHING that is not REIPPPP or
+RMIPPPP - wheeled utility plant and behind-the-meter rooftop, ground and roof mounted, residential
+through mining. It is a measured figure, not an estimate, which makes it the best rooftop source
+available; registration data is incomplete and will stay that way. Rooftop is obtained by
+subtracting the known wheeled plant from it.
+
+WHICH MEANS THE QUEUE BELOW IS A RECLASSIFICATION, NOT AN ADDITION. `FIXED.rooftopMW` 8,942.1 is
+the August 2026 NTCSA figure less the 488 MW of wheeled solar in `by_source.private`, which covers
+H1 2026 only. Every pre-2026 wheeled plant is therefore already inside the model, counted once, as
+rooftop. Loading one moves capacity between buckets rather than adding it: add to
+`by_source.private`, subtract the same figure from `rooftopMW`, in one commit. The totals are
+right today and the two buckets are wrong by roughly 300 MW, rising to 414 with SunCentral 1.
+
+It also suggests an answer to the open question about `FIXED.pvUtilityMW` 3,271, which nobody can
+source: it equals REIPPPP solar 2,783 plus the H1 2026 wheeled 488 exactly. That is a hypothesis
+from arithmetic rather than a provenance, and the repo history is still what would confirm it.
+
 **The private-project queue.** Six named projects observed from trade press now sit in
 `nodal/private_pending_h2_2026.json`, deliberately NOT loaded: SunCentral 1 (114 MW, commercial
 operation Oct 2026), Selemela (200 MW AC, Apr 2024), Damlaagte (97.5 MW, Aug 2025), Thakadu

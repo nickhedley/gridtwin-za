@@ -5,7 +5,8 @@
   "on_arrival": "When the H2 2026 monitor lands: replace by_source.private from it, then check each entry below against the monitor. An entry the monitor already carries is DELETED from this file, not added anywhere. An entry the monitor omits is a question for Power Futures Lab, not a licence to hand-edit.",
   "compiled": "2026-10-01",
   "licence": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/",
-  "attribution": "GridTwin ZA, Nick Hedley"
+  "attribution": "GridTwin ZA, Nick Hedley",
+  "effect_when_loaded": "These megawatts are NOT missing from the model. NTCSA's weekly privately-procured solar PV total covers all non-REIPPPP, non-RMIPPPP solar - wheeled and behind-the-meter alike - and FIXED.rooftopMW is derived from it by subtracting the wheeled plant in by_source.private, which currently covers H1 2026 only. So every entry below is already inside rooftopMW, counted once but in the wrong bucket. Loading one moves capacity from rooftop to wheeled: add it to by_source.private, subtract the same figure from FIXED.rooftopMW, in one commit."
  },
  "entries": [
   {
