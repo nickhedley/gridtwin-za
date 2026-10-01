@@ -3400,6 +3400,91 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### CORRECTION: the no-wind result is not what the economics want. It is what coal and a
+### representative-day screen allow.
+
+Build `2026-10-01a`, 1 Oct 2026, same day as the entry it corrects below. The claim that wind,
+rooftop and gas are "artefacts of the cap" was chased and does not survive. Two things the sweep
+did not see.
+
+**The optimiser keeps 21.8 GW of coal in 2040.** It retires coal on the per-unit dates in UC_FLEET,
+not on the preset's coalDecomMW, so a "Fossil-free 2040" run of the build optimiser is a run with
+more than half the coal fleet still standing. Nothing on screen says so. The no-wind build was
+never a fossil-free build: it was 60 GW of solar and 28 GW of batteries riding on 21.8 GW of coal
+for every winter night. Coal was the firm capacity, and that is why wind looked unnecessary.
+
+**And the screen cannot see the tail.** The same builds, run through the full twelve-year dispatch
+with the coal the optimiser actually assumed:
+
+```
+                                                  mean shed GWh   worst year GWh   standard
+unbound: 60.5 GW solar, 27.6 GW batt, no wind              92.0        313.1 (2022)    about 3.5
+capped:  4.1 wind, 37.5 solar, 17.2 roof, 25.6 batt      185.2        429.7 (2022)    about 3.5
+```
+
+Both fail the NEM standard by a factor of 25 to 50. The representative-day screen under-provides
+adequacy because its twelve days do not contain the 2022 winter, and that is exactly what the
+handover spec said would happen: the optimiser proposes, the twelve-year dispatch disposes.
+
+**With the coal removed, the no-wind build is not a system at all:** 47.5 TWh a year unserved,
+52 TWh in the worst year, shedding in all twelve years. That is the measurement that settles it.
+In a genuinely fossil-free system wind is essential, which is what the preset search found weeks
+ago - 35 GW of it - and what the unbound optimiser could not see because it had coal to lean on.
+
+WHAT STANDS from the sweep below: the cap range being worth only 3.2% of the objective, and rooftop
+losing to utility solar on a shared profile. WHAT DOES NOT: "wind, rooftop and gas are artefacts of
+the cap." Wind is an artefact of the retained coal and the screen's blindness to the tail. Do not
+repeat the earlier framing.
+
+TWO THINGS TO FIX, both now on the list. The build panel must say which coal it assumes, because a
+user selecting Fossil-free 2040 and reading a least-cost path is being shown a coal-backed system
+under a fossil-free label. And every optimiser result needs the twelve-year dispatch run before it
+is reported - which this one got only because someone asked.
+
+### What the economics actually want: utility solar and batteries, and nothing else
+
+Build `2026-10-01a`, 1 Oct 2026. The build caps were raised until they stopped binding. Fossil-free
+2040, annual steps, every cap scaled by the same multiple:
+
+```
+caps x       objective R bn   wind GW   utility solar GW   rooftop GW   batt GW   gas GW
+1 (current)         1,127.4       4.1               37.5         17.2      25.6      0.8
+1.5                 1,103.4       0.0               53.6          6.9      27.6      0.0
+2                   1,094.1       0.0               59.4          1.0      27.6      0.0
+3                   1,090.4       0.0               60.5          0.0      27.6      0.0
+5                   1,090.3       0.0               60.5          0.0      27.6      0.0
+10                  1,090.3       0.0               60.5          0.0      27.6      0.0
+```
+
+Unbound, the optimiser builds 60.5 GW of utility solar and 27.6 GW of batteries. No wind, no
+rooftop, no gas. The answer stops moving at three times the current caps, so that is where the
+economics stop being constrained by the pace assumption.
+
+THREE THINGS WORTH SITTING WITH.
+
+WIND, ROOFTOP AND GAS ARE ALL ARTEFACTS OF THE CAP. Each appears only because solar and storage
+are not allowed to build fast enough. At 1.5x the caps wind is gone entirely; by 2x rooftop is
+nearly gone; gas disappears between 1x and 1.5x. Every one of them is in the current schedule as a
+SUBSTITUTE for solar that the model is forbidden to build, not because it is cheaper.
+
+THE WHOLE RANGE IS WORTH ONLY R37bn, 3.2% of the objective. Fifteen years of building at ten times
+the current pace saves 3% against building at the current one. That is the strongest argument yet
+that the pace assumption, which moves R28.5bn on its own, is doing more work than it can carry -
+and also that the urgency case here is not a cost case.
+
+THE UNBOUND SCHEDULE IS NOT A PLAN. It builds 7.6 to 8.6 GW of solar in single years and nothing
+in 2026 to 2029 except batteries, because with perfect foresight and no ramp limits there is no
+reason to start early. A real build cannot do that, which is exactly why the caps exist. The right
+reading is not "build 60 GW of solar" but "every megawatt of wind, rooftop and gas in the capped
+schedule is there because of the cap".
+
+CAVEATS. Rooftop and utility solar share a resource profile here, so the model has little reason
+to prefer rooftop once utility solar is unconstrained - it does not see the network cost rooftop
+avoids, nor the household's own reasons for installing it. Wind's disappearance is more striking
+and less easily explained away, and deserves its own test: this model's wind is regionally
+profiled and capacity-weighted, so a result that says 'no wind at all' should be interrogated
+before it is repeated.
+
 ### Raising the solar caps nearly removes the gas, 1 Oct 2026
 
 Build `2026-10-01a`. The deliverable pace now allows 2.5 GW a year of utility solar and 2 GW of
