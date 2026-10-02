@@ -9471,6 +9471,16 @@ function bldBuildLP(opts){
   // headroom is power not used, which assumes energy behind it - a simplification the engine
   // does not make, and the reason this remains a screen.
   const TAIL_COAL_FACTOR = 0.76;
+  const AV_NUC = S.nuclearCF ?? FIXED.nuclearCF;
+  const AV_HYD = 0.55;   // the engine's own literal at simulate(); one value, two readers
+  const AV_IMP = S.importsCF ?? FIXED.importsCF;
+  // ROOFTOP AND CONGESTION, also from the engine's keys. The engine derates rooftop to 0.78 of
+  // the solar profile and loses congestionCurtailPct of utility wind and solar to congestion when
+  // that toggle is on; this LP took both at face value. In the stalled week that was about 130 GWh
+  // of supply the LP counted and the engine did not have, against 163 GWh the engine shed.
+  const AV_ROOF = S.rooftopDerate ?? 0.78;
+  const AV_CONG = (S.congestionCurtailOn ?? FIXED.congestionCurtailOn)
+    ? 1 - Math.max(0, (S.congestionCurtailPct ?? 4)) / 100 : 1;
   const RES_MW  = (S.reserveEnabled ?? 1) ? (S.reserveOperatingMW || 0) : 0;
   const RES_VRE = (S.reserveEnabled ?? 1) ? (S.reserveVrePct || 0) / 100 : 0;
   const RES_VRE_BASE = S.reserveVreBaseMW || 0;
@@ -9485,14 +9495,19 @@ function bldBuildLP(opts){
       // default profile. Same index arithmetic for demand either way.
       const sp = r.solar ? r.solar[h] : PROFILES.solar[i];
       const wp = r.wind  ? r.wind[h]  : PROFILES.wind[i];
-      const fixed = EX.nuclear*0.9 + EX.hydro*0.5 + EX.imports*0.9
-                  + EX.wind*wp + (EX.pv + EX.rooftop)*sp + EX.csp*0.38;
+      // AVAILABILITY FROM THE ENGINE'S OWN KEYS, 2 Oct 2026. This line hardcoded nuclear 0.9,
+      // hydro 0.5 and imports 0.9 while the engine reads nuclearCF (0.66, Koeberg's record),
+      // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
+      // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
+      // had. Found by decomposing the stalled week of the adequacy loop.
+      const fixed = EX.nuclear*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
+                  + EX.wind*wp*AV_CONG + EX.pv*sp*AV_CONG + EX.rooftop*sp*AV_ROOF + EX.csp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
-        + ' + ' + cum('wind',y).map(v => wp.toFixed(4)+' '+v).join(' + ')
-        + ' + ' + cum('pv',y).map(v => sp.toFixed(4)+' '+v).join(' + ')
-        + ' + ' + cum('rooftop',y).map(v => sp.toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('wind',y).map(v => (wp*AV_CONG).toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('pv',y).map(v => (sp*AV_CONG).toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
         + ' = ' + (dem - fixed).toFixed(1));
       L.push(' cmax_' + k + ': gc_' + k + ' <= ' + coalCap.toFixed(1));
       L.push(' gmax_' + k + ': gg_' + k + ' - ' + cum('ccgt',y).join(' - ') + ' <= 0');
@@ -9505,7 +9520,12 @@ function bldBuildLP(opts){
         // explicitly in this LP, so its full power counts. A slack rsl_ priced at VoLL keeps the
         // problem feasible in early years, where the fleet cannot be changed fast enough to meet
         // the requirement on a derated tail day, and reports the shortfall rather than hiding it.
-        const rhs = coalCap + EX.diesel + EX.batt + EX.ps - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE);
+        // PUMPED STORAGE IS NOT RESERVE HERE, 2 Oct 2026. This LP never dispatches pumped storage
+        // as energy, so counting its 2,724 MW as reserve headroom credited power with no energy
+        // behind it. In the stalled loop week the engine's pumped storage was empty and delivered
+        // 314 MW; the LP was counting all 2,724 toward reserve, which let coal, gas and lithium
+        // serve energy the engine had to hold back. Out until the LP models its energy.
+        const rhs = coalCap + EX.diesel + EX.batt - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE);
         L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + ' + bdis_' + k + ' - rsl_' + k
           + ' - ' + cum('ccgt',y).join(' - ') + ' - ' + cum('batt',y).join(' - ')
           + (RES_VRE > 0
@@ -9598,7 +9618,7 @@ function bldBuildLP(opts){
     for (const r of rd) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg);
     // The annual-peak margin uses the mean coal availability, as before; the tail-day derate is
     // an hourly matter and lives in cmax_ and resv_ above.
-    const firm = coalCapMean + EX.nuclear*0.9 + EX.hydro*0.5 + EX.imports*0.9
+    const firm = coalCapMean + EX.nuclear*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
                + EX.ps + EX.diesel + EX.batt;
     // Long-duration storage counts toward firm capacity at its de-rated value:
     // a 100-hour store can be relied on through a long event in a way a 4-hour

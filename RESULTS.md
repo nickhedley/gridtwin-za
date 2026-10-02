@@ -3400,6 +3400,48 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### The stall was not foresight. Four constants the optimiser and engine disagreed on.
+
+Build `2026-10-02a`, 2 Oct 2026, later the same day. Both open questions from the entry below were
+measured, and the first overturns its conclusion.
+
+**State of charge settles it.** In every hour the engine shed during the stalled week, its battery
+was below 10% charge, and on three of those days it never charged at all. The engine was not
+holding energy back for a week it could not see; there was no surplus to store. So the gap was an
+energy shortfall, which means the optimiser was counting supply the engine did not have. The
+explanation in the entry below - storage foresight - was wrong, and so was the earlier one it
+replaced.
+
+Decomposing the week found where:
+
+```
+                              optimiser assumed        engine has
+nuclear availability          0.90, hardcoded          nuclearCF 0.66, Koeberg's record
+pumped storage as reserve     all 2,724 MW             empty that week, delivered 314 MW
+rooftop output                full solar profile       rooftopDerate 0.78
+congestion on wind, solar     none                     congestionCurtailPct, 4%
+```
+
+Every one is a second copy of a constant that disagreed with the first - rule 6, four times, in a
+function written to cross-check the other. Nuclear alone was 451 MW the optimiser counted in every
+hour of every year. The optimiser now reads the engine's keys for all four, and pumped storage is
+out of its reserve until its energy is modelled.
+
+```
+Fossil-free 2040 through the loop      worst year GWh   mean GWh   weeks it found
+before the four fixes                             366        185   January, January
+after, pass 4                                     152         66   January, late May, June
+standard                                          4.5
+```
+
+Better by more than half, and the loop now finds winter weeks. It still stalls, at about 34 times
+the standard. What remains has not been decomposed; the same week-by-week comparison is the method.
+
+**Summer maintenance decides when, not whether.** Flattening the engine's planned coal maintenance
+across the year moves the worst week from mid-January to late May, and barely moves the shortfall:
+worst year 365 to 350 GWh, mean 193 to 194. The January finding below was an artefact of where the
+engine schedules outages and should not be repeated as a property of the system.
+
 ### The stress-period loop works, and it stalls - which locates the remaining gap
 
 Build `2026-10-02a`, 2 Oct 2026. The build optimiser now has the iteration NREL's ReEDS uses: solve,

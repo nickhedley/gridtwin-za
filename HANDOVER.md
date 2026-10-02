@@ -273,6 +273,20 @@ and this model has twelve REAL weather years behind its variability, which is a 
 than a synthetic distribution fitted to fewer. Report the spread we have rather than manufacturing
 a larger one.
 
+## The adequacy loop: four constants fixed, a factor of 34 left
+
+UPDATED 2 Oct 2026, late. The stall was NOT storage foresight - the engine's battery was empty in
+every shed hour. It was four constants the optimiser duplicated and got wrong: nuclear 0.9 against
+the engine's 0.66, pumped storage counted as reserve with no energy, rooftop at full output against
+a 0.78 derate, and no congestion loss against 4%. Fixed by reading the engine's keys. Worst year
+366 to 152 GWh, still stalling at about 34 times the standard. NEXT: decompose the stalled week
+again, the same way - compare each supply line between the two models, in GWh, for that week.
+And sweep the rest of bldBuildLP for any other literal that has an engine key; four turned up in
+one week, which suggests there are more.
+
+The January timing was the engine's summer maintenance schedule: flattening it moves the worst week
+to late May without changing the shortfall.
+
 ## The adequacy loop exists, and its stall is the finding
 
 ADDED 2 Oct 2026, late. The ReEDS stress-period iteration is built: "Solve, then test against twelve

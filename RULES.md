@@ -60,6 +60,19 @@ and prefer excluding by ID over excluding by property - an id list is explicit a
 WATCH THE COUNTS, not just the ratio. 84/84 and 83/83 both read as green; it was the controls
 figure beside them that said a control had vanished.
 
+## Two models of the same system read the same constants
+
+Found 2 Oct 2026. The build optimiser hardcoded nuclear at 0.9, hydro 0.5, imports 0.9, rooftop
+at full output and no congestion loss, while the dispatch engine it is tested against read
+nuclearCF 0.66, 0.55, importsCF, rooftopDerate 0.78 and congestionCurtailPct. Every optimiser
+build was therefore designed for a system with more supply than the one that judged it - and the
+gap was blamed on storage foresight for a day before a state-of-charge measurement ruled that out.
+
+THE RULE: where two models describe the same plant, the second reads the first's key. A literal
+in an optimiser that has an equivalent key in the engine is a bug waiting for a scenario to expose
+it. When the models disagree, decompose the disagreement line by line in energy before naming a
+mechanism - the mechanism named first was wrong here twice.
+
 ## Comments: value, source, date. Nothing else.
 
 A constant needs what it is, where it came from, and when it was last checked. It does not
