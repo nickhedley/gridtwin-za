@@ -13,6 +13,11 @@ number the code no longer produces. Every entry must carry the preset, the
 scenario year, and every toggle that is not at its default. An entry that cannot
 be re-derived from what it states is not a result either.
 
+SECOND CAVEAT, 2 Oct 2026: every adequacy figure below for a build that KEEPS COAL predates the
+engine charging storage from coal ahead of stress, and is pessimistic by some amount. Directions
+re-measured on three key entries all hold; levels do not. See "Which earlier findings the charging
+fix touches".
+
 CAVEAT ON EVERYTHING BELOW: all of it is ONE synthetic-normal weather year. The
 ten-year run is outstanding and will move these, probably outward, because a bad
 wind year is exactly what sets a capacity requirement.
@@ -3399,6 +3404,43 @@ fetches building insights, converts each roof segment's real pitch and azimuth i
 multiplier the dropdown uses, draws the measured roof, and falls back to manual tracing where
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
+
+### Which earlier findings the charging fix touches, and three re-measured
+
+Build `2026-10-02a`, 2 Oct 2026, night. 69 entries in this file report adequacy for a build that keeps
+coal; every one predates the engine charging storage from coal ahead of stress, so their shed figures
+are pessimistic by some amount. Rather than re-run 69, the three that carry a mechanism someone might
+quote were re-measured both ways on the current build:
+
+```
+                                                  old rule     new rule
+FLEXIBILISING COAL, no gas, 10 GW coal, default year (unserved GWh)
+  rigid coal                                         6,703        6,556
+  flexible coal                                      7,897        7,297
+  flexible worse by                                 +1,194         +741
+ELECTRIFICATION WALL, Deep decarbonisation, flat load added (unserved GWh)
+  +3 GW                                                133          116
+  +5 GW                                                868          764
+NO-GAS FRONTIER, 50 GW wind / 60 GW solar, 10 GW coal, default year
+  unserved GWh                                           0            0
+  curtailment TWh                                    120.9        121.1
+```
+
+ALL THREE DIRECTIONS HOLD. Flexibilising coal still worsens adequacy in a no-gas system - the fix
+narrows the penalty by 38% because flexible coal can now charge storage when it sees stress, but rigid
+coal still forces more energy into storage. The electrification wall stays near 3 GW. The frontier
+cell is unchanged.
+
+THE LEVELS DO NOT. Every number above differs from what its entry published - 14,078 and 15,206 GWh
+for flexibilisation in August, 81 and 676 GWh for the electrification wall yesterday - because each
+has been through a month of model changes as well as this one. Quote directions from those entries;
+re-measure before quoting any level.
+
+A KEY THAT CHANGED SHAPE, caught re-measuring. The flexibilisation entry describes "ramp %/hr 24
+against 100". coalFlexPct is now a toggle, read as true or false, so setting it to 24 or 100 both mean
+"flexible" and give identical results. The first re-measurement came out identical for rigid and
+flexible for exactly that reason. Rule 7's shape again: a value that resolves to something plausible
+rather than an error.
 
 ### Deep decarbonisation re-sized, and why more coal cannot go
 
