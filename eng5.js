@@ -44,7 +44,11 @@ setTimeout(()=>{
 
  // 3. higher EAF must reduce unserved energy
  const uns=sweep('coalEAFPct',[45,50,55,60,65,70],r=>r.E.unserved/M);
- const mono3=uns.every((v,i)=>i===0||v<=uns[i-1]+0.02);
+ // Tolerance was larger than the effect, fixed 2 Oct 2026, the same way as check 6: an absolute
+ // 0.02 TWh allowance passed any single-step rise up to 20 GWh. Now each step may rise by at most
+ // 2% of the starting value, and the sweep must cut unserved energy by at least a tenth.
+ const tol3=Math.max(0.002, uns[0]*0.02);
+ const mono3=uns.every((v,i)=>i===0||v<=uns[i-1]+tol3) && uns[uns.length-1] <= uns[0]*0.9;
  console.log('3. unserved falls as EAF rises:', uns.map(x=>x.toFixed(2)).join(' -> '), mono3?'ok':'*** NOT MONOTONIC ***');
  if(!mono3) fails.push('unserved vs EAF');
 

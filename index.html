@@ -17407,7 +17407,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-02a';
+const BUILD_STAMP = '2026-10-02b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -20254,7 +20254,7 @@ async function _rtFetchSiteData(lat, lng, contextHtml, skipRoof) {
     const solar = await window.fetchSolar(lat, lng);
     window._resourceData = { lat, lng, solar, windRegion: region, windMonthly };
     if (infoEl) infoEl.innerHTML =
-      prefix + 'Using site-specific solar data for <strong>' + region + '</strong> (' + (solar.annualCF*100).toFixed(1) + '% CF).';
+      prefix + 'Using solar data for this site: ' + (solar.annualCF*100).toFixed(1) + '% CF, Open-Meteo ERA5 at the clicked point.';
   } catch (err) {
     if (infoEl) infoEl.innerHTML =
       prefix + 'Could not fetch site-specific solar data (using SA national average instead).';
