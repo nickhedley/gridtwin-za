@@ -3400,6 +3400,96 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### The optimiser now holds reserve and expects outages. The gap closed from 250 to 60.
+
+Build `2026-10-02a`, 2 Oct 2026. Two of the three structural gaps between the build optimiser and
+the dispatch engine are closed; the third is inherent to a screening LP.
+
+**Outages.** The tail window is now seven days rather than three, and coal on it is derated to the
+worst measured week: 0.76 of the annual mean, from the coal availability trace (2024, the worst of
+three years; 0.87 and 0.83 in the others). Calendar days keep the mean.
+
+**Reserve.** Every hour now carries the engine's requirement - the ASTR's 2,200 MW plus 5% of
+variable output above the 2026 fleet's - as headroom on coal, gas, diesel, lithium and pumped
+storage above what is dispatched. A slack priced at VoLL keeps early years feasible and reports
+the shortfall rather than hiding it; it is zero in every solve so far.
+
+**Tail-day shedding is priced, not forbidden.** A hard zero made 2026 infeasible - nothing can be
+built fast enough to cover a derated winter week that year - and an LP that cannot solve reports
+nothing. Shedding on the tail is now priced as if that week came round every week, VoLL x 365,
+which says the same thing with a price on it. Note the objective is no longer comparable with
+earlier runs: it carries that penalty.
+
+The same 2040 build, Fossil-free preset, coal matched, through twelve weather years:
+
+```
+screen                                  LP build (GW)                           mean shed GWh
+no tail                                 31.8 solar, 13.8 batt, no wind                 6,307
+three-day tail, priced                  34.8 solar, 15.6 batt, 7.0 wind                  731
+three-day tail, outage + reserve        31.5 solar, 14.5 batt, 8.4 wind, 3.8 gas          250
+seven-day tail, outage + reserve        26.7 solar, 12.1 batt, 16.4 wind, 1.4 gas         215
+standard                                                                           about 3.5
+```
+
+From 1,800 times the standard to 60. And watch the wind column: none, then 7, then 8, then 16 GW.
+Every step that makes the screen's winter more like the engine's puts more wind in the build. The
+preset search, which used the engine directly, settled on 35 GW. The screen is converging on the
+engine's answer from below as its winter gets harder, which is the right direction and a decent
+check that the fixes are the right fixes.
+
+WHAT REMAINS is foresight. The LP dispatches each day knowing the day; the engine looks 168 hours
+ahead through a heuristic and holds storage back for what might come. The remaining factor of 60
+is mostly that, and it cannot be closed in a screening LP - only measured. So: every optimiser
+result is still a proposal, the panel still says so on apply, and the twelve-year dispatch is
+still the arbiter. But the proposals are now in the right neighbourhood.
+
+The regional model does not have any of this yet: it screens on eight calendar days with mean
+coal and no reserve, and says so in its code.
+
+### Four fixes to the build optimiser, and the one that did not work
+
+Build `2026-10-01a`, 1 Oct 2026, following the correction below.
+
+**The coal the optimiser assumed now travels with its build.** Applying a result to the sliders
+sets coal retirement to the optimiser's own per-unit figure - 17,939 MW retired for 2040, 21.8 GW
+standing - and sets the storage duration it chose. The status line says what coal it assumed and
+that the result is a screening result until the twelve weather years have run. Before this, the
+apply button handed a coal-backed build to a dispatch with no coal in it.
+
+**The growth root follows the horizon.** demandGrowthPct was converted to an annual rate with a
+hardcoded fifth root, right for five years and wrong for fifteen. It now takes the horizon's root.
+
+**The tail from the other eleven years is in the screen.** The worst three-day net-load window
+across all twelve weather years - June 2015 under the screen's own weighting - is spliced into the
+representative days with its own wind and solar shapes, and those days may not shed at all. The
+regional model keeps its calendar days, because it indexes regional shapes and the tail carries
+only national ones; that blindness is stated in the code rather than hidden.
+
+**AND IT IS NOT ENOUGH.** Measured on the same 2040 build, coal matched, through twelve years:
+
+```
+                                        LP build                              mean shed GWh   worst
+no tail days                            31.8 solar, 13.8 batt, no wind              6,307     7,590
+tail days, priced                       34.8 solar, 15.6 batt, 7 wind                 731     1,414
+tail days, forbidden to shed            31.5 solar, 14.2 batt, 7.8 wind, 0.3 gas      877     1,580
+standard                                                                            about 3.5
+```
+
+The tail days cut the shortfall nine-fold and bring wind back - 7 to 8 GW where there was none -
+which confirms what the correction below says about why wind vanished. But 877 GWh against a
+3.5 GWh standard is a factor of 250, and more days will not close that.
+
+The gap is structural. The optimiser gives coal a flat 64% availability in every hour; the engine
+draws outages with 480-hour persistence that can take gigawatts out for weeks. The optimiser holds
+no operating reserve; the engine holds 2,200 MW plus a share of variable output. The optimiser
+dispatches each day with perfect foresight; the engine looks 168 hours ahead through a heuristic.
+Each of those makes the engine's winter harder than the optimiser's, and together they are the
+250.
+
+So the build optimiser is a screen and only a screen, and the panel now says so on every apply.
+Closing the gap properly means putting the engine's reserve and an outage allowance into the LP,
+which is a session of its own and is on the list.
+
 ### CORRECTION: the no-wind result is not what the economics want. It is what coal and a
 ### representative-day screen allow.
 
