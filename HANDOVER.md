@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-10-01a`. Suite 801/803 plus eng5 6/6, measured 30 Sep 2026. Three sessions ran long and the
+Build `2026-10-02a`. Suite 801/803 plus eng5 6/6, measured 30 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -272,6 +272,34 @@ What NOT to copy: their simulation counts. Ten thousand consumption simulations 
 and this model has twelve REAL weather years behind its variability, which is a stronger basis
 than a synthetic distribution fitted to fewer. Report the spread we have rather than manufacturing
 a larger one.
+
+## The build optimiser under-provides adequacy by a factor of 60, down from 250
+
+UPDATED 2 Oct 2026. Items 1 and 2 below are DONE: a seven-day tail window with coal derated to the
+worst measured week, and the engine's reserve requirement as a row in every hour. Mean shed on the
+same 2040 build went 877 to 215 GWh, and wind came back into the build at 16 GW. What is left is
+item 3, foresight, which a screening LP cannot close. The regional model has none of this.
+
+The original note, kept for the reasoning:
+
+Measured 1 Oct 2026. A build the optimiser calls adequate sheds about 900 GWh a year in the
+twelve-year dispatch against a standard of about 3.5. Adding the worst three-day window from the
+other weather years, with shedding forbidden on it, cut that from 6,300 GWh and brought wind back
+into the build - and left a factor of 250.
+
+Three structural differences, in the order I would close them:
+
+1. **Outages.** The LP gives coal a flat 64% in every hour. The engine draws forced outages with
+   480-hour persistence, so a bad fortnight can lose several gigawatts. An outage allowance on the
+   tail days - derate coal to the engine's worst-fortnight availability rather than its mean - is
+   the cheapest fix and probably the largest.
+2. **Reserve.** The LP holds none. The engine holds 2,200 MW plus a share of variable output in
+   every hour. Add a reserve row per hour on the tail days at least.
+3. **Foresight.** The LP dispatches each day perfectly. The engine looks 168 hours ahead through a
+   heuristic. This one is inherent to a screening LP and cannot be closed; it can be measured.
+
+Until then: every optimiser result is a screening proposal, the panel says so on apply, and the
+twelve-year dispatch is the arbiter. Do not quote an optimiser build without it.
 
 ## Least-cost to 2040, with a build schedule
 

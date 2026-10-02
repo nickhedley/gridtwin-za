@@ -9112,10 +9112,58 @@ function bldRepDays(n){
   // storage level can carry forward. prevD is undefined for the first day, which
   // is where the opening state of charge is set.
   const ordered = [...chosen].slice(0, n).sort((a, b) => a - b);
-  return ordered.map((d, i) => ({
+  const days = ordered.map((d, i) => ({
     d, weight: 365/n,
     prevD: i === 0 ? undefined : ordered[i-1],
   }));
+
+  // THE TAIL FROM THE OTHER ELEVEN YEARS, added 1 Oct 2026. Every day above comes from the
+  // DEFAULT profile year, so the worst winter the twelve-year set holds - 2022, in every
+  // adequacy run this project has done - was invisible to the optimiser. Measured: a build the
+  // optimiser called adequate shed 92 to 185 GWh a year in full dispatch against a standard of
+  // about 3.5, because its days did not contain that week.
+  //
+  // So when the twelve-year set is loaded, the worst three-day net-load window ACROSS ALL YEARS
+  // is spliced in as three extra days carrying their own wind and solar shapes. They take the
+  // calendar day's demand, weight 1 each - they exist to enforce adequacy, not to drive cost -
+  // and chain to each other so storage must carry through them. Index 1000+ so their variable
+  // names cannot collide with a calendar day. Absent the set, the optimiser runs as before and
+  // says so in its status line.
+  if (typeof bldWeatherYears !== 'undefined' && bldWeatherYears && bldWeatherYears.meta){
+    let best = null;
+    for (const y of bldWeatherYears.meta.years){
+      let nat;
+      try { nat = weatherYearNational(String(y)); } catch (e) { continue; }
+      if (!nat || !nat.solar || !nat.wind) continue;
+      const net = [];
+      for (let d = 0; d < 365; d++){
+        let v = 0;
+        for (let h = 0; h < 24; h++){
+          const i = d*24 + h;
+          v += PROFILES.demand[i] - 4000*nat.solar[i] - 3600*nat.wind[i];
+        }
+        net.push(v);
+      }
+      // Seven days, not three, from 2 Oct 2026: the engine's outage persistence runs to weeks,
+      // and a three-day window could be bridged by storage that a week cannot.
+      const TAIL_DAYS = 7;
+      const start = roll(net, TAIL_DAYS);
+      let v = 0; for (let j = 0; j < TAIL_DAYS; j++) v += net[start + j];
+      if (!best || v > best.v) best = { v, y, start, nat, n: TAIL_DAYS };
+    }
+    if (best){
+      for (let j = 0; j < best.n; j++){
+        const cal = best.start + j;
+        days.push({
+          d: 1000 + j, dem: cal, weight: 1, tail: true, year: best.y,
+          prevD: j === 0 ? undefined : 1000 + j - 1,
+          solar: Array.from({length:24}, (_, h) => best.nat.solar[cal*24 + h]),
+          wind:  Array.from({length:24}, (_, h) => best.nat.wind[cal*24 + h]),
+        });
+      }
+    }
+  }
+  return days;
 }
 
 // Seconds the in-browser solver may spend before giving up. Declared here, before the
@@ -9343,7 +9391,12 @@ function bldBuildLP(opts){
       obj.push(((MC.coal + CARBON*EMIS_COAL)*r.weight*df).toFixed(3) + ' gc_' + k);
       obj.push(((MC.ccgt + CARBON*EMIS_CCGT)*r.weight*df).toFixed(3) + ' gg_' + k);
       obj.push(((MC.diesel + CARBON*EMIS_DIESEL)*r.weight*df).toFixed(3) + ' gd_' + k);
-      obj.push((VOLL*r.weight*df).toFixed(3) + ' u_' + k);
+      // Shedding on a tail day is priced as if that day came round every day of the year: a hard
+      // zero made the early years infeasible, because nothing can be built fast enough to cover
+      // a derated 2026 tail day, and an LP that cannot solve reports nothing. VoLL x 365 says the
+      // same thing - do not plan to shed on the worst window - while leaving a price on it.
+      obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' u_' + k);
+      obj.push((VOLL*r.weight*df).toFixed(3) + ' rsl_' + k);   // reserve shortfall, priced like shed load
       obj.push((S.lpCurtailCostR*r.weight*df).toFixed(3) + ' crt_' + k);
       // resolved (14 Aug 2026): lpBattDischargeCostR (20) deliberately stays below
       // the dispatch engine's battCycleCostR (165). They are different quantities.
@@ -9377,13 +9430,39 @@ function bldBuildLP(opts){
   const cum = (t,y) => Y.filter(yy => yy <= y).map(yy => 'b_' + t + '_' + yy);
   const cumE = y => Y.filter(yy => yy <= y).map(yy => 'eb_batt_' + yy);   // lithium cells, MWh
 
+  // THE ENGINE'S WINTER, IN THE SCREEN. Added 2 Oct 2026 after a build the optimiser called
+  // adequate shed about 900 GWh a year in the twelve-year dispatch, 250 times the standard.
+  // Two of the three structural differences are closed here; the third - the engine looks 168
+  // hours ahead through a heuristic where this LP dispatches each day perfectly - is inherent
+  // to a screening LP and is not.
+  //
+  // OUTAGES. The LP gave coal a flat EAF in every hour. The measured coal availability trace
+  // (nodal/coal_availability_trace.json, ESK19679 by hour, each year divided by its own mean)
+  // puts the worst 72-hour window at 0.83 of the annual mean in 2023, 0.72 in 2024 and 0.79 in
+  // 2025, and the worst 168-hour window at 0.87, 0.76 and 0.83. The tail is a seven-day window,
+  // so coal on it is derated to the worst measured week: 0.76. Calendar days keep the mean.
+  // Recompute this if the trace is rebuilt; it is a value read from that file, not a judgement.
+  //
+  // RESERVE. The LP held none; the engine holds reserveOperatingMW plus reserveVrePct of
+  // variable output above reserveVreBaseMW in every hour. The same requirement is a row per
+  // hour here: headroom on coal, gas, diesel and lithium power above what is dispatched. Storage
+  // headroom is power not used, which assumes energy behind it - a simplification the engine
+  // does not make, and the reason this remains a screen.
+  const TAIL_COAL_FACTOR = 0.76;
+  const RES_MW  = (S.reserveEnabled ?? 1) ? (S.reserveOperatingMW || 0) : 0;
+  const RES_VRE = (S.reserveEnabled ?? 1) ? (S.reserveVrePct || 0) / 100 : 0;
+  const RES_VRE_BASE = S.reserveVreBaseMW || 0;
   for (const y of Y){
     const dg = Math.pow(1+growth, y-2026);
-    const coalCap = bldCoalMW(y) * eaf;
+    const coalCapMean = bldCoalMW(y) * eaf;
     for (const r of rd) for (let h = 0; h < 24; h++){
-      const i = r.d*24 + h, k = y + '_' + r.d + '_' + h;
+      const coalCap = r.tail ? coalCapMean * TAIL_COAL_FACTOR : coalCapMean;
+      const i = (r.dem !== undefined ? r.dem : r.d)*24 + h, k = y + '_' + r.d + '_' + h;
       const dem = PROFILES.demand[i]*dg;
-      const sp = PROFILES.solar[i], wp = PROFILES.wind[i];
+      // A tail day from another weather year carries its own shapes; a calendar day reads the
+      // default profile. Same index arithmetic for demand either way.
+      const sp = r.solar ? r.solar[h] : PROFILES.solar[i];
+      const wp = r.wind  ? r.wind[h]  : PROFILES.wind[i];
       const fixed = EX.nuclear*0.9 + EX.hydro*0.5 + EX.imports*0.9
                   + EX.wind*wp + (EX.pv + EX.rooftop)*sp + EX.csp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k
@@ -9395,6 +9474,25 @@ function bldBuildLP(opts){
         + ' = ' + (dem - fixed).toFixed(1));
       L.push(' cmax_' + k + ': gc_' + k + ' <= ' + coalCap.toFixed(1));
       L.push(' gmax_' + k + ': gg_' + k + ' - ' + cum('ccgt',y).join(' - ') + ' <= 0');
+      // Reserve: dispatched + required <= capacity. The VRE term sits on both sides - existing
+      // VRE output is a number, new VRE output is a variable - and the base is subtracted so
+      // today's fleet reads the ASTR figure, as in the engine.
+      if (RES_MW > 0 || RES_VRE > 0){
+        const exVre = EX.wind*wp + (EX.pv + EX.rooftop)*sp;
+        // Pumped storage is reserve-capable headroom in the engine too, and is not dispatched
+        // explicitly in this LP, so its full power counts. A slack rsl_ priced at VoLL keeps the
+        // problem feasible in early years, where the fleet cannot be changed fast enough to meet
+        // the requirement on a derated tail day, and reports the shortfall rather than hiding it.
+        const rhs = coalCap + EX.diesel + EX.batt + EX.ps - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE);
+        L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + ' + bdis_' + k + ' - rsl_' + k
+          + ' - ' + cum('ccgt',y).join(' - ') + ' - ' + cum('batt',y).join(' - ')
+          + (RES_VRE > 0
+              ? ' + ' + cum('wind',y).map(v => (RES_VRE*wp).toFixed(5)+' '+v).join(' + ')
+                + ' + ' + cum('pv',y).map(v => (RES_VRE*sp).toFixed(5)+' '+v).join(' + ')
+                + ' + ' + cum('rooftop',y).map(v => (RES_VRE*sp).toFixed(5)+' '+v).join(' + ')
+              : '')
+          + ' <= ' + rhs.toFixed(1));
+      }
       L.push(' dmax_' + k + ': gd_' + k + ' <= ' + EX.diesel);
       L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
@@ -9475,8 +9573,10 @@ function bldBuildLP(opts){
     // capacity credit: South Africa's system peak is a winter evening, when
     // solar is zero and wind cannot be relied on.
     let peak = 0;
-    for (const r of rd) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[r.d*24+h]*dg);
-    const firm = coalCap + EX.nuclear*0.9 + EX.hydro*0.5 + EX.imports*0.9
+    for (const r of rd) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg);
+    // The annual-peak margin uses the mean coal availability, as before; the tail-day derate is
+    // an hourly matter and lives in cmax_ and resv_ above.
+    const firm = coalCapMean + EX.nuclear*0.9 + EX.hydro*0.5 + EX.imports*0.9
                + EX.ps + EX.diesel + EX.batt;
     // Long-duration storage counts toward firm capacity at its de-rated value:
     // a 100-hour store can be relied on through a long event in a way a 4-hour
@@ -9533,7 +9633,13 @@ function bldBuildLP(opts){
   for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
     const k = y + '_' + r.d + '_' + h;
     L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
-    L.push(' 0 <= gd_'+k+' <= ' + EX.diesel); L.push(' 0 <= u_'+k+' <= 100000');
+    L.push(' 0 <= gd_'+k+' <= ' + EX.diesel);
+    // A TAIL DAY MAY NOT SHED. At weight 1 the cost of shedding on it is VoLL for one day, which
+    // is nothing against fifteen years of capital, so the optimiser would simply pay it. The
+    // reliability standard is 0.002% of demand, which over a three-day window rounds to zero,
+    // so zero is the honest bound. Calendar days keep the priced slack.
+    L.push(' 0 <= u_'+k+' <= 100000');   // tail days are priced at VoLL x 365 instead of bounded to zero
+    L.push(' 0 <= rsl_'+k+' <= 100000');
     L.push(' 0 <= crt_'+k+' <= 200000');
     // Every storage technology needs bounds, or its variables are unbounded and
     // the solve fails. The real limits are the power constraints above; these are
@@ -9562,11 +9668,12 @@ async function runBuildOpt(){
   st.textContent = 'Solving…';
 
   // Inherit the scenario from the sliders above rather than duplicating them.
-  // demandGrowthPct is a total change to 2030; the optimiser needs an annual
-  // rate over the five years, hence the fifth root.
+  // demandGrowthPct is a total change over the horizon; the optimiser needs an annual rate.
+  // The root follows BLD_YEARS - it was a hardcoded fifth root until 1 Oct 2026, which was
+  // right for five years and would have compounded a five-year change over fifteen.
   const totalGrowth = 1 + (state.demandGrowthPct || 0)/100;
   const opts = {
-    growth: Math.pow(totalGrowth, 1/5) - 1,
+    growth: Math.pow(totalGrowth, 1/Math.max(1, BLD_YEARS.length)) - 1,
     eaf:    (state.coalEAFPct ?? FIXED.coalEAFPct) / 100,   // ?? not ||: EAF=0 is a real input
     rate:   bldRates(),
     state:  state,
@@ -9583,6 +9690,8 @@ async function runBuildOpt(){
       built = bldBuildRegionalLP(opts);
     }
   } else {
+    st.textContent = 'Loading the twelve weather years for the tail days\u2026';
+    try { await loadWeatherYears(); } catch (e) { /* runs without tail days, and says so */ }
     built = bldBuildLP(opts);
   }
   const { lp, rate, regional } = built;
@@ -9687,8 +9796,8 @@ function renderBuildResult(res, rate, opts){
   // includes a duration and the table above cannot show it. Read it out, and say when it is
   // sitting on one of the 1 to 12 hour bounds rather than choosing.
   let durHtml = '';
+  let ebMWh = 0;   // hoisted 1 Oct 2026 so the chosen duration can travel with the build
   {
-    let ebMWh = 0;
     for (const y of Y){ const v = res.Columns['eb_batt_' + y]; ebMWh += v ? v.Primal : 0; }
     if (tot.batt > 1){
       const hrs = ebMWh / tot.batt;
@@ -9708,7 +9817,8 @@ function renderBuildResult(res, rate, opts){
   // The binding-constraint annotation. This is the real output: where a
   // technology sits at its cap, the answer is set by how fast we can build, not
   // by economics. Where it does not, the model has genuinely chosen.
-  bldLastTotals = { wind:tot.wind, pv:tot.pv, rooftop:tot.rooftop, batt:tot.batt, ccgt:tot.ccgt };
+  bldLastTotals = { wind:tot.wind, pv:tot.pv, rooftop:tot.rooftop, batt:tot.batt, ccgt:tot.ccgt,
+                    hours: (tot.batt > 1 && ebMWh > 0) ? ebMWh / tot.batt : 0 };
   const limited = T.filter(t => bound[t] > 0);
   const free    = T.filter(t => bound[t] === 0 && tot[t] > 1);
   const none    = T.filter(t => tot[t] <= 1);
@@ -9920,7 +10030,11 @@ function bldBuildRegionalLP(opts){
   // ignored the pace presets entirely, which is how vanadium reached 62 GW.
   // Storage is taken from BLD_STORE so the two lists cannot drift apart.
   const T = ['wind','pv'].concat(BLD_STORE.map(S2 => S2.t));
-  const rd = bldRepDays(8);                    // 8 days keeps the LP browser-sized
+  // The regional LP indexes REGIONAL profile arrays by calendar day, and a tail day from
+  // another weather year carries national shapes only. So the regional model keeps its eight
+  // calendar days and drops the tail - which means it has the blindness the national model has
+  // just had corrected. Stated here rather than hidden; fixing it needs regional tail shapes.
+  const rd = bldRepDays(8).filter(r => !r.tail);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   const S = { ...FIXED, ...(opts.state || {}) };
   const STORE = bldStoreList(S);   // lithium at the scenario's duration
@@ -11082,8 +11196,26 @@ function bldApplyToSliders(){
     const el = document.getElementById('in_' + id);
     if (el){ el.value = String(Math.round(mw)); el.dispatchEvent(new Event('input', {bubbles:true})); }
   }
+  // THE COAL THE OPTIMISER ASSUMED GOES WITH THE BUILD, 1 Oct 2026. It retires coal on the
+  // per-unit dates in UC_FLEET, not on the coalDecomMW slider, so a build it called adequate
+  // was being dispatched against whatever retirement the slider happened to hold. On the
+  // Fossil-free preset that was all 39.7 GW retired where the optimiser had kept 21.8 GW
+  // standing in 2040 - and the build shed 47 TWh a year. Apples to apples now: the slider is
+  // set to the retirement the optimiser used, and the hours it chose come across too.
+  const endY = BLD_YEARS[BLD_YEARS.length - 1];
+  const decomEl = document.getElementById('in_coalDecomMW');
+  if (decomEl){
+    decomEl.value = String(Math.round(FIXED.coalInstalledMW - bldCoalMW(endY)));
+    decomEl.dispatchEvent(new Event('input', {bubbles:true}));
+  }
+  if (bldLastTotals.hours > 0){
+    const hEl = document.getElementById('in_newBattHours');
+    if (hEl){ hEl.value = String(Math.round(bldLastTotals.hours)); hEl.dispatchEvent(new Event('input', {bubbles:true})); }
+  }
   const st = document.getElementById('bldStatus');
-  if (st) st.textContent = 'Loaded into the sliders above \u2013 the dispatch model has re-solved.';
+  if (st) st.textContent = 'Loaded into the sliders above with the coal the optimiser assumed '
+    + '(' + (bldCoalMW(endY)/1000).toFixed(1) + ' GW standing in ' + endY + ') \u2013 the dispatch '
+    + 'model has re-solved. This is a screening result: run the twelve weather years before quoting it.';
 
   // confirm AT THE destination, not at the origin. This scrolls to the KPI row,
   // so a status line left behind at the build panel is invisible by the time the
@@ -17011,7 +17143,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-01a';
+const BUILD_STAMP = '2026-10-02a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
