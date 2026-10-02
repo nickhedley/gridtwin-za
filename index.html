@@ -9418,7 +9418,11 @@ function bldBuildLP(opts){
       // a derated 2026 tail day, and an LP that cannot solve reports nothing. VoLL x 365 says the
       // same thing - do not plan to shed on the worst window - while leaving a price on it.
       obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' u_' + k);
-      obj.push((VOLL*r.weight*df).toFixed(3) + ' rsl_' + k);   // reserve shortfall, priced like shed load
+      // Priced like shedding on tail days too. At weight 1 against shedding at 365, the LP would
+      // drop reserve on the worst week rather than shed - while the engine, like an operator,
+      // sheds load to hold reserve. In the pass-4 stalled week the engine's mean shed (2,338 MW)
+      // sat almost exactly on its reserve requirement (2,254 MW). Same price, same behaviour.
+      obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' rsl_' + k);
       obj.push((S.lpCurtailCostR*r.weight*df).toFixed(3) + ' crt_' + k);
       // resolved (14 Aug 2026): lpBattDischargeCostR (20) deliberately stays below
       // the dispatch engine's battCycleCostR (165). They are different quantities.
@@ -9479,6 +9483,22 @@ function bldBuildLP(opts){
   // that toggle is on; this LP took both at face value. In the stalled week that was about 130 GWh
   // of supply the LP counted and the engine did not have, against 163 GWh the engine shed.
   const AV_ROOF = S.rooftopDerate ?? 0.78;
+  // FIRM EXPORTS ARE LOAD, as in the engine. The engine adds exportsMW to every hour, shaped by
+  // where the hour sits between the year's lowest and highest demand so exports are heaviest when
+  // the system is tightest. This LP carried none: 745 MW in the presets, 6.6 TWh a year, about
+  // 125 GWh in a week the engine shed 44. Same formula, same keys.
+  const _EXB = (S.exportsCurtailable ?? FIXED.exportsCurtailable) ? 0 : (S.exportsMW ?? FIXED.exportsMW);
+  const _EXP = S.exportShapePeak ?? FIXED.exportShapePeak;
+  let _dMin = Infinity, _dMax = -Infinity;
+  for (let h = 0; h < PROFILES.demand.length; h++){
+    if (PROFILES.demand[h] < _dMin) _dMin = PROFILES.demand[h];
+    if (PROFILES.demand[h] > _dMax) _dMax = PROFILES.demand[h];
+  }
+  const expAtLP = (i) => {
+    if (_EXB <= 0) return 0;
+    const f = (_dMax > _dMin) ? (PROFILES.demand[i] - _dMin) / (_dMax - _dMin) : 0.5;
+    return _EXB * (1 + (_EXP - 1) * (2 * f - 1));
+  };
   const AV_CONG = (S.congestionCurtailOn ?? FIXED.congestionCurtailOn)
     ? 1 - Math.max(0, (S.congestionCurtailPct ?? 4)) / 100 : 1;
   const RES_MW  = (S.reserveEnabled ?? 1) ? (S.reserveOperatingMW || 0) : 0;
@@ -9490,7 +9510,7 @@ function bldBuildLP(opts){
     for (const r of rd) for (let h = 0; h < 24; h++){
       const coalCap = r.tail ? coalCapMean * TAIL_COAL_FACTOR : coalCapMean;
       const i = (r.dem !== undefined ? r.dem : r.d)*24 + h, k = y + '_' + r.d + '_' + h;
-      const dem = PROFILES.demand[i]*dg;
+      const dem = PROFILES.demand[i]*dg + expAtLP(i);
       // A tail day from another weather year carries its own shapes; a calendar day reads the
       // default profile. Same index arithmetic for demand either way.
       const sp = r.solar ? r.solar[h] : PROFILES.solar[i];
@@ -9827,7 +9847,7 @@ async function runBuildStress(){
   bldRunning = true; if (btn){ btn.disabled = true; btn.style.opacity = 0.6; }
   const totalGrowth = 1 + (state.demandGrowthPct || 0)/100;
   const opts = {
-    growth: Math.pow(totalGrowth, 1/Math.max(1, BLD_YEARS.length)) - 1,
+    growth: Math.pow(totalGrowth, 1/Math.max(1, BLD_YEARS.length - 1)) - 1,
     eaf:    (state.coalEAFPct ?? FIXED.coalEAFPct) / 100,
     rate:   bldRates(),
     state:  state,
@@ -9878,7 +9898,9 @@ async function runBuildOpt(){
   // right for five years and would have compounded a five-year change over fifteen.
   const totalGrowth = 1 + (state.demandGrowthPct || 0)/100;
   const opts = {
-    growth: Math.pow(totalGrowth, 1/Math.max(1, BLD_YEARS.length)) - 1,
+    // Over the INTERVALS, not the years: 2026 to 2040 is fourteen steps, and a fifteenth root
+    // left the final year at 1.0466 where the engine, testing the same build, uses 1.05.
+    growth: Math.pow(totalGrowth, 1/Math.max(1, BLD_YEARS.length - 1)) - 1,
     eaf:    (state.coalEAFPct ?? FIXED.coalEAFPct) / 100,   // ?? not ||: EAF=0 is a real input
     rate:   bldRates(),
     state:  state,

@@ -273,6 +273,20 @@ and this model has twelve REAL weather years behind its variability, which is a 
 than a synthetic distribution fitted to fewer. Report the spread we have rather than manufacturing
 a larger one.
 
+## The adequacy loop: seven constants fixed, and the last gap is in the engine
+
+UPDATED 2 Oct 2026, evening. Three more optimiser disagreements fixed - firm exports, reserve
+pricing on tail days, a growth off-by-one. Worst year 152 to 83 GWh. The remaining stall is the
+ENGINE: it charges storage only from renewable surplus, never from spare coal. In the stalled week
+coal had 3 to 4 GW idle at midday while batteries stayed under 3% full, then the night shed about
+the same energy. Real operation pumps from coal routinely.
+
+THIS IS THE NEXT PIECE OF WORK, and it is not small: letting the engine charge storage from thermal
+headroom when a shortfall is coming changes dispatch in every scenario and moves every adequacy
+figure in RESULTS.md, in the optimistic direction for coal-retaining builds. It needs the full
+suite before and after, a re-run of the twelve-year preset searches, and a decision about how much
+foresight the charging rule may use - the engine looks 168 hours ahead already.
+
 ## The adequacy loop: four constants fixed, a factor of 34 left
 
 UPDATED 2 Oct 2026, late. The stall was NOT storage foresight - the engine's battery was empty in

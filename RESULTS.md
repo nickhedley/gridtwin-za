@@ -3400,6 +3400,64 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### Three more disagreements, and the last of the gap is the engine's, not the optimiser's
+
+Build `2026-10-02a`, 2 Oct 2026, evening. The sweep and the second decomposition.
+
+**The sweep of the optimiser's literals** found three more places where it disagreed with the engine
+it is tested against, all fixed:
+
+```
+firm exports                 optimiser: none        engine: 745 MW of load, shaped to demand
+reserve shortfall, tail days priced at 1 day        shedding priced at 365: so the LP dropped
+                                                    reserve where the engine sheds to keep it
+demand growth to 2040        fifteenth root, 1.0466 engine 1.05; an off-by-one in yesterday's fix
+```
+
+The engine's mean shed in the last stalled week, 2,338 MW, sat almost exactly on its reserve
+requirement of 2,254 MW: it sheds load to hold reserve, as an operator would. The optimiser, paying
+365 times more for shedding than for missing reserve, simply did not hold it.
+
+Remaining literals checked and left: CSP at a flat 0.38 against the engine's profile (the optimiser
+is the more pessimistic of the two), the 1.10 planning margin and the storage wear costs (optimiser
+only, no engine equivalent).
+
+```
+Fossil-free 2040 through the loop      worst year GWh   mean GWh
+before any alignment                              366        185
+after four constants                              152         66
+after seven                                        83         26 to 31
+standard                                          4.4
+```
+
+**And what remains is the engine.** In the stalled week, January 2016, the engine sheds at night -
+46 hours, almost all between 18:00 and 08:00, at 1,420 MW on average - with lithium empty and coal
+at full. At midday on the same days coal ran at 7.7 to 9.0 GW against 11.4 to 11.9 GW available,
+and the batteries charged at 52 to 276 MW and never passed 3% full.
+
+```
+midday, January 2016   coal running   coal available   battery charging   battery max
+day 20                       7,877           11,419                  67            1%
+day 21                       7,682           11,875                 276            3%
+day 22                       8,970           11,574                  52            1%
+```
+
+Three to four gigawatts of coal headroom for seven hours a day is about 20 GWh. The nights shed
+about 20 GWh. The engine charges storage only from renewable surplus, never from spare thermal
+capacity; the optimiser charges from whatever is cheapest. That is the remaining gap, and on this
+evidence it is the ENGINE that is wrong: Eskom pumps its storage schemes from coal overnight as a
+matter of routine, and an operator facing a night of shedding with three gigawatts idle at noon
+would charge the batteries.
+
+So the direction of every adequacy figure the engine has produced for a coal-retaining build is
+pessimistic by however much of this it does. Not quoted until measured: the fix is a change to the
+engine's dispatch and moves every result in this file, which makes it a session of its own.
+
+Also caught on the way: my own probe of the stalled week first came out at 115 GWh against the
+loop's 83. The difference was 2 GW of rooftop the optimiser had built and I had left out when
+copying the build by hand - which is the lesson of the apply-button bug, learned again an hour later.
+The probe that records what the loop actually tested is the one to trust.
+
 ### The stall was not foresight. Four constants the optimiser and engine disagreed on.
 
 Build `2026-10-02a`, 2 Oct 2026, later the same day. Both open questions from the entry below were
