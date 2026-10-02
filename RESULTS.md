@@ -3400,6 +3400,38 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### The same fix for the regional model was built, measured, and reverted
+
+Build `2026-10-02a`, 2 Oct 2026. The regional build optimiser was given the national model's
+three fixes: tail days carrying each region's OWN worst-week wind and solar from the twelve-year
+file, coal derated to the worst measured week on them, and its existing reserve co-optimisation
+switched on - which its own comment said to do "when peakers retire", exactly what these
+scenarios do.
+
+It does not fit in the browser:
+
+```
+regional LP, Fossil-free, 2030 horizon     size     solved within
+before the change                          23 MB    not within 360 s CPU
+after the change                           48 MB    not within 940 s CPU
+after the change, 2040 horizon            200 MB    not attempted
+browser limit                                       900 s
+```
+
+So the regional model was already slow on this scenario, and the fix pushed it past the limit.
+REVERTED, not shipped: an optimiser that times out reports nothing, which is worse than a screen
+known to be optimistic. The code now says why, at the point a future reader would try again.
+
+THE PRACTICAL RULE THAT FOLLOWS. Use the national optimiser for adequacy and the build total; use
+the regional one for WHERE, on a horizon of 2030. Its adequacy is uncorrected and it should not be
+quoted for whether a build keeps the lights on.
+
+Two things learned along the way worth keeping. The sandbox freezes background processes between
+calls, which is why the first measurements looked like the solves were progressing at half speed:
+they were simply not running. And one check that came back clean - the weights the weather-year
+aggregation divides by sum to exactly 1, so a division that looked like a double normalisation is
+a no-op, as it should be.
+
 ### The optimiser now holds reserve and expects outages. The gap closed from 250 to 60.
 
 Build `2026-10-02a`, 2 Oct 2026. Two of the three structural gaps between the build optimiser and

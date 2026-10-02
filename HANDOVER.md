@@ -278,7 +278,11 @@ a larger one.
 UPDATED 2 Oct 2026. Items 1 and 2 below are DONE: a seven-day tail window with coal derated to the
 worst measured week, and the engine's reserve requirement as a row in every hour. Mean shed on the
 same 2040 build went 877 to 215 GWh, and wind came back into the build at 16 GW. What is left is
-item 3, foresight, which a screening LP cannot close. The regional model has none of this.
+item 3, foresight, which a screening LP cannot close. The regional model has none of this, and that is now a decision rather than an omission: the
+same three fixes were built on 2 Oct and took its 2030 LP from 23 MB to 48 MB and past the
+browser's 900-second limit. Reverted. The regional optimiser is for WHERE, at a 2030 horizon; the
+national one is for adequacy. If the regional fix is ever revisited, the route is fewer regions or
+fewer calendar days to pay for the tail, not more hardware.
 
 The original note, kept for the reasoning:
 

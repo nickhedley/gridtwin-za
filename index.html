@@ -10030,10 +10030,16 @@ function bldBuildRegionalLP(opts){
   // ignored the pace presets entirely, which is how vanadium reached 62 GW.
   // Storage is taken from BLD_STORE so the two lists cannot drift apart.
   const T = ['wind','pv'].concat(BLD_STORE.map(S2 => S2.t));
-  // The regional LP indexes REGIONAL profile arrays by calendar day, and a tail day from
-  // another weather year carries national shapes only. So the regional model keeps its eight
-  // calendar days and drops the tail - which means it has the blindness the national model has
-  // just had corrected. Stated here rather than hidden; fixing it needs regional tail shapes.
+  // The regional LP keeps its eight calendar days, mean coal and no reserve, which means it has
+  // the adequacy blindness the national model had corrected on 2 Oct 2026.
+  //
+  // THE FIX WAS BUILT AND MEASURED, AND IT DOES NOT FIT. Regional tail days with each region's
+  // own worst-week shapes, worst-week coal, and reserve co-optimisation took the 2030 regional LP
+  // from 23 MB to 48 MB, and at 2040 to 200 MB. On the Fossil-free scenario the NEW LP had not
+  // solved after 940 seconds of CPU, past the browser's 900-second limit - and the OLD one had
+  // not solved after 360, so this path was already slow before the change. Reverted rather than
+  // shipped: a fix that times out reports nothing, which is worse than a screen that is known to
+  // be optimistic. Use the national optimiser for adequacy questions; use this one for siting.
   const rd = bldRepDays(8).filter(r => !r.tail);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   const S = { ...FIXED, ...(opts.state || {}) };
