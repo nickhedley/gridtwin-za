@@ -273,6 +273,18 @@ and this model has twelve REAL weather years behind its variability, which is a 
 than a synthetic distribution fitted to fewer. Report the spread we have rather than manufacturing
 a larger one.
 
+## The adequacy loop exists, and its stall is the finding
+
+ADDED 2 Oct 2026, late. The ReEDS stress-period iteration is built: "Solve, then test against twelve
+weather years" in the build panel. On Fossil-free 2040 it ran three passes and stalled at about
+340 GWh in the worst year against a 4.4 GWh standard, because the week it would add was already
+in the LP. The engine had more coal available that week than the LP assumed, so the residual is
+storage dispatch - perfect foresight in the LP, a 168-hour heuristic in the engine. Next step if
+this matters: compare the two models' battery state of charge through that week, which would
+confirm or kill the explanation in one measurement.
+
+The binding weeks were late January, not winter. Worth a test of its own before anyone repeats it.
+
 ## The build optimiser under-provides adequacy by a factor of 60, down from 250
 
 UPDATED 2 Oct 2026. Items 1 and 2 below are DONE: a seven-day tail window with coal derated to the

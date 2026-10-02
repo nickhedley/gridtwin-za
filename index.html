@@ -655,6 +655,10 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
                   style="padding:6px 14px;background:var(--ink);color:var(--panel);border:none;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.05em;border-radius:2px">
             Solve the build schedule
           </button>
+          <button id="bldStressBtn" onclick="runBuildStress()"
+                  style="padding:6px 12px;background:none;color:var(--ink);border:1px solid var(--line2);cursor:pointer;font-size:11.5px;border-radius:2px">
+            Solve, then test against twelve weather years
+          </button>
           <span id="bldStatus" style="font-size:10.5px;color:var(--ink2)"></span>
         </div>
 
@@ -9151,6 +9155,24 @@ function bldRepDays(n){
       let v = 0; for (let j = 0; j < TAIL_DAYS; j++) v += net[start + j];
       if (!best || v > best.v) best = { v, y, start, nat, n: TAIL_DAYS };
     }
+    // STRESS PERIODS FROM THE LOOP. bldStressLoop adds the weeks where the twelve-year dispatch
+    // shed, so the next solve has to cover them. Each carries its own weather year's shapes and
+    // is chained so storage must carry through it. Same treatment as the seed tail: coal at the
+    // worst-week derate, shedding priced at VoLL x 365.
+    (typeof bldStressPeriods !== 'undefined' ? bldStressPeriods : []).forEach((sp, p) => {
+      let nat;
+      try { nat = weatherYearNational(String(sp.year)); } catch (e) { return; }
+      if (!nat) return;
+      for (let j = 0; j < sp.n; j++){
+        const cal = Math.min(364, sp.start + j);
+        days.push({
+          d: 1100 + 10*p + j, dem: cal, weight: 1, tail: true, year: sp.year, stress: true,
+          prevD: j === 0 ? undefined : 1100 + 10*p + j - 1,
+          solar: Array.from({length:24}, (_, h) => nat.solar[cal*24 + h]),
+          wind:  Array.from({length:24}, (_, h) => nat.wind[cal*24 + h]),
+        });
+      }
+    });
     if (best){
       for (let j = 0; j < best.n; j++){
         const cal = best.start + j;
@@ -9659,6 +9681,169 @@ function bldBuildLP(opts){
 }
 
 
+// ── STRESS-PERIOD ITERATION ────────────────────────────────────────────────────────────────
+// Added 2 Oct 2026, after NREL's ReEDS: a capacity expansion model on representative days
+// proposes a build, a full chronological adequacy model tests it, and the periods where it fails
+// go back into the optimisation, which re-solves. Repeat until the build is adequate.
+//
+// Here the optimiser is bldBuildLP and the adequacy model is the dispatch engine across all
+// twelve weather years. Each pass finds the worst year, the worst week within it - weighted by
+// net load in the hours that shed - and adds that week as a stress period. It stops when the
+// worst year sheds less than the reliability standard, or after five passes, and says which.
+//
+// The standard is 0.002% of demand, the Australian NEM figure this project already uses -
+// South Africa has no fixed threshold, only a Cost of Unserved Energy. This closes what the
+// seed tail could not: the screen no longer has to guess which week binds.
+let bldStressPeriods = [];
+let bldStressLog = [];
+const BLD_STRESS_MAX = 5;
+const BLD_STRESS_STANDARD = 0.00002;   // share of annual demand
+
+function bldSolveLP(lp){
+  // A test harness may supply its own solver; the page uses the worker.
+  if (typeof window !== 'undefined' && typeof window.__bldSolveOverride === 'function')
+    return Promise.resolve(window.__bldSolveOverride(lp));
+  return new Promise((resolve, reject) => {
+    if (!bldWorker){
+      try { bldWorker = new Worker(URL.createObjectURL(new Blob([BLD_WORKER_SRC], {type:'text/javascript'}))); }
+      catch (err){ reject(err); return; }
+    }
+    bldWorker.onmessage = (e) => e.data.type === 'error' ? reject(new Error(e.data.msg)) : resolve(e.data.res);
+    bldWorker.postMessage({ lp });
+  });
+}
+
+// The build a solve implies, as slider overrides - the same mapping bldApplyToSliders uses,
+// including the coal the optimiser assumed, so the adequacy test is apples to apples.
+function bldBuildToState(res){
+  const tot = {}; let eb = 0;
+  for (const [c, v] of Object.entries(res.Columns || {})){
+    if (/^eb_batt_/.test(c)) eb += v.Primal || 0;
+    const m = c.match(/^b_([a-z]+)_[0-9]+$/);
+    if (m) tot[m[1]] = (tot[m[1]] || 0) + (v.Primal || 0);
+  }
+  const endY = BLD_YEARS[BLD_YEARS.length - 1];
+  // EVERY NEW-BUILD SETTING, not just the five the panel shows. The first version of this loop
+  // set wind, solar, rooftop, lithium and gas and left the rest at the preset's values - so on
+  // Fossil-free 2040 the twelve-year test was run with 7 GW of offshore wind and 1 GW of 100-hour
+  // iron-air the optimiser never built, and declared a build adequate that sheds about 390 GWh in
+  // its worst year without them. The optimiser does not decide offshore or nuclear, so the test
+  // sets them to zero: the system tested is the system proposed.
+  const o = {
+    newWindMW: Math.round(tot.wind || 0), newPvMW: Math.round(tot.pv || 0),
+    newRooftopMW: Math.round(tot.rooftop || 0), newBattMW: Math.round(tot.batt || 0),
+    newCcgtMW: Math.round(tot.ccgt || 0),
+    newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
+    newOffshoreMW: 0, newNuclearMW: 0,
+    coalDecomMW: Math.round(FIXED.coalInstalledMW - bldCoalMW(endY)),
+  };
+  if ((tot.batt || 0) > 1 && eb > 0) o.newBattHours = Math.max(1, Math.round(eb / tot.batt));
+  return o;
+}
+
+// The twelve-year test. Returns each year's shed, and the worst week in the worst year.
+function bldAdequacyTest(st){
+  const years = (bldWeatherYears && bldWeatherYears.meta && bldWeatherYears.meta.years) || [];
+  const rows = []; let worst = null;
+  for (const y of years){
+    const nat = weatherYearNational(String(y));
+    if (!nat) continue;
+    const r = simulate(st, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
+    const gwh = (r.E.unserved || 0) / 1000;
+    let served = 0; for (let h = 0; h < r.loadS.length; h++) served += r.loadS[h];
+    rows.push({ year: y, gwh });
+    if (!worst || gwh > worst.gwh) worst = { year: y, gwh, r, demandGWh: served / 1000 };
+  }
+  if (!worst) return { rows, worst: null };
+  // Worst seven-day window by shortfall weight: net load in the hours the engine shed.
+  const w = new Float64Array(365);
+  for (let h = 0; h < worst.r.marginalTech.length; h++)
+    if (worst.r.marginalTech[h] === 'unserved') w[Math.floor(h / 24)] += Math.max(0, worst.r.netLoadPre[h]);
+  let bestStart = 0, bestV = -1;
+  for (let d = 0; d <= 365 - 7; d++){
+    let v = 0; for (let j = 0; j < 7; j++) v += w[d + j];
+    if (v > bestV){ bestV = v; bestStart = d; }
+  }
+  worst.start = bestStart;
+  delete worst.r;
+  return { rows, worst };
+}
+
+async function bldStressLoop(opts, onProgress){
+  bldStressPeriods = []; bldStressLog = [];
+  await loadWeatherYears();
+  let res = null, built = null, verdict = 'pass limit reached';
+  for (let it = 1; it <= BLD_STRESS_MAX; it++){
+    if (onProgress) onProgress('Pass ' + it + ' of up to ' + BLD_STRESS_MAX + ': solving the build\u2026');
+    built = bldBuildLP(opts);
+    res = await bldSolveLP(built.lp);
+    const over = bldBuildToState(res);
+    if (onProgress) onProgress('Pass ' + it + ': testing it against twelve weather years\u2026');
+    const test = bldAdequacyTest({ ...opts.state, ...over });
+    const w = test.worst;
+    const limit = w ? w.demandGWh * BLD_STRESS_STANDARD : 0;
+    const mean = test.rows.length ? test.rows.reduce((a, b) => a + b.gwh, 0) / test.rows.length : 0;
+    bldStressLog.push({ pass: it, build: over, worstYear: w && w.year, worstGWh: w ? w.gwh : 0,
+                        meanGWh: mean, limitGWh: limit, added: null });
+    if (!w || w.gwh <= limit){ verdict = 'adequate'; break; }
+    if (it === BLD_STRESS_MAX) break;
+    const already = bldStressPeriods.some(p => p.year === w.year && Math.abs(p.start - w.start) < 7);
+    if (already){ verdict = 'stalled'; break; }
+    bldStressPeriods.push({ year: w.year, start: w.start, n: 7 });
+    bldStressLog[bldStressLog.length - 1].added = { year: w.year, start: w.start };
+  }
+  return { res, built, verdict, log: bldStressLog };
+}
+
+async function runBuildStress(){
+  if (bldRunning) return;
+  const btn = document.getElementById('bldStressBtn');
+  const st  = document.getElementById('bldStatus');
+  const host = document.getElementById('bldResult');
+  if (document.getElementById('bldRegional').value === '1'){
+    st.textContent = 'The adequacy loop runs on the national model only.';
+    return;
+  }
+  bldRunning = true; if (btn){ btn.disabled = true; btn.style.opacity = 0.6; }
+  const totalGrowth = 1 + (state.demandGrowthPct || 0)/100;
+  const opts = {
+    growth: Math.pow(totalGrowth, 1/Math.max(1, BLD_YEARS.length)) - 1,
+    eaf:    (state.coalEAFPct ?? FIXED.coalEAFPct) / 100,
+    rate:   bldRates(),
+    state:  state,
+  };
+  try {
+    const out = await bldStressLoop(opts, msg => { st.textContent = msg; });
+    st.textContent = '';
+    renderBuildResult(out.res, out.built.rate, opts);
+    const rows = out.log.map(r =>
+      '<tr><td style="padding:3px 6px">' + r.pass + '</td>'
+      + '<td style="padding:3px 6px;text-align:right">' + (r.build.newWindMW/1000).toFixed(1) + '</td>'
+      + '<td style="padding:3px 6px;text-align:right">' + (r.build.newPvMW/1000).toFixed(1) + '</td>'
+      + '<td style="padding:3px 6px;text-align:right">' + (r.build.newBattMW/1000).toFixed(1) + '</td>'
+      + '<td style="padding:3px 6px;text-align:right">' + (r.build.newCcgtMW/1000).toFixed(1) + '</td>'
+      + '<td style="padding:3px 6px;text-align:right">' + r.worstGWh.toFixed(0) + ' (' + r.worstYear + ')</td>'
+      + '<td style="padding:3px 6px;text-align:right">' + r.limitGWh.toFixed(1) + '</td></tr>').join('');
+    const say = out.verdict === 'adequate'
+      ? 'Adequate: the worst of twelve weather years sheds less than the 0.002% standard.'
+      : out.verdict === 'stalled'
+        ? 'Stalled: the worst week was already in the optimisation and the build still sheds. The gap is not a missing week.'
+        : 'Not adequate after ' + BLD_STRESS_MAX + ' passes. Treat the last build as a lower bound.';
+    host.insertAdjacentHTML('afterbegin',
+      '<div style="border:1px solid var(--line2);border-radius:3px;padding:8px 10px;margin-bottom:10px;font-size:11px">'
+      + '<strong>Adequacy loop.</strong> ' + say
+      + '<div style="overflow-x:auto"><table style="border-collapse:collapse;margin-top:6px;font-size:10.5px">'
+      + '<tr style="color:var(--ink2)"><td style="padding:3px 6px">pass</td><td style="padding:3px 6px">wind GW</td>'
+      + '<td style="padding:3px 6px">solar GW</td><td style="padding:3px 6px">batt GW</td><td style="padding:3px 6px">gas GW</td>'
+      + '<td style="padding:3px 6px">worst year GWh</td><td style="padding:3px 6px">standard GWh</td></tr>'
+      + rows + '</table></div></div>');
+  } catch (err){
+    st.textContent = 'Adequacy loop failed: ' + (err && err.message ? err.message : err);
+  } finally {
+    bldRunning = false; if (btn){ btn.disabled = false; btn.style.opacity = 1; }
+  }
+}
+
 async function runBuildOpt(){
   if (bldRunning) return;
   const btn = document.getElementById('bldRunBtn');
@@ -9818,6 +10003,7 @@ function renderBuildResult(res, rate, opts){
   // technology sits at its cap, the answer is set by how fast we can build, not
   // by economics. Where it does not, the model has genuinely chosen.
   bldLastTotals = { wind:tot.wind, pv:tot.pv, rooftop:tot.rooftop, batt:tot.batt, ccgt:tot.ccgt,
+                    vrfb:tot.vrfb || 0, ironair:tot.ironair || 0,
                     hours: (tot.batt > 1 && ebMWh > 0) ? ebMWh / tot.batt : 0 };
   const limited = T.filter(t => bound[t] > 0);
   const free    = T.filter(t => bound[t] === 0 && tot[t] > 1);
@@ -11194,8 +11380,15 @@ function bldApplyToSliders(){
     if (st0) st0.textContent = 'Solve a build schedule first.';
     return;
   }
+  // vrfb and ironair added, and offshore and nuclear zeroed below, 2 Oct 2026: the five-entry map
+  // left a preset's offshore and iron-air sitting on top of the optimiser's build, so the
+  // dispatch above showed a system the optimiser never proposed.
   const map = { wind:'newWindMW', pv:'newPvMW', rooftop:'newRooftopMW',
-                batt:'newBattMW', ccgt:'newCcgtMW' };
+                batt:'newBattMW', ccgt:'newCcgtMW', vrfb:'newVrfbMW', ironair:'newIronAirMW' };
+  for (const id of ['newOffshoreMW', 'newNuclearMW']){
+    const el = document.getElementById('in_' + id);
+    if (el && Number(el.value) !== 0){ el.value = '0'; el.dispatchEvent(new Event('input', {bubbles:true})); }
+  }
   for (const [t, id] of Object.entries(map)){
     const mw = bldLastTotals[t];
     if (mw == null) continue;

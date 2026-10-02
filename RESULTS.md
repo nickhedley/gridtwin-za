@@ -3400,6 +3400,49 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### The stress-period loop works, and it stalls - which locates the remaining gap
+
+Build `2026-10-02a`, 2 Oct 2026. The build optimiser now has the iteration NREL's ReEDS uses: solve,
+test the build against the full chronological dispatch across twelve weather years, add the worst
+week where it failed as a stress period, re-solve. A second button runs it; it stops when the worst
+year sheds less than 0.002% of demand, after five passes, or when the week it would add is already
+in the optimisation.
+
+Fossil-free 2040 at the deliverable pace:
+
+```
+pass   wind GW   solar GW   batt GW   gas GW   worst year GWh   standard   week added
+1         16.4       26.7      12.1      1.4      366 (2022)        4.4    2022, day 24
+2         17.0       26.8      12.3      1.2      348 (2016)        4.4    2016, day 18
+3         14.2       31.3      13.5      1.6      338 (2016)        4.5    stalled
+```
+
+STALLED on pass three: the worst week was already in the optimisation and the build still sheds in
+it. That is the loop's most useful output, because it rules out the explanation I offered
+yesterday morning and confirms the one I withdrew yesterday afternoon.
+
+It is not coal. In the stalled week the engine had 11,734 MW of coal available on average; the
+optimiser assumed 10,581. The optimiser was MORE pessimistic about coal, and the engine still shed
+in 65 of 168 hours. With the week in the LP, the coal derate tightened and reserve held in both
+models, what remains is how storage is dispatched: the LP runs the week with perfect knowledge of
+it, the engine with a 168-hour heuristic. So the residual is foresight after all - not because
+iteration cannot reach it, but because the loop reached it and found it there. That is a measured
+statement now rather than an assumed one.
+
+AND THE WEEKS IT FOUND ARE IN JANUARY. Days 18 and 24, late summer, in both 2022 and 2016. Every
+discussion of this system's adequacy - including this file's - has been about the winter wind
+drought. This build, solar-heavy and holding 21.8 GW of coal, fails in summer instead. The engine
+schedules planned coal maintenance into summer (its seasonal factor peaks at 1.23 in January),
+which is the likely reason, and unproven. A build's binding week depends on the build, which is
+the pattern this file has recorded four times for the binding YEAR; it holds for the season too.
+
+A BUG FOUND IN TESTING THE LOOP, and present in the apply button since it was written. Only five
+technologies were carried from the optimiser into the sliders, so a preset's offshore wind and
+iron-air stayed on top of the optimiser's build. On Fossil-free that meant 7 GW of offshore and
+1 GW of 100-hour iron-air the optimiser never built, and the first loop run called the build
+adequate at 3 GWh. Without them it sheds 366. Both paths now carry every technology the optimiser
+decides and zero the ones it does not.
+
 ### The same fix for the regional model was built, measured, and reverted
 
 Build `2026-10-02a`, 2 Oct 2026. The regional build optimiser was given the national model's
