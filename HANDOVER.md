@@ -3,8 +3,9 @@
 Build `2026-10-02a`. Suite 802/803 plus eng5 6/6, measured 2 Oct 2026 with `profiles.json` at
 the root. The one failure is EDMSA Scenario A CO2 2035 (90.8 against 124 Mt), known and standing.
 
-This top section is complete on its own: read RULES.md in full, then this section, then stop and
-run the suite before changing anything. Everything below the line "Older handover material" is
+This top section is complete on its own: read RULES.md in full, then this section, then TODO.md,
+then stop and run the suite before changing anything. TODO.md holds the full running to-do list
+(124 items on 2 Oct); keep it current and reprint it at the end of each message. Everything below the line "Older handover material" is
 kept for its reasoning and is superseded wherever it disagrees with this section.
 
 ---
