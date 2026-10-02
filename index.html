@@ -16002,7 +16002,13 @@ const PRESETS={
   // It is NOT the IRP's forecast - the IRP's own preset carries that separately at +20%,
   // reaching 224.2 TWh - and it is not a forecast of this project's own.
   // Documented 23 Sep 2026; the figure itself predates that.
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:20000,newBattHours:12,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // DEEP DECARBONISATION RE-SIZED 2 Oct 2026, lithium 20 to 17 GW at 12h. Once the engine could
+  // charge storage from coal headroom ahead of forecast stress, this preset's twelve-year mean shed
+  // fell from 1.75 to 0.44 GWh against a 2.07 target (half the 0.002% standard) - over-built.
+  // Screened trims, mean GWh / system R bn: lithium 17 GW 2.02 / 283.8 (chosen, cheapest meeting
+  // the target); 18 GW 1.65 / 286.1; solar 32 GW 1.96 / 286.2; rooftop 8 GW 1.70 / 285.9. Retiring
+  // more coal is NOT available at this build: 29 GW retired gives 7.67, 31 GW gives 46.7.
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:17000,newBattHours:12,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,

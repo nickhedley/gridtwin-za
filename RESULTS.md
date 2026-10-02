@@ -3400,6 +3400,54 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### Deep decarbonisation re-sized, and why more coal cannot go
+
+Build `2026-10-02a`, 2 Oct 2026, night. With the engine able to charge from coal ahead of stress, the
+Deep decarbonisation preset's twelve-year mean shed fell to 0.44 GWh against a target of 2.07 - half
+the 0.002% standard, the margin both presets carry. It was over-built. Every trim below is against
+twelve weather years:
+
+```
+Deep decarbonisation 2035              mean GWh   worst GWh   system R bn   CO2 Mt
+preset as it was, lithium 20 GW            0.44         5.2         290.5       30
+lithium 17 GW (CHOSEN)                     2.02        24.0         283.8       30
+lithium 18 GW                              1.65        19.6         286.1       30
+lithium 16 GW                              2.73        32.1         281.6       30   misses
+solar 32 GW                                1.96        23.5         286.2       30
+rooftop 8 GW                               1.70        20.3         285.9       30
+wind 30 GW                                 4.46        52.8         280.3       35   misses
+coal retired 29 GW, build unchanged        7.67        75.6         285.8       28   misses
+coal retired 31 GW, build unchanged       46.71       215.5         280.8       25   misses
+target                                     2.07
+```
+
+Lithium 17 GW at 12 hours is the cheapest trim that holds the margin: R6.7bn a year less, the
+regulated retail price R4.23 to R4.17/kWh, emissions unchanged. Solar and rooftop trims also hold
+but save less. Wind does not trim at all: 5 GW less doubles the shedding and adds 5 Mt of CO2,
+because wind is what covers the evenings the coal no longer does.
+
+AND MORE COAL CANNOT GO AT THIS BUILD. Retiring two more gigawatts saves R4.7bn and multiplies
+shedding by seventeen; four more takes the worst year past 200 GWh. The charging fix made coal MORE
+valuable, not less - its headroom now fills storage - so the remaining 12.7 GW is doing firm work
+the renewables and storage in this build cannot replace. Retiring more needs more firm capacity
+alongside it, which is a different preset rather than a trim of this one.
+
+Fossil-free 2040 is unchanged: it has no coal to charge from, so the fix does not touch it.
+
+### The OCGT check that flipped, read out
+
+The MTSAO 2030 risk-adjusted case, mean over twelve weather years and two outage draws:
+
+```
+                         old rule   new rule   MTSAO
+OCGT utilisation          58.9%      52.9%     about 45%
+unserved energy           7.9 TWh    6.8 TWh   more than 4 TWh
+```
+
+It passes because it moved, not because the band did: storage charged from midday coal now covers
+evening hours the OCGTs used to. The mechanism is the one the fix was built for, and the direction is
+toward the MTSAO on both measures. Still eight points above their 45%, so this is closer, not matched.
+
 ### The engine now charges storage from coal when it can see stress coming
 
 Build `2026-10-02a`, 2 Oct 2026, night. The fix the entry below scoped. The engine charged storage

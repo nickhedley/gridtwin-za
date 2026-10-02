@@ -33,7 +33,7 @@ validate_consistency     80/80     gas-firmed band re-derived from AEMC 2025
                                    three panels failed on load timing and passed on rerun
 validate_benchmarks      28/28
                                    peakerSeasonRatio confounded by 2025 fleet trend
-validate_external         7/8      EDMSA CO2 (known); MTSAO OCGT now passes after the charging fix - unread
+validate_external         7/8      EDMSA CO2 (known); MTSAO OCGT 52.9% after the charging fix, was 58.9%
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            8/8
 audit.py                 87/87
@@ -149,7 +149,7 @@ cost. The model was already at the international level.
 ```
 IRP path 2035               22.2 onshore / 18.9 solar / 6.1 GW at 4h / 11.6 gas at a 50% floor
                             coal -16 GW; the counterfactual to read the two below against
-Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 10.8 GW new rooftop / 20 GW at 12h + 1 GW iron-air (NEM standard, 2x margin)
+Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 10.8 GW new rooftop / 17 GW at 12h + 1 GW iron-air (NEM standard, 2x margin; re-sized 2 Oct after the charging fix)
                             coal -27 GW, no new gas, reserve and inertia priced
                             curtailment 51 to 68 TWh across twelve weather years, median 63
 Fossil-free 2040            35 onshore / 55 solar / 7 offshore / 16.8 GW new rooftop / 30 GW at 12h + 1 GW iron-air (NEM standard, 2x margin)
@@ -295,9 +295,9 @@ a larger one.
 DONE 2 Oct 2026, night. chargeFromThermal (default 1) lets the engine charge storage from coal
 headroom in any hour its shortfall forecast says stress is coming. Stalled loop build 83 to 30 GWh
 worst year; Deep decarbonisation preset 21 to 5. Fossil-free unaffected. MTSAO OCGT check flipped
-from deliberate failure to pass - read out the new value before accepting it. Re-run the Deep
-decarbonisation preset search: it is now probably over-built on storage. Loop still stalls at a
-factor of about 7; decompose again the same way.
+from deliberate failure to pass at 52.9% against MTSAO's 45%, for the reason the fix was built.
+Deep decarbonisation re-sized: lithium 20 to 17 GW, R6.7bn a year less. More coal cannot be retired
+at that build. Loop still stalls at a factor of about 7; decompose again the same way.
 
 ## The adequacy loop: seven constants fixed, and the last gap is in the engine
 
