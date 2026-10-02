@@ -1,10 +1,173 @@
-# GridTwin ZA - handover, 20 September 2026
+# GridTwin ZA - handover, 2 October 2026
 
-Build `2026-10-02a`. Suite 802/803 plus eng5 6/6, measured 30 Sep 2026. Three sessions ran long and the
-COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
-stale.
+Build `2026-10-02a`. Suite 802/803 plus eng5 6/6, measured 2 Oct 2026 with `profiles.json` at
+the root. The one failure is EDMSA Scenario A CO2 2035 (90.8 against 124 Mt), known and standing.
+
+This top section is complete on its own: read RULES.md in full, then this section, then stop and
+run the suite before changing anything. Everything below the line "Older handover material" is
+kept for its reasoning and is superseded wherever it disagrees with this section.
 
 ---
+
+## Start here: what the next session needs to know
+
+### 1. The two biggest changes since 30 Sep, both of which move published numbers
+
+**The engine now charges storage from coal when stress is coming** (`chargeFromThermal`, default
+1). It used to charge from coal only 23:00 to 05:00. In a solar-heavy system the spare coal is at
+midday and the stress at night, so the window never opened when it mattered. Now, in any hour the
+engine's own shortfall forecast says energy will be short, it charges from coal headroom up to
+that forecast. Off-peak behaviour is unchanged; a calm day burns no extra coal. Setting it to 0
+reproduces the old results exactly.
+
+CONSEQUENCE: every adequacy figure in RESULTS.md for a build that keeps coal, dated before 2 Oct,
+is pessimistic. Directions re-measured on three key entries all hold (coal flexibilisation, the
+electrification wall, a no-gas frontier cell); levels do not. Re-measure before quoting any level.
+Fossil-free figures stand: no coal, nothing to charge from.
+
+**Deep decarbonisation was re-sized because of it.** Lithium 20 to 17 GW at 12 hours. Its twelve-
+year mean shed had fallen to 0.44 GWh against a 2.07 target. Now 2.02 GWh, system cost R290.5bn to
+R283.8bn, regulated retail R4.23 to R4.17/kWh, CO2 unchanged at 30 Mt. Retiring more coal is NOT
+available at this build: 2 GW more multiplies shedding seventeen-fold.
+
+### 2. The presets as they stand
+
+```
+Today 2026                  the reference; prices nothing; existing fleet
+IRP path 2035               22.2 onshore / 18.9 solar / 6.1 GW at 4h / 11.6 gas at a 50% floor; coal -16 GW
+Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 10.8 GW new rooftop / 17 GW at 12h
+                            + 1 GW iron-air; coal -27 GW (12.7 GW kept); no new gas; reserve and inertia priced
+                            curtailment 51 to 68 TWh across twelve weather years
+Fossil-free 2040            35 onshore / 55 solar / 7 offshore / 16.8 GW new rooftop / 30 GW at 12h
+                            + 1 GW iron-air; all coal and diesel retired; mean shed 1.77 GWh
+                            curtailment 90 to 114 TWh across twelve weather years
+```
+
+Both transition presets are sized to the cheapest build meeting the NEM standard (0.002% of
+demand) with a 2x margin, scored as the mean over twelve weather years.
+
+### 3. The build optimiser: what changed and what it now is
+
+Read RESULTS.md from "The stress-period loop works" upward for the full story. In short:
+
+- The horizon is a control: 2030, 2035 or 2040. Annual steps to 2040 solve in about 8 seconds.
+- The build-rate caps were raised: utility solar 2.5 GW a year, rooftop 2 GW (Australia installed
+  1.9 GW of rooftop in six months on similar demand; South Africa's record year was 2.6 GW).
+  The 2040 schedule is still cap-bound in most years: the pace assumption outweighs the economics.
+- Applying a result now carries every technology the optimiser decides, the coal retirement it
+  assumed, and its storage duration. Before 2 Oct it carried five technologies and left a preset's
+  offshore and iron-air on top, so a build called adequate was tested with plant it never built.
+- Seven constants it duplicated from the engine, and got wrong, now read the engine's keys:
+  nuclear 0.9 (engine 0.66), hydro, imports, rooftop at full output (engine 0.78), no congestion
+  loss (engine 4%), no firm exports (engine 745 MW), and pumped storage counted as reserve with no
+  energy behind it. Plus a demand-growth off-by-one and reserve shortfall priced 365 times cheaper
+  than shedding on stress days.
+- The worst week across all twelve weather years is spliced in as seven stress days, coal derated
+  to 0.76 on them (the worst measured week in the availability trace), shedding priced at VoLL x 365.
+- A second button runs ReEDS-style stress-period iteration: solve, test against twelve weather
+  years, add the failing week, re-solve. On Fossil-free 2040 it still stalls, now at about 7 times
+  the standard (30 GWh worst year against 4.4). This morning it was 1,800 times.
+- The regional optimiser did NOT get these fixes. They were built and reverted: the LP went from
+  23 to 48 MB and past the browser's 900-second limit. Use the national optimiser for adequacy, the
+  regional one for siting at a 2030 horizon.
+
+STANDING RULE: an optimiser result is a proposal until the twelve-year dispatch has run on it.
+
+### 4. Other changes, 1-2 Oct
+
+- Rooftop tool: capacity is whole modules (2.58 m2, 620 Wp) at a stated packing factor; a roof-form
+  control (flat, single pitch, dual pitch at 0.52 of footprint, complex); an obstruction control
+  (clear 0.80 to heavy 0.45, typical 0.69); a "Save sizing sheet" button. A double-count was fixed:
+  the tracer and the Google Solar path both wrote area x 0.72 and then rtCalc packed it again.
+  Google's Solar API was already wired in; it needs a key in `window.GOOGLE_SOLAR_KEY`.
+- Retail: the market basis is labelled "SAWEM, from Apr 2027" and called a counterfactual until then.
+  A dead `retSupply` flag found and pinned: the stack models an Eskom-direct customer.
+- Four dead element reads found; a structural check now asserts every id read exists. The VPP
+  readout, computed for weeks and never displayed, now has a host.
+- Curtailment pinned in validate_findings with a 15% band; it spreads 22 to 27% across weather years
+  where system cost spreads 1.4%. Spill is set by the weather, shortage by the build.
+- The page's scope line now says it answers bulk adequacy, not distribution reliability, and that
+  rooftop address and roof lookups go to Google.
+- Private-project queue: `nodal/private_pending_h2_2026.json`, six named projects (SunCentral 1,
+  Selemela, Damlaagte, Thakadu, Paarde Valley PV2, Discovery Green's portfolio), deliberately not
+  loaded. They are a RECLASSIFICATION from rooftop to wheeled when loaded, not an addition: NTCSA's
+  weekly private-solar figure already contains them. Reconcile against the PFL H2 monitor, Feb 2027.
+
+### 5. In flight - the next piece of work, in order
+
+1. **Decompose the adequacy loop's remaining factor of about 7.** Same method that found the seven
+   constants and the charging rule: take the stalled week, compare every supply line between the
+   optimiser and the engine in GWh, and look at the engine's shed hours for what was idle. Candidates
+   not yet ruled out: iron-air held 4.4 GWh while the engine shed (check its discharge rule);
+   interruptible load (1,200 MW in the engine, absent from the optimiser).
+2. **Fraunhofer-style replay on ESK19679.** Real hourly Eskom dispatch, April 2022 to August 2026,
+   with a hypothetical battery fleet inserted; measure diesel displaced, peaks shaved, shedding
+   avoided. Nothing about the existing system is modelled, so the baseline cannot be argued with,
+   and it tests the new charging rule on real midday coal headroom.
+3. **The render check, now four sessions overdue.** The user tried to upload a screenshot of the
+   rooftop tool on 2 Oct and it failed to send - ask for it again first thing. Check: the rooftop
+   roof-form and obstruction controls, module note and sizing sheet; the build panel's horizon
+   selector, apply status line and adequacy-loop button; the VPP readout; the nodal panel with
+   reserve live at defaults.
+4. **A deeper-coal-retirement preset**, if the user wants a third transition scenario: retiring more
+   than 27 GW needs firm capacity alongside, so it is a different preset, not a trim.
+
+### 6. Waiting on the user
+
+- Google Solar API: enable it on the existing GridTwin ZA Cloud project, add it to the key's API
+  restrictions, set a daily quota of a few hundred, check whether the key is committed to the repo,
+  then test Johannesburg and Cape Town addresses. Building Insights is free to 10,000 calls a month.
+- Industrial electrification: parked as a research project pending funding. GIZ pitched 2 Oct
+  (gas-cliff framing). Six-step scope below. First cut only: 3 GW of flat load lowers retail about
+  8 to 11% and hits an adequacy wall near 3 GW - not to be quoted as a result.
+- A Sondeva-style tracker of NERSA notices, the Government Gazette and DFFE authorisations:
+  probably a separate project. Two pieces belong in GridTwin now - source URLs and an
+  active/withdrawn/rejected status on the private queue, and REEA_SHARE weighted by build rate.
+
+### 7. Rules learned this session (all now in RULES.md or below)
+
+- Two models of the same system read the same constants. A literal in the optimiser with an engine
+  key is a bug waiting for a scenario.
+- Decompose a disagreement in energy before naming its mechanism. The mechanism named first was
+  wrong twice on 2 Oct (foresight, then storage foresight); a state-of-charge measurement settled it.
+- The system tested must be the system proposed - every technology, not the ones on screen.
+- Record what a probe actually tested; never copy a build by hand. A hand-copied build missed 2 GW
+  of rooftop and produced a false discrepancy.
+- A check that flips green after a model change needs explaining as much as one that flips red.
+  (The MTSAO OCGT check passed after the charging fix: 58.9% to 52.9% against their 45%, moved for
+  the reason the fix was built.)
+- Before believing a match, confirm the key still means what it did: `coalFlexPct` is now an on/off
+  switch, so 24 and 100 both read as "on".
+- Splitting a constant means hunting for the places that already split it informally (the rooftop
+  0.72 double-count).
+- A harness that excludes by property name owns that name (`readout` silently dropped a control).
+- A curtailment level needs a range, and its profile set named.
+- Share files before writing the report. The user has had to ask for files repeatedly; the share
+  call goes first in any turn that produces one.
+
+### 8. Running the suite
+
+Unchanged; see MANIFEST.md. From the directory holding `index.html` and `nodal/`, the root-taking
+harnesses take `.`; `validate_outputs`, `eng5` and `jsdom_local2` run from the parent.
+New this session: `validate_structure` has 25 checks (the element-read check), `validate_findings`
+39 (curtailment band), `validate_external` 8 (GreenCape build-pace check).
+
+Background processes in the sandbox are frozen between tool calls, so a long solve must be kept
+alive with a running command (a sleep) or it will appear to crawl.
+
+### 9. Dates
+
+```
+Feb 2027   PFL IPP monitor, H2 2026: replace by_source.private, reconcile the private queue,
+           and move each loaded project from rooftopMW to wheeled in the same commit
+Apr 2027   SAWEM launch: change the market-basis label and tooltip on the day
+```
+
+---
+
+# Older handover material
+
+Kept for its reasoning. Where it disagrees with the section above, the section above wins.
 
 ## Read first
 
