@@ -3400,6 +3400,45 @@ multiplier the dropdown uses, draws the measured roof, and falls back to manual 
 there is no coverage. It needs a Google Maps Platform key in window.GOOGLE_SOLAR_KEY. Building
 Insights is free to 10,000 calls a month and $0.01 a call after that.
 
+### The engine now charges storage from coal when it can see stress coming
+
+Build `2026-10-02a`, 2 Oct 2026, night. The fix the entry below scoped. The engine charged storage
+from spare coal only between 23:00 and 05:00, the classic pumping window. In a solar-heavy system the
+coal headroom sits at midday and the stress at night, so the window never opened when it mattered.
+Now, in any hour, when the engine's own shortfall forecast says energy will be short, it charges
+from coal headroom up to that forecast. Off-peak behaviour is unchanged; a calm day burns no coal to
+fill storage it will not need. `chargeFromThermal` 0 restores the old rule, and does exactly - the
+stalled build reproduces 83 GWh with it off.
+
+```
+                                  old rule   new rule
+stalled loop build, worst year     83 GWh     30 GWh
+                    mean of twelve 31 GWh    7.2 GWh
+Deep decarbonisation, worst year   21 GWh      5 GWh
+                      mean          1.7 GWh    0.4 GWh
+                      system cost  R290.2bn   R290.5bn
+                      coal          27.2 TWh   27.8 TWh   CO2 unchanged at 30 Mt
+Fossil-free 2040 preset            no change - there is no coal to charge from
+```
+
+THE DIRECTION OF EARLIER WORK. Every adequacy figure the engine produced for a build that keeps coal
+was pessimistic, and the Deep decarbonisation preset is the clearest case: sized for the NEM standard
+with a twofold margin under the old rule, it now sits at about 5 GWh in its worst year against that
+standard, which means it carries more storage than it needs. Its preset search should be re-run
+before its storage figure is quoted again. Fossil-free figures stand, because the change cannot touch
+a system with no thermal plant.
+
+The cost is small and real: 0.6 TWh more coal burned to fill storage ahead of stress, R0.3bn a year,
+and no measurable carbon change.
+
+THE SUITE MOVED IN ONE PLACE, and it needs understanding rather than celebrating. The MTSAO OCGT check
+that has failed deliberately since 23 Sep, at 58.9% against a 45% band, now passes: storage charged
+from coal is displacing OCGT burn. Rule 2 cuts both ways - a check that flips green after a model
+change is as much a question as one that flips red. The new value has not yet been read out.
+
+The adequacy loop still stalls, now at 30 GWh against a 4.4 GWh standard, a factor of about 7 where
+it was 19 this afternoon and 1,800 this morning.
+
 ### Three more disagreements, and the last of the gap is the engine's, not the optimiser's
 
 Build `2026-10-02a`, 2 Oct 2026, evening. The sweep and the second decomposition.

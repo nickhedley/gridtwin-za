@@ -1,6 +1,6 @@
 # GridTwin ZA - handover, 20 September 2026
 
-Build `2026-10-02a`. Suite 801/803 plus eng5 6/6, measured 30 Sep 2026. Three sessions ran long and the
+Build `2026-10-02a`. Suite 802/803 plus eng5 6/6, measured 30 Sep 2026. Three sessions ran long and the
 COST BASIS CHANGED UNDERNEATH EVERYTHING - treat any figure not re-measured since 18 Sep as
 stale.
 
@@ -33,11 +33,11 @@ validate_consistency     80/80     gas-firmed band re-derived from AEMC 2025
                                    three panels failed on load timing and passed on rerun
 validate_benchmarks      28/28
                                    peakerSeasonRatio confounded by 2025 fleet trend
-validate_external         6/8      EDMSA CO2 (known); MTSAO OCGT at the derived demand
+validate_external         7/8      EDMSA CO2 (known); MTSAO OCGT now passes after the charging fix - unread
 validate_outputs         42/42     Crisis 2023 checks now an inline stress scenario
 validate_solve            8/8
 audit.py                 87/87
-total                   801/803
+total                   802/803
 
 eng5.js                   6/6      check 4 now reads systemCostR, which carries shed energy
 
@@ -237,6 +237,23 @@ shed energy at no capital cost. And their data shows renewable deployment has no
 reliability outcomes in the US, which is the empirical answer to the claim this model keeps
 meeting in South African debate.
 
+## Two ideas from other people's tools, 2 Oct 2026
+
+**Replay reality, Fraunhofer-style.** Their price simulator re-clears Germany's actual day-ahead bids
+with a hypothetical battery fleet, so nothing about the existing system is modelled and the baseline
+cannot be argued with. The South African version needs no market: take ESK19679's real hourly
+dispatch, April 2022 to August 2026, insert a battery fleet, and measure what it would have displaced
+- diesel burned, peaks shaved, load shedding avoided in 2022 and 2023. It also tests the charging rule
+above on real midday coal headroom. Their metrics are worth borrowing for the battery panel: daily
+max-minus-min spread, hours above a price threshold, negative-price hours, solar capture value.
+
+**A Sondeva-style tracker.** Sondeva aggregates every renewable project notice in Spain's national
+and fourteen regional gazettes daily, links each entry to its official source, and separates active,
+withdrawn and rejected. The South African equivalent would index NERSA registration notices, the
+Government Gazette and DFFE authorisations. Probably a project of its own rather than a GridTwin
+feature, but two pieces belong here now: source URLs and a status field on the private-project
+queue, and a REEA_SHARE weighted by how often an authorisation is actually built.
+
 ## Report distributions, not single numbers
 
 Prompted 30 Sep 2026 by Discovery Green's EnergyOS, which reframes renewable procurement as a
@@ -272,6 +289,15 @@ What NOT to copy: their simulation counts. Ten thousand consumption simulations 
 and this model has twelve REAL weather years behind its variability, which is a stronger basis
 than a synthetic distribution fitted to fewer. Report the spread we have rather than manufacturing
 a larger one.
+
+## Engine charging from coal: done, and what it leaves
+
+DONE 2 Oct 2026, night. chargeFromThermal (default 1) lets the engine charge storage from coal
+headroom in any hour its shortfall forecast says stress is coming. Stalled loop build 83 to 30 GWh
+worst year; Deep decarbonisation preset 21 to 5. Fossil-free unaffected. MTSAO OCGT check flipped
+from deliberate failure to pass - read out the new value before accepting it. Re-run the Deep
+decarbonisation preset search: it is now probably over-built on storage. Loop still stalls at a
+factor of about 7; decompose again the same way.
 
 ## The adequacy loop: seven constants fixed, and the last gap is in the engine
 

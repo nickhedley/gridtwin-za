@@ -5654,6 +5654,7 @@ const FIXED = {
   // that nameplate understates the true 2025 average operating fleet - a data
   // issue in profiles.json, listed in HANDOVER, not something to paper over with
   // a fabricated loss factor in the engine.
+  chargeFromThermal:1,   // engine may charge storage from coal headroom when its forecast says stress is coming
   nuclearCF:0.66,
   // part-load heat RATE. A coal unit burns more fuel per MWh the further it is
   // backed off: auxiliaries, mill and fan power and boiler losses are largely
@@ -7737,7 +7738,23 @@ function simulate(u, prof, outPath, _soc0){
       // bonus, so it reflects every MWh coal actually generated. That is correct now the demand
       // line includes storage charging: coal burned to charge storage is real generation meeting
       // real load, and hiding it was what made charging invisible.
-      if(hour<=5||hour>=23){
+      // CHARGING FROM COAL HEADROOM WHEN STRESS IS COMING, 2 Oct 2026. This block charged storage
+      // from spare coal only between 23:00 and 05:00 - the classic pumping window - so in a
+      // solar-heavy system, where the coal headroom sits at midday and the stress at night, it
+      // could never act. Measured in the adequacy loop's stalled week (January 2016, Fossil-free
+      // 2040 build): coal ran 7.7 to 9.0 GW against 11.4 to 11.9 GW available at midday, the
+      // batteries charged 52 to 276 MW and never passed 3% full, and the nights shed about the
+      // same 20 GWh a day the idle coal could have stored. No operator would do that.
+      //
+      // So in any hour, when the engine's own shortfall forecast (anticipatedShortfall, already
+      // used for the night target) says energy will be short, it charges from coal headroom up
+      // to that forecast. Off-peak keeps its daily floor exactly as before; daytime charges ONLY
+      // against forecast stress, so a calm day burns no coal to fill storage it will not need.
+      // chargeFromThermal 0 restores the night-only rule, for comparison.
+      const _offPeak = hour<=5 || hour>=23;
+      const _ctcOn = (p.chargeFromThermal ?? FIXED.chargeFromThermal ?? 1) ? true : false;
+      const _stressAhead = _ctcOn && !_offPeak && anticipatedShortfall[h] > 0;
+      if(_offPeak || _stressAhead){
         let head=coalCeiling-coalGen; // off-peak bonus also respects the ramp ceiling, not just total capacity
         // Target ceilings are no longer a blind nightly chase to 85%/80% regardless of whether
         // it's actually needed - they're capped by real anticipated need over the next 24h
@@ -7767,8 +7784,8 @@ function simulate(u, prof, outPath, _soc0){
         // stopping - 987 GWh idle while 116 TWh was curtailed.
         const battFleetHours = battPower > 0 ? battEnergy / battPower : (p.battHours ?? 4);
         const battDailyFloor= Math.min(battEnergy*0.60, battPower*battFleetHours*0.75);
-        const psTargetCeiling=Math.min(psEnergyTot*0.85, Math.max(anticipatedShortfall[h], psDailyFloor));
-        const battTargetCeiling=Math.min(battEnergy*0.8, Math.max(anticipatedShortfall[h], battDailyFloor));
+        const psTargetCeiling=Math.min(psEnergyTot*0.85, _offPeak ? Math.max(anticipatedShortfall[h], psDailyFloor) : anticipatedShortfall[h]);
+        const battTargetCeiling=Math.min(battEnergy*0.8, _offPeak ? Math.max(anticipatedShortfall[h], battDailyFloor) : anticipatedShortfall[h]);
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
         if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h,chgC); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
