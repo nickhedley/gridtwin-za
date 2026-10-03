@@ -1650,27 +1650,33 @@ Open: why Eskom's peakers delivered under a gigawatt in its tightest hours while
 delivers three. Fuel logistics and station availability are the candidates, and neither is in
 ESK19679.
 
-### The coal-only forecast stays on mean EAF: the backcast rules out the switch, 3 Oct 2026
+### Both forecasts on planned coal and outage state; no thermal charging into the peak, 3 Oct 2026
 
-Build `2026-10-03a`, unchanged. Tested: the coal-only charging forecast on planned commitment capped
-by the outage state held forward, the basis the coal-and-gas forecast uses.
+Build `2026-10-03b`. The coal-only charging forecast now uses the same coal basis as the
+coal-and-gas forecast: planned commitment capped by the outage state held forward, not mean EAF.
+Adopted on the user's decision for consistency, knowing it moves the backcast away from 2025.
+
+As first built it charged storage from coal at the annual demand peak: default grid peak 29.6 to
+31.7 GW, and four checks failed (peak-demand agreement, the demand-response finding, reserve
+monotonicity at 55% EAF, peaker seasonality 1.9x against a 2-12x band). Thermal charging is now
+barred from the day's expensive hours, as operators do not pump into the peak. All four pass.
 
 ```
-                                   mean EAF (kept)   planned + outage state   Eskom actual
-Backcast 2025, own 2025 profile
-  shed GWh                              13.8               0.3                  390
-  OCGT TWh                              1.58               1.03                 3.4
-Backcast 2025, twelve years, mean        11.0               2.2
-Today 2026, twelve years, mean           1.93               0
+                                     03a     switched     03b adopted    Eskom actual
+Backcast 2025, own profile, shed GWh  13.8       0.3           9.4            390
+Backcast 2025, OCGT TWh               1.58       1.03          1.29           3.4
+Backcast 2025, twelve-year mean GWh   11.0       2.2           6.5
+Today 2026, twelve-year mean GWh      1.93       0             0
+Stalled loop build, worst year GWh    3.3        3.3           6.1            standard 4.46
 ```
 
-The switch moves the backcast further from 2025 on both measures. Rejected. The two forecasts now
-use different coal bases by decision, not oversight.
+The loop still converges: adequate on pass 2, worst year 4.3 GWh (2018) against 4.44. Build 15.4 GW
+wind, 31.5 solar, 12.8 lithium at 6h, 2.7 gas. Grid delay, both IRP presets and Deep decarbonisation
+unchanged to the reported precision. Suite 803/804.
 
-Caveat on the entry below: the loop's convergence rests on the planned-plus-outage-state basis,
-which the backcast says is more foresight than Eskom's 2025 operation showed. On mean EAF the same
-gas-ahead-of-storage rule leaves the stalled build at 11.9 GWh in its worst year. The converged
-build is a proposal for an operator with good outage information.
+Caveat: the backcast gap widens, and the planned-plus-outage basis is more foresight than Eskom's
+2025 operation showed. Adequacy results on coal-retaining builds now describe an operator with good
+outage information who does not pump into the peak.
 
 ### Adequacy loop converges: gas ahead of storage on a realistic coal forecast, 3 Oct 2026
 

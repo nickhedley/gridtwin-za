@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03a`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03b`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -10,7 +10,7 @@ eng5 check 3 fixed and shown to fail on an injected defect; rooftop footer relab
 was site-specific, the region name was wrong); full suite with all inputs present, 802/803 plus
 eng5 6/6; Backcast 2025 rooftop sourced as a 2025 annual mean and re-measured; list reprints
 only pressing items, full list on request; lithium duration swept 8 to 20 hours and the 12-hour
-cap raised to 20; adequacy loop decomposed and gas charging added; backcast subtraction vetted; adequacy loop converges after gas-ahead-of-storage (validate_findings check added).
+cap raised to 20; adequacy loop decomposed and gas charging added; backcast subtraction vetted; adequacy loop converges after gas-ahead-of-storage (validate_findings check added); both forecasts on planned coal, no thermal charging into the peak.
 
 ---
 
@@ -41,7 +41,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 14a. You: re-size either preset to 16-hour lithium? 0.5% cheaper, inside the cost uncertainty
 15. You: EAF 55–60% unserved rise (4.00, 5.39, 5.69 GWh, present with the charging rule off) – investigate now or park?
-16. You: the loop's convergence rests on outage foresight the backcast does not support – keep the planned-plus-outage-state basis for the gas forecast, or put it back on mean EAF?
+16. You: model OCGT deliverability under stress – the largest measured part of the backcast gap (9.4 GWh against 390)
 16a. Run the converged loop build through the presets' twelve-year test before treating it as a result
 16b. You: backcast capacities – move solar and wind to 2025 annual means (2,302 and 3,642) alongside rooftop 6,830?
 
@@ -123,7 +123,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-03a after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-03b after the push, and the new footer label shows
 
 ## Named projects
 
@@ -163,7 +163,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 ## Assumptions register (read when quoting, not worked through)
 
 100. Backcast 2025 mixes an annual-mean rooftop (6,532) with year-end utility solar and wind (2,600, 3,900); the 298.3 MW subtraction does not hold up
-101. Backcast 2025 sheds 13.8 GWh against Eskom's 390; the model assumes full OCGT deliverability in a crisis
+101. Backcast 2025 sheds 9.4 GWh against Eskom's 390; the model assumes full OCGT deliverability in a crisis
 102. Coal-retaining adequacy levels before 2 Oct are pessimistic; directions re-measured on three entries hold
 103. coalFlexPct is an on/off switch; older entries describe it as a ramp percentage
 104. Deep decarbonisation carries 17 GW of lithium at 12h, re-sized 2 Oct after the charging fix
@@ -202,6 +202,6 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 137. Grid-forming share of 30%
 138. Vanadium and iron-air fixed durations in the build LP
 138a. Lithium duration capped at 20 hours (LI_MAX_HOURS); dispatch tested 8 to 20 only
-138b. Gas charges storage to, and runs ahead of storage on, a 101-hour forecast using planned coal commitment and current outage state; the coal-only forecast stays on mean EAF because switching it took Backcast 2025 from 13.8 to 0.3 GWh against Eskom's 390
+138b. Both storage forecasts use planned coal commitment capped by the outage state held forward (101-hour horizon); thermal plant does not charge storage in the day's expensive hours. Backcast 2025 sheds 9.4 GWh against Eskom's 390
 139. Nine nodal/ data files carry CC BY-NC-ND, not the CC BY 4.0 the data files moved to on 6 Sep
 140. eng5 check 3 tolerates a single-step rise of up to 2% of the starting value; the measured 1.7 GWh rise at EAF 55–60% passes it

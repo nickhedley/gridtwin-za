@@ -7310,7 +7310,7 @@ function simulate(u, prof, outPath, _soc0){
     const a = new Float64Array(HOURS);
     for (let h = 0; h < HOURS; h++){
       let sum = 0; const end = Math.min(HOURS, h + H);
-      for (let k = h + 1; k < end; k++){ const gap = netLoadPre[k] - coalAvail; if (gap > 0) sum += gap; }
+      for (let k = h + 1; k < end; k++){ const gap = netLoadPre[k] - _fcCoal(h, k); if (gap > 0) sum += gap; }
       a[h] = sum;
     }
     return a;
@@ -7329,7 +7329,8 @@ function simulate(u, prof, outPath, _soc0){
   // Shortfall left after coal and gas together, same horizon, with coal at the planned
   // commitment capped by the outage state held forward rather than the mean EAF. Gas charges
   // storage only up to this, and runs ahead of storage when it exceeds stored energy. Added
-  // 2 Oct 2026. The coal-only forecast above still uses the mean EAF; see TODO.
+  // 2 Oct 2026. Both forecasts use _fcCoal from 3 Oct 2026; the switch took Backcast 2025 from
+  // 13.8 to 0.3 GWh against Eskom's 390 (RESULTS.md).
   const anticipatedShortfallG = (() => {
     const a = new Float64Array(HOURS);
     for (let h = 0; h < HOURS; h++){
@@ -7784,7 +7785,9 @@ function simulate(u, prof, outPath, _soc0){
       // chargeFromThermal 0 restores the night-only rule, for comparison.
       const _offPeak = hour<=5 || hour>=23;
       const _ctcOn = (p.chargeFromThermal ?? FIXED.chargeFromThermal ?? 1) ? true : false;
-      const _stressAhead = _ctcOn && !_offPeak && anticipatedShortfall[h] > 0;
+      // Not in the day's expensive hours: operators do not pump into the peak, and charging there
+      // raised the default grid peak from 29.6 to 31.7 GW. Added 3 Oct 2026.
+      const _stressAhead = _ctcOn && !_offPeak && !isExpensiveHour && anticipatedShortfall[h] > 0;
       if(_offPeak || _stressAhead){
         let head=coalCeiling-coalGen; // off-peak bonus also respects the ramp ceiling, not just total capacity
         // Target ceilings are no longer a blind nightly chase to 85%/80% regardless of whether
@@ -17455,7 +17458,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-03a';
+const BUILD_STAMP = '2026-10-03b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
