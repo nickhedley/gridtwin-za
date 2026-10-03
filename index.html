@@ -6881,6 +6881,7 @@ function simulate(u, prof, outPath, _soc0){
     ? (_liE*(p.battEff ?? 0.88) + _vrE*(p.newVrfbEff ?? 0.75) + _feE*(p.newIronAirEff ?? 0.45)) / battEnergy
     : (p.battEff ?? 0.88);
   const ccgtCap=p.ccgtMW+p.newCcgtMW;
+  const ccgtMustRunMW = p.ccgtForceLoad ? Math.round(ccgtCap*0.5) : 0;   // IRP 50% load-factor floor
   const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
   // Coal ramp-rate limit: how much coal generation can change hour-to-hour, blended between
   // today's real SA fleet rate and the flexibilised rate based on the flexibilisation slider.
@@ -7301,6 +7302,10 @@ function simulate(u, prof, outPath, _soc0){
   // Capped at 168 hours. Past a week the perfect foresight in this loop does more work
   // than the storage does, and the result would flatter long-duration assets rather
   // than test them.
+  // Coal the dispatcher can count on for hour k, seen from hour h: the planned commitment for k,
+  // capped by the forced-outage state at h held forward (persistence). Not the year's mean EAF.
+  const _fcCoalFrac = (h) => outPath ? outPath[Math.floor(h/24)] : (traceOutage ? traceOutage[h] : (unitOutage ? unitOutage[h] : null));
+  const _fcCoal = (h, k) => { const uc = (ucAvail[k] > 0 && !isNaN(ucAvail[k])) ? ucAvail[k] : coalAvail; const f = _fcCoalFrac(h); return f != null ? Math.min(uc, coalInstRem * f) : uc; };
   const shortfallOver = (H) => {
     const a = new Float64Array(HOURS);
     for (let h = 0; h < HOURS; h++){
@@ -7321,6 +7326,19 @@ function simulate(u, prof, outPath, _soc0){
   // Kept for the scalar path and for panels that still read one number.
   const _longestStoreH = Math.max(25, ...Object.values(_tierHorizonH));
   const anticipatedShortfall = shortfallOver(_longestStoreH);
+  // Shortfall left after coal and gas together, same horizon, with coal at the planned
+  // commitment capped by the outage state held forward rather than the mean EAF. Gas charges
+  // storage only up to this, and runs ahead of storage when it exceeds stored energy. Added
+  // 2 Oct 2026. The coal-only forecast above still uses the mean EAF; see TODO.
+  const anticipatedShortfallG = (() => {
+    const a = new Float64Array(HOURS);
+    for (let h = 0; h < HOURS; h++){
+      let sum = 0; const end = Math.min(HOURS, h + _longestStoreH);
+      for (let k = h + 1; k < end; k++){ const gap = netLoadPre[k] - _fcCoal(h, k) - ccgtCap; if (gap > 0) sum += gap; }
+      a[h] = sum;
+    }
+    return a;
+  })();
 
   // ── PEAK RESERVATION FOR PUMPED STORAGE ───────────────────────────────────
   // Added 31 Aug 2026. The discharge was purely greedy: it served whatever deficit was
@@ -7652,6 +7670,19 @@ function simulate(u, prof, outPath, _soc0){
       // not dispatch into it; the balance passes to CCGT and OCGT, then interruptible load,
       // then load shedding. OCGTs are emergency reserve in the ASTR, and reserve categories
       // are exclusive, so idle OCGT does not count toward operating reserve. 22 Sep 2026.
+      // Gas ahead of storage when the forecast shortfall beyond coal and gas exceeds what storage
+      // holds, so storage is kept for the hours thermal cannot cover. Added 2 Oct 2026. Served
+      // before the reserve cap: placed after it, gas no longer covered the reserve-shed balance and
+      // Grid delay's worst year rose from 3.9 to 7.8 GWh.
+      const _gasFirst = (p.chargeFromThermal ?? FIXED.chargeFromThermal ?? 1) && ccgtCap > 0 && !_forceTwoSided
+        && anticipatedShortfallG[h] > Math.max(0, battSoc) + Math.max(0, psSoc);
+      let _gasEarly = 0;
+      if (_gasFirst){
+        // only what coal headroom cannot cover, so coal stays ahead of gas in merit order
+        const _beyondCoal = Math.max(0, residual - Math.max(0, coalCeiling - coalGen));
+        _gasEarly = Math.max(0, Math.min(_beyondCoal, ccgtCap - ccgtMustRunMW));
+        residual -= _gasEarly;
+      }
       let _resShed = 0;
       if (RESERVE.on && !_forceTwoSided){
         const _spin = Math.max(0, coalCeiling - coalGen)
@@ -7674,7 +7705,7 @@ function simulate(u, prof, outPath, _soc0){
         if (!_fcDef) _buildForecast();
         return _liShortAhead(li, h, 0);
       })();
-      if(isExpensiveHour && !_holdForAdequacy){
+      if(isExpensiveHour && !_holdForAdequacy && !_gasFirst){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
@@ -7706,7 +7737,7 @@ function simulate(u, prof, outPath, _soc0){
       // generation. Forced output now serves the residual, then displaces coal down to its
       // floor, then charges storage; what still cannot be absorbed is not generated, and the
       // unmet floor is recorded rather than hidden.
-      const ccgtMustRun = p.ccgtForceLoad ? Math.round(ccgtCap*0.5) : 0;
+      const ccgtMustRun = ccgtMustRunMW;
       if(ccgtMustRun>0){
         const forced=Math.min(ccgtMustRun,ccgtCap);
         const take=Math.min(forced,Math.max(0,residual));
@@ -7731,7 +7762,7 @@ function simulate(u, prof, outPath, _soc0){
         residual-=take;
         _ccgtFloorUnmet+=excess;
       }
-      const g=Math.min(residual,ccgtCap-ccgtMustRun); residual-=g; E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*(p.costCcgt+p.vomCcgt); carbonCost+=g*cG;
+      const g=Math.min(residual,Math.max(0,ccgtCap-ccgtMustRun-_gasEarly))+_gasEarly; residual-=g-_gasEarly; E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*(p.costCcgt+p.vomCcgt); carbonCost+=g*cG;
       const _mo=_monthOfHour[h % 8760];
       const dsl=Math.max(0, Math.min(residual,dieselAvailMW(p), _dslMonthCap - _dslUsed[_mo])); _dslUsed[_mo]+=dsl; residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
       // stack.coal is set from coalGenTotal in the shared block below, after the off-peak charging
@@ -7789,6 +7820,17 @@ function simulate(u, prof, outPath, _soc0){
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
         if(head>0&&battSoc<battTargetCeiling){let w=Math.min(battPower*0.6,battTargetCeiling-battSoc,head); w=tierChargeAt(w,h,chgC); coalGen+=w; addCharge(h,'batt',w,chgC); syncBattSoc(); chargeMW[h]+=w;}
+        // Gas headroom charges storage too when the forecast shortfall exceeds coal and gas
+        // together, to that shortfall only. chargeFromThermal 0 turns this off with the rest.
+        // Added 2 Oct 2026: the adequacy loop's stalled week left 222 GWh of gas idle before
+        // its first shed hour.
+        if(_stressAhead && anticipatedShortfallG[h] > 0){
+          let gh=ccgtCap-ccgtMustRun-g; const gC=p.costCcgt+p.vomCcgt+cG;
+          const psG=Math.min(psEnergyTot*0.85, anticipatedShortfallG[h]);
+          const btG=Math.min(battEnergy*0.8, anticipatedShortfallG[h]);
+          if(gh>0&&psSoc<psG){const w=Math.min(psPowerTot*0.8,psG-psSoc,gh); if(w>0){addCharge(h,'ps',w,gC); psSoc+=w*psEffTot; gh-=w; chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
+          if(gh>0&&battSoc<btG){let w=Math.min(battPower*0.6,btG-battSoc,gh); w=tierChargeAt(w,h,gC); if(w>0){addCharge(h,'batt',w,gC); syncBattSoc(); chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
+        }
       }
       // coalGenTotal[h] and prevCoalGen are set in shared code below, after the if/else, so both branches are covered correctly
       // interruptible load, called before anything is shed. Contracted industrial
@@ -9019,6 +9061,10 @@ const BLD_STORE = [
 // The findings on storage duration and saturation in RESULTS.md were measured on the old
 // scaling and are due a re-run.
 const BATT_POWER_SHARE = 0.278;
+// Longest lithium duration the slider and the build LP offer. Raised 12 -> 20, 2 Oct 2026: the
+// twelve-year dispatch was run at 8 to 20 hours on both transition presets with the reserve and
+// synchronous floors met in every hour. Not tested above 20.
+const LI_MAX_HOURS = 20;
 function battDurationMult(hours){
   return BATT_POWER_SHARE + (1 - BATT_POWER_SHARE) * (hours || 4) / 4;
 }
@@ -9694,13 +9740,13 @@ function bldBuildLP(opts){
       + ' >= ' + Math.max(0, peak*1.10 - firm).toFixed(1));
   }
 
-  // Lithium's duration stays inside the range the rest of the model offers, 1 to 12 hours, so
-  // the LP cannot answer with a 40-hour lithium system the dispatch could not run. Named
-  // battdur_ rather than dmin_/dmax_, which are the diesel rows' prefix.
+  // Lithium's duration stays inside 1 to LI_MAX_HOURS, the range the slider offers and the
+  // twelve-year dispatch has been tested on. Named battdur_ rather than dmin_/dmax_, which are
+  // the diesel rows' prefix.
   for (const y of Y){
     L.push(' battdur_min_'+y+': ' + cumE(y).join(' + ') + ' - ' + cum('batt',y).join(' - ') + ' >= 0');
     L.push(' battdur_max_'+y+': ' + cumE(y).join(' + ') + ' - '
-      + cum('batt',y).map(v => '12 ' + v).join(' - ') + ' <= 0');
+      + cum('batt',y).map(v => LI_MAX_HOURS + ' ' + v).join(' - ') + ' <= 0');
   }
 
   L.push('Bounds');
@@ -15731,7 +15777,7 @@ const SLIDERS=[
   {id:'newPvMW',label:'New utility solar PV',min:0,max:120000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 3.2 GW existing (2.7 GW from REIPPPP + 488 MW wheeled).'},
   {id:'newRooftopMW',label:'New rooftop / embedded PV',min:0,max:60000,step:500,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'on 8.6 GW existing, behind the meter. Eskom estimates 9.1 GW; 0.49 GW of that is wheeled plant, modelled as utility supply.'},
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'on 0.8 GW existing (4h).'},
-  {id:'newBattHours',label:'New lithium-ion duration',min:1,max:12,step:1,def:FIXED.newBattHours,fmt:v=>v+'h',
+  {id:'newBattHours',label:'New lithium-ion duration',min:1,max:LI_MAX_HOURS,step:1,def:FIXED.newBattHours,fmt:v=>v+'h',
    note:'Hours of storage at rated power for new lithium only; the existing 0.8 GW fleet stays at 4h. South African utility procurement is 4h today, so that is the default. Longer durations are modelled at proportionally higher capex from the 4-hour reference, which understates cost slightly because the power electronics do not scale with duration. Above about 8 hours, flow and iron-air chemistries are the cheaper route and have their own controls.'},
   {id:'newPsMW',label:'New pumped storage',min:0,max:6000,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
    note:'on 2.9 GW existing. New additions modelled at 14-hours of storage (the duration of Eskom\u2019s planned 1,500 MW / 21 GWh Tubatse scheme in Limpopo).'},
@@ -15977,18 +16023,20 @@ const PRESETS={
   // Backcast 2025. The fleet, demand and measured coal availability of calendar 2025, so the
   // model can be scored against what actually happened: Eskom shed 390 GWh that year and burned
   // 3.4 TWh of OCGT. Wind 3,900 MW and solar 2,600 are the year's Eskom-visible capacity plus
-  // the private wheeled plant of the time; rooftop 6,900 is the System Operator's own estimate;
+  // the private wheeled plant of the time; rooftop 6,532 is the 2025 annual mean of NTCSA's
+  // monthly Estimated Rooftop PV rows (6,830.2, Weekly System Status Report 2026 w3 and w16) less
+  // 298.3 MW of wheeled solar already in pvUtilityMW (2,600 less ESK19679's 2025 mean of 2,301.7);
   // exports 1,705 MW is the 2025 mean, against 745 today because Mozal has since stopped.
   // Coal availability 58.4% is the coal-only figure for 2025 and outageTraceYear puts its
   // measured hourly shape behind it.
   //
-  // IT IS NOT A VALIDATION. It sheds about 6 GWh against the 390 GWh Eskom actually shed. The
+  // IT IS NOT A VALIDATION. It sheds about 14 GWh against the 390 GWh Eskom actually shed. The
   // difference is peaker delivery: in the 202 hours Eskom shed, its OCGTs managed 942 MW while
   // this model dispatches the full 3.06 GW fleet. Eskom's coal generated 96.5% of its available
   // capacity in those hours, so availability and deliverability are not the gap. Read the preset
   // as a fixed set of 2025 inputs, and read the model as optimistic about the last gigawatt or
   // two of peaking in a crisis.
-  'Backcast 2025':{demandGrowthPct:0,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,windMW:3900,pvUtilityMW:2600,rooftopMW:6900,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
+  'Backcast 2025':{demandGrowthPct:0,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
   // DEMAND +5%, the same in Fossil-free 2040 and IRP path 2035 so the three can be compared.
   // Roughly half a percent a year to 2035: electrification and industrial recovery against
   // efficiency and continued grid defection.
@@ -17407,7 +17455,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-02b';
+const BUILD_STAMP = '2026-10-03a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

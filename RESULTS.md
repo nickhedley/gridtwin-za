@@ -1650,6 +1650,143 @@ Open: why Eskom's peakers delivered under a gigawatt in its tightest hours while
 delivers three. Fuel logistics and station availability are the candidates, and neither is in
 ESK19679.
 
+### The coal-only forecast stays on mean EAF: the backcast rules out the switch, 3 Oct 2026
+
+Build `2026-10-03a`, unchanged. Tested: the coal-only charging forecast on planned commitment capped
+by the outage state held forward, the basis the coal-and-gas forecast uses.
+
+```
+                                   mean EAF (kept)   planned + outage state   Eskom actual
+Backcast 2025, own 2025 profile
+  shed GWh                              13.8               0.3                  390
+  OCGT TWh                              1.58               1.03                 3.4
+Backcast 2025, twelve years, mean        11.0               2.2
+Today 2026, twelve years, mean           1.93               0
+```
+
+The switch moves the backcast further from 2025 on both measures. Rejected. The two forecasts now
+use different coal bases by decision, not oversight.
+
+Caveat on the entry below: the loop's convergence rests on the planned-plus-outage-state basis,
+which the backcast says is more foresight than Eskom's 2025 operation showed. On mean EAF the same
+gas-ahead-of-storage rule leaves the stalled build at 11.9 GWh in its worst year. The converged
+build is a proposal for an operator with good outage information.
+
+### Adequacy loop converges: gas ahead of storage on a realistic coal forecast, 3 Oct 2026
+
+Build `2026-10-03a`. Same stalled build and settings as the entry below, twelve weather years.
+
+```
+                       worst yr GWh   mean GWh   gas TWh   cost R bn
+02d                        34.4          8.15      0.04      219.9
+02e  gas charges           11.2          3.19      0.46      220.5
+03a  gas ahead of storage   3.3          0.33      0.77      221.0
+standard                    4.48
+```
+
+Two changes. Gas runs ahead of storage when the forecast shortfall beyond coal and gas exceeds the
+energy storage holds, covering only what coal headroom cannot. And that forecast takes coal at its
+planned commitment capped by the outage state held forward, not the mean EAF: 14.1 GW against 11.4
+to 12.2 GW available in the stalled week.
+
+The loop now reaches adequate on pass 2: worst year 4.0 GWh (2022) against 4.55. Build: 11.3 GW
+wind, 34.8 solar, 14.2 lithium at 6h, 3.5 gas, 17.9 GW coal retired. A proposal until the presets
+are re-run on it.
+
+A first version placed gas after the reserve cap and raised Grid delay's worst year from 3.9 to 7.8
+GWh. All seven presets unchanged across twelve years. The coal-only charging forecast still uses the
+mean EAF; switching it takes Today 2026 from 1.93 GWh mean shed to zero.
+
+### Adequacy loop decomposed: idle gas, then storage spent before idle gas, 2 Oct 2026
+
+Build `2026-10-02e`. Fossil-free 2040 preset, horizon 2040, the loop's stalled build (14.6 GW wind,
+32.7 solar, 2 rooftop, 13.0 lithium at 5h, 2.8 CCGT, 0.5 vanadium, 0.15 iron-air, 21.8 GW coal
+kept). Stalled week 2016, days 17-23, twelve weather years, regional profiles.
+
+The week in energy, before the change:
+
+```
+GWh                        optimiser (2040)   engine (2016)
+coal                            1,721            1,800
+gas                               325              120
+lithium discharge                 399              182
+shed                                0               30
+before the first shed hour: coal headroom 113, gas idle 222
+```
+
+In every shed hour coal, gas, iron-air, vanadium and interruptible load were at their limits and
+lithium was empty. The engine charged storage from coal headroom under forecast stress and never
+from gas; the optimiser charges from both. Gas now charges storage when the forecast shortfall
+exceeds coal and gas together, up to that shortfall (chargeFromThermal governs both).
+
+```
+                         mean GWh   worst yr GWh   standard   gas TWh   cost R bn
+before                      8.15        34.4          4.45      0.04      219.9
+gas to forecast (coal)      2.60        10.3          4.46      2.11      223.3
+gas to forecast (c+g)       3.19        11.2          4.46      0.46      220.5   adopted
+```
+
+Charging gas to the coal-only forecast burns 2.1 TWh a year: that forecast is positive in 96% of
+hours. The adopted rule keeps about nine tenths of the gain for a fifth of the gas. Loop stalls at 11.2
+against 4.46, a factor of 2.5 (was 7.7).
+
+What is left: on day 3 lithium discharged 57 GWh with nothing shed while 20 GWh of gas sat idle; days
+4 and 5 then shed 10 GWh with lithium empty.
+
+Presets: only Grid delay moves (mean 2.61 to 2.15 GWh, worst 7.3 to 3.9). Today 2026, Latest IRP's
+2030 targets, IRP path 2035, Deep decarbonisation, Fossil-free and Backcast 2025 unchanged to the
+reported precision.
+
+### Lithium beyond 12 hours: a flat basin, cheapest at 16, 2 Oct 2026
+
+Build `2026-10-02d`. Each preset as defined, only lithium power and duration varied. Twelve weather
+years (2014-2025, regional profiles, capacity-weighted). For each duration, the least power whose
+mean shed meets the presets' own target, half the 0.002% standard; searched to 100 MW.
+
+```
+                  Deep decarbonisation 2035              Fossil-free 2040
+hours        GW    GWh   worst yr GWh  cost R bn     GW    GWh   worst yr GWh  cost R bn
+  8        25.5    204        24.0       289.9      44.4   355        24.8       340.9
+ 10        20.4    204        24.0       288.6      35.6   356        24.5       339.0
+ 12        17.0    204        24.0       287.7      29.7   356        24.2       337.7
+ 14        14.6    204        23.3       287.2      25.4   356        24.6       336.7
+ 16        12.6    201        23.6       286.3      22.3   357        24.2       336.2
+ 18        11.7    211        21.7       287.9      20.3   365        24.1       336.9
+ 20        10.9    218        19.6       289.2      18.8   376        21.9       338.2
+```
+
+Adequacy is set by stored energy, not power, from 8 to 16 hours: about 204 GWh on Deep
+decarbonisation and 356 on Fossil-free at every duration in that range. Cost is lowest at 16 hours
+on both, R1.4bn and R1.5bn a year below 12 hours, 0.5%. Curtailment does not move (63.3 to 63.8 and
+105.2 to 105.5 TWh). Reserve and synchronous floors met in every hour of every year at 12 and 16.
+
+Caveats: 0.5% is inside the cost uncertainty: lithium capital is one source (NREL 2025 split, linear
+in energy), with no augmentation or calendar degradation. Fewer inverters at long duration means
+less grid-forming capability if SYNC_GFM_SHARE applies per megawatt; the floor still held. Ofgem's
+first LDES window scored 16-18 hour lithium above 8-12 hour on security of supply and avoided
+curtailment; this agrees on the first and finds nothing on the second.
+
+The slider and the build LP were capped at 12 hours, so neither could reach this range. Both now
+read LI_MAX_HOURS, 20. Presets unchanged at 12.
+
+### Backcast 2025 rooftop sourced as a 2025 annual mean, 2 Oct 2026
+
+Build `2026-10-02c`. Backcast 2025, its own preset, nothing else changed; the coal-charging rule on
+unless stated. Rooftop 6,900 MW had no date or basis. Now 6,532: the 2025 annual mean of NTCSA's
+monthly Estimated Rooftop PV rows, 6,830.2, less 298.3 MW of wheeled solar already in
+`pvUtilityMW`. Source and basis in SOURCES.md.
+
+```
+rooftop MW   chargeFromThermal   shed GWh   OCGT TWh
+6,900                0             12.3       1.52
+6,900                1             11.9       1.52
+6,532                1             13.8       1.58
+Eskom actual                       390        3.4
+```
+
+The charging fix moved the backcast 0.4 GWh further from Eskom's 390; the rooftop correction moved
+it 1.9 GWh closer. Peaker delivery remains the open gap.
+
 ### Reserve requirement now grows with variable generation, 22 Sep 2026
 
 Build `2026-09-22al`. The ASTR's 2,200 MW of operating reserve is sized to 2030/31 on today's

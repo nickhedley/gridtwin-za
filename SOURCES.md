@@ -23,6 +23,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Meridian Economics, South Africa Power Market Report | annual | 2025 edition, summary only | corroboration that cheaper solar-plus-storage delays new peaking plant. The report and COMPASS behind it are commercial; only the published summary is used |
 | CSIR least-cost study (plexos) | occasional | as cited in `validate_external.js` | external comparison, 2030 coal share |
 | Eskom weekly system status | weekly | drift detector only | `validate_capacity.js` |
+| NTCSA Weekly System Status Report, "Estimated Rooftop PV" monthly rows | weekly | 2026 w3 and w16; the 2025 rows agree in both | Backcast 2025 `rooftopMW` 6,532: the 2025 annual mean of the twelve monthly rows, 6,830.2, less 298.3 MW of wheeled solar the preset already carries in `pvUtilityMW` (2,600 less ESK19679's 2025 mean of 2,301.7). Basis: annual mean, calendar 2025 |
 | Eskom hourly dataset ESK19679 | on request | Apr 2022 - Aug 2026, 38,736 h | curtailment estimate. Separates Wind, PV, CSP, Other RE with installed capacity per technology. Wind installed peaks at 4,143 MW, matching the REIPPPP-only fleet - it EXCLUDES wheeled plant |
 | Eskom hourly dataset ESK19243 | on request | calendar 2025 | OCGT seasonality. Superseded for most purposes by ESK19679 |
 | SAPVIA NERSA Registered Plants Dashboard | rolling | Q1 2026/27, as at 24 Aug 2026 | `nersa_registrations.json` — the cumulative series |
@@ -146,6 +147,18 @@ H1 2026 only. Every pre-2026 wheeled plant is therefore already inside the model
 rooftop. Loading one moves capacity between buckets rather than adding it: add to
 `by_source.private`, subtract the same figure from `rooftopMW`, in one commit. The totals are
 right today and the two buckets are wrong by roughly 300 MW, rising to 414 with SunCentral 1.
+
+The same subtraction applies to Backcast 2025, on its own year: 6,830.2 MW is the 2025 annual mean
+of the monthly rows (Jan 6,177.5 to Dec 7,463.6), and the 298.3 MW taken off is the wheeled solar
+the preset counts in `pvUtilityMW`. That 298.3 is implied by the preset's 2,600, whose own
+derivation is not recorded. The previous 6,900 carried no date or basis.
+
+Vetted 2 Oct 2026: the 298.3 does not hold up. ESK19679's Eskom-visible solar sat at 2,285 MW from
+January to November 2025 and reached 2,510 in December; wind rose from 3,443 to 3,863. The preset's
+2,600 and 3,900 sit just above those year-end values, so they read as year-end figures, not annual
+means plus wheeled plant. Selemela (200 MW, Apr 2024) and Damlaagte (97.5 MW, 23 Aug 2025) total
+297.5 at year-end but about 235 as a 2025 mean, so they do not explain the gap on the basis the
+subtraction assumes. The preset now mixes an annual-mean rooftop with year-end utility capacity.
 
 It also suggests an answer to the open question about `FIXED.pvUtilityMW` 3,271, which nobody can
 source: it equals REIPPPP solar 2,783 plus the H1 2026 wheeled 488 exactly. That is a hypothesis

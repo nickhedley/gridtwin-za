@@ -1,21 +1,23 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-02b`. Items marked
-"You:" need the user's decision or action; the rest are work Claude can take on. Reprint at the
-end of each message.
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03a`. Items marked
+"You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
+end of each message; the full list on request.
 
 Done this session, removed: offshore file placed in nodal/; ESK19679.csv added to MANIFEST's
 upload set as local-only; licence check read (it tests presence only; the zip copy was stale);
 eng5 check 3 fixed and shown to fail on an injected defect; rooftop footer relabelled (the figure
 was site-specific, the region name was wrong); full suite with all inputs present, 802/803 plus
-eng5 6/6.
+eng5 6/6; Backcast 2025 rooftop sourced as a 2025 annual mean and re-measured; list reprints
+only pressing items, full list on request; lithium duration swept 8 to 20 hours and the 12-hour
+cap raised to 20; adequacy loop decomposed and gas charging added; backcast subtraction vetted; adequacy loop converges after gas-ahead-of-storage (validate_findings check added).
 
 ---
 
 ## Install this session's files
 
-1. You: replace index.html (root), eng5.js (harness folder), MANIFEST.md and TODO.md (root)
-2. You: replace MANIFEST.md and TODO.md in project knowledge too
+1. You: replace index.html (root), eng5.js and validate_findings.js (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
+2. You: replace MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md in project knowledge too
 3. You: commit and push; never commit the zip
 
 ## Eskom data in the repo
@@ -33,15 +35,15 @@ eng5 6/6.
 
 ## Backcast
 
-11. Source Backcast 2025's rooftop as a 2025 annual mean from NTCSA's weekly series, less 2025 wheeled plant
-12. Record the figure with its date and basis in SOURCES
-13. Re-measure Backcast 2025 after the charging fix – the gap to Eskom's 390 GWh probably widened
 14. You: model OCGT deliverability under stress, the known cause of the backcast gap?
 
 ## Next, in order
 
+14a. You: re-size either preset to 16-hour lithium? 0.5% cheaper, inside the cost uncertainty
 15. You: EAF 55–60% unserved rise (4.00, 5.39, 5.69 GWh, present with the charging rule off) – investigate now or park?
-16. Decompose the adequacy loop's remaining factor of about 7
+16. You: the loop's convergence rests on outage foresight the backcast does not support – keep the planned-plus-outage-state basis for the gas forecast, or put it back on mean EAF?
+16a. Run the converged loop build through the presets' twelve-year test before treating it as a result
+16b. You: backcast capacities – move solar and wind to 2025 annual means (2,302 and 3,642) alongside rooftop 6,830?
 
 ## Follow-through on the engine change
 
@@ -80,7 +82,6 @@ eng5 6/6.
 
 ## Decisions
 
-37. You: reprint the full list each message, or only the open items?
 38. You: make roof form an unavoidable choice rather than defaulting to flat?
 39. You: build a curtailment distribution into the panel?
 40. You: rewrite the outreach pieces that lean on spill, with ranges?
@@ -122,7 +123,7 @@ eng5 6/6.
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-02b after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-03a after the push, and the new footer label shows
 
 ## Named projects
 
@@ -161,14 +162,14 @@ eng5 6/6.
 
 ## Assumptions register (read when quoting, not worked through)
 
-100. Backcast 2025's rooftop of 6,900 MW has no recorded date or basis
-101. Backcast 2025 sheds about 6 GWh against Eskom's 390; the model assumes full OCGT deliverability in a crisis
+100. Backcast 2025 mixes an annual-mean rooftop (6,532) with year-end utility solar and wind (2,600, 3,900); the 298.3 MW subtraction does not hold up
+101. Backcast 2025 sheds 13.8 GWh against Eskom's 390; the model assumes full OCGT deliverability in a crisis
 102. Coal-retaining adequacy levels before 2 Oct are pessimistic; directions re-measured on three entries hold
 103. coalFlexPct is an on/off switch; older entries describe it as a ramp percentage
 104. Deep decarbonisation carries 17 GW of lithium at 12h, re-sized 2 Oct after the charging fix
 105. The remaining 12.7 GW of coal in Deep decarbonisation is binding; retiring more needs firm capacity alongside
 106. OCGT utilisation in the MTSAO case is 52.9% against their 45%
-107. The optimiser's residual gap is about 7 times the standard; not yet decomposed
+107. The adequacy loop converges on Fossil-free 2040 at a 2040 horizon (worst year 4.0 against 4.55); not tested on other presets or horizons
 108. REEA_SHARE treats every authorisation as equally likely to be built
 109. Planned coal maintenance decides when a build fails, not whether
 110. Pumped storage is excluded from the LP's reserve until its energy is modelled
@@ -200,5 +201,7 @@ eng5 6/6.
 136. Existing renewables never retire
 137. Grid-forming share of 30%
 138. Vanadium and iron-air fixed durations in the build LP
+138a. Lithium duration capped at 20 hours (LI_MAX_HOURS); dispatch tested 8 to 20 only
+138b. Gas charges storage to, and runs ahead of storage on, a 101-hour forecast using planned coal commitment and current outage state; the coal-only forecast stays on mean EAF because switching it took Backcast 2025 from 13.8 to 0.3 GWh against Eskom's 390
 139. Nine nodal/ data files carry CC BY-NC-ND, not the CC BY 4.0 the data files moved to on 6 Sep
 140. eng5 check 3 tolerates a single-step rise of up to 2% of the starting value; the measured 1.7 GWh rise at EAF 55–60% passes it
