@@ -802,7 +802,32 @@ setTimeout(()=>{
     }
   }
 
-  console.log(`\n${npass}/${npass+nfail} published findings still hold`);
-  if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
-  process.exit(nfail?1:0);
+  (async () => {
+    // ── THE ADEQUACY LOOP'S STALLED BUILD IS ADEQUATE IN 2016 ───────────────
+    // Added 2 Oct 2026. Fossil-free 2040 preset with the build the loop stalled on (21.8 GW coal
+    // kept, 2.8 GW gas, 13.0 GW lithium at 5h). The engine shed 34.4 GWh in 2016 while 222 GWh
+    // of gas sat idle, then 11.2 with gas charging alone; gas ahead of storage on a coal forecast
+    // from planned commitment and outage state took it to zero. The standard is 0.002% of demand.
+    try {
+      await w.eval('loadWeatherYears()');
+      const a = probe(`
+        const st = { ...state, ...PRESETS['Fossil-free 2040'], newWindMW:14591, newPvMW:32738,
+          newRooftopMW:2000, newBattMW:13029, newCcgtMW:2848, newVrfbMW:500, newIronAirMW:150,
+          newOffshoreMW:0, newNuclearMW:0, coalDecomMW:17939, newBattHours:5 };
+        const nat = weatherYearNational('2016');
+        const r = simulate(st, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
+        let dem = 0; for (let i = 0; i < r.loadS.length; i++) dem += r.loadS[i];
+        return { shed: r.E.unserved / 1e3, limit: dem * 0.00002 / 1e3 };`);
+      if (a && !a.error)
+        check('the adequacy loop build is adequate in its stalled year',
+              a.shed <= a.limit,
+              `${a.shed.toFixed(1)} GWh shed in 2016 against a ${a.limit.toFixed(2)} GWh standard `
+              + `(34.4 before gas charging, 11.2 with charging alone)`);
+      else check('the adequacy loop build is adequate in its stalled year', false, a ? a.error : 'no result');
+      if (a && !a.error) console.log(`  adequacy loop  2016 shed ${a.shed.toFixed(1)} GWh, standard ${a.limit.toFixed(2)}`);
+    } catch (e) { check('the adequacy loop build is adequate in its stalled year', false, String(e).slice(0, 120)); }
+    console.log(`\n${npass}/${npass+nfail} published findings still hold`);
+    if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
+    process.exit(nfail?1:0);
+  })();
 }, 8000);
