@@ -41,7 +41,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 14a. You: re-size either preset to 16-hour lithium? 0.5% cheaper, inside the cost uncertainty
 15. You: EAF 55–60% unserved rise (4.00, 5.39, 5.69 GWh, present with the charging rule off) – investigate now or park?
-16. Check whether the forward outage draws assume independent unit failures; add correlated (common-mode) outages if so
+16. You: add station-level common-mode trips to the forward outage draw, calibrated to the measured count of sudden drops, then re-measure every coal preset? Independent draws produce 4 days a year of >8% falls against Eskom's 16
 16b2. You: the backcast's remaining gap is Eskom's reserve-refill shedding; ask Eskom or NTCSA for their weekly emergency-reserve targets?
 16c. You: the RMIPPPP hybrids (335 MW, 1.8 TWh) – were they delivering in 2025? Turning them off brings backcast coal to 170.3 against 170.4
 16a. Run the converged loop build through the presets' twelve-year test before treating it as a result

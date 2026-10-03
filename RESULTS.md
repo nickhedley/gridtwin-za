@@ -1650,6 +1650,32 @@ Open: why Eskom's peakers delivered under a gigawatt in its tightest hours while
 delivers three. Fuel logistics and station availability are the candidates, and neither is in
 ESK19679.
 
+### Forward outage draws are independent per unit; they match Eskom's tails but miss its sudden drops, 3 Oct 2026
+
+Build `2026-10-03c`. genUnitOutagePath draws each coal unit as its own two-state Markov chain, same
+forced-outage rate and 480-hour repair time for every unit, nothing shared between units. Sixty
+draws at 2025's coal availability (0.577) against ESK19679's measured coal-only availability,
+each over its own mean:
+
+```
+                          2023    2024    2025    synthetic median (range of 60)
+hourly sd                0.076   0.121   0.118    0.097 (0.069-0.140)
+1st percentile           0.831   0.730   0.797    0.793 (0.674-0.851)
+worst week               0.868   0.760   0.825    0.800 (0.682-0.879)
+largest 6-hour fall      0.141   0.136   0.152    0.086 (0.066-0.132)
+days falling >8% in 24h      9      16      16        4 (1-8)
+```
+
+The spread and the depth of bad weeks are reproduced. Sudden falls are not: 2024 and 2025 had two
+to four times as many days losing more than 8% of the coal fleet in 24 hours as any of sixty
+independent draws, and their largest 6-hour falls sit above the whole synthetic range. ESK19679
+puts 4 to 7 such days a year in unplanned and other losses, not planned outage starts.
+
+So correlated failures are real in Eskom's fleet (February 2025: Majuba's five units and Camden on
+control systems) and show up as fast, short drops, not deeper troughs. They matter where storage
+and peakers must respond within hours. Backcast 2025 is unaffected, as it runs on the measured
+trace; every forward coal scenario runs on the independent draw. Adequacy effect not yet measured.
+
 ### The backcast gap, re-measured: inputs explain the energy, operation explains the shedding, 3 Oct 2026
 
 Build `2026-10-03c`. Backcast 2025, its own 2025 profile. ESK19679 against the model, TWh:
