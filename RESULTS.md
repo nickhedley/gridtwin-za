@@ -1682,6 +1682,27 @@ null, same random use        0.06              0.7
 At 48% EAF, eight draws: 0.102 to 0.111 TWh. Still under the 0.002% standard (about 4 GWh) at
 today's fleet. Coal presets other than Today 2026 not yet re-measured over many draws.
 
+### Coal presets re-measured with common-mode trips, 480 draws each, 3 Oct 2026
+
+Build `2026-10-03d`. Each draw its own outage path and one of twelve weather years, 40 per year.
+
+```
+                             mean shed GWh            worst-year mean GWh
+                          independent  common-mode   independent  common-mode
+Today 2026                    0.07        0.19           0.7          2.0      (960 draws)
+Grid delay                    0.93        1.26           6.2          6.3
+Latest IRP's 2030 targets     0.44        0.63           3.4          3.6
+IRP path 2035                 0           0              0            0
+Deep decarbonisation 2035     1.08        1.36          12.2         12.8
+```
+
+Common-mode trips raise mean shedding by a quarter to a half on every coal preset that sheds, and
+barely move the worst year. Every preset stays under the 0.002% standard on the mean.
+
+Deep decarbonisation was sized to a 2.07 GWh target on one outage path, where it read 2.02. Over
+480 paths it reads 1.08 independent and 1.36 with common-mode: the single path was a bad one, and
+the preset carries more margin than its 2x design. Re-sizing on many draws is open.
+
 ### Three checks were passing on one lucky outage draw, 3 Oct 2026
 
 Changing the random draw moved three harness results with no change to the fleet. Each now reads

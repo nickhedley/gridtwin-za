@@ -41,7 +41,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 14a. You: re-size either preset to 16-hour lithium? 0.5% cheaper, inside the cost uncertainty
 15. You: EAF 55–60% unserved rise (4.00, 5.39, 5.69 GWh, present with the charging rule off) – investigate now or park?
-16. Re-measure every coal preset over many outage draws with common-mode trips on (Today 2026 done: 0.07 to 0.19 GWh mean)
+16. You: re-size the transition presets on many outage draws rather than one? Deep decarbonisation reads 1.36 GWh mean on 480 draws against the 2.02 it was sized on
 16d. Investigate the flat shadow price: a normal winter week varies 1.1x against Homeflex's 3.9x (standing failure in validate_consistency)
 16e. Sweep the harnesses for other checks that read one seeded outage draw
 16b2. You: the backcast's remaining gap is Eskom's reserve-refill shedding; ask Eskom or NTCSA for their weekly emergency-reserve targets?
