@@ -802,6 +802,17 @@ setTimeout(()=>{
     }
   }
 
+  // ── EVERY PRESET KEY REACHES THE MODEL ────────────────────────────────────
+  // Added 3 Oct 2026. applyState sets sliders and PRESET_NON_SLIDER_KEYS only; any other key in a
+  // preset is dropped without error. Backcast 2025's importsCF and hydroCF were dropped that way.
+  {
+    const k = probe(`const ok = new Set([...SLIDERS.map(s => s.id), ...PRESET_NON_SLIDER_KEYS]);
+      const bad = []; for (const [n, p] of Object.entries(PRESETS)) for (const key of Object.keys(p)) if (!ok.has(key)) bad.push(n + ': ' + key);
+      return { bad };`);
+    if (k && !k.error) check('every preset key reaches the model', k.bad.length === 0,
+      k.bad.length ? 'dropped by applyState: ' + k.bad.join(', ') : '');
+    else check('every preset key reaches the model', false, k ? k.error : 'no result');
+  }
   (async () => {
     // ── THE ADEQUACY LOOP'S STALLED BUILD IS ADEQUATE IN 2016 ───────────────
     // Added 2 Oct 2026. Fossil-free 2040 preset with the build the loop stalled on (21.8 GW coal

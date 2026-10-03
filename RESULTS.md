@@ -1650,6 +1650,56 @@ Open: why Eskom's peakers delivered under a gigawatt in its tightest hours while
 delivers three. Fuel logistics and station availability are the candidates, and neither is in
 ESK19679.
 
+### The backcast gap, re-measured: inputs explain the energy, operation explains the shedding, 3 Oct 2026
+
+Build `2026-10-03c`. Backcast 2025, its own 2025 profile. ESK19679 against the model, TWh:
+
+```
+                       Eskom 2025   model before   model now
+coal                      170.4         161.6        168.9
+imports                     6.57          8.87         6.57
+hydro                       1.79          2.90         1.79
+peakers                     3.36          1.29         2.32
+pumped storage gen          4.49          2.76         2.67
+shed, GWh                    390           9.4         17.6
+```
+
+The preset carried a typical year's imports (CF 0.88) and hydro (0.55), not 2025's drought (0.652,
+0.339), and demand 2.5% below contracted. Set to Eskom's measured 2025 values, the model needs 7
+TWh more coal and 1 TWh more peaking, and coal lands within 1% of Eskom's. Hydro was a literal in
+three places; now hydroCF, read by the engine and the build LP.
+
+What is left is operation, not energy. Eskom's own 2025 data:
+
+```
+shedding                    390 GWh on 17 days; about 70% in three weekends, 31 Jan to 9 Mar
+shed 22:00-06:00            40%
+shed at weekends            54%
+pumping while shedding      about 1,000 MW on average; pumped-storage output 390 MW
+peakers while shedding      941 MW of about 3,000
+```
+
+Eskom sheds to refill pumped storage and diesel for the week ahead (its stated one-week cycle),
+on top of any hourly shortfall. The model sheds shortfall only. That is the adequacy standard's
+measure, so the remaining gap is not an error in adequacy terms, but the backcast cannot
+reproduce Eskom's shedding without Eskom's reserve targets, which are not published.
+
+Tested and rejected: a reserve-floor rule that sheds to pump storage above a fixed share. At 30%,
+50% and 70% floors it shed 1,064, 1,236 and 1,329 GWh, three times Eskom. Removed rather than
+left in unsourced.
+
+Added, off by default: Eskom's diesel tank and delivery limit (Ankerlig and Gourikwa, 82.5 GWh on
+site, about 431 MW of deliverable output; Mining Weekly 2015, Business Day 2022). On in Backcast
+2025. It does not bind there, and on by default it took NTCSA's MTSAO 2030 OCGT check from 45% to
+34% utilisation, against the MTSAO's own assumption.
+
+Not yet checked: whether the forward outage draws treat each unit independently. Correlated
+failures (Majuba's five units and Camden in February 2025) are what US adequacy work found
+standard models miss.
+
+New check: every preset key must reach the model. Backcast 2025's importsCF and hydroCF were
+dropped by applyState without error; it failed on that and passes now.
+
 ### Both forecasts on planned coal and outage state; no thermal charging into the peak, 3 Oct 2026
 
 Build `2026-10-03b`. The coal-only charging forecast now uses the same coal basis as the

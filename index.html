@@ -5296,6 +5296,9 @@ const FIXED = {
   // harnesses die with "IMPORTS_CF is not defined" without it. A fallback here would
   // turn a loud failure into a plausible wrong answer, which is rule 7's whole lesson.
   importsCF:IMPORTS_CF,
+  // Gariep and Vanderkloof, delivered share of 602 MW; was a literal in two engine lines and the
+  // build LP. 2025 ran at 0.34 (ESK19679, 1.79 TWh), the drought year. 3 Oct 2026.
+  hydroCF:0.55,
   // FIRM EXPORTS, added 8 Sep 2026. 1,340 MW is the mean over 2025-26 from Eskom's hourly
   // file. Exports are a LOAD on the South African system and the model previously had none,
   // which made it about 1.35 GW optimistic at the annual peak. See the expAt() note in
@@ -5471,6 +5474,13 @@ const FIXED = {
   // maximum (3.4 GW x 8,760 h = 29.8 TWh), so by default it never binds. ESK19679 2023 OCGT
   // output was flat across the year, not winter-weighted, hence even months. 22 Sep 2026.
   dieselBudgetTWh:30,
+  // Eskom's own diesel turbines (Ankerlig 1,338 MW, Gourikwa 746 MW) run from on-site tanks of
+  // 16.2 and 10 Ml at about 0.318 l/kWh, 82.5 GWh, refilled at Eskom's stated logistics limit of
+  // about 100 Ml a month, 431 MW of output (Mining Weekly 10 Apr 2015; Business Day 23 Nov 2022).
+  // Independent peakers carry their own fuel and are not limited here. Tanks start full. 3 Oct 2026.
+  // Off by default: NTCSA's MTSAO assumes about 45% OCGT utilisation by 2030, which this limit
+  // would prevent. On in Backcast 2025, where it is the year's physical constraint.
+  dslTankOn:0, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -6679,6 +6689,9 @@ function simulate(u, prof, outPath, _soc0){
   // Diesel budget: flat monthly cap, used from the start of each month.
   const _dslMonthCap = Math.max(0, p.dieselBudgetTWh) * 1e6 / 12;
   const _dslUsed = new Float64Array(12);
+  const _dslTankOn = !!p.dslTankOn;
+  const _dslTankCap = Math.max(0, p.dslTankGWh) * 1000;
+  let _dslStock = _dslTankCap;
   const _monthOfHour = (() => { const a = new Uint8Array(8760), MD = [31,28,31,30,31,30,31,31,30,31,30,31];
     let h = 0; for (let m = 0; m < 12; m++) for (let k = 0; k < MD[m] * 24; k++) a[h++] = m; return a; })();
   const _asHoldH = Math.max(0.25, p.asHoldHours);
@@ -7176,7 +7189,7 @@ function simulate(u, prof, outPath, _soc0){
     // constraints - with them in place it converges to this ordering. Note the
     // economics anyway: contracted imports (R550) now undercut marginal coal
     // (R674 with VOM and carbon) - true, and no code change follows from it.
-    const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF, hyd=p.hydroMW*0.55, imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
+    const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF, hyd=p.hydroMW*(p.hydroCF ?? FIXED.hydroCF), imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -7417,6 +7430,7 @@ function simulate(u, prof, outPath, _soc0){
       ? Math.min(ucCommitted, coalInstRem * availFrac)
       : ucCommitted;
     coalAvailableArr[h] = (availFrac != null) ? coalInstRem * availFrac : coalAvail;
+    if (_dslTankOn) _dslStock = Math.min(_dslTankCap, _dslStock + Math.max(0, p.dslRefillMW));
     for (const t of battTiers) if (tierSoc[t.k]) tierSoc[t.k][h] = t.soc;
     // operating RESERVE: capacity that is committed but must NOT be dispatched,
     // so it can respond to a unit trip or a forecast error. Coal carries the
@@ -7455,7 +7469,7 @@ function simulate(u, prof, outPath, _soc0){
       windGen *= (1 - _cgp2); pvGen *= (1 - _cgp2);
       congestMW[h] = _lost2; congestTot += _lost2;
     }
-    const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF, hyd=p.hydroMW*0.55, imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
+    const nuc=(p.nuclearMW+p.newNuclearMW)*p.nuclearCF, hyd=p.hydroMW*(p.hydroCF ?? FIXED.hydroCF), imp=p.importsMW*(p.importsCF ?? FIXED.importsCF);
     // RMIPPPP hybrid: available inside 05:00-21:30, nothing outside. It is
     // dispatched on System Operator instruction, so it is NOT must-run - it is
     // called into residual demand ahead of coal (the capacity charge is already
@@ -7765,7 +7779,11 @@ function simulate(u, prof, outPath, _soc0){
       }
       const g=Math.min(residual,Math.max(0,ccgtCap-ccgtMustRun-_gasEarly))+_gasEarly; residual-=g-_gasEarly; E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*(p.costCcgt+p.vomCcgt); carbonCost+=g*cG;
       const _mo=_monthOfHour[h % 8760];
-      const dsl=Math.max(0, Math.min(residual,dieselAvailMW(p), _dslMonthCap - _dslUsed[_mo])); _dslUsed[_mo]+=dsl; residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
+      // Independent peakers first, then Eskom's own from the tank, so the tank is conserved.
+      const _dslAll = dieselAvailMW(p), _dslEsk = Math.min(_dslAll, Math.max(0, p.dslTankMW));
+      const _dslLim = _dslTankOn ? (_dslAll - _dslEsk) + Math.min(_dslEsk, _dslStock) : _dslAll;
+      const dsl=Math.max(0, Math.min(residual,_dslLim, _dslMonthCap - _dslUsed[_mo]));
+      if (_dslTankOn) _dslStock -= Math.max(0, dsl - (_dslAll - _dslEsk)); _dslUsed[_mo]+=dsl; residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
       // stack.coal is set from coalGenTotal in the shared block below, after the off-peak charging
       // bonus, so it reflects every MWh coal actually generated. That is correct now the demand
       // line includes storage charging: coal burned to charge storage is real generation meeting
@@ -8576,7 +8594,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -9542,7 +9560,7 @@ function bldBuildLP(opts){
   // does not make, and the reason this remains a screen.
   const TAIL_COAL_FACTOR = 0.76;
   const AV_NUC = S.nuclearCF ?? FIXED.nuclearCF;
-  const AV_HYD = 0.55;   // the engine's own literal at simulate(); one value, two readers
+  const AV_HYD = S.hydroCF ?? FIXED.hydroCF;
   const AV_IMP = S.importsCF ?? FIXED.importsCF;
   // ROOFTOP AND CONGESTION, also from the engine's keys. The engine derates rooftop to 0.78 of
   // the solar profile and loses congestionCurtailPct of utility wind and solar to congestion when
@@ -16033,13 +16051,15 @@ const PRESETS={
   // Coal availability 58.4% is the coal-only figure for 2025 and outageTraceYear puts its
   // measured hourly shape behind it.
   //
-  // IT IS NOT A VALIDATION. It sheds about 14 GWh against the 390 GWh Eskom actually shed. The
+  // IT IS NOT A VALIDATION. It sheds about 18 GWh against the 390 GWh Eskom actually shed. The
   // difference is peaker delivery: in the 202 hours Eskom shed, its OCGTs managed 942 MW while
   // this model dispatches the full 3.06 GW fleet. Eskom's coal generated 96.5% of its available
   // capacity in those hours, so availability and deliverability are not the gap. Read the preset
   // as a fixed set of 2025 inputs, and read the model as optimistic about the last gigawatt or
-  // two of peaking in a crisis.
-  'Backcast 2025':{demandGrowthPct:0,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
+  // two of peaking in a crisis. Imports 0.652, hydro 0.339 and demand +2.5% are 2025 as measured in
+  // ESK19679 (6.57 TWh, 1.79 TWh, contracted 209.6 TWh); with them coal runs 168.9 TWh against
+  // Eskom's 170.4. 3 Oct 2026.
+  'Backcast 2025':{demandGrowthPct:2.5,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,importsCF:0.652,hydroCF:0.339,dslTankOn:1,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
   // DEMAND +5%, the same in Fossil-free 2040 and IRP path 2035 so the three can be compared.
   // Roughly half a percent a year to 2035: electrification and industrial recovery against
   // efficiency and continued grid defection.
@@ -16468,7 +16488,7 @@ function applyState(overrides){
   updateGroupBadges(); if(typeof updateVppTotal==='function') updateVppTotal();
 }
 const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'rooftopMW',
-                               'battPowerMW', 'outageTraceYear'];
+                               'battPowerMW', 'outageTraceYear', 'importsCF', 'hydroCF', 'dslTankOn'];
 const presetsEl=document.getElementById('presets');
 Object.keys(PRESETS).forEach((name,i)=>{
   const b=document.createElement('button');b.textContent=name; if(i===0)b.classList.add('active');
@@ -17458,7 +17478,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-03b';
+const BUILD_STAMP = '2026-10-03c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
