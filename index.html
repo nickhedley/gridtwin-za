@@ -5952,13 +5952,13 @@ const FIXED = {
   //   capacity 300 R/kW/yr - Ireland's T-4 cleared near EUR150,000/MW for
   //                          2028/29, roughly R3,000/kW/yr on de-rated capacity.
   //                          300 is a deliberately conservative tenth of that.
-  // Congestion curtailment, share of wind and solar output. 0.24% is the measured rate: 19.9 GWh
-  // curtailed against 8,397 GWh of REIPPPP output, January to June 2024 (NERSA renewable
-  // monitoring report; 0.06% a year earlier). 4% is the framework ceiling approved in September
-  // 2025, the most an IPP may be curtailed before compensation, not an expected rate. Was 4 until
-  // 3 Oct 2026. Builds beyond connection headroom pay for reinforcement (gridBuildChargeFor)
-  // rather than curtailing more; Grid delay sets 10% for a corridor that is not built.
-  congestionCurtailOn: true, congestionCurtailPct: 0.24,
+  // Curtailment, share of wind and solar output. STOPGAP: 1.3% stands in for 2025's observed
+  // curtailment, R402m of deemed energy to 67 REIPPPP plants (NERSA, issue 27, March 2026), about
+  // 1.0-1.6% of 17,808 GWh. That curtailment was low demand at night, not congestion, and the
+  // dispatch should produce it itself; it does not yet (TODO). Applied to every hour, so the timing
+  // is wrong. 4% is the congestion framework's cap on new Cape wind, not a fleet rate. Was 4 until
+  // 3 Oct 2026, briefly 0.24 (H1 2024). Grid delay sets 10% for a corridor that is not built.
+  congestionCurtailOn: true, congestionCurtailPct: 1.3,
   // National connection headroom, MW, sum of nodal/headroom_summary.json (GCCA 2025). Not read by
   // the engine; headroom enters through gridBuildChargeFor.
   congestHeadroomMW: 19940,
@@ -15886,8 +15886,8 @@ const SLIDERS=[
      + 'only 17% of it is in execution, so projects are weighted by their published phase '
      + 'before this scales them. At zero, headroom stays at the 2025 snapshot and new build '
      + 'pays to construct every line itself.'},
-  {id:'congestionCurtailPct',label:'Congestion curtailment',min:0,max:15,step:0.01,def:FIXED.congestionCurtailPct,fmt:v=>v+'&#37; of wind and solar',
-   note:'Default is the measured rate: 0.24&#37; of REIPPPP output, January to June 2024 (NERSA). NERSA approved a 4&#37; ceiling in September 2025, the most an IPP may be curtailed before compensation, expected to unlock 1,180&#160;MW of Western Cape wind. The single-node engine applies it nationally rather than to the corridors that actually bind.'},
+  {id:'congestionCurtailPct',label:'Curtailment',min:0,max:15,step:0.01,def:FIXED.congestionCurtailPct,fmt:v=>v+'&#37; of wind and solar',
+   note:'Default 1.3&#37; stands in for 2025&rsquo;s observed curtailment, about 1.0&ndash;1.6&#37; of REIPPPP output (NERSA, R402m of deemed energy), mostly wind at night when demand was low. NERSA&rsquo;s 4&#37; is a cap on new wind connecting in the Eastern and Western Cape, not a fleet-wide rate. The single-node engine applies it nationally rather than to the corridors that actually bind.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. Switch on to see what a priced reserve market would be worth to storage.'},
   {id:'asReserveRMWh',label:'\u2013 reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,ctrlStyle:SUB_CTRL,
@@ -17504,7 +17504,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-03f';
+const BUILD_STAMP = '2026-10-03g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

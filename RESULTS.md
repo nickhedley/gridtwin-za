@@ -1685,6 +1685,35 @@ today's fleet. Coal presets other than Today 2026 not yet re-measured over many 
 > RENAMED 3 Oct 2026: `Latest IRP's 2030 targets` is now `IRP's 2030 targets`. Entries before
 > then use the old name.
 
+### Curtailment re-based on 2025: a stopgap at 1.3%, and why the dispatch produces none, 3 Oct 2026
+
+Build `2026-10-03g`. NERSA's 2025 monitoring report (issue 27, March 2026): R402m of deemed energy
+to 67 REIPPPP plants, against R46.2m in H1 2024, curtailed at night when demand was low, to keep
+the grid stable. No GWh figure; at H1 2024's implied R2.32/kWh it is about 173 GWh, at the wind
+tariff of R1.42 about 283 GWh: 1.0-1.6% of 17,808 GWh. The congestion framework (April 2025 to
+March 2028) covers only new wind in the Eastern and Western Cape, capped at 4%.
+
+Stopgap: congestionCurtailPct 1.3, labelled as standing in for 2025's curtailment. Right on energy,
+wrong on timing: it takes energy from every hour, where the real loss was wind at night. Today 2026
+now loses 280 GWh, 1.2%. The iron-air finding passes again (July gas 2,209 to 2,209 GWh); it failed
+only at 0.24%, so it is sensitive to how much renewable energy is delivered. Suite 804/805.
+
+Why the dispatch produces no surplus curtailment, Today 2026 against Eskom's 2025 nights (00-05):
+
+```
+                        model     Eskom 2025
+coal / thermal MW      17,124       19,329
+storage charging MW     2,294          997  (Eskom: pumping only)
+coal min stable MW     10,739
+night thermal p5 / min               15,894 / 11,247
+```
+
+Coal never comes within 300 MW of its minimum stable level at night, so there is always room to
+back down. The model pumps over twice as hard as Eskom overnight and serves less from coal.
+Raising every unit's minimum stable level is not the answer: x1.3 gives 4 GWh of curtailment and
+x1.45 gives 1,100 GWh, with only 46% of it at night. The calibration belongs on Backcast 2025,
+against Eskom's 2025 night thermal distribution and pumping, before the stopgap is removed.
+
 ### Congestion loss: a double count found, and the default set to the measured 0.24%, 3 Oct 2026
 
 Build `2026-10-03f`. Why 7.2% and not 4%: the loss was booked twice, once in the net-load forecast

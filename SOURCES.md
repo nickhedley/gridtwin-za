@@ -23,7 +23,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Meridian Economics, South Africa Power Market Report | annual | 2025 edition, summary only | corroboration that cheaper solar-plus-storage delays new peaking plant. The report and COMPASS behind it are commercial; only the published summary is used |
 | CSIR least-cost study (plexos) | occasional | as cited in `validate_external.js` | external comparison, 2030 coal share |
 | Eskom weekly system status | weekly | drift detector only | `validate_capacity.js` |
-| NERSA renewable energy monitoring report | half-yearly | H1 2024 | curtailment check: 19.9 GWh curtailed Jan-Jun 2024, about 0.2% of REIPPPP output; not yet loaded into the model |
+| NERSA renewable energy monitoring report | half-yearly | 2025, issue 27, March 2026 | curtailment: R402m deemed energy to 67 plants, low demand at night, about 1.0-1.6% of 17,808 GWh (no GWh published; derived from tariffs). Sets the 1.3% stopgap. H1 2024 was 19.9 GWh, 0.2% |
 | NTCSA Weekly System Status Report, "Estimated Rooftop PV" monthly rows | weekly | 2026 w3 and w16; the 2025 rows agree in both | Backcast 2025 `rooftopMW` 6,532: the 2025 annual mean of the twelve monthly rows, 6,830.2, less 298.3 MW of wheeled solar the preset already carries in `pvUtilityMW` (2,600 less ESK19679's 2025 mean of 2,301.7). Basis: annual mean, calendar 2025 |
 | Eskom hourly dataset ESK19679 | on request | Apr 2022 - Aug 2026, 38,736 h | curtailment estimate. Separates Wind, PV, CSP, Other RE with installed capacity per technology. Wind installed peaks at 4,143 MW, matching the REIPPPP-only fleet - it EXCLUDES wheeled plant |
 | Eskom hourly dataset ESK19243 | on request | calendar 2025 | OCGT seasonality. Superseded for most purposes by ESK19679 |
