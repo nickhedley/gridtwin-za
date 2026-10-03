@@ -1685,6 +1685,37 @@ today's fleet. Coal presets other than Today 2026 not yet re-measured over many 
 > RENAMED 3 Oct 2026: `Latest IRP's 2030 targets` is now `IRP's 2030 targets`. Entries before
 > then use the old name.
 
+### Night demand definitions: ruled out as the curtailment cause; the model's demand shape is off, 3 Oct 2026
+
+Eskom's glossary: residual demand is what dispatchable resources supply (Eskom generation,
+imports, dispatchable IPPs, IOS); RSA contracted demand is residual demand plus self-dispatched
+generation such as renewables. It does not say how pumping is treated. ESK19679 settles it: across
+2025, contracted demand equals the sum of all supply columns (including IOS, ILS and load shed)
+less pumping load, to a mean of 7 MW and an SD of 20 MW at night. So contracted demand excludes
+pumping, includes exports and adds back load shed. The model's comparable line is its load before
+storage charging (rawDemand less rooftop plus firm exports), which is defined the same way.
+
+Like for like, Backcast 2025 against Eskom 2025, MW:
+
+```
+hours    model    Eskom    model less Eskom
+00-04   20,059   20,582       -523
+05-08   24,092   24,251       -159
+09-15   25,509   24,589       +919
+16-20   26,361   26,731       -370
+21-23   22,194   22,809       -615
+year     209.4    209.6 TWh
+peak     27,184   27,770      -586   both at 18:00
+```
+
+Night demand in the model is lower than Eskom's, which would make surplus curtailment more likely,
+not less. Ruled out as the cause.
+
+But the shape is wrong in a way that matters: the evening peak is 0.6 GW (2%) low, which flatters
+adequacy, and middays are 0.9 GW high, which hides solar surplus. The likeliest cause is rooftop
+netting (too little rooftop output subtracted at midday) or the demand profile's own shape; not
+yet tested.
+
 ### Correction: ESK19679 timestamps are 12-hour clock, and two figures above were wrong, 3 Oct 2026
 
 ESK19679 writes "2025-01-01 12:00:00 AM". Reading the hour as the two digits after the date folded
