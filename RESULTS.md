@@ -1682,6 +1682,29 @@ null, same random use        0.06              0.7
 At 48% EAF, eight draws: 0.102 to 0.111 TWh. Still under the 0.002% standard (about 4 GWh) at
 today's fleet. Coal presets other than Today 2026 not yet re-measured over many draws.
 
+> RENAMED 3 Oct 2026: `Latest IRP's 2030 targets` is now `IRP's 2030 targets`. Entries before
+> then use the old name.
+
+### Curtailment: the model loses 7% of Today's renewables to congestion; reality is about 0.2%, 3 Oct 2026
+
+Build `2026-10-03e`, Today 2026, default profile. The weather-extremes panel reports 0% because it
+counts only surplus curtailment, which is zero. Congestion is counted separately and not shown:
+
+```
+                                  model            measured
+renewable output                  22.2 TWh
+surplus curtailment               0                 -
+congestion loss                   1.72 TWh, 7.2%    19.9 GWh in H1 2024 against 8.4 TWh, about 0.2%
+```
+
+The measured figure is NERSA's renewable monitoring report for January to June 2024 (up from 4.6
+GWh a year earlier, mostly late night to early morning, R46.2m of deemed energy to 40 IPPs). The
+model applies congestionCurtailPct, 4%, which is NERSA's Congestion Curtailment Framework ceiling,
+not an expected rate; Eskom said congestion curtailment would only be needed once the 3,470 MW in
+its GCCA 2025 addendum connects, from about 2026. Why the model's share reads 7.2% rather than 4%
+is not yet established. Every renewable-output and curtailment figure on a build near today's is
+pessimistic by roughly this amount.
+
 ### Coal presets re-measured with common-mode trips, 480 draws each, 3 Oct 2026
 
 Build `2026-10-03d`. Each draw its own outage path and one of twelve weather years, 40 per year.

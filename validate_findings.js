@@ -552,7 +552,7 @@ setTimeout(()=>{
   {
     const c = probe(`
       const saved = JSON.parse(JSON.stringify(state));
-      Object.assign(state, PRESETS["Latest IRP's 2030 targets"]);
+      Object.assign(state, PRESETS["IRP's 2030 targets"]);
       const P = { ...FIXED, ...state };
       const r = simulate(state, PROFILES);
       const avail = (P.coalInstalledMW - P.coalDecomMW) * P.coalEAFPct / 100 * 8760 / 1e6;
@@ -740,7 +740,7 @@ setTimeout(()=>{
         const E = lastRes.E;
         return { re: ((E.wind||0)+(E.pv||0)+(E.rooftop||0)+(E.csp||0))/1e6, coal: (E.coal||0)/1e6 };
       };
-      const irp = pick("Latest IRP's 2030 targets");
+      const irp = pick("IRP's 2030 targets");
       const dly = pick('Grid delay');
       for (const k of Object.keys(state)) delete state[k];
       Object.assign(state, saved); run();
@@ -781,7 +781,7 @@ setTimeout(()=>{
                  tu: r.congestTurnUpR || 0 };
       };
       const today = pick('Today 2026');
-      const irp = pick("Latest IRP's 2030 targets");
+      const irp = pick("IRP's 2030 targets");
       for (const k of Object.keys(state)) delete state[k];
       Object.assign(state, saved); run();
       return { today, irp };

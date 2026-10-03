@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03d`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03e`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -16,7 +16,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Install this session's files
 
-1. You: replace index.html (root), eng5.js, validate_findings.js, validate_consistency.js and validate_benchmarks.js (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
+1. You: replace index.html (root), eng5.js, validate_findings.js, validate_consistency.js, validate_benchmarks.js and audit.py (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
 2. You: replace MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md in project knowledge too
 3. You: commit and push; never commit the zip
 
@@ -39,6 +39,11 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
+14b. Congestion loss: the model loses 1.72 TWh (7.2%) of Today 2026's renewables against NERSA's measured ~0.2%; find why it reads 7.2% not the 4% setting, then recalibrate to measured with a path to higher levels as new connections exceed headroom
+14c. Show congestion loss alongside surplus curtailment in the wind and solar extremes panel, so 0% is not read as no curtailment
+14d. You: Grid delay is a 2030 scenario (IRP's 2030 targets with 40% of wind and solar held back by a slipping corridor, congestion 10%) – rename it to make the year visible, e.g. 'IRP's 2030 targets, grid delayed'?
+14e. You: 'IRP path 2035' is not the IRP's 2035 targets – the IRP publishes no 2035 figures, so it is a straight-line interpolation between 2030 and 2039 on this model's demand. Keep the name, or 'IRP path 2035 (interpolated)'?
+14f. You: 'Backcast 2025' – a backcast is the model re-run on a past year to compare against what happened; '2025 actual' would read as Eskom's data. Suggest '2025 replay' or 'Model of 2025'?
 14a. You: re-size either preset to 16-hour lithium? 0.5% cheaper, inside the cost uncertainty
 15. You: EAF 55–60% unserved rise (4.00, 5.39, 5.69 GWh, present with the charging rule off) – investigate now or park?
 16. You: re-size the transition presets on many outage draws rather than one? Deep decarbonisation reads 1.36 GWh mean on 480 draws against the 2.02 it was sized on
@@ -127,7 +132,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-03d after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-03e after the push, and the new footer label shows
 
 ## Named projects
 
