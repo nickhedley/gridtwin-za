@@ -1685,6 +1685,39 @@ today's fleet. Coal presets other than Today 2026 not yet re-measured over many 
 > RENAMED 3 Oct 2026: `Latest IRP's 2030 targets` is now `IRP's 2030 targets`. Entries before
 > then use the old name.
 
+### Correction: ESK19679 timestamps are 12-hour clock, and two figures above were wrong, 3 Oct 2026
+
+ESK19679 writes "2025-01-01 12:00:00 AM". Reading the hour as the two digits after the date folded
+AM and PM together. Re-parsed:
+
+```
+                                        reported      corrected
+Eskom 2025 shedding at 22:00-06:00         40%           30%
+Eskom 2025 night (00-05) thermal mean   19,329 MW     19,177 MW
+Eskom 2025 night pumping mean              997 MW      1,849 MW
+Eskom 2025 night thermal p5 / min    15,894/11,247  16,144/13,210
+```
+
+The weekend share (54%), pumping while shedding and every daily or index-based figure are
+unaffected. The entry below compared Today 2026 with Eskom's nights; the claim that the model pumps
+twice as hard as Eskom is withdrawn. On the like-for-like comparison, Backcast 2025 against 2025:
+
+```
+hour     Eskom thermal   model coal    Eskom pumping   model PS pumping
+00-03       ~18,900        ~17,700         ~2,000            ~1,300
+06-16       ~19,300        ~19,400           ~300              ~50
+17-20       ~20,300        ~20,300            ~40              ~25
+```
+
+The backcast follows Eskom's daily shape to within about 1 GW; at night it runs about 1 GW less
+coal and pumps about 0.7 GW less. Its night coal p5 and minimum (15,436 and 13,613 MW) sit close to
+Eskom's. Raising every unit's minimum stable level up to 1.4x produces no curtailment at all on
+the backcast. So the 2025 curtailment is not reproduced by a coal-minimum change; the remaining
+candidates are the demand definition at night (model load includes charging; Eskom's contracted
+demand may not), an operating floor Eskom holds on coal above technical minimum, and local
+stability curtailment at specific plants, which a single-node model cannot see. The 1.3% stopgap
+stays.
+
 ### Curtailment re-based on 2025: a stopgap at 1.3%, and why the dispatch produces none, 3 Oct 2026
 
 Build `2026-10-03g`. NERSA's 2025 monitoring report (issue 27, March 2026): R402m of deemed energy
@@ -1854,7 +1887,7 @@ What is left is operation, not energy. Eskom's own 2025 data:
 
 ```
 shedding                    390 GWh on 17 days; about 70% in three weekends, 31 Jan to 9 Mar
-shed 22:00-06:00            40%
+shed 22:00-06:00            30% (corrected from 40%, see 12-hour clock entry)
 shed at weekends            54%
 pumping while shedding      about 1,000 MW on average; pumped-storage output 390 MW
 peakers while shedding      941 MW of about 3,000
