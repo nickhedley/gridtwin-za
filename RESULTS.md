@@ -1650,6 +1650,55 @@ Open: why Eskom's peakers delivered under a gigawatt in its tightest hours while
 delivers three. Fuel logistics and station availability are the candidates, and neither is in
 ESK19679.
 
+### Common-mode trips added; Today 2026 expected shedding roughly triples, 3 Oct 2026
+
+Build `2026-10-03d`. Professional tools (GE MARS, AEMO's ESOO, PLEXOS) draw forced outages unit by
+unit, independently; correlation is added as a common-mode failure rate that takes a group out
+together, with its own repair rate (Billinton and Allan; Singh). Done here per station, with the
+independent rate reduced so the EAF is unchanged. 0 events reproduces the independent draw exactly.
+
+Calibrated to ESK19679 2023-2025 on two statistics, checked on two it was not fitted to:
+
+```
+                            measured            calibrated (60 draws)
+days losing >8% in 24h      9, 16, 16           14       fitted
+largest 6-hour fall         0.136-0.152         0.154    fitted
+1st percentile              0.73-0.83           0.78     not fitted
+worst week                  0.76-0.87           0.80     not fitted
+```
+
+5 events per station-year, each taking half the station's units, 36-hour repair (February 2025:
+8 of 10 tripped units back within about a day and a half).
+
+Today 2026, 960 draws, each with its own outage path and one of twelve weather years:
+
+```
+                         mean shed GWh   worst-year mean
+independent                  0.07              0.7
+common-mode                  0.19              2.0
+null, same random use        0.06              0.7
+```
+
+At 48% EAF, eight draws: 0.102 to 0.111 TWh. Still under the 0.002% standard (about 4 GWh) at
+today's fleet. Coal presets other than Today 2026 not yet re-measured over many draws.
+
+### Three checks were passing on one lucky outage draw, 3 Oct 2026
+
+Changing the random draw moved three harness results with no change to the fleet. Each now reads
+the mean or median of eight draws:
+
+```
+check                                   one seed, before / after    eight-draw value
+Homeflex shadow spread (consistency)       2.3x / 1.1x                 1.1x, FAILS
+surplusGW 2025 (benchmarks)                2.2 / -2.0 GW              2.0 / 1.5 GW, passes
+storage cuts unserved, eng5 check 6        20% / 6%                    11% / 11%, passes
+```
+
+The Homeflex check now fails on both builds, and that is the finding: in seven of eight outage
+draws the shadow price of a representative winter week varies 1.1x against Homeflex's 3.9x. It
+only matched when a scarcity event fell in that week. The hourly shadow price is nearly flat in a
+normal week. Standing failure until the shadow price shape is investigated.
+
 ### Forward outage draws are independent per unit; they match Eskom's tails but miss its sudden drops, 3 Oct 2026
 
 Build `2026-10-03c`. genUnitOutagePath draws each coal unit as its own two-state Markov chain, same

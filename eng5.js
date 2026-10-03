@@ -68,7 +68,11 @@ setTimeout(()=>{
  if(!mono5) fails.push('storage vs curtailment');
 
  // 6. more storage must not increase unserved energy
- const us=[0,10000,20000,30000].map(v=>{preset('Today 2026'); set('coalEAFPct',48); set('newBattMW',v); w.run(); return w.lastRes.E.unserved/M;});
+ // Mean of eight outage draws from 3 Oct 2026. On one seed the sweep read a 20% cut before
+ // common-mode trips and 6% after, against 11% on the eight-draw mean either way.
+ preset('Today 2026');
+ const us=JSON.parse(w.eval(`JSON.stringify([0,10000,20000,30000].map(v=>{ let u=0; for (let k=0;k<8;k++)
+   u+=simulate({...state, coalEAFPct:48, newBattMW:v, outageSeed:20260816+k*104729}, PROFILES).E.unserved/1e6; return u/8; }))`));
  // TOLERANCE WAS LARGER THAN THE EFFECT, fixed 23 Sep 2026. The absolute 0.02 TWh allowance is
  // 20 GWh, against a total variation across this sweep of about 16 GWh - so a regression that
  // RAISED unserved energy by anything up to 20 GWh passed. The check could not fail.

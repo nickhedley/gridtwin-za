@@ -311,7 +311,11 @@ const check = (name, ok, detail) => {
           const v = seeds.map(sd => sur(simulate({ ...state, ...(ov || {}), outageSeed: sd }, PROFILES), state));
           return v.reduce((x, y) => x + y, 0) / v.length;
         };
-        return { surplusGW: sur(r, S25), surplus2026GW: meanSur() };
+        // The 2025 figure on eight draws from 3 Oct 2026: on one seed it read 2.2 GW with independent
+        // outages and -2.0 GW once common-mode trips changed the draw, with no change to the fleet.
+        const sur25 = (() => { const v = []; for (let k = 0; k < 8; k++){ const st = { ...S25, outageSeed: 20260816 + k * 104729 };
+          v.push(sur(simulate(st, PROFILES), st)); } return v.reduce((x, y) => x + y, 0) / v.length; })();
+        return { surplusGW: sur25, surplus2026GW: meanSur() };
       })(),
       // Grid generation excluding rooftop, which is behind the meter and never reaches
       // the distribution network. Compare against energy AVAILABLE, not sales.

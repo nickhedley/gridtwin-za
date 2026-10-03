@@ -5610,6 +5610,12 @@ const FIXED = {
   // Null means the Markov draw. A year in nodal/coal_availability_trace.json makes coal
   // availability follow that year's measured hours instead; see the trace block in simulate.
   outageTraceYear:null, outageSeed:20260816,
+  // Common-mode trips: events per station-year, repair hours, and the share of a station's units
+  // each event takes. Calibrated 3 Oct 2026 to ESK19679 2023-2025: 14 days a year losing over 8%
+  // of the coal fleet in 24 hours (measured 9, 16, 16) and a largest 6-hour fall of 0.154 of mean
+  // (measured 0.136-0.152). Repair 36 h from February 2025, when 8 of 10 tripped units at Majuba,
+  // Camden and Medupi were back within about a day and a half. 0 restores the independent draw.
+  outageCmPerStationYr:5, outageCmMttrH:36, outageCmUnitShare:0.5,
   outagePlannedSeason:[1.23,1.14,1.03,1.12,0.80,0.75,0.72,0.89,0.98,1.01,1.07,1.27],
   // CARBON CAP in the build optimiser. Off by default so the headline answer
   // stays "least cost, carbon priced". Switched on, the LP must MEET the cap
@@ -7237,7 +7243,8 @@ function simulate(u, prof, outPath, _soc0){
   // toggle is off, which restores the smooth-derate behaviour exactly.
   const unitOutage = (!outPath && (p.outageUnitLevel ?? 1))
     ? genUnitOutagePath(eafFraction, p.outageForcedSharePct,
-                        p.outageMttrH, p.outageSeed, p.outagePlannedSeason)
+                        p.outageMttrH, p.outageSeed, p.outagePlannedSeason,
+                        p.outageCmPerStationYr, p.outageCmMttrH, p.outageCmUnitShare)
     : null;
   // HISTORICAL AVAILABILITY TRACE, 22 Sep 2026. A synthetic outage draw reproduces the spread
   // of Eskom's availability but not its persistence: real troughs last weeks, which is when
@@ -8700,16 +8707,18 @@ function priceStatsOf(mp, stack, E){
  * reproducible and the validators stay meaningful; the Monte Carlo panel varies
  * the seed across its runs, which is where the distribution belongs.
  */
-function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed, season){
+function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed, season, cmPerStationYr, cmMttrH, cmUnitShare){
   const HOURS = 8760;
   const rnd = mulberry32(seed >>> 0);
 
   // Build the unit list once from the same fleet the UC scheduler uses.
-  const units = [];
+  const units = [], stationOf = [], stationIx = new Map();
   for (const g of UC_FLEET){
     const n = Math.max(1, g.n || 1);
     const uc = g.unit_cap || (g.cap / n);
-    for (let k = 0; k < n; k++) units.push(uc);
+    const st = String(g.name).replace(/\*+$/, '');
+    if (!stationIx.has(st)) stationIx.set(st, stationIx.size);
+    for (let k = 0; k < n; k++){ units.push(uc); stationOf.push(stationIx.get(st)); }
   }
   const fleetMW = units.reduce((a,b) => a+b, 0) || 1;
 
@@ -8720,20 +8729,37 @@ function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed, season){
   // ---- forced: two-state Markov per unit -------------------------------------
   const MTTR = Math.max(4, mttrHours);
   const mu = 1 / MTTR;
-  const FOR = Math.min(0.6, Math.max(0, forcedFrac));
+  // Common-mode failures (Billinton and Allan's two-component model, applied per station): an
+  // extra failure rate that takes every unit of a station out together, with its own repair rate.
+  // The independent rate is reduced so total forced unavailability, and so the EAF, is unchanged.
+  // Off when cmPerStationYr is 0, which reproduces the independent draw exactly. 3 Oct 2026.
+  const nSt = stationIx.size;
+  const lamC = Math.max(0, cmPerStationYr || 0) / 8760, muC = 1 / Math.max(4, cmMttrH || 36);
+  const qC = Math.min(1, Math.max(0, cmUnitShare ?? 1));
+  const uC = lamC > 0 ? qC * lamC / (lamC + muC) : 0;
+  const FORall = Math.min(0.6, Math.max(0, forcedFrac));
+  const FOR = uC > 0 ? Math.max(0, 1 - (1 - FORall) / (1 - uC)) : FORall;
   const lambda = FOR >= 1 ? 1 : mu * FOR / (1 - FOR);
+  const stUp = new Uint8Array(nSt).fill(1), cmHit = new Uint8Array(units.length);
 
   const up = new Uint8Array(units.length);
   const avail = new Float64Array(HOURS);
   // Start each unit in its steady state so the year does not open all-healthy.
   for (let i = 0; i < units.length; i++) up[i] = rnd() < FOR ? 0 : 1;
+  if (lamC > 0){ for (let k = 0; k < nSt; k++) stUp[k] = rnd() < lamC / (lamC + muC) ? 0 : 1;
+    for (let i = 0; i < units.length; i++) cmHit[i] = rnd() < qC ? 1 : 0; }
 
   for (let h = 0; h < HOURS; h++){
     let mw = 0;
+    if (lamC > 0) for (let k = 0; k < nSt; k++){
+      if (stUp[k]){ if (rnd() < lamC){ stUp[k] = 0;
+        for (let i = 0; i < units.length; i++) if (stationOf[i] === k) cmHit[i] = rnd() < qC ? 1 : 0; } }
+      else        { if (rnd() < muC)  stUp[k] = 1; }
+    }
     for (let i = 0; i < units.length; i++){
       if (up[i]){ if (rnd() < lambda) up[i] = 0; }
       else      { if (rnd() < mu)     up[i] = 1; }
-      if (up[i]) mw += units[i];
+      if (up[i] && (stUp[stationOf[i]] || !cmHit[i])) mw += units[i];
     }
     avail[h] = mw / fleetMW;      // fraction of fleet forced-available
   }
@@ -17478,7 +17504,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-03c';
+const BUILD_STAMP = '2026-10-03d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

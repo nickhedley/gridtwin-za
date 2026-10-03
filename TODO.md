@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03c`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03d`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -10,13 +10,13 @@ eng5 check 3 fixed and shown to fail on an injected defect; rooftop footer relab
 was site-specific, the region name was wrong); full suite with all inputs present, 802/803 plus
 eng5 6/6; Backcast 2025 rooftop sourced as a 2025 annual mean and re-measured; list reprints
 only pressing items, full list on request; lithium duration swept 8 to 20 hours and the 12-hour
-cap raised to 20; adequacy loop decomposed and gas charging added; backcast subtraction vetted; adequacy loop converges after gas-ahead-of-storage (validate_findings check added); both forecasts on planned coal, no thermal charging into the peak; backcast inputs set to 2025 measured; diesel tank added; preset-key check added.
+cap raised to 20; adequacy loop decomposed and gas charging added; backcast subtraction vetted; adequacy loop converges after gas-ahead-of-storage (validate_findings check added); both forecasts on planned coal, no thermal charging into the peak; backcast inputs set to 2025 measured; diesel tank added; preset-key check added; common-mode outage trips added and calibrated; three seed-fragile checks moved to eight-draw means.
 
 ---
 
 ## Install this session's files
 
-1. You: replace index.html (root), eng5.js and validate_findings.js (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
+1. You: replace index.html (root), eng5.js, validate_findings.js, validate_consistency.js and validate_benchmarks.js (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
 2. You: replace MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md in project knowledge too
 3. You: commit and push; never commit the zip
 
@@ -41,7 +41,9 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 14a. You: re-size either preset to 16-hour lithium? 0.5% cheaper, inside the cost uncertainty
 15. You: EAF 55–60% unserved rise (4.00, 5.39, 5.69 GWh, present with the charging rule off) – investigate now or park?
-16. You: add station-level common-mode trips to the forward outage draw, calibrated to the measured count of sudden drops, then re-measure every coal preset? Independent draws produce 4 days a year of >8% falls against Eskom's 16
+16. Re-measure every coal preset over many outage draws with common-mode trips on (Today 2026 done: 0.07 to 0.19 GWh mean)
+16d. Investigate the flat shadow price: a normal winter week varies 1.1x against Homeflex's 3.9x (standing failure in validate_consistency)
+16e. Sweep the harnesses for other checks that read one seeded outage draw
 16b2. You: the backcast's remaining gap is Eskom's reserve-refill shedding; ask Eskom or NTCSA for their weekly emergency-reserve targets?
 16c. You: the RMIPPPP hybrids (335 MW, 1.8 TWh) – were they delivering in 2025? Turning them off brings backcast coal to 170.3 against 170.4
 16a. Run the converged loop build through the presets' twelve-year test before treating it as a result
@@ -125,7 +127,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-03c after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-03d after the push, and the new footer label shows
 
 ## Named projects
 

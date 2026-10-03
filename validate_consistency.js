@@ -1313,11 +1313,18 @@ const num = t => {
           const yr = document.getElementById('retYear'); const keepY = yr.value;
           const keep = JSON.parse(JSON.stringify(state));
           // 2025 conditions since 22 Sep 2026, as for the TOU checks above.
-          Object.assign(state, { demandGrowthPct: 4.6, coalEAFPct: 58, importsMW: 858, exportsMW: 1705, nuclearCF: 0.62 });
-          yr.value = 2026; run();
-          const d = retailHourly();
+          // Median over eight outage seeds, from 3 Oct 2026. On one seed the result was luck: a
+          // scarcity event in the representative week gave 2.3x, and seven of eight other seeds
+          // gave 1.1x. A single draw cannot test a shape.
           const R = RETAIL_T.homeflex.rates_r_per_kwh_2026_27;
-          const out = d ? { shadowSpread: Math.max(...d.week) / Math.min(...d.week),
+          const spreads = []; let d = null;
+          for (let k = 0; k < 8; k++){
+            Object.assign(state, keep, { demandGrowthPct: 4.6, coalEAFPct: 58, importsMW: 858, exportsMW: 1705, nuclearCF: 0.62, outageSeed: 20260816 + k * 104729 });
+            yr.value = 2026; run(); d = retailHourly();
+            if (d) spreads.push(Math.max(...d.week) / Math.min(...d.week));
+          }
+          spreads.sort((x, y) => x - y);
+          const out = d ? { shadowSpread: (spreads[3] + spreads[4]) / 2, spreads,
                             hfHigh: R.high_season_peak / R.high_season_offpeak,
                             hfLow: R.low_season_peak / R.low_season_offpeak,
                             wk: d.wkMode } : { err: 'no panel' };
@@ -1332,7 +1339,8 @@ const num = t => {
                 + `season ${sh.hfHigh.toFixed(1)}x, ratio ${ratio.toFixed(2)}. Eskom sets `
                 + `Homeflex from its own wholesale purchase structure, so a dispatch model `
                 + `of the same system should land near it. This is the ONLY check here that `
-                + `borrows nothing from the tariff it tests against.`);
+                + `borrows nothing from the tariff it tests against. Median of eight outage seeds: `
+                + `${(sh.spreads || []).map(x => x.toFixed(1)).join(', ')}.`);
           console.log(`  shape         shadow ${sh.shadowSpread.toFixed(1)}x vs Homeflex `
             + `${sh.hfHigh.toFixed(1)}x high / ${sh.hfLow.toFixed(1)}x low season`);
         }
