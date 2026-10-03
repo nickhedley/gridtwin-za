@@ -5952,15 +5952,15 @@ const FIXED = {
   //   capacity 300 R/kW/yr - Ireland's T-4 cleared near EUR150,000/MW for
   //                          2028/29, roughly R3,000/kW/yr on de-rated capacity.
   //                          300 is a deliberately conservative tenth of that.
-  // Congestion curtailment. 4% is NERSA's approved ceiling from September 2025,
-  // not a fitted value. Defaults ON: it is happening now and at scale, unlike
-  // the market-design levers below which model things South Africa does not do.
-  congestionCurtailOn: true, congestionCurtailPct: 4,
-  // National connection headroom, MW. Sum of nodal/headroom_summary.json across ten regions:
-  // what the grid can absorb without reinforcement. Source GCCA 2025 plus the Oct 2025
-  // curtailment update. congestionCurtailPct is the rate AT this headroom, and curtailment
-  // scales with how far a build exceeds it. Capped at 4x so a very large build does not
-  // curtail everything.
+  // Congestion curtailment, share of wind and solar output. 0.24% is the measured rate: 19.9 GWh
+  // curtailed against 8,397 GWh of REIPPPP output, January to June 2024 (NERSA renewable
+  // monitoring report; 0.06% a year earlier). 4% is the framework ceiling approved in September
+  // 2025, the most an IPP may be curtailed before compensation, not an expected rate. Was 4 until
+  // 3 Oct 2026. Builds beyond connection headroom pay for reinforcement (gridBuildChargeFor)
+  // rather than curtailing more; Grid delay sets 10% for a corridor that is not built.
+  congestionCurtailOn: true, congestionCurtailPct: 0.24,
+  // National connection headroom, MW, sum of nodal/headroom_summary.json (GCCA 2025). Not read by
+  // the engine; headroom enters through gridBuildChargeFor.
   congestHeadroomMW: 19940,
   // How much of the Transmission Development Plan actually gets built, as a share of the
   // phase-weighted figure. 100 means the TDP delivers on its own published phases; 0 means
@@ -7176,11 +7176,11 @@ function simulate(u, prof, outPath, _soc0){
     // The 4% is NERSA's Congestion Curtailment Framework CEILING - the most an IPP may be
     // curtailed before compensation - used here as an expected rate. Regional allocation with
     // resource-weighted siting and a TDP headroom path is the real fix; see the to-do.
-    const _cgp = p.congestionCurtailOn ? Math.max(0, (p.congestionCurtailPct ?? 4)) / 100 : 0;
+    // Net load forecast only: the loss is booked once, in the dispatch loop. Booking it here as
+    // well counted every congested MWh twice (1.72 TWh reported for 0.92 lost). Fixed 3 Oct 2026.
+    const _cgp = p.congestionCurtailOn ? Math.max(0, p.congestionCurtailPct) / 100 : 0;
     if (_cgp > 0){
-      const _lost = (windGen + pvGen) * _cgp;
       windGen *= (1 - _cgp); pvGen *= (1 - _cgp);
-      congestMW[h] = _lost; congestTot += _lost;
 
     };
     // dispatch ORDER IS deliberate, NOT A shortcut (settled 14 Aug 2026).
@@ -7470,7 +7470,7 @@ function simulate(u, prof, outPath, _soc0){
     // congestion CURTAILMENT. Own accumulator, deliberately - see the note at
     // the other declaration. The price engine reads curtailMW as an oversupply
     // signal and zeroes the marginal price wherever it is non-zero.
-    const _cgp2 = p.congestionCurtailOn ? Math.max(0, (p.congestionCurtailPct ?? 4)) / 100 : 0;
+    const _cgp2 = p.congestionCurtailOn ? Math.max(0, p.congestionCurtailPct) / 100 : 0;
     if (_cgp2 > 0){
       const _lost2 = (windGen + pvGen) * _cgp2;
       windGen *= (1 - _cgp2); pvGen *= (1 - _cgp2);
@@ -9610,7 +9610,7 @@ function bldBuildLP(opts){
     return _EXB * (1 + (_EXP - 1) * (2 * f - 1));
   };
   const AV_CONG = (S.congestionCurtailOn ?? FIXED.congestionCurtailOn)
-    ? 1 - Math.max(0, (S.congestionCurtailPct ?? 4)) / 100 : 1;
+    ? 1 - Math.max(0, S.congestionCurtailPct) / 100 : 1;
   const RES_MW  = (S.reserveEnabled ?? 1) ? (S.reserveOperatingMW || 0) : 0;
   const RES_VRE = (S.reserveEnabled ?? 1) ? (S.reserveVrePct || 0) / 100 : 0;
   const RES_VRE_BASE = S.reserveVreBaseMW || 0;
@@ -15886,8 +15886,8 @@ const SLIDERS=[
      + 'only 17% of it is in execution, so projects are weighted by their published phase '
      + 'before this scales them. At zero, headroom stays at the 2025 snapshot and new build '
      + 'pays to construct every line itself.'},
-  {id:'congestionCurtailPct',label:'Curtailment ceiling',min:0,max:15,step:0.5,def:FIXED.congestionCurtailPct,fmt:v=>v+'&#37; of wind and solar',
-   note:'NERSA approved 4&#37; congestion curtailment in September 2025, expected to unlock 1,180&#160;MW of Western Cape wind. Compensation runs only to 2028 under the pilot. The single-node engine applies it nationally rather than to the corridors that actually bind.'},
+  {id:'congestionCurtailPct',label:'Congestion curtailment',min:0,max:15,step:0.01,def:FIXED.congestionCurtailPct,fmt:v=>v+'&#37; of wind and solar',
+   note:'Default is the measured rate: 0.24&#37; of REIPPPP output, January to June 2024 (NERSA). NERSA approved a 4&#37; ceiling in September 2025, the most an IPP may be curtailed before compensation, expected to unlock 1,180&#160;MW of Western Cape wind. The single-node engine applies it nationally rather than to the corridors that actually bind.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. Switch on to see what a priced reserve market would be worth to storage.'},
   {id:'asReserveRMWh',label:'\u2013 reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,ctrlStyle:SUB_CTRL,
@@ -17504,7 +17504,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-03e';
+const BUILD_STAMP = '2026-10-03f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

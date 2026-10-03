@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03e`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03f`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -39,7 +39,10 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
-14b. Congestion loss: the model loses 1.72 TWh (7.2%) of Today 2026's renewables against NERSA's measured ~0.2%; find why it reads 7.2% not the 4% setting, then recalibrate to measured with a path to higher levels as new connections exceed headroom
+14b. You: re-size both transition presets – with congestion at the measured 0.24% they are over-built (Deep 0.08 GWh mean shed against a 2.07 target, Fossil-free 0); combine with the many-draws re-sizing
+14b2. You: the iron-air finding now reads a 6% July gas change, not zero – re-state the finding and re-pin its check, or keep it failing?
+14b3. Explain why the Homeflex check flipped green: the representative week's peak price rose 3.40 to 7.39 R/kWh after the congestion fix
+14b4. Re-measure the curtailment ranges quoted in RESULTS and outreach (51-68 and 90-114 TWh were at 4%)
 14c. Show congestion loss alongside surplus curtailment in the wind and solar extremes panel, so 0% is not read as no curtailment
 14d. You: Grid delay is a 2030 scenario (IRP's 2030 targets with 40% of wind and solar held back by a slipping corridor, congestion 10%) – rename it to make the year visible, e.g. 'IRP's 2030 targets, grid delayed'?
 14e. You: 'IRP path 2035' is not the IRP's 2035 targets – the IRP publishes no 2035 figures, so it is a straight-line interpolation between 2030 and 2039 on this model's demand. Keep the name, or 'IRP path 2035 (interpolated)'?
@@ -132,7 +135,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-03e after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-03f after the push, and the new footer label shows
 
 ## Named projects
 

@@ -4,7 +4,7 @@ Root-versus-nodal confusion has cost time twice: two different `build_capacity.p
 under the same name, and a split builder writing to a filename the generator does
 not read. This file exists so that does not happen a third time.
 
-Last verified: 3 Oct 2026, build `2026-10-03e`, against the upload set of that day.
+Last verified: 3 Oct 2026, build `2026-10-03f`, against the upload set of that day.
 
 ---
 
@@ -148,7 +148,7 @@ check its exit code. Two `ctx.createPattern` errors (index.html:11951 on
 
 Node dependencies: `jsdom`, `highs`, `eslint` (validate_lint calls `npx eslint`).
 
-Expected on 3 Oct 2026: 803/805, the failures EDMSA Scenario A CO2 2035 and the Homeflex shadow spread,
+Expected on 3 Oct 2026: 803/805, the failures EDMSA Scenario A CO2 2035 and the iron-air July finding (moved by the congestion fix),
 known and standing. eng5 6/6.
 
 ---

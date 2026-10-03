@@ -1685,6 +1685,39 @@ today's fleet. Coal presets other than Today 2026 not yet re-measured over many 
 > RENAMED 3 Oct 2026: `Latest IRP's 2030 targets` is now `IRP's 2030 targets`. Entries before
 > then use the old name.
 
+### Congestion loss: a double count found, and the default set to the measured 0.24%, 3 Oct 2026
+
+Build `2026-10-03f`. Why 7.2% and not 4%: the loss was booked twice, once in the net-load forecast
+loop and again in dispatch. Dispatch applied it once; the reported total counted it twice (1.72 TWh
+reported for 0.92 lost). At a 4% setting the reported share is now 3.7% of wind, solar and CSP,
+which is 4% of wind and solar.
+
+Default congestionCurtailPct 4 to 0.24, the measured rate (19.9 GWh against 8,397 GWh, NERSA,
+January to June 2024). 4% stays available as the framework ceiling; the slider step went from 0.5
+to 0.01, or the page would have snapped 0.24 to zero. Grid delay keeps its 10%.
+
+Twelve weather years, one outage path:
+
+```
+                          before (4%)                  after (0.24%)
+                     mean shed  worst  curtail TWh   mean shed  worst  curtail TWh
+Today 2026              0        0         0            0        0         0
+Deep decarbonisation    1.72    15.3      62.4         0.08      0.9      69.0
+Fossil-free 2040        1.77    21.2     105.5         0         0       116.1
+```
+
+Both transition presets were sized with 4% of their wind and solar lost to congestion. They now sit
+far inside their reliability target and are over-built; curtailment rises because more energy is
+delivered into the same surpluses. Every curtailment range and preset-sizing figure above this
+entry was measured at 4%.
+
+Two harness results moved. The iron-air finding (Seriti scenario: 20 GW of 100-hour iron-air
+barely moves July gas) now reads a 6.0% change, 803 to 754 GWh, against a published "nothing to
+three significant figures": with more energy delivered there is some surplus for it to store.
+Left failing pending a decision. The Homeflex shadow spread passes, 1.1x to 2.5x on eight draws,
+because the representative week's peak price rose (3.40 to 7.39 R/kWh on the base draw). Why the
+peak rose is not established.
+
 ### Curtailment: the model loses 7% of Today's renewables to congestion; reality is about 0.2%, 3 Oct 2026
 
 Build `2026-10-03e`, Today 2026, default profile. The weather-extremes panel reports 0% because it
