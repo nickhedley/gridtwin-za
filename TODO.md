@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04b`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04c`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -137,7 +137,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-04b after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-04c after the push, and the new footer label shows
 
 ## Named projects
 

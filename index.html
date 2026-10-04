@@ -16529,8 +16529,12 @@ const PRESET_TIPS = {
   'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
 };
 const presetsEl=document.getElementById('presets');
-Object.keys(PRESETS).forEach((name,i)=>{
-  const b=document.createElement('button');b.textContent=name; if(i===0)b.classList.add('active');
+// Button order, set 4 Oct 2026; any preset not listed is appended. The page opens on the
+// defaults, which are Today 2026, so that button is marked active, whatever its position.
+const PRESET_ORDER = ['2025, as modelled', 'Today 2026', 'IRP\'s 2030 targets',
+  'IRP\'s 2030 targets, grid delayed', 'IRP path 2035', 'Deep decarbonisation 2035', 'Fossil-free 2040'];
+[...PRESET_ORDER.filter(n => n in PRESETS), ...Object.keys(PRESETS).filter(n => !PRESET_ORDER.includes(n))].forEach((name)=>{
+  const b=document.createElement('button');b.textContent=name; if(name==='Today 2026')b.classList.add('active');
   if (PRESET_TIPS[name]) b.title = PRESET_TIPS[name];
   b.addEventListener('click',()=>{
     applyState(PRESETS[name]);
@@ -17518,7 +17522,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-04b';
+const BUILD_STAMP = '2026-10-04c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
