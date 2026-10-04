@@ -1714,6 +1714,69 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Build optimiser: coal retirement and offshore are decisions; the solar cap grows, 4 Oct 2026
+
+Build `2026-10-04e`. Three changes to bldBuildLP. Coal may retire ahead of Eskom's unit schedule
+(rc_<y>, cumulative, irreversible), saving fomCoal (R1,160/kW-yr) a year; it may not run past its
+scheduled date. Offshore wind is a build option on the engine's offshore profile, capped at ESMAP's
+medium path (none before 2032, 1 GW by 2035, 5 GW by 2040). Utility solar's build cap grows 7% a year
+from 2.5 GW (6.4 GW by 2040), an assumption for a scaling industry, not a sourced rate.
+
+Coal schedule corrected: Camden, Hendrina and Grootvlei now close in 2030, not 2024-2027. Their 17
+units run under an emissions exemption to 31 March 2030, and the IRP 2025 requires the five older
+stations, with Arnot and Kriel, to close by 2030. Coal the optimiser sees in 2026 went 38.5 to
+41.4 GW. Life extension beyond the schedule is not offered; Eskom attributed R8.4bn of the MYPD 6
+maintenance increase to keeping those five stations running, and that is inside fomCoal.
+
+Re-run of the pathway before the schedule correction (Today 2026 to 2040, gas from 2030, rooftop at
+uptake): no early coal retirement, no offshore. At an effective carbon price of about R46/t, saved
+fixed O&M never pays for replacement, and onshore wind, solar and storage beat offshore. Solar uses
+the growing cap, 3.0-3.5 GW a year in 2029-32, 25 GW new by 2040; wind 10.8 GW, lithium 13.5 GW at
+about 6.4 hours. Mean shed still exceeds the standard in 2038-2040 (4.2-4.4 against 3.9 GWh). To be
+re-run on the corrected schedule. Suite 804/805.
+
+### Least-cost pathway to 2040: first draft, short of the standard from 2038, 4 Oct 2026
+
+Build `2026-10-04d`, pathway.js and pathcheck.js (harness folder). Start: Today 2026. Build optimiser,
+annual steps to 2040, stress-period loop on. Demand +5% by 2040. Coal retires on Eskom's unit
+schedule (UC_FLEET), 38.5 GW in 2026 to 21.8 GW in 2040: an input, as in the IRP. Gas allowed from
+2030 only (no import terminal before). New rooftop fixed at 1.2 GW a year from 2027 (16.8 GW by
+2040). Offshore is not an optimiser technology. Pace caps: the masterplan pace.
+
+Every year then dispatched on twelve weather years x two outage draws. GW built that year, GW
+cumulative new, coal remaining; shed against the 0.002% standard, GWh; coal TWh; curtailment TWh;
+system cost R bn:
+
+```
+year  wind   pv batt  GWh    cum: wind    pv  batt   coal    shed   std    coal  curt    cost
+2026    2.5  2.5  2.0   2.0     2.5   2.5   2.0   38.5    0.14  4.03   135.3    0.0   219.0
+2027    2.5  0.0  2.0   2.0     5.0   2.5   4.0   37.1    0.09  4.03   126.4    0.0   226.0
+2028    0.0  2.5  0.7   0.7     5.0   5.0   4.7   35.8    0.05  4.03   120.7    0.1   228.2
+2029    0.0  2.5  0.6   0.9     5.0   7.5   5.4   34.8    0.02  4.02   115.3    0.5   219.7
+2030    0.0  2.5  1.7  10.2     5.0  10.0   7.0   31.6    0.06  3.99   109.8    1.1   219.4
+2031    0.0  2.5  1.0   7.0     5.0  12.5   8.0   29.9    0.12  3.97   105.3    2.5   218.2
+2032    0.0  2.5  1.0   8.4     5.0  15.0   8.9   28.1    0.51  3.95   101.9    4.7   219.6
+2033    0.0  2.5  0.7   5.7     5.0  17.5   9.6   27.0    1.06  3.95    99.4    7.9   221.6
+2034    1.6  2.5  0.7  11.1     6.6  20.0  10.3   25.3    1.86  3.94    93.5   12.9   216.0
+2035    0.0  0.1  0.1   1.1     6.6  20.1  10.4   25.3    1.96  3.93    93.3   14.1   211.9
+2036    2.4  1.3  0.6  16.6     9.0  21.4  10.9   23.5    3.08  3.92    86.9   18.6   216.7
+2037    0.0  0.2  0.1   1.1     9.0  21.6  11.0   23.5    3.01  3.90    86.8   19.9   211.7
+2038    2.0  2.5  1.8  17.2    11.0  24.1  12.9   21.8    4.14  3.90    80.8   26.1   217.6
+2039    0.0  0.0  0.2   1.1    11.0  24.1  13.1   21.8    4.35  3.88    80.9   27.2   215.8
+2040    0.0  0.1  0.1   1.1    11.0  24.2  13.2   21.8    4.34  3.86    80.9   28.6   216.6
+```
+
+Built by 2040: about 11 GW onshore, 24 GW solar, 13 GW lithium (86 GWh, about 6.6 hours), 0.5 GW
+vanadium, 0.15 GW iron-air, no gas. Solar hits its 2.5 GW a year cap in most years, so the pace
+assumption, not cost, sets the schedule. System cost stays near R212-228bn a year while coal
+output falls from 135 to 81 TWh.
+
+Not yet a result: mean shedding exceeds the standard in 2038-2040 (4.1-4.3 against 3.9 GWh), and
+from 2034 it is above the presets' half-standard design. The loop tests only the final year on
+one outage path (it read 2.15 GWh mean); per-year checks with outage draws read higher. Next: add
+the failing years' worst weeks to the LP, or top up per year, and re-check. CO2 not reported: the
+key read returned zero (co2Mt is not on the result object); coal TWh stands in.
+
 ### Both transition presets re-sized, 4 Oct 2026
 
 Build `2026-10-04d`. Both had been sized with congestion at 4% (double-counted) and on one outage

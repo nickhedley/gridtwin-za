@@ -5484,7 +5484,14 @@ const FIXED = {
   dslTankOn:0,
   // Which year's demand series to run: null is the 2026 series in profiles.json; 2025 is 2025's,
   // built by build_demand_2026.py with 2025 rooftop added back. 3 Oct 2026.
-  demandYear:null, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  demandYear:null,
+  // Build optimiser may retire coal ahead of Eskom's unit schedule (rc_ in bldBuildLP). 4 Oct 2026.
+  bldCoalEarlyOn:1,
+  // Build optimiser may build offshore wind, capped at ESMAP's medium path. 4 Oct 2026.
+  bldOffshoreOn:1,
+  // Utility solar build-rate cap growth, % a year from the 2026 cap: an assumption that the
+  // industry scales, about doubling the cap by 2036. 0 holds it flat. 4 Oct 2026.
+  bldPvRateGrowthPct:7, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -6335,7 +6342,10 @@ const FIXED = {
 
 
 // ── Unit Commitment Fleet Data (from PyPSA-RSA fleet_by_region_v2.csv) ────────
-const UC_FLEET = [{"name":"Arnot*","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":146236.9340034813,"marginal_cost":664.1402453697383,"decom":"2027","region":"Mpumalanga"},{"name":"Arnot**","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":146236.9340034813,"marginal_cost":675.4804253697383,"decom":"2029","region":"Mpumalanga"},{"name":"Camden*","cap":570.0,"unit_cap":190.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":56320.930887372,"marginal_cost":702.0914453697383,"decom":"2024","region":"Mpumalanga"},{"name":"Camden**","cap":911.0,"unit_cap":182.2,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":93868.21814561999,"marginal_cost":733.5367253697383,"decom":"2025","region":"Mpumalanga"},{"name":"Duvha*","cap":1150.0,"unit_cap":575.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":183388.7508532424,"marginal_cost":633.5082053697383,"decom":"2033","region":"Mpumalanga"},{"name":"Duvha**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":275083.12627986365,"marginal_cost":633.5082053697383,"decom":"2034","region":"Mpumalanga"},{"name":"Grootvlei*","cap":380.0,"unit_cap":190.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":47428.2396745848,"marginal_cost":711.3985253697383,"decom":"2026","region":"Mpumalanga"},{"name":"Grootvlei**","cap":190.0,"unit_cap":190.0,"n":1,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":23714.1198372924,"marginal_cost":664.1402453697383,"decom":"2027","region":"Mpumalanga"},{"name":"Hendrina*","cap":760.0,"unit_cap":190.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":60075.6596131968,"marginal_cost":687.7242053697383,"decom":"2024","region":"Mpumalanga"},{"name":"Hendrina**","cap":338.0,"unit_cap":169.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":30037.8298065984,"marginal_cost":733.5367253697383,"decom":"2025","region":"Mpumalanga"},{"name":"Kelvin","cap":160.0,"unit_cap":80.0,"n":2,"msl":0.65,"min_up":8,"min_dn":8,"startup_cost":450165.44254835,"marginal_cost":658.5346505574515,"decom":"2027","region":"Gauteng"},{"name":"Kendal*","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2044","region":"Mpumalanga"},{"name":"Kendal**","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2050","region":"Mpumalanga"},{"name":"Komati","cap":114.0,"unit_cap":114.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":8782.97661497838,"marginal_cost":771.6234653697383,"decom":"2022","region":"Mpumalanga"},{"name":"Kriel*","cap":1215.0,"unit_cap":405.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2028","region":"Mpumalanga"},{"name":"Kriel**","cap":1425.0,"unit_cap":475.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Kusile*","cap":2880.0,"unit_cap":720.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":348234.678785074,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile**","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile***","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Lethabo*","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":585.4818653697383,"decom":"2038","region":"Gauteng"},{"name":"Lethabo**","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":608.7947453697383,"decom":"2041","region":"Gauteng"},{"name":"Majuba*","cap":1818.0,"unit_cap":606.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":482186.41170716693,"marginal_cost":620.6770853697383,"decom":"2048","region":"Mpumalanga"},{"name":"Majuba**","cap":1989.0,"unit_cap":663.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":529614.236756997,"marginal_cost":586.7920853697383,"decom":"2051","region":"Mpumalanga"},{"name":"Matimba*","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":616.1590853697384,"decom":"2042","region":"Limpopo"},{"name":"Matimba**","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":608.7947453697383,"decom":"2044","region":"Limpopo"},{"name":"Matla*","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2032","region":"Mpumalanga"},{"name":"Matla**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2036","region":"Mpumalanga"},{"name":"Medupi*","cap":3600.0,"unit_cap":720.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":435293.3484813425,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Medupi**","cap":717.0,"unit_cap":717.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Tutuka*","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Tutuka**","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2031","region":"Mpumalanga"}];
+// Decommissioning dates for Camden, Hendrina and Grootvlei moved to 2030 on 4 Oct 2026: the 17 units
+// operate under an emissions exemption to 31 Mar 2030 (DFFE, May 2024; Eskom, Dec 2024), and the
+// IRP 2025 requires the five older stations, with Arnot and Kriel, to close by 2030.
+const UC_FLEET = [{"name":"Arnot*","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":146236.9340034813,"marginal_cost":664.1402453697383,"decom":"2027","region":"Mpumalanga"},{"name":"Arnot**","cap":1050.0,"unit_cap":350.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":146236.9340034813,"marginal_cost":675.4804253697383,"decom":"2029","region":"Mpumalanga"},{"name":"Camden*","cap":570.0,"unit_cap":190.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":56320.930887372,"marginal_cost":702.0914453697383,"decom":"2030","region":"Mpumalanga"},{"name":"Camden**","cap":911.0,"unit_cap":182.2,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":93868.21814561999,"marginal_cost":733.5367253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Duvha*","cap":1150.0,"unit_cap":575.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":183388.7508532424,"marginal_cost":633.5082053697383,"decom":"2033","region":"Mpumalanga"},{"name":"Duvha**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":275083.12627986365,"marginal_cost":633.5082053697383,"decom":"2034","region":"Mpumalanga"},{"name":"Grootvlei*","cap":380.0,"unit_cap":190.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":47428.2396745848,"marginal_cost":711.3985253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Grootvlei**","cap":190.0,"unit_cap":190.0,"n":1,"msl":0.65,"min_up":48,"min_dn":48,"startup_cost":23714.1198372924,"marginal_cost":664.1402453697383,"decom":"2030","region":"Mpumalanga"},{"name":"Hendrina*","cap":760.0,"unit_cap":190.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":60075.6596131968,"marginal_cost":687.7242053697383,"decom":"2030","region":"Mpumalanga"},{"name":"Hendrina**","cap":338.0,"unit_cap":169.0,"n":2,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":30037.8298065984,"marginal_cost":733.5367253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Kelvin","cap":160.0,"unit_cap":80.0,"n":2,"msl":0.65,"min_up":8,"min_dn":8,"startup_cost":450165.44254835,"marginal_cost":658.5346505574515,"decom":"2027","region":"Gauteng"},{"name":"Kendal*","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2044","region":"Mpumalanga"},{"name":"Kendal**","cap":1920.0,"unit_cap":640.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":252949.85097945388,"marginal_cost":620.6770853697383,"decom":"2050","region":"Mpumalanga"},{"name":"Komati","cap":114.0,"unit_cap":114.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":8782.97661497838,"marginal_cost":771.6234653697383,"decom":"2022","region":"Mpumalanga"},{"name":"Kriel*","cap":1215.0,"unit_cap":405.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2028","region":"Mpumalanga"},{"name":"Kriel**","cap":1425.0,"unit_cap":475.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":189712.5438122184,"marginal_cost":675.4804253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Kusile*","cap":2880.0,"unit_cap":720.0,"n":4,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":348234.678785074,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile**","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Kusile***","cap":720.0,"unit_cap":720.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Mpumalanga"},{"name":"Lethabo*","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":585.4818653697383,"decom":"2038","region":"Gauteng"},{"name":"Lethabo**","cap":1779.0,"unit_cap":593.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":233188.7758941297,"marginal_cost":608.7947453697383,"decom":"2041","region":"Gauteng"},{"name":"Majuba*","cap":1818.0,"unit_cap":606.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":482186.41170716693,"marginal_cost":620.6770853697383,"decom":"2048","region":"Mpumalanga"},{"name":"Majuba**","cap":1989.0,"unit_cap":663.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":529614.236756997,"marginal_cost":586.7920853697383,"decom":"2051","region":"Mpumalanga"},{"name":"Matimba*","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":616.1590853697384,"decom":"2042","region":"Limpopo"},{"name":"Matimba**","cap":1845.0,"unit_cap":615.0,"n":3,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":245045.42094532412,"marginal_cost":608.7947453697383,"decom":"2044","region":"Limpopo"},{"name":"Matla*","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2032","region":"Mpumalanga"},{"name":"Matla**","cap":1725.0,"unit_cap":575.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":633.5082053697383,"decom":"2036","region":"Mpumalanga"},{"name":"Medupi*","cap":3600.0,"unit_cap":720.0,"n":5,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":435293.3484813425,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Medupi**","cap":717.0,"unit_cap":717.0,"n":1,"msl":0.5,"min_up":8,"min_dn":4,"startup_cost":87058.6696962685,"marginal_cost":587.550320932878,"decom":"beyond 2050","region":"Limpopo"},{"name":"Tutuka*","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2030","region":"Mpumalanga"},{"name":"Tutuka**","cap":1755.0,"unit_cap":585.0,"n":3,"msl":0.65,"min_up":8,"min_dn":4,"startup_cost":229235.93856655288,"marginal_cost":562.5304253697383,"decom":"2031","region":"Mpumalanga"}];
 
 // ── Heuristic Day-Ahead Unit Commitment ───────────────────────────────────────
 // For each day, decides which unit groups to commit based on next-24h net load.
@@ -9568,8 +9578,31 @@ function bldBuildLP(opts){
       }
     }
   }
-  L.push('  ' + obj.join(' + '));
+  // OFFSHORE WIND IS A BUILD DECISION, 4 Oct 2026: b_off_<y>, MW, priced like the other
+  // technologies, run on the engine's own offshore profile, and capped cumulatively at ESMAP's
+  // medium deployment path (OFF_PATH: nothing before 2032, 1 GW by 2035, 5 GW by 2040).
+  const OFF_ON = !!(S.bldOffshoreOn ?? 1) && typeof OFFSHORE_PU !== 'undefined' && OFFSHORE_PU && OFFSHORE_PU.length === 8760;
+  const OFF_PATH = y => y < 2032 ? 0 : y <= 2035 ? 1000 * (y - 2031) / 4 : Math.min(5000, 1000 + 800 * (y - 2035));
+  if (OFF_ON) for (const y of Y){
+    let cost = 0;
+    for (const yy of Y) if (yy >= y) cost += bldNetAnnuityAt('offshore', y) / Math.pow(1+BLD_DISC, yy-2026);
+    obj.push((cost * 1000).toFixed(3) + ' b_off_' + y);
+  }
+  // EARLY COAL RETIREMENT IS A DECISION, 4 Oct 2026. rc_<y> is coal retired ahead of Eskom's unit
+  // schedule by year y, cumulative and irreversible. Each MW retired saves the fleet's fixed O&M
+  // (fomCoal) that year; fuel and carbon fall through the dispatch terms. Coal cannot run past
+  // its scheduled date: life extension is not offered. bldCoalEarlyOn 0 restores the schedule.
+  const RC_ON = !!(S.bldCoalEarlyOn ?? 1);
+  if (RC_ON) for (const y of Y){
+    const df = 1/Math.pow(1+BLD_DISC, y-2026);
+    obj.push('-' + (S.fomCoal * 1000 * df).toFixed(3) + ' rc_' + y);
+  }
+  L.push('  ' + obj.join(' + ').replace(/\+ -/g, '- '));
   L.push('Subject To');
+  if (RC_ON) for (let i = 1; i < Y.length; i++)
+    L.push(' rcmono_' + Y[i] + ': rc_' + Y[i] + ' - rc_' + Y[i-1] + ' >= 0');
+  const cumOff = y => Y.filter(yy => yy <= y).map(yy => 'b_off_' + yy);
+  if (OFF_ON) for (const y of Y) L.push(' offcap_' + y + ': ' + cumOff(y).join(' + ') + ' <= ' + OFF_PATH(y).toFixed(1));
 
   const cum = (t,y) => Y.filter(yy => yy <= y).map(yy => 'b_' + t + '_' + yy);
   const cumE = y => Y.filter(yy => yy <= y).map(yy => 'eb_batt_' + yy);   // lithium cells, MWh
@@ -9646,8 +9679,10 @@ function bldBuildLP(opts){
         + ' + ' + cum('wind',y).map(v => (wp*AV_CONG).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('pv',y).map(v => (sp*AV_CONG).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
+        + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AV_CONG).toFixed(4)+' '+v).join(' + ') : '')
         + ' = ' + (dem - fixed).toFixed(1));
-      L.push(' cmax_' + k + ': gc_' + k + ' <= ' + coalCap.toFixed(1));
+      const _rcf = (r.tail ? eaf * TAIL_COAL_FACTOR : eaf);
+      L.push(' cmax_' + k + ': gc_' + k + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '') + ' <= ' + coalCap.toFixed(1));
       L.push(' gmax_' + k + ': gg_' + k + ' - ' + cum('ccgt',y).join(' - ') + ' <= 0');
       // Reserve: dispatched + required <= capacity. The VRE term sits on both sides - existing
       // VRE output is a number, new VRE output is a variable - and the base is subtracted so
@@ -9665,6 +9700,7 @@ function bldBuildLP(opts){
         // serve energy the engine had to hold back. Out until the LP models its energy.
         const rhs = coalCap + EX.diesel + EX.batt - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE);
         L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + ' + bdis_' + k + ' - rsl_' + k
+          + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + ' - ' + cum('ccgt',y).join(' - ') + ' - ' + cum('batt',y).join(' - ')
           + (RES_VRE > 0
               ? ' + ' + cum('wind',y).map(v => (RES_VRE*wp).toFixed(5)+' '+v).join(' + ')
@@ -9792,7 +9828,8 @@ function bldBuildLP(opts){
     L.push(' res_' + y + ': cc_batt_' + y
       + ' + ' + STORE.filter(S2 => S2.t !== 'batt').map(S2 => 'cc_' + S2.t + '_' + y).join(' + ')
       + ' + ' + cum('ccgt',y).join(' + ')
-      + ' >= ' + Math.max(0, peak*1.10 - firm).toFixed(1));
+      + (RC_ON ? ' - ' + eaf.toFixed(4) + ' rc_' + y : '')
+      + ' >= ' + (RC_ON ? (peak*1.10 - firm) : Math.max(0, peak*1.10 - firm)).toFixed(1));
   }
 
   // Lithium's duration stays inside 1 to LI_MAX_HOURS, the range the slider offers and the
@@ -9805,8 +9842,13 @@ function bldBuildLP(opts){
   }
 
   L.push('Bounds');
-  for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + RATE[t].toFixed(1));
+  // Utility solar's build-rate cap grows bldPvRateGrowthPct a year from its 2026 value, for an
+  // industry that scales up (assumption, 4 Oct 2026). Every other cap is flat.
+  const _pvG = Math.max(0, S.bldPvRateGrowthPct) / 100;
+  for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + (RATE[t] * (t === 'pv' ? Math.pow(1 + _pvG, y - 2026) : 1)).toFixed(1));
+  if (OFF_ON) for (const y of Y) L.push(' 0 <= b_off_'+y+' <= 5000');
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
+  if (RC_ON) for (const y of Y) L.push(' 0 <= rc_'+y+' <= ' + bldCoalMW(y).toFixed(1));
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
   for (const y of Y) for (const S2 of STORE) if (S2.t !== 'batt')
     L.push(' 0 <= cc_'+S2.t+'_'+y+' <= 200000');
@@ -9892,8 +9934,9 @@ function bldBuildToState(res){
     newRooftopMW: Math.round(tot.rooftop || 0), newBattMW: Math.round(tot.batt || 0),
     newCcgtMW: Math.round(tot.ccgt || 0),
     newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
-    newOffshoreMW: 0, newNuclearMW: 0,
-    coalDecomMW: Math.round(FIXED.coalInstalledMW - bldCoalMW(endY)),
+    newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
+    coalDecomMW: Math.round(FIXED.coalInstalledMW - bldCoalMW(endY)
+      + (((res && res.Columns && res.Columns['rc_' + endY]) || {}).Primal || 0)),
   };
   if ((tot.batt || 0) > 1 && eb > 0) o.newBattHours = Math.max(1, Math.round(eb / tot.batt));
   return o;
@@ -17527,7 +17570,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-04d';
+const BUILD_STAMP = '2026-10-04e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
