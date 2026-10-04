@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04a`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04b`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -49,9 +49,6 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 14b3. Explain why the Homeflex check flipped green: the representative week's peak price rose 3.40 to 7.39 R/kWh after the congestion fix
 14b4. Re-measure the curtailment ranges quoted in RESULTS and outreach (51-68 and 90-114 TWh were at 4%)
 14c. Show congestion loss alongside surplus curtailment in the wind and solar extremes panel, so 0% is not read as no curtailment
-14d. You: Grid delay is a 2030 scenario (IRP's 2030 targets with 40% of wind and solar held back by a slipping corridor, congestion 10%) – rename it to make the year visible, e.g. 'IRP's 2030 targets, grid delayed'?
-14e. You: 'IRP path 2035' is not the IRP's 2035 targets – the IRP publishes no 2035 figures, so it is a straight-line interpolation between 2030 and 2039 on this model's demand. Keep the name, or 'IRP path 2035 (interpolated)'?
-14f. You: 'Backcast 2025' – a backcast is the model re-run on a past year to compare against what happened; '2025 actual' would read as Eskom's data. Suggest '2025 replay' or 'Model of 2025'?
 14a. You: re-size either preset to 16-hour lithium? 0.5% cheaper, inside the cost uncertainty
 15. You: EAF 55–60% unserved rise (4.00, 5.39, 5.69 GWh, present with the charging rule off) – investigate now or park?
 16. You: re-size the transition presets on many outage draws rather than one? Deep decarbonisation reads 1.36 GWh mean on 480 draws against the 2.02 it was sized on
@@ -140,7 +137,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-04a after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-04b after the push, and the new footer label shows
 
 ## Named projects
 

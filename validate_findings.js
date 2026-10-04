@@ -52,7 +52,7 @@ const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToB
   const _i = _src.indexOf('const PRESETS={');
   const _blk = _src.slice(_i, _src.indexOf('\n};', _i));
   const _have = new Set([..._blk.matchAll(/^\s*'((?:[^'\\]|\\.)+)'\s*:\s*\{/gm)].map(m => m[1].replace(/\\'/g, "'")));
-  const _miss = ['Deep decarbonisation 2035', 'Grid delay', 'Today 2026'].filter(n => !_have.has(n));
+  const _miss = ['Deep decarbonisation 2035', "IRP's 2030 targets, grid delayed", 'Today 2026'].filter(n => !_have.has(n));
   check('every preset this harness uses exists', _miss.length === 0, 'missing: ' + _miss.join(', '));
 }
 setTimeout(()=>{
@@ -722,7 +722,7 @@ setTimeout(()=>{
   }
 
   // ── GRID DELAY IS AN EMISSIONS EVENT, NOT A PRICE EVENT ──────────────────
-  // Added 10 Sep 2026. The Grid delay preset mirrors the IRP 2030 preset exactly and then
+  // Added 10 Sep 2026. The IRP's 2030 targets, grid delayed preset mirrors the IRP 2030 preset exactly and then
   // applies the delay: curtailment ceiling 4% -> 10%, wind and solar held back 40%.
   //
   //   renewable energy        89 -> 68 TWh    -24%
@@ -735,13 +735,13 @@ setTimeout(()=>{
     const gd = probe(`
       const saved = JSON.parse(JSON.stringify(state));
       const pick = nm => {
-        for (const k of Object.keys(PRESETS['Grid delay'])) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k];
+        for (const k of Object.keys(PRESETS["IRP's 2030 targets, grid delayed"])) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k];
         Object.assign(state, PRESETS[nm]); run();
         const E = lastRes.E;
         return { re: ((E.wind||0)+(E.pv||0)+(E.rooftop||0)+(E.csp||0))/1e6, coal: (E.coal||0)/1e6 };
       };
       const irp = pick("IRP's 2030 targets");
-      const dly = pick('Grid delay');
+      const dly = pick("IRP's 2030 targets, grid delayed");
       for (const k of Object.keys(state)) delete state[k];
       Object.assign(state, saved); run();
       return { irp, dly };
@@ -773,7 +773,7 @@ setTimeout(()=>{
     const cs = probe(`
       const saved = JSON.parse(JSON.stringify(state));
       const pick = nm => {
-        for (const k of Object.keys(PRESETS['Grid delay'])) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k];
+        for (const k of Object.keys(PRESETS["IRP's 2030 targets, grid delayed"])) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k];
         Object.assign(state, PRESETS[nm]); run();
         const r = lastRes, cc = RETAIL_T.curtailment_compensation || {};
         const cong = r.congestTot || 0;
@@ -804,7 +804,7 @@ setTimeout(()=>{
 
   // ── EVERY PRESET KEY REACHES THE MODEL ────────────────────────────────────
   // Added 3 Oct 2026. applyState sets sliders and PRESET_NON_SLIDER_KEYS only; any other key in a
-  // preset is dropped without error. Backcast 2025's importsCF and hydroCF were dropped that way.
+  // preset is dropped without error. 2025, as modelled's importsCF and hydroCF were dropped that way.
   {
     const k = probe(`const ok = new Set([...SLIDERS.map(s => s.id), ...PRESET_NON_SLIDER_KEYS]);
       const bad = []; for (const [n, p] of Object.entries(PRESETS)) for (const key of Object.keys(p)) if (!ok.has(key)) bad.push(n + ': ' + key);

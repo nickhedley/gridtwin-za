@@ -5480,7 +5480,7 @@ const FIXED = {
   // about 100 Ml a month, 431 MW of output (Mining Weekly 10 Apr 2015; Business Day 23 Nov 2022).
   // Independent peakers carry their own fuel and are not limited here. Tanks start full. 3 Oct 2026.
   // Off by default: NTCSA's MTSAO assumes about 45% OCGT utilisation by 2030, which this limit
-  // would prevent. On in Backcast 2025, where it is the year's physical constraint.
+  // would prevent. On in 2025, as modelled, where it is the year's physical constraint.
   dslTankOn:0,
   // Which year's demand series to run: null is the 2026 series in profiles.json; 2025 is 2025's,
   // built by build_demand_2026.py with 2025 rooftop added back. 3 Oct 2026.
@@ -5961,7 +5961,7 @@ const FIXED = {
   // 1.0-1.6% of 17,808 GWh. That curtailment was low demand at night, not congestion, and the
   // dispatch should produce it itself; it does not yet (TODO). Applied to every hour, so the timing
   // is wrong. 4% is the congestion framework's cap on new Cape wind, not a fleet rate. Was 4 until
-  // 3 Oct 2026, briefly 0.24 (H1 2024). Grid delay sets 10% for a corridor that is not built.
+  // 3 Oct 2026, briefly 0.24 (H1 2024). IRP's 2030 targets, grid delayed sets 10% for a corridor that is not built.
   congestionCurtailOn: true, congestionCurtailPct: 1.3,
   // National connection headroom, MW, sum of nodal/headroom_summary.json (GCCA 2025). Not read by
   // the engine; headroom enters through gridBuildChargeFor.
@@ -7357,7 +7357,7 @@ function simulate(u, prof, outPath, _soc0){
   // Shortfall left after coal and gas together, same horizon, with coal at the planned
   // commitment capped by the outage state held forward rather than the mean EAF. Gas charges
   // storage only up to this, and runs ahead of storage when it exceeds stored energy. Added
-  // 2 Oct 2026. Both forecasts use _fcCoal from 3 Oct 2026; the switch took Backcast 2025 from
+  // 2 Oct 2026. Both forecasts use _fcCoal from 3 Oct 2026; the switch took 2025, as modelled from
   // 13.8 to 0.3 GWh against Eskom's 390 (RESULTS.md).
   const anticipatedShortfallG = (() => {
     const a = new Float64Array(HOURS);
@@ -7703,7 +7703,7 @@ function simulate(u, prof, outPath, _soc0){
       // Gas ahead of storage when the forecast shortfall beyond coal and gas exceeds what storage
       // holds, so storage is kept for the hours thermal cannot cover. Added 2 Oct 2026. Served
       // before the reserve cap: placed after it, gas no longer covered the reserve-shed balance and
-      // Grid delay's worst year rose from 3.9 to 7.8 GWh.
+      // IRP's 2030 targets, grid delayed's worst year rose from 3.9 to 7.8 GWh.
       const _gasFirst = (p.chargeFromThermal ?? FIXED.chargeFromThermal ?? 1) && ccgtCap > 0 && !_forceTwoSided
         && anticipatedShortfallG[h] > Math.max(0, battSoc) + Math.max(0, psSoc);
       let _gasEarly = 0;
@@ -16016,7 +16016,7 @@ const PRESETS={
   // Sized on the Northern Cape, where connection capacity has been full since 2022 and which
   // carries the best resource - so a corridor that slips there holds back a large share of a
   // national programme rather than a marginal one.
-  'Grid delay':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:4400,newPvMW:6200,
+  'IRP\'s 2030 targets, grid delayed':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:4400,newPvMW:6200,
                 newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,
                 congestionCurtailPct:10,scenarioYear:2030},
   // IRP 2025 (gazetted 28 Oct 2025), 2030 targets. Demand and EAF re-derived 22 Sep 2026 from
@@ -16037,7 +16037,7 @@ const PRESETS={
   //   coalEAFPct 68      : top of the IRP's stated 66-68% target band. For scale,
   //                        Eskom's FY2026 year-end EAF was 65.2%, itself ~5 points
   //                        up on FY2025, so 68% is a stretch but not a fantasy.
-  // scenarioYear 2030 added 23 Sep 2026. Both this preset and Grid delay carried no year, so
+  // scenarioYear 2030 added 23 Sep 2026. Both this preset and IRP's 2030 targets, grid delayed carried no year, so
   // they defaulted to 2026: new build was priced at 2026 capital costs with no learning, and the
   // retail panel charged them 2026 contract positions. A 2030 scenario should be priced at 2030.
   'IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,scenarioYear:2030},
@@ -16075,7 +16075,7 @@ const PRESETS={
   // Sized to about half the NEM limit rather than just inside it, so an ordinary data refresh
   // does not push the preset out of compliance: mean shed 1.75 GWh against a 3.67 limit, worst
   // 20.5 (2016). Derivation in RESULTS.md.
-  // Backcast 2025. The fleet, demand and measured coal availability of calendar 2025, so the
+  // 2025, as modelled. The fleet, demand and measured coal availability of calendar 2025, so the
   // model can be scored against what actually happened: Eskom shed 390 GWh that year and burned
   // 3.4 TWh of OCGT. Wind 3,900 MW and solar 2,600 are the year's Eskom-visible capacity plus
   // the private wheeled plant of the time; rooftop 6,532 is the 2025 annual mean of NTCSA's
@@ -16093,7 +16093,7 @@ const PRESETS={
   // two of peaking in a crisis. Imports 0.652 and hydro 0.339 are 2025 as measured in ESK19679
   // (6.57 and 1.79 TWh); demand is 2025's own series (demandYear 2025); with them coal runs 168.6 TWh against
   // Eskom's 170.4. 3 Oct 2026.
-  'Backcast 2025':{demandGrowthPct:0,demandYear:2025,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,importsCF:0.652,hydroCF:0.339,dslTankOn:1,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
+  '2025, as modelled':{demandGrowthPct:0,demandYear:2025,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,importsCF:0.652,hydroCF:0.339,dslTankOn:1,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
   // DEMAND +5%, the same in Fossil-free 2040 and IRP path 2035 so the three can be compared.
   // Roughly half a percent a year to 2035: electrification and industrial recovery against
   // efficiency and continued grid defection.
@@ -16523,9 +16523,15 @@ function applyState(overrides){
 }
 const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'rooftopMW',
                                'battPowerMW', 'outageTraceYear', 'importsCF', 'hydroCF', 'dslTankOn', 'demandYear'];
+// Hover text for presets whose name alone could mislead. 4 Oct 2026.
+const PRESET_TIPS = {
+  '2025, as modelled': 'The model re-run on 2025\u2019s fleet, demand, weather, imports and coal outages, to compare with what Eskom actually did. Not Eskom\u2019s data.',
+  'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
+};
 const presetsEl=document.getElementById('presets');
 Object.keys(PRESETS).forEach((name,i)=>{
   const b=document.createElement('button');b.textContent=name; if(i===0)b.classList.add('active');
+  if (PRESET_TIPS[name]) b.title = PRESET_TIPS[name];
   b.addEventListener('click',()=>{
     applyState(PRESETS[name]);
     setPresetActive(b); scheduleRun();
@@ -17512,7 +17518,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-04a';
+const BUILD_STAMP = '2026-10-04b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

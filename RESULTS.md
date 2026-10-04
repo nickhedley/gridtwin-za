@@ -1685,6 +1685,9 @@ today's fleet. Coal presets other than Today 2026 not yet re-measured over many 
 > RENAMED 3 Oct 2026: `Latest IRP's 2030 targets` is now `IRP's 2030 targets`. Entries before
 > then use the old name.
 
+> RENAMED 4 Oct 2026: `Grid delay` is now `IRP's 2030 targets, grid delayed`, and `Backcast 2025` is
+> now `2025, as modelled`. Entries before then use the old names. Both buttons carry hover text.
+
 ### A coal operating floor does not reproduce 2025's curtailment either, 4 Oct 2026
 
 Build `2026-10-04a`, Backcast 2025, stopgap off (curtailment setting 0). Test only, in a copy: coal
