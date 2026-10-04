@@ -1685,6 +1685,32 @@ today's fleet. Coal presets other than Today 2026 not yet re-measured over many 
 > RENAMED 3 Oct 2026: `Latest IRP's 2030 targets` is now `IRP's 2030 targets`. Entries before
 > then use the old name.
 
+### A coal operating floor does not reproduce 2025's curtailment either, 4 Oct 2026
+
+Build `2026-10-04a`, Backcast 2025, stopgap off (curtailment setting 0). Test only, in a copy: coal
+held at or above a share of its available capacity in every hour.
+
+```
+floor      night coal mean / p5 / min    curtailment         at night (22-05)
+none         18,355 / 15,667 / 14,054    0
+55-70%       unchanged                   0
+80%          18,186 / 15,194 / 12,994    5 GWh, 0.03%        100%
+85%          18,061 / 15,340 / 13,224    697 GWh, 3.9%       42%
+90%          18,376 / 16,046 / 14,002    3,214 GWh, 18%      33%
+Eskom 2025   19,177 / 16,144 / 13,210    about 1.0-1.6%      mostly night
+```
+
+The floor does not bind until about 80% of available coal, then curtailment jumps past the target
+in one step and lands mostly at midday on solar, not at night on wind. Wrong timing and no stable
+setting in between. Together with the minimum-stable test (up to 1.4x, no curtailment) and the
+demand-definition test (ruled out), no system-wide mechanism tried reproduces 2025: night
+curtailment of about 1% with clean days.
+
+The remaining explanation is local: NERSA says plants were curtailed to keep the grid stable at
+low demand, which on long, lightly loaded lines in the Northern and Eastern Cape points to voltage
+or stability limits at specific substations, not national surplus. A single-node dispatch cannot
+produce that. The stopgap stays; its timing could be moved to wind at night.
+
 ### Backcast 2025 now runs 2025's own demand, 4 Oct 2026
 
 Build `2026-10-04a`. build_demand_2026.py also writes demand_2025 to profiles.json: calendar 2025
