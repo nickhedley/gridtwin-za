@@ -40,7 +40,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 ## Next, in order
 
 14a1. Night curtailment, next: test an operating floor on coal; ask NTCSA whether 2025 curtailment was system surplus or local stability at specific plants. Demand definitions ruled out (model night demand is 0.5 GW below Eskom's)
-14a3. Demand shape: Backcast 2025 evening peak 0.6 GW low and middays 0.9 GW high against Eskom's contracted demand, with annual energy matching; test rooftop netting first. Affects adequacy and solar curtailment in every scenario
+14a3. Build a 2025 demand series (ESK19679 contracted less exports, 2025 rooftop 6,532 x 0.78 added back, no 2026 scaling) and use it when the scenario year is 2025; drop the backcast's +2.5% demand fudge. Needs build_demand_2026.py (not in the upload set). Cause confirmed: the backcast runs the 2026 profile; forward presets unaffected
 14a2. Check every script that reads ESK19679 timestamps for the 12-hour clock (AM/PM) – one analysis this session got it wrong
 14b. You: re-size both transition presets – with congestion at the measured 0.24% they are over-built (Deep 0.08 GWh mean shed against a 2.07 target, Fossil-free 0); combine with the many-draws re-sizing
 14b2. The iron-air finding passes at 1.3% and failed at 0.24%: it is sensitive to delivered renewable energy; re-state it with that range once curtailment is calibrated

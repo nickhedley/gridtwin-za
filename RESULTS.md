@@ -1685,6 +1685,29 @@ today's fleet. Coal presets other than Today 2026 not yet re-measured over many 
 > RENAMED 3 Oct 2026: `Latest IRP's 2030 targets` is now `IRP's 2030 targets`. Entries before
 > then use the old name.
 
+### The demand-shape gap is the backcast's, not the model's: a 2026 profile run as 2025, 3 Oct 2026
+
+Build `2026-10-03g`. profiles.json demand is a 2026 series: Eskom's 2025 contracted demand less
+exports, scaled by 0.9519 to 2026, with rooftop added back at 8,942.1 MW x 0.78 so the engine
+removes exactly that. Backcast 2025 runs it with rooftopMW 6,532 and demand +2.5%. The engine then
+removes 2.4 GW less rooftop than was added back, which appears as midday demand, and the +2.5%
+leaves everything else 2.4% low.
+
+Test: undo both, demand +5.05% (1/0.9519) and rooftop 9,394 (8,942 x 1.0505), so the engine
+reproduces 2025's net demand exactly. Against Eskom's 2025 contracted demand, MW:
+
+```
+                 00-04    09-15    16-20    21-23    peak             shed GWh
+backcast now      -523     +919     -371     -615    27,182 / 27,770     19.1
+undone             -63     +119      -46     -104    27,651 / 27,770     27.0
+```
+
+Confirmed. Today 2026 and every forward preset use the profile at the rooftop it was built with,
+so their shape is right; the earlier entry saying the gap affects every scenario overstated it.
+The 9,394 MW is a test setting only: it would report 2025 rooftop output wrongly. The fix is a 2025
+demand series built from ESK19679 with 2025 rooftop (6,532) added back and no scaling, chosen when
+the scenario year is 2025. With the shape corrected the backcast sheds 27 GWh, not 19.
+
 ### Night demand definitions: ruled out as the curtailment cause; the model's demand shape is off, 3 Oct 2026
 
 Eskom's glossary: residual demand is what dispatchable resources supply (Eskom generation,
