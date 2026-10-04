@@ -39,6 +39,9 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
+14g. ITP Phase I slipped (final RFP Q2 2027): find the seven corridors in tdp_projects.json and move their commissioning to about 2030-31; re-measure the 2030 presets
+14h. Grid delay holds back 40% of 2030 wind and solar on a judgement; the ITP's 3,222 MW is about 18% of that preset's new wind and solar, a sourced basis for the size of the delay
+14j. Rooftop and site tools: an export limit at the connection point as its own input (PV DC, inverter AC and export limit are different quantities)
 14a1. Night curtailment: system-wide causes exhausted (coal minimums, an operating floor, demand definitions). You: ask NTCSA whether 2025 curtailment was local stability at specific substations. Then decide: reshape the 1.3% stopgap to wind at night, or model it regionally in the nodal engine
 14a2. Check every script that reads ESK19679 timestamps for the 12-hour clock (AM/PM) – one analysis this session got it wrong
 14b. You: re-size both transition presets – with congestion at the measured 0.24% they are over-built (Deep 0.08 GWh mean shed against a 2.07 target, Fossil-free 0); combine with the many-draws re-sizing

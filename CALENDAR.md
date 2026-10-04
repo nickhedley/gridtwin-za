@@ -107,10 +107,31 @@ FY 2026/27     Eskom Group CFO Calib Cassim retires after 24 years. The
                from his finance function.
 ```
 
+## Independent Transmission Projects, Phase I
+
+```
+1 Oct 2026     Final RFP moved from Q3 2026 to Q2 2027 (analyst note, 2 Oct 2026, citing the
+               Government update of 1 Oct; not yet checked against the primary release).
+               Scope unchanged: 1,164 km of 400 kV and 2,630 MVA across seven corridors in the
+               Northern Cape, North West and Gauteng, seven pre-qualified bidders, expected to
+               unlock 3,222 MW of renewables (Engineering News, Apr 2025: COD 2029-2030).
+end 2026       Second draft RFP and a draft non-binding Credit Guarantee Vehicle term sheet to
+               the seven bidders.
+end Q1 2027    Binding CGV term sheet targeted.
+Q2 2027        Final RFP. Financial close and a three-year build would put first lines in about
+               2030-31, a year later than the COD the 3,222 MW was quoted against.
+```
+
+Bears on tdp_projects.json and the 2030 presets: if the seven corridors sit in the TDP with
+2029-2030 dates, the headroom path releases their capacity a year early.
+
 ## SAWEM
 
 ```
-Apr 2027       SAWEM LAUNCH. NTCSA is standing up a market surveillance unit as part of its
+Apr 2027       SAWEM LAUNCH. Confirmed 4 Oct 2026: NTCSA's Andrew Etzinger, Engineering News 30 Sep
+               2026. Already delayed once, from April 2026, to finalise the market code and
+               vesting contracts; about 30 Eskom Generation stations trade on the platform now,
+               with Eskom Distribution as offtaker. NTCSA is standing up a market surveillance unit as part of its
                preparations (Engineering News, 30 Sep 2026). This is the date the retail
                panel's market-indexed basis has been waiting for: that mode assumes a
                competitive wholesale market, and this is when its counterparty exists.
