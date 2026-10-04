@@ -1685,6 +1685,26 @@ today's fleet. Coal presets other than Today 2026 not yet re-measured over many 
 > RENAMED 3 Oct 2026: `Latest IRP's 2030 targets` is now `IRP's 2030 targets`. Entries before
 > then use the old name.
 
+### Backcast 2025 now runs 2025's own demand, 4 Oct 2026
+
+Build `2026-10-04a`. build_demand_2026.py also writes demand_2025 to profiles.json: calendar 2025
+contracted demand less exports, unscaled (194.62 TWh domestic), rooftop added back at Backcast
+2025's 6,532 MW x 0.78, read from the preset so there is one source. The 2026 series is unchanged,
+byte for byte. demandYear 2025 swaps it in for single runs and weather years; Backcast 2025 sets
+it and drops its +2.5% demand fudge.
+
+Against Eskom's 2025 contracted demand, MW:
+
+```
+              00-04    09-15    16-20    21-23    peak               energy TWh
+before         -523     +919     -371     -615    27,182 / 27,770    209.4 / 209.6
+now             -52     +108      -27      -87    27,674 / 27,770    209.6 / 209.6
+```
+
+Backcast 2025 on its own profile: shed 28.3 GWh (was 19.1), peakers 2.25 TWh, coal 168.6 TWh
+against Eskom's 170.4. Twelve weather years, mean 32.5 GWh. Eskom shed 390 GWh and burned 3.4 TWh
+of peakers. Suite 804/805.
+
 ### The demand-shape gap is the backcast's, not the model's: a 2026 profile run as 2025, 3 Oct 2026
 
 Build `2026-10-03g`. profiles.json demand is a 2026 series: Eskom's 2025 contracted demand less

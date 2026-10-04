@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-03g`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04a`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -16,7 +16,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Install this session's files
 
-1. You: replace index.html (root), eng5.js, validate_findings.js, validate_consistency.js, validate_benchmarks.js and audit.py (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
+1. You: replace index.html, profiles.json and build_demand_2026.py (root), eng5.js, validate_findings.js, validate_consistency.js, validate_benchmarks.js and audit.py (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
 2. You: replace MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md in project knowledge too
 3. You: commit and push; never commit the zip
 
@@ -40,7 +40,6 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 ## Next, in order
 
 14a1. Night curtailment, next: test an operating floor on coal; ask NTCSA whether 2025 curtailment was system surplus or local stability at specific plants. Demand definitions ruled out (model night demand is 0.5 GW below Eskom's)
-14a3. Build a 2025 demand series (ESK19679 contracted less exports, 2025 rooftop 6,532 x 0.78 added back, no 2026 scaling) and use it when the scenario year is 2025; drop the backcast's +2.5% demand fudge. Needs build_demand_2026.py (not in the upload set). Cause confirmed: the backcast runs the 2026 profile; forward presets unaffected
 14a2. Check every script that reads ESK19679 timestamps for the 12-hour clock (AM/PM) – one analysis this session got it wrong
 14b. You: re-size both transition presets – with congestion at the measured 0.24% they are over-built (Deep 0.08 GWh mean shed against a 2.07 target, Fossil-free 0); combine with the many-draws re-sizing
 14b2. The iron-air finding passes at 1.3% and failed at 0.24%: it is sensitive to delivered renewable energy; re-state it with that range once curtailment is calibrated
@@ -138,7 +137,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-03g after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-04a after the push, and the new footer label shows
 
 ## Named projects
 
@@ -178,7 +177,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 ## Assumptions register (read when quoting, not worked through)
 
 100. Backcast 2025 mixes an annual-mean rooftop (6,532) with year-end utility solar and wind (2,600, 3,900); the 298.3 MW subtraction does not hold up
-101. Backcast 2025 sheds 17.6 GWh against Eskom's 390 with 2025 imports, hydro and demand; the remainder is reserve-refill shedding the model does not do
+101. Backcast 2025 sheds 28.3 GWh against Eskom's 390 on 2025's own demand, imports and hydro; the remainder is reserve-refill shedding the model does not do
 102. Coal-retaining adequacy levels before 2 Oct are pessimistic; directions re-measured on three entries hold
 103. coalFlexPct is an on/off switch; older entries describe it as a ramp percentage
 104. Deep decarbonisation carries 17 GW of lithium at 12h, re-sized 2 Oct after the charging fix

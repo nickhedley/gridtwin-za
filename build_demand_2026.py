@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""build_demand_2026.py - build the demand series in profiles.json at the 2026 level.
+"""build_demand_2026.py - build the demand series in profiles.json at the 2026 level, and the
+2025 series the backcast uses.
 
 Runs from the repo root. Reads ESK19679.csv, profiles.json and index.html; writes
 profiles.json.
@@ -71,6 +72,21 @@ for d, s in zip(dom26, S):
     if r > 0.9 * g: g = d / 0.1           # the cap binds: engine removes 0.9 x gross
     gross.append(round(g, 3))
 p['demand'] = gross
+
+# 2025 series, added 3 Oct 2026: the same domestic demand without the 2026 scaling, with 2025
+# rooftop added back at Backcast 2025's rooftopMW. The engine uses it when demandYear is 2025, so a
+# backcast no longer runs the 2026 series with a growth fudge (which put 2.4 GW of rooftop back
+# into midday demand).
+m = re.search(r"'Backcast 2025':\{[^}]*?rooftopMW:([0-9.]+)", html)
+if not m: sys.exit('Backcast 2025 rooftopMW not found in index.html')
+ROOF_25 = float(m.group(1))
+gross25 = []
+for d, s in zip(y25, S):
+    r = ROOF_25 * s * DERATE
+    g = d + r
+    if r > 0.9 * g: g = d / 0.1
+    gross25.append(round(g, 3))
+p['demand_2025'] = gross25
 p['meta'].pop('demand_2026', None)
 p['meta']['demand_source'] = (
     f'Built {dt.date.today():%d %b %Y} by build_demand_2026.py from ESK19679: RSA Contracted Demand '
@@ -83,6 +99,10 @@ p['meta']['demand_source'] = (
     f'Domestic grid demand {sum(y25)/1e6:.2f} TWh (2025) -> {sum(dom26)/1e6:.2f} TWh. '
     f'Exports are added by the engine, not carried here. Provisional: re-run with full-year 2026.')
 p['meta']['demand_note'] = 'See demand_source.'
+p['meta']['demand_2025_source'] = (
+    f'Built {dt.date.today():%d %b %Y} by build_demand_2026.py: ESK19679 calendar 2025 RSA Contracted '
+    f'Demand less International Exports, unscaled ({sum(y25)/1e6:.2f} TWh), rooftop added back at '
+    f'{ROOF_25:g} MW x derate {DERATE:g} (Backcast 2025). Used when demandYear is 2025.')
 json.dump(p, open('profiles.json', 'w'))
 print(f'wheeled Jan-Aug 2026: {wheeled_ja/1e6:.3f} TWh from {len(wheel)} plants')
 print(f'domestic ratio Jan-Aug 2026/2025: {RATIO_CONTRACTED:.4f} contracted, {RATIO:.4f} with wheeled')

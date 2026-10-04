@@ -5122,7 +5122,8 @@ function buildProfiles(real){
     } else {
       for(let h=0;h<HOURS;h++){const hour=h%24; const eve=(hour>=10&&hour<=22)?Math.exp(-Math.pow(hour-17,2)/18):0; csp[h]=Math.min(1,0.6*eve);}
     }
-    return {demand,solar,wind,csp,real:true};
+    const demand_2025 = (real.demand_2025 && real.demand_2025.length===HOURS) ? Float64Array.from(real.demand_2025) : null;
+    return {demand,solar,wind,csp,real:true,demand_2025};
   }
   const rand = mulberry32(20260714);
   const demand=new Float64Array(HOURS), solar=new Float64Array(HOURS), wind=new Float64Array(HOURS), csp=new Float64Array(HOURS);
@@ -5480,7 +5481,10 @@ const FIXED = {
   // Independent peakers carry their own fuel and are not limited here. Tanks start full. 3 Oct 2026.
   // Off by default: NTCSA's MTSAO assumes about 45% OCGT utilisation by 2030, which this limit
   // would prevent. On in Backcast 2025, where it is the year's physical constraint.
-  dslTankOn:0, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  dslTankOn:0,
+  // Which year's demand series to run: null is the 2026 series in profiles.json; 2025 is 2025's,
+  // built by build_demand_2026.py with 2025 rooftop added back. 3 Oct 2026.
+  demandYear:null, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -6586,7 +6590,11 @@ function simulate(u, prof, outPath, _soc0){
   }
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
   p.syncFloorMW = (typeof p.syncMinMW === 'number') ? p.syncMinMW : (p.syncMinEnabled !== false ? SYNC_MIN_MW : 0);
-  const {demand,solar,wind,csp}=prof;
+  const {solar,wind,csp}=prof;
+  // demandYear 2025 swaps in 2025's own demand series wherever the default series was passed
+  // (single run or weather years). The default is the 2026 series. 3 Oct 2026.
+  const demand = (p.demandYear === 2025 && prof.demand === PROFILES.demand && PROFILES.demand_2025)
+    ? PROFILES.demand_2025 : prof.demand;
   const growth=1+p.demandGrowthPct/100;
   // Retire nameplate, add nameplate, then take the capture penalty off whatever
   // fleet is left - existing and new alike. A new station with capture loses the
@@ -16077,15 +16085,15 @@ const PRESETS={
   // Coal availability 58.4% is the coal-only figure for 2025 and outageTraceYear puts its
   // measured hourly shape behind it.
   //
-  // IT IS NOT A VALIDATION. It sheds about 18 GWh against the 390 GWh Eskom actually shed. The
+  // IT IS NOT A VALIDATION. It sheds about 28 GWh against the 390 GWh Eskom actually shed. The
   // difference is peaker delivery: in the 202 hours Eskom shed, its OCGTs managed 942 MW while
   // this model dispatches the full 3.06 GW fleet. Eskom's coal generated 96.5% of its available
   // capacity in those hours, so availability and deliverability are not the gap. Read the preset
   // as a fixed set of 2025 inputs, and read the model as optimistic about the last gigawatt or
-  // two of peaking in a crisis. Imports 0.652, hydro 0.339 and demand +2.5% are 2025 as measured in
-  // ESK19679 (6.57 TWh, 1.79 TWh, contracted 209.6 TWh); with them coal runs 168.9 TWh against
+  // two of peaking in a crisis. Imports 0.652 and hydro 0.339 are 2025 as measured in ESK19679
+  // (6.57 and 1.79 TWh); demand is 2025's own series (demandYear 2025); with them coal runs 168.6 TWh against
   // Eskom's 170.4. 3 Oct 2026.
-  'Backcast 2025':{demandGrowthPct:2.5,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,importsCF:0.652,hydroCF:0.339,dslTankOn:1,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
+  'Backcast 2025':{demandGrowthPct:0,demandYear:2025,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,importsCF:0.652,hydroCF:0.339,dslTankOn:1,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
   // DEMAND +5%, the same in Fossil-free 2040 and IRP path 2035 so the three can be compared.
   // Roughly half a percent a year to 2035: electrification and industrial recovery against
   // efficiency and continued grid defection.
@@ -16514,7 +16522,7 @@ function applyState(overrides){
   updateGroupBadges(); if(typeof updateVppTotal==='function') updateVppTotal();
 }
 const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'rooftopMW',
-                               'battPowerMW', 'outageTraceYear', 'importsCF', 'hydroCF', 'dslTankOn'];
+                               'battPowerMW', 'outageTraceYear', 'importsCF', 'hydroCF', 'dslTankOn', 'demandYear'];
 const presetsEl=document.getElementById('presets');
 Object.keys(PRESETS).forEach((name,i)=>{
   const b=document.createElement('button');b.textContent=name; if(i===0)b.classList.add('active');
@@ -17504,7 +17512,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-03g';
+const BUILD_STAMP = '2026-10-04a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
