@@ -486,7 +486,8 @@ setTimeout(()=>{
       }
       return out;`);
     if (curt && !curt.error){
-      const PIN = { 'Deep decarbonisation 2035': 65.2, 'Fossil-free 2040': 119.7 };
+      // Re-pinned 4 Oct 2026 for the re-sized presets (was 65.2 and 119.7, on the old builds).
+      const PIN = { 'Deep decarbonisation 2035': 52.7, 'Fossil-free 2040': 96.3 };
       const bad = [];
       for (const [name, pinned] of Object.entries(PIN)){
         const got = curt[name];

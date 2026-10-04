@@ -16113,7 +16113,10 @@ const PRESETS={
   // Screened trims, mean GWh / system R bn: lithium 17 GW 2.02 / 283.8 (chosen, cheapest meeting
   // the target); 18 GW 1.65 / 286.1; solar 32 GW 1.96 / 286.2; rooftop 8 GW 1.70 / 285.9. Retiring
   // more coal is NOT available at this build: 29 GW retired gives 7.67, 31 GW gives 46.7.
-  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:35000,newPvMW:35000,newOffshoreMW:0,newRooftopMW:10800,newBattMW:17000,newBattHours:12,newIronAirMW:1000,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
+  // Re-sized 4 Oct 2026, after the congestion fix and common-mode outages: least system cost
+  // meeting half the 0.002% standard (mean shed about 2 GWh), searched technology by technology at
+  // 2, 1 and 0.5 GW steps with rooftop fixed at expected uptake, then confirmed on 480 draws.
+  'Deep decarbonisation 2035':{demandGrowthPct:5,coalDecomMW:27000,coalFlexPct:1,newWindMW:32500,newPvMW:29500,newOffshoreMW:0,newRooftopMW:10800,newBattMW:19000,newBattHours:12,newIronAirMW:1125,newCcgtMW:0,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Fossil free, 2040. All coal and diesel retired, no gas; Koeberg, hydro, CSP and Cahora Bassa
   // kept. Cheapest build found meeting the NEM standard, re-run 22 Sep 2026 after the
   // long-duration lookahead, the iron-air power fix and long-duration O&M: 7 GW offshore,
@@ -16123,7 +16126,9 @@ const PRESETS={
   // stored energy, 45 GW at 8h costs R341.7bn and 36 GW at 10h R339.7bn - the shedding is
   // identical in all three, so this system is energy-limited rather than power-limited.
   // Offshore is flat from 5 to 8 GW within about R1bn. Derivation in RESULTS.md.
-  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:55000,newOffshoreMW:7000,newRooftopMW:16800,newBattMW:30000,newBattHours:12,newIronAirMW:1000,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
+  // Re-sized 4 Oct 2026 by the same search; offshore held at ESMAP's 5 GW deployable by 2040
+  // (5.25 GW was cheaper but not deployable). No coal, so twelve weather years fix the result.
+  'Fossil-free 2040':{demandGrowthPct:5,coalDecomMW:42000,dieselDecomMW:3400,coalFlexPct:100,newWindMW:35000,newPvMW:45000,newOffshoreMW:5000,newRooftopMW:16800,newBattMW:32000,newBattHours:12,newIronAirMW:2250,newCcgtMW:0,newNuclearMW:0,scenarioYear:2040,asReserveOn:true,asInertiaOn:true},
 };
 const COLORS={hybrid:'#6FA8A0',nuclear:'#E4322B',hydro:'#1F4E79',imports:'#8FA3AC',coal:'#4A3120',ps:'#5B8Fb0',batt:'#7EC8E3',ccgt:'#B0655A',diesel:'#B08D57',wind:'#3EA055',pv:'#F5C518',csp:'#E8862B',unserved:'#22292B',rooftop:'#F7DE7A',curtailment:'#c8e6c8'};
 // NAMES must carry every key COLORS does, or the legend renders 'undefined'
@@ -17522,7 +17527,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-04c';
+const BUILD_STAMP = '2026-10-04d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

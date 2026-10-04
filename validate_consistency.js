@@ -1394,6 +1394,10 @@ const num = t => {
       // only. See BLD_FOM in index.html for the sources. This is a correction, not an
       // inflation: the earlier figures understated the cost of every build.
       //
+      // UPDATED 4 Oct 2026, R1.019 -> R0.936. The Deep decarbonisation preset was re-sized after
+      // the congestion fix and common-mode outages (32.5 GW wind, 29.5 solar, 19 GW lithium,
+      // 1.125 iron-air, from 35/35/17/1). Deliberate scenario change.
+      //
       // UPDATED AGAIN 16 Sep 2026, R0.886 -> R0.823. The Deep decarbonisation 2035 preset's lithium
       // moved 30 GW -> 20 GW, which is the measured optimum: discharge saturates at about
       // 8.1 TWh, and going 20 -> 30 costs R22.2bn/yr to avoid 51 GWh of unserved energy, which
@@ -1418,8 +1422,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.019) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.019 for Deep `
+              Math.abs(ncap.newCap - 0.936) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.936 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

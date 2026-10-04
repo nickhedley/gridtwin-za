@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04c`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04d`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -16,7 +16,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Install this session's files
 
-1. You: replace index.html, profiles.json and build_demand_2026.py (root), eng5.js, validate_findings.js, validate_consistency.js, validate_benchmarks.js and audit.py (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
+1. You: replace index.html, profiles.json and build_demand_2026.py (root), validate_consistency.js, eng5.js, validate_findings.js, validate_consistency.js, validate_benchmarks.js and audit.py (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
 2. You: replace MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md in project knowledge too
 3. You: commit and push; never commit the zip
 
@@ -39,19 +39,18 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
+14k. You: re-run the preset search letting lithium choose 12 to 20 hours?
 14g. ITP Phase I slipped (final RFP Q2 2027): find the seven corridors in tdp_projects.json and move their commissioning to about 2030-31; re-measure the 2030 presets
 14h. Grid delay holds back 40% of 2030 wind and solar on a judgement; the ITP's 3,222 MW is about 18% of that preset's new wind and solar, a sourced basis for the size of the delay
 14j. Rooftop and site tools: an export limit at the connection point as its own input (PV DC, inverter AC and export limit are different quantities)
 14a1. Night curtailment: system-wide causes exhausted (coal minimums, an operating floor, demand definitions). You: ask NTCSA whether 2025 curtailment was local stability at specific substations. Then decide: reshape the 1.3% stopgap to wind at night, or model it regionally in the nodal engine
 14a2. Check every script that reads ESK19679 timestamps for the 12-hour clock (AM/PM) – one analysis this session got it wrong
-14b. You: re-size both transition presets – with congestion at the measured 0.24% they are over-built (Deep 0.08 GWh mean shed against a 2.07 target, Fossil-free 0); combine with the many-draws re-sizing
 14b2. The iron-air finding passes at 1.3% and failed at 0.24%: it is sensitive to delivered renewable energy; re-state it with that range once curtailment is calibrated
 14b3. Explain why the Homeflex check flipped green: the representative week's peak price rose 3.40 to 7.39 R/kWh after the congestion fix
 14b4. Re-measure the curtailment ranges quoted in RESULTS and outreach (51-68 and 90-114 TWh were at 4%)
 14c. Show congestion loss alongside surplus curtailment in the wind and solar extremes panel, so 0% is not read as no curtailment
 14a. You: re-size either preset to 16-hour lithium? 0.5% cheaper, inside the cost uncertainty
 15. You: EAF 55–60% unserved rise (4.00, 5.39, 5.69 GWh, present with the charging rule off) – investigate now or park?
-16. You: re-size the transition presets on many outage draws rather than one? Deep decarbonisation reads 1.36 GWh mean on 480 draws against the 2.02 it was sized on
 16d. Investigate the flat shadow price: a normal winter week varies 1.1x against Homeflex's 3.9x (standing failure in validate_consistency)
 16b2. You: the backcast's remaining gap is Eskom's reserve-refill shedding; ask Eskom or NTCSA for their weekly emergency-reserve targets?
 16c. You: the RMIPPPP hybrids (335 MW, 1.8 TWh) – were they delivering in 2025? Turning them off brings backcast coal to 170.3 against 170.4
@@ -136,7 +135,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-04c after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-04d after the push, and the new footer label shows
 
 ## Named projects
 
@@ -179,7 +178,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 101. Backcast 2025 sheds 28.3 GWh against Eskom's 390 on 2025's own demand, imports and hydro; the remainder is reserve-refill shedding the model does not do
 102. Coal-retaining adequacy levels before 2 Oct are pessimistic; directions re-measured on three entries hold
 103. coalFlexPct is an on/off switch; older entries describe it as a ramp percentage
-104. Deep decarbonisation carries 17 GW of lithium at 12h, re-sized 2 Oct after the charging fix
+104. Deep decarbonisation carries 19 GW of lithium at 12h and Fossil-free 32 GW, re-sized 4 Oct; lithium duration held at 12h in the search
 105. The remaining 12.7 GW of coal in Deep decarbonisation is binding; retiring more needs firm capacity alongside
 106. OCGT utilisation in the MTSAO case is 52.9% against their 45%
 107. The adequacy loop converges on Fossil-free 2040 at a 2040 horizon (worst year 4.0 against 4.55); not tested on other presets or horizons

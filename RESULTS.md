@@ -1714,6 +1714,44 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Both transition presets re-sized, 4 Oct 2026
+
+Build `2026-10-04d`. Both had been sized with congestion at 4% (double-counted) and on one outage
+draw, so both sat far inside their target. Re-sized to the least system cost meeting half the
+0.002% standard, the presets' existing design rule, with the target fixed at the starting build's
+level (cutting rooftop would otherwise raise grid demand and loosen it).
+
+Method: greedy search from each preset. Every technology alone, and every pair (one cut by twice
+the step, one raised by the step), at 2, then 1, then 0.5 GW (iron-air 0.5, 0.25, 0.125; offshore
+1, 0.5, 0.25). Cheapest move that still meets the target, repeated until none helps. New rooftop
+held at expected uptake: behind-the-meter solar is a household decision, taken as a forecast in
+IRP-style planning, not a planner's choice. Lithium held at 12 hours. Fossil-free scored on twelve
+weather years (no coal, so outage draws do not matter); Deep on twelve years x two draws, then
+checked on 480 draws.
+
+```
+GW                        onshore  solar  offshore  lithium  iron-air  cost R bn  shed GWh  curtail TWh
+Deep decarbonisation old     35      35      0        17      1.0       286.8               67.4
+                     new     32.5    29.5    0        19      1.125     279.5     1.98*      ~51
+Fossil-free 2040     old     35      55      7        30      1.0       338.4     0.18      113.1
+                     new     35      45      5        32      2.25      323.1     1.98       84.2
+* mean of 480 draws, target 2.07; on the default single draw 2.59
+```
+
+About R7bn and R15bn a year cheaper, at target rather than far inside it. Solar cut most, lithium
+up a little, curtailment down 16 and 29 TWh.
+
+Deep's search build (29.0 GW solar) shed 2.32 GWh on 480 draws, over target: two draws per year
+were optimistic. Four smallest top-ups tested on the same 480 draws all met it (lithium +0.5 GW
+1.96, iron-air +0.125 1.82, onshore +0.5 1.87, solar +0.5 1.98); solar was cheapest, R279.5bn.
+
+Offshore in Fossil-free held at 5 GW, ESMAP's deployable path to 2040. The unconstrained search
+chose 5.25 GW at R322.0bn; at exactly 5 GW that build shed 3.76 GWh, so the result is sensitive to
+the last quarter-gigawatt of offshore. The old preset's 7 GW was above the deployable path.
+
+Re-pinned for the deliberate change: preset curtailment band (validate_findings) 65.2/119.7 to
+52.7/96.3 TWh; Deep's new-build capital (validate_consistency) R1.019 to R0.936/kWh. Suite 804/805.
+
 ### Backcast 2025 now runs 2025's own demand, 4 Oct 2026
 
 Build `2026-10-04a`. build_demand_2026.py also writes demand_2025 to profiles.json: calendar 2025
