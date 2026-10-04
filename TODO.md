@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04e`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04f`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -40,7 +40,6 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 ## Next, in order
 
 14l. Least-cost pathway to 2040: re-run on the corrected coal schedule; repair 2038-2040 adequacy; carbon-price sensitivity (it decides early retirement); life-extension option for the larger stations (IRP 2024 draft option, not the reference case)
-14m. Coal capacity mismatch: UC_FLEET sums to 41.4 GW in 2026 against FIXED.coalInstalledMW 39.7; reconcile
 14k. You: re-run the preset search letting lithium choose 12 to 20 hours?
 14g. ITP Phase I slipped (final RFP Q2 2027): find the seven corridors in tdp_projects.json and move their commissioning to about 2030-31; re-measure the 2030 presets
 14h. Grid delay holds back 40% of 2030 wind and solar on a judgement; the ITP's 3,222 MW is about 18% of that preset's new wind and solar, a sourced basis for the size of the delay
@@ -137,7 +136,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-04e after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-04f after the push, and the new footer label shows
 
 ## Named projects
 

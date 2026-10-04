@@ -1714,6 +1714,19 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Coal schedule scaled to Eskom's 39,692 MW; pathway re-run falls further short, 4 Oct 2026
+
+Build `2026-10-04f`. UC_FLEET's unit sizes summed to 41.4 GW in 2026 against Eskom's nominal
+39,692 MW (integrated report FY2026). Both build LPs now scale the schedule's shape so 2026 equals
+FIXED.coalInstalledMW (factor 0.958): 39.7 GW in 2026, 30.3 GW in 2030, 24.2 GW in 2035, 20.8 GW
+in 2040.
+
+Pathway re-run on it (Today 2026 to 2040, gas from 2030, rooftop at uptake): still no early
+retirement and no offshore. The adequacy loop stalls further out than before: 2040 worst year
+41.2 GWh and mean 7.3 GWh on one outage path, against a 3.9 GWh standard. With 1 GW less coal in
+2040, the optimiser's builds fall further short of what the hourly engine needs. The optimiser-
+engine gap, not the schedule, is now the blocker for a publishable pathway. Suite 804/805.
+
 ### Build optimiser: coal retirement and offshore are decisions; the solar cap grows, 4 Oct 2026
 
 Build `2026-10-04e`. Three changes to bldBuildLP. Coal may retire ahead of Eskom's unit schedule

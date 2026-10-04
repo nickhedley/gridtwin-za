@@ -9151,7 +9151,10 @@ function bldCapex(tech, year){
   return BLD_COST[tech].c2026 * Math.pow(1 - BLD_COST[tech].decl, year - 2026);
 }
 // Coal still standing at the start of a given year, from real per-unit dates.
-function bldCoalMW(year){
+// UC_FLEET's unit sizes sum to 41.4 GW in 2026 against Eskom's nominal 39,692 MW (integrated
+// report FY2026). The schedule keeps its shape and is scaled so 2026 matches FIXED.coalInstalledMW;
+// one scale for both build LPs. 4 Oct 2026.
+function bldCoalRawMW(year){
   let cap = 0;
   for (const u of UC_FLEET){
     const dy = (u.decom === 'beyond 2050') ? 9999 : parseInt(u.decom, 10);
@@ -9159,6 +9162,8 @@ function bldCoalMW(year){
   }
   return cap;
 }
+function bldCoalScale(){ return FIXED.coalInstalledMW / bldCoalRawMW(2026); }
+function bldCoalMW(year){ return bldCoalRawMW(year) * bldCoalScale(); }
 
 function bldRates(){
   const out = {};
@@ -10397,7 +10402,7 @@ function bldCoalByRegion(year, extraDecomMW){
   const alive = [];
   for (const u of UC_FLEET){
     const dy = u.decom === 'beyond 2050' ? 9999 : parseInt(u.decom, 10);
-    if (dy > year && out[u.region] !== undefined){ out[u.region] += u.cap; alive.push({ ...u, dy }); }
+    if (dy > year && out[u.region] !== undefined){ const c = u.cap * bldCoalScale(); out[u.region] += c; alive.push({ ...u, cap: c, dy }); }
   }
   let left = Math.max(0, extraDecomMW || 0);
   if (left > 0){
@@ -17570,7 +17575,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-04e';
+const BUILD_STAMP = '2026-10-04f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
