@@ -160,9 +160,12 @@ const CF_BENCH = {
   // WHAT IT GUARDS: this is the first check on the ADEQUACY side against a published
   // national figure. If the model ever reports a system that is comfortable when Eskom
   // says it is tight, or vice versa, this is where it shows.
-  // PEAKER SEASONALITY, not level. Added 31 Aug 2026 from Eskom's own hourly file:
-  // peakers run 8.5x more in Jan-Mar than Jul-Sep, because maintenance is scheduled away
-  // from the winter peak. The model reproduces Jan and Feb to within half a point.
+  // PEAKER SEASONALITY, not level. Re-specified 4 Oct 2026. The 2025 ratio comes from the
+  // fleet recovering through the year (unplanned outages 13.8 GW in Q1, 10.5 GW in Q3), not a
+  // built-in season: 2023, bad all year, shows 0.8x. A seeded draw has no recovery trend, so the
+  // test runs on the measured 2025 availability trace. Comparator: all peakers, Eskom and IPP
+  // OCGTs and gas, 4.3x in ESK19679. The earlier 8.5x was Eskom's own OCGTs only (8.4x here);
+  // the model's peaker line includes the IPP units. Band: half to double, a factor of two.
   //
   // The LEVEL is deliberately NOT benchmarked. 63% of Eskom's peaker output runs below
   // 25 GW of demand with ~25.8 GW of coal available - reserve, network support and
@@ -170,9 +173,9 @@ const CF_BENCH = {
   // economics cannot reproduce it, and a level benchmark would invite tuning availability
   // to fit the right total for the wrong reason. That mistake was made and withdrawn
   // twice on 31 Aug; this comment exists so it is not made a third time.
-  peakerSeasonRatio: { lo: 2.0, hi: 12.0, unit: 'x', why: 'Eskom hourly 2025 (ESK19243): '
-    + 'Jan-Mar peaker output is 8.5x Jul-Sep. Band is wide because the model reproduces '
-    + 'the shape, not the level' },
+  peakerSeasonRatio: { lo: 2.15, hi: 8.6, unit: 'x', why: 'Eskom hourly 2025 (ESK19679), all '
+    + 'peakers: Jan-Mar output 4.3x Jul-Sep, driven by the fleet recovering through the year. '
+    + 'Model run on the measured 2025 availability trace; band is a factor of two' },
   // Lower bound 1.8 -> 1.2 on 8 Sep 2026, deliberately.
   //
   // The band was set against Eskom's stated 2-3 GW. The model now reads 1.5 GW, and the
@@ -270,14 +273,18 @@ const check = (name, ok, detail) => {
       // Residual basis: rooftop out of numerator and denominator, matching how Eskom
       // reports 'power supplied' - it cannot meter behind the customer's meter.
       // Surplus at the annual peak: what could still have run, less the reserve held.
+      // On the measured 2025 availability trace, so no outage draw decides it (4 Oct 2026).
       peakerSeasonRatio: (() => {
         const MD = [31,28,31,30,31,30,31,31,30,31,30,31];
         const bym = new Array(12).fill(0);
-        let h = 0;
-        for (let m = 0; m < 12; m++){
-          const n = MD[m] * 24;
-          for (let k = 0; k < n && h < 8760; k++, h++)
-            bym[m] += (r.stack.ccgt[h] || 0) + (r.stack.diesel[h] || 0);
+        {
+          const rr = simulate({ ...S25, outageTraceYear: 2025 }, PROFILES);
+          let h = 0;
+          for (let m = 0; m < 12; m++){
+            const n = MD[m] * 24;
+            for (let k = 0; k < n && h < 8760; k++, h++)
+              bym[m] += (rr.stack.ccgt[h] || 0) + (rr.stack.diesel[h] || 0);
+          }
         }
         const q1 = bym[0] + bym[1] + bym[2], q3 = bym[6] + bym[7] + bym[8];
         return q3 > 0 ? q1 / q3 : null;

@@ -618,11 +618,15 @@ setTimeout(()=>{
       // domestic-only on 8 Sep 2026 the model no longer sheds at default settings, so
       // comparing curtailed against uncurtailed there gives 0.0 both ways and proves
       // nothing. 52% availability is roughly the 2023 outturn.
-      const a = simulate({ ...state, coalEAFPct: 52, exportsCurtailable: false }, PROFILES);
-      const b = simulate({ ...state, coalEAFPct: 52, exportsCurtailable: true }, PROFILES);
-      return { def: P.exportsCurtailable, expMW: P.exportsMW,
-               unserved0: (a.E.unserved || 0) / 1000,
-               unserved100: (b.E.unserved || 0) / 1000 };
+      // Mean of eight outage draws from 4 Oct 2026: on one draw the stressed case shed only
+      // 0.8 GWh, too little for the 1 GWh test to see.
+      let u0 = 0, u1 = 0;
+      for (let k = 0; k < 8; k++){
+        const sd = 20260816 + k * 104729;
+        u0 += (simulate({ ...state, coalEAFPct: 52, exportsCurtailable: false, outageSeed: sd }, PROFILES).E.unserved || 0) / 8000;
+        u1 += (simulate({ ...state, coalEAFPct: 52, exportsCurtailable: true,  outageSeed: sd }, PROFILES).E.unserved || 0) / 8000;
+      }
+      return { def: P.exportsCurtailable, expMW: P.exportsMW, unserved0: u0, unserved100: u1 };
     `);
     if (r && !r.error){
       check('exports are modelled and non-zero',

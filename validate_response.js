@@ -107,8 +107,10 @@ const EXPLAINED = {
 };
 
 const CONTEXT = {
-  drInterruptMW:    { coalEAFPct: 55 },   // interruptible load only fires in a shortage
-  drInterruptCostR: { coalEAFPct: 55, drInterruptMW: 2000 },
+  // On the measured 2025 outage trace from 4 Oct 2026, not the seeded draw: on one draw EAF 55
+  // gave no shortage and the cost control read as dead.
+  drInterruptMW:    { coalEAFPct: 55, outageTraceYear: 2025 },   // interruptible load only fires in a shortage
+  drInterruptCostR: { coalEAFPct: 55, drInterruptMW: 2000, outageTraceYear: 2025 },
   newBattHours:     { newBattMW: 20000 }, // duration is meaningless at zero new lithium
   vppGeyserPoolMW:  { vppEnrolPct: 50 },  // pool size is irrelevant at zero enrolment
   syncMinMW:        { newWindMW: 30000, newPvMW: 30000 }, // only binds when VRE displaces synchronous plant

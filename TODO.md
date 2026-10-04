@@ -53,7 +53,6 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 15. You: EAF 55–60% unserved rise (4.00, 5.39, 5.69 GWh, present with the charging rule off) – investigate now or park?
 16. You: re-size the transition presets on many outage draws rather than one? Deep decarbonisation reads 1.36 GWh mean on 480 draws against the 2.02 it was sized on
 16d. Investigate the flat shadow price: a normal winter week varies 1.1x against Homeflex's 3.9x (standing failure in validate_consistency)
-16e. Sweep the harnesses for other checks that read one seeded outage draw
 16b2. You: the backcast's remaining gap is Eskom's reserve-refill shedding; ask Eskom or NTCSA for their weekly emergency-reserve targets?
 16c. You: the RMIPPPP hybrids (335 MW, 1.8 TWh) – were they delivering in 2025? Turning them off brings backcast coal to 170.3 against 170.4
 16a. Run the converged loop build through the presets' twelve-year test before treating it as a result
