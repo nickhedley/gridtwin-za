@@ -1714,6 +1714,38 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Battery reserve in the optimiser now energy-limited, as in the engine; small effect, 5 Oct 2026
+
+Build `2026-10-05e`. Confirmed: the storage held back while load is shed is the engine's reserve rule
+(shed load before reserve falls below the requirement; storage counts as reserve up to what its
+stored energy sustains for asHoldHours), the practice of operators who shed firm load to keep
+contingency reserve. The optimiser counted full battery power as reserve even when empty. It now
+uses a battery-reserve variable limited by unused power and by stored energy over asHoldHours.
+
+Effect on the 2040 build at zero stress margin: engine mean shed 8.9 to 8.6 GWh, build almost
+unchanged. Correct, but not the main gap. What remains is multi-day lulls draining a 6.7-hour
+lithium fleet, with outage timing the optimiser's single tail derate cannot represent.
+
+### Optimiser-engine gap, first decomposition: the engine's storage, not coal, 5 Oct 2026
+
+Build `2026-10-05d`, gapdiag.js (harness folder). The reference pathway's 2040 build as the optimiser
+sizes it with no stress margin, run in the engine on twelve weather years x two outage draws: mean
+shed 8.9 GWh against a 3.9 GWh standard, 103 shed hours in 39 events.
+
+In the engine's shed hours: coal 11,540 MW (above the optimiser's stressed 10,300), diesel at its
+full 3,400, pumped storage 1,350, lithium discharging 140 MW from about 275 MWh of a 101 GWh fleet,
+wind and solar 2,560. Before the largest events lithium was 50-98% full 48 hours ahead and empty
+by the event: multi-day lulls that a 6.6-hour fleet cannot bridge.
+
+The optimiser's own stress week (2016, days 286-292) sheds 53.9 GWh on one outage draw with coal
+averaging 10,426 MW, against the optimiser's 10,299 and no shedding; on the other draw, coal 11,436
+and no shedding. The optimiser's coal assumption is not the gap.
+
+Storage held back while load is shed: in 47 of 103 shed hours vanadium held over 300 MWh; in the
+inspected hours vanadium (500-2,000 MWh) and lithium (200 MWh) discharged nothing. Unresolved
+whether that is the reserve the engine holds every hour (the reserve note says load is shed before
+reserve falls below 2,200 MW) or a dispatch fault. Next: establish which, then re-run the loop.
+
 ### Slider notes: stale figures fixed, fleet numbers now computed, gas fuel on R16.50/USD, 5 Oct 2026
 
 Build `2026-10-05d`. Trimmed on request: Diesel retired, Diesel budget, energy lost in shifting.
