@@ -1714,6 +1714,38 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Build 05j changed stress-window scope; the 5 Oct pathways do not reproduce on it, 5 Oct 2026
+
+Build `2026-10-05j`. Between `05g` (pathway_op recorded) and `05j` each stress window became scoped to
+its fromYear on: the failing model year minus opts.windowLeadYears (default 4). At `05g` every window
+bound every model year. Not recorded in RESULTS at the time.
+
+Effect: pathway_op.js on `05j` no longer converges in two passes; its 2016 window binds only from
+2036, 2032-2034 are never repaired, windows pile up and HiGHS (highs-js 1.15.3, WebAssembly) aborts.
+With windowLeadYears 14 (every window from 2026) it reproduces pathway_op.json exactly: same
+objective, same schedule to the MW, adequate in two passes (pathway_half_op.js TF=1).
+
+Every pathway entry below dated 5 Oct was run at or before `05g`, so with all-year windows.
+
+### Half-standard pathway on pathway_op's settings: stalls near the full standard, solver limit at pass 5, 5 Oct 2026
+
+Build `2026-10-05j`. pathway_half_op.js: pathway_op's settings (draws 2, testEvery 2, stressDays 14,
+windowsPerPass 1) plus targetFrac 0.5 and windowLeadYears 14 (all-year windows, as at `05g`). Fresh
+HiGHS instance per solve.
+
+Mean shed against half the standard (about 1.97 GWh), years failing only:
+pass 1  2032 2.51, 2034 4.44, 2036 5.70, 2038 8.27, 2040 8.39   (identical to pathway_op pass 1)
+pass 2  2036 2.10, 2038 3.90, 2040 3.71
+pass 3  2036 2.25, 2038 3.60, 2040 3.58
+pass 4  2036 2.15, 2038 3.57, 2040 3.86
+Pass 5's solve (five 14-day windows on fifteen model years) aborted in HiGHS; no build recorded.
+
+Finding: after the first window, three more each moved 2038-2040 by under 0.4 GWh. The loop sits at
+about the full standard, not half. The earlier half-standard run (pathway_half, windowLeadYears 1,
+below) is superseded as a test of the target: it was scoped too narrowly to repair 2032-2036.
+
+Caveat: not converged; no build or cost to quote. Two draws per weather year.
+
 ### Pathways re-checked on independent outage draws: both still meet the standard every year, 5 Oct 2026
 
 Build `2026-10-05j`, suite 803/812 with ESK19679.csv absent (see the half-standard entry below).
