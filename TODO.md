@@ -39,13 +39,14 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
+14u. Optimiser-engine gap: the pathway loop's stress-day margin rose to 8,000 MW at R462/t, from 5,000 MW in the reference; the two disagree more as coal leaves. Narrowing that gap is the main improvement needed to the optimiser
 14n. Rooftop in system cost: both reported in the pathway (whole and grid cost). Open: show both on the page
 14o. Full model audit, as an energy modeller and grid operator: gaps, inconsistencies and errors
 14p. Find a published scenario from a professional modelling group and test the model against it
 14q. Remaining tool and calculation gaps between GridTwin and professional models
-14r. Solar cap growth: 7% central (RFF Haiku precedent). Open: 15% sensitivity pathway
+14r. Solar cap growth: 7% central; 15% sensitivity done (RESULTS, 5 Oct): 0.4% cheaper, 3% more CO2
 14s. Least-cost mix: test higher rooftop uptake, and electrolysers to absorb curtailment
-14t. Carbon: reference pathway on the legislated Phase 2 path done (5 Oct). Open: NDC emissions-cap pathway (needs a sourced electricity cap) and a shadow-price sensitivity
+14t. Carbon: legislated-path reference and R462/t shadow-price sensitivity done (RESULTS, 5 Oct). Open: NDC emissions-cap pathway with a sourced electricity cap; report resource cost net of carbon tax on the page
 14l. Pathway to 2040 done (RESULTS, 5 Oct). Open: carbon-price sensitivity; report CO2; life-extension option; shrink the 4,000 MW stress margin by narrowing the optimiser-engine gap; expose the per-year loop in the build panel
 14k. You: re-run the preset search letting lithium choose 12 to 20 hours?
 14g. ITP Phase I slipped (final RFP Q2 2027): find the seven corridors in tdp_projects.json and move their commissioning to about 2030-31; re-measure the 2030 presets

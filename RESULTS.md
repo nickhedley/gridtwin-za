@@ -1714,6 +1714,37 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Pathway sensitivities: solar build-cap growth and a shadow carbon price, 5 Oct 2026
+
+Build `2026-10-05b`, same method and checks as the reference pathway below (every year on twelve
+weather years x two outage draws; every year meets the standard in both). pathway_pv15.js and
+pathway_c462.js, outputs pathway_pv15/pathcheck_pv15 and pathway_c462/pathcheck_c462 json.
+
+Solar build cap growing 15% a year instead of 7%: 10.0 GW onshore and 28.9 GW solar by 2040 against
+12.1 and 26.0, lithium unchanged at 15.7 GW, gas 0.3 against 0.7 GW. Cost over 2026-2040 0.4% lower
+(R3,478 against R3,493bn), CO2 3% higher (1,518 against 1,473 Mt), mean shed in 2038 3.6 against
+1.5 GWh. The 7% assumption barely matters; 7% stays central.
+
+Shadow carbon price, the full R462/t headline rate from 2026 with no allowances: the optimiser now
+retires coal early, from 2032, 6.5 GW ahead of schedule by 2040 (14.3 GW left against 20.8). By 2040
+15.0 GW onshore, 42.7 GW solar, 22.5 GW lithium (130 GWh), 1.25 GW vanadium, 0.75 GW iron-air, 1.55 GW
+gas; still no offshore. Stress margin 8,000 MW, ten passes.
+
+```
+              2030    2035    2040    2026-2040
+CO2 Mt ref    96.5    88.0    82.3     1,473
+CO2 Mt R462   91.0    73.2    62.2     1,307
+curtail ref    3.5    15.3    32.7   TWh
+curtail R462   6.4    40.2    55.9   TWh
+```
+
+Reported system cost includes the carbon tax, a transfer. Net of it, resource cost in 2040 is
+R223bn on the reference against R254bn at R462/t, and over 2026-2040 R3,348bn
+against R3,629bn: 165 Mt less CO2 for about R281bn, about R1,700/t abated.
+
+Caveat: the 8,000 MW stress margin shows the optimiser-engine gap widening as coal leaves; the
+emissions-cap pathway still needs a sourced electricity cap.
+
 ### Reference pathway on the legislated carbon tax, with CO2 and both cost measures, 5 Oct 2026
 
 Build `2026-10-05b`. The build optimiser now prices carbon on the legislated Phase 2 path
