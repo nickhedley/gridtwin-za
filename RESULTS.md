@@ -1714,6 +1714,39 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Half-standard pathway did not converge: fails even the full standard in 2034-2038, 5 Oct 2026
+
+Build `2026-10-05j`, suite 803/812 plus eng5 6/6 with ESK19679.csv absent (803/805 leaving out seven
+checks against stale baseline files, see TODO). pathway_half.js, recorded in harness/pathway/
+(pathway_half.json, pathcheck_half.json). Today 2026, demand growth 5% to 2040, horizon 2040, gas no
+earlier than 2030, rooftop fixed at 1.2 GW a year from 2027. Loop: perYear, targetFrac 0.5, draws 2,
+testEvery 3, stressDays 10, maxPasses 10, windowsPerPass 1, windowLeadYears 1, marginStepMW 1000.
+Check: pathcheck.js, twelve weather years x two outage draws, legislated carbon path, PH 14.
+
+Verdict "pass limit reached": ten passes, nine outage-path windows added, all for model years 2038
+and 2040, no margin used. With windowLeadYears 1 each window binds only from the year before, so the
+build to 2036 barely moved and 2032 and 2035 never changed across passes (2.51 and 4.52 GWh).
+
+By 2040: 15.2 GW onshore, 30.9 GW solar, 16.8 GW new rooftop, 19.4 GW lithium at 107 GWh (5.5
+hours), 0.25 GW vanadium, no iron-air, no gas, no offshore; 1.35 GW of coal retired early in
+2039-2040.
+
+Half the standard is met in 2026-2031 only. The full standard is failed in 2034 (4.44 against 3.95
+GWh), 2035 (4.52, 3.93), 2036 (5.70, 3.92) and 2038 (4.87, 3.90). The full-standard run
+(pathcheck_op.json) met the full standard every year.
+
+Over 2026-2040: cost R3,384bn against R3,463bn at the full standard (2.3% lower), grid cost R3,239bn
+against R3,319bn; CO2 1,585 Mt against 1,522 (4.1% higher). 2040: CO2 73.6 Mt (82.4), curtailment
+43 TWh (33), whole-system R234bn (229).
+
+Caveat: not a half-standard pathway. It is cheaper because it is less reliable, not because a
+stricter target found a better build. Not to be quoted as the cost of the presets' 2x margin.
+
+Second caveat, applies to every pathcheck figure: pathcheck uses the same outage seeds as the
+loop's own test (20260816 + k x 104729 + y x 7919 in both), so its means reproduce the loop's
+exactly. It is a full-year check of untested years, not an independent draw. The entry below
+calls its draws fresh; they are not.
+
 ### Outage-path stress windows replace the capacity margin: no margin needed, R17bn cheaper, 5 Oct 2026
 
 Build `2026-10-05g`, suite 805/806, pathway_op.js. The engine now records hourly coal availability
