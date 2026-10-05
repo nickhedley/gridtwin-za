@@ -1714,6 +1714,27 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Pathways re-checked on independent outage draws: both still meet the standard every year, 5 Oct 2026
+
+Build `2026-10-05j`, suite 803/812 with ESK19679.csv absent (see the half-standard entry below).
+pathcheck.js until now drew the same outage seeds as the loop's own adequacy test, so its means
+reproduced the loop's and were not an independent check. It now uses SEED_BASE 71830529 + k x
+104729 + y x 7919, which collides with no seed in index.html; SEED_BASE=20260816 reproduces the old
+runs exactly (pathcheck_op re-run, largest difference 0). Twelve weather years x two draws, legislated
+carbon path, PH 14. Outputs pathcheck_op_s2.json and pathcheck_sd14_s2.json in harness/pathway/.
+
+Outage-path pathway (pathway_op): every year 2026-2040 meets the standard. Worst year 2038 and 2040,
+2.89 GWh against 3.92 and 3.88 (loop's draws: 3.90 in 2038). Mean over the fifteen years 0.96 GWh
+against 1.34. Cost R3,462bn (3,463), CO2 1,520 Mt (1,522).
+
+Fourteen-day pathway (pathway_sd14): every year meets the standard. Worst 2039, 3.08 GWh against
+3.91 (loop's draws: 3.38 in 2038). Mean 0.77 GWh against 0.93. Cost R3,479bn (3,480), CO2 1,513 Mt
+(1,514).
+
+Caveat: two draws per weather year. On fresh draws both builds shed less than on the draws they were
+sized against, which is the expected direction for an in-sample test, but two draws do not pin the
+size of the difference. The worst single run is still 31 to 33 GWh in 2040 on both.
+
 ### Half-standard pathway did not converge: fails even the full standard in 2034-2038, 5 Oct 2026
 
 Build `2026-10-05j`, suite 803/812 plus eng5 6/6 with ESK19679.csv absent (803/805 leaving out seven
@@ -1742,10 +1763,8 @@ against R3,319bn; CO2 1,585 Mt against 1,522 (4.1% higher). 2040: CO2 73.6 Mt (8
 Caveat: not a half-standard pathway. It is cheaper because it is less reliable, not because a
 stricter target found a better build. Not to be quoted as the cost of the presets' 2x margin.
 
-Second caveat, applies to every pathcheck figure: pathcheck uses the same outage seeds as the
-loop's own test (20260816 + k x 104729 + y x 7919 in both), so its means reproduce the loop's
-exactly. It is a full-year check of untested years, not an independent draw. The entry below
-calls its draws fresh; they are not.
+Second caveat: this check used the loop's own outage seeds (20260816 + k x 104729 + y x 7919 in
+both), so its means reproduce the loop's exactly. Fixed since; see the independent-seed entry above.
 
 ### Outage-path stress windows replace the capacity margin: no margin needed, R17bn cheaper, 5 Oct 2026
 
@@ -1761,7 +1780,8 @@ no margin, against six passes and 4,000 MW with flat-derate windows.
 By 2040: 11.9 GW onshore, 26.7 GW solar, 14.0 GW lithium at 90 GWh (about 6.4 hours), 0.75 GW
 vanadium, 0.45 GW iron-air, no gas, no offshore, no early coal retirement.
 
-Every year checked on twelve weather years x two fresh outage draws meets the standard. 2038 sits at
+Every year checked on twelve weather years x two outage draws meets the standard (corrected 5 Oct:
+the loop's own draws, not fresh ones; see the independent-seed entry above). 2038 sits at
 the line, 3.90 against 3.91 GWh, so the build is on the
 standard with no spare margin, unlike the presets' 2x design. Over 2026-2040: cost R3,463bn against
 R3,480bn for the flat-derate 14-day pathway, CO2 1,522 Mt against 1,514.
@@ -1769,7 +1789,7 @@ R3,480bn for the flat-derate 14-day pathway, CO2 1,522 Mt against 1,514.
 ### Fourteen-day pathway verified; pumped hydro not chosen even at its best case, 5 Oct 2026
 
 Build `2026-10-05f`, suite 805/806. The 14-day pathway (pathway_sd14) checked year by year on twelve
-weather years x two fresh outage draws: every year meets the standard, worst mean shed 3.38 GWh
+weather years x two outage draws (corrected 5 Oct: the loop's own draws, not fresh ones): every year meets the standard, worst mean shed 3.38 GWh
 (2038) against about 3.9. Over 2026-2040: cost R3,480bn against R3,493bn
 for the 7-day reference (0.4% lower), CO2 1,514 Mt against 1,473 (3% higher).
 2040: CO2 84.5 Mt, curtailment 34 TWh, whole-system R232bn, grid R212bn.
@@ -1946,7 +1966,9 @@ judged on expected unserved energy, the mean, against 0.002% of demand. The wors
 worst failing year joins the optimiser; when that week is already there, a stress-day margin rises
 by 1,000 MW instead, as utilities calibrate a planning reserve margin to an adequacy study. Seven
 passes: two weeks added (2016 for model year 2038, 2015 for 2040), margin 4,000 MW. Then all fifteen
-years checked independently, twelve weather years x two fresh outage draws.
+years checked, twelve weather years x two outage draws. Corrected 5 Oct: pathcheck then used the
+loop's own seed formula, so these were probably the loop's draws, not fresh ones (not re-verified
+for this build).
 
 Assumptions. Start Today 2026; demand +5% by 2040. Coal retires on Eskom's unit schedule scaled to
 39,692 MW in 2026; the optimiser may retire earlier (it does not). Gas from 2030 only. Offshore on
