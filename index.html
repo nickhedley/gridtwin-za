@@ -5491,7 +5491,9 @@ const FIXED = {
   bldOffshoreOn:1,
   // Utility solar build-rate cap growth, % a year from the 2026 cap: an assumption that the
   // industry scales, about doubling the cap by 2036. 0 holds it flat. 4 Oct 2026.
-  bldPvRateGrowthPct:7, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  bldPvRateGrowthPct:7,
+  // Build optimiser prices carbon on the legislated Phase 2 path (CARBON_AT in bldBuildLP). 5 Oct 2026.
+  carbonTaxPathOn:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -9504,6 +9506,15 @@ function bldBuildLP(opts){
   // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
   // planning than the dispatch engine prices them in operations. One number.
   const VOLL = S.voll ?? 87000, CARBON = S.carbonTaxRPerT;
+  // Legislated carbon tax path, 5 Oct 2026: headline R308/t in 2026 rising to R462/t in 2030
+  // (2022 Budget, Phase 2), tax-free allowances cut 2.5 points a year from 2027 to 2030 (Treasury
+  // Phase 2 paper), so the effective rate goes from carbonTaxRPerT in 2026 to 462 x 0.25 =
+  // R115.5/t in 2030, flat after. carbonTaxPathOn 0 holds carbonTaxRPerT flat.
+  const CARBON_AT = y => {
+    if (!S.carbonTaxPathOn || y <= 2026) return CARBON;
+    const head = y >= 2030 ? 462 : 308 * Math.pow(462 / 308, (y - 2026) / 4);
+    return head * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
+  };
   const CAP_ON = !!(S.carbonCapEnabled), CAP_MT = S.carbonCapMt ?? 140;
   const MC = { coal: S.costCoal + S.vomCoal, ccgt: S.costCcgt + S.vomCcgt, diesel: S.costDiesel + S.vomDiesel };
   const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:dieselAvailMW(S),
@@ -9543,9 +9554,9 @@ function bldBuildLP(opts){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
     for (const r of rd) for (let h = 0; h < 24; h++){
       const k = y + '_' + r.d + '_' + h;
-      obj.push(((MC.coal + CARBON*EMIS_COAL)*r.weight*df).toFixed(3) + ' gc_' + k);
-      obj.push(((MC.ccgt + CARBON*EMIS_CCGT)*r.weight*df).toFixed(3) + ' gg_' + k);
-      obj.push(((MC.diesel + CARBON*EMIS_DIESEL)*r.weight*df).toFixed(3) + ' gd_' + k);
+      obj.push(((MC.coal + CARBON_AT(y)*EMIS_COAL)*r.weight*df).toFixed(3) + ' gc_' + k);
+      obj.push(((MC.ccgt + CARBON_AT(y)*EMIS_CCGT)*r.weight*df).toFixed(3) + ' gg_' + k);
+      obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*r.weight*df).toFixed(3) + ' gd_' + k);
       // Shedding on a tail day is priced as if that day came round every day of the year: a hard
       // zero made the early years infeasible, because nothing can be built fast enough to cover
       // a derated 2026 tail day, and an LP that cannot solve reports nothing. VoLL x 365 says the
@@ -17643,7 +17654,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-05a';
+const BUILD_STAMP = '2026-10-05b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

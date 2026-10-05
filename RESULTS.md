@@ -1714,6 +1714,44 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Reference pathway on the legislated carbon tax, with CO2 and both cost measures, 5 Oct 2026
+
+Build `2026-10-05b`. The build optimiser now prices carbon on the legislated Phase 2 path
+(carbonTaxPathOn): headline R308/t in 2026 to R462/t in 2030 (2022 Budget), allowances cut 2.5
+points a year from 2027 (Treasury Phase 2 paper), so the effective rate rises from R46/t in 2026
+to R115.5/t in 2030, held flat after. The per-year check uses the same path. Otherwise as the 5 Oct
+pathway. Loop: seven passes, two weeks added, stress margin 5,000 MW.
+
+By 2040: 12.1 GW onshore, 26.0 GW solar, 15.7 GW lithium (81 GWh, about 5.2 hours), 0.93 GW
+vanadium, 0.45 GW iron-air, 0.73 GW gas, 16.8 GW rooftop. No offshore, no early coal retirement:
+at R115.5/t retiring early still does not pay.
+
+Every year checked on twelve weather years x two outage draws. Cumulative new GW; coal GW; shed
+mean and standard GWh; CO2 Mt; curtailment TWh; whole-system cost and grid cost (without
+consumer-funded rooftop, the ISP convention), R bn:
+
+```
+year   wind    pv  batt  hrs   coal   shed  std     CO2  curt   whole   grid
+2026    2.5   2.5   2.0  1.0   39.7   0.01 4.03   144.7   0.0   220.8  220.8
+2027    5.0   5.2   4.0  1.0   38.5   0.00 4.05   130.7   0.1   233.3  232.0
+2028    7.5   7.2   6.0  1.0   37.4   0.00 4.07   118.2   0.5   243.1  240.4
+2029   10.0   7.2   8.0  1.0   36.4   0.00 4.05   109.3   1.0   238.6  234.5
+2030   12.1  10.5  10.0  1.0   30.3   0.00 3.99    96.5   3.5   239.3  233.8
+2031   12.1  12.2  10.9  1.4   28.6   0.00 3.97    93.6   5.4   237.4  230.5
+2032   12.1  13.0  11.8  1.9   27.0   0.02 3.94    92.1   7.0   237.2  228.9
+2033   12.1  14.9  12.5  2.2   25.9   0.05 3.93    90.2  10.2   238.6  229.0
+2034   12.1  16.4  13.4  3.0   24.2   0.13 3.92    88.6  13.1   230.7  219.7
+2035   12.1  17.4  13.5  3.0   24.2   0.14 3.90    88.0  15.3   227.3  214.9
+2036   12.1  19.9  14.4  4.0   22.6   0.45 3.90    85.9  19.7   231.1  217.3
+2037   12.1  19.9  14.5  4.0   22.6   0.59 3.89    85.9  20.8   225.8  210.6
+2038   12.1  21.6  15.5  4.9   20.8   1.52 3.90    83.7  23.5   228.6  212.1
+2039   12.1  23.4  15.6  5.0   20.8   1.33 3.88    83.1  27.5   228.8  210.8
+2040   12.1  26.0  15.7  5.2   20.8   1.13 3.87    82.3  32.7   232.7  213.4
+```
+
+Every year meets the standard. CO2 falls from 145 to 82 Mt, almost all of it from the coal
+schedule. Consumer-funded rooftop is R13-19bn a year of whole-system cost by the late 2030s.
+
 ### Pathway assumptions checked against professional practice, 5 Oct 2026
 
 Rooftop solar in system cost. AEMO's ISP takes consumer energy resources as a forecast input and
