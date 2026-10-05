@@ -15940,13 +15940,10 @@ const SLIDERS=[
   {id:'outVolPct',label:'Outage volatility',min:0,max:8,step:0.5,def:3.5,fmt:v=>'±'+(42*v/100).toFixed(1)+' GW',note:'Multi-week swing in unplanned outages · 2026 ≈ ±1.5 GW · 2023 ≈ ±2.5–3 GW.'},
   {id:'dieselDecomMW',label:'Diesel retired',min:0,max:3400,step:100,def:FIXED.dieselDecomMW,
    fmt:v=>v?((v/1000).toFixed(1)+' GW'):'none',
-   note:'Eskom\u2019s open-cycle diesel fleet is 3,400 MW. Retiring all of it is what makes a '
-     + 'fossil-free system a constraint rather than a hope \u2013 without this control the only '
-     + 'way to get there is to find a build the dispatch happens never to reach diesel in.'},
+   note:'Eskom\u2019s open-cycle diesel fleet is currently 3,400 MW.'},
   {id:'dieselBudgetTWh',label:'Diesel budget',min:0.5,max:30,step:0.25,def:FIXED.dieselBudgetTWh,
    fmt:v=>v>=29.8?'no limit':(v.toFixed(2)+' TWh/yr'),
-   note:'Fuel Eskom can buy and deliver in a year, spread evenly by month. Unlimited by default. '
-     + 'In 2023 the OCGT fleet ran 5.25 TWh (ESK19679), an 18% load factor, while the country shed load.'},
+   note:'Fuel Eskom can buy and deliver in a year, spread evenly by month.'},
   {id:'coalDecomMW',label:'Coal decommissioned',min:0,max:39692,step:1000,def:0,fmt:v=>(v/1000).toFixed(1)+' GW',note:'of 39.7 GW installed (Eskom FY2026 nominal).'},
   {id:'coalFlexPct',toggle:true,def:false,label:'Coal fleet flexibilised',note:'Retrofit R223/kW/yr (Weisweiler). SA fleet ramps ~24&#37;/hr today (Agora 2017), ~100&#37;/hr once flexibilised (IRENA). Applies to the non-decommissioned fleet.'},
   {grp:'New build (national view/region agnostic)'},
@@ -15984,11 +15981,7 @@ const SLIDERS=[
   // had modelled 2.2%. The formatter now shows both numbers.
   {id:'drShiftLossPct',label:'\u2013 energy lost in shifting',min:0,max:25,step:1,
    def:FIXED.drShiftLossPct,ctrlStyle:SUB_CTRL,fmt:v=>v+' %',
-   note:'Shifted load returns larger than it left. A geyser reheated hours later has lost '
-     + 'standing heat; a pre-cooled building conditions space that did not need it. LBNL '
-     + 'measures 10\u201320% for pre-cooling; water heating sits lower, and South African '
-     + 'shiftable load is geyser-dominated. Zero makes demand response a lossless store, '
-     + 'which is what this model assumed until 19 Sep 2026.'},
+   note:'Shifted load returns larger than it left.'},
   {id:'drShiftPct',label:'Shiftable load',min:0,max:30,step:1,def:FIXED.drShiftPct,
    fmt:v=>v+' % of each peak hour \u2248 '+(v*0.227).toFixed(1)+' % of annual load',
    note:'Load moved within the day rather than dropped. I.e., loads including water heating, pumping, irrigation and EV charging are shifted out of the six highest net-load hours into the six lowest (i.e. midday solar). Strictly energy-neutral per day. Defaults to zero because this barely exists at scale in South Africa yet but is a potential policy lever.'},
@@ -17654,7 +17647,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-05b';
+const BUILD_STAMP = '2026-10-05c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

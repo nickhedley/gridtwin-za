@@ -4,7 +4,7 @@ Root-versus-nodal confusion has cost time twice: two different `build_capacity.p
 under the same name, and a split builder writing to a filename the generator does
 not read. This file exists so that does not happen a third time.
 
-Last verified: 5 Oct 2026, build `2026-10-05b`, against the upload set of that day.
+Last verified: 5 Oct 2026, build `2026-10-05c`, against the upload set of that day.
 
 ---
 
