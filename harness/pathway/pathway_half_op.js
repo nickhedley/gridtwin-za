@@ -1,4 +1,5 @@
-// Least-cost pathway to 2040 from Today 2026 at half the standard: pathway_op's settings plus targetFrac 0.5, cap 14 passes (5 Oct 2026). Run from the parent of testroot.
+// Least-cost pathway to 2040 from Today 2026 at half the standard: pathway_op's settings plus targetFrac (TF, default 0.5) and windowLeadYears (LEAD, default 14:
+// every window binds from 2026, as all windows did at build 05g when pathway_op was recorded), cap 14 passes (5 Oct 2026). Run from the parent of testroot.
 // Assumptions applied to the build LP text: gas no earlier than 2030 (no import terminal before);
 // new rooftop fixed at 1.2 GW a year from 2027 (16.8 GW by 2040, expected uptake, not a planner's choice).
 const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');const highsLoader=require('highs');
@@ -21,7 +22,7 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  const t0=Date.now();
  const _dump=setInterval(()=>{ try{ fs.writeFileSync((process.env.OUT||'x')+'.progress', JSON.stringify(w.eval('JSON.stringify(bldStressLog.map(l=>({pass:l.pass,margin:l.margin,added:l.added,fails:l.years.filter(q=>q.mean>q.limit).map(q=>[q.y,+q.mean.toFixed(2),+q.limit.toFixed(2)])})))'))); }catch(e){} }, 20000);
  await w.eval(`(async()=>{ const tg=1+(state.demandGrowthPct||0)/100;
-   const opts={growth:Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, maxPasses:14, marginStepMW:1000, draws:2, testEvery:2, stressDays:14, targetFrac:0.5};
+   const opts={growth:Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, maxPasses:14, marginStepMW:1000, draws:2, testEvery:2, stressDays:14, targetFrac:${+(process.env.TF||0.5)}, windowLeadYears:${+(process.env.LEAD||14)}};
    window.__out=await bldStressLoop(opts, m=>{}); })()`);
  const out=w.__out, cols=out.res.Columns;
  const Y=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)')), T=JSON.parse(w.eval('JSON.stringify(BLD_TECHS)'));
