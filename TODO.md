@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-04f`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-05a`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -16,7 +16,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Install this session's files
 
-1. You: replace index.html, profiles.json and build_demand_2026.py (root), validate_consistency.js, eng5.js, validate_findings.js, validate_consistency.js, validate_benchmarks.js and audit.py (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
+1. You: replace index.html, profiles.json and build_demand_2026.py (root), pathway.js and pathcheck.js (harness folder), validate_consistency.js, eng5.js, validate_findings.js, validate_consistency.js, validate_benchmarks.js and audit.py (harness folder), MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md (root)
 2. You: replace MANIFEST.md, TODO.md, SOURCES.md and RESULTS.md in project knowledge too
 3. You: commit and push; never commit the zip
 
@@ -39,7 +39,14 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
-14l. Least-cost pathway to 2040: re-run on the corrected coal schedule; repair 2038-2040 adequacy; carbon-price sensitivity (it decides early retirement); life-extension option for the larger stations (IRP 2024 draft option, not the reference case)
+14n. Rooftop in system cost: researched (RESULTS). You: report both grid system cost (ISP convention, no consumer-funded rooftop) and whole-system cost?
+14o. Full model audit, as an energy modeller and grid operator: gaps, inconsistencies and errors
+14p. Find a published scenario from a professional modelling group and test the model against it
+14q. Remaining tool and calculation gaps between GridTwin and professional models
+14r. Solar cap growth: 7% has precedent (RFF Haiku); TIAM allows 15%. Run a 15% sensitivity on the pathway
+14s. Least-cost mix: test higher rooftop uptake, and electrolysers to absorb curtailment
+14t. Carbon: researched (RESULTS). You: reference pathway on the legislated carbon tax, plus an NDC emissions-cap pathway and a shadow-price sensitivity? Check the Phase 2 escalation first
+14l. Pathway to 2040 done (RESULTS, 5 Oct). Open: carbon-price sensitivity; report CO2; life-extension option; shrink the 4,000 MW stress margin by narrowing the optimiser-engine gap; expose the per-year loop in the build panel
 14k. You: re-run the preset search letting lithium choose 12 to 20 hours?
 14g. ITP Phase I slipped (final RFP Q2 2027): find the seven corridors in tdp_projects.json and move their commissioning to about 2030-31; re-measure the 2030 presets
 14h. Grid delay holds back 40% of 2030 wind and solar on a judgement; the ITP's 3,222 MW is about 18% of that preset's new wind and solar, a sourced basis for the size of the delay
@@ -136,7 +143,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-04f after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-05a after the push, and the new footer label shows
 
 ## Named projects
 

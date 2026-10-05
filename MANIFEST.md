@@ -4,7 +4,7 @@ Root-versus-nodal confusion has cost time twice: two different `build_capacity.p
 under the same name, and a split builder writing to a filename the generator does
 not read. This file exists so that does not happen a third time.
 
-Last verified: 4 Oct 2026, build `2026-10-04f`, against the upload set of that day.
+Last verified: 5 Oct 2026, build `2026-10-05a`, against the upload set of that day.
 
 ---
 
@@ -25,6 +25,8 @@ ESK19679.csv                Eskom hourly dataset, Apr 2022 - Aug 2026, 12 MB.
                             one fail and three skipped checks.
 build_demand_2026.py        writes profiles.json demand (2026) and demand_2025 from ESK19679.
                             Runs from the root; re-run January 2027 with the full 2026 year.
+pathway.js / pathcheck.js   least-cost pathway to 2040 and its per-year check; run from the
+                            parent of testroot (node pathway.js, then IN=pathway.json node pathcheck.js).
 build_capacity.py           the generator. Runs from the root and reads nodal/...
                             relative to cwd. Has step 1b (the supply-area split) and
                             the eskom bucket.
@@ -150,7 +152,7 @@ check its exit code. Two `ctx.createPattern` errors (index.html:11951 on
 
 Node dependencies: `jsdom`, `highs`, `eslint` (validate_lint calls `npx eslint`).
 
-Expected on 4 Oct 2026: 804/805, the one failure EDMSA Scenario A CO2 2035,
+Expected on 5 Oct 2026: 804/805, the one failure EDMSA Scenario A CO2 2035,
 known and standing. eng5 6/6.
 
 ---

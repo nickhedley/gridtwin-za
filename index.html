@@ -9703,7 +9703,11 @@ function bldBuildLP(opts){
         // behind it. In the stalled loop week the engine's pumped storage was empty and delivered
         // 314 MW; the LP was counting all 2,724 toward reserve, which let coal, gas and lithium
         // serve energy the engine had to hold back. Out until the LP models its energy.
-        const rhs = coalCap + EX.diesel + EX.batt - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE);
+        // Stress margin: extra headroom held on tail days, raised by the adequacy loop when the
+        // engine still sheds in a week the LP already holds (a calibrated margin, as utilities
+        // calibrate a planning reserve margin to an adequacy study). 4 Oct 2026.
+        const rhs = coalCap + EX.diesel + EX.batt - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE)
+                    - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0);
         L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + ' + bdis_' + k + ' - rsl_' + k
           + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + ' - ' + cum('ccgt',y).join(' - ') + ' - ' + cum('batt',y).join(' - ')
@@ -9948,13 +9952,17 @@ function bldBuildToState(res){
 }
 
 // The twelve-year test. Returns each year's shed, and the worst week in the worst year.
-function bldAdequacyTest(st){
+// draws > 1: each weather year is run on that many independent outage paths (Monte Carlo, as PRAS
+// samples outages); the mean is then over weather years and draws. 4 Oct 2026.
+function bldAdequacyTest(st, draws){
   const years = (bldWeatherYears && bldWeatherYears.meta && bldWeatherYears.meta.years) || [];
   const rows = []; let worst = null;
-  for (const y of years){
+  const K = Math.max(1, draws || 1);
+  for (const y of years) for (let k = 0; k < K; k++){
     const nat = weatherYearNational(String(y));
     if (!nat) continue;
-    const r = simulate(st, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
+    const stk = K > 1 ? { ...st, outageSeed: 20260816 + k * 104729 + y * 7919 } : st;
+    const r = simulate(stk, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
     const gwh = (r.E.unserved || 0) / 1000;
     let served = 0; for (let h = 0; h < r.loadS.length; h++) served += r.loadS[h];
     rows.push({ year: y, gwh });
@@ -9975,7 +9983,29 @@ function bldAdequacyTest(st){
   return { rows, worst };
 }
 
+// The system in model year y as the LP built it: cumulative builds to y, coal on the schedule less
+// any early retirement by y, demand grown to y. Used by the per-year adequacy test. 4 Oct 2026.
+function bldStateForYear(res, y, opts){
+  const tot = {}; let eb = 0;
+  for (const [c, v] of Object.entries(res.Columns || {})){
+    const m = c.match(/^b_([a-z]+)_([0-9]+)$/);
+    if (m && +m[2] <= y) tot[m[1]] = (tot[m[1]] || 0) + (v.Primal || 0);
+    const e = c.match(/^eb_batt_([0-9]+)$/);
+    if (e && +e[1] <= y) eb += v.Primal || 0;
+  }
+  const rc = ((res.Columns || {})['rc_' + y] || {}).Primal || 0;
+  const batt = tot.batt || 0;
+  return { ...opts.state,
+    newWindMW: Math.round(tot.wind || 0), newPvMW: Math.round(tot.pv || 0), newRooftopMW: Math.round(tot.rooftop || 0),
+    newBattMW: Math.round(batt), newBattHours: batt > 0 ? Math.max(1, Math.min(LI_MAX_HOURS, eb / batt)) : (opts.state.newBattHours ?? FIXED.newBattHours),
+    newCcgtMW: Math.round(tot.ccgt || 0), newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
+    newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
+    coalDecomMW: Math.max(0, Math.round(FIXED.coalInstalledMW - bldCoalMW(y) + rc)),
+    demandGrowthPct: (Math.pow(1 + (opts.growth || 0), y - 2026) - 1) * 100, scenarioYear: y };
+}
+
 async function bldStressLoop(opts, onProgress){
+  if (opts.perYear) return bldStressLoopPerYear(opts, onProgress);
   bldStressPeriods = []; bldStressLog = [];
   await loadWeatherYears();
   let res = null, built = null, verdict = 'pass limit reached';
@@ -9999,6 +10029,44 @@ async function bldStressLoop(opts, onProgress){
     bldStressLog[bldStressLog.length - 1].added = { year: w.year, start: w.start };
   }
   return { res, built, verdict, log: bldStressLog };
+}
+
+// PER-YEAR STRESS LOOP, 4 Oct 2026, after the ReEDS method: every model year is dispatched on twelve
+// weather years and judged on expected unserved energy (the mean) against 0.002% of demand. The
+// worst week of the worst failing year joins the LP. If that week is already there - the LP thinks it
+// copes, the engine does not - the tail-day stress margin rises by opts.marginStepMW instead.
+async function bldStressLoopPerYear(opts, onProgress){
+  bldStressPeriods = []; bldStressLog = [];
+  await loadWeatherYears();
+  opts.stressMarginMW = opts.stressMarginMW || 0;
+  const step = opts.marginStepMW || 500, maxP = opts.maxPasses || 10;
+  let res = null, built = null, verdict = 'pass limit reached';
+  for (let it = 1; it <= maxP; it++){
+    if (onProgress) onProgress('Pass ' + it + ': solving the build\u2026');
+    built = bldBuildLP(opts);
+    res = await bldSolveLP(built.lp);
+    const years = [];
+    let worstFail = null;
+    // opts.testEvery: test every nth model year plus the last, to keep a pass short; verify all
+    // years afterwards.
+    const TY = BLD_YEARS.filter((y, i) => !opts.testEvery || i % opts.testEvery === 0 || i === BLD_YEARS.length - 1);
+    for (const y of TY){
+      const t = bldAdequacyTest(bldStateForYear(res, y, opts), opts.draws || 1);
+      const mean = t.rows.length ? t.rows.reduce((a, b) => a + b.gwh, 0) / t.rows.length : 0;
+      const limit = t.worst ? t.worst.demandGWh * BLD_STRESS_STANDARD : 0;
+      years.push({ y, mean, limit, worstYear: t.worst && t.worst.year, worstGWh: t.worst ? t.worst.gwh : 0 });
+      if (t.worst && mean > limit && (!worstFail || mean / limit > worstFail.ratio))
+        worstFail = { y, ratio: mean / limit, year: t.worst.year, start: t.worst.start };
+    }
+    const entry = { pass: it, margin: opts.stressMarginMW, years, added: null };
+    bldStressLog.push(entry);
+    if (!worstFail){ verdict = 'adequate'; break; }
+    if (it === maxP) break;
+    const already = bldStressPeriods.some(p => p.year === worstFail.year && Math.abs(p.start - worstFail.start) < 7);
+    if (already){ opts.stressMarginMW += step; entry.added = { margin: opts.stressMarginMW }; }
+    else { bldStressPeriods.push({ year: worstFail.year, start: worstFail.start, n: 7 }); entry.added = { year: worstFail.year, start: worstFail.start, forModelYear: worstFail.y }; }
+  }
+  return { res, built, verdict, log: bldStressLog, margin: opts.stressMarginMW };
 }
 
 async function runBuildStress(){
@@ -17575,7 +17643,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-04f';
+const BUILD_STAMP = '2026-10-05a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -1714,6 +1714,77 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Pathway assumptions checked against professional practice, 5 Oct 2026
+
+Rooftop solar in system cost. AEMO's ISP takes consumer energy resources as a forecast input and
+leaves their cost out, as consumers pay it; that is contested (AEMC rule change ERC406, critics who
+call it incomplete whole-system costing). ReEDS takes distributed PV from dGen, outside the
+optimisation. GridTwin's system cost includes new rooftop capital (acapRooftop in newCapexR and in
+the build LP). Proposal: report both, grid system cost without consumer-funded rooftop (the ISP
+convention) and whole-system cost with it, labelled.
+
+Carbon prices. Planners differ: legislated prices go into reference cases; climate targets are
+usually imposed as emissions budgets or caps (AEMO's ISP, the IRP's emissions trajectory, the DBSA/
+PCC scenarios) rather than as an invented price. GridTwin uses the effective South African rate,
+R46/t after allowances. Proposal: keep the legislated rate in the reference pathway (its Phase 2
+escalation to be checked), add a pathway under an NDC emissions cap, and a shadow-price
+sensitivity. Needs pathway CO2 reported first.
+
+Solar build cap growth. Precedents: RFF's Haiku limits each fuel to its historical maximum growth
+rising 7% a year; the IEA-ETSAP TIAM framework allows additions to grow 15% a year without extra
+cost; ReEDS applies a growth penalty relative to the previous year. Proposal: keep 7% as central,
+15% as a sensitivity.
+
+### Least-cost pathway to 2040, adequate in every year, 5 Oct 2026
+
+Build `2026-10-05a`; pathway.js and pathcheck.js in the harness folder, outputs pathway6.json and
+pathcheck6.json. Supersedes the two pathway drafts below.
+
+Method, after NREL's ReEDS. The build optimiser solves 2026-2040 in annual steps. Every second model
+year (and 2040) is then dispatched hourly on twelve weather years with two outage draws each and
+judged on expected unserved energy, the mean, against 0.002% of demand. The worst week of the
+worst failing year joins the optimiser; when that week is already there, a stress-day margin rises
+by 1,000 MW instead, as utilities calibrate a planning reserve margin to an adequacy study. Seven
+passes: two weeks added (2016 for model year 2038, 2015 for 2040), margin 4,000 MW. Then all fifteen
+years checked independently, twelve weather years x two fresh outage draws.
+
+Assumptions. Start Today 2026; demand +5% by 2040. Coal retires on Eskom's unit schedule scaled to
+39,692 MW in 2026; the optimiser may retire earlier (it does not). Gas from 2030 only. Offshore on
+ESMAP's medium path (not chosen). New rooftop fixed at 1.2 GW a year from 2027. Solar build cap 2.5
+GW a year growing 7% a year (assumption). Lithium duration chosen by the optimiser, 1-20 hours.
+
+```
+      built that year GW       cumulative new GW        coal   shed GWh mean/std/worst   TWh          R bn
+year  wind   pv batt  gas    wind    pv  batt   GWh     GW
+2026   2.5  2.5  2.0  0.0     2.5   2.5   2.0   2.0   39.7   0.01 4.03   0.2   135.3   0.0  220.8
+2027   2.5  2.7  2.0  0.0     5.0   5.2   4.0   4.0   38.5   0.00 4.05   0.0   121.5   0.1  231.6
+2028   2.5  0.0  2.0  0.0     7.5   5.2   6.0   6.0   37.4   0.00 4.06   0.0   112.9   0.2  238.2
+2029   0.0  0.0  2.0  0.0     7.5   5.2   8.0   8.0   36.4   0.00 4.04   0.0   111.9   0.3  229.0
+2030   0.6  3.3  2.0  0.6     8.1   8.5  10.0  14.1   30.3   0.00 3.99   0.0   103.0   1.0  226.9
+2031   0.0  3.5  0.9  0.0     8.1  12.0  10.9  20.7   28.6   0.01 3.97   0.2    97.0   2.8  226.0
+2032   0.0  2.7  0.9  0.0     8.1  14.7  11.8  27.9   27.0   0.03 3.96   0.4    93.6   5.6  227.4
+2033   0.0  2.3  0.6  0.0     8.1  17.0  12.5  33.0   25.9   0.06 3.95   1.5    91.7   9.1  229.3
+2034   0.0  1.7  0.9  0.0     8.1  18.7  13.4  44.6   24.2   0.43 3.94   5.5    90.5  12.3  221.7
+2035   0.0  0.2  0.1  0.0     8.1  18.9  13.5  46.2   24.2   0.44 3.93   5.6    90.2  13.5  217.7
+2036   0.0  3.0  0.9  0.0     8.1  21.9  14.4  62.6   22.6   2.49 3.94  19.9    87.8  18.2  222.3
+2037   0.0  0.3  0.1  0.0     8.1  22.2  14.5  64.8   22.6   2.13 3.92  21.7    87.6  19.6  217.4
+2038   1.1  5.6  0.8  0.0     9.2  27.9  15.3  83.9   20.8   2.82 3.93  30.7    81.8  29.2  226.3
+2039   0.0  0.2  0.1  0.0     9.2  28.1  15.4  84.2   20.8   2.92 3.92  31.3    81.8  30.7  224.5
+2040   0.0  0.3  0.1  0.0     9.2  28.4  15.5  87.1   20.8   2.74 3.90  32.0    81.7  32.4  225.8
+```
+
+By 2040: 9.2 GW onshore, 28.4 GW solar, 15.5 GW lithium (87 GWh, about 5.6 hours), 0.75 GW vanadium,
+0.43 GW iron-air, 0.62 GW gas (2030), 16.8 GW rooftop; no offshore, no early coal retirement. Coal
+output 135 to 82 TWh; system cost R218-238bn a year throughout; curtailment rises to 32 TWh. Every
+year meets the standard on the mean (at most 2.9 against about 3.9 GWh); the worst weather year
+reaches 30-32 GWh in 2038-2040.
+
+Caveats. The 4,000 MW stress margin is calibrated, not physical: it measures how far the optimiser
+and the hourly engine still disagree about stress weeks, and should be reported as a planning
+reserve margin. Gas in 2030 assumes an import terminal that is not financed. The solar-cap growth is
+an assumption. At an effective carbon price of about R46/t nothing retires early; a carbon-price
+sensitivity is open. CO2 not yet reported. Tested every second year in the loop, every year after.
+
 ### Coal schedule scaled to Eskom's 39,692 MW; pathway re-run falls further short, 4 Oct 2026
 
 Build `2026-10-04f`. UC_FLEET's unit sizes summed to 41.4 GW in 2026 against Eskom's nominal
