@@ -5493,7 +5493,11 @@ const FIXED = {
   // industry scales, about doubling the cap by 2036. 0 holds it flat. 4 Oct 2026.
   bldPvRateGrowthPct:7,
   // Build optimiser prices carbon on the legislated Phase 2 path (CARBON_AT in bldBuildLP). 5 Oct 2026.
-  carbonTaxPathOn:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  carbonTaxPathOn:1,
+  // Pumped hydro as a build option (bldBuildLP, 5 Oct 2026). Off by default until reviewed.
+  // FOM R297/kW-yr: NREL ATB 2022 pumped storage, USD 18/kW-yr, at R16.50/USD (no South African
+  // figure published).
+  bldPhesOn:0, bldPhesHours:48, bldPhesCostBasis:'tubatse', bldPhesFomRkW:297, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -7055,6 +7059,10 @@ function simulate(u, prof, outPath, _soc0){
   // charging bonus - unlike stack.coal (load-serving only, for the chart), this is what real fuel
   // cost/emissions and any external cost comparison (e.g. an LP solve) should use
   const loadS=new Float64Array(HOURS);
+  // Hourly coal availability as a share of the coal still installed, outages and planned
+  // maintenance included. Read by the adequacy loop to give the build LP a failing draw's own
+  // outage path. 5 Oct 2026.
+  const coalAvailFrac=new Float32Array(HOURS);
 
   // Pre-pass: net load (residual before coal/storage) is purely a function of demand and
   // weather/baseload - no dependency on storage state - so it can be computed once upfront to
@@ -7456,6 +7464,7 @@ function simulate(u, prof, outPath, _soc0){
     const cAvailRaw = (availFrac != null)
       ? Math.min(ucCommitted, coalInstRem * availFrac)
       : ucCommitted;
+    coalAvailFrac[h] = coalInstRem > 0 ? cAvailRaw / coalInstRem : 0;
     coalAvailableArr[h] = (availFrac != null) ? coalInstRem * availFrac : coalAvail;
     if (_dslTankOn) _dslStock = Math.min(_dslTankCap, _dslStock + Math.max(0, p.dslRefillMW));
     for (const t of battTiers) if (tierSoc[t.k]) tierSoc[t.k][h] = t.soc;
@@ -8621,7 +8630,7 @@ function simulate(u, prof, outPath, _soc0){
     return simulate(u, prof, outPath, { ps: psSoc, tiers: _tiers });
   }
 
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -9301,8 +9310,9 @@ function bldRepDays(n){
       for (let j = 0; j < sp.n; j++){
         const cal = Math.min(364, sp.start + j);
         days.push({
-          d: 1100 + 10*p + j, dem: cal, weight: 1, tail: true, year: sp.year, stress: true,
-          prevD: j === 0 ? undefined : 1100 + 10*p + j - 1,
+          d: 1100 + 30*p + j, dem: cal, weight: 1, tail: true, year: sp.year, stress: true,
+          prevD: j === 0 ? undefined : 1100 + 30*p + j - 1,
+          coalFrac: sp.coalFrac ? Array.from({length:24}, (_, h) => sp.coalFrac[j*24 + h]) : null,
           solar: Array.from({length:24}, (_, h) => nat.solar[cal*24 + h]),
           wind:  Array.from({length:24}, (_, h) => nat.wind[cal*24 + h]),
         });
@@ -9502,6 +9512,15 @@ function bldBuildLP(opts){
   // an LP that HiGHS refuses to parse.
   const S = { ...FIXED, ...(opts.state || {}) };
   const STORE = bldStoreList(S);   // lithium at the scenario's duration
+  // PUMPED HYDRO IS A BUILD DECISION, 5 Oct 2026 (TODO 14z, after Weber et al. 2026). One duration
+  // per run (bldPhesHours: 24, 48 or 160). Capex per kW = (power + energy x hours): a linear fit to
+  // the paper's top-50 Australian off-river sites (USD 1,226/kW + 11.4/kWh, including its 50%
+  // overhead), scaled 1.28 so 14 hours reproduces Tubatse (R29,200/kW) when bldPhesCostBasis is
+  // 'tubatse', the default; 'atlas' uses the fit unscaled. 60-year life, 78% round trip. Earliest
+  // 2033, at most 1,500 MW a year (one Tubatse-size scheme), cumulative up to newPsMaxMW.
+  const PHES_ON = !!S.bldPhesOn, PHES_H = S.bldPhesHours;
+  const PHES_KW = () => (1226 + 11.4 * PHES_H) * (S.bldPhesCostBasis === 'atlas' ? 1 : 1.28) * 16.5;
+  if (PHES_ON) STORE.push({ t:'phes', dis:'hdis', chg:'hchg', eff:S.newPsEff, hours:PHES_H, ex:() => 0, costMult:1 });
   // VoLL comes from FIXED.voll (R87,000/MWh, CSIR cost of unserved energy) -
   // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
   // planning than the dispatch engine prices them in operations. One number.
@@ -9588,7 +9607,7 @@ function bldBuildLP(opts){
       // 30,000 full-depth cycles against lithium's 4,000-7,000, and iron-air is
       // built for slow seasonal cycling rather than daily wear. Charging them is
       // still costed through the energy they consume in the balance row.
-      const WEAR = { batt: 1.0, vrfb: 0.25, ironair: 0.15 };
+      const WEAR = { batt: 1.0, vrfb: 0.25, ironair: 0.15, phes: 0.05 };
       for (const S2 of STORE){
         obj.push((S.lpBattDischargeCostR*WEAR[S2.t]*r.weight*df).toFixed(3)
           + ' ' + S2.dis + '_' + k);
@@ -9605,6 +9624,12 @@ function bldBuildLP(opts){
     for (const yy of Y) if (yy >= y) cost += bldNetAnnuityAt('offshore', y) / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_off_' + y);
   }
+  if (PHES_ON) for (const y of Y){
+    let cost = 0;
+    const ann = bldAnnuity(PHES_KW(), 60) + S.bldPhesFomRkW;
+    for (const yy of Y) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
+    obj.push((cost * 1000).toFixed(3) + ' b_phes_' + y);
+  }
   // EARLY COAL RETIREMENT IS A DECISION, 4 Oct 2026. rc_<y> is coal retired ahead of Eskom's unit
   // schedule by year y, cumulative and irreversible. Each MW retired saves the fleet's fixed O&M
   // (fomCoal) that year; fuel and carbon fall through the dispatch terms. Coal cannot run past
@@ -9620,6 +9645,7 @@ function bldBuildLP(opts){
     L.push(' rcmono_' + Y[i] + ': rc_' + Y[i] + ' - rc_' + Y[i-1] + ' >= 0');
   const cumOff = y => Y.filter(yy => yy <= y).map(yy => 'b_off_' + yy);
   if (OFF_ON) for (const y of Y) L.push(' offcap_' + y + ': ' + cumOff(y).join(' + ') + ' <= ' + OFF_PATH(y).toFixed(1));
+  if (PHES_ON) L.push(' phescap: ' + Y.map(yy => 'b_phes_' + yy).join(' + ') + ' <= ' + S.newPsMaxMW.toFixed(1));
 
   const cum = (t,y) => Y.filter(yy => yy <= y).map(yy => 'b_' + t + '_' + yy);
   const cumE = y => Y.filter(yy => yy <= y).map(yy => 'eb_batt_' + yy);   // lithium cells, MWh
@@ -9676,7 +9702,9 @@ function bldBuildLP(opts){
     const dg = Math.pow(1+growth, y-2026);
     const coalCapMean = bldCoalMW(y) * eaf;
     for (const r of rd) for (let h = 0; h < 24; h++){
-      const coalCap = r.tail ? coalCapMean * TAIL_COAL_FACTOR : coalCapMean;
+      // A stress window from the adequacy loop carries the failing draw's own hourly coal path
+      // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
+      const coalCap = r.coalFrac ? bldCoalMW(y) * r.coalFrac[h] : (r.tail ? coalCapMean * TAIL_COAL_FACTOR : coalCapMean);
       const i = (r.dem !== undefined ? r.dem : r.d)*24 + h, k = y + '_' + r.d + '_' + h;
       const dem = PROFILES.demand[i]*dg + expAtLP(i);
       // A tail day from another weather year carries its own shapes; a calendar day reads the
@@ -9698,7 +9726,7 @@ function bldBuildLP(opts){
         + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
         + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AV_CONG).toFixed(4)+' '+v).join(' + ') : '')
         + ' = ' + (dem - fixed).toFixed(1));
-      const _rcf = (r.tail ? eaf * TAIL_COAL_FACTOR : eaf);
+      const _rcf = r.coalFrac ? r.coalFrac[h] : (r.tail ? eaf * TAIL_COAL_FACTOR : eaf);
       L.push(' cmax_' + k + ': gc_' + k + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '') + ' <= ' + coalCap.toFixed(1));
       L.push(' gmax_' + k + ': gg_' + k + ' - ' + cum('ccgt',y).join(' - ') + ' <= 0');
       // Reserve: dispatched + required <= capacity. The VRE term sits on both sides - existing
@@ -9877,6 +9905,7 @@ function bldBuildLP(opts){
   const _pvG = Math.max(0, S.bldPvRateGrowthPct) / 100;
   for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + (RATE[t] * (t === 'pv' ? Math.pow(1 + _pvG, y - 2026) : 1)).toFixed(1));
   if (OFF_ON) for (const y of Y) L.push(' 0 <= b_off_'+y+' <= 5000');
+  if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + (y < 2033 ? 0 : 1500));
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
   if (RC_ON) for (const y of Y) L.push(' 0 <= rc_'+y+' <= ' + bldCoalMW(y).toFixed(1));
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
@@ -9975,6 +10004,18 @@ function bldBuildToState(res){
 // The twelve-year test. Returns each year's shed, and the worst week in the worst year.
 // draws > 1: each weather year is run on that many independent outage paths (Monte Carlo, as PRAS
 // samples outages); the mean is then over weather years and draws. 4 Oct 2026.
+// Worst seven-day window of one engine run, by net load in the hours it shed.
+function bldWorstWindow(r){
+  const w = new Float64Array(365);
+  for (let h = 0; h < r.marginalTech.length; h++)
+    if (r.marginalTech[h] === 'unserved') w[Math.floor(h / 24)] += Math.max(0, r.netLoadPre[h]);
+  let bestStart = 0, bestV = -1;
+  for (let d = 0; d <= 365 - 7; d++){
+    let v = 0; for (let j = 0; j < 7; j++) v += w[d + j];
+    if (v > bestV){ bestV = v; bestStart = d; }
+  }
+  return bestStart;
+}
 function bldAdequacyTest(st, draws){
   const years = (bldWeatherYears && bldWeatherYears.meta && bldWeatherYears.meta.years) || [];
   const rows = []; let worst = null;
@@ -9986,7 +10027,9 @@ function bldAdequacyTest(st, draws){
     const r = simulate(stk, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
     const gwh = (r.E.unserved || 0) / 1000;
     let served = 0; for (let h = 0; h < r.loadS.length; h++) served += r.loadS[h];
-    rows.push({ year: y, gwh });
+    const row = { year: y, k, gwh, seed: stk.outageSeed };
+    if (gwh > 0.01){ row.start = bldWorstWindow(r); row.coalFrac = r.coalAvailFrac; }
+    rows.push(row);
     if (!worst || gwh > worst.gwh) worst = { year: y, gwh, r, demandGWh: served / 1000 };
   }
   if (!worst) return { rows, worst: null };
@@ -10021,6 +10064,7 @@ function bldStateForYear(res, y, opts){
     newBattMW: Math.round(batt), newBattHours: batt > 0 ? Math.max(1, Math.min(LI_MAX_HOURS, eb / batt)) : (opts.state.newBattHours ?? FIXED.newBattHours),
     newCcgtMW: Math.round(tot.ccgt || 0), newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
     newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
+    newPsMW: Math.round(tot.phes || 0), newPsHours: opts.state.bldPhesHours,
     coalDecomMW: Math.max(0, Math.round(FIXED.coalInstalledMW - bldCoalMW(y) + rc)),
     demandGrowthPct: (Math.pow(1 + (opts.growth || 0), y - 2026) - 1) * 100, scenarioYear: y };
 }
@@ -10077,15 +10121,32 @@ async function bldStressLoopPerYear(opts, onProgress){
       const limit = t.worst ? t.worst.demandGWh * BLD_STRESS_STANDARD : 0;
       years.push({ y, mean, limit, worstYear: t.worst && t.worst.year, worstGWh: t.worst ? t.worst.gwh : 0 });
       if (t.worst && mean > limit && (!worstFail || mean / limit > worstFail.ratio))
-        worstFail = { y, ratio: mean / limit, year: t.worst.year, start: t.worst.start };
+        worstFail = { y, ratio: mean / limit, year: t.worst.year, start: t.worst.start,
+                      rows: t.rows.filter(q => q.gwh > 0.01).sort((a, b) => b.gwh - a.gwh) };
     }
     const entry = { pass: it, margin: opts.stressMarginMW, years, added: null };
     bldStressLog.push(entry);
     if (!worstFail){ verdict = 'adequate'; break; }
     if (it === maxP) break;
-    const already = bldStressPeriods.some(p => p.year === worstFail.year && Math.abs(p.start - worstFail.start) < 7);
-    if (already){ opts.stressMarginMW += step; entry.added = { margin: opts.stressMarginMW }; }
-    else { bldStressPeriods.push({ year: worstFail.year, start: worstFail.start, n: 7 }); entry.added = { year: worstFail.year, start: worstFail.start, forModelYear: worstFail.y }; }
+    // opts.stressDays (default 7): a longer window opens before the failing week, so the LP must
+    // carry storage through the run-up as well as the lull itself (5 Oct 2026; multi-day lulls
+    // drained lithium over the 48 hours before the engine's largest events).
+    const SD = Math.max(7, Math.min(28, opts.stressDays || 7));
+    // OUTAGE-PATH STRESS WINDOWS, 5 Oct 2026, replacing the capacity margin. Each failing engine
+    // run (weather year and outage draw) becomes its own window carrying that run's hourly coal
+    // availability, worst first; a window already held is skipped. Only if every failing run is
+    // already held does the loop fall back to raising the margin, and it logs that it did.
+    const held = q => bldStressPeriods.some(p => p.year === q.year && p.seed === q.seed
+      && q.start >= p.start && q.start + 7 <= p.start + p.n);
+    const pick = opts.outagePaths === false ? null : worstFail.rows.find(q => q.coalFrac && !held(q));
+    if (pick){
+      const st0 = Math.max(0, Math.min(365 - SD, pick.start - (SD - 7)));
+      bldStressPeriods.push({ year: pick.year, seed: pick.seed, start: st0, n: SD,
+        coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)) });
+      entry.added = { year: pick.year, seed: pick.seed, start: st0, n: SD, forModelYear: worstFail.y, shedGWh: +pick.gwh.toFixed(2) };
+    } else {
+      opts.stressMarginMW += step; entry.added = { margin: opts.stressMarginMW, fallback: true };
+    }
   }
   return { res, built, verdict, log: bldStressLog, margin: opts.stressMarginMW };
 }
@@ -17657,7 +17718,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-05e';
+const BUILD_STAMP = '2026-10-05g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -1714,6 +1714,44 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Outage-path stress windows replace the capacity margin: no margin needed, R17bn cheaper, 5 Oct 2026
+
+Build `2026-10-05g`, suite 805/806, pathway_op.js. The engine now records hourly coal availability
+(coalAvailFrac). Each failing engine run (weather year and outage draw) becomes its own 14-day
+stress window in the optimiser carrying that run's hourly coal path, instead of the flat 0.76
+derate; a window already held is skipped, and the capacity margin is only a logged fallback. After
+NREL's ReEDS, whose stress periods come from a reliability model that samples outages.
+
+One window was enough: 2016, days 279-292, the draw that shed 65.8 GWh. Converged in two passes with
+no margin, against six passes and 4,000 MW with flat-derate windows.
+
+By 2040: 11.9 GW onshore, 26.7 GW solar, 14.0 GW lithium at 90 GWh (about 6.4 hours), 0.75 GW
+vanadium, 0.45 GW iron-air, no gas, no offshore, no early coal retirement.
+
+Every year checked on twelve weather years x two fresh outage draws meets the standard. 2038 sits at
+the line, 3.90 against 3.91 GWh, so the build is on the
+standard with no spare margin, unlike the presets' 2x design. Over 2026-2040: cost R3,463bn against
+R3,480bn for the flat-derate 14-day pathway, CO2 1,522 Mt against 1,514.
+
+### Fourteen-day pathway verified; pumped hydro not chosen even at its best case, 5 Oct 2026
+
+Build `2026-10-05f`, suite 805/806. The 14-day pathway (pathway_sd14) checked year by year on twelve
+weather years x two fresh outage draws: every year meets the standard, worst mean shed 3.38 GWh
+(2038) against about 3.9. Over 2026-2040: cost R3,480bn against R3,493bn
+for the 7-day reference (0.4% lower), CO2 1,514 Mt against 1,473 (3% higher).
+2040: CO2 84.5 Mt, curtailment 34 TWh, whole-system R232bn, grid R212bn.
+
+Pumped hydro in the same loop, best case: 160-hour schemes at the unscaled atlas cost (about
+R50,300/kW, R314/kWh), 8% real, 60-year life, available from 2033 up to 6 GW. The optimiser builds
+none, and the pathway is identical to the one without the option. (The 48-hour Tubatse-cost run,
+more expensive per kWh, was not completed; it cannot do better.)
+
+Why: the loop closes the remaining gap with a capacity margin on stress days, and a megawatt of
+lithium meets a megawatt of margin far more cheaply than a megawatt of 160-hour pumped hydro. What
+pumped hydro is good at, energy over a long lull, is only partly visible to the optimiser, which
+still needs a 4,000 MW margin. Not a finding that pumped hydro is uneconomic in South Africa: a
+finding that this optimiser, with this margin method, cannot value it yet.
+
 ### Fourteen-day stress windows: margin 5,000 to 4,000 MW; coal derate already at the bad-outage level, 5 Oct 2026
 
 Build `2026-10-05f` (suite not yet run), pathway_sd14.js. The per-year loop can now add stress

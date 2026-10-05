@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-05d`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-05g`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -44,7 +44,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 14v. Second-pass sweep of panel prose for stale text (slider notes done 5 Oct)
 14w. Other constants still on R16.21/USD (battery degradation, ATB VOM anchors): move to R16.50 or record why not
 14x. Transmission note cites R440bn for 46.9 GW; SOURCES cites over R390bn for 56 GW from the same TDP: reconcile
-14u. Optimiser-engine gap: reserve matched (small effect); 14-day stress windows cut the margin 5,000 to 4,000 MW (RESULTS). Next: verify the 14-day pathway year by year; test pumped hydro with 14-day windows in the loop; run the suite on 05f
+14u. Optimiser-engine gap: closed by outage-path stress windows (5 Oct, RESULTS): no margin needed. Open: 2038 sits exactly on the standard; decide whether the pathway should carry the presets' 2x margin; re-test pumped hydro with outage-path windows
 14n. Rooftop in system cost: both reported in the pathway (whole and grid cost). Open: show both on the page
 14o. Full model audit, as an energy modeller and grid operator: gaps, inconsistencies and errors
 14p. Find a published scenario from a professional modelling group and test the model against it
@@ -149,7 +149,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-05d after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-05g after the push, and the new footer label shows
 
 ## Named projects
 
