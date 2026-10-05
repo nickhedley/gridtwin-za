@@ -11,8 +11,10 @@ h.setOptionValue('time_limit', float(sys.argv[3]) if len(sys.argv) > 3 else 900.
 h.readModel(sys.argv[1])
 h.run()
 lp, sol = h.getLp(), h.getSolution()
-cols = {n: {'Name': n, 'Primal': sol.col_value[i], 'Dual': sol.col_dual[i]} for i, n in enumerate(lp.col_names_)}
-rows = [{'Name': n, 'Primal': sol.row_value[i], 'Dual': sol.row_dual[i]} for i, n in enumerate(lp.row_names_)]
+# Copy each vector once: indexing sol.col_value copies the whole vector per access (19 min, not 2).
+cv, cd, rv, rd = list(sol.col_value), list(sol.col_dual), list(sol.row_value), list(sol.row_dual)
+cols = {n: {'Name': n, 'Primal': cv[i], 'Dual': cd[i]} for i, n in enumerate(lp.col_names_)}
+rows = [{'Name': n, 'Primal': rv[i], 'Dual': rd[i]} for i, n in enumerate(lp.row_names_)]
 out = {'Status': h.modelStatusToString(h.getModelStatus()),
        'ObjectiveValue': h.getInfo().objective_function_value, 'Columns': cols, 'Rows': rows}
 with open(sys.argv[2], 'w') as f:
