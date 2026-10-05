@@ -4,7 +4,7 @@ Root-versus-nodal confusion has cost time twice: two different `build_capacity.p
 under the same name, and a split builder writing to a filename the generator does
 not read. This file exists so that does not happen a third time.
 
-Last verified: 5 Oct 2026, build `2026-10-05c`, against the upload set of that day.
+Last verified: 5 Oct 2026, build `2026-10-05d`, against the upload set of that day.
 
 ---
 
@@ -110,7 +110,7 @@ looks consistent.
 
 ## Running the suite - there is no single working directory
 
-Sixteen counted harnesses, 805 checks, plus eng5 (6) and jsdom_local2
+Sixteen counted harnesses, 806 checks, plus eng5 (6) and jsdom_local2
 (a diagnostic dump, not counted). `validate_docs.py` checks the markdown and is
 not part of the count.
 
@@ -152,7 +152,7 @@ check its exit code. Two `ctx.createPattern` errors (index.html:11951 on
 
 Node dependencies: `jsdom`, `highs`, `eslint` (validate_lint calls `npx eslint`).
 
-Expected on 5 Oct 2026: 804/805, the one failure EDMSA Scenario A CO2 2035,
+Expected on 5 Oct 2026: 805/806, the one failure EDMSA Scenario A CO2 2035,
 known and standing. eng5 6/6.
 
 ---

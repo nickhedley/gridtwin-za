@@ -625,7 +625,9 @@ const num = t => {
       const quoted = (g.note.match(/R([0-9]+\.[0-9]{2})\/kWh/g) || [])
         .map(x => Math.round(parseFloat(x.slice(1)) * 1000));
       const defK = sliderNotes.lcoeCcgt;
-      const stale = quoted.filter(q => Math.abs(q - defK) > 5 && Math.abs(q - 1968) > 5);
+      // The fuel figure is read from FIXED.costCcgt, not a literal (the literal 1968 went stale
+      // when the exchange rate moved to R16.50 on 5 Oct 2026).
+      const stale = quoted.filter(q => Math.abs(q - defK) > 5 && Math.abs(q - sliderNotes.costCcgt) > 5);
       check('the gas LCOE note quotes no stale rand figure',
             stale.length === 0,
             `note cites R${(stale[0]/1000).toFixed(2)}/kWh against a default of `

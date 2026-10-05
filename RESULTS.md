@@ -1714,6 +1714,18 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Slider notes: stale figures fixed, fleet numbers now computed, gas fuel on R16.50/USD, 5 Oct 2026
+
+Build `2026-10-05d`. Trimmed on request: Diesel retired, Diesel budget, energy lost in shifting.
+Fleet figures in notes (wind, utility PV, rooftop, lithium, pumped storage, coal) are now computed
+from FIXED, so they cannot drift; they had read 3.2, 8.6 and 2.9 GW against constants of 3.3, 8.9
+and 2.7. New check in validate_findings fails on the old notes and passes now. Lithium-duration
+note now matches the 2 Oct result (lithium cheapest to about 16 hours; only cells scale with
+duration). Congestion toggle note no longer quotes unsourced 2026 figures. Interruptible-load note
+reads diesel and VOLL from FIXED. TDP edition named. costCcgt 1,968 to 2,003 R/MWh: the project's
+R16.50/USD rate, not R16.21 (fallbacks, the methods table, validate_consistency and audit.py follow).
+Suite 805/806.
+
 ### Pathway sensitivities: solar build-cap growth and a shadow carbon price, 5 Oct 2026
 
 Build `2026-10-05b`, same method and checks as the reference pathway below (every year on twelve

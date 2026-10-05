@@ -1,6 +1,6 @@
 # GridTwin ZA - running to-do list
 
-Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-05c`. Items marked
+Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-05d`. Items marked
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
@@ -39,6 +39,10 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 ## Next, in order
 
+14y. Hydrogen-fuelled power plants as a technology: firm dispatchable capacity with hydrogen fuel cost, fuel storage and efficiency, linked to the electrolyser item (14s) so curtailed energy can make the fuel. Identify the Mpumalanga project (user recalls one) and source its status. Reference case: Calistoga Resiliency Center (Energy Vault for PG&E, COD Sept 2025): 8.5 MW peak, 6 MW continuous, 293 MWh, at least 48 hours, PEM fuel cells on liquid hydrogen with batteries for black start; replaces rented diesel for a local microgrid; cost-recovery ceiling USD 46.3m over the project life (LinkedIn post, figures to verify against primary sources). Note the scope: Calistoga is local resilience, not bulk adequacy, which is what this model covers
+14v. Second-pass sweep of panel prose for stale text (slider notes done 5 Oct)
+14w. Other constants still on R16.21/USD (battery degradation, ATB VOM anchors): move to R16.50 or record why not
+14x. Transmission note cites R440bn for 46.9 GW; SOURCES cites over R390bn for 56 GW from the same TDP: reconcile
 14u. Optimiser-engine gap: the pathway loop's stress-day margin rose to 8,000 MW at R462/t, from 5,000 MW in the reference; the two disagree more as coal leaves. Narrowing that gap is the main improvement needed to the optimiser
 14n. Rooftop in system cost: both reported in the pathway (whole and grid cost). Open: show both on the page
 14o. Full model audit, as an energy modeller and grid operator: gaps, inconsistencies and errors
@@ -144,7 +148,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 70. The VPP readout line, which has never been seen rendering
 71. The nodal panel with reserve live at defaults
 72. A regional optimiser run on your machine: how long does it actually take in the browser?
-73. Confirm the live site is on 2026-10-05b after the push, and the new footer label shows
+73. Confirm the live site is on 2026-10-05d after the push, and the new footer label shows
 
 ## Named projects
 

@@ -807,6 +807,21 @@ setTimeout(()=>{
     }
   }
 
+  // ── FLEET FIGURES IN SLIDER NOTES MATCH THE CONSTANTS ─────────────────────
+  // Added 5 Oct 2026. Notes said 3.2, 8.6 and 2.9 GW existing while the constants said 3.3, 8.9
+  // and 2.7. Notes now compute these from FIXED; this fails if a literal comes back.
+  {
+    const k = probe(`const MAP = { newWindMW:'windMW', newPvMW:'pvUtilityMW', newRooftopMW:'rooftopMW',
+        newBattMW:'battPowerMW', newPsMW:'psPowerMW', coalDecomMW:'coalInstalledMW' };
+      const bad = [];
+      for (const s of SLIDERS){ const key = MAP[s.id]; if (!key || !s.note) continue;
+        const m = String(s.note).match(/(?:on|of) ([0-9.]+) GW (?:existing|installed)/);
+        if (!m) { bad.push(s.id + ': no figure'); continue; }
+        if (Math.abs(+m[1] - FIXED[key] / 1000) > 0.051) bad.push(s.id + ': note ' + m[1] + ' GW, constant ' + (FIXED[key]/1000).toFixed(2)); }
+      return { bad };`);
+    if (k && !k.error) check('fleet figures in slider notes match the constants', k.bad.length === 0, k.bad.join('; '));
+    else check('fleet figures in slider notes match the constants', false, k ? k.error : 'no result');
+  }
   // ── EVERY PRESET KEY REACHES THE MODEL ────────────────────────────────────
   // Added 3 Oct 2026. applyState sets sliders and PRESET_NON_SLIDER_KEYS only; any other key in a
   // preset is dropped without error. 2025, as modelled's importsCF and hydroCF were dropped that way.

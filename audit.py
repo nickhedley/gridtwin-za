@@ -37,7 +37,7 @@ CHECKS = [
     ('coalDecomMW:8000,newWindMW:7340,newPvMW:10300',              'IRP preset values'),
     ('Deep decarbonisation 2035',                                     'deep decarbonisation preset'),
     ('costCoal:546',                                               'coal cost R546/MWh'),
-    ('costCcgt:1968',                                              'CCGT dispatch R1968/MWh, FY2026 JKM reference'),
+    ('costCcgt:2003',                                              'CCGT dispatch R2003/MWh, FY2026 JKM reference'),
     # Engine features
     ('ccgtForceLoad',                                              'gas load factor toggle'),
     ('curtailFuelCost',                                            'curtailment cost fix'),
