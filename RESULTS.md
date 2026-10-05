@@ -1714,6 +1714,22 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Fourteen-day stress windows: margin 5,000 to 4,000 MW; coal derate already at the bad-outage level, 5 Oct 2026
+
+Build `2026-10-05f` (suite not yet run), pathway_sd14.js. The per-year loop can now add stress
+windows of stressDays (here 14) that open a week before the failing week, so the optimiser must
+carry storage through the run-up as well as the lull. Same reference pathway otherwise.
+
+Margin needed 5,000 to 4,000 MW, six passes against seven. By 2040: 10.4 GW onshore (12.1), 28.5 GW
+solar (26.0), 15.6 GW lithium at 90 GWh (81), 0.75 vanadium, 0.43 iron-air, 0.29 gas (0.73). Not yet
+checked year by year on independent draws.
+
+Coal derate left at 0.76: measured, the engine's coal in its shed hours averages 85% of the mean
+available, and on the 2016 stress week's bad draw 10,426 MW against the optimiser's 10,299. The
+derate already sits at the engine's bad-outage level; what remains is storage energy over long lulls.
+
+Pumped hydro fixed O&M sourced: NREL ATB 2022, USD 18/kW-yr, R297 at R16.50 (was an assumed R250).
+
 ### Battery reserve in the optimiser now energy-limited, as in the engine; small effect, 5 Oct 2026
 
 Build `2026-10-05e`. Confirmed: the storage held back while load is shed is the engine's reserve rule

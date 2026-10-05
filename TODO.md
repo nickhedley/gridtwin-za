@@ -44,7 +44,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 14v. Second-pass sweep of panel prose for stale text (slider notes done 5 Oct)
 14w. Other constants still on R16.21/USD (battery degradation, ATB VOM anchors): move to R16.50 or record why not
 14x. Transmission note cites R440bn for 46.9 GW; SOURCES cites over R390bn for 56 GW from the same TDP: reconcile
-14u. Optimiser-engine gap: the pathway loop's stress-day margin rose to 8,000 MW at R462/t, from 5,000 MW in the reference; the two disagree more as coal leaves. Narrowing that gap is the main improvement needed to the optimiser
+14u. Optimiser-engine gap: reserve matched (small effect); 14-day stress windows cut the margin 5,000 to 4,000 MW (RESULTS). Next: verify the 14-day pathway year by year; test pumped hydro with 14-day windows in the loop; run the suite on 05f
 14n. Rooftop in system cost: both reported in the pathway (whole and grid cost). Open: show both on the page
 14o. Full model audit, as an energy modeller and grid operator: gaps, inconsistencies and errors
 14p. Find a published scenario from a professional modelling group and test the model against it
