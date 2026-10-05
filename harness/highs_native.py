@@ -6,6 +6,7 @@ import highspy
 
 h = highspy.Highs()
 h.setOptionValue('output_flag', False)
+h.setOptionValue('solver', 'simplex')   # the default chose interior point: over 38 min on a pass-2 LP that simplex solves in 2
 h.setOptionValue('time_limit', float(sys.argv[3]) if len(sys.argv) > 3 else 900.0)
 h.readModel(sys.argv[1])
 h.run()
