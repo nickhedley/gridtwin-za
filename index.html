@@ -9313,6 +9313,7 @@ function bldRepDays(n){
           d: 1100 + 30*p + j, dem: cal, weight: 1, tail: true, year: sp.year, stress: true,
           prevD: j === 0 ? undefined : 1100 + 30*p + j - 1,
           coalFrac: sp.coalFrac ? Array.from({length:24}, (_, h) => sp.coalFrac[j*24 + h]) : null,
+          fromYear: sp.fromYear,
           solar: Array.from({length:24}, (_, h) => nat.solar[cal*24 + h]),
           wind:  Array.from({length:24}, (_, h) => nat.wind[cal*24 + h]),
         });
@@ -9506,6 +9507,9 @@ async function renderProvMix(){
 function bldBuildLP(opts){
   const Y = BLD_YEARS, T = BLD_TECHS;
   const rd = bldRepDays(12);
+  // A stress window applies from its fromYear on (ReEDS attaches stress periods to the solve
+  // year that failed), so windows found late in the horizon do not bloat every earlier year.
+  const rdY = y => rd.filter(r => !(r.fromYear > y));
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   // `state` is script-scoped, so read it via the accessor rather than assuming a
   // global - reading undefined fields here silently produces NaN coefficients and
@@ -9572,7 +9576,7 @@ function bldBuildLP(opts){
   }
   for (const y of Y){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
-    for (const r of rd) for (let h = 0; h < 24; h++){
+    for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       const k = y + '_' + r.d + '_' + h;
       obj.push(((MC.coal + CARBON_AT(y)*EMIS_COAL)*r.weight*df).toFixed(3) + ' gc_' + k);
       obj.push(((MC.ccgt + CARBON_AT(y)*EMIS_CCGT)*r.weight*df).toFixed(3) + ' gg_' + k);
@@ -9701,7 +9705,7 @@ function bldBuildLP(opts){
   for (const y of Y){
     const dg = Math.pow(1+growth, y-2026);
     const coalCapMean = bldCoalMW(y) * eaf;
-    for (const r of rd) for (let h = 0; h < 24; h++){
+    for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
       // (5 Oct 2026); otherwise tail days use the flat worst-week derate.
       const coalCap = r.coalFrac ? bldCoalMW(y) * r.coalFrac[h] : (r.tail ? coalCapMean * TAIL_COAL_FACTOR : coalCapMean);
@@ -9788,7 +9792,7 @@ function bldBuildLP(opts){
     // trajectory the target itself does not specify.
     if (CAP_ON && y === Y[Y.length - 1]){
       const capTerms = [];
-      for (const r of rd) for (let h = 0; h < 24; h++){
+      for (const r of rdY(y)) for (let h = 0; h < 24; h++){
         const kk = y + '_' + r.d + '_' + h;
         capTerms.push((EMIS_COAL   * r.weight).toFixed(6) + ' gc_' + kk);
         capTerms.push((EMIS_CCGT   * r.weight).toFixed(6) + ' gg_' + kk);
@@ -9815,7 +9819,7 @@ function bldBuildLP(opts){
     // bldRepDays already picks the worst 3-day rolling net load and the worst
     // 3-day wind lull, and returns prevD in calendar order - so the drought these
     // stores exist for is in the sample and reachable.
-    for (const r of rd){
+    for (const r of rdY(y)){
       for (const S2 of STORE){
         const dis = [], chg = [];
         for (let h = 0; h < 24; h++){
@@ -9847,7 +9851,7 @@ function bldBuildLP(opts){
     // capacity credit: South Africa's system peak is a winter evening, when
     // solar is zero and wind cannot be relied on.
     let peak = 0;
-    for (const r of rd) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg);
+    for (const r of rdY(y)) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg);
     // The annual-peak margin uses the mean coal availability, as before; the tail-day derate is
     // an hourly matter and lives in cmax_ and resv_ above.
     const firm = coalCapMean + EX.nuclear*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
@@ -9911,7 +9915,7 @@ function bldBuildLP(opts){
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
   for (const y of Y) for (const S2 of STORE) if (S2.t !== 'batt')
     L.push(' 0 <= cc_'+S2.t+'_'+y+' <= 200000');
-  for (const y of Y) for (const r of rd) for (let h = 0; h < 24; h++){
+  for (const y of Y) for (const r of rdY(y)) for (let h = 0; h < 24; h++){
     const k = y + '_' + r.d + '_' + h;
     L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
     L.push(' 0 <= gd_'+k+' <= ' + EX.diesel);
@@ -9933,7 +9937,7 @@ function bldBuildLP(opts){
   // Stored energy level at the end of each representative day - one per
   // technology per day, so it sits outside the hourly loop above. The binding
   // limit is the ecap_ constraint; this is just a ceiling.
-  for (const y of Y) for (const r of rd) for (const S2 of STORE)
+  for (const y of Y) for (const r of rdY(y)) for (const S2 of STORE)
     L.push(' 0 <= e_' + S2.t + '_' + y + '_' + r.d + ' <= 2000000');
   L.push('End');
   return { lp: L.join('\n'), rate: RATE };
@@ -10118,7 +10122,8 @@ async function bldStressLoopPerYear(opts, onProgress){
     for (const y of TY){
       const t = bldAdequacyTest(bldStateForYear(res, y, opts), opts.draws || 1);
       const mean = t.rows.length ? t.rows.reduce((a, b) => a + b.gwh, 0) / t.rows.length : 0;
-      const limit = t.worst ? t.worst.demandGWh * BLD_STRESS_STANDARD : 0;
+      // opts.targetFrac (default 1): plan to a fraction of the standard, 0.5 as the presets do.
+      const limit = t.worst ? t.worst.demandGWh * BLD_STRESS_STANDARD * (opts.targetFrac || 1) : 0;
       years.push({ y, mean, limit, worstYear: t.worst && t.worst.year, worstGWh: t.worst ? t.worst.gwh : 0 });
       if (t.worst && mean > limit && (!worstFail || mean / limit > worstFail.ratio))
         worstFail = { y, ratio: mean / limit, year: t.worst.year, start: t.worst.start,
@@ -10138,12 +10143,16 @@ async function bldStressLoopPerYear(opts, onProgress){
     // already held does the loop fall back to raising the margin, and it logs that it did.
     const held = q => bldStressPeriods.some(p => p.year === q.year && p.seed === q.seed
       && q.start >= p.start && q.start + 7 <= p.start + p.n);
-    const pick = opts.outagePaths === false ? null : worstFail.rows.find(q => q.coalFrac && !held(q));
-    if (pick){
-      const st0 = Math.max(0, Math.min(365 - SD, pick.start - (SD - 7)));
-      bldStressPeriods.push({ year: pick.year, seed: pick.seed, start: st0, n: SD,
-        coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)) });
-      entry.added = { year: pick.year, seed: pick.seed, start: st0, n: SD, forModelYear: worstFail.y, shedGWh: +pick.gwh.toFixed(2) };
+    // opts.windowsPerPass (default 1): add the worst few unheld runs at once, so fewer rounds.
+    const picks = opts.outagePaths === false ? [] : worstFail.rows.filter(q => q.coalFrac && !held(q)).slice(0, Math.max(1, opts.windowsPerPass || 1));
+    if (picks.length){
+      entry.added = [];
+      for (const pick of picks){
+        const st0 = Math.max(0, Math.min(365 - SD, pick.start - (SD - 7)));
+        bldStressPeriods.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, fromYear: Math.max(BLD_YEARS[0], worstFail.y - (opts.windowLeadYears ?? 4)),
+          coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)) });
+        entry.added.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, forModelYear: worstFail.y, shedGWh: +pick.gwh.toFixed(2) });
+      }
     } else {
       opts.stressMarginMW += step; entry.added = { margin: opts.stressMarginMW, fallback: true };
     }
@@ -17718,7 +17727,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-05g';
+const BUILD_STAMP = '2026-10-05j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

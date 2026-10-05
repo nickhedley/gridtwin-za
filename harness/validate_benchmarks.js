@@ -1,0 +1,482 @@
+#!/usr/bin/env node
+/**
+ * validate_benchmarks.js — Session 4 of the bug hunt.
+ *
+ * Reconciles EVERY CARRIER against published data, not just the national total.
+ * We already matched Ember on the total to 0.02%, but a total can match while
+ * two carriers are wrong in opposite directions — and that is precisely how the
+ * wind nameplate (3,466 against a real 4,044 MW) and the nuclear capacity factor
+ * (applied gross when the model is sent-out) survived for months.
+ *
+ * THE RULE THIS ENFORCES: a gap with a documented reason is fine; a gap without
+ * one is a bug you have not found yet. Every entry below therefore carries both
+ * a tolerance AND the reason the gap exists. If a reconciliation drifts outside
+ * its band, either the model changed or the explanation was wrong.
+ *
+ * BASIS. The model produces SENT-OUT energy throughout. Ember publishes GROSS.
+ * Converting Ember down at each carrier's own auxiliary rate — coal 7.7%,
+ * nuclear 5%, renewables nil — is what closed the apparent 11% coal gap on
+ * 16 Aug 2026, and is applied per carrier here rather than as one national
+ * factor.
+ *
+ *   node validate_benchmarks.js [root]
+ */
+const fs = require('fs');
+const path = require('path');
+const { JSDOM } = require('jsdom');
+
+const ROOT = process.argv[2] || '.';
+let pass = 0, fail = 0;
+const rows = [], failures = [], notes = [];
+
+// ── the benchmark set ───────────────────────────────────────────────────────
+// value      : the published figure, on the SAME BASIS as the model (sent-out)
+// tolPct     : how far the model may sit from it before this is a finding
+// why        : why a gap exists at all, and why that tolerance is right
+//
+// Anything with a wide tolerance must justify it. A wide band with a vague
+// reason is how a real error hides.
+const BENCH = {
+  coal: {
+    value: 164.0, tolPct: 6, unit: 'TWh',
+    source: 'Ember 2025 gross 177.7 TWh, converted at 7.7% station auxiliary',
+    why: 'The model is sent-out and Ember is gross. Converting per carrier closed what looked ' +
+         'like an 11% shortfall on 16 Aug 2026. Residual is dispatch timing, not level.',
+  },
+  nuclear: {
+    value: 10.95, tolPct: 8, unit: 'TWh',
+    source: 'Ember 2025 gross 11.5 TWh at 5% auxiliary',
+    why: 'Koeberg output swings with refuelling outages, so a single year is a poor benchmark. ' +
+         'CF was corrected 0.90 -> 0.75 -> 0.70 on 16 Aug once the sent-out basis was applied.',
+  },
+  wind: {
+    // Band widened 15 -> 25 on 6 Sep 2026, DELIBERATELY, and paired with a tighter
+    // fleet-normalised check below that does the real work.
+    //
+    // This compares ENERGY, so it measures fleet size as much as model accuracy. The model
+    // runs 4,512 MW including wheeled plant Ember does not meter; Ember's window averaged
+    // 3,871 MW metered. That is +16.6% before any question of whether the model is right.
+    // Add a 2025 profile against a window that is mostly 2026 - a poorer wind year - and
+    // +18.5% is what a CORRECT model produces.
+    //
+    // Widening a band to get green is what rule 2 forbids, so the tight check moved rather
+    // than disappeared: see 'wind capacity factor reconciles with Eskom' below, which
+    // compares CF against CF and reads 1.5%.
+    value: 11.60, tolPct: 25, unit: 'TWh',
+    source: 'Ember 12 months to May 2026, NTCSA-metered fleet',
+    why: 'The model INCLUDES privately wheeled wind that Ember does not count, and runs a ' +
+         'different weather year, so it should read ABOVE this by roughly 20%. A figure ' +
+         'BELOW the benchmark would be the real alarm. The FLEET-NORMALISED check is the ' +
+         'one that constrains accuracy.',
+  },
+  solarUtility: {
+    value: 6.5, tolPct: 20, unit: 'TWh',
+    source: 'Ember utility-scale PV, 12 months to May 2026',
+    why: 'Wide band: the utility/rooftop split differs between sources, and wheeled plant sits ' +
+         'on the model side only.',
+  },
+  hydro: {
+    value: 2.9, tolPct: 25, unit: 'TWh',
+    source: 'Eskom hydro plus SAPP hydro imports attributed to domestic hydro',
+    why: 'Small carrier, highly rainfall-dependent, and the import/domestic boundary is drawn ' +
+         'differently by different sources.',
+  },
+  imports: {
+    value: 6.61, tolPct: 12, unit: 'TWh',
+    source: 'ESK19679 International Imports, calendar 2025',
+    // 22 Sep 2026: from Eskom's audited 4.09 TWh (FY2026) to ESK19679 calendar 2025, the
+    // demand series' own source. The scenario now sets 2025 imports as an input, so this
+    // checks plumbing, not behaviour.
+    why: 'REBASED 31 Aug 2026 from 8.56 TWh. The old figure came from CONTRACT capacity - ' +
+         '1.15 GW firm at high availability - which is an assumption about utilisation, not a ' +
+         'measurement. Eskom now publishes three years of audited imports: 9,150 GWh FY2024, ' +
+         '7,570 FY2025, 4,090 FY2026. Deliveries have MORE THAN HALVED in two years. ' +
+         'This is not a relaxed check: it moves from an assumed utilisation to an audited one, ' +
+         'and the tolerance is 12% rather than 5% only because imports are visibly trending, ' +
+         'so a year-on-year move is expected rather than a fault. If it fails, check whether ' +
+         'a newer Eskom energy balance has been published before touching the constant.',
+  },
+  co2: {
+    value: 175, tolPct: 12, unit: 'Mt',
+    source: 'Ember 2025 power-sector CO2 for South Africa',
+    // CROSS-CHECKED 1 Sep 2026 against Eskom's own coal burn, after EDMSA Scenario A put
+    // 2025 emissions at 195 Mt against our 174.5. Eskom FY2026 burnt 96.5 Mt of coal for
+    // about 165 TWh. The implied emission factor depends entirely on calorific value:
+    //
+    //   CV 19 GJ/t   ->  173.4 Mt   1.049 t/MWh     our emisCoal is 1.040
+    //   CV 20 GJ/t   ->  182.6 Mt   1.104 t/MWh
+    //   CV 21 GJ/t   ->  191.7 Mt   1.159 t/MWh
+    //
+    // Our 1.04 corresponds to roughly 19 GJ/t, which is a defensible figure for Eskom's
+    // low-grade burn. Eskom's reported 184.5 MtCO2e is a different quantity again - group
+    // Scope 1, all greenhouse gases, not power-sector CO2 - so it is not the comparator.
+    //
+    // THREE NUMBERS, THREE BOUNDARIES. Anyone challenging this should be asked which they
+    // mean before the constant is touched. Ember's power-sector CO2 is the right
+    // comparator for a power-system model and we sit within 0.3% of it.
+    why: 'Follows the coal reconciliation, plus the part-load heat-rate penalty added 17 Aug ' +
+         'which raises emissions per MWh by ~1.5% at default.',
+  },
+};
+
+// Capacity factors are a SEPARATE test from energy: a carrier can hit its energy
+// target with the wrong capacity and the wrong CF, and the two errors cancel.
+// That is exactly what the wind nameplate bug did — energy matched Ember to 0.2%
+// while the nameplate was 578 MW light and the CF correspondingly overstated.
+const CF_BENCH = {
+  cfWind:    { lo: 28, hi: 38, why: 'SA fleet averages ~32-35%; Eastern Cape sites reach the low 40s' },
+  // RENEWABLE SHARE, added 31 Aug 2026 from Eskom's FY2026 annual results: renewables
+  // at 11.7% of power supplied. Checked on the RESIDUAL basis - rooftop removed from
+  // numerator AND denominator - because Eskom cannot see behind-the-meter generation,
+  // so 'power supplied' is a residual figure by construction. The model returns 12.0%.
+  //
+  // Band is +/-2 points rather than tight: Eskom's exact treatment of hydro, imports
+  // and IPP output is not stated in the results presentation, and any of those would
+  // move it by a point. It is a SANITY CHECK against a published national figure, not
+  // a precision test - but it is the closest external corroboration this model has for
+  // its headline mix.
+  reShareResid: { lo: 9.7, hi: 13.7, why: 'Eskom FY2026 annual results: renewables 11.7% of power supplied' },
+  // DEMAND BASIS. Added 31 Aug 2026 after nearly adding a distribution-loss term the
+  // model did not need. profiles.json is built on `gross grid demand + est rooftop`,
+  // which is Eskom's ENERGY AVAILABLE FOR DISTRIBUTION - before the 23,921 GWh of
+  // technical losses. So the model's grid generation should track 206.0 TWh, NOT the
+  // 178.0 TWh of sales.
+  //
+  // This check exists to stop the basis being changed by accident. If it fails high by
+  // roughly 17%, someone has compared against sales; if it drops by roughly 12%,
+  // someone has added a loss term that double-counts what is already in the demand.
+  // SURPLUS CAPACITY AT THE ANNUAL PEAK. Added 31 Aug 2026 against Eskom's FY2026
+  // statement: "improved generation availability has created an estimated 2-3 GW surplus
+  // capacity, positioning Eskom to attract new demand rather than ration it".
+  //
+  // ESKOM DOES NOT PUBLISH ITS METHOD, so this band covers the defensible definitions
+  // rather than picking the one that fits best:
+  //     less operating reserve only                        3.4 GW
+  //     less reserve and contracted imports                2.9 GW
+  //     less reserve, imports and VRE credit at peak       2.2 GW
+  // Two of the three sit inside Eskom's range. Band is 1.8-4.0 GW: tight enough to catch
+  // a real adequacy drift, loose enough not to fail on a definition nobody published.
+  //
+  // WHAT IT GUARDS: this is the first check on the ADEQUACY side against a published
+  // national figure. If the model ever reports a system that is comfortable when Eskom
+  // says it is tight, or vice versa, this is where it shows.
+  // PEAKER SEASONALITY, not level. Re-specified 4 Oct 2026. The 2025 ratio comes from the
+  // fleet recovering through the year (unplanned outages 13.8 GW in Q1, 10.5 GW in Q3), not a
+  // built-in season: 2023, bad all year, shows 0.8x. A seeded draw has no recovery trend, so the
+  // test runs on the measured 2025 availability trace. Comparator: all peakers, Eskom and IPP
+  // OCGTs and gas, 4.3x in ESK19679. The earlier 8.5x was Eskom's own OCGTs only (8.4x here);
+  // the model's peaker line includes the IPP units. Band: half to double, a factor of two.
+  //
+  // The LEVEL is deliberately NOT benchmarked. 63% of Eskom's peaker output runs below
+  // 25 GW of demand with ~25.8 GW of coal available - reserve, network support and
+  // ramping, none of which an energy merit order prices. A model that dispatches on
+  // economics cannot reproduce it, and a level benchmark would invite tuning availability
+  // to fit the right total for the wrong reason. That mistake was made and withdrawn
+  // twice on 31 Aug; this comment exists so it is not made a third time.
+  peakerSeasonRatio: { lo: 2.15, hi: 8.6, unit: 'x', why: 'Eskom hourly 2025 (ESK19679), all '
+    + 'peakers: Jan-Mar output 4.3x Jul-Sep, driven by the fleet recovering through the year. '
+    + 'Model run on the measured 2025 availability trace; band is a factor of two' },
+  // Lower bound 1.8 -> 1.2 on 8 Sep 2026, deliberately.
+  //
+  // The band was set against Eskom's stated 2-3 GW. The model now reads 1.5 GW, and the
+  // reason is that it reproduces Eskom's ACTUAL peak: 32.53 GW at 18:00 against Eskom's
+  // measured 32,526 MW, where it previously used an understated 31.60 GW. A correct peak
+  // gives a smaller surplus.
+  //
+  // This check is named "physically plausible" and 1.5 GW is physically plausible. What it
+  // was doing was testing agreement with Eskom's ESTIMATE, which is a different question and
+  // one the model is now entitled to disagree with - at Eskom's own peak and its own 65%
+  // EAF, the firm surplus is 1.5 GW rather than 2-3. That disagreement is recorded in
+  // RESULTS.md rather than hidden by a band.
+  //
+  // The bound is not removed: below 1.2 GW something is wrong with the fleet or the demand.
+  surplusGW: { lo: 1.2, hi: 4.0, unit: 'GW', why:
+      'Available firm capacity minus residual peak demand, no reserve deducted, at 2025 '
+    + 'conditions: Eskom stated 2-3 GW for FY2026, and reported 29,132 MW available against '
+    + '25,797 MW demand on 29 Aug 2025. Before 22 Sep 2026 this deducted operating reserve and '
+    + 'ignored wind and solar at the peak, which is not how Eskom reports it.' },
+  surplus2026GW: { lo: 4.0, hi: 8.0, unit: 'GW', why:
+      'Same convention at 2026 defaults, against Eskom\'s winter 2026 outlook (22 Apr 2026): '
+    + 'surplus peak capacity of about 6 GW over the winter.' },
+  gridGenTWh: { lo: 190, hi: 222, unit: 'TWh', why: 'Eskom FY2026 audited: energy available for distribution '
+    + '206.0 TWh. NOT sales, which are 178.0 TWh - losses of 23.9 TWh sit between them' },
+  cfPv:      { lo: 19, hi: 27, why: 'SA fixed-tilt utility PV, 21-24% typical; tracking reaches 26-28%' },
+  cfRooftop: { lo: 14, hi: 22, why: 'Below utility PV: mixed orientation, shading, no tracking, urban siting' },
+  cfNuclear: { lo: 60, hi: 85, why: 'Koeberg between refuelling outages; sent-out basis, not gross' },
+  cfCoal:    { lo: 35, hi: 60, why: 'Constrained by EAF, not by demand. At 68% EAF and partial loading, ~44%' },
+};
+
+const check = (name, ok, detail) => {
+  if (ok) pass++; else { fail++; failures.push(`${name}${detail ? '  —  ' + detail : ''}`); }
+};
+
+(async () => {
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const dom = new JSDOM(html, {
+    runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true,
+    url: 'file://' + path.resolve(ROOT) + '/index.html',
+    beforeParse(w) {
+      w.HTMLCanvasElement.prototype.getContext = () =>
+        new Proxy({}, { get: () => () => ({ addColorStop() {}, data: [], width: 0 }) });
+      const ch = () => new Proxy(function () { return ch(); }, { get: () => ch() });
+      w.L = new Proxy({}, { get() { return function () { return ch(); }; } });
+      w.onerror = () => {};
+      Object.defineProperty(w.history, 'replaceState', { value: () => {}, writable: true });
+      w.URL.createObjectURL = () => 'blob:x';
+      w.Worker = function () { this.postMessage = () => {}; };
+      w.fetch = async (u) => {
+        try {
+          const cl = String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles)/, '');
+          const t = fs.readFileSync(path.join(path.resolve(ROOT), cl), 'utf8');
+          return { ok: true, json: async () => JSON.parse(t), text: async () => t };
+        } catch (e) { return { ok: false, json: async () => { throw e }, text: async () => { throw e } }; }
+      };
+    },
+  });
+
+  // WAIT ON THE PAGE, not on a stopwatch. 23 Sep 2026. A fixed delay is right until the day the
+  // page takes longer - a slower machine, one more data file - and then the harness measures a
+  // half-loaded page and reports failures that are not there. index.html sets GTZA_READY once
+  // every input has settled and the first run has finished, so poll that and keep the old delay
+  // only as a ceiling.
+  for (let waited = 0; waited < 4500; waited += 100){
+    const probe = dom.window.document.createElement('script');
+    probe.textContent = 'window.__ready = !!window.GTZA_READY;';
+    dom.window.document.body.appendChild(probe);
+    if (dom.window.__ready) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
+
+  const w = dom.window;
+  const el = w.document.createElement('script');
+  // THE 2025 SYSTEM, added 22 Sep 2026. The references here are 2025 (Ember) and FY2026
+  // (Eskom), while the default scenario is 2026. Demand +4.6% returns domestic grid demand to
+  // 2025's 194.6 TWh (was +5.5% before wheeled load was added to the 2026 base, 22 Sep); Koeberg
+  // 62% is 2025's 10.21 TWh; coal EAF 58% is ESK19679's 2025 fleet EAF of 62.4% with nuclear,
+  // OCGT, hydro and pumped storage taken out. Comparing the 2026 system with 2025 data read
+  // coal 9% low for no reason but the year.
+  el.textContent = `window.__bm = (() => { try {
+    // Trade 2025, ESK19679: imports 755 MW mean (858 x 0.88), exports 1,705 MW incl. Mozal.
+    const S25 = { ...state, demandGrowthPct: 4.6, coalEAFPct: 58, importsMW: 858, exportsMW: 1705, nuclearCF: 0.62 };
+    const r = simulate(S25, PROFILES); const E = r.E;
+    const cf = (twh, mw) => mw > 0 ? twh*1e6/(mw*8760)*100 : 0;
+    return {
+      coal: E.coal/1e6, nuclear: E.nuclear/1e6, wind: E.wind/1e6,
+      solarUtility: E.pv/1e6, rooftop: E.rooftop/1e6, csp: E.csp/1e6,
+      hybrid: (E.hybrid||0)/1e6, hydro: E.hydro/1e6, imports: E.imports/1e6,
+      ps: E.ps/1e6, batt: E.batt/1e6, ccgt: E.ccgt/1e6, diesel: E.diesel/1e6,
+      co2: r.co2,
+      cfWind: cf(E.wind/1e6, FIXED.windMW), cfPv: cf(E.pv/1e6, FIXED.pvUtilityMW),
+      // Existing-fleet constants, for the Eskom Integrated Report 2026 p10 checks below.
+      fleetCoal: FIXED.coalInstalledMW, fleetNuclear: FIXED.nuclearMW,
+      fleetPs: FIXED.psPowerMW, fleetHydro: FIXED.hydroMW,
+      // Residual basis: rooftop out of numerator and denominator, matching how Eskom
+      // reports 'power supplied' - it cannot meter behind the customer's meter.
+      // Surplus at the annual peak: what could still have run, less the reserve held.
+      // On the measured 2025 availability trace, so no outage draw decides it (4 Oct 2026).
+      peakerSeasonRatio: (() => {
+        const MD = [31,28,31,30,31,30,31,31,30,31,30,31];
+        const bym = new Array(12).fill(0);
+        {
+          const rr = simulate({ ...S25, outageTraceYear: 2025 }, PROFILES);
+          let h = 0;
+          for (let m = 0; m < 12; m++){
+            const n = MD[m] * 24;
+            for (let k = 0; k < n && h < 8760; k++, h++)
+              bym[m] += (rr.stack.ccgt[h] || 0) + (rr.stack.diesel[h] || 0);
+          }
+        }
+        const q1 = bym[0] + bym[1] + bym[2], q3 = bym[6] + bym[7] + bym[8];
+        return q3 > 0 ? q1 / q3 : null;
+      })(),
+      // SURPLUS ON ESKOM'S CONVENTION, rebuilt 22 Sep 2026: available firm capacity minus
+      // demand net of wind, solar and CSP, at the hour that residual demand peaks, with NO
+      // reserve deducted. Eskom reports it that way ("available generation capacity 29,132 MW
+      // against demand of 25,797 MW", 29 Aug 2025). Coal is the engine's hourly availability
+      // at that hour, and Koeberg the scenario's nuclearCF. surplusGW is 2025 conditions, the
+      // winter inside FY2026; surplus2026GW is today's defaults against Eskom's winter 2026
+      // outlook.
+      ...(() => {
+        const sur = (rr, st) => {
+          const P = { ...FIXED, ...st };
+          let ph = 0, pk = -Infinity;
+          for (let h = 0; h < rr.loadS.length; h++){
+            const d = rr.loadS[h] - (rr.chargeMW[h] || 0) + (rr.drMW[h] || 0)
+                    - (rr.stack.wind[h] || 0) - (rr.stack.pv[h] || 0) - (rr.stack.csp[h] || 0);
+            if (d > pk){ pk = d; ph = h; }
+          }
+          const firm = (rr.coalAvailableMW ? rr.coalAvailableMW[ph] : NaN)
+            + P.nuclearMW * P.nuclearCF + P.hydroMW + P.psPowerMW + P.battPowerMW
+            + P.ocgtDieselMW + P.importsMW * P.importsCF;
+          return (firm - pk) / 1000;
+        };
+        // Averaged over three outage draws from 22 Sep 2026. The surplus is read at ONE hour,
+        // so a single seeded outage path made it a draw from a distribution: at the calibrated
+        // 480-hour repair time it read 8.6 GW on the base seed and 6.5 GW as a three-draw mean.
+        const meanSur = (ov) => {
+          const seeds = [20260816, 20260816 + 7919, 20260816 + 15838];
+          const v = seeds.map(sd => sur(simulate({ ...state, ...(ov || {}), outageSeed: sd }, PROFILES), state));
+          return v.reduce((x, y) => x + y, 0) / v.length;
+        };
+        // The 2025 figure on eight draws from 3 Oct 2026: on one seed it read 2.2 GW with independent
+        // outages and -2.0 GW once common-mode trips changed the draw, with no change to the fleet.
+        const sur25 = (() => { const v = []; for (let k = 0; k < 8; k++){ const st = { ...S25, outageSeed: 20260816 + k * 104729 };
+          v.push(sur(simulate(st, PROFILES), st)); } return v.reduce((x, y) => x + y, 0) / v.length; })();
+        return { surplusGW: sur25, surplus2026GW: meanSur() };
+      })(),
+      // Grid generation excluding rooftop, which is behind the meter and never reaches
+      // the distribution network. Compare against energy AVAILABLE, not sales.
+      gridGenTWh: (E.coal + E.nuclear + E.ccgt + E.diesel + E.hydro + E.ps + E.wind
+                   + E.pv + E.csp + (E.hybrid || 0) + E.imports) / 1e6,
+      reShareResid: (() => {
+        const gen = E.wind + E.pv + E.csp + (E.hybrid || 0) + E.rooftop + E.hydro;
+        const tot = Object.keys(E).filter(k => !['curtailed','unserved','exported'].includes(k))
+                          .reduce((a, k) => a + E[k], 0);
+        return 100 * (gen - E.rooftop) / Math.max(1, tot - E.rooftop);
+      })(),
+      cfRooftop: cf(E.rooftop/1e6, FIXED.rooftopMW),
+      cfNuclear: cf(E.nuclear/1e6, FIXED.nuclearMW),
+      cfCoal: cf(E.coal/1e6, FIXED.coalInstalledMW),
+      windMW: FIXED.windMW, pvMW: FIXED.pvUtilityMW, rooftopMW: FIXED.rooftopMW,
+      nuclearMW: FIXED.nuclearMW, coalMW: FIXED.coalInstalledMW,
+      domestic: (E.coal+E.nuclear+E.hydro+E.wind+E.pv+E.csp+(E.hybrid||0)+E.rooftop+E.ccgt+E.diesel)/1e6,
+    };
+  } catch (e) { return { err: String(e) }; } })();`;
+  w.document.body.appendChild(el);
+  const M = w.__bm;
+  if (!M || M.err) { console.log('FATAL:', M ? M.err : 'no result'); process.exit(1); }
+
+  console.log('\nPER-CARRIER RECONCILIATION, sent-out basis');
+  console.log('  carrier          model    bench     gap    band');
+  for (const [k, b] of Object.entries(BENCH)) {
+    const v = M[k];
+    if (typeof v !== 'number') { notes.push(`${k}: no model value`); continue; }
+    const gapPct = 100 * (v - b.value) / b.value;
+    const ok = Math.abs(gapPct) <= b.tolPct;
+    console.log(`  ${k.padEnd(14)} ${v.toFixed(2).padStart(7)} ${b.value.toFixed(2).padStart(8)} ` +
+                `${(gapPct >= 0 ? '+' : '') + gapPct.toFixed(1) + '%'} `.padStart(9) +
+                `  ±${b.tolPct}%${ok ? '' : '   <-- OUTSIDE'}`);
+    check(`${k} reconciles with ${b.source.split(',')[0]}`, ok,
+          ok ? '' : `model ${v.toFixed(2)} vs ${b.value} ${b.unit} = ${gapPct.toFixed(1)}%, band ±${b.tolPct}%. ${b.why}`);
+    rows.push({ carrier: k, model: +v.toFixed(2), bench: b.value, gapPct: +gapPct.toFixed(1) });
+  }
+
+  // Wind must read ABOVE Ember, not merely near it: the model counts privately
+  // wheeled plant that Ember excludes. Being below would mean capacity is missing.
+  check('wind reads ABOVE the NTCSA-metered benchmark, as wheeling implies',
+        M.wind >= BENCH.wind.value,
+        `model ${M.wind.toFixed(2)} TWh vs Ember-comparable ${BENCH.wind.value} TWh — ` +
+        `the model includes wheeled wind that Ember does not, so below is wrong`);
+
+  console.log('\nCAPACITY FACTORS — a separate test, because energy and CF errors can cancel');
+  console.log('  metric           model     plausible band');
+  for (const [k, b] of Object.entries(CF_BENCH)) {
+    const v = M[k];
+    // A null is a failed measurement, not a crash. Added 22 Sep 2026: peakerSeasonRatio
+    // returns null when no peaker runs in Jul-Sep, and the harness died on toFixed.
+    if (typeof v !== 'number' || !isFinite(v)) {
+      console.log(`  ${k.padEnd(14)}    none   ${b.lo}–${b.hi} ${b.unit || '%'}   <-- NO VALUE`);
+      check(`${k} is physically plausible`, false, `no value returned. ${b.why}`);
+      continue;
+    }
+    const ok = v >= b.lo && v <= b.hi;
+    // Unit-aware. This block assumed every RANGE band was a percentage, so a TWh band
+    // printed as "210.2%    190-222%". Harmless to the check, misleading to read - and
+    // the first band added in another unit was the one asserting a DEMAND BASIS, where
+    // a wrong unit is exactly the confusion it exists to prevent.
+    const u = b.unit || '%';
+    console.log(`  ${k.padEnd(14)} ${v.toFixed(1).padStart(7)} ${u}   ${b.lo}–${b.hi} ${u}${ok ? '' : '   <-- OUTSIDE'}`);
+    check(`${k} is physically plausible`, ok, ok ? '' : `${v.toFixed(1)} ${u} outside ${b.lo}-${b.hi} ${u}. ${b.why}`);
+  }
+
+  // The national identity that closed the Ember reconciliation on 16 Aug. If this
+  // drifts, one of the carriers above moved without its benchmark moving.
+  const totalWithImports = M.domestic + M.imports;
+  check('domestic + imports reconciles with the Ember-equivalent total',
+        Math.abs(totalWithImports - 218.8) / 218.8 < 0.05,
+        `${totalWithImports.toFixed(2)} TWh vs 218.8 TWh Ember-equivalent`);
+
+  // Carriers with no benchmark are still worth bounding: a silent collapse to
+  // zero, or a tenfold jump, is a bug whatever the published figure.
+  const SANITY = { csp: [1.0, 3.5], hybrid: [0.5, 4.0], ps: [1.5, 6.0], diesel: [0, 3.0] };
+  for (const [k, [lo, hi]] of Object.entries(SANITY))
+    check(`${k} is within a sane range`, M[k] >= lo && M[k] <= hi,
+          `${M[k].toFixed(3)} TWh outside ${lo}-${hi} TWh`);
+
+
+  // ── ESKOM INTEGRATED REPORT 2026, PAGE 10 ────────────────────────────────
+  // The primary source for the existing fleet. Checked 2 Sep 2026: coal was exactly right
+  // at 39,692 MW, three others were not - nuclear 1,860 against 1,880, pumped storage
+  // 2,900 against 2,724, hydro 600 against 602.
+  //
+  // OCGT is deliberately NOT asserted. The report gives 2,380 MW, which is Eskom-only;
+  // the model's 3,400 is a system total including the Avon and Dedisa IPP peakers. A
+  // different boundary, not an error, and a check ignoring that would force a wrong fix.
+  // ── ESKOM HOURLY DATASET ESK19679, Apr 2022 - Aug 2026 ───────────────────
+  // Independent corroboration from a source obtained 4 Sep 2026. Three of our figures were
+  // confirmed exactly and one gap found:
+  //
+  //   CSP installed        600 MW    exact match
+  //   wind installed     4,143 MW    matches the REIPPPP-only fleet, confirming the
+  //                                  series excludes wheeled plant
+  //   interruptible      1,021 MW    observed peak call against our 1,200 MW contract
+  //   Other RE              51 MW    against our biomass 25 - a 26 MW gap, see STATE
+  //
+  // Asserted here so a later edit cannot quietly move them away from measured values.
+  for (const [k, want, lab] of [['fleetCoal', 39692, 'coal-fired stations'],
+                                ['fleetNuclear', 1880, 'nuclear'],
+                                ['fleetPs', 2724, 'pumped storage'],
+                                ['fleetHydro', 602, 'hydro']]){
+    check(`[Eskom IR2026 p10] ${lab} ${want.toLocaleString()} MW`,
+          Math.abs(M[k] - want) < 1,
+          `model holds ${M[k]} against ${want} in the Integrated Report 2026`);
+  }
+
+  // ── WIND, FLEET-NORMALISED ──────────────────────────────────────────────
+  // The energy comparison above measures fleet size as much as model accuracy: the model
+  // runs 4,512 MW including wheeled plant, Ember's window averaged 3,871 MW metered. This
+  // divides that out and compares CAPACITY FACTOR against Eskom's own hourly file over the
+  // same window, which is the fleet-independent question - does a megawatt of wind in the
+  // model produce what a megawatt of real wind produced?
+  //
+  // Added 6 Sep 2026 when the profile rebuild pushed the energy check past its band. The
+  // energy band was widened at the same time, so this had to be tight enough to replace
+  // what that gave up: it reads 1.5%.
+  try {
+    const fs2 = require('fs'), path2 = require('path');
+    const lines = fs2.readFileSync(path2.join(ROOT, 'ESK19679.csv'), 'utf8').split('\n');
+    const hdr = lines[0].split(',');
+    const iD = hdr.indexOf('Date Time Hour Beginning');
+    const iG = hdr.indexOf('Wind'), iC = hdr.indexOf('Wind Installed Capacity');
+    let g = 0, c = 0;
+    for (let k = 1; k < lines.length; k++){
+      const p3 = lines[k].split(',');
+      if (p3.length <= iC) continue;
+      const ym = (p3[iD] || '').slice(0, 7);
+      if (ym < '2025-06' || ym > '2026-05') continue;
+      const gv = parseFloat(p3[iG]), cv = parseFloat(p3[iC]);
+      if (isFinite(gv) && isFinite(cv) && cv > 0){ g += gv; c += cv; }
+    }
+    if (c > 0 && typeof M.cfWind === 'number'){
+      const obsCF = 100 * g / c;
+      // M.cfWind is already the model's wind capacity factor, computed by the harness as
+      // energy over FIXED.windMW. Using it rather than recomputing means one definition.
+      const modCF = M.cfWind;
+      const gap = 100 * Math.abs(modCF / obsCF - 1);
+      check('wind capacity factor reconciles with Eskom, fleet-normalised',
+            gap <= 8,
+            `model ${modCF.toFixed(2)}% against Eskom ${obsCF.toFixed(2)}% over Jun 2025 to `
+            + `May 2026, gap ${gap.toFixed(1)}% > 8%. This divides out fleet size, so it asks `
+            + `whether a modelled megawatt produces what a real one did - the energy check `
+            + `above cannot separate those.`);
+      notes.push(`wind CF: model ${modCF.toFixed(2)}% vs Eskom ${obsCF.toFixed(2)}% `
+        + `(model fleet ${M.windMW} MW vs Eskom metered mean `
+        + `${(c / 8760).toFixed(0)} MW over the window)`);
+    }
+  } catch (e) { notes.push('fleet-normalised wind check skipped: ' + String(e).slice(0, 60)); }
+
+  console.log(`\n${pass}/${pass + fail} benchmark checks passed`);
+  if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log('  ' + f)); }
+  if (notes.length) { console.log('\nNOTES:'); notes.forEach(n => console.log('  ' + n)); }
+  process.exit(fail ? 1 : 0);
+})();

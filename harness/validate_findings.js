@@ -1,0 +1,864 @@
+#!/usr/bin/env node
+/**
+ * validate_findings.js — the published findings, re-run against THEIR OWN scenarios.
+ *
+ * WHY THIS EXISTS. On 31 Aug 2026, re-verifying findings after a round of constant
+ * corrections produced THREE near-miss false corrections in one session, every one
+ * caused by re-testing a result in a scenario other than the one it was measured in:
+ *
+ *   demand response      swept in a no-gas system measuring UNSERVED, published on the
+ *                        dashboard measuring AVERAGE COST. Looked broken. Was not.
+ *   battery saturation   run at an arbitrary reserve price of 60 against a published
+ *                        default of 150. Showed a 60% error. Was exactly the ratio.
+ *   capture asymmetry    run with storage against a published run with none.
+ *
+ * RESULTS.md opens with "a number without its scenario is not a result". That rule lives
+ * in prose, and prose does not run. This encodes the scenario NEXT TO the number so a
+ * re-check cannot silently test something else.
+ *
+ * These are TOLERANT checks. The point is not to freeze values - the calibration work of
+ * 31 Aug moved several legitimately - it is to catch a published finding whose DIRECTION
+ * or SHAPE has changed without anyone noticing.
+ *
+ *   node validate_findings.js [root]
+ */
+const fs=require('fs'), path=require('path');
+const { JSDOM } = require('jsdom');
+const ROOT=process.argv[2]||'.';
+
+let npass=0, nfail=0; const fails=[];
+function check(name, ok, detail){
+  if(ok) npass++; else { nfail++; fails.push(`  ${name}` + (detail?`  —  ${detail}`:'')); }
+}
+
+const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
+const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,
+ url:'file://'+path.resolve(ROOT)+'/index.html',
+ beforeParse(w){ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({},{get:()=>()=>({addColorStop(){},data:[],width:0,measureText:()=>({width:10})})});
+  const ch=()=>new Proxy(function(){return ch();},{get:()=>ch()}); w.L=new Proxy({},{get(){return function(){return ch();};}});
+  w.onerror=()=>{}; Object.defineProperty(w.history,'replaceState',{value:()=>{},writable:true});
+  w.URL.createObjectURL=()=>'blob:x'; w.Worker=function(){this.postMessage=()=>{};};
+  w.fetch=async(u)=>{try{const cl=String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles)/,'');
+   const t=fs.readFileSync(path.join(path.resolve(ROOT),cl),'utf8');
+   return{ok:true,json:async()=>JSON.parse(t),text:async()=>t};}
+   catch(e){return{ok:false,json:async()=>{throw e},text:async()=>{throw e}};}}; }});
+
+// EVERY PRESET THIS HARNESS NAMES MUST EXIST. Added 22 Sep 2026. A missing preset spreads as
+// undefined and runs the defaults, or its button lookup returns null and the checks are
+// skipped - either way with no error. Deleting Crisis 2023 took validate_outputs from 40/40 to
+// 36/36 while it still reported green.
+{
+  const _src = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const _i = _src.indexOf('const PRESETS={');
+  const _blk = _src.slice(_i, _src.indexOf('\n};', _i));
+  const _have = new Set([..._blk.matchAll(/^\s*'((?:[^'\\]|\\.)+)'\s*:\s*\{/gm)].map(m => m[1].replace(/\\'/g, "'")));
+  const _miss = ['Deep decarbonisation 2035', "IRP's 2030 targets, grid delayed", 'Today 2026'].filter(n => !_have.has(n));
+  check('every preset this harness uses exists', _miss.length === 0, 'missing: ' + _miss.join(', '));
+}
+setTimeout(()=>{
+  const w=dom.window;
+  const probe=(src)=>{const s=w.document.createElement('script'); w.__p=null;
+    s.textContent=`try{window.__p=JSON.stringify((function(){${src}})());}catch(e){window.__p=JSON.stringify({error:String(e)});}`;
+    w.document.body.appendChild(s); return JSON.parse(w.__p);};
+
+  // ── 1. IRON-AIR DOES NOT SOLVE A WINTER WIND DROUGHT ──────────────────────
+  // SCENARIO: Seriti Green - 20 GW wind, 25 GW solar, 32 GW coal retired, 25 GW gas,
+  // 20 GW/10h lithium, EAF 70. METRIC: July gas energy, with and without 20 GW iron-air.
+  // PUBLISHED: identical to the MWh. Survived a heuristic, an LP and a reserve-constrained LP.
+  {
+    const r=probe(`
+      const sc={newWindMW:20000-FIXED.windMW,newPvMW:25000-FIXED.pvUtilityMW,newNuclearMW:0,
+                coalEAFPct:70,coalDecomMW:32000,newCcgtMW:25000,newBattMW:20000,newBattHours:10};
+      const jul=x=>{let s=0;for(let h=4344;h<5088;h++)s+=(x.stack.ccgt[h]||0)+(x.stack.diesel[h]||0);return s/1000;};
+      return {without:jul(simulate({...state,...sc},PROFILES)),
+              with20:jul(simulate({...state,...sc,newIronAirMW:20000},PROFILES))};`);
+    if(r.error) check('iron-air finding runs', false, r.error);
+    else {
+      const gap=Math.abs(r.with20-r.without);
+      check('iron-air changes July gas by essentially nothing',
+            gap < Math.max(5, r.without*0.01),
+            `July gas ${r.without.toFixed(0)} without vs ${r.with20.toFixed(0)} with 20 GW iron-air `
+            + `- a gap here means the headline long-duration finding has changed`);
+      console.log(`  iron-air       July gas ${r.without.toFixed(0)} -> ${r.with20.toFixed(0)} GWh`);
+    }
+  }
+
+  // ── 2. DEMAND RESPONSE HAS AN OPTIMUM ─────────────────────────────────────
+  // SCENARIO: the DASHBOARD default, sweeping drShiftPct. METRIC: SYSTEM COST, R/yr.
+  // Changed 22 Sep 2026 from average cost. Shifted load returns with a 6% loss, so a large
+  // shift raises energy served as well as cost, and the ratio hid the reversal: at 30%,
+  // average cost read R1,089.05 against R1,090.03 while system cost was R1.7bn higher and the
+  // rebound peak 441 MW above the unshifted one. Measuring unserved energy in a no-gas
+  // system instead shows no optimum at all - that mistake was made on 31 Aug.
+  {
+    const r=probe(`return [0,7.5,30].map(p=>{const x=simulate({...state,drShiftPct:p},PROFILES);
+      return {p,sys:x.systemCostR/1e9,peak:x.peakGridLoad||0};});`);
+    if(r.error) check('demand response finding runs', false, r.error);
+    else {
+      const [z,opt,hi]=r;
+      check('modest demand shifting lowers system cost', opt.sys < z.sys,
+            `7.5% shift gives R${opt.sys.toFixed(2)}bn against R${z.sys.toFixed(2)}bn at zero`);
+      check('demand response reverses at high shift', hi.sys > z.sys && hi.peak > z.peak,
+            `30% shift gives R${hi.sys.toFixed(2)}bn and a ${Math.round(hi.peak)} MW peak against `
+            + `R${z.sys.toFixed(2)}bn and ${Math.round(z.peak)} MW at zero - the rebound peak is the finding`);
+      console.log(`  demand resp.   R${z.sys.toFixed(1)}bn at 0% · R${opt.sys.toFixed(1)}bn at 7.5% · R${hi.sys.toFixed(1)}bn at 30%`);
+    }
+  }
+
+  // ── 3. SOLAR CANNIBALISES ITSELF, WIND DOES NOT ───────────────────────────
+  // SCENARIO: NO STORAGE - newBattMW 0 - at 50 GW wind / 60 GW solar. Adding storage
+  // materially protects solar and tests a different claim.
+  {
+    const r=probe(`
+      const x=simulate({...state,newWindMW:50000-FIXED.windMW,newPvMW:60000-FIXED.pvUtilityMW,
+                        newBattMW:0},PROFILES);
+      const P=x.marginalP; let ps=0; for(let h=0;h<HOURS;h++) ps+=P[h];
+      const mean=ps/HOURS;
+      const cap=g=>{let e=0,rv=0;for(let h=0;h<HOURS;h++){e+=g[h];rv+=g[h]*P[h];}
+        return e>0?100*(rv/e)/mean:null;};
+      return {wind:cap(x.stack.wind), solar:cap(x.stack.pv)};`);
+    if(r.error) check('capture asymmetry finding runs', false, r.error);
+    else {
+      check('wind holds its capture rate at 110 GW of build',
+            r.wind > 85 && r.wind < 115, `wind capture ${r.wind.toFixed(1)}%`);
+      check('solar capture collapses at 110 GW of build',
+            r.solar < 10, `solar capture ${r.solar.toFixed(1)}% - the asymmetry IS the finding`);
+      console.log(`  capture        wind ${r.wind.toFixed(0)}% · solar ${r.solar.toFixed(1)}% (no storage)`);
+    }
+  }
+
+  // ── 4. BATTERY ANCILLARY SATURATES, AND SA IS PAST THE KNEE ───────────────
+  // SCENARIO: asReserveOn with asReserveRMWh AT ITS FIXED DEFAULT. Setting an arbitrary
+  // reserve price scales every figure linearly - on 31 Aug a price of 60 against the
+  // default 150 produced an exact 60% "error" that was purely the ratio.
+  {
+    const r=probe(`
+      state.asReserveOn=true;
+      const c=bessSaturationCurve(simulate({...state},PROFILES));
+      return {pts:c.pts.map(p=>({mw:p.mw,anc:p.anc})), nowMW:c.nowMW,
+              price:(state.asReserveRMWh??FIXED.asReserveRMWh)};`);
+    if(r.error) check('battery saturation finding runs', false, r.error);
+    else {
+      const first=r.pts[0].anc, last=r.pts[r.pts.length-1].anc;
+      check('ancillary revenue saturates as the fleet grows', last < first*0.6,
+            `falls ${(100*(1-last/first)).toFixed(1)}% across the sweep`);
+      // RE-DERIVED 23 Sep 2026. This used to assert that South Africa was already PAST the
+      // knee, which was true when the reserve requirement read 1,309 MW. It now reads 2,237,
+      // because the requirement moved to the ASTR's 2,200 MW on 21 Sep and grew with variable
+      // generation on 23 Sep. The knee is twice the mean requirement, so about 4.5 GW, and the
+      // existing 3.5 GW fleet is just below it. The check now pins the knee's LOCATION relative
+      // to the fleet rather than the claim, so either direction registers as a change.
+      const knee=r.pts.find(p=>p.anc < first*0.999);
+      const ratio = knee ? knee.mw / r.nowMW : null;
+      check('the ancillary knee sits close to the existing fleet',
+            !!knee && ratio > 0.8 && ratio < 2.0,
+            knee ? `knee between ${((knee.mw - 2000)/1000).toFixed(1)} and `
+                   + `${(knee.mw/1000).toFixed(1)} GW against an existing fleet of `
+                   + `${(r.nowMW/1000).toFixed(1)} GW - approaching, not past`
+                 : 'no knee found in the sweep');
+      // The model must not pay storage more for reserve than the System Operator pays for
+      // reserve in total. NERSA approved R1,518m of ancillary services for FY2026, of which the
+      // application's reserve share is about R1,017m. The band below is that, not the larger
+      // figure NTCSA applied for. Added 23 Sep 2026 with the sourced reserve price.
+      const fleetPayRbn = r.pts.length
+        ? (r.pts.find(p => Math.abs(p.mw - r.nowMW) < 600) || r.pts[0]).anc * r.nowMW / 1e9
+        : 0;
+      // Voltage support, added 23 Sep 2026: the fleet cannot earn more than the System Operator
+      // buys. NTCSA MYPD 6 Table 10, FY2026: reactive power and voltage control R468m.
+      const volt = probe(`
+        state.asVoltageOn = true;
+        const r = simulate({ ...state }, PROFILES);
+        const now = (state.newBattMW||0) + FIXED.psPowerMW + FIXED.battPowerMW;
+        const a = bessRevenueStack(r, 4, now), b = bessRevenueStack(r, 4, 20000);
+        state.asVoltageOn = false;
+        return { perMWnow: a.voltage, perMW20: b.voltage, fleetMW: now,
+                 potRm: (state.asVoltagePotRm ?? FIXED.asVoltagePotRm) };`);
+      if (volt && !volt.error){
+        const paidRm = volt.perMWnow * volt.fleetMW / 1e6;
+        check('voltage support revenue stays inside the System Operator\'s reactive power budget',
+              paidRm > 0 && paidRm <= volt.potRm && volt.perMW20 < volt.perMWnow,
+              `R${paidRm.toFixed(0)}m a year to the ${(volt.fleetMW/1000).toFixed(1)} GW fleet `
+              + `against a R${volt.potRm}m budget, falling from R${Math.round(volt.perMWnow/1000)}k `
+              + `to R${Math.round(volt.perMW20/1000)}k per MW at 20 GW`);
+      }
+      check('storage reserve revenue stays inside the published reserve budget',
+            fleetPayRbn > 0 && fleetPayRbn < 1.02,
+            `R${fleetPayRbn.toFixed(2)}bn a year to the ${(r.nowMW/1000).toFixed(1)} GW fleet `
+            + `against the R1.02bn of reserve inside NERSA's approved ancillary allowance`);
+      console.log(`  ancillary      knee ~${knee?(knee.mw/1000).toFixed(1):'?'} GW · fleet `
+        + `${(r.nowMW/1000).toFixed(1)} GW · reserve price R${r.price}/MWh`);
+    }
+  }
+
+
+  // ── 5. SOLAR ALONE CANNOT PASS THE DAYLIGHT FRACTION ──────────────────────
+  // SCENARIO: a FLAT 1 MW load matched against regional solar - NO wind, NO battery.
+  // METRIC: share of load served directly. Adding either tests a different claim; the
+  // point is what solar can do ALONE. PUBLISHED: capped near 45%, because only 49.3%
+  // of hours have any sun at all.
+  {
+    const mp = path.join(ROOT, 'nodal', 'profiles_regional_multiyear.json');
+    if (fs.existsSync(mp)){
+      const j = JSON.parse(fs.readFileSync(mp, 'utf8'));
+      // Years that have SOLAR, not every year in meta.years. Wind reached 2025 on
+      // 6 Sep while solar stopped at 2023, and taking meta.years crashed on the missing
+      // series - the third symptom of that one gap, after weatherYearNational returning
+      // null and the anchor losing its year.
+      //
+      // Filtering rather than failing is right here: this check is about the daylight
+      // ceiling, which every year with solar can test. It reports the count so a shrinking
+      // sample cannot pass unnoticed.
+      const sc = j.scale, reg = 'Northern Cape';
+      const ys = j.meta.years.map(String).filter(y => j.solar_pu[reg] && j.solar_pu[reg][y]);
+      if (!ys.length) throw new Error('no solar years available for ' + reg);
+      const cover = smw => {
+        let tot = 0;
+        for (const y of ys){
+          const s = j.solar_pu[reg][y];
+          let served = 0;
+          for (let h = 0; h < 8760; h++) served += Math.min(s[h] / sc * smw, 1);
+          tot += 100 * served / 8760;
+        }
+        return tot / ys.length;
+      };
+      let n = 0, t = 0;
+      for (const y of ys){ const s = j.solar_pu[reg][y];
+        for (let h = 0; h < 8760; h++){ t++; if (s[h] / sc > 0.001) n++; } }
+      const sunPct = 100 * n / t, c4 = cover(4), c32 = cover(32);
+      console.log(`  solar ceiling  tested on ${ys.length} of ${j.meta.years.length} `
+        + `weather years (those with solar data)`);
+      check('solar alone cannot exceed the daylight fraction', c32 < sunPct + 1,
+            `32 MW on a 1 MW load serves ${c32.toFixed(1)}% against a daylight fraction `
+            + `of ${sunPct.toFixed(1)}% - the ceiling is physical, not a model artefact`);
+      check('eight times the solar buys less than eight points', (c32 - c4) < 8,
+            `4 MW serves ${c4.toFixed(1)}%, 32 MW serves ${c32.toFixed(1)}%`);
+      console.log(`  solar ceiling  4 MW ${c4.toFixed(1)}% \u00b7 32 MW ${c32.toFixed(1)}%`
+        + ` \u00b7 daylight ${sunPct.toFixed(1)}%`);
+    }
+  }
+
+
+  // ── 6. AN ANNUAL BUILD TRIGGER CANNOT SEE CUMULATIVE OVERSUPPLY ───────────
+  // SCENARIO: demand growing 2% a year, VRE added at a fixed annual rate, EAF 70 -
+  // EDMSA Scenario A's own assumptions. METRIC: renewable output wasted as a share of
+  // what renewables generate. The claim is about DURATION at a fixed rate, so both runs
+  // must use the SAME rate and differ only in years.
+  {
+    const r = probe(`
+      const run = (gwYr, yrs) => {
+        const added = gwYr * yrs * 1000;
+        const g = Math.round(100 * (Math.pow(1.02, yrs) - 1));
+        const x = simulate({ ...state, demandGrowthPct: g, coalEAFPct: 70,
+          newWindMW: Math.round(added * 0.45), newPvMW: Math.round(added * 0.55),
+          newBattMW: Math.round(gwYr * yrs * 150), newBattHours: 4 }, PROFILES);
+        const econ = (x.E.curtailed || 0) / 1e6;
+        const cong = Array.from(x.congestMW || []).reduce((a, b) => a + b, 0) / 1e6;
+        const vre = (x.E.wind + x.E.pv) / 1e6;
+        return 100 * (econ + cong) / Math.max(vre + econ + cong, 1);
+      };
+      return { five: run(5, 5), ten: run(5, 10), lowTen: run(2, 10) };
+    `);
+    if (r && !r.error){
+      check('the same build rate wastes more when sustained longer',
+            r.ten > r.five * 1.5,
+            `5 GW/yr wastes ${r.five.toFixed(1)}% over five years and ${r.ten.toFixed(1)}% `
+            + `over ten - if these converge, the cumulative-versus-rate finding has changed`);
+      check('a low build rate stays at the congestion floor',
+            r.lowTen < 5,
+            `2 GW/yr over ten years wastes ${r.lowTen.toFixed(1)}%, which should be the `
+            + `NERSA congestion ceiling rather than economic surplus`);
+      console.log(`  oversupply     5 GW/yr: ${r.five.toFixed(1)}% at 5 yrs, `
+        + `${r.ten.toFixed(1)}% at 10 \u00b7 2 GW/yr: ${r.lowTen.toFixed(1)}%`);
+    }
+  }
+
+
+  // ── 7. THE INSTANT HEURISTIC DISPATCHES AT THE AVERAGE PRICE ──────────────
+  // SCENARIO: the model's own battery fleet against its own hourly prices, default build.
+  // METRIC: revenue-weighted average price ACHIEVED on discharge, against the median
+  // market price. The published claim is that the heuristic is not targeting peaks -
+  // which is a statement about TIMING and needs no revenue comparison to hold.
+  //
+  // Deliberately NOT asserting the revenue gap. Against perfect foresight it reads 89%,
+  // and almost all of that sits in hours a 1,800 MW battery would itself price away by
+  // discharging into them. That number is not defensible and is not pinned.
+  {
+    const r = probe(`
+      // SNAPSHOT AND RESTORE. Probes in this harness share one window and earlier ones
+      // mutate the scenario object - the oversupply check leaves 46 GW of wind behind.
+      // Inheriting that gave R1,141/MWh against R754 measured in isolation, and I nearly
+      // recorded the polluted figure as a finding.
+      //
+      // Rebuilding from FIXED does not work either: it lacks the slider keys simulate
+      // needs, so the run throws and a guard silently skips the check - which is how this
+      // one disappeared without failing. Restore the defaults instead.
+      const saved = JSON.parse(JSON.stringify(state));
+      for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
+      const x = simulate({ ...state, newBattMW: 1000, newBattHours: 4 }, PROFILES);
+      const p = x.marginalP, dis = x.stack.batt;
+      let rev = 0, mwh = 0;
+      for (let h = 0; h < 8760; h++){ const d = dis[h] || 0; rev += d * p[h]; mwh += d; }
+      const srt = Array.from(p).sort((a, b) => a - b);
+      Object.assign(state, saved);
+      return { achieved: mwh > 0 ? rev / mwh : 0, median: srt[4380], mwh };
+    `);
+    check('the storage timing probe returns a result',
+          !!(r && !r.error && r.mwh > 0),
+          r && r.error ? String(r.error).slice(0, 90) : 'probe returned no discharge');
+    if (r && !r.error && r.mwh > 0){
+      const ratio = r.achieved / r.median;
+      check('the instant heuristic discharges near the median price, not the peak',
+            ratio < 1.5,
+            `achieves R${r.achieved.toFixed(0)}/MWh against a median of R${r.median.toFixed(0)} `
+            + `- a ratio of ${ratio.toFixed(2)}. If this rises above 1.5 the heuristic has `
+            + `started targeting peaks and the published claim needs revisiting`);
+      console.log(`  storage timing R${r.achieved.toFixed(0)}/MWh achieved \u00b7 `
+        + `median R${r.median.toFixed(0)} \u00b7 ratio ${ratio.toFixed(2)}`);
+    }
+  }
+
+
+  // ── 8. CURTAILED RENEWABLES ARE REPLACED BY COAL, ONE FOR ONE ─────────────
+  // SCENARIO: default build, the congestion curtailment ceiling swept from 0 to 15%.
+  // METRIC: coal energy and CO2 against renewable output spilled. The published claim is
+  // a SUBSTITUTION RATIO, so it must be tested by differencing two runs that differ only
+  // in the ceiling - not by reading one run's totals.
+  //
+  // Snapshot and restore, because probes here share one window and earlier ones mutate
+  // the scenario. That pollution gave a wrong figure once already today.
+  {
+    const r = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
+      const run = pct => {
+        const x = simulate({ ...state, congestionCurtailOn: pct > 0,
+                             congestionCurtailPct: pct }, PROFILES);
+        const cong = Array.from(x.congestMW || []).reduce((a, b) => a + b, 0) / 1e6;
+        return { cong, coal: x.E.coal / 1e6, co2: x.co2 };
+      };
+      const a = run(0), b = run(10);
+      Object.assign(state, saved);
+      return { spilled: b.cong - a.cong, dCoal: b.coal - a.coal, dCo2: b.co2 - a.co2 };
+    `);
+    check('the curtailment substitution probe returns a result',
+          !!(r && !r.error && r.spilled > 0.1),
+          r && r.error ? String(r.error).slice(0, 90) : 'no spill at a 10% ceiling');
+    if (r && !r.error && r.spilled > 0.1){
+      const ratio = r.dCoal / r.spilled, co2r = r.dCo2 / r.spilled;
+      check('spilled renewable output is replaced by coal roughly one for one',
+            ratio > 0.8 && ratio < 1.2,
+            `${r.spilled.toFixed(2)} TWh spilled replaced by ${r.dCoal.toFixed(2)} TWh of `
+            + `coal - a ratio of ${ratio.toFixed(2)}`);
+      check('the carbon that follows matches the coal emission factor',
+            co2r > 0.85 && co2r < 1.25,
+            `${co2r.toFixed(2)} Mt per TWh spilled against an emisCoal of 1.04 - if these `
+            + `diverge, either the factor or the substitution has changed`);
+      console.log(`  curtail cost   ${r.spilled.toFixed(2)} TWh spilled \u00b7 coal `
+        + `${ratio.toFixed(2)}x \u00b7 CO2 ${co2r.toFixed(2)} Mt/TWh`);
+    }
+  }
+
+
+  // ── LONG-DURATION STORAGE: THE RESULT INVERTS ON THE GAS ASSUMPTION ──────
+  // RESULTS.md carries both: 20 GW of 100-hour iron-air changes July by nothing WITH the
+  // Seriti 25 GW of gas, and 10 GW cuts unserved energy 98% WITHOUT gas. Those look
+  // contradictory and are not - with gas the deficit is an energy shortage no store can
+  // fill; without it the shortfall concentrates into fewer, deeper hours.
+  //
+  // Both directions asserted, because quoting either without its gas assumption inverts
+  // the finding. Snapshot and restore - probes here share one window.
+  {
+    const r = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
+      const seriti = { newWindMW: 20000, newPvMW: 25000, newBattMW: 20000, newBattHours: 10,
+                       coalDecomMW: 32000, coalEAFPct: 70 };
+      const julGas = x => { const MD=[31,28,31,30,31,30,31,31,30,31,30,31];
+        let h0=0; for(let m=0;m<6;m++) h0+=MD[m]*24;
+        let g=0; for(let h=h0;h<h0+31*24;h++) g+=(x.stack.ccgt[h]||0)+(x.stack.diesel[h]||0);
+        return g/1000; };
+      const withGasNo  = simulate({ ...state, ...seriti, newCcgtMW: 25000 }, PROFILES);
+      const withGasIA  = simulate({ ...state, ...seriti, newCcgtMW: 25000,
+                                    newIronAirMW: 20000, newIronAirHours: 100 }, PROFILES);
+      // No new lithium in the no-gas case. With Seriti's 20 GW of 4-hour storage the gap
+      // is already closed and iron-air has nothing to improve - the check then passes
+      // vacuously on 0 -> 0, which is how the first version of it read.
+      const bare = { coalDecomMW: 32000, coalEAFPct: 70, newCcgtMW: 0,
+                     newWindMW: 40000, newPvMW: 80000 };
+      const noGasNo    = simulate({ ...state, ...bare }, PROFILES);
+      const noGasIA    = simulate({ ...state, ...bare,
+                                    newIronAirMW: 10000, newIronAirHours: 100 }, PROFILES);
+      Object.assign(state, saved);
+      return { gasJulBefore: julGas(withGasNo), gasJulAfter: julGas(withGasIA),
+               noGasBefore: (noGasNo.E.unserved||0)/1000,
+               noGasAfter: (noGasIA.E.unserved||0)/1000 };
+    `);
+    if (r && !r.error){
+      const julDelta = Math.abs(r.gasJulAfter - r.gasJulBefore) / Math.max(r.gasJulBefore, 1);
+      check('with gas, 20 GW of 100-hour iron-air barely moves July',
+            julDelta < 0.02,
+            `July gas ${r.gasJulBefore.toFixed(0)} -> ${r.gasJulAfter.toFixed(0)} GWh, `
+            + `a ${(julDelta*100).toFixed(1)}% change`);
+      check('without gas, 10 GW of 100-hour iron-air cuts unserved energy sharply',
+            r.noGasAfter < r.noGasBefore * 0.25 && r.noGasBefore > 100,
+            `unserved ${r.noGasBefore.toFixed(0)} -> ${r.noGasAfter.toFixed(0)} GWh - if this `
+            + `stops holding, the scope note in RESULTS.md is wrong`);
+      console.log(`  LDES scope     with gas July ${r.gasJulBefore.toFixed(0)} -> `
+        + `${r.gasJulAfter.toFixed(0)} GWh \u00b7 no gas unserved `
+        + `${r.noGasBefore.toFixed(0)} -> ${r.noGasAfter.toFixed(0)} GWh`);
+    }
+  }
+
+
+  // ── FINDINGS WITH NO CHECK UNTIL NOW ────────────────────────────────────
+  // A coverage sweep on 6 Sep found four RESULTS.md sections with nothing asserting them.
+  // Three reproduce; they were holding by luck rather than by anything guarding them, which
+  // rule 14 says is the same as not being guarded.
+  //
+  // The fourth - the no-gas frontier - is deliberately left unchecked: it runs on the
+  // ten-year profile file, which the multi-site rebuild has not yet replaced, so its
+  // numbers are expected to move. Pinning them now would pin a figure we know is wrong.
+  {
+    const r = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      for (const sl of SLIDERS) if (sl.id && sl.def !== undefined) state[sl.id] = sl.def;
+      const res = simulate(state, PROFILES);
+      const P = { ...FIXED, ...state };
+      const out = { avgCost: res.avgCost, tx: P.txRPerKWyr };
+      Object.assign(state, saved);
+      return out;
+    `);
+    if (r && !r.error){
+      // REMOVED 6 Sep 2026. This asserted the model's average ENERGY cost equals R584/MWh
+      // because RESULTS.md's locational transmission section quotes R584. It does - as a
+      // TRANSMISSION ANNUITY in R/kW-yr, being R6,964/kW over 40 years at 8%. Two
+      // unrelated quantities that happened to share a number, and I pinned the coincidence.
+      //
+      // It passed this morning for the wrong reason and broke today for the right one,
+      // which is how it was found. Replaced by the arithmetic it should have checked.
+      const af = 0.08 / (1 - Math.pow(1.08, -40));
+      // UPDATED 22 Sep 2026. The rate was re-derived from what the TDP buys: TDP 2024 Table 4,
+      // generation integration R54.3bn of R112.5bn (51% with land pro rata); 51% of R440bn over
+      // 46.9 GW of grid-connected new generation is R4,800/kW, R402/kW-yr over 40 years at 8%.
+      const gi = (54277 + 4880 * 54277 / 80707) / 112534;
+      const perKw = gi * 440e9 / 46.9e6;
+      check('transmission: TDP generation integration annuitises to R402/kW-yr',
+            Math.abs(perKw * af - 402) < 1,
+            `${(100 * gi).toFixed(1)}% of R440bn over 46.9 GW is R${perKw.toFixed(0)}/kW, `
+            + `R${(perKw * af).toFixed(0)}/kW-yr`);
+      check('transmission: the engine constant is R402/kW-yr',
+            Math.abs(r.tx - 402) < 1,
+            `R${r.tx}/kW-yr against the R402 derived from TDP 2024 Table 4`);
+      console.log(`  locational   avgCost R${r.avgCost.toFixed(0)}/MWh \u00b7 tx R${r.tx}/kW-yr`);
+    }
+  }
+
+
+  // ── THE FUTURE MIX PRESET IS A CHOSEN POINT, NOT A GUESS ────────────────
+  // Searched 8 Sep 2026: 144 builds across wind, solar, battery power and duration, each
+  // scored on the worst of twelve weather years with gas excluded.
+  //
+  // Sixty reach zero shortfall. The cheapest costs R35bn more capex and 14% on the average
+  // price to remove 30 GWh in one year of twelve - 0.01% of annual demand. The preset
+  // deliberately does NOT buy that, and sits at 4 GWh instead.
+  //
+  // Pinned so the choice cannot drift back silently. If a future change moves it, the
+  // question to ask is whether the trade was re-decided, not whether the number moved.
+  // ── CURTAILMENT, PINNED WITH ITS WEATHER BAND ─────────────────────────────
+  // Added 1 Oct 2026. Spill is the one quantity in this model that moves materially with the
+  // weather year: 51 to 68 TWh on Deep decarbonisation and 90 to 114 on Fossil-free across
+  // twelve years, against 1.4% for system cost and under 1% for unserved energy. So a single
+  // default-year figure cannot be pinned tightly without failing on noise, and cannot be left
+  // unpinned without letting a real change pass.
+  //
+  // Pinned here on the DEFAULT profile set, which is a different source from the twelve-year
+  // regional set - national Eskom-derived against regional MERRA-2 - so the levels are not
+  // interchangeable. Deep decarbonisation's 65.2 TWh sits inside its regional band; Fossil-free's
+  // 119.7 sits about 5% ABOVE the regional maximum of 114.2. That offset is a property of the
+  // profile sets, not drift, and is recorded in RESULTS.md. The band below is +/-15%, wide
+  // enough to absorb the known offset and narrow enough to catch a build or dispatch change.
+  {
+    const curt = probe(`
+      const out = {};
+      for (const name of ['Deep decarbonisation 2035', 'Fossil-free 2040']){
+        const r = simulate({ ...state, ...PRESETS[name] }, PROFILES);
+        out[name] = (r.E.curtailed || 0) / 1e6;
+      }
+      return out;`);
+    if (curt && !curt.error){
+      // Re-pinned 4 Oct 2026 for the re-sized presets (was 65.2 and 119.7, on the old builds).
+      const PIN = { 'Deep decarbonisation 2035': 52.7, 'Fossil-free 2040': 96.3 };
+      const bad = [];
+      for (const [name, pinned] of Object.entries(PIN)){
+        const got = curt[name];
+        if (!(got > pinned * 0.85 && got < pinned * 1.15))
+          bad.push(`${name} ${got ? got.toFixed(1) : 'missing'} against ${pinned} +/-15%`);
+      }
+      check('preset curtailment sits within its weather band',
+            bad.length === 0,
+            bad.length ? bad.join('; ')
+              : `Deep decarbonisation ${curt['Deep decarbonisation 2035'].toFixed(1)} TWh, `
+                + `Fossil-free ${curt['Fossil-free 2040'].toFixed(1)} TWh on the default profiles`);
+    }
+  }
+
+  // ── A PRESET THAT NAMES A YEAR SETS ONE ───────────────────────────────────
+  // Added 23 Sep 2026. Both IRP presets carried 2030 in their titles and no scenarioYear, so
+  // they priced new build at 2026 capital with no learning: R8bn a year each. Nothing caught it
+  // because nothing was looking.
+  {
+    const yr = probe(`
+      const bad = [];
+      for (const [name, p] of Object.entries(PRESETS)){
+        const m = name.match(/\\b(20[0-9]{2})\\b/);
+        if (m && String(p.scenarioYear || '') !== m[1]) bad.push(name + ' names ' + m[1] + ', sets ' + (p.scenarioYear || 'nothing'));
+      }
+      return { bad };`);
+    if (yr && !yr.error)
+      check('every preset that names a year sets that scenario year',
+            yr.bad.length === 0,
+            yr.bad.length ? yr.bad.join('; ') : 'all presets naming a year set it');
+  }
+
+  // ── FLEET EAF TO COAL EAF ─────────────────────────────────────────────────
+  // Added 23 Sep 2026 with coalEafFromFleet. Everyone else publishes availability for the whole
+  // Eskom fleet; this model runs on coal alone. The function must reproduce the three pairs
+  // measured from ESK19679 with that year's nuclear output, or the presets and the external
+  // comparisons that now call it are drifting.
+  {
+    const e = probe(`
+      return { y2023: coalEafFromFleet(54.7, 0.493),
+               y2025: coalEafFromFleet(62.4, 0.620),
+               y2026: coalEafFromFleet(68.1, 0.609),
+               irp:   coalEafFromFleet(67) };
+    `);
+    if (e && !e.error){
+      const off = Math.max(Math.abs(e.y2023 - 49.7), Math.abs(e.y2025 - 58.4), Math.abs(e.y2026 - 65.3));
+      check('the fleet-to-coal availability conversion reproduces the measured years',
+            off < 1,
+            `2023 ${e.y2023.toFixed(1)} against 49.7, 2025 ${e.y2025.toFixed(1)} against 58.4, `
+            + `2026 ${e.y2026.toFixed(1)} against 65.3; the IRP's 67% fleet becomes `
+            + `${e.irp.toFixed(1)}% coal`);
+    }
+  }
+
+  // ── COAL UTILISATION UNDER THE IRP'S OWN BUILD ────────────────────────────
+  // Measured 22 Sep 2026. On the IRP's 2030 targets the model dispatches 110.9 TWh of coal,
+  // 62% of what that fleet has available at 64% EAF, and emits 129 Mt. The IRP's own published
+  // 160 Mt implies about 144 TWh, which is coal running roughly as hard as it does today
+  // despite the plan's renewables. Removing the plan's new wind and solar from this preset
+  // takes the model to 156 TWh and 175 Mt, so the difference is displacement, not the fleet.
+  // The check exists so that if our dispatch drifts back toward the IRP's number, someone
+  // notices it is a change rather than a confirmation.
+  {
+    const c = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      Object.assign(state, PRESETS["IRP's 2030 targets"]);
+      const P = { ...FIXED, ...state };
+      const r = simulate(state, PROFILES);
+      const avail = (P.coalInstalledMW - P.coalDecomMW) * P.coalEAFPct / 100 * 8760 / 1e6;
+      const out = { coalTWh: r.E.coal / 1e6, availTWh: avail, co2: r.co2,
+                    curtTWh: r.E.curtailed / 1e6 };
+      Object.assign(state, saved);
+      return out;
+    `);
+    if (c && !c.error){
+      const util = 100 * c.coalTWh / c.availTWh;
+      check('the IRP build pushes coal below 70% of its available energy',
+            util > 52 && util < 72,
+            `coal ${c.coalTWh.toFixed(1)} TWh, ${util.toFixed(0)}% of ${c.availTWh.toFixed(0)} TWh `
+            + `available, ${c.co2.toFixed(0)} Mt CO2 against the IRP's 160; only `
+            + `${c.curtTWh.toFixed(1)} TWh is spilled, so the coal is displaced rather than the wind`);
+    }
+  }
+
+  {
+    const r = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      Object.assign(state, PRESETS['Deep decarbonisation 2035']);
+      const P = { ...FIXED, ...state };
+      const out = { wind: P.newWindMW, pv: P.newPvMW, batt: P.newBattMW,
+                    hours: P.newBattHours, ccgt: P.newCcgtMW };
+      Object.assign(state, saved);
+      return out;
+    `);
+    if (r && !r.error){
+      check('the deep decarbonisation preset keeps gas at zero',
+            r.ccgt === 0,
+            `newCcgtMW is ${r.ccgt} - this preset exists to show a no-gas build`);
+      // RE-DERIVED 23 Sep 2026, 8h -> 12h, when battery capital split into power and energy.
+      // With inverters priced separately, duration is cheaper per kilowatt-hour than the old
+      // straight scaling made it: at the same reliability, 20 GW at 12h costs R293.8bn against
+      // R296.3bn for 30 GW at 8h and R294.8bn for 24 GW at 10h. Fossil-free 2040 shows the same
+      // ordering and identical shedding across 8, 10 and 12 hours, so that system is
+      // energy-limited rather than power-limited.
+      check('the deep decarbonisation preset uses 12-hour storage',
+            r.hours === 12,
+            `newBattHours is ${r.hours}, chosen as 12 on 23 Sep 2026 with the power and energy `
+            + `capital split. If this changed, confirm the trade was re-derived.`);
+    }
+  }
+
+
+  // ── EXPORTS ARE A LOAD, AND THEY DO NOT BACK OFF ────────────────────────
+  // Added 8 Sep 2026. The model imported 1,150 MW and exported nothing, which is not what
+  // the interconnector does: 2025 saw 6,571 GWh imported against 14,935 exported.
+  //
+  // The curtailable share defaults to ZERO, and that is measured, not assumed. Exports in
+  // the 200 most stressed hours of each year 2022-26 ran within 6% of the annual mean and
+  // were HIGHER in three years of five - including 2023, the worst load-shedding year on
+  // record. They did not back off while the system was failing.
+  //
+  // Pinned so the default cannot drift. If someone sets it above zero as a modelling
+  // convenience, that is a claim about contracts the data does not support, and it should
+  // be argued rather than defaulted.
+  {
+    const r = probe(`
+      const P = { ...FIXED, ...state };
+      // Under a STRESSED fleet, not defaults. With the demand series corrected to
+      // domestic-only on 8 Sep 2026 the model no longer sheds at default settings, so
+      // comparing curtailed against uncurtailed there gives 0.0 both ways and proves
+      // nothing. 52% availability is roughly the 2023 outturn.
+      // Mean of eight outage draws from 4 Oct 2026: on one draw the stressed case shed only
+      // 0.8 GWh, too little for the 1 GWh test to see.
+      let u0 = 0, u1 = 0;
+      for (let k = 0; k < 8; k++){
+        const sd = 20260816 + k * 104729;
+        u0 += (simulate({ ...state, coalEAFPct: 52, exportsCurtailable: false, outageSeed: sd }, PROFILES).E.unserved || 0) / 8000;
+        u1 += (simulate({ ...state, coalEAFPct: 52, exportsCurtailable: true,  outageSeed: sd }, PROFILES).E.unserved || 0) / 8000;
+      }
+      return { def: P.exportsCurtailable, expMW: P.exportsMW, unserved0: u0, unserved100: u1 };
+    `);
+    if (r && !r.error){
+      check('exports are modelled and non-zero',
+            r.expMW > 0,
+            `exportsMW is ${r.expMW} - the interconnector is a NET DRAIN on South Africa, `
+            + `8.4 TWh in 2025. Modelling imports without exports overstates firm supply by `
+            + `about 1.35 GW at the peak.`);
+      check('export curtailment defaults to off',
+            r.def === false,
+            `exportsCurtailable defaults to ${r.def}. Off is the measured behaviour: across `
+            + `2022-26 exports never fell more than 3% in the most stressed hours. A `
+            + `non-zero default asserts a contractual flexibility the record does not show.`);
+      check('curtailing exports measurably reduces unserved energy',
+            r.unserved100 < r.unserved0 - 1,
+            `off gives ${r.unserved0.toFixed(1)} GWh unserved, on gives `
+            + `${r.unserved100.toFixed(1)} - if these match, the setting is not wired and the `
+            + `policy question cannot be asked.`);
+      console.log(`  exports       ${r.expMW} MW capacity \u00b7 curtailing all of it takes `
+        + `unserved ${r.unserved0.toFixed(1)} \u2192 ${r.unserved100.toFixed(1)} GWh`);
+    }
+
+    // The Mozal closure is worth about 1 GW of adequacy headroom, and it is INVISIBLE at
+    // today's fleet availability. That is the point worth pinning: a healthy fleet hides
+    // the exposure, and it reappears the moment availability falls.
+    const m = probe(`
+      const a = simulate({ ...state, coalEAFPct: 52, exportsMW: 745 }, PROFILES);
+      const b = simulate({ ...state, coalEAFPct: 52, exportsMW: 1750 }, PROFILES);
+      const c = simulate({ ...state, exportsMW: 745 }, PROFILES);
+      const d = simulate({ ...state, exportsMW: 1750 }, PROFILES);
+      return { closed52: (a.E.unserved||0)/1000, open52: (b.E.unserved||0)/1000,
+               closedNow: (c.E.unserved||0)/1000, openNow: (d.E.unserved||0)/1000 };
+    `);
+    if (m && !m.error){
+      check('a Mozal restart roughly doubles unserved energy in a bad year',
+            m.open52 > m.closed52 * 1.5,
+            `at 52% availability, exports 745 MW gives ${m.closed52.toFixed(0)} GWh unserved `
+            + `and 1,750 MW gives ${m.open52.toFixed(0)}. The Mozal smelter took about 1 GW `
+            + `of Eskom exports until March 2026; its closure is worth that much adequacy `
+            + `headroom, and it returns if the smelter does.`);
+      check('the same restart is nearly invisible at current availability',
+            m.openNow < 5,
+            `at 65% availability the restart costs ${m.openNow.toFixed(1)} GWh against `
+            + `${m.closedNow.toFixed(1)}. A healthy fleet HIDES this exposure - which is why `
+            + `it is worth stating rather than leaving to be rediscovered in a bad year.`);
+      console.log(`  Mozal         restart costs ${(m.open52-m.closed52).toFixed(0)} GWh at `
+        + `EAF 52, ${(m.openNow-m.closedNow).toFixed(1)} GWh at EAF 65`);
+    }
+  }
+
+
+  // ── THE RESIDENTIAL FIXED CHARGE, ARITHMETIC NOT MODEL ──────────────────
+  // Added 10 Sep 2026. This finding uses NO model output - it is arithmetic on Eskom's
+  // published Schedule of Standard Prices, Homepower 4, 2026/27. It is pinned here anyway
+  // because RESULTS.md quotes it, and a published tariff moves every April.
+  //
+  // The check re-derives the numbers rather than storing them, so when the schedule is
+  // updated the constants below are the ONLY thing to change and the conclusions re-compute.
+  // If the direction ever reverses - the phase-in becoming progressive - that is a finding,
+  // not a failure, and the message says so.
+  {
+    const FIXED_R_MONTH = 536.0;     // network 10.44 + service 6.60 + gen 0.82 R/day
+    const ENERGY_R_KWH  = 3.5556;    // incl VAT, flat
+    const STILL_TO_MOVE = 159.0;     // R/month: service+admin 33.34% and GCC 70% not yet fixed
+    const NEUTRAL_KWH   = 900.0;     // basis on which the shift is revenue-neutral
+
+    const energyAfter = ENERGY_R_KWH - STILL_TO_MOVE / NEUTRAL_KWH;
+    const fixedAfter  = FIXED_R_MONTH + STILL_TO_MOVE;
+    const share = (kwh, fx, en) => 100 * fx / (kwh * en + fx);
+
+    const smallNow  = share(200, FIXED_R_MONTH, ENERGY_R_KWH);
+    const smallAfter = share(200, fixedAfter, energyAfter);
+    const bigNow    = share(2000, FIXED_R_MONTH, ENERGY_R_KWH);
+
+    check('the residential fixed charge is regressive',
+          smallNow > bigNow * 2,
+          `a 200 kWh household pays ${smallNow.toFixed(0)}% of its bill in fixed charges `
+          + `against ${bigNow.toFixed(0)}% for a 2,000 kWh household. If this ever reverses `
+          + `it is a FINDING about a tariff change, not a broken check - re-read the `
+          + `schedule before editing anything.`);
+
+    check('completing the fixed-charge phase-in raises the unshiftable share above half',
+          smallAfter > 50,
+          `a 200 kWh household goes from ${smallNow.toFixed(0)}% to ${smallAfter.toFixed(0)}% `
+          + `fixed. RESULTS.md quotes 43% and 51%. The constants here are the 2026/27 `
+          + `schedule - update them each April and let the conclusions re-derive.`);
+
+    const delta200  = (200 * energyAfter + fixedAfter) - (200 * ENERGY_R_KWH + FIXED_R_MONTH);
+    const delta2000 = (2000 * energyAfter + fixedAfter) - (2000 * ENERGY_R_KWH + FIXED_R_MONTH);
+    check('the phase-in transfers from small households to large ones',
+          delta200 > 0 && delta2000 < 0,
+          `200 kWh household ${delta200 >= 0 ? '+' : ''}R${delta200.toFixed(0)}/month, `
+          + `2,000 kWh household ${delta2000 >= 0 ? '+' : ''}R${delta2000.toFixed(0)}. `
+          + `Revenue-neutral in aggregate at ${NEUTRAL_KWH} kWh means someone pays more.`);
+
+    console.log(`  fixed charge  200 kWh household ${smallNow.toFixed(0)}% -> `
+      + `${smallAfter.toFixed(0)}% fixed \u00b7 ${delta200 >= 0 ? '+' : ''}R${delta200.toFixed(0)}/mo`);
+  }
+
+  // ── GRID DELAY IS AN EMISSIONS EVENT, NOT A PRICE EVENT ──────────────────
+  // Added 10 Sep 2026. The IRP's 2030 targets, grid delayed preset mirrors the IRP 2030 preset exactly and then
+  // applies the delay: curtailment ceiling 4% -> 10%, wind and solar held back 40%.
+  //
+  //   renewable energy        89 -> 68 TWh    -24%
+  //   coal                   140 -> 157 TWh   +12%
+  //   retail                R3.91 -> R3.96    +1.3%
+  //
+  // The household barely notices. The mix moves a quarter. That asymmetry is the finding, and
+  // it is why delay goes unaddressed: nobody on the bill feels it.
+  {
+    const gd = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      const pick = nm => {
+        for (const k of Object.keys(PRESETS["IRP's 2030 targets, grid delayed"])) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k];
+        Object.assign(state, PRESETS[nm]); run();
+        const E = lastRes.E;
+        return { re: ((E.wind||0)+(E.pv||0)+(E.rooftop||0)+(E.csp||0))/1e6, coal: (E.coal||0)/1e6 };
+      };
+      const irp = pick("IRP's 2030 targets");
+      const dly = pick("IRP's 2030 targets, grid delayed");
+      for (const k of Object.keys(state)) delete state[k];
+      Object.assign(state, saved); run();
+      return { irp, dly };
+    `);
+    if (gd && !gd.error && gd.irp && gd.irp.re){
+      const reDrop = 100 * (1 - gd.dly.re / gd.irp.re);
+      const coalRise = 100 * (gd.dly.coal / gd.irp.coal - 1);
+      check('grid delay moves the generation mix, not the bill',
+            reDrop > 10 && coalRise > 5,
+            `renewables ${reDrop.toFixed(0)}% lower and coal ${coalRise.toFixed(0)}% higher under `
+            + `a delayed corridor. The energy still gets served - by coal - so the consumer sees `
+            + `almost nothing. That asymmetry is why delay goes unaddressed.`);
+      console.log(`  grid delay    renewables -${reDrop.toFixed(0)}% \u00b7 coal +${coalRise.toFixed(0)}%`);
+    }
+  }
+
+  // ── TURN-UP IS THE LARGER HALF OF CONSTRAINT COST ────────────────────────
+  // Added 10 Sep 2026 after NESO's reporting of Britain's record constraint day: 8 Sep 2026
+  // cost GBP 28.9m of which 88% was turn-up, and that day ranked only SEVENTH by curtailed
+  // volume. Volume and cost are related, not the same thing.
+  //
+  // Measured here: turn-up is 42% of constraint cost today, 65% under the IRP 2030 build.
+  // It grows because the replacement gets dearer, not because more is curtailed - the
+  // turn-up rate goes from R395/MWh to R1,010/MWh as coal gives way to gas and storage on
+  // the margin.
+  //
+  // The turn-up cost is already inside fuelCost. This is a reporting split, not a charge.
+  {
+    const cs = probe(`
+      const saved = JSON.parse(JSON.stringify(state));
+      const pick = nm => {
+        for (const k of Object.keys(PRESETS["IRP's 2030 targets, grid delayed"])) state[k] = FIXED[k] !== undefined ? FIXED[k] : state[k];
+        Object.assign(state, PRESETS[nm]); run();
+        const r = lastRes, cc = RETAIL_T.curtailment_compensation || {};
+        const cong = r.congestTot || 0;
+        return { cong, comp: cong * (cc.ppa_price_r_per_kwh || 0.55) * 1000,
+                 tu: r.congestTurnUpR || 0 };
+      };
+      const today = pick('Today 2026');
+      const irp = pick("IRP's 2030 targets");
+      for (const k of Object.keys(state)) delete state[k];
+      Object.assign(state, saved); run();
+      return { today, irp };
+    `);
+    if (cs && !cs.error && cs.today && cs.today.cong > 0){
+      const shareNow = 100 * cs.today.tu / (cs.today.tu + cs.today.comp);
+      const shareIrp = 100 * cs.irp.tu / (cs.irp.tu + cs.irp.comp);
+      const rateNow = cs.today.tu / cs.today.cong, rateIrp = cs.irp.tu / cs.irp.cong;
+      check('turn-up is a growing share of constraint cost',
+            shareIrp > shareNow && shareIrp > 50,
+            `turn-up is ${shareNow.toFixed(0)}% of constraint cost today and `
+            + `${shareIrp.toFixed(0)}% under the IRP build, as the replacement rate rises from `
+            + `R${rateNow.toFixed(0)} to R${rateIrp.toFixed(0)}/MWh. Curtailed VOLUME and `
+            + `constraint COST are not the same thing - NESO's most expensive day ranked `
+            + `seventh by volume.`);
+      console.log(`  constraint    turn-up ${shareNow.toFixed(0)}% -> ${shareIrp.toFixed(0)}% of cost `
+        + `\u00b7 R${rateNow.toFixed(0)} -> R${rateIrp.toFixed(0)}/MWh`);
+    }
+  }
+
+  // ── FLEET FIGURES IN SLIDER NOTES MATCH THE CONSTANTS ─────────────────────
+  // Added 5 Oct 2026. Notes said 3.2, 8.6 and 2.9 GW existing while the constants said 3.3, 8.9
+  // and 2.7. Notes now compute these from FIXED; this fails if a literal comes back.
+  {
+    const k = probe(`const MAP = { newWindMW:'windMW', newPvMW:'pvUtilityMW', newRooftopMW:'rooftopMW',
+        newBattMW:'battPowerMW', newPsMW:'psPowerMW', coalDecomMW:'coalInstalledMW' };
+      const bad = [];
+      for (const s of SLIDERS){ const key = MAP[s.id]; if (!key || !s.note) continue;
+        const m = String(s.note).match(/(?:on|of) ([0-9.]+) GW (?:existing|installed)/);
+        if (!m) { bad.push(s.id + ': no figure'); continue; }
+        if (Math.abs(+m[1] - FIXED[key] / 1000) > 0.051) bad.push(s.id + ': note ' + m[1] + ' GW, constant ' + (FIXED[key]/1000).toFixed(2)); }
+      return { bad };`);
+    if (k && !k.error) check('fleet figures in slider notes match the constants', k.bad.length === 0, k.bad.join('; '));
+    else check('fleet figures in slider notes match the constants', false, k ? k.error : 'no result');
+  }
+  // ── EVERY PRESET KEY REACHES THE MODEL ────────────────────────────────────
+  // Added 3 Oct 2026. applyState sets sliders and PRESET_NON_SLIDER_KEYS only; any other key in a
+  // preset is dropped without error. 2025, as modelled's importsCF and hydroCF were dropped that way.
+  {
+    const k = probe(`const ok = new Set([...SLIDERS.map(s => s.id), ...PRESET_NON_SLIDER_KEYS]);
+      const bad = []; for (const [n, p] of Object.entries(PRESETS)) for (const key of Object.keys(p)) if (!ok.has(key)) bad.push(n + ': ' + key);
+      return { bad };`);
+    if (k && !k.error) check('every preset key reaches the model', k.bad.length === 0,
+      k.bad.length ? 'dropped by applyState: ' + k.bad.join(', ') : '');
+    else check('every preset key reaches the model', false, k ? k.error : 'no result');
+  }
+  (async () => {
+    // ── THE ADEQUACY LOOP'S STALLED BUILD IS ADEQUATE IN 2016 ───────────────
+    // Added 2 Oct 2026. Fossil-free 2040 preset with the build the loop stalled on (21.8 GW coal
+    // kept, 2.8 GW gas, 13.0 GW lithium at 5h). The engine shed 34.4 GWh in 2016 while 222 GWh
+    // of gas sat idle, then 11.2 with gas charging alone; gas ahead of storage on a coal forecast
+    // from planned commitment and outage state took it to zero. The standard is 0.002% of demand.
+    try {
+      await w.eval('loadWeatherYears()');
+      const a = probe(`
+        const st = { ...state, ...PRESETS['Fossil-free 2040'], newWindMW:14591, newPvMW:32738,
+          newRooftopMW:2000, newBattMW:13029, newCcgtMW:2848, newVrfbMW:500, newIronAirMW:150,
+          newOffshoreMW:0, newNuclearMW:0, coalDecomMW:17939, newBattHours:5 };
+        const nat = weatherYearNational('2016');
+        const r = simulate(st, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
+        let dem = 0; for (let i = 0; i < r.loadS.length; i++) dem += r.loadS[i];
+        return { shed: r.E.unserved / 1e3, limit: dem * 0.00002 / 1e3 };`);
+      if (a && !a.error)
+        check('the adequacy loop build is adequate in its stalled year',
+              a.shed <= a.limit,
+              `${a.shed.toFixed(1)} GWh shed in 2016 against a ${a.limit.toFixed(2)} GWh standard `
+              + `(34.4 before gas charging, 11.2 with charging alone)`);
+      else check('the adequacy loop build is adequate in its stalled year', false, a ? a.error : 'no result');
+      if (a && !a.error) console.log(`  adequacy loop  2016 shed ${a.shed.toFixed(1)} GWh, standard ${a.limit.toFixed(2)}`);
+    } catch (e) { check('the adequacy loop build is adequate in its stalled year', false, String(e).slice(0, 120)); }
+    console.log(`\n${npass}/${npass+nfail} published findings still hold`);
+    if(fails.length){ console.log('\nFAILURES:'); fails.forEach(f=>console.log(f)); }
+    process.exit(nfail?1:0);
+  })();
+}, 8000);
