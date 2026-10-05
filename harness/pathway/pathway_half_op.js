@@ -1,5 +1,6 @@
 // Least-cost pathway to 2040 from Today 2026 at half the standard: pathway_op's settings plus targetFrac (TF, default 0.5) and windowLeadYears (LEAD, default 14:
-// every window binds from 2026, as all windows did at build 05g when pathway_op was recorded), cap 14 passes (5 Oct 2026). Run from the parent of testroot.
+// every window binds from 2026, as all windows did at build 05g when pathway_op was recorded), cap 14 passes (5 Oct 2026).
+// SOLVER=native solves with native HiGHS via highs_native.py (needs: pip install highspy). Run from the parent of testroot.
 // Assumptions applied to the build LP text: gas no earlier than 2030 (no import terminal before);
 // new rooftop fixed at 1.2 GW a year from 2027 (16.8 GW by 2040, expected uptake, not a planner's choice).
 const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');const highsLoader=require('highs');
@@ -16,7 +17,10 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  const newHighs=()=>highsLoader({locateFile:f=>path.join(process.cwd(),'node_modules/highs/build',f)});
  const fix=lp=>lp.replace(/^ 0 <= b_ccgt_(\d{4}) <= [0-9.]+$/gm,(m,y)=> +y<GAS_FIRST ? ` 0 <= b_ccgt_${y} <= 0` : m)
                  .replace(/^ 0 <= b_rooftop_(\d{4}) <= [0-9.]+$/gm,(m,y)=>{const v=+y>=2027?ROOF_PER_YR:0; return ` ${v} <= b_rooftop_${y} <= ${v}`;});
- let last=null; w.__bldSolveOverride=async(lp)=>{ const highs=await newHighs(); last=highs.solve(fix(lp),{time_limit:900}); console.log('solved', last.Status, new Date().toISOString()); return last; };
+ let last=null; w.__bldSolveOverride=async(lp)=>{ if (process.env.SOLVER==='native'){ const os=require('os'),cp=require('child_process'); const tmp=path.join(os.tmpdir(),'gtza_'+process.pid);
+   fs.writeFileSync(tmp+'.lp',fix(lp)); cp.execFileSync('python3',['highs_native.py',tmp+'.lp',tmp+'.json','900'],{stdio:'inherit'}); last=JSON.parse(fs.readFileSync(tmp+'.json','utf8')); }
+   else { const highs=await newHighs(); last=highs.solve(fix(lp),{time_limit:900}); }
+   console.log('solved', last.Status, new Date().toISOString()); return last; };
  w.eval(`applyState(PRESETS['Today 2026']); state.demandGrowthPct=${DEM}; bldSetHorizon(2040);`);
  await w.eval('loadWeatherYears()');
  const t0=Date.now();
