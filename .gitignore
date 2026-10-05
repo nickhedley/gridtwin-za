@@ -28,3 +28,8 @@ raw_offshore_best/
 screen_offshore/
 ESK19679.csv
 ESK19679.csv
+
+# Per-environment harness setup (CLAUDE.md): the testroot link and npm install output
+harness/testroot
+harness/package.json
+harness/package-lock.json
