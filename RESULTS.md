@@ -1887,7 +1887,12 @@ objective, same schedule to the MW, adequate in two passes (pathway_half_op.js T
 
 Every pathway entry below dated 5 Oct was run at or before `05g`, so with all-year windows.
 
-### Half-standard pathway on pathway_op's settings: stalls near the full standard, solver limit at pass 5, 5 Oct 2026
+### SUPERSEDED 6 Oct 2026 - Half-standard pathway on pathway_op's settings: stalls near the full standard, solver limit at pass 5, 5 Oct 2026
+
+Superseded by the per-failing-year stress loop (builds 2026-10-06b and 06c, branch claude/stress-per-year),
+which reaches half the standard; kept for the record of why this run stalled. Cause: windows reached only
+the worst year, so 2032-2036 were never repaired; with every-year windows the WebAssembly solver ran out
+of memory, and with native HiGHS (6 Oct) the run hit the 3,600 s limit at solve 13 with no build saved.
 
 Build `2026-10-05j`. pathway_half_op.js: pathway_op's settings (draws 2, testEvery 2, stressDays 14,
 windowsPerPass 1) plus targetFrac 0.5 and windowLeadYears 14 (all-year windows, as at `05g`). Fresh
@@ -1927,7 +1932,12 @@ Caveat: two draws per weather year. On fresh draws both builds shed less than on
 sized against, which is the expected direction for an in-sample test, but two draws do not pin the
 size of the difference. The worst single run is still 31 to 33 GWh in 2040 on both.
 
-### Half-standard pathway did not converge: fails even the full standard in 2034-2038, 5 Oct 2026
+### SUPERSEDED 6 Oct 2026 - Half-standard pathway did not converge: fails even the full standard in 2034-2038, 5 Oct 2026
+
+Superseded by the per-failing-year stress loop (builds 2026-10-06b and 06c, branch claude/stress-per-year),
+which reaches half the standard; kept for the record of why this run stalled. Cause: windows reached only
+the worst year, so 2032-2036 were never repaired; with every-year windows the WebAssembly solver ran out
+of memory, and with native HiGHS (6 Oct) the run hit the 3,600 s limit at solve 13 with no build saved.
 
 Build `2026-10-05j`, suite 803/812 plus eng5 6/6 with ESK19679.csv absent (803/805 leaving out seven
 checks against stale baseline files, see TODO). pathway_half.js, recorded in harness/pathway/
