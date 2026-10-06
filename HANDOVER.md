@@ -143,6 +143,8 @@ STANDING RULE: an optimiser result is a proposal until the twelve-year dispatch 
   0.72 double-count).
 - A harness that excludes by property name owns that name (`readout` silently dropped a control).
 - A curtailment level needs a range, and its profile set named.
+- Every pathway comparison table carries a new-gas column: GW of new CCGT by 2030 and by 2040, read
+  from newCcgtMW (user, 6 Oct 2026), while the 'no new gas' result is provisional.
 - Share files before writing the report. The user has had to ask for files repeatedly; the share
   call goes first in any turn that produces one.
 
