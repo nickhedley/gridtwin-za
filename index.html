@@ -5507,7 +5507,9 @@ const FIXED = {
   // bldCoalMinFrac x committed, commitment changing by at most available coal / bldCoalCommitHours per
   // hour, standing in for 48-hour minimum up and down times); and existing pumped storage dispatched as
   // energy (TODO 26). The engine has both; the LP had neither (2040 decomposition, RESULTS).
-  bldCoalCommit:1, bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldPsEnergy:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  // bldPsEnergy is OFF until the pumped-storage decomposition shows whether the LP over-uses it or the
+  // engine under-uses it (user, 6 Oct 2026); results with it on are diagnostics, not findings.
+  bldCoalCommit:1, bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldPsEnergy:0, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -17784,7 +17786,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-06d';
+const BUILD_STAMP = '2026-10-06e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
