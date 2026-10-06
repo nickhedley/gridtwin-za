@@ -401,6 +401,16 @@ Cape only, curtailment capped at 4%, releasing 1,580 MW of extra connections (1,
 400 MW Eastern Cape). Extending it to other technologies or regions needs NERSA approval backed by
 studies. The model's congestionCurtailPct 4 is this ceiling, not an expected rate.
 
+## IRP 2025 extract (public_data/irp2025_extract.csv)
+
+Government Gazette 53596, notice 6767, 28 Oct 2025. Extracted by the user 6 Oct 2026 by OCR and visual
+reading: Table 1 (new capacity by year to 2042, p.31), Figure 5 (committed private capacity by year,
+13,892 MW, p.18), the demand definition and the reference-case assumptions (p.11, p.34). Columns checked
+against their totals 6 Oct: wind, solar, IPP gas, nuclear, distributed generation and other private
+agree. Two to check against the PDF: energy storage sums to 7,930 MW by year against a stated total of
+8,223 (the gap equals the two Eskom battery entries, 294 MW); private PV sums to 6,987 against 6,988.
+The IRP's new wind in 2026 and 2027 (964 and 2,847 MW) equals the committed private wind.
+
 ## Sources consulted and rejected
 
 Recording these so they are not re-investigated.
