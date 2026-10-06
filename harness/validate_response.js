@@ -187,6 +187,12 @@ const CONTEXT = {
   asVoltageRMWyr:  { __skip: true },
   asVoltagePotRm:  { __skip: true },
   exportPriceR: { exportCapMW: 3000, newWindMW: 45000, newPvMW: 52000, coalDecomMW: 27000 },
+  // Moved out of BUILD_ONLY 6 Oct 2026: both feed the engine's own system cost (txChargeFor and the
+  // repurpose exemption in simulate), but only for new wind and solar, so at defaults they read as dead.
+  // Measured with 10 GW wind, 10 GW solar, 3 GW batteries and 6 GW coal retired: avgCost 1,112 to 1,196
+  // across txRPerKWyr 0-1200, and 1,151 to 1,140 with repurpose on.
+  txRPerKWyr: { newWindMW: 10000, newPvMW: 10000, newBattMW: 3000, coalDecomMW: 6000 },
+  repurpose:  { newWindMW: 10000, newPvMW: 10000, newBattMW: 3000, coalDecomMW: 6000 },
 };
 
 const BUILD_ONLY = {
@@ -196,11 +202,9 @@ const BUILD_ONLY = {
   outVolPct: 'drives the Monte Carlo risk panel only; simulate() is one deterministic draw',
   gridBeyondGccaPct: 'scales GCCA headroom in the build LP; the dispatch engine has no headroom concept',
   vppRegion:         'siting only matters regionally; the single-node engine has no geography',
-  txRPerKWyr:        'transmission adder priced in the build LP',
   carbonCapEnabled:  'constrains the build LP only',
   carbonCapMt:       'constrains the build LP only',
   getsEnabled:       'grid-enhancing tech acts on corridors in the build LP',
-  repurpose:         'connection reuse only affects the build LP transmission adder',
 };
 
 (async () => {
