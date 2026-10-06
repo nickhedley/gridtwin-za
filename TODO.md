@@ -49,7 +49,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 14u. Optimiser-engine gap: closed by outage-path stress windows (5 Oct, RESULTS): no margin needed. Open: 2038 sits exactly on the standard; decide whether the pathway should carry the presets' 2x margin; re-test pumped hydro with outage-path windows
 14n. Rooftop in system cost: both reported in the pathway (whole and grid cost). Open: show both on the page
 14o. Full model audit, as an energy modeller and grid operator: gaps, inconsistencies and errors
-14p. Find a published scenario from a professional modelling group and test the model against it. Kerwin et al. 2026 (MAED-OSeMOSYS): Part 1 done (RESULTS, 6 Oct): their systems shed 19 to 1,000 times the standard when dispatched hourly, except baseline 2030. Part 2 (our optimiser on their inputs, 2030 and 2040 only) waiting on the user's choices about inputs our model cannot represent
+14p. Find a published scenario from a professional modelling group and test the model against it. Kerwin et al. 2026 (MAED-OSeMOSYS) done (RESULTS, 6 Oct): part 1, their systems shed 19 to 1,000 times the standard when dispatched hourly, except baseline 2030; part 2, our optimiser on their inputs builds twice their solar and ten times their storage, and meets the standard with the loop. Open: their battery power cost needs BATT_POWER_SHARE to be settable
 14q. Remaining tool and calculation gaps between GridTwin and professional models
 14r. Solar cap growth: 7% central; 15% sensitivity done (RESULTS, 5 Oct): 0.4% cheaper, 3% more CO2
 14s. Least-cost mix: test higher rooftop uptake, and electrolysers to absorb curtailment
