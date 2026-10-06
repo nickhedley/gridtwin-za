@@ -5497,7 +5497,10 @@ const FIXED = {
   // Pumped hydro as a build option (bldBuildLP, 5 Oct 2026). Off by default until reviewed.
   // FOM R297/kW-yr: NREL ATB 2022 pumped storage, USD 18/kW-yr, at R16.50/USD (no South African
   // figure published).
-  bldPhesOn:0, bldPhesHours:48, bldPhesCostBasis:'tubatse', bldPhesFomRkW:297, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  bldPhesOn:0, bldPhesHours:48, bldPhesCostBasis:'tubatse', bldPhesFomRkW:297,
+  // Earliest year a first pumped-hydro scheme can be in service: 2035, 6 Oct 2026. Ingula took 11 years
+  // (2006-2017); 2033 is kept as a sensitivity (set bldPhesFirstYear: 2033).
+  bldPhesFirstYear:2035, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -9521,7 +9524,7 @@ function bldBuildLP(opts){
   // the paper's top-50 Australian off-river sites (USD 1,226/kW + 11.4/kWh, including its 50%
   // overhead), scaled 1.28 so 14 hours reproduces Tubatse (R29,200/kW) when bldPhesCostBasis is
   // 'tubatse', the default; 'atlas' uses the fit unscaled. 60-year life, 78% round trip. Earliest
-  // 2033, at most 1,500 MW a year (one Tubatse-size scheme), cumulative up to newPsMaxMW.
+  // bldPhesFirstYear, at most 1,500 MW a year (one Tubatse-size scheme), cumulative up to newPsMaxMW.
   const PHES_ON = !!S.bldPhesOn, PHES_H = S.bldPhesHours;
   const PHES_KW = () => (1226 + 11.4 * PHES_H) * (S.bldPhesCostBasis === 'atlas' ? 1 : 1.28) * 16.5;
   if (PHES_ON) STORE.push({ t:'phes', dis:'hdis', chg:'hchg', eff:S.newPsEff, hours:PHES_H, ex:() => 0, costMult:1 });
@@ -9909,7 +9912,7 @@ function bldBuildLP(opts){
   const _pvG = Math.max(0, S.bldPvRateGrowthPct) / 100;
   for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + (RATE[t] * (t === 'pv' ? Math.pow(1 + _pvG, y - 2026) : 1)).toFixed(1));
   if (OFF_ON) for (const y of Y) L.push(' 0 <= b_off_'+y+' <= 5000');
-  if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + (y < 2033 ? 0 : 1500));
+  if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
   if (RC_ON) for (const y of Y) L.push(' 0 <= rc_'+y+' <= ' + bldCoalMW(y).toFixed(1));
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
@@ -17727,7 +17730,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-05j';
+const BUILD_STAMP = '2026-10-06a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
