@@ -1714,6 +1714,21 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Curtailment timing: the IEP workshop and NERSA's 2025 report disagree, 6 Oct 2026
+
+Not a model result; a point for the IEP comment. The DEE's input-assumptions workshop (5-6 Oct 2026,
+slides photographed, not published) describes curtailment as midday solar. NERSA's 2025 monitoring
+report (issue 27, March 2026) describes R402m of deemed energy to 67 REIPPPP plants, curtailed at
+night when demand was low, to keep the grid stable (see "Curtailment re-based on 2025" below).
+
+What is established: night, low demand, stability. What is inferred: that it was mostly wind (from
+the timing and the deemed-energy tariffs), and that it was local rather than system-wide (open,
+TODO 14a1; a single-node model cannot see local stability limits). The model's own surplus
+curtailment in high-solar builds is midday, so the department's description fits the future system
+better than the 2025 record.
+
+Caveat: cite the department's wording only once the slides are published.
+
 ### Harness baselines regenerated: what had changed since they were written, 6 Oct 2026
 
 Build `2026-10-05j`. control_inventory.json (validate_structure) and response_matrix.json
