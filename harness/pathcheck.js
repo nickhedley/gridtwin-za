@@ -1,6 +1,9 @@
 const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');
 // Effective carbon tax by year on the legislated Phase 2 path (matches CARBON_AT in bldBuildLP); CFLAT overrides.
 const CTAX = y => process.env.CFLAT ? +process.env.CFLAT : (y <= 2026 ? 46 : (y >= 2030 ? 462 : 308*Math.pow(462/308,(y-2026)/4)) * (1 - Math.max(0.75, 0.85 - 0.025*Math.min(4, y-2026))));
+// SEED_BASE: outage draws independent of the loop's own test (index.html bldAdequacyTest uses 20260816
+// + k*104729 + y*7919); SEED_BASE=20260816 reproduces the 5 Oct 2026 runs, which reused the loop's draws.
+const SEED_BASE=+(process.env.SEED_BASE||71830529);
 const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.json')), K=+(process.env.K||2), DEM=+(process.env.DEM||5);
 (async()=>{
  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
@@ -19,7 +22,7 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOffshoreMW:cum.off,newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
      demandGrowthPct:dg,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    const r=JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
-      for(let k=0;k<${K};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:20260816+k*104729+yy*7919};
+      for(let k=0;k<${K};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
        let dem=0; for(let i=0;i<x.loadS.length;i++) dem+=x.loadS[i];
        o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9]); } }

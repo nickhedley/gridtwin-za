@@ -1,0 +1,39 @@
+// Least-cost pathway to 2040 from Today 2026 at half the standard: pathway_op's settings plus targetFrac (TF, default 0.5) and windowLeadYears (LEAD, default 14:
+// every window binds from 2026, as all windows did at build 05g when pathway_op was recorded), cap 14 passes (5 Oct 2026).
+// TL: solve time limit in seconds (default 900); a solve that is not Optimal stops the run.
+// SOLVER=native solves with native HiGHS via highs_native.py (needs: pip install highspy). Run from the parent of testroot.
+// Assumptions applied to the build LP text: gas no earlier than 2030 (no import terminal before);
+// new rooftop fixed at 1.2 GW a year from 2027 (16.8 GW by 2040, expected uptake, not a planner's choice).
+const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');const highsLoader=require('highs');
+const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF_PER_YR=1200, DEM=+(process.env.DEM||5);
+(async()=>{
+ const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
+ const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,url:'file://'+path.resolve(ROOT)+'/index.html',
+  beforeParse(w){ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({},{get:()=>()=>({addColorStop(){},data:[],width:0,measureText:()=>({width:10})})});
+   const ch=()=>new Proxy(function(){return ch();},{get:()=>ch()}); w.L=new Proxy({},{get(){return function(){return ch();};}});
+   w.onerror=()=>{}; Object.defineProperty(w.history,'replaceState',{value:()=>{},writable:true}); w.URL.createObjectURL=()=>'blob:x'; w.Worker=function(){this.postMessage=()=>{};};
+   w.fetch=async(u)=>{try{const cl=String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles|config)/,'');const t=fs.readFileSync(path.join(path.resolve(ROOT),cl),'utf8');return{ok:true,json:async()=>JSON.parse(t),text:async()=>t};}catch(e){return{ok:false,json:async()=>{throw e},text:async()=>{throw e}};}};}});
+ await new Promise(r=>setTimeout(r,6000)); const w=dom.window;
+ // A fresh HiGHS instance per solve: one shared instance aborted (out of WASM memory) after several passes, 5 Oct 2026.
+ const newHighs=()=>highsLoader({locateFile:f=>path.join(process.cwd(),'node_modules/highs/build',f)});
+ const fix=lp=>lp.replace(/^ 0 <= b_ccgt_(\d{4}) <= [0-9.]+$/gm,(m,y)=> +y<GAS_FIRST ? ` 0 <= b_ccgt_${y} <= 0` : m)
+                 .replace(/^ 0 <= b_rooftop_(\d{4}) <= [0-9.]+$/gm,(m,y)=>{const v=+y>=2027?ROOF_PER_YR:0; return ` ${v} <= b_rooftop_${y} <= ${v}`;});
+ let last=null; w.__bldSolveOverride=async(lp)=>{ if (process.env.SOLVER==='native'){ const os=require('os'),cp=require('child_process'); const tmp=path.join(os.tmpdir(),'gtza_'+process.pid);
+   fs.writeFileSync(tmp+'.lp',fix(lp)); cp.execFileSync('python3',['highs_native.py',tmp+'.lp',tmp+'.json',String(process.env.TL||900)],{stdio:'inherit'}); last=JSON.parse(fs.readFileSync(tmp+'.json','utf8')); }
+   else { const highs=await newHighs(); last=highs.solve(fix(lp),{time_limit:+(process.env.TL||900)}); }
+   console.log('solved', last.Status, new Date().toISOString()); if (last.Status!=='Optimal') throw new Error('solve not optimal: '+last.Status); return last; };
+ w.eval(`applyState(PRESETS['Today 2026']); state.demandGrowthPct=${DEM}; bldSetHorizon(2040);`);
+ await w.eval('loadWeatherYears()');
+ const t0=Date.now();
+ const _dump=setInterval(()=>{ try{ fs.writeFileSync((process.env.OUT||'x')+'.progress', JSON.stringify(w.eval('JSON.stringify(bldStressLog.map(l=>({pass:l.pass,margin:l.margin,added:l.added,fails:l.years.filter(q=>q.mean>q.limit).map(q=>[q.y,+q.mean.toFixed(2),+q.limit.toFixed(2)])})))'))); }catch(e){} }, 20000);
+ await w.eval(`(async()=>{ const tg=1+(state.demandGrowthPct||0)/100;
+   const opts={growth:Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, maxPasses:14, marginStepMW:1000, draws:2, testEvery:2, stressDays:14, targetFrac:${+(process.env.TF||0.5)}, windowLeadYears:${+(process.env.LEAD||14)}};
+   window.__out=await bldStressLoop(opts, m=>{}); })()`);
+ const out=w.__out, cols=out.res.Columns;
+ const Y=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)')), T=JSON.parse(w.eval('JSON.stringify(BLD_TECHS)'));
+ const sched={}; for(const y of Y){ sched[y]={}; for(const t of T) sched[y][t]=Math.round((cols['b_'+t+'_'+y]||{Primal:0}).Primal);
+   sched[y].battMWh=Math.round((cols['eb_batt_'+y]||{Primal:0}).Primal); sched[y].off=Math.round((cols['b_off_'+y]||{Primal:0}).Primal);
+   sched[y].earlyRetMW=Math.round((cols['rc_'+y]||{Primal:0}).Primal); sched[y].coalMW=Math.round(w.eval(`bldCoalMW(${y})`) - sched[y].earlyRetMW); }
+ fs.writeFileSync(OUT, JSON.stringify({margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status},null,1));
+ console.log('done', out.verdict, ((Date.now()-t0)/1000).toFixed(0)+'s'); process.exit(0);
+})();

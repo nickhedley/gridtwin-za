@@ -26,6 +26,11 @@ share headroom and are not additive.
 **environmental_authorisations.csv** - DFFE permits with coordinates. Permits, not plants:
 permitted capacity exceeds built by roughly ten times.
 
+**irp2025_extract.csv** - IRP 2025 (Government Gazette 53596, 28 Oct 2025) by OCR and visual
+reading: Table 1 new capacity by year to 2042, committed private capacity by year, the demand
+definition and reference-case assumptions. Check any single value against the gazette before relying
+on it; the storage total does not match its yearly values (SOURCES.md).
+
 ## The one thing to get right
 
 **Do not add operational capacity to pipeline to permits.** They are three different

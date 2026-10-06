@@ -1,0 +1,33 @@
+# IRP 2025 (Government Gazette 53596, notice 6767, 28 Oct 2025). Extracted 6 Oct 2026 from scanned pages by OCR and visual reading; check against the PDF before relying on any single value.
+# Table 1: Proposed Balanced Plan, new generation capacity in MW (IRP p.31, gazette p.42). base_end2025 = installed, under construction and deemed online 2025.
+table,year,coal,gas_ipp,gas_eskom,nuclear,hydro,pumped_storage,csp,solar_pv,wind,hybrid_ipp,distributed_gen_own_use,energy_storage,bess_eskom,other_private
+table1,base_end2025,40960,1005,2825,1860,1600,2732,600,3646,5344,428,7065,513,199,104
+table1,2026,,,,,,,,3553,964,,900,,144,35
+table1,2027,,,,,,,,2886,2847,,900,,150,332
+table1,2028,,,,,,,,1760,770,,900,615,,
+table1,2029,,,3000,,,,,1314,760,,900,2615,,
+table1,2030,,3000,,,,,,800,2000,,900,200,,
+table1,2031,,,,,,,,1000,2500,,900,200,,
+table1,2032,,1250,,,,,,1200,2600,,900,200,,
+table1,2033,,1250,,,,,,1400,2600,,900,200,,
+table1,2034,,1250,,,,,,1600,3000,,900,200,,
+table1,2035,,1000,,,,,,2000,3000,,900,200,,
+table1,2036,,1250,,1250,,,,1600,2000,,,500,,
+table1,2037,,1500,,1250,,1332,,1600,3000,,,500,,
+table1,2038,,1250,,1350,,,,1600,3000,,,500,,
+table1,2039,,1250,,1350,,,,1600,3500,,,500,,
+table1,2040,,1250,,,,,,1600,3500,,,500,,
+table1,2041,,500,,,,,,1600,3500,,,500,,
+table1,2042,,500,,,,,,1600,3500,,,500,,
+table1,new_total_2026_2042,,15250,3000,5200,,1332,,28713,43041,,9000,8223,,367
+# Figure 5: committed private generation capacity, MW (IRP p.18). Total 13,892 MW; about 55% operational, in execution or holding budget quotes, 45% at IGCAR stage.
+private,year,pv,wind,hybrid,bioenergy,other_small,total
+private,2025,1209,1117,,92,47,2465
+private,2026,3328,964,,24,15,4331
+private,2027,2426,2847,335,,3,5611
+private,2028,,700,,,,700
+private,2029,24,760,,,,784
+private,total,6988,6388,335,119,62,13892
+# Demand (IRP p.11 and p.34): system demand incl. network losses, excl. pumping, battery charging and station auxiliaries; includes deemed cross-border sales.
+# Moderate forecast: about 255 TWh in 2030 (stated, executive summary); average growth 2.3%/yr. Figure 2 read visually, about +/-5 TWh: 2024 ~238, 2030 ~255-260, 2035 ~300, 2040 ~345, 2050 ~430.
+# Reference case assumptions (IRP p.34): Jan 2024 rand; discount rate 11.3%; R18.35/USD; gas US$15/GJ; coal 50-year life; Koeberg +20 years; EAF 68% by 2030; rooftop PV 900 MW/yr to 2035; 6 GW CCGT with minimum annual capacity factor 51% 2030-2040; investment R2.23 trillion.
