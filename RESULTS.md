@@ -1714,6 +1714,93 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### External test, Kerwin et al. 2026, part 2: our optimiser on their inputs builds more solar and storage, less gas, 6 Oct 2026
+
+Builds on `2026-10-05j`; pathchecks on `2026-10-06a` (only pumped hydro's default and the stamp differ;
+pumped hydro is off). harness/ext/kerwin_part2.js (LOOP=0 and LOOP=1, SOLVER=native, TL=3600),
+outputs kerwin_part2_loop0/1.json and pathcheck_kerwin_loop0/1.json. Horizon 2040 (2050 dropped by
+agreement: the optimiser's horizon ends at 2040).
+
+Their inputs: demand to 247.8 TWh in 2040 at one growth rate (demandGrowthPct 23.54; their path is 0.8%
+a year to 2030 then 1.8%, so 2030 is about 1.7% high); capex, fixed O&M and lives for wind, utility PV,
+rooftop and CCGT (A5 at R16.50/USD; 2026 interpolated, decline from 2030-2040: wind R17,097/kW falling
+0.24% a year, PV R13,451 falling 1.57%, rooftop R21,734 falling 1.24%, CCGT R19,929 falling 0.73%);
+residual coal (A8, interpolated: 33.3 GW 2026, 30.3 2030, 21.7 2040, replacing bldCoalMW); wind and PV
+build caps (A13: 1.6 and 1.0 GW a year to 2030, 2.0 and 2.0 after). Ours, by the user's choice: 8% real
+discount rate, legislated carbon tax path, battery cost, life and duration (BATT_POWER_SHARE is a
+constant, so their battery power cost cannot be set alone), coal fuel cost, existing non-coal fleet, gas
+no earlier than 2030. Rooftop chosen under our rate cap. Vanadium, iron-air, offshore and pumped hydro
+off. Not representable: nuclear, biomass, small hydro, CSP and open-cycle gas as separate builds; their
+battery energy cost and duration; their eight time slices. Loop settings as pathway_op: windows on
+every year (windowLeadYears 14), 14-day, draws 2, testEvery 2, up to 14 passes.
+
+New build from 2026 (theirs: baseline from Figure C8 less their 2024-25 build):
+
+                         2030                                  2040
+                 theirs   ours no loop  ours loop      theirs   ours no loop  ours loop
+wind GW          8.0      6.4           8.0            28.0     22.4          28.0
+utility PV GW    0        5.0           5.0            11.0     25.0          25.0
+rooftop GW       0        4.0           8.0            0        4.0           8.0
+battery GW       0        8.7 (30.6 GWh) 8.0 (32.9)    1.4      12.4 (74.5)   14.6 (85.2)
+gas GW           0.7      0.8           1.2            6.8      4.9           3.9
+coal GW (all)    30.3     30.3          30.3           21.7     21.7          21.7
+
+Twelve weather years x two independent draws (SEED_BASE 71830529), against the 0.002% standard:
+no loop fails 2039 (6.12 against 4.97 GWh) and 2040 (9.57 against 5.07); the loop build (ten passes,
+nine windows, all for 2040, no margin) meets every year, worst 0.85 of the standard. Over 2026-2040:
+R3,544bn and 1,739 Mt without the loop; R3,626bn (+2.3%) and 1,609 Mt with it. Coal share 59% / 33%
+(2030 / 2040) without, 56% / 30% with, against their 61.8% / 34.3%. CO2 2030: 132.0 / 121.5 Mt against
+their 155.9; 2040: 89.0 / 77.9 against 111.1.
+
+Finding: on the same demand, capex, coal and build caps, wind agrees (both at the cap with the loop),
+but our optimiser builds about twice their solar (at the cap every year), about ten times their
+storage and less gas. Hourly chronology values solar-plus-storage, which their day-night time slices
+and flat wind do not see; and their 2040 build, dispatched hourly, sheds 19 times the standard (part 1)
+where ours meets it at 2.3% more cost than ours without the loop.
+
+Caveats: battery cost and duration are ours; their 2024-25 build is subtracted from a digitised figure;
+the objective with stress windows is not comparable with the one without (TODO 31); two draws per year.
+
+### External test, Kerwin et al. 2026: their systems shed when dispatched hourly; the gap is energy, not power, 6 Oct 2026
+
+Build `2026-10-05j`, suite 804/807 plus eng5 6/6 on 6 Oct with ESK19679.csv absent (failures: EDMSA
+CO2, the Eskom reference, the build-stamp date). harness/ext/kerwin_part1.js, output kerwin_part1.json.
+Their inputs are in SOURCES ("External scenario: Kerwin et al. 2026").
+
+Settings. Today 2026 preset; scenarioYear 2030 or 2040; demand set to their Table A4 baseline (207.4 and
+247.8 TWh; demandGrowthPct 3.36 and 23.54 on our 200.62 TWh profile). Their residual fleet replaces
+ours: coalDecomMW = 39,692 - their coal; windMW, pvUtilityMW, rooftopMW, nuclearMW, cspMW and
+ocgtDieselMW from Table A8. Hydro, pumped storage and imports are ours. Their new build cumulative from
+2024 as newWindMW, newPvMW, newRooftopMW, newBattMW (4 h, assumed), newCcgtMW (all their gas),
+newNuclearMW; biomass and small hydro (0.13-0.28 GW) left out. Scenario 1 coal is their own phase-out
+(C5: 25.2 and 12.5 GW), because the engine has no emissions cap. Twelve weather years x two outage
+draws on pathcheck's independent seeds (SEED_BASE 71830529). Standard: 0.002% of demand.
+
+                       mean shed   standard  x std  curtail  CO2 ours  CO2 theirs  smallest fix
+                       GWh         GWh              TWh      Mt        Mt
+Baseline 2030          4.47        4.16      1.1    0.0      135.6     155.9       +250 MW 4 h battery or gas
+Baseline 2040          94.3        5.07      19     6.6      99.6      111.1       +3.0 GW gas; no battery size
+Scenario 1 2030        134         4.05      33     1.0      116.0     129.1       +3.0 GW gas; no battery size
+Scenario 1 2040        5,428       5.02      1,080  20.1     64.9      64.5        +12.25 GW gas; no battery size
+S1 2030, their residual coal 30.3 GW   3.84   4.06   meets  1.2   118.6
+S1 2040, their residual coal 21.7 GW   368    4.96   74     25.6  83.4
+
+"No battery size": 4 h lithium added up to 64 GW does not meet the standard. Checked that it is not a
+cap: on Scenario 1 2040 (one draw per year), 0 / 10 / 30 / 64 GW extra take mean shed 5,404 / 4,112 /
+3,240 / 2,657 GWh, battery discharge in 2016 2.8 to 14.3 TWh; at 12 h, 4,751 to 2,091 GWh. Curtailment
+falls 20 to 5-7 TWh. The remaining shortfall is energy over multi-day periods, which storage cannot
+create; gas adds it.
+
+Finding: their 2030 baseline is about adequate; every other system fails the standard by 19 to about
+1,000 times, and the shortfall is energy over multi-day periods, met with gas, not storage. Their wind
+runs at a flat 0.36 in all eight time slices (A9), so their model never sees a wind lull. The authors
+say as much: their model "does not capture sub-annual balancing requirements". CO2 agrees where coal
+capacity is set the same (Scenario 1 2040: 64.9 against 64.5 Mt).
+
+Caveats: battery duration assumed (4 h); the baseline build is digitised from a figure; demand
+definitions not reconciled (their final demand against our system demand; levels agree within 0.5% in
+2026); two draws per weather year.
+
 ### Pumped hydro's earliest build year moved from 2033 to 2035, 6 Oct 2026
 
 Build `2026-10-06a`, suite 805/807 plus eng5 6/6 with ESK19679.csv absent (before: 804/807 at
