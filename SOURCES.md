@@ -63,6 +63,8 @@ superseded queue entries. Never add the delta. See rules.md.
 | IEA, *Electrification* (special report) | one-off | 22 Sep 2026, CC BY 4.0 | the industrial electrification scenario: 40% of fossil low- and medium-temperature industrial heat is competitively electrifiable today, heat pumps deliver 3-5 units of heat per unit of electricity, global electrification rate 23% now to 35% by 2035 in the High Electrification Scenario |
 | RMI, grid reliability guide and *Reliability Explored* | rolling | 2026 | the scope note in handover.md: reliability is adequacy, stability and resilience across bulk AND distribution; most outages originate on distribution; renewable deployment has not worsened US reliability outcomes |
 | GCCA Annexure A substation limits | annual | as at 2026 | not yet loaded: the per-substation connection limits behind regional congestion, for the nodal work |
+| NERSA congestion curtailment approval | one-off | April 2025 (framework to March 2028) | `congestionCurtailPct` 4% is its ceiling; framing for TODO 14aj |
+| NTCSA practice note on congestion curtailment | one-off | October 2025 | the 1,580 MW released under the framework (TODO 14aj); not yet read by Claude |
 | CSIR systems analysis technical report | occasional | as cited | least-cost installed capacity ranges by 2030 and 2050, the band check in `validate_external.js` |
 | Firm-dispatchable generation in South Africa (arXiv 2403.15037) | one-off | 2024 | independent renewable-based build: 49 GW wind, 14 GW solar, 24 GWh storage, 15 GW firm at 5% utilisation, 12.9 GW baseload retained |
 
@@ -386,6 +388,14 @@ Baseline build (digitised from Figure C8,          2030: wind 11.2, gas 0.7. 204
  +/-0.05 GW a bar; sums 11.9 and 50.4 GW against   gas 6.8 (gas type not split in the figure)
  Table 2's 11.9 and 50.5)
 ```
+
+## Congestion curtailment: South Africa's current rule (TODO 14aj)
+
+NERSA's congestion curtailment approval (April 2025) and NTCSA's practice note (October 2025), as
+summarised by the user 6 Oct 2026; neither document read by Claude yet. Wind only, Western and Eastern
+Cape only, curtailment capped at 4%, releasing 1,580 MW of extra connections (1,180 MW Western Cape,
+400 MW Eastern Cape). Extending it to other technologies or regions needs NERSA approval backed by
+studies. The model's congestionCurtailPct 4 is this ceiling, not an expected rate.
 
 ## Sources consulted and rejected
 
