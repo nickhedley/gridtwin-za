@@ -447,10 +447,19 @@ and pages before quoting.
   It mixes interruptible and shiftable load, is mostly industrial, and is closer to a technical than
   an economic potential (about 2022). It also gives Eskom's contracted demand response: 1,014 MW
   instantaneous, 346 MW supplemental and 62 MW critical peak day. That is interruptible, not shifted.
-- IEA, Scaling Up Demand Flexibility (2025, or 2026: the year needs checking), South Africa case
-  study: "demand flexibility measures have already avoided around 1.5 GW or 5% of annual peak
-  demand". This comes from a search summary; the document was not reached. "Mostly industrial" is only
-  implied.
+- IEA, Scaling Up Demand Flexibility: From peak management to efficient system operation (2026; it
+  cites sources accessed in May 2026), CC BY 4.0. VERIFIED from the copy the user uploaded:
+  - "In South Africa, demand flexibility measures have already avoided around 1.5 GW or 5% of annual
+    peak demand" (printed p.8).
+  - "In South Africa today, most flexibility is provided by industrial users" (p.9).
+  - The Demand Management Programme "has delivered up to 1.5 GW of peak shaving, mainly from large
+    industrial consumers, with a smaller but significant amount from residential water heaters and
+    pool pumps" (p.24-25).
+  - "Industry has the greatest shifting potential at around 1 TWh annually" (p.25, with a chart of
+    technical potential by sector and end use, 2025).
+  - Hot water controls in 1.2 million households (10%) "could unlock 600 MW of additional peak
+    shaving capacity" (p.25). This is a cross-check on the VPP geyser pool.
+  - Model use: 1 TWh a year is about 1.7% on drShiftPct, where 1% moves 0.58 TWh.
 - Covary and de la Rue du Can (LBNL, for USAID and DMRE), South Africa: Energy Efficiency Demand Side
   Management Experience (2004-2022), LBNL-2001576, October 2023,
   https://eta-publications.lbl.gov/sites/default/files/usaid_dmre_report_1.pdf. VERIFIED in the document
@@ -461,8 +470,8 @@ and pages before quoting.
     efficiency.
   - "Eskom achieved a saving of 1 216 MW" against 1,037 MW targeted (printed p.5), stated as 2011-2013
     there but as April 2010-March 2013 on printed p.6.
-- Model use: about 15% of each peak hour (about 4 GW) as a technical ceiling; 2-7% (500-2,000 MW) as
-  a plausible 2026-2030 range. The split between shiftable and interruptible is an assumption.
+- Model use: the IEA's about 1 TWh a year (about 1.7%) as the verified technical potential for industry;
+  NREL and CSIR's 4 GW (about 15%) only as an outer ceiling until verified.
 
 ## LNG import infrastructure costs (TODO 14ak, pathway sensitivity only, 6 Oct 2026)
 
@@ -473,24 +482,49 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     the use.
   - Moheshkhali, Bangladesh: about USD 217-237k/day per FSRU, obligatory whatever the throughput.
   - Lubmin FSRU, Germany: about USD 150k/day.
-  - OIES NG-123 (Songhurst, 2017): charters of USD 100-140k/day.
+  - OIES NG-123, Songhurst, The Outlook for Floating Storage and Regasification Units, July 2017.
+    VERIFIED from the copy the user uploaded:
+    - leasing USD 110-160k/day, plus operating cost USD 20-45k/day, so USD 130-205k/day in total
+      (printed p.30);
+    - tolling rates USD 0.60-0.94/MMBtu at a 50% load factor (QED Consulting, quoted p.30);
+    - about USD 1/MMBtu at 50% use for an FSRU, against about USD 2 for an onshore terminal (p.30);
+    - boil-off 0.10-0.15% of the cargo by weight per day (p.5);
+    - new-build FSRUs typically 170,000 m3 (p.10), which is general and not the Zululand terminal's
+      own figure.
+    So USD 47-75 m a year for one FSRU, against the USD 84 m central used below. The Zululand
+    terminal is a storage unit with onshore regas, about USD 1 bn, so its cost need not follow the
+    FSRU range.
 - Zululand Energy Terminal, Richards Bay:
   - a Vopak and Transnet Pipelines joint venture, 25-year concession;
   - Phase 1 is a floating storage unit plus onshore regas, about 3 mtpa; Phase 2 is above 4 mtpa;
   - about USD 1 bn for both phases;
   - investment decision Q1 2028, Phase 1 operating about 2030;
   - Eskom heads of agreement as foundation customer, 5 Jun 2026; no take-or-pay terms published.
-  Sources: pgjonline (Mar 2026), Mining Weekly (5 Jun 2026), Zawya. Search summaries of Engineering
-  News and Mining Weekly (5 Jun 2026) describe "a 170 000 m3 floating storage unit and an onshore
-  regasification plant", so it is a storage unit with onshore regas, not an FSRU. An earlier tender
-  said "at least 170,000 cbm" and 2 mtpa. Not confirmed in the documents.
+  Sources: pgjonline (Mar 2026), Mining Weekly (5 Jun 2026), Zawya. VERIFIED in Engineering News,
+  "Eskom signs agreement with Zululand Energy Terminal as it seeks to advance 3 GW Richards Bay
+  gas-fired power project", 5 Jun 2026 (user's printed copy):
+  - Phase 1 is "a 170 000 m3 floating storage unit and an onshore regasification plant with a yearly
+    capacity of about 3-million tons". Phase 2 takes it to "over 4-million tons" with an onshore tank.
+  - It connects to the Lilly pipeline.
+  - Eskom's 3,000 MW plant at Richards Bay: "mid-merit", 25 years, power from 2031.
+  - IPP gas bids, all on imported LNG: 440 MW Mpumalanga, 990 MW KwaZulu-Natal, 600 MW Gauteng,
+    800 MW Mpumalanga. Most are inland, so transport cost applies to them.
+  The USD 1 bn cost and the 2028 investment decision are not in this article.
 - Inland transport: the Lilly pipeline is about 23 PJ/yr, too small for a 3 GW plant. The ROMPCO
   tariff was R13.34/GJ in 2016 on its first expansion and R12.87/GJ on the second (Business Day,
   30 Nov 2016, search summary), about USD 0.85/MMBtu. An inland plant would need a new pipeline.
 - Not confirmed in any document: Engro's USD 228,016/day (its USD 0.66/MMBtu tolling fee is a lead
-  from a 2017 Profit article), OIES NG-123's USD 100-140k/day, and LNG density, energy per tonne and
-  heel share. The LNG storage check uses 0.45 t/m3 and 54.9 GJ/t (HHV) as settings until a source is
+  from a 2017 Profit article), and LNG density, energy per tonne and heel share. Engineering News
+  (5 Jun 2026) on the Zululand terminal is still blocked from this environment. The LNG storage check uses 0.45 t/m3 and 54.9 GJ/t (HHV) as settings until a source is
   found.
+- IRP 2025, Additional Data and Assumptions workbook (user's copy, New Tech Properties sheet), in
+  January 2024 rand at R18.35/USD:
+  - gas fuel R260.89/GJ in the first year with no escalation, about USD 15.0/MMBtu;
+  - no separate LNG terminal or pipeline cost appears in the workbook, so import infrastructure is
+    either in that fuel price or left out (the workbook does not say);
+  - 2x1 9F.05 CCGT: heat rate 6,900 kJ/kWh (52.2%), overnight R18,653/kW, fixed O&M R501/kW-yr,
+    variable O&M R61/MWh, 30 years, availability 97.5%;
+  - gas energy content 53.37 MJ/kg, used for the LNG storage check.
 - Derived (not sourced):
   - Regas fuel and boil-off: USD 0.25/MMBtu.
   - Transport: 0 at Richards Bay; USD 1.2/MMBtu central inland.

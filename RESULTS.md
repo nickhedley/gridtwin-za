@@ -1771,11 +1771,13 @@ the note now says so.
 Size, in the note:
 - 1% of each peak hour is about 270 MW. That is the mean demand in each day's six highest hours,
   26.6 GW on the 2026 profile.
-- Eskom Transmission puts the remaining base of demand response and load shifting at about 4 GW, which
-  mixes shiftable with interruptible load (NREL and CSIR, 2024; SOURCES). So about 15% is a technical
-  ceiling.
-- 500 to 2,000 MW (about 2 to 7%) is a plausible 2026-2030 range. This is an estimate, and the source
-  figures are not yet verified in the documents (SOURCES).
+- 1% moves 0.58 TWh a year (simulate, shiftMovedMWh; linear to at least 4%).
+- The IEA (2026) puts industry's technical potential for load shifting in South Africa at about
+  1 TWh a year (verified, printed p.25), so about 1.7% on this slider.
+- The 1.5 GW the Demand Management Programme delivers is peak shaving, mainly by large industrial
+  users (p.24-25). That is the interruptible-load control, not this one.
+- NREL and CSIR (2024) quote Eskom Transmission at about 4 GW of demand response and load shifting
+  combined, still unverified. That makes about 15% an outer ceiling.
 
 ### Control panel regrouped into six sections, 6 Oct 2026
 
