@@ -4,7 +4,7 @@ Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-05g
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
-Done this session, removed: pathcheck given its own outage seeds and both pathways re-checked (14u2, RESULTS 5 Oct); offshore file placed in nodal/; ESK19679.csv added to MANIFEST's
+Done this session, removed: control_inventory.json and response_matrix.json compared and regenerated (14u3, RESULTS 6 Oct); pathcheck given its own outage seeds and both pathways re-checked (14u2, RESULTS 5 Oct); offshore file placed in nodal/; ESK19679.csv added to MANIFEST's
 upload set as local-only; licence check read (it tests presence only; the zip copy was stale);
 eng5 check 3 fixed and shown to fail on an injected defect; rooftop footer relabelled (the figure
 was site-specific, the region name was wrong); full suite with all inputs present, 802/803 plus
@@ -48,7 +48,6 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 14x. Transmission note cites R440bn for 46.9 GW; SOURCES cites over R390bn for 56 GW from the same TDP: reconcile
 14u. Optimiser-engine gap: closed by outage-path stress windows (5 Oct, RESULTS): no margin needed. On independent outage draws (5 Oct) both pathways meet the standard every year, worst 2.89 GWh (op) and 3.08 (sd14) against about 3.9. Open: re-test pumped hydro with outage-path windows
 14u1. Half-standard pathway: on pathway_op's settings with all-year windows it stalls at about the full standard (2038-2040 near 3.6-3.9 GWh against 1.97 after four passes) and HiGHS (WebAssembly) aborts at pass 5 (RESULTS, 5 Oct). You: native HiGHS for larger LPs, shorter windows, or park? Also decide whether build 05j's window scoping (windowLeadYears, default 4) stays: the 5 Oct pathways only reproduce with it set to 14
-14u3. control_inventory.json and response_matrix.json at the repo root are stale baselines; they fail 1 structure and 6 response checks when testroot is the repo. Compared 5 Oct against build 2026-10-05j: three controls removed (reserveContingencyMW, reserveRegulatingPct, reserveVrePct), fifteen added; asReserveOn and asReserveRMWh still exist but the response harness now skips them by id; every base value moved (avgCost 571 to 1,094 R/MWh); seven response cells flipped (battHours, coalFlexPct, ccgtForceLoad, importsMW now responsive; newNuclearMW, drShiftPct, reserveEnabled now inert). Trace each flip before regenerating with --write-baseline
 14n. Rooftop in system cost: both reported in the pathway (whole and grid cost). Open: show both on the page
 14o. Full model audit, as an energy modeller and grid operator: gaps, inconsistencies and errors
 14p. Find a published scenario from a professional modelling group and test the model against it

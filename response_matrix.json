@@ -1,11 +1,11 @@
 {
  "base": {
-  "coalTWh": 161.233,
-  "co2": 170,
-  "avgCost": 571.07,
-  "replAvg": 1536.53,
-  "avgPrice": 810.31,
-  "rePct": 19.42,
+  "coalTWh": 145.947,
+  "co2": 155.245,
+  "avgCost": 1093.99,
+  "replAvg": 1515.57,
+  "avgPrice": 790.53,
+  "rePct": 21.432,
   "curtTWh": 0,
   "loleHrs": 0
  },
@@ -53,7 +53,7 @@
   "battHours": {
    "coalTWh": true,
    "co2": true,
-   "avgCost": false,
+   "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
    "rePct": true,
@@ -150,6 +150,26 @@
    "curtTWh": false,
    "loleHrs": false
   },
+  "dieselDecomMW": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "dieselBudgetTWh": {
+   "coalTWh": false,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
   "coalDecomMW": {
    "coalTWh": true,
    "co2": true,
@@ -165,12 +185,22 @@
    "co2": false,
    "avgCost": true,
    "replAvg": false,
-   "avgPrice": false,
+   "avgPrice": true,
    "rePct": false,
    "curtTWh": false,
    "loleHrs": false
   },
   "newWindMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": true,
+   "loleHrs": false
+  },
+  "newOffshoreMW": {
    "coalTWh": true,
    "co2": true,
    "avgCost": true,
@@ -261,7 +291,7 @@
    "loleHrs": false
   },
   "ccgtForceLoad": {
-   "coalTWh": false,
+   "coalTWh": true,
    "co2": true,
    "avgCost": true,
    "replAvg": true,
@@ -286,7 +316,7 @@
    "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
-   "rePct": true,
+   "rePct": false,
    "curtTWh": false,
    "loleHrs": false
   },
@@ -310,6 +340,16 @@
    "curtTWh": false,
    "loleHrs": false
   },
+  "drShiftLossPct": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": false
+  },
   "drShiftPct": {
    "coalTWh": true,
    "co2": true,
@@ -318,7 +358,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": true,
-   "loleHrs": true
+   "loleHrs": false
   },
   "vppGeyserPoolMW": {
    "coalTWh": true,
@@ -346,11 +386,11 @@
    "avgCost": true,
    "replAvg": true,
    "avgPrice": true,
-   "rePct": true,
+   "rePct": false,
    "curtTWh": false,
    "loleHrs": false
   },
-  "reserveContingencyMW": {
+  "reserveOperatingMW": {
    "coalTWh": true,
    "co2": true,
    "avgCost": true,
@@ -359,26 +399,6 @@
    "rePct": true,
    "curtTWh": false,
    "loleHrs": true
-  },
-  "reserveRegulatingPct": {
-   "coalTWh": true,
-   "co2": true,
-   "avgCost": true,
-   "replAvg": true,
-   "avgPrice": true,
-   "rePct": true,
-   "curtTWh": false,
-   "loleHrs": true
-  },
-  "reserveVrePct": {
-   "coalTWh": true,
-   "co2": true,
-   "avgCost": true,
-   "replAvg": true,
-   "avgPrice": true,
-   "rePct": true,
-   "curtTWh": true,
-   "loleHrs": false
   },
   "syncMinMW": {
    "coalTWh": true,
@@ -440,6 +460,16 @@
    "curtTWh": false,
    "loleHrs": false
   },
+  "tdpConfidencePct": {
+   "coalTWh": false,
+   "co2": false,
+   "avgCost": true,
+   "replAvg": false,
+   "avgPrice": false,
+   "rePct": false,
+   "curtTWh": false,
+   "loleHrs": false
+  },
   "congestionCurtailPct": {
    "coalTWh": true,
    "co2": true,
@@ -450,7 +480,7 @@
    "curtTWh": false,
    "loleHrs": false
   },
-  "asReserveOn": {
+  "nuclearCF": {
    "coalTWh": true,
    "co2": true,
    "avgCost": true,
@@ -458,17 +488,7 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
-  },
-  "asReserveRMWh": {
-   "coalTWh": true,
-   "co2": true,
-   "avgCost": true,
-   "replAvg": true,
-   "avgPrice": true,
-   "rePct": true,
-   "curtTWh": true,
-   "loleHrs": false
+   "loleHrs": true
   },
   "importsMW": {
    "coalTWh": true,
@@ -478,7 +498,17 @@
    "avgPrice": true,
    "rePct": true,
    "curtTWh": false,
-   "loleHrs": false
+   "loleHrs": true
+  },
+  "exportsMW": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
   },
   "exportCapMW": {
    "coalTWh": false,
@@ -531,6 +561,16 @@
    "loleHrs": false
   },
   "ccsEnabled": {
+   "coalTWh": true,
+   "co2": true,
+   "avgCost": true,
+   "replAvg": true,
+   "avgPrice": true,
+   "rePct": true,
+   "curtTWh": false,
+   "loleHrs": true
+  },
+  "ccsSharePct": {
    "coalTWh": true,
    "co2": true,
    "avgCost": true,

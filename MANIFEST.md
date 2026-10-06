@@ -27,6 +27,12 @@ build_demand_2026.py        writes profiles.json demand (2026) and demand_2025 f
                             Runs from the root; re-run January 2027 with the full 2026 year.
 pathway.js / pathcheck.js   least-cost pathway to 2040 and its per-year check; run from the
                             parent of testroot (node pathway.js, then IN=pathway.json node pathcheck.js).
+control_inventory.json      validate_structure baseline: every control id. A control that
+                            disappears fails. Regenerated 6 Oct 2026 with --write-baseline.
+response_matrix.json        validate_response baseline: which of eight outputs each control
+                            moves, and the base values. A flip fails. Regenerated 6 Oct 2026.
+                            Both are read from the testroot argument; regenerate only after
+                            comparing old against new (RESULTS, 6 Oct).
 build_capacity.py           the generator. Runs from the root and reads nodal/...
                             relative to cwd. Has step 1b (the supply-area split) and
                             the eskom bucket.
