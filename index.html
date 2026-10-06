@@ -5500,7 +5500,9 @@ const FIXED = {
   bldPhesOn:0, bldPhesHours:48, bldPhesCostBasis:'tubatse', bldPhesFomRkW:297,
   // Earliest year a first pumped-hydro scheme can be in service: 2035, 6 Oct 2026. Ingula took 11 years
   // (2006-2017); 2033 is kept as a sensitivity (set bldPhesFirstYear: 2033).
-  bldPhesFirstYear:2035, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  bldPhesFirstYear:2035,
+  // Storage credit on stress (tail) days in the build LP: energy over 4 h, at most 1 x power. 6 Oct 2026.
+  bldMarginHoldHours:4, bldMarginCreditMax:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -9760,10 +9762,18 @@ function bldBuildLP(opts){
         // served load the engine had to shed to protect reserve (gap decomposition, RESULTS).
         const rhs = coalCap + EX.diesel - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE)
                     - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0);
+        // STORAGE CREDIT BY DURATION ON TAIL DAYS, 6 Oct 2026. Tail days carry the stress margin, and
+        // there a battery is credited at min(1, duration / bldMarginHoldHours) of its power: stored
+        // energy over 4 h (CAISO and MISO full-credit rule; ISO-NE 2 h), not over asHoldHours (1 h),
+        // and at most bldMarginCreditMax x power. Before this a full one-hour battery counted as
+        // fully firm for a whole stress window. PJM 2027/28 sensitivity: hold 8, max 0.70. Placeholder
+        // until South African ELCC by duration is measured (TODO).
+        const _hold = r.tail ? Math.max(RES_HOLD_H, S.bldMarginHoldHours) : RES_HOLD_H;
+        const _cmax = r.tail ? Math.min(1, Math.max(0, S.bldMarginCreditMax)) : 1;
         const _eNow = 'e_batt_' + y + '_' + r.d, _ePrev = (r.prevD !== undefined) ? 'e_batt_' + y + '_' + r.prevD : null;
-        L.push(' rbp_' + k + ': rb_' + k + ' + bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt.toFixed(1));
-        L.push(' rbe_' + k + ': ' + RES_HOLD_H.toFixed(3) + ' rb_' + k + ' - ' + _eNow + ' <= 0');
-        if (_ePrev) L.push(' rbq_' + k + ': ' + RES_HOLD_H.toFixed(3) + ' rb_' + k + ' - ' + _ePrev + ' <= 0');
+        L.push(' rbp_' + k + ': rb_' + k + ' + bdis_' + k + ' - ' + cum('batt',y).map(v => _cmax.toFixed(4) + ' ' + v).join(' - ') + ' <= ' + (_cmax * EX.batt).toFixed(1));
+        L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _eNow + ' <= 0');
+        if (_ePrev) L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _ePrev + ' <= 0');
         L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + ' - rb_' + k + ' - rsl_' + k
           + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + ' - ' + cum('ccgt',y).join(' - ')
@@ -17739,7 +17749,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-06b';
+const BUILD_STAMP = '2026-10-06c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

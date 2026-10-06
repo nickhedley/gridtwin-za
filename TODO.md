@@ -47,6 +47,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 14w. Other constants still on R16.21/USD (battery degradation, ATB VOM anchors): move to R16.50 or record why not
 14x. Transmission note cites R440bn for 46.9 GW; SOURCES cites over R390bn for 56 GW from the same TDP: reconcile
 14u. Optimiser-engine gap: closed by outage-path stress windows (5 Oct, RESULTS): no margin needed. Open: 2038 sits exactly on the standard; decide whether the pathway should carry the presets' 2x margin; re-test pumped hydro with outage-path windows
+14u4. Later. South African storage capacity credit (ELCC) by duration, to replace the 4 h placeholder (bldMarginHoldHours, 6 Oct 2026): add 1 GW of 1, 2, 4, 8 and 12 h storage to the 2030 and 2040 builds, measure unserved energy avoided against 1 GW of firm capacity across twelve weather years, and fit the credit curve. Sources: PJM ELCC class ratings 2026/27 and 2027/28 (2027/28: 4 h 58%, 8 h 70%, 10 h 78%); NREL capacity credit studies (2023, 2025)
 14n. Rooftop in system cost: both reported in the pathway (whole and grid cost). Open: show both on the page
 14o. Full model audit, as an energy modeller and grid operator: gaps, inconsistencies and errors
 14p. Find a published scenario from a professional modelling group and test the model against it
