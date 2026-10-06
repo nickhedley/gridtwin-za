@@ -1714,6 +1714,50 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Harness baselines regenerated: what had changed since they were written, 6 Oct 2026
+
+Build `2026-10-05j`. control_inventory.json (validate_structure) and response_matrix.json
+(validate_response) at the repo root were written before 18 Sep (base avgCost R571/MWh) and failed
+1 structure and 6 response checks. Compared against the current build, then regenerated with
+--write-baseline; the new matrix came out byte-identical on three separate runs. After: response
+85/85; structure 25/26, the one failure the build-stamp date check (stamp 2026-10-05, run 6 Oct).
+
+Controls: 64 to 76. Removed reserveContingencyMW, reserveRegulatingPct, reserveVrePct (one flat
+reserveOperatingMW since 21 Sep; reserveVrePct is still a FIXED key the engine reads). Added
+asVoltageOn, asVoltagePotRm, asVoltageRMWyr, billFeedInR, billGenPct, billSelfConsumePct,
+capacityPaymentLdsRkWyr, ccsSharePct, dieselBudgetTWh, dieselDecomMW, drShiftLossPct,
+newOffshoreMW, nuclearCF, reserveOperatingMW, tdpConfidencePct. asReserveOn and asReserveRMWh still
+exist but the response sweep now skips them by id (revenue levers since 21 Sep); exportsMW is newly
+swept.
+
+Base at defaults, old to new: coal 161.2 to 145.9 TWh, CO2 170 to 155.2 Mt, avgCost 571.07 to
+1,093.99 R/MWh, replAvg 1,536.53 to 1,515.57, avgPrice 810.31 to 790.53, renewable share 19.42 to
+21.43%; curtailment and loss-of-load hours 0 in both.
+
+Seven response cells flipped. "Responsive" means the sweep's spread exceeds 0.01% of the base value,
+or one hour for loss-of-load hours. All seven already stand at build 2026-10-01a, the oldest
+index.html in git, so none can be bisected. Current values, and the cause with its evidence:
+
+battHours -> avgCost, now responsive: 1,094.23 / 1,096.23 / 1,096.18 at 0 / 4 / 12 h (battPowerMW
+  8,000). Inferred: the 18-19 Sep system-cost additions.
+coalFlexPct -> avgPrice, now responsive: 790.53 to 787.41. Inferred: coalFlexPct became an on/off
+  toggle (see the coal flexibilisation entry).
+ccgtForceLoad -> coalTWh, now responsive: 145.95 to 128.59 TWh. Traced: the sweep now gives it
+  4,000 MW of CCGT to force on (CONTEXT in validate_response); with no CCGT it cannot move coal.
+newNuclearMW -> rePct, now inert: 21.432 to 21.431 across 0-10 GW (1 Oct build: 21.142 to 21.140).
+  Measured: a threshold case. New nuclear displaces coal almost one for one, so the renewable share
+  moves 0.001-0.002 points, under the 0.002 threshold.
+drShiftPct -> loleHrs, now inert: 0 hours at every point to 30%. Inferred: the 28 Aug note recorded
+  a rebound peak with diesel at 30%; later fleet and reserve changes leave no shed hour.
+reserveEnabled -> rePct, now inert: 21.432 both ways. Inferred: the 21 Sep reserve rework (held
+  every hour, one flat requirement); with no curtailment at defaults the share does not move.
+importsMW -> loleHrs, now responsive: 1 hour at zero imports, 0 from 2,000 MW (1 Oct build: 2).
+  Measured; cause inferred: the 22 Sep imports re-basing and later engine changes leave the base
+  with one shed hour when imports are removed.
+
+Caveat: four of the seven causes are inferred from dated entries, not reproduced; the builds that
+would show them are not in git.
+
 ### Outage-path stress windows replace the capacity margin: no margin needed, R17bn cheaper, 5 Oct 2026
 
 Build `2026-10-05g`, suite 805/806, pathway_op.js. The engine now records hourly coal availability

@@ -153,6 +153,13 @@ harnesses take `.`; `validate_outputs`, `eng5` and `jsdom_local2` run from the p
 New this session: `validate_structure` has 25 checks (the element-read check), `validate_findings`
 39 (curtailment band), `validate_external` 8 (GreenCape build-pace check).
 
+Baselines regenerated 6 Oct 2026 (build `2026-10-05j`): control_inventory.json and
+response_matrix.json at the root predated 18 Sep and failed 7 checks. Regenerated with --write-baseline
+after a full comparison; RESULTS has every difference and the cause of each of the seven flipped
+response cells, four of them inferred because the builds are not in git. Regenerate again only after
+the same comparison: a baseline reset without one hides exactly what these files exist to catch.
+validate_structure also fails its build-stamp date check on any day after the stamp's date.
+
 Background processes in the sandbox are frozen between tool calls, so a long solve must be kept
 alive with a running command (a sleep) or it will appear to crawl.
 
