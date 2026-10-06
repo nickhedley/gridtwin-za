@@ -9853,6 +9853,8 @@ function bldBuildLP(opts){
     // bldRepDays already picks the worst 3-day rolling net load and the worst
     // 3-day wind lull, and returns prevD in calendar order - so the drought these
     // stores exist for is in the sample and reachable.
+    // A day no other day names as its predecessor ends a chain (or stands alone).
+    const _chainPrev = new Set(rdY(y).filter(q => q.prevD !== undefined).map(q => q.prevD));
     for (const r of rdY(y)){
       for (const S2 of STORE){
         const dis = [], chg = [];
@@ -9868,6 +9870,12 @@ function bldBuildLP(opts){
           + ' - ' + chg.map(v=>(S2.eff*r.weight).toFixed(4)+' '+v).join(' - ')
           + ' + ' + dis.map(v=>r.weight.toFixed(4)+' '+v).join(' + ')
           + ' = ' + (r.prevD === undefined ? (ex*S2.hours*0.5).toFixed(1) : '0'));
+        // NO FREE OPENING ENERGY, 6 Oct 2026. Each chain opens half full, so it must end at least that
+        // full: otherwise every free-standing day and every stress window started with energy it never
+        // had to put back, and on stress days, where shedding is priced at VoLL x 365, that was worth a
+        // great deal. Small for existing lithium; large once pumped storage's 60 GWh joined (TODO 26).
+        if (ex > 0 && !_chainPrev.has(r.d))
+          L.push(' send_'+kk+': e_'+kk + ' >= ' + (ex*S2.hours*0.5).toFixed(1));
         // Stored energy cannot exceed what is built plus what already exists. For lithium the
         // built energy is its own variable, so the LP sets the duration; for the others it is
         // still power times their fixed duration.
