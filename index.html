@@ -6344,7 +6344,12 @@ const FIXED = {
   // has actually delivered at - and Yelland notes IRP 2019 claimed the programme
   // showed a business case for 300 and 600 MW plants while ignoring that. Treat it
   // as the best available anchor rather than a demonstrated cost.
-  lcoeCsp:2000, lcoeCcgt:3340, ccgtForceLoad:0, lcoeNuclear:1650, lcoeCoalNew:1550, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
+  lcoeCsp:2000, lcoeCcgt:3340, ccgtForceLoad:0,
+  // IRP 2025 reference case (Government Gazette 53596, 28 Oct 2025, p.34): 6 GW of CCGT at a minimum annual
+  // capacity factor of 51%, 2030-2040. Applied as an hourly must-run floor on up to ccgtForceLoadMW of new
+  // CCGT in scenario years ccgtForceFromYear-ccgtForceToYear, which is stricter than an annual factor.
+  ccgtForceLoadPct:51, ccgtForceLoadMW:6000, ccgtForceFromYear:2030, ccgtForceToYear:2040,
+  lcoeNuclear:1650, lcoeCoalNew:1550, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
 };
@@ -6927,7 +6932,9 @@ function simulate(u, prof, outPath, _soc0){
     ? (_liE*(p.battEff ?? 0.88) + _vrE*(p.newVrfbEff ?? 0.75) + _feE*(p.newIronAirEff ?? 0.45)) / battEnergy
     : (p.battEff ?? 0.88);
   const ccgtCap=p.ccgtMW+p.newCcgtMW;
-  const ccgtMustRunMW = p.ccgtForceLoad ? Math.round(ccgtCap*0.5) : 0;   // IRP 50% load-factor floor
+  const _yr = p.scenarioYear ?? 2026;
+  const ccgtMustRunMW = (p.ccgtForceLoad && _yr >= p.ccgtForceFromYear && _yr <= p.ccgtForceToYear)
+    ? Math.round(Math.min(ccgtCap, p.ccgtForceLoadMW) * p.ccgtForceLoadPct / 100) : 0;   // IRP 2025 51% floor
   const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
   // Coal ramp-rate limit: how much coal generation can change hour-to-hour, blended between
   // today's real SA fleet rate and the flexibilised rate based on the flexibilisation slider.
@@ -16001,7 +16008,7 @@ function setCCS(k, v){ state[k] = parseFloat(v); run(); }
 // Shared indent for controls that are gated BY THE toggle above them, so the
 // dependency is visible at a glance. Used by: 2030 emissions ceiling (under
 // the carbon cap toggle), the three reserve components (under Operating
-// reserve), and Force 50% load factor (under Gas CCGT capacity). One constant
+// reserve), and Force 51% load factor (under Gas CCGT capacity). One constant
 // rather than five copies - they must look identical or the grouping reads as
 // accidental.
 const SUB_CTRL = 'padding-left:16px;border-left:3px solid var(--alert2,#9E5C42);margin-left:6px;margin-top:-2px';
@@ -16047,8 +16054,8 @@ const SLIDERS=[
    note:'on 0 GW existing. 8-hour storage at 75&#37; round-trip efficiency. The electrolyte does not degrade with cycling \u2013 an advantage this model does not yet price.'},
   {id:'newIronAirMW',label:'New iron-air storage',min:0,max:20000,step:500,def:FIXED.newIronAirMW,fmt:v=>v===0?'none':(v/1000).toFixed(1)+' GW',
    note:'on 0 GW existing. 100-hour storage at 45&#37; round-trip efficiency.'},
-  {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'Lng-fired · runs as backup/insurance and rarely dispatched when storage is ample (except when IRP artificial load factor is applied).'},
-  {id:'ccgtForceLoad',label:'Force 50% annual load factor (IRP policy)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:SUB_CTRL,note:'Must-run at 50&#37; of capacity, matching the IRP 2025 load factor. Off = merit order.'},
+  {id:'newCcgtMW',label:'New gas CCGT',min:0,max:30000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'LNG-fired · runs as backup and is rarely dispatched when storage is ample, unless the IRP&rsquo;s minimum load factor is applied.'},
+  {id:'ccgtForceLoad',label:'Force 51% load factor (IRP 2025)',toggle:true,def:FIXED.ccgtForceLoad,ctrlStyle:SUB_CTRL,note:'IRP 2025 (Government Gazette 53596, 28 Oct 2025): 6 GW of CCGT at a minimum annual capacity factor of 51&#37;, 2030&ndash;2040. Applied here as a must-run floor of 51&#37; on up to 6 GW of new CCGT in scenario years 2030&ndash;2040, which is stricter than an annual factor. Off = merit order.'},
   {id:'newCoalMW',label:'New coal',min:0,max:15000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'Modern supercritical, same fuel cost as existing fleet.'},
   {id:'newNuclearMW',label:'New nuclear',min:0,max:10000,step:500,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:'IRP 2025 targets 5.2 GW by 2039 · long lead times not modelled here.'},
   {grp:'Demand-side &amp; flexibility'},
@@ -16086,7 +16093,7 @@ const SLIDERS=[
    note:'Scales every region\u2019s connection headroom in the build optimiser. Zero means the network Eskom currently plans to build. Raise it to ask what a larger build programme would unlock; the transmission cost slider below prices the network. Without this the optimiser simply stops at GCCA headroom, which is why it builds no new corridors in high-renewables scenarios.'},
   {id:'txRPerKWyr',label:'Grid expansion cost',min:0,max:1200,step:50,def:FIXED.txRPerKWyr,fmt:v=>'R'+v+'/kW·yr',note:'Transmission for new wind, utility PV and offshore. TDP 2025\u20132034 (published 2024): generation integration is 51% of the plan, R225bn of R440bn for 46.9 GW, R4,800/kW, R402/kW&middot;yr. Rooftop solar avoids new grid.'},
   {id:'getsEnabled',toggle:true,def:false,label:'Grid-enhancing technologies',note:'Adds 20&#37; capacity to corridors above 30&#37; utilisation, at R1.55m/km \u2013 about a twentieth of a new line (DOE 2024). Nodal simulation only.'},
-  {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar &amp; batteries inherit the grid connection points of decommissioned coal (Highveld suits solar, not wind), avoiding the transmission adder \u2013 up to the MW of coal retired.'},
+  {id:'repurpose',toggle:true,def:true,label:'Repurpose retired coal connections',note:'Let new solar and batteries inherit the grid connection points of decommissioned coal, avoiding the transmission adder \u2013 up to the MW of coal retired.'},
   {id:'congestionCurtailOn',toggle:true,def:true,label:'Congestion curtailment',
    note:'On by default: curtailment is happening today. See the Curtailment slider for the rate and its basis. Turn off to see what the fleet would produce unconstrained.'},
   {id:'tdpConfidencePct',label:'Transmission plan delivery',min:0,max:100,step:5,
@@ -16097,7 +16104,7 @@ const SLIDERS=[
      + 'only 17% of it is in execution, so projects are weighted by their published phase '
      + 'before this scales them. At zero, headroom stays at the 2025 snapshot and new build '
      + 'pays to construct every line itself.'},
-  {id:'congestionCurtailPct',label:'Curtailment',min:0,max:15,step:0.01,def:FIXED.congestionCurtailPct,fmt:v=>v+'&#37; of wind and solar',
+  {id:'congestionCurtailPct',label:'Curtailment',min:0,max:15,step:0.1,def:FIXED.congestionCurtailPct,fmt:v=>(+v).toFixed(1)+'% of utility wind and solar',
    note:'Default 1.3&#37; stands in for 2025&rsquo;s observed curtailment, about 1.0&ndash;1.6&#37; of REIPPPP output (NERSA, R402m of deemed energy), mostly wind at night when demand was low. NERSA&rsquo;s 4&#37; is a cap on new wind connecting in the Eastern and Western Cape, not a fleet-wide rate. The single-node engine applies it nationally rather than to the corridors that actually bind.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. Switch on to see what a priced reserve market would be worth to storage.'},
@@ -16257,9 +16264,10 @@ const PRESETS={
   // interpolation between the two, which the IRP does not publish: wind 22.2 GW, solar 18.9,
   // storage 6.1, gas 11.6. Rooftop is held at Deep decarbonisation's 10.8 GW so the two
   // presets differ only in what is built on the grid side.
-  // GAS RUNS AT 50%. The IRP raised the minimum load factor for the first gas plants to 50%,
-  // which is what ccgtForceLoad does here. At this build the floor is not reachable: 20.4 TWh
-  // of it goes unmet, recorded as ccgtFloorUnmetMWh.
+  // GAS RUNS AT 51% ON THE FIRST 6 GW. The IRP 2025 sets a 51% minimum load factor on 6 GW of
+  // CCGT, 2030-2040, which is what ccgtForceLoad does here; the other 5.6 GW runs on merit. At build
+  // 06f the floor is not reachable: 6.4 TWh of it goes unmet, recorded as ccgtFloorUnmetMWh (20.2
+  // TWh before 06f, when the floor applied at 50% to all 11.6 GW).
   //
   // DEMAND IS THE TRANSITION PRESETS', NOT THE IRP'S. It runs at the same +5% as Deep
   // decarbonisation 2035 and Fossil-free 2040 so the three can be compared; the IRP's own 2030
@@ -17730,7 +17738,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-06a';
+const BUILD_STAMP = '2026-10-06f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

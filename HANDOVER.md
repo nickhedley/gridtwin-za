@@ -35,7 +35,7 @@ available at this build: 2 GW more multiplies shedding seventeen-fold.
 
 ```
 Today 2026                  the reference; prices nothing; existing fleet
-IRP path 2035               22.2 onshore / 18.9 solar / 6.1 GW at 4h / 11.6 gas at a 50% floor; coal -16 GW
+IRP path 2035               22.2 onshore / 18.9 solar / 6.1 GW at 4h / 11.6 gas, 6 GW of it at a 51% floor (IRP 2025, 6 Oct 2026); coal -16 GW
 Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 10.8 GW new rooftop / 17 GW at 12h
                             + 1 GW iron-air; coal -27 GW (12.7 GW kept); no new gas; reserve and inertia priced
                             curtailment 51 to 68 TWh across twelve weather years
@@ -318,7 +318,7 @@ cost. The model was already at the international level.
 ## Presets
 
 ```
-IRP path 2035               22.2 onshore / 18.9 solar / 6.1 GW at 4h / 11.6 gas at a 50% floor
+IRP path 2035               22.2 onshore / 18.9 solar / 6.1 GW at 4h / 11.6 gas, 6 GW of it at a 51% floor
                             coal -16 GW; the counterfactual to read the two below against
 Deep decarbonisation 2035   35 onshore / 35 solar / 0 offshore / 10.8 GW new rooftop / 17 GW at 12h + 1 GW iron-air (NEM standard, 2x margin; re-sized 2 Oct after the charging fix)
                             coal -27 GW, no new gas, reserve and inertia priced
