@@ -1776,7 +1776,7 @@ newNuclearMW; biomass and small hydro (0.13-0.28 GW) left out. Scenario 1 coal i
 (C5: 25.2 and 12.5 GW), because the engine has no emissions cap. Twelve weather years x two outage
 draws on pathcheck's independent seeds (SEED_BASE 71830529). Standard: 0.002% of demand.
 
-                       mean shed   standard  x std  curtail  CO2 ours  CO2 theirs  smallest fix
+                       mean shed   standard  x std  curtail  CO2 ours  CO2 theirs  smallest fix tested
                        GWh         GWh              TWh      Mt        Mt
 Baseline 2030          4.47        4.16      1.1    0.0      135.6     155.9       +250 MW 4 h battery or gas
 Baseline 2040          94.3        5.07      19     6.6      99.6      111.1       +3.0 GW gas; no battery size
@@ -1788,11 +1788,14 @@ S1 2040, their residual coal 21.7 GW   368    4.96   74     25.6  83.4
 "No battery size": 4 h lithium added up to 64 GW does not meet the standard. Checked that it is not a
 cap: on Scenario 1 2040 (one draw per year), 0 / 10 / 30 / 64 GW extra take mean shed 5,404 / 4,112 /
 3,240 / 2,657 GWh, battery discharge in 2016 2.8 to 14.3 TWh; at 12 h, 4,751 to 2,091 GWh. Curtailment
-falls 20 to 5-7 TWh. The remaining shortfall is energy over multi-day periods, which storage cannot
-create; gas adds it.
+falls 20 to 5-7 TWh. The remaining shortfall is energy over multi-day lulls, which 4-12 h lithium
+cannot shift enough of. Firm capacity (gas, here) closes it; long-duration storage is not yet tested
+(TODO 14p(a)).
 
 Finding: their 2030 baseline is about adequate; every other system fails the standard by 19 to about
-1,000 times, and the shortfall is energy over multi-day periods, met with gas, not storage. Their wind
+1,000 times, and the shortfall is energy over multi-day lulls, which need firm or long-duration
+capacity. Of what was tested, added gas meets the standard and 4-12 h lithium does not; pumped hydro
+and iron-air are not yet tested (TODO 14p(a)). Their wind
 runs at a flat 0.36 in all eight time slices (A9), so their model never sees a wind lull. The authors
 say as much: their model "does not capture sub-annual balancing requirements". CO2 agrees where coal
 capacity is set the same (Scenario 1 2040: 64.9 against 64.5 Mt).
