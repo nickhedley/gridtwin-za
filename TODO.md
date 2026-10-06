@@ -53,7 +53,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 14p. Find a published scenario from a professional modelling group and test the model against it
 14q. Remaining tool and calculation gaps between GridTwin and professional models
 14r. Solar cap growth: 7% central; 15% sensitivity done (RESULTS, 5 Oct): 0.4% cheaper, 3% more CO2
-14s. Least-cost mix: test higher rooftop uptake, and electrolysers to absorb curtailment
+14s. Least-cost mix: test higher rooftop uptake, and electrolysers to absorb curtailment; also micro data centres at solar and wind farms and EV chargers (Axios, 1 Oct 2026; Rune, Soluna, Xeal; kilowatts to tens of megawatts), modelled only as a flexible absorber of curtailment in this test; high chip costs push such sites toward firm load, which belongs in the demand scenarios
 14t. Carbon: legislated-path reference and R462/t shadow-price sensitivity done (RESULTS, 5 Oct). Open: NDC emissions-cap pathway with a sourced electricity cap; report resource cost net of carbon tax on the page
 14l. Pathway to 2040 done (RESULTS, 5 Oct). Open: carbon-price sensitivity; report CO2; life-extension option; shrink the 4,000 MW stress margin by narrowing the optimiser-engine gap; expose the per-year loop in the build panel
 14k. You: re-run the preset search letting lithium choose 12 to 20 hours?
