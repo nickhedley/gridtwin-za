@@ -331,7 +331,11 @@ FX                       R16.50/USD, 180-day trailing average to 26 Aug 2026 (ra
 ## Energy Council of South Africa, Electricity Wholesale Tariff Series (2026)
 
 Chapters 1-3, UK PACT-funded, on unbundling the wholesale tariff for SAWEM. Online as flip-books at
-energycouncil.org.za/insights/analysis/; the user holds the PDFs. Not yet read in full by Claude.
+energycouncil.org.za/insights/analysis/. PDFs supplied by the user 6 Oct 2026 (ch. 1, 14 pp; ch. 2, 22 pp;
+ch. 3, 22 pp; created 28 May 2026). No licence stated, so not committed to the repo. Searched, not yet
+read in full: ch. 3 gives vesting contracts as usually lasting 5-7 years before phasing out (UK Pool,
+Singapore NEMS, Chile), "but may be extended indefinitely", with volumes reduced under NERSA-approved
+transition arrangements. It gives no starting vesting share.
 
 ```
 At SAWEM launch      most volume trades under vesting contracts (two-way contracts for difference
