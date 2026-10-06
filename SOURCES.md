@@ -34,6 +34,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Eskom TDP | annual | 2025-2034 edition | `tdp_projects.json`; also underpins the storage and transmission capex constants |
 | Revised Electricity Pricing Policy | one-off, for comment | Gazette 55257, gn 7852, 28 Aug 2026 | the price-component mapping in results.md; submission made 27 Sep |
 | NERSA Wholesale Electricity Pricing Methodology | consultation | May 2026 | independent cross-check on the price-component mapping; names balancing costs, which GridTwin lacks |
+| Energy Council of South Africa, Electricity Wholesale Tariff Series, ch. 1-3 | one-off, 2026 (UK PACT-funded) | flip-book at energycouncil.org.za/insights/analysis/; PDFs held by the user | retail stack and the planned SAWEM transition basis (TODO 14af-14ai); no constant reads it yet |
 | NERSA Trading Rules | consultation, v3 | June 2026; comments extended to 28 Sep 2026 (dashboard Issue 04) | governs wheeling and trading - see calendar |
 | Renewables.ninja / MERRA-2, regional | static | 2014-2025, twelve years | `profiles_regional_multiyear.json` via `weatherYearNational()` - capacity-weighted, bias-corrected 0.848 |
 | Form Energy / Google / Xcel transaction | one-off | 30 GWh, ~usd 77/kWh pre-incentive | `acapIronAir` 12,940 R/kW-yr |
@@ -325,6 +326,24 @@ FX                       R16.50/USD, 180-day trailing average to 26 Aug 2026 (ra
                          15.90-17.25; spot 15.97). A period average, deliberately - a
                          capital constant must not move 8% on a currency tick.
                          Supersedes the R16.21 and R16.80 used elsewhere in the file.
+```
+
+## Energy Council of South Africa, Electricity Wholesale Tariff Series (2026)
+
+Chapters 1-3, UK PACT-funded, on unbundling the wholesale tariff for SAWEM. Online as flip-books at
+energycouncil.org.za/insights/analysis/; the user holds the PDFs. Not yet read in full by Claude.
+
+```
+At SAWEM launch      most volume trades under vesting contracts (two-way contracts for difference
+                     between the central purchasing agency, Eskom Generation and distributors that are
+                     market participants) and legacy contracts (Section 34 IPP PPAs)
+Legacy charge        the difference between contract prices and the hourly market price, recovered
+                     from all consumers
+Vesting volumes      set quarterly by NERSA; shrink as the market matures, typically over 5-7 years
+Wholesale tariff     seven parts: energy (time of use), generation capacity, legacy, transmission use
+                     of system, losses, ancillary services, subsidies
+Chapter 2            the 1980s transmission charging zones are now inverted relative to grid
+                     constraints: support for the model's locational grid costs (TODO 14ai)
 ```
 
 ## Sources consulted and rejected
