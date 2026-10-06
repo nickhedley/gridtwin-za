@@ -431,6 +431,58 @@ Not from this brief: the 19.3 GW of NERSA registrations, which is press coverage
 Building Africa, Aug 2026; MyBroadband, about 19,300 MW registered 2018 to Q1 2026). The model's
 registrations source is nodal/nersa_registrations.json (SAPVIA dashboard, 20,131 MW to Q1 2026/27).
 
+## Non-residential shiftable load (drShiftPct note, build 06g)
+
+Found 6 Oct 2026 by web search. The network proxy blocked every document, so each figure below is from
+a search extract and not yet checked in the source. Verify the figures and pages before quoting.
+
+- Matsuda-Dunn, McKenna, Desai (NREL) and Mukoma (CSIR), Determining and Unlocking Untapped
+  Demand-Side Management Potential in South Africa: Demand Response at the Grid Edge,
+  NREL/TP-6A40-88042, January 2024, https://www.nrel.gov/docs/fy24osti/88042.pdf. It quotes Eskom
+  Transmission:
+  - an identified base of 8-9 GW of demand response and load shifting;
+  - less about 3 GW non-flexible and 1.4 GW already used;
+  - leaving about 4 GW.
+  It mixes interruptible and shiftable load, is mostly industrial, and is closer to a technical than
+  an economic potential (about 2022). It also gives Eskom's contracted demand response: 1,014 MW
+  instantaneous, 346 MW supplemental and 62 MW critical peak day. That is interruptible, not shifted.
+- IEA, Scaling Up Demand Flexibility, 2025, South Africa case study: about 1.5 GW (5% of peak) avoided,
+  mostly industrial and mostly curtailment.
+- USAID and DMRE (LBNL), South Africa: Energy Efficiency Demand Side Management Experience
+  (2004-2022), June 2023: 769 MW of verified demand savings through the energy service company model,
+  efficiency and load shift together.
+- Model use: about 15% of each peak hour (about 4 GW) as a technical ceiling; 2-7% (500-2,000 MW) as
+  a plausible 2026-2030 range. The split between shiftable and interruptible is an assumption.
+
+## LNG import infrastructure costs (TODO 14ak, pathway sensitivity only, 6 Oct 2026)
+
+Search extracts only (proxy blocked the documents). Applied in harness/pathway/pathway_perfail.js and
+pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
+- FSRU fixed charges:
+  - Engro Elengy, Pakistan: tolling USD 0.66/MMBtu; capacity charge USD 228,016/day, payable whatever
+    the use.
+  - Moheshkhali, Bangladesh: about USD 217-237k/day per FSRU, obligatory whatever the throughput.
+  - Lubmin FSRU, Germany: about USD 150k/day.
+  - OIES NG-123 (Songhurst, 2017): charters of USD 100-140k/day.
+- Zululand Energy Terminal, Richards Bay:
+  - a Vopak and Transnet Pipelines joint venture, 25-year concession;
+  - Phase 1 is a floating storage unit plus onshore regas, about 3 mtpa; Phase 2 is above 4 mtpa;
+  - about USD 1 bn for both phases;
+  - investment decision Q1 2028, Phase 1 operating about 2030;
+  - Eskom heads of agreement as foundation customer, 5 Jun 2026; no take-or-pay terms published.
+  Sources: pgjonline (Mar 2026), Mining Weekly (5 Jun 2026), Zawya.
+- Inland transport: the Lilly pipeline is about 23 PJ/yr, too small for a 3 GW plant. The ROMPCO tariff
+  was R13.34/GJ in 2016 (about USD 0.85/MMBtu). An inland plant would need a new pipeline.
+- Derived (not sourced):
+  - Regas fuel and boil-off: USD 0.25/MMBtu.
+  - Transport: 0 at Richards Bay; USD 1.2/MMBtu central inland.
+  - Terminal fixed cost: USD 84 m/yr central (55-130), spread over 3 mtpa shared by about 5.4 GW at
+    50% load. That gives R260/kW-yr central, R170-460.
+- Applied (central, coastal):
+  - costCcgt R1,813/MWh: the R2,003 default's USD 18.50 delivered becomes USD 16.75. The flat
+    USD 2/MMBtu adder is replaced, not added to.
+  - New CCGT fixed O&M raised by R260/kW-yr.
+
 ## Sources consulted and rejected
 
 Recording these so they are not re-investigated.

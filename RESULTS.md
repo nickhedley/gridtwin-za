@@ -1714,7 +1714,100 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### The IRP gas floor is now an annual minimum; IRP path 2035 still falls 13.5 TWh short of it, 6 Oct 2026
+
+Build `2026-10-06g` against `2026-10-06f`. The IRP 2025 rule is a 51% minimum annual capacity factor
+on 6 GW of CCGT, 2030 to 2040, not an hourly must-run. ccgtForceLoad now applies it as an annual
+minimum (simulateGasAnnualFloor):
+- Gas first dispatches on merit.
+- If the first 6 GW produce less than 51% of a year's energy, the floor is set at 6 GW in the highest
+  net-load hours (netLoadPre), enough to cover the gap, and the year is re-run.
+- The loop repeats until output is within 0.5% of the target, or after at most four re-runs.
+The hourly version is kept as a sensitivity (FIXED ccgtForceHourly 1, not on the panel).
+
+Correction to the 06f entry below: ccgtFloorUnmetMWh left out surplus hours, where the engine skips
+the floor. It now counts them. Under the hourly rule, IRP path 2035's shortfall was 15.6 TWh at 06f,
+not 6.4.
+
+Each preset at its own settings, synthetic-normal weather year, seeded outage draw, simulate() once
+(scratchpad preset_gas.js). Target 26.8 TWh (51% x 6 GW x 8,760 h).
+
+```
+preset                            rule     gas TWh  floor unmet TWh  gas hours  CO2 Mt  avgCost R/MWh
+IRP's 2030 targets                annual   26.67    0.13             5,216      126.9   1278.5
+                                  hourly   24.81    2.66             8,465      127.9   1266.6
+IRP's 2030 targets, grid delayed  annual   26.73    0.07             4,891      147.9   1259.7
+                                  hourly   27.90    0.04             8,760      147.2   1267.4
+IRP path 2035 (11.6 GW gas)       annual   13.31    13.49            4,765      60.8    1465.6
+                                  hourly   11.24    15.57            4,814      60.8    1446.2
+```
+
+- On the 2030 presets the annual rule meets the target, with gas running in 4,900 to 5,200 hours
+  rather than nearly every hour.
+- IRP path 2035 cannot meet it: the floor is set in every hour, yet gas runs in only 4,765 because the
+  rest are surplus hours.
+- The hourly sensitivity reproduces 06f exactly, apart from the corrected unmet figure.
+- Unserved energy is the same under both rules.
+- Caveat: one weather year. The annual rule runs the year two to five times, about 2 to 4 s in the
+  browser when the toggle is on.
+
+### Shiftable load is non-residential, the VPP is households, and the shared cap is reported, 6 Oct 2026
+
+Build `2026-10-06g`. The two controls drew on the same loads: shiftable load's note listed water
+heating and EV charging, which are the VPP pool's geysers and home charging. They are now exclusive
+by definition:
+- Shiftable load: industrial, commercial, agricultural and municipal.
+- VPP: households.
+Both still move load out of the six highest net-load hours under one cap of 45% of the hour.
+simulate() now returns shiftCapH, shiftCappedMWh and shiftMovedMWh, and the VPP readout says when the
+cap binds.
+- Today 2026 with shiftable 20% and a 12 GW pool fully enrolled: the cap binds in 2,190 hours (every
+  peak hour) and 11.8 TWh a year cannot be moved.
+- Shiftable 3% alone: the cap never binds.
+
+The old note said load moves into "the six lowest" hours. The engine spreads it over up to twelve, and
+the note now says so.
+
+Size, in the note:
+- 1% of each peak hour is about 270 MW. That is the mean demand in each day's six highest hours,
+  26.6 GW on the 2026 profile.
+- Eskom Transmission puts the remaining base of demand response and load shifting at about 4 GW, which
+  mixes shiftable with interruptible load (NREL and CSIR, 2024; SOURCES). So about 15% is a technical
+  ceiling.
+- 500 to 2,000 MW (about 2 to 7%) is a plausible 2026-2030 range. This is an estimate, and the source
+  figures are not yet verified in the documents (SOURCES).
+
+### Control panel regrouped into six sections, 6 Oct 2026
+
+Build `2026-10-06g`. The sections are now Demand; Supply and build; Storage and flexibility; Grid and
+connections; Prices and markets; Retail and household bill. The build cost (LCOE) settings are a
+subgroup of Supply and build. Cause of the old mix: capacity payments, Koeberg, imports and exports
+sat after the Voltage settings subgroup inside Household bill.
+
+No harness asserts group names or order, saved links key on control ids, and control_inventory.json
+lists ids only. Prices and markets starts closed, as Policy and prices did.
+
+Checked before labelling (scratchpad ctl_probe.js; 10 GW wind, 10 GW solar, 3 GW batteries, 6 GW coal
+retired):
+- Grid headroom beyond the plan feeds only the build optimiser, and is labelled so.
+- Grid-enhancing technologies feed only the Where To Build siting panel, and are labelled so.
+- The grid expansion cost and repurposed coal connections are not optimiser-only: they move the engine's
+  own system cost once new wind and solar exist (avgCost R1,112 to R1,196/MWh across txRPerKWyr 0 to
+  1,200; R1,151 to R1,140 with repurpose on).
+- validate_response listed those two as build-only, so it never saw them. They now carry a sweep
+  context instead.
+
+response_matrix.json was regenerated with --write-baseline. Before regenerating, the only drift was
+two cells, txRPerKWyr -> avgCost and repurpose -> avgCost, both from inert to responsive and both
+explained by the new context. The falsy-zero notes are the same as at 06f. Suite before (06f on
+main): 805/807. After (06g): 807/809. The two added checks are the two newly swept controls. The
+failures are the same two as before (weather 63/64 without ESK19679.csv; EDMSA Scenario A CO2 2035).
+eng5 6/6.
+
 ### The IRP gas floor is now 51% on 6 GW, 2030-2040; IRP path 2035 unmet floor falls from 20.2 to 6.4 TWh, 6 Oct 2026
+
+CORRECTED 6 Oct 2026, build 06g: the floor-unmet column below left out surplus hours. Under the hourly
+rule IRP path 2035 was 15.6 TWh short at 06f, not 6.4. See the entry above.
 
 Build `2026-10-06f` against `2026-10-06a`. ccgtForceLoad now follows the IRP 2025 reference case
 (Government Gazette 53596, 28 Oct 2025, p.34): a 51% minimum load factor on 6 GW of CCGT, scenario

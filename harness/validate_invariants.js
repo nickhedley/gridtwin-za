@@ -552,7 +552,7 @@ const SCENARIOS = {
     if (!G || G.err) check('must-run gas energy goes somewhere', false, G ? G.err : 'no result');
     else check('must-run gas energy goes somewhere', G.gapTWh < 0.25 * G.chargeTWh + 1,
                `generation exceeds served, exported and charged energy by ${G.gapTWh.toFixed(1)} TWh `
-               + `against ${G.chargeTWh.toFixed(1)} TWh charged; the 50% gas floor went unmet by `
+               + `against ${G.chargeTWh.toFixed(1)} TWh charged; the IRP gas floor went unmet by `
                + `${G.unmetTWh.toFixed(1)} TWh`);
   }
 
