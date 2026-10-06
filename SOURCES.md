@@ -38,6 +38,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Renewables.ninja / MERRA-2, regional | static | 2014-2025, twelve years | `profiles_regional_multiyear.json` via `weatherYearNational()` - capacity-weighted, bias-corrected 0.848 |
 | Form Energy / Google / Xcel transaction | one-off | 30 GWh, ~usd 77/kWh pre-incentive | `acapIronAir` 12,940 R/kW-yr |
 | Eskom Tubatse pumped storage | one-off | R35.9bn, 1.5 GW / 21 GWh, jet plan | `acapPs` 2,360 R/kW-yr |
+| Eskom Ingula pumped storage | one-off | R26.8bn reported, 1,332 MW / 21 GWh, built 2006-2017 (Engineering News, 2016) | cross-check on `bldPhesCostBasis` 'tubatse'; no constant reads it |
 | DFFE REEA, Red Cap / Impofu | rolling | as at last ingest | the Impofu and Koruson connector endpoints in `transmission_lines.geojson` |
 
 | SolarAfrica SunCentral | one-off | 114 MW of a 342 MW phase 1 energised 26 Aug 2026, not yet at commercial operation | pipeline, not capacity. Corrected 23 Sep 2026: an earlier entry here said 342 MW energised, which was wrong on the figure and the status |
@@ -310,6 +311,13 @@ Vanadium turnkey range   USD 450/kWh at 8h, 25-yr life -> acapVrfb 5,565.
                          +/-20% as the honest band.
 Tubatse                  R35.9bn for 1.5 GW (JET plan, 2022 rands), escalated four
                          years at SA CPI -> R29,200/kW, 60-yr civil life -> acapPs.
+Ingula                   R26.8bn reported for 1,332 MW / 21 GWh, about 15.8 h (Engineering News,
+                         2016); construction 2006-2017. R20,100/kW as reported; at the ~5.1% a
+                         year implied by the Tubatse escalation, about R33,000/kW in 2026 rands,
+                         about 42% above the unscaled atlas fit at 15.8 h (Tubatse: 28% at 14 h).
+                         Supports the 'tubatse' basis. Approximate: spend is mixed-year nominal,
+                         and unescalated it sits about 13% below the fit. Eleven years to build
+                         against the optimiser's 2033 earliest pumped-hydro date (TODO 14z).
 Carbon Tax Act Phase 2   R308/t headline from 1 Jan 2026, generation allowances up to
                          85% -> carbonTaxRPerT 46. SEE CALENDAR: a suspension was under
                          consideration and NERSA has disallowed tariff recovery to 2030.
