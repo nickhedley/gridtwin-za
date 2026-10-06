@@ -301,9 +301,13 @@ These do not populate a JSON file, but a number in `FIXED` rests on each. Changi
 source means changing the constant, so they belong in this register.
 
 ```
-Eskom TDP 2025-2034      14,500 km + 210 transformers for 56 GW at >R390bn
-                         = R6,964/kW overnight, 40-yr life at 8% -> R584/kW-yr.
-                         Validates txRPerKWyr 600 as a national AVERAGE.
+Eskom TDP 2024           2025-2034: 14,494 km, 210 transformers, 133,000 MVA, 56 GW, about
+                         R440bn (DBSA; NTCSA CEO, Aug 2026). txRPerKWyr 402 = generation
+                         integration only: R225bn for 46.9 GW of grid-connected generation
+                         (56 GW less 9 GW rooftop), R4,800/kW, over 40 years at 8%. The whole
+                         plan over 56 GW would give about R660/kW-yr; the earlier 600 came from
+                         that method on R390bn. 14,200 km, 53 GW and probably R390bn are
+                         TDP 2022. Corrected 6 Oct 2026: this note said R390bn and 600.
                          The locational spread around it (R150 Gauteng to R735 Hydra
                          Central) comes from the corridor graph, not from the TDP.
 Form Energy transaction  USD ~77/kWh PRE-incentive (the ~33 figure is after US 45X
