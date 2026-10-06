@@ -1714,6 +1714,27 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### The IRP gas floor is now 51% on 6 GW, 2030-2040; IRP path 2035 unmet floor falls from 20.2 to 6.4 TWh, 6 Oct 2026
+
+Build `2026-10-06f` against `2026-10-06a`. ccgtForceLoad now follows the IRP 2025 reference case
+(Government Gazette 53596, 28 Oct 2025, p.34): a 51% minimum load factor on 6 GW of CCGT, scenario
+years 2030 to 2040 (FIXED ccgtForceLoadPct, ccgtForceLoadMW, ccgtForceFromYear, ccgtForceToYear).
+Before: 50% on all new CCGT in any year. Still an hourly must-run floor, which is stricter than the
+IRP's annual factor. Each preset at its own settings, synthetic-normal weather year, seeded outage
+draw, simulate() once (scratchpad preset_gas.js):
+
+```
+preset                              year  CCGT    gas TWh      floor unmet TWh   CO2 Mt        avgCost R/MWh
+                                                  06a   06f    06a    06f        06a    06f    06a     06f
+IRP's 2030 targets                  2030  6 GW    24.5  24.8   2.46   2.64       128.0  127.9  1264.6  1266.6
+IRP's 2030 targets, grid delayed    2030  6 GW    27.4  27.9   0.03   0.04       147.5  147.2  1264.5  1267.4
+IRP path 2035                       2035  11.6 GW 13.3  11.2   20.2   6.4        60.8   60.8   1465.4  1446.2
+```
+
+The 2030 presets move by under 2%. IRP path 2035 moves because only 6 of its 11.6 GW now carry the
+floor. Unserved energy unchanged in all three. The toggle does nothing before 2030 or after 2040,
+so at the Today 2026 default it has no effect; validate_response now sweeps it at scenario year 2030.
+
 ### External test, Kerwin et al. 2026, part 2: our optimiser on their inputs builds more solar and storage, less gas, 6 Oct 2026
 
 Builds on `2026-10-05j`; pathchecks on `2026-10-06a` (only pumped hydro's default and the stamp differ;
