@@ -4,7 +4,7 @@ Merged 2 Oct 2026 from the previous chat's list and this one; build `2026-10-05g
 "You:" need the user's decision or action; the rest are work Claude can take on. Pressing items at the
 end of each message; the full list on request.
 
-Done this session, removed: offshore file placed in nodal/; ESK19679.csv added to MANIFEST's
+Done this session, removed: control_inventory.json and response_matrix.json compared and regenerated (RESULTS, 6 Oct); offshore file placed in nodal/; ESK19679.csv added to MANIFEST's
 upload set as local-only; licence check read (it tests presence only; the zip copy was stale);
 eng5 check 3 fixed and shown to fail on an injected defect; rooftop footer relabelled (the figure
 was site-specific, the region name was wrong); full suite with all inputs present, 802/803 plus
