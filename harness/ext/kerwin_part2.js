@@ -11,7 +11,8 @@
 const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');const highsLoader=require('highs');
 const ROOT='testroot', OUT=process.env.OUT||'ext/kerwin_part2.json', GAS_FIRST=2030, LOOP=+(process.env.LOOP||0);
 const FX=16.5, PJ=v=>v*277.78/1e3, PROF_TWH=200.6164115620006;
-const DEM=(PJ(892.2)/PROF_TWH-1)*100;             // demandGrowthPct to their 2040 demand
+let DEM=(PJ(892.2)/PROF_TWH-1)*100;             // demandGrowthPct to their 2040 demand (DEMBASIS=direct)
+const BASIS=process.env.DEMBASIS||'direct';
 const at26=(a20,a30)=>a20+(a30-a20)*0.6, decl=(a30,a40)=>1-Math.pow(a40/a30,0.1);
 const COST={ wind:{c2026:at26(1047,1029)*FX, decl:decl(1029,1005)}, pv:{c2026:at26(877,774)*FX, decl:decl(774,661)},
   rooftop:{c2026:at26(1406,1258)*FX, decl:decl(1258,1110)}, ccgt:{c2026:at26(1248,1181)*FX, decl:decl(1181,1098)} };
@@ -41,6 +42,10 @@ const CAP={ wind:y=>y<=2030?1600:2000, pv:y=>y<=2030?1000:2000 };
    fs.writeFileSync(tmp+'.lp',fix(lp)); cp.execFileSync('python3',['highs_native.py',tmp+'.lp',tmp+'.json',String(process.env.TL||900)],{stdio:'inherit'}); last=JSON.parse(fs.readFileSync(tmp+'.json','utf8')); }
    else { const highs=await newHighs(); last=highs.solve(fix(lp),{time_limit:+(process.env.TL||900)}); }
    console.log('solved', last.Status, new Date().toISOString()); if (last.Status!=='Optimal') throw new Error('solve not optimal: '+last.Status); return last; };
+ // DEMBASIS=grossup (6 Oct 2026): their meter-level demand / (1 - RETAIL_LOSS), plus today's rooftop output,
+ // which our underlying demand carries and their sales-level demand does not.
+ if (BASIS==='grossup'){ w.eval(`applyState(PRESETS['Today 2026']);`); const R=+w.eval('simulate(state,PROFILES).E.rooftop/1e6'), L=+w.eval('RETAIL_LOSS');
+   DEM=((PJ(892.2)/(1-L)+R)/PROF_TWH-1)*100; console.log('grossup', JSON.stringify({R,L,DEM})); }
  w.eval(`applyState(PRESETS['Today 2026']); state.demandGrowthPct=${DEM}; bldSetHorizon(2040);`);
  await w.eval('loadWeatherYears()');
  const t0=Date.now();
@@ -53,6 +58,6 @@ const CAP={ wind:y=>y<=2030?1600:2000, pv:y=>y<=2030?1000:2000 };
  const sched={}; for(const y of Y){ sched[y]={}; for(const t of T) sched[y][t]=Math.round((cols['b_'+t+'_'+y]||{Primal:0}).Primal);
    sched[y].battMWh=Math.round((cols['eb_batt_'+y]||{Primal:0}).Primal); sched[y].off=Math.round((cols['b_off_'+y]||{Primal:0}).Primal);
    sched[y].earlyRetMW=Math.round((cols['rc_'+y]||{Primal:0}).Primal); sched[y].coalMW=Math.round(w.eval(`bldCoalMW(${y})`) - sched[y].earlyRetMW); }
- fs.writeFileSync(OUT, JSON.stringify({inputs:{DEM,COST,FOM,LIFE,COAL,check,LOOP}, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status},null,1));
+ fs.writeFileSync(OUT, JSON.stringify({inputs:{DEM,BASIS,COST,FOM,LIFE,COAL,check,LOOP}, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status},null,1));
  console.log('done', out.verdict, ((Date.now()-t0)/1000).toFixed(0)+'s'); process.exit(0);
 })();

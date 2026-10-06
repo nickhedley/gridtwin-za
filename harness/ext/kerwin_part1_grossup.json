@@ -1,0 +1,251 @@
+{
+ "settings": {
+  "K": 2,
+  "SEED_BASE": 71830529,
+  "BATT_H": 4,
+  "profTWh": 200.6164115620006,
+  "coalInst": 39692,
+  "DEM": {
+   "2030": 207.36276999999998,
+   "2040": 247.83531599999998
+  },
+  "BASIS": "grossup",
+  "LOSS": 0.08
+ },
+ "cases": {
+  "base_2030": {
+   "state": {
+    "scenarioYear": 2030,
+    "demandGrowthPct": 17.31700868423418,
+    "coalDecomMW": 9392,
+    "windMW": 3400,
+    "pvUtilityMW": 2400,
+    "rooftopMW": 5800,
+    "nuclearMW": 1900,
+    "cspMW": 500,
+    "ocgtDieselMW": 3400,
+    "newWindMW": 11200,
+    "newPvMW": 0,
+    "newRooftopMW": 0,
+    "newBattMW": 0,
+    "newBattHours": 4,
+    "newCcgtMW": 700,
+    "newNuclearMW": 0
+   },
+   "mean": 449.08088449412344,
+   "worst": 1036.0956297522264,
+   "std": 4.722419723678624,
+   "curt": 0.0005450025969627628,
+   "co2": 160.34182407389463,
+   "coal": 148.55793212365498,
+   "diesel": 4.8140846141839,
+   "loadTWh": 236.12098618393122,
+   "gas": 2.407680884414921,
+   "addBatt": {
+    "mw": null
+   },
+   "addGas": {
+    "mw": 4250,
+    "mean": 3.3064900834419864,
+    "worst": 13.718862394071097,
+    "std": 4.7660151497856145,
+    "curt": 0.0003960665345011367,
+    "co2": 159.25779606522315,
+    "coal": 148.90462803621057,
+    "diesel": 0.49535818978821905,
+    "loadTWh": 238.30075748928073,
+    "gas": 7.70517069037453
+   }
+  },
+  "base_2040": {
+   "state": {
+    "scenarioYear": 2040,
+    "demandGrowthPct": 39.2453731104373,
+    "coalDecomMW": 17992,
+    "windMW": 2000,
+    "pvUtilityMW": 1400,
+    "rooftopMW": 5800,
+    "nuclearMW": 1500,
+    "cspMW": 300,
+    "ocgtDieselMW": 2300,
+    "newWindMW": 31200,
+    "newPvMW": 11030,
+    "newRooftopMW": 0,
+    "newBattMW": 1400,
+    "newBattHours": 4,
+    "newCcgtMW": 6770,
+    "newNuclearMW": 0
+   },
+   "mean": 1152.5228925041404,
+   "worst": 1697.1653920939823,
+   "std": 5.699801231438422,
+   "curt": 3.299498763991817,
+   "co2": 117.621831853079,
+   "coal": 102.71596438030026,
+   "diesel": 2.358738797232513,
+   "loadTWh": 284.9900615719211,
+   "gas": 22.20021720454989,
+   "addBatt": {
+    "mw": null
+   },
+   "addGas": {
+    "mw": 7500,
+    "mean": 4.604924503689526,
+    "worst": 14.369226720851715,
+    "std": 5.695608059954413,
+    "curt": 3.036140057917347,
+    "co2": 117.12122660228245,
+    "coal": 102.53316111167003,
+    "diesel": 0.12325367251561294,
+    "loadTWh": 284.78040299772056,
+    "gas": 26.022134007402638
+   }
+  },
+  "s1_2030": {
+   "state": {
+    "scenarioYear": 2030,
+    "demandGrowthPct": 20.322369327471847,
+    "coalDecomMW": 14492,
+    "windMW": 3400,
+    "pvUtilityMW": 2400,
+    "rooftopMW": 5800,
+    "nuclearMW": 1900,
+    "cspMW": 500,
+    "ocgtDieselMW": 3400,
+    "newWindMW": 11200,
+    "newPvMW": 7000,
+    "newRooftopMW": 3510,
+    "newBattMW": 0,
+    "newBattHours": 4,
+    "newCcgtMW": 250,
+    "newNuclearMW": 0
+   },
+   "mean": 2740.4480460418795,
+   "worst": 3900.396295875737,
+   "std": 4.722458783881768,
+   "curt": 0.10361933531662514,
+   "co2": 142.20033310422497,
+   "coal": 127.78104463872408,
+   "diesel": 10.300633116387623,
+   "loadTWh": 236.12293919408833,
+   "gas": 1.484465433807965,
+   "addBatt": {
+    "mw": null
+   },
+   "addGas": {
+    "mw": 7750,
+    "mean": 4.410129842600584,
+    "worst": 18.00861398589891,
+    "std": 4.780179402985377,
+    "curt": 0.09337153749282118,
+    "co2": 140.01867162078537,
+    "coal": 127.99740756292152,
+    "diesel": 0.3953148242486688,
+    "loadTWh": 239.00897014926878,
+    "gas": 15.922225129429513
+   }
+  },
+  "s1_2040": {
+   "state": {
+    "scenarioYear": 2040,
+    "demandGrowthPct": 42.36204340712819,
+    "coalDecomMW": 27192,
+    "windMW": 2000,
+    "pvUtilityMW": 1400,
+    "rooftopMW": 5800,
+    "nuclearMW": 1500,
+    "cspMW": 300,
+    "ocgtDieselMW": 2300,
+    "newWindMW": 31200,
+    "newPvMW": 25700,
+    "newRooftopMW": 3640,
+    "newBattMW": 2750,
+    "newBattHours": 4,
+    "newCcgtMW": 1910,
+    "newNuclearMW": 930
+   },
+   "mean": 17859.912088828583,
+   "worst": 21504.537769775423,
+   "std": 5.703431483394923,
+   "curt": 10.918077569410082,
+   "co2": 75.49142544449792,
+   "coal": 60.98036060794757,
+   "diesel": 9.504617265098515,
+   "loadTWh": 285.1715741697462,
+   "gas": 11.917059899003169,
+   "addBatt": {
+    "mw": null
+   },
+   "addGas": {
+    "mw": 17500,
+    "mean": 4.987686021013977,
+    "worst": 12.205690894150939,
+    "std": 5.7759040533602795,
+    "curt": 10.313999479798804,
+    "co2": 79.4878145720323,
+    "coal": 60.95531874870171,
+    "diesel": 0.10148618841061008,
+    "loadTWh": 288.7952026680139,
+    "gas": 42.60409966269139
+   }
+  },
+  "s1_2030_rescoal": {
+   "state": {
+    "scenarioYear": 2030,
+    "demandGrowthPct": 20.322369327471847,
+    "coalDecomMW": 9392,
+    "windMW": 3400,
+    "pvUtilityMW": 2400,
+    "rooftopMW": 5800,
+    "nuclearMW": 1900,
+    "cspMW": 500,
+    "ocgtDieselMW": 3400,
+    "newWindMW": 11200,
+    "newPvMW": 7000,
+    "newRooftopMW": 3510,
+    "newBattMW": 0,
+    "newBattHours": 4,
+    "newCcgtMW": 250,
+    "newNuclearMW": 0
+   },
+   "mean": 400.66083068248736,
+   "worst": 762.1688857120607,
+   "std": 4.731777592443087,
+   "curt": 0.1799625361508409,
+   "co2": 149.3919718244841,
+   "coal": 138.8778408786532,
+   "diesel": 3.6170174369297587,
+   "loadTWh": 236.5888796221543,
+   "gas": 0.6852231225082437
+  },
+  "s1_2040_rescoal": {
+   "state": {
+    "scenarioYear": 2040,
+    "demandGrowthPct": 42.36204340712819,
+    "coalDecomMW": 17992,
+    "windMW": 2000,
+    "pvUtilityMW": 1400,
+    "rooftopMW": 5800,
+    "nuclearMW": 1500,
+    "cspMW": 300,
+    "ocgtDieselMW": 2300,
+    "newWindMW": 31200,
+    "newPvMW": 25700,
+    "newRooftopMW": 3640,
+    "newBattMW": 2750,
+    "newBattHours": 4,
+    "newCcgtMW": 1910,
+    "newNuclearMW": 930
+   },
+   "mean": 3230.2226263191246,
+   "worst": 4250.425735935905,
+   "std": 5.772621262396051,
+   "curt": 14.354345513444565,
+   "co2": 102.98319552627686,
+   "coal": 92.67767947605984,
+   "diesel": 3.716153360299025,
+   "loadTWh": 288.6310631198025,
+   "gas": 7.17548794327501
+  }
+ }
+}

@@ -1714,6 +1714,41 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### External test, Kerwin et al. 2026: their demand grossed up for losses; every system now fails, 6 Oct 2026
+
+Build `2026-10-06a` (TODO 14p(c)). Parts 1 and 2 above entered their demand directly: their meter-level
+TWh (MAED final demand: 681.3 PJ, 189 TWh in 2024) was set equal to our underlying demand, which is
+supply-side (contracted demand less exports, losses included) with rooftop output added back. Both
+therefore understated their demand on our basis. Re-run with RETAIL_LOSS (8%, technical losses) as the
+gross-up, under two readings of rooftop (DEMBASIS in kerwin_part1.js and kerwin_part2.js):
+
+(a) grossup: their demand excludes rooftop self-consumption; ours = theirs / 0.92 + rooftop output.
+(b) grossup_incl: their demand includes it; ours = (theirs - rooftop) / 0.92 + rooftop.
+
+Part 1, same settings as before otherwise. Mean shed GWh, standard about 4.4-5.7 GWh:
+
+                     demand TWh             mean shed GWh            CO2 Mt                 their   gas fix GW
+                     direct  (a)   (b)      direct  (a)     (b)      direct  (a)    (b)     CO2     direct (a)   (b)
+Baseline 2030        208     236   225      4.5     449     113      135.6   160.3  151.3   155.9   0.25   4.25  2.5
+Baseline 2040        254     285   274      94      1,153   559      99.6    117.6  111.8   111.1   3.0    7.5   6.0
+Scenario 1 2030      202     236   220      134     2,740   755      116.0   142.2  129.7   129.1   3.0    7.75  5.25
+Scenario 1 2040      251     285   269      5,428   17,860  11,001   64.9    75.5   70.9    64.5    12.25  17.5  15.0
+
+Reading (b) reproduces their CO2 to within 1.5% in three of four cases (151.3 against 155.9, 111.8 against
+111.1, 129.7 against 129.1); (a) overshoots by 3-17%. So (b) is the right basis: their demand includes
+rooftop-supplied consumption, and their model, where rooftop meets final demand, does not double count it.
+The loss gross-up is needed either way. On it, every one of their systems fails the standard, the 2030
+baseline included (113 GWh against 4.5, 25 times); 4-12 h lithium still cannot close any of the gaps.
+
+Part 2 without the loop, reading (a), 2040 demand +41.9% on our 2026 level (was +23.5%): the optimiser
+builds 8.5 GW of gas by 2040 (4.9 before) and the same solar; on independent draws it meets the standard
+to 2034 and fails from 2035, 39.0 GWh in 2040 against 5.79. 2026-2040: R3,910bn, 1,791 Mt. The run with
+the adequacy loop ended infeasible at its 14th pass; under diagnosis, not reported.
+
+Caveats: reading (a) was used for part 2 before the CO2 comparison favoured (b); part 2 should be re-run
+on (b). Their exports are not separated (their demand is domestic; our engine adds 745 MW of firm
+exports). Two draws per weather year.
+
 ### External test, Kerwin et al. 2026, part 2: our optimiser on their inputs builds more solar and storage, less gas, 6 Oct 2026
 
 Builds on `2026-10-05j`; pathchecks on `2026-10-06a` (only pumped hydro's default and the stamp differ;

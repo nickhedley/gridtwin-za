@@ -32,7 +32,14 @@ const CASES={
  await new Promise(r=>setTimeout(r,6000)); const w=dom.window;
  w.eval(`applyState(PRESETS['Today 2026']);`); await w.eval('loadWeatherYears()');
  const profTWh=+w.eval('PROFILES.demand.reduce((a,b)=>a+b,0)/1e6'), coalInst=+w.eval('FIXED.coalInstalledMW');
- const stateFor=(c,extraBatt=0,extraGas=0)=>({scenarioYear:c.y, demandGrowthPct:(DEM[c.y]/profTWh-1)*100,
+ // DEMBASIS (6 Oct 2026): 'direct' sets our underlying demand to their meter-level TWh (as first run);
+ // 'grossup' = theirs / (1 - RETAIL_LOSS) + rooftop output (their demand excludes rooftop self-consumption);
+ // 'grossup_incl' = (theirs - rooftop) / (1 - RETAIL_LOSS) + rooftop (it includes it). Ours is supply-side
+ // (contracted demand less exports, losses included) with rooftop output added back.
+ const BASIS=process.env.DEMBASIS||'direct', LOSS=+w.eval('RETAIL_LOSS');
+ const roofTWh=c=>{ if(BASIS==='direct') return 0; const x=w.eval(`simulate({...state,rooftopMW:${c.res.roof},newRooftopMW:${c.nw.roof},scenarioYear:${c.y}},PROFILES).E.rooftop/1e6`); return +x; };
+ const demFor=c=>{ const M=DEM[c.y], R=roofTWh(c); return BASIS==='grossup' ? M/(1-LOSS)+R : BASIS==='grossup_incl' ? (M-R)/(1-LOSS)+R : M; };
+ const stateFor=(c,extraBatt=0,extraGas=0)=>({scenarioYear:c.y, demandGrowthPct:(demFor(c)/profTWh-1)*100,
    coalDecomMW:Math.max(0,coalInst-c.res.coal), windMW:c.res.wind, pvUtilityMW:c.res.pv, rooftopMW:c.res.roof, nuclearMW:c.res.nuc, cspMW:c.res.csp, ocgtDieselMW:c.res.gt,
    newWindMW:c.nw.wind, newPvMW:c.nw.pv, newRooftopMW:c.nw.roof, newBattMW:c.nw.batt+extraBatt, newBattHours:BATT_H, newCcgtMW:c.nw.gas+extraGas, newNuclearMW:c.nw.nuc});
  const evalState=over=>JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
@@ -47,7 +54,7 @@ const CASES={
    if (r.mean>r.std) return {mw:null};
    while(hi-lo>step){ const mid=Math.round((lo+hi)/2/step)*step; const q=f(mid); if(q.mean<=q.std){hi=mid;r=q;} else lo=mid; }
    return {mw:hi, ...r}; };
- const out={settings:{K,SEED_BASE,BATT_H,profTWh,coalInst,DEM}, cases:{}};
+ const out={settings:{K,SEED_BASE,BATT_H,profTWh,coalInst,DEM,BASIS,LOSS}, cases:{}};
  for (const [name,c] of Object.entries(CASES)){
    const st=stateFor(c), r=evalState(st);
    const row={state:st, ...r};

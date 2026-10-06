@@ -1,0 +1,317 @@
+{
+ "inputs": {
+  "DEM": 41.93572743440226,
+  "BASIS": "grossup",
+  "COST": {
+   "wind": {
+    "c2026": 17097.3,
+    "decl": 0.002357208943460698
+   },
+   "pv": {
+    "c2026": 13450.800000000001,
+    "decl": 0.015657923254991046
+   },
+   "rooftop": {
+    "c2026": 21733.8,
+    "decl": 0.012438311010662617
+   },
+   "ccgt": {
+    "c2026": 19928.7,
+    "decl": 0.007260632734367056
+   }
+  },
+  "FOM": {
+   "wind": 841.5,
+   "pv": 396,
+   "rooftop": 627,
+   "ccgt": 501.59999999999997
+  },
+  "LIFE": {
+   "wind": 25,
+   "pv": 24,
+   "rooftop": 24,
+   "ccgt": 30
+  },
+  "COAL": {
+   "2020": 37900,
+   "2030": 30300,
+   "2040": 21700
+  },
+  "check": {
+   "coal2026": 33340,
+   "coal2030": 30300,
+   "coal2040": 21700,
+   "windCapex2030": 16936.66147102665,
+   "pvCapex2030": 12627.934330049316,
+   "ccgtCapex2030": 19356.193119955755
+  },
+  "LOOP": 0
+ },
+ "margin": 0,
+ "secs": 64.394,
+ "verdict": "pass limit reached",
+ "log": [
+  {
+   "pass": 1,
+   "margin": 0,
+   "years": [
+    {
+     "y": 2026,
+     "mean": 1.9321167382275022,
+     "limit": 3.9312084667301543,
+     "worstYear": 2017,
+     "worstGWh": 25.26483728890581
+    },
+    {
+     "y": 2028,
+     "mean": 3.7057488854150082,
+     "limit": 4.065094111214166,
+     "worstYear": 2017,
+     "worstGWh": 40.911134607431165
+    },
+    {
+     "y": 2030,
+     "mean": 3.443649229614136,
+     "limit": 4.254315832640809,
+     "worstYear": 2017,
+     "worstGWh": 34.782199713236636
+    },
+    {
+     "y": 2032,
+     "mean": 2.7848630062765083,
+     "limit": 4.522988506460357,
+     "worstYear": 2017,
+     "worstGWh": 21.46774612438077
+    },
+    {
+     "y": 2034,
+     "mean": 5.178272384451652,
+     "limit": 4.811891604481309,
+     "worstYear": 2017,
+     "worstGWh": 30.261633894090856
+    },
+    {
+     "y": 2036,
+     "mean": 7.207789231031575,
+     "limit": 5.1140570255694735,
+     "worstYear": 2017,
+     "worstGWh": 23.91376774682336
+    },
+    {
+     "y": 2038,
+     "mean": 18.200658306950825,
+     "limit": 5.438043158684477,
+     "worstYear": 2017,
+     "worstGWh": 43.801341399647036
+    },
+    {
+     "y": 2040,
+     "mean": 37.641239436759946,
+     "limit": 5.812452956823629,
+     "worstYear": 2016,
+     "worstGWh": 74.86032912868552
+    }
+   ],
+   "added": null
+  }
+ ],
+ "sched": {
+  "2026": {
+   "wind": 1600,
+   "pv": 1000,
+   "rooftop": 2000,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 6685,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 33340
+  },
+  "2027": {
+   "wind": 1600,
+   "pv": 1000,
+   "rooftop": 2000,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 12653,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 32580
+  },
+  "2028": {
+   "wind": 1600,
+   "pv": 1000,
+   "rooftop": 2000,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 8106,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 31820
+  },
+  "2029": {
+   "wind": 1600,
+   "pv": 1000,
+   "rooftop": 2000,
+   "batt": 1214,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 2854,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 31060
+  },
+  "2030": {
+   "wind": 1600,
+   "pv": 1000,
+   "rooftop": 0,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 1200,
+   "battMWh": 2636,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 30300
+  },
+  "2031": {
+   "wind": 2000,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 206,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 678,
+   "battMWh": 0,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 29440
+  },
+  "2032": {
+   "wind": 2000,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 126,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 779,
+   "battMWh": 0,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 28580
+  },
+  "2033": {
+   "wind": 2000,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 509,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 416,
+   "battMWh": 7410,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 27720
+  },
+  "2034": {
+   "wind": 2000,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 475,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 471,
+   "battMWh": 7628,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 26860
+  },
+  "2035": {
+   "wind": 2000,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 319,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 649,
+   "battMWh": 6022,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 26000
+  },
+  "2036": {
+   "wind": 2000,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 0,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 1162,
+   "battMWh": 193,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 25140
+  },
+  "2037": {
+   "wind": 2000,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 1020,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 604,
+   "battMWh": 7252,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 24280
+  },
+  "2038": {
+   "wind": 2000,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 1009,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 642,
+   "battMWh": 8008,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 23420
+  },
+  "2039": {
+   "wind": 2000,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 784,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 895,
+   "battMWh": 4927,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 22560
+  },
+  "2040": {
+   "wind": 573,
+   "pv": 2000,
+   "rooftop": 0,
+   "batt": 731,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 977,
+   "battMWh": 4941,
+   "off": 0,
+   "earlyRetMW": 0,
+   "coalMW": 21700
+  }
+ },
+ "objective": 6595438245079.302,
+ "status": "Optimal"
+}
