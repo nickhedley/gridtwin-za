@@ -1815,6 +1815,21 @@ from now than seven; a smaller off-river scheme could be quicker. 2033 is kept a
 and from 2033 with the sensitivity. Nothing in the suite moves: pumped hydro is off by default
 (bldPhesOn 0). The 5 Oct pumped-hydro pathway (pathway_ph160a, which built none) used 2033.
 
+### Curtailment timing: the IEP workshop and NERSA's 2025 report disagree, 6 Oct 2026
+
+Not a model result; a point for the IEP comment. The DEE's input-assumptions workshop (5-6 Oct 2026,
+slides photographed, not published) describes curtailment as midday solar. NERSA's 2025 monitoring
+report (issue 27, March 2026) describes R402m of deemed energy to 67 REIPPPP plants, curtailed at
+night when demand was low, to keep the grid stable (see "Curtailment re-based on 2025" below).
+
+What is established: night, low demand, stability. What is inferred: that it was mostly wind (from
+the timing and the deemed-energy tariffs), and that it was local rather than system-wide (open,
+TODO 14a1; a single-node model cannot see local stability limits). The model's own surplus
+curtailment in high-solar builds is midday, so the department's description fits the future system
+better than the 2025 record.
+
+Caveat: cite the department's wording only once the slides are published.
+
 ### Harness baselines regenerated: what had changed since they were written, 6 Oct 2026
 
 Build `2026-10-05j`. control_inventory.json (validate_structure) and response_matrix.json
@@ -1859,6 +1874,100 @@ importsMW -> loleHrs, now responsive: 1 hour at zero imports, 0 from 2,000 MW (1
 Caveat: four of the seven causes are inferred from dated entries, not reproduced; the builds that
 would show them are not in git.
 
+### Build 05j changed stress-window scope; the 5 Oct pathways do not reproduce on it, 5 Oct 2026
+
+Build `2026-10-05j`. Between `05g` (pathway_op recorded) and `05j` each stress window became scoped to
+its fromYear on: the failing model year minus opts.windowLeadYears (default 4). At `05g` every window
+bound every model year. Not recorded in RESULTS at the time.
+
+Effect: pathway_op.js on `05j` no longer converges in two passes; its 2016 window binds only from
+2036, 2032-2034 are never repaired, windows pile up and HiGHS (highs-js 1.15.3, WebAssembly) aborts.
+With windowLeadYears 14 (every window from 2026) it reproduces pathway_op.json exactly: same
+objective, same schedule to the MW, adequate in two passes (pathway_half_op.js TF=1).
+
+Every pathway entry below dated 5 Oct was run at or before `05g`, so with all-year windows.
+
+### SUPERSEDED 6 Oct 2026 - Half-standard pathway on pathway_op's settings: stalls near the full standard, solver limit at pass 5, 5 Oct 2026
+
+Superseded by the per-failing-year stress loop (builds 2026-10-06b and 06c, branch claude/stress-per-year),
+which reaches half the standard; kept for the record of why this run stalled. Cause: windows reached only
+the worst year, so 2032-2036 were never repaired; with every-year windows the WebAssembly solver ran out
+of memory, and with native HiGHS (6 Oct) the run hit the 3,600 s limit at solve 13 with no build saved.
+
+Build `2026-10-05j`. pathway_half_op.js: pathway_op's settings (draws 2, testEvery 2, stressDays 14,
+windowsPerPass 1) plus targetFrac 0.5 and windowLeadYears 14 (all-year windows, as at `05g`). Fresh
+HiGHS instance per solve.
+
+Mean shed against half the standard (about 1.97 GWh), years failing only:
+pass 1  2032 2.51, 2034 4.44, 2036 5.70, 2038 8.27, 2040 8.39   (identical to pathway_op pass 1)
+pass 2  2036 2.10, 2038 3.90, 2040 3.71
+pass 3  2036 2.25, 2038 3.60, 2040 3.58
+pass 4  2036 2.15, 2038 3.57, 2040 3.86
+Pass 5's solve (five 14-day windows on fifteen model years) aborted in HiGHS; no build recorded.
+
+Finding: after the first window, three more each moved 2038-2040 by under 0.4 GWh. The loop sits at
+about the full standard, not half. The earlier half-standard run (pathway_half, windowLeadYears 1,
+below) is superseded as a test of the target: it was scoped too narrowly to repair 2032-2036.
+
+Caveat: not converged; no build or cost to quote. Two draws per weather year.
+
+### Pathways re-checked on independent outage draws: both still meet the standard every year, 5 Oct 2026
+
+Build `2026-10-05j`, suite 803/812 with ESK19679.csv absent (see the half-standard entry below).
+pathcheck.js until now drew the same outage seeds as the loop's own adequacy test, so its means
+reproduced the loop's and were not an independent check. It now uses SEED_BASE 71830529 + k x
+104729 + y x 7919, which collides with no seed in index.html; SEED_BASE=20260816 reproduces the old
+runs exactly (pathcheck_op re-run, largest difference 0). Twelve weather years x two draws, legislated
+carbon path, PH 14. Outputs pathcheck_op_s2.json and pathcheck_sd14_s2.json in harness/pathway/.
+
+Outage-path pathway (pathway_op): every year 2026-2040 meets the standard. Worst year 2038 and 2040,
+2.89 GWh against 3.92 and 3.88 (loop's draws: 3.90 in 2038). Mean over the fifteen years 0.96 GWh
+against 1.34. Cost R3,462bn (3,463), CO2 1,520 Mt (1,522).
+
+Fourteen-day pathway (pathway_sd14): every year meets the standard. Worst 2039, 3.08 GWh against
+3.91 (loop's draws: 3.38 in 2038). Mean 0.77 GWh against 0.93. Cost R3,479bn (3,480), CO2 1,513 Mt
+(1,514).
+
+Caveat: two draws per weather year. On fresh draws both builds shed less than on the draws they were
+sized against, which is the expected direction for an in-sample test, but two draws do not pin the
+size of the difference. The worst single run is still 31 to 33 GWh in 2040 on both.
+
+### SUPERSEDED 6 Oct 2026 - Half-standard pathway did not converge: fails even the full standard in 2034-2038, 5 Oct 2026
+
+Superseded by the per-failing-year stress loop (builds 2026-10-06b and 06c, branch claude/stress-per-year),
+which reaches half the standard; kept for the record of why this run stalled. Cause: windows reached only
+the worst year, so 2032-2036 were never repaired; with every-year windows the WebAssembly solver ran out
+of memory, and with native HiGHS (6 Oct) the run hit the 3,600 s limit at solve 13 with no build saved.
+
+Build `2026-10-05j`, suite 803/812 plus eng5 6/6 with ESK19679.csv absent (803/805 leaving out seven
+checks against stale baseline files, see TODO). pathway_half.js, recorded in harness/pathway/
+(pathway_half.json, pathcheck_half.json). Today 2026, demand growth 5% to 2040, horizon 2040, gas no
+earlier than 2030, rooftop fixed at 1.2 GW a year from 2027. Loop: perYear, targetFrac 0.5, draws 2,
+testEvery 3, stressDays 10, maxPasses 10, windowsPerPass 1, windowLeadYears 1, marginStepMW 1000.
+Check: pathcheck.js, twelve weather years x two outage draws, legislated carbon path, PH 14.
+
+Verdict "pass limit reached": ten passes, nine outage-path windows added, all for model years 2038
+and 2040, no margin used. With windowLeadYears 1 each window binds only from the year before, so the
+build to 2036 barely moved and 2032 and 2035 never changed across passes (2.51 and 4.52 GWh).
+
+By 2040: 15.2 GW onshore, 30.9 GW solar, 16.8 GW new rooftop, 19.4 GW lithium at 107 GWh (5.5
+hours), 0.25 GW vanadium, no iron-air, no gas, no offshore; 1.35 GW of coal retired early in
+2039-2040.
+
+Half the standard is met in 2026-2031 only. The full standard is failed in 2034 (4.44 against 3.95
+GWh), 2035 (4.52, 3.93), 2036 (5.70, 3.92) and 2038 (4.87, 3.90). The full-standard run
+(pathcheck_op.json) met the full standard every year.
+
+Over 2026-2040: cost R3,384bn against R3,463bn at the full standard (2.3% lower), grid cost R3,239bn
+against R3,319bn; CO2 1,585 Mt against 1,522 (4.1% higher). 2040: CO2 73.6 Mt (82.4), curtailment
+43 TWh (33), whole-system R234bn (229).
+
+Caveat: not a half-standard pathway. It is cheaper because it is less reliable, not because a
+stricter target found a better build. Not to be quoted as the cost of the presets' 2x margin.
+
+Second caveat: this check used the loop's own outage seeds (20260816 + k x 104729 + y x 7919 in
+both), so its means reproduce the loop's exactly. Fixed since; see the independent-seed entry above.
+
 ### Outage-path stress windows replace the capacity margin: no margin needed, R17bn cheaper, 5 Oct 2026
 
 Build `2026-10-05g`, suite 805/806, pathway_op.js. The engine now records hourly coal availability
@@ -1873,7 +1982,8 @@ no margin, against six passes and 4,000 MW with flat-derate windows.
 By 2040: 11.9 GW onshore, 26.7 GW solar, 14.0 GW lithium at 90 GWh (about 6.4 hours), 0.75 GW
 vanadium, 0.45 GW iron-air, no gas, no offshore, no early coal retirement.
 
-Every year checked on twelve weather years x two fresh outage draws meets the standard. 2038 sits at
+Every year checked on twelve weather years x two outage draws meets the standard (corrected 5 Oct:
+the loop's own draws, not fresh ones; see the independent-seed entry above). 2038 sits at
 the line, 3.90 against 3.91 GWh, so the build is on the
 standard with no spare margin, unlike the presets' 2x design. Over 2026-2040: cost R3,463bn against
 R3,480bn for the flat-derate 14-day pathway, CO2 1,522 Mt against 1,514.
@@ -1881,7 +1991,7 @@ R3,480bn for the flat-derate 14-day pathway, CO2 1,522 Mt against 1,514.
 ### Fourteen-day pathway verified; pumped hydro not chosen even at its best case, 5 Oct 2026
 
 Build `2026-10-05f`, suite 805/806. The 14-day pathway (pathway_sd14) checked year by year on twelve
-weather years x two fresh outage draws: every year meets the standard, worst mean shed 3.38 GWh
+weather years x two outage draws (corrected 5 Oct: the loop's own draws, not fresh ones): every year meets the standard, worst mean shed 3.38 GWh
 (2038) against about 3.9. Over 2026-2040: cost R3,480bn against R3,493bn
 for the 7-day reference (0.4% lower), CO2 1,514 Mt against 1,473 (3% higher).
 2040: CO2 84.5 Mt, curtailment 34 TWh, whole-system R232bn, grid R212bn.
@@ -2058,7 +2168,9 @@ judged on expected unserved energy, the mean, against 0.002% of demand. The wors
 worst failing year joins the optimiser; when that week is already there, a stress-day margin rises
 by 1,000 MW instead, as utilities calibrate a planning reserve margin to an adequacy study. Seven
 passes: two weeks added (2016 for model year 2038, 2015 for 2040), margin 4,000 MW. Then all fifteen
-years checked independently, twelve weather years x two fresh outage draws.
+years checked, twelve weather years x two outage draws. Corrected 5 Oct: pathcheck then used the
+loop's own seed formula, so these were probably the loop's draws, not fresh ones (not re-verified
+for this build).
 
 Assumptions. Start Today 2026; demand +5% by 2040. Coal retires on Eskom's unit schedule scaled to
 39,692 MW in 2026; the optimiser may retire earlier (it does not). Gas from 2030 only. Offshore on

@@ -34,10 +34,12 @@ superseded queue entries. Never add the delta. See rules.md.
 | Eskom TDP | annual | 2025-2034 edition | `tdp_projects.json`; also underpins the storage and transmission capex constants |
 | Revised Electricity Pricing Policy | one-off, for comment | Gazette 55257, gn 7852, 28 Aug 2026 | the price-component mapping in results.md; submission made 27 Sep |
 | NERSA Wholesale Electricity Pricing Methodology | consultation | May 2026 | independent cross-check on the price-component mapping; names balancing costs, which GridTwin lacks |
+| Energy Council of South Africa, Electricity Wholesale Tariff Series, ch. 1-3 | one-off, 2026 (UK PACT-funded) | flip-book at energycouncil.org.za/insights/analysis/; PDFs held by the user | retail stack and the planned SAWEM transition basis (TODO 14af-14ai); no constant reads it yet |
 | NERSA Trading Rules | consultation, v3 | June 2026; comments extended to 28 Sep 2026 (dashboard Issue 04) | governs wheeling and trading - see calendar |
 | Renewables.ninja / MERRA-2, regional | static | 2014-2025, twelve years | `profiles_regional_multiyear.json` via `weatherYearNational()` - capacity-weighted, bias-corrected 0.848 |
 | Form Energy / Google / Xcel transaction | one-off | 30 GWh, ~usd 77/kWh pre-incentive | `acapIronAir` 12,940 R/kW-yr |
 | Eskom Tubatse pumped storage | one-off | R35.9bn, 1.5 GW / 21 GWh, jet plan | `acapPs` 2,360 R/kW-yr |
+| Eskom Ingula pumped storage | one-off | R26.8bn reported, 1,332 MW / 21 GWh, built 2006-2017 (Engineering News, 2016) | cross-check on `bldPhesCostBasis` 'tubatse'; no constant reads it |
 | DFFE REEA, Red Cap / Impofu | rolling | as at last ingest | the Impofu and Koruson connector endpoints in `transmission_lines.geojson` |
 
 | SolarAfrica SunCentral | one-off | 114 MW of a 342 MW phase 1 energised 26 Aug 2026, not yet at commercial operation | pipeline, not capacity. Corrected 23 Sep 2026: an earlier entry here said 342 MW energised, which was wrong on the figure and the status |
@@ -61,6 +63,8 @@ superseded queue entries. Never add the delta. See rules.md.
 | IEA, *Electrification* (special report) | one-off | 22 Sep 2026, CC BY 4.0 | the industrial electrification scenario: 40% of fossil low- and medium-temperature industrial heat is competitively electrifiable today, heat pumps deliver 3-5 units of heat per unit of electricity, global electrification rate 23% now to 35% by 2035 in the High Electrification Scenario |
 | RMI, grid reliability guide and *Reliability Explored* | rolling | 2026 | the scope note in handover.md: reliability is adequacy, stability and resilience across bulk AND distribution; most outages originate on distribution; renewable deployment has not worsened US reliability outcomes |
 | GCCA Annexure A substation limits | annual | as at 2026 | not yet loaded: the per-substation connection limits behind regional congestion, for the nodal work |
+| NERSA congestion curtailment approval | one-off | April 2025 (framework to March 2028) | `congestionCurtailPct` 4% is its ceiling; framing for TODO 14aj |
+| NTCSA practice note on congestion curtailment | one-off | October 2025 | the 1,580 MW released under the framework (TODO 14aj); not yet read by Claude |
 | CSIR systems analysis technical report | occasional | as cited | least-cost installed capacity ranges by 2030 and 2050, the band check in `validate_external.js` |
 | Firm-dispatchable generation in South Africa (arXiv 2403.15037) | one-off | 2024 | independent renewable-based build: 49 GW wind, 14 GW solar, 24 GWh storage, 15 GW firm at 5% utilisation, 12.9 GW baseload retained |
 
@@ -310,6 +314,13 @@ Vanadium turnkey range   USD 450/kWh at 8h, 25-yr life -> acapVrfb 5,565.
                          +/-20% as the honest band.
 Tubatse                  R35.9bn for 1.5 GW (JET plan, 2022 rands), escalated four
                          years at SA CPI -> R29,200/kW, 60-yr civil life -> acapPs.
+Ingula                   R26.8bn reported for 1,332 MW / 21 GWh, about 15.8 h (Engineering News,
+                         2016); construction 2006-2017. R20,100/kW as reported; at the ~5.1% a
+                         year implied by the Tubatse escalation, about R33,000/kW in 2026 rands,
+                         about 42% above the unscaled atlas fit at 15.8 h (Tubatse: 28% at 14 h).
+                         Supports the 'tubatse' basis. Approximate: spend is mixed-year nominal,
+                         and unescalated it sits about 13% below the fit. Eleven years to build
+                         against the optimiser's 2033 earliest pumped-hydro date (TODO 14z).
 Carbon Tax Act Phase 2   R308/t headline from 1 Jan 2026, generation allowances up to
                          85% -> carbonTaxRPerT 46. SEE CALENDAR: a suspension was under
                          consideration and NERSA has disallowed tariff recovery to 2030.
@@ -318,6 +329,27 @@ FX                       R16.50/USD, 180-day trailing average to 26 Aug 2026 (ra
                          capital constant must not move 8% on a currency tick.
                          Supersedes the R16.21 and R16.80 used elsewhere in the file.
 ```
+
+## Energy Council of South Africa, Electricity Wholesale Tariff Series (2026)
+
+Chapters 1-3, UK PACT-funded, on unbundling the wholesale tariff for SAWEM. Online as flip-books at
+energycouncil.org.za/insights/analysis/. PDFs supplied by the user 6 Oct 2026 (ch. 1, 14 pp; ch. 2, 22 pp;
+ch. 3, 22 pp; created 28 May 2026). No licence stated, so not committed to the repo. Searched, not yet
+read in full: ch. 3 gives vesting contracts as usually lasting 5-7 years before phasing out (UK Pool,
+Singapore NEMS, Chile), "but may be extended indefinitely", with volumes reduced under NERSA-approved
+transition arrangements. It gives no starting vesting share.
+
+```
+At SAWEM launch      most volume trades under vesting contracts (two-way contracts for difference
+                     between the central purchasing agency, Eskom Generation and distributors that are
+                     market participants) and legacy contracts (Section 34 IPP PPAs)
+Legacy charge        the difference between contract prices and the hourly market price, recovered
+                     from all consumers
+Vesting volumes      set quarterly by NERSA; shrink as the market matures, typically over 5-7 years
+Wholesale tariff     seven parts: energy (time of use), generation capacity, legacy, transmission use
+                     of system, losses, ancillary services, subsidies
+Chapter 2            the 1980s transmission charging zones are now inverted relative to grid
+                     constraints: support for the model's locational grid costs (TODO 14ai)
 
 ## External scenario: Kerwin et al. 2026 (TODO 14p)
 
@@ -356,6 +388,14 @@ Baseline build (digitised from Figure C8,          2030: wind 11.2, gas 0.7. 204
  +/-0.05 GW a bar; sums 11.9 and 50.4 GW against   gas 6.8 (gas type not split in the figure)
  Table 2's 11.9 and 50.5)
 ```
+
+## Congestion curtailment: South Africa's current rule (TODO 14aj)
+
+NERSA's congestion curtailment approval (April 2025) and NTCSA's practice note (October 2025), as
+summarised by the user 6 Oct 2026; neither document read by Claude yet. Wind only, Western and Eastern
+Cape only, curtailment capped at 4%, releasing 1,580 MW of extra connections (1,180 MW Western Cape,
+400 MW Eastern Cape). Extending it to other technologies or regions needs NERSA approval backed by
+studies. The model's congestionCurtailPct 4 is this ceiling, not an expected rate.
 
 ## Sources consulted and rejected
 
