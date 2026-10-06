@@ -1874,6 +1874,30 @@ importsMW -> loleHrs, now responsive: 1 hour at zero imports, 0 from 2,000 MW (1
 Caveat: four of the seven causes are inferred from dated entries, not reproduced; the builds that
 would show them are not in git.
 
+### Settings each 5 Oct pathway used, so they stay reproducible, recorded 6 Oct 2026
+
+Common to all: Today 2026, demand growth 5% to 2040, horizon 2040, gas no earlier than 2030, rooftop
+1.2 GW a year from 2027, perYear loop, draws 2, marginStepMW 1000, maxPasses 14 unless stated, highs-js
+(WebAssembly) solver. Windows bind every model year at every build before `05j`; the scope option did not
+exist yet.
+
+```
+script, output                 build  commit    loop                                        notes
+pathway.js, pathway6           05a    a08cc0e   testEvery 2; 7-day weather window per pass  reference pathway, superseded
+pathway_pv15.js, pathway_pv15  05b    bff06d5   as 05a                                      solar cap growth 15%
+pathway_c462.js, pathway_c462  05b    bff06d5   as 05a                                      carbon path to R462
+pathway_sd14.js, pathway_sd14  05f    not in git testEvery 2, stressDays 14                 14-day windows
+pathway_ph160a.js              05f    not in git testEvery 2, stressDays 14                 pumped hydro, first year 2033
+pathway_op.js, pathway_op      05g    d1be2a3   testEvery 2, stressDays 14, maxPasses 12    outage-path windows
+pathway_half.js                05j    -         testEvery 3, stressDays 10, maxPasses 10,   superseded (scope too narrow)
+                                                targetFrac 0.5, windowsPerPass 1, windowLeadYears 1
+```
+
+Reproduction: pathway_op reproduces exactly on `05j` and `06a` with windowLeadYears 14 (pathway_half_op.js,
+TF=1, LEAD=14). It does not reproduce on `06b` or later, where windows are added per failing year
+(windowsPerPass, default scope the failing year itself). `05f` was never committed; sd14 and ph160a can
+only be re-run approximately, on `05g` with the same options.
+
 ### Build 05j changed stress-window scope; the 5 Oct pathways do not reproduce on it, 5 Oct 2026
 
 Build `2026-10-05j`. Between `05g` (pathway_op recorded) and `05j` each stress window became scoped to
