@@ -1714,6 +1714,46 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### External test, Kerwin et al. 2026: their systems shed when dispatched hourly; the gap is energy, not power, 6 Oct 2026
+
+Build `2026-10-05j`, suite 804/807 plus eng5 6/6 on 6 Oct with ESK19679.csv absent (failures: EDMSA
+CO2, the Eskom reference, the build-stamp date). harness/ext/kerwin_part1.js, output kerwin_part1.json.
+Their inputs are in SOURCES ("External scenario: Kerwin et al. 2026").
+
+Settings. Today 2026 preset; scenarioYear 2030 or 2040; demand set to their Table A4 baseline (207.4 and
+247.8 TWh; demandGrowthPct 3.36 and 23.54 on our 200.62 TWh profile). Their residual fleet replaces
+ours: coalDecomMW = 39,692 - their coal; windMW, pvUtilityMW, rooftopMW, nuclearMW, cspMW and
+ocgtDieselMW from Table A8. Hydro, pumped storage and imports are ours. Their new build cumulative from
+2024 as newWindMW, newPvMW, newRooftopMW, newBattMW (4 h, assumed), newCcgtMW (all their gas),
+newNuclearMW; biomass and small hydro (0.13-0.28 GW) left out. Scenario 1 coal is their own phase-out
+(C5: 25.2 and 12.5 GW), because the engine has no emissions cap. Twelve weather years x two outage
+draws on pathcheck's independent seeds (SEED_BASE 71830529). Standard: 0.002% of demand.
+
+                       mean shed   standard  x std  curtail  CO2 ours  CO2 theirs  smallest fix
+                       GWh         GWh              TWh      Mt        Mt
+Baseline 2030          4.47        4.16      1.1    0.0      135.6     155.9       +250 MW 4 h battery or gas
+Baseline 2040          94.3        5.07      19     6.6      99.6      111.1       +3.0 GW gas; no battery size
+Scenario 1 2030        134         4.05      33     1.0      116.0     129.1       +3.0 GW gas; no battery size
+Scenario 1 2040        5,428       5.02      1,080  20.1     64.9      64.5        +12.25 GW gas; no battery size
+S1 2030, their residual coal 30.3 GW   3.84   4.06   meets  1.2   118.6
+S1 2040, their residual coal 21.7 GW   368    4.96   74     25.6  83.4
+
+"No battery size": 4 h lithium added up to 64 GW does not meet the standard. Checked that it is not a
+cap: on Scenario 1 2040 (one draw per year), 0 / 10 / 30 / 64 GW extra take mean shed 5,404 / 4,112 /
+3,240 / 2,657 GWh, battery discharge in 2016 2.8 to 14.3 TWh; at 12 h, 4,751 to 2,091 GWh. Curtailment
+falls 20 to 5-7 TWh. The remaining shortfall is energy over multi-day periods, which storage cannot
+create; gas adds it.
+
+Finding: their 2030 baseline is about adequate; every other system fails the standard by 19 to about
+1,000 times, and the shortfall is energy over multi-day periods, met with gas, not storage. Their wind
+runs at a flat 0.36 in all eight time slices (A9), so their model never sees a wind lull. The authors
+say as much: their model "does not capture sub-annual balancing requirements". CO2 agrees where coal
+capacity is set the same (Scenario 1 2040: 64.9 against 64.5 Mt).
+
+Caveats: battery duration assumed (4 h); the baseline build is digitised from a figure; demand
+definitions not reconciled (their final demand against our system demand; levels agree within 0.5% in
+2026); two draws per weather year.
+
 ### Harness baselines regenerated: what had changed since they were written, 6 Oct 2026
 
 Build `2026-10-05j`. control_inventory.json (validate_structure) and response_matrix.json

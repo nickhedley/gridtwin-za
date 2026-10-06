@@ -319,6 +319,44 @@ FX                       R16.50/USD, 180-day trailing average to 26 Aug 2026 (ra
                          Supersedes the R16.21 and R16.80 used elsewhere in the file.
 ```
 
+## External scenario: Kerwin et al. 2026 (TODO 14p)
+
+Kerwin, Fields, Martindale and Quiros-Tortos (2026), "Long term planning for a clean energy transition
+in South Africa's electricity sector: an integrated MAED-OSeMOSYS approach", Renewable and Sustainable
+Energy Transition, doi 10.1016/j.rset.2026.100162. Open preprint, CC BY 4.0: doi 10.33774/coe-2026-15jfr
+(65 pages, read 6 Oct 2026). OSeMOSYS, annual steps 2024-2050, eight time slices (four seasons, day and
+night). No discount rate, battery duration or reliability constraint is stated.
+
+```
+Demand (A4, MAED baseline, PJ; x 277.78 = GWh)   2020 687.2   2030 746.5 (207.4 TWh)   2040 892.2 (247.8 TWh)
+                                                  2050 1,066.5. High demand: 791.7 / 1,043.5 / 1,375.3
+Capex USD/kW 2020 / 2030 / 2040 (A5)              wind 1,047 / 1,029 / 1,005; utility PV 877 / 774 / 661;
+                                                  rooftop 1,406 / 1,258 / 1,110; BESS (power) 250 / 220 / 190;
+                                                  CCGT 1,248 / 1,181 / 1,098; OCGT 1,120 / 1,050 / 961;
+                                                  nuclear 6,137; coal 3,297
+Fixed O&M USD/kW-yr (A5)                          wind 51, utility PV 24, rooftop 38, BESS 6-5, CCGT 31-28,
+                                                  nuclear 119, coal 78
+Life, years (A5)                                  wind 25, PV 24, BESS 10, CCGT 30, OCGT 25, nuclear 50, coal 35
+Fuel, million USD/PJ (A6)                         domestic coal 3.4-3.8, imported gas 8.6-11, diesel 11-15
+Residual capacity GW 2020 / 2030 / 2040 (A8)      coal 37.9 / 30.3 / 21.7; wind 2.5 / 3.4 / 2.0;
+                                                  utility PV 2.0 / 2.4 / 1.4; rooftop 1.2 / 5.8 / 5.8;
+                                                  nuclear 1.9 / 1.9 / 1.5; "CCGT" 3.4 / 3.4 / 2.3 (in fact
+                                                  the diesel OCGT fleet); large hydro 3.3 (hydro plus pumped
+                                                  storage); CSP with storage 0.5 / 0.5 / 0.3
+Capacity factors (A9)                             wind 0.36 in all eight slices; coal 0.57; utility PV
+                                                  0.43-0.61 by day, 0 at night
+Build limits GW/yr (A13)                          wind 1.6 (2024-30), 2 (2031-40), 3 (2041-50);
+                                                  utility PV 1, 2, 3
+Scenario 1 build (C1), cumulative from 2024       2030: wind 11.2, utility PV 7.0, rooftop 3.51, CCGT 0.25,
+                                                  biomass + small hydro 0.13. 2040: wind 31.2, PV 25.7,
+                                                  rooftop 3.64, BESS 2.75, CCGT 1.91, nuclear 0.93, bio+hydro 0.28
+Scenario 1 coal (C5), GW required                 2030 25.2, 2040 12.5. Emissions path (C3): 2030 129.1 Mt,
+                                                  2040 64.5 Mt
+Baseline build (digitised from Figure C8,          2030: wind 11.2, gas 0.7. 2040: wind 31.2, PV 11.0, BESS 1.4,
+ +/-0.05 GW a bar; sums 11.9 and 50.4 GW against   gas 6.8 (gas type not split in the figure)
+ Table 2's 11.9 and 50.5)
+```
+
 ## Sources consulted and rejected
 
 Recording these so they are not re-investigated.
