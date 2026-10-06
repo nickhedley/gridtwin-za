@@ -1754,6 +1754,17 @@ Caveats: battery duration assumed (4 h); the baseline build is digitised from a 
 definitions not reconciled (their final demand against our system demand; levels agree within 0.5% in
 2026); two draws per weather year.
 
+### Pumped hydro's earliest build year moved from 2033 to 2035, 6 Oct 2026
+
+Build `2026-10-06a`, suite 805/807 plus eng5 6/6 with ESK19679.csv absent (before: 804/807 at
+`2026-10-05j`; the one change is the build-stamp date check; failures EDMSA CO2 and the Eskom reference).
+New FIXED key bldPhesFirstYear 2035 replaces the literal 2033 in the build LP. Why: Ingula took 11
+years (2006-2017), so a first scheme that does not yet exist is more honestly in service nine years
+from now than seven; a smaller off-river scheme could be quicker. 2033 is kept as a sensitivity
+(bldPhesFirstYear: 2033). LP bounds checked: b_phes is 0 to 2034 and 1,500 MW from 2035 by default,
+and from 2033 with the sensitivity. Nothing in the suite moves: pumped hydro is off by default
+(bldPhesOn 0). The 5 Oct pumped-hydro pathway (pathway_ph160a, which built none) used 2033.
+
 ### Harness baselines regenerated: what had changed since they were written, 6 Oct 2026
 
 Build `2026-10-05j`. control_inventory.json (validate_structure) and response_matrix.json
