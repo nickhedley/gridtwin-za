@@ -433,8 +433,9 @@ registrations source is nodal/nersa_registrations.json (SAPVIA dashboard, 20,131
 
 ## Non-residential shiftable load (drShiftPct note, build 06g)
 
-Found 6 Oct 2026 by web search. The network proxy blocked every document, so each figure below is from
-a search extract and not yet checked in the source. Verify the figures and pages before quoting.
+Found 6 Oct 2026 by web search. Only the LBNL report could be opened and checked. NREL and IEA are
+still blocked from this environment, so their figures come from search extracts. Verify those figures
+and pages before quoting.
 
 - Matsuda-Dunn, McKenna, Desai (NREL) and Mukoma (CSIR), Determining and Unlocking Untapped
   Demand-Side Management Potential in South Africa: Demand Response at the Grid Edge,
@@ -446,11 +447,20 @@ a search extract and not yet checked in the source. Verify the figures and pages
   It mixes interruptible and shiftable load, is mostly industrial, and is closer to a technical than
   an economic potential (about 2022). It also gives Eskom's contracted demand response: 1,014 MW
   instantaneous, 346 MW supplemental and 62 MW critical peak day. That is interruptible, not shifted.
-- IEA, Scaling Up Demand Flexibility, 2025, South Africa case study: about 1.5 GW (5% of peak) avoided,
-  mostly industrial and mostly curtailment.
-- USAID and DMRE (LBNL), South Africa: Energy Efficiency Demand Side Management Experience
-  (2004-2022), June 2023: 769 MW of verified demand savings through the energy service company model,
-  efficiency and load shift together.
+- IEA, Scaling Up Demand Flexibility (2025, or 2026: the year needs checking), South Africa case
+  study: "demand flexibility measures have already avoided around 1.5 GW or 5% of annual peak
+  demand". This comes from a search summary; the document was not reached. "Mostly industrial" is only
+  implied.
+- Covary and de la Rue du Can (LBNL, for USAID and DMRE), South Africa: Energy Efficiency Demand Side
+  Management Experience (2004-2022), LBNL-2001576, October 2023,
+  https://eta-publications.lbl.gov/sites/default/files/usaid_dmre_report_1.pdf. VERIFIED in the document
+  (6 Oct 2026):
+  - "The total savings from the ESCO model were 769 MW of demand savings and 2,327 GWh of energy savings
+    (Skinner, 2012)" (printed p.7). These are figures to 2012 and combine efficiency with load shift.
+  - Table 2 (printed p.8): R3.5M/MW for load shifting and peak clipping alike; R5.25M/MW for
+    efficiency.
+  - "Eskom achieved a saving of 1 216 MW" against 1,037 MW targeted (printed p.5), stated as 2011-2013
+    there but as April 2010-March 2013 on printed p.6.
 - Model use: about 15% of each peak hour (about 4 GW) as a technical ceiling; 2-7% (500-2,000 MW) as
   a plausible 2026-2030 range. The split between shiftable and interruptible is an assumption.
 
@@ -470,9 +480,17 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
   - about USD 1 bn for both phases;
   - investment decision Q1 2028, Phase 1 operating about 2030;
   - Eskom heads of agreement as foundation customer, 5 Jun 2026; no take-or-pay terms published.
-  Sources: pgjonline (Mar 2026), Mining Weekly (5 Jun 2026), Zawya.
-- Inland transport: the Lilly pipeline is about 23 PJ/yr, too small for a 3 GW plant. The ROMPCO tariff
-  was R13.34/GJ in 2016 (about USD 0.85/MMBtu). An inland plant would need a new pipeline.
+  Sources: pgjonline (Mar 2026), Mining Weekly (5 Jun 2026), Zawya. Search summaries of Engineering
+  News and Mining Weekly (5 Jun 2026) describe "a 170 000 m3 floating storage unit and an onshore
+  regasification plant", so it is a storage unit with onshore regas, not an FSRU. An earlier tender
+  said "at least 170,000 cbm" and 2 mtpa. Not confirmed in the documents.
+- Inland transport: the Lilly pipeline is about 23 PJ/yr, too small for a 3 GW plant. The ROMPCO
+  tariff was R13.34/GJ in 2016 on its first expansion and R12.87/GJ on the second (Business Day,
+  30 Nov 2016, search summary), about USD 0.85/MMBtu. An inland plant would need a new pipeline.
+- Not confirmed in any document: Engro's USD 228,016/day (its USD 0.66/MMBtu tolling fee is a lead
+  from a 2017 Profit article), OIES NG-123's USD 100-140k/day, and LNG density, energy per tonne and
+  heel share. The LNG storage check uses 0.45 t/m3 and 54.9 GJ/t (HHV) as settings until a source is
+  found.
 - Derived (not sourced):
   - Regas fuel and boil-off: USD 0.25/MMBtu.
   - Transport: 0 at Richards Bay; USD 1.2/MMBtu central inland.
