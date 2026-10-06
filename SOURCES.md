@@ -411,6 +411,26 @@ agree. Two to check against the PDF: energy storage sums to 7,930 MW by year aga
 8,223 (the gap equals the two Eskom battery entries, 294 MW); private PV sums to 6,987 against 6,988.
 The IRP's new wind in 2026 and 2027 (964 and 2,847 MW) equals the committed private wind.
 
+## Power Futures Lab, Financial Close & Commercial Operations Monitor, H1 2026 (TODO 14u5 step 3)
+
+Alao and Kruger, Power Futures Lab (UCT), briefing "SA IPP FC/COD H1 2026" (v4), 17 Aug 2026, 7 pages. The
+PDF was uploaded 6 Oct 2026 and removed from the repo the same day: it states no licence. Figures used:
+
+```
+Operational H1 2026        1,920 MW, 17 projects (Table 1): privately procured 1,046 MW in 10 projects,
+                           publicly procured 874 MW installed (680 contracted) in 7. Includes Mulilo Total
+                           Hydra Storage (75 MW contracted; 216 MWp PV behind it) and Graspan PV (75 MW).
+                           Three captive behind-the-meter projects, 88 MW (Lephalale 1 68, PPC Slurry 10,
+                           PPC Dwaalboom 10), excluded from the model as before.
+Expected H2 2026 COD       2,202 MW, 28 projects; 1,414 private and 789 public (Figure 1, p.5, chart labels)
+Financial close 2026       1,713 MW, nine closures
+Advanced pipeline          3,243 MW: REI4P BW7 1,520, BW6 640, BESI4P BW2 462, private 621
+```
+
+Not from this brief: the 19.3 GW of NERSA registrations, which is press coverage of PFL data (Green
+Building Africa, Aug 2026; MyBroadband, about 19,300 MW registered 2018 to Q1 2026). The model's
+registrations source is nodal/nersa_registrations.json (SAPVIA dashboard, 20,131 MW to Q1 2026/27).
+
 ## Sources consulted and rejected
 
 Recording these so they are not re-investigated.
