@@ -90,6 +90,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Global Energy Monitor, Global Wind and Solar Power Trackers | project-level status - announced, pre-construction, construction, operating - with coordinates, capacity and owner, updated twice a year, free for research. The nearest thing to RenewMap with South African coverage | to try: the Hydra Central split and the 1,823 MW of unexplained solar are both named-project problems |
 | OpenStreetMap power plants | `plant:source=wind` or `solar` with output and construction tags, and geometry. Good for EXISTENCE and LOCATION, weak for status and dates: mappers follow imagery updates, and construction tags are often left behind after completion | to try, as geometry and corroboration alongside a structured source |
 | RenewMap | the tool this project wants - status, capacity, grid connections, approvals, milestone history, CSV export - but AUSTRALIA AND NEW ZEALAND ONLY. Recorded as the model of what a South African equivalent would look like | not applicable, checked 23 Sep 2026 |
+| Department of Electricity and Energy, media statement on the first section 34 determination under IRP 2025 | the first procurement the IRP actually triggers; the basis for the first-determination scenario (TODO 14au) | statement of 7 Oct 2026, supplied by the user; link not yet recorded. Determination proposed, not gazetted; needs NERSA concurrence (see CALENDAR) |
 
 ---
 
@@ -591,3 +592,15 @@ compilation of uncopyrightable facts, and NC-ND blocked both reuse and the inges
 BY-SA sources.*
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
+
+## First section 34 determination under IRP 2025 (media statement, 7 Oct 2026)
+
+Department of Electricity and Energy media statement, 7 Oct 2026, supplied by the user; the link is not
+yet recorded and the determination text is not yet published. Proposed: 4,600 MW battery storage and
+5,000 MW gas-to-power. No new wind or solar in this determination; a later determination is to cover
+them, hybrids and pumped storage. Gas is framed as flexible (start-up, ramping, minimum levels, fuel
+logistics, operating profile); the statement does not mention the IRP's 51% minimum load factor.
+
+Bearing on the model: the engine's annual gas floor (51% on 6 GW, 2030-2040) rests on IRP 2025, not on
+this determination. Nothing changes until the gazetted determination and NERSA's concurrence are read.
+Not loaded; feeds the first-determination scenario (TODO 14au) once it is built.
