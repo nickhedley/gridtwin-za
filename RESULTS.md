@@ -1727,6 +1727,31 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Existing diesel peakers run almost never from 2030 on the half-standard pathway, 7 Oct 2026
+
+Pathway pathway_v_half_c1_p1.json (build `2026-10-07c`: half standard, coal commitment on, pumped-storage
+energy on, demand +5% to 2040, legislated carbon tax path), dispatched by the engine in each year, twelve
+weather years (2014-2025) x two outage draws (seed base 71830529). Fleet 3,400 MW in every year: no
+retirement dates were applied before build 07h. Script: peakers.js (scratch), as pathcheck.js.
+
+```
+year   TWh     mean hours   worst-draw hours   peak MW
+2026   0.063   94           126                2,492
+2028   0.002   3            19                 592
+2030   0       0            0                  0
+2032   0       0            0                  0
+2034   0.001   0            4                  478
+2035   0.001   0            4                  568
+2036   0.001   0            2                  429
+2038   0       0            2                  283
+2040   0.001   0            4                  283
+```
+
+- Hours are fleet hours with output above 1 MW, mean over the 24 runs.
+- The fleet is still counted in every adequacy test and pays fixed O&M (R360/kW-yr, about R1.2bn a year).
+- IRP 2025 (3.2.1.2.2, p.13) retires Acacia and Port Rex in 2025-2026 and Ankerlig and Gourikwa in the
+  mid-2040s; the retirement option (bldPeakerRet, build 07h) tests what replacing them costs.
+
 ### IRP presets rebuilt from Table 1; the 2030 presets had 300 MW of storage, not 3,724, 7 Oct 2026
 
 Build `2026-10-07f` against `2026-10-07e`. Each preset at its own defaults, default weather year,
