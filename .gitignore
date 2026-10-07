@@ -37,3 +37,4 @@ harness/*.progress
 harness/lpcache/
 pvgis_tracking_cache.json
 __pycache__/
+ninja_wind_cache.json

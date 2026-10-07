@@ -64,6 +64,9 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  if (process.env.DSL_DECOM) w.eval(`state.dieselDecomMW=${+process.env.DSL_DECOM};`);
  const COAL_DECOM = process.env.COAL_DECOM ? +process.env.COAL_DECOM : null;
  const RC_MIN = COAL_DECOM === null ? null : Math.max(0, +w.eval(`bldCoalMW(BLD_YEARS[BLD_YEARS.length-1]) - (FIXED.coalInstalledMW - ${COAL_DECOM})`));
+ // WINDMOD / WIND_CASE (7 Oct 2026): new wind on the modern-turbine profile with bid capex (1, default) or the previous
+ // R21,000 on the current profile (0); wind cost case central, high or low.
+ w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:''));
  // COSTSET (7 Oct 2026): a whole cost set, e.g. COSTSET=irp2025; see costset.js.
  require('./costset.js')(w, process.env.COSTSET);
  await w.eval('loadWeatherYears()');

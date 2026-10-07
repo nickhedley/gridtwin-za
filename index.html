@@ -5538,6 +5538,11 @@ const FIXED = {
   // Lithium cost case (BLD_COST.batt): 'central' BW3 aged to January 2026, 'high' BW3 as bid, 'low' global turnkey
   // equipment only. User decision, 7 Oct 2026.
   bldBattCase:'central',
+  // NEW WIND (user decisions, 7 Oct 2026). bldWindModern 1: new wind at BW6 bid capex (bldWindCase central; high the
+  // disclosed investment values of awarded projects; low IRENA's global average) on a modern-turbine profile (Vestas
+  // V162 5.6 MW at 120 m, nodal/profiles_wind_modern.json); existing farms keep their profile. Capex and profile change
+  // together. 0: the previous R21,000/kW on the existing profile, for comparison with earlier results.
+  bldWindModern:1, bldWindCase:'central',
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -6685,6 +6690,11 @@ function simulate(u, prof, outPath, _soc0){
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
   p.syncFloorMW = (typeof p.syncMinMW === 'number') ? p.syncMinMW : (p.syncMinEnabled !== false ? SYNC_MIN_MW : 0);
   const {solar,wind,csp}=prof;
+  // NEW WIND ON THE MODERN-TURBINE PROFILE (bldWindModern): onshore wind's per-unit output blends existing MW on the
+  // current profile with new MW on the modern twin. Off, or with no new wind: windU is wind itself.
+  const _wModOn = ((p.bldWindModern ?? 0) | 0) > 0 && (p.newWindMW || 0) > 0;
+  const windU = _wModOn ? (() => { const T = prof.windMod || windModOf(wind), E = p.windMW || 0, N = p.newWindMW || 0;
+    const a = new Float64Array(wind.length); for (let h = 0; h < a.length; h++) a[h] = (E * wind[h] + N * T[h]) / (E + N); return a; })() : wind;
   // SOLAR TRACKING (TODO 14aw): utility solar's per-unit output blends existing MW on fixed tilt with new MW on the
   // tracking twin; rooftop keeps solar. Off: solarU is solar itself.
   const _trkOn = ((p.bldPvTracking ?? 0) | 0) > 0 && (p.newPvMW || 0) > 0;
@@ -7190,7 +7200,7 @@ function simulate(u, prof, outPath, _soc0){
       const idx = [];
       for (let k = 0; k < 24; k++){
         const h = h0+k;
-        idx.push({ h, net: demand[h]*growth - (vreCap.w*wind[h] + vreCap.p*solarU[h]) });
+        idx.push({ h, net: demand[h]*growth - ((_wModOn ? windCap*windU[h] + offshoreCap*wind[h] : vreCap.w*wind[h]) + vreCap.p*solarU[h]) });
       }
       idx.sort((a,b) => b.net - a.net);
       const nMove = 6;                                  // out of the top six hours; back into up to twelve
@@ -7270,7 +7280,7 @@ function simulate(u, prof, outPath, _soc0){
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
     // Offshore on its OWN shape where the profile loaded, onshore's where it did not.
-    let windGen=windCap*wind[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
+    let windGen=windCap*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
         pvGen=pvCap*solarU[h];
     const cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Its OWN accumulator, deliberately - the price
@@ -7345,7 +7355,7 @@ function simulate(u, prof, outPath, _soc0){
   // actually running, not with installed capacity.
   const _vreMW = new Float64Array(HOURS);
   for (let h = 0; h < HOURS; h++)
-    _vreMW[h] = (p.windMW + p.newWindMW) * wind[h] + (p.pvUtilityMW + p.newPvMW) * solarU[h];
+    _vreMW[h] = (p.windMW + p.newWindMW) * windU[h] + (p.pvUtilityMW + p.newPvMW) * solarU[h];
   const RESERVE = {
     on: !!(p.reserveEnabled ?? 1),
     contingencyMW: p.reserveOperatingMW,
@@ -7586,7 +7596,7 @@ function simulate(u, prof, outPath, _soc0){
     // surplus pool rate and pull firm volume out of the retail sales base.
     E.exportedFirm+=expAt(h);
     E.rooftop+=rooftopGen; loadS[h]=load;
-    let windGen=windCap*wind[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
+    let windGen=windCap*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
         pvGen=pvCap*solarU[h], cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Own accumulator, deliberately - see the note at
     // the other declaration. The price engine reads curtailMW as an oversupply
@@ -8986,6 +8996,16 @@ const BLD_COST = {
   // global average. Cross-check only: IRP 2025 workbook BW6 base case R27,446/kW (2026 rands). The previous R21,000 had
   // no recorded source. IRP 2025 cost assumptions are a sensitivity (COSTSET=irp2025), never central (user, 7 Oct).
   wind:    { c2026: 26647 * 1.032 * 1.035, decl:  0.0286, connIncl: true },
+  // High: disclosed investment values of awarded or financially closed projects, MW-weighted, escalated to January 2026
+  // at SA CPI (6.9% Jan 2023, 5.3% Jan 2024, 3.2% Jan 2025, 3.5% Jan 2026): EDF's BW5 Koruson 1, 420 MW, R11.5bn at
+  // financial close Nov 2022 - Jan 2023 (from January 2023); Impofu, 330 MW private, R9bn at financial close Feb 2024
+  // (from January 2024). About R30,060/kW. Investment values include financing costs and development fees, so they sit
+  // above overnight cost; that is why they are the high case and the overnight bids the central (user, 7 Oct 2026).
+  wind_high: { c2026: (420 * 11.5e9 / 420e3 * 1.053 * 1.032 * 1.035 + 330 * 9e9 / 330e3 * 1.032 * 1.035) / 750, decl: 0.0286, connIncl: true },
+  // Low: IRENA, Renewable Power Generation Costs in 2024, onshore wind global weighted average USD 1,041/kW at R16.50.
+  wind_low:  { c2026: 1041 * 16.5, decl: 0.0286, connIncl: false },
+  // The previous central, R21,000/kW (no recorded source), kept for bldWindModern 0 only.
+  wind_legacy: { c2026: 21000, decl: 0.0286 },
   pv:      { c2026: 12000, decl:  0.0389 },
   // Single-axis tracking solar, BW6 preferred bidders' mean, R15,715/kW (IPP Office REIPPPP historical data note,
   // 7 Nov 2025, January 2024 rands) x SA CPI January 2024 to January 2026 (1.032 x 1.035, Stats SA). Bid-derived, so
@@ -9383,6 +9403,9 @@ function bldNetAnnuity(tech, year){
 function bldPvTrackingOn(){
   return typeof state !== 'undefined' && ((state.bldPvTracking ?? FIXED.bldPvTracking) | 0) > 0;
 }
+function bldWindModernOn(){
+  return typeof state !== 'undefined' ? ((state.bldWindModern ?? FIXED.bldWindModern) | 0) > 0 : (FIXED.bldWindModern | 0) > 0;
+}
 function bldBattCase(){
   const c = typeof state !== 'undefined' ? (state.bldBattCase ?? FIXED.bldBattCase) : FIXED.bldBattCase;
   if (c !== 'central' && c !== 'high' && c !== 'low') throw new Error('bldBattCase must be central, high or low: ' + c);
@@ -9391,6 +9414,12 @@ function bldBattCase(){
 function bldCostEntry(tech){
   if (tech === 'pv' && bldPvTrackingOn()) return BLD_COST.pvtrk;
   if (tech === 'batt'){ const c = bldBattCase(); return c === 'high' ? BLD_COST.batt_high : c === 'low' ? BLD_COST.batt_low : BLD_COST.batt; }
+  if (tech === 'wind'){
+    if (!bldWindModernOn()) return BLD_COST.wind_legacy;
+    const c = typeof state !== 'undefined' ? (state.bldWindCase ?? FIXED.bldWindCase) : FIXED.bldWindCase;
+    if (c !== 'central' && c !== 'high' && c !== 'low') throw new Error('bldWindCase must be central, high or low: ' + c);
+    return c === 'high' ? BLD_COST.wind_high : c === 'low' ? BLD_COST.wind_low : BLD_COST.wind;
+  }
   return BLD_COST[tech];
 }
 function bldCapex(tech, year){
@@ -9552,6 +9581,7 @@ function bldRepDays(n){
           fromYear: sp.fromYear,
           solar: Array.from({length:24}, (_, h) => nat.solar[cal*24 + h]),
           ...(nat.solar.trk ? { solarTrk: Array.from({length:24}, (_, h) => nat.solar.trk[cal*24 + h]) } : {}),
+          ...(nat.wind.mod ? { windMod: Array.from({length:24}, (_, h) => nat.wind.mod[cal*24 + h]) } : {}),
           wind:  Array.from({length:24}, (_, h) => nat.wind[cal*24 + h]),
         });
       }
@@ -9564,6 +9594,7 @@ function bldRepDays(n){
           prevD: j === 0 ? undefined : 1000 + j - 1,
           solar: Array.from({length:24}, (_, h) => best.nat.solar[cal*24 + h]),
           ...(best.nat.solar.trk ? { solarTrk: Array.from({length:24}, (_, h) => best.nat.solar.trk[cal*24 + h]) } : {}),
+          ...(best.nat.wind.mod ? { windMod: Array.from({length:24}, (_, h) => best.nat.wind.mod[cal*24 + h]) } : {}),
           wind:  Array.from({length:24}, (_, h) => best.nat.wind[cal*24 + h]),
         });
       }
@@ -9798,7 +9829,13 @@ function bldBuildLP(opts){
 
   // Grid cost per technology, R/kW-yr (BLD_GRID; zero unless bldGridCost is set).
   const GRID_ON = (S.bldGridCost | 0) > 0, GA = {};
+  // Capex reads the cost case from the page state (bldCostEntry) while profiles read S; a caller passing a state that
+  // disagrees with the page on these switches would price one case and dispatch another. Every caller passes the page
+  // state; this guard keeps it that way.
+  if (typeof state !== 'undefined') for (const k of ['bldPvTracking', 'bldWindModern', 'bldWindCase', 'bldBattCase'])
+    if ((S[k] ?? FIXED[k]) !== (state[k] ?? FIXED[k])) throw new Error('bldBuildLP: ' + k + ' differs between opts.state and the page state');
   const TRK_ON = ((S.bldPvTracking ?? 0) | 0) > 0;   // new utility solar on the tracking profile (TODO 14aw)
+  const WMOD_ON = ((S.bldWindModern ?? 0) | 0) > 0;   // new wind on the modern-turbine profile
   for (const t of T.concat(['offshore', 'phes', 'phel'])) GA[t] = GRID_ON ? bldGridAnn(t, S) : 0;
   const L = ['Minimize', ' obj:'];
   const obj = [];
@@ -10002,6 +10039,9 @@ function bldBuildLP(opts){
       const spN = !TRK_ON ? sp : r.solar ? (r.solarTrk ? r.solarTrk[h] : (() => { throw new Error('tracking on: a representative day has no tracking solar'); })())
                                        : solarTrkOf(PROFILES.solar)[i];
       const wp = r.wind  ? r.wind[h]  : PROFILES.wind[i];
+      // New wind's per-unit output: the modern-turbine twin when bldWindModern is on, else wp.
+      const wpN = !WMOD_ON ? wp : r.wind ? (r.windMod ? r.windMod[h] : (() => { throw new Error('modern wind on: a representative day has no modern-turbine wind'); })())
+                                      : windModOf(PROFILES.wind)[i];
       // AVAILABILITY FROM THE ENGINE'S OWN KEYS, 2 Oct 2026. This line hardcoded nuclear 0.9,
       // hydro 0.5 and imports 0.9 while the engine reads nuclearCF (0.66, Koeberg's record),
       // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
@@ -10012,7 +10052,7 @@ function bldBuildLP(opts){
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
-        + ' + ' + cum('wind',y).map(v => (wp*AV_CONG).toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('wind',y).map(v => (wpN*AV_CONG).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('pv',y).map(v => (spN*AV_CONG).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
         + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AV_CONG).toFixed(4)+' '+v).join(' + ') : '')
@@ -10071,7 +10111,7 @@ function bldBuildLP(opts){
           + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + ' - ' + cum('ccgt',y).join(' - ')
           + (RES_VRE > 0
-              ? ' + ' + cum('wind',y).map(v => (RES_VRE*wp).toFixed(5)+' '+v).join(' + ')
+              ? ' + ' + cum('wind',y).map(v => (RES_VRE*wpN).toFixed(5)+' '+v).join(' + ')
                 + ' + ' + cum('pv',y).map(v => (RES_VRE*spN).toFixed(5)+' '+v).join(' + ')
                 + ' + ' + cum('rooftop',y).map(v => (RES_VRE*sp).toFixed(5)+' '+v).join(' + ')
               : '')
@@ -12222,6 +12262,11 @@ async function loadWeatherYears(){
       const rt = await fetch('nodal/profiles_solar_tracking.json?v=' + (window.DATA_V || '7'));
       if (rt.ok) { bldSolarTrk = await rt.json(); bldBuildSolarTrkRatio(); }
     } catch (e) { bldSolarTrk = null; }
+    // Modern-turbine wind for new wind (bldWindModern). Without it, new wind with the switch on raises an error.
+    try {
+      const rw = await fetch('nodal/profiles_wind_modern.json?v=' + (window.DATA_V || '7'));
+      if (rw.ok) { bldWindMod = await rw.json(); bldBuildWindModMap(); }
+    } catch (e) { bldWindMod = null; }
     if (!bldWxWeights || !bldWxWeights.wind || !bldWxWeights.solar) {
       bldWxWeights = null;
       console.warn('[GridTwin] Weather years loaded but nodal/regional_renewable_capacity.json '
@@ -12518,6 +12563,31 @@ function bldBuildSolarTrkRatio(){
   }
   SOLAR_TRK_G = num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1));
 }
+// MODERN-TURBINE WIND (bldWindModern). bldWindMod holds the regional series; WIND_MOD_MAP the national mapping from
+// current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
+// profile with none of its own (the default single-year PROFILES.wind).
+let bldWindMod = null, WIND_MOD_MAP = null;
+function bldBuildWindModMap(){
+  if (!bldWindMod || !bldWeatherYears || !bldWxWeights) return;
+  const B = 50, num = new Float64Array(B), den = new Float64Array(B), sc = bldWeatherYears.scale || 1, sm = bldWindMod.scale || 1;
+  for (const y of bldWeatherYears.meta.years){
+    const o = new Float64Array(HOURS), m = new Float64Array(HOURS);
+    for (const R of BLD_REGIONS){
+      const w = bldWxWeights.wind[R] || 0, F = bldWeatherYears.wind_pu[R] && bldWeatherYears.wind_pu[R][y], M = bldWindMod.wind_modern_pu[R] && bldWindMod.wind_modern_pu[R][y];
+      if (!w || !F || !M) continue;
+      for (let h = 0; h < HOURS; h++){ o[h] += w * F[h] / sc; m[h] += w * M[h] / sm; }
+    }
+    for (let h = 0; h < HOURS; h++){ const b = Math.min(B - 1, Math.floor(o[h] * B)); num[b] += m[h]; den[b] += o[h]; }
+  }
+  WIND_MOD_MAP = Array.from(num, (v, b) => den[b] > 1e-9 ? v / den[b] : 1);   // ratio modern/current per bin
+}
+function windModOf(wind){
+  if (wind.mod) return wind.mod;
+  if (!WIND_MOD_MAP) throw new Error('modern wind is on but nodal/profiles_wind_modern.json is not loaded');
+  const t = new Float64Array(wind.length);
+  for (let h = 0; h < wind.length; h++) t[h] = Math.min(1, wind[h] * WIND_MOD_MAP[Math.min(49, Math.floor(wind[h] * 50))]);
+  wind.mod = t; return t;
+}
 // The tracking twin of a fixed-tilt solar profile: its own if built with one, else derived from SOLAR_TRK_G.
 function solarTrkOf(solar){
   if (solar.trk) return solar.trk;
@@ -12605,6 +12675,15 @@ function weatherYearNational(year){
       if (t){ const f = (bldWxWeights.solar[R] || 0) / ts / st; for (let h = 0; h < HOURS; h++) trk[h] += t[h]*f; }
     }
     solar.trk = trk;
+  }
+  // Modern-turbine twin on the same weights (bldWindModern), carried on the array like solar.trk.
+  if (bldWindMod && bldWindMod.wind_modern_pu){
+    const mod = new Float64Array(HOURS), sm = bldWindMod.scale || 1;
+    for (const R of BLD_REGIONS){
+      const t = bldWindMod.wind_modern_pu[R] && bldWindMod.wind_modern_pu[R][year];
+      if (t){ const f = (bldWxWeights.wind[R] || 0) / tw / sm; for (let h = 0; h < HOURS; h++) mod[h] += t[h]*f; }
+    }
+    wind.mod = mod;
   }
   return { wind, solar };
 }
@@ -18145,7 +18224,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07q';
+const BUILD_STAMP = '2026-10-07r';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
