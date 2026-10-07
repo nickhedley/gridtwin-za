@@ -1,0 +1,746 @@
+{
+ "margin": 0,
+ "secs": 8739.862,
+ "verdict": "adequate",
+ "log": [
+  {
+   "pass": 1,
+   "margin": 0,
+   "years": [
+    {
+     "y": 2026,
+     "mean": 0.23705022172459067,
+     "limit": 2.0056034389252786,
+     "worstYear": 2017,
+     "worstGWh": 2.9570813595556866
+    },
+    {
+     "y": 2027,
+     "mean": 0.36300589397282784,
+     "limit": 1.9997457738926527,
+     "worstYear": 2017,
+     "worstGWh": 5.079861071130028
+    },
+    {
+     "y": 2028,
+     "mean": 0.34259644771837844,
+     "limit": 1.9926985112787186,
+     "worstYear": 2023,
+     "worstGWh": 4.230272538183273
+    },
+    {
+     "y": 2029,
+     "mean": 0.25202976181800313,
+     "limit": 1.9949638676190666,
+     "worstYear": 2023,
+     "worstGWh": 4.319256764084057
+    },
+    {
+     "y": 2030,
+     "mean": 1.9221706837240575,
+     "limit": 1.98482467754262,
+     "worstYear": 2017,
+     "worstGWh": 21.472725689923568
+    },
+    {
+     "y": 2031,
+     "mean": 2.3146235550079646,
+     "limit": 1.9794163900787805,
+     "worstYear": 2017,
+     "worstGWh": 19.862779573930826
+    },
+    {
+     "y": 2032,
+     "mean": 3.493260055121985,
+     "limit": 1.9813511572477505,
+     "worstYear": 2015,
+     "worstGWh": 26.418687497362107
+    },
+    {
+     "y": 2033,
+     "mean": 3.9616837806080967,
+     "limit": 1.96595182078492,
+     "worstYear": 2017,
+     "worstGWh": 31.871268950150213
+    },
+    {
+     "y": 2034,
+     "mean": 4.6687103452371215,
+     "limit": 1.9775270724624805,
+     "worstYear": 2015,
+     "worstGWh": 36.44072014187105
+    },
+    {
+     "y": 2035,
+     "mean": 4.163407858494815,
+     "limit": 1.9695378260800778,
+     "worstYear": 2015,
+     "worstGWh": 30.117504491208635
+    },
+    {
+     "y": 2036,
+     "mean": 7.0239036705233175,
+     "limit": 1.9707605821834762,
+     "worstYear": 2015,
+     "worstGWh": 41.555404133060804
+    },
+    {
+     "y": 2037,
+     "mean": 6.755728211833006,
+     "limit": 1.9617818334811907,
+     "worstYear": 2015,
+     "worstGWh": 40.17853482325795
+    },
+    {
+     "y": 2038,
+     "mean": 8.754338752135066,
+     "limit": 1.9590200416536887,
+     "worstYear": 2016,
+     "worstGWh": 54.99674010898656
+    },
+    {
+     "y": 2039,
+     "mean": 8.978124935481313,
+     "limit": 1.9517018413522067,
+     "worstYear": 2016,
+     "worstGWh": 56.690647418465744
+    },
+    {
+     "y": 2040,
+     "mean": 8.656780242393141,
+     "limit": 1.9541154724074832,
+     "worstYear": 2016,
+     "worstGWh": 70.70982464261694
+    }
+   ],
+   "added": [
+    {
+     "year": 2016,
+     "seed": 36225520,
+     "start": 279,
+     "n": 14,
+     "forModelYear": 2039,
+     "fromYear": 2039,
+     "rebound": false,
+     "shedGWh": 56.69
+    },
+    {
+     "year": 2015,
+     "seed": 36322330,
+     "start": 80,
+     "n": 14,
+     "forModelYear": 2039,
+     "fromYear": 2039,
+     "rebound": false,
+     "shedGWh": 37.81
+    },
+    {
+     "year": 2017,
+     "seed": 36338168,
+     "start": 178,
+     "n": 14,
+     "forModelYear": 2039,
+     "fromYear": 2039,
+     "rebound": false,
+     "shedGWh": 30.81
+    },
+    {
+     "year": 2016,
+     "seed": 36225520,
+     "start": 279,
+     "n": 14,
+     "forModelYear": 2038,
+     "fromYear": 2038,
+     "rebound": true,
+     "shedGWh": 55
+    },
+    {
+     "year": 2015,
+     "seed": 36322330,
+     "start": 80,
+     "n": 14,
+     "forModelYear": 2038,
+     "fromYear": 2038,
+     "rebound": true,
+     "shedGWh": 35.57
+    },
+    {
+     "year": 2017,
+     "seed": 36338168,
+     "start": 178,
+     "n": 14,
+     "forModelYear": 2038,
+     "fromYear": 2038,
+     "rebound": true,
+     "shedGWh": 32
+    },
+    {
+     "year": 2017,
+     "seed": 36338168,
+     "start": 179,
+     "n": 14,
+     "forModelYear": 2040,
+     "fromYear": 2040,
+     "rebound": false,
+     "shedGWh": 22.79
+    },
+    {
+     "year": 2022,
+     "seed": 36377763,
+     "start": 162,
+     "n": 14,
+     "forModelYear": 2040,
+     "fromYear": 2040,
+     "rebound": false,
+     "shedGWh": 19.94
+    },
+    {
+     "year": 2016,
+     "seed": 36330249,
+     "start": 10,
+     "n": 14,
+     "forModelYear": 2040,
+     "fromYear": 2040,
+     "rebound": false,
+     "shedGWh": 17.58
+    },
+    {
+     "year": 2015,
+     "seed": 36322330,
+     "start": 80,
+     "n": 14,
+     "forModelYear": 2036,
+     "fromYear": 2036,
+     "rebound": true,
+     "shedGWh": 41.56
+    },
+    {
+     "year": 2017,
+     "seed": 36338168,
+     "start": 179,
+     "n": 14,
+     "forModelYear": 2036,
+     "fromYear": 2036,
+     "rebound": true,
+     "shedGWh": 35.09
+    },
+    {
+     "year": 2016,
+     "seed": 36225520,
+     "start": 279,
+     "n": 14,
+     "forModelYear": 2036,
+     "fromYear": 2036,
+     "rebound": true,
+     "shedGWh": 32.2
+    },
+    {
+     "year": 2022,
+     "seed": 36377763,
+     "start": 129,
+     "n": 14,
+     "forModelYear": 2037,
+     "fromYear": 2037,
+     "rebound": false,
+     "shedGWh": 11.53
+    },
+    {
+     "year": 2023,
+     "seed": 36280953,
+     "start": 30,
+     "n": 14,
+     "forModelYear": 2037,
+     "fromYear": 2037,
+     "rebound": false,
+     "shedGWh": 9.93
+    },
+    {
+     "year": 2020,
+     "seed": 36257196,
+     "start": 102,
+     "n": 14,
+     "forModelYear": 2037,
+     "fromYear": 2037,
+     "rebound": false,
+     "shedGWh": 6.67
+    },
+    {
+     "year": 2015,
+     "seed": 36322330,
+     "start": 80,
+     "n": 14,
+     "forModelYear": 2034,
+     "fromYear": 2034,
+     "rebound": true,
+     "shedGWh": 36.44
+    },
+    {
+     "year": 2017,
+     "seed": 36338168,
+     "start": 179,
+     "n": 14,
+     "forModelYear": 2034,
+     "fromYear": 2034,
+     "rebound": true,
+     "shedGWh": 27.37
+    },
+    {
+     "year": 2023,
+     "seed": 36280953,
+     "start": 32,
+     "n": 14,
+     "forModelYear": 2034,
+     "fromYear": 2034,
+     "rebound": false,
+     "shedGWh": 15.67
+    },
+    {
+     "year": 2016,
+     "seed": 36225520,
+     "start": 277,
+     "n": 14,
+     "forModelYear": 2035,
+     "fromYear": 2035,
+     "rebound": false,
+     "shedGWh": 15.44
+    },
+    {
+     "year": 2023,
+     "seed": 36280953,
+     "start": 24,
+     "n": 14,
+     "forModelYear": 2035,
+     "fromYear": 2035,
+     "rebound": false,
+     "shedGWh": 12.58
+    },
+    {
+     "year": 2022,
+     "seed": 36377763,
+     "start": 129,
+     "n": 14,
+     "forModelYear": 2035,
+     "fromYear": 2035,
+     "rebound": true,
+     "shedGWh": 6.38
+    },
+    {
+     "year": 2017,
+     "seed": 36338168,
+     "start": 179,
+     "n": 14,
+     "forModelYear": 2033,
+     "fromYear": 2033,
+     "rebound": true,
+     "shedGWh": 31.87
+    },
+    {
+     "year": 2015,
+     "seed": 36322330,
+     "start": 80,
+     "n": 14,
+     "forModelYear": 2033,
+     "fromYear": 2033,
+     "rebound": true,
+     "shedGWh": 27.3
+    },
+    {
+     "year": 2023,
+     "seed": 36280953,
+     "start": 24,
+     "n": 14,
+     "forModelYear": 2033,
+     "fromYear": 2033,
+     "rebound": true,
+     "shedGWh": 18.86
+    },
+    {
+     "year": 2015,
+     "seed": 36322330,
+     "start": 80,
+     "n": 14,
+     "forModelYear": 2032,
+     "fromYear": 2032,
+     "rebound": true,
+     "shedGWh": 26.42
+    },
+    {
+     "year": 2017,
+     "seed": 36338168,
+     "start": 179,
+     "n": 14,
+     "forModelYear": 2032,
+     "fromYear": 2032,
+     "rebound": true,
+     "shedGWh": 25.03
+    },
+    {
+     "year": 2023,
+     "seed": 36280953,
+     "start": 24,
+     "n": 14,
+     "forModelYear": 2032,
+     "fromYear": 2032,
+     "rebound": true,
+     "shedGWh": 20.89
+    },
+    {
+     "year": 2017,
+     "seed": 36338168,
+     "start": 178,
+     "n": 14,
+     "forModelYear": 2031,
+     "fromYear": 2031,
+     "rebound": true,
+     "shedGWh": 19.86
+    },
+    {
+     "year": 2023,
+     "seed": 36280953,
+     "start": 24,
+     "n": 14,
+     "forModelYear": 2031,
+     "fromYear": 2031,
+     "rebound": true,
+     "shedGWh": 15.8
+    },
+    {
+     "year": 2015,
+     "seed": 36322330,
+     "start": 80,
+     "n": 14,
+     "forModelYear": 2031,
+     "fromYear": 2031,
+     "rebound": true,
+     "shedGWh": 15.12
+    }
+   ]
+  },
+  {
+   "pass": 2,
+   "margin": 0,
+   "years": [
+    {
+     "y": 2026,
+     "mean": 0.032067613889788085,
+     "limit": 2.009298868675873,
+     "worstYear": 2023,
+     "worstGWh": 0.630874394323253
+    },
+    {
+     "y": 2027,
+     "mean": 0.02410582251873272,
+     "limit": 2.0145564290172238,
+     "worstYear": 2023,
+     "worstGWh": 0.5785397404495852
+    },
+    {
+     "y": 2028,
+     "mean": 0.03978810197880754,
+     "limit": 2.040316237618083,
+     "worstYear": 2023,
+     "worstGWh": 0.954914447491381
+    },
+    {
+     "y": 2029,
+     "mean": 0,
+     "limit": 2.031387482193335,
+     "worstYear": 2014,
+     "worstGWh": 0
+    },
+    {
+     "y": 2030,
+     "mean": 0,
+     "limit": 2.010332768273011,
+     "worstYear": 2014,
+     "worstGWh": 0
+    },
+    {
+     "y": 2031,
+     "mean": 0,
+     "limit": 1.9919688892337455,
+     "worstYear": 2014,
+     "worstGWh": 0
+    },
+    {
+     "y": 2032,
+     "mean": 0,
+     "limit": 1.9727556933777537,
+     "worstYear": 2014,
+     "worstGWh": 0
+    },
+    {
+     "y": 2033,
+     "mean": 0,
+     "limit": 1.9944605725346292,
+     "worstYear": 2014,
+     "worstGWh": 0
+    },
+    {
+     "y": 2034,
+     "mean": 0.0987493488001296,
+     "limit": 2.0205863785325593,
+     "worstYear": 2018,
+     "worstGWh": 1.4525842920017094
+    },
+    {
+     "y": 2035,
+     "mean": 0,
+     "limit": 2.0171430677819377,
+     "worstYear": 2014,
+     "worstGWh": 0
+    },
+    {
+     "y": 2036,
+     "mean": 0.01307455347810757,
+     "limit": 2.0533327953055536,
+     "worstYear": 2018,
+     "worstGWh": 0.3137892834745817
+    },
+    {
+     "y": 2037,
+     "mean": 0,
+     "limit": 2.0486856162037843,
+     "worstYear": 2014,
+     "worstGWh": 0
+    },
+    {
+     "y": 2038,
+     "mean": 0,
+     "limit": 2.0756974447271035,
+     "worstYear": 2014,
+     "worstGWh": 0
+    },
+    {
+     "y": 2039,
+     "mean": 0.18446582368931863,
+     "limit": 2.0984505122640082,
+     "worstYear": 2015,
+     "worstGWh": 2.243314271461808
+    },
+    {
+     "y": 2040,
+     "mean": 0.19226260751374466,
+     "limit": 2.101740271924454,
+     "worstYear": 2015,
+     "worstGWh": 2.3211654437888227
+    }
+   ],
+   "added": null
+  }
+ ],
+ "sched": {
+  "2026": {
+   "wind": 2500,
+   "pv": 2500,
+   "rooftop": 0,
+   "batt": 2000,
+   "vrfb": 250,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 2000,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 0,
+   "coalMW": 39692
+  },
+  "2027": {
+   "wind": 2500,
+   "pv": 2675,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 2000,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 0,
+   "coalMW": 38532
+  },
+  "2028": {
+   "wind": 2500,
+   "pv": 2862,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 16903,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 0,
+   "coalMW": 37368
+  },
+  "2029": {
+   "wind": 2500,
+   "pv": 3063,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 250,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 24000,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 0,
+   "coalMW": 36362
+  },
+  "2030": {
+   "wind": 2500,
+   "pv": 3277,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 250,
+   "ironair": 0,
+   "ccgt": 1200,
+   "battMWh": 24000,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 0,
+   "coalMW": 30296
+  },
+  "2031": {
+   "wind": 2500,
+   "pv": 3506,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 250,
+   "ironair": 741,
+   "ccgt": 1200,
+   "battMWh": 24000,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 0,
+   "coalMW": 28614
+  },
+  "2032": {
+   "wind": 2500,
+   "pv": 3752,
+   "rooftop": 1200,
+   "batt": 810,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 1200,
+   "battMWh": 10983,
+   "off": 250,
+   "phes": 0,
+   "earlyRetMW": 0,
+   "coalMW": 26961
+  },
+  "2033": {
+   "wind": 0,
+   "pv": 4015,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 0,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 7542,
+   "coalMW": 18317
+  },
+  "2034": {
+   "wind": 0,
+   "pv": 4296,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 2022,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 7542,
+   "coalMW": 16664
+  },
+  "2035": {
+   "wind": 0,
+   "pv": 4029,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 2705,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 8445,
+   "coalMW": 15761
+  },
+  "2036": {
+   "wind": 0,
+   "pv": 3480,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 10697,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 8445,
+   "coalMW": 14107
+  },
+  "2037": {
+   "wind": 0,
+   "pv": 3317,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 12065,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 9130,
+   "coalMW": 13422
+  },
+  "2038": {
+   "wind": 0,
+   "pv": 3311,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 13813,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 9130,
+   "coalMW": 11718
+  },
+  "2039": {
+   "wind": 0,
+   "pv": 1580,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 9379,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 9439,
+   "coalMW": 11409
+  },
+  "2040": {
+   "wind": 0,
+   "pv": 2454,
+   "rooftop": 1200,
+   "batt": 2000,
+   "vrfb": 0,
+   "ironair": 0,
+   "ccgt": 0,
+   "battMWh": 11574,
+   "off": 0,
+   "phes": 0,
+   "earlyRetMW": 10089,
+   "coalMW": 10759
+  }
+ },
+ "objective": 2954898962327.7812,
+ "status": "Optimal"
+}
