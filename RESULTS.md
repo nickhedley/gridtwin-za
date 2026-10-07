@@ -1874,6 +1874,67 @@ importsMW -> loleHrs, now responsive: 1 hour at zero imports, 0 from 2,000 MW (1
 Caveat: four of the seven causes are inferred from dated entries, not reproduced; the builds that
 would show them are not in git.
 
+### PROVISIONAL - Half-standard pathway: a coal minimum in the optimiser brings 3.6 GW of backup gas that neither LNG costs nor long-duration storage displace, 6-7 Oct 2026
+
+Builds `2026-10-06e` (optimiser runs) and `2026-10-06h` (checks; the engine is unchanged between them).
+harness/pathway/pathway_perfail.js and pathcheck.js.
+- Pathway runs: Today 2026, demand +5% to 2040, half the 0.002% standard (TF 0.5), per-failing-year
+  14-day stress windows (WPP 3, LEAD 0, testEvery 1, MAXP 14), native HiGHS (simplex; TL 7200 or 14400 s).
+- Checks: twelve weather years x two independent outage draws (SEED_BASE 71830529), legislated carbon
+  path, LNG=1.
+- Outputs are in harness/pathway/variants_6oct/.
+Provisional because it rests on one demand path and on the commitment formulation.
+
+Coal minimum (bldCoalCommit, 65% of committed coal, commitment ramp coalCapMean/48 per hour), pumped
+storage energy off:
+
+```
+run                    new gas     cost 2026-40  CO2     worst year  2040 solar/lithium  coal retired  margin
+                       2030/2040   R bn          Mt      GWh         GW                  by 2040, GW   needed
+no coal minimum        0.67/0.67   3,590         1,412   0.46        36.8 / 21.1         22.5          5,000 MW, 9 passes
+coal minimum           1.2 / 3.6   3,918         1,206   0.18        48.6 / 29.1         28.8          none, 2 passes
+```
+
+The no-minimum run on 06e reproduces 06c to within a few MW in six cells, so the other 06d/06e changes
+do not move the build; the difference is the coal minimum. Gas runs as backup: on the coal-minimum path
+2.1% capacity factor (335 h) in 2033, 5.5% (779 h) in 2035, 17.1% (1,911 h) in 2040.
+
+Sensitivities on the coal-minimum path (all build 1.2 GW of gas a year in 2030-2032, the yearly cap):
+
+```
+run                                          new gas   gas CF/h 2040   cost R bn  CO2 Mt  built
+base                                         3.6 GW    17.1% / 1,911   3,918      1,206
+(a) 14ak gas costs, coastal central          3.6 GW    19.7% / 2,132   3,918      1,203   fuel R1,813.5/MWh, +R260/kW-yr
+(b1) pumped hydro from 2035, current caps    3.6 GW    17.1% / 1,911   3,918      1,206   pumped hydro 0
+(b2) iron-air 500, lithium 3,000 MW/yr 2028  3.6 GW    16.8% / 1,882   3,883      1,197   iron-air 0.5 GW, pumped hydro 0
+(b3) no caps on iron-air or pumped hydro     3.6 GW    15.2% / 1,759   3,908      1,206   iron-air 0.74 GW, pumped hydro 0
+     (bounding case, not a plan)
+b1-b3 on the 'anu2026' pumped-hydro basis    identical to the Tubatse rows to the MW and the rand
+```
+
+- (a) Fuel is about 9% cheaper once the flat USD 2/MMBtu adder is replaced (USD 0.25 regas fuel, no
+  transport at Richards Bay), and the terminal's fixed cost (R260/kW-yr, SOURCES) offsets it. Gas runs
+  a little more.
+- (b) Pumped hydro is offered in every b run: its variables are in the final LP, and its dispatch is
+  zero in every 2040 stress hour. It is never built, on either cost basis. Even unconstrained, iron-air
+  adds only about 0.3 GW.
+- At these costs, long-duration storage does not displace the backup gas. The binding limit is the gas
+  build cap.
+
+LNG storage (one 170,000 m3 storage unit, 0.45 t/m3, 53.37 GJ/t from the IRP 2025 assumptions, no heel:
+4.08 PJ, about 590 GWh of gas generation at 52%):
+- Through 2035, every stress window is within one cargo.
+- From 2036-2038 on, a 14-day lull in a bad weather year (2015 day 80 the worst) burns up to 1.37-1.38
+  cargoes. That is 8-10 of the loop's 30 windows in 2040, in every run above.
+- The pathway's adequacy from then on assumes at least one cargo is delivered during a two-week event.
+
+Caveats:
+- Half standard, one demand path.
+- Coastal gas only; most IPP gas bids are inland, where transport adds about USD 1.2/MMBtu.
+- R260/kW-yr is above OIES's FSRU range (about R145-230).
+- Pumped hydro is 48 h only, from 2035.
+- The pumped-storage energy run (TODO 26) is still to come.
+
 ### Settings each 5 Oct pathway used, so they stay reproducible, recorded 6 Oct 2026
 
 Common to all: Today 2026, demand growth 5% to 2040, horizon 2040, gas no earlier than 2030, rooftop
