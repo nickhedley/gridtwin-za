@@ -496,3 +496,22 @@ harness/ext/grid_distances.py.
   they include connection is unclear; charge from zero is central and beyond-18-km the sensitivity. Under
   REIPPPP the developer funds the dedicated connection (Eskom budget quote and cost estimate letter;
   self-build or Eskom build), so bid-derived capex probably includes it.
+
+## Existing diesel peakers: dates and life extension (TODO 14as, build 07h, 7 Oct 2026)
+
+- IRP 2025, section 3.2.1.2.2, p.13 (Gazette 53596 p.24): Port Rex and Acacia, 314 MW, end of life
+  2025-2026; Ankerlig and Gourikwa mid-2040s; Avon and Dedisa, procured on 15-year contracts, expire
+  2030-2031. Section 3.2.1.1.3, same page: coal 50-year end of life, 8 GW reduction 2029-2030, a further
+  15 GW 2034-2042. Page references supplied by the user.
+- About 30 years (user's default): PyPSA-RSA fleet_by_region_v2.csv decommissioning dates, Ankerlig 2039 and
+  Gourikwa 2038; Eskom heritage page: Gourikwa phase 1 in commercial operation 2007, phase 2 and Ankerlig
+  phase 2 started August 2007.
+- Fleet in the model: 3,400 MW (Ankerlig 1,338, Gourikwa 746, Acacia and Port Rex, Avon 670, Dedisa 335).
+  The fleet file has Acacia and Port Rex at 342 MW; the IRP's 314 MW is what retires.
+- Life extension: R1,500/kW, a labelled placeholder. UK Capacity Market, government response (2025): the
+  capex threshold for a refurbishing unit's three-year agreement lowered to GBP 65/kW (proposed GBP 50/kW,
+  after a Baringa study), a policy threshold set for CCGTs, not a measured cost. Sensitivity R4,000/kW.
+  No South African figure found.
+- Fixed O&M: fomDiesel R360/kW-yr on every MW online, Avon and Dedisa included after their contracts.
+- Running hours on the half-standard pathway (pathway_v_half_c1_p1.json, build 07c, twelve weather years x
+  two outage draws): 94 h a year in 2026, 3 in 2028, zero from 2030 (worst draw at most 4 h).
