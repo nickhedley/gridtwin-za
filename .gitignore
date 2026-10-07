@@ -35,3 +35,4 @@ harness/package.json
 harness/package-lock.json
 harness/*.progress
 harness/lpcache/
+pvgis_tracking_cache.json
