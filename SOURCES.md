@@ -90,6 +90,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Global Energy Monitor, Global Wind and Solar Power Trackers | project-level status - announced, pre-construction, construction, operating - with coordinates, capacity and owner, updated twice a year, free for research. The nearest thing to RenewMap with South African coverage | to try: the Hydra Central split and the 1,823 MW of unexplained solar are both named-project problems |
 | OpenStreetMap power plants | `plant:source=wind` or `solar` with output and construction tags, and geometry. Good for EXISTENCE and LOCATION, weak for status and dates: mappers follow imagery updates, and construction tags are often left behind after completion | to try, as geometry and corroboration alongside a structured source |
 | RenewMap | the tool this project wants - status, capacity, grid connections, approvals, milestone history, CSV export - but AUSTRALIA AND NEW ZEALAND ONLY. Recorded as the model of what a South African equivalent would look like | not applicable, checked 23 Sep 2026 |
+| Department of Electricity and Energy, media statement on the first section 34 determination under IRP 2025 | the first procurement the IRP actually triggers; the basis for the first-determination scenario (TODO 14au) | statement of 7 Oct 2026, supplied by the user; link not yet recorded. Determination proposed, not gazetted; needs NERSA concurrence (see CALENDAR) |
 
 ---
 
@@ -446,6 +447,128 @@ Use in the model:
 
 ## Sources consulted and rejected
 
+## Non-residential shiftable load (drShiftPct note, build 06g)
+
+Found 6 Oct 2026 by web search. Only the LBNL report could be opened and checked. NREL and IEA are
+still blocked from this environment, so their figures come from search extracts. Verify those figures
+and pages before quoting.
+
+- Matsuda-Dunn, McKenna, Desai (NREL) and Mukoma (CSIR), Determining and Unlocking Untapped
+  Demand-Side Management Potential in South Africa: Demand Response at the Grid Edge,
+  NREL/TP-6A40-88042, January 2024, https://www.nrel.gov/docs/fy24osti/88042.pdf. It quotes Eskom
+  Transmission:
+  - an identified base of 8-9 GW of demand response and load shifting;
+  - less about 3 GW non-flexible and 1.4 GW already used;
+  - leaving about 4 GW.
+  It mixes interruptible and shiftable load, is mostly industrial, and is closer to a technical than
+  an economic potential (about 2022). It also gives Eskom's contracted demand response: 1,014 MW
+  instantaneous, 346 MW supplemental and 62 MW critical peak day. That is interruptible, not shifted.
+- IEA, Scaling Up Demand Flexibility: From peak management to efficient system operation (2026; it
+  cites sources accessed in May 2026), CC BY 4.0. VERIFIED from the copy the user uploaded:
+  - "In South Africa, demand flexibility measures have already avoided around 1.5 GW or 5% of annual
+    peak demand" (printed p.8).
+  - "In South Africa today, most flexibility is provided by industrial users" (p.9).
+  - The Demand Management Programme "has delivered up to 1.5 GW of peak shaving, mainly from large
+    industrial consumers, with a smaller but significant amount from residential water heaters and
+    pool pumps" (p.24-25).
+  - "Industry has the greatest shifting potential at around 1 TWh annually" (p.25, with a chart of
+    technical potential by sector and end use, 2025).
+  - Hot water controls in 1.2 million households (10%) "could unlock 600 MW of additional peak
+    shaving capacity" (p.25). This is a cross-check on the VPP geyser pool.
+  - Model use: 1 TWh a year is about 1.7% on drShiftPct, where 1% moves 0.58 TWh.
+- Covary and de la Rue du Can (LBNL, for USAID and DMRE), South Africa: Energy Efficiency Demand Side
+  Management Experience (2004-2022), LBNL-2001576, October 2023,
+  https://eta-publications.lbl.gov/sites/default/files/usaid_dmre_report_1.pdf. VERIFIED in the document
+  (6 Oct 2026):
+  - "The total savings from the ESCO model were 769 MW of demand savings and 2,327 GWh of energy savings
+    (Skinner, 2012)" (printed p.7). These are figures to 2012 and combine efficiency with load shift.
+  - Table 2 (printed p.8): R3.5M/MW for load shifting and peak clipping alike; R5.25M/MW for
+    efficiency.
+  - "Eskom achieved a saving of 1 216 MW" against 1,037 MW targeted (printed p.5), stated as 2011-2013
+    there but as April 2010-March 2013 on printed p.6.
+- Model use: the IEA's about 1 TWh a year (about 1.7%) as the verified technical potential for industry;
+  NREL and CSIR's 4 GW (about 15%) only as an outer ceiling until verified.
+
+## LNG import infrastructure costs (TODO 14ak, pathway sensitivity only, 6 Oct 2026)
+
+Search extracts only (proxy blocked the documents). Applied in harness/pathway/pathway_perfail.js and
+pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
+- FSRU fixed charges:
+  - Engro Elengy, Pakistan: tolling USD 0.66/MMBtu; capacity charge USD 228,016/day, payable whatever
+    the use.
+  - Moheshkhali, Bangladesh: about USD 217-237k/day per FSRU, obligatory whatever the throughput.
+  - Lubmin FSRU, Germany: about USD 150k/day.
+  - OIES NG-123, Songhurst, The Outlook for Floating Storage and Regasification Units, July 2017.
+    VERIFIED from the copy the user uploaded:
+    - leasing USD 110-160k/day, plus operating cost USD 20-45k/day, so USD 130-205k/day in total
+      (printed p.30);
+    - tolling rates USD 0.60-0.94/MMBtu at a 50% load factor (QED Consulting, quoted p.30);
+    - about USD 1/MMBtu at 50% use for an FSRU, against about USD 2 for an onshore terminal (p.30);
+    - boil-off 0.10-0.15% of the cargo by weight per day (p.5);
+    - new-build FSRUs typically 170,000 m3 (p.10), which is general and not the Zululand terminal's
+      own figure.
+    So USD 47-75 m a year for one FSRU, against the USD 84 m central used below. The Zululand
+    terminal is a storage unit with onshore regas, about USD 1 bn, so its cost need not follow the
+    FSRU range.
+- Zululand Energy Terminal, Richards Bay:
+  - a Vopak and Transnet Pipelines joint venture, 25-year concession;
+  - Phase 1 is a floating storage unit plus onshore regas, about 3 mtpa; Phase 2 is above 4 mtpa;
+  - about USD 1 bn for both phases;
+  - investment decision Q1 2028, Phase 1 operating about 2030;
+  - Eskom heads of agreement as foundation customer, 5 Jun 2026; no take-or-pay terms published.
+  Sources: pgjonline (Mar 2026), Mining Weekly (5 Jun 2026), Zawya. VERIFIED in Engineering News,
+  "Eskom signs agreement with Zululand Energy Terminal as it seeks to advance 3 GW Richards Bay
+  gas-fired power project", 5 Jun 2026 (user's printed copy):
+  - Phase 1 is "a 170 000 m3 floating storage unit and an onshore regasification plant with a yearly
+    capacity of about 3-million tons". Phase 2 takes it to "over 4-million tons" with an onshore tank.
+  - It connects to the Lilly pipeline.
+  - Eskom's 3,000 MW plant at Richards Bay: "mid-merit", 25 years, power from 2031.
+  - IPP gas bids, all on imported LNG: 440 MW Mpumalanga, 990 MW KwaZulu-Natal, 600 MW Gauteng,
+    800 MW Mpumalanga. Most are inland, so transport cost applies to them.
+  The USD 1 bn cost and the 2028 investment decision are not in this article.
+- Inland transport: the Lilly pipeline is about 23 PJ/yr, too small for a 3 GW plant. The ROMPCO
+  tariff was R13.34/GJ in 2016 on its first expansion and R12.87/GJ on the second (Business Day,
+  30 Nov 2016, search summary), about USD 0.85/MMBtu. An inland plant would need a new pipeline.
+- Not confirmed in any document: Engro's USD 228,016/day (its USD 0.66/MMBtu tolling fee is a lead
+  from a 2017 Profit article), and LNG density, energy per tonne and heel share. Engineering News
+  (5 Jun 2026) on the Zululand terminal is still blocked from this environment. The LNG storage check uses 0.45 t/m3 and 54.9 GJ/t (HHV) as settings until a source is
+  found.
+- IRP 2025, Additional Data and Assumptions workbook (user's copy, New Tech Properties sheet), in
+  January 2024 rand at R18.35/USD:
+  - gas fuel R260.89/GJ in the first year with no escalation, about USD 15.0/MMBtu;
+  - no separate LNG terminal or pipeline cost appears in the workbook, so import infrastructure is
+    either in that fuel price or left out (the workbook does not say);
+  - 2x1 9F.05 CCGT: heat rate 6,900 kJ/kWh (52.2%), overnight R18,653/kW, fixed O&M R501/kW-yr,
+    variable O&M R61/MWh, 30 years, availability 97.5%;
+  - gas energy content 53.37 MJ/kg, used for the LNG storage check.
+- Derived (not sourced):
+  - Regas fuel and boil-off: USD 0.25/MMBtu.
+  - Transport: 0 at Richards Bay; USD 1.2/MMBtu central inland.
+  - Terminal fixed cost: USD 84 m/yr central (55-130), spread over 3 mtpa shared by about 5.4 GW at
+    50% load. That gives R260/kW-yr central, R170-460.
+- Applied (central, coastal):
+  - costCcgt R1,813/MWh: the R2,003 default's USD 18.50 delivered becomes USD 16.75. The flat
+    USD 2/MMBtu adder is replaced, not added to.
+  - New CCGT fixed O&M raised by R260/kW-yr.
+
+## ANU RE100 pumped hydro atlas, South Africa shortlist (TODO 14z, 7 Oct 2026)
+
+Downloaded by Nick Hedley, Oct 2026: 6,921 off-river site pairs, none in protected areas, with URLs
+stripped. It gives each pair's class (AAA, AA, A, B), head, energy (GWh), duration (h), system size,
+reservoir type and figure of merit. Class AA and AAA: 741 sites and 341 TWh gross, matching Blakers'
+"738 sites, 340 TWh" (personal communication, 6 Oct). Sizes overlap: the same reservoirs appear in up to
+111 pairs. Each reservoir counted once, the shortlist holds 2,688 sites and 287 TWh.
+
+Licence: CC BY 4.0. Andrew Blakers (ANU RE100), personal communication to Nick Hedley, 7 Oct 2026,
+confirming that the ANU Pumped Hydro Atlases are released under CC BY 4.0. The shortlist is republished as
+public_data/anu_phes_shortlist_za.csv with the attribution line "Source: ANU RE100 Group, Global Pumped
+Hydro Atlas, South Africa shortlist (downloaded Oct 2026), CC BY 4.0." as its first line. Aggregates:
+public_data/anu_phes_za_summary.csv, made by harness/ext/anu_summary.py.
+
+Source: ANU RE100 Group, Global Pumped Hydro Atlas, South Africa shortlist (downloaded Oct 2026), CC BY 4.0.
+
+
+
 Recording these so they are not re-investigated.
 
 ```
@@ -469,6 +592,18 @@ compilation of uncopyrightable facts, and NC-ND blocked both reuse and the inges
 BY-SA sources.*
 Data files carry their own terms — see sources.md. Model outputs are reproducible from
 the scenarios stated; nothing here is a tariff, a forecast, or investment advice.*
+
+## First section 34 determination under IRP 2025 (media statement, 7 Oct 2026)
+
+Department of Electricity and Energy media statement, 7 Oct 2026, supplied by the user; the link is not
+yet recorded and the determination text is not yet published. Proposed: 4,600 MW battery storage and
+5,000 MW gas-to-power. No new wind or solar in this determination; a later determination is to cover
+them, hybrids and pumped storage. Gas is framed as flexible (start-up, ramping, minimum levels, fuel
+logistics, operating profile); the statement does not mention the IRP's 51% minimum load factor.
+
+Bearing on the model: the engine's annual gas floor (51% on 6 GW, 2030-2040) rests on IRP 2025, not on
+this determination. Nothing changes until the gazetted determination and NERSA's concurrence are read.
+Not loaded; feeds the first-determination scenario (TODO 14au) once it is built.
 
 ## Optimiser grid cost (TODO 14ar, build 07g, 7 Oct 2026)
 
