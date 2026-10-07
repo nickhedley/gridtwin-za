@@ -2024,6 +2024,132 @@ importsMW -> loleHrs, now responsive: 1 hour at zero imports, 0 from 2,000 MW (1
 Caveat: four of the seven causes are inferred from dated entries, not reproduced; the builds that
 would show them are not in git.
 
+### Pumped storage: the optimiser does not over-use it and the engine does not under-use it; the gap is foresight, 7 Oct 2026
+
+Build `2026-10-06e` (optimiser run) and `2026-10-06h` (engine).
+- Run: half-standard coal-minimum pathway with existing pumped storage modelled as energy in the
+  optimiser (bldPsEnergy 1, COMMIT 1, TF 0.5, TL 14400; pathway_v_half_c1_p1.json, 2 passes, adequate).
+- Method: its 2040 build dispatched by the engine on the same twelve 2040 stress windows, weather years
+  and outage seeds (harness/pathway/psboth.js), with the optimiser's own daily storage balance rebuilt from
+  its pdis and pchg (variants_6oct/psboth_c1p1.json).
+- Existing pumped storage: 2,724 MW, 60 GWh, 76% round trip.
+
+```
+                                   optimiser                    engine
+level at window start              30 GWh, fixed (half full)    25-53 GWh, median about 41
+level at window end                30 GWh (must refill)         6-21 GWh
+net energy drawn per window        0 by construction            15-40 GWh
+discharge, all 12 windows          3,264 GWh                    3,661 GWh (12% more)
+shed in the windows                0                            16.5 GWh, 2016 days 277-279 only
+```
+
+- The optimiser gets no free opening energy (fixed 6 Oct, 06d) and discharges less in total.
+- The engine draws its store down further. The engine-side checks of 6 Oct agree:
+  - In 2015 day 80 the energy held back was used later in the same event.
+  - Switching off the 26-hour peak floor raised shed across the windows from 43.7 to 61.3 GWh.
+- The only shed gap is in two overlapping 2016 windows. There the engine empties pumped storage, while
+  the optimiser keeps at least 8.4 GWh on the same build: it sees the whole 14 days and balances storage
+  per day, not per hour.
+- That is an optimism of the method for every store, not of pumped storage.
+
+Decision (user, 7 Oct): bldPsEnergy on by default from build `2026-10-07a`.
+
+Effect on the half-standard coal-minimum pathway (checked on independent draws):
+
+```
+pumped storage energy   new gas 2030/2040  gas CF/h 2040   cost R bn  CO2 Mt  worst year GWh
+off (06e default)       1.2 / 3.6 GW       17.1% / 1,911   3,918      1,206   0.18
+on (07a default)        1.2 / 3.22 GW      20.6% / 2,147   3,981      1,212   0.92
+```
+
+The gas, LNG-cost and storage variants of 6-7 Oct (entry below) ran with it off. They stand as
+comparisons with each other, but need re-running with it on before any is quoted (TODO 26).
+
+### PROVISIONAL - Half-standard pathway: a coal minimum in the optimiser brings 3.6 GW of backup gas that neither LNG costs nor long-duration storage displace, 6-7 Oct 2026
+
+Builds `2026-10-06e` (optimiser runs) and `2026-10-06h` (checks; the engine is unchanged between them).
+harness/pathway/pathway_perfail.js and pathcheck.js.
+- Pathway runs: Today 2026, demand +5% to 2040, half the 0.002% standard (TF 0.5), per-failing-year
+  14-day stress windows (WPP 3, LEAD 0, testEvery 1, MAXP 14), native HiGHS (simplex; TL 7200 or 14400 s).
+- Checks: twelve weather years x two independent outage draws (SEED_BASE 71830529), legislated carbon
+  path, LNG=1.
+- Outputs are in harness/pathway/variants_6oct/.
+Provisional because it rests on one demand path and on the commitment formulation.
+
+Coal minimum (bldCoalCommit, 65% of committed coal, commitment ramp coalCapMean/48 per hour), pumped
+storage energy off:
+
+```
+run                    new gas     cost 2026-40  CO2     worst year  2040 solar/lithium  coal retired  margin
+                       2030/2040   R bn          Mt      GWh         GW                  by 2040, GW   needed
+no coal minimum        0.67/0.67   3,590         1,412   0.46        36.8 / 21.1         22.5          5,000 MW, 9 passes
+coal minimum           1.2 / 3.6   3,918         1,206   0.18        48.6 / 29.1         28.8          none, 2 passes
+```
+
+The no-minimum run on 06e reproduces 06c to within a few MW in six cells, so the other 06d/06e changes
+do not move the build; the difference is the coal minimum. Gas runs as backup: on the coal-minimum path
+2.1% capacity factor (335 h) in 2033, 5.5% (779 h) in 2035, 17.1% (1,911 h) in 2040.
+
+Sensitivities on the coal-minimum path (all build 1.2 GW of gas a year in 2030-2032, the yearly cap):
+
+```
+run                                          new gas   gas CF/h 2040   cost R bn  CO2 Mt  built
+base                                         3.6 GW    17.1% / 1,911   3,918      1,206
+(a) 14ak gas costs, coastal central          3.6 GW    19.7% / 2,132   3,918      1,203   fuel R1,813.5/MWh, +R260/kW-yr
+(b1) pumped hydro from 2035, current caps    3.6 GW    17.1% / 1,911   3,918      1,206   pumped hydro 0
+(b2) iron-air 500, lithium 3,000 MW/yr 2028  3.6 GW    16.8% / 1,882   3,883      1,197   iron-air 0.5 GW, pumped hydro 0
+(b3) no caps on iron-air or pumped hydro     3.6 GW    15.2% / 1,759   3,908      1,206   iron-air 0.74 GW, pumped hydro 0
+     (bounding case, not a plan)
+b1-b3 on the 'anu2026' pumped-hydro basis    identical to the Tubatse rows to the MW and the rand
+```
+
+- (a) Fuel is about 9% cheaper once the flat USD 2/MMBtu adder is replaced (USD 0.25 regas fuel, no
+  transport at Richards Bay), and the terminal's fixed cost (R260/kW-yr, SOURCES) offsets it. Gas runs
+  a little more.
+- (b) Pumped hydro is offered in every b run: its variables are in the final LP, and its dispatch is
+  zero in every 2040 stress hour. It is never built, on either cost basis. Even unconstrained, iron-air
+  adds only about 0.3 GW.
+- At these costs, long-duration storage does not displace the backup gas. The binding limit is the gas
+  build cap.
+
+LNG storage (one 170,000 m3 storage unit, 0.45 t/m3, 53.37 GJ/t from the IRP 2025 assumptions, no heel:
+4.08 PJ, about 590 GWh of gas generation at 52%):
+- Through 2035, every stress window is within one cargo.
+- From 2036-2038 on, a 14-day lull in a bad weather year (2015 day 80 the worst) burns up to 1.37-1.38
+  cargoes. That is 8-10 of the loop's 30 windows in 2040, in every run above.
+- The pathway's adequacy from then on assumes at least one cargo is delivered during a two-week event.
+
+Caveats:
+- Half standard, one demand path.
+- Coastal gas only; most IPP gas bids are inland, where transport adds about USD 1.2/MMBtu.
+- R260/kW-yr is above OIES's FSRU range (about R145-230).
+- Pumped hydro is 48 h only, from 2035.
+- The pumped-storage energy run (TODO 26) is still to come.
+
+### Settings each 5 Oct pathway used, so they stay reproducible, recorded 6 Oct 2026
+
+Common to all: Today 2026, demand growth 5% to 2040, horizon 2040, gas no earlier than 2030, rooftop
+1.2 GW a year from 2027, perYear loop, draws 2, marginStepMW 1000, maxPasses 14 unless stated, highs-js
+(WebAssembly) solver. Windows bind every model year at every build before `05j`; the scope option did not
+exist yet.
+
+```
+script, output                 build  commit    loop                                        notes
+pathway.js, pathway6           05a    a08cc0e   testEvery 2; 7-day weather window per pass  reference pathway, superseded
+pathway_pv15.js, pathway_pv15  05b    bff06d5   as 05a                                      solar cap growth 15%
+pathway_c462.js, pathway_c462  05b    bff06d5   as 05a                                      carbon path to R462
+pathway_sd14.js, pathway_sd14  05f    not in git testEvery 2, stressDays 14                 14-day windows
+pathway_ph160a.js              05f    not in git testEvery 2, stressDays 14                 pumped hydro, first year 2033
+pathway_op.js, pathway_op      05g    d1be2a3   testEvery 2, stressDays 14, maxPasses 12    outage-path windows
+pathway_half.js                05j    -         testEvery 3, stressDays 10, maxPasses 10,   superseded (scope too narrow)
+                                                targetFrac 0.5, windowsPerPass 1, windowLeadYears 1
+```
+
+Reproduction: pathway_op reproduces exactly on `05j` and `06a` with windowLeadYears 14 (pathway_half_op.js,
+TF=1, LEAD=14). It does not reproduce on `06b` or later, where windows are added per failing year
+(windowsPerPass, default scope the failing year itself). `05f` was never committed; sd14 and ph160a can
+only be re-run approximately, on `05g` with the same options.
+
 ### Build 05j changed stress-window scope; the 5 Oct pathways do not reproduce on it, 5 Oct 2026
 
 Build `2026-10-05j`. Between `05g` (pathway_op recorded) and `05j` each stress window became scoped to
@@ -2119,6 +2245,10 @@ Second caveat: this check used the loop's own outage seeds (20260816 + k x 10472
 both), so its means reproduce the loop's exactly. Fixed since; see the independent-seed entry above.
 
 ### Outage-path stress windows replace the capacity margin: no margin needed, R17bn cheaper, 5 Oct 2026
+
+PROVISIONAL, 6 Oct 2026: the "no gas" build below came from a build LP with no coal minimum and no
+pumped-storage energy, the two gaps the 2040 decomposition found (RESULTS, 6 Oct). Re-runs with both
+(build 2026-10-06d) are under way; do not quote the build mix until they are done.
 
 Build `2026-10-05g`, suite 805/806, pathway_op.js. The engine now records hourly coal availability
 (coalAvailFrac). Each failing engine run (weather year and outage draw) becomes its own 14-day

@@ -432,6 +432,21 @@ Not from this brief: the 19.3 GW of NERSA registrations, which is press coverage
 Building Africa, Aug 2026; MyBroadband, about 19,300 MW registered 2018 to Q1 2026). The model's
 registrations source is nodal/nersa_registrations.json (SAPVIA dashboard, 20,131 MW to Q1 2026/27).
 
+## Pumped hydro, off-river cost basis 'anu2026' (TODO 14z, build 06h)
+
+Andrew Blakers (ANU, RE100 group), personal communication by email to Nick Hedley, 6 Oct 2026:
+- Off-river pumped hydro costs USD 1,100/kW plus USD 14/kWh, including 50% contingency.
+- South Africa has 738 Class AA and AAA sites holding 340 TWh between them. The top 30 hold 43 TWh.
+- Site-level data to follow; Nick is downloading the shortlist.
+
+Use in the model:
+- bldPhesCapexKW 'anu2026' gives (1,100 + 14 x hours) x R16.50/USD, for example R29,238/kW at 48 hours.
+- It is the default basis since build 06h.
+- 'tubatse' (the Weber et al. fit scaled to Tubatse's R29,200/kW at 14 hours; R37,450/kW at 48 hours) is
+  the conservative sensitivity, because river-based schemes cost more for flood design.
+
+## Sources consulted and rejected
+
 ## Non-residential shiftable load (drShiftPct note, build 06g)
 
 Found 6 Oct 2026 by web search. Only the LBNL report could be opened and checked. NREL and IEA are

@@ -34,3 +34,4 @@ harness/testroot
 harness/package.json
 harness/package-lock.json
 harness/*.progress
+harness/lpcache/
