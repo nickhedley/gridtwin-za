@@ -36,7 +36,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | NERSA Wholesale Electricity Pricing Methodology | consultation | May 2026 | independent cross-check on the price-component mapping; names balancing costs, which GridTwin lacks |
 | Energy Council of South Africa, Electricity Wholesale Tariff Series, ch. 1-3 | one-off, 2026 (UK PACT-funded) | flip-book at energycouncil.org.za/insights/analysis/; PDFs held by the user | retail stack and the planned SAWEM transition basis (TODO 14af-14ai); no constant reads it yet |
 | NERSA Trading Rules | consultation, v3 | June 2026; comments extended to 28 Sep 2026 (dashboard Issue 04) | governs wheeling and trading - see calendar |
-| Renewables.ninja / MERRA-2, regional | static | 2014-2025, twelve years | `profiles_regional_multiyear.json` via `weatherYearNational()` - capacity-weighted, bias-corrected 0.848 |
+| Renewables.ninja / MERRA-2, regional | static | 2014-2025, twelve years | `profiles_regional_multiyear.json` via `weatherYearNational()` - capacity-weighted; wind bias-corrected x1.0753 in the file (6 Sep 2026: fleet-weighted mean matched to Eskom's observed 2022-2023 output; the earlier 0.848 factor in weatherYearNational is retired, WIND_BIAS = 1.0) |
 | Form Energy / Google / Xcel transaction | one-off | 30 GWh, ~usd 77/kWh pre-incentive | `acapIronAir` 12,940 R/kW-yr |
 | Eskom Tubatse pumped storage | one-off | R35.9bn, 1.5 GW / 21 GWh, jet plan | `acapPs` 2,360 R/kW-yr |
 | Eskom Ingula pumped storage | one-off | R26.8bn reported, 1,332 MW / 21 GWh, built 2006-2017 (Engineering News, 2016) | cross-check on `bldPhesCostBasis` 'tubatse'; no constant reads it |
@@ -680,6 +680,12 @@ Decisions are the user's (7 Oct 2026).
   asked for Renewables.ninja's tracking option; it is not reachable from the cloud environment, so PVGIS was
   used, which is the source of the existing fixed-tilt solar too. SARAH3 covers 2005-2023; 2024 and 2025 use
   the PVGIS tracking/fixed ratio by region, month and hour.
+- Modern-turbine wind profile (new wind, bldWindModern): Renewables.ninja MERRA-2 (CC BY-NC 4.0), Vestas V162 5600
+  at 120 m, at the 98 sites of profile_sites.json, sample year 2019, mapped onto every year of the existing file in
+  50 bins per region (build_wind_modern.py; nodal/profiles_wind_modern.json and the national map
+  nodal/profiles_wind_modern_map.json). Stored uncorrected. Correction for new wind 1.064 central, 1.00 low
+  (index.html WIND_NEW_CORR; user decision, 7 Oct 2026), fitted to developer-stated annual output: Impofu 330 MW,
+  1,260 GWh (Enel) and San Kraal 140 MW, 616 GWh (EDF), check_wind_farms.py, weather years 2016, 2019, 2021, 2023.
 
 ## International benchmarks for central build costs (RULES, 7 Oct 2026)
 

@@ -84,6 +84,8 @@ fetched by the page
   substations_compact.json         tdp_projects.json
   transmission_lines.geojson
   profiles_solar_tracking.json     new utility solar, tracking option (build_solar_tracking.py)
+  profiles_wind_modern.json        new wind, modern-turbine profile, uncorrected (build_wind_modern.py)
+  profiles_wind_modern_map.json    its national 50-bin map, loaded at start-up (build_wind_modern.py)
 
 private_pending_h2_2026.json   six named private projects, deliberately not loaded.
                                Reconcile against the PFL H2 monitor, Feb 2027.

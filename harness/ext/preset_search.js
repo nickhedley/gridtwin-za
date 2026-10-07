@@ -29,6 +29,8 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   // The preset applied the way the page applies it (applyState also sets derived fields), as pathcheck.js does.
   w.eval(`applyState(PRESETS[${JSON.stringify(PRESET)}])`);
   if (process.env.BATT_CASE) w.eval(`state.bldBattCase=${JSON.stringify(process.env.BATT_CASE)};`);
+  if (process.env.WIND_CORR) w.eval(`state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`);   // new-wind correction case
+  console.log('wind', w.eval('bldWindModernOn()') ? 'modern' : 'legacy', 'R/kW', Math.round(w.eval('bldCostEntry("wind").c2026')), 'correction', w.eval('windNewCorr(state.bldWindCorr ?? FIXED.bldWindCorr)'));
   console.log('battery case', w.eval('bldBattCase()'), 'R/kW', Math.round(w.eval('bldCostEntry("batt").c2026')));
   const stamp = w.eval('BUILD_STAMP'), years = JSON.parse(w.eval('JSON.stringify(bldWeatherYears.meta.years)'));
   const offCap = (P0.scenarioYear || 2035) <= 2035 ? 1000 : 5000;

@@ -5543,6 +5543,8 @@ const FIXED = {
   // V162 5.6 MW at 120 m, nodal/profiles_wind_modern.json); existing farms keep their profile. Capex and profile change
   // together. 0: the previous R21,000/kW on the existing profile, for comparison with earlier results.
   bldWindModern:1, bldWindCase:'central',
+  // Correction for new wind on the modern-turbine profile (WIND_NEW_CORR): 'central' or 'low'. User decision, 7 Oct 2026.
+  bldWindCorr:'central',
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -6692,9 +6694,9 @@ function simulate(u, prof, outPath, _soc0){
   const {solar,wind,csp}=prof;
   // NEW WIND ON THE MODERN-TURBINE PROFILE (bldWindModern): onshore wind's per-unit output blends existing MW on the
   // current profile with new MW on the modern twin. Off, or with no new wind: windU is wind itself.
-  const _wModOn = ((p.bldWindModern ?? 0) | 0) > 0 && (p.newWindMW || 0) > 0;
-  const windU = _wModOn ? (() => { const T = prof.windMod || windModOf(wind), E = p.windMW || 0, N = p.newWindMW || 0;
-    const a = new Float64Array(wind.length); for (let h = 0; h < a.length; h++) a[h] = (E * wind[h] + N * T[h]) / (E + N); return a; })() : wind;
+  const _wModOn = ((p.bldWindModern ?? FIXED.bldWindModern) | 0) > 0 && (p.newWindMW || 0) > 0;
+  const windU = _wModOn ? (() => { const T = prof.windMod || windModOf(wind), E = p.windMW || 0, N = p.newWindMW || 0, k = windNewCorr(p.bldWindCorr);
+    const a = new Float64Array(wind.length); for (let h = 0; h < a.length; h++) a[h] = (E * wind[h] + N * Math.min(1, k * T[h])) / (E + N); return a; })() : wind;
   // SOLAR TRACKING (TODO 14aw): utility solar's per-unit output blends existing MW on fixed tilt with new MW on the
   // tracking twin; rooftop keeps solar. Off: solarU is solar itself.
   const _trkOn = ((p.bldPvTracking ?? 0) | 0) > 0 && (p.newPvMW || 0) > 0;
@@ -9832,10 +9834,11 @@ function bldBuildLP(opts){
   // Capex reads the cost case from the page state (bldCostEntry) while profiles read S; a caller passing a state that
   // disagrees with the page on these switches would price one case and dispatch another. Every caller passes the page
   // state; this guard keeps it that way.
-  if (typeof state !== 'undefined') for (const k of ['bldPvTracking', 'bldWindModern', 'bldWindCase', 'bldBattCase'])
+  if (typeof state !== 'undefined') for (const k of ['bldPvTracking', 'bldWindModern', 'bldWindCase', 'bldWindCorr', 'bldBattCase'])
     if ((S[k] ?? FIXED[k]) !== (state[k] ?? FIXED[k])) throw new Error('bldBuildLP: ' + k + ' differs between opts.state and the page state');
   const TRK_ON = ((S.bldPvTracking ?? 0) | 0) > 0;   // new utility solar on the tracking profile (TODO 14aw)
-  const WMOD_ON = ((S.bldWindModern ?? 0) | 0) > 0;   // new wind on the modern-turbine profile
+  const WMOD_ON = ((S.bldWindModern ?? FIXED.bldWindModern) | 0) > 0;   // new wind on the modern-turbine profile
+  const WMOD_K = WMOD_ON ? windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr) : 1;   // its correction (WIND_NEW_CORR)
   for (const t of T.concat(['offshore', 'phes', 'phel'])) GA[t] = GRID_ON ? bldGridAnn(t, S) : 0;
   const L = ['Minimize', ' obj:'];
   const obj = [];
@@ -10040,8 +10043,8 @@ function bldBuildLP(opts){
                                        : solarTrkOf(PROFILES.solar)[i];
       const wp = r.wind  ? r.wind[h]  : PROFILES.wind[i];
       // New wind's per-unit output: the modern-turbine twin when bldWindModern is on, else wp.
-      const wpN = !WMOD_ON ? wp : r.wind ? (r.windMod ? r.windMod[h] : (() => { throw new Error('modern wind on: a representative day has no modern-turbine wind'); })())
-                                      : windModOf(PROFILES.wind)[i];
+      const wpN = !WMOD_ON ? wp : Math.min(1, WMOD_K * (r.wind ? (r.windMod ? r.windMod[h] : (() => { throw new Error('modern wind on: a representative day has no modern-turbine wind'); })())
+                                      : windModOf(PROFILES.wind)[i]));
       // AVAILABILITY FROM THE ENGINE'S OWN KEYS, 2 Oct 2026. This line hardcoded nuclear 0.9,
       // hydro 0.5 and imports 0.9 while the engine reads nuclearCF (0.66, Koeberg's record),
       // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
@@ -12566,7 +12569,20 @@ function bldBuildSolarTrkRatio(){
 // MODERN-TURBINE WIND (bldWindModern). bldWindMod holds the regional series; WIND_MOD_MAP the national mapping from
 // current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
 // profile with none of its own (the default single-year PROFILES.wind).
-let bldWindMod = null, WIND_MOD_MAP = null;
+let bldWindMod = null, WIND_MOD_MAP = null, WIND_MOD_ERR = null;
+// One map, two routes: nodal/profiles_wind_modern_map.json at start-up (build_wind_modern.py writes it from the series)
+// and the series themselves when the weather years load. They must agree; a stale map file stops modern wind loudly.
+function setWindModMap(m, source){
+  if (!Array.isArray(m) || m.length !== 50) throw new Error('modern wind map from ' + source + ' is not 50 bins');
+  if (WIND_MOD_MAP){
+    const d = Math.max(...m.map((v, b) => Math.abs(v - WIND_MOD_MAP[b]) / Math.max(1e-9, Math.abs(WIND_MOD_MAP[b]))));
+    if (d > 1e-9){ WIND_MOD_MAP = null;
+      WIND_MOD_ERR = 'modern wind map disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun build_wind_modern.py';
+      throw new Error(WIND_MOD_ERR); }
+    return;
+  }
+  WIND_MOD_MAP = Array.from(m);
+}
 function bldBuildWindModMap(){
   if (!bldWindMod || !bldWeatherYears || !bldWxWeights) return;
   const B = 50, num = new Float64Array(B), den = new Float64Array(B), sc = bldWeatherYears.scale || 1, sm = bldWindMod.scale || 1;
@@ -12579,11 +12595,20 @@ function bldBuildWindModMap(){
     }
     for (let h = 0; h < HOURS; h++){ const b = Math.min(B - 1, Math.floor(o[h] * B)); num[b] += m[h]; den[b] += o[h]; }
   }
-  WIND_MOD_MAP = Array.from(num, (v, b) => den[b] > 1e-9 ? v / den[b] : 1);   // ratio modern/current per bin
+  setWindModMap(Array.from(num, (v, b) => den[b] > 1e-9 ? v / den[b] : 1), 'the series');   // ratio modern/current per bin
+}
+// CORRECTION FOR NEW WIND (user decision, 7 Oct 2026). profiles_wind_modern.json is uncorrected (Renewables.ninja's V162
+// at 120 m mapped from the current profile with the fleet factor removed). Fitted to developer-stated output: Impofu 1.0645,
+// San Kraal 1.0628 (check_wind_farms.py, RESULTS 7 Oct 2026); central 1.064. Low 1.00: stated output optimistic. Not the
+// fleet's 1.0753, which was fitted to a V90-at-80 m proxy against Eskom's older fleet. Applied per hour, clipped at 1.
+const WIND_NEW_CORR = { central: 1.064, low: 1.00 };
+function windNewCorr(c){
+  if (!(c in WIND_NEW_CORR)) throw new Error('bldWindCorr must be central or low: ' + c);
+  return WIND_NEW_CORR[c];
 }
 function windModOf(wind){
   if (wind.mod) return wind.mod;
-  if (!WIND_MOD_MAP) throw new Error('modern wind is on but nodal/profiles_wind_modern.json is not loaded');
+  if (!WIND_MOD_MAP) throw new Error(WIND_MOD_ERR || 'modern wind is on but nodal/profiles_wind_modern_map.json is not loaded');
   const t = new Float64Array(wind.length);
   for (let h = 0; h < wind.length; h++) t[h] = Math.min(1, wind[h] * WIND_MOD_MAP[Math.min(49, Math.floor(wind[h] * 50))]);
   wind.mod = t; return t;
@@ -18224,7 +18249,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07r';
+const BUILD_STAMP = '2026-10-07s';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -18821,7 +18846,10 @@ const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():n
 // the engine's inputs are complete.
 window.GTZA_READY = false;
 const P_TX = (typeof buildTxCurve === 'function') ? buildTxCurve().catch(() => {}) : Promise.resolve();
-Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE]).then(() => {
+// Modern-turbine wind map (bldWindModern, on by default): needed by any dispatch with new wind on the default profile.
+const P_WMOD = fetch('nodal/profiles_wind_modern_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
+  .then(d => { if (d) setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); }).catch(e => console.error('[GridTwin]', e.message));
+Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD]).then(() => {
   // The methodology table's capex line is filled from BLD_COST, so it cannot drift from the constants (7 Oct 2026:
   // it still read R10,500 for batteries and R18,000 for CCGT, against 8,105 and 34,965).
   for (const [id, t] of [['capexWind','wind'],['capexPv','pv'],['capexRooftop','rooftop'],['capexBatt','batt'],['capexCcgt','ccgt']]){

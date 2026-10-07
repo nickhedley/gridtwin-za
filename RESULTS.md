@@ -1727,6 +1727,86 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### New wind on the modern-turbine profile at 1.064: six suite results move, a pinned corner re-pinned, 7 Oct 2026
+
+Build `2026-10-07s`: nodal/profiles_wind_modern.json stored uncorrected; new wind's output x 1.064 (bldWindCorr 'central';
+'low' 1.00), clipped at 1, in engine and LP (WIND_NEW_CORR). Fixes two 07r defects found by the suite: the national map
+was built only with the weather years, so any dispatch with new wind threw before they loaded (invariants, response and
+outputs could not run); and the switch's fallback read 0 against a default of 1. ESK19679.csv absent.
+
+```
+suite                       07o          07r (before)    07s
+passed                      807 of 809   718 of 760      801 of 809 (799 before the map licence and the re-pin below)
+eng5                        6/6        6/6            6/6
+```
+
+Moved by the profile (each check returns to its 07o value with bldWindModern 0, measured on a copy of 07s):
+
+```
+check                                        modern off      modern on (1.064)    band
+CSIR 2030 coal share                         50.5%           46.1%                55% +/-6
+CSIR 2030 renewable share                    43.8%           48.1%                40% +/-8
+EDMSA Scenario A CO2 2035                    88.4 Mt         76.8 Mt              124 +/-22 (already failing)
+EDMSA Scenario A wind 2035                   within band     85.2 TWh             64 +/-12
+wind capture at 110 GW, no storage           86%             79%                  85-115%
+July gas with 20 GW iron-air, with gas       846 -> 832      425 -> 0 GWh         < 2% change
+preset curtailment, default profile          in band         Deep 71.6, FF 124.4  52.7, 96.3 +/-15%
+coal-curtailment corner, curtailFuelCost     R14.10bn        R16.67bn             re-pinned 13.9 -> 16.7
+```
+
+- Presets on the default profile (Deep decarbonisation 2035): wind 101.2 TWh at 1.064 against 98.2 at 1.00; system cost
+  R321.1bn against R322.2bn; no unserved energy in either.
+- The external and findings rows are results, not pins: left failing pending a decision (TODO 14bg). The corner is a
+  pin whose purpose (a non-zero term) still holds; available wind there 200.7 -> 247.3 TWh, curtailment 373.4 -> 433.4.
+- Caveat: one sample year (2019) sets the modern mapping; the preset searches restart on this build (TODO 14ay).
+
+### Modern-turbine wind against developer-stated output: the factor that matches is 1.063 to 1.065, not the fleet's 1.0753, 7 Oct 2026
+
+Build `2026-10-07r` data, check_wind_farms.py (output ninja_farm_check.json): Vestas V162 5600 at 120 m, Renewables.ninja
+MERRA-2, local_time=true, at each farm's REEA location, weather years 2016, 2019, 2021, 2023, capacity factor clipped at 1.
+Stated output is the developer's annual figure (net, P50 by convention), treated as an expected value, possibly optimistic.
+
+```
+                 raw CF    x 1.0753    stated    factor matching stated
+Impofu (330 MW)  41.1%     44.0%       43.6%     1.0645
+San Kraal (140)  47.4%     50.7%       50.2%     1.0628
+Phezukomoya      47.5%     50.9%       none      -
+Umsobomvu        48.0%     51.3%       none      -
+```
+
+- Uncorrected, the modern profile sits about 6% below both stated figures; with the fleet's 1.0753 about 1% above.
+- The two farms agree on the matching factor to 0.2%. Phezukomoya and Umsobomvu sit within 0.6 points of their
+  neighbour San Kraal, so the nearby sites are consistent.
+- Weather spread: Impofu 39.2% to 43.3% raw across the four years, so one year's figure is not a fair test.
+- Caveat: two farms with stated output, both Eastern Cape; stated figures may be optimistic, which would put the
+  right factor lower. Decided 7 Oct (user): 1.064 central, 1.00 low; re-check when measured output exists (TODO 14bf).
+
+### IRP 2025's own cost set on the central pathway: about the same gas build, a fifth of its running, 10 GW more coal kept, 7 Oct 2026
+
+Pathway v_half_c1_p1_costirp against v_half_c1_p1, both build `2026-10-07c` code: half standard, coal commitment on,
+pumped-storage energy on, demand +5% to 2040, legislated carbon tax path, stress loop per year. COSTSET=irp2025: the IRP
+2025 assumptions workbook's capex paths (wind, solar, lithium, CCGT, offshore), CCGT fuel, O&M and heat rate, x 1.068
+to 2026 rands (harness/pathway/costset_irp2025.json). Engine check: twelve weather years x two outage draws, LNG on.
+Each run is costed at its own prices, so the cost totals do not rank the two.
+
+```
+                         central (07c costs)        IRP cost set
+new gas GW 2030/35/40    1.20 / 3.22 / 3.22         1.20 / 3.87 / 3.87
+gas CF 2035, 2040        6.5%, 20.6%                2.6%, 3.2%
+gas hours 2035, 2040     844, 2,147                 399, 395
+coal retired by 2040     28.9 GW                    18.8 GW
+2040 wind/solar/Li GW    17.5 / 49.6 / 27.4         14.2 / 10.2 / 7.3
+CO2 2026-2040            1,212 Mt                   1,785 Mt
+system cost 2026-2040    R3,981bn                   R3,395bn
+LNG, worst 14-day lull   1.23 cargoes (2038-40)     0.97 cargoes
+```
+
+- The IRP cost set prices lithium at R24,362/kW at 4 h in 2026, about 78% above the central lithium cost now in use
+  (BESIPPPP bid window 3 aged to January 2026, R13,699/kW) and three times the 07c figure (R8,105). Its solar
+  (R15,734) and wind (R27,446) are also above the 07c figures; its CCGT (R18,610) is about half.
+- Caveat: the central column is the 07c baseline, not today's central costs (wind on BW6 bids, lithium on BW3 aged);
+  the comparison is re-run on those (TODO 14bd).
+
 ### Wind and lithium on South African bid data: Deep decarbonisation's new-build capital R0.936 to R1.205/kWh, 7 Oct 2026
 
 Build `2026-10-07q`. Wind central on BW6 compliant bids (R28,463/kW, was R21,000 unsourced; IRENA 2024 global onshore
