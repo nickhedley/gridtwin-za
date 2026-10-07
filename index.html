@@ -16271,8 +16271,10 @@ const PRESETS={
   // Sized on the Northern Cape, where connection capacity has been full since 2022 and which
   // carries the best resource - so a corridor that slips there holds back a large share of a
   // national programme rather than a marginal one.
-  'IRP\'s 2030 targets, grid delayed':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:4400,newPvMW:6200,
-                newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,
+  // Table 1 build (see IRP's 2030 targets) with 40% of the new wind and solar unable to connect: wind 0.6 x 7,341,
+  // solar 0.6 x 10,313; storage as planned. 7 Oct 2026.
+  'IRP\'s 2030 targets, grid delayed':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:4405,newPvMW:6188,
+                newRooftopMW:4500,newBattMW:3724,newBattHours:4,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,
                 congestionCurtailPct:10,scenarioYear:2030},
   // IRP 2025 (gazetted 28 Oct 2025), 2030 targets. Demand and EAF re-derived 22 Sep 2026 from
   // the IRP itself (section 3.1, Figure 2): its forecast is grid-connected consumption including
@@ -16295,7 +16297,11 @@ const PRESETS={
   // scenarioYear 2030 added 23 Sep 2026. Both this preset and IRP's 2030 targets, grid delayed carried no year, so
   // they defaulted to 2026: new build was priced at 2026 capital costs with no learning, and the
   // retail panel charged them 2026 contract positions. A 2030 scenario should be priced at 2030.
-  'IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:7340,newPvMW:10300,newRooftopMW:4500,newBattMW:300,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,scenarioYear:2030},
+  // TABLE 1, 7 Oct 2026. New build to the end of 2030 from public_data/irp2025_extract.csv (IRP 2025 Table 1,
+  // cumulative 2026-2030): wind 7,341, solar PV 10,313, gas 6,000 (3,000 Eskom 2029 + 3,000 IPP 2030), storage
+  // 3,724 (3,430 IPP + 294 Eskom BESS, 4 h), distributed generation 4,500. Storage was 300 until 07f, a tenth
+  // of the plan.
+  'IRP\'s 2030 targets':{demandGrowthPct:20,coalEAFPct:coalEafFromFleet(67),coalDecomMW:8000,newWindMW:7341,newPvMW:10313,newRooftopMW:4500,newBattMW:3724,newBattHours:4,newCcgtMW:6000,lcoeCcgt:2500,ccgtForceLoad:1,scenarioYear:2030},
   // IRP path 2035. The counterfactual the two transition presets should be read against: what
   // the published plan builds by 2035, on the same demand and the same weather, so a retail
   // comparison measures the transition rather than the passage of time. Comparing either of
@@ -16303,14 +16309,12 @@ const PRESETS={
   //
   // COAL. Eskom's Generation Continued Operations schedule retires 8.4 GW by 2030; the MTSAO
   // puts about 17 GW of coal and gas out by 2035. 16 GW of coal here.
-  // BUILD. The IRP's 2030 targets are published - 7,340 MW wind, 11,270 solar, 6,000 gas,
-  // 3,100 storage, 5,400 distributed - and its horizon totals are 34 GW wind, 25 GW solar,
-  // 8.5 GW storage and 16 GW gas by 2039. The 2035 figures here are a STRAIGHT-LINE
-  // interpolation between the two, which the IRP does not publish: wind 22.2 GW, solar 18.9,
-  // storage 6.1, gas 11.6. Rooftop is held at Deep decarbonisation's 10.8 GW so the two
-  // presets differ only in what is built on the grid side.
+  // BUILD, from the IRP 2025 Table 1 itself (public_data/irp2025_extract.csv, cumulative 2026-2035), 7 Oct 2026:
+  // wind 21,041, solar PV 17,513, gas 10,750 (3,000 Eskom + 7,750 IPP), storage 4,724 (4,430 IPP + 294 Eskom
+  // BESS, 4 h), distributed generation 9,000 (900 MW a year). It replaces a straight-line interpolation between
+  // older 2030 and 2039 figures (wind 22.2, solar 18.9, storage 6.1, gas 11.6, rooftop 10.8 GW).
   // GAS RUNS AT 51% ON THE FIRST 6 GW. The IRP 2025 sets a 51% minimum annual capacity factor on
-  // 6 GW of CCGT, 2030-2040, which is what ccgtForceLoad does here; the other 5.6 GW runs on merit. At
+  // 6 GW of CCGT, 2030-2040, which is what ccgtForceLoad does here; the other 4.75 GW runs on merit. At
   // build 06g the floor is not reachable: of its 26.8 TWh, 13.5 goes unmet even topped up in every hour,
   // recorded as ccgtFloorUnmetMWh (15.6 TWh on the hourly sensitivity, ccgtForceHourly).
   //
@@ -16319,8 +16323,8 @@ const PRESETS={
   // preset runs at +20%, its published trajectory. So this preset's emissions are NOT
   // comparable with the IRP's own 142 Mt for 2035 - it is the IRP's build on this model's
   // demand, which is the comparison the retail panel needs.
-  'IRP path 2035':{demandGrowthPct:5,coalEAFPct:coalEafFromFleet(67),coalDecomMW:16000,newWindMW:22200,newPvMW:18900,
-                   newRooftopMW:10800,newBattMW:6100,newBattHours:4,newCcgtMW:11600,lcoeCcgt:2500,
+  'IRP path 2035':{demandGrowthPct:5,coalEAFPct:coalEafFromFleet(67),coalDecomMW:16000,newWindMW:21041,newPvMW:17513,
+                   newRooftopMW:9000,newBattMW:4724,newBattHours:4,newCcgtMW:10750,lcoeCcgt:2500,
                    ccgtForceLoad:1,scenarioYear:2035,asReserveOn:true,asInertiaOn:true},
   // Deep decarbonisation 2035. Cheapest build found that meets the NEM reliability standard
   // (expected unserved energy at most 0.002% of demand, mean of twelve weather years), re-run
@@ -16797,9 +16801,9 @@ const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'roofto
 const PRESET_DESC = {
   '2025, as modelled': 'The model re-run on 2025\u2019s fleet, demand, weather, imports and coal outages, to compare with what Eskom actually did. Not Eskom\u2019s data.',
   'Today 2026': 'The system as it runs today: the 2026 fleet, demand and coal availability. The page opens here.',
-  'IRP\'s 2030 targets': 'The IRP 2025\u2019s build for 2030 (8 GW of coal retired, 7.3 GW of new wind, 10.3 GW of new solar, 6 GW of gas at its 51% floor) on the IRP\u2019s own demand growth.',
+  'IRP\'s 2030 targets': 'The IRP 2025\u2019s Table 1 build to 2030 (7.3 GW of new wind, 10.3 GW of new solar, 3.7 GW of storage, 6 GW of gas at its 51% floor), with 8 GW of coal retired, on the IRP\u2019s own demand growth.',
   'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
-  'IRP path 2035': 'The IRP\u2019s build interpolated to 2035 (22.2 GW wind, 18.9 GW solar, 6.1 GW storage, 11.6 GW gas) on the transition presets\u2019 +5% demand, so the three compare like for like.',
+  'IRP path 2035': 'The IRP 2025\u2019s Table 1 build to 2035 (21.0 GW of new wind, 17.5 GW of new solar, 4.7 GW of storage, 10.75 GW of gas), on the transition presets\u2019 +5% demand, so the three compare like for like.',
   'Deep decarbonisation 2035': '27 GW of coal retired by 2035 and no new gas: 32.5 GW wind, 29.5 GW solar, 19 GW of 12-hour batteries and 1.1 GW of iron-air, the cheapest build found meeting half the reliability standard.',
   'Fossil-free 2040': 'No coal, diesel or gas by 2040: 35 GW wind, 45 GW solar, 5 GW offshore, 32 GW of 12-hour batteries and 2.3 GW of iron-air, the cheapest build found meeting half the reliability standard.',
 };
@@ -17817,7 +17821,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07e';
+const BUILD_STAMP = '2026-10-07f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

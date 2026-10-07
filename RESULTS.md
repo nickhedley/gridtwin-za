@@ -1688,6 +1688,19 @@ today's fleet. Coal presets other than Today 2026 not yet re-measured over many 
 > RENAMED 4 Oct 2026: `Grid delay` is now `IRP's 2030 targets, grid delayed`, and `Backcast 2025` is
 > now `2025, as modelled`. Entries before then use the old names. Both buttons carry hover text.
 
+> CORRECTED 7 Oct 2026: `IRP's 2030 targets` and `IRP's 2030 targets, grid delayed` (and their old
+> names `Latest IRP's 2030 targets` and `Grid delay`) carried 300 MW of new storage until build
+> `2026-10-07f`; IRP 2025 Table 1 has 3,724 MW by 2030. Every figure for either preset before 07f used
+> 300 MW, in these entries: "Earlier findings re-measured on build 2026-09-22n"; "IRP demand verified
+> against the IRP"; "Network held in both retail bases"; "Coal presets re-measured with common-mode
+> trips"; "Both forecasts on planned coal and outage state"; "Adequacy loop converges"; "Adequacy loop
+> decomposed"; "A 2035 counterfactual"; "The IRP emissions comparison, redone"; "Coal utilisation is
+> where this model and the IRP disagree"; "Fleet availability to coal availability"; "The two 2030
+> presets were priced at 2026"; and both 6 Oct gas-floor entries. Not affected: "A growth percentage
+> is not a demand mapping" (demand only). `IRP path 2035` also changed at 07f (storage 6.1 to 4.7 GW,
+> gas 11.6 to 10.75 GW, wind and solar from an interpolation to Table 1). Effect on one run: see
+> "IRP presets rebuilt from Table 1", 7 Oct 2026.
+
 ### A coal operating floor does not reproduce 2025's curtailment either, 4 Oct 2026
 
 Build `2026-10-04a`, Backcast 2025, stopgap off (curtailment setting 0). Test only, in a copy: coal
@@ -1713,6 +1726,27 @@ The remaining explanation is local: NERSA says plants were curtailed to keep the
 low demand, which on long, lightly loaded lines in the Northern and Eastern Cape points to voltage
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
+
+### IRP presets rebuilt from Table 1; the 2030 presets had 300 MW of storage, not 3,724, 7 Oct 2026
+
+Build `2026-10-07f` against `2026-10-07e`. Each preset at its own defaults, default weather year,
+default outage seed, annual gas floor (51% on 6 GW). Source: public_data/irp2025_extract.csv (IRP 2025
+Table 1, cumulative new build).
+
+```
+                                  storage MW     gas TWh       unserved GWh   CO2 Mt         R/MWh
+IRP's 2030 targets                300 -> 3,724   26.67 26.73   0.95 0         126.9 127.6    1,278.5 1,288.4
+IRP's 2030 targets, grid delayed  300 -> 3,724   26.73 26.78   1.39 0         147.9 149.0    1,259.7 1,267.4
+IRP path 2035                     6,100 -> 4,724 13.31 14.22   0 0            60.8 64.0      1,465.6 1,404.7
+```
+
+- 2030 presets: wind 7,341 and solar 10,313 MW (were 7,340 and 10,300); grid delayed 0.6 of each,
+  4,405 and 6,188. The added storage takes unserved energy to zero and costs about R8-10/MWh.
+- IRP path 2035 is now Table 1 to 2035: wind 21,041, solar 17,513, rooftop 9,000, storage 4,724,
+  gas 10,750 MW (was an interpolation: 22.2, 18.9, 10.8, 6.1 and 11.6 GW). Curtailment 34.3 to 28.2
+  TWh, gas floor unmet 13.49 to 12.58 TWh, gas running hours 4,765 to 4,991.
+- Caveat: one weather year, one outage draw. Earlier entries that used these presets are listed in
+  the CORRECTED note above "A coal operating floor does not reproduce 2025's curtailment either".
 
 ### The IRP gas floor is now an annual minimum; IRP path 2035 still falls 13.5 TWh short of it, 6 Oct 2026
 
