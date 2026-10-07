@@ -19,6 +19,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    w.fetch=async(u)=>{try{const cl=String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles|config)/,'');const t=fs.readFileSync(path.join(path.resolve(ROOT),cl),'utf8');return{ok:true,json:async()=>JSON.parse(t),text:async()=>t};}catch(e){return{ok:false,json:async()=>{throw e},text:async()=>{throw e}};}};}});
  await new Promise(r=>setTimeout(r,6000)); const w=dom.window;
  w.eval(`applyState(PRESETS['Today 2026']);`); await w.eval('loadWeatherYears()');
+ // COSTSET (7 Oct 2026): the same cost set as the pathway run; see pathway/costset.js.
+ require('./pathway/costset.js')(w, process.env.COSTSET);
  // Gas infrastructure sensitivity, TODO 14ak (6 Oct 2026): the same overrides as pathway_perfail.js.
  if (process.env.GAS_FUEL_R) w.eval(`if(!('costCcgt' in state)) throw new Error('costCcgt missing'); state.costCcgt=${+process.env.GAS_FUEL_R};`);
  if (process.env.GAS_FOM_ADD) w.eval(`if(!('ccgt' in BLD_FOM)) throw new Error('BLD_FOM.ccgt missing'); BLD_FOM.ccgt+=${+process.env.GAS_FOM_ADD};`);
