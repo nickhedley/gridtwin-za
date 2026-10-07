@@ -216,6 +216,7 @@ input[type=range]::-moz-range-thumb{border:none; box-shadow:none; background:var
 .presets button{border:1.5px solid var(--ink); background:var(--panel); padding:7px 6px 5px; font-family:'Saira Condensed'; font-size:13.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; transition:background .15s; min-width:0; max-width:100%; overflow-wrap:break-word}
 .presets button:hover{background:var(--panel2)}
 .presets button.active{background:var(--ink); color:var(--panel)}
+.preset-caption{font-size:10.5px; color:var(--ink2); line-height:1.45; margin:-6px 0 12px; min-height:4.4em}
 
 /* KPI strip */
 .kpis{display:grid; grid-template-columns:repeat(8,1fr); gap:12px; margin-bottom:0}
@@ -390,6 +391,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     <div class="pb">
       <p style="font-size:10.5px;color:var(--ink2);margin:0 0 8px;line-height:1.45">Start from a preset, or move any slider.</p>
       <div class="presets" id="presets"></div>
+      <p class="preset-caption" id="presetCaption"></p>
       <button class="sharebtn" id="shareBtn" type="button">Copy scenario link</button>
       <button class="sharebtn" type="button" onclick="exportRunRecord()" title="A one-page record of this run: assumptions, outputs, and the data fingerprints it used, so the numbers can be reproduced and checked later" style="margin-top:6px">&darr; Export run record</button>
       <button class="sharebtn" id="pinBtn" type="button" onclick="pinScenario()" style="margin-top:6px;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink)">📌 Pin for comparison</button>
@@ -16789,26 +16791,53 @@ function applyState(overrides){
 }
 const PRESET_NON_SLIDER_KEYS = ['scenarioYear', 'windMW', 'pvUtilityMW', 'rooftopMW',
                                'battPowerMW', 'outageTraceYear', 'importsCF', 'hydroCF', 'dslTankOn', 'demandYear'];
-// Hover text for presets whose name alone could mislead. 4 Oct 2026.
-const PRESET_TIPS = {
+// ONE DESCRIPTION PER PRESET, read by the caption under the buttons, the hover tooltip and the screen-reader
+// description alike, so the text lives only here. Hover tooltips alone appeared late and never on touch
+// screens; the caption shows the hovered or focused preset, and the active one otherwise. 7 Oct 2026.
+const PRESET_DESC = {
   '2025, as modelled': 'The model re-run on 2025\u2019s fleet, demand, weather, imports and coal outages, to compare with what Eskom actually did. Not Eskom\u2019s data.',
+  'Today 2026': 'The system as it runs today: the 2026 fleet, demand and coal availability. The page opens here.',
+  'IRP\'s 2030 targets': 'The IRP 2025\u2019s build for 2030 (8 GW of coal retired, 7.3 GW of new wind, 10.3 GW of new solar, 6 GW of gas at its 51% floor) on the IRP\u2019s own demand growth.',
   'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
+  'IRP path 2035': 'The IRP\u2019s build interpolated to 2035 (22.2 GW wind, 18.9 GW solar, 6.1 GW storage, 11.6 GW gas) on the transition presets\u2019 +5% demand, so the three compare like for like.',
+  'Deep decarbonisation 2035': '27 GW of coal retired by 2035 and no new gas: 32.5 GW wind, 29.5 GW solar, 19 GW of 12-hour batteries and 1.1 GW of iron-air, the cheapest build found meeting half the reliability standard.',
+  'Fossil-free 2040': 'No coal, diesel or gas by 2040: 35 GW wind, 45 GW solar, 5 GW offshore, 32 GW of 12-hour batteries and 2.3 GW of iron-air, the cheapest build found meeting half the reliability standard.',
 };
 const presetsEl=document.getElementById('presets');
+const presetCaptionEl=document.getElementById('presetCaption');
+// The caption follows the pointer and keyboard focus, and falls back to the active preset; with no
+// active preset (a slider has been moved) it says so.
+function presetCaption(name){
+  if (!presetCaptionEl) return;
+  if (!name){ const a = presetsEl.querySelector('button.active'); name = a ? a.dataset.preset : null; }
+  presetCaptionEl.textContent = name ? (PRESET_DESC[name] || '') : 'Custom scenario: a slider has been moved from the preset.';
+}
 // Button order, set 4 Oct 2026; any preset not listed is appended. The page opens on the
 // defaults, which are Today 2026, so that button is marked active, whatever its position.
 const PRESET_ORDER = ['2025, as modelled', 'Today 2026', 'IRP\'s 2030 targets',
   'IRP\'s 2030 targets, grid delayed', 'IRP path 2035', 'Deep decarbonisation 2035', 'Fossil-free 2040'];
 [...PRESET_ORDER.filter(n => n in PRESETS), ...Object.keys(PRESETS).filter(n => !PRESET_ORDER.includes(n))].forEach((name)=>{
   const b=document.createElement('button');b.textContent=name; if(name==='Today 2026')b.classList.add('active');
-  if (PRESET_TIPS[name]) b.title = PRESET_TIPS[name];
+  b.type='button'; b.dataset.preset=name;
+  if (PRESET_DESC[name]){
+    b.title = PRESET_DESC[name];
+    // A hidden copy for assistive technology, so the description is read on focus without waiting on
+    // the caption to update. Same text, from PRESET_DESC.
+    const d=document.createElement('span'); d.id='presetDesc'+presetsEl.children.length; d.className='sr-only'; d.textContent=PRESET_DESC[name];
+    b.setAttribute('aria-describedby', d.id); presetsEl.parentNode.insertBefore(d, presetsEl.nextSibling);
+  }
+  b.addEventListener('mouseenter',()=>presetCaption(name));
+  b.addEventListener('focus',()=>presetCaption(name));
+  b.addEventListener('mouseleave',()=>presetCaption(null));
+  b.addEventListener('blur',()=>presetCaption(null));
   b.addEventListener('click',()=>{
     applyState(PRESETS[name]);
     setPresetActive(b); scheduleRun();
   });
   presetsEl.appendChild(b);
 });
-function setPresetActive(btn){presetsEl.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===btn));}
+function setPresetActive(btn){presetsEl.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===btn)); presetCaption(null);}
+presetCaption(null);
 
 /* lamps */
 const lampsEl=document.getElementById('lamps');
@@ -17788,7 +17817,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07b';
+const BUILD_STAMP = '2026-10-07e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
