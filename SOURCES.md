@@ -543,11 +543,13 @@ reservoir type and figure of merit. Class AA and AAA: 741 sites and 341 TWh gros
 "738 sites, 340 TWh" (personal communication, 6 Oct). Sizes overlap: the same reservoirs appear in up to
 111 pairs. Each reservoir counted once, the shortlist holds 2,688 sites and 287 TWh.
 
-Licence: not confirmed. The atlas images are CC BY 4.0, and articles describing the atlas are CC BY 4.0,
-but no licence for the site data was found (the ANU pages are blocked from this environment). So the raw
-file was removed from the repository root (7 Oct) and only aggregates are kept:
-public_data/anu_phes_za_summary.csv, made by harness/ext/anu_summary.py. Ask ANU RE100 to confirm the
-licence before republishing the site list.
+Licence: CC BY 4.0. Andrew Blakers (ANU RE100), personal communication to Nick Hedley, 7 Oct 2026,
+confirming that the ANU Pumped Hydro Atlases are released under CC BY 4.0. The shortlist is republished as
+public_data/anu_phes_shortlist_za.csv with the attribution line "Source: ANU RE100 Group, Global Pumped
+Hydro Atlas, South Africa shortlist (downloaded Oct 2026), CC BY 4.0." as its first line. Aggregates:
+public_data/anu_phes_za_summary.csv, made by harness/ext/anu_summary.py.
+
+Source: ANU RE100 Group, Global Pumped Hydro Atlas, South Africa shortlist (downloaded Oct 2026), CC BY 4.0.
 
 
 
