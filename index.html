@@ -1141,7 +1141,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             imports get no adder \u2013 hydro has no fuel so its R30/MWh already is consumables, and
             the import price is contracted and embeds the supplier\u2019s own O&amp;M.</td></tr>
           <tr><td>Existing fleet</td><td>Wind 4.6&nbsp;GW (REIPPPP 4.0 + wheeled 0.47 + Eskom Sere 0.1) &middot; Utility PV 3.27&nbsp;GW (grid-contracted 2.78 + wheeled 0.49) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, contracted dispatchable 05:00&ndash;21:30; modelled hourly as 05:00&ndash;22:00) &middot; Rooftop 8.6&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
-          <tr><td>New-build capex</td><td>Wind R21&nbsp;000 &middot; PV R12&nbsp;000 &middot; Rooftop R17&nbsp;000 &middot; Battery&nbsp;(4h) R10&nbsp;500 &middot; CCGT R18&nbsp;000 /kW. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT rises, having hit a record high in 2025</td></tr>
+          <tr><td>New-build capex</td><td>Wind R<span id="capexWind">&ndash;</span> &middot; PV R<span id="capexPv">&ndash;</span> &middot; Rooftop R<span id="capexRooftop">&ndash;</span> &middot; Battery&nbsp;(4h) R<span id="capexBatt">&ndash;</span> (BESIPPPP bid window 3; inclusions not stated) &middot; CCGT R<span id="capexCcgt">&ndash;</span> /kW, 2026. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT rises, having hit a record high in 2025</td></tr>
           <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region &middot; 11 Renewable Energy Development Zones (GN&nbsp;114 / Gazette&nbsp;41445 2018 and GN&nbsp;142/144/145 / Gazette&nbsp;44191 2021), held as centre points and equivalent-area radii rather than gazetted polygons. Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &ndash; they are not published by Eskom or NTCSA.</td></tr>
           <tr><td>Planned build</td><td>221 projects from NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034, all nine provinces, each with its published commissioning year and delivery phase</td></tr>
           <tr><td>Renewables vs Non-fossil</td><td>&ldquo;Renewables&rdquo; = wind + utility PV + rooftop PV + CSP + hydro. &ldquo;Non-fossil&rdquo; adds nuclear and (mostly-hydro) imports.</td></tr>
@@ -1451,8 +1451,8 @@ function initResourceQuery(){
   // said R6,500/kWh installed while pre-feasibility said R1,450 - the R1,450 was
   // a utility cell-pack figure mislabelled "installed"; retail reality for
   // small-scale is ~R6,000-7,000/kWh, e.g. a 5 kWh unit lands around R32k).
-  // Utility-scale EPC in the main model is R2,026/kWh (R8,105/kW at 4h) - a
-  // behind-the-meter system does not get that price.
+  // Utility-scale lithium in the main model is BLD_COST.batt (BESIPPPP bid window 3 since 7 Oct 2026, about
+  // R3,990/kWh) - a behind-the-meter system does not get that price.
   const BTM_BATT_R_PER_KWH = 6500;
   // CO2 displaced by behind-the-meter solar, tCO2/MWh. The main model's grid
   // average at defaults is 0.78; its marginal generator is coal (1.04) in
@@ -3954,7 +3954,8 @@ function printPrefeas() {
     // error. Rule 11: compute the bound before believing the number.
     const battRPerKW = (typeof BLD_COST !== 'undefined' && BLD_COST.batt
                         && typeof BLD_COST.batt.c2026 === 'number')
-                       ? BLD_COST.batt.c2026 : 8105;
+                       ? BLD_COST.batt.c2026
+                       : (() => { throw new Error('BLD_COST.batt.c2026 missing'); })();   // no stand-in number (rule 4)
     const battRm = battMW * 1000 * battRPerKW / 1e6;   // R/kW is priced at its own duration
     // Demand response: no capital, an availability payment on the MW held.
     const drMW = corridorCapMW * 0.05;
@@ -8903,7 +8904,7 @@ const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distribu
 // Overnight capex, R/kW in 2026 money, with an annual real decline rate.
 // this is what the build LPs optimise on (via bldAnnuity + BLD_LIFE + BLD_DISC)
 // - not acap*, not lcoe*. At R16.2/USD these imply wind ~$1,300/kW, PV ~$740/kW,
-// battery R10,500/kW for 4h = R2,625/kWh (~$162/kWh installed), CCGT ~$1,110/kW.
+// battery: see the BESIPPPP note on the batt line below. CCGT: see its own note.
 // Declines are annual real cost reductions; ccgt's is NEGATIVE (costs rising 2%/yr,
 // consistent with post-2022 turbine market tightness). Cross-check: these annuitise
 // to numbers near the lcoe* reference anchors at typical capacity factors.
@@ -8911,7 +8912,15 @@ const BLD_COST = {
   wind:    { c2026: 21000, decl:  0.0286 },
   pv:      { c2026: 12000, decl:  0.0389 },
   rooftop: { c2026: 17000, decl:  0.0389 },
-  batt:    { c2026:  8105, decl:  0.0500 },
+  // BATTERIES ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14ax). Central: BESIPPPP bid window 3,
+  // preferred bidders announced 30 May 2025: 616 MW / 2,464 MWh for R9.5bn (DEE media statement; SAnews), R3,856/kWh,
+  // escalated one year at SA CPI (3.5%, Stats SA, January 2026) to R3,990/kWh, x 4 h per kW. INCLUSIONS NOT STATED:
+  // the R9.5bn is the announced project value; whether it covers development, financing, local content (31% on
+  // BW2) and the works at the five NTCSA substations is not published. Treated as including connection (connIncl),
+  // so a battery on this basis pays no connection bay in the grid-cost option. The previous R8,105/kW (R2,026/kWh,
+  // no recorded source; level of BNEF's 2025 global turnkey price, which excludes EPC and grid connection) is the
+  // low case: BATT_CAPEX=8105 in the pathway scripts.
+  batt:    { c2026: 9.5e9 / 2464e3 * 1.035 * 4, decl:  0.0500, connIncl: true },
   // long-duration storage, added Aug 2026. Both are priced per kW of power at
   // their own duration, like the lithium line above (R10,500/kW = 4h).
   //
@@ -9072,13 +9081,17 @@ function bldGrid132Ratio(){
 // One-off connection capex, R/kW, for a technology under bldGridCost mode m.
 function bldGridCapexKW(tech, S){
   const m = S.bldGridCost | 0; if (!m) return 0;
-  const G = BLD_GRID, f = bldGrid132Ratio(), km = (S.bldGridSpurBeyond ? G.kmBeyond : G.km)[tech === 'phel' ? 'phes' : tech];
+  // Capex that includes connection (BLD_COST[tech].connIncl, bid-derived; user decision 7 Oct 2026): wind and solar
+  // then pay only the distance beyond the typical connection, and storage pays no bay. Gas (GridLab) and pumped hydro
+  // (ANU, excluding connection per Blakers) always pay from zero.
+  const incl = !!(BLD_COST[tech] && BLD_COST[tech].connIncl);
+  const G = BLD_GRID, f = bldGrid132Ratio(), km = ((S.bldGridSpurBeyond || incl) ? G.kmBeyond : G.km)[tech === 'phel' ? 'phes' : tech];
   const line132 = G.line400[m] * f, bay132 = (G.bay400[2] * f);   // the storage bay uses the high-case 132 kV bay
   if (tech === 'wind' || tech === 'pv')
     return (line132 * km + (m === 2 ? 2 * G.bay400[m] * f : 0)) / (G.circuitMW.kv132 * 1000);
   if (tech === 'phes' || tech === 'phel' || tech === 'ccgt')
     return (2 * G.line400[m] * km + 4 * G.bay400[m]) / (G.circuitMW.kv400 * 1000);
-  if (tech === 'batt' || tech === 'vrfb' || tech === 'ironair') return bay132 / (G.storeSchemeMW * 1000);
+  if (tech === 'batt' || tech === 'vrfb' || tech === 'ironair') return incl ? 0 : bay132 / (G.storeSchemeMW * 1000);
   return 0;   // rooftop (distribution) and offshore (export cable inside its capex)
 }
 // Annual grid cost in the build LP, R/kW-yr: the connection annuitised plus the integration charge.
@@ -17941,7 +17954,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07h';
+const BUILD_STAMP = '2026-10-07j';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -18539,6 +18552,12 @@ const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():n
 window.GTZA_READY = false;
 const P_TX = (typeof buildTxCurve === 'function') ? buildTxCurve().catch(() => {}) : Promise.resolve();
 Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE]).then(() => {
+  // The methodology table's capex line is filled from BLD_COST, so it cannot drift from the constants (7 Oct 2026:
+  // it still read R10,500 for batteries and R18,000 for CCGT, against 8,105 and 34,965).
+  for (const [id, t] of [['capexWind','wind'],['capexPv','pv'],['capexRooftop','rooftop'],['capexBatt','batt'],['capexCcgt','ccgt']]){
+    const el = document.getElementById(id);
+    if (el && BLD_COST[t]) el.textContent = Math.round(BLD_COST[t].c2026).toLocaleString('en-ZA').replace(/,/g, '\u00a0');
+  }
   window.GTZA_READY = true;
   run();
 });

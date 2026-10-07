@@ -25,6 +25,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // PEAK (TODO 14as): the same peaker settings as the pathway run; each year's diesel retired comes from the schedule.
  w.eval(`if(!('bldPeakerRet' in FIXED)) throw new Error('bldPeakerRet missing');`+(process.env.PEAK!==undefined?` state.bldPeakerRet=${+process.env.PEAK};`:'')+(process.env.PEAK_EXT!==undefined?` state.bldPeakerLifeExt=${+process.env.PEAK_EXT};`:'')+(process.env.PEAK_EXT_R!==undefined?` state.bldPeakerExtRkW=${+process.env.PEAK_EXT_R};`:''));
  const PEAK_ON=+w.eval('(state.bldPeakerRet??FIXED.bldPeakerRet)|0')>0;
+ // BATT_CAPEX (7 Oct 2026, TODO 14ax): lithium capex at 2026, R/kW at 4 h, for the low case (8105, a hardware-only
+ // basis, so it does not include connection). Read by engine and optimiser alike.
+ if (process.env.BATT_CAPEX) w.eval(`if(!('batt' in BLD_COST)) throw new Error('BLD_COST.batt missing'); BLD_COST.batt.c2026=${+process.env.BATT_CAPEX}; BLD_COST.batt.connIncl=false;`);
  // COSTSET (7 Oct 2026): the same cost set as the pathway run; see pathway/costset.js.
  require('./pathway/costset.js')(w, process.env.COSTSET);
  // Gas infrastructure sensitivity, TODO 14ak (6 Oct 2026): the same overrides as pathway_perfail.js.
