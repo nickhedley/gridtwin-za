@@ -5521,6 +5521,13 @@ const FIXED = {
   // the spur only beyond the 18 km median, for capex that already includes connection. bldGridBattHalf 1 charges
   // storage half the integration charge (sensitivity; central charges storage none).
   bldGridCost:0, bldGridSpurBeyond:0, bldGridBattHalf:0,
+  // EXISTING DIESEL PEAKERS: RETIREMENT AND LIFE EXTENSION (TODO 14as, 7 Oct 2026, user decisions; see BLD_PEAKERS).
+  // bldPeakerRet 0 off (default until reviewed: all 3.4 GW to 2040, as before), 1 end-of-life dates, 2 the IRP 2025's
+  // dates. bldPeakerLifeExt 1 (with 1) lets the build LP keep Ankerlig and Gourikwa to the IRP's mid-2040s at
+  // bldPeakerExtRkW, R/kW: R1,500 is a labelled placeholder, the UK capacity market's GBP 65/kW capex threshold
+  // for a refurbishing unit's three-year agreement (DESNZ, 2025 government response), a policy threshold set for
+  // CCGTs, not a measured cost; R4,000 is the sensitivity. Extended or not, a plant online pays fomDiesel.
+  bldPeakerRet:0, bldPeakerLifeExt:1, bldPeakerExtRkW:1500,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -9034,6 +9041,29 @@ const BLD_GRID = {
   circuitMW:{ kv132: 205, kv400: 1000 },
   storeSchemeMW: 90, lifeY: 40,
 };
+// EXISTING DIESEL PEAKERS, TODO 14as (7 Oct 2026). The 3.4 GW fleet stayed in full to 2040 in every pathway.
+// eol: first year offline at about 30 years (PyPSA-RSA fleet_by_region_v2.csv decommissioning dates; Ankerlig
+// commissioned 2007-2009, Gourikwa 2007-2008, Eskom). irp: IRP 2025 section 3.2.1.2.2, p.13 (Gazette 53596
+// p.24): Port Rex and Acacia, 314 MW, end of life 2025-2026; Ankerlig and Gourikwa mid-2040s (2045 here, beyond
+// the horizon). Avon (670 MW) and Dedisa (335 MW) are not listed: their 15-year contracts expire 2030-2031 and
+// they stay online to 2040 paying fixed O&M (user, 7 Oct 2026). Acacia and Port Rex retire at the IRP's 314 MW,
+// against 342 MW in the fleet file. Only plants with ext may be life-extended, to the IRP's date.
+const BLD_PEAKERS = [
+  { id: 'acpr', name: 'Acacia and Port Rex', mw: 314,  eol: 2027, irp: 2027, ext: false },
+  { id: 'gou',  name: 'Gourikwa',            mw: 746,  eol: 2038, irp: 2045, ext: true },
+  { id: 'ank',  name: 'Ankerlig',            mw: 1338, eol: 2039, irp: 2045, ext: true },
+];
+function bldPeakerOffYear(p, S){ const m = S.bldPeakerRet | 0; return m === 1 ? p.eol : m === 2 ? p.irp : 9999; }
+function bldPeakerExtOn(p, S, y){ return (S.bldPeakerRet | 0) === 1 && !!S.bldPeakerLifeExt && p.ext && y >= p.eol; }
+// Diesel MW retired by year y, less any life extension the build LP chose (cols: its solution, or none).
+function bldPeakerDecomMW(y, S, cols){
+  let mw = 0;
+  for (const p of BLD_PEAKERS) if (y >= bldPeakerOffYear(p, S)){
+    mw += p.mw;
+    if (cols && bldPeakerExtOn(p, S, y)) mw -= ((cols['le_' + p.id] || {}).Primal || 0);
+  }
+  return Math.max(0, mw);
+}
 // 132 kV cost as a share of 400 kV, from the reV classes (400 kV interpolated by voltage, 230 to 500 kV).
 function bldGrid132Ratio(){
   const r = BLD_GRID.rev, c400 = r.c400 + (400 - 230) / (500 - 230) * (r.c1500 - r.c400);
@@ -9638,6 +9668,12 @@ function bldBuildLP(opts){
                wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
                csp:S.cspMW, batt:S.battPowerMW };
   const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt, EMIS_DIESEL = S.emisDiesel;
+  // Peakers by year (BLD_PEAKERS; off: the whole fleet every year). DSL(y) is the fleet left on its dates, LEV(y) the
+  // life-extension variables that add back to it.
+  const PK_ON = (S.bldPeakerRet | 0) > 0;
+  const DSL = y => PK_ON ? Math.max(0, EX.diesel - BLD_PEAKERS.filter(p => y >= bldPeakerOffYear(p, S)).reduce((a, p) => a + p.mw, 0)) : EX.diesel;
+  const LEV = y => PK_ON ? BLD_PEAKERS.filter(p => bldPeakerExtOn(p, S, y)).map(p => 'le_' + p.id) : [];
+  const LE_P = PK_ON ? BLD_PEAKERS.filter(p => bldPeakerExtOn(p, S, Y[Y.length - 1])) : [];
 
   // Grid cost per technology, R/kW-yr (BLD_GRID; zero unless bldGridCost is set).
   const GRID_ON = (S.bldGridCost | 0) > 0, GA = {};
@@ -9752,6 +9788,14 @@ function bldBuildLP(opts){
     let credit = 0;
     for (const yy of Y) if (yy >= y) credit += GA[t] / Math.pow(1+BLD_DISC, yy-2026);
     obj.push('-' + (credit * 1000).toFixed(3) + ' rp_' + t + '_' + y);
+  }
+  // Life extension (TODO 14as): le_<id> MW kept from its end-of-life year to the IRP's date, paying the extension
+  // capex over those years and fixed O&M every year it runs.
+  for (const p of LE_P){
+    let cost = 0;
+    const ann = bldAnnuity(S.bldPeakerExtRkW, p.irp - p.eol) + S.fomDiesel;
+    for (const yy of Y) if (yy >= p.eol) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
+    obj.push((cost * 1000).toFixed(3) + ' le_' + p.id);
   }
   L.push('  ' + obj.join(' + ').replace(/\+ -/g, '- '));
   L.push('Subject To');
@@ -9884,7 +9928,7 @@ function bldBuildLP(opts){
         // engine's min(power, soc / holdH)), and only the power it is not already discharging.
         // Before this the LP counted the full battery power as reserve even when empty, so it
         // served load the engine had to shed to protect reserve (gap decomposition, RESULTS).
-        const rhs = coalCap + EX.diesel - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE)
+        const rhs = coalCap + DSL(y) - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE)
                     - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0);
         // STORAGE CREDIT BY DURATION ON TAIL DAYS, 6 Oct 2026. Tail days carry the stress margin, and
         // there a battery is credited at min(1, duration / bldMarginHoldHours) of its power: stored
@@ -9906,9 +9950,10 @@ function bldBuildLP(opts){
                 + ' + ' + cum('pv',y).map(v => (RES_VRE*sp).toFixed(5)+' '+v).join(' + ')
                 + ' + ' + cum('rooftop',y).map(v => (RES_VRE*sp).toFixed(5)+' '+v).join(' + ')
               : '')
+          + LEV(y).map(v => ' - ' + v).join('')
           + ' <= ' + rhs.toFixed(1));
       }
-      L.push(' dmax_' + k + ': gd_' + k + ' <= ' + EX.diesel);
+      L.push(' dmax_' + k + ': gd_' + k + LEV(y).map(v => ' - ' + v).join('') + ' <= ' + DSL(y));
       L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       // Same power limits for vanadium and iron-air: neither can charge or
@@ -10004,7 +10049,7 @@ function bldBuildLP(opts){
     // The annual-peak margin uses the mean coal availability, as before; the tail-day derate is
     // an hourly matter and lives in cmax_ and resv_ above.
     const firm = coalCapMean + EX.nuclear*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
-               + EX.ps + EX.diesel + EX.batt;
+               + EX.ps + DSL(y) + EX.batt;
     // Long-duration storage counts toward firm capacity at its de-rated value:
     // a 100-hour store can be relied on through a long event in a way a 4-hour
     // one cannot. Energy arbitrage for vrfb/ironair is not yet in this LP - see
@@ -10039,6 +10084,7 @@ function bldBuildLP(opts){
     L.push(' res_' + y + ': cc_batt_' + y
       + ' + ' + STORE.filter(S2 => S2.t !== 'batt').map(S2 => 'cc_' + S2.t + '_' + y).join(' + ')
       + ' + ' + cum('ccgt',y).join(' + ')
+      + LEV(y).map(v => ' + ' + v).join('')
       + (RC_ON ? ' - ' + eaf.toFixed(4) + ' rc_' + y : '')
       + ' >= ' + (RC_ON ? (peak*1.10 - firm) : Math.max(0, peak*1.10 - firm)).toFixed(1));
   }
@@ -10063,6 +10109,7 @@ function bldBuildLP(opts){
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
   if (PS_ON) for (const y of Y) L.push(' 0 <= b_ps_'+y+' <= 0');
   if (RC_ON) for (const y of Y) L.push(' 0 <= rc_'+y+' <= ' + bldCoalMW(y).toFixed(1));
+  for (const p of LE_P) L.push(' 0 <= le_' + p.id + ' <= ' + p.mw);
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
   for (const y of Y) for (const S2 of STORE) if (S2.t !== 'batt')
     L.push(' 0 <= cc_'+S2.t+'_'+y+' <= 200000');
@@ -10153,6 +10200,10 @@ function bldBuildToState(res){
     coalDecomMW: Math.round(FIXED.coalInstalledMW - bldCoalMW(endY)
       + (((res && res.Columns && res.Columns['rc_' + endY]) || {}).Primal || 0)),
   };
+  // Peakers on their dates (TODO 14as), only when the option is on.
+  const _ps = { ...FIXED, ...((typeof state !== 'undefined' && state) || {}) };
+  // Set, not added to the current value: applying a build twice must not retire the fleet twice.
+  if ((_ps.bldPeakerRet | 0) > 0) o.dieselDecomMW = bldPeakerDecomMW(endY, _ps, res && res.Columns);
   if ((tot.batt || 0) > 1 && eb > 0) o.newBattHours = Math.max(1, Math.round(eb / tot.batt));
   return o;
 }
@@ -10222,7 +10273,9 @@ function bldStateForYear(res, y, opts){
     newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
     newPsMW: Math.round(tot.phes || 0), newPsHours: opts.state.bldPhesHours,
     coalDecomMW: Math.max(0, Math.round(FIXED.coalInstalledMW - bldCoalMW(y) + rc)),
-    demandGrowthPct: (Math.pow(1 + (opts.growth || 0), y - 2026) - 1) * 100, scenarioYear: y };
+    demandGrowthPct: (Math.pow(1 + (opts.growth || 0), y - 2026) - 1) * 100, scenarioYear: y,
+    ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
+        ? { dieselDecomMW: (opts.state.dieselDecomMW || 0) + bldPeakerDecomMW(y, { ...FIXED, ...opts.state }, res.Columns) } : {}) };
 }
 
 async function bldStressLoop(opts, onProgress){
@@ -17888,7 +17941,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07g';
+const BUILD_STAMP = '2026-10-07h';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
