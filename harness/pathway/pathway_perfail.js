@@ -44,6 +44,9 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
    console.log('solved', last.Status, new Date().toISOString()); if (last.Status!=='Optimal') throw new Error('solve not optimal: '+last.Status); return last; };
  // COMMIT / PSE (6 Oct 2026): coal commitment and pumped-storage energy in the build LP; unset = FIXED defaults.
  w.eval(`applyState(PRESETS['Today 2026']); state.demandGrowthPct=${DEM}; bldSetHorizon(2040);`+(process.env.COMMIT!==undefined?` state.bldCoalCommit=${+process.env.COMMIT};`:'')+(process.env.PSE!==undefined?` state.bldPsEnergy=${+process.env.PSE};`:'')+(process.env.PHES!==undefined?` state.bldPhesOn=${+process.env.PHES};`:'')+(process.env.PHES_H?` state.bldPhesHours=${+process.env.PHES_H};`:'')+(process.env.PHES_H2?` state.bldPhesHours2=${+process.env.PHES_H2};`:'')+(process.env.GAS_CAPEX?` if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`:'')+(process.env.PHES_FIRST?` state.bldPhesFirstYear=${+process.env.PHES_FIRST};`:'')+(process.env.PHES_BASIS?` if(!('bldPhesCostBasis' in FIXED)) throw new Error('bldPhesCostBasis missing'); state.bldPhesCostBasis='${process.env.PHES_BASIS}';`:'')+(process.env.GAS_FUEL_R?` if(!('costCcgt' in state)) throw new Error('costCcgt missing'); state.costCcgt=${+process.env.GAS_FUEL_R};`:'')+(process.env.GAS_FOM_ADD?` if(!('ccgt' in BLD_FOM)) throw new Error('BLD_FOM.ccgt missing'); BLD_FOM.ccgt+=${+process.env.GAS_FOM_ADD};`:''));
+ // GRID (7 Oct 2026, TODO 14ar): optimiser grid cost. GRID=1 central, 2 high; GRID_BEYOND=1 spur only beyond the
+ // median; GRID_BATTHALF=1 storage pays half the integration charge. Unset = FIXED (off).
+ w.eval(`if(!('bldGridCost' in FIXED)) throw new Error('bldGridCost missing');`+(process.env.GRID!==undefined?` state.bldGridCost=${+process.env.GRID};`:'')+(process.env.GRID_BEYOND!==undefined?` state.bldGridSpurBeyond=${+process.env.GRID_BEYOND};`:'')+(process.env.GRID_BATTHALF!==undefined?` state.bldGridBattHalf=${+process.env.GRID_BATTHALF};`:''));
  // COSTSET (7 Oct 2026): a whole cost set, e.g. COSTSET=irp2025; see costset.js.
  require('./costset.js')(w, process.env.COSTSET);
  await w.eval('loadWeatherYears()');
@@ -56,7 +59,7 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  const Y=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)')), T=JSON.parse(w.eval('JSON.stringify(BLD_TECHS)'));
  const sched={}; for(const y of Y){ sched[y]={}; for(const t of T) sched[y][t]=Math.round((cols['b_'+t+'_'+y]||{Primal:0}).Primal);
    sched[y].battMWh=Math.round((cols['eb_batt_'+y]||{Primal:0}).Primal); sched[y].off=Math.round((cols['b_off_'+y]||{Primal:0}).Primal);
-   sched[y].phes=Math.round((cols['b_phes_'+y]||{Primal:0}).Primal); sched[y].phel=Math.round((cols['b_phel_'+y]||{Primal:0}).Primal); sched[y].earlyRetMW=Math.round((cols['rc_'+y]||{Primal:0}).Primal); sched[y].coalMW=Math.round(w.eval(`bldCoalMW(${y})`) - sched[y].earlyRetMW); }
+   sched[y].phes=Math.round((cols['b_phes_'+y]||{Primal:0}).Primal); sched[y].phel=Math.round((cols['b_phel_'+y]||{Primal:0}).Primal); sched[y].rp={}; for(const t of T.concat(['phes','phel'])){ const v=Math.round((cols['rp_'+t+'_'+y]||{Primal:0}).Primal); if(v) sched[y].rp[t]=v; } sched[y].earlyRetMW=Math.round((cols['rc_'+y]||{Primal:0}).Primal); sched[y].coalMW=Math.round(w.eval(`bldCoalMW(${y})`) - sched[y].earlyRetMW); }
  // DUMP (6 Oct 2026): the final LP's 2040 stress-window hours (d >= 1100) and the windows themselves,
  // for decomposing optimiser against engine supply line by line.
  if (process.env.DUMP!=='0'){ const DY=+(process.env.DUMPY||2040); const re=new RegExp('^([a-z]+)_'+DY+'_(\\d+)_(\\d+)$'); const lpv={};

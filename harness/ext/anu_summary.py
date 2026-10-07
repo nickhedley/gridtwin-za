@@ -1,6 +1,7 @@
 # ANU PHES shortlist: assign to model supply areas (nearest substation), summarise. 7 Oct 2026.
-# Run: python3 -I harness/ext/anu_summary.py <anu_phes_shortlist_za.csv> nodal/substations_compact.json <out.json> <out.csv>
-# The shortlist is public_data/anu_phes_shortlist_za.csv; drop its first (attribution) line before reading.
+# Run: python3 -I harness/ext/anu_summary.py <anu_phes_shortlist_za.csv> nodal/substations_compact.json <out.json> <out.csv> [nodal/phes_sites_region.json]
+# The shortlist is CC BY 4.0 (confirmed by Prof. Blakers, 7 Oct 2026) and is in public_data/ with its attribution line;
+# strip that first line before passing the file here.
 import csv, json, sys, math, collections
 rows = list(csv.DictReader(open(sys.argv[1])))
 subs = json.load(open(sys.argv[2]))['subs']
@@ -51,6 +52,18 @@ for lim in (50, 100):
     sel = [r for r in keep if r['area']=='Eastern Cape' and min(hav(float(r['Latitude']),float(r['Longitude']),s['lat'],s['lng']) for s in wind_subs if s['area']=='Eastern Cape') <= lim]
     print(f'EC non-overlapping sites within {lim} km of Poseidon/Grassridge/Dedisa/Delphi:', fmt(agg(sel)), {c: sum(1 for r in sel if r['Class']==c) for c in CL})
 json.dump(out, open(sys.argv[3], 'w'), indent=1)
+# nodal/phes_sites_region.json (optional 5th argument): the regional optimiser's pumped-hydro tiers. Per supply
+# area and class, the non-overlapping storage (GWh), site count and median distance to the nearest >=275 kV
+# substation (km). 7 Oct 2026.
+if len(sys.argv) > 5:
+    import statistics
+    reg = {}
+    for a in AREAS:
+        reg[a] = {}
+        for c in CL:
+            sel = [r for r in keep if r['area']==a and r['Class']==c]
+            if sel: reg[a][c] = {'GWh': round(sum(r['E'] for r in sel)), 'sites': len(sel), 'km275': round(statistics.median(r['sub275Km'] for r in sel), 1)}
+    json.dump({'meta': {'source': 'ANU RE100 pumped hydro atlas, South Africa shortlist (downloaded Oct 2026), 6,921 site pairs outside protected areas', 'method': 'harness/ext/anu_summary.py: nearest-substation supply area; each reservoir used once, best figure of merit first', 'licence': 'CC BY 4.0. Derived from the ANU RE100 Group Global Pumped Hydro Atlas, South Africa shortlist (public_data/anu_phes_shortlist_za.csv); attribution required.', 'note': 'Aggregates of the shortlist by model supply area and class.', 'classCostVsAA': {'AAA': 0.6, 'AA': 1.0, 'A': 1.4, 'B': 1.9}, 'classCostNote': 'median figure of merit relative to AA within the same system size (7 Oct 2026)'}, 'regions': reg}, open(sys.argv[5], 'w'), indent=1)
 w = csv.writer(open(sys.argv[4], 'w', newline=''))
 w.writerow(['area','class','set','sites','energy_GWh','power_GW'])
 for key in ('gross','nonOverlap'):
