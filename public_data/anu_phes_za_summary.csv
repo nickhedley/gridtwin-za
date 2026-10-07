@@ -1,0 +1,101 @@
+area,class,set,sites,energy_GWh,power_GW
+Eastern Cape,AAA,gross,19,23450,289.0
+Eastern Cape,AA,gross,276,95880,1854.2
+Eastern Cape,A,gross,775,99780,2580.3
+Eastern Cape,B,gross,1308,71848,2440.4
+Eastern Cape,all,gross,2378,290958,7164.0
+Kwazulu Natal,AAA,gross,4,7150,63.0
+Kwazulu Natal,AA,gross,212,88815,1659.3
+Kwazulu Natal,A,gross,578,74860,1928.0
+Kwazulu Natal,B,gross,983,63945,2036.1
+Kwazulu Natal,all,gross,1777,234770,5686.3
+Mpumalanga,AAA,gross,1,500,10.0
+Mpumalanga,AA,gross,51,19200,360.8
+Mpumalanga,A,gross,185,28555,687.8
+Mpumalanga,B,gross,466,33885,1065.1
+Mpumalanga,all,gross,703,82140,2123.7
+Limpopo,AAA,gross,0,0,0
+Limpopo,AA,gross,17,6550,122.8
+Limpopo,A,gross,153,18940,492.2
+Limpopo,B,gross,344,19287,668.5
+Limpopo,all,gross,514,44777,1283.5
+Western Cape,AAA,gross,5,13500,110.0
+Western Cape,AA,gross,120,68500,1065.3
+Western Cape,A,gross,364,75325,1609.2
+Western Cape,B,gross,696,76590,1973.2
+Western Cape,all,gross,1185,233915,4757.7
+Northern Cape,AAA,gross,2,2000,35.0
+Northern Cape,AA,gross,34,15700,289.0
+Northern Cape,A,gross,94,12200,313.3
+Northern Cape,B,gross,190,13917,437.7
+Northern Cape,all,gross,320,43817,1075.1
+Hydra Central,AAA,gross,0,0,0
+Hydra Central,AA,gross,0,0,0
+Hydra Central,A,gross,12,1750,42.1
+Hydra Central,B,gross,27,2605,77.2
+Hydra Central,all,gross,39,4355,119.3
+Free State,AAA,gross,0,0,0
+Free State,AA,gross,0,0,0
+Free State,A,gross,1,50,2.8
+Free State,B,gross,4,230,7.4
+Free State,all,gross,5,280,10.2
+Gauteng,AAA,gross,0,0,0
+Gauteng,AA,gross,0,0,0
+Gauteng,A,gross,0,0,0
+Gauteng,B,gross,0,0,0
+Gauteng,all,gross,0,0,0
+North West,AAA,gross,0,0,0
+North West,AA,gross,0,0,0
+North West,A,gross,0,0,0
+North West,B,gross,0,0,0
+North West,all,gross,0,0,0
+Eastern Cape,AAA,nonOverlap,8,7650,133.0
+Eastern Cape,AA,nonOverlap,70,24850,510.8
+Eastern Cape,A,nonOverlap,366,36755,1190.7
+Eastern Cape,B,nonOverlap,572,37323,1372.2
+Eastern Cape,all,nonOverlap,1016,106578,3206.7
+Kwazulu Natal,AAA,nonOverlap,2,2000,35.0
+Kwazulu Natal,AA,nonOverlap,23,8565,172.5
+Kwazulu Natal,A,nonOverlap,212,21210,699.0
+Kwazulu Natal,B,nonOverlap,339,23838,840.2
+Kwazulu Natal,all,nonOverlap,576,55613,1746.7
+Mpumalanga,AAA,nonOverlap,1,500,10.0
+Mpumalanga,AA,nonOverlap,2,200,5.8
+Mpumalanga,A,nonOverlap,69,8695,254.4
+Mpumalanga,B,nonOverlap,155,12070,416.3
+Mpumalanga,all,nonOverlap,227,21465,686.5
+Limpopo,AAA,nonOverlap,0,0,0
+Limpopo,AA,nonOverlap,5,2350,43.8
+Limpopo,A,nonOverlap,62,7360,224.0
+Limpopo,B,nonOverlap,120,9380,311.7
+Limpopo,all,nonOverlap,187,19090,579.4
+Western Cape,AAA,nonOverlap,2,3000,50.0
+Western Cape,AA,nonOverlap,19,11750,215.3
+Western Cape,A,nonOverlap,170,21725,629.8
+Western Cape,B,nonOverlap,315,26645,890.4
+Western Cape,all,nonOverlap,506,63120,1785.6
+Northern Cape,AAA,nonOverlap,1,1500,25.0
+Northern Cape,AA,nonOverlap,7,5500,100.0
+Northern Cape,A,nonOverlap,45,5500,163.3
+Northern Cape,B,nonOverlap,102,6432,258.0
+Northern Cape,all,nonOverlap,155,18932,546.3
+Hydra Central,AAA,nonOverlap,0,0,0
+Hydra Central,AA,nonOverlap,0,0,0
+Hydra Central,A,nonOverlap,5,350,14.1
+Hydra Central,B,nonOverlap,14,1665,51.6
+Hydra Central,all,nonOverlap,19,2015,65.7
+Free State,AAA,nonOverlap,0,0,0
+Free State,AA,nonOverlap,0,0,0
+Free State,A,nonOverlap,1,50,2.8
+Free State,B,nonOverlap,1,15,0.8
+Free State,all,nonOverlap,2,65,3.6
+Gauteng,AAA,nonOverlap,0,0,0
+Gauteng,AA,nonOverlap,0,0,0
+Gauteng,A,nonOverlap,0,0,0
+Gauteng,B,nonOverlap,0,0,0
+Gauteng,all,nonOverlap,0,0,0
+North West,AAA,nonOverlap,0,0,0
+North West,AA,nonOverlap,0,0,0
+North West,A,nonOverlap,0,0,0
+North West,B,nonOverlap,0,0,0
+North West,all,nonOverlap,0,0,0
