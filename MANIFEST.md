@@ -63,6 +63,7 @@ inputs to build_capacity.py, not fetched by the page
   supply_area_split_draft.json
   pfl_private_h1_2026.json
   pfl_cod_h1_2026.json      read by validate_capacity
+  phes_sites_region.json    read by harness/ext/grid_distances.py (anu_summary.py)
 
 fetched by the page
   bq_queue.json                    coal_availability_trace.json
@@ -78,6 +79,7 @@ fetched by the page
   sa_solar_grid.json               substation_bands.json
   substations_compact.json         tdp_projects.json
   transmission_lines.geojson
+  profiles_solar_tracking.json     new utility solar, tracking option (build_solar_tracking.py)
 
 private_pending_h2_2026.json   six named private projects, deliberately not loaded.
                                Reconcile against the PFL H2 monitor, Feb 2027.
