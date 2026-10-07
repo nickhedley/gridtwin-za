@@ -31,7 +31,8 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
                  .replace(/^ 0 <= b_batt_(\d{4}) <= [0-9.]+$/gm,(m,y)=> LI_CAP && +y>=CAP_FROM ? ` 0 <= b_batt_${y} <= ${LI_CAP}` : m)
                  .replace(/^ 0 <= eb_batt_(\d{4}) <= [0-9.]+$/gm,(m,y)=> LI_CAP && +y>=CAP_FROM ? ` 0 <= eb_batt_${y} <= ${12*LI_CAP}` : m)
                  .replace(/^ 0 <= b_phes_(\d{4}) <= ([0-9.]+)$/gm,(m,y,v)=> LDES_NOCAP && +v>0 ? ` 0 <= b_phes_${y} <= 200000` : m)
-                 .replace(/^ phescap: (.*) <= [0-9.]+$/gm,(m,lhs)=> LDES_NOCAP ? ` phescap: ${lhs} <= 1000000` : m);
+                 .replace(/^ phescap: (.*) <= [0-9.]+$/gm,(m,lhs)=> LDES_NOCAP ? ` phescap: ${lhs} <= 1000000` : m)
+                 .replace(/^ 0 <= rc_(\d{4}) <= ([0-9.]+)$/gm,(m,y,ub)=> RC_MIN!==null && +y===+(process.env.HORIZON||2040) ? ` ${Math.min(RC_MIN,+ub).toFixed(1)} <= rc_${y} <= ${ub}` : m);
  let last=null; w.__bldSolveOverride=async(lp)=>{ if (process.env.SOLVER==='native'){ const os=require('os'),cp=require('child_process'); const tmp=path.join(os.tmpdir(),'gtza_'+process.pid);
    // SOLVE CACHE (7 Oct 2026): the container restarts every few hours and a pass-2 solve takes one to three, so
    // each optimal solution is kept under lpcache/, keyed by a hash of the LP text. A restarted run replays the
@@ -43,7 +44,7 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
    else { const highs=await newHighs(); last=highs.solve(fix(lp),{time_limit:+(process.env.TL||900)}); }
    console.log('solved', last.Status, new Date().toISOString()); if (last.Status!=='Optimal') throw new Error('solve not optimal: '+last.Status); return last; };
  // COMMIT / PSE (6 Oct 2026): coal commitment and pumped-storage energy in the build LP; unset = FIXED defaults.
- w.eval(`applyState(PRESETS['Today 2026']); state.demandGrowthPct=${DEM}; bldSetHorizon(2040);`+(process.env.COMMIT!==undefined?` state.bldCoalCommit=${+process.env.COMMIT};`:'')+(process.env.PSE!==undefined?` state.bldPsEnergy=${+process.env.PSE};`:'')+(process.env.PHES!==undefined?` state.bldPhesOn=${+process.env.PHES};`:'')+(process.env.PHES_H?` state.bldPhesHours=${+process.env.PHES_H};`:'')+(process.env.PHES_H2?` state.bldPhesHours2=${+process.env.PHES_H2};`:'')+(process.env.GAS_CAPEX?` if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`:'')+(process.env.PHES_FIRST?` state.bldPhesFirstYear=${+process.env.PHES_FIRST};`:'')+(process.env.PHES_BASIS?` if(!('bldPhesCostBasis' in FIXED)) throw new Error('bldPhesCostBasis missing'); state.bldPhesCostBasis='${process.env.PHES_BASIS}';`:'')+(process.env.GAS_FUEL_R?` if(!('costCcgt' in state)) throw new Error('costCcgt missing'); state.costCcgt=${+process.env.GAS_FUEL_R};`:'')+(process.env.GAS_FOM_ADD?` if(!('ccgt' in BLD_FOM)) throw new Error('BLD_FOM.ccgt missing'); BLD_FOM.ccgt+=${+process.env.GAS_FOM_ADD};`:''));
+ w.eval(`applyState(PRESETS['Today 2026']); state.demandGrowthPct=${DEM}; bldSetHorizon(${+(process.env.HORIZON||2040)});`+(process.env.COMMIT!==undefined?` state.bldCoalCommit=${+process.env.COMMIT};`:'')+(process.env.PSE!==undefined?` state.bldPsEnergy=${+process.env.PSE};`:'')+(process.env.PHES!==undefined?` state.bldPhesOn=${+process.env.PHES};`:'')+(process.env.PHES_H?` state.bldPhesHours=${+process.env.PHES_H};`:'')+(process.env.PHES_H2?` state.bldPhesHours2=${+process.env.PHES_H2};`:'')+(process.env.GAS_CAPEX?` if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`:'')+(process.env.PHES_FIRST?` state.bldPhesFirstYear=${+process.env.PHES_FIRST};`:'')+(process.env.PHES_BASIS?` if(!('bldPhesCostBasis' in FIXED)) throw new Error('bldPhesCostBasis missing'); state.bldPhesCostBasis='${process.env.PHES_BASIS}';`:'')+(process.env.GAS_FUEL_R?` if(!('costCcgt' in state)) throw new Error('costCcgt missing'); state.costCcgt=${+process.env.GAS_FUEL_R};`:'')+(process.env.GAS_FOM_ADD?` if(!('ccgt' in BLD_FOM)) throw new Error('BLD_FOM.ccgt missing'); BLD_FOM.ccgt+=${+process.env.GAS_FOM_ADD};`:''));
  // GRID (7 Oct 2026, TODO 14ar): optimiser grid cost. GRID=1 central, 2 high; GRID_BEYOND=1 spur only beyond the
  // median; GRID_BATTHALF=1 storage pays half the integration charge. Unset = FIXED (off).
  w.eval(`if(!('bldGridCost' in FIXED)) throw new Error('bldGridCost missing');`+(process.env.GRID!==undefined?` state.bldGridCost=${+process.env.GRID};`:'')+(process.env.GRID_BEYOND!==undefined?` state.bldGridSpurBeyond=${+process.env.GRID_BEYOND};`:'')+(process.env.GRID_BATTHALF!==undefined?` state.bldGridBattHalf=${+process.env.GRID_BATTHALF};`:''));
@@ -55,6 +56,14 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  if (process.env.BATT_CAPEX) w.eval(`if(!('batt' in BLD_COST)) throw new Error('BLD_COST.batt missing'); BLD_COST.batt.c2026=${+process.env.BATT_CAPEX}; BLD_COST.batt.connIncl=false;`);
  // PVTRK (7 Oct 2026, TODO 14aw): new utility solar on the tracking profile at tracker capex.
  w.eval(`if(!('bldPvTracking' in FIXED)) throw new Error('bldPvTracking missing');`+(process.env.PVTRK!==undefined?` state.bldPvTracking=${+process.env.PVTRK};`:''));
+ // BATT_CASE (7 Oct 2026): lithium cost case, central (BW3 aged to January 2026), high (BW3 as bid) or low (global turnkey).
+ w.eval(`if(!('bldBattCase' in FIXED)) throw new Error('bldBattCase missing');`+(process.env.BATT_CASE!==undefined?` state.bldBattCase=${JSON.stringify(process.env.BATT_CASE)};`:''));
+ // PRESET PROPOSAL (7 Oct 2026, user): the build optimiser's proposal for a preset's year, as the second starting point
+ // of the preset re-search. HORIZON ends the build in that year (demand reaches DEM there); DSL_DECOM retires that
+ // diesel MW; COAL_DECOM forces coal retired by the final year to at least the preset's coalDecomMW (rc_ lower bound).
+ if (process.env.DSL_DECOM) w.eval(`state.dieselDecomMW=${+process.env.DSL_DECOM};`);
+ const COAL_DECOM = process.env.COAL_DECOM ? +process.env.COAL_DECOM : null;
+ const RC_MIN = COAL_DECOM === null ? null : Math.max(0, +w.eval(`bldCoalMW(BLD_YEARS[BLD_YEARS.length-1]) - (FIXED.coalInstalledMW - ${COAL_DECOM})`));
  // COSTSET (7 Oct 2026): a whole cost set, e.g. COSTSET=irp2025; see costset.js.
  require('./costset.js')(w, process.env.COSTSET);
  await w.eval('loadWeatherYears()');

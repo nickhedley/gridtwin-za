@@ -1727,7 +1727,15 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
-### Lithium on BESIPPPP bid window 3 raises Deep decarbonisation's new-build capital from R0.936 to R1.160/kWh, 7 Oct 2026
+### Lithium on BESIPPPP bid window 3, aged to January 2026: Deep decarbonisation's new-build capital R0.936 to R1.096/kWh, 7 Oct 2026
+
+Superseded the same day by the aged central (user decision): BW3's equipment share at the bid date (BNEF global
+turnkey interpolated to May 2025, USD 143/kWh at R16.50, 61% of the bid) aged to January 2026 at BNEF's 2025 rate
+(x 0.795), the rest held at CPI: R3,425/kWh, R13,699/kW at 4 h (R3,373 at the May 2025 rate of about R18/USD).
+Build `2026-10-07p`: Deep decarbonisation 2035 new-build capital R1.096/kWh (central), R1.160 (high, BW3 as bid),
+R0.936 (low, R2,026/kWh). The entry below records the as-bid figure.
+
+### Lithium on BESIPPPP bid window 3 as bid raises Deep decarbonisation's new-build capital from R0.936 to R1.160/kWh, 7 Oct 2026
 
 Build `2026-10-07o` (lithium at BESIPPPP bid window 3, R15,962/kW at 4 h, inclusions not stated) against the
 same build with the previous R8,105/kW. Deep decarbonisation 2035 preset, retail year 2035, panel at 40%

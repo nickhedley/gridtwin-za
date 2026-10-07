@@ -1396,6 +1396,9 @@ const num = t => {
       // only. See BLD_FOM in index.html for the sources. This is a correction, not an
       // inflation: the earlier figures understated the cost of every build.
       //
+      // UPDATED 7 Oct 2026 (later), R1.160 -> R1.096. Lithium central is BW3 aged to January 2026 (equipment share at
+      // BNEF's 2025 decline; user decision), R13,699/kW. Measured on build 07p; old cost gives R0.936, BW3 as bid R1.160.
+      //
       // UPDATED 7 Oct 2026, R0.936 -> R1.160. Lithium capex moved to BESIPPPP bid window 3, R8,105 -> R15,962/kW
       // at 4 h (user decision, TODO 14ax; build 07j). Measured on build 07o; the same build with the old battery
       // cost gives R0.936 exactly, so the whole move is the battery input. Deliberate input change, tolerance unchanged.
@@ -1428,8 +1431,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.160) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.160 for Deep `
+              Math.abs(ncap.newCap - 1.096) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.096 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }
