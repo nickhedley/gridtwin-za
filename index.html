@@ -5516,6 +5516,11 @@ const FIXED = {
   // less than the engine. What remains is the LP's within-window foresight and daily storage balance, an
   // optimism of the method for all storage, not of pumped storage.
   bldCoalCommit:1, bldCoalMinFrac:0.65, bldCoalCommitHours:48, bldPsEnergy:1, dslTankMW:2084, dslTankGWh:82.5, dslRefillMW:431,
+  // OPTIMISER GRID COST (TODO 14ar, 7 Oct 2026, user decisions; see BLD_GRID). bldGridCost 0 off (default until
+  // the effect on the pathway is reviewed), 1 central (ITP basis), 2 high (MISO basis). bldGridSpurBeyond 1 charges
+  // the spur only beyond the 18 km median, for capex that already includes connection. bldGridBattHalf 1 charges
+  // storage half the integration charge (sensitivity; central charges storage none).
+  bldGridCost:0, bldGridSpurBeyond:0, bldGridBattHalf:0,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -8997,6 +9002,62 @@ function bldFom(tech, year){
   if (tech === 'batt') return bldCapex('batt', year) * 0.025;
   return BLD_FOM[tech] || 0;
 }
+// OPTIMISER GRID COST, TODO 14ar (7 Oct 2026, user decisions). Until now the build LP charged no grid cost to
+// any technology, while the engine added txRPerKWyr to new wind, solar and offshore afterwards, so the optimiser
+// chose them without it. Each new resource now pays, in the LP:
+//  - the integration charge txRPerKWyr (R402/kW-yr, TDP 2024 generation integration) - every new resource
+//    except storage (bldGridBattHalf: half) and rooftop, which connects to the distribution network;
+//  - a spur from zero distance to its own nearest substation (bldGridSpurBeyond 1: only beyond the median),
+//    sized by connection voltage: wind and solar one 132 kV circuit; pumped hydro and gas two 400 kV circuits
+//    for N-1, each rated for the scheme; storage one bay per scheme and no line; offshore none (its export
+//    cable is inside BLD_COST.offshore, ESMAP Figure 36).
+// Any new resource may instead take a connection freed by retired coal (repurposed, rp_ in the LP), up to the
+// coal MW retired by that year, scheduled and early; it then pays neither. Whether wind and solar capex already
+// includes connection is unclear (TODO 14ar), so charging from zero is central.
+// Line costs, R/km. Central (bldGridCost 1): ITP Phase 1, USD 1bn for 1,164 km, about R15.5m/km including
+// substations, so no separate bays (South African, unverified). High (2): MISO Transmission Cost Estimation
+// Guide 345 kV class as the 400 kV equivalent, R37m/km, and R76m per 400 kV bay. 132 kV in both cases: the 400 kV
+// figure times NREL reV's MISO ratio of a 205 MW-class (138 kV) line to a 400 kV line interpolated between its
+// 400 MW (230 kV) and 1,500 MW (500 kV) classes; 2019 USD per mile, a ratio only. Circuit ratings: 132 kV 205 MW
+// (the reV class); 400 kV 1,000 MW (MISO 345 kV 750 MW scaled by voltage squared).
+// Storage bay: the 132 kV bay (high case) in both cases, per scheme of 90 MW (BESIPPPP BW1 preferred bidders'
+// mean, IPP Office REIPPPP historical data note, 7 Nov 2025).
+// Distances: harness/ext/grid_distances.py (regenerate, never edit): wind and solar the MW-weighted mean
+// straight-line distance of approved REEA projects to their nearest transmission substation; pumped hydro the
+// ANU AAA and AA classes to 275 kV or more; gas Richards Bay and Coega to 400 kV. Lines last 40 years.
+const BLD_GRID = {
+  km:       { wind: 37.7, pv: 21.9, phes: 73.4, ccgt: 7.5 },
+  kmBeyond: { wind: 22.0, pv: 9.7, phes: 55.4, ccgt: 0.0 },   // beyond 18 km
+  line400:  { 1: 15.5e6, 2: 37e6 },
+  bay400:   { 1: 0, 2: 76e6 },
+  rev:      { c205: 1446469, c400: 1694747, c1500: 2787303 }, // reV MISO, USD per mile by class (2019)
+  circuitMW:{ kv132: 205, kv400: 1000 },
+  storeSchemeMW: 90, lifeY: 40,
+};
+// 132 kV cost as a share of 400 kV, from the reV classes (400 kV interpolated by voltage, 230 to 500 kV).
+function bldGrid132Ratio(){
+  const r = BLD_GRID.rev, c400 = r.c400 + (400 - 230) / (500 - 230) * (r.c1500 - r.c400);
+  return r.c205 / c400;
+}
+// One-off connection capex, R/kW, for a technology under bldGridCost mode m.
+function bldGridCapexKW(tech, S){
+  const m = S.bldGridCost | 0; if (!m) return 0;
+  const G = BLD_GRID, f = bldGrid132Ratio(), km = (S.bldGridSpurBeyond ? G.kmBeyond : G.km)[tech === 'phel' ? 'phes' : tech];
+  const line132 = G.line400[m] * f, bay132 = (G.bay400[2] * f);   // the storage bay uses the high-case 132 kV bay
+  if (tech === 'wind' || tech === 'pv')
+    return (line132 * km + (m === 2 ? 2 * G.bay400[m] * f : 0)) / (G.circuitMW.kv132 * 1000);
+  if (tech === 'phes' || tech === 'phel' || tech === 'ccgt')
+    return (2 * G.line400[m] * km + 4 * G.bay400[m]) / (G.circuitMW.kv400 * 1000);
+  if (tech === 'batt' || tech === 'vrfb' || tech === 'ironair') return bay132 / (G.storeSchemeMW * 1000);
+  return 0;   // rooftop (distribution) and offshore (export cable inside its capex)
+}
+// Annual grid cost in the build LP, R/kW-yr: the connection annuitised plus the integration charge.
+function bldGridAnn(tech, S){
+  if (!(S.bldGridCost | 0)) return 0;
+  const store = (tech === 'batt' || tech === 'vrfb' || tech === 'ironair');
+  const integ = tech === 'rooftop' ? 0 : store ? (S.bldGridBattHalf ? 0.5 : 0) * S.txRPerKWyr : S.txRPerKWyr;
+  return bldAnnuity(bldGridCapexKW(tech, S), BLD_GRID.lifeY) + integ;
+}
 
 // Build-rate presets, each grounded in something real rather than assumed.
 const BLD_PACE = {
@@ -9578,6 +9639,9 @@ function bldBuildLP(opts){
                csp:S.cspMW, batt:S.battPowerMW };
   const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt, EMIS_DIESEL = S.emisDiesel;
 
+  // Grid cost per technology, R/kW-yr (BLD_GRID; zero unless bldGridCost is set).
+  const GRID_ON = (S.bldGridCost | 0) > 0, GA = {};
+  for (const t of T.concat(['offshore', 'phes', 'phel'])) GA[t] = GRID_ON ? bldGridAnn(t, S) : 0;
   const L = ['Minimize', ' obj:'];
   const obj = [];
   for (const t of T) for (const y of Y){
@@ -9591,7 +9655,7 @@ function bldBuildLP(opts){
     // published power/energy split, and inventing one would be worse than stating the limit.
     const _m = (t === 'batt') ? BATT_POWER_SHARE : 1;
     for (const yy of Y) if (yy >= y)
-      cost += bldNetAnnuityAt(t, y, _m) / Math.pow(1+BLD_DISC, yy-2026);
+      cost += (bldNetAnnuityAt(t, y, _m) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);   // GA: grid cost, per MW of power
     // x1000: bldNetAnnuity is R/kW/yr and b_ is in MW. Without this the whole
     // capex side is 1000x too cheap against the fuel terms, building is
     // effectively free, and the optimiser just overbuilds VRE and spills.
@@ -9657,18 +9721,18 @@ function bldBuildLP(opts){
   const OFF_PATH = y => y < 2032 ? 0 : y <= 2035 ? 1000 * (y - 2031) / 4 : Math.min(5000, 1000 + 800 * (y - 2035));
   if (OFF_ON) for (const y of Y){
     let cost = 0;
-    for (const yy of Y) if (yy >= y) cost += bldNetAnnuityAt('offshore', y) / Math.pow(1+BLD_DISC, yy-2026);
+    for (const yy of Y) if (yy >= y) cost += (bldNetAnnuityAt('offshore', y) + GA.offshore) / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_off_' + y);
   }
   if (PHES_ON) for (const y of Y){
     let cost = 0;
-    const ann = bldAnnuity(PHES_KW(), 60) + S.bldPhesFomRkW;
+    const ann = bldAnnuity(PHES_KW(), 60) + S.bldPhesFomRkW + GA.phes;
     for (const yy of Y) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_phes_' + y);
   }
   if (PHES2_ON) for (const y of Y){
     let cost = 0;
-    const ann = bldAnnuity(bldPhesCapexKW(S.bldPhesCostBasis, PHES2_H), 60) + S.bldPhesFomRkW;
+    const ann = bldAnnuity(bldPhesCapexKW(S.bldPhesCostBasis, PHES2_H), 60) + S.bldPhesFomRkW + GA.phel;
     for (const yy of Y) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_phel_' + y);
   }
@@ -9681,6 +9745,14 @@ function bldBuildLP(opts){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
     obj.push('-' + (S.fomCoal * 1000 * df).toFixed(3) + ' rc_' + y);
   }
+  // REPURPOSED CONNECTIONS (TODO 14ar): rp_<t>_<y> MW of that year's build on a connection freed by retired coal,
+  // which avoids the technology's grid cost from then on. Offshore and rooftop cannot use one.
+  const RP_T = GRID_ON ? T.filter(t => t !== 'rooftop' && GA[t] > 0).concat(PHES_ON ? ['phes'] : [], PHES2_ON ? ['phel'] : []) : [];
+  for (const t of RP_T) for (const y of Y){
+    let credit = 0;
+    for (const yy of Y) if (yy >= y) credit += GA[t] / Math.pow(1+BLD_DISC, yy-2026);
+    obj.push('-' + (credit * 1000).toFixed(3) + ' rp_' + t + '_' + y);
+  }
   L.push('  ' + obj.join(' + ').replace(/\+ -/g, '- '));
   L.push('Subject To');
   if (RC_ON) for (let i = 1; i < Y.length; i++)
@@ -9689,6 +9761,12 @@ function bldBuildLP(opts){
   if (OFF_ON) for (const y of Y) L.push(' offcap_' + y + ': ' + cumOff(y).join(' + ') + ' <= ' + OFF_PATH(y).toFixed(1));
   if (PHES_ON) L.push(' phescap: ' + Y.map(yy => 'b_phes_' + yy).concat(PHES2_ON ? Y.map(yy => 'b_phel_' + yy) : []).join(' + ') + ' <= ' + S.newPsMaxMW.toFixed(1));
   if (PHES2_ON) for (const y of Y) L.push(' phesrate_' + y + ': b_phes_' + y + ' + b_phel_' + y + ' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
+  // Repurposed connections: no more than that year's build, and in total no more than the coal retired so far.
+  for (const t of RP_T) for (const y of Y) L.push(' rpb_' + t + '_' + y + ': rp_' + t + '_' + y + ' - b_' + t + '_' + y + ' <= 0');
+  if (RP_T.length) for (const y of Y){
+    const terms = []; for (const t of RP_T) for (const yy of Y) if (yy <= y) terms.push('rp_' + t + '_' + yy);
+    L.push(' rppool_' + y + ': ' + terms.join(' + ') + (RC_ON ? ' - rc_' + y : '') + ' <= ' + Math.max(0, bldCoalMW(Y[0]) - bldCoalMW(y)).toFixed(1));
+  }
 
   const cum = (t,y) => Y.filter(yy => yy <= y).map(yy => 'b_' + t + '_' + yy);
   const cumE = y => Y.filter(yy => yy <= y).map(yy => 'eb_batt_' + yy);   // lithium cells, MWh
@@ -17810,7 +17888,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07c';
+const BUILD_STAMP = '2026-10-07g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

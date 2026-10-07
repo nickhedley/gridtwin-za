@@ -19,6 +19,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    w.fetch=async(u)=>{try{const cl=String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles|config)/,'');const t=fs.readFileSync(path.join(path.resolve(ROOT),cl),'utf8');return{ok:true,json:async()=>JSON.parse(t),text:async()=>t};}catch(e){return{ok:false,json:async()=>{throw e},text:async()=>{throw e}};}};}});
  await new Promise(r=>setTimeout(r,6000)); const w=dom.window;
  w.eval(`applyState(PRESETS['Today 2026']);`); await w.eval('loadWeatherYears()');
+ // GRID (7 Oct 2026, TODO 14ar): the same grid-cost settings as the pathway run.
+ w.eval(`if(!('bldGridCost' in FIXED)) throw new Error('bldGridCost missing');`+(process.env.GRID!==undefined?` state.bldGridCost=${+process.env.GRID};`:'')+(process.env.GRID_BEYOND!==undefined?` state.bldGridSpurBeyond=${+process.env.GRID_BEYOND};`:'')+(process.env.GRID_BATTHALF!==undefined?` state.bldGridBattHalf=${+process.env.GRID_BATTHALF};`:''));
+ const GRID_ON=+w.eval('(state.bldGridCost??FIXED.bldGridCost)|0')>0, rpCum={};
  // COSTSET (7 Oct 2026): the same cost set as the pathway run; see pathway/costset.js.
  require('./pathway/costset.js')(w, process.env.COSTSET);
  // Gas infrastructure sensitivity, TODO 14ak (6 Oct 2026): the same overrides as pathway_perfail.js.
@@ -62,6 +65,17 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      for (const z of r.lng){ z.fuelPJ=z.gasGWh*fuelPerGWh; z.cargoes=z.fuelPJ/cargoPJ; }
      r.lngCargoPJ=cargoPJ; r.lng14dMaxCargoes=r.gas14dMaxGWh*fuelPerGWh/cargoPJ;
      r.lngWindowsOver=r.lng.filter(z=>z.cargoes>1).length; r.lngWorstCargoes=Math.max(0,...r.lng.map(z=>z.cargoes));
+   }
+   // OPTIMISER GRID COST (TODO 14ar): when GRID is set, the engine's own transmission charge on new wind, solar and
+   // offshore (txChargeFor) is replaced by what the optimiser charged every technology, less repurposed MW.
+   // costGrid is the system cost on that basis; cost stays the engine's own figure.
+   if (GRID_ON){
+     for (const [t,v] of Object.entries(P.sched[y].rp||{})) rpCum[t]=(rpCum[t]||0)+v;
+     const ga=JSON.parse(w.eval(`JSON.stringify(Object.fromEntries(['wind','pv','batt','vrfb','ironair','ccgt','offshore','phes','phel'].map(t=>[t,bldGridAnn(t,{...FIXED,...state})])))`));
+     const built={wind:cum.wind,pv:cum.pv,batt:cum.batt,vrfb:cum.vrfb,ironair:cum.ironair,ccgt:cum.ccgt,offshore:cum.off,phes:cum.phes,phel:cum.phel};
+     let g=0; for (const t of Object.keys(built)) g+=Math.max(0,built[t]-(rpCum[t]||0))*ga[t]*1000;
+     const engTx=+w.eval(`txChargeFor(${cum.wind},${cum.pv},${cum.off},{...FIXED,...state,...${JSON.stringify(over)}})`);
+     r.gridOptBn=g/1e9; r.engTxBn=engTx/1e9; r.costGrid=r.cost-r.engTxBn+r.gridOptBn; r.rpCumMW=Object.values(rpCum).reduce((a,b)=>a+b,0);
    }
    rows.push({y,...over,...r}); console.log(y, JSON.stringify(r));
  }

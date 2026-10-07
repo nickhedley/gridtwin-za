@@ -1,0 +1,170 @@
+{
+ "meta": {
+  "source": "ANU RE100 pumped hydro atlas, South Africa shortlist (downloaded Oct 2026), 6,921 site pairs outside protected areas",
+  "method": "harness/ext/anu_summary.py: nearest-substation supply area; each reservoir used once, best figure of merit first",
+  "licence": "CC BY 4.0. Derived from the ANU RE100 Group Global Pumped Hydro Atlas, South Africa shortlist (public_data/anu_phes_shortlist_za.csv); attribution required.",
+  "note": "Aggregates of the shortlist by model supply area and class.",
+  "classCostVsAA": {
+   "AAA": 0.6,
+   "AA": 1.0,
+   "A": 1.4,
+   "B": 1.9
+  },
+  "classCostNote": "median figure of merit relative to AA within the same system size (7 Oct 2026)"
+ },
+ "regions": {
+  "Eastern Cape": {
+   "AAA": {
+    "GWh": 7650,
+    "sites": 8,
+    "km275": 82.4
+   },
+   "AA": {
+    "GWh": 24850,
+    "sites": 70,
+    "km275": 86.5
+   },
+   "A": {
+    "GWh": 36755,
+    "sites": 366,
+    "km275": 80.3
+   },
+   "B": {
+    "GWh": 37323,
+    "sites": 572,
+    "km275": 72.5
+   }
+  },
+  "Kwazulu Natal": {
+   "AAA": {
+    "GWh": 2000,
+    "sites": 2,
+    "km275": 61.4
+   },
+   "AA": {
+    "GWh": 8565,
+    "sites": 23,
+    "km275": 37.2
+   },
+   "A": {
+    "GWh": 21210,
+    "sites": 212,
+    "km275": 39.7
+   },
+   "B": {
+    "GWh": 23838,
+    "sites": 339,
+    "km275": 40.7
+   }
+  },
+  "Mpumalanga": {
+   "AAA": {
+    "GWh": 500,
+    "sites": 1,
+    "km275": 10.1
+   },
+   "AA": {
+    "GWh": 200,
+    "sites": 2,
+    "km275": 31.5
+   },
+   "A": {
+    "GWh": 8695,
+    "sites": 69,
+    "km275": 35.8
+   },
+   "B": {
+    "GWh": 12070,
+    "sites": 155,
+    "km275": 35.8
+   }
+  },
+  "Limpopo": {
+   "AA": {
+    "GWh": 2350,
+    "sites": 5,
+    "km275": 46.7
+   },
+   "A": {
+    "GWh": 7360,
+    "sites": 62,
+    "km275": 45.8
+   },
+   "B": {
+    "GWh": 9380,
+    "sites": 120,
+    "km275": 41.0
+   }
+  },
+  "Western Cape": {
+   "AAA": {
+    "GWh": 3000,
+    "sites": 2,
+    "km275": 53.7
+   },
+   "AA": {
+    "GWh": 11750,
+    "sites": 19,
+    "km275": 52.6
+   },
+   "A": {
+    "GWh": 21725,
+    "sites": 170,
+    "km275": 57.9
+   },
+   "B": {
+    "GWh": 26645,
+    "sites": 315,
+    "km275": 55.8
+   }
+  },
+  "Northern Cape": {
+   "AAA": {
+    "GWh": 1500,
+    "sites": 1,
+    "km275": 139.7
+   },
+   "AA": {
+    "GWh": 5500,
+    "sites": 7,
+    "km275": 117.7
+   },
+   "A": {
+    "GWh": 5500,
+    "sites": 45,
+    "km275": 126.1
+   },
+   "B": {
+    "GWh": 6432,
+    "sites": 102,
+    "km275": 123.0
+   }
+  },
+  "Hydra Central": {
+   "A": {
+    "GWh": 350,
+    "sites": 5,
+    "km275": 73.4
+   },
+   "B": {
+    "GWh": 1665,
+    "sites": 14,
+    "km275": 61.2
+   }
+  },
+  "Free State": {
+   "A": {
+    "GWh": 50,
+    "sites": 1,
+    "km275": 167.2
+   },
+   "B": {
+    "GWh": 15,
+    "sites": 1,
+    "km275": 169.8
+   }
+  },
+  "Gauteng": {},
+  "North West": {}
+ }
+}
