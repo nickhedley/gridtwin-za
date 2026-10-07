@@ -1727,6 +1727,40 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### PROVISIONAL - With gas, 100-hour iron-air removes July gas on the modern-turbine profile (was: barely moves it); depends on the new-wind correction, 7 Oct 2026
+
+Build `2026-10-07s`, default profile set, the validate_findings LDES scenario: slider defaults; Seriti build (20 GW wind,
+25 GW solar, 20 GW lithium at 10 h, 32 GW coal retired, EAF 70%) plus 25 GW new CCGT; then 20 GW of iron-air at 100 h.
+Iron-air charging tagged by source on an instrumented copy of 07s (scratch only, not committed); the tagged total
+equals the engine's own tierChg.fe in every case (4,970, 6,256 and 6,265 GWh).
+
+```
+GWh                      Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec    year
+modern off    charge       0     0     0     0     0     0    78   448   110  2113  1654   567    4970
+              disch.       0    48  1315   637     0     0     9   228     0     0     0     0    2237
+              gas, no      0    57  1316  1799  1166   757   846  1256     0     0     0     0    7197
+              gas, Fe      0     0     0  1166  1166   755   832  1023     0     0     0     0    4942
+modern 1.00   charge       0     0     0     0    87   358   662   705   885  2894   665     0    6256
+              disch.       0     0   573  1112   315    41   340   434     0     0     0     0    2815
+              gas, no      0     0   581  1122   524   265   524   887     0     0     0     0    3903
+              gas, Fe      0     0     0     0   214   224   184   438     0     0     0     0    1060
+modern 1.064  charge       0     0     0     0   242   543   926   811  1177  2566     0     0    6265
+              disch.       0     0   336   857   341   151   426   708     0     0     0     0    2819
+              gas, no      0     0   346   869   338   151   425   713     0     0     0     0    2842
+              gas, Fe      0     0     0     0     0     0     0     0     0     0     0     0       0
+```
+
+- July gas with iron-air: 846 -> 832 GWh on the current-turbine profile, 524 -> 184 at 1.00, 425 -> 0 at 1.064. Gas
+  for the year: 7,197 -> 4,942, 3,903 -> 1,060, 2,842 -> 0 GWh. The finding reverses at both correction cases.
+- Source of iron-air charge: renewable surplus 96-97%, forced surplus 2-3%, coal headroom 1%, at all three. In the
+  surplus hours that fill it, generation is 48-56% solar, 30-39% wind, 5% coal.
+- What changes: on the current profile iron-air fills only from July to December and empties in February to April.
+  On the modern profile it also fills from May to August, 2.5 TWh at 1.064 against 0.5 TWh, on winter wind
+  surplus, and discharges in the same months.
+- Caveats: one weather year (the default profile); the year is cyclic (the second pass starts from the first pass's
+  year-end state of charge, so the February-April discharge is last spring's surplus); the 1.064 correction rests on two
+  Eastern Cape farms (TODO 14bf). Provisional until re-measured on the twelve weather years.
+
 ### New wind on the modern-turbine profile at 1.064: six suite results move, a pinned corner re-pinned, 7 Oct 2026
 
 Build `2026-10-07s`: nodal/profiles_wind_modern.json stored uncorrected; new wind's output x 1.064 (bldWindCorr 'central';
@@ -1759,7 +1793,9 @@ coal-curtailment corner, curtailFuelCost     R14.10bn        R16.67bn           
   new wind, so the modern path is never entered.
 - Presets on the default profile (Deep decarbonisation 2035): wind 101.2 TWh at 1.064 against 98.2 at 1.00; system cost
   R321.1bn against R322.2bn; no unserved energy in either.
-- The external and findings rows are results, not pins: left failing pending a decision (TODO 14bg). The corner is a
+- Decided 7 Oct (user): CSIR and EDMSA builds run on the current-turbine profile, their own basis (validate_external,
+  bldWindModern 0); the modern-profile values above are kept as a sensitivity and printed by the harness, not checked.
+  The two findings are recorded as updated, not re-pinned; the preset curtailment pin is re-pinned after the re-search. The corner is a
   pin whose purpose (a non-zero term) still holds; available wind there 200.7 -> 247.3 TWh, curtailment 373.4 -> 433.4.
 - Caveat: one sample year (2019) sets the modern mapping; the preset searches restart on this build (TODO 14ay).
 
@@ -5976,7 +6012,7 @@ Eskom-owned plant.
 ## Long-duration storage in a system that has gas - SCOPE CORRECTED
 
 UPDATED 7 Oct 2026, build 07s: with new wind on the modern-turbine profile, the with-gas test reads July gas
-425 -> 0 GWh with 20 GW of 100-hour iron-air (was 846 -> 832). See "New wind on the modern-turbine profile at 1.064".
+425 -> 0 GWh with 20 GW of 100-hour iron-air (was 846 -> 832); provisional, see "PROVISIONAL - With gas, 100-hour iron-air removes July gas".
 
 Their conclusion is that the deficit needs firm wind or SEASONAL STORAGE. Tested
 directly. July gas energy, Seriti scenario:
