@@ -1754,11 +1754,36 @@ preset curtailment, default profile          in band         Deep 71.6, FF 124.4
 coal-curtailment corner, curtailFuelCost     R14.10bn        R16.67bn             re-pinned 13.9 -> 16.7
 ```
 
+- Existing farms keep the old profile: Today 2026 and '2025, as modelled' give identical results on 07o and 07s, every
+  engine output compared on the default profile and all twelve weather years (26 runs, no difference). Both carry no
+  new wind, so the modern path is never entered.
 - Presets on the default profile (Deep decarbonisation 2035): wind 101.2 TWh at 1.064 against 98.2 at 1.00; system cost
   R321.1bn against R322.2bn; no unserved energy in either.
 - The external and findings rows are results, not pins: left failing pending a decision (TODO 14bg). The corner is a
   pin whose purpose (a non-zero term) still holds; available wind there 200.7 -> 247.3 TWh, curtailment 373.4 -> 433.4.
 - Caveat: one sample year (2019) sets the modern mapping; the preset searches restart on this build (TODO 14ay).
+
+Published findings updated (user, 7 Oct 2026: recorded here, checks not re-pinned; reason for both: new wind on the
+modern-turbine profile at 1.064, build 07s, against the current-turbine profile, 07o):
+
+- Wind holds its capture rate, solar does not (validate_findings 3). Scenario: 50 GW wind, 60 GW solar in total, no
+  storage, default profile. Wind capture 86% -> 79% (check: 85-115%); solar 2.6% -> 0.4%. Wind now loses some value at
+  this build; the asymmetry with solar stands.
+- With gas, 100-hour iron-air barely moves July (validate_findings, LDES scope; RESULTS "Long-duration storage in a
+  system that has gas"). Scenario: Seriti build (20 GW wind, 25 GW solar, 20 GW lithium at 10 h, 32 GW coal retired,
+  EAF 70%) plus 25 GW new CCGT, then 20 GW of 100-hour iron-air. July gas 846 -> 832 GWh (-1.7%) becomes 425 -> 0 GWh
+  (-100%; check: under 2%). On the modern profile July gas halves before iron-air, and iron-air then removes the rest:
+  the finding reverses in this scenario.
+
+External comparisons, each further from its benchmark (modern off -> 1.00 -> 1.064):
+
+```
+check                         scenario                                       off     1.00    1.064   published
+CSIR 2030 coal share          20 GW wind, 15 GW solar, 285 TWh, EAF 65%      50.5%   47.5%   46.1%   55% +/-6
+CSIR 2030 renewable share     same                                           43.8%   46.8%   48.1%   40% +/-8
+EDMSA Scenario A CO2 2035     24.6 GW wind, 28 GW solar, 8 GW 4 h, 4 GW CCGT 88.4    80.1    76.8    124 +/-22 Mt
+EDMSA Scenario A wind 2035    same                                           72.1    81.5    85.2    64 +/-12 TWh
+```
 
 ### Modern-turbine wind against developer-stated output: the factor that matches is 1.063 to 1.065, not the fleet's 1.0753, 7 Oct 2026
 
@@ -5949,6 +5974,9 @@ Eskom-owned plant.
 ---
 
 ## Long-duration storage in a system that has gas - SCOPE CORRECTED
+
+UPDATED 7 Oct 2026, build 07s: with new wind on the modern-turbine profile, the with-gas test reads July gas
+425 -> 0 GWh with 20 GW of 100-hour iron-air (was 846 -> 832). See "New wind on the modern-turbine profile at 1.064".
 
 Their conclusion is that the deficit needs firm wind or SEASONAL STORAGE. Tested
 directly. July gas energy, Seriti scenario:
