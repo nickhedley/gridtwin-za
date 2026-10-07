@@ -535,7 +535,21 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     USD 2/MMBtu adder is replaced, not added to.
   - New CCGT fixed O&M raised by R260/kW-yr.
 
-## Sources consulted and rejected
+## ANU RE100 pumped hydro atlas, South Africa shortlist (TODO 14z, 7 Oct 2026)
+
+Downloaded by Nick Hedley, Oct 2026: 6,921 off-river site pairs, none in protected areas, with URLs
+stripped. It gives each pair's class (AAA, AA, A, B), head, energy (GWh), duration (h), system size,
+reservoir type and figure of merit. Class AA and AAA: 741 sites and 341 TWh gross, matching Blakers'
+"738 sites, 340 TWh" (personal communication, 6 Oct). Sizes overlap: the same reservoirs appear in up to
+111 pairs. Each reservoir counted once, the shortlist holds 2,688 sites and 287 TWh.
+
+Licence: not confirmed. The atlas images are CC BY 4.0, and articles describing the atlas are CC BY 4.0,
+but no licence for the site data was found (the ANU pages are blocked from this environment). So the raw
+file was removed from the repository root (7 Oct) and only aggregates are kept:
+public_data/anu_phes_za_summary.csv, made by harness/ext/anu_summary.py. Ask ANU RE100 to confirm the
+licence before republishing the site list.
+
+
 
 Recording these so they are not re-investigated.
 
