@@ -1727,6 +1727,21 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Regional optimiser: new wind on the modern-turbine profile, matching its capex, 7 Oct 2026
+
+Build `2026-10-07u` (TODO 14bh). Since 07r the regional LP priced new wind at the modern capex (R28,463/kW) on the
+regional file's V90 output (nodal/profiles_regional.json). Every wind MW in that LP is new build, so its output now
+takes the modern profile: a per-region map from raw V90 to V162 output (build_wind_modern.py, the same fit as the national
+profile; profiles_wind_modern_map.json regional_map) times WIND_NEW_CORR. Regional new-wind capacity factor, Deep
+decarbonisation 2035 inputs, V90 -> modern at 1.064: Eastern Cape 36.7 -> 46.3%, Hydra Central 42.5 -> 53.6%,
+KwaZulu-Natal 21.6 -> 29.3%, Limpopo 23.5 -> 32.7% (all ten in the run log). The tracking-solar option now raises an
+error in the regional LP (no regional tracking profile). A guard as in the national LP keeps opts.state and the page
+state on one cost case. Suite 804/809 plus eng5 6/6, unchanged.
+
+- Found on the way (TODO 14bi): profiles_regional.json is raw V90 output (maximum 0.991; no scaling recorded), while
+  the national file carries the fleet factor 1.0753. With modern wind off, the regional LP's wind is on a lower basis
+  than the national model's.
+
 ### Build LP: coal-limit rounding made retiring all coal infeasible; fixed, 7 Oct 2026
 
 Build `2026-10-07t`. The Fossil-free 2040 optimiser proposal (HORIZON=2040, GAS_CAP=0, COAL_DECOM=42000, DSL_DECOM=3400,

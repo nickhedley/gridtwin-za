@@ -102,7 +102,7 @@ def main():
     # The correction for NEW wind is a decision, not inherited (user, 7 Oct 2026): the fleet factor was fitted to a
     # V90-at-80 m proxy against Eskom's older fleet and may be correcting the turbine proxy, not the weather. It is
     # applied in index.html (WIND_NEW_CORR, from check_wind_farms.py), not here.
-    out, note = {}, {}
+    out, note, fmap = {}, {}, {}
     for region in sites:
         num, den = [0.0] * BINS, [0] * BINS
         for y in YEARS:
@@ -115,6 +115,7 @@ def main():
             if f[b] is None:
                 near = min((abs(b - c), c) for c in range(BINS) if den[c])[1]
                 f[b] = f[near] * ((b + 0.5) / (near + 0.5))
+        fmap[region] = [round(v, 6) for v in f]   # modern output by bin of raw current-turbine output (regional LP, 14bh)
         out[region] = {}
         for y, ser in d['wind_pu'][region].items():
             raw = [v / scale / bias for v in ser]
@@ -147,7 +148,9 @@ def main():
     nmap = [num[b] / den[b] if den[b] > 1e-9 else 1 for b in range(BINS)]
     json.dump({'meta': {'what': 'WIND_MOD_MAP: modern/current wind output ratio in 50 bins of national current-turbine output, capacity-weighted (' + CAP + '), all years; uncorrected.',
                         'built_by': 'build_wind_modern.py from ' + OUT, 'years': d['meta']['years'],
-                        'licence': d['meta'].get('licence'), 'copyright': d['meta'].get('copyright')}, 'map': nmap}, open(MAP_OUT, 'w'), separators=(',', ':'))
+                        'licence': d['meta'].get('licence'), 'copyright': d['meta'].get('copyright'),
+                        'regional_map': 'per region, mean modern-turbine output (uncorrected) in 50 bins of RAW current-turbine output, fitted on the sample years; for the regional LP, whose profiles_regional.json is raw V90 at 80 m (TODO 14bh)'},
+               'map': nmap, 'regional_map': fmap}, open(MAP_OUT, 'w'), separators=(',', ':'))
     print('wrote', MAP_OUT)
 
 if __name__ == '__main__':

@@ -10983,6 +10983,16 @@ function bldBuildRegionalLP(opts){
   const rd = bldRepDays(8).filter(r => !r.tail);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   const S = { ...FIXED, ...(opts.state || {}) };
+  // MODERN-TURBINE WIND IN THE REGIONAL LP (TODO 14bh, 7 Oct 2026). Every wind MW here is new build (the balance has
+  // no existing-wind term), priced by bldCostEntry at the modern capex when bldWindModern is on; its output now takes
+  // the modern-turbine profile too: WIND_MOD_REG maps profiles_regional.json's raw V90 output, region by region, to
+  // V162 output (build_wind_modern.py), times WIND_NEW_CORR. The same guard as bldBuildLP keeps opts.state and the
+  // page state on one case.
+  if (typeof state !== 'undefined') for (const k of ['bldPvTracking', 'bldWindModern', 'bldWindCase', 'bldWindCorr', 'bldBattCase'])
+    if ((S[k] ?? FIXED[k]) !== (state[k] ?? FIXED[k])) throw new Error('bldBuildRegionalLP: ' + k + ' differs between opts.state and the page state');
+  const WMOD_R = ((S.bldWindModern ?? FIXED.bldWindModern) | 0) > 0, WMOD_RK = WMOD_R ? windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr) : 1;
+  if (WMOD_R && !WIND_MOD_REG) throw new Error('modern wind is on but the regional map (profiles_wind_modern_map.json regional_map) is not loaded');
+  if (((S.bldPvTracking ?? FIXED.bldPvTracking) | 0) > 0) throw new Error('bldBuildRegionalLP: the tracking-solar option has no regional profile yet; switch it off for the regional LP');
   const STORE = bldStoreList(S);   // lithium at the scenario's duration
   // VoLL comes from FIXED.voll (R87,000/MWh, CSIR cost of unserved energy) -
   // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
@@ -11041,7 +11051,8 @@ function bldBuildRegionalLP(opts){
       for (let ri = 0; ri < BLD_REGIONS.length; ri++){
         const R = BLD_REGIONS[ri], k = ri+'_'+y+'_'+r.d+'_'+h;
         const dem = PROFILES.demand[i]*dg*(BLD_LOAD_SHARE[R]||0);
-        const sp = bldRegProfiles.solar_pu[R][i], wp = bldRegProfiles.wind_pu[R][i];
+        const sp = bldRegProfiles.solar_pu[R][i], wp0 = bldRegProfiles.wind_pu[R][i];
+        const wp = !WMOD_R ? wp0 : Math.min(1, WMOD_RK * WIND_MOD_REG[R][Math.min(49, Math.floor(Math.min(1, wp0) * 50))]);
         const flows = [];
         BLD_CORRIDORS.forEach(([a,b], ci) => {
           const f = '_'+ci+'_'+y+'_'+r.d+'_'+h;
@@ -11385,7 +11396,10 @@ function renderBuildRegional(res, rate, opts){
       got[t] = s; tot[t] += s;
     }
     // Mean capacity factor for this region, so the user can see the trade-off
-    const sp = bldRegProfiles.solar_pu[R], wp = bldRegProfiles.wind_pu[R];
+    const sp = bldRegProfiles.solar_pu[R], wp0 = bldRegProfiles.wind_pu[R];
+    // New wind's capacity factor on the profile the LP used (modern turbine when bldWindModern is on; TODO 14bh).
+    const _wm = typeof bldWindModernOn === 'function' && bldWindModernOn() && WIND_MOD_REG, _wk = _wm ? windNewCorr(state.bldWindCorr ?? FIXED.bldWindCorr) : 1;
+    const wp = _wm ? wp0.map(v => Math.min(1, _wk * WIND_MOD_REG[R][Math.min(49, Math.floor(Math.min(1, v) * 50))])) : wp0;
     const scf = sp.reduce((a,b)=>a+b,0)/sp.length, wcf = wp.reduce((a,b)=>a+b,0)/wp.length;
     rows.push({ R, got, hr, scf, wcf });
   }
@@ -12574,7 +12588,7 @@ function bldBuildSolarTrkRatio(){
 // MODERN-TURBINE WIND (bldWindModern). bldWindMod holds the regional series; WIND_MOD_MAP the national mapping from
 // current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
 // profile with none of its own (the default single-year PROFILES.wind).
-let bldWindMod = null, WIND_MOD_MAP = null, WIND_MOD_ERR = null;
+let bldWindMod = null, WIND_MOD_MAP = null, WIND_MOD_ERR = null, WIND_MOD_REG = null;
 // One map, two routes: nodal/profiles_wind_modern_map.json at start-up (build_wind_modern.py writes it from the series)
 // and the series themselves when the weather years load. They must agree; a stale map file stops modern wind loudly.
 function setWindModMap(m, source){
@@ -18254,7 +18268,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07t';
+const BUILD_STAMP = '2026-10-07u';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -18853,7 +18867,7 @@ window.GTZA_READY = false;
 const P_TX = (typeof buildTxCurve === 'function') ? buildTxCurve().catch(() => {}) : Promise.resolve();
 // Modern-turbine wind map (bldWindModern, on by default): needed by any dispatch with new wind on the default profile.
 const P_WMOD = fetch('nodal/profiles_wind_modern_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
-  .then(d => { if (d) setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); }).catch(e => console.error('[GridTwin]', e.message));
+  .then(d => { if (d){ setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; } }).catch(e => console.error('[GridTwin]', e.message));
 Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD]).then(() => {
   // The methodology table's capex line is filled from BLD_COST, so it cannot drift from the constants (7 Oct 2026:
   // it still read R10,500 for batteries and R18,000 for CCGT, against 8,105 and 34,965).
