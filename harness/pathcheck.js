@@ -22,7 +22,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // Gas infrastructure sensitivity, TODO 14ak (6 Oct 2026): the same overrides as pathway_perfail.js.
  if (process.env.GAS_FUEL_R) w.eval(`if(!('costCcgt' in state)) throw new Error('costCcgt missing'); state.costCcgt=${+process.env.GAS_FUEL_R};`);
  if (process.env.GAS_FOM_ADD) w.eval(`if(!('ccgt' in BLD_FOM)) throw new Error('BLD_FOM.ccgt missing'); BLD_FOM.ccgt+=${+process.env.GAS_FOM_ADD};`);
- const Y=Object.keys(P.sched).map(Number); const cum={wind:0,pv:0,rooftop:0,batt:0,battMWh:0,vrfb:0,ironair:0,ccgt:0,off:0,phes:0};
+ const Y=Object.keys(P.sched).map(Number); const cum={wind:0,pv:0,rooftop:0,batt:0,battMWh:0,vrfb:0,ironair:0,ccgt:0,off:0,phes:0,phel:0};
+ // GAS_CAPEX (7 Oct 2026): CCGT capex at 2026, R/kW, for the IRP-capex sensitivity; read by engine and optimiser alike.
+ if (process.env.GAS_CAPEX) w.eval(`if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`);
  const rows=[];
  for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0;
    const frac=(y-2026)/(2040-2026), dg=(Math.pow(1+DEM/100,frac)-1)*100;
@@ -31,8 +33,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      demandGrowthPct:dg,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    // New pumped hydro built by the optimiser (6 Oct 2026): charge what the optimiser charged, not the engine's
    // fixed Tubatse 14-hour acapPs. PHES_BASIS names the basis (bldPhesCapexKW); PH the hours (bldPhesHours).
-   if (cum.phes > 0){ const H=+(process.env.PH||w.eval('FIXED.bldPhesHours')), B=process.env.PHES_BASIS||w.eval('FIXED.bldPhesCostBasis');
-     over.newPsHours=H; over.newPsMaxMW=1e7; over.acapPs=+w.eval(`bldAnnuity(bldPhesCapexKW('${B}',${H}),60)+FIXED.bldPhesFomRkW`); }
+   // Two durations (PH and PH2): the engine has one new pumped-storage block, so power adds, energy adds (hours
+   // power-weighted) and the per-kW charge is the power-weighted mean of the two optimiser charges.
+   if (cum.phes + cum.phel > 0){ const H=+(process.env.PH||w.eval('FIXED.bldPhesHours')), H2=+(process.env.PH2||0), B=process.env.PHES_BASIS||w.eval('FIXED.bldPhesCostBasis');
+     const ann=h=>+w.eval(`bldAnnuity(bldPhesCapexKW('${B}',${h}),60)+FIXED.bldPhesFomRkW`), P1=cum.phes, P2=cum.phel;
+     over.newPsMW=P1+P2; over.newPsHours=(H*P1+H2*P2)/(P1+P2); over.newPsMaxMW=1e7; over.acapPs=(ann(H)*P1+(P2>0?ann(H2)*P2:0))/(P1+P2); }
    const r=JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
       for(let k=0;k<${K};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});

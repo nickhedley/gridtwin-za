@@ -5499,7 +5499,9 @@ const FIXED = {
   // figure published).
   // Cost basis (bldPhesCapexKW): 'anu2026' (default since 6 Oct 2026) for off-river sites; 'tubatse' the
   // conservative sensitivity, since river-based schemes cost more for flood design; 'atlas' the Weber et al. fit.
-  bldPhesOn:0, bldPhesHours:48, bldPhesCostBasis:'anu2026', bldPhesFomRkW:297,
+  // bldPhesHours2 (7 Oct 2026): a second pumped-hydro duration offered alongside the first (e.g. 160 h next to
+  // 48 h), same cost basis, sharing the yearly 1,500 MW limit, the newPsMaxMW cap and the earliest year. 0 = off.
+  bldPhesOn:0, bldPhesHours:48, bldPhesHours2:0, bldPhesCostBasis:'anu2026', bldPhesFomRkW:297,
   // Earliest year a first pumped-hydro scheme can be in service: 2035, 6 Oct 2026. Ingula took 11 years
   // (2006-2017); 2033 is kept as a sensitivity (set bldPhesFirstYear: 2033).
   bldPhesFirstYear:2035,
@@ -9549,6 +9551,8 @@ function bldBuildLP(opts){
   const PHES_ON = !!S.bldPhesOn, PHES_H = S.bldPhesHours;
   const PHES_KW = () => bldPhesCapexKW(S.bldPhesCostBasis, PHES_H);
   if (PHES_ON) STORE.push({ t:'phes', dis:'hdis', chg:'hchg', eff:S.newPsEff, hours:PHES_H, ex:() => 0, costMult:1 });
+  const PHES2_ON = PHES_ON && (S.bldPhesHours2 || 0) > 0, PHES2_H = S.bldPhesHours2 || 0;
+  if (PHES2_ON) STORE.push({ t:'phel', dis:'ldis', chg:'lchg', eff:S.newPsEff, hours:PHES2_H, ex:() => 0, costMult:1 });
   // EXISTING PUMPED STORAGE AS ENERGY, 6 Oct 2026 (TODO 26). Its build variables b_ps_<y> are declared
   // and fixed at zero below, so every storage row stays well formed and nothing can be built.
   const PS_ON = !!S.bldPsEnergy && S.psPowerMW > 0;
@@ -9662,6 +9666,12 @@ function bldBuildLP(opts){
     for (const yy of Y) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_phes_' + y);
   }
+  if (PHES2_ON) for (const y of Y){
+    let cost = 0;
+    const ann = bldAnnuity(bldPhesCapexKW(S.bldPhesCostBasis, PHES2_H), 60) + S.bldPhesFomRkW;
+    for (const yy of Y) if (yy >= y) cost += ann / Math.pow(1+BLD_DISC, yy-2026);
+    obj.push((cost * 1000).toFixed(3) + ' b_phel_' + y);
+  }
   // EARLY COAL RETIREMENT IS A DECISION, 4 Oct 2026. rc_<y> is coal retired ahead of Eskom's unit
   // schedule by year y, cumulative and irreversible. Each MW retired saves the fleet's fixed O&M
   // (fomCoal) that year; fuel and carbon fall through the dispatch terms. Coal cannot run past
@@ -9677,7 +9687,8 @@ function bldBuildLP(opts){
     L.push(' rcmono_' + Y[i] + ': rc_' + Y[i] + ' - rc_' + Y[i-1] + ' >= 0');
   const cumOff = y => Y.filter(yy => yy <= y).map(yy => 'b_off_' + yy);
   if (OFF_ON) for (const y of Y) L.push(' offcap_' + y + ': ' + cumOff(y).join(' + ') + ' <= ' + OFF_PATH(y).toFixed(1));
-  if (PHES_ON) L.push(' phescap: ' + Y.map(yy => 'b_phes_' + yy).join(' + ') + ' <= ' + S.newPsMaxMW.toFixed(1));
+  if (PHES_ON) L.push(' phescap: ' + Y.map(yy => 'b_phes_' + yy).concat(PHES2_ON ? Y.map(yy => 'b_phel_' + yy) : []).join(' + ') + ' <= ' + S.newPsMaxMW.toFixed(1));
+  if (PHES2_ON) for (const y of Y) L.push(' phesrate_' + y + ': b_phes_' + y + ' + b_phel_' + y + ' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
 
   const cum = (t,y) => Y.filter(yy => yy <= y).map(yy => 'b_' + t + '_' + yy);
   const cumE = y => Y.filter(yy => yy <= y).map(yy => 'eb_batt_' + yy);   // lithium cells, MWh
@@ -9970,6 +9981,7 @@ function bldBuildLP(opts){
   for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + (RATE[t] * (t === 'pv' ? Math.pow(1 + _pvG, y - 2026) : 1)).toFixed(1));
   if (OFF_ON) for (const y of Y) L.push(' 0 <= b_off_'+y+' <= 5000');
   if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
+  if (PHES2_ON) for (const y of Y) L.push(' 0 <= b_phel_'+y+' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
   if (PS_ON) for (const y of Y) L.push(' 0 <= b_ps_'+y+' <= 0');
   if (RC_ON) for (const y of Y) L.push(' 0 <= rc_'+y+' <= ' + bldCoalMW(y).toFixed(1));
@@ -17798,7 +17810,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07a';
+const BUILD_STAMP = '2026-10-07c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
