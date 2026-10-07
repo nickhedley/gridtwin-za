@@ -36,8 +36,12 @@ shortlist (6,921 site pairs outside protected areas, downloaded Oct 2026), aggre
 supply areas (nearest substation) and cost class (AAA cheapest, then AA, A, B): sites, energy (GWh) and
 power (GW). Two sets: 'gross' counts every listed pair, but the atlas offers several sizes on the same
 reservoirs, so gross totals overlap and must not be added; 'nonOverlap' uses each reservoir once (best
-figure of merit first). Derived from the atlas; attribute ANU RE100 (Blakers et al.). The site list
-itself is not republished here until its licence is confirmed.
+figure of merit first). Derived from the atlas; attribute ANU RE100.
+
+**anu_phes_shortlist_za.csv** - the site list itself: Source: ANU RE100 Group, Global Pumped Hydro
+Atlas, South Africa shortlist (downloaded Oct 2026), CC BY 4.0. The first line is that attribution;
+read the file with it skipped. Columns as published, URLs stripped, plus region_approx (a rough
+province label added at download, not the model's supply area).
 
 ## The one thing to get right
 

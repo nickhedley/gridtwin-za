@@ -1,6 +1,6 @@
 # ANU PHES shortlist: assign to model supply areas (nearest substation), summarise. 7 Oct 2026.
 # Run: python3 -I harness/ext/anu_summary.py <anu_phes_shortlist_za.csv> nodal/substations_compact.json <out.json> <out.csv>
-# The shortlist itself is not in the repository until its licence is confirmed (SOURCES).
+# The shortlist is public_data/anu_phes_shortlist_za.csv; drop its first (attribution) line before reading.
 import csv, json, sys, math, collections
 rows = list(csv.DictReader(open(sys.argv[1])))
 subs = json.load(open(sys.argv[2]))['subs']
