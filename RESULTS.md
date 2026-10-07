@@ -1727,6 +1727,16 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Build LP: coal-limit rounding made retiring all coal infeasible; fixed, 7 Oct 2026
+
+Build `2026-10-07t`. The Fossil-free 2040 optimiser proposal (HORIZON=2040, GAS_CAP=0, COAL_DECOM=42000, DSL_DECOM=3400,
+COMMIT=1, PSE=1, TF=0.5) solved its first pass and returned Infeasible on the second. IIS: one row, cmax_2040_1190_0
+(cm + 0.5092 rc_2040 <= 10,614.9) against rc_2040 >= 20,847.5. The coefficient was written to 4 decimals and the
+right-hand side to 1, so the coal capacity each cmax row implied ranged 20,841 to 20,847.6 MW in 2040; forcing all coal
+out then needed negative commitment. The right-hand side is now written from the rounded coefficient and rounded up to
+0.1 MW. Affects only runs that force all coal out; suite unchanged at 804/809 (lp 51/51, solve 8/8). The 07s national
+runs never bind rc_ at its bound.
+
 ### PROVISIONAL - With gas, 100-hour iron-air removes July gas on the modern-turbine profile (was: barely moves it); depends on the new-wind correction, 7 Oct 2026
 
 Build `2026-10-07s`, default profile set, the validate_findings LDES scenario: slider defaults; Seriti build (20 GW wind,

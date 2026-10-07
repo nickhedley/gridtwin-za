@@ -86,6 +86,36 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   console.log(stamp, PRESET, 'start', JSON.stringify(base), JSON.stringify(start), 'target', target.toFixed(2), 'GWh', ((Date.now() - t0) / 1000).toFixed(0) + ' s/eval');
   let cur = { ...base }, curR = start;
   const ok = (b) => TECH.every(t => b[t.k] >= 0 && (!t.cap || b[t.k] <= t.cap));
+  // TOP-UP ROUNDS (7 Oct 2026, extends the 4 Oct method, which tested one round only and could end with no build):
+  // each round tests every technology up by its smallest step on the CONFIRM runs; the cheapest that meets the target
+  // is taken; if none does, the round moves to the top-up removing the most shed per rand and tests again. At most 8.
+  const topUp = (b0, r0, out) => {
+    out.topups = []; let b = b0, r = r0;
+    for (let round = 1; round <= 8; round++){
+      const ups = TECH.map(t => ({ ...b, [t.k]: b[t.k] + t.steps[2] })).filter(ok).map(x => ({ build: x, ...evaluate(x, CONFIRM) }));
+      out.topups.push({ round, from: b, ups });
+      const fit = ups.filter(u => u.shed <= target).sort((x, y) => x.cost - y.cost)[0];
+      if (fit) { console.log('top-up round', round, JSON.stringify(fit.build), fit.cost.toFixed(1), fit.shed.toFixed(2)); return fit; }
+      const best = ups.filter(u => u.shed < r.shed).sort((x, y) => (y.shed < r.shed ? (r.shed - y.shed) / Math.max(1e-6, y.cost - r.cost) : 0)
+                                                                - (x.shed < r.shed ? (r.shed - x.shed) / Math.max(1e-6, x.cost - r.cost) : 0))[0];
+      if (!best) { console.log('top-up round', round, 'no top-up reduces shed'); return null; }
+      console.log('top-up round', round, 'none meets; next from', JSON.stringify(best.build), best.cost.toFixed(1), best.shed.toFixed(2));
+      b = best.build; r = best;
+    }
+    return null;
+  };
+  // RESUME=<output json> (7 Oct 2026): skip the search; take its searched build and confirm result, run the top-ups.
+  if (process.env.RESUME){
+    const R = JSON.parse(fs.readFileSync(process.env.RESUME, 'utf8'));
+    if (Math.abs(R.target - target) > 1e-9) throw new Error('RESUME target ' + R.target + ' differs from ' + target);
+    if (R.stamp !== stamp) throw new Error('RESUME stamp ' + R.stamp + ' differs from ' + stamp);
+    const out = { ...R, resumed: true };
+    if (!R.confirm) throw new Error('RESUME file has no confirm result');
+    out.final = R.confirm.shed > target ? topUp(R.searched.build, R.confirm, out) : { build: R.searched.build, ...R.confirm };
+    fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
+    console.log('done', JSON.stringify(out.final), ((Date.now() - t0) / 60000).toFixed(0) + ' min');
+    process.exit(0);
+  }
   for (let si = 0; si < 3; si++){
     for (;;){
       const cands = [];
@@ -111,12 +141,8 @@ const DRAWS = +(process.env.DRAWS || 2), CONFIRM = +(process.env.CONFIRM || 0), 
   if (CONFIRM > DRAWS){
     const c = evaluate(cur, CONFIRM); out.confirm = { draws: CONFIRM, ...c };
     console.log('confirm', CONFIRM, 'draws: shed', c.shed.toFixed(2), 'cost', c.cost.toFixed(1));
-    if (c.shed > target){
-      const ups = TECH.map(t => ({ ...cur, [t.k]: cur[t.k] + t.steps[2] })).filter(ok).map(b => ({ build: b, ...evaluate(b, CONFIRM) }));
-      out.topups = ups; const fit = ups.filter(u => u.shed <= target).sort((a, b) => a.cost - b.cost)[0];
-      if (fit) { out.final = fit; console.log('top-up', JSON.stringify(fit.build), fit.cost.toFixed(1), fit.shed.toFixed(2)); }
-      else out.final = null;
-    } else out.final = { build: cur, ...c };
+    if (c.shed > target) out.final = topUp(cur, c, out);
+    else out.final = { build: cur, ...c };
   } else out.final = { build: cur, ...curR };
   fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
   console.log('done', JSON.stringify(out.final), ((Date.now() - t0) / 60000).toFixed(0) + ' min');

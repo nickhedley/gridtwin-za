@@ -10061,13 +10061,18 @@ function bldBuildLP(opts){
         + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AV_CONG).toFixed(4)+' '+v).join(' + ') : '')
         + ' = ' + (dem - fixed).toFixed(1));
       const _rcf = r.coalFrac ? r.coalFrac[h] : (r.tail ? eaf * TAIL_COAL_FACTOR : eaf);
-      if (!COMMIT_ON) L.push(' cmax_' + k + ': gc_' + k + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '') + ' <= ' + coalCap.toFixed(1));
+      // ROUNDING, 7 Oct 2026: coalCap is bldCoalMW(y) x _rcf, but the coefficient was written to 4 decimals and the
+      // right-hand side to 1, so the capacity they imply drifted by up to 7 MW either way. Retiring all coal (rc_ at
+      // its bound, the Fossil-free proposal) then required negative commitment on some stress hours: infeasible
+      // (IIS: cmax_2040_1190_0). The right-hand side is now written from the rounded coefficient, rounded up to 0.1 MW.
+      const _rcfW = +_rcf.toFixed(4), _cmaxRhs = RC_ON ? (Math.ceil(_rcfW * bldCoalMW(y) * 10 - 1e-9) / 10).toFixed(1) : coalCap.toFixed(1);
+      if (!COMMIT_ON) L.push(' cmax_' + k + ': gc_' + k + (RC_ON ? ' + ' + _rcfW.toFixed(4) + ' rc_' + y : '') + ' <= ' + _cmaxRhs);
       else {
         // Committed coal cm_ is no more than what is available; output sits between bldCoalMinFrac of
         // it and all of it; commitment moves at most COMMIT_RAMP per hour, from the previous hour of a
         // chained day or, on a free-standing day, cyclically from its own last hour.
         const kp = h > 0 ? y + '_' + r.d + '_' + (h - 1) : (r.prevD !== undefined ? y + '_' + r.prevD + '_23' : y + '_' + r.d + '_23');
-        L.push(' cmax_' + k + ': cm_' + k + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '') + ' <= ' + coalCap.toFixed(1));
+        L.push(' cmax_' + k + ': cm_' + k + (RC_ON ? ' + ' + _rcfW.toFixed(4) + ' rc_' + y : '') + ' <= ' + _cmaxRhs);
         L.push(' cgen_' + k + ': gc_' + k + ' - cm_' + k + ' <= 0');
         L.push(' cmin_' + k + ': gc_' + k + ' - ' + COMMIT_MIN.toFixed(3) + ' cm_' + k + ' >= 0');
         L.push(' cru_' + k + ': cm_' + k + ' - cm_' + kp + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
@@ -18249,7 +18254,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07s';
+const BUILD_STAMP = '2026-10-07t';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
