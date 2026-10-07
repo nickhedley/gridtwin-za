@@ -33,6 +33,10 @@ response_matrix.json        validate_response baseline: which of eight outputs e
                             moves, and the base values. A flip fails. Regenerated 6 Oct 2026.
                             Both are read from the testroot argument; regenerate only after
                             comparing old against new (RESULTS, 6 Oct).
+public_data/anu_phes_za_summary.csv  ANU pumped hydro sites by supply area and class (aggregates;
+                            harness/ext/anu_summary.py).
+public_data/anu_phes_shortlist_za.csv  the ANU South Africa shortlist, CC BY 4.0 (confirmed 7 Oct 2026);
+                            first line is the attribution, skip it when reading.
 build_capacity.py           the generator. Runs from the root and reads nodal/...
                             relative to cwd. Has step 1b (the supply-area split) and
                             the eskom bucket.

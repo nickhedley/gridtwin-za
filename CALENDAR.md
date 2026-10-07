@@ -66,6 +66,11 @@ Underway       CoS Framework Review; Compliance Enforcement Rules. No dates.
 ## Expected publications - watch for these
 
 ```
+when gazetted  First section 34 determination under IRP 2025: 4,600 MW battery storage and
+               5,000 MW gas-to-power, no new wind or solar (DEE media statement, 7 Oct 2026;
+               SOURCES). Watch for the gazetted text and NERSA's concurrence. Read both for
+               the gas operating profile: the statement frames gas as flexible and does not
+               mention the IRP's 51% floor, which the engine applies. Feeds TODO 14au.
 Dec 2026       AEMO Transition Plan for System Security. Absorbs the Engineering Roadmap and
                carries workplans for system strength, oscillatory stability and system
                restoration, plus a damping study due before it. The first published position
