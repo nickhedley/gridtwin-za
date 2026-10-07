@@ -31,6 +31,14 @@ reading: Table 1 new capacity by year to 2042, committed private capacity by yea
 definition and reference-case assumptions. Check any single value against the gazette before relying
 on it; the storage total does not match its yearly values (SOURCES.md).
 
+**anu_phes_za_summary.csv** - off-river pumped hydro sites from the ANU RE100 atlas South Africa
+shortlist (6,921 site pairs outside protected areas, downloaded Oct 2026), aggregated by the model's ten
+supply areas (nearest substation) and cost class (AAA cheapest, then AA, A, B): sites, energy (GWh) and
+power (GW). Two sets: 'gross' counts every listed pair, but the atlas offers several sizes on the same
+reservoirs, so gross totals overlap and must not be added; 'nonOverlap' uses each reservoir once (best
+figure of merit first). Derived from the atlas; attribute ANU RE100 (Blakers et al.). The site list
+itself is not republished here until its licence is confirmed.
+
 ## The one thing to get right
 
 **Do not add operational capacity to pipeline to permits.** They are three different
