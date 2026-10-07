@@ -680,3 +680,13 @@ Decisions are the user's (7 Oct 2026).
   asked for Renewables.ninja's tracking option; it is not reachable from the cloud environment, so PVGIS was
   used, which is the source of the existing fixed-tilt solar too. SARAH3 covers 2005-2023; 2024 and 2025 use
   the PVGIS tracking/fixed ratio by region, month and hour.
+
+## International benchmarks for central build costs (RULES, 7 Oct 2026)
+
+- IRENA, Renewable Power Generation Costs in 2024 (July 2025): global weighted average total installed cost,
+  onshore wind USD 1,041/kW (R17,180 at R16.50), utility-scale solar USD 691/kW (R11,400); India 525 and China 591
+  for solar. South African BW6 bids sit about 66% (wind) and 47% (tracking solar) above these.
+- Wind central from build 07q: BW6 compliant bids R26,647/kW (January 2024) x 1.068 = R28,463/kW. IRP 2025's BW6
+  base case (R27,446/kW, 2026) is a cross-check only.
+- Lithium central from build 07p: BW3 aged to January 2026 (equipment share at BNEF's 2025 turnkey decline),
+  R3,425/kWh; BNEF turnkey 2024 USD 165/kWh, 2025 USD 117/kWh.

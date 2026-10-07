@@ -8978,7 +8978,14 @@ const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distribu
 const BATT_BW3_BID = 9.5e9 / 2464e3;
 const BATT_EQUIP_BID = 165 * Math.pow(117/165, 5/12) * 16.5;
 const BLD_COST = {
-  wind:    { c2026: 21000, decl:  0.0286 },
+  // WIND ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14av). BW6 wind compliant bids, R26,647/kW
+  // (IPP Office REIPPPP historical data note, 7 Nov 2025, January 2024 rands; no wind was awarded in BW6) x SA CPI
+  // January 2024 to January 2026 (1.032 x 1.035): R28,463/kW. Bid-derived, so it includes the developer's connection
+  // (connIncl). International benchmark: IRENA, Renewable Power Generation Costs in 2024, onshore wind global weighted
+  // average total installed cost USD 1,041/kW (R17,180 at R16.50), so South African bids sit about 66% above the
+  // global average. Cross-check only: IRP 2025 workbook BW6 base case R27,446/kW (2026 rands). The previous R21,000 had
+  // no recorded source. IRP 2025 cost assumptions are a sensitivity (COSTSET=irp2025), never central (user, 7 Oct).
+  wind:    { c2026: 26647 * 1.032 * 1.035, decl:  0.0286, connIncl: true },
   pv:      { c2026: 12000, decl:  0.0389 },
   // Single-axis tracking solar, BW6 preferred bidders' mean, R15,715/kW (IPP Office REIPPPP historical data note,
   // 7 Nov 2025, January 2024 rands) x SA CPI January 2024 to January 2026 (1.032 x 1.035, Stats SA). Bid-derived, so
@@ -18138,7 +18145,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07p';
+const BUILD_STAMP = '2026-10-07q';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -1727,6 +1727,13 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Wind and lithium on South African bid data: Deep decarbonisation's new-build capital R0.936 to R1.205/kWh, 7 Oct 2026
+
+Build `2026-10-07q`. Wind central on BW6 compliant bids (R28,463/kW, was R21,000 unsourced; IRENA 2024 global onshore
+USD 1,041/kW, R17,180) and lithium on BW3 aged to January 2026 (R13,699/kW, was R8,105). Deep decarbonisation 2035,
+retail year 2035, 40% margin, vintage 2030.5: new-build capital R0.936 -> R1.205/kWh; wind alone gives R1.045 (+0.109),
+the battery the rest (+0.160). The preset builds are being re-searched on these costs (TODO 14ay).
+
 ### Lithium on BESIPPPP bid window 3, aged to January 2026: Deep decarbonisation's new-build capital R0.936 to R1.096/kWh, 7 Oct 2026
 
 Superseded the same day by the aged central (user decision): BW3's equipment share at the bid date (BNEF global

@@ -229,6 +229,13 @@ Sourcing added the same day: `costCoal` 546 = Eskom FY2025 coal primary energy;
 `costImports` bases documented at the block. `costCcgt` 2800 predates the JKM
 benchmark work and sits high - see open items.
 
+## Central build costs: local evidence plus an international benchmark (user, 7 Oct 2026)
+
+Every central cost in `BLD_COST` needs South African bid or project data AND an international benchmark (BNEF,
+IRENA or NREL), both recorded in SOURCES. IRP 2025 cost assumptions are a sensitivity, labelled "the IRP's own
+assumptions" (`COSTSET=irp2025`), never central; they may be quoted as a cross-check. A central figure with neither
+is a gap to close, not a default to defend: TODO 14ba lists the current gaps.
+
 ## Gotchas
 
 - **Province naming.** Keys are `Kwazulu Natal` (not `KwaZulu-Natal`) and include
