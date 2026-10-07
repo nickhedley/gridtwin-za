@@ -1727,6 +1727,17 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Lithium on BESIPPPP bid window 3 raises Deep decarbonisation's new-build capital from R0.936 to R1.160/kWh, 7 Oct 2026
+
+Build `2026-10-07o` (lithium at BESIPPPP bid window 3, R15,962/kW at 4 h, inclusions not stated) against the
+same build with the previous R8,105/kW. Deep decarbonisation 2035 preset, retail year 2035, panel at 40%
+margin, vintage 2030.5 (validate_consistency.js, 'new-build capital matches the hand computation').
+
+- New-build capital per kWh sold: R0.936 -> R1.160 (+24%). The battery input is the whole change.
+- The preset carries 19 GW of lithium at 12 h, so it is the most battery-heavy preset and moves most.
+- The effect on the central pathway's build (v_half_c1_p1_battbw3) is queued; not yet measured.
+- Caveat: the BW3 figure is a project value whose inclusions are not published.
+
 ### Existing diesel peakers run almost never from 2030 on the half-standard pathway, 7 Oct 2026
 
 Pathway pathway_v_half_c1_p1.json (build `2026-10-07c`: half standard, coal commitment on, pumped-storage
