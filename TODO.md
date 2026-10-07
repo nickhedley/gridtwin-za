@@ -110,7 +110,7 @@ cap raised to 20; adequacy loop decomposed and gas charging added; backcast subt
 
 24. Iron-air held 4.4 GWh while the engine shed – check its discharge rule
 25. Interruptible load: 1,200 MW in the engine, absent from the optimiser
-26. Model pumped storage energy in the LP, so it can count as reserve honestly
+26. Model pumped storage energy in the LP, so it can count as reserve honestly. Done 7 Oct (build 07a): bldPsEnergy on by default after the decomposition (RESULTS, 7 Oct) found no LP over-use or engine under-use; the remaining gap is the LP's within-window foresight. Open: re-run the half-standard gas variants (a, b1-b3) with it on before quoting them
 27. Regional: test a year-by-year solve before concluding the adequacy fix cannot fit
 28. Give wind and solar a capacity credit in the margin row, rather than zero
 29. Make coal retirement a decision variable

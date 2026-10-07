@@ -1874,6 +1874,47 @@ importsMW -> loleHrs, now responsive: 1 hour at zero imports, 0 from 2,000 MW (1
 Caveat: four of the seven causes are inferred from dated entries, not reproduced; the builds that
 would show them are not in git.
 
+### Pumped storage: the optimiser does not over-use it and the engine does not under-use it; the gap is foresight, 7 Oct 2026
+
+Build `2026-10-06e` (optimiser run) and `2026-10-06h` (engine).
+- Run: half-standard coal-minimum pathway with existing pumped storage modelled as energy in the
+  optimiser (bldPsEnergy 1, COMMIT 1, TF 0.5, TL 14400; pathway_v_half_c1_p1.json, 2 passes, adequate).
+- Method: its 2040 build dispatched by the engine on the same twelve 2040 stress windows, weather years
+  and outage seeds (harness/pathway/psboth.js), with the optimiser's own daily storage balance rebuilt from
+  its pdis and pchg (variants_6oct/psboth_c1p1.json).
+- Existing pumped storage: 2,724 MW, 60 GWh, 76% round trip.
+
+```
+                                   optimiser                    engine
+level at window start              30 GWh, fixed (half full)    25-53 GWh, median about 41
+level at window end                30 GWh (must refill)         6-21 GWh
+net energy drawn per window        0 by construction            15-40 GWh
+discharge, all 12 windows          3,264 GWh                    3,661 GWh (12% more)
+shed in the windows                0                            16.5 GWh, 2016 days 277-279 only
+```
+
+- The optimiser gets no free opening energy (fixed 6 Oct, 06d) and discharges less in total.
+- The engine draws its store down further. The engine-side checks of 6 Oct agree:
+  - In 2015 day 80 the energy held back was used later in the same event.
+  - Switching off the 26-hour peak floor raised shed across the windows from 43.7 to 61.3 GWh.
+- The only shed gap is in two overlapping 2016 windows. There the engine empties pumped storage, while
+  the optimiser keeps at least 8.4 GWh on the same build: it sees the whole 14 days and balances storage
+  per day, not per hour.
+- That is an optimism of the method for every store, not of pumped storage.
+
+Decision (user, 7 Oct): bldPsEnergy on by default from build `2026-10-07a`.
+
+Effect on the half-standard coal-minimum pathway (checked on independent draws):
+
+```
+pumped storage energy   new gas 2030/2040  gas CF/h 2040   cost R bn  CO2 Mt  worst year GWh
+off (06e default)       1.2 / 3.6 GW       17.1% / 1,911   3,918      1,206   0.18
+on (07a default)        1.2 / 3.22 GW      20.6% / 2,147   3,981      1,212   0.92
+```
+
+The gas, LNG-cost and storage variants of 6-7 Oct (entry below) ran with it off. They stand as
+comparisons with each other, but need re-running with it on before any is quoted (TODO 26).
+
 ### PROVISIONAL - Half-standard pathway: a coal minimum in the optimiser brings 3.6 GW of backup gas that neither LNG costs nor long-duration storage displace, 6-7 Oct 2026
 
 Builds `2026-10-06e` (optimiser runs) and `2026-10-06h` (checks; the engine is unchanged between them).
