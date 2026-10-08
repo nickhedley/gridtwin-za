@@ -1,12 +1,12 @@
 # Native HiGHS for the pathway scripts (SOLVER=native): highs-js (WebAssembly) aborts on large stress
 # LPs. Reads an LP file, writes the fields index.html reads from a highs-js result. 5 Oct 2026.
 #   python3 highs_native.py in.lp out.json [time_limit_s]
-import json, sys
+import json, os, sys
 import highspy
 
 h = highspy.Highs()
 h.setOptionValue('output_flag', False)
-h.setOptionValue('solver', 'simplex')   # the default chose interior point: over 38 min on a pass-2 LP that simplex solves in 2
+h.setOptionValue('solver', os.environ.get('HIGHS_SOLVER', 'simplex'))   # simplex by default: interior point took over 38 min on a pass-2 LP that simplex solves in 2; HIGHS_SOLVER=ipm for LPs where simplex stalls (7 Oct 2026, grid-cost runs)
 h.setOptionValue('time_limit', float(sys.argv[3]) if len(sys.argv) > 3 else 900.0)
 h.readModel(sys.argv[1])
 h.run()

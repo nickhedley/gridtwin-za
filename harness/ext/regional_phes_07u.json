@@ -1,0 +1,145 @@
+{
+ "preset": "Deep decarbonisation 2035",
+ "stamp": "2026-10-07u + regional pumped-hydro patch (uncommitted)",
+ "windBasis": {
+  "windModern": 1,
+  "windCapexRkW": 28462
+ },
+ "label": "new wind on the modern-turbine profile at modern capex (regional map, build 07u)",
+ "runs": {
+  "without": {
+   "objectiveRbn": 7258.6,
+   "secs": 1589.19,
+   "year": 2040,
+   "regions": {
+    "Eastern Cape": {
+     "ph": {},
+     "windMW": 400,
+     "pvMW": 0,
+     "curtailGWh": 3.7
+    },
+    "Limpopo": {
+     "ph": {},
+     "windMW": 3360,
+     "pvMW": 3360,
+     "curtailGWh": 15
+    },
+    "Mpumalanga": {
+     "ph": {},
+     "windMW": 3320,
+     "pvMW": 3320,
+     "curtailGWh": 0
+    },
+    "Gauteng": {
+     "ph": {},
+     "windMW": 4680,
+     "pvMW": 4680,
+     "curtailGWh": 0
+    },
+    "Western Cape": {
+     "ph": {},
+     "windMW": 1180,
+     "pvMW": 0,
+     "curtailGWh": 1
+    },
+    "Northern Cape": {
+     "ph": {},
+     "windMW": 0,
+     "pvMW": 0,
+     "curtailGWh": 0
+    },
+    "Hydra Central": {
+     "ph": {},
+     "windMW": 0,
+     "pvMW": 0,
+     "curtailGWh": 0
+    },
+    "Kwazulu Natal": {
+     "ph": {},
+     "windMW": 5500,
+     "pvMW": 5500,
+     "curtailGWh": 153.6
+    },
+    "North West": {
+     "ph": {},
+     "windMW": 1660,
+     "pvMW": 1660,
+     "curtailGWh": 60.7
+    },
+    "Free State": {
+     "ph": {},
+     "windMW": 1420,
+     "pvMW": 1420,
+     "curtailGWh": 0
+    }
+   }
+  },
+  "with_phes": {
+   "objectiveRbn": 7258.6,
+   "secs": 3019.896,
+   "year": 2040,
+   "regions": {
+    "Eastern Cape": {
+     "ph": {},
+     "windMW": 400,
+     "pvMW": 0,
+     "curtailGWh": 2.3
+    },
+    "Limpopo": {
+     "ph": {},
+     "windMW": 3360,
+     "pvMW": 3360,
+     "curtailGWh": 0
+    },
+    "Mpumalanga": {
+     "ph": {},
+     "windMW": 3320,
+     "pvMW": 3320,
+     "curtailGWh": 0
+    },
+    "Gauteng": {
+     "ph": {},
+     "windMW": 4680,
+     "pvMW": 4680,
+     "curtailGWh": 0
+    },
+    "Western Cape": {
+     "ph": {},
+     "windMW": 1180,
+     "pvMW": 0,
+     "curtailGWh": 0
+    },
+    "Northern Cape": {
+     "ph": {},
+     "windMW": 0,
+     "pvMW": 0,
+     "curtailGWh": 0
+    },
+    "Hydra Central": {
+     "ph": {},
+     "windMW": 0,
+     "pvMW": 0,
+     "curtailGWh": 0
+    },
+    "Kwazulu Natal": {
+     "ph": {},
+     "windMW": 5500,
+     "pvMW": 5500,
+     "curtailGWh": 197.3
+    },
+    "North West": {
+     "ph": {},
+     "windMW": 1660,
+     "pvMW": 1660,
+     "curtailGWh": 34.4
+    },
+    "Free State": {
+     "ph": {},
+     "windMW": 1420,
+     "pvMW": 1420,
+     "curtailGWh": 0
+    }
+   }
+  }
+ }
+}

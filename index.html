@@ -10915,7 +10915,7 @@ const BLD_LOAD_SHARE = { 'Gauteng':0.315,'Mpumalanga':0.175,'Kwazulu Natal':0.15
   'Western Cape':0.115,'North West':0.075,'Free State':0.055,'Limpopo':0.048,
   'Eastern Cape':0.042,'Northern Cape':0.014,'Hydra Central':0.006 };
 
-let bldRegProfiles = null, bldHeadroom = null;
+let bldRegProfiles = null, bldHeadroom = null, bldPhesSites = null;
 
 async function bldLoadRegionalData(){
   if (bldRegProfiles && bldHeadroom) return true;
@@ -10926,6 +10926,9 @@ async function bldLoadRegionalData(){
     ]);
     if (!p || !h) return false;
     bldRegProfiles = p; bldHeadroom = h.headroom || h;
+    // Pumped-hydro sites by supply area and class (ANU RE100 shortlist, aggregates; 7 Oct 2026). Optional:
+    // without it the regional LP simply offers no pumped hydro.
+    try { const ph = await fetch('nodal/phes_sites_region.json').then(r => r.ok ? r.json() : null); bldPhesSites = ph; } catch (e) {}
     await bldLoadTdp();   // the delay comparison needs it, and the LP is synchronous
     return true;
   } catch (e) { return false; }
@@ -10969,7 +10972,15 @@ function bldBuildRegionalLP(opts){
   // capex in the objective but NO rate_ or rrate_ build-rate constraints - they
   // ignored the pace presets entirely, which is how vanadium reached 62 GW.
   // Storage is taken from BLD_STORE so the two lists cannot drift apart.
-  const T = ['wind','pv'].concat(BLD_STORE.map(S2 => S2.t));
+  const S0 = { ...FIXED, ...(opts.state || {}) };
+  // PUMPED HYDRO BY REGION AND CLASS, 7 Oct 2026 (user-approved). One store per ANU cost class (AAA, AA, A, B),
+  // available only where the shortlist has sites, capped at each region's non-overlapping storage, priced on the
+  // scenario's cost basis times the class's cost index relative to AA, plus a grid connection over the median
+  // distance to the nearest >=275 kV substation. For siting and curtailment, not adequacy (this LP has no
+  // tail days). Needs bldPhesOn and nodal/phes_sites_region.json.
+  const PH_CLASSES = (S0.bldPhesOn && bldPhesSites && bldPhesSites.regions) ? ['AAA','AA','A','B'] : [];
+  const PH_STORE = PH_CLASSES.map(c => ({ t:'ph'+c, dis:'hd'+c, chg:'hc'+c, eff:S0.newPsEff, hours:S0.bldPhesHours, ex:() => 0, costMult:1, phClass:c }));
+  const T = ['wind','pv'].concat(BLD_STORE.map(S2 => S2.t)).concat(PH_STORE.map(S2 => S2.t));
   // The regional LP keeps its eight calendar days, mean coal and no reserve, which means it has
   // the adequacy blindness the national model had corrected on 2 Oct 2026.
   //
@@ -10993,7 +11004,15 @@ function bldBuildRegionalLP(opts){
   const WMOD_R = ((S.bldWindModern ?? FIXED.bldWindModern) | 0) > 0, WMOD_RK = WMOD_R ? windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr) : 1;
   if (WMOD_R && !WIND_MOD_REG) throw new Error('modern wind is on but the regional map (profiles_wind_modern_map.json regional_map) is not loaded');
   if (((S.bldPvTracking ?? FIXED.bldPvTracking) | 0) > 0) throw new Error('bldBuildRegionalLP: the tracking-solar option has no regional profile yet; switch it off for the regional LP');
-  const STORE = bldStoreList(S);   // lithium at the scenario's duration
+  const STORE = bldStoreList(S).concat(PH_STORE);   // lithium at the scenario's duration; pumped hydro tiers
+  // Pumped hydro: R/kW-yr by region and class, and the MW available (0 where the shortlist has none).
+  const _phMult = (bldPhesSites && bldPhesSites.meta && bldPhesSites.meta.classCostVsAA) || {};
+  const _phTier = (c, ri) => ((bldPhesSites && bldPhesSites.regions[BLD_REGIONS[ri]]) || {})[c] || null;
+  const phAnn = (c, ri) => { const tr = _phTier(c, ri);
+    const capex = bldPhesCapexKW(S.bldPhesCostBasis, S.bldPhesHours) * (_phMult[c] ?? 1);
+    const conn = tr ? TX_R_PER_MW_KM / 1000 * tr.km275 : 0;   // R/kW over the median distance to a >=275 kV substation
+    return bldAnnuity(capex, 60) + S.bldPhesFomRkW + bldAnnuity(conn, TX_LIFE_YEARS); };
+  const phCapMW = (c, ri) => { const tr = _phTier(c, ri); return tr ? tr.GWh * 1000 / S.bldPhesHours : 0; };
   // VoLL comes from FIXED.voll (R87,000/MWh, CSIR cost of unserved energy) -
   // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
   // planning than the dispatch engine prices them in operations. One number.
@@ -11007,8 +11026,9 @@ function bldBuildRegionalLP(opts){
   for (const t of T) for (let ri = 0; ri < BLD_REGIONS.length; ri++) for (const y of Y){
     let c = 0;
     const _m = (t === 'batt') ? battDurationMult(S.newBattHours) : 1;   // see bldStoreList
+    const _ph = t.startsWith('ph') ? t.slice(2) : null;
     for (const yy of Y) if (yy >= y)
-      c += bldNetAnnuityAt(t, y, _m) / Math.pow(1+BLD_DISC, yy-2026);
+      c += (_ph ? phAnn(_ph, ri) : bldNetAnnuityAt(t, y, _m)) / Math.pow(1+BLD_DISC, yy-2026);
     // x1000: R/kW/yr against a variable in MW. See the note in bldBuildLP.
     obj.push((c * 1000).toFixed(3) + ' b_' + t + '_' + ri + '_' + y);
   }
@@ -11033,7 +11053,7 @@ function bldBuildRegionalLP(opts){
       // Cycling wear per technology. The regional LP previously priced none,
       // so discharging was free - which removed the only marginal cost
       // distinguishing an 88%-efficient store from a 45%-efficient one.
-      const WEAR_R = { batt: 1.0, vrfb: 0.25, ironair: 0.15 };
+      const WEAR_R = { batt: 1.0, vrfb: 0.25, ironair: 0.15, phAAA: 0.05, phAA: 0.05, phA: 0.05, phB: 0.05 };
       for (const S2 of STORE){
         obj.push((S.lpBattDischargeCostR*WEAR_R[S2.t]*r.weight*df).toFixed(3)
           + ' ' + S2.dis + '_' + k);
@@ -11222,7 +11242,15 @@ function bldBuildRegionalLP(opts){
     // a genuine lead province - the Northern Cape has taken well over a third of
     // national solar - without permitting the whole programme to land in one place.
     const REGION_SHARE = opts.regionShare != null ? opts.regionShare : 0.45;
+    // Pumped hydro: one national limit, at most 1,500 MW a year (one Tubatse-size scheme) from bldPhesFirstYear,
+    // in place of the share-of-rate rule below.
+    if (PH_STORE.length){
+      const terms = [];
+      for (const S2 of PH_STORE) for (let ri = 0; ri < BLD_REGIONS.length; ri++) terms.push('b_'+S2.t+'_'+ri+'_'+y);
+      L.push(' phrate_'+y+': ' + terms.join(' + ') + ' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
+    }
     for (const t of T){
+      if (t.startsWith('ph')) continue;
       const terms = [];
       for (let ri = 0; ri < BLD_REGIONS.length; ri++) terms.push('b_'+t+'_'+ri+'_'+y);
       const rt = (RATE[t] != null) ? RATE[t] : 0;   // no stated rate = no pipeline
@@ -11232,6 +11260,17 @@ function bldBuildRegionalLP(opts){
         L.push(' rrate_'+t+'_'+ri+'_'+y+': b_'+t+'_'+ri+'_'+y+' <= ' + cap.toFixed(1));
       }
     }
+  }
+
+  // Pumped hydro site availability: cumulative build per region and class within the shortlist's non-overlapping
+  // storage, and in total within newPsMaxMW as in the national LP.
+  if (PH_STORE.length){
+    const all = [];
+    for (const S2 of PH_STORE) for (let ri = 0; ri < BLD_REGIONS.length; ri++){
+      const v = Y.map(y => 'b_'+S2.t+'_'+ri+'_'+y); all.push(...v);
+      L.push(' phcap_'+S2.t+'_'+ri+': ' + v.join(' + ') + ' <= ' + phCapMW(S2.phClass, ri).toFixed(1));
+    }
+    L.push(' phnat: ' + all.join(' + ') + ' <= ' + S.newPsMaxMW.toFixed(1));
   }
 
   // RESERVE requirement, met nationally in each hour. Contingency (largest unit)
@@ -11593,6 +11632,13 @@ function renderBuildRegional(res, rate, opts){
     + 'above to test a resulting mix hour by hour.'
     + '<div style="margin-top:5px;font-style:normal">Storage now carries its charge <strong>between</strong> representative days, so a long-duration store can bank energy ahead of a wind drought and spend it through one. The sample deliberately includes the worst three-day net-load window and the worst three-day wind lull of the year. It is still a sample of days rather than all 8,760 hours \u2013 use <strong>Run the full model</strong> to test a resulting mix chronologically.</div>'
     + '</div></div>';
+  // Pumped hydro by region (7 Oct 2026), summed over the ANU cost classes, when the scenario offers it.
+  { const ph = []; let phTot = 0;
+    for (let ri = 0; ri < BLD_REGIONS.length; ri++){ let mw = 0;
+      for (const c of ['AAA','AA','A','B']) for (const y of BLD_YEARS){ const v = res.Columns['b_ph'+c+'_'+ri+'_'+y]; mw += v ? v.Primal : 0; }
+      if (mw > 1){ ph.push(BLD_REGIONS[ri] + ' ' + Math.round(mw).toLocaleString() + ' MW'); phTot += mw; } }
+    if (phTot > 1) html += '<div style="margin-top:7px;font-size:10.5px">Pumped hydro built: <strong>'
+      + Math.round(phTot).toLocaleString() + ' MW</strong> (' + ph.join(', ') + '), sited on the ANU RE100 shortlist.</div>'; }
   html += bldApplyButton();
   html += '<div id="bldStress"></div>';
   host.innerHTML = capFlag + durFlag + txHtml + html;
@@ -18268,7 +18314,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07u';
+const BUILD_STAMP = '2026-10-08a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
