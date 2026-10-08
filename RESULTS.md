@@ -1727,6 +1727,36 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Why the engine sheds where the optimiser served in full: the LP's storage keeps one energy balance per day, 8 Oct 2026
+
+07s central pathway (v_half_c1_p1_07s), model year 2040, the window where the engine shed most: weather year 2016,
+outage draw 0 (seed 36225520), days 279-292 (LP stress period 1, days 1130-1143). Engine: pathcheck.js
+WINDOW_DUMP=2016,36225520,279,14 on the same 2040 build (K=1 YEARS=2040). LP: the pass-2 LP regenerated with
+DUMP_LP (hash a8a71a7a) and its cached solution. Hour by hour (scripts in the session scratchpad, to be committed with
+the fix):
+
+- The shed: day 290, hours 13-14, 6.6 and 5.1 GW (11.7 GWh). Engine lithium starts day 290 at 89 GWh, runs dry at hour
+  13 and sheds; diesel, gas and coal are all at their limits. The LP starts the day at 75 GWh, discharges 117 GWh by
+  hour 14 with no charging before hour 15, then charges 27, 19 and 9 GW in hours 15-17. Tracked by the hour, its
+  lithium would sit about 42 GWh below zero at hour 14. Pumped storage does the same: empty in the engine from hour
+  12, discharging at 2,724 MW in the LP in hours 13-14.
+- Cause: in the LP each store has one energy balance per day (soc_<store>_<y>_<d>: end-of-day energy = previous day's
+  + 0.88 x charge - discharge, summed over the day), with no hourly state of charge, so the order of hours within a day
+  is not enforced: energy charged at 15:00 can serve 13:00. The engine tracks state of charge every hour.
+- How widespread, 2040: within-day energy goes below zero on 106 of 203 stress days for lithium (deepest -113 GWh),
+  10 for pumped storage (-7 GWh), 7 for iron-air (under 1 GWh). Typical case: the window's first day starts from a
+  fixed 1.6 GWh of lithium and the morning peak (hours 7-8) is covered with energy stored from midday solar.
+- Ruled out on this window: coal availability (identical, 7.3-7.4 GW, both at it in the shed hours), coal commitment
+  and ramps (coal at availability in both), pumped-storage constants (2,724 MW and 60,000 MWh in both), imports and
+  demand (the energy each model asks of dispatchable plant and storage agrees within 2% on days 289-291: 279 against
+  274, 276 against 272, 176 against 172 GWh), reserves (engine requirement 2.3 GW against 16 GW available, so no
+  shedding to hold reserve; the LP holds none on the battery).
+- Secondary differences, not the cause here: the LP starts every window from fixed constants (lithium 1.6 GWh, half
+  the existing 3.2 GWh with nothing for new build; pumped storage 30 GWh; iron-air 0), while the engine carries its own
+  state in (lithium 137 GWh at day 279); and in the run-up days the LP cycles storage on the midday surplus and burns
+  no coal, while the engine holds its storage near full and burns 73-194 GWh of coal a day.
+- Calendar days use the same daily balance with day weights; not measured here.
+
 ### Stress windows planned to the standard under-build ninefold against the engine: 2038 planned 2.17 GWh, engine 19.4 GWh, 8 Oct 2026
 
 Run v_half_c1_p1_08b_st, build `2026-10-08b`, bldStressTarget 1 (STRESS_TARGET=1), otherwise as the central pathway
