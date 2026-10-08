@@ -1729,6 +1729,28 @@ produce that. The stopgap stays; its timing could be moved to wind at night.
 
 ### The 07s central pathway overshoots the half standard: pace caps and fully served stress windows, 8 Oct 2026
 
+MEASURED 8 Oct 2026 (TODO 14bk (c)): 480 runs a year (12 weather years x 40 outage draws) on the final build, 2036-2040,
+in both seed schemes (pathcheck.js K=40 YEARS=2036-2040; SEED_BASE=20260816 is the loop's own scheme, the default
+71830529 the engine check's). Mean shed, GWh (standard error); target about 1.97:
+
+```
+year   loop 24 runs   loop seeds 480    engine 24 runs   engine seeds 480   pooled 960   share of target
+2036   0.44           0.41 (0.08)       0.00             0.26 (0.06)        0.33         17%
+2037   0.22           0.33 (0.07)       0.00             0.19 (0.06)        0.26         13%
+2038   1.11           1.02 (0.18)       0.02             0.72 (0.14)        0.87         44%
+2039   1.51           1.25 (0.21)       0.28             0.91 (0.17)        1.08         55%
+2040   0.73           0.56 (0.14)       0.36             0.36 (0.10)        0.46         23%
+```
+
+- The overshoot is real but about half the target in the tightest year (2039, 55%, roughly 40-70% at 95%), not the
+  factor of seven the 24-run engine check implied: its 24 runs were mild (0.28 in 2039 against 0.91 on 480 runs of
+  the same seed base). The two 480-run sets differ by 1.2-1.4 standard errors each year; they lean the same way every
+  year because the draws reuse seeds across model years. Worst single run 27-40 GWh in 2038-2040.
+- Implication: two draws a year is too few to report shed against the target. Shed figures from pathcheck at K=2 in
+  earlier entries are samples, not measurements.
+
+The figures below were the first, 24-run reading and are superseded by the table above for 2036-2040.
+
 Same run as below (v_half_c1_p1_07s). Engine check mean shed against the half-standard target (about 1.97 GWh):
 0.00 GWh every year 2026-2037, then 0.02 (2038), 0.28 (2039), 0.26 (2040), so the worst year sits at 14% of the
 target. The loop's own pass-2 check, on its own outage seeds, puts 2038-2040 at 1.11, 1.51 and 0.73 GWh (56-76%):
@@ -1791,7 +1813,7 @@ coal retired by 2040          28.9 GW                      26.2 GW
 2040 pumped hydro GW          0                            0
 CO2 2026-2040                 1,212 Mt                     1,195 Mt
 system cost 2026-2040         R3,981bn                     R3,929bn
-worst-year mean shed          0.92 GWh                     0.28 GWh
+worst-year mean shed          0.92 GWh                     0.28 GWh (24 runs; 1.08 on 960 runs, see above)
 LNG check by year: stress windows binding the year above one cargo, of those tested (worst 14 days
 of the year's 24 runs, in cargoes):
   2030                        0 of 3 (0.03)                0 of 3 (0.02)
