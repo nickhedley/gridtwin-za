@@ -1737,17 +1737,28 @@ central costs: wind BW6 R28,462/kW on the modern-turbine profile at 1.064, lithi
 costed at its own prices.
 
 ```
-                         07c (old costs)            07s (final costs)
-new gas GW 2030/35/40    1.20 / 3.22 / 3.22         1.20 / 1.45 / 1.45
-gas CF 2035, 2040        6.5%, 20.6%                7.3%, 19.6%
-gas hours 2035, 2040     844, 2,147                 684, 1,773
-coal retired by 2040     28.9 GW                    26.2 GW
-2040 wind/solar/Li GW    17.5 / 49.6 / 27.4         17.1 / 43.3 / 23.6
-iron-air / vanadium GW   0.75 / 1.25                0.30 / 0
-CO2 2026-2040            1,212 Mt                   1,195 Mt
-system cost 2026-2040    R3,981bn                   R3,929bn
-LNG, 14-day windows      10 of 33 above 1 cargo     0 of 33 (worst 0.57 cargoes)
-worst-year mean shed     0.92 GWh                   0.28 GWh
+                              07c (old costs)              07s (final costs)
+new gas GW, 2030/35/40        1.20 / 3.22 / 3.22           1.20 / 1.45 / 1.45
+gas CF and hours, 2030        0.1%, 6 h                    0.0%, 2 h
+gas CF and hours, 2033        2.6%, 372 h                  3.7%, 363 h
+gas CF and hours, 2035        6.5%, 844 h                  7.3%, 684 h
+gas CF and hours, 2038        16.2%, 1,767 h               16.2%, 1,482 h
+gas CF and hours, 2040        20.6%, 2,147 h               19.6%, 1,773 h
+coal retired by 2040          28.9 GW                      26.2 GW
+2040 wind / solar GW          17.5 / 49.6                  17.1 / 43.3
+2040 lithium GW               27.4                         23.6
+2040 iron-air / vanadium GW   0.75 / 1.25                  0.30 / 0
+2040 pumped hydro GW          0                            0
+CO2 2026-2040                 1,212 Mt                     1,195 Mt
+system cost 2026-2040         R3,981bn                     R3,929bn
+worst-year mean shed          0.92 GWh                     0.28 GWh
+LNG check by year: stress windows binding the year above one cargo, of those tested (worst 14 days
+of the year's 24 runs, in cargoes):
+  2030                        0 of 3 (0.03)                0 of 3 (0.02)
+  2033                        0 of 12 (0.39)               0 of 12 (0.35)
+  2035                        0 of 18 (0.76)               0 of 18 (0.52)
+  2038                        8 of 27 (1.23)               0 of 27 (0.56)
+  2040                        10 of 33 (1.23)              0 of 33 (0.57)
 ```
 
 - Solver: simplex solved pass 2 in 7 h 58 min; interior point (HIGHS_SOLVER=ipm) on the same LP did not finish in 8 h.
