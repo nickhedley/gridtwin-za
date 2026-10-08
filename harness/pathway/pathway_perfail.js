@@ -38,6 +38,8 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
    // each optimal solution is kept under lpcache/, keyed by a hash of the LP text. A restarted run replays the
    // solves it already finished (identical LP, identical answer) and only redoes the one that was cut off.
    const LPT=fix(lp), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
+   // DUMP_LP=<prefix> (8 Oct 2026, diagnostics): write each LP to <prefix>_pass<n>.lp; DUMP_STOP=<n> exits after the n-th.
+   if (process.env.DUMP_LP){ w.__dumpN=(w.__dumpN||0)+1; fs.writeFileSync(process.env.DUMP_LP+'_pass'+w.__dumpN+'.lp', LPT); console.log('dumped LP pass', w.__dumpN, key.slice(0,10)); if (process.env.DUMP_STOP && w.__dumpN>=+process.env.DUMP_STOP) process.exit(0); }
    if (fs.existsSync(cf)) { last=JSON.parse(fs.readFileSync(cf,'utf8')); console.log('cache hit', key.slice(0,10)); }
    else { fs.writeFileSync(tmp+'.lp',LPT); await require('util').promisify(cp.execFile)('python3',['highs_native.py',tmp+'.lp',tmp+'.json',String(process.env.TL||900)],{maxBuffer:1<<26}); last=JSON.parse(fs.readFileSync(tmp+'.json','utf8'));
      if (last.Status==='Optimal'){ fs.mkdirSync(cdir,{recursive:true}); fs.renameSync(tmp+'.json',cf); try{ fs.unlinkSync(tmp+'.lp'); }catch(e){} }
