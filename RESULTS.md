@@ -1727,6 +1727,35 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Preset re-search on the final central costs: Deep decarbonisation R289.7bn from two starts within 0.7%; Fossil-free R348.9bn from one so far, 7-8 Oct 2026
+
+Build `2026-10-07s` engine (07t and 07u change only the build LPs), harness/ext/preset_search.js, EXT=1, the 4 Oct
+method: target half of 0.002% of served energy, fixed at the start; steps 2, 1, 0.5 GW (iron-air 0.5, 0.25, 0.125;
+offshore 1, 0.5, 0.25); rooftop fixed; lithium at 12 h; offshore capped at 1 GW (2035) and 5 GW (2040). Costs: wind
+BW6 R28,462/kW on the modern-turbine profile at 1.064, lithium BW3 aged R13,699/kW. Deep scored on twelve weather
+years x 2 outage draws, confirmed on 40 draws (480 runs); Fossil-free on twelve years x 1 (no coal). Start A: the
+current preset. Start B: the build optimiser's proposal at half the standard (HORIZON 2035, GAS_CAP 0, COAL_DECOM
+27000, COMMIT 1, PSE 1; vanadium 1.75 GW and CCGT 0 held from it). Outputs: harness/ext/search_*.json.
+
+```
+                      wind    solar   Li 12h  iron-air  offshore  vanadium   R bn/yr   shed GWh (target)
+Deep, preset as is    32.5    29.5    19.0    1.125     0         -          325.2     0.00
+Deep, A final         32.5    27.5     9.0    1.5       0         -          289.7     1.98 (2.01), 480 runs
+Deep, B start         23.6    34.5    14.0    1.0       0.5       1.75       301.3     1.91
+Deep, B final         30.6    25.5     7.0    2.0       0.5       1.75       291.8     1.94 (2.07), 480 runs
+FF, preset as is      35      45      32      2.25      5         -          386.5     0.00
+FF, A final           35      51      22      4.25      1         -          348.9     1.84 (2.01), 12 runs
+```
+
+- Deep: the two starts end on different builds, R2.1bn (0.7%) apart; both meet the stricter target (2.01 GWh). The
+  cheapest found by the stated method is A, R289.7bn: lithium 19 -> 9 GW at 12 h, iron-air 1.125 -> 1.5 GW.
+- Method extension, 7 Oct 2026: A missed the target on the 480-run confirmation (2.56 GWh) and no single smallest
+  top-up met it (2.07 to 2.42); top-up rounds now repeat from the most cost-effective top-up until one does (round 2:
+  solar +0.5 GW after iron-air +0.125 GW). B needed none.
+- Fossil-free B: the proposal (HORIZON 2040, GAS_CAP 0, COAL_DECOM 42000, DSL_DECOM 3400) was infeasible on 07s
+  (fixed in 07t), then timed out at 4 h and was cut off twice by container restarts and memory; still to run.
+- Caveat: the targets differ slightly by start (fixed at each start's served energy); presets are not yet changed.
+
 ### Regional optimiser: new wind on the modern-turbine profile, matching its capex, 7 Oct 2026
 
 Build `2026-10-07u` (TODO 14bh). Since 07r the regional LP priced new wind at the modern capex (R28,463/kW) on the
