@@ -5545,6 +5545,12 @@ const FIXED = {
   bldWindModern:1, bldWindCase:'central',
   // Correction for new wind on the modern-turbine profile (WIND_NEW_CORR): 'central' or 'low'. User decision, 7 Oct 2026.
   bldWindCorr:'central',
+  // STRESS WINDOWS PLANNED TO THE STANDARD (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
+  // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
+  // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
+  // plus reserve shortfall (calendar days at their weights, windows at that probability) to targetFrac x 0.002% of
+  // demand, with a slack priced at VoLL x 365 per expected MWh so capped years stay solvable.
+  bldStressTarget:0,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -9868,24 +9874,30 @@ function bldBuildLP(opts){
             * (1 - BATT_POWER_SHARE) / 4 / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((ec * 1000).toFixed(3) + ' eb_batt_' + y);
   }
+  // Stress-window weighting (bldStressTarget; off reproduces the LP text exactly). wObj: a day's weight in the objective.
+  const ST_ON = ((S.bldStressTarget ?? FIXED.bldStressTarget) | 0) > 0;
+  const ST_N = ST_ON ? Math.max(1, (opts.draws || 1) * ((typeof bldWeatherYears !== 'undefined' && bldWeatherYears && bldWeatherYears.meta) ? bldWeatherYears.meta.years.length : 1)) : 1;
+  const wObj = r => (ST_ON && r.tail) ? 1 / ST_N : r.weight;
+  const ST_TERMS = {}, ST_DEM = {};
   for (const y of Y){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       const k = y + '_' + r.d + '_' + h;
-      obj.push(((MC.coal + CARBON_AT(y)*EMIS_COAL)*r.weight*df).toFixed(3) + ' gc_' + k);
-      obj.push(((MC.ccgt + CARBON_AT(y)*EMIS_CCGT)*r.weight*df).toFixed(3) + ' gg_' + k);
-      obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*r.weight*df).toFixed(3) + ' gd_' + k);
+      obj.push(((MC.coal + CARBON_AT(y)*EMIS_COAL)*wObj(r)*df).toFixed(3) + ' gc_' + k);
+      obj.push(((MC.ccgt + CARBON_AT(y)*EMIS_CCGT)*wObj(r)*df).toFixed(3) + ' gg_' + k);
+      obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*wObj(r)*df).toFixed(3) + ' gd_' + k);
       // Shedding on a tail day is priced as if that day came round every day of the year: a hard
       // zero made the early years infeasible, because nothing can be built fast enough to cover
       // a derated 2026 tail day, and an LP that cannot solve reports nothing. VoLL x 365 says the
       // same thing - do not plan to shed on the worst window - while leaving a price on it.
-      obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' u_' + k);
+      obj.push((VOLL*(ST_ON ? wObj(r) : (r.tail ? 365 : r.weight))*df).toFixed(3) + ' u_' + k);
       // Priced like shedding on tail days too. At weight 1 against shedding at 365, the LP would
       // drop reserve on the worst week rather than shed - while the engine, like an operator,
       // sheds load to hold reserve. In the pass-4 stalled week the engine's mean shed (2,338 MW)
       // sat almost exactly on its reserve requirement (2,254 MW). Same price, same behaviour.
-      obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' rsl_' + k);
-      obj.push((S.lpCurtailCostR*r.weight*df).toFixed(3) + ' crt_' + k);
+      obj.push((VOLL*(ST_ON ? wObj(r) : (r.tail ? 365 : r.weight))*df).toFixed(3) + ' rsl_' + k);
+      if (ST_ON) (ST_TERMS[y] = ST_TERMS[y] || []).push(wObj(r).toFixed(6) + ' u_' + k, wObj(r).toFixed(6) + ' rsl_' + k);
+      obj.push((S.lpCurtailCostR*wObj(r)*df).toFixed(3) + ' crt_' + k);
       // resolved (14 Aug 2026): lpBattDischargeCostR (20) deliberately stays below
       // the dispatch engine's battCycleCostR (165). They are different quantities.
       // The LP already pays for battery cells through its capex annuity (BLD_LIFE
@@ -9907,10 +9919,11 @@ function bldBuildLP(opts){
       // still costed through the energy they consume in the balance row.
       const WEAR = { batt: 1.0, vrfb: 0.25, ironair: 0.15, phes: 0.05, ps: 0.05 };
       for (const S2 of STORE){
-        obj.push((S.lpBattDischargeCostR*WEAR[S2.t]*r.weight*df).toFixed(3)
+        obj.push((S.lpBattDischargeCostR*WEAR[S2.t]*wObj(r)*df).toFixed(3)
           + ' ' + S2.dis + '_' + k);
       }
     }
+    if (ST_ON) obj.push((VOLL*365*df).toFixed(3) + ' tsl_' + y);   // expected shed above the target
   }
   // OFFSHORE WIND IS A BUILD DECISION, 4 Oct 2026: b_off_<y>, MW, priced like the other
   // technologies, run on the engine's own offshore profile, and capped cumulatively at ESMAP's
@@ -10035,6 +10048,7 @@ function bldBuildLP(opts){
       const coalCap = r.coalFrac ? bldCoalMW(y) * r.coalFrac[h] : (r.tail ? coalCapMean * TAIL_COAL_FACTOR : coalCapMean);
       const i = (r.dem !== undefined ? r.dem : r.d)*24 + h, k = y + '_' + r.d + '_' + h;
       const dem = PROFILES.demand[i]*dg + expAtLP(i);
+      if (ST_ON && !r.tail) ST_DEM[y] = (ST_DEM[y] || 0) + r.weight * dem;
       // A tail day from another weather year carries its own shapes; a calendar day reads the
       // default profile. Same index arithmetic for demand either way.
       const sp = r.solar ? r.solar[h] : PROFILES.solar[i];
@@ -10271,6 +10285,11 @@ function bldBuildLP(opts){
       + cum('batt',y).map(v => LI_MAX_HOURS + ' ' + v).join(' - ') + ' <= 0');
   }
 
+  const ST_TGT = {};
+  if (ST_ON) for (const y of Y){
+    ST_TGT[y] = (opts.targetFrac || 1) * BLD_STRESS_STANDARD * (ST_DEM[y] || 0);   // MWh of expected shed
+    L.push(' tgt_' + y + ': ' + ST_TERMS[y].join(' + ') + ' - tsl_' + y + ' <= ' + ST_TGT[y].toFixed(3));
+  }
   L.push('Bounds');
   // Utility solar's build-rate cap grows bldPvRateGrowthPct a year from its 2026 value, for an
   // industry that scales up (assumption, 4 Oct 2026). Every other cap is flat.
@@ -10312,7 +10331,7 @@ function bldBuildLP(opts){
   for (const y of Y) for (const r of rdY(y)) for (const S2 of STORE)
     L.push(' 0 <= e_' + S2.t + '_' + y + '_' + r.d + ' <= 2000000');
   L.push('End');
-  return { lp: L.join('\n'), rate: RATE };
+  return { lp: L.join('\n'), rate: RATE, ...(ST_ON ? { stressTarget: { runs: ST_N, targetMWh: ST_TGT } } : {}) };
 }
 
 
@@ -10509,6 +10528,13 @@ async function bldStressLoopPerYear(opts, onProgress){
     }
     fails.sort((a, b) => b.ratio - a.ratio);
     const entry = { pass: it, margin: opts.stressMarginMW, years, added: null };
+    // bldStressTarget: the LP's own expected shed, target and slack per year (slack used = target missed in the plan).
+    if (built.stressTarget){
+      const rows = new Map((res.Rows || []).map(q => [q.Name, q.Primal])), col = n => ((res.Columns || {})[n] || {}).Primal || 0;
+      entry.lpTarget = BLD_YEARS.map(y => { const sl = col('tsl_' + y);
+        return { y, targetGWh: +(built.stressTarget.targetMWh[y] / 1e3).toFixed(3), expectedShedGWh: +(((rows.get('tgt_' + y) || 0) + sl) / 1e3).toFixed(3), slackGWh: +(sl / 1e3).toFixed(3) }; });
+      entry.lpTargetRuns = built.stressTarget.runs;
+    }
     bldStressLog.push(entry);
     if (!fails.length){ verdict = 'adequate'; break; }
     if (it === maxP) break;
@@ -18268,7 +18294,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07u';
+const BUILD_STAMP = '2026-10-08b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

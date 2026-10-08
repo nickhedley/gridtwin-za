@@ -70,6 +70,8 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  // WINDMOD / WIND_CASE (7 Oct 2026): new wind on the modern-turbine profile with bid capex (1, default) or the previous
  // R21,000 on the current profile (0); wind cost case central, high or low; WIND_CORR the new-wind correction, central or low.
  w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:''));
+ // STRESS_TARGET (8 Oct 2026, TODO 14bk): 1 plans the stress windows to the standard (bldStressTarget); unset = FIXED (0).
+ w.eval(`if(!('bldStressTarget' in FIXED)) throw new Error('bldStressTarget missing');`+(process.env.STRESS_TARGET!==undefined?` state.bldStressTarget=${+process.env.STRESS_TARGET};`:''));
  // COSTSET (7 Oct 2026): a whole cost set, e.g. COSTSET=irp2025; see costset.js.
  require('./costset.js')(w, process.env.COSTSET);
  await w.eval('loadWeatherYears()');

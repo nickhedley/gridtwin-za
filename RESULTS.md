@@ -1727,6 +1727,24 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Build LP option: stress windows planned to the standard (bldStressTarget), and reported shed on an adaptive sample, 8 Oct 2026
+
+Build `2026-10-08b` (user decision, TODO 14bk (a), option (i)). bldStressTarget 1: every operating cost on a stress day
+(the loop's windows and the seed tail) is weighted as one run of the loop's check, 1 / (draws x weather years) = 1/24,
+so shedding stays above diesel in the merit order; a row per year, tgt_<y>, holds expected unserved energy plus reserve
+shortfall (calendar days at their weights, stress days at 1/24) to targetFrac x 0.002% of the LP's annual demand
+(2030: 2,110 MWh at the half standard), with a slack tsl_<y> priced at VoLL x 365 per expected MWh. The loop logs, per
+pass and year, the LP's expected shed, the target and the slack used (bldStressLog lpTarget). Default 0: the LP text is
+byte-identical to 07u (checked on the central pathway's first-pass LP: same length and hash), so the central case and
+the solve cache are untouched. Harness: STRESS_TARGET=1 in pathway_perfail.js.
+
+pathcheck.js now samples reported shed adaptively (user, 8 Oct 2026): batches of 10 draws (120 runs) until the 95%
+interval of the mean is within +/-20% of the target, at most 480 runs; each year reports nRuns, ci95Half and
+ciPctOfTarget. K=<n> keeps a fixed sample. Checked on the 07s central pathway, 2039: 480 runs, mean 0.910 GWh, standard
+error 0.173, interval +/-17% of the target, identical to the fixed 480-run check above.
+
+Suite 804/809 plus eng5 6/6 without ESK19679.csv, unchanged.
+
 ### The 07s central pathway overshoots the half standard: pace caps and fully served stress windows, 8 Oct 2026
 
 MEASURED 8 Oct 2026 (TODO 14bk (c)): 480 runs a year (12 weather years x 40 outage draws) on the final build, 2036-2040,

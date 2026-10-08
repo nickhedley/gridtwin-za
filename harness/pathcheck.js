@@ -5,6 +5,10 @@ const CTAX = y => process.env.CFLAT ? +process.env.CFLAT : (y <= 2026 ? 46 : (y 
 // SEED_BASE: outage draws independent of the loop's own test (index.html bldAdequacyTest uses 20260816
 // + k*104729 + y*7919); SEED_BASE=20260816 reproduces the 5 Oct 2026 runs, which reused the loop's draws.
 const SEED_BASE=+(process.env.SEED_BASE||71830529);
+// DRAWS (8 Oct 2026, user): outage draws per weather year. Unset: batches of 10 until the 95% interval of the mean shed is
+// within +/-20% of the target (TF, default 0.5, x the 0.002% standard), at most KMAX (40, i.e. 480 runs); each year
+// reports nRuns, draws, ci95Half, ciPctOfTarget and ciWithin20. K=<n>: exactly n draws, as before (the old default was 2).
+// YEARS=<y,y>: check only those years.
 // LNG storage check settings: one floating storage unit (LNG_M3, m3), energy per m3 (LNG_GJ_M3, GJ HHV),
 // unusable heel (LNG_HEEL), CCGT efficiency (CCGT_EFF). 170,000 m3: Zululand Energy Terminal phase 1 (Engineering News,
 // 5 Jun 2026). 53.37 GJ/t: IRP 2025 additional assumptions (gas fuel energy content). 0.45 t/m3 and no heel: unsourced.
@@ -59,12 +63,20 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    if (cum.phes + cum.phel > 0){ const H=+(process.env.PH||w.eval('FIXED.bldPhesHours')), H2=+(process.env.PH2||0), B=process.env.PHES_BASIS||w.eval('FIXED.bldPhesCostBasis');
      const ann=h=>+w.eval(`bldAnnuity(bldPhesCapexKW('${B}',${h}),60)+FIXED.bldPhesFomRkW`), P1=cum.phes, P2=cum.phel;
      over.newPsMW=P1+P2; over.newPsHours=(H*P1+H2*P2)/(P1+P2); over.newPsMaxMW=1e7; over.acapPs=(ann(H)*P1+(P2>0?ann(H2)*P2:0))/(P1+P2); }
-   const r=JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
-      for(let k=0;k<${K};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
+   const batch=(k0,k1)=>JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
+      for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
        let dem=0; for(let i=0;i<x.loadS.length;i++) dem+=x.loadS[i];
        o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})()]); } }
-      const n=o.length,m=i=>o.reduce((a,b)=>a+b[i],0)/n; return JSON.stringify({seMean:n>1?Math.sqrt(o.reduce((a,b)=>a+(b[0]-m(0))**2,0)/(n-1)/n):null,nRuns:n,mean:m(0),worst:Math.max(...o.map(a=>a[0])),cost:m(1),curt:m(2),std:m(3),co2:m(4),coal:m(5),diesel:m(6),gridCost:m(7),gasTWh:m(8),gasHours:m(9),gasCF:m(10)>0?m(8)*1e6/(m(10)*8760):0,gas14dMaxGWh:Math.max(...o.map(a=>a[11]))}); })()`));
+      return JSON.stringify(o); })()`));
+   // REPORTED SHED, 8 Oct 2026 (user): K unset draws in batches of 10 (120 runs) until the 95% interval of the mean shed
+   // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
+   const TFR=+(process.env.TF||0.5), KMAX=+(process.env.KMAX||40), KSTEP=10;
+   const agg=(o)=>{      const n=o.length,m=i=>o.reduce((a,b)=>a+b[i],0)/n; return ({seMean:n>1?Math.sqrt(o.reduce((a,b)=>a+(b[0]-m(0))**2,0)/(n-1)/n):null,nRuns:n,mean:m(0),worst:Math.max(...o.map(a=>a[0])),cost:m(1),curt:m(2),std:m(3),co2:m(4),coal:m(5),diesel:m(6),gridCost:m(7),gasTWh:m(8),gasHours:m(9),gasCF:m(10)>0?m(8)*1e6/(m(10)*8760):0,gas14dMaxGWh:Math.max(...o.map(a=>a[11]))}); };
+   let o=[], kk=0, r=null;
+   for(;;){ const k1=process.env.K?K:Math.min(KMAX,kk+KSTEP); o=o.concat(batch(kk,k1)); kk=k1; r=agg(o);
+     r.target=TFR*r.std; r.ci95Half=1.96*(r.seMean||0); r.ciPctOfTarget=r.target>0?100*r.ci95Half/r.target:null; r.ciWithin20=r.ci95Half<=0.2*r.target; r.draws=kk;
+     if (process.env.K || r.ciWithin20 || kk>=KMAX) break; }
    // LNG STORAGE ADEQUACY (user, 6 Oct 2026; LNG=1). Gas burned in each of the loop's own stress windows
    // that bind this model year (fromYear <= y), re-dispatched on that window's weather year and outage seed,
    // and in the worst 14 days of the runs above, against the energy one floating storage unit holds.
