@@ -1727,6 +1727,35 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Central pathway on the final costs: new gas 3.22 -> 1.45 GW, no LNG window above one cargo, 8 Oct 2026
+
+Pathway v_half_c1_p1_07s, build `2026-10-07s` (worktree frozen at 92b5d1a), against v_half_c1_p1 on `2026-10-07c`: half
+standard (TF=0.5), coal commitment on (COMMIT=1), pumped-storage energy on (PSE=1), demand +5% to 2040, legislated
+carbon tax path, stress loop per year, SOLVER=native simplex, TL 28800. Converged: pass 1 added 33 stress windows,
+pass 2 none; verdict adequate. Engine check (pathcheck, LNG=1): twelve weather years x two outage draws. Final
+central costs: wind BW6 R28,462/kW on the modern-turbine profile at 1.064, lithium BW3 aged R13,699/kW. Each run
+costed at its own prices.
+
+```
+                         07c (old costs)            07s (final costs)
+new gas GW 2030/35/40    1.20 / 3.22 / 3.22         1.20 / 1.45 / 1.45
+gas CF 2035, 2040        6.5%, 20.6%                7.3%, 19.6%
+gas hours 2035, 2040     844, 2,147                 684, 1,773
+coal retired by 2040     28.9 GW                    26.2 GW
+2040 wind/solar/Li GW    17.5 / 49.6 / 27.4         17.1 / 43.3 / 23.6
+iron-air / vanadium GW   0.75 / 1.25                0.30 / 0
+CO2 2026-2040            1,212 Mt                   1,195 Mt
+system cost 2026-2040    R3,981bn                   R3,929bn
+LNG, 14-day windows      10 of 33 above 1 cargo     0 of 33 (worst 0.57 cargoes)
+worst-year mean shed     0.92 GWh                   0.28 GWh
+```
+
+- Solver: simplex solved pass 2 in 7 h 58 min; interior point (HIGHS_SOLVER=ipm) on the same LP did not finish in 8 h.
+  On the regional LP (07u, Deep decarbonisation inputs, 2040) interior point solved in 26 min where simplex did not
+  finish in 4 h. National runs stay on simplex, regional on interior point (user rule, 8 Oct 2026). The objective
+  check across the two methods is still to do, on a solve both can finish.
+- Caveat: the gas figures are the half-standard pathway's; the 07c column predates wind and battery bid costs.
+
 ### Preset re-search on the final central costs: Deep decarbonisation R289.7bn from two starts within 0.7%; Fossil-free R348.9bn from one so far, 7-8 Oct 2026
 
 Build `2026-10-07s` engine (07t and 07u change only the build LPs), harness/ext/preset_search.js, EXT=1, the 4 Oct
