@@ -1727,6 +1727,30 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Stress windows planned to the standard under-build ninefold against the engine: 2038 planned 2.17 GWh, engine 19.4 GWh, 8 Oct 2026
+
+Run v_half_c1_p1_08b_st, build `2026-10-08b`, bldStressTarget 1 (STRESS_TARGET=1), otherwise as the central pathway
+(half standard, COMMIT=1, PSE=1, demand +5%, legislated carbon tax, stress loop per year, 14-day windows, three windows
+per failing year per pass, simplex). Stopped after pass 3 (user decision, 8 Oct 2026; pass 4 was cut off by a
+container restart). The LP's own expected shed against the engine's mean over the loop's 24 runs, GWh:
+
+```
+pass  windows  LP slack used           LP planned 2038   engine mean, failing years (limit about 2.0)
+1     seed     none                    2.17              2030 2.8, 2034 11.9, 2036 18.5, 2038 27.3, 2040 27.8
+2     33       2030: 1.20 GWh          2.17              2035 2.0, 2036 9.5, 2037 10.3, 2038 21.0, 2039 19.9, 2040 19.4
+3     51       2030: 1.18 GWh          2.17              2034 7.1, 2036 8.2, 2037 8.1, 2038 19.4, 2039 18.5, 2040 17.3
+```
+
+- The target row binds in most years from 2030 (the LP plans to the target, as built), but the engine sheds about nine
+  times more on the same build, and each pass of 18 windows moves the late years by about 1-2 GWh: at that pace the
+  loop would not converge inside its 14 passes.
+- Two causes: shed in runs and weeks with no window counts in the engine's mean but nowhere in the LP; and on the
+  windows themselves the engine sheds more than the LP plans (as on the central build, below). VoLL x 365 hid both by
+  serving every window in full.
+- Solve times: pass 2 35 min, pass 3 1 h 50 min (the central pathway's pass 2, VoLL x 365, took 7 h 58 min).
+- Decision (user, 8 Oct 2026): keep the VoLL x 365 method (option D); bldStressTarget stays in the code, off. The
+  LP-engine divergence on a single window is investigated first (TODO 14bl).
+
 ### Build LP option: stress windows planned to the standard (bldStressTarget), and reported shed on an adaptive sample, 8 Oct 2026
 
 Build `2026-10-08b` (user decision, TODO 14bk (a), option (i)). bldStressTarget 1: every operating cost on a stress day
