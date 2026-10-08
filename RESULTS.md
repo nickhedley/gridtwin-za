@@ -1736,17 +1736,36 @@ two draws a year is a small sample and the mean is set by rare draws.
 
 What drives it, from the cached pass-2 solution (lpcache a8a71a7a..., reduced costs on the build variables):
 - Pace caps, 2026-2030: wind at its 2.5 GW/yr cap with reduced cost about -R160m per MW, solar on its cap path
-  (-R118m per MW to 2030, binding to 2034), new gas at 0 before 2030 and at its 1.2 GW cap in 2030 (-R640m per MW),
-  iron-air at its 150 MW cap 2029-2030, lithium at 2 GW/yr in eleven of fifteen years (small reduced costs). The early
-  build is set by the caps and by energy value over the horizon, not by the reliability target.
+  (-R118m per MW to 2030, binding to 2034), new gas at 0 before 2030 and at its 1.2 GW cap in 2030 (-R649m per MW),
+  iron-air at its 150 MW cap 2029-2030, lithium at 2 GW/yr in eleven of fifteen years (small reduced costs).
+- CORRECTED 8 Oct 2026 (user question): this entry first said the capped early build was set by energy value, not the
+  reliability target. Wrong. Splitting each reduced cost into the rows it enters (pass-2 LP regenerated with
+  DUMP_LP, hash a8a71a7a matching the cached solution; each hour's price matched to the cost of the resource that sets
+  it; parts sum exactly to the reported reduced cost):
+
+```
+value per MW of the 2030 build                       gas      wind     solar
+stress hours priced by shedding (VoLL x 365)         66%      60%      27%
+stress hours, scarcity carried by storage/energy     22%      32%      68%
+hourly reserve rows (stress shortfall at VoLL x 365) 14%      -1%      -2%
+fuel, VOM and carbon, all hours                      0.6%     3.7%     2.3%
+other                                                -2%       5%       5%
+total value, R m per MW (discounted)                 670      184      126
+share from the year 2030 itself                      97%      91%      93%
+```
+
+  The 2030 stress windows drive it: the caps stop the build covering them (28.1 GWh still shed there), and with that
+  shortage priced at VoLL x 365 every capped resource in 2026-2030 is worth far more than it costs. The zero shed in
+  other years is the by-product of building at full pace for 2030's worst windows. The planning-margin row (res_)
+  does not bind.
 - Stress windows served in full: pass 1 added 33 windows (the worst 14 days of failing draws, 55-102 GWh shed each).
   With shedding there priced at VoLL x 365, the pass-2 LP leaves no unserved energy in any stress hour except in 2030
   (28.1 GWh in 9 hours). Serving the worst week of each failing draw is a far stricter test than a mean over 24 runs.
 - On those same windows the LP is more optimistic than the engine in 2036-2040: re-dispatched on the final build the
   engine sheds in 6 to 13 windows a year, up to 11.7 GWh in one window (2040), where the LP shed none. 2030-2035 agree
   (no shed). This remaining optimiser-engine gap offsets part of the overshoot but not much of it.
-- Caveat: half the target is not cost-free headroom in every year; the caps make the 2026-2030 build economics-led,
-  so a looser target would mainly change 2036-2040. Measuring the cost of the overshoot needs a run (TODO 14bk).
+- Caveat: the cost of the overshoot needs a run (TODO 14bk); probability-weighting the stress windows, option (a),
+  bears directly on the 2030 windows that drive the capped build.
 
 ### Central pathway on the final costs: new gas 3.22 -> 1.45 GW, no LNG window above one cargo, 8 Oct 2026
 
