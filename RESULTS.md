@@ -1727,7 +1727,12 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
-### Regional pumped hydro on the final costs: none built in any region; curtailment unchanged, 8 Oct 2026
+### INCONCLUSIVE - Regional pumped hydro on the final costs: none built in any region; curtailment unchanged, 8 Oct 2026
+
+INCONCLUSIVE (user, 8 Oct 2026) until the regional optimiser has stress days (TODO 14bj): without them pumped hydro
+can earn only from shifting energy on eight ordinary days, so 'none built' does not test its adequacy value. Do not
+quote as a finding about pumped hydro.
+
 
 Build `2026-10-08a` (branch claude/regional-phes-07u: build 07u plus the regional pumped-hydro tiers). harness/ext/
 regional_phes.js, PRESET 'Deep decarbonisation 2035', HORIZON 2040, PHES_FIRST 2035, new wind on the modern-turbine
