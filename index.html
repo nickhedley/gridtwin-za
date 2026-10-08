@@ -5551,6 +5551,14 @@ const FIXED = {
   // plus reserve shortfall (calendar days at their weights, windows at that probability) to targetFrac x 0.002% of
   // demand, with a slack priced at VoLL x 365 per expected MWh so capped years stay solvable.
   bldStressTarget:0,
+  // HOURLY STATE OF CHARGE IN THE BUILD LP (user decision, 8 Oct 2026; TODO 14bl). The LP kept one energy balance per
+  // store per day, so energy charged late in a day could serve its earlier hours: on the 07s central build the engine
+  // shed 11.7 GWh in a 2040 window the LP served in full this way. 1: stress days carry an hourly level for every store,
+  // chained across the window and cyclic (the window ends at the level it started, a free variable); calendar days keep
+  // their day-to-day chain and add an hourly level that must stay within zero and capacity on every real day the
+  // representative day stands for (checked at both ends of the block, where the start level is lowest and highest).
+  // 2: stress days only. 0: the daily balance as before (LP text unchanged).
+  bldHourlySoc:1,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -9879,6 +9887,13 @@ function bldBuildLP(opts){
   const ST_N = ST_ON ? Math.max(1, (opts.draws || 1) * ((typeof bldWeatherYears !== 'undefined' && bldWeatherYears && bldWeatherYears.meta) ? bldWeatherYears.meta.years.length : 1)) : 1;
   const wObj = r => (ST_ON && r.tail) ? 1 / ST_N : r.weight;
   const ST_TERMS = {}, ST_DEM = {};
+  // Hourly state of charge (bldHourlySoc). HS_T: stress days; HS_C: calendar days.
+  const HS = (S.bldHourlySoc ?? FIXED.bldHourlySoc) | 0, HS_T = HS >= 1, HS_C = HS === 1;
+  // A stress window's last day (the day no other day names as predecessor, walking forward from d).
+  const hsLast = (y, d) => { const nx = new Map(rdY(y).filter(q => q.prevD !== undefined).map(q => [q.prevD, q.d])); let x = d; while (nx.has(x)) x = nx.get(x); return x; };
+  // Level of store t at the end of hour h of day r, and at the start of day r (stress days: hourly variables).
+  const hsLevel = (t, y, r, h) => h < 23 ? 's_' + t + '_' + y + '_' + r.d + '_' + h : 'e_' + t + '_' + y + '_' + r.d;
+  const hsStart = (t, y, r) => 'e_' + t + '_' + y + '_' + (r.prevD !== undefined ? r.prevD : hsLast(y, r.d));
   for (const y of Y){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
@@ -10127,8 +10142,20 @@ function bldBuildLP(opts){
         const _cmax = r.tail ? Math.min(1, Math.max(0, S.bldMarginCreditMax)) : 1;
         const _eNow = 'e_batt_' + y + '_' + r.d, _ePrev = (r.prevD !== undefined) ? 'e_batt_' + y + '_' + r.prevD : null;
         L.push(' rbp_' + k + ': rb_' + k + ' + bdis_' + k + ' - ' + cum('batt',y).map(v => _cmax.toFixed(4) + ' ' + v).join(' - ') + ' <= ' + (_cmax * EX.batt).toFixed(1));
+        if (HS_T && r.tail){
+          // Stress day, hourly level: reserve held this hour is limited by the level at its start and at its end.
+          L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + hsLevel('batt', y, r, h) + ' <= 0');
+          L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + (h > 0 ? hsLevel('batt', y, r, h - 1) : hsStart('batt', y, r)) + ' <= 0');
+        } else if (HS_C && !r.tail){
+          // Calendar day: the hour's level on the first and on the last real day of the block (c_ is the cumulative
+          // movement within the day; the first real day starts at the previous level, the last at e - c_23).
+          const c = 'c_batt_' + k, c23 = 'c_batt_' + y + '_' + r.d + '_23';
+          L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + c + (_ePrev ? ' - ' + _ePrev + ' <= 0' : ' <= ' + (EX.batt * STORE.find(q => q.t === 'batt').hours * 0.5).toFixed(1)));   // the chain's half-full opening, as soc_
+          L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _eNow + ' + ' + c23 + ' - ' + c + ' <= 0');
+        } else {
         L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _eNow + ' <= 0');
         if (_ePrev) L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _ePrev + ' <= 0');
+        }
         L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + ' - rb_' + k + ' - rsl_' + k
           + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + ' - ' + cum('ccgt',y).join(' - ')
@@ -10200,6 +10227,25 @@ function bldBuildLP(opts){
         const kk = S2.t+'_'+y+'_'+r.d;
         const ex = S2.ex(EX);
         const prev = (r.prevD !== undefined) ? (' - e_'+S2.t+'_'+y+'_'+r.prevD) : '';
+        // Stored energy cannot exceed what is built plus what already exists. For lithium the
+        // built energy is its own variable, so the LP sets the duration; for the others it is
+        // still power times their fixed duration.
+        const capTerms = (S2.t === 'batt')
+          ? cumE(y).map(v => '1 ' + v)
+          : cum(S2.t,y).map(v => S2.hours+' '+v);
+        if (HS_T && r.tail){
+          // STRESS DAY, HOURLY LEVEL (bldHourlySoc, 8 Oct 2026). s_<t>_<y>_<d>_<h> is the level at the end of hour h
+          // (hour 23 is e_<t>_<y>_<d>), each hour moved by its own charge and discharge, between zero and capacity.
+          // The window is cyclic: its first day starts from the last day's closing level, a free choice, so the
+          // window must put back what it takes and opens with no energy it did not store. Replaces the daily
+          // balance, the half-full opening and send_ for these days.
+          if (Math.abs(r.weight - 1) > 1e-9) throw new Error('bldHourlySoc: a stress day with weight ' + r.weight);
+          for (let h = 0; h < 24; h++){
+            const lev = hsLevel(S2.t, y, r, h), from = h > 0 ? hsLevel(S2.t, y, r, h - 1) : hsStart(S2.t, y, r);
+            L.push(' sh_'+kk+'_'+h+': '+lev+' - '+from+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
+            if (h < 23) L.push(' shc_'+kk+'_'+h+': '+lev+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours).toFixed(1));
+          }
+        } else {
         // Opening level on the first day is half full, matching the regional LP.
         L.push(' soc_'+kk+': e_'+kk + prev
           + ' - ' + chg.map(v=>(S2.eff*r.weight).toFixed(4)+' '+v).join(' - ')
@@ -10211,12 +10257,26 @@ function bldBuildLP(opts){
         // great deal. Small for existing lithium; large once pumped storage's 60 GWh joined (TODO 26).
         if (ex > 0 && !_chainPrev.has(r.d))
           L.push(' send_'+kk+': e_'+kk + ' >= ' + (ex*S2.hours*0.5).toFixed(1));
-        // Stored energy cannot exceed what is built plus what already exists. For lithium the
-        // built energy is its own variable, so the LP sets the duration; for the others it is
-        // still power times their fixed duration.
-        const capTerms = (S2.t === 'batt')
-          ? cumE(y).map(v => '1 ' + v)
-          : cum(S2.t,y).map(v => S2.hours+' '+v);
+        if (HS_C && !r.tail){
+          // CALENDAR DAY, HOURLY LEVEL (bldHourlySoc 1, 8 Oct 2026). c_<t>_<k> is the cumulative movement within the
+          // day (free). The day stands for r.weight identical real days whose opening levels run in a straight line
+          // from the previous level (first real day) to e - c_23 (last real day), so the hourly level is checked at
+          // both ends, which covers every real day in between: within zero and capacity in every hour.
+          const open = r.prevD !== undefined ? 'e_'+S2.t+'_'+y+'_'+r.prevD : null, openC = (ex*S2.hours*0.5);
+          const c23 = 'c_'+kk+'_23';
+          for (let h = 0; h < 24; h++){
+            const c = 'c_'+kk+'_'+h;
+            L.push(' cr_'+kk+'_'+h+': '+c+(h > 0 ? ' - c_'+kk+'_'+(h-1) : '')+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
+            // first real day: open + c_h within [0, capacity]
+            L.push(' cla_'+kk+'_'+h+': '+c+(open ? ' + '+open+' >= 0' : ' >= '+(-openC).toFixed(1)));
+            L.push(' cua_'+kk+'_'+h+': '+c+(open ? ' + '+open : '')+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours - (open ? 0 : openC)).toFixed(1));
+            if (h < 23){   // last real day: e - c_23 + c_h within [0, capacity]
+              L.push(' clb_'+kk+'_'+h+': e_'+kk+' - '+c23+' + '+c+' >= 0');
+              L.push(' cub_'+kk+'_'+h+': e_'+kk+' - '+c23+' + '+c+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours).toFixed(1));
+            }
+          }
+        }
+        }
         L.push(' ecap_'+kk+': e_'+kk + ' - ' + capTerms.join(' - ')
           + ' <= ' + (ex*S2.hours).toFixed(1));
         // Within-day discharge still cannot exceed the stored energy.
@@ -10305,6 +10365,8 @@ function bldBuildLP(opts){
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
   for (const y of Y) for (const S2 of STORE) if (S2.t !== 'batt')
     L.push(' 0 <= cc_'+S2.t+'_'+y+' <= 200000');
+  if (HS_C) for (const y of Y) for (const r of rdY(y)) if (!r.tail) for (const S2 of STORE) for (let h = 0; h < 24; h++)
+    L.push(' c_'+S2.t+'_'+y+'_'+r.d+'_'+h+' free');
   for (const y of Y) for (const r of rdY(y)) for (let h = 0; h < 24; h++){
     const k = y + '_' + r.d + '_' + h;
     L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
@@ -18294,7 +18356,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-08b';
+const BUILD_STAMP = '2026-10-08c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
