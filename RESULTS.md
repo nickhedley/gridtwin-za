@@ -1727,6 +1727,27 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### The 07s central pathway overshoots the half standard: pace caps and fully served stress windows, 8 Oct 2026
+
+Same run as below (v_half_c1_p1_07s). Engine check mean shed against the half-standard target (about 1.97 GWh):
+0.00 GWh every year 2026-2037, then 0.02 (2038), 0.28 (2039), 0.26 (2040), so the worst year sits at 14% of the
+target. The loop's own pass-2 check, on its own outage seeds, puts 2038-2040 at 1.11, 1.51 and 0.73 GWh (56-76%):
+two draws a year is a small sample and the mean is set by rare draws.
+
+What drives it, from the cached pass-2 solution (lpcache a8a71a7a..., reduced costs on the build variables):
+- Pace caps, 2026-2030: wind at its 2.5 GW/yr cap with reduced cost about -R160m per MW, solar on its cap path
+  (-R118m per MW to 2030, binding to 2034), new gas at 0 before 2030 and at its 1.2 GW cap in 2030 (-R640m per MW),
+  iron-air at its 150 MW cap 2029-2030, lithium at 2 GW/yr in eleven of fifteen years (small reduced costs). The early
+  build is set by the caps and by energy value over the horizon, not by the reliability target.
+- Stress windows served in full: pass 1 added 33 windows (the worst 14 days of failing draws, 55-102 GWh shed each).
+  With shedding there priced at VoLL x 365, the pass-2 LP leaves no unserved energy in any stress hour except in 2030
+  (28.1 GWh in 9 hours). Serving the worst week of each failing draw is a far stricter test than a mean over 24 runs.
+- On those same windows the LP is more optimistic than the engine in 2036-2040: re-dispatched on the final build the
+  engine sheds in 6 to 13 windows a year, up to 11.7 GWh in one window (2040), where the LP shed none. 2030-2035 agree
+  (no shed). This remaining optimiser-engine gap offsets part of the overshoot but not much of it.
+- Caveat: half the target is not cost-free headroom in every year; the caps make the 2026-2030 build economics-led,
+  so a looser target would mainly change 2036-2040. Measuring the cost of the overshoot needs a run (TODO 14bk).
+
 ### Central pathway on the final costs: new gas 3.22 -> 1.45 GW, no LNG window above one cargo, 8 Oct 2026
 
 Pathway v_half_c1_p1_07s, build `2026-10-07s` (worktree frozen at 92b5d1a), against v_half_c1_p1 on `2026-10-07c`: half
