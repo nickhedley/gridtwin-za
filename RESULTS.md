@@ -1727,6 +1727,23 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Regional pumped hydro on the final costs: none built in any region; curtailment unchanged, 8 Oct 2026
+
+Build `2026-10-08a` (branch claude/regional-phes-07u: build 07u plus the regional pumped-hydro tiers). harness/ext/
+regional_phes.js, PRESET 'Deep decarbonisation 2035', HORIZON 2040, PHES_FIRST 2035, new wind on the modern-turbine
+profile at R28,462/kW (regional map, 1.064), lithium BW3 aged; pumped hydro by region and ANU class (AAA, AA, A, B),
+anu2026 cost basis, connection over the class median distance to a 275 kV substation. Regional LP: eight
+representative days, no stress days. HiGHS interior point (simplex did not finish the first solve in 4 h).
+Output harness/ext/regional_phes_07u.json.
+
+- Without and with pumped hydro: objective R7,258.6bn both; no pumped hydro built in any region or class; wind and
+  solar builds identical by region; curtailment in 2040 233.9 against 234.0 GWh in total, moved between regions
+  (KwaZulu-Natal 153.6 -> 197.3, Limpopo 15.0 -> 0, North West 60.7 -> 34.4).
+- Wind equals solar MW in most regions and Northern Cape and Hydra Central build none: the regional build caps and
+  headroom bind, so the siting answer is the pace and grid limits, not resource.
+- Caveat: with no stress days this LP gives storage no adequacy value; it answers siting and curtailment only, as the
+  national result (pumped hydro not chosen at its best case, 5 Oct 2026) answers adequacy.
+
 ### Regional optimiser: new wind on the modern-turbine profile, matching its capex, 7 Oct 2026
 
 Build `2026-10-07u` (TODO 14bh). Since 07r the regional LP priced new wind at the modern capex (R28,463/kW) on the
