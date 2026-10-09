@@ -1821,6 +1821,35 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### The 07s-to-09a shift is the storage fix: per-year windows alone move cost 0.1% and new gas by 0.55 GW, 9 Oct 2026
+
+Attribution run (user, 9 Oct): the 07s formulation (one storage energy balance per day, HSOC=0) with per-year stress
+windows (WPY=1), on build `2026-10-09d` code, legacy +5% demand, otherwise as 09a: SOLVER=native TL=72000 COMMIT=1
+PSE=1 TF=0.5. Converged in 5 passes, 6 h 52 min (07s: 2 passes; 09a: 2). Engine checks: pathcheck.js COMMIT=1 PSE=1
+TF=0.5 LNG=1, adaptive (120 to 480 runs a year); every year of all three meets its target. Outputs
+harness/pathway_v_half_c1_p1_09a_dailysoc.json and harness/pathcheck_v_half_c1_p1_09a_dailysoc.json.
+
+```
+                              07s        + per-year windows    + hourly storage (09a)
+new gas GW 2030/2035/2040     1.2/1.45/1.45   1.2/2.0/2.0     1.2/3.6/3.6
+lithium GW 2030 / 2040        7.2 / 23.6      7.2 / 23.6      4.4 / 14.4
+lithium hours 2030 / 2040     12.6 / 6.0      13.1 / 5.7      2.9 / 5.9
+wind GW 2030 / 2040           12.5 / 17.1     12.5 / 13.8     5.0 / 13.1
+utility solar GW 2030 / 2040  14.4 / 43.3     14.4 / 42.9     10.0 / 26.7
+coal retired GW 2040          26.2            26.2            22.5
+gas TWh 2026-2040             12.0            20.5            3.0
+cost 2026-2040, R bn          3,929           3,934 (+5)      3,565 (-369)
+CO2 2026-2040, Mt             1,195           1,239 (+44)     1,471 (+232)
+```
+
+Of the shift from 07s to 09a, per-year windows account for +R5bn of cost (+0.1%), +0.55 GW of new gas and +44 Mt of
+CO2, and leave the build up to 2034 almost unchanged; the hourly storage balance accounts for the rest: -R369bn,
++1.6 GW of gas, +232 Mt, 9 GW less lithium by 2040 at shorter durations early on, and wind and solar built later.
+With one energy balance per day the optimiser over-valued storage energy (12 to 15 hour lithium from 2027) and so built
+more lithium, wind and solar and retired more coal; the engine check accepts both, so the daily-balance builds were
+adequate but dearer on the engine's cost. Caveats: one run each; the 07s check used 07s code; costs are the engine's
+system cost; gas at the default R2,003/MWh, emisCcgt 0.37.
+
 ### PROVISIONAL pending the gas price review - Central pathway on IRP demand: 4.9 GW of new gas, lithium on its 2 GW a year cap in 12 of 15 years, and the system cost 36% above the legacy-demand run, 9 Oct 2026
 
 Run on build `2026-10-09d` code (the LP is identical to 09c's; pumped hydro off). harness/pathway/pathway_perfail.js
