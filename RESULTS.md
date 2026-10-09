@@ -1775,11 +1775,23 @@ representative days shrink it by only about 5% (8 days) or 7% (6 days).
 
 Stress windows. Merging windows from the same weather year and outage draw that overlap (MERGE_WIN) cuts the pass-2 LP
 from 237.7 to 198.2 MB (-17%). Tested on a pass-2 LP holding only the four overlapping
-2023 windows (WIN_YEARS=2023), interior point: unmerged, four windows binding from 2031, 2035, 2039 and 2040 (98.5 MB),
-solved in 1 h 54 min, objective R1,279.69bn; merged, one 21-day window binding from 2031 (85.6 MB), still solving
-after 2 h 10 min. On this test merging made the LP slower, not faster; its effect on cost and build follows when it
-finishes. The same unmerged LP is being solved without crossover (HIGHS_CROSSOVER=off), to measure how much of interior
-point's time the final vertex step takes.
+2023 windows (WIN_YEARS=2023), interior point:
+
+```
+                     windows in the LP                          LP MB   pass-2 solve   objective R bn   engine check after
+unmerged             4 x 14 days, binding from 2031/35/39/40    98.5    1 h 54 min     1,279.69         fails 2034, 2038, 2040
+merged (MERGE_WIN)   1 x 21 days, binding from 2031             85.6    2 h 31 min     1,409.53 (+10%)  passes every year
+```
+
+- Merging is not a neutral change, and on this test it was slower. Windows from the same weather year and outage draw
+  are not duplicates: each carries the coal availability of the fleet in the year it was found, and the four disagree
+  on 140 hours. The merged window takes the first one's where they overlap, and binds all 21 days from 2031, including
+  days first found failing in 2039 and 2040. Build moves by 2030: wind 0.4 -> 12.5 GW, gas 0.6 -> 1.2 GW, coal retired
+  0 -> 4.4 GW. Not recommended in this form.
+- Interior point without crossover (HIGHS_CROSSOVER=off) on the unmerged LP stopped after 450 s with status Unknown and
+  an unusable point (objective 6.5e15, negative builds). The vertex step does most of the work, which points to the
+  LP's numerics: costs run from 0.34 to 1.2e8 and matrix coefficients from 1e-5 to 1e2 (first pass). Not tested
+  further.
 Binding each window only in the years it failed, not from then to 2040, would cut window days from 1,036 to 420 (or
 588 with the following year): about -45% on the pass-2 LP, at the risk of more passes. Not tested.
 
