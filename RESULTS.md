@@ -1795,6 +1795,32 @@ Caveat: the reconciliation rests on one year (2024) and one Eskom series. Not ye
 gives about 255 TWh for 2030 against 268.6 TWh in this Mode 1 series; its basis is unknown and it is not to be quoted
 until identified (TODO 14be).
 
+### New pumped hydro capped by delivery, not siting: Tubatse alone by 2040 in the central case; duration 14 hours, 9 Oct 2026
+
+Build `2026-10-09d` (user decisions, 9 Oct). Cumulative caps on new pumped hydro in the build LP (BLD_PHES_CAPS):
+central 1,500 MW from 2038; high 1,500 MW from 2035 and 3,000 MW from 2038; none before. At most 1,500 MW a year
+(bldPhesRateMW). They replace the 6 GW total and the 2035 earliest year. Source for the central case: Engineering News,
+22 May 2026 (checked by the user): Tubatse, 4 x 375 MW, 21 GWh, construction 2028, operation about 2038, transaction
+adviser still being procured; Energize, 8 Nov 2024, had implementation 2025-2033. IRP 2025 Table 1 has 1,332 MW in 2037
+as its only new pumped storage to 2042. No second South African scheme was found in development. The engine's manual
+lever is capped at the high case's 3 GW (was 6 GW). Pumped hydro is still not offered by default (bldPhesOn 0), so no
+default result moves.
+
+Duration: the optimiser held pumped hydro at one fixed duration per run, 48 hours; energy is not a separate decision
+(lithium's is). The default is now 14 hours (Tubatse, 21 GWh on 1.5 GW); bldPhesHours2 offers a second duration beside
+it, so the optimiser can choose. At the ANU basis (USD 1,100/kW + 14/kWh, R16.50/USD), 14 hours costs R21,384/kW and 48
+hours R29,238/kW.
+
+Defect fixed: when a second duration was offered, its builds (b_phel) never reached the engine inside the pathway's
+adequacy loop (bldStateForYear passed b_phes only), so the loop under-counted storage. The final engine check
+(pathcheck.js) already added both. No recorded run built any new pumped hydro of either duration, so no result is
+affected.
+
+First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pumped hydro offered from 2033, up to 6 GW,
+48 hours, ANU basis, legacy demand: no pumped hydro built, objective equal to the 09a first pass to 15 significant
+figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
+sourced caps.
+
 ### PROVISIONAL pending the storage fix - The model's gas fuel cost was within 4% of IRP 2025's, so the gap between the two gas builds did not come from the fuel price, 9 Oct 2026
 
 Build `2026-10-09a` constants (unchanged since 5 Oct 2026). The model's CCGT fuel cost, costCcgt, is R2,003/MWh: USD 18.50/MMBtu

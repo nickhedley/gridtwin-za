@@ -5268,6 +5268,23 @@ function otherIppR(year){
   return (peakers + rmi + shortTerm) * 1e6;
 }
 
+// NEW PUMPED HYDRO BUILD CAPS, 9 Oct 2026 (user; TODO 14bq). Cumulative new pumped hydro allowed from each listed
+// year, MW; none before the first. The limit is delivery, not siting: the ANU shortlist has 140 Class AA/AAA sites
+// (67.9 TWh), but only Eskom's Tubatse (4 x 375 MW, 21 GWh) is in development, with construction from 2028 and
+// operation about 2038 (Engineering News, 22 May 2026, checked by the user); Energize (8 Nov 2024) had 2025-2033, so the
+// timeline has slipped. IRP 2025 Table 1 has 1,332 MW in 2037 as its only new pumped storage to 2042. Observed approval-
+// to-operation times are 10 to 15 years (Ingula 14). central: Tubatse alone, from 2038. high: Tubatse from Eskom's 2035
+// target and a second scheme of the same size from 2038 (3 GW, about the AUDA-NEPAD continental plan's figure for all
+// of Africa by 2040).
+const BLD_PHES_CAPS = { central: [[2038, 1500]], high: [[2035, 1500], [2038, 3000]] };
+// Cumulative cap in year y for a case name or a [[year, MW], ...] list.
+function bldPhesCumCapMW(cap, y){
+  const steps = Array.isArray(cap) ? cap : BLD_PHES_CAPS[cap];
+  if (!steps) throw new Error('bldPhesCap: unknown case ' + cap);
+  let mw = 0;
+  for (const [yy, v] of steps) if (y >= yy) mw = v;
+  return mw;
+}
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -5510,11 +5527,14 @@ const FIXED = {
   // Cost basis (bldPhesCapexKW): 'anu2026' (default since 6 Oct 2026) for off-river sites; 'tubatse' the
   // conservative sensitivity, since river-based schemes cost more for flood design; 'atlas' the Weber et al. fit.
   // bldPhesHours2 (7 Oct 2026): a second pumped-hydro duration offered alongside the first (e.g. 160 h next to
-  // 48 h), same cost basis, sharing the yearly 1,500 MW limit, the newPsMaxMW cap and the earliest year. 0 = off.
-  bldPhesOn:0, bldPhesHours:48, bldPhesHours2:0, bldPhesCostBasis:'anu2026', bldPhesFomRkW:297,
-  // Earliest year a first pumped-hydro scheme can be in service: 2035, 6 Oct 2026. Ingula took 11 years
-  // (2006-2017); 2033 is kept as a sensitivity (set bldPhesFirstYear: 2033).
-  bldPhesFirstYear:2035,
+  // 48 h), same cost basis, sharing the yearly limit and the cumulative cap. 0 = off.
+  // bldPhesHours 14 from 9 Oct 2026 (user): Tubatse is 21 GWh on 1.5 GW. It was 48. The duration is fixed per run,
+  // not a build decision; offer a second with bldPhesHours2 (e.g. 48) to let the optimiser choose between them.
+  bldPhesOn:0, bldPhesHours:14, bldPhesHours2:0, bldPhesCostBasis:'anu2026', bldPhesFomRkW:297,
+  // Cumulative cap on new pumped hydro: a case in BLD_PHES_CAPS ('central' or 'high') or a [[year, MW], ...] list.
+  // It replaces bldPhesFirstYear (2035, 6 Oct) and the 6 GW total (9 Oct 2026, user). bldPhesRateMW: at most one
+  // Tubatse-size scheme a year (Ingula's four units entered service within 8 months, Jun 2016 to Jan 2017).
+  bldPhesCap:'central', bldPhesRateMW:1500,
   // Storage credit on stress (tail) days in the build LP: energy over 4 h, at most 1 x power. 6 Oct 2026.
   bldMarginHoldHours:4, bldMarginCreditMax:1,
   // Build LP, 6 Oct 2026: coal unit commitment, linearised (committed capacity, generation at least
@@ -5941,12 +5961,10 @@ const FIXED = {
   // feasibility study was due Q1 2026. Duration and round trip here follow
   // Tubatse's published spec and typical PSH performance.
   //
-  // capped AT 6 GW, and the reason is siting rather than water. Pumped storage is
-  // closed-loop, so it consumes evaporation and an initial fill, not a continuous
-  // draw. What limits it is needing two reservoirs several hundred metres apart
-  // vertically AND the water to fill them. South Africa has managed four schemes
-  // in a century; single-digit GW is the honest ceiling, not tens.
-  newPsMW:0, newPsHours:14, newPsEff:0.78, newPsMaxMW:6000,
+  // Capped at the high case's 2040 total in BLD_PHES_CAPS (3 GW, 9 Oct 2026; it was 6 GW). The limit is delivery,
+  // not siting or water: closed-loop schemes need an initial fill and make-up for evaporation, and the ANU shortlist
+  // has 140 Class AA/AAA sites, but South Africa has built four schemes in fifty years and has one in development.
+  newPsMW:0, newPsHours:14, newPsEff:0.78, newPsMaxMW:BLD_PHES_CAPS.high[BLD_PHES_CAPS.high.length - 1][1],
   // ── regional trade ───────────────────────────────────────────────────────
   // Imports were a fixed constant. The SAPP Master Plan Update (draft, July 2026)
   // makes the case for a lever: it plans ONE new direct link to South Africa -
@@ -6791,7 +6809,7 @@ function simulate(u, prof, outPath, _soc0){
   // New pumped storage joins the existing PS fleet - same technology, same
   // behaviour - with an energy-weighted round trip so a Tubatse-class addition
   // does not silently inherit the old fleet's efficiency.
-  const _newPs = Math.max(0, Math.min(p.newPsMaxMW ?? 6000, p.newPsMW || 0));
+  const _newPs = Math.max(0, Math.min(p.newPsMaxMW ?? FIXED.newPsMaxMW, p.newPsMW || 0));
   const psPowerTot  = p.psPowerMW + _newPs;
   const psEnergyTot = p.psEnergyMWh + _newPs*(p.newPsHours ?? 14);
   const psEffTot = (psEnergyTot > 0)
@@ -9828,11 +9846,9 @@ function bldBuildLP(opts){
   const S = { ...FIXED, ...(opts.state || {}) };
   const STORE = bldStoreList(S);   // lithium at the scenario's duration
   // PUMPED HYDRO IS A BUILD DECISION, 5 Oct 2026 (TODO 14z, after Weber et al. 2026). One duration
-  // per run (bldPhesHours: 24, 48 or 160). Capex per kW = (power + energy x hours): a linear fit to
-  // the paper's top-50 Australian off-river sites (USD 1,226/kW + 11.4/kWh, including its 50%
-  // overhead), scaled 1.28 so 14 hours reproduces Tubatse (R29,200/kW) when bldPhesCostBasis is
-  // 'tubatse', the default; 'atlas' uses the fit unscaled. 60-year life, 78% round trip. Earliest
-  // bldPhesFirstYear, at most 1,500 MW a year (one Tubatse-size scheme), cumulative up to newPsMaxMW.
+  // per run (bldPhesHours, 14 from 9 Oct 2026), optionally a second (bldPhesHours2). Capex per kW from
+  // bldPhesCapexKW (power + energy x hours; 'anu2026' the default basis since 6 Oct). 60-year life, 78%
+  // round trip. At most bldPhesRateMW a year, cumulative up to the bldPhesCap step in each year.
   const PHES_ON = !!S.bldPhesOn, PHES_H = S.bldPhesHours;
   const PHES_KW = () => bldPhesCapexKW(S.bldPhesCostBasis, PHES_H);
   if (PHES_ON) STORE.push({ t:'phes', dis:'hdis', chg:'hchg', eff:S.newPsEff, hours:PHES_H, ex:() => 0, costMult:1 });
@@ -10019,8 +10035,9 @@ function bldBuildLP(opts){
     L.push(' rcmono_' + Y[i] + ': rc_' + Y[i] + ' - rc_' + Y[i-1] + ' >= 0');
   const cumOff = y => Y.filter(yy => yy <= y).map(yy => 'b_off_' + yy);
   if (OFF_ON) for (const y of Y) L.push(' offcap_' + y + ': ' + cumOff(y).join(' + ') + ' <= ' + OFF_PATH(y).toFixed(1));
-  if (PHES_ON) L.push(' phescap: ' + Y.map(yy => 'b_phes_' + yy).concat(PHES2_ON ? Y.map(yy => 'b_phel_' + yy) : []).join(' + ') + ' <= ' + S.newPsMaxMW.toFixed(1));
-  if (PHES2_ON) for (const y of Y) L.push(' phesrate_' + y + ': b_phes_' + y + ' + b_phel_' + y + ' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
+  const PHES_CAP = y => bldPhesCumCapMW(S.bldPhesCap, y), PHES_RATE = y => PHES_CAP(y) > 0 ? S.bldPhesRateMW : 0;
+  if (PHES_ON) for (const y of Y) L.push(' phescap_' + y + ': ' + Y.filter(yy => yy <= y).flatMap(yy => PHES2_ON ? ['b_phes_' + yy, 'b_phel_' + yy] : ['b_phes_' + yy]).join(' + ') + ' <= ' + PHES_CAP(y).toFixed(1));
+  if (PHES2_ON) for (const y of Y) L.push(' phesrate_' + y + ': b_phes_' + y + ' + b_phel_' + y + ' <= ' + PHES_RATE(y));
   // Repurposed connections: no more than that year's build, and in total no more than the coal retired so far.
   for (const t of RP_T) for (const y of Y) L.push(' rpb_' + t + '_' + y + ': rp_' + t + '_' + y + ' - b_' + t + '_' + y + ' <= 0');
   if (RP_T.length) for (const y of Y){
@@ -10394,8 +10411,8 @@ function bldBuildLP(opts){
   const _pvG = Math.max(0, S.bldPvRateGrowthPct) / 100;
   for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + (RATE[t] * (t === 'pv' ? Math.pow(1 + _pvG, y - 2026) : 1)).toFixed(1));
   if (OFF_ON) for (const y of Y) L.push(' 0 <= b_off_'+y+' <= 5000');
-  if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
-  if (PHES2_ON) for (const y of Y) L.push(' 0 <= b_phel_'+y+' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
+  if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + PHES_RATE(y));
+  if (PHES2_ON) for (const y of Y) L.push(' 0 <= b_phel_'+y+' <= ' + PHES_RATE(y));
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
   if (PS_ON) for (const y of Y) L.push(' 0 <= b_ps_'+y+' <= 0');
   if (RC_ON) for (const y of Y) L.push(' 0 <= rc_'+y+' <= ' + bldCoalMW(y).toFixed(1));
@@ -10563,7 +10580,12 @@ function bldStateForYear(res, y, opts){
     newBattMW: Math.round(batt), newBattHours: batt > 0 ? Math.max(1, Math.min(LI_MAX_HOURS, eb / batt)) : (opts.state.newBattHours ?? FIXED.newBattHours),
     newCcgtMW: Math.round(tot.ccgt || 0), newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
     newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
-    newPsMW: Math.round(tot.phes || 0), newPsHours: opts.state.bldPhesHours,
+    // Both pumped-hydro durations reach the engine (9 Oct 2026; b_phel was dropped before): one block, power adds,
+    // energy adds, as harness/pathcheck.js does.
+    newPsMW: Math.round((tot.phes || 0) + (tot.phel || 0)),
+    newPsHours: ((tot.phes || 0) + (tot.phel || 0)) > 0
+      ? ((tot.phes || 0) * ((opts.state.bldPhesHours ?? FIXED.bldPhesHours)) + (tot.phel || 0) * (opts.state.bldPhesHours2 || 0)) / ((tot.phes || 0) + (tot.phel || 0))
+      : (opts.state.bldPhesHours ?? FIXED.bldPhesHours),
     coalDecomMW: Math.max(0, Math.round(FIXED.coalInstalledMW - bldCoalMW(y) + rc)),
     demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, scenarioYear: y,
     ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
@@ -16701,7 +16723,7 @@ const SLIDERS=[
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (4h).`},
   {id:'newBattHours',label:'New lithium-ion duration',min:1,max:LI_MAX_HOURS,step:1,def:FIXED.newBattHours,fmt:v=>v+'h',
    note:`Hours of storage at rated power for new lithium only; the existing ${(FIXED.battPowerMW/1000).toFixed(1)} GW fleet stays at 4h. South African utility procurement is 4h today, so that is the default. Longer durations add cell cost only; the inverter does not scale. In this model lithium stays cheapest up to about 16 hours.`},
-  {id:'newPsMW',label:'New pumped storage',min:0,max:6000,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
+  {id:'newPsMW',label:'New pumped storage',min:0,max:FIXED.newPsMaxMW,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
    note:`on ${(FIXED.psPowerMW/1000).toFixed(1)} GW existing. New additions modelled at 14-hours of storage (the duration of Eskom\u2019s planned 1,500 MW / 21 GWh Tubatse scheme in Limpopo).`},
   {id:'newVrfbMW',label:'New vanadium flow batteries',min:0,max:20000,step:500,def:FIXED.newVrfbMW,fmt:v=>v===0?'none':(v/1000).toFixed(1)+' GW',
    note:'on 0 GW existing. 8-hour storage at 75&#37; round-trip efficiency. The electrolyte does not degrade with cycling \u2013 an advantage this model does not yet price.'},
@@ -18400,7 +18422,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-09c';
+const BUILD_STAMP = '2026-10-09d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

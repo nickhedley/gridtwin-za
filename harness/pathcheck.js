@@ -62,7 +62,9 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    // fixed Tubatse 14-hour acapPs. PHES_BASIS names the basis (bldPhesCapexKW); PH the hours (bldPhesHours).
    // Two durations (PH and PH2): the engine has one new pumped-storage block, so power adds, energy adds (hours
    // power-weighted) and the per-kW charge is the power-weighted mean of the two optimiser charges.
-   if (cum.phes + cum.phel > 0){ const H=+(process.env.PH||w.eval('FIXED.bldPhesHours')), H2=+(process.env.PH2||0), B=process.env.PHES_BASIS||w.eval('FIXED.bldPhesCostBasis');
+   // From build 2026-10-09d the pathway records its pumped-hydro settings (P.phes), which take precedence over PH, PH2
+   // and PHES_BASIS, so the check cannot price a different duration from the one the optimiser built.
+   if (cum.phes + cum.phel > 0){ const PS=P.phes||{}, H=+(PS.hours??(process.env.PH||w.eval('FIXED.bldPhesHours'))), H2=+(PS.hours2??(process.env.PH2||0)), B=PS.basis??(process.env.PHES_BASIS||w.eval('FIXED.bldPhesCostBasis'));
      const ann=h=>+w.eval(`bldAnnuity(bldPhesCapexKW('${B}',${h}),60)+FIXED.bldPhesFomRkW`), P1=cum.phes, P2=cum.phel;
      over.newPsMW=P1+P2; over.newPsHours=(H*P1+H2*P2)/(P1+P2); over.newPsMaxMW=1e7; over.acapPs=(ann(H)*P1+(P2>0?ann(H2)*P2:0))/(P1+P2); }
    const batch=(k0,k1)=>JSON.parse(w.eval(`(function(){ const o=[]; for (const yy of bldWeatherYears.meta.years){ const nat=weatherYearNational(String(yy));
