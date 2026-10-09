@@ -37,7 +37,7 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
    // SOLVE CACHE (7 Oct 2026): the container restarts every few hours and a pass-2 solve takes one to three, so
    // each optimal solution is kept under lpcache/, keyed by a hash of the LP text. A restarted run replays the
    // solves it already finished (identical LP, identical answer) and only redoes the one that was cut off.
-   const LPT=fix(lp), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
+   const LPT=fixBuild(fix(lp)), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
    // DUMP_LP=<prefix> (8 Oct 2026, diagnostics): write each LP to <prefix>_pass<n>.lp; DUMP_STOP=<n> exits after the n-th.
    if (process.env.DUMP_LP){ w.__dumpN=(w.__dumpN||0)+1; fs.writeFileSync(process.env.DUMP_LP+'_pass'+w.__dumpN+'.lp', LPT); console.log('dumped LP pass', w.__dumpN, key.slice(0,10)); if (process.env.DUMP_STOP && w.__dumpN>=+process.env.DUMP_STOP) process.exit(0); }
    if (fs.existsSync(cf)) { last=JSON.parse(fs.readFileSync(cf,'utf8')); console.log('cache hit', key.slice(0,10)); }
@@ -72,13 +72,47 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:''));
  // STRESS_TARGET (8 Oct 2026, TODO 14bk): 1 plans the stress windows to the standard (bldStressTarget); unset = FIXED (0).
  w.eval(`if(!('bldStressTarget' in FIXED)) throw new Error('bldStressTarget missing');`+(process.env.STRESS_TARGET!==undefined?` state.bldStressTarget=${+process.env.STRESS_TARGET};`:''));
+ // CUMV (8 Oct 2026): 1 writes cumulative capacity as one variable per technology and year (bldCumVars), the same
+ // model in a sparser LP; unset = FIXED (0).
+ w.eval(`if(!('bldCumVars' in FIXED)) throw new Error('bldCumVars missing');`+(process.env.CUMV!==undefined?` state.bldCumVars=${+process.env.CUMV};`:''));
+ // SHRINK TESTS (user, 8 Oct 2026: ways to shrink the pass-2 LP, each tested for its effect on cost and build).
+ // REP_DAYS=<n>: n representative days instead of 12. MERGE_WIN=1: stress windows from the same weather year and outage
+ // draw that overlap are solved as one window over their union of days, binding from the earliest of their years (the
+ // loop's record of which runs are held is unchanged). WIN_YEARS=<y,y>: only windows from these weather years reach the
+ // LP (to test MERGE_WIN on a small LP). FIX_FROM=<pathway json> FIX_TO=<year>: every build decision up to that year is
+ // fixed at the file's exact value (five-year blocks, and re-costing a build on the full model). GROWTH_PA: annual demand
+ // growth, so a block keeps the full path's rate.
+ if (process.env.REP_DAYS) w.eval(`{ const _rd = bldRepDays; bldRepDays = n => _rd(n === 12 ? ${+process.env.REP_DAYS} : n); }`);
+ if (process.env.MERGE_WIN==='1' || process.env.WIN_YEARS) w.eval(`{ const MERGE = ${process.env.MERGE_WIN==='1'}, KEEP = ${JSON.stringify((process.env.WIN_YEARS||'').split(',').filter(Boolean).map(Number))};
+   const shrink = P => { let L = P.filter(p => !KEEP.length || KEEP.includes(p.year)); if (!MERGE) return L;
+     const out = [], groups = {}; for (const p of L) (groups[p.year + '_' + p.seed] = groups[p.year + '_' + p.seed] || []).push(p);
+     for (const g of Object.values(groups)){ g.sort((a, b) => a.start - b.start); let cur = null;
+       for (const p of g){
+         const end = Math.max(cur ? cur.start + cur.n : 0, p.start + p.n);
+         if (cur && p.start < cur.start + cur.n && end - cur.start <= 30){
+           const n = end - cur.start, cf = new Array(n * 24);
+           for (const q of [cur, p]) for (let i = 0; i < q.n * 24; i++){ const k = (q.start - cur.start) * 24 + i; if (cf[k] === undefined) cf[k] = q.coalFrac[i]; else if (Math.abs(cf[k] - q.coalFrac[i]) > 1e-9) window.__mergeMismatch = (window.__mergeMismatch || 0) + 1; }
+           cur = { ...cur, n, fromYear: Math.min(cur.fromYear, p.fromYear), coalFrac: cf, merged: (cur.merged || 1) + 1 };
+         } else { if (cur) out.push(cur); cur = { ...p }; } }
+       if (cur) out.push(cur); }
+     return out; };
+   const _b = bldBuildLP; bldBuildLP = function(o){ const keep = bldStressPeriods; bldStressPeriods = shrink(keep); window.__lpWindows = bldStressPeriods.map(p => [p.year, p.seed, p.start, p.n, p.fromYear, p.merged || 1]);
+     try { return _b(o); } finally { bldStressPeriods = keep; } }; }`);
+ const FIXB = process.env.FIX_FROM ? JSON.parse(fs.readFileSync(process.env.FIX_FROM,'utf8')).build : null, FIX_TO = +(process.env.FIX_TO||0);
+ function fixBuild(lp){ if (!FIXB) return lp;
+   const fx = Object.entries(FIXB).filter(([n]) => +n.slice(-4) <= FIX_TO), names = new Set(fx.map(([n]) => n));
+   const i = lp.indexOf('\nBounds\n'), j = lp.lastIndexOf('\nEnd'); if (i < 0 || j < 0) throw new Error('fixBuild: no Bounds or End');
+   const present = new Set(lp.slice(i, j).match(/[A-Za-z_][A-Za-z0-9_]*/g));
+   const kept = lp.slice(i + 8, j).split('\n').filter(l => !(l.match(/[A-Za-z_][A-Za-z0-9_]*/g) || []).some(t => names.has(t)));
+   const add = fx.filter(([n]) => lp.includes(' ' + n + ' ') || lp.includes(' ' + n + '\n') || present.has(n)).map(([n, v]) => ' ' + n + ' = ' + v);
+   return lp.slice(0, i + 8) + kept.concat(add).join('\n') + lp.slice(j); }
  // COSTSET (7 Oct 2026): a whole cost set, e.g. COSTSET=irp2025; see costset.js.
  require('./costset.js')(w, process.env.COSTSET);
  await w.eval('loadWeatherYears()');
  const t0=Date.now();
  const _dump=setInterval(()=>{ try{ fs.writeFileSync((process.env.OUT||'x')+'.progress', JSON.stringify(w.eval('JSON.stringify(bldStressLog.map(l=>({pass:l.pass,margin:l.margin,added:l.added,nAdded:Array.isArray(l.added)?l.added.length:l.added,fails:l.years.filter(q=>q.mean>q.limit).map(q=>[q.y,+q.mean.toFixed(2),+q.limit.toFixed(2)])})))'))); }catch(e){} }, 20000);
  await w.eval(`(async()=>{ const tg=1+(state.demandGrowthPct||0)/100;
-   const opts={growth:Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, marginStepMW:1000, draws:2, stressDays:14, targetFrac:${+(process.env.TF||0.5)}, windowLeadYears:${+(process.env.LEAD||0)}, testEvery:1, windowsPerPass:${+(process.env.WPP||3)}, maxPasses:${+(process.env.MAXP||14)}};
+   const opts={growth:${process.env.GROWTH_PA ? +process.env.GROWTH_PA : 'Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1'}, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, marginStepMW:1000, draws:2, stressDays:14, targetFrac:${+(process.env.TF||0.5)}, windowLeadYears:${+(process.env.LEAD||0)}, testEvery:1, windowsPerPass:${+(process.env.WPP||3)}, maxPasses:${+(process.env.MAXP||14)}};
    window.__out=await bldStressLoop(opts, m=>{}); })()`);
  const out=w.__out, cols=out.res.Columns;
  const Y=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)')), T=JSON.parse(w.eval('JSON.stringify(BLD_TECHS)'));
@@ -92,6 +126,7 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
    const periods=JSON.parse(w.eval('JSON.stringify(bldStressPeriods)'));
    fs.writeFileSync(OUT.replace(/\.json$/,'')+'_lp'+DY+'.json', JSON.stringify({year:DY, periods, lpv})); }
  const peakerExt=Object.fromEntries(Object.entries(cols).filter(([c])=>c.startsWith('le_')).map(([c,v])=>[c.slice(3),Math.round(v.Primal||0)]));   // TODO 14as
- fs.writeFileSync(OUT, JSON.stringify({margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
+ const build=Object.fromEntries(Object.entries(cols).filter(([n])=>/^(b_[a-z]+|eb_batt|rc|cc_[a-z]+)_20\d\d$/.test(n)).map(([n,c])=>[n,c.Primal]));   // exact, for FIX_FROM
+ fs.writeFileSync(OUT, JSON.stringify({build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
  console.log('done', out.verdict, ((Date.now()-t0)/1000).toFixed(0)+'s'); process.exit(0);
 })();

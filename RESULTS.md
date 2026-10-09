@@ -22,7 +22,8 @@ Third caveat, 8 Oct 2026: every result from the build optimiser (the national bu
 regional one, bldBuildRegionalLP) on a build before `2026-10-08c` is provisional. Both LPs kept one storage energy
 balance per day, so a store could discharge in the morning energy it charged that afternoon (entry "Why the engine
 sheds where the optimiser served in full"). Build `2026-10-08c` gives the national LP an hourly state of charge (entry
-"Hourly state of charge in the build LP"); the regional LP still has the daily balance (TODO 14bn). Entries whose main
+"Hourly state of charge in the build LP"); the regional LP still has the daily balance (TODO 14bn),
+and no regional optimiser result is to be published until it is fixed with 14bj (user, 8 Oct). Entries whose main
 finding is an optimiser output carry "pending the storage fix" in the heading and stay as written until re-run.
 Engine-only results (dispatch, adequacy checks of a fixed build, preset searches scored on the engine) are unaffected.
 
@@ -1735,6 +1736,56 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### The 08c central pass 2 did not solve in eight hours; a sparser LP and three ways to shrink it, tested on the first pass, 9 Oct 2026
+
+Central pathway on build `2026-10-08c` (v_half_c1_p1_08c: Today 2026, demand +5% to 2040, half standard, COMMIT 1,
+PSE 1, TF 0.5, WPP 3, MAXP 14, native HiGHS). Pass 1 solved in 23 min (simplex). Its engine check added 12 distinct
+14-day windows, bound from the first failing year to 2040: 1,036 window days over 2031-2040 (168 in 2040). The pass-2
+LP is 237.7 MB (07s: 204.2 MB). Simplex ran 7 h 52 min and interior point 4 h 52 min (net of a 58 min pause) on it,
+neither finishing; both were stopped at 01:00 UTC (user rule, 8 Oct). The 07s pass 2 took 7 h 58 min on simplex.
+
+Sparser LP (bldCumVars, build `2026-10-08d`, off by default). Two thirds of the first-pass LP's nonzeros (1.37 of 2.02
+million) are the same build sums repeated in every hourly row. One cumulative-capacity variable per technology and year
+(K_<t>_<y> = K_<t>_<y-1> + b_<t>_<y>) is an exact rewrite: 0.89 million nonzeros, 28.9 MB against 49.9. On the first
+pass (harness/ext/hs_lp.js) it gives the same objective to 14 significant figures and all 225 build decisions identical
+(no difference above 0.001 MW). Interior point 509 s against 806 s dense (1.6 times faster); simplex slower (stopped at
+2,962 s against 1,505 s). Below the user's threshold of twice as fast, so not used.
+
+Shrink options, first pass (the run's own pass-1 LP; interior point, which matched simplex to 14 significant figures;
+base objective R1,227.40bn). Cost is the option's build re-costed on the full 12-day model where the option changes the
+model. GW built by the year shown.
+
+```
+option                      LP size          solve     cost vs base   build moves (GW)
+base (12 days, 2026-2040)   49.9 MB          ~13 min(+) -
+8 representative days       38.3 MB (-23%)   ~7 min     +0.036%        2040: solar +1.7, wind -0.8, lithium -0.6, gas +0.17
+6 representative days       32.6 MB (-35%)   ~5 min     +0.21%         2030: solar -2.4; gas +0.36 throughout
+five-year blocks            11.4 / 28.0 /    <2, 2.5,   +1.47%         2030: solar +5.2, wind +2.3, gas -0.68, coal
+  (2026-30, then 2031-35,   49.9 MB (*)      4 min                     retired +1.5; 2040: lithium +1.9, solar +3.2
+  then 2036-40, earlier
+  builds fixed)
+```
+(+) Interior point on the near-identical first-pass LP of harness/ext/hs_lp.js (806 s); solve times include no page
+load. (*) The harness keeps earlier years in each block's LP with their builds fixed, so it measures the blocks' effect on
+cost and build, not their speed; true blocks need a start year in bldBuildLP. With every build to 2035 fixed, the full
+2026-2040 LP solved in about 4 min against 13: the build decisions that tie the years together are what make it hard.
+
+At pass 2 the calendar days are a small part of the LP (12 a year against up to 175 stress days), so fewer
+representative days shrink it by only about 5% (8 days) or 7% (6 days).
+
+Stress windows. Merging windows from the same weather year and outage draw that overlap (MERGE_WIN) cuts the pass-2 LP
+from 237.7 to 198.2 MB (-17%). Tested on a pass-2 LP holding only the four overlapping
+2023 windows (WIN_YEARS=2023), interior point: unmerged, four windows binding from 2031, 2035, 2039 and 2040 (98.5 MB),
+solved in 1 h 54 min, objective R1,279.69bn; merged, one 21-day window binding from 2031 (85.6 MB), still solving
+after 2 h 10 min. On this test merging made the LP slower, not faster; its effect on cost and build follows when it
+finishes. The same unmerged LP is being solved without crossover (HIGHS_CROSSOVER=off), to measure how much of interior
+point's time the final vertex step takes.
+Binding each window only in the years it failed, not from then to 2040, would cut window days from 1,036 to 420 (or
+588 with the following year): about -45% on the pass-2 LP, at the risk of more passes. Not tested.
+
+Harness: pathway_perfail.js switches REP_DAYS, MERGE_WIN, WIN_YEARS, FIX_FROM/FIX_TO, GROWTH_PA and CUMV; outputs in the
+session scratchpad (shrink/). The harness with no switch set writes the run's pass-1 and pass-2 LPs byte for byte.
+
 ### Hourly state of charge in the build LP (bldHourlySoc): no store borrows within a day any more, 8 Oct 2026
 
 Build `2026-10-08c` (user decision 8 Oct, TODO 14bl): (1) an hourly level for every store on stress days; (2) the
@@ -1756,7 +1807,8 @@ What changed in bldBuildLP (FIXED.bldHourlySoc, default 1):
   cumulative movement within the day, free) holds the hourly level between zero and capacity on the first real day of
   the block (from e_prev) and on the last (from e_d - c_23). The days in between lie on a straight line between those
   two, so both ends cover them. Battery reserve uses the same two levels.
-- Not as asked, to confirm with the user: each calendar day is not made to cycle. A cycle per representative day
+- Not as first asked, accepted by the user 8 Oct (stated in the page's methods notes from build `2026-10-08d`): each
+  calendar day is not made to cycle. A cycle per representative day
   would stop storage moving energy from one day to the next, which is what the chain is for (iron-air and pumped
   storage across a still week). The rule above enforces the hourly limits without that loss.
 - bldHourlySoc 2: stress days only. 0: the old daily balance; the LP text is byte-identical to 08b (central
@@ -1779,7 +1831,8 @@ bldHourlySoc      LP MB   lines     solve s   objective R bn   calendar store-da
   32.7 GWh).
 - Solve time: 1 takes 5.1 times as long as 0 on the first pass. The 07s central pass 2 took 7 h 58 min on simplex;
   scaled alike it would take about 40 h, longer than the container stays up. Interior point is being timed on the
-  same LP; the runtime estimate and the solver choice follow.
+  same LP; the runtime estimate and the solver choice follow. (9 Oct: on pass 2 neither finished in eight hours;
+  entry above.)
 
 Suite 804/809 plus eng5 6/6 without ESK19679.csv, identical to 08b check by check (validate_lp's LP grows from 7.56
 to 11.42 million characters, 51/51). The central pathway, the no-gas test and the Fossil-free proposal are being rerun

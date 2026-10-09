@@ -7,6 +7,7 @@ import highspy
 h = highspy.Highs()
 h.setOptionValue('output_flag', False)
 h.setOptionValue('solver', os.environ.get('HIGHS_SOLVER', 'simplex'))   # simplex by default: interior point took over 38 min on a pass-2 LP that simplex solves in 2; HIGHS_SOLVER=ipm for LPs where simplex stalls (7 Oct 2026, grid-cost runs)
+h.setOptionValue('run_crossover', os.environ.get('HIGHS_CROSSOVER', 'on'))   # 'off' with ipm: an interior answer, no vertex (timing test, 9 Oct 2026)
 h.setOptionValue('time_limit', float(sys.argv[3]) if len(sys.argv) > 3 else 900.0)
 h.readModel(sys.argv[1])
 h.run()

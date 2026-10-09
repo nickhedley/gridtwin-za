@@ -1,7 +1,7 @@
 // GridTwin ZA - writes the central pathway's first-pass build LP (Today 2026, demand +5% to 2040, coal minimum, pumped
 // storage energy, two outage draws, half standard) in a chosen storage mode, to compare LP size and solve time across
 // bldHourlySoc settings (build 2026-10-08c). Run from harness/:
-//   node ext/hs_lp.js testroot <0|1|2|none> <out.lp>     ('none' leaves the build's default)
+//   node ext/hs_lp.js testroot <0|1|2|none> <out.lp>     ('none' leaves the build's default); CUMV=1 sets bldCumVars
 const ROOTARG = process.argv[2];
 const fs = require('fs'), path = require('path'); const { JSDOM } = require(process.cwd() + '/node_modules/jsdom');
 (async () => {
@@ -16,7 +16,7 @@ const fs = require('fs'), path = require('path'); const { JSDOM } = require(proc
   await w.eval('loadWeatherYears()');
   const hs = process.argv[3], outf = process.argv[4];
   const lp = w.eval(`(function(){ applyState(PRESETS['Today 2026']); state.demandGrowthPct=5; bldSetHorizon(2040);
-    state.bldCoalCommit=1; state.bldPsEnergy=1; ${hs === 'none' ? '' : 'state.bldHourlySoc=' + hs + ';'}
+    state.bldCoalCommit=1; state.bldPsEnergy=1; ${hs === 'none' ? '' : 'state.bldHourlySoc=' + hs + ';'} ${process.env.CUMV ? 'state.bldCumVars=' + (+process.env.CUMV) + ';' : ''}
     const tg=1.05, opts={growth:Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, draws:2, targetFrac:0.5};
     return bldBuildLP(opts).lp; })()`);
   fs.writeFileSync(outf, lp);
