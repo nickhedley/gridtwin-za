@@ -551,6 +551,31 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     USD 2/MMBtu adder is replaced, not added to.
   - New CCGT fixed O&M raised by R260/kW-yr.
 
+## Gas price cases (TODO 14bo, build 09f, 9 Oct 2026)
+
+All quotes are search extracts (the source hosts are blocked from this environment). Computed by build_gas_cases.py
+into public_data/gas_price_cases.json; conversions there (US CPI-U 2024 average to January 2026 1.0369, 2018 average
+to January 2026 1.2953; SA CPI January 2024 to January 2026 1.0681; R16.50/USD).
+- Low: EIA AEO2025 reference Henry Hub, real 2024 USD, 2.88 in 2025 and 4.80 in 2050 (EIA Today in Energy), linear
+  between (user confirmed); US LNG at 115% of Henry Hub plus a USD 3.00 tolling fee (Argus, 5 Dec 2025; OIES Quarterly
+  Gas Review 32, Apr 2026); shipped 8,600 nm to Richards Bay.
+- Central: 13.25% of Brent (range 12.5-14%), a free-on-board slope (S&P Global, 7 May 2024: 13.2% FOB against 14.2%
+  delivered), at Brent USD 80 in 2024 dollars (IEA WEO 2025 STEPS, via an IISD explainer; dollar year probably 2024),
+  shipped about 4,200 nm from Ras Laffan (waypoint estimate; no published distance found). Brent USD 100 run as well.
+- High: JKM 2026 full-year estimate USD 19.80, delivered North Asia, taken as the delivered price at the South
+  African coast with no shipping added (Jan-Sep average 17.76 from EIA, IEA Gas Market Report Q3-2026 and
+  Reuters/LSEG monthly figures, with Oct-Dec at the early October front month of about 25.8).
+- IRP 2025 as published: R260.89/GJ, January 2024 rands, flat real, no terminal or adder (assumptions workbook, New
+  Tech Properties). No terminal charge is added in this case, matching the IRP.
+- Shipping, the least-sourced input: a 165,000 m3 carrier, 17 knots, 3 days in port, boil-off 0.12%/day laden, heel
+  0.09%/day; charter USD 60,000/day, a 2018 breakeven (OIES Insight 27), adjusted with US CPI. Charter rates have
+  likely risen since the Hormuz disruption (Fearnleys: one-year charter about USD 100,000/day in March 2026).
+- Variable regasification USD 0.25/MMBtu (derived, 14ak section above) is added to every case but the IRP's.
+- LNG terminal as a fixed cost per kW of new gas on the send-out basis, R354-707/kW-yr (Ngqura about R22bn plus R2bn
+  for the berth, 3.6 Mt/yr; Richards Bay R7bn for 2 mtpa; Standard Bank, ENN 23 Jul 2026, USD 1.5bn for two
+  terminals; computed at 8% over 25 years, 53.37 GJ/t, 6,900 kJ/kWh), applied with GAS_FOM_ADD to new gas in the
+  optimiser and the cost readout alike.
+
 ## Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026)
 
 - US EPA, GHG Emission Factors Hub: natural gas, 53.06 kg CO2 per MMBtu on a higher heating value basis.

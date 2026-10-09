@@ -125,6 +125,17 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  if (process.env.PHES_FIRST) throw new Error('PHES_FIRST was replaced by PHES_CAP (central, high or a [[year,MW],...] list), build 2026-10-09d');
  const DEMAND=process.env.DEMAND||'irp_esrg', YRS=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)'));
  let DEM_INDEX=null;
+ // GAS_CASE (build 2026-10-09f, TODO 14bo): a gas price case from public_data/gas_price_cases.json (low, central, brent100,
+ // high, irp), applied by year to the optimiser and the engine check. Cases with a terminal take it as GAS_FOM_ADD
+ // (R/kW-yr on new gas); 'irp' takes none.
+ const GAS_CASE=process.env.GAS_CASE||null; let GAS_FUEL=null;
+ if (GAS_CASE){ if (process.env.GAS_FUEL_R) throw new Error('GAS_CASE and GAS_FUEL_R are exclusive');
+   const G=JSON.parse(fs.readFileSync(path.join(ROOT,'public_data','gas_price_cases.json'),'utf8')).cases[GAS_CASE];
+   if (!G) throw new Error('gas_price_cases.json has no case '+GAS_CASE);
+   if (!G.terminal && +(process.env.GAS_FOM_ADD||0)!==0) throw new Error('case '+GAS_CASE+' carries no terminal charge');
+   if (G.terminal && process.env.GAS_FOM_ADD===undefined) throw new Error('case '+GAS_CASE+' needs GAS_FOM_ADD (R354-707/kW-yr)');
+   GAS_FUEL=Object.fromEntries(YRS.map(y=>{ if(!G.years[y]) throw new Error('gas case '+GAS_CASE+' has no '+y); return [y, G.years[y].fuel_r_mwh]; }));
+   console.log('gas', GAS_CASE, JSON.stringify(GAS_FUEL), 'terminal R/kW-yr', +(process.env.GAS_FOM_ADD||0)); }
  if (DEMAND==='irp_esrg'){ const J=JSON.parse(fs.readFileSync(path.join(ROOT,'public_data','esrg_irp_demand_ref.json'),'utf8')).years;
    DEM_INDEX=Object.fromEntries(YRS.map(y=>{ if(!J[y]) throw new Error('esrg_irp_demand_ref.json has no '+y); return [y, J[y].index_vs_2026]; })); }
  else if (DEMAND.startsWith('rate:')){ const r=+DEMAND.slice(5)/100; if(!isFinite(r)) throw new Error('DEMAND rate'); DEM_INDEX=Object.fromEntries(YRS.map(y=>[y, Math.pow(1+r, y-2026)])); }
@@ -135,7 +146,7 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  const t0=Date.now();
  const _dump=setInterval(()=>{ try{ fs.writeFileSync((process.env.OUT||'x')+'.progress', JSON.stringify(w.eval('JSON.stringify(bldStressLog.map(l=>({pass:l.pass,margin:l.margin,added:l.added,nAdded:Array.isArray(l.added)?l.added.length:l.added,fails:l.years.filter(q=>q.mean>q.limit).map(q=>[q.y,+q.mean.toFixed(2),+q.limit.toFixed(2)])})))'))); }catch(e){} }, 20000);
  await w.eval(`(async()=>{ const tg=1+(state.demandGrowthPct||0)/100;
-   const opts={growth:${process.env.GROWTH_PA ? +process.env.GROWTH_PA : 'Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1'}, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, marginStepMW:1000, draws:2, stressDays:14, targetFrac:${+(process.env.TF||0.5)}, windowLeadYears:${+(process.env.LEAD||0)}, testEvery:1, windowsPerPass:${+(process.env.WPP||3)}, maxPasses:${+(process.env.MAXP||14)}${DEM_INDEX ? ', demandIndex:'+JSON.stringify(DEM_INDEX) : ''}};
+   const opts={growth:${process.env.GROWTH_PA ? +process.env.GROWTH_PA : 'Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1'}, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, marginStepMW:1000, draws:2, stressDays:14, targetFrac:${+(process.env.TF||0.5)}, windowLeadYears:${+(process.env.LEAD||0)}, testEvery:1, windowsPerPass:${+(process.env.WPP||3)}, maxPasses:${+(process.env.MAXP||14)}${DEM_INDEX ? ', demandIndex:'+JSON.stringify(DEM_INDEX) : ''}${GAS_FUEL ? ', gasFuelR:'+JSON.stringify(GAS_FUEL) : ''}};
    window.__out=await bldStressLoop(opts, m=>{}); })()`);
  const out=w.__out, cols=out.res.Columns;
  const Y=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)')), T=JSON.parse(w.eval('JSON.stringify(BLD_TECHS)'));
@@ -150,6 +161,6 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
    fs.writeFileSync(OUT.replace(/\.json$/,'')+'_lp'+DY+'.json', JSON.stringify({year:DY, periods, lpv})); }
  const peakerExt=Object.fromEntries(Object.entries(cols).filter(([c])=>c.startsWith('le_')).map(([c,v])=>[c.slice(3),Math.round(v.Primal||0)]));   // TODO 14as
  const build=Object.fromEntries(Object.entries(cols).filter(([n])=>/^(b_[a-z]+|eb_batt|rc|cc_[a-z]+)_20\d\d$/.test(n)).map(([n,c])=>[n,c.Primal]));   // exact, for FIX_FROM
- fs.writeFileSync(OUT, JSON.stringify({demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
+ fs.writeFileSync(OUT, JSON.stringify({demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, gas:{case:GAS_CASE, fuelR:GAS_FUEL, fuelRFlat:process.env.GAS_FUEL_R?+process.env.GAS_FUEL_R:null, fomAdd:+(process.env.GAS_FOM_ADD||0)}, phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
  console.log('done', out.verdict, ((Date.now()-t0)/1000).toFixed(0)+'s'); process.exit(0);
 })();

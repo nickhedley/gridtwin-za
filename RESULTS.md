@@ -1821,6 +1821,33 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### Gas price cases built: central R1,298/MWh fuel, about 35% below the R2,003 default, with the terminal now a fixed charge, 9 Oct 2026
+
+Build `2026-10-09f`. public_data/gas_price_cases.json (build_gas_cases.py; sources in SOURCES, "Gas price cases").
+LNG delivered at the coast, January 2026 dollars, and the fuel cost the model uses (52% HHV, R16.50/USD, variable
+regasification USD 0.25/MMBtu added except in the IRP case):
+
+```
+case                    2030 USD   2035 USD   2040 USD   fuel R/MWh 2030 / 2035 / 2040   terminal
+low                      8.19       8.67       9.15       914 / 966 / 1,018              R354-707/kW-yr
+central (Brent 80)      11.74      11.74      11.74       1,298                          R354-707/kW-yr
+central at Brent 100    14.05      14.05      14.05       1,549                          R354-707/kW-yr
+high (JKM 2026)         19.80      19.80      19.80       2,171                          R354-707/kW-yr
+IRP 2025 as published   17.82      17.82      17.82       1,929                          none
+```
+
+Before and after (double counting, user 9 Oct): the default costCcgt R2,003/MWh is USD 18.50 delivered, which
+already carries USD 2/MMBtu for regasification and transport, with no fixed terminal charge. The 14ak sensitivity
+(6 Oct) replaced the USD 2 with USD 0.25 of variable regasification (R1,813/MWh) and added R260/kW-yr. The cases
+carry only shipping and variable regasification in the fuel price, and the terminal as a fixed R354-707/kW-yr on new
+gas (send-out basis), so nothing is counted twice. The IRP case has neither, as in the IRP.
+
+Switch: harness/pathway/pathway_perfail.js GAS_CASE=<case> with GAS_FOM_ADD=<R/kW-yr> (required for every case but
+'irp', refused for 'irp'); the fuel cost reaches the optimiser by year (opts.gasFuelR, bldGasFuelR) and the engine
+check (pathcheck.js reads the recorded P.gas). Checks: without GAS_CASE the first-pass LP differs from 09d's only in
+the gas generation cost coefficients (the 09e emissions factor); GAS_CASE=central writes the same LP (f2820b1cf4) as
+the flat GAS_FUEL_R=1298.42 override. No runs yet: the run matrix, the OCGT option and its cap are with the user.
+
 ### Gas emissions factor 0.37 to 0.348 t/MWh; gas comments corrected, 9 Oct 2026
 
 Build `2026-10-09e` (user decision, TODO 14bo). emisCcgt = 53.06 kg CO2/MMBtu (HHV, US EPA) / 0.293071 / 0.52 = 0.348
