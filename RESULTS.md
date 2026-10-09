@@ -1750,7 +1750,50 @@ over 2026-2040, which is 0.35% a year. Eskom's sales have fallen from over 224 T
 Every pathway, preset search and optimiser comparison in this file ran on it, from the first-draft pathway (4 Oct) to
 the 09a central rerun. From build `2026-10-09b` the preset comment and the pathway scripts say it is unsourced, and runs
 on it are labelled "demand +5% (legacy, unsourced)". TODO 14be step 1 runs three sourced paths (IRP 2025 moderate,
-NTCSA, flat) on one demand basis; no new central until the user confirms.
+NTCSA, flat) on one demand basis. Central from build `2026-10-09c` (user, 9 Oct): the IRP reference path year by year
+on the measured 2026 base (next entry).
+
+### PROVISIONAL - On one basis, the IRP's demand forecast put 2026 about 12% above measured demand; the pathways now take the IRP's growth on the measured base, 9 Oct 2026
+
+Build `2026-10-09c`. Source: UCT Energy Systems Research Group, HourlyDemandModel_v10_IRP_v02_wExports.xlsm, scenario
+IRPDemandREF (the IRP 2023-24 revision of the forecast behind IRP 2025), Merven, doi:10.25375/uct.26942134.v5, CC BY 4.0.
+The workbook is not in the repository (size; the report carries a SANEDI no-redistribution notice). build_demand_paths.py
+extracts the AnnualDashboard sector rows, rebuilds the IRP's Mode 1 series (onsite generation not subtracted) and checks
+it against the workbook's own "Frozen Results" row within 1 GWh; it writes public_data/esrg_irp_demand_ref.json.
+
+```
+GWh, sent out     domestic grid   exports   distributed PV   other onsite   Mode 1 total   index vs 2026
+2024              208,901         11,055    6,892            12,390         239,238        0.9694
+2026              213,859         11,016    8,754            12,390         246,019        1.0000
+2030              232,722         11,016    12,460           12,390         268,588        1.1014
+2035                                                                                       1.2675
+2040              312,308         11,016    12,460           12,390         348,175        1.4589
+```
+
+Reconciliation, 2024, against Eskom contracted demand including exports, 219.7 TWh (ESK19679, entry "IRP demand verified
+against the IRP", 22 Sep): the IRP's domestic grid demand is 4.2 TWh above actual and its exports 3.9 TWh below, so the
+two offset and leave 0.26 TWh unexplained. The 1.3 TWh first reported was a rounding artefact. 2026 on one basis: the
+IRP's 246.0 TWh against 219.5 TWh measured (the model's 2026 profile, 200.62 TWh gross of rooftop, plus exports 6.53
+and other onsite generation 12.39) = +12.1%. The 218.9 TWh in the user's note was an earlier estimate with a smaller
+onsite figure. Like-for-like ratios, IRP level to the model's basis: IRP 1.089, NTCSA MTSAO 1.106; the 1.187 used
+earlier mixed definitions.
+
+Settings: harness/pathway/pathway_perfail.js DEMAND=irp_esrg (default from this build) passes opts.demandIndex
+(year to multiplier against 2026, the index column above: domestic grid demand plus distributed PV, the components the
+model's domestic profile gross of rooftop represents; the IRP holds exports and other onsite flat after 2025) to bldBuildLP, and bldStateForYear and harness/pathcheck.js
+read the same index, so the optimiser and the engine check use one demand path. The pathways therefore follow the IRP's
+growth year by year on the measured 2026 base and sit about 12% below the IRP's own levels. The like-for-like series (domestic grid plus
+distributed PV) grows 45.9% from 2026 to 2040; the IRP's full Mode 1 total, reported alongside it (user, 9 Oct), grows
+41.5% (246.0 to 348.2 TWh), because exports and other onsite generation are held flat. Alternatives: DEMAND=rate:2.3
+(the IRP's average 2.3% a year, flat, labelled alternative), rate:1.39 (NTCSA MTSAO extended), rate:0 (flat at the
+Eskom stabilisation level), rate:3.44 (TDP high peak growth converted to energy at constant load factor, labelled
+converted), legacy (+5% to 2040, unsourced). Check: DEMAND=legacy writes a pass-1 LP byte-identical to the 09a run's
+(c6e3fd9476); DEMAND=irp_esrg writes 07798fdcee, and gross demand solved from the two LPs agrees in the hours checked
+(17,004 MW at hour 2, 25,629 MW at hour 12, 2030 and 2040).
+
+Caveat: the reconciliation rests on one year (2024) and one Eskom series. Not yet checked: IRP 2025's executive summary
+gives about 255 TWh for 2030 against 268.6 TWh in this Mode 1 series; its basis is unknown and it is not to be quoted
+until identified (TODO 14be).
 
 ### PROVISIONAL pending the storage fix - The model's gas fuel cost was within 4% of IRP 2025's, so the gap between the two gas builds did not come from the fuel price, 9 Oct 2026
 

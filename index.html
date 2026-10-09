@@ -1225,7 +1225,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         sites per region chosen from environmental authorisations and gazetted development zones,
         then calibrated so the national mean matches Eskom&rsquo;s metered output. Solar is PVGIS
         satellite data at 5&nbsp;km. Demand is Eskom&rsquo;s measured 2025 hourly profile, domestic
-        only, scaled by the growth slider.</p>
+        only, scaled by the growth slider. The 2040 pathways grow demand on the IRP 2025 reference path year by year, from the forecast
+        behind the IRP (UCT Energy Systems Research Group demand model, IRP 2023&ndash;24 revision; Merven,
+        <a href="https://doi.org/10.25375/uct.26942134.v5" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">doi:10.25375/uct.26942134.v5</a>,
+        CC BY 4.0), applied as growth on measured 2026 demand. Their levels therefore sit about 12% below the
+        IRP&rsquo;s own: on the same basis the IRP&rsquo;s forecast put 2026 at 246&nbsp;TWh against about 219.5&nbsp;TWh
+        measured. Using IRP demand is a generous test, not a forecast: IRP 2019 expected 306&nbsp;TWh by 2030,
+        demand on the IRP&rsquo;s basis was about 239&nbsp;TWh in 2024, and Eskom&rsquo;s sales have fallen from
+        224&nbsp;TWh (FY2012) to 178&nbsp;TWh (FY2026).</p>
         <p style="font-size:11px;color:var(--ink2)"><strong>Why the sampling matters.</strong> These
         profiles used one point per region until September 2026. A single point in a province with a
         coast, an escarpment and a dry interior is not a province: the national fleet ran out of wind
@@ -9798,6 +9805,15 @@ async function renderProvMix(){
   host.innerHTML = html;
 }
 
+// Demand in model year y relative to 2026, for the build LP and its per-year engine checks. opts.demandIndex
+// (9 Oct 2026, user: central demand follows the IRP 2025 reference path year by year on the measured 2026 base)
+// maps year -> multiplier, e.g. from public_data/esrg_irp_demand_ref.json; without it, the constant annual rate
+// opts.growth, as before.
+function bldDemandIndex(opts, y){
+  const ix = opts && opts.demandIndex;
+  if (ix && ix[y] != null) return +ix[y];
+  return Math.pow(1 + ((opts && opts.growth) || 0), y - 2026);
+}
 function bldBuildLP(opts){
   const Y = BLD_YEARS, T = BLD_TECHS;
   const rd = bldRepDays(12);
@@ -10072,7 +10088,7 @@ function bldBuildLP(opts){
   const RES_VRE_BASE = S.reserveVreBaseMW || 0;
   const COMMIT_ON = !!S.bldCoalCommit, COMMIT_MIN = Math.max(0, Math.min(1, S.bldCoalMinFrac)), COMMIT_H = Math.max(1, S.bldCoalCommitHours);
   for (const y of Y){
-    const dg = Math.pow(1+growth, y-2026);
+    const dg = bldDemandIndex(opts, y);
     const coalCapMean = bldCoalMW(y) * eaf;
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
@@ -10549,7 +10565,7 @@ function bldStateForYear(res, y, opts){
     newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
     newPsMW: Math.round(tot.phes || 0), newPsHours: opts.state.bldPhesHours,
     coalDecomMW: Math.max(0, Math.round(FIXED.coalInstalledMW - bldCoalMW(y) + rc)),
-    demandGrowthPct: (Math.pow(1 + (opts.growth || 0), y - 2026) - 1) * 100, scenarioYear: y,
+    demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, scenarioYear: y,
     ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
         ? { dieselDecomMW: (opts.state.dieselDecomMW || 0) + bldPeakerDecomMW(y, { ...FIXED, ...opts.state }, res.Columns) } : {}) };
 }
@@ -18384,7 +18400,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-09b';
+const BUILD_STAMP = '2026-10-09c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

@@ -117,10 +117,24 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  // COSTSET (7 Oct 2026): a whole cost set, e.g. COSTSET=irp2025; see costset.js.
  require('./costset.js')(w, process.env.COSTSET);
  await w.eval('loadWeatherYears()');
+ // DEMAND (9 Oct 2026, user decision): central demand follows the IRP 2025 reference path year by year on the
+ // measured 2026 base. 'irp_esrg' (default): public_data/esrg_irp_demand_ref.json (ESRG, CC BY 4.0), its
+ // index_vs_2026 (domestic grid + distributed PV); 'rate:<pct>': a constant % a year (2.3 the IRP average, labelled
+ // alternative; 1.39 NTCSA MTSAO moderate; 0 flat; 3.44 TDP high peak growth converted at constant load factor);
+ // 'legacy': DEM to the horizon (5%, unsourced), the setting of every run before build 2026-10-09c.
+ const DEMAND=process.env.DEMAND||'irp_esrg', YRS=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)'));
+ let DEM_INDEX=null;
+ if (DEMAND==='irp_esrg'){ const J=JSON.parse(fs.readFileSync(path.join(ROOT,'public_data','esrg_irp_demand_ref.json'),'utf8')).years;
+   DEM_INDEX=Object.fromEntries(YRS.map(y=>{ if(!J[y]) throw new Error('esrg_irp_demand_ref.json has no '+y); return [y, J[y].index_vs_2026]; })); }
+ else if (DEMAND.startsWith('rate:')){ const r=+DEMAND.slice(5)/100; if(!isFinite(r)) throw new Error('DEMAND rate'); DEM_INDEX=Object.fromEntries(YRS.map(y=>[y, Math.pow(1+r, y-2026)])); }
+ else if (DEMAND!=='legacy') throw new Error('DEMAND must be irp_esrg, rate:<pct> or legacy');
+ if (DEM_INDEX && process.env.DEM) throw new Error('DEM applies only with DEMAND=legacy');
+ if (DEM_INDEX) w.eval(`state.demandGrowthPct=${(DEM_INDEX[YRS[YRS.length-1]]-1)*100};`);   // the horizon year's level, for anything reading the slider
+ console.log('demand', DEMAND, DEM_INDEX ? JSON.stringify(DEM_INDEX) : 'legacy +'+DEM+'% to the horizon');
  const t0=Date.now();
  const _dump=setInterval(()=>{ try{ fs.writeFileSync((process.env.OUT||'x')+'.progress', JSON.stringify(w.eval('JSON.stringify(bldStressLog.map(l=>({pass:l.pass,margin:l.margin,added:l.added,nAdded:Array.isArray(l.added)?l.added.length:l.added,fails:l.years.filter(q=>q.mean>q.limit).map(q=>[q.y,+q.mean.toFixed(2),+q.limit.toFixed(2)])})))'))); }catch(e){} }, 20000);
  await w.eval(`(async()=>{ const tg=1+(state.demandGrowthPct||0)/100;
-   const opts={growth:${process.env.GROWTH_PA ? +process.env.GROWTH_PA : 'Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1'}, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, marginStepMW:1000, draws:2, stressDays:14, targetFrac:${+(process.env.TF||0.5)}, windowLeadYears:${+(process.env.LEAD||0)}, testEvery:1, windowsPerPass:${+(process.env.WPP||3)}, maxPasses:${+(process.env.MAXP||14)}};
+   const opts={growth:${process.env.GROWTH_PA ? +process.env.GROWTH_PA : 'Math.pow(tg,1/Math.max(1,BLD_YEARS.length-1))-1'}, eaf:(state.coalEAFPct??FIXED.coalEAFPct)/100, rate:bldRates(), state:state, perYear:true, marginStepMW:1000, draws:2, stressDays:14, targetFrac:${+(process.env.TF||0.5)}, windowLeadYears:${+(process.env.LEAD||0)}, testEvery:1, windowsPerPass:${+(process.env.WPP||3)}, maxPasses:${+(process.env.MAXP||14)}${DEM_INDEX ? ', demandIndex:'+JSON.stringify(DEM_INDEX) : ''}};
    window.__out=await bldStressLoop(opts, m=>{}); })()`);
  const out=w.__out, cols=out.res.Columns;
  const Y=JSON.parse(w.eval('JSON.stringify(BLD_YEARS)')), T=JSON.parse(w.eval('JSON.stringify(BLD_TECHS)'));
@@ -135,6 +149,6 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
    fs.writeFileSync(OUT.replace(/\.json$/,'')+'_lp'+DY+'.json', JSON.stringify({year:DY, periods, lpv})); }
  const peakerExt=Object.fromEntries(Object.entries(cols).filter(([c])=>c.startsWith('le_')).map(([c,v])=>[c.slice(3),Math.round(v.Primal||0)]));   // TODO 14as
  const build=Object.fromEntries(Object.entries(cols).filter(([n])=>/^(b_[a-z]+|eb_batt|rc|cc_[a-z]+)_20\d\d$/.test(n)).map(([n,c])=>[n,c.Primal]));   // exact, for FIX_FROM
- fs.writeFileSync(OUT, JSON.stringify({build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
+ fs.writeFileSync(OUT, JSON.stringify({demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
  console.log('done', out.verdict, ((Date.now()-t0)/1000).toFixed(0)+'s'); process.exit(0);
 })();
