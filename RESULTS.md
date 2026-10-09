@@ -1747,8 +1747,8 @@ kJ/kWh). The model's figure is 3.8% higher. Both are all-in: the model's carries
 has no separate charge.
 
 So the difference between the optimiser's new gas (1.2-1.45 GW on the central pathways, 07c and 07s) and the IRP's is
-not the fuel price; the IRP cost-set run of 7 Oct (entry "IRP 2025's own cost set on the central pathway") already
-pointed to other inputs. Provisional with every optimiser result until the central pathway is rerun with the hourly
+not the fuel price. The IRP cost-set run of 7 Oct (entry "IRP 2025's own cost set on the central pathway") found
+about the same gas build with the IRP's whole cost set, so the gap is not a cost input at all. Provisional with every optimiser result until the central pathway is rerun with the hourly
 storage fix (build `2026-10-09a`, running).
 
 ### Cost scaling does not make the stress-window LP solvable; the build LP now binds each stress window only in the years it failed (per-year windows, build 2026-10-09a), 9 Oct 2026
