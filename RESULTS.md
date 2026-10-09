@@ -1738,9 +1738,9 @@ produce that. The stopgap stays; its timing could be moved to wind at night.
 
 ### Cost scaling does not make the stress-window LP solvable; the build LP now binds each stress window only in the years it failed (per-year windows, build 2026-10-09a), 9 Oct 2026
 
-Cost scaling (user, 9 Oct; tested on two LPs because Bröchin et al. (2022, arXiv:2211.12299, as cited by the user; the
-paper could not be opened from this container) found that scaling cuts average solve time but makes very long runs
-more likely). harness/ext/scale_test.py divides every objective coefficient by the factor and multiplies the reported
+Cost scaling (user, 9 Oct; tested on two LPs because Bröchin, Pickering, Tröndle and Pfenninger (2022), "Harder,
+better, faster, stronger: understanding and improving the tractability of large energy system models",
+arXiv:2211.12299, found that scaling cuts average solve time but makes very long runs more likely). harness/ext/scale_test.py divides every objective coefficient by the factor and multiplies the reported
 objective back; the variables and constraints are unchanged. Interior point (HiGHS 1.15.1); "no crossover" stops at the
 interior point without the final vertex step. A: the 08c central first pass (hs_lp.js, 49.9 MB). B: the 08c pass-2 LP
 with only the four 2023 windows (98.5 MB).
@@ -1756,13 +1756,21 @@ B   1                  on          Optimal   6,836 s   exact                    
 B   1                  off         Unknown   450 s     unusable (6.5e15)
 B   1e6                off         Unknown   353 s     unusable (6.6e15)
 B   1e4                off         Unknown   313 s     unusable (6.1e15)
-B   1e6                on          running at the time of writing; 6,836 s unscaled
+B   1e6                on          Optimal   4,057 s   2.5e-13                     all within 0.1 MW
 ```
 
 - The first-pass LP needs no scaling: without crossover it already solves to the same build. The LP with stress
   windows does not converge without crossover at any of the three cost scales, so scaling the costs does not remove
   the long vertex step. Costs run from 0.34 to 1.2e8 (median 1,550); dividing by 1e6 puts 2,352 of them within ten
   times of the dual feasibility tolerance (1e-7), which is why 1e4 was tried as well.
+- Correction (user, 9 Oct): dividing every cost by one factor shifts the coefficient range but does not narrow it, so
+  this did not test the scaling Bröchin et al. describe, by quantity group. With crossover the one-factor scaling was
+  faster on both LPs (A 527 against 806 s, B 4,057 against 6,836 s) with the same answer; no long run appeared.
+- The largest costs (1.2e8) are not the stress-window penalty: they are new-build capital, iron-air in 2026 (R121m per
+  MW) and offshore wind (R82m per MW). Next come the stress-day shed and reserve-shortfall variables (u_, rsl_ at
+  VoLL x 365), above 1e7: 2,520 columns each on the first pass, 2,981 and 2,978 on B.
+- Queued as a diagnosis only, no method change (user, 9 Oct): on B, interior point without crossover with (a) the
+  stress-window shed penalty capped at VoLL x 10, (b) HiGHS's most aggressive scaling option.
 - The fallback agreed with the user follows.
 
 Per-year stress windows (bldWindowsPerYear, default 1 from build `2026-10-09a`; 0 restores the 6-8 Oct behaviour, LP
