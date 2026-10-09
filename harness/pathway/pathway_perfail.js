@@ -9,6 +9,8 @@ const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');const
 // GAS_CAP (7 Oct 2026): new CCGT MW a year from GAS_FIRST, replacing the rate cap; 0 allows no new gas.
 const GAS_CAP=process.env.GAS_CAP!==undefined?+process.env.GAS_CAP:null;
 const IA_CAP=process.env.IA_CAP?+process.env.IA_CAP:0, LI_CAP=process.env.LI_CAP?+process.env.LI_CAP:0, CAP_FROM=+(process.env.CAP_FROM||2028), LDES_NOCAP=process.env.LDES_NOCAP==='1';
+// DEM: demand growth to the horizon year, %. Default 5 is the LEGACY, UNSOURCED setting inherited from the transition
+// presets (a judgement, not a forecast; RESULTS 9 Oct 2026); label runs on it "demand +5% (legacy, unsourced)".
 const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF_PER_YR=1200, DEM=+(process.env.DEM||5);
 (async()=>{
  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
@@ -72,6 +74,9 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:''));
  // STRESS_TARGET (8 Oct 2026, TODO 14bk): 1 plans the stress windows to the standard (bldStressTarget); unset = FIXED (0).
  w.eval(`if(!('bldStressTarget' in FIXED)) throw new Error('bldStressTarget missing');`+(process.env.STRESS_TARGET!==undefined?` state.bldStressTarget=${+process.env.STRESS_TARGET};`:''));
+ // HSOC (9 Oct 2026): storage state of charge in the build LP (bldHourlySoc): 0 the daily balance of 07s and earlier,
+ // 1 hourly (default from 2026-10-08c); to separate the storage fix from other changes.
+ w.eval(`if(!('bldHourlySoc' in FIXED)) throw new Error('bldHourlySoc missing');`+(process.env.HSOC!==undefined?` state.bldHourlySoc=${+process.env.HSOC};`:''));
  // WPY (9 Oct 2026): 1 binds each loop window only in the years where it failed (bldWindowsPerYear), 0 from the first
  // failing year to the horizon; unset = FIXED (1 from build 2026-10-09a).
  w.eval(`if(!('bldWindowsPerYear' in FIXED)) throw new Error('bldWindowsPerYear missing');`+(process.env.WPY!==undefined?` state.bldWindowsPerYear=${+process.env.WPY};`:''));

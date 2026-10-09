@@ -1736,6 +1736,22 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### The pathways' demand growth, +5% to 2040, has no source; every pathway result so far used it, 9 Oct 2026
+
+Checked 9 Oct 2026 (user request). Where it is set: harness/pathway/pathway_perfail.js and harness/pathcheck.js (DEM,
+default 5; demand reaches +5% in the horizon year, interpolated geometrically from 2026), and hard-coded in
+harness/gapdiag.js. What it is based on: nothing sourced. It is the transition presets' setting (Deep decarbonisation
+2035, Fossil-free 2040, IRP path 2035), whose comment gave "roughly half a percent a year to 2035: electrification and
+industrial recovery against efficiency and continued grid defection" and stated it was "not a forecast of this
+project's own"; documented 23 Sep 2026, chosen earlier. The 2040 pathways (first draft 4 Oct 2026) reused the same +5%
+over 2026-2040, which is 0.35% a year. Eskom's sales have fallen from over 224 TWh in FY2012 to 178.0 TWh in FY2026
+(SOURCES), so any positive setting is a forward assumption.
+
+Every pathway, preset search and optimiser comparison in this file ran on it, from the first-draft pathway (4 Oct) to
+the 09a central rerun. From build `2026-10-09b` the preset comment and the pathway scripts say it is unsourced, and runs
+on it are labelled "demand +5% (legacy, unsourced)". TODO 14be step 1 runs three sourced paths (IRP 2025 moderate,
+NTCSA, flat) on one demand basis; no new central until the user confirms.
+
 ### PROVISIONAL pending the storage fix - The model's gas fuel cost was within 4% of IRP 2025's, so the gap between the two gas builds did not come from the fuel price, 9 Oct 2026
 
 Build `2026-10-09a` constants (unchanged since 5 Oct 2026). The model's CCGT fuel cost, costCcgt, is R2,003/MWh: USD 18.50/MMBtu

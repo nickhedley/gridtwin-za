@@ -13,6 +13,7 @@ const SEED_BASE=+(process.env.SEED_BASE||71830529);
 // unusable heel (LNG_HEEL), CCGT efficiency (CCGT_EFF). 170,000 m3: Zululand Energy Terminal phase 1 (Engineering News,
 // 5 Jun 2026). 53.37 GJ/t: IRP 2025 additional assumptions (gas fuel energy content). 0.45 t/m3 and no heel: unsourced.
 const LNG_M3=+(process.env.LNG_M3||170000), LNG_GJ_M3=+(process.env.LNG_GJ_M3||0.45*53.37), LNG_HEEL=+(process.env.LNG_HEEL||0), CCGT_EFF=+(process.env.CCGT_EFF||0.52);
+// DEM: demand growth to 2040, %, as the pathway; default 5 is the legacy, unsourced setting (RESULTS 9 Oct 2026).
 const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.json')), K=+(process.env.K||2), DEM=+(process.env.DEM||5);
 (async()=>{
  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');

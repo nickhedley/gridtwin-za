@@ -16914,8 +16914,12 @@ const PRESETS={
   // Eskom's 170.4. 3 Oct 2026.
   '2025, as modelled':{demandGrowthPct:0,demandYear:2025,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,importsCF:0.652,hydroCF:0.339,dslTankOn:1,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
   // DEMAND +5%, the same in Fossil-free 2040 and IRP path 2035 so the three can be compared.
-  // Roughly half a percent a year to 2035: electrification and industrial recovery against
-  // efficiency and continued grid defection.
+  // UNSOURCED (checked 9 Oct 2026): a judgement, not a forecast. It was chosen before 23 Sep 2026
+  // as roughly half a percent a year to 2035, reasoned as electrification and industrial recovery
+  // against efficiency and continued grid defection, with no study or forecast behind the number.
+  // Eskom's sales have fallen since FY2012 (SOURCES), so any positive setting is an assumption.
+  // The 2040 pathways reused the same +5% over 2026-2040 (0.35% a year); TODO 14be tests sourced
+  // paths (IRP 2025, NTCSA, flat) against it.
   //
   // WHAT IT PRODUCES, and it is not one number, which is the trap. Eskom-SERVED demand at +5%
   // is 183.3 TWh here and in IRP path 2035, and 173.0 TWh in Fossil-free 2040 - same growth
@@ -18380,7 +18384,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-09a';
+const BUILD_STAMP = '2026-10-09b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
