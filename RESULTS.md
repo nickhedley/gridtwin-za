@@ -1821,6 +1821,43 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### PROVISIONAL pending the gas price review - Central pathway on IRP demand: 4.9 GW of new gas, lithium on its 2 GW a year cap in 12 of 15 years, and the system cost 36% above the legacy-demand run, 9 Oct 2026
+
+Run on build `2026-10-09d` code (the LP is identical to 09c's; pumped hydro off). harness/pathway/pathway_perfail.js
+DEMAND=irp_esrg SOLVER=native TL=72000 COMMIT=1 PSE=1 TF=0.5 (half standard), hourly state of charge and per-year
+windows at their defaults, gas at the default R2,003/MWh, emisCcgt 0.37 (before 09e, so gas CO2 is 6.3% high), no OCGT
+option, twelve weather years. Converged in 2 passes, 4 h 21 min (pass 2 solve 4 h 18 min, simplex). Engine check:
+pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive, 120 runs a year, 95% half-width within 11.5% of target.
+Outputs harness/pathway_v_half_c1_p1_09c_irp.json, harness/pathcheck_v_half_c1_p1_09c_irp.json. Compared with 09a
+(legacy +5% demand, same settings otherwise); each run's shed is against its own target, which scales with demand.
+
+```
+year  demand  shed/target GWh: 09a legacy   09c IRP       new gas GW    lithium GW     cost R bn
+                                                          09a   09c     09a    09c     09a   09c
+2026   +0.0%   0.38/2.00 (19%)   0.04/2.02 ( 2%)          0.00  0.00    1.72   2.00    214   230
+2028   +4.1%   0.26/1.98 (13%)   0.00/2.11 ( 0%)          0.00  0.00    3.07   6.00    225   275
+2030  +10.1%   0.04/1.99 ( 2%)   0.00/2.19 ( 0%)          1.20  1.20    4.41  10.00    230   303
+2032  +16.7%   0.00/1.99 ( 0%)   0.00/2.29 ( 0%)          3.60  3.48    6.73  12.00    249   332
+2034  +23.6%   0.02/1.97 ( 1%)   0.00/2.43 ( 0%)          3.60  3.69   10.71  14.58    254   336
+2035  +26.7%   0.02/1.96 ( 1%)   0.02/2.47 ( 1%)          3.60  4.89   10.86  16.58    248   347
+2036  +30.1%   0.26/1.97 (13%)   0.06/2.56 ( 2%)          3.60  4.89   10.92  18.21    246   353
+2038  +38.1%   0.73/1.98 (37%)   0.70/2.76 (25%)          3.60  4.89   13.17  22.21    244   365
+2039  +42.1%   0.74/1.97 (37%)   0.97/2.84 (34%)          3.60  4.89   13.53  24.21    242   375
+2040  +45.9%   0.63/1.97 (32%)   0.84/2.91 (29%)          3.60  4.89   14.39  26.21    244   388
+2026-2040 total cost: 09a R3,565bn, 09c R4,863bn (+36%). CO2 1,471 against 1,460 Mt. Gas 3.0 against 16.6 TWh.
+```
+
+Every year meets the target in both runs, by a wide margin (at most 37% of target in 09a, 34% in 09c): the overshoot
+of TODO 14bk persists. New gas 2030/2035/2040: 1.2/4.9/4.9 GW on IRP demand against 1.2/3.6/3.6 GW on legacy demand;
+2030 sits on the deliverability cap in both. Gas runs 1,557 hours in 2040 (11% capacity factor) against 236.
+
+Caps that bind (build at the yearly limit), 09c: lithium power 2026-31, 2034-35, 2037-40 (12 of 15 years) and lithium
+energy 2026-31 (12-hour batteries early on); gas 2030, 2031, 2035; utility solar every year 2026-39; wind 2026-31;
+iron-air 2027-31; flow batteries 2026-31. 09a: lithium 2032, 2034, 2038; gas 2030-32; solar 2028-32, 2034; wind
+2029-32, 2034. On IRP demand the pathway builds at the pace limits in most years, so the limits, not costs, shape it:
+the lithium pace sensitivity (TODO 14bt) and the deliverability of the solar and wind paces matter more here than on
+legacy demand.
+
 ### Gas price cases built: central R1,298/MWh fuel, about 35% below the R2,003 default, with the terminal now a fixed charge, 9 Oct 2026
 
 Build `2026-10-09f`. public_data/gas_price_cases.json (build_gas_cases.py; sources in SOURCES, "Gas price cases").
