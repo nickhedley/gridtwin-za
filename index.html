@@ -1135,7 +1135,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <table class="mono" style="font-size:11.5px">
           <tr><td>Coal</td><td>R546/MWh fuel (Eskom FY2025 primary energy) &middot; +R80 VOM &middot; 1.04&nbsp;tCO&#8322;/MWh &middot; 42&nbsp;GW installed &middot; real per-unit retirement dates to 2051</td></tr>
           <tr><td>Diesel OCGT</td><td>R6&nbsp;100/MWh fuel &middot; +R70 VOM &middot; 0.78&nbsp;tCO&#8322;/MWh &middot; 3.4&nbsp;GW</td></tr>
-          <tr><td>Gas CCGT</td><td>R2&nbsp;003/MWh fuel &middot; +R35 VOM &middot; 0.37&nbsp;tCO&#8322;/MWh &middot; LNG-fired. FY2026 JKM reference: $18.50/MMBtu delivered &times; R16.50/USD &divide; 52% efficiency. Carbon added separately. Use the Gas running cost slider for spot ($23 &asymp; R2&nbsp;490) or pre-Hormuz consensus ($12 &asymp; R1&nbsp;300)</td></tr>
+          <tr><td>Gas CCGT</td><td>R2&nbsp;003/MWh fuel &middot; +R35 VOM &middot; 0.348&nbsp;tCO&#8322;/MWh &middot; LNG-fired. FY2026 JKM reference: $18.50/MMBtu delivered &times; R16.50/USD &divide; 0.293071&nbsp;MWh/MMBtu &divide; 52% efficiency. Carbon added separately. Use the Gas running cost slider for spot ($23 &asymp; R2&nbsp;490) or pre-Hormuz consensus ($12 &asymp; R1&nbsp;300)</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; 1&nbsp;150&nbsp;MW @ 85&nbsp;%</td></tr>
           <tr><td>Variable O&amp;M</td><td>Applied, and shown above per source. Thermal only:
             wind, solar and battery carry their O&amp;M as fixed R/kW-yr instead, which is the
@@ -6277,7 +6277,7 @@ const FIXED = {
   //   costImports 550  Cahora Bassa & international purchases at contracted
   //                    rates (these DO embed the supplier's O&M and return -
   //                    contracted price, not a cost build-up).
-  //   costCcgt 1968    Derived from the FY2026 JKM reference (14 Aug 2026):
+  //   costCcgt 2003    Derived from the FY2026 JKM reference (14 Aug 2026):
   //                    JKM realised Jan-Aug 2026 averaged ~$15.5 (low-teens
   //                    January, $18.75 April shoulder, $21.2 August on the
   //                    Hormuz disruption; 52wk range $9.46-22.35), blended
@@ -6289,9 +6289,13 @@ const FIXED = {
   //                    the Hormuz spike into every scenario; the pre-spike
   //                    "calm" $16.5 delivered would pretend 2026 didn't
   //                    happen. Replaces 2800, which predated the benchmark
-  //                    work and carried no derivation. GAS_DEFAULTS in the
-  //                    SRMC panel uses the same $18.50, so panel and model
-  //                    agree by construction.
+  //                    work and carried no derivation. The SRMC panel reads
+  //                    costCcgt itself (GAS_DEFAULTS no longer exists), so
+  //                    panel and model agree by construction.
+  //                    Checked 9 Oct 2026 (TODO 14bo, search extracts): JKM
+  //                    averaged about $16.8 over Jan-Aug 2026 and $22.0 in
+  //                    August, not ~$15.5 and $21.2. The $18.50 basis stays
+  //                    the default until the gas price cases replace it.
   //   costDiesel 6100  Eskom OCGT: recent runs reported at ~R6,011/MWh
   //                    (Mar 2026). Fuel-only.
   // SUPERSEDED 14 Aug 2026, corrected here 18 Sep 2026. This block used to read "VOM is
@@ -6306,7 +6310,9 @@ const FIXED = {
   // move for all technologies at once or the merit order tilts. Do not add or remove it for
   // one constant in passing.
   costCoal:546, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
-  costCcgt:2003, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
+  // emisCcgt 0.348 t/MWh from 9 Oct 2026 (was 0.37, which implied 48.9% efficiency): natural gas 53.06 kg CO2 per
+  // MMBtu (HHV; US EPA GHG Emission Factors Hub) / 0.293071 MWh per MMBtu / 0.52, the efficiency costCcgt uses.
+  costCcgt:2003, emisCcgt:0.348, costDiesel:6100, emisDiesel:0.78,
   // Variable O&M, R/MWh, thermal only - added 14 Aug 2026 following the
   // professional convention (NREL ATB 2022/2024, used by ReEDS/GenX; EIA AEO):
   // per-MWh VOM for thermal plant, zero for wind/solar/battery, whose O&M is
@@ -6412,6 +6418,10 @@ const FIXED = {
   //                    R18,000 to R34,965/kW. At 25yr, 9% wacc the annuity is
   //                    R3,560/kW/yr; at 30% CF that is R1,355/MWh of capital,
   //                    plus R1,968 fuel SRMC and R17 carbon = R3,340.
+  //                    Stale since 5 Oct 2026: costCcgt is R2,003 (FX update) and
+  //                    emisCcgt 0.348 (9 Oct), so this is about R35 low. To be
+  //                    recomputed once the gas price review (TODO 14bo) sets the
+  //                    default fuel price, so that it moves once.
   //                    The previous 2,500 was consistent with the OLD R18,000/kW
   //                    capex - both were about half the market, and they moved
   //                    together, which is exactly why cross-panel consistency
@@ -6880,7 +6890,7 @@ function simulate(u, prof, outPath, _soc0){
   //     charge if   cost_now  <  reservationPrice(tier, hour) * efficiency
   //
   // A 45%-efficient store charging at R690/MWh must expect better than R1,533 to
-  // break even; against gas clearing near R1,968 it often will, but now it can
+  // break even; against gas clearing near R2,003 (costCcgt) it often will, but now it can
   // decline the trade when it would not. Efficiency ordering is unchanged - the gate
   // sits in front of it, so a tier that fails the test is simply skipped.
   //
@@ -7481,7 +7491,7 @@ function simulate(u, prof, outPath, _soc0){
   // This is the charge-from-coal path, so it does not need a renewable surplus to
   // exist - the question is whether cheap energy is available, not whether energy is
   // being spilled. That distinction matters in a system like South Africa's where the
-  // price floor is coal at ~R690/MWh and gas clears near R1,968: a 45%-efficient store
+  // price floor is coal at ~R690/MWh and gas clears near R2,003 (costCcgt): a 45%-efficient store
   // charging at R690 delivers at ~R1,533, which is in the money against gas.
   //
   // Capped at 168 hours (one week). Beyond that the perfect-foresight assumption does
@@ -16714,7 +16724,7 @@ const SLIDERS=[
   {id:'lcoeIronAir',label:'Iron-air',min:600,max:4000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
   {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:3500,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
-  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R2.00/kWh \u2013 about 60&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed $10/MMBtu against the FY2026 reference of $18.50.'},
+  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R2.00/kWh \u2013 about 60&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the FY2026 reference of $18.50.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Wide range; SMRs higher.'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Calculated from the 2016 coal baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Adjusted for inflation. Neither project was built.'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'R9.00 at a 5&#37; capacity factor; R13.20 at 2&#37;, R7.60 at 10&#37;. Floor is diesel\u2019s own SRMC, ~R6.2/kWh.'},
@@ -16798,7 +16808,7 @@ const SLIDERS=[
    note:'Make the build optimiser meet an emissions ceiling in 2030, rather than only reporting whether it does. When turned on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
    ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that.'},
-  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'R2,003 = $18.50/MMBtu delivered LNG &#215; R16.50/USD &#215; 52&#37; efficiency. Each $1/MMBtu \u2248 R108/MWh. Fuel only; build cost is the Gas CCGT slider.'},
+  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'R2,003 = $18.50/MMBtu delivered LNG &#215; R16.50/USD &#247; 0.293071 MWh/MMBtu &#247; 52&#37; efficiency. Each $1/MMBtu \u2248 R108/MWh. Fuel only; build cost is the Gas CCGT slider.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. Switch on to see what a priced reserve market would be worth to storage.'},
   {id:'asReserveRMWh',label:'\u2013 reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,ctrlStyle:SUB_CTRL,
@@ -18422,7 +18432,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-09d';
+const BUILD_STAMP = '2026-10-09e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

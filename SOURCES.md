@@ -551,6 +551,12 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     USD 2/MMBtu adder is replaced, not added to.
   - New CCGT fixed O&M raised by R260/kW-yr.
 
+## Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026)
+
+- US EPA, GHG Emission Factors Hub: natural gas, 53.06 kg CO2 per MMBtu on a higher heating value basis.
+- emisCcgt = 53.06 / 1000 / 0.293071 MWh per MMBtu / 0.52 = 0.348 t/MWh, at the 52% (HHV) efficiency costCcgt
+  uses. The previous 0.37 implied 48.9%. IRP 2025 OCGT units at the same factor: 9F.05 0.534, 9HA.02 0.475 t/MWh.
+
 ## ANU RE100 pumped hydro atlas, South Africa shortlist (TODO 14z, 7 Oct 2026)
 
 Downloaded by Nick Hedley, Oct 2026: 6,921 off-river site pairs, none in protected areas, with URLs

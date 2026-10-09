@@ -1821,6 +1821,18 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### Gas emissions factor 0.37 to 0.348 t/MWh; gas comments corrected, 9 Oct 2026
+
+Build `2026-10-09e` (user decision, TODO 14bo). emisCcgt = 53.06 kg CO2/MMBtu (HHV, US EPA) / 0.293071 / 0.52 = 0.348
+t/MWh; 0.37 implied 48.9% efficiency against the 52% that costCcgt uses (SOURCES). Gas CO2 in every earlier result is
+6.3% high (0.37/0.348). No default output moves (no gas at the defaults): suite 804/809 plus eng5 6/6, identical to
+09d, with no printed value changed. Comments corrected: costCcgt's label 1968 to 2003, the retired GAS_DEFAULTS
+reference, two "gas clears near R1,968" notes, the slider's "x 52%" (a division), the slider's and README's
+unsourced "IRP 2025 assumed $10/MMBtu" (IRP 2025: R260.89/GJ in January 2024 rands, about USD 15/MMBtu). The JKM
+figures in the costCcgt derivation (Jan-Aug about $15.5, August $21.2) are lower than the sourced $16.8 and $22.0;
+noted at the constant, value unchanged until the gas price cases replace it. lcoeCcgt (R3,340) was derived with
+R1,968 fuel and is about R35 low; to be recomputed once, when the default fuel price is set.
+
 ### PROVISIONAL pending the storage fix - The model's gas fuel cost was within 4% of IRP 2025's, so the gap between the two gas builds did not come from the fuel price, 9 Oct 2026
 
 Build `2026-10-09a` constants (unchanged since 5 Oct 2026). The model's CCGT fuel cost, costCcgt, is R2,003/MWh: USD 18.50/MMBtu
