@@ -72,6 +72,9 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF
  w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:''));
  // STRESS_TARGET (8 Oct 2026, TODO 14bk): 1 plans the stress windows to the standard (bldStressTarget); unset = FIXED (0).
  w.eval(`if(!('bldStressTarget' in FIXED)) throw new Error('bldStressTarget missing');`+(process.env.STRESS_TARGET!==undefined?` state.bldStressTarget=${+process.env.STRESS_TARGET};`:''));
+ // WPY (9 Oct 2026): 1 binds each loop window only in the years where it failed (bldWindowsPerYear), 0 from the first
+ // failing year to the horizon; unset = FIXED (1 from build 2026-10-09a).
+ w.eval(`if(!('bldWindowsPerYear' in FIXED)) throw new Error('bldWindowsPerYear missing');`+(process.env.WPY!==undefined?` state.bldWindowsPerYear=${+process.env.WPY};`:''));
  // CUMV (8 Oct 2026): 1 writes cumulative capacity as one variable per technology and year (bldCumVars), the same
  // model in a sparser LP; unset = FIXED (0).
  w.eval(`if(!('bldCumVars' in FIXED)) throw new Error('bldCumVars missing');`+(process.env.CUMV!==undefined?` state.bldCumVars=${+process.env.CUMV};`:''));

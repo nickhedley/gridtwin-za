@@ -1736,6 +1736,51 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### Cost scaling does not make the stress-window LP solvable; the build LP now binds each stress window only in the years it failed (per-year windows, build 2026-10-09a), 9 Oct 2026
+
+Cost scaling (user, 9 Oct; tested on two LPs because Bröchin et al. (2022, arXiv:2211.12299, as cited by the user; the
+paper could not be opened from this container) found that scaling cuts average solve time but makes very long runs
+more likely). harness/ext/scale_test.py divides every objective coefficient by the factor and multiplies the reported
+objective back; the variables and constraints are unchanged. Interior point (HiGHS 1.15.1); "no crossover" stops at the
+interior point without the final vertex step. A: the 08c central first pass (hs_lp.js, 49.9 MB). B: the 08c pass-2 LP
+with only the four 2023 windows (98.5 MB).
+
+```
+LP  costs divided by   crossover   status    time      objective vs exact vertex   build decisions (165) vs exact
+A   1 (as built)       on          Optimal   806 s     exact                       -
+A   1                  off         Optimal   514 s     1.1e-9                      all within 0.1 MW
+A   1e6 (R million)    off         Optimal   492 s     1.7e-9                      all within 0.1 MW
+A   1e4                off         Optimal   527 s     1.3e-9                      all within 0.1 MW
+A   1e6                on          Optimal   527 s     5e-15                       all within 0.1 MW
+B   1                  on          Optimal   6,836 s   exact                       -
+B   1                  off         Unknown   450 s     unusable (6.5e15)
+B   1e6                off         Unknown   353 s     unusable (6.6e15)
+B   1e4                off         Unknown   313 s     unusable (6.1e15)
+B   1e6                on          running at the time of writing; 6,836 s unscaled
+```
+
+- The first-pass LP needs no scaling: without crossover it already solves to the same build. The LP with stress
+  windows does not converge without crossover at any of the three cost scales, so scaling the costs does not remove
+  the long vertex step. Costs run from 0.34 to 1.2e8 (median 1,550); dividing by 1e6 puts 2,352 of them within ten
+  times of the dual feasibility tolerance (1e-7), which is why 1e4 was tried as well.
+- The fallback agreed with the user follows.
+
+Per-year stress windows (bldWindowsPerYear, default 1 from build `2026-10-09a`; 0 restores the 6-8 Oct behaviour, LP
+unchanged: the central pass-2 LP is byte-identical to 08c's with it off). Each window the loop adds binds only in the
+model year where the engine found it failing, and in any other year where the same window fails later; before, it
+bound from that year to the horizon. ReEDS checks resource adequacy for each solve year in the same way: "for a given
+solve year t, ReEDS iterates with the PRAS model to dynamically update stress periods", and PRAS "is run after each
+ReEDS model year to evaluate the RA of the ReEDS-designed power system and add additional stress periods if necessary"
+(ReEDS documentation, github.com/NREL/ReEDS-2.0, docs/source/model_documentation.md, Resource Adequacy; method in Mai,
+Brown, Lavin, Dhulipala and Kuna 2024, Incorporating Stressful Grid Conditions for Reliable and Cost-Effective
+Electricity System Planning, SSRN, doi:10.2139/ssrn.4841668). The difference: ReEDS solves year by year, while this LP
+plans all years at once, so a window bound only in 2034 still shapes the builds that 2035 inherits.
+
+Central pathway pass 2 with the same pass-1 build: 121.4 MB against 237.7 MB (window days 420 against 1,036). The
+seed tail (the worst seven days across the twelve years) still binds every year. Stated in the page's methods notes.
+
+Suite 804/809 plus eng5 6/6 without ESK19679.csv, identical to 08d check by check.
+
 ### The 08c central pass 2 did not solve in eight hours; a sparser LP and three ways to shrink it, tested on the first pass, 9 Oct 2026
 
 Central pathway on build `2026-10-08c` (v_half_c1_p1_08c: Today 2026, demand +5% to 2040, half standard, COMMIT 1,
