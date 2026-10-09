@@ -1748,7 +1748,38 @@ has no separate charge.
 
 So the difference between the optimiser's new gas (1.2-1.45 GW on the central pathways, 07c and 07s) and the IRP's is
 not the fuel price. The IRP cost-set run of 7 Oct (entry "IRP 2025's own cost set on the central pathway") found
-about the same gas build with the IRP's whole cost set, so the gap is not a cost input at all. Provisional with every optimiser result until the central pathway is rerun with the hourly
+about the same gas build with the IRP's cost set (capex, fuel, O&M, heat rate; the model's discount rate and lives kept):
+
+```
+new gas, cumulative GW                 2030    2035    2040
+central, 07c costs (build 07c)         1.20    3.22    3.22
+IRP cost set (build 07c)               1.20    3.87    3.87
+central, 07s costs (build 07s)         1.20    1.45    1.45
+IRP 2025 Table 1 (gas IPP + Eskom)     6.00   10.75   17.25   (18.25 by 2042)
+```
+
+All three model runs predate the storage fix. In each, 2030 sits on the build cap: no new gas before 2030
+(pathway_perfail.js GAS_FIRST) and at most 1,200 MW a year (BLD_PACE.deliverable, "gas at Masterplan pace").
+
+What differs between this setup and the IRP's, any of which could explain the gap (inputs for TODO 14bd and 14be):
+- Gas earmarked: the IRP's first 6 GW is 3 GW Eskom in 2029 and 3 GW IPP in 2030, and its reference case assumes "6
+  GW CCGT" (IRP p.34). The model chooses gas, and cannot build more than 1.2 GW by 2030 under its cap.
+- Minimum running: the IRP holds that 6 GW at a minimum annual capacity factor of 51%, 2030-2040 (p.34). The optimiser
+  has no floor; the engine has one only for the IRP presets (ccgtForceLoad).
+- Demand: the IRP's moderate forecast grows about 2.3% a year, to about 255 TWh in 2030, 300 in 2035 and 345 in 2040
+  (executive summary; Figure 2 read visually, +/-5 TWh). The pathways grow demand 5% in total over 2026-2040 (about
+  0.35% a year). Not yet on one basis: the IRP's includes network losses and deemed cross-border sales (14be).
+- Coal retirement: the IRP fixes a 50-year life, 8 GW off in 2029-2030 and a further 15 GW in 2034-2042 (3.2.1.1.3).
+  The optimiser chooses retirement: 28.9 GW by 2040 on 07c costs, 18.8 GW on the IRP's.
+- Discount rate: the IRP uses 11.3% (p.34); the model 8% real (BLD_DISC). The cost-set run kept 8%. A higher rate
+  favours low-capital, high-fuel plant such as gas over solar, wind and storage. Not yet tested.
+- Reliability basis: the model plans to half the 0.002% unserved-energy standard, checked hourly over twelve weather
+  years and outage draws, with no reserve margin. The IRP's reliability criterion or reserve margin is not in the
+  extract; to be sourced from the IRP before 14be.
+- Build pace for the alternatives: the model's default allows 2 GW a year of lithium and 2.5 GW of solar and of wind;
+  the pace implied by the IRP is 0.55, 1.5 and 2.2 GW (BLD_PACE.irp). Storage is what replaces gas in the model.
+- Also: 5.2 GW of new nuclear 2036-2039 in the IRP, not an option in the build LP; rooftop 0.9 GW a year in the IRP
+  against 1.2 in the pathways. Provisional with every optimiser result until the central pathway is rerun with the hourly
 storage fix (build `2026-10-09a`, running).
 
 ### Cost scaling does not make the stress-window LP solvable; the build LP now binds each stress window only in the years it failed (per-year windows, build 2026-10-09a), 9 Oct 2026
