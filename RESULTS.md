@@ -1736,6 +1736,21 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### PROVISIONAL pending the storage fix - The model's gas fuel cost was within 4% of IRP 2025's, so the gap between the two gas builds did not come from the fuel price, 9 Oct 2026
+
+Build `2026-10-09a` constants (unchanged since 5 Oct 2026). The model's CCGT fuel cost, costCcgt, is R2,003/MWh: USD 18.50/MMBtu
+delivered (a 2026 JKM reference of about USD 16.5 plus USD 2 for regasification and transport) x R16.50/USD / 0.293071
+MWh per MMBtu / 0.52. IRP 2025's gas price (assumptions workbook, sheet "New Tech Properties", "First year, ZAR/GJ" =
+R260.89 in January 2024 rands, flat in real terms, no terminal or inland adder) is R278.66/GJ in 2026 rands (x 1.0681,
+SA CPI January 2024 to January 2026), which is R1,929/MWh at 52% (R1,923 at the IRP's own CCGT heat rate, 6,900
+kJ/kWh). The model's figure is 3.8% higher. Both are all-in: the model's carries the terminal as USD 2/MMBtu, the IRP's
+has no separate charge.
+
+So the difference between the optimiser's new gas (1.2-1.45 GW on the central pathways, 07c and 07s) and the IRP's is
+not the fuel price; the IRP cost-set run of 7 Oct (entry "IRP 2025's own cost set on the central pathway") already
+pointed to other inputs. Provisional with every optimiser result until the central pathway is rerun with the hourly
+storage fix (build `2026-10-09a`, running).
+
 ### Cost scaling does not make the stress-window LP solvable; the build LP now binds each stress window only in the years it failed (per-year windows, build 2026-10-09a), 9 Oct 2026
 
 Cost scaling (user, 9 Oct; tested on two LPs because Bröchin, Pickering, Tröndle and Pfenninger (2022), "Harder,
