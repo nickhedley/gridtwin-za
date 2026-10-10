@@ -1839,7 +1839,7 @@ At 48 hours the 10 MW displaces about 40 MW of wind in 2035, 3 MW of gas in 2034
 difference is within solver tolerance, so pumped hydro is effectively not chosen at either duration. The pathway's
 binding limits are elsewhere (lithium, solar and wind pace; RESULTS, central pathway on IRP demand). As the central cap
 (1,500 MW from 2038) is tighter than the high cap, it cannot bind either, so offering pumped hydro by default with the
-central cap does not move results (user rule, 9 Oct): done in build `2026-10-09g`. Outputs
+central cap does not move results (user rule, 9 Oct): done in build `2026-10-10a`. Outputs
 harness/pathway_v_half_c1_p1_09c_phes_high14.json and harness/pathway_v_half_c1_p1_09c_phes_high48.json; no engine
 check run, as the builds equal the central's (14 h) or differ by under 50 MW (48 h).
 
