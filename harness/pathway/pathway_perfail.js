@@ -7,11 +7,13 @@
 // new rooftop fixed at 1.2 GW a year from 2027 (16.8 GW by 2040, expected uptake, not a planner's choice).
 const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');const highsLoader=require('highs');
 // GAS_CAP (7 Oct 2026): new CCGT MW a year from GAS_FIRST, replacing the rate cap; 0 allows no new gas.
+// GAS_FIRST (10 Oct 2026, TODO 14be step 2): first year new gas may come on line, default 2030 (the deliverability cap);
+// the relaxed-cap diagnosis uses GAS_FIRST=2027 GAS_CAP=100000 and is labelled not deliverable.
 const GAS_CAP=process.env.GAS_CAP!==undefined?+process.env.GAS_CAP:null;
 const IA_CAP=process.env.IA_CAP?+process.env.IA_CAP:0, LI_CAP=process.env.LI_CAP?+process.env.LI_CAP:0, CAP_FROM=+(process.env.CAP_FROM||2028), LDES_NOCAP=process.env.LDES_NOCAP==='1';
 // DEM: demand growth to the horizon year, %. Default 5 is the LEGACY, UNSOURCED setting inherited from the transition
 // presets (a judgement, not a forecast; RESULTS 9 Oct 2026); label runs on it "demand +5% (legacy, unsourced)".
-const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=2030, ROOF_PER_YR=1200, DEM=+(process.env.DEM||5);
+const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.env.GAS_FIRST||2030), ROOF_PER_YR=1200, DEM=+(process.env.DEM||5);
 (async()=>{
  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
  const dom=new JSDOM(html,{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,url:'file://'+path.resolve(ROOT)+'/index.html',
