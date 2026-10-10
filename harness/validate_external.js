@@ -107,6 +107,7 @@ const EXTERNAL = {
       newWindMW: 20000 - 4612, // to 20 GW total wind
       demandGrowthPct: 30,   // 285 TWh by 2030 - CSIR Table 1, Least-cost scenario
       coalEAFPct: 65,        // CSIR Table 1: 65% EAF in 2030
+      bldWindModern: 0,      // the study's own basis: its wind on the current-turbine profile (user, 7 Oct 2026)
     },
     why: 'CSIR reports coal at roughly 55% of energy by 2030 in its least-cost '
        + 'case, with solar 15-40 GW and wind 20-45 GW installed. This runs '
@@ -131,6 +132,7 @@ const EXTERNAL = {
       newWindMW: 20000 - 4612,
       demandGrowthPct: 30,   // 285 TWh by 2030 - CSIR Table 1, Least-cost scenario
       coalEAFPct: 65,        // CSIR Table 1: 65% EAF in 2030
+      bldWindModern: 0,      // the study's own basis: its wind on the current-turbine profile (user, 7 Oct 2026)
     },
     why: 'The complement of the coal figure, less nuclear, hydro and imports. '
        + 'Stated separately because coal share and RE share can both drift '
@@ -360,9 +362,19 @@ function check(name, ok, detail) {
   }
 
   const gA = Math.round(100 * (Math.pow(1.02, 9) - 1));
-  const edmsa = run({ coalEAFPct: 70, demandGrowthPct: gA,
+  // EXTERNAL BUILDS ON THEIR OWN WIND BASIS (user decision, 7 Oct 2026): CSIR and EDMSA specify wind MW at their own
+  // yields (EDMSA's 64 TWh from 24.6 GW is about 30%), so their builds run on the current-turbine profile
+  // (bldWindModern 0). The modern-turbine profile, the model's default for new wind since build 07s, is reported
+  // below as a sensitivity (RESULTS, 7 Oct 2026), not checked.
+  const EDMSA_A = { coalEAFPct: 70, demandGrowthPct: gA,
     newWindMW: 20000, newPvMW: 25000, newBattMW: 8000, newBattHours: 4,
-    newCcgtMW: 4000, coalDecomMW: 4100 });
+    newCcgtMW: 4000, coalDecomMW: 4100 };
+  const edmsa = run({ ...EDMSA_A, bldWindModern: 0 });
+  {
+    const cs = run({ ...EXTERNAL.csir2030CoalShare.scenario, bldWindModern: 1 }), es = run({ ...EDMSA_A, bldWindModern: 1 });
+    notes.push(`Sensitivity, new wind on the modern-turbine profile (not checked): CSIR 2030 coal ${cs.coalShare.toFixed(1)}%, `
+      + `renewables ${cs.reShare.toFixed(1)}%; EDMSA A 2035 CO2 ${es.co2.toFixed(1)} Mt, wind ${es.windTWh.toFixed(1)} TWh`);
+  }
 
   for (const [lab, got, pub, band, unit] of [
         // BAND WIDENED 12 -> 22 on 6 Sep 2026, deliberately, with the reason recorded.

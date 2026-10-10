@@ -1135,7 +1135,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         <table class="mono" style="font-size:11.5px">
           <tr><td>Coal</td><td>R546/MWh fuel (Eskom FY2025 primary energy) &middot; +R80 VOM &middot; 1.04&nbsp;tCO&#8322;/MWh &middot; 42&nbsp;GW installed &middot; real per-unit retirement dates to 2051</td></tr>
           <tr><td>Diesel OCGT</td><td>R6&nbsp;100/MWh fuel &middot; +R70 VOM &middot; 0.78&nbsp;tCO&#8322;/MWh &middot; 3.4&nbsp;GW</td></tr>
-          <tr><td>Gas CCGT</td><td>R2&nbsp;003/MWh fuel &middot; +R35 VOM &middot; 0.37&nbsp;tCO&#8322;/MWh &middot; LNG-fired. FY2026 JKM reference: $18.50/MMBtu delivered &times; R16.50/USD &divide; 52% efficiency. Carbon added separately. Use the Gas running cost slider for spot ($23 &asymp; R2&nbsp;490) or pre-Hormuz consensus ($12 &asymp; R1&nbsp;300)</td></tr>
+          <tr><td>Gas CCGT</td><td>R2&nbsp;003/MWh fuel &middot; +R35 VOM &middot; 0.348&nbsp;tCO&#8322;/MWh &middot; LNG-fired. FY2026 JKM reference: $18.50/MMBtu delivered &times; R16.50/USD &divide; 0.293071&nbsp;MWh/MMBtu &divide; 52% efficiency. Carbon added separately. Use the Gas running cost slider for spot ($23 &asymp; R2&nbsp;490) or pre-Hormuz consensus ($12 &asymp; R1&nbsp;300). The national model treats gas plants as coastal (Richards Bay): no inland transport is charged. The inland adder (the Lilly pipeline at R9.00/GJ, NERSA 2025/26, once its flow is reversed; about USD&nbsp;2.8/GJ by truck before then, from an undated source) goes into the regional optimiser. The 2040 pathways also run five gas price cases (low, central, Brent USD&nbsp;100, high, and IRP 2025 as published), each delivered at the coast; all but the IRP case carry the LNG terminal as a fixed cost per kW of new gas. Shipping is their least-sourced input: a 2018 charter breakeven adjusted with US inflation and an estimated sea distance, and charter rates have likely risen since the Hormuz disruption.</td></tr>
           <tr><td>Imports (Cahora Bassa)</td><td>R550/MWh &middot; 1&nbsp;150&nbsp;MW @ 85&nbsp;%</td></tr>
           <tr><td>Variable O&amp;M</td><td>Applied, and shown above per source. Thermal only:
             wind, solar and battery carry their O&amp;M as fixed R/kW-yr instead, which is the
@@ -1143,7 +1143,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
             imports get no adder \u2013 hydro has no fuel so its R30/MWh already is consumables, and
             the import price is contracted and embeds the supplier\u2019s own O&amp;M.</td></tr>
           <tr><td>Existing fleet</td><td>Wind 4.6&nbsp;GW (REIPPPP 4.0 + wheeled 0.47 + Eskom Sere 0.1) &middot; Utility PV 3.27&nbsp;GW (grid-contracted 2.78 + wheeled 0.49) &middot; Hybrid 0.34&nbsp;GW (RMIPPPP, contracted dispatchable 05:00&ndash;21:30; modelled hourly as 05:00&ndash;22:00) &middot; Rooftop 8.6&nbsp;GW &middot; CSP 0.6&nbsp;GW &middot; Batteries 0.8&nbsp;GW &middot; Pumped storage 2.9&nbsp;GW</td></tr>
-          <tr><td>New-build capex</td><td>Wind R21&nbsp;000 &middot; PV R12&nbsp;000 &middot; Rooftop R17&nbsp;000 &middot; Battery&nbsp;(4h) R10&nbsp;500 &middot; CCGT R18&nbsp;000 /kW. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT rises, having hit a record high in 2025</td></tr>
+          <tr><td>New-build capex</td><td>Wind R<span id="capexWind">&ndash;</span> &middot; PV R<span id="capexPv">&ndash;</span> &middot; Rooftop R<span id="capexRooftop">&ndash;</span> &middot; Battery&nbsp;(4h) R<span id="capexBatt">&ndash;</span> (BESIPPPP bid window 3 aged to 2026; inclusions not stated) &middot; CCGT R<span id="capexCcgt">&ndash;</span> /kW, 2026. Declining per BNEF to 2035 (solar &minus;30&nbsp;%, storage &minus;25&nbsp;%, onshore wind &minus;23&nbsp;%); CCGT rises, having hit a record high in 2025</td></tr>
           <tr><td>Network</td><td>439 real Eskom transmission lines &middot; 185 substations with verified coordinates and kV ratings (NTCSA shapefile, OSM, Eskom GPS, DBSA RFP&nbsp;008 register) &middot; GCCA 2025 connection headroom by region &middot; 11 Renewable Energy Development Zones (GN&nbsp;114 / Gazette&nbsp;41445 2018 and GN&nbsp;142/144/145 / Gazette&nbsp;44191 2021), held as centre points and equivalent-area radii rather than gazetted polygons. Per-substation capability bands shown in the Grid connection tab are a GridTwin estimate derived from that regional figure plus network topology &ndash; they are not published by Eskom or NTCSA.</td></tr>
           <tr><td>Planned build</td><td>221 projects from NTCSA&rsquo;s Transmission Development Plan 2025&ndash;2034, all nine provinces, each with its published commissioning year and delivery phase</td></tr>
           <tr><td>Renewables vs Non-fossil</td><td>&ldquo;Renewables&rdquo; = wind + utility PV + rooftop PV + CSP + hydro. &ldquo;Non-fossil&rdquo; adds nuclear and (mostly-hydro) imports.</td></tr>
@@ -1151,7 +1151,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
 
         <p style="margin-top:8px"><strong>Risk and variability:</strong> the risk panel dispatches 60 synthetic years, each drawing both an outage path and a real weather year. Coal availability is drawn unit by unit around the EAF slider, with station-level trips that take several units out together, calibrated to Eskom&rsquo;s measured 2023&ndash;2025 availability; weather is drawn from twelve real years (2014&ndash;2025, Renewables.ninja/MERRA-2 at capacity-weighted REIPPPP plant locations) and cycled so each year is used equally. The two are sampled independently, since unplanned outages track plant condition rather than the weather. This matters most in high-renewable scenarios: varying coal availability alone told you nothing once the coal fleet had retired. Separately, <strong>Show wind &amp; solar extremes</strong> re-solves the scenario against 12 real weather years (2014&ndash;2025, Renewables.ninja / MERRA-2 at capacity-weighted REIPPPP plant locations). South Africa has the most variable solar resource in Africa, and 2022 delivered 17&nbsp;% less wind energy than 2023 from an identical fleet – so a single-year run can materially over- or under-state both adequacy risk and curtailment.</p>
 
-        <p style="margin-top:8px"><strong>Capacity expansion:</strong> the build-schedule optimiser is a linear programme solved in-browser with HiGHS. It minimises discounted system cost over 2026&ndash;2030 using representative days rather than all 8&nbsp;760 hours, so it sizes the build rather than proving it – verify any resulting mix with <strong>Run the full model</strong>. In regional mode it also decides where, subject to per-region GCCA headroom, real corridor limits, and a per-region annual build cap of 45% of the national rate (without that last constraint the optimiser concentrated an entire national year of wind into a single province, roughly eleven times what any South African province has sustained).</p>
+        <p style="margin-top:8px"><strong>Capacity expansion:</strong> the build-schedule optimiser is a linear programme solved in-browser with HiGHS. It minimises discounted system cost over 2026&ndash;2030 using representative days rather than all 8&nbsp;760 hours, so it sizes the build rather than proving it – verify any resulting mix with <strong>Run the full model</strong>. Reliability is checked year by year: where the hourly engine sheds more than the standard allows, the failing days are added to the optimisation as a stress window for the model year in which they failed, as NREL&rsquo;s ReEDS model checks resource adequacy for each solve year (<a href="https://github.com/NREL/ReEDS-2.0" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">ReEDS documentation</a>; Mai et al. 2024, <a href="https://doi.org/10.2139/ssrn.4841668" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">doi:10.2139/ssrn.4841668</a>). In national mode storage keeps an hourly state of charge: each representative day stands for a block of identical real days, its hourly level must stay between empty and full on the first and the last day of the block (which covers every day between them), and the level carries over from one representative day to the next. In regional mode it also decides where, subject to per-region GCCA headroom, real corridor limits, and a per-region annual build cap of 45% of the national rate (without that last constraint the optimiser concentrated an entire national year of wind into a single province, roughly eleven times what any South African province has sustained).</p>
 
         <p style="margin-top:8px"><strong>What it is not:</strong> the instant model has no network constraints (the MIP does, across 10 regions) and no operating-reserve co-optimisation. Costs exclude existing-fleet capex, wires and retail. It answers bulk adequacy, not distribution reliability, where most outages start. Everything runs in your browser, except the rooftop tool's address and roof lookups, which go to Google. The TDP is a published plan, not an investment commitment. For decision-grade work use <a href="https://github.com/MeridianEconomics/pypsa-rsa" target="_blank" rel="noopener">PyPSA-RSA</a> – this app is the intuition layer in front of it.</p>
       </div>
@@ -1225,7 +1225,14 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
         sites per region chosen from environmental authorisations and gazetted development zones,
         then calibrated so the national mean matches Eskom&rsquo;s metered output. Solar is PVGIS
         satellite data at 5&nbsp;km. Demand is Eskom&rsquo;s measured 2025 hourly profile, domestic
-        only, scaled by the growth slider.</p>
+        only, scaled by the growth slider. The 2040 pathways grow demand on the IRP 2025 reference path year by year, from the forecast
+        behind the IRP (UCT Energy Systems Research Group demand model, IRP 2023&ndash;24 revision; Merven,
+        <a href="https://doi.org/10.25375/uct.26942134.v5" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">doi:10.25375/uct.26942134.v5</a>,
+        CC BY 4.0), applied as growth on measured 2026 demand. Their levels therefore sit about 12% below the
+        IRP&rsquo;s own: on the same basis the IRP&rsquo;s forecast put 2026 at 246&nbsp;TWh against about 219.5&nbsp;TWh
+        measured. Using IRP demand is a generous test, not a forecast: IRP 2019 expected 306&nbsp;TWh by 2030,
+        demand on the IRP&rsquo;s basis was about 239&nbsp;TWh in 2024, and Eskom&rsquo;s sales have fallen from
+        224&nbsp;TWh (FY2012) to 178&nbsp;TWh (FY2026).</p>
         <p style="font-size:11px;color:var(--ink2)"><strong>Why the sampling matters.</strong> These
         profiles used one point per region until September 2026. A single point in a province with a
         coast, an escarpment and a dry interior is not a province: the national fleet ran out of wind
@@ -1453,8 +1460,8 @@ function initResourceQuery(){
   // said R6,500/kWh installed while pre-feasibility said R1,450 - the R1,450 was
   // a utility cell-pack figure mislabelled "installed"; retail reality for
   // small-scale is ~R6,000-7,000/kWh, e.g. a 5 kWh unit lands around R32k).
-  // Utility-scale EPC in the main model is R2,026/kWh (R8,105/kW at 4h) - a
-  // behind-the-meter system does not get that price.
+  // Utility-scale lithium in the main model is BLD_COST.batt (BESIPPPP bid window 3 aged to January 2026 since
+  // 7 Oct 2026, about R3,425/kWh) - a behind-the-meter system does not get that price.
   const BTM_BATT_R_PER_KWH = 6500;
   // CO2 displaced by behind-the-meter solar, tCO2/MWh. The main model's grid
   // average at defaults is 0.78; its marginal generator is coal (1.04) in
@@ -3955,8 +3962,9 @@ function printPrefeas() {
     // gave NaN silently, which the panel would have rendered as a blank row rather than an
     // error. Rule 11: compute the bound before believing the number.
     const battRPerKW = (typeof BLD_COST !== 'undefined' && BLD_COST.batt
-                        && typeof BLD_COST.batt.c2026 === 'number')
-                       ? BLD_COST.batt.c2026 : 8105;
+                        && typeof bldCostEntry('batt').c2026 === 'number')
+                       ? bldCostEntry('batt').c2026
+                       : (() => { throw new Error('BLD_COST.batt.c2026 missing'); })();   // no stand-in number (rule 4)
     const battRm = battMW * 1000 * battRPerKW / 1e6;   // R/kW is priced at its own duration
     // Demand response: no capital, an availability payment on the MW held.
     const drMW = corridorCapMW * 0.05;
@@ -5260,6 +5268,23 @@ function otherIppR(year){
   return (peakers + rmi + shortTerm) * 1e6;
 }
 
+// NEW PUMPED HYDRO BUILD CAPS, 9 Oct 2026 (user; TODO 14bq). Cumulative new pumped hydro allowed from each listed
+// year, MW; none before the first. The limit is delivery, not siting: the ANU shortlist has 140 Class AA/AAA sites
+// (67.9 TWh), but only Eskom's Tubatse (4 x 375 MW, 21 GWh) is in development, with construction from 2028 and
+// operation about 2038 (Engineering News, 22 May 2026, checked by the user); Energize (8 Nov 2024) had 2025-2033, so the
+// timeline has slipped. IRP 2025 Table 1 has 1,332 MW in 2037 as its only new pumped storage to 2042. Observed approval-
+// to-operation times are 10 to 15 years (Ingula 14). central: Tubatse alone, from 2038. high: Tubatse from Eskom's 2035
+// target and a second scheme of the same size from 2038 (3 GW, about the AUDA-NEPAD continental plan's figure for all
+// of Africa by 2040).
+const BLD_PHES_CAPS = { central: [[2038, 1500]], high: [[2035, 1500], [2038, 3000]] };
+// Cumulative cap in year y for a case name or a [[year, MW], ...] list.
+function bldPhesCumCapMW(cap, y){
+  const steps = Array.isArray(cap) ? cap : BLD_PHES_CAPS[cap];
+  if (!steps) throw new Error('bldPhesCap: unknown case ' + cap);
+  let mw = 0;
+  for (const [yy, v] of steps) if (y >= yy) mw = v;
+  return mw;
+}
 const FIXED = {
   coalInstalledMW:39692,
   // CORRECTED 42000 -> 39692 on 31 Aug 2026 from Eskom's integrated report FY2026, which
@@ -5502,11 +5527,17 @@ const FIXED = {
   // Cost basis (bldPhesCapexKW): 'anu2026' (default since 6 Oct 2026) for off-river sites; 'tubatse' the
   // conservative sensitivity, since river-based schemes cost more for flood design; 'atlas' the Weber et al. fit.
   // bldPhesHours2 (7 Oct 2026): a second pumped-hydro duration offered alongside the first (e.g. 160 h next to
-  // 48 h), same cost basis, sharing the yearly 1,500 MW limit, the newPsMaxMW cap and the earliest year. 0 = off.
-  bldPhesOn:0, bldPhesHours:48, bldPhesHours2:0, bldPhesCostBasis:'anu2026', bldPhesFomRkW:297,
-  // Earliest year a first pumped-hydro scheme can be in service: 2035, 6 Oct 2026. Ingula took 11 years
-  // (2006-2017); 2033 is kept as a sensitivity (set bldPhesFirstYear: 2033).
-  bldPhesFirstYear:2035,
+  // 48 h), same cost basis, sharing the yearly limit and the cumulative cap. 0 = off.
+  // bldPhesHours 14 from 9 Oct 2026 (user): Tubatse is 21 GWh on 1.5 GW. It was 48. The duration is fixed per run,
+  // not a build decision; offer a second with bldPhesHours2 (e.g. 48) to let the optimiser choose between them.
+  // bldPhesOn 1 from 10 Oct 2026 (user rule, 9 Oct): new pumped hydro is offered by default under the central cap. On IRP
+  // demand it is not chosen even under the high cap (0 MW at 14 hours, 10 MW at 48; RESULTS, 10 Oct), so the default
+  // builds are unchanged; the LP is about 10% slower to solve.
+  bldPhesOn:1, bldPhesHours:14, bldPhesHours2:0, bldPhesCostBasis:'anu2026', bldPhesFomRkW:297,
+  // Cumulative cap on new pumped hydro: a case in BLD_PHES_CAPS ('central' or 'high') or a [[year, MW], ...] list.
+  // It replaces bldPhesFirstYear (2035, 6 Oct) and the 6 GW total (9 Oct 2026, user). bldPhesRateMW: at most one
+  // Tubatse-size scheme a year (Ingula's four units entered service within 8 months, Jun 2016 to Jan 2017).
+  bldPhesCap:'central', bldPhesRateMW:1500,
   // Storage credit on stress (tail) days in the build LP: energy over 4 h, at most 1 x power. 6 Oct 2026.
   bldMarginHoldHours:4, bldMarginCreditMax:1,
   // Build LP, 6 Oct 2026: coal unit commitment, linearised (committed capacity, generation at least
@@ -5530,6 +5561,43 @@ const FIXED = {
   // for a refurbishing unit's three-year agreement (DESNZ, 2025 government response), a policy threshold set for
   // CCGTs, not a measured cost; R4,000 is the sensitivity. Extended or not, a plant online pays fomDiesel.
   bldPeakerRet:0, bldPeakerLifeExt:1, bldPeakerExtRkW:1500,
+  // SOLAR TRACKING (TODO 14aw, user, 7 Oct 2026). bldPvTracking 1: NEW utility solar runs on a single-axis tracking
+  // profile (nodal/profiles_solar_tracking.json, PVGIS SARAH3) at BW6 tracker capex (BLD_COST.pvtrk), which includes
+  // connection. Existing utility solar and rooftop keep the fixed-tilt profile. Off until the effect is reviewed.
+  bldPvTracking:0,
+  // Lithium cost case (BLD_COST.batt): 'central' BW3 aged to January 2026, 'high' BW3 as bid, 'low' global turnkey
+  // equipment only. User decision, 7 Oct 2026.
+  bldBattCase:'central',
+  // NEW WIND (user decisions, 7 Oct 2026). bldWindModern 1: new wind at BW6 bid capex (bldWindCase central; high the
+  // disclosed investment values of awarded projects; low IRENA's global average) on a modern-turbine profile (Vestas
+  // V162 5.6 MW at 120 m, nodal/profiles_wind_modern.json); existing farms keep their profile. Capex and profile change
+  // together. 0: the previous R21,000/kW on the existing profile, for comparison with earlier results.
+  bldWindModern:1, bldWindCase:'central',
+  // Correction for new wind on the modern-turbine profile (WIND_NEW_CORR): 'central' or 'low'. User decision, 7 Oct 2026.
+  bldWindCorr:'central',
+  // STRESS WINDOWS PLANNED TO THE STANDARD (user decision, 8 Oct 2026; TODO 14bk). 0: shedding in a stress window priced
+  // at VoLL x 365 (each window must be served). 1: each window and the seed tail weighted as one run of the loop's
+  // check (1 / (draws x weather years)) for every operating cost, and a row per year holding expected unserved energy
+  // plus reserve shortfall (calendar days at their weights, windows at that probability) to targetFrac x 0.002% of
+  // demand, with a slack priced at VoLL x 365 per expected MWh so capped years stay solvable.
+  bldStressTarget:0,
+  // HOURLY STATE OF CHARGE IN THE BUILD LP (user decision, 8 Oct 2026; TODO 14bl). The LP kept one energy balance per
+  // store per day, so energy charged late in a day could serve its earlier hours: on the 07s central build the engine
+  // shed 11.7 GWh in a 2040 window the LP served in full this way. 1: stress days carry an hourly level for every store,
+  // chained across the window and cyclic (the window ends at the level it started, a free variable); calendar days keep
+  // their day-to-day chain and add an hourly level that must stay within zero and capacity on every real day the
+  // representative day stands for (checked at both ends of the block, where the start level is lowest and highest).
+  // 2: stress days only. 0: the daily balance as before (LP text unchanged).
+  bldHourlySoc:1,
+  // CUMULATIVE CAPACITY AS ONE VARIABLE IN THE BUILD LP (8 Oct 2026, a test for the pass-2 runtime). 1: each hourly row
+  // names one K_<t>_<y> per technology and year instead of every year's build; the same model, a sparser LP.
+  // 0: the build sums written out (LP text unchanged).
+  bldCumVars:0,
+  // PER-YEAR STRESS WINDOWS (user decision 9 Oct 2026, after cost scaling did not make the pass-2 LP solvable): 1 binds
+  // each loop window only in the model years where the engine found it failing, as ReEDS checks resource adequacy for
+  // each solve year (ReEDS documentation; Mai et al. 2024, doi:10.2139/ssrn.4841668); a window failing again in another
+  // year is bound there too. 0: from the first failing year to the horizon, as 6 Oct to 8 Oct 2026 (LP unchanged).
+  bldWindowsPerYear:1,
   // RMIPPPP hybrid - firm dispatchable renewables, a category of its own.
   // 335.1 MW from Eskom's Weekly System Status Report (Week 32, Aug 2026), which
   // lists "Hybrid" separately from PV, Wind and CSP. These are solar+wind+battery
@@ -5896,12 +5964,10 @@ const FIXED = {
   // feasibility study was due Q1 2026. Duration and round trip here follow
   // Tubatse's published spec and typical PSH performance.
   //
-  // capped AT 6 GW, and the reason is siting rather than water. Pumped storage is
-  // closed-loop, so it consumes evaporation and an initial fill, not a continuous
-  // draw. What limits it is needing two reservoirs several hundred metres apart
-  // vertically AND the water to fill them. South Africa has managed four schemes
-  // in a century; single-digit GW is the honest ceiling, not tens.
-  newPsMW:0, newPsHours:14, newPsEff:0.78, newPsMaxMW:6000,
+  // Capped at the high case's 2040 total in BLD_PHES_CAPS (3 GW, 9 Oct 2026; it was 6 GW). The limit is delivery,
+  // not siting or water: closed-loop schemes need an initial fill and make-up for evaporation, and the ANU shortlist
+  // has 140 Class AA/AAA sites, but South Africa has built four schemes in fifty years and has one in development.
+  newPsMW:0, newPsHours:14, newPsEff:0.78, newPsMaxMW:BLD_PHES_CAPS.high[BLD_PHES_CAPS.high.length - 1][1],
   // ── regional trade ───────────────────────────────────────────────────────
   // Imports were a fixed constant. The SAPP Master Plan Update (draft, July 2026)
   // makes the case for a lever: it plans ONE new direct link to South Africa -
@@ -6214,7 +6280,7 @@ const FIXED = {
   //   costImports 550  Cahora Bassa & international purchases at contracted
   //                    rates (these DO embed the supplier's O&M and return -
   //                    contracted price, not a cost build-up).
-  //   costCcgt 1968    Derived from the FY2026 JKM reference (14 Aug 2026):
+  //   costCcgt 2003    Derived from the FY2026 JKM reference (14 Aug 2026):
   //                    JKM realised Jan-Aug 2026 averaged ~$15.5 (low-teens
   //                    January, $18.75 April shoulder, $21.2 August on the
   //                    Hormuz disruption; 52wk range $9.46-22.35), blended
@@ -6226,9 +6292,13 @@ const FIXED = {
   //                    the Hormuz spike into every scenario; the pre-spike
   //                    "calm" $16.5 delivered would pretend 2026 didn't
   //                    happen. Replaces 2800, which predated the benchmark
-  //                    work and carried no derivation. GAS_DEFAULTS in the
-  //                    SRMC panel uses the same $18.50, so panel and model
-  //                    agree by construction.
+  //                    work and carried no derivation. The SRMC panel reads
+  //                    costCcgt itself (GAS_DEFAULTS no longer exists), so
+  //                    panel and model agree by construction.
+  //                    Checked 9 Oct 2026 (TODO 14bo, search extracts): JKM
+  //                    averaged about $16.8 over Jan-Aug 2026 and $22.0 in
+  //                    August, not ~$15.5 and $21.2. The $18.50 basis stays
+  //                    the default until the gas price cases replace it.
   //   costDiesel 6100  Eskom OCGT: recent runs reported at ~R6,011/MWh
   //                    (Mar 2026). Fuel-only.
   // SUPERSEDED 14 Aug 2026, corrected here 18 Sep 2026. This block used to read "VOM is
@@ -6243,7 +6313,9 @@ const FIXED = {
   // move for all technologies at once or the merit order tilts. Do not add or remove it for
   // one constant in passing.
   costCoal:546, emisCoal:1.04, costNuclear:160, costHydro:30, costImports:550,
-  costCcgt:2003, emisCcgt:0.37, costDiesel:6100, emisDiesel:0.78,
+  // emisCcgt 0.348 t/MWh from 9 Oct 2026 (was 0.37, which implied 48.9% efficiency): natural gas 53.06 kg CO2 per
+  // MMBtu (HHV; US EPA GHG Emission Factors Hub) / 0.293071 MWh per MMBtu / 0.52, the efficiency costCcgt uses.
+  costCcgt:2003, emisCcgt:0.348, costDiesel:6100, emisDiesel:0.78,
   // Variable O&M, R/MWh, thermal only - added 14 Aug 2026 following the
   // professional convention (NREL ATB 2022/2024, used by ReEDS/GenX; EIA AEO):
   // per-MWh VOM for thermal plant, zero for wind/solar/battery, whose O&M is
@@ -6349,6 +6421,10 @@ const FIXED = {
   //                    R18,000 to R34,965/kW. At 25yr, 9% wacc the annuity is
   //                    R3,560/kW/yr; at 30% CF that is R1,355/MWh of capital,
   //                    plus R1,968 fuel SRMC and R17 carbon = R3,340.
+  //                    Stale since 5 Oct 2026: costCcgt is R2,003 (FX update) and
+  //                    emisCcgt 0.348 (9 Oct), so this is about R35 low. To be
+  //                    recomputed once the gas price review (TODO 14bo) sets the
+  //                    default fuel price, so that it moves once.
   //                    The previous 2,500 was consistent with the OLD R18,000/kW
   //                    capex - both were about half the market, and they moved
   //                    together, which is exactly why cross-panel consistency
@@ -6677,6 +6753,16 @@ function simulate(u, prof, outPath, _soc0){
   // Derive syncFloorMW from the toggle so the dispatch loop can reference it as p.syncFloorMW
   p.syncFloorMW = (typeof p.syncMinMW === 'number') ? p.syncMinMW : (p.syncMinEnabled !== false ? SYNC_MIN_MW : 0);
   const {solar,wind,csp}=prof;
+  // NEW WIND ON THE MODERN-TURBINE PROFILE (bldWindModern): onshore wind's per-unit output blends existing MW on the
+  // current profile with new MW on the modern twin. Off, or with no new wind: windU is wind itself.
+  const _wModOn = ((p.bldWindModern ?? FIXED.bldWindModern) | 0) > 0 && (p.newWindMW || 0) > 0;
+  const windU = _wModOn ? (() => { const T = prof.windMod || windModOf(wind), E = p.windMW || 0, N = p.newWindMW || 0, k = windNewCorr(p.bldWindCorr);
+    const a = new Float64Array(wind.length); for (let h = 0; h < a.length; h++) a[h] = (E * wind[h] + N * Math.min(1, k * T[h])) / (E + N); return a; })() : wind;
+  // SOLAR TRACKING (TODO 14aw): utility solar's per-unit output blends existing MW on fixed tilt with new MW on the
+  // tracking twin; rooftop keeps solar. Off: solarU is solar itself.
+  const _trkOn = ((p.bldPvTracking ?? 0) | 0) > 0 && (p.newPvMW || 0) > 0;
+  const solarU = _trkOn ? (() => { const T = prof.solarTrk || solarTrkOf(solar), E = p.pvUtilityMW || 0, N = p.newPvMW || 0;
+    const a = new Float64Array(solar.length); for (let h = 0; h < a.length; h++) a[h] = (E * solar[h] + N * T[h]) / (E + N); return a; })() : solar;
   // demandYear 2025 swaps in 2025's own demand series wherever the default series was passed
   // (single run or weather years). The default is the 2026 series. 3 Oct 2026.
   const demand = (p.demandYear === 2025 && prof.demand === PROFILES.demand && PROFILES.demand_2025)
@@ -6736,7 +6822,7 @@ function simulate(u, prof, outPath, _soc0){
   // New pumped storage joins the existing PS fleet - same technology, same
   // behaviour - with an energy-weighted round trip so a Tubatse-class addition
   // does not silently inherit the old fleet's efficiency.
-  const _newPs = Math.max(0, Math.min(p.newPsMaxMW ?? 6000, p.newPsMW || 0));
+  const _newPs = Math.max(0, Math.min(p.newPsMaxMW ?? FIXED.newPsMaxMW, p.newPsMW || 0));
   const psPowerTot  = p.psPowerMW + _newPs;
   const psEnergyTot = p.psEnergyMWh + _newPs*(p.newPsHours ?? 14);
   const psEffTot = (psEnergyTot > 0)
@@ -6807,7 +6893,7 @@ function simulate(u, prof, outPath, _soc0){
   //     charge if   cost_now  <  reservationPrice(tier, hour) * efficiency
   //
   // A 45%-efficient store charging at R690/MWh must expect better than R1,533 to
-  // break even; against gas clearing near R1,968 it often will, but now it can
+  // break even; against gas clearing near R2,003 (costCcgt) it often will, but now it can
   // decline the trade when it would not. Efficiency ordering is unchanged - the gate
   // sits in front of it, so a tier that fails the test is simply skipped.
   //
@@ -7177,7 +7263,7 @@ function simulate(u, prof, outPath, _soc0){
       const idx = [];
       for (let k = 0; k < 24; k++){
         const h = h0+k;
-        idx.push({ h, net: demand[h]*growth - (vreCap.w*wind[h] + vreCap.p*solar[h]) });
+        idx.push({ h, net: demand[h]*growth - ((_wModOn ? windCap*windU[h] + offshoreCap*wind[h] : vreCap.w*wind[h]) + vreCap.p*solarU[h]) });
       }
       idx.sort((a,b) => b.net - a.net);
       const nMove = 6;                                  // out of the top six hours; back into up to twelve
@@ -7257,8 +7343,8 @@ function simulate(u, prof, outPath, _soc0){
     const rooftopGen=Math.min(rooftopCap*solar[h]*(p.rooftopDerate??0.78), rawDemand*0.9);
     const load=rawDemand-rooftopGen+expAt(h);   // firm exports are a load on the SA system
     // Offshore on its OWN shape where the profile loaded, onshore's where it did not.
-    let windGen=windCap*wind[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
-        pvGen=pvCap*solar[h];
+    let windGen=windCap*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
+        pvGen=pvCap*solarU[h];
     const cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Its OWN accumulator, deliberately - the price
     // engine reads curtailMW as an oversupply signal and zeroes the marginal
@@ -7332,7 +7418,7 @@ function simulate(u, prof, outPath, _soc0){
   // actually running, not with installed capacity.
   const _vreMW = new Float64Array(HOURS);
   for (let h = 0; h < HOURS; h++)
-    _vreMW[h] = (p.windMW + p.newWindMW) * wind[h] + (p.pvUtilityMW + p.newPvMW) * solar[h];
+    _vreMW[h] = (p.windMW + p.newWindMW) * windU[h] + (p.pvUtilityMW + p.newPvMW) * solarU[h];
   const RESERVE = {
     on: !!(p.reserveEnabled ?? 1),
     contingencyMW: p.reserveOperatingMW,
@@ -7408,7 +7494,7 @@ function simulate(u, prof, outPath, _soc0){
   // This is the charge-from-coal path, so it does not need a renewable surplus to
   // exist - the question is whether cheap energy is available, not whether energy is
   // being spilled. That distinction matters in a system like South Africa's where the
-  // price floor is coal at ~R690/MWh and gas clears near R1,968: a 45%-efficient store
+  // price floor is coal at ~R690/MWh and gas clears near R2,003 (costCcgt): a 45%-efficient store
   // charging at R690 delivers at ~R1,533, which is in the money against gas.
   //
   // Capped at 168 hours (one week). Beyond that the perfect-foresight assumption does
@@ -7573,8 +7659,8 @@ function simulate(u, prof, outPath, _soc0){
     // surplus pool rate and pull firm volume out of the retail sales base.
     E.exportedFirm+=expAt(h);
     E.rooftop+=rooftopGen; loadS[h]=load;
-    let windGen=windCap*wind[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
-        pvGen=pvCap*solar[h], cspGen=p.cspMW*csp[h];
+    let windGen=windCap*windU[h] + offshoreCap*(_offPu ? _offPu[h % 8760] : wind[h]),
+        pvGen=pvCap*solarU[h], cspGen=p.cspMW*csp[h];
     // congestion CURTAILMENT. Own accumulator, deliberately - see the note at
     // the other declaration. The price engine reads curtailMW as an oversupply
     // signal and zeroes the marginal price wherever it is non-zero.
@@ -8956,15 +9042,59 @@ const BLD_LABEL = { wind:'Wind', pv:'Utility solar', rooftop:'Rooftop / distribu
 // Overnight capex, R/kW in 2026 money, with an annual real decline rate.
 // this is what the build LPs optimise on (via bldAnnuity + BLD_LIFE + BLD_DISC)
 // - not acap*, not lcoe*. At R16.2/USD these imply wind ~$1,300/kW, PV ~$740/kW,
-// battery R10,500/kW for 4h = R2,625/kWh (~$162/kWh installed), CCGT ~$1,110/kW.
+// battery: see the BESIPPPP note on the batt line below. CCGT: see its own note.
 // Declines are annual real cost reductions; ccgt's is NEGATIVE (costs rising 2%/yr,
 // consistent with post-2022 turbine market tightness). Cross-check: these annuitise
 // to numbers near the lcoe* reference anchors at typical capacity factors.
+// BESIPPPP bid window 3 as bid (R9.5bn for 2,464 MWh, May 2025) and its equipment share at the bid date: BNEF global
+// turnkey (USD 165/kWh, 2024 survey; 117, 2025) interpolated to May 2025, at the pinned R16.50/USD. See BLD_COST.batt.
+const BATT_BW3_BID = 9.5e9 / 2464e3;
+const BATT_EQUIP_BID = 165 * Math.pow(117/165, 5/12) * 16.5;
 const BLD_COST = {
-  wind:    { c2026: 21000, decl:  0.0286 },
+  // WIND ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14av). BW6 wind compliant bids, R26,647/kW
+  // (IPP Office REIPPPP historical data note, 7 Nov 2025, January 2024 rands; no wind was awarded in BW6) x SA CPI
+  // January 2024 to January 2026 (1.032 x 1.035): R28,463/kW. Bid-derived, so it includes the developer's connection
+  // (connIncl). International benchmark: IRENA, Renewable Power Generation Costs in 2024, onshore wind global weighted
+  // average total installed cost USD 1,041/kW (R17,180 at R16.50), so South African bids sit about 66% above the
+  // global average. Cross-check only: IRP 2025 workbook BW6 base case R27,446/kW (2026 rands). The previous R21,000 had
+  // no recorded source. IRP 2025 cost assumptions are a sensitivity (COSTSET=irp2025), never central (user, 7 Oct).
+  wind:    { c2026: 26647 * 1.032 * 1.035, decl:  0.0286, connIncl: true },
+  // High: disclosed investment values of awarded or financially closed projects, MW-weighted, escalated to January 2026
+  // at SA CPI (6.9% Jan 2023, 5.3% Jan 2024, 3.2% Jan 2025, 3.5% Jan 2026): EDF's BW5 Koruson 1, 420 MW, R11.5bn at
+  // financial close Nov 2022 - Jan 2023 (from January 2023); Impofu, 330 MW private, R9bn at financial close Feb 2024
+  // (from January 2024). About R30,060/kW. Investment values include financing costs and development fees, so they sit
+  // above overnight cost; that is why they are the high case and the overnight bids the central (user, 7 Oct 2026).
+  wind_high: { c2026: (420 * 11.5e9 / 420e3 * 1.053 * 1.032 * 1.035 + 330 * 9e9 / 330e3 * 1.032 * 1.035) / 750, decl: 0.0286, connIncl: true },
+  // Low: IRENA, Renewable Power Generation Costs in 2024, onshore wind global weighted average USD 1,041/kW at R16.50.
+  wind_low:  { c2026: 1041 * 16.5, decl: 0.0286, connIncl: false },
+  // The previous central, R21,000/kW (no recorded source), kept for bldWindModern 0 only.
+  wind_legacy: { c2026: 21000, decl: 0.0286 },
   pv:      { c2026: 12000, decl:  0.0389 },
+  // Single-axis tracking solar, BW6 preferred bidders' mean, R15,715/kW (IPP Office REIPPPP historical data note,
+  // 7 Nov 2025, January 2024 rands) x SA CPI January 2024 to January 2026 (1.032 x 1.035, Stats SA). Bid-derived, so
+  // it includes the developer's connection. Used for new utility solar when bldPvTracking is on (bldCostEntry).
+  pvtrk:   { c2026: 15715 * 1.032 * 1.035, decl: 0.0389, connIncl: true },
   rooftop: { c2026: 17000, decl:  0.0389 },
-  batt:    { c2026:  8105, decl:  0.0500 },
+  // BATTERIES ON SOUTH AFRICAN BID DATA, 7 Oct 2026 (user decision, TODO 14ax). Central: BESIPPPP bid window 3,
+  // preferred bidders announced 30 May 2025: 616 MW / 2,464 MWh for R9.5bn (DEE media statement; SAnews), R3,856/kWh,
+  // escalated one year at SA CPI (3.5%, Stats SA, January 2026) to R3,990/kWh, x 4 h per kW. INCLUSIONS NOT STATED:
+  // the R9.5bn is the announced project value; whether it covers development, financing, local content (31% on
+  // BW2) and the works at the five NTCSA substations is not published. Treated as including connection (connIncl),
+  // so a battery on this basis pays no connection bay in the grid-cost option. The previous R8,105/kW (R2,026/kWh,
+  // no recorded source; level of BNEF's 2025 global turnkey price, which excludes EPC and grid connection) is the
+  // low case: BATT_CAPEX=8105 in the pathway scripts.
+  // AGED TO JANUARY 2026 (user decision, 7 Oct 2026). BW3 was bid in May 2025; applying it as a 2026 price ignores a
+  // year of falling equipment prices. The equipment share of the bid is taken as BNEF's global turnkey price at the
+  // bid date (USD 165/kWh in the 2024 survey, 117 in 2025, interpolated to May 2025: USD 143, at the pinned R16.50,
+  // R2,359/kWh, 61% of the bid) and aged to January 2026 at BNEF's 2025 rate ((117/165)^(8/12) = 0.795). The rest
+  // (EPC, connection, local content, development) is held, escalated by CPI. Central R3,425/kWh, R13,699/kW at 4 h;
+  // the model's forward decline applies from 2026. At the May 2025 rate of about R18/USD it would be R3,373.
+  // Cases (bldBattCase): 'high' BW3 as bid (R3,990/kWh in 2026 rands); 'low' global turnkey equipment only
+  // (R2,026/kWh, excludes EPC and connection). Replace with the first section 34 determination's bid prices when
+  // published (TODO 14au).
+  batt:    { c2026: 4 * (BATT_EQUIP_BID * Math.pow(117/165, 8/12) + (BATT_BW3_BID - BATT_EQUIP_BID) * 1.035), decl:  0.0500, connIncl: true },
+  batt_high: { c2026: 4 * BATT_BW3_BID * 1.035, decl: 0.0500, connIncl: true },
+  batt_low:  { c2026: 8105, decl: 0.0500, connIncl: false },
   // long-duration storage, added Aug 2026. Both are priced per kW of power at
   // their own duration, like the lithium line above (R10,500/kW = 4h).
   //
@@ -9125,13 +9255,17 @@ function bldGrid132Ratio(){
 // One-off connection capex, R/kW, for a technology under bldGridCost mode m.
 function bldGridCapexKW(tech, S){
   const m = S.bldGridCost | 0; if (!m) return 0;
-  const G = BLD_GRID, f = bldGrid132Ratio(), km = (S.bldGridSpurBeyond ? G.kmBeyond : G.km)[tech === 'phel' ? 'phes' : tech];
+  // Capex that includes connection (BLD_COST[tech].connIncl, bid-derived; user decision 7 Oct 2026): wind and solar
+  // then pay only the distance beyond the typical connection, and storage pays no bay. Gas (GridLab) and pumped hydro
+  // (ANU, excluding connection per Blakers) always pay from zero.
+  const incl = !!(BLD_COST[tech] && bldCostEntry(tech).connIncl);
+  const G = BLD_GRID, f = bldGrid132Ratio(), km = ((S.bldGridSpurBeyond || incl) ? G.kmBeyond : G.km)[tech === 'phel' ? 'phes' : tech];
   const line132 = G.line400[m] * f, bay132 = (G.bay400[2] * f);   // the storage bay uses the high-case 132 kV bay
   if (tech === 'wind' || tech === 'pv')
     return (line132 * km + (m === 2 ? 2 * G.bay400[m] * f : 0)) / (G.circuitMW.kv132 * 1000);
   if (tech === 'phes' || tech === 'phel' || tech === 'ccgt')
     return (2 * G.line400[m] * km + 4 * G.bay400[m]) / (G.circuitMW.kv400 * 1000);
-  if (tech === 'batt' || tech === 'vrfb' || tech === 'ironair') return bay132 / (G.storeSchemeMW * 1000);
+  if (tech === 'batt' || tech === 'vrfb' || tech === 'ironair') return incl ? 0 : bay132 / (G.storeSchemeMW * 1000);
   return 0;   // rooftop (distribution) and offshore (export cable inside its capex)
 }
 // Annual grid cost in the build LP, R/kW-yr: the connection annuitised plus the integration charge.
@@ -9328,8 +9462,32 @@ function bldNetAnnuity(tech, year){
   const pay = capPayRate(tech);
   return Math.max(0, gross - pay * (BLD_DERATE[tech] ?? 0));
 }
+// The cost entry a technology is built at: new utility solar takes the tracker line when bldPvTracking is on.
+function bldPvTrackingOn(){
+  return typeof state !== 'undefined' && ((state.bldPvTracking ?? FIXED.bldPvTracking) | 0) > 0;
+}
+function bldWindModernOn(){
+  return typeof state !== 'undefined' ? ((state.bldWindModern ?? FIXED.bldWindModern) | 0) > 0 : (FIXED.bldWindModern | 0) > 0;
+}
+function bldBattCase(){
+  const c = typeof state !== 'undefined' ? (state.bldBattCase ?? FIXED.bldBattCase) : FIXED.bldBattCase;
+  if (c !== 'central' && c !== 'high' && c !== 'low') throw new Error('bldBattCase must be central, high or low: ' + c);
+  return c;
+}
+function bldCostEntry(tech){
+  if (tech === 'pv' && bldPvTrackingOn()) return BLD_COST.pvtrk;
+  if (tech === 'batt'){ const c = bldBattCase(); return c === 'high' ? BLD_COST.batt_high : c === 'low' ? BLD_COST.batt_low : BLD_COST.batt; }
+  if (tech === 'wind'){
+    if (!bldWindModernOn()) return BLD_COST.wind_legacy;
+    const c = typeof state !== 'undefined' ? (state.bldWindCase ?? FIXED.bldWindCase) : FIXED.bldWindCase;
+    if (c !== 'central' && c !== 'high' && c !== 'low') throw new Error('bldWindCase must be central, high or low: ' + c);
+    return c === 'high' ? BLD_COST.wind_high : c === 'low' ? BLD_COST.wind_low : BLD_COST.wind;
+  }
+  return BLD_COST[tech];
+}
 function bldCapex(tech, year){
-  return BLD_COST[tech].c2026 * Math.pow(1 - BLD_COST[tech].decl, year - 2026);
+  const c = bldCostEntry(tech);
+  return c.c2026 * Math.pow(1 - c.decl, year - 2026);
 }
 // Coal still standing at the start of a given year, from real per-unit dates.
 // UC_FLEET's unit sizes sum to 41.4 GW in 2026 against Eskom's nominal 39,692 MW (integrated
@@ -9483,8 +9641,10 @@ function bldRepDays(n){
           d: 1100 + 30*p + j, dem: cal, weight: 1, tail: true, year: sp.year, stress: true,
           prevD: j === 0 ? undefined : 1100 + 30*p + j - 1,
           coalFrac: sp.coalFrac ? Array.from({length:24}, (_, h) => sp.coalFrac[j*24 + h]) : null,
-          fromYear: sp.fromYear,
+          fromYear: sp.fromYear, ...(sp.years ? { years: sp.years.slice() } : {}),
           solar: Array.from({length:24}, (_, h) => nat.solar[cal*24 + h]),
+          ...(nat.solar.trk ? { solarTrk: Array.from({length:24}, (_, h) => nat.solar.trk[cal*24 + h]) } : {}),
+          ...(nat.wind.mod ? { windMod: Array.from({length:24}, (_, h) => nat.wind.mod[cal*24 + h]) } : {}),
           wind:  Array.from({length:24}, (_, h) => nat.wind[cal*24 + h]),
         });
       }
@@ -9496,6 +9656,8 @@ function bldRepDays(n){
           d: 1000 + j, dem: cal, weight: 1, tail: true, year: best.y,
           prevD: j === 0 ? undefined : 1000 + j - 1,
           solar: Array.from({length:24}, (_, h) => best.nat.solar[cal*24 + h]),
+          ...(best.nat.solar.trk ? { solarTrk: Array.from({length:24}, (_, h) => best.nat.solar.trk[cal*24 + h]) } : {}),
+          ...(best.nat.wind.mod ? { windMod: Array.from({length:24}, (_, h) => best.nat.wind.mod[cal*24 + h]) } : {}),
           wind:  Array.from({length:24}, (_, h) => best.nat.wind[cal*24 + h]),
         });
       }
@@ -9674,12 +9836,29 @@ async function renderProvMix(){
   host.innerHTML = html;
 }
 
+// Demand in model year y relative to 2026, for the build LP and its per-year engine checks. opts.demandIndex
+// (9 Oct 2026, user: central demand follows the IRP 2025 reference path year by year on the measured 2026 base)
+// maps year -> multiplier, e.g. from public_data/esrg_irp_demand_ref.json; without it, the constant annual rate
+// opts.growth, as before.
+// Gas fuel cost in model year y, R/MWh (TODO 14bo, 9 Oct 2026): opts.gasFuelR (year to R/MWh, a gas price case
+// from public_data/gas_price_cases.json, built by build_gas_cases.py) when given, else the scenario's costCcgt.
+function bldGasFuelR(opts, y, S){
+  const p = opts && opts.gasFuelR;
+  if (p && p[y] != null) return +p[y];
+  return S.costCcgt;
+}
+function bldDemandIndex(opts, y){
+  const ix = opts && opts.demandIndex;
+  if (ix && ix[y] != null) return +ix[y];
+  return Math.pow(1 + ((opts && opts.growth) || 0), y - 2026);
+}
 function bldBuildLP(opts){
   const Y = BLD_YEARS, T = BLD_TECHS;
   const rd = bldRepDays(12);
   // A stress window applies from its fromYear on (ReEDS attaches stress periods to the solve
   // year that failed), so windows found late in the horizon do not bloat every earlier year.
-  const rdY = y => rd.filter(r => !(r.fromYear > y));
+  // bldWindowsPerYear: a window carrying its own list of years binds only in those (per-year stress windows).
+  const rdY = y => rd.filter(r => r.years ? r.years.includes(y) : !(r.fromYear > y));
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   // `state` is script-scoped, so read it via the accessor rather than assuming a
   // global - reading undefined fields here silently produces NaN coefficients and
@@ -9687,11 +9866,9 @@ function bldBuildLP(opts){
   const S = { ...FIXED, ...(opts.state || {}) };
   const STORE = bldStoreList(S);   // lithium at the scenario's duration
   // PUMPED HYDRO IS A BUILD DECISION, 5 Oct 2026 (TODO 14z, after Weber et al. 2026). One duration
-  // per run (bldPhesHours: 24, 48 or 160). Capex per kW = (power + energy x hours): a linear fit to
-  // the paper's top-50 Australian off-river sites (USD 1,226/kW + 11.4/kWh, including its 50%
-  // overhead), scaled 1.28 so 14 hours reproduces Tubatse (R29,200/kW) when bldPhesCostBasis is
-  // 'tubatse', the default; 'atlas' uses the fit unscaled. 60-year life, 78% round trip. Earliest
-  // bldPhesFirstYear, at most 1,500 MW a year (one Tubatse-size scheme), cumulative up to newPsMaxMW.
+  // per run (bldPhesHours, 14 from 9 Oct 2026), optionally a second (bldPhesHours2). Capex per kW from
+  // bldPhesCapexKW (power + energy x hours; 'anu2026' the default basis since 6 Oct). 60-year life, 78%
+  // round trip. At most bldPhesRateMW a year, cumulative up to the bldPhesCap step in each year.
   const PHES_ON = !!S.bldPhesOn, PHES_H = S.bldPhesHours;
   const PHES_KW = () => bldPhesCapexKW(S.bldPhesCostBasis, PHES_H);
   if (PHES_ON) STORE.push({ t:'phes', dis:'hdis', chg:'hchg', eff:S.newPsEff, hours:PHES_H, ex:() => 0, costMult:1 });
@@ -9716,7 +9893,7 @@ function bldBuildLP(opts){
     return head * (1 - Math.max(0.75, 0.85 - 0.025 * Math.min(4, y - 2026)));
   };
   const CAP_ON = !!(S.carbonCapEnabled), CAP_MT = S.carbonCapMt ?? 140;
-  const MC = { coal: S.costCoal + S.vomCoal, ccgt: S.costCcgt + S.vomCcgt, diesel: S.costDiesel + S.vomDiesel };
+  const MC = { coal: S.costCoal + S.vomCoal, diesel: S.costDiesel + S.vomDiesel };   // gas: bldGasFuelR, by year
   const EX = { nuclear:S.nuclearMW, hydro:S.hydroMW, imports:S.importsMW, ps:S.psPowerMW, diesel:dieselAvailMW(S),
                wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
                csp:S.cspMW, batt:S.battPowerMW };
@@ -9730,6 +9907,14 @@ function bldBuildLP(opts){
 
   // Grid cost per technology, R/kW-yr (BLD_GRID; zero unless bldGridCost is set).
   const GRID_ON = (S.bldGridCost | 0) > 0, GA = {};
+  // Capex reads the cost case from the page state (bldCostEntry) while profiles read S; a caller passing a state that
+  // disagrees with the page on these switches would price one case and dispatch another. Every caller passes the page
+  // state; this guard keeps it that way.
+  if (typeof state !== 'undefined') for (const k of ['bldPvTracking', 'bldWindModern', 'bldWindCase', 'bldWindCorr', 'bldBattCase'])
+    if ((S[k] ?? FIXED[k]) !== (state[k] ?? FIXED[k])) throw new Error('bldBuildLP: ' + k + ' differs between opts.state and the page state');
+  const TRK_ON = ((S.bldPvTracking ?? 0) | 0) > 0;   // new utility solar on the tracking profile (TODO 14aw)
+  const WMOD_ON = ((S.bldWindModern ?? FIXED.bldWindModern) | 0) > 0;   // new wind on the modern-turbine profile
+  const WMOD_K = WMOD_ON ? windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr) : 1;   // its correction (WIND_NEW_CORR)
   for (const t of T.concat(['offshore', 'phes', 'phel'])) GA[t] = GRID_ON ? bldGridAnn(t, S) : 0;
   const L = ['Minimize', ' obj:'];
   const obj = [];
@@ -9759,24 +9944,37 @@ function bldBuildLP(opts){
             * (1 - BATT_POWER_SHARE) / 4 / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((ec * 1000).toFixed(3) + ' eb_batt_' + y);
   }
+  // Stress-window weighting (bldStressTarget; off reproduces the LP text exactly). wObj: a day's weight in the objective.
+  const ST_ON = ((S.bldStressTarget ?? FIXED.bldStressTarget) | 0) > 0;
+  const ST_N = ST_ON ? Math.max(1, (opts.draws || 1) * ((typeof bldWeatherYears !== 'undefined' && bldWeatherYears && bldWeatherYears.meta) ? bldWeatherYears.meta.years.length : 1)) : 1;
+  const wObj = r => (ST_ON && r.tail) ? 1 / ST_N : r.weight;
+  const ST_TERMS = {}, ST_DEM = {};
+  // Hourly state of charge (bldHourlySoc). HS_T: stress days; HS_C: calendar days.
+  const HS = (S.bldHourlySoc ?? FIXED.bldHourlySoc) | 0, HS_T = HS >= 1, HS_C = HS === 1;
+  // A stress window's last day (the day no other day names as predecessor, walking forward from d).
+  const hsLast = (y, d) => { const nx = new Map(rdY(y).filter(q => q.prevD !== undefined).map(q => [q.prevD, q.d])); let x = d; while (nx.has(x)) x = nx.get(x); return x; };
+  // Level of store t at the end of hour h of day r, and at the start of day r (stress days: hourly variables).
+  const hsLevel = (t, y, r, h) => h < 23 ? 's_' + t + '_' + y + '_' + r.d + '_' + h : 'e_' + t + '_' + y + '_' + r.d;
+  const hsStart = (t, y, r) => 'e_' + t + '_' + y + '_' + (r.prevD !== undefined ? r.prevD : hsLast(y, r.d));
   for (const y of Y){
     const df = 1/Math.pow(1+BLD_DISC, y-2026);
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       const k = y + '_' + r.d + '_' + h;
-      obj.push(((MC.coal + CARBON_AT(y)*EMIS_COAL)*r.weight*df).toFixed(3) + ' gc_' + k);
-      obj.push(((MC.ccgt + CARBON_AT(y)*EMIS_CCGT)*r.weight*df).toFixed(3) + ' gg_' + k);
-      obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*r.weight*df).toFixed(3) + ' gd_' + k);
+      obj.push(((MC.coal + CARBON_AT(y)*EMIS_COAL)*wObj(r)*df).toFixed(3) + ' gc_' + k);
+      obj.push(((bldGasFuelR(opts, y, S) + S.vomCcgt + CARBON_AT(y)*EMIS_CCGT)*wObj(r)*df).toFixed(3) + ' gg_' + k);
+      obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*wObj(r)*df).toFixed(3) + ' gd_' + k);
       // Shedding on a tail day is priced as if that day came round every day of the year: a hard
       // zero made the early years infeasible, because nothing can be built fast enough to cover
       // a derated 2026 tail day, and an LP that cannot solve reports nothing. VoLL x 365 says the
       // same thing - do not plan to shed on the worst window - while leaving a price on it.
-      obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' u_' + k);
+      obj.push((VOLL*(ST_ON ? wObj(r) : (r.tail ? 365 : r.weight))*df).toFixed(3) + ' u_' + k);
       // Priced like shedding on tail days too. At weight 1 against shedding at 365, the LP would
       // drop reserve on the worst week rather than shed - while the engine, like an operator,
       // sheds load to hold reserve. In the pass-4 stalled week the engine's mean shed (2,338 MW)
       // sat almost exactly on its reserve requirement (2,254 MW). Same price, same behaviour.
-      obj.push((VOLL*(r.tail ? 365 : r.weight)*df).toFixed(3) + ' rsl_' + k);
-      obj.push((S.lpCurtailCostR*r.weight*df).toFixed(3) + ' crt_' + k);
+      obj.push((VOLL*(ST_ON ? wObj(r) : (r.tail ? 365 : r.weight))*df).toFixed(3) + ' rsl_' + k);
+      if (ST_ON) (ST_TERMS[y] = ST_TERMS[y] || []).push(wObj(r).toFixed(6) + ' u_' + k, wObj(r).toFixed(6) + ' rsl_' + k);
+      obj.push((S.lpCurtailCostR*wObj(r)*df).toFixed(3) + ' crt_' + k);
       // resolved (14 Aug 2026): lpBattDischargeCostR (20) deliberately stays below
       // the dispatch engine's battCycleCostR (165). They are different quantities.
       // The LP already pays for battery cells through its capex annuity (BLD_LIFE
@@ -9798,10 +9996,11 @@ function bldBuildLP(opts){
       // still costed through the energy they consume in the balance row.
       const WEAR = { batt: 1.0, vrfb: 0.25, ironair: 0.15, phes: 0.05, ps: 0.05 };
       for (const S2 of STORE){
-        obj.push((S.lpBattDischargeCostR*WEAR[S2.t]*r.weight*df).toFixed(3)
+        obj.push((S.lpBattDischargeCostR*WEAR[S2.t]*wObj(r)*df).toFixed(3)
           + ' ' + S2.dis + '_' + k);
       }
     }
+    if (ST_ON) obj.push((VOLL*365*df).toFixed(3) + ' tsl_' + y);   // expected shed above the target
   }
   // OFFSHORE WIND IS A BUILD DECISION, 4 Oct 2026: b_off_<y>, MW, priced like the other
   // technologies, run on the engine's own offshore profile, and capped cumulatively at ESMAP's
@@ -9856,8 +10055,9 @@ function bldBuildLP(opts){
     L.push(' rcmono_' + Y[i] + ': rc_' + Y[i] + ' - rc_' + Y[i-1] + ' >= 0');
   const cumOff = y => Y.filter(yy => yy <= y).map(yy => 'b_off_' + yy);
   if (OFF_ON) for (const y of Y) L.push(' offcap_' + y + ': ' + cumOff(y).join(' + ') + ' <= ' + OFF_PATH(y).toFixed(1));
-  if (PHES_ON) L.push(' phescap: ' + Y.map(yy => 'b_phes_' + yy).concat(PHES2_ON ? Y.map(yy => 'b_phel_' + yy) : []).join(' + ') + ' <= ' + S.newPsMaxMW.toFixed(1));
-  if (PHES2_ON) for (const y of Y) L.push(' phesrate_' + y + ': b_phes_' + y + ' + b_phel_' + y + ' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
+  const PHES_CAP = y => bldPhesCumCapMW(S.bldPhesCap, y), PHES_RATE = y => PHES_CAP(y) > 0 ? S.bldPhesRateMW : 0;
+  if (PHES_ON) for (const y of Y) L.push(' phescap_' + y + ': ' + Y.filter(yy => yy <= y).flatMap(yy => PHES2_ON ? ['b_phes_' + yy, 'b_phel_' + yy] : ['b_phes_' + yy]).join(' + ') + ' <= ' + PHES_CAP(y).toFixed(1));
+  if (PHES2_ON) for (const y of Y) L.push(' phesrate_' + y + ': b_phes_' + y + ' + b_phel_' + y + ' <= ' + PHES_RATE(y));
   // Repurposed connections: no more than that year's build, and in total no more than the coal retired so far.
   for (const t of RP_T) for (const y of Y) L.push(' rpb_' + t + '_' + y + ': rp_' + t + '_' + y + ' - b_' + t + '_' + y + ' <= 0');
   if (RP_T.length) for (const y of Y){
@@ -9865,8 +10065,15 @@ function bldBuildLP(opts){
     L.push(' rppool_' + y + ': ' + terms.join(' + ') + (RC_ON ? ' - rc_' + y : '') + ' <= ' + Math.max(0, bldCoalMW(Y[0]) - bldCoalMW(y)).toFixed(1));
   }
 
-  const cum = (t,y) => Y.filter(yy => yy <= y).map(yy => 'b_' + t + '_' + yy);
-  const cumE = y => Y.filter(yy => yy <= y).map(yy => 'eb_batt_' + yy);   // lithium cells, MWh
+  // CUMULATIVE CAPACITY AS ONE VARIABLE (bldCumVars, 8 Oct 2026). Every hourly row names the capacity built so far, and
+  // written out it repeats each year's build: two thirds of the LP's nonzeros on the central first pass. With the switch
+  // on, cum() and cumE() name one variable per technology and year, K_<t>_<y> = K_<t>_<y-1> + b_<t>_<y> (kdef_ rows),
+  // the same model in a sparser LP. Every use multiplies all years' builds by the same coefficient, so it is exact.
+  const CUMV = !!(S.bldCumVars ?? FIXED.bldCumVars), CUMV_T = new Set();
+  const cum = CUMV ? (t,y) => { CUMV_T.add(t); return Y.some(yy => yy <= y) ? ['K_' + t + '_' + y] : []; }
+    : (t,y) => Y.filter(yy => yy <= y).map(yy => 'b_' + t + '_' + yy);
+  const cumE = CUMV ? y => { CUMV_T.add('E'); return Y.some(yy => yy <= y) ? ['K_E_' + y] : []; }
+    : y => Y.filter(yy => yy <= y).map(yy => 'eb_batt_' + yy);   // lithium cells, MWh
 
   // THE ENGINE'S WINTER, IN THE SCREEN. Added 2 Oct 2026 after a build the optimiser called
   // adequate shed about 900 GWh a year in the twelve-year dispatch, 250 times the standard.
@@ -9918,7 +10125,7 @@ function bldBuildLP(opts){
   const RES_VRE_BASE = S.reserveVreBaseMW || 0;
   const COMMIT_ON = !!S.bldCoalCommit, COMMIT_MIN = Math.max(0, Math.min(1, S.bldCoalMinFrac)), COMMIT_H = Math.max(1, S.bldCoalCommitHours);
   for (const y of Y){
-    const dg = Math.pow(1+growth, y-2026);
+    const dg = bldDemandIndex(opts, y);
     const coalCapMean = bldCoalMW(y) * eaf;
     for (const r of rdY(y)) for (let h = 0; h < 24; h++){
       // A stress window from the adequacy loop carries the failing draw's own hourly coal path
@@ -9926,10 +10133,17 @@ function bldBuildLP(opts){
       const coalCap = r.coalFrac ? bldCoalMW(y) * r.coalFrac[h] : (r.tail ? coalCapMean * TAIL_COAL_FACTOR : coalCapMean);
       const i = (r.dem !== undefined ? r.dem : r.d)*24 + h, k = y + '_' + r.d + '_' + h;
       const dem = PROFILES.demand[i]*dg + expAtLP(i);
+      if (ST_ON && !r.tail) ST_DEM[y] = (ST_DEM[y] || 0) + r.weight * dem;
       // A tail day from another weather year carries its own shapes; a calendar day reads the
       // default profile. Same index arithmetic for demand either way.
       const sp = r.solar ? r.solar[h] : PROFILES.solar[i];
+      // New utility solar's per-unit output: the tracking twin when bldPvTracking is on (TODO 14aw), else sp.
+      const spN = !TRK_ON ? sp : r.solar ? (r.solarTrk ? r.solarTrk[h] : (() => { throw new Error('tracking on: a representative day has no tracking solar'); })())
+                                       : solarTrkOf(PROFILES.solar)[i];
       const wp = r.wind  ? r.wind[h]  : PROFILES.wind[i];
+      // New wind's per-unit output: the modern-turbine twin when bldWindModern is on, else wp.
+      const wpN = !WMOD_ON ? wp : Math.min(1, WMOD_K * (r.wind ? (r.windMod ? r.windMod[h] : (() => { throw new Error('modern wind on: a representative day has no modern-turbine wind'); })())
+                                      : windModOf(PROFILES.wind)[i]));
       // AVAILABILITY FROM THE ENGINE'S OWN KEYS, 2 Oct 2026. This line hardcoded nuclear 0.9,
       // hydro 0.5 and imports 0.9 while the engine reads nuclearCF (0.66, Koeberg's record),
       // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
@@ -9940,19 +10154,24 @@ function bldBuildLP(opts){
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
-        + ' + ' + cum('wind',y).map(v => (wp*AV_CONG).toFixed(4)+' '+v).join(' + ')
-        + ' + ' + cum('pv',y).map(v => (sp*AV_CONG).toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('wind',y).map(v => (wpN*AV_CONG).toFixed(4)+' '+v).join(' + ')
+        + ' + ' + cum('pv',y).map(v => (spN*AV_CONG).toFixed(4)+' '+v).join(' + ')
         + ' + ' + cum('rooftop',y).map(v => (sp*AV_ROOF).toFixed(4)+' '+v).join(' + ')
         + (OFF_ON ? ' + ' + cumOff(y).map(v => (OFFSHORE_PU[i % 8760]*AV_CONG).toFixed(4)+' '+v).join(' + ') : '')
         + ' = ' + (dem - fixed).toFixed(1));
       const _rcf = r.coalFrac ? r.coalFrac[h] : (r.tail ? eaf * TAIL_COAL_FACTOR : eaf);
-      if (!COMMIT_ON) L.push(' cmax_' + k + ': gc_' + k + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '') + ' <= ' + coalCap.toFixed(1));
+      // ROUNDING, 7 Oct 2026: coalCap is bldCoalMW(y) x _rcf, but the coefficient was written to 4 decimals and the
+      // right-hand side to 1, so the capacity they imply drifted by up to 7 MW either way. Retiring all coal (rc_ at
+      // its bound, the Fossil-free proposal) then required negative commitment on some stress hours: infeasible
+      // (IIS: cmax_2040_1190_0). The right-hand side is now written from the rounded coefficient, rounded up to 0.1 MW.
+      const _rcfW = +_rcf.toFixed(4), _cmaxRhs = RC_ON ? (Math.ceil(_rcfW * bldCoalMW(y) * 10 - 1e-9) / 10).toFixed(1) : coalCap.toFixed(1);
+      if (!COMMIT_ON) L.push(' cmax_' + k + ': gc_' + k + (RC_ON ? ' + ' + _rcfW.toFixed(4) + ' rc_' + y : '') + ' <= ' + _cmaxRhs);
       else {
         // Committed coal cm_ is no more than what is available; output sits between bldCoalMinFrac of
         // it and all of it; commitment moves at most COMMIT_RAMP per hour, from the previous hour of a
         // chained day or, on a free-standing day, cyclically from its own last hour.
         const kp = h > 0 ? y + '_' + r.d + '_' + (h - 1) : (r.prevD !== undefined ? y + '_' + r.prevD + '_23' : y + '_' + r.d + '_23');
-        L.push(' cmax_' + k + ': cm_' + k + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '') + ' <= ' + coalCap.toFixed(1));
+        L.push(' cmax_' + k + ': cm_' + k + (RC_ON ? ' + ' + _rcfW.toFixed(4) + ' rc_' + y : '') + ' <= ' + _cmaxRhs);
         L.push(' cgen_' + k + ': gc_' + k + ' - cm_' + k + ' <= 0');
         L.push(' cmin_' + k + ': gc_' + k + ' - ' + COMMIT_MIN.toFixed(3) + ' cm_' + k + ' >= 0');
         L.push(' cru_' + k + ': cm_' + k + ' - cm_' + kp + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
@@ -9993,14 +10212,26 @@ function bldBuildLP(opts){
         const _cmax = r.tail ? Math.min(1, Math.max(0, S.bldMarginCreditMax)) : 1;
         const _eNow = 'e_batt_' + y + '_' + r.d, _ePrev = (r.prevD !== undefined) ? 'e_batt_' + y + '_' + r.prevD : null;
         L.push(' rbp_' + k + ': rb_' + k + ' + bdis_' + k + ' - ' + cum('batt',y).map(v => _cmax.toFixed(4) + ' ' + v).join(' - ') + ' <= ' + (_cmax * EX.batt).toFixed(1));
+        if (HS_T && r.tail){
+          // Stress day, hourly level: reserve held this hour is limited by the level at its start and at its end.
+          L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + hsLevel('batt', y, r, h) + ' <= 0');
+          L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + (h > 0 ? hsLevel('batt', y, r, h - 1) : hsStart('batt', y, r)) + ' <= 0');
+        } else if (HS_C && !r.tail){
+          // Calendar day: the hour's level on the first and on the last real day of the block (c_ is the cumulative
+          // movement within the day; the first real day starts at the previous level, the last at e - c_23).
+          const c = 'c_batt_' + k, c23 = 'c_batt_' + y + '_' + r.d + '_23';
+          L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + c + (_ePrev ? ' - ' + _ePrev + ' <= 0' : ' <= ' + (EX.batt * STORE.find(q => q.t === 'batt').hours * 0.5).toFixed(1)));   // the chain's half-full opening, as soc_
+          L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _eNow + ' + ' + c23 + ' - ' + c + ' <= 0');
+        } else {
         L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _eNow + ' <= 0');
         if (_ePrev) L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _ePrev + ' <= 0');
+        }
         L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + ' - rb_' + k + ' - rsl_' + k
           + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + ' - ' + cum('ccgt',y).join(' - ')
           + (RES_VRE > 0
-              ? ' + ' + cum('wind',y).map(v => (RES_VRE*wp).toFixed(5)+' '+v).join(' + ')
-                + ' + ' + cum('pv',y).map(v => (RES_VRE*sp).toFixed(5)+' '+v).join(' + ')
+              ? ' + ' + cum('wind',y).map(v => (RES_VRE*wpN).toFixed(5)+' '+v).join(' + ')
+                + ' + ' + cum('pv',y).map(v => (RES_VRE*spN).toFixed(5)+' '+v).join(' + ')
                 + ' + ' + cum('rooftop',y).map(v => (RES_VRE*sp).toFixed(5)+' '+v).join(' + ')
               : '')
           + LEV(y).map(v => ' - ' + v).join('')
@@ -10066,6 +10297,25 @@ function bldBuildLP(opts){
         const kk = S2.t+'_'+y+'_'+r.d;
         const ex = S2.ex(EX);
         const prev = (r.prevD !== undefined) ? (' - e_'+S2.t+'_'+y+'_'+r.prevD) : '';
+        // Stored energy cannot exceed what is built plus what already exists. For lithium the
+        // built energy is its own variable, so the LP sets the duration; for the others it is
+        // still power times their fixed duration.
+        const capTerms = (S2.t === 'batt')
+          ? cumE(y).map(v => '1 ' + v)
+          : cum(S2.t,y).map(v => S2.hours+' '+v);
+        if (HS_T && r.tail){
+          // STRESS DAY, HOURLY LEVEL (bldHourlySoc, 8 Oct 2026). s_<t>_<y>_<d>_<h> is the level at the end of hour h
+          // (hour 23 is e_<t>_<y>_<d>), each hour moved by its own charge and discharge, between zero and capacity.
+          // The window is cyclic: its first day starts from the last day's closing level, a free choice, so the
+          // window must put back what it takes and opens with no energy it did not store. Replaces the daily
+          // balance, the half-full opening and send_ for these days.
+          if (Math.abs(r.weight - 1) > 1e-9) throw new Error('bldHourlySoc: a stress day with weight ' + r.weight);
+          for (let h = 0; h < 24; h++){
+            const lev = hsLevel(S2.t, y, r, h), from = h > 0 ? hsLevel(S2.t, y, r, h - 1) : hsStart(S2.t, y, r);
+            L.push(' sh_'+kk+'_'+h+': '+lev+' - '+from+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
+            if (h < 23) L.push(' shc_'+kk+'_'+h+': '+lev+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours).toFixed(1));
+          }
+        } else {
         // Opening level on the first day is half full, matching the regional LP.
         L.push(' soc_'+kk+': e_'+kk + prev
           + ' - ' + chg.map(v=>(S2.eff*r.weight).toFixed(4)+' '+v).join(' - ')
@@ -10077,12 +10327,26 @@ function bldBuildLP(opts){
         // great deal. Small for existing lithium; large once pumped storage's 60 GWh joined (TODO 26).
         if (ex > 0 && !_chainPrev.has(r.d))
           L.push(' send_'+kk+': e_'+kk + ' >= ' + (ex*S2.hours*0.5).toFixed(1));
-        // Stored energy cannot exceed what is built plus what already exists. For lithium the
-        // built energy is its own variable, so the LP sets the duration; for the others it is
-        // still power times their fixed duration.
-        const capTerms = (S2.t === 'batt')
-          ? cumE(y).map(v => '1 ' + v)
-          : cum(S2.t,y).map(v => S2.hours+' '+v);
+        if (HS_C && !r.tail){
+          // CALENDAR DAY, HOURLY LEVEL (bldHourlySoc 1, 8 Oct 2026). c_<t>_<k> is the cumulative movement within the
+          // day (free). The day stands for r.weight identical real days whose opening levels run in a straight line
+          // from the previous level (first real day) to e - c_23 (last real day), so the hourly level is checked at
+          // both ends, which covers every real day in between: within zero and capacity in every hour.
+          const open = r.prevD !== undefined ? 'e_'+S2.t+'_'+y+'_'+r.prevD : null, openC = (ex*S2.hours*0.5);
+          const c23 = 'c_'+kk+'_23';
+          for (let h = 0; h < 24; h++){
+            const c = 'c_'+kk+'_'+h;
+            L.push(' cr_'+kk+'_'+h+': '+c+(h > 0 ? ' - c_'+kk+'_'+(h-1) : '')+' - '+S2.eff.toFixed(4)+' '+chg[h]+' + '+dis[h]+' = 0');
+            // first real day: open + c_h within [0, capacity]
+            L.push(' cla_'+kk+'_'+h+': '+c+(open ? ' + '+open+' >= 0' : ' >= '+(-openC).toFixed(1)));
+            L.push(' cua_'+kk+'_'+h+': '+c+(open ? ' + '+open : '')+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours - (open ? 0 : openC)).toFixed(1));
+            if (h < 23){   // last real day: e - c_23 + c_h within [0, capacity]
+              L.push(' clb_'+kk+'_'+h+': e_'+kk+' - '+c23+' + '+c+' >= 0');
+              L.push(' cub_'+kk+'_'+h+': e_'+kk+' - '+c23+' + '+c+' - '+capTerms.join(' - ')+' <= '+(ex*S2.hours).toFixed(1));
+            }
+          }
+        }
+        }
         L.push(' ecap_'+kk+': e_'+kk + ' - ' + capTerms.join(' - ')
           + ' <= ' + (ex*S2.hours).toFixed(1));
         // Within-day discharge still cannot exceed the stored energy.
@@ -10151,14 +10415,24 @@ function bldBuildLP(opts){
       + cum('batt',y).map(v => LI_MAX_HOURS + ' ' + v).join(' - ') + ' <= 0');
   }
 
+  const ST_TGT = {};
+  if (ST_ON) for (const y of Y){
+    ST_TGT[y] = (opts.targetFrac || 1) * BLD_STRESS_STANDARD * (ST_DEM[y] || 0);   // MWh of expected shed
+    L.push(' tgt_' + y + ': ' + ST_TERMS[y].join(' + ') + ' - tsl_' + y + ' <= ' + ST_TGT[y].toFixed(3));
+  }
+  // bldCumVars: the definitions of K, for every technology a row above named.
+  if (CUMV) for (const t of CUMV_T) Y.forEach((y, i) => {
+    const b = t === 'E' ? 'eb_batt_' + y : 'b_' + t + '_' + y, k = 'K_' + t + '_';
+    L.push(' kdef_' + t + '_' + y + ': ' + k + y + (i > 0 ? ' - ' + k + Y[i - 1] : '') + ' - ' + b + ' = 0');
+  });
   L.push('Bounds');
   // Utility solar's build-rate cap grows bldPvRateGrowthPct a year from its 2026 value, for an
   // industry that scales up (assumption, 4 Oct 2026). Every other cap is flat.
   const _pvG = Math.max(0, S.bldPvRateGrowthPct) / 100;
   for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + (RATE[t] * (t === 'pv' ? Math.pow(1 + _pvG, y - 2026) : 1)).toFixed(1));
   if (OFF_ON) for (const y of Y) L.push(' 0 <= b_off_'+y+' <= 5000');
-  if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
-  if (PHES2_ON) for (const y of Y) L.push(' 0 <= b_phel_'+y+' <= ' + (y < S.bldPhesFirstYear ? 0 : 1500));
+  if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + PHES_RATE(y));
+  if (PHES2_ON) for (const y of Y) L.push(' 0 <= b_phel_'+y+' <= ' + PHES_RATE(y));
   for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
   if (PS_ON) for (const y of Y) L.push(' 0 <= b_ps_'+y+' <= 0');
   if (RC_ON) for (const y of Y) L.push(' 0 <= rc_'+y+' <= ' + bldCoalMW(y).toFixed(1));
@@ -10166,6 +10440,8 @@ function bldBuildLP(opts){
   for (const y of Y) L.push(' 0 <= cc_batt_'+y+' <= 200000');
   for (const y of Y) for (const S2 of STORE) if (S2.t !== 'batt')
     L.push(' 0 <= cc_'+S2.t+'_'+y+' <= 200000');
+  if (HS_C) for (const y of Y) for (const r of rdY(y)) if (!r.tail) for (const S2 of STORE) for (let h = 0; h < 24; h++)
+    L.push(' c_'+S2.t+'_'+y+'_'+r.d+'_'+h+' free');
   for (const y of Y) for (const r of rdY(y)) for (let h = 0; h < 24; h++){
     const k = y + '_' + r.d + '_' + h;
     L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
@@ -10192,7 +10468,7 @@ function bldBuildLP(opts){
   for (const y of Y) for (const r of rdY(y)) for (const S2 of STORE)
     L.push(' 0 <= e_' + S2.t + '_' + y + '_' + r.d + ' <= 2000000');
   L.push('End');
-  return { lp: L.join('\n'), rate: RATE };
+  return { lp: L.join('\n'), rate: RATE, ...(ST_ON ? { stressTarget: { runs: ST_N, targetMWh: ST_TGT } } : {}) };
 }
 
 
@@ -10324,9 +10600,15 @@ function bldStateForYear(res, y, opts){
     newBattMW: Math.round(batt), newBattHours: batt > 0 ? Math.max(1, Math.min(LI_MAX_HOURS, eb / batt)) : (opts.state.newBattHours ?? FIXED.newBattHours),
     newCcgtMW: Math.round(tot.ccgt || 0), newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
     newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
-    newPsMW: Math.round(tot.phes || 0), newPsHours: opts.state.bldPhesHours,
+    // Both pumped-hydro durations reach the engine (9 Oct 2026; b_phel was dropped before): one block, power adds,
+    // energy adds, as harness/pathcheck.js does.
+    newPsMW: Math.round((tot.phes || 0) + (tot.phel || 0)),
+    newPsHours: ((tot.phes || 0) + (tot.phel || 0)) > 0
+      ? ((tot.phes || 0) * ((opts.state.bldPhesHours ?? FIXED.bldPhesHours)) + (tot.phel || 0) * (opts.state.bldPhesHours2 || 0)) / ((tot.phes || 0) + (tot.phel || 0))
+      : (opts.state.bldPhesHours ?? FIXED.bldPhesHours),
     coalDecomMW: Math.max(0, Math.round(FIXED.coalInstalledMW - bldCoalMW(y) + rc)),
-    demandGrowthPct: (Math.pow(1 + (opts.growth || 0), y - 2026) - 1) * 100, scenarioYear: y,
+    demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, scenarioYear: y,
+    ...(opts.gasFuelR ? { costCcgt: bldGasFuelR(opts, y, { ...FIXED, ...opts.state }) } : {}),
     ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
         ? { dieselDecomMW: (opts.state.dieselDecomMW || 0) + bldPeakerDecomMW(y, { ...FIXED, ...opts.state }, res.Columns) } : {}) };
 }
@@ -10389,6 +10671,13 @@ async function bldStressLoopPerYear(opts, onProgress){
     }
     fails.sort((a, b) => b.ratio - a.ratio);
     const entry = { pass: it, margin: opts.stressMarginMW, years, added: null };
+    // bldStressTarget: the LP's own expected shed, target and slack per year (slack used = target missed in the plan).
+    if (built.stressTarget){
+      const rows = new Map((res.Rows || []).map(q => [q.Name, q.Primal])), col = n => ((res.Columns || {})[n] || {}).Primal || 0;
+      entry.lpTarget = BLD_YEARS.map(y => { const sl = col('tsl_' + y);
+        return { y, targetGWh: +(built.stressTarget.targetMWh[y] / 1e3).toFixed(3), expectedShedGWh: +(((rows.get('tgt_' + y) || 0) + sl) / 1e3).toFixed(3), slackGWh: +(sl / 1e3).toFixed(3) }; });
+      entry.lpTargetRuns = built.stressTarget.runs;
+    }
     bldStressLog.push(entry);
     if (!fails.length){ verdict = 'adequate'; break; }
     if (it === maxP) break;
@@ -10402,7 +10691,7 @@ async function bldStressLoopPerYear(opts, onProgress){
     // already held does the loop fall back to raising the margin, and it logs that it did.
     // A run is held for model year y only by a window that binds y (fromYear <= y).
     const held = (q, y) => bldStressPeriods.some(p => p.year === q.year && p.seed === q.seed
-      && q.start >= p.start && q.start + 7 <= p.start + p.n && !(p.fromYear > y));
+      && q.start >= p.start && q.start + 7 <= p.start + p.n && (p.years ? p.years.includes(y) : !(p.fromYear > y)));
     // opts.windowsPerPass (default 1): windows per failing year per pass. opts.windowLeadYears
     // (default 0, the failing year itself, since 6 Oct 2026; was 4): how many years before the
     // failing year a window starts to bind. The 5 Oct pathways bound every year (14).
@@ -10414,8 +10703,10 @@ async function bldStressLoopPerYear(opts, onProgress){
         const st0 = Math.max(0, Math.min(365 - SD, pick.start - (SD - 7)));
         // The same week already held for a later year: bind it earlier rather than add it twice.
         const same = bldStressPeriods.find(p => p.year === pick.year && p.seed === pick.seed && p.start === st0 && p.n === SD);
-        if (same) same.fromYear = Math.min(same.fromYear ?? BLD_YEARS[0], from);
-        else bldStressPeriods.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, fromYear: from,
+        // bldWindowsPerYear 1: the same week failing in another year binds that year too, and only that year.
+        const PERY = !!((opts.state || {}).bldWindowsPerYear ?? FIXED.bldWindowsPerYear);
+        if (same) { if (PERY && same.years) { if (!same.years.includes(f.y)) same.years.push(f.y); } else same.fromYear = Math.min(same.fromYear ?? BLD_YEARS[0], from); }
+        else bldStressPeriods.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, fromYear: from, ...(PERY ? { years: [f.y] } : {}),
           coalFrac: Array.from(pick.coalFrac.slice(st0 * 24, (st0 + SD) * 24)) });
         entry.added.push({ year: pick.year, seed: pick.seed, start: st0, n: SD, forModelYear: f.y, fromYear: from, rebound: !!same, shedGWh: +pick.gwh.toFixed(2) });
       }
@@ -10863,6 +11154,16 @@ function bldBuildRegionalLP(opts){
   const rd = bldRepDays(8).filter(r => !r.tail);                    // 8 days keeps the LP browser-sized
   const growth = opts.growth, eaf = opts.eaf, RATE = opts.rate;
   const S = { ...FIXED, ...(opts.state || {}) };
+  // MODERN-TURBINE WIND IN THE REGIONAL LP (TODO 14bh, 7 Oct 2026). Every wind MW here is new build (the balance has
+  // no existing-wind term), priced by bldCostEntry at the modern capex when bldWindModern is on; its output now takes
+  // the modern-turbine profile too: WIND_MOD_REG maps profiles_regional.json's raw V90 output, region by region, to
+  // V162 output (build_wind_modern.py), times WIND_NEW_CORR. The same guard as bldBuildLP keeps opts.state and the
+  // page state on one case.
+  if (typeof state !== 'undefined') for (const k of ['bldPvTracking', 'bldWindModern', 'bldWindCase', 'bldWindCorr', 'bldBattCase'])
+    if ((S[k] ?? FIXED[k]) !== (state[k] ?? FIXED[k])) throw new Error('bldBuildRegionalLP: ' + k + ' differs between opts.state and the page state');
+  const WMOD_R = ((S.bldWindModern ?? FIXED.bldWindModern) | 0) > 0, WMOD_RK = WMOD_R ? windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr) : 1;
+  if (WMOD_R && !WIND_MOD_REG) throw new Error('modern wind is on but the regional map (profiles_wind_modern_map.json regional_map) is not loaded');
+  if (((S.bldPvTracking ?? FIXED.bldPvTracking) | 0) > 0) throw new Error('bldBuildRegionalLP: the tracking-solar option has no regional profile yet; switch it off for the regional LP');
   const STORE = bldStoreList(S);   // lithium at the scenario's duration
   // VoLL comes from FIXED.voll (R87,000/MWh, CSIR cost of unserved energy) -
   // this LP previously hardcoded 60000, penalising blackouts 31% cheaper in
@@ -10921,7 +11222,8 @@ function bldBuildRegionalLP(opts){
       for (let ri = 0; ri < BLD_REGIONS.length; ri++){
         const R = BLD_REGIONS[ri], k = ri+'_'+y+'_'+r.d+'_'+h;
         const dem = PROFILES.demand[i]*dg*(BLD_LOAD_SHARE[R]||0);
-        const sp = bldRegProfiles.solar_pu[R][i], wp = bldRegProfiles.wind_pu[R][i];
+        const sp = bldRegProfiles.solar_pu[R][i], wp0 = bldRegProfiles.wind_pu[R][i];
+        const wp = !WMOD_R ? wp0 : Math.min(1, WMOD_RK * WIND_MOD_REG[R][Math.min(49, Math.floor(Math.min(1, wp0) * 50))]);
         const flows = [];
         BLD_CORRIDORS.forEach(([a,b], ci) => {
           const f = '_'+ci+'_'+y+'_'+r.d+'_'+h;
@@ -11265,7 +11567,10 @@ function renderBuildRegional(res, rate, opts){
       got[t] = s; tot[t] += s;
     }
     // Mean capacity factor for this region, so the user can see the trade-off
-    const sp = bldRegProfiles.solar_pu[R], wp = bldRegProfiles.wind_pu[R];
+    const sp = bldRegProfiles.solar_pu[R], wp0 = bldRegProfiles.wind_pu[R];
+    // New wind's capacity factor on the profile the LP used (modern turbine when bldWindModern is on; TODO 14bh).
+    const _wm = typeof bldWindModernOn === 'function' && bldWindModernOn() && WIND_MOD_REG, _wk = _wm ? windNewCorr(state.bldWindCorr ?? FIXED.bldWindCorr) : 1;
+    const wp = _wm ? wp0.map(v => Math.min(1, _wk * WIND_MOD_REG[R][Math.min(49, Math.floor(Math.min(1, v) * 50))])) : wp0;
     const scf = sp.reduce((a,b)=>a+b,0)/sp.length, wcf = wp.reduce((a,b)=>a+b,0)/wp.length;
     rows.push({ R, got, hr, scf, wcf });
   }
@@ -12145,6 +12450,16 @@ async function loadWeatherYears(){
       }
     } catch (e) { /* handled below */ }
     try { await buildTxCurve(); } catch (e) { bldTxCurve = null; }
+    // Tracking solar for new utility solar (TODO 14aw). Optional: without it the tracking option raises an error.
+    try {
+      const rt = await fetch('nodal/profiles_solar_tracking.json?v=' + (window.DATA_V || '7'));
+      if (rt.ok) { bldSolarTrk = await rt.json(); bldBuildSolarTrkRatio(); }
+    } catch (e) { bldSolarTrk = null; }
+    // Modern-turbine wind for new wind (bldWindModern). Without it, new wind with the switch on raises an error.
+    try {
+      const rw = await fetch('nodal/profiles_wind_modern.json?v=' + (window.DATA_V || '7'));
+      if (rw.ok) { bldWindMod = await rw.json(); bldBuildWindModMap(); }
+    } catch (e) { bldWindMod = null; }
     if (!bldWxWeights || !bldWxWeights.wind || !bldWxWeights.solar) {
       bldWxWeights = null;
       console.warn('[GridTwin] Weather years loaded but nodal/regional_renewable_capacity.json '
@@ -12422,6 +12737,80 @@ function simulateTwoPass(st, PROF, opts){
 // Weights are per technology because wind and solar are sited differently: wind is
 // Cape-concentrated, solar is Northern Cape and inland. One shared weight would
 // reintroduce a smaller version of the same fault.
+// SOLAR TRACKING PROFILES (TODO 14aw). bldSolarTrk holds the regional tracking series; SOLAR_TRK_G the national
+// tracking/fixed ratio by month and hour (capacity-weighted over regions and the fetched years), which derives a
+// tracking twin for a profile that has none of its own (the default single-year PROFILES.solar).
+let bldSolarTrk = null, SOLAR_TRK_G = null;
+const _MSTART_H = [0,31,59,90,120,151,181,212,243,273,304,334].map(d => d * 24);
+function hourMonth(h){ let m = 11; while (m > 0 && h < _MSTART_H[m]) m--; return m; }
+function bldBuildSolarTrkRatio(){
+  if (!bldSolarTrk || !bldWeatherYears || !bldWxWeights) return;
+  const num = Array.from({length:12}, () => new Float64Array(24)), den = Array.from({length:12}, () => new Float64Array(24));
+  const sc = bldWeatherYears.scale || 1, st = bldSolarTrk.scale || 1;
+  for (const R of BLD_REGIONS){
+    const w = bldWxWeights.solar[R] || 0, T = bldSolarTrk.solar_trk_pu[R], F = bldWeatherYears.solar_pu[R];
+    if (!w || !T || !F) continue;
+    for (const y of Object.keys(T)) if (F[y]) for (let h = 0; h < HOURS; h++){
+      const m = hourMonth(h); num[m][h % 24] += w * T[y][h] / st; den[m][h % 24] += w * F[y][h] / sc;
+    }
+  }
+  SOLAR_TRK_G = num.map((r, m) => Array.from(r, (v, hh) => den[m][hh] > 1e-9 ? v / den[m][hh] : 1));
+}
+// MODERN-TURBINE WIND (bldWindModern). bldWindMod holds the regional series; WIND_MOD_MAP the national mapping from
+// current-turbine to modern-turbine output in 50 bins (capacity-weighted, all years), which derives a twin for a
+// profile with none of its own (the default single-year PROFILES.wind).
+let bldWindMod = null, WIND_MOD_MAP = null, WIND_MOD_ERR = null, WIND_MOD_REG = null;
+// One map, two routes: nodal/profiles_wind_modern_map.json at start-up (build_wind_modern.py writes it from the series)
+// and the series themselves when the weather years load. They must agree; a stale map file stops modern wind loudly.
+function setWindModMap(m, source){
+  if (!Array.isArray(m) || m.length !== 50) throw new Error('modern wind map from ' + source + ' is not 50 bins');
+  if (WIND_MOD_MAP){
+    const d = Math.max(...m.map((v, b) => Math.abs(v - WIND_MOD_MAP[b]) / Math.max(1e-9, Math.abs(WIND_MOD_MAP[b]))));
+    if (d > 1e-9){ WIND_MOD_MAP = null;
+      WIND_MOD_ERR = 'modern wind map disagrees with ' + source + ' (' + d.toExponential(2) + '); rerun build_wind_modern.py';
+      throw new Error(WIND_MOD_ERR); }
+    return;
+  }
+  WIND_MOD_MAP = Array.from(m);
+}
+function bldBuildWindModMap(){
+  if (!bldWindMod || !bldWeatherYears || !bldWxWeights) return;
+  const B = 50, num = new Float64Array(B), den = new Float64Array(B), sc = bldWeatherYears.scale || 1, sm = bldWindMod.scale || 1;
+  for (const y of bldWeatherYears.meta.years){
+    const o = new Float64Array(HOURS), m = new Float64Array(HOURS);
+    for (const R of BLD_REGIONS){
+      const w = bldWxWeights.wind[R] || 0, F = bldWeatherYears.wind_pu[R] && bldWeatherYears.wind_pu[R][y], M = bldWindMod.wind_modern_pu[R] && bldWindMod.wind_modern_pu[R][y];
+      if (!w || !F || !M) continue;
+      for (let h = 0; h < HOURS; h++){ o[h] += w * F[h] / sc; m[h] += w * M[h] / sm; }
+    }
+    for (let h = 0; h < HOURS; h++){ const b = Math.min(B - 1, Math.floor(o[h] * B)); num[b] += m[h]; den[b] += o[h]; }
+  }
+  setWindModMap(Array.from(num, (v, b) => den[b] > 1e-9 ? v / den[b] : 1), 'the series');   // ratio modern/current per bin
+}
+// CORRECTION FOR NEW WIND (user decision, 7 Oct 2026). profiles_wind_modern.json is uncorrected (Renewables.ninja's V162
+// at 120 m mapped from the current profile with the fleet factor removed). Fitted to developer-stated output: Impofu 1.0645,
+// San Kraal 1.0628 (check_wind_farms.py, RESULTS 7 Oct 2026); central 1.064. Low 1.00: stated output optimistic. Not the
+// fleet's 1.0753, which was fitted to a V90-at-80 m proxy against Eskom's older fleet. Applied per hour, clipped at 1.
+const WIND_NEW_CORR = { central: 1.064, low: 1.00 };
+function windNewCorr(c){
+  if (!(c in WIND_NEW_CORR)) throw new Error('bldWindCorr must be central or low: ' + c);
+  return WIND_NEW_CORR[c];
+}
+function windModOf(wind){
+  if (wind.mod) return wind.mod;
+  if (!WIND_MOD_MAP) throw new Error(WIND_MOD_ERR || 'modern wind is on but nodal/profiles_wind_modern_map.json is not loaded');
+  const t = new Float64Array(wind.length);
+  for (let h = 0; h < wind.length; h++) t[h] = Math.min(1, wind[h] * WIND_MOD_MAP[Math.min(49, Math.floor(wind[h] * 50))]);
+  wind.mod = t; return t;
+}
+// The tracking twin of a fixed-tilt solar profile: its own if built with one, else derived from SOLAR_TRK_G.
+function solarTrkOf(solar){
+  if (solar.trk) return solar.trk;
+  if (!SOLAR_TRK_G) throw new Error('solar tracking is on but nodal/profiles_solar_tracking.json is not loaded');
+  const t = new Float64Array(solar.length);
+  for (let h = 0; h < solar.length; h++) t[h] = Math.min(1, solar[h] * SOLAR_TRK_G[hourMonth(h % HOURS)][h % 24]);
+  solar.trk = t; return t;
+}
 function weatherYearNational(year){
   if (!bldWeatherYears || !bldWxWeights) return null;
   const wind = new Float64Array(HOURS), solar = new Float64Array(HOURS);
@@ -12493,6 +12882,24 @@ function weatherYearNational(year){
       for (let h = 0; h < HOURS; h++) solar[h] += s[h]*f; }
   }
   for (let h = 0; h < HOURS; h++){ wind[h] /= tw; solar[h] /= tw; }
+  // Tracking twin on the same weights (TODO 14aw), carried on the array so every caller passing nat.solar has it.
+  if (bldSolarTrk && bldSolarTrk.solar_trk_pu){
+    const trk = new Float64Array(HOURS), st = bldSolarTrk.scale || 1;
+    for (const R of BLD_REGIONS){
+      const t = bldSolarTrk.solar_trk_pu[R] && bldSolarTrk.solar_trk_pu[R][year];
+      if (t){ const f = (bldWxWeights.solar[R] || 0) / ts / st; for (let h = 0; h < HOURS; h++) trk[h] += t[h]*f; }
+    }
+    solar.trk = trk;
+  }
+  // Modern-turbine twin on the same weights (bldWindModern), carried on the array like solar.trk.
+  if (bldWindMod && bldWindMod.wind_modern_pu){
+    const mod = new Float64Array(HOURS), sm = bldWindMod.scale || 1;
+    for (const R of BLD_REGIONS){
+      const t = bldWindMod.wind_modern_pu[R] && bldWindMod.wind_modern_pu[R][year];
+      if (t){ const f = (bldWxWeights.wind[R] || 0) / tw / sm; for (let h = 0; h < HOURS; h++) mod[h] += t[h]*f; }
+    }
+    wind.mod = mod;
+  }
   return { wind, solar };
 }
 
@@ -16328,7 +16735,7 @@ const SLIDERS=[
   {id:'lcoeIronAir',label:'Iron-air',min:600,max:4000,step:50,def:FIXED.lcoeIronAir,fmt:v=>'R'+(v/1000).toFixed(2)+'/kWh'},
   {id:'lcoeBatt',label:'Lithium-ion (4h)',min:600,max:3500,step:20,def:FIXED.lcoeBatt,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
   {id:'lcoeCsp',label:'CSP',min:1000,max:4000,step:20,def:FIXED.lcoeCsp,fmt:v=>'R'+(v/1000).toFixed(2),note:''},
-  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R2.00/kWh \u2013 about 60&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed $10/MMBtu against the FY2026 reference of $18.50.'},
+  {id:'lcoeCcgt',label:'Gas CCGT',min:800,max:4000,step:20,def:FIXED.lcoeCcgt,fmt:v=>'R'+(v/1000).toFixed(2),note:'At the default gas price, fuel alone is R2.00/kWh \u2013 about 60&#37; of this figure \u2013 so the balance is capital recovery, which falls as utilisation rises. IRP 2025 assumed R260.89/GJ in January 2024 rands, flat in real terms (about $15.0/MMBtu at R18.35/USD), against the FY2026 reference of $18.50.'},
   {id:'lcoeNuclear',label:'Nuclear',min:800,max:4000,step:20,def:FIXED.lcoeNuclear,fmt:v=>'R'+(v/1000).toFixed(2),note:'Wide range; SMRs higher.'},
   {id:'lcoeCoalNew',label:'New coal',min:800,max:3000,step:20,def:FIXED.lcoeCoalNew,fmt:v=>'R'+(v/1000).toFixed(2),note:'Calculated from the 2016 coal baseload IPP bids \u2013 Thabametsi at 79c/kWh, Khanyisa at 80c. Adjusted for inflation. Neither project was built.'},
   {id:'lcoeDiesel',label:'Diesel OCGT',min:3000,max:14000,step:50,def:FIXED.lcoeDiesel,fmt:v=>'R'+(v/1000).toFixed(2),note:'R9.00 at a 5&#37; capacity factor; R13.20 at 2&#37;, R7.60 at 10&#37;. Floor is diesel\u2019s own SRMC, ~R6.2/kWh.'},
@@ -16337,7 +16744,7 @@ const SLIDERS=[
   {id:'newBattMW',label:'New lithium-ion batteries',min:0,max:80000,step:250,def:0,fmt:v=>(v/1000).toFixed(2)+' GW',note:`on ${(FIXED.battPowerMW/1000).toFixed(1)} GW existing (4h).`},
   {id:'newBattHours',label:'New lithium-ion duration',min:1,max:LI_MAX_HOURS,step:1,def:FIXED.newBattHours,fmt:v=>v+'h',
    note:`Hours of storage at rated power for new lithium only; the existing ${(FIXED.battPowerMW/1000).toFixed(1)} GW fleet stays at 4h. South African utility procurement is 4h today, so that is the default. Longer durations add cell cost only; the inverter does not scale. In this model lithium stays cheapest up to about 16 hours.`},
-  {id:'newPsMW',label:'New pumped storage',min:0,max:6000,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
+  {id:'newPsMW',label:'New pumped storage',min:0,max:FIXED.newPsMaxMW,step:250,def:FIXED.newPsMW,fmt:v=>v===0?'none':(v/1000).toFixed(2)+' GW',
    note:`on ${(FIXED.psPowerMW/1000).toFixed(1)} GW existing. New additions modelled at 14-hours of storage (the duration of Eskom\u2019s planned 1,500 MW / 21 GWh Tubatse scheme in Limpopo).`},
   {id:'newVrfbMW',label:'New vanadium flow batteries',min:0,max:20000,step:500,def:FIXED.newVrfbMW,fmt:v=>v===0?'none':(v/1000).toFixed(1)+' GW',
    note:'on 0 GW existing. 8-hour storage at 75&#37; round-trip efficiency. The electrolyte does not degrade with cycling \u2013 an advantage this model does not yet price.'},
@@ -16412,7 +16819,7 @@ const SLIDERS=[
    note:'Make the build optimiser meet an emissions ceiling in 2030, rather than only reporting whether it does. When turned on, the optimiser must hit the cap and the model reports what the last tonne cost to avoid.'},
   {id:'carbonCapMt',label:'2030 emissions ceiling',min:40,max:220,step:5,def:FIXED.carbonCapMt,fmt:v=>v+' Mt',
    ctrlStyle:SUB_CTRL,note:'140 Mt is the electricity sector\u2019s share of the NDC. The least-cost plan already lands below about 100 Mt, so the cap only starts to bite below that.'},
-  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'R2,003 = $18.50/MMBtu delivered LNG &#215; R16.50/USD &#215; 52&#37; efficiency. Each $1/MMBtu \u2248 R108/MWh. Fuel only; build cost is the Gas CCGT slider.'},
+  {id:'costCcgt',label:'Gas running cost (fuel)',min:600,max:4500,step:20,def:FIXED.costCcgt,fmt:v=>'R'+v+'/MWh',note:'R2,003 = $18.50/MMBtu delivered LNG &#215; R16.50/USD &#247; 0.293071 MWh/MMBtu &#247; 52&#37; efficiency. Each $1/MMBtu \u2248 R108/MWh. Fuel only; build cost is the Gas CCGT slider.'},
   {id:'asReserveOn',toggle:true,def:false,label:'Price reserve capacity',
    note:'Off by default: Eskom procures reserves but does not pay a published capacity price for them. Switch on to see what a priced reserve market would be worth to storage.'},
   {id:'asReserveRMWh',label:'\u2013 reserve capacity pricing',min:0,max:400,step:10,def:FIXED.asReserveRMWh,ctrlStyle:SUB_CTRL,
@@ -16566,8 +16973,12 @@ const PRESETS={
   // Eskom's 170.4. 3 Oct 2026.
   '2025, as modelled':{demandGrowthPct:0,demandYear:2025,scenarioYear:2025,coalEAFPct:coalEafFromFleet(62.4,0.620),nuclearCF:0.620,importsCF:0.652,hydroCF:0.339,dslTankOn:1,windMW:3900,pvUtilityMW:2600,rooftopMW:6532,battPowerMW:500,exportsMW:1705,outageTraceYear:2025},
   // DEMAND +5%, the same in Fossil-free 2040 and IRP path 2035 so the three can be compared.
-  // Roughly half a percent a year to 2035: electrification and industrial recovery against
-  // efficiency and continued grid defection.
+  // UNSOURCED (checked 9 Oct 2026): a judgement, not a forecast. It was chosen before 23 Sep 2026
+  // as roughly half a percent a year to 2035, reasoned as electrification and industrial recovery
+  // against efficiency and continued grid defection, with no study or forecast behind the number.
+  // Eskom's sales have fallen since FY2012 (SOURCES), so any positive setting is an assumption.
+  // The 2040 pathways reused the same +5% over 2026-2040 (0.35% a year); TODO 14be tests sourced
+  // paths (IRP 2025, NTCSA, flat) against it.
   //
   // WHAT IT PRODUCES, and it is not one number, which is the trap. Eskom-SERVED demand at +5%
   // is 183.3 TWh here and in IRP path 2035, and 173.0 TWh in Fossil-free 2040 - same growth
@@ -17015,8 +17426,8 @@ const PRESET_DESC = {
   'IRP\'s 2030 targets': 'The IRP 2025\u2019s Table 1 build to 2030 (7.3 GW of new wind, 10.3 GW of new solar, 3.7 GW of storage, 6 GW of gas at its 51% floor), with 8 GW of coal retired, on the IRP\u2019s own demand growth.',
   'IRP\'s 2030 targets, grid delayed': 'The IRP\u2019s 2030 targets with 40% of the new wind and solar unable to connect and curtailment at 10%, for a transmission corridor that is not built in time.',
   'IRP path 2035': 'The IRP 2025\u2019s Table 1 build to 2035 (21.0 GW of new wind, 17.5 GW of new solar, 4.7 GW of storage, 10.75 GW of gas), on the transition presets\u2019 +5% demand, so the three compare like for like.',
-  'Deep decarbonisation 2035': '27 GW of coal retired by 2035 and no new gas: 32.5 GW wind, 29.5 GW solar, 19 GW of 12-hour batteries and 1.1 GW of iron-air, the cheapest build found meeting half the reliability standard.',
-  'Fossil-free 2040': 'No coal, diesel or gas by 2040: 35 GW wind, 45 GW solar, 5 GW offshore, 32 GW of 12-hour batteries and 2.3 GW of iron-air, the cheapest build found meeting half the reliability standard.',
+  'Deep decarbonisation 2035': '27 GW of coal retired by 2035 and no new gas: 32.5 GW wind, 29.5 GW solar, 19 GW of 12-hour batteries and 1.1 GW of iron-air, sized on the earlier battery cost; being re-searched on the current battery cost, so not yet shown to be the cheapest build meeting half the reliability standard.',
+  'Fossil-free 2040': 'No coal, diesel or gas by 2040: 35 GW wind, 45 GW solar, 5 GW offshore, 32 GW of 12-hour batteries and 2.3 GW of iron-air, sized on the earlier battery cost; being re-searched on the current battery cost, so not yet shown to be the cheapest build meeting half the reliability standard.',
 };
 const presetsEl=document.getElementById('presets');
 const presetCaptionEl=document.getElementById('presetCaption');
@@ -18032,7 +18443,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-07n';
+const BUILD_STAMP = '2026-10-10a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -18629,7 +19040,16 @@ const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():n
 // the engine's inputs are complete.
 window.GTZA_READY = false;
 const P_TX = (typeof buildTxCurve === 'function') ? buildTxCurve().catch(() => {}) : Promise.resolve();
-Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE]).then(() => {
+// Modern-turbine wind map (bldWindModern, on by default): needed by any dispatch with new wind on the default profile.
+const P_WMOD = fetch('nodal/profiles_wind_modern_map.json?v=' + (window.DATA_V || '7')).then(r => r.ok ? r.json() : null)
+  .then(d => { if (d){ setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; } }).catch(e => console.error('[GridTwin]', e.message));
+Promise.allSettled([P_PROF, P_TDP, P_HEAD, P_OFF, P_TX, P_TRACE, P_WMOD]).then(() => {
+  // The methodology table's capex line is filled from BLD_COST, so it cannot drift from the constants (7 Oct 2026:
+  // it still read R10,500 for batteries and R18,000 for CCGT, against 8,105 and 34,965).
+  for (const [id, t] of [['capexWind','wind'],['capexPv','pv'],['capexRooftop','rooftop'],['capexBatt','batt'],['capexCcgt','ccgt']]){
+    const el = document.getElementById(id);
+    if (el && BLD_COST[t]) el.textContent = Math.round(BLD_COST[t].c2026).toLocaleString('en-ZA').replace(/,/g, '\u00a0');
+  }
   window.GTZA_READY = true;
   run();
 });

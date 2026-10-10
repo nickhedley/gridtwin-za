@@ -41,7 +41,8 @@ const SCENARIOS = {
   'coal retired 27 GW': { coalDecomMW: 27000, coalFlexPct: 1 },
   'high VRE':           { newWindMW: 50000, newPvMW: 50000, newRooftopMW: 20000 },
   'high VRE + storage': { newWindMW: 50000, newPvMW: 50000, newBattMW: 30000,
-                          newPsMW: 5000, newVrfbMW: 8000, newIronAirMW: 8000 },
+                          newPsMW: 5000, newVrfbMW: 8000, newIronAirMW: 8000,
+                          newPsMaxMW: 1e7 },   // keeps 5 GW above the 3 GW lever cap (build 2026-10-09d), as before
   'fleet collapse':     { coalEAFPct: 40 },
   'no storage at all':  { battPowerMW: 0, newBattMW: 0, psPowerMW: 0, psEnergyMWh: 0 },
   'zero everything':    { newWindMW: 0, newPvMW: 0, newRooftopMW: 0, newBattMW: 0,

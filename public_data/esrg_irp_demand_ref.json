@@ -1,0 +1,235 @@
+{
+ "meta": {
+  "what": "IRP 2025 reference demand (ESRG IRPDemandREF, Mode 1), GWh at sent-out level by component, and the growth index the model applies (domestic grid + distributed PV, 2026 = 1).",
+  "source": "B. Merven, ESRG Hourly Demand Model v2025 by Province, University of Cape Town, doi:10.25375/uct.26942134.v5, HourlyDemandModel_v10_IRP_v02_wExports.xlsm, sheet AnnualDashboard (IRP Update 2023-2024 revision).",
+  "licence": "CC BY 4.0 (attribution: Bruno Merven, Energy Systems Research Group, University of Cape Town)",
+  "built_by": "build_demand_paths.py, 9 Oct 2026",
+  "note": "Applied as growth on the model's measured 2026 base, so the model's levels sit about 12% below the IRP's own (RESULTS, 9 Oct 2026)."
+ },
+ "years": {
+  "2023": {
+   "domestic_grid": 208966.6,
+   "exports": 11250.4,
+   "dist_pv": 5648.9,
+   "other_onsite": 12390.0,
+   "mode1_total": 238255.8,
+   "index_vs_2026": 0.964077
+  },
+  "2024": {
+   "domestic_grid": 208900.8,
+   "exports": 11055.2,
+   "dist_pv": 6891.6,
+   "other_onsite": 12390.0,
+   "mode1_total": 239237.6,
+   "index_vs_2026": 0.969363
+  },
+  "2025": {
+   "domestic_grid": 210172.9,
+   "exports": 11016.5,
+   "dist_pv": 7823.4,
+   "other_onsite": 12390.0,
+   "mode1_total": 241402.8,
+   "index_vs_2026": 0.979264
+  },
+  "2026": {
+   "domestic_grid": 213858.5,
+   "exports": 11016.5,
+   "dist_pv": 8754.0,
+   "other_onsite": 12390.0,
+   "mode1_total": 246019.0,
+   "index_vs_2026": 1.0
+  },
+  "2027": {
+   "domestic_grid": 217555.4,
+   "exports": 11016.5,
+   "dist_pv": 9683.4,
+   "other_onsite": 12390.0,
+   "mode1_total": 250645.3,
+   "index_vs_2026": 1.020782
+  },
+  "2028": {
+   "domestic_grid": 221065.9,
+   "exports": 11017.5,
+   "dist_pv": 10611.7,
+   "other_onsite": 12390.0,
+   "mode1_total": 255085.1,
+   "index_vs_2026": 1.040721
+  },
+  "2029": {
+   "domestic_grid": 225327.4,
+   "exports": 11016.5,
+   "dist_pv": 11538.9,
+   "other_onsite": 12390.0,
+   "mode1_total": 260272.7,
+   "index_vs_2026": 1.06403
+  },
+  "2030": {
+   "domestic_grid": 232721.6,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 268588.3,
+   "index_vs_2026": 1.101384
+  },
+  "2031": {
+   "domestic_grid": 240802.2,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 276668.9,
+   "index_vs_2026": 1.137683
+  },
+  "2032": {
+   "domestic_grid": 247234.5,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 283101.2,
+   "index_vs_2026": 1.166577
+  },
+  "2033": {
+   "domestic_grid": 254557.7,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 290424.4,
+   "index_vs_2026": 1.199474
+  },
+  "2034": {
+   "domestic_grid": 262794.1,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 298660.8,
+   "index_vs_2026": 1.236473
+  },
+  "2035": {
+   "domestic_grid": 269691.0,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 305557.7,
+   "index_vs_2026": 1.267454
+  },
+  "2036": {
+   "domestic_grid": 277062.5,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 312929.2,
+   "index_vs_2026": 1.300568
+  },
+  "2037": {
+   "domestic_grid": 285704.9,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 321571.6,
+   "index_vs_2026": 1.339391
+  },
+  "2038": {
+   "domestic_grid": 294908.0,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 330774.7,
+   "index_vs_2026": 1.380732
+  },
+  "2039": {
+   "domestic_grid": 303899.4,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 339766.1,
+   "index_vs_2026": 1.421122
+  },
+  "2040": {
+   "domestic_grid": 312308.2,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 348174.9,
+   "index_vs_2026": 1.458896
+  },
+  "2041": {
+   "domestic_grid": 321729.5,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 357596.2,
+   "index_vs_2026": 1.501217
+  },
+  "2042": {
+   "domestic_grid": 330399.8,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 366266.5,
+   "index_vs_2026": 1.540165
+  },
+  "2043": {
+   "domestic_grid": 340488.6,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 376355.3,
+   "index_vs_2026": 1.585485
+  },
+  "2044": {
+   "domestic_grid": 348387.1,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 384253.8,
+   "index_vs_2026": 1.620966
+  },
+  "2045": {
+   "domestic_grid": 356247.5,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 392114.2,
+   "index_vs_2026": 1.656276
+  },
+  "2046": {
+   "domestic_grid": 367035.8,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 402902.5,
+   "index_vs_2026": 1.704738
+  },
+  "2047": {
+   "domestic_grid": 377029.3,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 412896.0,
+   "index_vs_2026": 1.74963
+  },
+  "2048": {
+   "domestic_grid": 384512.9,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 420379.6,
+   "index_vs_2026": 1.783247
+  },
+  "2049": {
+   "domestic_grid": 394726.4,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 430593.1,
+   "index_vs_2026": 1.829127
+  },
+  "2050": {
+   "domestic_grid": 404044.1,
+   "exports": 11016.5,
+   "dist_pv": 12460.2,
+   "other_onsite": 12390.0,
+   "mode1_total": 439910.9,
+   "index_vs_2026": 1.870983
+  }
+ }
+}

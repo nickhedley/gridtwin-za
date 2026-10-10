@@ -36,7 +36,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | NERSA Wholesale Electricity Pricing Methodology | consultation | May 2026 | independent cross-check on the price-component mapping; names balancing costs, which GridTwin lacks |
 | Energy Council of South Africa, Electricity Wholesale Tariff Series, ch. 1-3 | one-off, 2026 (UK PACT-funded) | flip-book at energycouncil.org.za/insights/analysis/; PDFs held by the user | retail stack and the planned SAWEM transition basis (TODO 14af-14ai); no constant reads it yet |
 | NERSA Trading Rules | consultation, v3 | June 2026; comments extended to 28 Sep 2026 (dashboard Issue 04) | governs wheeling and trading - see calendar |
-| Renewables.ninja / MERRA-2, regional | static | 2014-2025, twelve years | `profiles_regional_multiyear.json` via `weatherYearNational()` - capacity-weighted, bias-corrected 0.848 |
+| Renewables.ninja / MERRA-2, regional | static | 2014-2025, twelve years | `profiles_regional_multiyear.json` via `weatherYearNational()` - capacity-weighted; wind bias-corrected x1.0753 in the file (6 Sep 2026: fleet-weighted mean matched to Eskom's observed 2022-2023 output; the earlier 0.848 factor in weatherYearNational is retired, WIND_BIAS = 1.0) |
 | Form Energy / Google / Xcel transaction | one-off | 30 GWh, ~usd 77/kWh pre-incentive | `acapIronAir` 12,940 R/kW-yr |
 | Eskom Tubatse pumped storage | one-off | R35.9bn, 1.5 GW / 21 GWh, jet plan | `acapPs` 2,360 R/kW-yr |
 | Eskom Ingula pumped storage | one-off | R26.8bn reported, 1,332 MW / 21 GWh, built 2006-2017 (Engineering News, 2016) | cross-check on `bldPhesCostBasis` 'tubatse'; no constant reads it |
@@ -551,6 +551,37 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     USD 2/MMBtu adder is replaced, not added to.
   - New CCGT fixed O&M raised by R260/kW-yr.
 
+## Gas price cases (TODO 14bo, build 09f, 9 Oct 2026)
+
+All quotes are search extracts (the source hosts are blocked from this environment). Computed by build_gas_cases.py
+into public_data/gas_price_cases.json; conversions there (US CPI-U 2024 average to January 2026 1.0369, 2018 average
+to January 2026 1.2953; SA CPI January 2024 to January 2026 1.0681; R16.50/USD).
+- Low: EIA AEO2025 reference Henry Hub, real 2024 USD, 2.88 in 2025 and 4.80 in 2050 (EIA Today in Energy), linear
+  between (user confirmed); US LNG at 115% of Henry Hub plus a USD 3.00 tolling fee (Argus, 5 Dec 2025; OIES Quarterly
+  Gas Review 32, Apr 2026); shipped 8,600 nm to Richards Bay.
+- Central: 13.25% of Brent (range 12.5-14%), a free-on-board slope (S&P Global, 7 May 2024: 13.2% FOB against 14.2%
+  delivered), at Brent USD 80 in 2024 dollars (IEA WEO 2025 STEPS, via an IISD explainer; dollar year probably 2024),
+  shipped about 4,200 nm from Ras Laffan (waypoint estimate; no published distance found). Brent USD 100 run as well.
+- High: JKM 2026 full-year estimate USD 19.80, delivered North Asia, taken as the delivered price at the South
+  African coast with no shipping added (Jan-Sep average 17.76 from EIA, IEA Gas Market Report Q3-2026 and
+  Reuters/LSEG monthly figures, with Oct-Dec at the early October front month of about 25.8).
+- IRP 2025 as published: R260.89/GJ, January 2024 rands, flat real, no terminal or adder (assumptions workbook, New
+  Tech Properties). No terminal charge is added in this case, matching the IRP.
+- Shipping, the least-sourced input: a 165,000 m3 carrier, 17 knots, 3 days in port, boil-off 0.12%/day laden, heel
+  0.09%/day; charter USD 60,000/day, a 2018 breakeven (OIES Insight 27), adjusted with US CPI. Charter rates have
+  likely risen since the Hormuz disruption (Fearnleys: one-year charter about USD 100,000/day in March 2026).
+- Variable regasification USD 0.25/MMBtu (derived, 14ak section above) is added to every case but the IRP's.
+- LNG terminal as a fixed cost per kW of new gas on the send-out basis, R354-707/kW-yr (Ngqura about R22bn plus R2bn
+  for the berth, 3.6 Mt/yr; Richards Bay R7bn for 2 mtpa; Standard Bank, ENN 23 Jul 2026, USD 1.5bn for two
+  terminals; computed at 8% over 25 years, 53.37 GJ/t, 6,900 kJ/kWh), applied with GAS_FOM_ADD to new gas in the
+  optimiser and the cost readout alike.
+
+## Gas CCGT emissions factor (TODO 14bo, build 09e, 9 Oct 2026)
+
+- US EPA, GHG Emission Factors Hub: natural gas, 53.06 kg CO2 per MMBtu on a higher heating value basis.
+- emisCcgt = 53.06 / 1000 / 0.293071 MWh per MMBtu / 0.52 = 0.348 t/MWh, at the 52% (HHV) efficiency costCcgt
+  uses. The previous 0.37 implied 48.9%. IRP 2025 OCGT units at the same factor: 9F.05 0.534, 9HA.02 0.475 t/MWh.
+
 ## ANU RE100 pumped hydro atlas, South Africa shortlist (TODO 14z, 7 Oct 2026)
 
 Downloaded by Nick Hedley, Oct 2026: 6,921 off-river site pairs, none in protected areas, with URLs
@@ -650,3 +681,49 @@ harness/ext/grid_distances.py.
 - Fixed O&M: fomDiesel R360/kW-yr on every MW online, Avon and Dedisa included after their contracts.
 - Running hours on the half-standard pathway (pathway_v_half_c1_p1.json, build 07c, twelve weather years x
   two outage draws): 94 h a year in 2026, 3 in 2028, zero from 2030 (worst draw at most 4 h).
+
+## Build costs from South African bid data (TODO 14av, 14aw, 14ax; builds 07j and 07k, 7 Oct 2026)
+
+Decisions are the user's (7 Oct 2026).
+
+- IPP Office, South African REIPPPP historical data note, 7 Nov 2025 (uploaded by the user), January 2024
+  terms: BW6 solar preferred bidders R15,715/kW (single-axis tracking, capacity factor 30.1%), BW6 solar
+  compliant R19,756, BW6 wind compliant R26,647 (no wind was awarded), BESS BW1 preferred R27,888/kW at 4 h
+  (including 6% augmentation). Fixed O&M R269 (solar), R367 (wind), R678 (BESS) per kW-yr. Bid ranges: solar
+  R14,000-23,000, wind R19,000-36,000, storage R23,000-43,000. What the overnight cost includes is not defined;
+  under REIPPPP the developer funds the dedicated connection, so it probably includes it.
+- SA CPI, January 2024 to January 2026: 1.032 x 1.035 = 1.068 (Stats SA headline, 3.2% y/y January 2025 and
+  3.5% y/y January 2026, as reported; the Stats SA site is not reachable from the cloud environment).
+- IRP 2025 assumptions workbook (uploaded by the user), Learning Rates sheet, base case: onshore wind (BW6)
+  R25,695/kW in 2026 (January 2024 rands), x 1.068 = R27,446/kW. The user's choice for the wind default once
+  the IRP cost-set pathway run reports.
+- BESIPPPP bid window 3, preferred bidders 30 May 2025: 616 MW / 2,464 MWh at five NTCSA substations in the
+  Free State, R9.5bn (DEE media statement; SAnews; Engineering News). R3,856/kWh; one year at CPI 3.5% gives
+  R3,990/kWh, R15,962/kW at 4 h: BLD_COST.batt from build 07j, INCLUSIONS NOT STATED. Bid window 2 (Dec 2024):
+  615 MW / 2,460 MWh, R12.8bn, 31% local content. BW3's average evaluation price was 40% below BW1 and 8% below BW2.
+- BNEF Energy Storage System Cost Survey 2025: turnkey (battery racks, PCS, EMS; excluding EPC and grid
+  connection) USD 117/kWh global, 73 China, 177 Europe, 219 US; 2024 USD 165, 40% below 2023 (via
+  Energy-Storage.news). BNEF battery price survey 2025: stationary-storage packs USD 70/kWh, 45% below 2024;
+  lowest LFP cells USD 36/kWh. The old BLD_COST.batt (R8,105/kW, R2,026/kWh, no recorded source) sits at the
+  global turnkey level and is the low case.
+- Solar tracking profile: PVGIS (EC JRC) v5_3, PVGIS-SARAH3, single horizontal axis north-south, 10% system
+  loss, at the ten fixed-tilt points (build_solar_tracking.py; nodal/profiles_solar_tracking.json). The user
+  asked for Renewables.ninja's tracking option; it is not reachable from the cloud environment, so PVGIS was
+  used, which is the source of the existing fixed-tilt solar too. SARAH3 covers 2005-2023; 2024 and 2025 use
+  the PVGIS tracking/fixed ratio by region, month and hour.
+- Modern-turbine wind profile (new wind, bldWindModern): Renewables.ninja MERRA-2 (CC BY-NC 4.0), Vestas V162 5600
+  at 120 m, at the 98 sites of profile_sites.json, sample year 2019, mapped onto every year of the existing file in
+  50 bins per region (build_wind_modern.py; nodal/profiles_wind_modern.json and the national map
+  nodal/profiles_wind_modern_map.json). Stored uncorrected. Correction for new wind 1.064 central, 1.00 low
+  (index.html WIND_NEW_CORR; user decision, 7 Oct 2026), fitted to developer-stated annual output: Impofu 330 MW,
+  1,260 GWh (Enel) and San Kraal 140 MW, 616 GWh (EDF), check_wind_farms.py, weather years 2016, 2019, 2021, 2023.
+
+## International benchmarks for central build costs (RULES, 7 Oct 2026)
+
+- IRENA, Renewable Power Generation Costs in 2024 (July 2025): global weighted average total installed cost,
+  onshore wind USD 1,041/kW (R17,180 at R16.50), utility-scale solar USD 691/kW (R11,400); India 525 and China 591
+  for solar. South African BW6 bids sit about 66% (wind) and 47% (tracking solar) above these.
+- Wind central from build 07q: BW6 compliant bids R26,647/kW (January 2024) x 1.068 = R28,463/kW. IRP 2025's BW6
+  base case (R27,446/kW, 2026) is a cross-check only.
+- Lithium central from build 07p: BW3 aged to January 2026 (equipment share at BNEF's 2025 turnkey decline),
+  R3,425/kWh; BNEF turnkey 2024 USD 165/kWh, 2025 USD 117/kWh.

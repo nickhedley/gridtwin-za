@@ -10,6 +10,23 @@ kept for its reasoning and is superseded wherever it disagrees with this section
 
 ---
 
+## 7 October 2026: decisions in play (read before section 1, which is from 2 Oct)
+
+Build `2026-10-07s` on PR #22 (claude/build-costs, held). Decisions, all the user's, 7 Oct:
+
+- Central costs need local bid or project data plus an international benchmark (RULES, SOURCES). IRP 2025 cost
+  assumptions are a sensitivity only ("the IRP's own assumptions"), never central. CCGT stays at GridLab R34,965/kW.
+- Wind, option (c): central R28,463/kW (BW6 compliant); high R30,060 (investment values); low IRENA global. New wind
+  on a modern-turbine profile (V162 at 120 m); existing farms keep theirs; capex and profile change together.
+- The correction for new wind comes from the farm check, not the fleet's 1.0753: 1.064 central, 1.00 low (07s).
+  Re-check against measured output (TODO 14bf). Six suite results moved by the profile await a decision (TODO 14bg).
+- Lithium: central BW3 aged to January 2026 (R13,699/kW at 4 h); high BW3 as bid; low R2,026/kWh.
+- Solar tracking: an option (bldPvTracking), not default until reported.
+- #22 is held until Deep decarbonisation 2035 and Fossil-free 2040 are re-searched on the final costs, from two starts,
+  with convergence reported (TODO 14ay). Until then their descriptions make no least-cost claim.
+- Queued after the current runs: 14bd (IRP cost set against the final central costs) and 14be ("IRP world").
+- Priority runs, in order: grid cost, IRP cost set (done on 07c), BW3 batteries, solar tracking, peakers.
+
 ## Start here: what the next session needs to know
 
 ### 1. The two biggest changes since 30 Sep, both of which move published numbers
