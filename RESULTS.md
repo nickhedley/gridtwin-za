@@ -1821,6 +1821,28 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### New pumped hydro is not chosen on IRP demand even under the high cap: 0 MW at 14 hours, 10 MW at 48 hours, 10 Oct 2026
+
+Sensitivity agreed by the user (9 Oct, TODO 14bq), on the 09c central settings (build `2026-10-09d` code, DEMAND=irp_esrg,
+SOLVER=native TL=72000 COMMIT=1 PSE=1 TF=0.5, gas R2,003/MWh, emisCcgt 0.37) with new pumped hydro offered under the
+high cap (PHES=1 PHES_CAP=high: 1,500 MW from 2035, 3,000 MW from 2038, at most 1,500 MW a year), ANU basis (USD 1,100/kW
+plus USD 14/kWh, R16.50/USD), 60-year life, 78% round trip.
+
+```
+run                               passes   new pumped hydro    objective against the 09c central    build schedule
+14 hours (R21,384/kW)             2        none                equal to 15 significant figures       identical in every year
+48 hours (R29,238/kW)             2        10 MW in 2035       lower by about 1 part in 10^9         within 50 MW of it in every year
+14 and 48 hours offered together  -        -                   first pass unfinished after 6 h; lost in a restart
+```
+
+At 48 hours the 10 MW displaces about 40 MW of wind in 2035, 3 MW of gas in 2034 and 9 MW of lithium in 2036; the
+difference is within solver tolerance, so pumped hydro is effectively not chosen at either duration. The pathway's
+binding limits are elsewhere (lithium, solar and wind pace; RESULTS, central pathway on IRP demand). As the central cap
+(1,500 MW from 2038) is tighter than the high cap, it cannot bind either, so offering pumped hydro by default with the
+central cap does not move results (user rule, 9 Oct): done in build `2026-10-09g`. Outputs
+harness/pathway_v_half_c1_p1_09c_phes_high14.json and harness/pathway_v_half_c1_p1_09c_phes_high48.json; no engine
+check run, as the builds equal the central's (14 h) or differ by under 50 MW (48 h).
+
 ### The 07s-to-09a shift is the storage fix: per-year windows alone move cost 0.1% and new gas by 0.55 GW, 9 Oct 2026
 
 Attribution run (user, 9 Oct): the 07s formulation (one storage energy balance per day, HSOC=0) with per-year stress
