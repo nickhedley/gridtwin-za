@@ -1821,6 +1821,35 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### Lithium at 4 GW a year from 2028: the cap binds in 4 of 15 years, new gas falls 1.1 GW and gas burn by two thirds, system cost rises 2%, 10 Oct 2026
+
+Sensitivity TODO 14bt (user, 9 Oct): lithium build pace 4 GW a year from 2028, 2 GW in 2026-27 (LI_CAP=4000, CAP_FROM
+2028; yearly energy cap 48,000 MWh, twelve hours of the power cap), on the 09c central settings (build `2026-10-09d`
+code, DEMAND=irp_esrg, SOLVER=native TL=72000 COMMIT=1 PSE=1 TF=0.5, gas R2,003/MWh, emisCcgt 0.37). Benchmark (user):
+Australia's AEMO connections scorecard FY26 (12.9 GWh reaching full output; 2.7 GW of batteries in the June 2026
+quarter) and the Clean Energy Council (4.3 GW reaching financial close in 2025). Converged in 4 passes (central: 2),
+13 h 49 min including the restart (pass 1 from the cache). Engine check: pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1,
+adaptive (120 to 480 runs a year); every year meets its target, the closest 2038 at 95%. Outputs
+harness/pathway_v_half_c1_p1_09c_li4000.json and harness/pathcheck_v_half_c1_p1_09c_li4000.json.
+
+```
+                       2 GW a year (central)        4 GW a year
+lithium cap binds      power: 12 of 15 years        power: 2029, 2030, 2039, 2040; energy (48 GWh): 2028-31
+lithium by 2040        26.2 GW, 152 GWh             33.1 GW, 240 GWh
+new gas 2030/35/40     1.2 / 4.9 / 4.9 GW           1.2 / 3.0 / 3.75 GW
+gas burnt 2026-40      16.6 TWh                     5.3 TWh
+shed, worst year       0.97 of 2.84 GWh (2039)      2.60 of 2.75 GWh (2038)
+system cost 2026-40    R4,863bn                     R4,964bn (+R101bn, +2.1%)
+CO2 2026-40            1,460 Mt                     1,453 Mt
+```
+
+With the faster pace the optimiser builds early long-duration lithium (12 hours) up to the energy cap in 2028-31 and
+less gas after 2031; 2030 and 2031 gas still sit on the 1.2 GW a year deliverability cap. On the engine's system cost the
+faster pace costs R101bn more over 2026-2040 for 7 Mt less CO2 and two thirds less gas burnt; the optimiser's own
+objective falls 19%, but it carries the stress-window shed penalty and is not a system cost. The 2 GW a year central is
+already about 3.6 times the IRP's implied 0.55 GW a year (user, 9 Oct). Caveats: one run; the 2038 margin is thin
+(95% of target); the no-gas test at both paces is still to run (TODO 14bm).
+
 ### New pumped hydro is not chosen on IRP demand even under the high cap: 0 MW at 14 hours, 10 MW at 48 hours, 10 Oct 2026
 
 Sensitivity agreed by the user (9 Oct, TODO 14bq), on the 09c central settings (build `2026-10-09d` code, DEMAND=irp_esrg,
