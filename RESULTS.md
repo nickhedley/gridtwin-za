@@ -1821,6 +1821,34 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### PROVISIONAL pending the gas price review - Demand paths (TODO 14be step 1): new gas does not rise with demand; cost does, by R1.4 trillion from flat to the IRP path, 10 Oct 2026
+
+All on build `2026-10-09d` code with the 09c central settings except demand (pathway_perfail.js SOLVER=native TL=72000
+COMMIT=1 PSE=1 TF=0.5; gas R2,003/MWh; emisCcgt 0.37; pumped hydro off), demand applied as growth on the measured 2026
+base: flat (DEMAND=rate:0, Eskom stabilisation), NTCSA MTSAO extended (rate:1.39), the IRP reference path year by year
+(irp_esrg, the central), the IRP's average 2.3% a year flat (rate:2.3, labelled alternative); legacy +5% is 09a
+(build 09a, otherwise the same). Engine checks: pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive; every year of
+every path meets its own target. Each converged in 2 passes.
+
+```
+path                  demand 2040   new gas GW          lithium   wind / solar   gas burnt   system cost   CO2       worst year
+                      against 2026  2030 / 2035 / 2040  2040 GW   2040 GW        2026-40     2026-40       2026-40   shed/target
+legacy +5% (09a)      +5%           1.2 / 3.6 / 3.6     14.4      13.1 / 26.7    3.0 TWh     R3,565bn      1,471 Mt  37%
+flat                  0%            1.2 / 3.6 / 3.6     13.7      12.5 / 24.7    3.1 TWh     R3,498bn      1,404 Mt  51%
+NTCSA 1.39%           +21%          1.2 / 2.1 / 2.1     20.7      17.9 / 44.3    12.5 TWh    R4,390bn      1,379 Mt  18%
+2.3% a year           +38%          1.2 / 2.4 / 2.4     24.9      20.2 / 56.5    15.0 TWh    R4,745bn      1,454 Mt  45%
+IRP path (central)    +46%          1.2 / 4.9 / 4.9     26.2      21.5 / 61.1    16.6 TWh    R4,863bn      1,460 Mt  34%
+TDP high 3.44%        +61%          running (pass 3)
+```
+
+New gas capacity is not monotonic in demand: flat and legacy demand build 3.6 GW (on the deliverability cap in
+2030-32), NTCSA growth only 2.1 GW. With growth the optimiser builds more wind, solar and storage for energy, and
+these also carry capacity; with flat demand gas is the cheapest way to replace retiring coal. Gas burnt, lithium,
+wind, solar and cost all rise with demand. 2030 gas sits on the deliverability cap (1.2 GW) in every path. CO2 is
+lowest on the NTCSA path. Caveats: one run per path, so near-ties between builds cannot be ruled out; gas at the
+legacy price, before the gas price review (14bo) and without the OCGT option. Outputs
+harness/pathway_v_half_c1_p1_09c_{flat,ntcsa,r23}.json and harness/pathcheck_v_half_c1_p1_09c_{flat,ntcsa,r23}.json.
+
 ### Lithium at 4 GW a year from 2028: the cap binds in 4 of 15 years, new gas falls 1.1 GW and gas burn by two thirds, system cost rises 2%, 10 Oct 2026
 
 Sensitivity TODO 14bt (user, 9 Oct): lithium build pace 4 GW a year from 2028, 2 GW in 2026-27 (LI_CAP=4000, CAP_FROM
