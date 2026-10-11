@@ -3186,8 +3186,9 @@ function calcFinancials(kwp, solarCF, priceRkwh, costRwp, battHours, offtake, te
   const annualOpexR = systCostR * opexPct;
   const annualNetR = annualRevR - annualOpexR;
   const simplePayback = annualNetR > 0 ? systCostR / annualNetR : Infinity;
-  // IRR: simplified NPV at 10% discount rate over 25 years
-  const r = 0.10, N = 25;
+  // IRR: simplified NPV at the model's discount rate (BLD_DISC, 8% real) over the technology's life (BLD_LIFE; hybrids,
+  // which have no entry, take the solar life). Was 10% over 25 years until 11 Oct 2026 (user: one rate everywhere).
+  const r = BLD_DISC, N = BLD_LIFE[tech] || BLD_LIFE.pv;
   let npv = -systCostR;
   for(let y=1;y<=N;y++) npv += annualNetR / Math.pow(1+r, y);
   // Binary search for IRR
@@ -5951,7 +5952,7 @@ const FIXED = {
   // derate spreading capital over less saleable output - so 38,000 sits at the
   // TOP of that band rather than outside it. First-of-a-kind in South Africa
   // would plausibly be higher still.
-  ccsCapexRkW:38000, ccsWaccPct:9, ccsLifeYrs:20,
+  ccsCapexRkW:38000, ccsWaccPct:null, ccsLifeYrs:20,   // ccsWaccPct derived after BLD_DISC (see there)
   battPowerMW:800, battHours:4, newBattHours:4, battEff:0.88, ccgtMW:0,
   // ── long-duration storage ────────────────────────────────────────────────
   // Four-hour lithium cannot ride out a multi-day wind lull however it is
@@ -6417,6 +6418,7 @@ const FIXED = {
   //                    OCGT fleet) adds R2,780/MWh -> R8,986, rounded to 9000.
   //                    At 2% CF it would be R13,200; at 10%, R7,600. THE 5% CF
   //                    IS THE assumption - change it and this number moves a lot.
+  //   lcoeCcgt         DERIVED from 11 Oct 2026 (after BLD_DISC; one rate everywhere). History below.
   //   lcoeCcgt 3340    RE-derived 21 Aug 2026 after CCGT capex was corrected from
   //                    R18,000 to R34,965/kW. At 25yr, 9% wacc the annuity is
   //                    R3,560/kW/yr; at 30% CF that is R1,355/MWh of capital,
@@ -6449,7 +6451,7 @@ const FIXED = {
   // has actually delivered at - and Yelland notes IRP 2019 claimed the programme
   // showed a business case for 300 and 600 MW plants while ignoring that. Treat it
   // as the best available anchor rather than a demonstrated cost.
-  lcoeCsp:2000, lcoeCcgt:3340, ccgtForceLoad:0,
+  lcoeCsp:2000, lcoeCcgt:null, ccgtForceLoad:0,   // lcoeCcgt derived after BLD_DISC (see there)
   // IRP 2025 reference case (Government Gazette 53596, 28 Oct 2025, p.34): 6 GW of CCGT at a minimum annual
   // capacity factor of 51%, 2030-2040. Applied as an ANNUAL minimum on up to ccgtForceLoadMW of CCGT in
   // scenario years ccgtForceFromYear-ccgtForceToYear (simulateGasAnnualFloor): gas dispatches on merit,
@@ -9171,6 +9173,16 @@ const BLD_LIFE = { wind:25, pv:25, rooftop:25, batt:15, vrfb:25, ironair:20, ccg
 // higher rates in the same survey and are not differentiated here.
 // let, not const (11 Oct 2026): the pathway switch DISC overrides it for one run (TODO 14be step 3, the IRP's 11.3%).
 let BLD_DISC = 0.08;
+// ONE RATE AND ONE LIFE EVERYWHERE (11 Oct 2026, user). Panels that annualise capital read BLD_DISC and BLD_LIFE
+// rather than carrying their own: the gas LCOE readout was 9% over 25 years against the optimiser's 8% over 30, the
+// CCS panel 9%, the site revenue NPV 10%. Derived here because FIXED is declared before BLD_COST and BLD_DISC.
+//   lcoeCcgt: capital at a 30% capacity factor (the assumption the old hand-derived R3,340 made) plus fuel
+//   (costCcgt) and carbon at the compliance rate; fixed and variable O&M left out, as before. Recomputes with them.
+FIXED.lcoeCcgt = Math.round(bldAnnuity(BLD_COST.ccgt.c2026, BLD_LIFE.ccgt) / (0.30 * 8.76)
+  + FIXED.costCcgt + FIXED.carbonTaxRPerT * FIXED.emisCcgt);
+//   ccsWaccPct: the CCS panel's return on the retrofit, the same 8% real. Its 20-year life (ccsLifeYrs) is kept
+//   because it is a retrofit's remaining life on an existing coal unit, which BLD_LIFE (new build) does not cover.
+FIXED.ccsWaccPct = BLD_DISC * 100;
 
   // Fixed O&M for new build, R/kW-yr real 2026, from NREL ATB. Added 18 Sep 2026; until
   // then every technology was built on capital alone, which understated the ones with
@@ -16601,7 +16613,7 @@ function renderCCS(r){
         const rKw = state.ccsCapexRkW ?? 38000;                 // R/kW installed
         const gw = fleetMW / 1000;
         const totalBn = rKw * (fleetMW * 1000) / 1e9;           // R/kW \u00d7 kW \u2192 R bn
-        const wacc = (state.ccsWaccPct ?? 9) / 100;
+        const wacc = (state.ccsWaccPct ?? FIXED.ccsWaccPct) / 100;
         const life = state.ccsLifeYrs ?? 20;
         // Annual revenue requirement: return on the un-depreciated asset plus
         // straight-line depreciation. Mid-life return is the standard shorthand.
@@ -16643,7 +16655,7 @@ function renderCCS(r){
           + 'The February 2026 Medupi benefit-cost study puts carbon capture, utilisation and storage at <strong>R1,811bn to R13,837bn</strong> for Medupi alone. Read that carefully before comparing: it is a sulphur dioxide study \u2013 Eskom sought exemption from the SO\u2082 standards, and CCUS was assessed as one of six alternatives to flue-gas desulphurisation, costed in nominal rands over the station\u2019s life to 2071. This panel uses overnight capex in 2026 money for CO\u2082 capture, which is not the same quantity. Even so, it is the only South African utility-scale CCUS costing in the public domain, and it sits well above the figure used here.</div></details>'
           + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px">'
           + ci('ccsCapexRkW', 'Retrofit capital', 'R/kW', rKw, 1000)
-          + ci('ccsWaccPct', 'Return (WACC)', '%', state.ccsWaccPct ?? 9, 0.5)
+          + ci('ccsWaccPct', 'Return (WACC)', '%', state.ccsWaccPct ?? FIXED.ccsWaccPct, 0.5)
           + ci('ccsLifeYrs', 'Asset life', 'years', life, 1)
           + '</div></div>';
       })()
@@ -18458,7 +18470,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-11b';
+const BUILD_STAMP = '2026-10-11c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

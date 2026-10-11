@@ -509,8 +509,12 @@ function probe(w, src) {
   // an SRMC of 6206 until 14 Aug 2026 - impossible, and nothing was watching.
   // SRMC here is fuel + VOM + carbon at the model's own default carbon price.
   {
-    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-    const num = (k) => { const m = html.match(new RegExp('\\b' + k + '\\s*:\\s*([0-9.]+)')); return m ? parseFloat(m[1]) : null; };
+    // Read the LIVE values (FIXED after the page has loaded), not the first 'key: number' in the source text: from
+    // 11 Oct 2026 lcoeCcgt is derived at load from BLD_DISC and BLD_LIFE, so the source holds null for it and the text
+    // match fell through to a preset's lcoeCcgt:2500. Same check, now on the value the model uses.
+    const live = await probe(w, 'return { ' + ['carbonTaxRPerT','lcoeCoalNew','costCoal','vomCoal','emisCoal','lcoeCcgt','costCcgt','vomCcgt','emisCcgt','lcoeDiesel','costDiesel','vomDiesel','emisDiesel','lcoeNuclear','costNuclear','vomNuclear'].map(k => k + ': FIXED.' + k).join(', ') + ' };');
+    if (live.error) throw new Error('LCOE probe failed: ' + live.error);
+    const num = (k) => (typeof live[k] === 'number') ? live[k] : null;
     const carbon = num('carbonTaxRPerT');
     const pairs = [
       ['Coal',   num('lcoeCoalNew'), num('costCoal')   + num('vomCoal')    + carbon * num('emisCoal')],

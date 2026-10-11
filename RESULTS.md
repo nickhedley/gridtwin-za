@@ -1825,6 +1825,19 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### One discount rate and one life everywhere: three panels brought onto BLD_DISC and BLD_LIFE, 11 Oct 2026
+
+Build `2026-10-11c` (user, 11 Oct). The build optimiser annualises and discounts at BLD_DISC (8% real after tax) over
+BLD_LIFE; three readouts carried their own rates. Now: the gas LCOE readout (lcoeCcgt) is derived at load from
+BLD_COST.ccgt, BLD_DISC and BLD_LIFE.ccgt (30 years) at the 30% capacity factor the old constant assumed, plus fuel and
+carbon: R3,201/MWh, was a hand-derived R3,340 at 9% over 25 years with stale fuel. The CCS panel's return defaults to
+BLD_DISC (8%, was 9%, unsourced); its 20-year life stays, as a retrofit's remaining life on an existing unit, which
+BLD_LIFE (new build) does not cover. The site revenue check's NPV uses BLD_DISC over BLD_LIFE for the technology (was
+10% over 25 years). Only readouts move: lcoeCcgt feeds the all-new replacement-cost readout and nothing the optimiser
+or engine decides. validate_outputs.js's LCOE-against-SRMC check read the first 'lcoeCcgt: number' in the source,
+which after this change was a preset's 2500; it now reads the live values (same check, now on the value the model
+uses). Suite 804/809 plus eng5 6/6 without ESK19679.csv.
+
 ### Diagnosis, not deliverable - With no gas deliverability cap the central builds 7.6 GW of gas in 2030, costs 8.6% less and emits 104 Mt more, 11 Oct 2026
 
 TODO 14be step 2 (user, 9 Oct): the relaxed cap run once, as a diagnosis only, to show what the system would build if
