@@ -1930,8 +1930,15 @@ flat                  0%            1.2 / 3.6 / 3.6     13.7      12.5 / 24.7   
 NTCSA 1.39%           +21%          1.2 / 2.1 / 2.1     20.7      17.9 / 44.3    12.5 TWh    R4,390bn      1,379 Mt  18%
 2.3% a year           +38%          1.2 / 2.4 / 2.4     24.9      20.2 / 56.5    15.0 TWh    R4,745bn      1,454 Mt  45%
 IRP path (central)    +46%          1.2 / 4.9 / 4.9     26.2      21.5 / 61.1    16.6 TWh    R4,863bn      1,460 Mt  34%
-TDP high 3.44%        +61%          running (pass 3)
+TDP high 3.44%        +61%          1.2 / 5.6 / 7.2     27.3      37.5 / 62.8    7.3 TWh     R5,266bn      1,449 Mt  106% (2040)
 ```
+
+TDP high (DEMAND=rate:3.44, labelled converted), added 11 Oct 2026: not converged after 5 passes; paused, since the last
+two passes no longer closed the gap (after pass 4, 2039 at 3.19 and 2040 at 3.88 GWh against 3.06 and 3.16; after pass
+5, 3.35 and 3.86). Reported on its pass-5 build (replayed from the solve cache with MAXP=5, the same LPs,
+harness/pathway_v_half_c1_p1_09c_tdphigh_p5.json). Engine check: every year within its own target except 2040, 3.34
+against 3.16 GWh (240 runs). New wind is at its 2.5 GW a year cap in every year. Average system cost R1,423/MWh served
+against R1,393 on the IRP path. Resumable from the cache (passes 1-5) if wanted.
 
 New gas capacity is not monotonic in demand: flat and legacy demand build 3.6 GW (on the deliverability cap in
 2030-32), NTCSA growth only 2.1 GW. With growth the optimiser builds more wind, solar and storage for energy, and
