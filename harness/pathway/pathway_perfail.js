@@ -14,7 +14,7 @@ const fs=require('fs'),path=require('path');const {JSDOM}=require('jsdom');const
 // GAS_FIRST (10 Oct 2026, TODO 14be step 2): first year new gas may come on line, default 2030 (the deliverability cap);
 // the relaxed-cap diagnosis uses GAS_FIRST=2027 GAS_CAP=100000 and is labelled not deliverable.
 const GAS_CAP=process.env.GAS_CAP!==undefined?+process.env.GAS_CAP:null;
-const IA_CAP=process.env.IA_CAP?+process.env.IA_CAP:0, LI_CAP=process.env.LI_CAP?+process.env.LI_CAP:0, CAP_FROM=+(process.env.CAP_FROM||2028), LDES_NOCAP=process.env.LDES_NOCAP==='1';
+const IA_CAP=process.env.IA_CAP?+process.env.IA_CAP:0, LI_CAP=process.env.LI_CAP!==undefined?+process.env.LI_CAP:3000, CAP_FROM=+(process.env.CAP_FROM||2028), LDES_NOCAP=process.env.LDES_NOCAP==='1';
 // DEM: demand growth to the horizon year, %. Default 5 is the LEGACY, UNSOURCED setting inherited from the transition
 // presets (a judgement, not a forecast; RESULTS 9 Oct 2026); label runs on it "demand +5% (legacy, unsourced)".
 const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.env.GAS_FIRST||2030), ROOF_PER_YR=1200, DEM=+(process.env.DEM||5);
@@ -32,6 +32,8 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
                  .replace(/^ 0 <= b_rooftop_(\d{4}) <= [0-9.]+$/gm,(m,y)=>{const v=+y>=2027?ROOF_PER_YR:0; return ` ${v} <= b_rooftop_${y} <= ${v}`;})
                  // Gas infrastructure sensitivity, TODO 14ak (6 Oct 2026): GAS_FUEL_R sets costCcgt (R/MWh, replacing the flat regas
                  // adder), GAS_FOM_ADD adds the LNG terminal's fixed cost to new CCGT fixed O&M (R/kW-yr); same in pathcheck.js.
+                 // LI_CAP default 3000 from 11 Oct 2026 (user): the central lithium pace is 3 GW a year from CAP_FROM (2028),
+                 // 2 GW before; the 2 GW cap bound in 12 of 15 years on IRP demand. LI_CAP=2000 (or 0) restores the old central.
                  // Long-duration storage variants (user, 6 Oct 2026). IA_CAP and LI_CAP: iron-air and lithium MW a year
                  // from CAP_FROM (default 2028), lithium energy cap scaled with it (12 h x rate, as index.html).
                  // LDES_NOCAP=1: no yearly or cumulative cap on iron-air or pumped hydro, a bounding case.
@@ -167,6 +169,6 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
    fs.writeFileSync(OUT.replace(/\.json$/,'')+'_lp'+DY+'.json', JSON.stringify({year:DY, periods, lpv})); }
  const peakerExt=Object.fromEntries(Object.entries(cols).filter(([c])=>c.startsWith('le_')).map(([c,v])=>[c.slice(3),Math.round(v.Primal||0)]));   // TODO 14as
  const build=Object.fromEntries(Object.entries(cols).filter(([n])=>/^(b_[a-z]+|eb_batt|rc|cc_[a-z]+)_20\d\d$/.test(n)).map(([n,c])=>[n,c.Primal]));   // exact, for FIX_FROM
- fs.writeFileSync(OUT, JSON.stringify({demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, gas:{case:GAS_CASE, fuelR:GAS_FUEL, fuelRFlat:process.env.GAS_FUEL_R?+process.env.GAS_FUEL_R:null, fomAdd:+(process.env.GAS_FOM_ADD||0)}, disc:+w.eval('BLD_DISC'), gasFloor:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+(S.bldGasFloorOn||0), engine:+(S.ccgtForceLoad||0), pct:S.ccgtForceLoadPct, mw:S.ccgtForceLoadMW, from:S.ccgtForceFromYear, to:S.ccgtForceToYear}); })()`)), phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
+ fs.writeFileSync(OUT, JSON.stringify({demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, gas:{case:GAS_CASE, fuelR:GAS_FUEL, fuelRFlat:process.env.GAS_FUEL_R?+process.env.GAS_FUEL_R:null, fomAdd:+(process.env.GAS_FOM_ADD||0)}, disc:+w.eval('BLD_DISC'), liCap:LI_CAP, liCapFrom:CAP_FROM, gasFloor:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+(S.bldGasFloorOn||0), engine:+(S.ccgtForceLoad||0), pct:S.ccgtForceLoadPct, mw:S.ccgtForceLoadMW, from:S.ccgtForceFromYear, to:S.ccgtForceToYear}); })()`)), phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
  console.log('done', out.verdict, ((Date.now()-t0)/1000).toFixed(0)+'s'); process.exit(0);
 })();
