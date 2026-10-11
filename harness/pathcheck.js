@@ -47,6 +47,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // and passing GAS_FUEL_R or GAS_FOM_ADD as well is refused, so the check cannot price gas differently from the optimiser.
  // The pathway's discount rate (TODO 14be step 3), so the check annualises capital as the optimiser did.
  if (P.disc!=null) w.eval(`BLD_DISC=${+P.disc};`);
+ // The pathway's gas finance premium (bldGasFinPremium), so new gas capital is annualised as the optimiser did.
+ if (P.gasFinPremium) w.eval(`if(!('bldGasFinPremium' in FIXED)) throw new Error('bldGasFinPremium missing'); state.bldGasFinPremium=${+P.gasFinPremium};`);
  // The 51% gas floor (TODO 14be step 4): if the pathway ran with it, the engine check applies it too.
  if (P.gasFloor && P.gasFloor.engine) w.eval(`if(!('ccgtForceLoad' in FIXED)) throw new Error('ccgtForceLoad missing'); state.ccgtForceLoad=1;`);
  const PG=P.gas||null;
