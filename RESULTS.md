@@ -697,7 +697,11 @@ year stays near 19-25 GWh at every level: 2020 is short of energy, which 6-hour 
 cover.
 
 Discount rate. Correction: the 22 Sep note that the IRP uses 11.3% is withdrawn; no discount rate
-appears in the IRP 2025 gazette text, and the figure was not sourced. The 11.3% results stand as a
+appears in the IRP 2025 gazette text, and the figure was not sourced. Corrected again 11 Oct 2026 (user, from the
+Gazette p.34): IRP 2025 states 'a discount rate of 11.3%', listed with R18.35/USD, '$15/GJ' gas and 'All costs are
+estimated to be in January 2024 rand terms'. Real or nominal is not stated; as its costs are in constant rands we
+infer real, and the methods say this is our inference. The '$15/GJ' conflicts with the workbook's R260.89/GJ (USD
+15/MMBtu at R18.35) and is treated as a unit slip; the workbook figure is kept. The 11.3% results stand as a
 sensitivity only. Evidence for South Africa:
 
 ```
