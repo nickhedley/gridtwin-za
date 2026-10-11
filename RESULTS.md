@@ -1825,6 +1825,33 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### Average system cost per MWh served: R1,393 on the IRP central path against R1,221 flat, 2026-2040, 11 Oct 2026
+
+Build `2026-10-11d` (user, 11 Oct: every run report gives average system cost per MWh served, so demand paths can be
+compared). Measure: the engine's own avgCost, as the app reports it: grid cost (fuel, carbon, annualised new grid capex,
+fixed O&M, contracts, demand response, start-ups) less export revenue, over grid energy served (gridServed, which
+includes firm exports and storage losses). Rooftop capex and the shed penalty are outside it. Each year is
+served-weighted across runs; the 2026-2040 figure is total cost over total served, undiscounted. pathcheck.js records it
+from this build on. Runs checked before it: a 12-run companion check (K=1, the same 12 weather years, the check's own
+outage seeds) on the engine that checked them (gtza-09d, build 2026-10-09d plus the output-only gridServed patch); its
+grid cost matches the full 120-run check within 0.03% in every year, so the companion runs carry the figure.
+
+```
+R/MWh served          2026   2030   2035   2040   2026-2040   served TWh   cost (check)
+legacy (+5%, 09a)     1096   1174   1269   1241     1213         2820       R3,565bn
+flat                  1096   1181   1282   1243     1221         2746       R3,498bn
+NTCSA                 1188   1467   1409   1368     1386         3064       R4,390bn
+2.3% a year           1188   1436   1412   1384     1398         3291       R4,745bn
+IRP central (09c)     1178   1423   1432   1392     1393         3387       R4,863bn
+lithium 4 GW a year   1169   1479   1440   1443     1424         3385       R4,964bn
+relaxed gas cap       1103   1297   1274   1384     1272         3382       R4,447bn
+```
+
+Settings as each run's own entry (09c central and demand paths 10 Oct; lithium 4 GW 10 Oct; relaxed cap 11 Oct), half
+standard, adaptive engine check. Pumped hydro offered at the high cap (14 h and 48 h): R1,393.2 and R1,393.1, the same as
+the central, as nothing was built. Caveat: undiscounted; the per-MWh figure on the three growth paths is close
+(R1,386-1,398) while flat is R165-177 lower.
+
 ### One discount rate and one life everywhere: three panels brought onto BLD_DISC and BLD_LIFE, 11 Oct 2026
 
 Build `2026-10-11c` (user, 11 Oct). The build optimiser annualises and discounts at BLD_DISC (8% real after tax) over
