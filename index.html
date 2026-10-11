@@ -6477,6 +6477,10 @@ const FIXED = {
   // to be set by the user before it runs). bldOcgtCostCase: 'central' (NREL ATB 2025, to be supplied) or 'irp' (the IRP's
   // R12,981/kW, the low case). All off by default; the engine reads newOcgtMW and newOcgdMW.
   bldOcgtOn:0, bldOcgdOn:0, bldOcgdRateMW:null, bldOcgdFromYear:null, bldOcgtCostCase:'central',
+  // bldNuclearAdd (11 Oct 2026, TODO 14be step 7): new nuclear decided in advance, {year: MW}, e.g. IRP 2025 Table 1
+  // (1,250 in 2036 and 2037, 1,350 in 2038 and 2039). The build LP counts it as supply from its year and the engine
+  // charges its capital (newNuclearMW, acapNuclear); its cost is a constant the LP leaves out. null: none.
+  bldNuclearAdd:null,
   lcoeNuclear:1650, lcoeCoalNew:1550, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
@@ -9919,6 +9923,11 @@ function bldDemandIndex(opts, y){
   if (ix && ix[y] != null) return +ix[y];
   return Math.pow(1 + ((opts && opts.growth) || 0), y - 2026);
 }
+// New nuclear decided in advance and standing by year y (bldNuclearAdd, TODO 14be step 7), MW.
+function bldNuclearAddedMW(S, y){
+  const a = S && S.bldNuclearAdd; if (!a) return 0;
+  let mw = 0; for (const [yy, v] of Object.entries(a)) if (+yy <= y) mw += +v; return mw;
+}
 function bldBuildLP(opts){
   const Y = BLD_YEARS, T = BLD_TECHS;
   const rd = bldRepDays(12);
@@ -9965,6 +9974,8 @@ function bldBuildLP(opts){
                wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
                csp:S.cspMW, batt:S.battPowerMW };
   const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt, EMIS_DIESEL = S.emisDiesel;
+  // Nuclear standing in year y: the existing fleet plus any decided in advance (bldNuclearAdd).
+  const NUC = y => EX.nuclear + bldNuclearAddedMW(S, y);
   // Open-cycle gas options (FIXED notes, 11 Oct 2026). b_ocgt / go_: new OCGT on LNG, OC_K times a CCGT MWh's gas and
   // carbon. b_ocgd: new OCGT on diesel, dispatched in the diesel variable gd_ at the fleet's price.
   const OCGT_ON = (S.bldOcgtOn | 0) > 0, OCGD_ON = (S.bldOcgdOn | 0) > 0;
@@ -10228,7 +10239,7 @@ function bldBuildLP(opts){
       // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
-      const fixed = EX.nuclear*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
+      const fixed = NUC(y)*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
                   + EX.wind*wp*AV_CONG + EX.pv*sp*AV_CONG + EX.rooftop*sp*AV_ROOF + EX.csp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
@@ -10457,7 +10468,7 @@ function bldBuildLP(opts){
     for (const r of rdY(y)) if (!r.stress) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg);
     // The annual-peak margin uses the mean coal availability, as before; the tail-day derate is
     // an hourly matter and lives in cmax_ and resv_ above.
-    const firm = coalCapMean + EX.nuclear*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
+    const firm = coalCapMean + NUC(y)*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
                + EX.ps + DSL(y) + EX.batt;
     // Long-duration storage counts toward firm capacity at its de-rated value:
     // a 100-hour store can be relied on through a long event in a way a 4-hour
@@ -10618,13 +10629,13 @@ function bldBuildToState(res){
   // Fossil-free 2040 the twelve-year test was run with 7 GW of offshore wind and 1 GW of 100-hour
   // iron-air the optimiser never built, and declared a build adequate that sheds about 390 GWh in
   // its worst year without them. The optimiser does not decide offshore or nuclear, so the test
-  // sets them to zero: the system tested is the system proposed.
+  // sets them to zero, nuclear apart from what bldNuclearAdd decides in advance: the system tested is the system proposed.
   const o = {
     newWindMW: Math.round(tot.wind || 0), newPvMW: Math.round(tot.pv || 0),
     newRooftopMW: Math.round(tot.rooftop || 0), newBattMW: Math.round(tot.batt || 0),
     newCcgtMW: Math.round(tot.ccgt || 0), newOcgtMW: Math.round(tot.ocgt || 0), newOcgdMW: Math.round(tot.ocgd || 0),
     newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
-    newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
+    newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: bldNuclearAddedMW({ ...FIXED, ...((typeof state !== 'undefined' && state) || {}) }, endY),
     coalDecomMW: Math.round(FIXED.coalInstalledMW - bldCoalMW(endY)
       + (((res && res.Columns && res.Columns['rc_' + endY]) || {}).Primal || 0)),
   };
@@ -10699,7 +10710,7 @@ function bldStateForYear(res, y, opts){
     newBattMW: Math.round(batt), newBattHours: batt > 0 ? Math.max(1, Math.min(LI_MAX_HOURS, eb / batt)) : (opts.state.newBattHours ?? FIXED.newBattHours),
     newCcgtMW: Math.round(tot.ccgt || 0), newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
     newOcgtMW: Math.round(tot.ocgt || 0), newOcgdMW: Math.round(tot.ocgd || 0),
-    newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
+    newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: bldNuclearAddedMW({ ...FIXED, ...opts.state }, y),
     // Both pumped-hydro durations reach the engine (9 Oct 2026; b_phel was dropped before): one block, power adds,
     // energy adds, as harness/pathcheck.js does.
     newPsMW: Math.round((tot.phes || 0) + (tot.phel || 0)),
@@ -18543,7 +18554,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-11f';
+const BUILD_STAMP = '2026-10-11g';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
