@@ -1848,6 +1848,27 @@ and raises CO2 while coal runs longer in the early years. For comparison, IRP 20
 minimum capacity factor (TODO 14be steps 4 and 5). Outputs harness/pathway_v_half_c1_p1_09c_gasrelaxed.json and
 harness/pathcheck_v_half_c1_p1_09c_gasrelaxed.json.
 
+Detail (user questions, 11 Oct). The 4.9 TWh is the 2026-2040 total, not a yearly figure. By year, relaxed run:
+
+```
+year   shed/target         gas GW   gas capacity factor   gas TWh | relaxed minus capped: lithium  wind   solar GW | coal TWh   CO2 Mt
+2026   0.17/2.00 (9%)      0        -                     0       |                       -0.3    -2.5   0        | +9.4       +9.7
+2028   0.14/2.06 (7%)      0        -                     0       |                       -2.4    -5.4   0        | +20.1      +20.6
+2030   0.00/2.21 (0%)      7.6      0.14%                 0.09    |                       -3.8    -5.4   0        | +18.4      +18.4
+2032   0.05/2.31 (2%)      7.6      0.50%                 0.33    |                       -4.9    -4.7   -2.4     | +13.5      +13.6
+2034   0.38/2.43 (15%)     7.6      0.82%                 0.54    |                       -3.5    -0.6   -3.9     | +2.2       +2.1
+2036   2.10/2.56 (82%)     7.6      1.11%                 0.73    |                       -3.2    -0.6   -5.2     | +1.5       +1.4
+2038   2.58/2.72 (95%)     7.6      0.98%                 0.65    |                       -3.2    +4.4   -5.2     | -6.3       -7.3
+2040   1.85/2.85 (65%)     7.65     0.72%                 0.48    |                       -3.2    +8.1   -7.4     | -10.7      -12.4
+```
+
+Every year meets its target; the margin is thin from 2036 (65-95% of target, against 2-34% when capped). What the gas
+displaces is mostly early wind and lithium (from 2026, before any gas can run, as the optimiser plans around the 2030
+gas) and later solar; in their place the existing coal fleet runs more, up to 21 TWh a year more in 2027-2029. From
+2037 the relaxed run has more wind and runs less coal and gas. CO2, 2026-2040: +104 Mt = coal +108 Mt, gas -4.3 Mt,
+diesel +0.2 Mt; the whole increase is coal running longer in 2026-2036. To rerun once on the gas price settings
+(terminal charge per GW, open-cycle option, central price) when built, to see whether the R416bn saving survives (user).
+
 ### PROVISIONAL pending the gas price review - Demand paths (TODO 14be step 1): new gas does not rise with demand; cost does, by R1.4 trillion from flat to the IRP path, 10 Oct 2026
 
 All on build `2026-10-09d` code with the 09c central settings except demand (pathway_perfail.js SOLVER=native TL=72000
