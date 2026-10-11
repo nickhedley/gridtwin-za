@@ -1821,7 +1821,7 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
-### DIAGNOSIS, NOT DELIVERABLE - With no gas deliverability cap the central builds 7.6 GW of gas in 2030, costs 8.6% less and emits 104 Mt more, 11 Oct 2026
+### Diagnosis, not deliverable - With no gas deliverability cap the central builds 7.6 GW of gas in 2030, costs 8.6% less and emits 104 Mt more, 11 Oct 2026
 
 TODO 14be step 2 (user, 9 Oct): the relaxed cap run once, as a diagnosis only, to show what the system would build if
 gas could arrive sooner; not deliverable (GE Vernova about three-year lead times and about 10 GW of 2029-30 turbine slots
@@ -1843,7 +1843,7 @@ CO2 2026-2040            1,460 Mt                1,564 Mt (+104 Mt)
 
 No gas is built in 2027-2029 although allowed: the stress windows that call for firm capacity start in 2030, so the
 binding part of the cap is the 1.2 GW a year pace, not the 2030 start. Uncapped, gas is built as cheap backup capacity
-(about 0.6 TWh a year on 7.6 GW, under 1% capacity factor) in place of early lithium, wind and solar, which lowers cost
+(about 0.45 TWh a year on 7.6 GW, under 1% capacity factor) in place of early lithium, wind and solar, which lowers cost
 and raises CO2 while coal runs longer in the early years. For comparison, IRP 2025 earmarks 6 GW of gas by 2030 at a 51%
 minimum capacity factor (TODO 14be steps 4 and 5). Outputs harness/pathway_v_half_c1_p1_09c_gasrelaxed.json and
 harness/pathcheck_v_half_c1_p1_09c_gasrelaxed.json.
