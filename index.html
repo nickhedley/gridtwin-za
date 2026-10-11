@@ -6456,6 +6456,9 @@ const FIXED = {
   // then is topped up in the highest net-load hours until the year's output reaches the factor.
   // ccgtForceHourly 1 is the sensitivity: the same factor as an hourly must-run floor, which is stricter.
   ccgtForceLoadPct:51, ccgtForceLoadMW:6000, ccgtForceFromYear:2030, ccgtForceToYear:2040, ccgtForceHourly:0,
+  // bldGasFloorOn (11 Oct 2026, TODO 14be step 4): the same minimum in the build LP, as an annual floor on new gas
+  // output (gasfloor_<y>). Off by default; the pathway switch GASFLOOR turns on both this and ccgtForceLoad.
+  bldGasFloorOn:0,
   lcoeNuclear:1650, lcoeCoalNew:1550, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
@@ -10265,6 +10268,16 @@ function bldBuildLP(opts){
         capTerms.push((EMIS_DIESEL * r.weight).toFixed(6) + ' gd_' + kk);
       }
       L.push(' co2cap: ' + capTerms.join(' + ') + ' <= ' + (CAP_MT * 1e6).toFixed(0));
+    }
+    // GAS MINIMUM RUNNING (TODO 14be step 4, 11 Oct 2026). IRP 2025's minimum annual capacity factor on its gas,
+    // ccgtForceLoadPct, in years ccgtForceFromYear-ccgtForceToYear, counted on the weighted representative days (stress
+    // days are left out: they exist for adequacy, not annual energy). The engine floors only the first ccgtForceLoadMW
+    // of gas; a linear model cannot take that minimum, so here the floor covers all new gas, which is exact while the
+    // build stays at or below ccgtForceLoadMW.
+    if (S.bldGasFloorOn && y >= S.ccgtForceFromYear && y <= S.ccgtForceToYear && cum('ccgt', y).length){
+      const gT = [], need = (S.ccgtForceLoadPct / 100) * 8760;
+      for (const r of rdY(y)) if (!r.tail) for (let h = 0; h < 24; h++) gT.push(r.weight.toFixed(6) + ' gg_' + y + '_' + r.d + '_' + h);
+      L.push(' gasfloor_' + y + ': ' + gT.join(' + ') + ' - ' + cum('ccgt', y).map(c => need.toFixed(3) + ' ' + c).join(' - ') + ' >= 0');
     }
 
     // Storage must balance over each representative day at 88% round-trip, and
@@ -18443,7 +18456,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-10a';
+const BUILD_STAMP = '2026-10-11a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
