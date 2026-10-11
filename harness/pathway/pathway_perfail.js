@@ -114,6 +114,12 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
      return out; };
    const _b = bldBuildLP; bldBuildLP = function(o){ const keep = bldStressPeriods; bldStressPeriods = shrink(keep); window.__lpWindows = bldStressPeriods.map(p => [p.year, p.seed, p.start, p.n, p.fromYear, p.merged || 1]);
      try { return _b(o); } finally { bldStressPeriods = keep; } }; }`);
+ // WIN_FROM=<run>_lp2040.json (11 Oct 2026, TODO 27): start from a recorded run's final stress windows (its periods,
+ // with their coal availability) instead of none, so two settings can be compared on one window set. With MAXP=1 the
+ // first solve is on exactly those windows; the same settings as the recorded run reproduce its final LP (same hash).
+ if (process.env.WIN_FROM){ const WF=JSON.parse(fs.readFileSync(process.env.WIN_FROM,'utf8')).periods; if (!Array.isArray(WF) || !WF.length) throw new Error('WIN_FROM: no periods');
+   w.eval(`{ const WF = ${JSON.stringify(WF)}; const _bw = bldBuildLP; bldBuildLP = function(o){ if (!window.__winFrom){ bldStressPeriods.length = 0; for (const p of WF) bldStressPeriods.push(p); window.__winFrom = WF.length; } return _bw(o); }; }`);
+   console.log('windows from', process.env.WIN_FROM, WF.length); }
  const FIXB = process.env.FIX_FROM ? JSON.parse(fs.readFileSync(process.env.FIX_FROM,'utf8')).build : null, FIX_TO = +(process.env.FIX_TO||0);
  function fixBuild(lp){ if (!FIXB) return lp;
    const fx = Object.entries(FIXB).filter(([n]) => +n.slice(-4) <= FIX_TO), names = new Set(fx.map(([n]) => n));
