@@ -540,6 +540,10 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     either in that fuel price or left out (the workbook does not say);
   - 2x1 9F.05 CCGT: heat rate 6,900 kJ/kWh (52.2%), overnight R18,653/kW, fixed O&M R501/kW-yr,
     variable O&M R61/MWh, 30 years, availability 97.5%;
+  - 9F.05 OCGT (user's figures, 11 Oct 2026; build 2026-10-11f): heat rate 10,624 kJ/kWh (33.9% on the basis on which
+    the CCGT's 6,900 gives 52.2%, the efficiency costCcgt and emisCcgt use), overnight R12,981/kW (the low capex case),
+    fixed O&M R423.89/kW-yr, variable O&M R80.19/MWh; all x SA CPI 1.032 x 1.035 to January 2026. Life taken as the
+    CCGT's 30 years. The central capex (NREL ATB 2025) is still to be supplied; atb.nlr.gov is blocked here.
   - gas energy content 53.37 MJ/kg, used for the LNG storage check.
 - Derived (not sourced):
   - Regas fuel and boil-off: USD 0.25/MMBtu.

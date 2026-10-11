@@ -6465,6 +6465,18 @@ const FIXED = {
   // weighting stays at BLD_DISC. 0 by default; 0.015 is the user's sensitivity, illustrative unless a South African
   // source is found (candidate: IEA, Cost of capital by project type in selected countries, 2022).
   bldGasFinPremium:0,
+  // OPEN-CYCLE GAS AS A BUILD OPTION (user, 11 Oct 2026, TODO 14bo item 5): a GE 9F.05 open-cycle unit from the IRP 2025
+  // workbook (New Tech Properties): heat rate 10,624 kJ/kWh, read as HHV (33.9%; about 37.5% on LHV, the class figure),
+  // VOM R80.19/MWh and FOM R423.89/kW-yr in January 2024 rands, x SA CPI to January 2026 (1.032 x 1.035).
+  // effCcgtHHV is the efficiency costCcgt, emisCcgt and public_data/gas_price_cases.json are built on, so a new OCGT on
+  // LNG burns heatRateOcgtKJ / 3600 x effCcgtHHV (1.53) times the gas of a CCGT MWh and emits that much more.
+  effCcgtHHV:0.52, heatRateOcgtKJ:10624, vomOcgt:80.19 * 1.032 * 1.035, fomOcgtRkW:423.89 * 1.032 * 1.035,
+  // bldOcgtOn: new OCGT on LNG in the build LP (b_ocgt), sharing the gas build cap with CCGT (gascap_<y>) and carrying the
+  // LNG terminal charge where a gas case has one. bldOcgdOn: new OCGT on diesel (b_ocgd), same unit and capex, dispatched
+  // with the diesel fleet at its fuel price, no terminal, its own cap of bldOcgdRateMW a year from bldOcgdFromYear (both
+  // to be set by the user before it runs). bldOcgtCostCase: 'central' (NREL ATB 2025, to be supplied) or 'irp' (the IRP's
+  // R12,981/kW, the low case). All off by default; the engine reads newOcgtMW and newOcgdMW.
+  bldOcgtOn:0, bldOcgdOn:0, bldOcgdRateMW:null, bldOcgdFromYear:null, bldOcgtCostCase:'central',
   lcoeNuclear:1650, lcoeCoalNew:1550, lcoeDiesel:9000, // PV: IRENA 2025 SA range R537-721; Battery: BNEF 2026 USD78/MWh→R1440 (-27% YoY)
   // fixed replacement LCOE (R/MWh) for techs without sliders — used only in the replacement-cost KPI
   lcoeHydro:600, lcoeImports:550, lcoePs:1400,
@@ -6685,7 +6697,7 @@ function buildUCSchedule(netLoadPre, coalInstalled, eafFraction, resOpts) {
 // directly, so the control cannot be half-wired - which is how the coal fleet's own
 // decommissioning slider went wrong before.
 function dieselAvailMW(p){
-  return Math.max(0, (p.ocgtDieselMW || 0) - (p.dieselDecomMW || 0));
+  return Math.max(0, (p.ocgtDieselMW || 0) - (p.dieselDecomMW || 0)) + Math.max(0, p.newOcgdMW || 0);   // new OCGT on diesel (11 Oct 2026)
 }
 
 // IRP 2025 GAS FLOOR AS AN ANNUAL MINIMUM, 6 Oct 2026. The IRP sets a minimum annual capacity factor
@@ -7039,7 +7051,7 @@ function simulate(u, prof, outPath, _soc0){
   let _fcDef = null, _fcSur = null;
   const _buildForecast = () => {
     _fcDef = new Float64Array(HOURS); _fcSur = new Float64Array(HOURS);
-    const firm = (typeof coalAvail === 'number' ? coalAvail : 0) + (p.ccgtMW || 0) + (p.newCcgtMW || 0)
+    const firm = (typeof coalAvail === 'number' ? coalAvail : 0) + (p.ccgtMW || 0) + (p.newCcgtMW || 0) + (p.newOcgtMW || 0) + (p.newOcgdMW || 0)
                + Math.max(0, (p.dieselMW || 0) - (p.dieselDecomMW || 0));
     for (let k = 0; k < HOURS; k++){
       _fcDef[k] = Math.max(0, netLoadPre[k] - firm);
@@ -7088,7 +7100,11 @@ function simulate(u, prof, outPath, _soc0){
   const battEffMix = (battEnergy > 0)
     ? (_liE*(p.battEff ?? 0.88) + _vrE*(p.newVrfbEff ?? 0.75) + _feE*(p.newIronAirEff ?? 0.45)) / battEnergy
     : (p.battEff ?? 0.88);
-  const ccgtCap=p.ccgtMW+p.newCcgtMW;
+  // New open-cycle gas on LNG (newOcgtMW, 11 Oct 2026) joins the gas pool after the combined-cycle units: the slice of
+  // an hour's gas above ccgtCapCC is booked at the OCGT's fuel (_ocK times the CCGT's per MWh), VOM and carbon, and sets
+  // the price, in the block before thermalP.
+  const ccgtCapCC=p.ccgtMW+p.newCcgtMW, ocgtLngMW=Math.max(0, p.newOcgtMW||0), ccgtCap=ccgtCapCC+ocgtLngMW;
+  const _ocK=p.heatRateOcgtKJ/3600*p.effCcgtHHV; let _ocgtMWh=0;
   // IRP 2025 gas floor. Annual (default): simulateGasAnnualFloor passes the hours it tops up as
   // p.__ccgtFloor, MW per hour. Hourly (ccgtForceHourly, a sensitivity): the factor every hour.
   const _ccgtFloorArr = p.__ccgtFloor || null;
@@ -7649,7 +7665,7 @@ function simulate(u, prof, outPath, _soc0){
     // Withholding it is what forces peakers on in tight hours and lifts the
     // price above coal SRMC - without this the system prices flat all year.
     const reserveNeed = reserveMWAt(h);
-    const fastStart   = dieselAvailMW(p) + (p.ccgtMW||0) + battPower + psPowerTot;
+    const fastStart   = dieselAvailMW(p) + (p.ccgtMW||0) + ocgtLngMW + battPower + psPowerTot;
     const reserveOnCoal = Math.max(0, reserveNeed - fastStart);
     reserveMWArr[h] = reserveNeed;
     const cAvail = Math.max(ucMSLraw(h), cAvailRaw - reserveOnCoal);
@@ -8129,10 +8145,12 @@ function simulate(u, prof, outPath, _soc0){
       const plX = (cAvail > 1) ? Math.max(0.35, Math.min(1, coalGen / cAvail)) : 1;
       partLoadF[h] = (plK > 0 && coalGen > 1) ? (1 + plK * (1/plX - 1)) : 1;
     }
+    const _ocMW = ocgtLngMW > 0 ? Math.max(0, Math.min(ocgtLngMW, (stack.ccgt[h]||0) - ccgtCapCC)) : 0;
+    if (_ocMW > 0){ _ocgtMWh += _ocMW; fuelCost += _ocMW*(p.costCcgt*(_ocK-1) + p.vomOcgt - p.vomCcgt); carbonCost += _ocMW*cG*(_ocK-1); }
     thermalP[h] =
         ((stack.unserved[h]||0) > 1)     ? (_pnmCapped ? _pnmLowCap : p.voll)
       : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD + p.vomDiesel
-      : ((stack.ccgt[h]||0) > 1)         ? p.costCcgt + cG + p.vomCcgt
+      : ((stack.ccgt[h]||0) > 1)         ? (_ocMW > 1 ? (p.costCcgt + cG)*_ocK + p.vomOcgt : p.costCcgt + cG + p.vomCcgt)
       : ((curtailMW[h]||0) > 1)          ? 0
       : (coalGen > 1)                    ? coalMarginalCost(coalGen) * partLoadF[h] * ccsCostMult + ccsCostAdd + cC * partLoadF[h] + p.vomCoal
       : (imp > 1)                        ? p.costImports
@@ -8354,10 +8372,12 @@ function simulate(u, prof, outPath, _soc0){
   // ASSUMES A LINEAR BUILD-OUT. A real transition is usually back-loaded, which would push
   // the average vintage later and the cost slightly lower, so this is mildly conservative.
   const _vint = 2026 + Math.max(0, (p.scenarioYear ?? 2026) - 2026) / 2;
+  // Open-cycle gas has no acap* fallback: its capex comes through bldCostEntry (which refuses an unset central).
+  const acapOc = tech => bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech], tech) + bldFom(tech, _vint);
   const acapAt = (tech, flat) => (typeof BLD_COST === 'undefined' || !BLD_COST[tech])
     ? flat
     : bldAnnuity(bldCapex(tech, _vint), BLD_LIFE[tech], tech) + bldFom(tech, _vint);
-  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000;   // tiered regional charge, R/yr
+  const newCapexR=(u.newVrfbMW*acapAt('vrfb',p.acapVrfb)+u.newIronAirMW*acapAt('ironair',p.acapIronAir)+u.newPsMW*p.acapPs+u.newWindMW*acapAt('wind',p.acapWind)+(u.newOffshoreMW||0)*acapAt('offshore',p.acapOffshore)+u.newPvMW*acapAt('pv',p.acapPv)+u.newRooftopMW*acapAt('rooftop',p.acapRooftop)+u.newBattMW*(acapAt('batt',p.acapBatt4h)*battDurationMult(p.newBattHours))+u.newCcgtMW*acapAt('ccgt',p.acapCcgt)+((u.newOcgtMW||0)>0?u.newOcgtMW*acapOc('ocgt'):0)+((u.newOcgdMW||0)>0?u.newOcgdMW*acapOc('ocgd'):0)+u.newCoalMW*p.acapCoal+u.newNuclearMW*p.acapNuclear+Math.max(0,p.coalInstalledMW-u.coalDecomMW)*(u.coalFlexPct?1:0)*p.acapCoalFlex+txChargeFor(u.newWindMW, pvAdderMW, 0, p)/1000)*1000;   // tiered regional charge, R/yr
   // The transmission slice of newCapexR, kept separately so the cost decomposition can
   // report it against NERSA's "transmission network charges" component. It is a BUILD
   // cost, not a use-of-system charge, which is why the decomposition marks it partial.
@@ -8412,6 +8432,7 @@ function simulate(u, prof, outPath, _soc0){
   // long duration without repricing lithium. deratedMW stays a single total because
   // other panels report it; the revenue is summed per technology.
   const _capParts = [
+    ['ocgt',    (p.newOcgtMW || 0) + (p.newOcgdMW || 0),           (p.derateCcgt ?? 0.90)],
     ['ccgt',    (p.newCcgtMW || 0),                              (p.derateCcgt ?? 0.90)],
     ['batt',    (p.battPowerMW + (p.newBattMW || 0)),            (p.derateBattLi ?? 0.25)],
     ['vrfb',    (p.newVrfbMW || 0),                              (p.derateVrfb ?? 0.45)],
@@ -8728,7 +8749,7 @@ function simulate(u, prof, outPath, _soc0){
   // Emissions follow fuel burned, not energy sold. coalFuelMWh is coal output
   // scaled by the part-load heat-rate multiplier, so a fleet held at part load
   // emits more per MWh delivered - which is the physical point of the curve.
-  const co2=(coalFuelMWh*p.emisCoal+E.ccgt*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;
+  const co2=(coalFuelMWh*p.emisCoal+(E.ccgt+_ocgtMWh*(_ocK-1))*p.emisCcgt+E.diesel*p.emisDiesel)/1e6;   // E.ccgt includes OCGT on LNG
   // Full replacement cost: price every MWh (existing + new) at its lifecycle LCOE.
   // Coal is charged new-build coal LCOE; storage discharge priced at storage LCOE.
   // hybrid at R1,900/MWh: RMIPPPP awarded tariffs cluster R1.5-2.3/kWh; midpoint,
@@ -8810,7 +8831,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -9166,11 +9187,16 @@ const BLD_COST = {
   // gas anywhere between USD 727/kW and this figure, because a 4-hour battery is cheaper per
   // kilowatt of firm capacity and earns arbitrage on top. See RESULTS.md.
   ccgt:    { c2026: 34965, decl: -0.0200 },
+  // Open-cycle gas (TODO 14bo item 5): new OCGT on LNG (ocgt) and on diesel (ocgd) take one capex, chosen by
+  // bldOcgtCostCase in bldCostEntry. Low ('irp'): IRP 2025 workbook R12,981/kW (9F.05, January 2024 rands) x SA CPI to
+  // January 2026, flat real. The central (NREL ATB 2025) goes in as ocgt_central once supplied; until then the central
+  // case refuses to run rather than use an unsourced number.
+  ocgt_irp: { c2026: 12981 * 1.032 * 1.035, decl: 0 },
 };
 // vrfb gets 25 years: 20,000-30,000 cycles and a 25-30 year calendar life, with
 // no depth-of-discharge limit, so it outlives lithium by a decade. Iron-air at 20
 // is a judgement - no fleet has run long enough to know.
-const BLD_LIFE = { wind:25, pv:25, rooftop:25, batt:15, vrfb:25, ironair:20, ccgt:30, offshore:25 };
+const BLD_LIFE = { wind:25, pv:25, rooftop:25, batt:15, vrfb:25, ironair:20, ccgt:30, offshore:25, ocgt:30, ocgd:30 };   // ocgt, ocgd: as ccgt
 // Real, after-tax. Sourced 22 Sep 2026: IEA Cost of Capital Observatory (2025), South Africa
 // 2024, 11.0-13.5% nominal after tax for utility-scale solar and for batteries, which is about
 // 7.8-10.2% real at the 3% inflation target (SARB, November 2025) and about 6.7-9.1% at 4%
@@ -9201,6 +9227,7 @@ FIXED.ccsWaccPct = BLD_DISC * 100;
   // Was 0 until 22 Sep 2026, which biased the build toward long duration.
 const BLD_FOM = {
   wind: 693, pv: 396, rooftop: 495, offshore: 1403, ccgt: 462,
+  ocgt: FIXED.fomOcgtRkW, ocgd: FIXED.fomOcgtRkW,   // IRP 2025 workbook, 9F.05 (FIXED); the LNG terminal charge adds to ocgt only
   batt: null,          // computed from capex, see bldFom()
   vrfb: 165, ironair: 165, // PNNL 2019, $10/kW-yr; see the note above
   // Nothing chemistry-specific exists for iron-air at fleet scale, checked again 23 Sep 2026.
@@ -9282,11 +9309,11 @@ function bldGridCapexKW(tech, S){
   // then pay only the distance beyond the typical connection, and storage pays no bay. Gas (GridLab) and pumped hydro
   // (ANU, excluding connection per Blakers) always pay from zero.
   const incl = !!(BLD_COST[tech] && bldCostEntry(tech).connIncl);
-  const G = BLD_GRID, f = bldGrid132Ratio(), km = ((S.bldGridSpurBeyond || incl) ? G.kmBeyond : G.km)[tech === 'phel' ? 'phes' : tech];
+  const G = BLD_GRID, f = bldGrid132Ratio(), km = ((S.bldGridSpurBeyond || incl) ? G.kmBeyond : G.km)[tech === 'phel' ? 'phes' : (tech === 'ocgt' || tech === 'ocgd') ? 'ccgt' : tech];
   const line132 = G.line400[m] * f, bay132 = (G.bay400[2] * f);   // the storage bay uses the high-case 132 kV bay
   if (tech === 'wind' || tech === 'pv')
     return (line132 * km + (m === 2 ? 2 * G.bay400[m] * f : 0)) / (G.circuitMW.kv132 * 1000);
-  if (tech === 'phes' || tech === 'phel' || tech === 'ccgt')
+  if (tech === 'phes' || tech === 'phel' || tech === 'ccgt' || tech === 'ocgt' || tech === 'ocgd')
     return (2 * G.line400[m] * km + 4 * G.bay400[m]) / (G.circuitMW.kv400 * 1000);
   if (tech === 'batt' || tech === 'vrfb' || tech === 'ironair') return incl ? 0 : bay132 / (G.storeSchemeMW * 1000);
   return 0;   // rooftop (distribution) and offshore (export cable inside its capex)
@@ -9386,11 +9413,12 @@ function bldPhesCapexKW(basis, hours){
   if (basis === 'anu2026') return (1100 + 14 * hours) * 16.5;
   return (1226 + 11.4 * hours) * (basis === 'atlas' ? 1 : 1.28) * 16.5;
 }
-// The annuity rate for a technology: BLD_DISC, plus bldGasFinPremium for new gas (a sensitivity, 0 by default).
+// The annuity rate for a technology: BLD_DISC, plus bldGasFinPremium for new gas, CCGT and OCGT on LNG (a sensitivity,
+// 0 by default; not OCGT on diesel).
 // Read from the page state, as bldCapex reads its cost case.
 // The gas LCOE readout (FIXED.lcoeCcgt, set at load) stays at BLD_DISC.
 function bldAnnuityRate(tech){
-  if (tech !== 'ccgt') return BLD_DISC;
+  if (tech !== 'ccgt' && tech !== 'ocgt') return BLD_DISC;   // new gas: CCGT and OCGT on LNG
   let st = null; try { st = state; } catch (e) { /* state is declared later in the file; at load, use FIXED */ }
   const prem = (st && st.bldGasFinPremium != null) ? +st.bldGasFinPremium : (FIXED.bldGasFinPremium || 0);
   return BLD_DISC + prem;
@@ -9413,7 +9441,7 @@ function bldAnnuity(capexPerKW, life, tech){
 // against onshore's 14.1%, its longest drought is 83 hours against 35, and six of seven
 // regions trough in May. A resource that fails in the same month everywhere earns no
 // capacity credit however much energy it delivers. See RESULTS.md.
-const BLD_DERATE = { wind:0, pv:0, rooftop:0, batt:0.25, vrfb:0.45, ironair:0.90, ccgt:0.90, offshore:0 };
+const BLD_DERATE = { wind:0, pv:0, rooftop:0, batt:0.25, vrfb:0.45, ironair:0.90, ccgt:0.90, offshore:0, ocgt:0.90, ocgd:0.90 };
 
 // WHICH TECHNOLOGIES COUNT AS LONG DURATION for the capacity payment. Named here once so
 // the rule is not written out at each of the four sites that price capacity - that is how
@@ -9507,6 +9535,13 @@ function bldBattCase(){
   return c;
 }
 function bldCostEntry(tech){
+  if (tech === 'ocgt' || tech === 'ocgd'){
+    const c = typeof state !== 'undefined' ? (state.bldOcgtCostCase ?? FIXED.bldOcgtCostCase) : FIXED.bldOcgtCostCase;
+    if (c === 'irp') return BLD_COST.ocgt_irp;
+    if (c !== 'central') throw new Error('bldOcgtCostCase must be central or irp: ' + c);
+    if (!BLD_COST.ocgt_central) throw new Error('open-cycle gas: the central capex (NREL ATB 2025) is not set yet; use bldOcgtCostCase irp');
+    return BLD_COST.ocgt_central;
+  }
   if (tech === 'pv' && bldPvTrackingOn()) return BLD_COST.pvtrk;
   if (tech === 'batt'){ const c = bldBattCase(); return c === 'high' ? BLD_COST.batt_high : c === 'low' ? BLD_COST.batt_low : BLD_COST.batt; }
   if (tech === 'wind'){
@@ -9930,6 +9965,12 @@ function bldBuildLP(opts){
                wind:S.windMW, pv:S.pvUtilityMW, rooftop:S.rooftopMW,
                csp:S.cspMW, batt:S.battPowerMW };
   const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt, EMIS_DIESEL = S.emisDiesel;
+  // Open-cycle gas options (FIXED notes, 11 Oct 2026). b_ocgt / go_: new OCGT on LNG, OC_K times a CCGT MWh's gas and
+  // carbon. b_ocgd: new OCGT on diesel, dispatched in the diesel variable gd_ at the fleet's price.
+  const OCGT_ON = (S.bldOcgtOn | 0) > 0, OCGD_ON = (S.bldOcgdOn | 0) > 0;
+  const OC_K = S.heatRateOcgtKJ / 3600 * S.effCcgtHHV, EMIS_OCGT = EMIS_CCGT * OC_K;
+  if (OCGD_ON && !(S.bldOcgdRateMW >= 0 && S.bldOcgdFromYear > 0)) throw new Error('bldOcgdOn: set bldOcgdRateMW and bldOcgdFromYear');
+  const OC_T = (OCGT_ON ? ['ocgt'] : []).concat(OCGD_ON ? ['ocgd'] : []);
   // Peakers by year (BLD_PEAKERS; off: the whole fleet every year). DSL(y) is the fleet left on its dates, LEV(y) the
   // life-extension variables that add back to it.
   const PK_ON = (S.bldPeakerRet | 0) > 0;
@@ -9947,7 +9988,7 @@ function bldBuildLP(opts){
   const TRK_ON = ((S.bldPvTracking ?? 0) | 0) > 0;   // new utility solar on the tracking profile (TODO 14aw)
   const WMOD_ON = ((S.bldWindModern ?? FIXED.bldWindModern) | 0) > 0;   // new wind on the modern-turbine profile
   const WMOD_K = WMOD_ON ? windNewCorr(S.bldWindCorr ?? FIXED.bldWindCorr) : 1;   // its correction (WIND_NEW_CORR)
-  for (const t of T.concat(['offshore', 'phes', 'phel'])) GA[t] = GRID_ON ? bldGridAnn(t, S) : 0;
+  for (const t of T.concat(['offshore', 'phes', 'phel'], OC_T)) GA[t] = GRID_ON ? bldGridAnn(t, S) : 0;
   const L = ['Minimize', ' obj:'];
   const obj = [];
   for (const t of T) for (const y of Y){
@@ -9965,6 +10006,11 @@ function bldBuildLP(opts){
     // x1000: bldNetAnnuity is R/kW/yr and b_ is in MW. Without this the whole
     // capex side is 1000x too cheap against the fuel terms, building is
     // effectively free, and the optimiser just overbuilds VRE and spills.
+    obj.push((cost * 1000).toFixed(3) + ' b_' + t + '_' + y);
+  }
+  for (const t of OC_T) for (const y of Y){
+    let cost = 0;
+    for (const yy of Y) if (yy >= y) cost += (bldNetAnnuityAt(t, y) + GA[t]) / Math.pow(1+BLD_DISC, yy-2026);
     obj.push((cost * 1000).toFixed(3) + ' b_' + t + '_' + y);
   }
   // The energy half of lithium, per MWh of cells: the 4-hour constant's energy share spread over
@@ -9995,6 +10041,7 @@ function bldBuildLP(opts){
       obj.push(((MC.coal + CARBON_AT(y)*EMIS_COAL)*wObj(r)*df).toFixed(3) + ' gc_' + k);
       obj.push(((bldGasFuelR(opts, y, S) + S.vomCcgt + CARBON_AT(y)*EMIS_CCGT)*wObj(r)*df).toFixed(3) + ' gg_' + k);
       obj.push(((MC.diesel + CARBON_AT(y)*EMIS_DIESEL)*wObj(r)*df).toFixed(3) + ' gd_' + k);
+      if (OCGT_ON) obj.push(((bldGasFuelR(opts, y, S)*OC_K + S.vomOcgt + CARBON_AT(y)*EMIS_OCGT)*wObj(r)*df).toFixed(3) + ' go_' + k);
       // Shedding on a tail day is priced as if that day came round every day of the year: a hard
       // zero made the early years infeasible, because nothing can be built fast enough to cover
       // a derated 2026 tail day, and an LP that cannot solve reports nothing. VoLL x 365 says the
@@ -10183,7 +10230,7 @@ function bldBuildLP(opts){
       // had. Found by decomposing the stalled week of the adequacy loop.
       const fixed = EX.nuclear*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
                   + EX.wind*wp*AV_CONG + EX.pv*sp*AV_CONG + EX.rooftop*sp*AV_ROOF + EX.csp*0.38;
-      L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k
+      L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
         + STORE.map(S2 => ' + ' + S2.dis + '_' + k + ' - ' + S2.chg + '_' + k).join('')
         + ' + ' + cum('wind',y).map(v => (wpN*AV_CONG).toFixed(4)+' '+v).join(' + ')
@@ -10210,6 +10257,7 @@ function bldBuildLP(opts){
         L.push(' crd_' + k + ': cm_' + kp + ' - cm_' + k + ' <= ' + (coalCapMean / COMMIT_H).toFixed(1));
       }
       L.push(' gmax_' + k + ': gg_' + k + ' - ' + cum('ccgt',y).join(' - ') + ' <= 0');
+      if (OCGT_ON) L.push(' gomax_' + k + ': go_' + k + ' - ' + cum('ocgt',y).join(' - ') + ' <= 0');
       // Reserve: dispatched + required <= capacity. The VRE term sits on both sides - existing
       // VRE output is a number, new VRE output is a variable - and the base is subtracted so
       // today's fleet reads the ASTR figure, as in the engine.
@@ -10258,9 +10306,10 @@ function bldBuildLP(opts){
         L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _eNow + ' <= 0');
         if (_ePrev) L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _ePrev + ' <= 0');
         }
-        L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + ' - rb_' + k + ' - rsl_' + k
+        L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '') + ' - rb_' + k + ' - rsl_' + k
           + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + ' - ' + cum('ccgt',y).join(' - ')
+          + OC_T.map(t => ' - ' + cum(t,y).join(' - ')).join('')
           + (RES_VRE > 0
               ? ' + ' + cum('wind',y).map(v => (RES_VRE*wpN).toFixed(5)+' '+v).join(' + ')
                 + ' + ' + cum('pv',y).map(v => (RES_VRE*spN).toFixed(5)+' '+v).join(' + ')
@@ -10269,7 +10318,7 @@ function bldBuildLP(opts){
           + LEV(y).map(v => ' - ' + v).join('')
           + ' <= ' + rhs.toFixed(1));
       }
-      L.push(' dmax_' + k + ': gd_' + k + LEV(y).map(v => ' - ' + v).join('') + ' <= ' + DSL(y));
+      L.push(' dmax_' + k + ': gd_' + k + LEV(y).map(v => ' - ' + v).join('') + (OCGD_ON ? ' - ' + cum('ocgd',y).join(' - ') : '') + ' <= ' + DSL(y));
       L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       // Same power limits for vanadium and iron-air: neither can charge or
@@ -10295,6 +10344,7 @@ function bldBuildLP(opts){
         capTerms.push((EMIS_COAL   * r.weight).toFixed(6) + ' gc_' + kk);
         capTerms.push((EMIS_CCGT   * r.weight).toFixed(6) + ' gg_' + kk);
         capTerms.push((EMIS_DIESEL * r.weight).toFixed(6) + ' gd_' + kk);
+        if (OCGT_ON) capTerms.push((EMIS_OCGT * r.weight).toFixed(6) + ' go_' + kk);
       }
       L.push(' co2cap: ' + capTerms.join(' + ') + ' <= ' + (CAP_MT * 1e6).toFixed(0));
     }
@@ -10443,6 +10493,7 @@ function bldBuildLP(opts){
     L.push(' res_' + y + ': cc_batt_' + y
       + ' + ' + STORE.filter(S2 => S2.t !== 'batt').map(S2 => 'cc_' + S2.t + '_' + y).join(' + ')
       + ' + ' + cum('ccgt',y).join(' + ')
+      + OC_T.map(t => ' + ' + cum(t,y).join(' + ')).join('')
       + LEV(y).map(v => ' + ' + v).join('')
       + (RC_ON ? ' - ' + eaf.toFixed(4) + ' rc_' + y : '')
       + ' >= ' + (RC_ON ? (peak*1.10 - firm) : Math.max(0, peak*1.10 - firm)).toFixed(1));
@@ -10462,6 +10513,9 @@ function bldBuildLP(opts){
     ST_TGT[y] = (opts.targetFrac || 1) * BLD_STRESS_STANDARD * (ST_DEM[y] || 0);   // MWh of expected shed
     L.push(' tgt_' + y + ': ' + ST_TERMS[y].join(' + ') + ' - tsl_' + y + ' <= ' + ST_TGT[y].toFixed(3));
   }
+  // One gas build cap for CCGT and OCGT on LNG (user, 11 Oct 2026): gascap_<y> at the gas pace; the pathway's GAS_FIRST
+  // and GAS_CAP rewrite it as they do the b_ccgt bounds.
+  if (OCGT_ON) for (const y of Y) L.push(' gascap_' + y + ': b_ccgt_' + y + ' + b_ocgt_' + y + ' <= ' + RATE.ccgt.toFixed(1));
   // bldCumVars: the definitions of K, for every technology a row above named.
   if (CUMV) for (const t of CUMV_T) Y.forEach((y, i) => {
     const b = t === 'E' ? 'eb_batt_' + y : 'b_' + t + '_' + y, k = 'K_' + t + '_';
@@ -10472,6 +10526,8 @@ function bldBuildLP(opts){
   // industry that scales up (assumption, 4 Oct 2026). Every other cap is flat.
   const _pvG = Math.max(0, S.bldPvRateGrowthPct) / 100;
   for (const t of T) for (const y of Y) L.push(' 0 <= b_'+t+'_'+y+' <= ' + (RATE[t] * (t === 'pv' ? Math.pow(1 + _pvG, y - 2026) : 1)).toFixed(1));
+  if (OCGT_ON) for (const y of Y) L.push(' 0 <= b_ocgt_'+y+' <= ' + RATE.ccgt.toFixed(1));
+  if (OCGD_ON) for (const y of Y) L.push(' 0 <= b_ocgd_'+y+' <= ' + (y >= S.bldOcgdFromYear ? S.bldOcgdRateMW : 0).toFixed(1));
   if (OFF_ON) for (const y of Y) L.push(' 0 <= b_off_'+y+' <= 5000');
   if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + PHES_RATE(y));
   if (PHES2_ON) for (const y of Y) L.push(' 0 <= b_phel_'+y+' <= ' + PHES_RATE(y));
@@ -10488,7 +10544,8 @@ function bldBuildLP(opts){
     const k = y + '_' + r.d + '_' + h;
     L.push(' 0 <= gc_'+k+' <= 100000'); L.push(' 0 <= gg_'+k+' <= 100000');
     if (S.bldCoalCommit) L.push(' 0 <= cm_'+k+' <= 100000');
-    L.push(' 0 <= gd_'+k+' <= ' + EX.diesel);
+    L.push(' 0 <= gd_'+k+' <= ' + (OCGD_ON ? EX.diesel + 100000 : EX.diesel));   // with new OCGT on diesel, dmax_ limits it
+    if (OCGT_ON) L.push(' 0 <= go_'+k+' <= 100000');
     // A TAIL DAY MAY NOT SHED. At weight 1 the cost of shedding on it is VoLL for one day, which
     // is nothing against fifteen years of capital, so the optimiser would simply pay it. The
     // reliability standard is 0.002% of demand, which over a three-day window rounds to zero,
@@ -10565,7 +10622,7 @@ function bldBuildToState(res){
   const o = {
     newWindMW: Math.round(tot.wind || 0), newPvMW: Math.round(tot.pv || 0),
     newRooftopMW: Math.round(tot.rooftop || 0), newBattMW: Math.round(tot.batt || 0),
-    newCcgtMW: Math.round(tot.ccgt || 0),
+    newCcgtMW: Math.round(tot.ccgt || 0), newOcgtMW: Math.round(tot.ocgt || 0), newOcgdMW: Math.round(tot.ocgd || 0),
     newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
     newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
     coalDecomMW: Math.round(FIXED.coalInstalledMW - bldCoalMW(endY)
@@ -10641,6 +10698,7 @@ function bldStateForYear(res, y, opts){
     newWindMW: Math.round(tot.wind || 0), newPvMW: Math.round(tot.pv || 0), newRooftopMW: Math.round(tot.rooftop || 0),
     newBattMW: Math.round(batt), newBattHours: batt > 0 ? Math.max(1, Math.min(LI_MAX_HOURS, eb / batt)) : (opts.state.newBattHours ?? FIXED.newBattHours),
     newCcgtMW: Math.round(tot.ccgt || 0), newVrfbMW: Math.round(tot.vrfb || 0), newIronAirMW: Math.round(tot.ironair || 0),
+    newOcgtMW: Math.round(tot.ocgt || 0), newOcgdMW: Math.round(tot.ocgd || 0),
     newOffshoreMW: Math.round(tot.off || 0), newNuclearMW: 0,
     // Both pumped-hydro durations reach the engine (9 Oct 2026; b_phel was dropped before): one block, power adds,
     // energy adds, as harness/pathcheck.js does.
@@ -18213,7 +18271,7 @@ function renderAdequacy(r){
   const p={...FIXED,...state};
   const firm=(p.coalInstalledMW-(p.coalDecomMW||0))*((p.coalEAFPct??FIXED.coalEAFPct)/100)
     +(p.nuclearMW+(p.newNuclearMW||0))*0.90+p.hydroMW+p.importsMW*(p.importsCF ?? FIXED.importsCF)
-    +dieselAvailMW(p)+(p.ccgtMW||0)+(p.newCcgtMW||0)
+    +dieselAvailMW(p)+(p.ccgtMW||0)+(p.newCcgtMW||0)+(p.newOcgtMW||0)
     +p.psPowerMW+p.battPowerMW+(p.newBattMW||0)
     +p.hybridMW*p.hybridCF;
   let lolh=0, lole=0, dayShort=false, h0=0; const mPeak=new Array(12).fill(0);
@@ -18485,7 +18543,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-11e';
+const BUILD_STAMP = '2026-10-11f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
