@@ -1821,6 +1821,33 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### DIAGNOSIS, NOT DELIVERABLE - With no gas deliverability cap the central builds 7.6 GW of gas in 2030, costs 8.6% less and emits 104 Mt more, 11 Oct 2026
+
+TODO 14be step 2 (user, 9 Oct): the relaxed cap run once, as a diagnosis only, to show what the system would build if
+gas could arrive sooner; not deliverable (GE Vernova about three-year lead times and about 10 GW of 2029-30 turbine slots
+left worldwide; no LNG terminal; procurement only started with the 7 Oct 2026 determination). Settings: the 09c central
+(build `2026-10-09d` code, DEMAND=irp_esrg, SOLVER=native TL=72000 COMMIT=1 PSE=1 TF=0.5, gas R2,003/MWh, emisCcgt 0.37)
+with new gas allowed from 2027 and no yearly limit (GAS_FIRST=2027 GAS_CAP=100000; central: from 2030, 1,200 MW a year).
+Converged in 4 passes, 10 h 48 min. Engine check: pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive; every year meets
+its target, the closest 2038 at 95%.
+
+```
+                         capped (central)        relaxed (not deliverable)
+new gas 2030/2035/2040   1.2 / 4.9 / 4.9 GW      7.6 / 7.6 / 7.65 GW, all built in 2030
+gas burnt 2026-2040      16.6 TWh                4.9 TWh
+lithium 2030 / 2040      10.0 / 26.2 GW          6.2 / 23.1 GW
+wind / solar 2040        21.5 / 61.1 GW          29.6 / 53.7 GW
+system cost 2026-2040    R4,863bn                R4,447bn (-R416bn, -8.6%)
+CO2 2026-2040            1,460 Mt                1,564 Mt (+104 Mt)
+```
+
+No gas is built in 2027-2029 although allowed: the stress windows that call for firm capacity start in 2030, so the
+binding part of the cap is the 1.2 GW a year pace, not the 2030 start. Uncapped, gas is built as cheap backup capacity
+(about 0.6 TWh a year on 7.6 GW, under 1% capacity factor) in place of early lithium, wind and solar, which lowers cost
+and raises CO2 while coal runs longer in the early years. For comparison, IRP 2025 earmarks 6 GW of gas by 2030 at a 51%
+minimum capacity factor (TODO 14be steps 4 and 5). Outputs harness/pathway_v_half_c1_p1_09c_gasrelaxed.json and
+harness/pathcheck_v_half_c1_p1_09c_gasrelaxed.json.
+
 ### PROVISIONAL pending the gas price review - Demand paths (TODO 14be step 1): new gas does not rise with demand; cost does, by R1.4 trillion from flat to the IRP path, 10 Oct 2026
 
 All on build `2026-10-09d` code with the 09c central settings except demand (pathway_perfail.js SOLVER=native TL=72000
