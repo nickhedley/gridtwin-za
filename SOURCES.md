@@ -540,6 +540,15 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     either in that fuel price or left out (the workbook does not say);
   - 2x1 9F.05 CCGT: heat rate 6,900 kJ/kWh (52.2%), overnight R18,653/kW, fixed O&M R501/kW-yr,
     variable O&M R61/MWh, 30 years, availability 97.5%;
+  - Open-cycle central capex (user decision 12 Oct 2026; build 2026-10-12b): EIA AEO2023 Cost and Performance
+    Characteristics of New Generating Technologies, 2022 dollars: frame combustion turbine USD 867/kW, multi-shaft
+    combined cycle USD 1,176/kW; ratio 0.737 applied to the model's CCGT capex, R34,965/kW x 0.737 = R25,778/kW in 2026,
+    same real escalation as CCGT. The IRP's R12,981/kW stays the low case. NREL ATB 2025 not used (atb.nlr.gov blocked).
+  - Basis of the CCGT capex R34,965/kW (BLD_COST.ccgt): USD 2,119/kW at R16.50, rising 2% a year real; matched on
+    23 Sep 2026 to GridLab's September 2025 study (recent combined-cycle projects routinely at USD 2,000/kW or more,
+    against USD 1,116-1,427 for plants completing 2026-27 and the ATB's USD 1,638 for 2030). The constant predates that
+    sourcing and its dollar year is not recorded; GridLab's figures are nominal 2025 dollars, so treat it as about 2025
+    dollars converted at R16.50, without a CPI step to 2026.
   - 9F.05 OCGT (user's figures, 11 Oct 2026; build 2026-10-11f): heat rate 10,624 kJ/kWh (33.9% on the basis on which
     the CCGT's 6,900 gives 52.2%, the efficiency costCcgt and emisCcgt use), overnight R12,981/kW (the low capex case),
     fixed O&M R423.89/kW-yr, variable O&M R80.19/MWh; all x SA CPI 1.032 x 1.035 to January 2026. Life taken as the

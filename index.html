@@ -6477,7 +6477,7 @@ const FIXED = {
   // year from 2028 (user, 12 Oct 2026, judgement; precedent Ankerlig and Gourikwa, built in about two to three years).
   // bldTurbineCapMW: every new turbine together, CCGT, OCGT on LNG and OCGT on diesel, at most 2 GW a year (tcap_<y>, user,
   // 12 Oct), applied when an OCGT option is on; CCGT and OCGT on LNG keep their own 1.2 GW from 2030. bldOcgtCostCase:
-  // 'central' (NREL ATB 2025 Moderate, Conservative the high case; to be supplied) or 'irp' (the IRP's R12,981/kW, the
+  // 'central' (the CCGT capex x EIA AEO2023's CT/CC ratio, derived in bldCostEntry) or 'irp' (the IRP's R12,981/kW, the
   // low case). All off by default; the engine reads newOcgtMW and newOcgdMW.
   bldOcgtOn:0, bldOcgdOn:0, bldOcgdRateMW:1000, bldOcgdFromYear:2028, bldTurbineCapMW:2000, bldOcgtCostCase:'central',
   // bldNuclearAdd (11 Oct 2026, TODO 14be step 7): new nuclear decided in advance, {year: MW}, e.g. IRP 2025 Table 1
@@ -9196,10 +9196,14 @@ const BLD_COST = {
   ccgt:    { c2026: 34965, decl: -0.0200 },
   // Open-cycle gas (TODO 14bo item 5): new OCGT on LNG (ocgt) and on diesel (ocgd) take one capex, chosen by
   // bldOcgtCostCase in bldCostEntry. Low ('irp'): IRP 2025 workbook R12,981/kW (9F.05, January 2024 rands) x SA CPI to
-  // January 2026, flat real. The central (NREL ATB 2025) goes in as ocgt_central once supplied; until then the central
-  // case refuses to run rather than use an unsourced number.
+  // January 2026, flat real. Central: derived from ccgt in bldCostEntry (user decision 12 Oct 2026).
   ocgt_irp: { c2026: 12981 * 1.032 * 1.035, decl: 0 },
 };
+// OPEN-CYCLE CENTRAL CAPEX (user, 12 Oct 2026): the CCGT entry scaled by EIA AEO2023's ratio of a frame combustion turbine
+// (USD 867/kW) to a multi-shaft combined cycle (USD 1,176/kW), both 2022 dollars, 0.74, so open and combined cycle sit
+// on one 2026 price basis and follow the same real escalation: R25,778/kW in 2026 against the IRP's R13,865 (the low
+// case). Derived in bldCostEntry when used, so it follows any change to BLD_COST.ccgt (GAS_CAPEX, cost sets).
+const EIA_AEO2023_CT_KW = 867, EIA_AEO2023_CC_KW = 1176;
 // vrfb gets 25 years: 20,000-30,000 cycles and a 25-30 year calendar life, with
 // no depth-of-discharge limit, so it outlives lithium by a decade. Iron-air at 20
 // is a judgement - no fleet has run long enough to know.
@@ -9546,8 +9550,7 @@ function bldCostEntry(tech){
     const c = typeof state !== 'undefined' ? (state.bldOcgtCostCase ?? FIXED.bldOcgtCostCase) : FIXED.bldOcgtCostCase;
     if (c === 'irp') return BLD_COST.ocgt_irp;
     if (c !== 'central') throw new Error('bldOcgtCostCase must be central or irp: ' + c);
-    if (!BLD_COST.ocgt_central) throw new Error('open-cycle gas: the central capex (NREL ATB 2025) is not set yet; use bldOcgtCostCase irp');
-    return BLD_COST.ocgt_central;
+    return { c2026: BLD_COST.ccgt.c2026 * EIA_AEO2023_CT_KW / EIA_AEO2023_CC_KW, decl: BLD_COST.ccgt.decl };
   }
   if (tech === 'pv' && bldPvTrackingOn()) return BLD_COST.pvtrk;
   if (tech === 'batt'){ const c = bldBattCase(); return c === 'high' ? BLD_COST.batt_high : c === 'low' ? BLD_COST.batt_low : BLD_COST.batt; }
@@ -18560,7 +18563,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-12a';
+const BUILD_STAMP = '2026-10-12b';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
