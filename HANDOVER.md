@@ -1,3 +1,101 @@
+# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 16:15 UTC)
+
+Read this block first. Everything below it is older and is superseded wherever it disagrees. A new session can
+take over at any point from this block, CLAUDE.md and TODO.md (items 14cn, 14co, 14bz, 14ay and the FOCUS line).
+
+## Focus (user, 12 Oct 2026)
+
+Until the IRP comparison is drafted, the only goal is c4 as the frozen central, then the seeded set (TODO 14co) and
+the 14be comparison steps against it. Report to Nick only: runs started, runs finished or failed, and anything that
+changes c4's headline numbers. Local background runs do not survive the session going idle (user): long runs go to
+GitHub. The engine (index.html and harness) is not changed until the comparison is drafted.
+
+## c4, frozen (TODO 14cn; RESULTS, "c4 frozen as the central")
+
+- c4 is c4-target: `COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5
+  STRESS_TARGET=1`, SOLVER=native, commit 86bfea4 (engine build 2026-10-12e; lithium energy 4 hours of power), with
+  profiles.json and the weather-year file as committed there. Penalty c4 (the same without STRESS_TARGET) is the
+  method check.
+- Both run on GitHub with `.github/workflows/optimiser-long-run.yml`: one solve per job, each job under 6 hours, the
+  solve cache and basis passed on as artifact `state-<name>`, the next job started automatically, every job pinned
+  to the chain's first commit (86bfea4). The last job runs pathcheck.js (artifact `results-<name>`). GitHub's passes
+  reproduce the local LP keys (pass 2 a9e5c71dc2, pass 3 0d4fdcdd1e).
+- Status at 16:15 UTC, both running, nothing finished:
+
+```
+c4-target (name c4t)   run 38255689961 pass 1, 5.4 min | 38256479696 pass 2, 25 min | 38259914914 pass 3, ~78 min
+                       | 38269533084 pass 4, started 15:20 UTC
+penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, running since 13:45 UTC
+```
+
+- To check: list the runs of optimiser-long-run.yml (GitHub MCP, actions_list). The list does not show run names;
+  a job log's env block shows RUN_NAME. A chain has finished when its newest run's pass job ended with status done
+  (exit 0, no "Start the next job") and its check job ran (not skipped). Test runs carry 'test' in the name (user).
+- Artifacts cannot be downloaded into the container (the blob host is blocked, and network settings are not to be
+  changed until c4 is done), so seeded runs fetch c4-target's state themselves (inputs seed_run and seed_name, on
+  branch claude/c4-frozen; tested with run 38257189156).
+- Dated estimates (SAST): c4-target 12 Oct 20:00 to 13 Oct 08:00; penalty c4 13 Oct morning; the seeded set about
+  4-6 hours after c4-target. Refine from the job times above.
+
+## Seeded set (TODO 14co): 12 runs, start in parallel as soon as c4-target's chain finishes
+
+Dispatch each on ref `claude/c4-frozen` (app and harness identical to 86bfea4; only the workflow differs) with
+inputs: name, settings, passes_per_job 1, max_jobs 30, prev_run empty, job_no 1, seed_run = the run id of c4-target's
+final job, seed_name c4t. Settings = c4-target's, plus `WIN_FROM=seed/out/pathway_c4t_lp2040.json`, with one change
+(a setting named in the change replaces the base's, e.g. LI_CAP, OCGD):
+
+```
+s_disc10         DISC=0.10
+s_disc113        DISC=0.113
+s_gasprem        GAS_PREM=0.015
+s_committed      GAS_MIN=2030-2033:1200,2034:200 LI_MIN=2030:4600:18400
+s_wind35         WIND_CAP=3500                     (from 2028)
+s_li8h           LI_EH=8
+s_nogas3         GAS_CAP=0                         (no new CCGT or OCGT on LNG; new diesel open-cycle allowed)
+s_nogas4         GAS_CAP=0 LI_CAP=4000
+s_nogas4strict   GAS_CAP=0 OCGD=0 LI_CAP=4000      (no new gas and no new diesel open-cycle)
+s_be4            GASFLOOR=1
+s_be6            LI_CAP=550 CAP_FROM=2026
+s_be7            NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350
+```
+
+No-gas decision (user, 12 Oct): the two main runs as above (3 and 4 GW of lithium a year), plus the strict run; in
+all three report new diesel open-cycle GW (pathway output, ocgd by year) and diesel burned in TWh (engine check, by
+year). Nick asked to be told, once the set is running, that it is a good moment to start a new session; before
+saying so, cancel this session's pending check-ins (delete_trigger) so two sessions do not both act.
+
+## After the set
+
+c4 report against c3 (method test, standard table, three cost lines, lithium value split, shed by year on customer
+demand), the #22 merge plan (TODO 14ck), the diesel open-cycle condition (14cj), then the IRP comparison draft
+(14be steps, in the 14bd format). Then the profile test: keep the current profiles for c4 and the set; the plain open
+profile halves c3's shed (RESULTS, demand-shape sensitivity), so test the open shape quantile-mapped to the measured
+load-duration curve and propose the public swap only if it reproduces c3's shed within about 10% (14bz). The coal
+preset option (a) and the coal trace's removal from the public repository go with that swap.
+
+## Parked until the comparison is drafted
+
+14bw (the ERA5 download stopped at 28 Feb 2026; files from March are NetCDF4, 14cp), the preset re-search and the
++5% marks (14ay; inventory in RESULTS), Playwright render checks, EarthPV (14cl), new storage classes (14cm), exports
+(14by), panels and dashboards, Cloudflare build failures (14cq; the licence lines are live).
+
+## Open decisions and waiting on Nick
+
+- #26 (.mcp.json to main): Nick merges when convenient.
+- Eskom's written consent (requested; terms in CLAUDE.md). The weekly Eskom job in gridtwin-data stays disabled.
+- Later, with the parked preset work: whether IRP path 2035 keeps +5% or moves to the central path.
+
+## Git and suite
+
+- claude/build-costs is PR #22 (draft, base claude/peakers). Worktree /home/user/gtza-08d is a detached HEAD; push
+  with `git push origin HEAD:claude/build-costs`. claude/c4-frozen (worktree /home/user/gtza-c4f) holds the frozen
+  code for the set. Never push to main; Nick merges. Commit trailer per CLAUDE.md and the session reminder.
+- Suite at build 2026-10-12e (no app change since): 808/812 with ESK19679.csv, 804/809 without; eng5 6/6.
+  validate_docs.py (not in the counted suite): 13/20, seven failures that predate 12 Oct.
+- Check-ins are send_later triggers bound to the session that booked them; a new session books its own.
+
+---
+
 # GridTwin ZA - handover, 2 October 2026
 
 Build `2026-10-02a`. Suite 802/803 plus eng5 6/6, measured 2 Oct 2026 with `profiles.json` at
