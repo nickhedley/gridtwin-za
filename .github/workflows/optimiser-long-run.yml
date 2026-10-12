@@ -35,6 +35,9 @@ on:
       job_no:
         description: 'Leave at 1 to start a run. Set by the workflow itself'
         default: '1'
+      code_sha:
+        description: 'Leave blank. Set by the workflow itself: the commit every job of the run checks out'
+        default: ''
 
 permissions:
   contents: read
@@ -51,6 +54,7 @@ env:
   MAX_JOBS: ${{ inputs.max_jobs }}
   PREV_RUN: ${{ inputs.prev_run }}
   JOB_NO: ${{ inputs.job_no }}
+  CODE_SHA_IN: ${{ inputs.code_sha }}
 
 jobs:
   pass:
@@ -58,6 +62,7 @@ jobs:
     timeout-minutes: 355
     outputs:
       status: ${{ steps.run.outputs.status }}
+      code_sha: ${{ steps.pin.outputs.sha }}
     steps:
       - name: Note the job start
         run: echo "T0=$(date +%s)" >> "$GITHUB_ENV"
@@ -74,8 +79,24 @@ jobs:
             case "${kv#*=}" in /*|*..*) echo "files must be inside the repository: $kv"; exit 1;; esac
           done
 
+      # Every job of a run checks out the commit the run started on (12 Oct 2026). A later job is started on the branch
+      # name, so without this it would take whatever the branch holds by then, and a push mid-run would change the code
+      # (and the LP) between jobs. The first job pins its own commit; the second reads it from the first job's run (the
+      # first job of a run started before this step existed passes nothing); later jobs are passed it.
+      - name: Pin the code to the run's first commit
+        id: pin
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha="$CODE_SHA_IN"
+          if [ -z "$sha" ] && [ -n "$PREV_RUN" ]; then sha=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$PREV_RUN" --jq .head_sha); fi
+          [ -n "$sha" ] || sha="$GITHUB_SHA"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "not a commit: $sha"; exit 1; }
+          echo "code at $sha"; echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v5
         with:
+          ref: ${{ steps.pin.outputs.sha }}
           fetch-depth: 1
 
       - name: Check the branch can resume
@@ -149,7 +170,7 @@ jobs:
           fi
           gh workflow run optimiser-long-run.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME" \
             -f name="$RUN_NAME" -f settings="$SETTINGS" -f passes_per_job="$PASSES" -f max_jobs="$MAX_JOBS" \
-            -f prev_run="$GITHUB_RUN_ID" -f job_no="$((JOB_NO + 1))"
+            -f prev_run="$GITHUB_RUN_ID" -f job_no="$((JOB_NO + 1))" -f code_sha="${{ steps.pin.outputs.sha }}"
 
   check:
     needs: pass
@@ -159,6 +180,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: ${{ needs.pass.outputs.code_sha }}
           fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
