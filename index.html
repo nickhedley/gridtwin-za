@@ -118,6 +118,9 @@ header{border-bottom:2px solid #3a5668; background:#517180; box-shadow:var(--sha
 .lamp.on{background:var(--alert); color:#fff; border-color:#E2794F; box-shadow:0 0 10px 1px rgba(217,90,45,.55)}
 .statusword{font-family:'Saira Condensed'; font-weight:700; font-size:21px; letter-spacing:.06em}
 .statusword.ok{color:#7DC47A}.statusword.warn{color:#EFC24A}.statusword.bad{color:#F1794A}
+/* Fallback notice (user, 12 Oct 2026): shown when profiles.json does not load and the engine runs on synthetic profiles. */
+.profile-notice{margin:12px 16px 0; padding:10px 14px; border:1px solid #D9A21B; border-left:5px solid #D9A21B; border-radius:6px; background:#FFF6DA; color:var(--ink); font-size:14px; line-height:1.45}
+.profile-notice strong{font-weight:700}
 
 /* ---------- layout ---------- */
 .wrap{max-width:1380px; margin:0 auto; padding:18px 20px 60px; display:grid; grid-template-columns:322px 1fr; gap:18px}
@@ -358,6 +361,7 @@ body.embed .wrap{padding-top:12px; padding-bottom:24px}
     </div>
   </div>
 </header>
+<div id="profileNotice" class="profile-notice" role="alert" hidden></div>
 <nav id="jumpNav" aria-label="Section navigation">
   <div class="jn-wrap">
     <span class="jn-grp">System planning</span>
@@ -18575,7 +18579,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-12c';
+const BUILD_STAMP = '2026-10-12d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
@@ -19150,9 +19154,22 @@ fetch('nodal/residential_profile.json',{cache:'no-cache'}).then(r=>r.ok?r.json()
              if (typeof renderRetail === 'function') try { renderRetail(); } catch(e){} })
   .catch(()=>{});
 
-const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(data=>{
-  if(!data||!data.demand||data.demand.length!==HOURS)return;
-  PROFILES=buildProfiles(data);
+// FALLBACK NOTICE (user, 12 Oct 2026): if profiles.json does not load, or loads without a full-year demand series, the
+// engine keeps the synthetic profiles from buildProfiles(). That used to happen silently, the only sign a grey
+// "synthetic" in the status bar; the page now says so in a notice under the header, with the reason.
+function showProfileNotice(reason){
+  const el = document.getElementById('profileNotice');
+  if (el){ el.innerHTML = '<strong>Synthetic profiles in use.</strong> The hourly demand, wind and solar data (profiles.json) did not load ('
+    + String(reason).replace(/[<>&]/g, '') + '), so every result on this page comes from illustrative synthetic shapes, not measured or '
+    + 'modelled data. Reload the page; if this persists, the results should not be quoted.'; el.hidden = false; }
+  const badge = document.getElementById('bdData');
+  if (badge){ badge.textContent = 'synthetic'; badge.style.color = ''; badge.classList.add('warn'); }
+  console.error('[GridTwin] profiles.json not loaded, synthetic profiles in use: ' + reason);
+}
+let _profilesReal = false;
+const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(data=>{
+  if(!data||!data.demand||data.demand.length!==HOURS) throw new Error('no ' + HOURS + '-hour demand series in the file');
+  PROFILES=buildProfiles(data); _profilesReal = true;
   const badge=document.getElementById('bdData');
   if(badge){badge.textContent=((data.meta&&data.meta.year)?data.meta.year:'real')+' Eskom'; badge.style.color='#8FD08A';}
   const foot=document.querySelector('.foot');
@@ -19161,7 +19178,7 @@ const P_PROF = fetch('profiles.json',{cache:'no-cache'}).then(r=>r.ok?r.json():n
   // moment profile data loaded.
   const footLead=document.getElementById('footDataLine');
   if(footLead&&data.meta)footLead.innerHTML='Driven by actual Eskom hourly system data ('+data.meta.year+', Eskom Data Portal). Wind and solar profiles are real; demand keeps the '+data.meta.year+' hourly shape, scaled to 2026 levels; fleet mix, costs and outage volatility are modelled. All outputs indicative – educational tool, not planning advice.';
-}).catch(()=>{});
+}).catch(e=>{ if (_profilesReal) console.error('[GridTwin] after loading profiles.json: ' + (e && e.message || e)); else showProfileNotice(e && e.message || e); });
 
 // ENGINE INPUTS READY, 22 Sep 2026. simulate() reads several files that load asynchronously:
 // profiles, the TDP list, the headroom lookup, the offshore shape and the transmission-cost
