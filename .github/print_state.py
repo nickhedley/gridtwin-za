@@ -31,6 +31,10 @@ def passes_from_log(log):
             print('pass %2d  worst %d: %.2f / %.2f GWh (%3.0f%%)  failing years %2d  windows added %s' % (
                 e['pass'], w['y'], w['mean'], w['limit'], 100 * w['mean'] / w['limit'] if w['limit'] else 0, len(fails), nadd))
             if fails: print('         failing:', ', '.join('%d %.2f/%.2f' % (q['y'], q['mean'], q['limit']) for q in fails))
+        if isinstance(e.get('added'), list):
+            for a in e['added']:
+                print('         added for %s: weather year %s, days %s-%s (%s days, draw seed %s), shed %s GWh' % (a.get('forModelYear'), a.get('year'),
+                      a.get('start'), (a['start'] + a['n'] - 1) if isinstance(a.get('start'), int) and isinstance(a.get('n'), int) else '?', a.get('n'), a.get('seed'), a.get('shedGWh')))
 
 P, G, C = find('pathway_%s.json' % name), find('pathway_%s.json.progress' % name), find('pathcheck_%s.json' % name)
 if P:
@@ -58,6 +62,11 @@ elif G:
         print('pass %2d  failing years %2d  windows added %s  %s' % (e['pass'], len(f), e.get('nAdded'),
               ('worst %d: %.2f / %.2f GWh (%.0f%%)' % (w[0], w[1], w[2], 100 * w[1] / w[2])) if w else 'no failing year'))
         if f: print('         failing:', ', '.join('%d %.2f/%.2f' % tuple(q) for q in f))
+        if isinstance(e.get('added'), list):
+            for a in e['added']:
+                print('         added for %s: weather year %s, days %s-%s (%s days, draw seed %s), shed %s GWh' % (a.get('forModelYear'), a.get('year'),
+                      a.get('start'), (a['start'] + a['n'] - 1) if isinstance(a.get('start'), int) and isinstance(a.get('n'), int) else '?', a.get('n'), a.get('seed'), a.get('shedGWh')))
+        elif e.get('added') is not None: print('         added:', json.dumps(e['added']))
 else:
     print('== no pathway output or progress file for', name)
 
