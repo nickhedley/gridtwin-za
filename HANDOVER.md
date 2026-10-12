@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 19:10 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 19:25 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -46,9 +46,11 @@ penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, run
   (TODO 14cs): dispatch optimiser-long-run.yml on that ref with name, source_run, source_name. For the IRP note, run it
   on c4-target's final run and on each seeded run's final run.
 - Inputs checked 12 Oct (user): combined-cycle capex flat real at 86bfea4 (SOURCES); coal schedule against IRP 2025
-  in TODO 14cr (an IRP coal-timing run starts alongside the set once the set has started: build a COAL_DATES override
-  on a branch from claude/c4-frozen, LP unchanged when off, dates basis to be confirmed by Nick; c4's Tutuka, Kriel and
-  Arnot dates are unsourced PyPSA-RSA dates, see SOURCES fleet row).
+  in TODO 14cr. IRP coal-timing run s_coalirp: BUILT on branch claude/c4-coalirp (fdf0b40; c4-frozen plus the COAL_DATES
+  switch, LP unchanged when off, checked) and started once the set has started, alongside it: ref claude/c4-coalirp,
+  seed_run = c4t's final run, seed_name c4t, settings c4t's plus WIN_FROM=seed/out/pathway_c4t_lp2040.json
+  COAL_DATES=coal_dates_irp2025.json. Dates basis decided by Nick (TODO 14cr; GEM start years, CC BY-NC-SA 4.0). c4's
+  Tutuka, Kriel and Arnot dates are unsourced PyPSA-RSA dates (SOURCES fleet row).
 
 ## Seeded set (TODO 14co): 12 runs, start in parallel as soon as c4-target's chain finishes
 
