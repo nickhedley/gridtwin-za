@@ -1920,6 +1920,79 @@ would be a change of demand basis, not of data source; the build would have to b
 on each file's own solar shape, so the shape-only case serves 1.2% more energy; the CSP model and the 60% tracker
 share are judgement; the wind anchor is a public annual figure with a REIPPPP capacity from a news report.
 
+### Demand-shape sensitivity: at the same annual energy the open (ESRG) demand shape halves c3's 2026-40 shed; the single peak matches, the hours near it do not, 12 Oct 2026
+
+Run: as in the entry above (c3's build, pathway_v_half_c1_p1_11b_central.json; pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1,
+adaptive; engine build 2026-10-12d), demand shape only, scaled to the measured 185.3 TWh grid level in 2026, wind,
+solar and CSP unchanged. Mean shed in GWh, target half of 0.002% of customer demand.
+
+```
+c3's build       2026  2027  2028  2033  2034  2035  2036  2037  2038  2039  2040   sum 2026-40
+profiles.json    0.04  0.03  0.01  0.01  0.09  0.09  0.85  0.70  1.60  2.40  2.61   8.43
+  % of target      2%    2%    1%    0%    4%    4%   36%   29%   65%   95%  100%
+open shape       0.01  0.02  0.02  0.00  0.02  0.05  0.59  0.56  1.20  1.10  0.85   4.41
+  % of target      1%    1%    1%    0%    1%    2%   25%   23%   48%   43%   32%
+(2029-2032: 0.00 in both)
+```
+
+On the grid basis the engine dispatches (after rooftop, before exports), 2026 series, profiles.json against the open
+candidate (open_final.json): peak 28.80 against 28.95 GW; load factor 73.4% against 73.1%; hours above 27 GW 113
+against 48; mean of the top 100 hours 27.83 against 27.12 GW, top 500 26.35 against 25.90 GW; June-August 17:00-20:00
+mean 25.76 against 25.18 GW. The entry above compared peaks and load factors with rooftop added back (30.6 against
+28.9 GW, 75% against 79%); on that basis profiles.json peaks at 10:00 in July, which the engine never dispatches, so
+that comparison overstated the difference in the peak and understated it in the hours near the peak.
+
+Finding: the demand shape is a first-order input for adequacy. At the same annual energy and almost the same single
+peak, the open shape's thinner tail of near-peak hours halves the shed, so taking it unadjusted would understate
+adequacy needs. Matching annual energy and the single peak (two constants) would not close the gap, since the peaks
+already match. Decision (user, 12 Oct): keep the current profiles for c4 and its seeded set; afterwards test the open
+shape quantile-mapped to the measured load-duration curve (a small set of derived constants) and propose the public
+swap only if it reproduces c3's shed within about 10%. Eskom data credited (Eskom Holdings SOC Ltd, ESK19679); the
+statistics are GridTwin ZA's analysis, not Eskom's; no hourly series is reproduced. Caveats: one build (c3); ESRG's
+hourly year is a modelled year; the shape-only case serves 1.2% more energy (rooftop add-back on its own solar shape).
+
+### c4 frozen as the central, 12 Oct 2026
+
+User, 12 Oct 2026: until the IRP comparison is drafted, c4 is the frozen central and the engine is not changed. c4 is
+c4-target (the method test favoured the stress-target method): COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1
+OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5 STRESS_TARGET=1, SOLVER=native; code at 86bfea4 (engine build 2026-10-12e,
+lithium energy 4 hours of power), profiles.json and the weather-year file as committed there. Run on GitHub
+(optimiser-long-run.yml, run 38255689961 and its chain, each job pinned to that commit); its pass 1 reproduced the local
+run's next LP (key a9e5c71dc2). Penalty c4, the same without STRESS_TARGET (run 38255695323), is the method check. The
+seeded set (TODO 14co) runs on claude/c4-frozen, whose engine and harness are identical to 86bfea4. Results to follow.
+
+### Preset inventory at build 2026-10-12e: both transition presets are over-built at their +5% demand and far short at the central path's, 12 Oct 2026
+
+User, 12 Oct 2026 (TODO 14ay, now parked): each preset applied as the page applies it (applyState), twelve weather years
+x 20 outage draws (240 runs; seeds as pathcheck.js), profiles.json, build 2026-10-12e. Target half of 0.002% of
+customer demand (without storage charging). Central path: DEMAND=irp_esrg's index for the preset's year.
+
+```
+preset                        year  demand  central  customer   mean shed / target      cost       CO2
+                                    setting path     TWh        GWh                     R bn/yr    Mt
+Today 2026                    2026  +0%     +0%      193.5      0.26 / 1.94 (13%)       212.9      157.4
+IRP's 2030 targets            2030  +20%    +10.1%   226.7      0.00 / 2.27 (0%)        307.5      128.3
+IRP's 2030 targets, delayed   2030  +20%    +10.1%   226.7      0.11 / 2.27 (5%)        301.1      149.3
+IRP path 2035                 2035  +5%     +26.7%   189.8      0.00 / 1.90 (0%)        287.3       64.3
+Deep decarbonisation 2035     2035  +5%     +26.7%   187.0      0.02 / 1.87 (1%)        325.2       30.6
+Fossil-free 2040              2040  +5%     +45.9%   177.8      0.00 / 1.78 (0%)        386.5        0.0
+at the central path's demand
+IRP path 2035                 2035  +26.7%           233.4      0.00 / 2.33 (0%)        321.4       88.6
+Deep decarbonisation 2035     2035  +26.7%           230.5      381 / 2.31 (165x)       342.4       42.4
+Fossil-free 2040              2040  +45.9%           259.3      5,561 / 2.59 (2,145x)   445.2        0.0
+```
+
+2025, as modelled (page run, its own year): 28.3 GWh shed, coal 168.6 TWh, diesel 2.25 TWh, as its description and
+comments state. Claims that no longer hold at this build: Deep decarbonisation's 'mean shed about 2 GWh' (now 0.02) and
+Fossil-free's 1.77 GWh (now 0.00), and their quoted annual costs (R283.8bn and R338.3bn; now R325.2bn and R386.5bn, the
+battery cost change already recorded in TODO 14ay); both are sized to half the standard only in their descriptions'
+history, and the page text already says they are not shown to be the cheapest build. 'On the IRP's own demand growth'
+(IRP's 2030 targets): its +20% is the IRP's 2030 level less Mozal on a 2024 base, while the central path applies the
+IRP's growth to the measured 2026 base (+10.1% by 2030), so two IRP demand bases are in use. 'IRP path 2035 on the
+transition presets' +5%, so the three compare like for like' holds until those presets are re-searched. IRP path 2035's
+gas floor is still 13.5 of 26.8 TWh unmet, as recorded at build 06g. On the open profiles the table moves by at most
+0.2 GWh of shed and R1bn, except 2025 (page run 24.2 GWh). Caveats: one draw set; engine only; not a re-search.
+
 ### c3 checks: shed on customer demand, one cost basis, and what the 2026-30 lithium energy is for, 12 Oct 2026
 
 Run: the new central (c3, entry below), build `2026-10-11b`; re-measured 12 Oct with pathcheck.js on build `2026-10-12b`
