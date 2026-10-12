@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 19:45 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 21:45 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -21,12 +21,12 @@ GitHub. The engine (index.html and harness) is not changed until the comparison 
   solve cache and basis passed on as artifact `state-<name>`, the next job started automatically, every job pinned
   to the chain's first commit (86bfea4). The last job runs pathcheck.js (artifact `results-<name>`). GitHub's passes
   reproduce the local LP keys (pass 2 a9e5c71dc2, pass 3 0d4fdcdd1e).
-- Status at 19:40 UTC: penalty c4 finished; c4-target running (pass 6):
+- Status at 21:40 UTC: penalty c4 finished; c4-target running (pass 7):
 
 ```
 c4-target (name c4t)   run 38255689961 pass 1, 5.4 min | 38256479696 pass 2, 25 min | 38259914914 pass 3, ~78 min
                        | 38269533084 pass 4, ~112 min | 38282680097 pass 5, 118 min (17:13-19:11 UTC)
-                       | 38295943224 pass 6, started 19:11 UTC
+                       | 38295943224 pass 6, 138 min (19:11-21:29 UTC) | 38310964088 pass 7, started 21:29 UTC
 penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, 4 h 25 min (13:46-18:10 UTC, cold
                        start, 75 min inside the job deadline, so no handover was needed), 'done adequate', engine
                        check ran (artifact results-c4): every year within target (2040 1.17 / 2.60 GWh), cost PV
@@ -39,15 +39,17 @@ penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, 4 h
 - Artifacts cannot be downloaded into the container (the blob host is blocked, and network settings are not to be
   changed until c4 is done), so seeded runs fetch c4-target's state themselves (inputs seed_run and seed_name, on
   branch claude/c4-frozen; tested with run 38257189156).
-- Dated estimates (SAST, 12 Oct 21:45): c4-target's loop is converging slowly (2040: 85.11, 37.37, 9.63, 7.84 GWh
-  against 2.60 after passes 1-4; pass times 5, 25, 78, 112, 118 min). Pass 6 ends about 23:15-23:45. If pass 6
-  closes the gap the chain ends about 00:15; at pass 4's rate (-19% a pass) it needs 5 or more further passes, ending
-  13 Oct afternoon or evening; the cap is 14 passes. The seeded set then takes about 4-6 hours.
+- Dated estimates (SAST, 12 Oct 23:45): the loop has nearly stalled: 2040 85.11, 37.37, 9.63, 7.84, 7.27 GWh against
+  2.60 after passes 1-5 (cuts of 56%, 74%, 19%, 7%); pass times 5, 25, 78, 112, 118, 138 min. If pass 6 passes, job 7
+  ends within minutes and the chain finishes about 00:15. Otherwise it is likely to run to the 14-pass cap (8 more
+  passes at 2-2.5 hours: about 13 Oct 16:00-20:00), probably still failing 2039-40 on its own test. The seeded set
+  then takes about 4-6 hours. Penalty c4's plan passes the engine check in every year (2040 1.17/2.60).
 
 - c4-target's stress loop (its own test, worst year, mean shed / target in GWh): pass 1 2038 85.11/2.48 (11 years
   failing); pass 2 2040 37.37/2.61 (5); pass 3 2040 9.63/2.60 (2: 2039, 2040); pass 4 2040 7.84/2.60 (2: 2039 4.59/2.54, 2040);
-  pass 5's figure will be in pass 6's saved state. The windows each pass added (weather year, days) are printed by
-  the print job (run 38298773438 for passes 1-4). The loop stops when no year fails (half the standard) or at 14 passes (MAXP).
+  pass 5 2040 7.27/2.60 (2: 2039 3.71/2.54, 2040). Each job tests the previous pass's plan, then solves the next, so
+  pass N's figure is in pass N+1's saved state. The windows each pass added (weather year, days) are printed by the
+  print job (run 38311601535 for passes 1-5; pass 5's six windows carried 1.1-4.9 GWh of shed each). The loop stops when no year fails (half the standard) or at 14 passes (MAXP).
 - Reading results: artifacts cannot be downloaded here; use the print-only workflow on branch claude/print-results
   (TODO 14cs): dispatch optimiser-long-run.yml on that ref with name, source_run, source_name. For the IRP note, run it
   on c4-target's final run and on each seeded run's final run.
