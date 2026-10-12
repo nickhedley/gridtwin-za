@@ -99,6 +99,9 @@ STANDING RULE: an optimiser result is a proposal until the twelve-year dispatch 
   the tracer and the Google Solar path both wrote area x 0.72 and then rtCalc packed it again.
   Google's Solar API was already wired in; it needs a key in `window.GOOGLE_SOLAR_KEY`.
 - Retail: the market basis is labelled "SAWEM, from Apr 2027" and called a counterfactual until then.
+  The April 2027 switch is conditional (user, 12 Oct 2026): it holds only if the wholesale market
+  actually launches then. Re-date the label, and anything keyed to April 2027, to the actual launch date when it
+  is announced; until then treat April 2027 as the planned date, not a fact.
   A dead `retSupply` flag found and pinned: the stack models an Eskom-direct customer.
 - Four dead element reads found; a structural check now asserts every id read exists. The VPP
   readout, computed for weeks and never displayed, now has a host.

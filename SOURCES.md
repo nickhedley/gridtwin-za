@@ -42,7 +42,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Eskom Ingula pumped storage | one-off | R26.8bn reported, 1,332 MW / 21 GWh, built 2006-2017 (Engineering News, 2016) | cross-check on `bldPhesCostBasis` 'tubatse'; no constant reads it |
 | DFFE REEA, Red Cap / Impofu | rolling | as at last ingest | the Impofu and Koruson connector endpoints in `transmission_lines.geojson` |
 
-| SolarAfrica SunCentral | one-off | 114 MW of a 342 MW phase 1 energised 26 Aug 2026, not yet at commercial operation | pipeline, not capacity. Corrected 23 Sep 2026: an earlier entry here said 342 MW energised, which was wrong on the figure and the status |
+| SolarAfrica SunCentral | one-off | SunCentral 1, 114 MW: commercial operation September 2026 (user, 12 Oct 2026). SunCentral 2 nearing completion. 342 MW is phase one's planned total (SunCentral 1 to 3), not energised capacity: only 114 MW is confirmed | SunCentral 1 belongs in the private capacity at the next rebuild; 2 and 3 stay pipeline. Corrected 23 Sep 2026 (342 MW energised was wrong) and 12 Oct 2026 (commercial operation in September, not pending) |
 | Aurora Energy Research | occasional | 2060 outlook, Aug 2026 | independent corroboration of the no-gas frontier: >120 GW new capacity |
 | AEMO Engineering Roadmap / Transition Plan for System Security | annual | FY26 roadmap, Sep 2026 | the syncon and grid-forming findings in results.md; the roadmap merges into the TPSS from Dec 2026 |
 | NTCSA MYPD 6 revenue application, Table 10 | three-yearly | FY2026-FY2028, Aug 2024 | what the System Operator pays for ancillary services: reserves R1,445m, demand response R521m, reactive power R468m, system restoration R376m in FY2026. Behind asReserveRMWh and asVoltagePotRm |
@@ -172,7 +172,7 @@ from arithmetic rather than a provenance, and the repo history is still what wou
 
 **The private-project queue.** Six named projects observed from trade press now sit in
 `nodal/private_pending_h2_2026.json`, deliberately NOT loaded: SunCentral 1 (114 MW, commercial
-operation Oct 2026), Selemela (200 MW AC, Apr 2024), Damlaagte (97.5 MW, Aug 2025), Thakadu
+operation September 2026), Selemela (200 MW AC, Apr 2024), Damlaagte (97.5 MW, Aug 2025), Thakadu
 (255 MW, 2027), Paarde Valley PV2 (120 MW, end 2026) and Discovery Green's 740 MW portfolio,
 which is an aggregate rather than a plant and is there as a scale check only. 1,526 MW in total.
 The file says what to do when the February 2027 monitor lands: replace `by_source.private` from
@@ -216,7 +216,7 @@ file at the next rebuild:
 
 ```
 SunCentral 1, between Hanover and De Aar, Northern Cape   114 MW
-   COMMERCIAL OPERATION reached, reported 1 Oct 2026. Energised with its transmission
+   COMMERCIAL OPERATION reached in September 2026 (user, 12 Oct), first reported 1 Oct 2026. Energised with its transmission
    infrastructure in August; financial close Feb 2025, R1.8bn, Investec and RMB. SolarAfrica,
    backed by African Infrastructure Investment Managers and Helios. 548,856 modules.
    ONE-TO-MANY WHEELING: the plant is allocated across multiple commercial and industrial
@@ -608,6 +608,16 @@ Hourly series (the open question; terms under review, not CC BY):
 - profiles_OLD_backup.json: an older ESK19243 hourly set.
 - nodal/coal_availability_trace.json: coal-only availability by hour, 2023-2025, each year divided by its mean
   (outageTraceYear).
+
+## Eskom Green targets (user, 12 Oct 2026)
+
+Eskom Green: 21 GW by 2035 and 32 GW by 2040; first batteries 1 GW / 4 GWh. As given by the user; primary source
+(Eskom statement or report, with date and page) still to be recorded before any figure is used in a scenario.
+
+## Grid delivery pace, 2025/26 (TODO 14bj addition, user, 12 Oct 2026)
+
+Chris Yelland newsletter, October 2026: 270.8 km of transmission line delivered in 2025/26 against a 423 km target;
+1,230 of 1,657 MW reached commercial operation on time in 2025/26.
 
 ## Ember bulk data for validate_benchmarks (user, 12 Oct 2026)
 
