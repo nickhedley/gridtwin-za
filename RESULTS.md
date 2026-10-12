@@ -1961,6 +1961,28 @@ lithium energy 4 hours of power), profiles.json and the weather-year file as com
 run's next LP (key a9e5c71dc2). Penalty c4, the same without STRESS_TARGET (run 38255695323), is the method check. The
 seeded set (TODO 14co) runs on claude/c4-frozen, whose engine and harness are identical to 86bfea4. Results to follow.
 
+### Penalty c4 finished: adequate after 2 passes, every year within target, PV R2,681bn, 1,479 Mt, 12 Oct 2026
+
+Method check for c4 (TODO 14cn): COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central
+GAS_FOM_ADD=530.5 (no STRESS_TARGET), SOLVER=native, code 86bfea4 (build 2026-10-12e), GitHub runs 38255695323 (pass 1)
+and 38257824027 (pass 2, 4 h 25 min, 'done adequate'; engine check in the same run, artifact results-c4). Engine check
+(pathcheck.js, 12 weather years x 10 outage draws), mean shed against target on customer demand (half of 0.002%):
+
+```
+year  shed/target GWh   cost R bn  CO2 Mt     year  shed/target GWh   cost R bn  CO2 Mt
+2026  0.02 / 1.94       225.2      142.8      2034  0.01 / 2.26       310.0      90.9
+2027  0.02 / 1.96       243.2      130.4      2035  0.01 / 2.31       310.5      91.3
+2028  0.00 / 1.98       262.7      118.1      2036  0.05 / 2.35       323.1      88.6
+2029  0.00 / 2.01       272.2      105.5      2037  0.08 / 2.41       327.6      89.5
+2030  0.00 / 2.06       290.0       97.2      2038  0.45 / 2.48       342.4      84.9
+2031  0.00 / 2.12       295.8       91.8      2039  0.87 / 2.54       352.5      84.4
+2032  0.00 / 2.16       302.6       88.2      2040  1.17 / 2.60       363.2      85.6
+2033  0.00 / 2.21       312.3       89.9
+```
+
+Cost 2026-40 at 8% real (2026 base): R2,681bn; CO2 1,479 Mt. Caveat: c4 is c4-target, still running; the comparison
+of the two methods waits for it. After 4 passes c4-target's own stress loop still fails 2039-40 (2040 7.84 / 2.60 GWh).
+
 ### Preset inventory at build 2026-10-12e: both transition presets are over-built at their +5% demand and far short at the central path's, 12 Oct 2026
 
 User, 12 Oct 2026 (TODO 14ay, now parked): each preset applied as the page applies it (applyState), twelve weather years

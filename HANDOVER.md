@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 19:40 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 19:45 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -21,13 +21,16 @@ GitHub. The engine (index.html and harness) is not changed until the comparison 
   solve cache and basis passed on as artifact `state-<name>`, the next job started automatically, every job pinned
   to the chain's first commit (86bfea4). The last job runs pathcheck.js (artifact `results-<name>`). GitHub's passes
   reproduce the local LP keys (pass 2 a9e5c71dc2, pass 3 0d4fdcdd1e).
-- Status at 17:30 UTC, both running, nothing finished:
+- Status at 19:40 UTC: penalty c4 finished; c4-target running (pass 6):
 
 ```
 c4-target (name c4t)   run 38255689961 pass 1, 5.4 min | 38256479696 pass 2, 25 min | 38259914914 pass 3, ~78 min
-                       | 38269533084 pass 4, ~112 min | 38282680097 pass 5, started 17:12 UTC
-penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, running since 13:45 UTC (job deadline
-                       about 19:25 UTC: an unfinished solve keeps its basis and continues in the next job)
+                       | 38269533084 pass 4, ~112 min | 38282680097 pass 5, 118 min (17:13-19:11 UTC)
+                       | 38295943224 pass 6, started 19:11 UTC
+penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, 4 h 25 min (13:46-18:10 UTC, cold
+                       start, 75 min inside the job deadline, so no handover was needed), 'done adequate', engine
+                       check ran (artifact results-c4): every year within target (2040 1.17 / 2.60 GWh), cost PV
+                       R2,681bn at 8% real, CO2 1,479 Mt 2026-40 (RESULTS, 'Penalty c4 finished')
 ```
 
 - To check: list the runs of optimiser-long-run.yml (GitHub MCP, actions_list). The list does not show run names;
@@ -36,17 +39,20 @@ penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, run
 - Artifacts cannot be downloaded into the container (the blob host is blocked, and network settings are not to be
   changed until c4 is done), so seeded runs fetch c4-target's state themselves (inputs seed_run and seed_name, on
   branch claude/c4-frozen; tested with run 38257189156).
-- Dated estimates (SAST): c4-target 12 Oct 22:00 to 13 Oct 08:00 (pass times are rising: 5, 25, 78, 112 min); penalty
-  c4 13 Oct morning to midday; the seeded set about 4-6 hours after c4-target. Refine from the job times above.
+- Dated estimates (SAST, 12 Oct 21:45): c4-target's loop is converging slowly (2040: 85.11, 37.37, 9.63, 7.84 GWh
+  against 2.60 after passes 1-4; pass times 5, 25, 78, 112, 118 min). Pass 6 ends about 23:15-23:45. If pass 6
+  closes the gap the chain ends about 00:15; at pass 4's rate (-19% a pass) it needs 5 or more further passes, ending
+  13 Oct afternoon or evening; the cap is 14 passes. The seeded set then takes about 4-6 hours.
 
 - c4-target's stress loop (its own test, worst year, mean shed / target in GWh): pass 1 2038 85.11/2.48 (11 years
-  failing); pass 2 2040 37.37/2.61 (5); pass 3 2040 9.63/2.60 (2: 2039, 2040); pass 4 still failing (pass 5 started),
-  figure in pass 5's saved state. The loop stops when no year fails (half the standard) or at 14 passes (MAXP).
+  failing); pass 2 2040 37.37/2.61 (5); pass 3 2040 9.63/2.60 (2: 2039, 2040); pass 4 2040 7.84/2.60 (2: 2039 4.59/2.54, 2040);
+  pass 5's figure will be in pass 6's saved state. The windows each pass added (weather year, days) are printed by
+  the print job (run 38298773438 for passes 1-4). The loop stops when no year fails (half the standard) or at 14 passes (MAXP).
 - Reading results: artifacts cannot be downloaded here; use the print-only workflow on branch claude/print-results
   (TODO 14cs): dispatch optimiser-long-run.yml on that ref with name, source_run, source_name. For the IRP note, run it
   on c4-target's final run and on each seeded run's final run.
 - Inputs checked 12 Oct (user): combined-cycle capex flat real at 86bfea4 (SOURCES); coal schedule against IRP 2025
-  in TODO 14cr. IRP coal-timing run s_coalirp: REBUILT 12 Oct on branch claude/c4-coalirp (66819c2; the
+  in TODO 14cr. IRP coal-timing run s_coalirp: rebuilt 12 Oct on branch claude/c4-coalirp (66819c2; the
   first build, a hybrid leaving 14.4 GW in 2040, was held by Nick). The dates now track IRP 2025's total coal path
   from the plan's text (Figure 3 could not be read here): 8 GW gone by the start of 2030, then 15 GW in 12 equal steps
   from 2031 to 2042, scaled to 39,692 MW; the four named stations in 2030, then the oldest units first (GEM start
