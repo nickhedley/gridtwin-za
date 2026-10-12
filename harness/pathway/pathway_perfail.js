@@ -32,8 +32,16 @@ const byYear=(name)=>{ const o={}; for (const part of (process.env[name]||'').sp
 const GAS_FORCE=byYear('GAS_FORCE');
 // GAS_MIN (12 Oct 2026, user: committed procurement, section 34 determination of 7 Oct 2026): at least that many MW of
 // new CCGT in each year named, e.g. "2030-2033:1200,2034:200" (5 GW at the 1.2 GW a year cap from 2030); the optimiser
-// may add more up to the cap. Recorded in the output (gasMin).
+// may add more up to the cap. Recorded in the output (gasMin). When the LP offers OCGT on LNG (OCGT=1), the minimum
+// covers all new gas, CCGT plus OCGT on LNG, as gmin_<y> rows, and the optimiser chooses the type (user, 12 Oct 2026);
+// OCGT on diesel is not gas-to-power and stays outside it.
 const GAS_MIN=byYear('GAS_MIN');
+const gasMinRows=lp=>{ if (!Object.keys(GAS_MIN).length || !/^ 0 <= b_ocgt_\d{4} <= /m.test(lp)) return lp;
+  const i=lp.indexOf('\nBounds\n'); if (i<0) throw new Error('GAS_MIN: no Bounds');
+  const rows=Object.entries(GAS_MIN).filter(([,mw])=>mw>0).map(([y,mw])=>{ const g=lp.match(new RegExp('^ gascap_'+y+': .* <= ([0-9.]+)$','m'));
+    if (!g) throw new Error('GAS_MIN: no gascap_'+y); if (mw > +g[1]) throw new Error('GAS_MIN '+mw+' above the gas cap '+g[1]+' in '+y);
+    return ' gmin_'+y+': b_ccgt_'+y+' + b_ocgt_'+y+' >= '+mw; });
+  return lp.slice(0,i)+'\n'+rows.join('\n')+lp.slice(i); };
 // LI_MIN (12 Oct 2026, user: committed procurement): "year:MW:MWh", at least that much new lithium power and energy built
 // by that year (limin_/lemin_ rows), e.g. 2030:4600:18400 for the 4,600 MW of battery storage in the section 34
 // determination at an assumed 4 hours (judgement). Not additive: it is a floor on the optimiser's own build.
@@ -57,10 +65,10 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
  await new Promise(r=>setTimeout(r,6000)); const w=dom.window;
  // A fresh HiGHS instance per solve: one shared instance aborted (out of WASM memory) after several passes, 5 Oct 2026.
  const newHighs=()=>highsLoader({locateFile:f=>path.join(process.cwd(),'node_modules/highs/build',f)});
- const fix=lp=>lp.replace(/^ 0 <= b_(ccgt|ocgt)_(\d{4}) <= ([0-9.]+)$/gm,(m,t,y,ub)=>{
+ const fix=lp=>{ const oc=/^ 0 <= b_ocgt_\d{4} <= /m.test(lp); return lp.replace(/^ 0 <= b_(ccgt|ocgt)_(\d{4}) <= ([0-9.]+)$/gm,(m,t,y,ub)=>{
                    if (t==='ccgt' && GAS_FORCE[y]!==undefined) return ` ${GAS_FORCE[y]} <= b_ccgt_${y} <= ${GAS_FORCE[y]}`;
                    const out = +y<GAS_FIRST ? ` 0 <= b_${t}_${y} <= 0` : (GAS_CAP!==null ? ` 0 <= b_${t}_${y} <= ${GAS_CAP}` : m);
-                   if (t!=='ccgt' || !GAS_MIN[y]) return out;   // unchanged text when no minimum applies
+                   if (t!=='ccgt' || !GAS_MIN[y] || oc) return out;   // unchanged text when no minimum applies; with OCGT, gasMinRows
                    const hi = +out.split('<= ').pop(); if (GAS_MIN[y] > hi) throw new Error('GAS_MIN '+GAS_MIN[y]+' above the cap '+hi+' in '+y);
                    return ` ${GAS_MIN[y]} <= b_ccgt_${y} <= ${hi}`; })
                  // One gas cap for CCGT and OCGT on LNG (gascap_<y>, build 2026-10-11f): rewritten as the bounds are.
@@ -82,12 +90,12 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
                  .replace(/^ 0 <= eb_batt_(\d{4}) <= [0-9.]+$/gm,(m,y)=> LI_CAP && +y>=CAP_FROM ? ` 0 <= eb_batt_${y} <= ${(+w.eval('state.bldLiEnergyHours ?? FIXED.bldLiEnergyHours ?? 12'))*LI_CAP}` : m)
                  .replace(/^ 0 <= b_phes_(\d{4}) <= ([0-9.]+)$/gm,(m,y,v)=> LDES_NOCAP && +v>0 ? ` 0 <= b_phes_${y} <= 200000` : m)
                  .replace(/^ (phescap_\d{4}): (.*) <= [0-9.]+$/gm,(m,nm,lhs)=> LDES_NOCAP ? ` ${nm}: ${lhs} <= 1000000` : m)
-                 .replace(/^ 0 <= rc_(\d{4}) <= ([0-9.]+)$/gm,(m,y,ub)=> RC_MIN!==null && +y===+(process.env.HORIZON||2040) ? ` ${Math.min(RC_MIN,+ub).toFixed(1)} <= rc_${y} <= ${ub}` : m);
+                 .replace(/^ 0 <= rc_(\d{4}) <= ([0-9.]+)$/gm,(m,y,ub)=> RC_MIN!==null && +y===+(process.env.HORIZON||2040) ? ` ${Math.min(RC_MIN,+ub).toFixed(1)} <= rc_${y} <= ${ub}` : m); };
  let last=null; w.__bldSolveOverride=async(lp)=>{ if (process.env.SOLVER==='native'){ const os=require('os'),cp=require('child_process'); const tmp=path.join(os.tmpdir(),'gtza_'+process.pid);
    // SOLVE CACHE (7 Oct 2026): the container restarts every few hours and a pass-2 solve takes one to three, so
    // each optimal solution is kept under lpcache/, keyed by a hash of the LP text. A restarted run replays the
    // solves it already finished (identical LP, identical answer) and only redoes the one that was cut off.
-   const LPT=liMinRows(fixBuild(fix(lp))), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
+   const LPT=liMinRows(gasMinRows(fixBuild(fix(lp)))), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
    // DUMP_LP=<prefix> (8 Oct 2026, diagnostics): write each LP to <prefix>_pass<n>.lp; DUMP_STOP=<n> exits after the n-th.
    if (process.env.DUMP_LP){ w.__dumpN=(w.__dumpN||0)+1; fs.writeFileSync(process.env.DUMP_LP+'_pass'+w.__dumpN+'.lp', LPT); console.log('dumped LP pass', w.__dumpN, key.slice(0,10)); if (process.env.DUMP_STOP && w.__dumpN>=+process.env.DUMP_STOP) process.exit(0); }
    // WARM=1 (11 Oct 2026): each pass starts from the previous pass's basis, kept beside its cached solution
@@ -97,21 +105,24 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
    // a solve gets the time left before the deadline less 15 minutes; if it stops at that limit its basis is kept as
    // <key>.partial.basis.json beside the cache and the script exits with code 75; the next job replays the finished
    // passes from the cache and resumes this solve from that basis. Off by default.
+   // JOB_PASSES=<n> with RESUME=1 (12 Oct 2026, user: one pass per job): after n solves in this job (a resumed solve
+   // counts), the script exits with code 75 before starting the next, so the next job picks up from the cache.
    const RESUME=process.env.RESUME==='1', cfp=cf.replace(/\.json$/,'.partial.basis.json');
    const TLX=RESUME&&process.env.JOB_DEADLINE ? Math.max(600, Math.floor(+process.env.JOB_DEADLINE - Date.now()/1000 - 900)) : +(process.env.TL||900);
    if (fs.existsSync(cf)) { last=JSON.parse(fs.readFileSync(cf,'utf8')); console.log('cache hit', key.slice(0,10)); w.__prevBasis=fs.existsSync(cfb)?cfb:null; }
-   else { fs.writeFileSync(tmp+'.lp',LPT);
+   else { if (RESUME && process.env.JOB_PASSES && (w.__jobSolves||0) >= +process.env.JOB_PASSES){ console.log('solves for this job done; next pass', key.slice(0,10), 'left to the next job'); process.exit(75); }
+     fs.writeFileSync(tmp+'.lp',LPT);
      const bIn = RESUME && fs.existsSync(cfp) ? cfp : (WARM && w.__prevBasis ? w.__prevBasis : null);
      const benv=(WARM||RESUME)?{...process.env, HIGHS_BASIS_OUT:tmp+'.basis.json', ...(bIn?{HIGHS_BASIS_IN:bIn}:{})}:process.env;
      if (WARM||RESUME) console.log('start from basis', bIn||'none (cold)', 'time limit', TLX+'s');
      await require('util').promisify(cp.execFile)('python3',['highs_native.py',tmp+'.lp',tmp+'.json',String(TLX)],{maxBuffer:1<<26, env:benv}); last=JSON.parse(fs.readFileSync(tmp+'.json','utf8'));
      if (RESUME && last.Status==='Time limit reached' && fs.existsSync(tmp+'.basis.json')){ fs.mkdirSync(cdir,{recursive:true}); fs.renameSync(tmp+'.basis.json',cfp);
        console.log('stopped at the job deadline; basis kept for resume', key.slice(0,10)); process.exit(75); }
-     if (last.Status==='Optimal'){ fs.mkdirSync(cdir,{recursive:true}); fs.renameSync(tmp+'.json',cf); try{ fs.unlinkSync(tmp+'.lp'); }catch(e){}
+     if (last.Status==='Optimal'){ w.__jobSolves=(w.__jobSolves||0)+1; fs.mkdirSync(cdir,{recursive:true}); fs.renameSync(tmp+'.json',cf); try{ fs.unlinkSync(tmp+'.lp'); }catch(e){}
        if (WARM && fs.existsSync(tmp+'.basis.json')){ fs.renameSync(tmp+'.basis.json',cfb); w.__prevBasis=cfb; }
        if (RESUME){ try{ fs.unlinkSync(cfp); }catch(e){} } }
      else { fs.renameSync(tmp+'.lp', tmp+'.fail.lp'); console.log('kept the failed LP for diagnosis:', tmp+'.fail.lp'); } } }   // 7 Oct 2026: a failed solve keeps its LP (IIS)
-   else { const highs=await newHighs(); last=highs.solve(fix(lp),{time_limit:+(process.env.TL||900)}); }
+   else { const highs=await newHighs(); last=highs.solve(liMinRows(gasMinRows(fixBuild(fix(lp)))),{time_limit:+(process.env.TL||900)}); }
    console.log('solved', last.Status, new Date().toISOString()); if (last.Status!=='Optimal') throw new Error('solve not optimal: '+last.Status); return last; };
  // COMMIT / PSE (6 Oct 2026): coal commitment and pumped-storage energy in the build LP; unset = FIXED defaults.
  w.eval(`applyState(PRESETS['Today 2026']); state.demandGrowthPct=${DEM}; bldSetHorizon(${+(process.env.HORIZON||2040)});`+(process.env.COMMIT!==undefined?` state.bldCoalCommit=${+process.env.COMMIT};`:'')+(process.env.PSE!==undefined?` state.bldPsEnergy=${+process.env.PSE};`:'')+(process.env.GASFLOOR!==undefined?` if(!('bldGasFloorOn' in FIXED)) throw new Error('bldGasFloorOn missing'); state.bldGasFloorOn=${+process.env.GASFLOOR}; state.ccgtForceLoad=${+process.env.GASFLOOR};`:'')+(process.env.DISC!==undefined?` BLD_DISC=${+process.env.DISC};`:'')+(process.env.OCGT!==undefined?` state.bldOcgtOn=${+process.env.OCGT};`:'')+(process.env.OCGD!==undefined?` state.bldOcgdOn=${+process.env.OCGD}; ${process.env.OCGD_RATE!==undefined?'state.bldOcgdRateMW='+(+process.env.OCGD_RATE)+';':''} ${process.env.OCGD_FROM!==undefined?'state.bldOcgdFromYear='+(+process.env.OCGD_FROM)+';':''}`:'')+(process.env.LI_EH!==undefined?` state.bldLiEnergyHours=${+process.env.LI_EH};`:'')+(process.env.ADEQ_BASIS!==undefined?` state.bldAdequacyBasis=${JSON.stringify(process.env.ADEQ_BASIS)};`:'')+(process.env.TURB_CAP!==undefined?` state.bldTurbineCapMW=${+process.env.TURB_CAP};`:'')+(process.env.OCGT_COST!==undefined?` state.bldOcgtCostCase=${JSON.stringify(process.env.OCGT_COST)};`:'')+(process.env.NUC_FORCE!==undefined?` if(!('bldNuclearAdd' in FIXED)) throw new Error('bldNuclearAdd missing'); state.bldNuclearAdd=${JSON.stringify(Object.fromEntries(process.env.NUC_FORCE.split(',').map(q=>{ const [y,mw]=q.split(':'); if(!(+y>2000&&+mw>=0)) throw new Error('NUC_FORCE: '+q); return [y,+mw]; })))};`:'')+(process.env.GAS_PREM!==undefined?` if(!('bldGasFinPremium' in FIXED)) throw new Error('bldGasFinPremium missing'); state.bldGasFinPremium=${+process.env.GAS_PREM};`:'')+(process.env.PHES!==undefined?` state.bldPhesOn=${+process.env.PHES};`:'')+(process.env.PHES_H?` state.bldPhesHours=${+process.env.PHES_H};`:'')+(process.env.PHES_H2?` state.bldPhesHours2=${+process.env.PHES_H2};`:'')+(process.env.GAS_CAPEX?` if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`:'')+(process.env.PHES_CAP?` state.bldPhesCap=${/^\[/.test(process.env.PHES_CAP)?process.env.PHES_CAP:JSON.stringify(process.env.PHES_CAP)}; bldPhesCumCapMW(state.bldPhesCap,2040);`:'')+(process.env.PHES_BASIS?` if(!('bldPhesCostBasis' in FIXED)) throw new Error('bldPhesCostBasis missing'); state.bldPhesCostBasis='${process.env.PHES_BASIS}';`:'')+(process.env.GAS_FUEL_R?` if(!('costCcgt' in state)) throw new Error('costCcgt missing'); state.costCcgt=${+process.env.GAS_FUEL_R};`:'')+(process.env.GAS_FOM_ADD?` if(!('ccgt' in BLD_FOM)) throw new Error('BLD_FOM.ccgt missing'); BLD_FOM.ccgt+=${+process.env.GAS_FOM_ADD}; BLD_FOM.ocgt+=${+process.env.GAS_FOM_ADD};`:''));
@@ -232,6 +243,6 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
    fs.writeFileSync(OUT.replace(/\.json$/,'')+'_lp'+DY+'.json', JSON.stringify({year:DY, periods, lpv})); }
  const peakerExt=Object.fromEntries(Object.entries(cols).filter(([c])=>c.startsWith('le_')).map(([c,v])=>[c.slice(3),Math.round(v.Primal||0)]));   // TODO 14as
  const build=Object.fromEntries(Object.entries(cols).filter(([n])=>/^(b_[a-z]+|eb_batt|rc|cc_[a-z]+)_20\d\d$/.test(n)).map(([n,c])=>[n,c.Primal]));   // exact, for FIX_FROM
- fs.writeFileSync(OUT, JSON.stringify({demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, gas:{case:GAS_CASE, fuelR:GAS_FUEL, fuelRFlat:process.env.GAS_FUEL_R?+process.env.GAS_FUEL_R:null, fomAdd:+(process.env.GAS_FOM_ADD||0)}, disc:+w.eval('BLD_DISC'), liEnergyHours:+w.eval('state.bldLiEnergyHours ?? FIXED.bldLiEnergyHours ?? 12'), adequacyBasis:w.eval('state.bldAdequacyBasis ?? FIXED.bldAdequacyBasis ?? "withCharging"'), nuclearAdd:JSON.parse(w.eval('JSON.stringify(state.bldNuclearAdd||null)')), gasForce:Object.keys(GAS_FORCE).length?GAS_FORCE:null, gasMin:Object.keys(GAS_MIN).length?GAS_MIN:null, liMin:LI_MIN.length?LI_MIN:null, ocgt:JSON.parse(w.eval(`JSON.stringify((()=>{ const S={...FIXED,...state}; return {lng:S.bldOcgtOn|0, diesel:S.bldOcgdOn|0, dieselRateMW:S.bldOcgdRateMW, dieselFrom:S.bldOcgdFromYear, turbineCapMW:S.bldTurbineCapMW, costCase:S.bldOcgtCostCase}; })())`)), gasFinPremium:+(+w.eval('bldAnnuityRate("ccgt")-BLD_DISC')).toFixed(6), liCap:LI_CAP, windCap:WIND_CAP||null, windCapFrom:WIND_CAP?WIND_CAP_FROM:null, liCapFrom:CAP_FROM, gasFloor:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+(S.bldGasFloorOn||0), engine:+(S.ccgtForceLoad||0), pct:S.ccgtForceLoadPct, mw:S.ccgtForceLoadMW, from:S.ccgtForceFromYear, to:S.ccgtForceToYear}); })()`)), phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
+ fs.writeFileSync(OUT, JSON.stringify({demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, gas:{case:GAS_CASE, fuelR:GAS_FUEL, fuelRFlat:process.env.GAS_FUEL_R?+process.env.GAS_FUEL_R:null, fomAdd:+(process.env.GAS_FOM_ADD||0)}, disc:+w.eval('BLD_DISC'), liEnergyHours:+w.eval('state.bldLiEnergyHours ?? FIXED.bldLiEnergyHours ?? 12'), adequacyBasis:w.eval('state.bldAdequacyBasis ?? FIXED.bldAdequacyBasis ?? "withCharging"'), nuclearAdd:JSON.parse(w.eval('JSON.stringify(state.bldNuclearAdd||null)')), gasForce:Object.keys(GAS_FORCE).length?GAS_FORCE:null, gasMin:Object.keys(GAS_MIN).length?GAS_MIN:null, gasMinCovers:Object.keys(GAS_MIN).length?(Object.keys(cols).some(c=>c.startsWith('b_ocgt_'))?'ccgt+ocgt':'ccgt'):null, liMin:LI_MIN.length?LI_MIN:null, ocgt:JSON.parse(w.eval(`JSON.stringify((()=>{ const S={...FIXED,...state}; return {lng:S.bldOcgtOn|0, diesel:S.bldOcgdOn|0, dieselRateMW:S.bldOcgdRateMW, dieselFrom:S.bldOcgdFromYear, turbineCapMW:S.bldTurbineCapMW, costCase:S.bldOcgtCostCase}; })())`)), gasFinPremium:+(+w.eval('bldAnnuityRate("ccgt")-BLD_DISC')).toFixed(6), liCap:LI_CAP, windCap:WIND_CAP||null, windCapFrom:WIND_CAP?WIND_CAP_FROM:null, liCapFrom:CAP_FROM, gasFloor:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+(S.bldGasFloorOn||0), engine:+(S.ccgtForceLoad||0), pct:S.ccgtForceLoadPct, mw:S.ccgtForceLoadMW, from:S.ccgtForceFromYear, to:S.ccgtForceToYear}); })()`)), phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
  console.log('done', out.verdict, ((Date.now()-t0)/1000).toFixed(0)+'s'); process.exit(0);
 })();

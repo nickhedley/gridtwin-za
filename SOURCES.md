@@ -25,7 +25,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Eskom weekly system status | weekly | drift detector only | `validate_capacity.js` |
 | NERSA renewable energy monitoring report | half-yearly | 2025, issue 27, March 2026 | curtailment: R402m deemed energy to 67 plants, low demand at night, about 1.0-1.6% of 17,808 GWh (no GWh published; derived from tariffs). Sets the 1.3% stopgap. H1 2024 was 19.9 GWh, 0.2% |
 | NTCSA Weekly System Status Report, "Estimated Rooftop PV" monthly rows | weekly | 2026 w3 and w16; the 2025 rows agree in both | Backcast 2025 `rooftopMW` 6,532: the 2025 annual mean of the twelve monthly rows, 6,830.2, less 298.3 MW of wheeled solar the preset already carries in `pvUtilityMW` (2,600 less ESK19679's 2025 mean of 2,301.7). Basis: annual mean, calendar 2025 |
-| Eskom hourly dataset ESK19679 | on request | Apr 2022 - Aug 2026, 38,736 h | curtailment estimate. Separates Wind, PV, CSP, Other RE with installed capacity per technology. Wind installed peaks at 4,143 MW, matching the REIPPPP-only fleet - it EXCLUDES wheeled plant |
+| Eskom hourly dataset ESK19679 | on request | Apr 2022 - Aug 2026, 38,736 h | profiles.json (2025 hourly demand, wind_pu, solar_pu, csp_pu: build_demand_2026.py, rebuild_national_profiles.py), wind bias correction (bias_correct_wind.py), the coal availability trace (row below), the imports constant in nodal_engine.js, night thermal and pumping comparisons, and the validators (validate_weather, validate_benchmarks). No curtailment estimate has been made from it (corrected 12 Oct 2026, 14bw; the row said it fed one): the 2025 curtailment benchmark comes from NERSA's deemed-energy payments. Separates Wind, PV, CSP, Other RE with installed capacity per technology. Wind installed peaks at 4,143 MW, matching the REIPPPP-only fleet - it EXCLUDES wheeled plant |
 | Eskom hourly dataset ESK19243 | on request | calendar 2025 | OCGT seasonality. Superseded for most purposes by ESK19679 |
 | SAPVIA NERSA Registered Plants Dashboard | rolling | Q1 2026/27, as at 24 Aug 2026 | `nersa_registrations.json` — the cumulative series |
 | NERSA media statements | quarterly | Q1 2026/27 | the quarterly figures in the same file — a different source for a different scope |
@@ -574,6 +574,65 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
 - Use: the pre-decided set for TODO 14be step 5 (replacing IRP Table 1's gas by year), run as 'committed procurement'
   against the new central: at least 5 GW of new gas at the 1.2 GW a year cap from 2030 (GAS_MIN), technology not stated
   in the determination, modelled as CCGT (judgement).
+
+## Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)
+
+User decision 12 Oct 2026: Eskom-derived constants stay for now; the open question is the hourly series only. Both
+datasets were obtained on request, all rights reserved. Each constant below is a summary figure (a mean, a ratio or a
+calibrated parameter); its basis is in the comment beside it in the file named.
+
+Constants (kept):
+
+| Value | Where | Basis |
+|---|---|---|
+| coalEAFPct 65 | index.html FIXED | coal-only availability, Jan-Aug 2026 (65.3): fleet availability less nuclear at its output and the other 5,758 MW at 90%; 2023 49.7, 2025 58.4, FY2026 61.4 |
+| IMPORTS_CF 0.88 (read by importsCF) | nodal/nodal_engine.js | International Imports, Jan-Aug 2026 mean 1,012 MW on the 1,150 MW contract |
+| firm exports 745 MW | index.html FIXED | International Exports, mean since March 2026 (monthly means 684-822 MW after Mozal stopped) |
+| nuclearCF 0.66 | index.html FIXED | Koeberg sent-out on 1,880 MW, rolling twelve months to August 2026 (calendar 2022-2025: 0.631, 0.493, 0.472, 0.620) |
+| outageForcedSharePct 61 | index.html FIXED | UCLF / (PCLF + UCLF + OCLF), Jan-Aug 2026 |
+| outagePlannedSeason (12 monthly factors) | index.html FIXED | monthly PCLF over its annual mean, average of 2023-2025 |
+| outageMttrH 480 | index.html FIXED | calibrated to the persistence of 2025 unplanned capability loss (autocorrelation 0.91 at a day, 0.70 at a week) |
+| outageCmPerStationYr 5, outageCmMttrH 36, outageCmUnitShare 0.5 | index.html FIXED | calibrated to 2023-2025: 14 days a year losing over 8% of coal in 24 hours (measured 9, 16, 16), largest 6-hour fall 0.154 of mean (measured 0.136-0.152) |
+| dieselBudgetTWh spread evenly by month | index.html FIXED | 2023 OCGT output flat across the year (a shape choice, not a number) |
+| coal availability conversion, measured pairs | index.html (coal-only function) and validate_findings.js | fleet against coal-only availability 2023, 2025 and 2026 to August, with that year's nuclear factor |
+| '2025, as modelled' preset: coal availability 58.4%, exports 1,705 MW, imports 0.652, hydro 0.339, wind 3,900 and solar 2,600 MW Eskom-visible plus private, 2,301.7 MW 2025 mean Eskom-visible solar (rooftop 6,532 derivation) | index.html presets | calendar 2025 means |
+| weather-year wind scaling 1.0753 | nodal/profiles_regional_multiyear.json (bias_correct_wind.py) | scales the MERRA-2 regional wind so its capacity-weighted national mean matches Eskom-measured 2022-23 |
+| benchmark bands: 2025 imports, peaker seasonality 2.15-8.6, 2025 trade, coal EAF 58% with Koeberg 62% | harness/validate_benchmarks.js, validate_consistency.js, validate_outputs.js | calendar 2025 figures; validate_weather and validate_benchmarks also read ESK19679.csv at run time when it is present |
+
+Hourly series (the open question; terms under review, not CC BY):
+
+- profiles.json: demand and demand_2025 (RSA Contracted Demand less International Exports, calendar 2025, plus
+  rooftop added back; demand scaled 0.9519 to 2026), wind_pu, solar_pu, csp_pu (calendar 2025 output over that hour's
+  installed capacity). Copies: nodal/profiles.json, profiles_rebuilt.json.
+- profiles_OLD_backup.json: an older ESK19243 hourly set.
+- nodal/coal_availability_trace.json: coal-only availability by hour, 2023-2025, each year divided by its mean
+  (outageTraceYear).
+
+## ERA5 reanalysis, Google Cloud copy (ARCO-ERA5): licence and attribution (user, 12 Oct 2026)
+
+Use: the open replacement for profiles.json's wind and solar (user, 12 Oct 2026) and the 14bw curtailment
+back-estimate. User decision 12 Oct 2026: take ERA5 from the Google Cloud copy, not the Copernicus Climate Data Store
+(cds.climate.copernicus.eu is refused here, and the Cloud copy needs no account).
+
+- Data: ERA5 hourly data on single levels, ECMWF for the Copernicus Climate Change Service (C3S), 0.25 deg. Dataset
+  DOI 10.24381/cds.adbb2d47; reference Hersbach, H. et al. (2020), The ERA5 global reanalysis, Q. J. R. Meteorol. Soc.
+  146, 1999-2049, doi:10.1002/qj.3803.
+- Copy used: Google Cloud public dataset gs://gcp-public-data-arco-era5 (ARCO-ERA5, google-research/arco-era5; the
+  copy's code is Apache-2.0, the data stays under the Copernicus licence). Raw daily NetCDF per variable under
+  raw/date-variable-single_level/YYYY/MM/DD/<variable>/surface.nc (NetCDF classic, uncompressed, so a latitude band
+  can be read by byte range). Coverage checked 12 Oct 2026 from the store's metadata: final ERA5 1940-01-01 to
+  2026-06-30, preliminary ERA5T to 2026-10-03, last updated 2026-10-12. (Google's dataset page in translation still
+  says the copy stops in May 2023; the bucket shows otherwise.)
+- Licence: CC BY 4.0. Search extracts (ECMWF forum, "CC-BY licence to replace Licence to use Copernicus Products on
+  02 July 2025"; the page itself is blocked here) state that from 2 July 2025 Copernicus products from the Climate,
+  Atmosphere and Early Warning data stores are under CC BY 4.0 in place of the Licence to use Copernicus Products.
+  Verify on the ECMWF page when it can be read.
+- Attribution wording (Copernicus; the ARCO-ERA5 README repeats it): for unmodified data, "Generated using Copernicus
+  Climate Change Service information [year]"; for modified data, as here (regridded, converted to per-unit output),
+  "Contains modified Copernicus Climate Change Service information [year]"; and "Neither the European Commission nor
+  ECMWF is responsible for any use that may be made of the Copernicus information or data it contains." Name ECMWF as
+  originator, the dataset, the Google Cloud copy as access route, the licence (CC BY 4.0, with a link) and that the
+  data were modified.
 
 ## Gas price cases (TODO 14bo, build 09f, 9 Oct 2026)
 
