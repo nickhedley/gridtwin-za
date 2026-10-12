@@ -1852,6 +1852,30 @@ year; wind 2026-31, 2034 and 2037-39; gas 2030, 2031 and 2039; vanadium 2028-30.
 weather and outage sample per check; the 2 GW and 4 GW columns are on build 2026-10-09d code (emisCcgt 0.37, pumped hydro
 off), so CO2 differs by about 6% on gas from the emissions factor alone.
 
+### Retiring the coal availability trace: without it the 2025 backcast sheds three to four times as much; the trace's monthly means do not bring it back, 12 Oct 2026
+
+User, 12 Oct 2026: retire nodal/coal_availability_trace.json from the public repository (kept locally for
+validation); if the 2025 backcast's diesel burn or shed moves by more than about 10%, add monthly mean availability
+(12 derived constants) to the preset's outage draw. Preset '2025, as modelled', build 2026-10-12e, profiles.json as
+published; harness/backcast_trace.js; draws on the preset seed and on 20 further seeds. Eskom credited: the trace and
+the 12 factors come from Eskom's ESK19679; the analysis is GridTwin ZA's, not Eskom's.
+
+```
+2025 backcast                          diesel GWh            shed GWh
+hourly trace (as published)            2,249                 28.3
+outage draw, preset seed               2,423 (+7.7%)         67.0 (x2.4)
+outage draw, 20 seeds, mean (p10-p90)  1,759 (1,247-2,568)   88.5 (5.6-134)
+draw + 12 monthly factors, preset seed 2,644 (+17.6%)        89.6 (x3.2)
+draw + monthly factors, 20 seeds       2,593 (2,363-2,837)   110 (47-210)
+```
+
+Monthly factors (2025 coal-only availability by month over the year's mean): 0.857, 0.884, 0.910, 0.878, 0.939,
+0.967, 1.036, 1.087, 1.169, 1.076, 1.089, 1.102 (the fleet's recovery through the year, not a seasonal shape). They
+push diesel further from the trace and shed no closer: the difference is in the depth and duration of troughs within
+months, not the monthly level. For reference, Eskom shed 390 GWh in 2025 and burned 3.4 TWh of OCGT diesel (RESULTS,
+the '2025, as modelled' preset note), so every draw sits nearer the outturn than the trace does. Engine option
+outageMonthlyAvail added (off by default; no default run changes; suite 808/812 before and after).
+
 ### profiles.json against an open-data candidate (ERA5 and ESRG): wind matches once anchored, solar and CSP read high, ESRG demand is flatter and peaks in May; on c3's build the demand shape moves cost +0.6% and the late-year shed down, 12 Oct 2026
 
 User, 12 Oct 2026: profiles.json (built from Eskom's ESK19679) against a replacement from openly licensed data, same

@@ -50,6 +50,7 @@ ap.add_argument('--demand-grid-twh', type=float); ap.add_argument('--demand2025-
 ap.add_argument('--out', required=True)
 ap.add_argument('--wind-classes', choices=('one', 'two'), default='two')
 ap.add_argument('--wind-target-cf', type=float)
+ap.add_argument('--solar-target-cf', type=float); ap.add_argument('--csp-target-cf', type=float)
 a = ap.parse_args()
 if os.path.basename(a.out) == 'profiles.json': sys.exit('refusing to write profiles.json')
 HOURS = 8760
@@ -151,6 +152,17 @@ def pv_site(lat, lon, tracking=None):
         out += share * np.clip(dc * ETA_INV, 0, 1.0)
     return out
 solar_pu, solar_mw = fleet('solar', pv_site)
+# LEVEL SCALING (user, 12 Oct 2026): single calibration constants may set the levels (Eskom credited); the hourly
+# shapes stay ERA5's. --solar-target-cf and --csp-target-cf scale output by one factor, capped at nameplate, so the
+# annual capacity factor meets the target (the measured 2025 figures: solar 25.14%, CSP 28.89%).
+def scale_to_cf(pu, target):
+    lo, hi = 0.0, 3.0
+    for _ in range(50):
+        k = 0.5 * (lo + hi); cf = np.minimum(1.0, k * pu).mean()
+        lo, hi = (k, hi) if cf < target else (lo, k)
+    return np.minimum(1.0, k * pu), k
+solar_cf_raw, SOLAR_K = solar_pu.mean(), 1.0
+if a.solar_target_cf: solar_pu, SOLAR_K = scale_to_cf(solar_pu, a.solar_target_cf)
 
 # ---- CSP (approximate) ----
 CSP = [  # name, MW, storage h, type, lat, lon (town-level)
@@ -190,6 +202,8 @@ def csp_plant(mw, store, kind, lat, lon):
     return out
 CSP_FIELD_ETA, CSP_PARASITIC, CSP_AVAIL = 0.80, 0.90, 0.96   # judgement, SAM-like; sent-out = gross x parasitic x availability
 csp_pu = CSP_PARASITIC * CSP_AVAIL * sum(mw * csp_plant(mw, s, k, la, lo) for _, mw, s, k, la, lo in CSP) / sum(c[1] for c in CSP)
+csp_cf_raw, CSP_K = csp_pu.mean(), 1.0
+if a.csp_target_cf: csp_pu, CSP_K = scale_to_cf(csp_pu, a.csp_target_cf)
 
 # ---- demand ----
 html = open(os.path.join(ROOT, 'index.html')).read()
@@ -230,13 +244,13 @@ out = {'meta': {
     'demand_2025_source': 'ESRG IRPDemandREF national_demand 2025, same conversion, grid part %.2f TWh%s; rooftop at %g MW.'
                           % (grid25, ' (rescaled)' if a.demand2025_grid_twh else '', ROOF_25),
     'capacity_mw': {'wind': wind_mw, 'solar': solar_mw, 'csp': sum(c[1] for c in CSP)},
-    'assumptions': {'wind_classes': [{'turbine': n, 'hub_m': h, 'share': sh} for n, h, sh in CLASSES], 'wind_smoothing': 'Staffell-Pfenninger', 'wind_loss': WIND_LOSS, 'wind_speed_scale': round(SPEED_K, 4), 'wind_cf_before_scaling': round(float(wind_cf_raw), 4), 'wind_target_cf': a.wind_target_cf, 'csp_field_eta': CSP_FIELD_ETA, 'csp_parasitic': CSP_PARASITIC, 'csp_availability': CSP_AVAIL,
+    'assumptions': {'wind_classes': [{'turbine': n, 'hub_m': h, 'share': sh} for n, h, sh in CLASSES], 'solar_scale': round(SOLAR_K, 4), 'solar_cf_before_scaling': round(float(solar_cf_raw), 4), 'csp_scale': round(CSP_K, 4), 'csp_cf_before_scaling': round(float(csp_cf_raw), 4), 'wind_smoothing': 'Staffell-Pfenninger', 'wind_loss': WIND_LOSS, 'wind_speed_scale': round(SPEED_K, 4), 'wind_cf_before_scaling': round(float(wind_cf_raw), 4), 'wind_target_cf': a.wind_target_cf, 'csp_field_eta': CSP_FIELD_ETA, 'csp_parasitic': CSP_PARASITIC, 'csp_availability': CSP_AVAIL,
                     'pv_tracking_share': TRACK_SHARE, 'pv_dc_ac': DCAC, 'pv_losses': LOSS, 'pv_inverter_eta': ETA_INV,
                     'csp': 'approximate dispatch model, peak window first'},
     'licence': 'Derived from CC BY 4.0 sources (ERA5, ESRG); attribution as in source.'},
     'demand': demand.tolist(), 'wind_pu': r5(wind_pu), 'solar_pu': r5(solar_pu), 'csp_pu': r5(csp_pu),
     'demand_2025': demand_2025.tolist()}
 json.dump(out, open(a.out, 'w'))
-print('speed scale %.4f (raw wind CF %.2f%%)' % (SPEED_K, 100 * wind_cf_raw))
+print('speed scale %.4f (raw wind CF %.2f%%); solar x%.4f (raw %.2f%%); CSP x%.4f (raw %.2f%%)' % (SPEED_K, 100 * wind_cf_raw, SOLAR_K, 100 * solar_cf_raw, CSP_K, 100 * csp_cf_raw))
 print('wrote %s: wind CF %.2f%%, solar CF %.2f%%, CSP CF %.2f%%, demand %.2f TWh (grid %.2f), demand_2025 %.2f TWh (grid %.2f)'
       % (a.out, 100 * wind_pu.mean(), 100 * solar_pu.mean(), 100 * csp_pu.mean(), demand.sum() / 1e6, grid26, demand_2025.sum() / 1e6, grid25))

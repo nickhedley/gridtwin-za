@@ -5740,6 +5740,10 @@ const FIXED = {
   // Null means the Markov draw. A year in nodal/coal_availability_trace.json makes coal
   // availability follow that year's measured hours instead; see the trace block in simulate.
   outageTraceYear:null, outageSeed:20260816,
+  // Monthly mean availability for the outage draw (user, 12 Oct 2026): null, or 12 factors, each a month's mean coal
+  // availability over the year's mean. Set, the draw's hours are rescaled month by month so each month's mean is
+  // coalEAFPct x its factor, keeping the draw's hour-to-hour variation. For a backcast without an hourly trace.
+  outageMonthlyAvail:null,
   // Common-mode trips: events per station-year, repair hours, and the share of a station's units
   // each event takes. Calibrated 3 Oct 2026 to ESK19679 2023-2025: 14 days a year losing over 8%
   // of the coal fleet in 24 hours (measured 9, 16, 16) and a largest 6-hour fall of 0.154 of mean
@@ -7483,6 +7487,14 @@ function simulate(u, prof, outPath, _soc0){
                         p.outageMttrH, p.outageSeed, p.outagePlannedSeason,
                         p.outageCmPerStationYr, p.outageCmMttrH, p.outageCmUnitShare)
     : null;
+  // MONTHLY MEAN AVAILABILITY (outageMonthlyAvail, 12 Oct 2026): rescale the draw so each month's mean availability is
+  // eafFraction x that month's factor, hour by hour within the month, capped at 1. Off (null) changes nothing.
+  if (unitOutage && Array.isArray(p.outageMonthlyAvail) && p.outageMonthlyAvail.length === 12) {
+    const sum = new Float64Array(12), n = new Float64Array(12);
+    for (let h = 0; h < HOURS; h++) { const m = hourMonth(h); sum[m] += unitOutage[h]; n[m]++; }
+    for (let h = 0; h < HOURS; h++) { const m = hourMonth(h), d = sum[m] / n[m];
+      if (d > 0) unitOutage[h] = Math.max(0, Math.min(1, unitOutage[h] * eafFraction * p.outageMonthlyAvail[m] / d)); }
+  }
   // HISTORICAL AVAILABILITY TRACE, 22 Sep 2026. A synthetic outage draw reproduces the spread
   // of Eskom's availability but not its persistence: real troughs last weeks, which is when
   // load is shed. MISO builds hourly outage shapes from its outage history and AEMO uses
@@ -18579,7 +18591,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-12d';
+const BUILD_STAMP = '2026-10-12e';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
