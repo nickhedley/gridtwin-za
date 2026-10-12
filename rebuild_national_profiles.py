@@ -103,7 +103,7 @@ def main():
                        'REANALYSIS. They describe the same fleet and year but by different '
                        'methods, so they will not agree to 1% - the residual gap is the '
                        'reanalysis bias, measured at about 5% for wind.',
-        'licence': 'CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/',
+        'licence': 'Eskom Holdings SOC Ltd, hourly dataset ESK19679 (obtained on request): terms under review; not CC BY.',
     })
     for k in ('wind_nameplate_est', 'pv_nameplate_est', 'wind_cf_2025', 'pv_cf_2025'):
         p['meta'].pop(k, None)     # these encoded the error; leaving them invites reuse
