@@ -68,9 +68,16 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
    const LPT=fixBuild(fix(lp)), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
    // DUMP_LP=<prefix> (8 Oct 2026, diagnostics): write each LP to <prefix>_pass<n>.lp; DUMP_STOP=<n> exits after the n-th.
    if (process.env.DUMP_LP){ w.__dumpN=(w.__dumpN||0)+1; fs.writeFileSync(process.env.DUMP_LP+'_pass'+w.__dumpN+'.lp', LPT); console.log('dumped LP pass', w.__dumpN, key.slice(0,10)); if (process.env.DUMP_STOP && w.__dumpN>=+process.env.DUMP_STOP) process.exit(0); }
-   if (fs.existsSync(cf)) { last=JSON.parse(fs.readFileSync(cf,'utf8')); console.log('cache hit', key.slice(0,10)); }
-   else { fs.writeFileSync(tmp+'.lp',LPT); await require('util').promisify(cp.execFile)('python3',['highs_native.py',tmp+'.lp',tmp+'.json',String(process.env.TL||900)],{maxBuffer:1<<26}); last=JSON.parse(fs.readFileSync(tmp+'.json','utf8'));
-     if (last.Status==='Optimal'){ fs.mkdirSync(cdir,{recursive:true}); fs.renameSync(tmp+'.json',cf); try{ fs.unlinkSync(tmp+'.lp'); }catch(e){} }
+   // WARM=1 (11 Oct 2026): each pass starts from the previous pass's basis, kept beside its cached solution
+   // (<key>.basis.json); a pass whose predecessor has no saved basis starts cold. Off by default.
+   const WARM=process.env.WARM==='1', cfb=cf.replace(/\.json$/,'.basis.json');
+   if (fs.existsSync(cf)) { last=JSON.parse(fs.readFileSync(cf,'utf8')); console.log('cache hit', key.slice(0,10)); w.__prevBasis=fs.existsSync(cfb)?cfb:null; }
+   else { fs.writeFileSync(tmp+'.lp',LPT);
+     const benv=WARM?{...process.env, HIGHS_BASIS_OUT:tmp+'.basis.json', ...(w.__prevBasis?{HIGHS_BASIS_IN:w.__prevBasis}:{})}:process.env;
+     if (WARM) console.log('warm start from', w.__prevBasis||'none (cold)');
+     await require('util').promisify(cp.execFile)('python3',['highs_native.py',tmp+'.lp',tmp+'.json',String(process.env.TL||900)],{maxBuffer:1<<26, env:benv}); last=JSON.parse(fs.readFileSync(tmp+'.json','utf8'));
+     if (last.Status==='Optimal'){ fs.mkdirSync(cdir,{recursive:true}); fs.renameSync(tmp+'.json',cf); try{ fs.unlinkSync(tmp+'.lp'); }catch(e){}
+       if (WARM && fs.existsSync(tmp+'.basis.json')){ fs.renameSync(tmp+'.basis.json',cfb); w.__prevBasis=cfb; } }
      else { fs.renameSync(tmp+'.lp', tmp+'.fail.lp'); console.log('kept the failed LP for diagnosis:', tmp+'.fail.lp'); } } }   // 7 Oct 2026: a failed solve keeps its LP (IIS)
    else { const highs=await newHighs(); last=highs.solve(fix(lp),{time_limit:+(process.env.TL||900)}); }
    console.log('solved', last.Status, new Date().toISOString()); if (last.Status!=='Optimal') throw new Error('solve not optimal: '+last.Status); return last; };
