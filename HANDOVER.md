@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 19:25 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 19:40 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -46,10 +46,14 @@ penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, run
   (TODO 14cs): dispatch optimiser-long-run.yml on that ref with name, source_run, source_name. For the IRP note, run it
   on c4-target's final run and on each seeded run's final run.
 - Inputs checked 12 Oct (user): combined-cycle capex flat real at 86bfea4 (SOURCES); coal schedule against IRP 2025
-  in TODO 14cr. IRP coal-timing run s_coalirp: BUILT on branch claude/c4-coalirp (fdf0b40; c4-frozen plus the COAL_DATES
-  switch, LP unchanged when off, checked) and started once the set has started, alongside it: ref claude/c4-coalirp,
-  seed_run = c4t's final run, seed_name c4t, settings c4t's plus WIN_FROM=seed/out/pathway_c4t_lp2040.json
-  COAL_DATES=coal_dates_irp2025.json. Dates basis decided by Nick (TODO 14cr; GEM start years, CC BY-NC-SA 4.0). c4's
+  in TODO 14cr. IRP coal-timing run s_coalirp: REBUILT 12 Oct on branch claude/c4-coalirp (66819c2; the
+  first build, a hybrid leaving 14.4 GW in 2040, was held by Nick). The dates now track IRP 2025's total coal path
+  from the plan's text (Figure 3 could not be read here): 8 GW gone by the start of 2030, then 15 GW in 12 equal steps
+  from 2031 to 2042, scaled to 39,692 MW; the four named stations in 2030, then the oldest units first (GEM start
+  years). Coal standing 2030 31,978, 2034 27,018, 2040 19,661 MW (c4 30,296, 24,206, 20,848). Switch off, LP key
+  e0b93ac712 (unchanged); on, d41c0ccb76, coal-capacity right-hand sides only. Back in the launch check-in: started
+  with the set, alongside it, on ref claude/c4-coalirp, seed_run = c4t's final run, seed_name c4t, settings c4t's
+  plus WIN_FROM=seed/out/pathway_c4t_lp2040.json COAL_DATES=coal_dates_irp2025.json (TODO 14cr has the table). c4's
   Tutuka, Kriel and Arnot dates are unsourced PyPSA-RSA dates (SOURCES fleet row).
 
 ## Seeded set (TODO 14co): 12 runs, start in parallel as soon as c4-target's chain finishes
