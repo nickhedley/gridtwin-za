@@ -578,7 +578,15 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
 ## Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)
 
 User decision 12 Oct 2026: Eskom-derived constants stay for now; the open question is the hourly series only. Both
-datasets were obtained on request, all rights reserved. Each constant below is a summary figure (a mean, a ratio or a
+datasets were obtained on request, all rights reserved. Terms checked (user, 12 Oct 2026): they came through the Data
+Portal's five-year request with no licence of their own, so Eskom's website terms and the portal disclaimer apply:
+personal, educational or non-commercial use only; no reproduction, distribution or publication without written
+consent; no automated collection from the website without written consent (clause 2.10). Consent requested. Until
+it is given: ESK files stay local; derived results and single calibration constants (as listed below) may be
+published, with Eskom credited and a note that the analysis is GridTwin ZA's, not Eskom's; no raw or per-unit hourly
+series; no scripted fetches from eskom.co.za beyond one-off checks (the gridtwin-data weekly fetch is disabled).
+The hourly series below are to be replaced in the public repository by open versions, after their effect on c4 is
+reported (history not purged). Each constant below is a summary figure (a mean, a ratio or a
 calibrated parameter); its basis is in the comment beside it in the file named.
 
 Constants (kept):

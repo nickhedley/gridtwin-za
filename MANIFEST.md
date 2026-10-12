@@ -37,6 +37,11 @@ public_data/anu_phes_za_summary.csv  ANU pumped hydro sites by supply area and c
                             harness/ext/anu_summary.py).
 public_data/anu_phes_shortlist_za.csv  the ANU South Africa shortlist, CC BY 4.0 (confirmed 7 Oct 2026);
                             first line is the attribution, skip it when reading.
+build_open_profiles.py      open-data candidate for profiles.json (ESRG demand; ERA5 wind, solar, CSP), same format;
+                            writes only the path it is given, never profiles.json (12 Oct 2026).
+era5_band.py                reads South Africa's band of ERA5 daily fields from the Google Cloud copy by byte range
+                            into a local cache, for build_open_profiles.py and 14bw.
+compare_profiles.py         compares two profiles.json-format files: capacity factors, peaks, diurnal shapes.
 public_data/ember_za.json   Ember's South Africa rows (monthly and yearly bulk files, CC BY 4.0, attribute
                             Ember), with each file's release date; read by validate_benchmarks. Written by
                             fetch_ember.py; re-run it for a new Ember release (12 Oct 2026).

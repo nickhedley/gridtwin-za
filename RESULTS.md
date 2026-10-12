@@ -1852,6 +1852,50 @@ year; wind 2026-31, 2034 and 2037-39; gas 2030, 2031 and 2039; vanadium 2028-30.
 weather and outage sample per check; the 2 GW and 4 GW columns are on build 2026-10-09d code (emisCcgt 0.37, pumped hydro
 off), so CO2 differs by about 6% on gas from the emissions factor alone.
 
+### profiles.json against an open-data candidate (ERA5 and ESRG): wind matches once anchored, solar and CSP read high, ESRG demand is flatter and peaks in May; on c3's build the demand shape moves cost +0.6% and the late-year shed down, 12 Oct 2026
+
+User, 12 Oct 2026: profiles.json (built from Eskom's ESK19679) against a replacement from openly licensed data, same
+format. Eskom data credited: Eskom Holdings SOC Ltd, hourly dataset ESK19679; the comparison and every figure derived
+from it are GridTwin ZA's analysis, not Eskom's. No Eskom hourly series is reproduced here. Builder build_open_profiles.py, ERA5 2025 from the Google Cloud copy (era5_band.py, raw
+daily files read by byte range), ESRG IRPDemandREF hourly; sites profile_sites.json, capacity
+regional_renewable_capacity.json. Candidate: two wind turbine classes (V112-3.075 at 90 m for BW1-3, 43%; N131-3.6 at
+115 m for BW4 onward and private, 57%), ERA5 speeds scaled by 1.285 to a REIPPPP-only public anchor of 35.9%, 60%
+single-axis PV, approximate CSP dispatch. Engine checks: c3's build (pathway_v_half_c1_p1_11b_central.json) with
+pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive, build 2026-10-12d engine, profiles.json swapped in a side folder.
+
+```
+calendar 2025                  profiles.json (Eskom)    open candidate
+wind CF                        35.45%                   35.90% anchored (24.25% raw ERA5)
+  hourly r / daily r           -                        0.885 / 0.934; hours below 2%: 0 against 5
+solar CF                       25.14%                   28.65% (no curtailment or outages modelled)
+CSP CF                         28.89%                   38.43% (approximate model; hourly r 0.856)
+demand 2026, TWh               200.6                    231.4 at ESRG's level, 202.8 shape only
+demand peak                    30.6 GW, 7 Jul 10:00     33.4 GW, 26 May 18:00 (29.2 GW shape only)
+top 100 demand hours           76 in Jun-Jul            51 in May (ESRG's model year, not 2025's weather)
+load factor                    75.0%                    79.0% (flatter); daily-mean r 0.55
+```
+
+Wind anchors (two classes): 29.8% on Ember's year-end 4.33 GW (RMSE against Eskom's hourly series 0.097 per unit),
+33.3% on the mean of Ember's year-ends 3.44 and 4.33 GW (0.081), 35.9% on 11.32 TWh over a REIPPPP-only mean of
+3.44 and 3.763 GW (Engineering News, Jan 2026, citing the IPP Office) (0.079). Ember's 4.33 GW appears to include
+wheeled private plant whose output it does not count. One turbine class against two, before any anchoring: CF 22.5%
+against 24.3%, RMSE 0.154 against 0.138, hours below 2% 20 against 11 (Eskom 5); after anchoring they converge
+(0.082 against 0.081).
+
+```
+c3's build, engine-checked       PV at 8%     CO2 2026-40    worst year, shed / target
+profiles.json                    R2,861bn     1,418 Mt       100% (2040)
+open wind, solar, CSP only       R2,866bn     1,414 Mt       shed within 0.2 GWh of the line above, every year
+open, demand shape at 185.3 TWh  R2,879bn     1,441 Mt       48% (2038)
+open, ESRG level (213.9 TWh)     R3,074bn     1,756 Mt       above target every year from 2030; 66x in 2036
+```
+
+Pathway runs take wind and solar from the weather-year file, so the renewable series move c3 little; the demand
+series is what matters. ESRG's level is 15% above the model's measured base (the same gap noted 9 Oct), so taking it
+would be a change of demand basis, not of data source; the build would have to be re-optimised. Caveats: ESRG's hourly year is a modelled year, not 2025's weather; the rooftop add-back runs
+on each file's own solar shape, so the shape-only case serves 1.2% more energy; the CSP model and the 60% tracker
+share are judgement; the wind anchor is a public annual figure with a REIPPPP capacity from a news report.
+
 ### c3 checks: shed on customer demand, one cost basis, and what the 2026-30 lithium energy is for, 12 Oct 2026
 
 Run: the new central (c3, entry below), build `2026-10-11b`; re-measured 12 Oct with pathcheck.js on build `2026-10-12b`
