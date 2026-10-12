@@ -596,6 +596,7 @@ Constants (kept):
 | dieselBudgetTWh spread evenly by month | index.html FIXED | 2023 OCGT output flat across the year (a shape choice, not a number) |
 | coal availability conversion, measured pairs | index.html (coal-only function) and validate_findings.js | fleet against coal-only availability 2023, 2025 and 2026 to August, with that year's nuclear factor |
 | '2025, as modelled' preset: coal availability 58.4%, exports 1,705 MW, imports 0.652, hydro 0.339, wind 3,900 and solar 2,600 MW Eskom-visible plus private, 2,301.7 MW 2025 mean Eskom-visible solar (rooftop 6,532 derivation) | index.html presets | calendar 2025 means |
+| TAIL_COAL_FACTOR 0.76 | index.html bldBuildLP (every pathway run) | coal on stress-window tail days derated to the worst measured 168-hour window over its annual mean (2024; 2023 0.87, 2025 0.83), read from nodal/coal_availability_trace.json |
 | weather-year wind scaling 1.0753 | nodal/profiles_regional_multiyear.json (bias_correct_wind.py) | scales the MERRA-2 regional wind so its capacity-weighted national mean matches Eskom-measured 2022-23 |
 | benchmark bands: 2025 imports, peaker seasonality 2.15-8.6, 2025 trade, coal EAF 58% with Koeberg 62% | harness/validate_benchmarks.js, validate_consistency.js, validate_outputs.js | calendar 2025 figures; validate_weather and validate_benchmarks also read ESK19679.csv at run time when it is present |
 
