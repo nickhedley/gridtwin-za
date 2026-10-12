@@ -32,7 +32,8 @@ out = {'Status': h.modelStatusToString(h.getModelStatus()),
        'ObjectiveValue': h.getInfo().objective_function_value, 'Columns': cols, 'Rows': rows}
 with open(sys.argv[2], 'w') as f:
     json.dump(out, f)
-if _bout and out['Status'] == 'Optimal':
+# A solve stopped at its time limit also saves its basis, so a later job can resume it (RESUME, 12 Oct 2026).
+if _bout and out['Status'] in ('Optimal', 'Time limit reached'):
     _bs = h.getBasis()
     with open(_bout, 'w') as f:
         json.dump({'cols': {n: int(x) for n, x in zip(lp.col_names_, _bs.col_status)},

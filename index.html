@@ -5582,6 +5582,14 @@ const FIXED = {
   // plus reserve shortfall (calendar days at their weights, windows at that probability) to targetFrac x 0.002% of
   // demand, with a slack priced at VoLL x 365 per expected MWh so capped years stay solvable.
   bldStressTarget:0,
+  // LITHIUM ENERGY BUILT PER YEAR (user, 12 Oct 2026, central c4): at most bldLiEnergyHours x the year's lithium power
+  // cap (eb_batt bound). 4 hours, matching South African procurement so far (1,744 MW / 6,976 MWh); 8 hours is the first
+  // sensitivity. Was 12 hours with no recorded source (36 GWh a year at 3 GW, about 1.8 times Australia's record year).
+  bldLiEnergyHours:4,
+  // ADEQUACY LOOP ON CUSTOMER DEMAND (user, 12 Oct 2026, central c4): the loop's standard is a share of demand without
+  // storage charging (loadS less pumped-storage and battery charging), as the engine check (pathcheck.js) from 12 Oct.
+  // 'withCharging' restores the basis of every run before c4.
+  bldAdequacyBasis:'customer',
   // HOURLY STATE OF CHARGE IN THE BUILD LP (user decision, 8 Oct 2026; TODO 14bl). The LP kept one energy balance per
   // store per day, so energy charged late in a day could serve its earlier hours: on the 07s central build the engine
   // shed 11.7 GWh in a 2040 window the LP served in full this way. 1: stress days carry an hourly level for every store,
@@ -9193,7 +9201,9 @@ const BLD_COST = {
   // It makes no difference to what gets built. At the deliverable build pace the LP builds no
   // gas anywhere between USD 727/kW and this figure, because a 4-hour battery is cheaper per
   // kilowatt of firm capacity and earns arbitrage on top. See RESULTS.md.
-  ccgt:    { c2026: 34965, decl: -0.0200 },
+  // Flat in real terms from 12 Oct 2026 (user, central c4): the 2% a year real rise (decl -0.02) had no quoted source;
+  // GridLab's study gives cost levels, not a rate, and could not be read here to check. OCGT follows (bldCostEntry).
+  ccgt:    { c2026: 34965, decl: 0 },
   // Open-cycle gas (TODO 14bo item 5): new OCGT on LNG (ocgt) and on diesel (ocgd) take one capex, chosen by
   // bldOcgtCostCase in bldCostEntry. Low ('irp'): IRP 2025 workbook R12,981/kW (9F.05, January 2024 rands) x SA CPI to
   // January 2026, flat real. Central: derived from ccgt in bldCostEntry (user decision 12 Oct 2026).
@@ -10551,7 +10561,7 @@ function bldBuildLP(opts){
   if (OFF_ON) for (const y of Y) L.push(' 0 <= b_off_'+y+' <= 5000');
   if (PHES_ON) for (const y of Y) L.push(' 0 <= b_phes_'+y+' <= ' + PHES_RATE(y));
   if (PHES2_ON) for (const y of Y) L.push(' 0 <= b_phel_'+y+' <= ' + PHES_RATE(y));
-  for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + (12 * RATE.batt).toFixed(1));
+  for (const y of Y) L.push(' 0 <= eb_batt_'+y+' <= ' + ((S.bldLiEnergyHours ?? FIXED.bldLiEnergyHours) * RATE.batt).toFixed(1));   // bldLiEnergyHours x the power cap
   if (PS_ON) for (const y of Y) L.push(' 0 <= b_ps_'+y+' <= 0');
   if (RC_ON) for (const y of Y) L.push(' 0 <= rc_'+y+' <= ' + bldCoalMW(y).toFixed(1));
   for (const p of LE_P) L.push(' 0 <= le_' + p.id + ' <= ' + p.mw);
@@ -10681,7 +10691,9 @@ function bldAdequacyTest(st, draws){
     const stk = K > 1 ? { ...st, outageSeed: 20260816 + k * 104729 + y * 7919 } : st;
     const r = simulate(stk, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
     const gwh = (r.E.unserved || 0) / 1000;
-    let served = 0; for (let h = 0; h < r.loadS.length; h++) served += r.loadS[h];
+    // The standard's demand: customer demand without storage charging by default (bldAdequacyBasis, 12 Oct 2026).
+    const _cust = (st.bldAdequacyBasis ?? FIXED.bldAdequacyBasis) !== 'withCharging';
+    let served = 0; for (let h = 0; h < r.loadS.length; h++) served += r.loadS[h] - (_cust ? (r.chargePsMW[h] || 0) + (r.chargeBattMW[h] || 0) : 0);
     const row = { year: y, k, gwh, seed: stk.outageSeed };
     if (gwh > 0.01){ row.start = bldWorstWindow(r); row.coalFrac = r.coalAvailFrac; }
     rows.push(row);
@@ -18563,7 +18575,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-12b';
+const BUILD_STAMP = '2026-10-12c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
