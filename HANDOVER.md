@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 16:30 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 17:30 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -21,12 +21,13 @@ GitHub. The engine (index.html and harness) is not changed until the comparison 
   solve cache and basis passed on as artifact `state-<name>`, the next job started automatically, every job pinned
   to the chain's first commit (86bfea4). The last job runs pathcheck.js (artifact `results-<name>`). GitHub's passes
   reproduce the local LP keys (pass 2 a9e5c71dc2, pass 3 0d4fdcdd1e).
-- Status at 16:30 UTC, both running, nothing finished:
+- Status at 17:30 UTC, both running, nothing finished:
 
 ```
 c4-target (name c4t)   run 38255689961 pass 1, 5.4 min | 38256479696 pass 2, 25 min | 38259914914 pass 3, ~78 min
-                       | 38269533084 pass 4, started 15:20 UTC
-penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, running since 13:45 UTC
+                       | 38269533084 pass 4, ~112 min | 38282680097 pass 5, started 17:12 UTC
+penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, running since 13:45 UTC (job deadline
+                       about 19:25 UTC: an unfinished solve keeps its basis and continues in the next job)
 ```
 
 - To check: list the runs of optimiser-long-run.yml (GitHub MCP, actions_list). The list does not show run names;
@@ -35,8 +36,8 @@ penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, run
 - Artifacts cannot be downloaded into the container (the blob host is blocked, and network settings are not to be
   changed until c4 is done), so seeded runs fetch c4-target's state themselves (inputs seed_run and seed_name, on
   branch claude/c4-frozen; tested with run 38257189156).
-- Dated estimates (SAST): c4-target 12 Oct 20:00 to 13 Oct 08:00; penalty c4 13 Oct morning; the seeded set about
-  4-6 hours after c4-target. Refine from the job times above.
+- Dated estimates (SAST): c4-target 12 Oct 22:00 to 13 Oct 08:00 (pass times are rising: 5, 25, 78, 112 min); penalty
+  c4 13 Oct morning to midday; the seeded set about 4-6 hours after c4-target. Refine from the job times above.
 
 ## Seeded set (TODO 14co): 12 runs, start in parallel as soon as c4-target's chain finishes
 
