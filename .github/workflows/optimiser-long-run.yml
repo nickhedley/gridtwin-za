@@ -73,7 +73,7 @@ jobs:
             case "${kv#*=}" in /*|*..*) echo "files must be inside the repository: $kv"; exit 1;; esac
           done
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
 
@@ -152,7 +152,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
       - uses: actions/setup-node@v4
