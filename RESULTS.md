@@ -1852,6 +1852,32 @@ year; wind 2026-31, 2034 and 2037-39; gas 2030, 2031 and 2039; vanadium 2028-30.
 weather and outage sample per check; the 2 GW and 4 GW columns are on build 2026-10-09d code (emisCcgt 0.37, pumped hydro
 off), so CO2 differs by about 6% on gas from the emissions factor alone.
 
+### c3 checks: shed on customer demand, one cost basis, and what the 2026-30 lithium energy is for, 12 Oct 2026
+
+Run: the new central (c3, entry below), build `2026-10-11b`; re-measured 12 Oct with pathcheck.js on build `2026-10-12b`
+(same engine results; COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive).
+
+Shed standard on customer demand (user decision 12 Oct: the target is 0.002% of demand without storage charging, half
+standard, from the next runs; old runs not re-run, any year above 90% flagged marginal). c3 on that basis: 2040 2.61
+against 2.60 GWh (100%, marginal: at the line, within sampling error), 2039 2.40 against 2.54 (95%, marginal), 2038 65%,
+every other year at most 36%. The customer-demand target is 4% (2026) to 10% (2040) below the old one.
+
+One cost basis (user, 12 Oct): R bn, 2026 present value at 8% real, engine-checked, for every run whatever rate it was
+optimised at. c3 R2,867bn against the 2 GW central R2,864bn (+R3bn, +0.1%); the 4 GW run R2,918bn; the 6% run R2,726bn.
+The undiscounted sums quoted earlier (R4,875bn against R4,863bn) are the same engine figures summed without discounting.
+The optimiser's own build and running cost (R2,100bn against R2,078bn, +1.1%) is a different measure: each year's build
+at its own vintage cost and dispatch on 12 representative days, against the engine's midpoint-vintage capital and full
+dispatch of 12 weather years; it is reported only beside its stress-window term, as a diagnostic.
+
+Lithium energy (user question 12 Oct; no change made). The yearly energy cap is 12 hours of the power cap (eb_batt <=
+12 x lithium MW a year: 36 GWh a year at 3 GW, 24 GWh at 2 GW), with no recorded source; it matches the 12-hour duration
+of the high-renewables presets. c3 builds energy at the cap in 2026-31 (156 GWh on 13 GW by 2030, 192 GWh by 2032) and
+none after. In the final LP, 97% of the value of energy built in 2026, 2028 or 2030 comes from the stress windows of
+2030 and 2031 (the coal retirements of 2030, before gas can arrive at 1.2 GW a year), none from representative-day
+arbitrage; its value is about twice its cost, so the cap binds (eb_value.py). In the engine (12 runs a year), new
+lithium does 89 full cycles a year in 2027, 30 in 2030, 24 in 2032, 36 in 2035 and 90 in 2040; 93-100% of its discharge
+falls in hours with no diesel, gas or shed, that is, time-shifting against coal.
+
 ### Why the 4 GW lithium run cost R101bn more: the cap, not the stress windows; with the looser cap the optimiser swaps iron-air and vanadium for lithium, which the engine finds dearer and less reliable, 12 Oct 2026
 
 TODO 27 (user, 11 Oct: before using the 4 GW result, explain the R101bn; if it is the different stress windows, compare
