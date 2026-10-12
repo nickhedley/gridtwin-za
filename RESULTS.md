@@ -1836,7 +1836,7 @@ pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive.
 
 ```
 engine-checked, 2026-2040        09c windows (9)                  4 GW run's windows (12)
-lithium 2 GW a year              R4,863bn; worst year 34%         R4,840bn; worst year 23%
+lithium 2 GW a year              R4,863bn; worst year 34%         R4,840bn; worst year 24%
                                  iron-air 0.75 GW, gas 4.9 GW     iron-air 0.67 GW, gas 4.3 GW
 lithium 4 GW a year              R4,970bn; 2039-40 above target   R4,964bn (after two more passes)
                                  (3.74 and 4.00 against 2.84,     iron-air 0, gas 3.75 GW
