@@ -27,6 +27,28 @@ const { JSDOM } = require('jsdom');
 
 const ROOT = process.argv[2] || '.';
 let pass = 0, fail = 0;
+
+// EMBER FIGURES FROM EMBER'S OWN FILES (user, 12 Oct 2026). Ember's South Africa figures are read from
+// public_data/ember_za.json, which fetch_ember.py writes from Ember's public bulk data files (CC BY 4.0, attribute
+// Ember), instead of being typed in. Calendar-year and twelve-month sums use the MONTHLY file, the Eskom-metered
+// system; Ember's yearly file adds generation outside it (2025 coal 197.5 TWh against 185.6 in the monthly file).
+// Re-run fetch_ember.py for a new release; the release date prints with the results.
+const EMBER = JSON.parse(fs.readFileSync(path.join(ROOT, 'public_data', 'ember_za.json'), 'utf8'));
+const EMBER_REL = `Ember monthly data, release of ${EMBER.meta.files.monthly.released}`;
+const AUX = { coal: 0.077, nuclear: 0.05 };          // station auxiliary, gross to sent-out (see BASIS above)
+function emberSum(variable, unit, fromYM, toYM) {
+  const r = EMBER.monthly.filter(x => x[3] === variable && x[4] === unit && x[0].slice(0, 7) >= fromYM && x[0].slice(0, 7) <= toYM);
+  const months = (+toYM.slice(0, 4) - +fromYM.slice(0, 4)) * 12 + (+toYM.slice(5) - +fromYM.slice(5)) + 1;
+  if (r.length !== months) throw new Error(`ember_za.json: ${variable} ${unit} has ${r.length} of ${months} months ${fromYM} to ${toYM}`);
+  return r.reduce((t, x) => t + x[5], 0);
+}
+const EMBER_LAST = EMBER.monthly.reduce((m, x) => x[0] > m ? x[0] : m, '').slice(0, 7);     // latest month in the file
+const EMBER_12_FROM = (() => { const [y, m] = EMBER_LAST.split('-').map(Number); const k = y * 12 + m - 1 - 11;
+  return `${Math.floor(k / 12)}-${String(k % 12 + 1).padStart(2, '0')}`; })();
+const EMBER_COAL_25 = emberSum('Coal', 'TWh', '2025-01', '2025-12');
+const EMBER_NUC_25 = emberSum('Nuclear', 'TWh', '2025-01', '2025-12');
+const EMBER_WIND_12 = emberSum('Wind', 'TWh', EMBER_12_FROM, EMBER_LAST);
+const EMBER_CO2_25 = emberSum('Total emissions', 'mtCO2', '2025-01', '2025-12');
 const rows = [], failures = [], notes = [];
 
 // ── the benchmark set ───────────────────────────────────────────────────────
@@ -38,14 +60,14 @@ const rows = [], failures = [], notes = [];
 // reason is how a real error hides.
 const BENCH = {
   coal: {
-    value: 164.0, tolPct: 6, unit: 'TWh',
-    source: 'Ember 2025 gross 177.7 TWh, converted at 7.7% station auxiliary',
+    value: +(EMBER_COAL_25 * (1 - AUX.coal)).toFixed(2), tolPct: 6, unit: 'TWh',
+    source: `${EMBER_REL}: 2025 gross ${EMBER_COAL_25.toFixed(1)} TWh, converted at ${AUX.coal * 100}% station auxiliary`,
     why: 'The model is sent-out and Ember is gross. Converting per carrier closed what looked ' +
          'like an 11% shortfall on 16 Aug 2026. Residual is dispatch timing, not level.',
   },
   nuclear: {
-    value: 10.95, tolPct: 8, unit: 'TWh',
-    source: 'Ember 2025 gross 11.5 TWh at 5% auxiliary',
+    value: +(EMBER_NUC_25 * (1 - AUX.nuclear)).toFixed(2), tolPct: 8, unit: 'TWh',
+    source: `${EMBER_REL}: 2025 gross ${EMBER_NUC_25.toFixed(2)} TWh at ${AUX.nuclear * 100}% auxiliary`,
     why: 'Koeberg output swings with refuelling outages, so a single year is a poor benchmark. ' +
          'CF was corrected 0.90 -> 0.75 -> 0.70 on 16 Aug once the sent-out basis was applied.',
   },
@@ -62,8 +84,8 @@ const BENCH = {
     // Widening a band to get green is what rule 2 forbids, so the tight check moved rather
     // than disappeared: see 'wind capacity factor reconciles with Eskom' below, which
     // compares CF against CF and reads 1.5%.
-    value: 11.60, tolPct: 25, unit: 'TWh',
-    source: 'Ember 12 months to May 2026, NTCSA-metered fleet',
+    value: +EMBER_WIND_12.toFixed(2), tolPct: 25, unit: 'TWh',
+    source: `${EMBER_REL}: 12 months ${EMBER_12_FROM} to ${EMBER_LAST}, NTCSA-metered fleet (was 11.60, 12 months to May 2026)`,
     why: 'The model INCLUDES privately wheeled wind that Ember does not count, and runs a ' +
          'different weather year, so it should read ABOVE this by roughly 20%. A figure ' +
          'BELOW the benchmark would be the real alarm. The FLEET-NORMALISED check is the ' +
@@ -71,7 +93,7 @@ const BENCH = {
   },
   solarUtility: {
     value: 6.5, tolPct: 20, unit: 'TWh',
-    source: 'Ember utility-scale PV, 12 months to May 2026',
+    source: 'Ember utility-scale PV, 12 months to May 2026 (Ember website; the bulk files carry solar only in total, rooftop included)',
     why: 'Wide band: the utility/rooftop split differs between sources, and wheeled plant sits ' +
          'on the model side only.',
   },
@@ -97,8 +119,8 @@ const BENCH = {
          'a newer Eskom energy balance has been published before touching the constant.',
   },
   co2: {
-    value: 175, tolPct: 12, unit: 'Mt',
-    source: 'Ember 2025 power-sector CO2 for South Africa',
+    value: +EMBER_CO2_25.toFixed(1), tolPct: 12, unit: 'Mt',
+    source: `${EMBER_REL}: 2025 power-sector CO2, monthly sum (was 175; Ember's yearly file gives 169.7 Mt for 2025)`,
     // CROSS-CHECKED 1 Sep 2026 against Eskom's own coal burn, after EDMSA Scenario A put
     // 2025 emissions at 195 Mt against our 174.5. Eskom FY2026 burnt 96.5 Mt of coal for
     // about 165 TWh. The implied emission factor depends entirely on calorific value:
@@ -113,7 +135,9 @@ const BENCH = {
     //
     // THREE NUMBERS, THREE BOUNDARIES. Anyone challenging this should be asked which they
     // mean before the constant is touched. Ember's power-sector CO2 is the right
-    // comparator for a power-system model and we sit within 0.3% of it.
+    // comparator for a power-system model and we sat within 0.3% of the 175 Mt typed in then. 12 Oct 2026: from
+    // Ember's monthly file (release 7 Jul 2026) 2025 sums to 160.3 Mt and the model reads about 8.5% above it; the
+    // yearly file says 169.7. Which Ember series is the comparator is an open question, not settled here.
     why: 'Follows the coal reconciliation, plus the part-load heat-rate penalty added 17 Aug ' +
          'which raises emissions per MWh by ~1.5% at default.',
   },
@@ -347,6 +371,7 @@ const check = (name, ok, detail) => {
   if (!M || M.err) { console.log('FATAL:', M ? M.err : 'no result'); process.exit(1); }
 
   console.log('\nPER-CARRIER RECONCILIATION, sent-out basis');
+  console.log(`  Ember figures: ${EMBER_REL} (yearly ${EMBER.meta.files.yearly.released}), public_data/ember_za.json, CC BY 4.0, Ember`);
   console.log('  carrier          model    bench     gap    band');
   for (const [k, b] of Object.entries(BENCH)) {
     const v = M[k];

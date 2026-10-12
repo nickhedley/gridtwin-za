@@ -37,6 +37,9 @@ public_data/anu_phes_za_summary.csv  ANU pumped hydro sites by supply area and c
                             harness/ext/anu_summary.py).
 public_data/anu_phes_shortlist_za.csv  the ANU South Africa shortlist, CC BY 4.0 (confirmed 7 Oct 2026);
                             first line is the attribution, skip it when reading.
+public_data/ember_za.json   Ember's South Africa rows (monthly and yearly bulk files, CC BY 4.0, attribute
+                            Ember), with each file's release date; read by validate_benchmarks. Written by
+                            fetch_ember.py; re-run it for a new Ember release (12 Oct 2026).
 build_capacity.py           the generator. Runs from the root and reads nodal/...
                             relative to cwd. Has step 1b (the supply-area split) and
                             the eskom bucket.

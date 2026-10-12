@@ -608,6 +608,20 @@ Hourly series (the open question; terms under review, not CC BY):
 - nodal/coal_availability_trace.json: coal-only availability by hour, 2023-2025, each year divided by its mean
   (outageTraceYear).
 
+## Ember bulk data for validate_benchmarks (user, 12 Oct 2026)
+
+Ember, Electricity Data Explorer, bulk data files, CC BY 4.0: attribute Ember. South Africa's rows are in
+public_data/ember_za.json (fetch_ember.py), with each file's URL, release date (Last-Modified) and SHA-256. In use:
+monthly file released 2026-07-07 (latest month March 2026), yearly file released 2026-06-23. validate_benchmarks
+takes coal, nuclear, wind and power-sector CO2 from the monthly file and prints the release date. The Ember API was
+tried first and dropped: the proxy answered 'injection failed ("Ember")', HTTP 502, with the key as a network secret
+(body parameter api_key), and again with api_key=placeholder in the URL.
+
+Figures that moved with the switch (2025 unless stated): coal gross 185.6 TWh (was 177.7, not reproducible from
+the current files; the yearly file says 197.5, which includes generation outside Eskom's metering), nuclear 10.21 TWh
+(was 11.5), wind 11.64 TWh for the 12 months to March 2026 (was 11.60 to May 2026), CO2 160.3 Mt (was 175; yearly
+169.7). Utility-scale solar stays at 6.5 TWh from Ember's website: the bulk files carry solar only in total.
+
 ## ERA5 reanalysis, Google Cloud copy (ARCO-ERA5): licence and attribution (user, 12 Oct 2026)
 
 Use: the open replacement for profiles.json's wind and solar (user, 12 Oct 2026) and the 14bw curtailment
