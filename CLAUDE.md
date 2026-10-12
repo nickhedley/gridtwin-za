@@ -33,7 +33,10 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected with ESK19679.csv present: 805/806, the one failure EDMSA Scenario A CO2 2035; eng5 6/6.
+Expected (12 Oct 2026): 808/812 with ESK19679.csv present, 804/809 without it; eng5 6/6. The four known failures:
+EDMSA Scenario A CO2 2035 (validate_external); wind capture at 110 GW, iron-air in July, and the preset curtailment
+band (validate_findings). The last three wait on #22. Without the file, validate_weather adds a fifth failure (the
+missing Eskom reference) and validate_benchmarks skips the fleet-normalised wind check.
 
 ## Rules that matter most (RULES.md has the full set)
 
