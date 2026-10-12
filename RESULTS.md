@@ -1825,6 +1825,33 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### New central, lithium 3 GW a year from 2028: cost within R12bn of the 2 GW central, CO2 42 Mt lower, gas burnt a quarter; iron-air not built, 12 Oct 2026
+
+User decision 11 Oct: central lithium pace 3 GW a year from 2028 (2 GW in 2026-27; energy 36,000 MWh a year), 8% real.
+Build `2026-10-11b` (gtza-11b, index.html carrying only the output-only gridServed patch), pathway_perfail.js SOLVER=native
+TL=72000 COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 (pumped hydro offered at the central cap, 14 h; gas R2,003/MWh;
+emisCcgt 0.348). Converged adequate in 4 passes, 23 h (pass solves 0.3, 5.4, 8.5 and 8.9 h). Engine check pathcheck.js
+COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive: every year within target, the closest 2040 at 2.61 of 2.91 GWh (90%). Outputs
+harness/pathway_v_half_c1_p1_11b_central.json and harness/pathcheck_v_half_c1_p1_11b_central.json.
+
+```
+                       09c central, 2 GW a year     new central, 3 GW a year     4 GW a year (09c settings)
+new gas 2030/35/40     1.2 / 4.9 / 4.9 GW           1.2 / 3.4 / 5.6 GW           1.2 / 3.0 / 3.75 GW
+lithium 2040           26.2 GW, 5.8 h               30.8 GW, 6.2 h               33.1 GW, 7.3 h
+iron-air 2040          0.75 GW                      0                            0
+wind / solar 2040      21.5 / 61.1 GW               28.8 / 62.8 GW               26.5 / 62.8 GW
+gas burnt 2026-40      16.6 TWh                     4.7 TWh                      5.3 TWh
+system cost 2026-40    R4,863bn                     R4,875bn (+R12bn, +0.25%)    R4,964bn (+R101bn)
+average, R/MWh served  1,393                        1,397                        1,424
+CO2 2026-40            1,460 Mt                     1,418 Mt                     1,453 Mt
+worst year shed        34% of target (2039)         90% (2040)                   95% (2038)
+```
+
+Caps binding (final LP): lithium power 2026-31 and 2037-40 (10 of 15 years), lithium energy 2026-31; utility solar every
+year; wind 2026-31, 2034 and 2037-39; gas 2030, 2031 and 2039; vanadium 2028-30. Pumped hydro not built. Caveat: one
+weather and outage sample per check; the 2 GW and 4 GW columns are on build 2026-10-09d code (emisCcgt 0.37, pumped hydro
+off), so CO2 differs by about 6% on gas from the emissions factor alone.
+
 ### Why the 4 GW lithium run cost R101bn more: the cap, not the stress windows; with the looser cap the optimiser swaps iron-air and vanadium for lithium, which the engine finds dearer and less reliable, 12 Oct 2026
 
 TODO 27 (user, 11 Oct: before using the 4 GW result, explain the R101bn; if it is the different stress windows, compare
