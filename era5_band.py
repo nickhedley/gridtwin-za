@@ -75,21 +75,32 @@ def fetch_day(var, day, out_dir):
     if os.path.exists(dst): return 'skip'
     url = '%s/%04d/%02d/%02d/%s/surface.nc' % (BASE, day.year, day.month, day.day, var)
     h = header(url)
-    data = [k for k, v in h.vars.items() if len(v['dims']) == 3]
+    data = [k for k, v in h.vars.items() if len(v['dims']) >= 3]
     if len(data) != 1: raise ValueError('%s: data variables %s' % (url, data))
     v = h.vars[data[0]]
-    (tn, nt), (yn, ny), (xn, nx) = v['dims']
+    dims, ne = v['dims'], 1
+    # From 2026 some files hold two ERA5 versions side by side (time, expver, lat, lon): expver 1 (final) and 5
+    # (preliminary, ERA5T). Each hour is filled in one of them; the other is all fill values. Merged below.
+    if len(dims) == 4:
+        if dims[1][0] != 'expver': raise ValueError('unexpected dimensions %s: %s' % (dims, url))
+        ne, dims = dims[1][1], [dims[0], dims[2], dims[3]]
+    (tn, nt), (yn, ny), (xn, nx) = dims
     if any(d[1] == 0 for d in v['dims']): raise ValueError('record dimension not handled: %s' % url)
     lat = np.frombuffer(get(url, h.vars[yn]['begin'], h.vars[yn]['begin'] + h.vars[yn]['vsize'] - 1)[:ny * SZ[h.vars[yn]['type']]], '>' + FMT[h.vars[yn]['type']]).astype(float)
     lon = np.frombuffer(get(url, h.vars[xn]['begin'], h.vars[xn]['begin'] + h.vars[xn]['vsize'] - 1)[:nx * SZ[h.vars[xn]['type']]], '>' + FMT[h.vars[xn]['type']]).astype(float)
     iy = np.where((lat <= LAT_N) & (lat >= LAT_S))[0]; ix = np.where((lon >= LON_W) & (lon <= LON_E))[0]
     y0, y1 = iy.min(), iy.max(); es = SZ[v['type']]
-    def hour(t):
-        a = v['begin'] + ((t * ny + y0) * nx) * es
-        return np.frombuffer(get(url, a, a + (y1 - y0 + 1) * nx * es - 1), '>' + FMT[v['type']]).reshape(y1 - y0 + 1, nx)[:, ix.min():ix.max() + 1]
-    arr = np.stack([hour(t) for t in range(nt)]).astype(np.float64)
     at = v['atts']
     fill = [at[k][0] for k in ('_FillValue', 'missing_value') if k in at]
+    def hour(t):
+        out = None
+        for k in range(ne):
+            a = v['begin'] + (((t * ne + k) * ny + y0) * nx) * es
+            r = np.frombuffer(get(url, a, a + (y1 - y0 + 1) * nx * es - 1), '>' + FMT[v['type']]).reshape(y1 - y0 + 1, nx)[:, ix.min():ix.max() + 1]
+            if out is None: out = r.copy()
+            elif fill: m = np.isin(out, fill); out[m] = r[m]
+        return out
+    arr = np.stack([hour(t) for t in range(nt)]).astype(np.float64)
     bad = np.isin(arr, fill) if fill else np.zeros(arr.shape, bool)
     arr = arr * (at['scale_factor'][0] if 'scale_factor' in at else 1) + (at['add_offset'][0] if 'add_offset' in at else 0)
     arr[bad] = np.nan
@@ -100,7 +111,7 @@ def fetch_day(var, day, out_dir):
     gj = json.load(open(g))
     if gj['lat'] != lat[y0:y1 + 1].tolist() or gj['lon'] != lon[ix.min():ix.max() + 1].tolist(): raise ValueError('grid changed: ' + url)
     np.save(dst + '.tmp.npy', arr.astype(np.float32)); os.replace(dst + '.tmp.npy', dst)
-    return '%s %s %s nt=%d units=%s' % (var, day, data[0], nt, at.get('units', '?'))
+    return '%s %s %s nt=%d units=%s%s' % (var, day, data[0], nt, at.get('units', '?'), ' expver merged' if ne > 1 else '')
 
 if __name__ == '__main__':
     out_dir, d0, d1, vars_ = sys.argv[1], datetime.date.fromisoformat(sys.argv[2]), datetime.date.fromisoformat(sys.argv[3]), sys.argv[4:]
