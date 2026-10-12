@@ -1,0 +1,186 @@
+name: Optimiser long run
+
+# Runs one optimiser pathway (harness/pathway/pathway_perfail.js) on GitHub's runners, one pass per job, for runs
+# longer than GitHub's 6-hour job limit (user, 12 Oct 2026, 14bw item 6b). Each job stops before the limit, keeps its
+# state as an artifact (the solve cache, and the basis of a solve cut off at the deadline) and starts the next job as
+# a new run of this workflow, which picks that state up (RESUME=1, JOB_DEADLINE, JOB_PASSES in the pathway script).
+# When the pathway finishes, a last job runs the engine check (pathcheck.js) and keeps both results as an artifact.
+#
+# Start it from the Actions tab: "Optimiser long run", "Run workflow", with a run name and the settings. GitHub only
+# offers this once the file is on the default branch. Choose a branch whose pathway script can resume (RESUME and
+# JOB_DEADLINE: claude/build-costs until #22 merges); the first step stops at once on a branch that cannot.
+# No ESK files: the run reads only files committed to this repository and downloads no Eskom data. A WIN_FROM or
+# FIX_FROM setting must name a file committed under harness/.
+# This repository is public, so the logs and artifacts of these runs can be seen by anyone signed in to GitHub.
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Run name, used for the output files (letters, digits, - and _)'
+        required: true
+      settings:
+        description: 'Pathway settings, KEY=VALUE separated by spaces, as in the queue'
+        required: true
+        default: 'COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5'
+      passes_per_job:
+        description: 'Optimiser solves per job'
+        default: '1'
+      max_jobs:
+        description: 'Stop the chain after this many jobs'
+        default: '30'
+      prev_run:
+        description: 'Leave blank to start a run. Set by the workflow itself: the run whose state the next job continues'
+        default: ''
+      job_no:
+        description: 'Leave at 1 to start a run. Set by the workflow itself'
+        default: '1'
+
+permissions:
+  contents: read
+  actions: write          # read the previous job's artifact and start the next job
+
+concurrency:
+  group: optimiser-${{ inputs.name }}
+  cancel-in-progress: false
+
+env:
+  RUN_NAME: ${{ inputs.name }}
+  SETTINGS: ${{ inputs.settings }}
+  PASSES: ${{ inputs.passes_per_job }}
+  MAX_JOBS: ${{ inputs.max_jobs }}
+  PREV_RUN: ${{ inputs.prev_run }}
+  JOB_NO: ${{ inputs.job_no }}
+
+jobs:
+  pass:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    outputs:
+      status: ${{ steps.run.outputs.status }}
+    steps:
+      - name: Note the job start
+        run: echo "T0=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Check the inputs
+        run: |
+          [[ "$RUN_NAME" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "run name: letters, digits, - and _ only"; exit 1; }
+          for v in "$PASSES" "$MAX_JOBS" "$JOB_NO"; do [[ "$v" =~ ^[0-9]+$ ]] || { echo "not a whole number: $v"; exit 1; }; done
+          [[ -z "$PREV_RUN" || "$PREV_RUN" =~ ^[0-9]+$ ]] || { echo "prev_run must be a run id"; exit 1; }
+          (( PASSES >= 1 && JOB_NO <= MAX_JOBS )) || { echo "passes_per_job must be at least 1 and job_no at most max_jobs"; exit 1; }
+          for kv in $SETTINGS; do
+            [[ "$kv" =~ ^[A-Z][A-Z0-9_]*=[A-Za-z0-9_.:,/+-]*$ ]] || { echo "not KEY=VALUE: $kv"; exit 1; }
+            case "${kv%%=*}" in RESUME|JOB_DEADLINE|JOB_PASSES|OUT|SOLVER|TL|DUMP_LP|DUMP_STOP) echo "set by the workflow: ${kv%%=*}"; exit 1;; esac
+            case "${kv#*=}" in /*|*..*) echo "files must be inside the repository: $kv"; exit 1;; esac
+          done
+
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Check the branch can resume
+        run: |
+          grep -q JOB_DEADLINE harness/pathway/pathway_perfail.js || { echo "::error::The pathway script on $GITHUB_REF_NAME cannot resume (no JOB_DEADLINE). Run this workflow on claude/build-costs."; exit 1; }
+
+      # Exact versions, as used locally on 12 Oct 2026: a new job must rebuild the same LP text as the job before it,
+      # or it misses the cache and the saved basis.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.0'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the harness dependencies
+        working-directory: harness
+        run: |
+          npm install --no-save --no-package-lock jsdom@29.1.1 highs@1.15.3
+          pip install highspy==1.15.1
+          ln -s .. testroot
+
+      - name: Fetch the previous job's state
+        if: inputs.prev_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: state-${{ inputs.name }}
+          path: harness
+          run-id: ${{ inputs.prev_run }}
+          github-token: ${{ github.token }}
+
+      - name: Run the pathway
+        id: run
+        working-directory: harness
+        run: |
+          mkdir -p lpcache out
+          # Deadline 20 minutes before the 6-hour limit; the script stops the solve 15 minutes before that, leaving
+          # 35 minutes to save the basis and upload the state.
+          export JOB_DEADLINE=$(( T0 + 6*3600 - 20*60 ))
+          echo "=== job $JOB_NO, run $GITHUB_RUN_ID, $(date -u +%FT%TZ), settings: $SETTINGS" >> "out/pathway_$RUN_NAME.log"
+          set +e
+          env $SETTINGS SOLVER=native TL=72000 RESUME=1 JOB_PASSES="$PASSES" OUT="out/pathway_$RUN_NAME.json" \
+            node --max-old-space-size=8192 pathway/pathway_perfail.js 2>&1 | tee -a "out/pathway_$RUN_NAME.log"
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "pathway exit $code"
+          case $code in
+            0)  echo "status=done" >> "$GITHUB_OUTPUT" ;;
+            75) echo "status=more" >> "$GITHUB_OUTPUT" ;;
+            *)  echo "status=failed" >> "$GITHUB_OUTPUT"; exit "$code" ;;
+          esac
+
+      - name: Keep the state for the next job
+        if: always() && steps.run.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: state-${{ inputs.name }}
+          path: |
+            harness/lpcache
+            harness/out
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Start the next job
+        if: steps.run.outputs.status == 'more'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if (( JOB_NO >= MAX_JOBS )); then
+            echo "::warning::Stopped at max_jobs ($MAX_JOBS). To continue, run again with prev_run=$GITHUB_RUN_ID and job_no=$((JOB_NO + 1))."
+            exit 0
+          fi
+          gh workflow run optimiser-long-run.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME" \
+            -f name="$RUN_NAME" -f settings="$SETTINGS" -f passes_per_job="$PASSES" -f max_jobs="$MAX_JOBS" \
+            -f prev_run="$GITHUB_RUN_ID" -f job_no="$((JOB_NO + 1))"
+
+  check:
+    needs: pass
+    if: needs.pass.outputs.status == 'done'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.0'
+      - name: Install the harness dependencies
+        working-directory: harness
+        run: |
+          npm install --no-save --no-package-lock jsdom@29.1.1 highs@1.15.3
+          ln -s .. testroot
+      - name: Fetch the finished pathway
+        uses: actions/download-artifact@v4
+        with:
+          name: state-${{ inputs.name }}
+          path: harness
+      - name: Engine check
+        working-directory: harness
+        run: |
+          env COMMIT=1 PSE=1 TF=0.5 LNG=1 IN="out/pathway_$RUN_NAME.json" OUTC="out/pathcheck_$RUN_NAME.json" \
+            node --max-old-space-size=8192 pathcheck.js 2>&1 | tee "out/pathcheck_$RUN_NAME.log"
+      - name: Keep the results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ inputs.name }}
+          path: harness/out
+          retention-days: 30
