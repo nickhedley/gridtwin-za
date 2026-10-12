@@ -6473,10 +6473,13 @@ const FIXED = {
   effCcgtHHV:0.52, heatRateOcgtKJ:10624, vomOcgt:80.19 * 1.032 * 1.035, fomOcgtRkW:423.89 * 1.032 * 1.035,
   // bldOcgtOn: new OCGT on LNG in the build LP (b_ocgt), sharing the gas build cap with CCGT (gascap_<y>) and carrying the
   // LNG terminal charge where a gas case has one. bldOcgdOn: new OCGT on diesel (b_ocgd), same unit and capex, dispatched
-  // with the diesel fleet at its fuel price, no terminal, its own cap of bldOcgdRateMW a year from bldOcgdFromYear (both
-  // to be set by the user before it runs). bldOcgtCostCase: 'central' (NREL ATB 2025, to be supplied) or 'irp' (the IRP's
-  // R12,981/kW, the low case). All off by default; the engine reads newOcgtMW and newOcgdMW.
-  bldOcgtOn:0, bldOcgdOn:0, bldOcgdRateMW:null, bldOcgdFromYear:null, bldOcgtCostCase:'central',
+  // with the diesel fleet at its fuel price, no terminal, its own cap of bldOcgdRateMW a year from bldOcgdFromYear: 1 GW a
+  // year from 2028 (user, 12 Oct 2026, judgement; precedent Ankerlig and Gourikwa, built in about two to three years).
+  // bldTurbineCapMW: every new turbine together, CCGT, OCGT on LNG and OCGT on diesel, at most 2 GW a year (tcap_<y>, user,
+  // 12 Oct), applied when an OCGT option is on; CCGT and OCGT on LNG keep their own 1.2 GW from 2030. bldOcgtCostCase:
+  // 'central' (NREL ATB 2025 Moderate, Conservative the high case; to be supplied) or 'irp' (the IRP's R12,981/kW, the
+  // low case). All off by default; the engine reads newOcgtMW and newOcgdMW.
+  bldOcgtOn:0, bldOcgdOn:0, bldOcgdRateMW:1000, bldOcgdFromYear:2028, bldTurbineCapMW:2000, bldOcgtCostCase:'central',
   // bldNuclearAdd (11 Oct 2026, TODO 14be step 7): new nuclear decided in advance, {year: MW}, e.g. IRP 2025 Table 1
   // (1,250 in 2036 and 2037, 1,350 in 2038 and 2039). The build LP counts it as supply from its year and the engine
   // charges its capital (newNuclearMW, acapNuclear); its cost is a constant the LP leaves out. null: none.
@@ -10527,6 +10530,9 @@ function bldBuildLP(opts){
   // One gas build cap for CCGT and OCGT on LNG (user, 11 Oct 2026): gascap_<y> at the gas pace; the pathway's GAS_FIRST
   // and GAS_CAP rewrite it as they do the b_ccgt bounds.
   if (OCGT_ON) for (const y of Y) L.push(' gascap_' + y + ': b_ccgt_' + y + ' + b_ocgt_' + y + ' <= ' + RATE.ccgt.toFixed(1));
+  // Every new turbine together (bldTurbineCapMW, user 12 Oct 2026): tcap_<y>, only when an OCGT option is on.
+  if (OC_T.length && S.bldTurbineCapMW > 0) for (const y of Y)
+    L.push(' tcap_' + y + ': b_ccgt_' + y + OC_T.map(t => ' + b_' + t + '_' + y).join('') + ' <= ' + (+S.bldTurbineCapMW).toFixed(1));
   // bldCumVars: the definitions of K, for every technology a row above named.
   if (CUMV) for (const t of CUMV_T) Y.forEach((y, i) => {
     const b = t === 'E' ? 'eb_batt_' + y : 'b_' + t + '_' + y, k = 'K_' + t + '_';
@@ -18554,7 +18560,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-11g';
+const BUILD_STAMP = '2026-10-12a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

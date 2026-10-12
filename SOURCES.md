@@ -555,6 +555,17 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     USD 2/MMBtu adder is replaced, not added to.
   - New CCGT fixed O&M raised by R260/kW-yr.
 
+## Committed procurement: section 34 determination, 7 Oct 2026 (user, 12 Oct 2026)
+
+- Ministerial determination under section 34 of the Electricity Regulation Act, 7 Oct 2026 (user's reading): 5,000 MW of
+  gas-to-power and 4,600 MW of battery storage, procured by the IPP Office. No commercial operation dates, battery
+  duration or gas capacity factor are published.
+- Battery procured so far: 1,744 MW / 6,976 MWh (4 hours); used as the assumed duration of the 4,600 MW (judgement).
+- Unclear whether the first gas round (closed 29 May 2026) sits inside the 5,000 MW, so 5 GW is treated as a minimum.
+- Use: the pre-decided set for TODO 14be step 5 (replacing IRP Table 1's gas by year), run as 'committed procurement'
+  against the new central: at least 5 GW of new gas at the 1.2 GW a year cap from 2030 (GAS_MIN), technology not stated
+  in the determination, modelled as CCGT (judgement).
+
 ## Gas price cases (TODO 14bo, build 09f, 9 Oct 2026)
 
 All quotes are search extracts (the source hosts are blocked from this environment). Computed by build_gas_cases.py
