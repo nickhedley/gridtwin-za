@@ -7,7 +7,8 @@ name: Optimiser long run
 # When the pathway finishes, a last job runs the engine check (pathcheck.js) and keeps both results as an artifact.
 #
 # Start it from the Actions tab: "Optimiser long run", "Run workflow", with a run name and the settings. GitHub only
-# offers this once the file is on the default branch.
+# offers this once the file is on the default branch. Choose a branch whose pathway script can resume (RESUME and
+# JOB_DEADLINE: claude/build-costs until #22 merges); the first step stops at once on a branch that cannot.
 # No ESK files: the run reads only files committed to this repository and downloads no Eskom data. A WIN_FROM or
 # FIX_FROM setting must name a file committed under harness/.
 # This repository is public, so the logs and artifacts of these runs can be seen by anyone signed in to GitHub.
@@ -76,6 +77,10 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 1
+
+      - name: Check the branch can resume
+        run: |
+          grep -q JOB_DEADLINE harness/pathway/pathway_perfail.js || { echo "::error::The pathway script on $GITHUB_REF_NAME cannot resume (no JOB_DEADLINE). Run this workflow on claude/build-costs."; exit 1; }
 
       # Exact versions, as used locally on 12 Oct 2026: a new job must rebuild the same LP text as the job before it,
       # or it misses the cache and the saved basis.
