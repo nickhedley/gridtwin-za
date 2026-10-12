@@ -54,7 +54,7 @@ superseded queue entries. Never add the delta. See rules.md.
 | Deakin et al., *Comparing Generator Unavailability Models with Empirical Distributions* | one-off | 2022 | the published repair-time figures rejected for this fleet (40 h for coal, after Edwards 2017) and the persistence evidence behind `outageMttrH` 480 |
 | NREL, *Operating Reserves and Variable Generation* (TP-5500-51978) | one-off | 2011 | the 3+5 rule behind `reserveVrePct` 5: the regulating requirement scales at 5% of variable generation |
 | NREL, *Cost Projections for Utility-Scale Battery Storage* | annual | 2025 update (docs 93281) | the power and energy split behind `BATT_POWER_SHARE` 0.278: USD 241/kWh of energy and about USD 372/kW of power in 2024 |
-| GridLab / Energy Futures Group / Halcyon, gas turbine costs | one-off | Sep 2025 | `BLD_COST.ccgt` R34,965/kW = USD 2,119: recent combined-cycle projects routinely at USD 2,000/kW or more against USD 1,116-1,427 for 2026-27 completions |
+| GridLab / Energy Futures Group / Halcyon, gas turbine costs | one-off | Sep 2025 | `BLD_COST.ccgt` R34,965/kW = USD 2,119: recent combined-cycle projects routinely at USD 2,000/kW or more against USD 1,116-1,427 for 2026-27 completions. Flat in real terms (decl 0) from c4 (12 Oct 2026; commit 86bfea4). GridLab states no escalation rate: its 2% (p.5, footnotes 5-6) is general inflation, used to put EIA and NREL figures into nominal 2030 dollars. GridLab costs are nominal, in-service-year dollars, so R34,965/kW may sit a few percent above a 2026 real basis (user, 12 Oct 2026) |
 | South African storage procurement | rolling | as at Sep 2026 | the build-pace judgement: BESIPPPP three windows 1,744 MW/6,976 MWh, RMIPPPP hybrid 600 MW, Eskom's own 343 MW - about 0.6-0.7 GW a year against the 2 GW the default pace assumes |
 | Eskom hourly dataset ESK19679, coal availability trace | on request | 2023, 2024, 2025 | `nodal/coal_availability_trace.json`: measured coal-only availability by hour, divided by each year's mean, for `outageTraceYear` |
 | IRP 2025 | occasional | gazetted Oct 2025 | the `IRP path 2035` preset's build, interpolated between the published 2030 targets and the 2039 totals; and the emissions comparison, about 160 Mt for 2030 |
@@ -544,11 +544,13 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
     Characteristics of New Generating Technologies, 2022 dollars: frame combustion turbine USD 867/kW, multi-shaft
     combined cycle USD 1,176/kW; ratio 0.737 applied to the model's CCGT capex, R34,965/kW x 0.737 = R25,778/kW in 2026,
     same real escalation as CCGT. The IRP's R12,981/kW stays the low case. NREL ATB 2025 not used (atb.nlr.gov blocked).
-  - Basis of the CCGT capex R34,965/kW (BLD_COST.ccgt): USD 2,119/kW at R16.50, rising 2% a year real; matched on
+  - Basis of the CCGT capex R34,965/kW (BLD_COST.ccgt): USD 2,119/kW at R16.50, flat in real terms from c4 (12 Oct 2026;
+    the earlier 2% a year real rise had no source: GridLab's 2%, p.5 footnotes 5-6, is general inflation used to put EIA
+    and NREL figures into nominal 2030 dollars, not a real escalation); matched on
     23 Sep 2026 to GridLab's September 2025 study (recent combined-cycle projects routinely at USD 2,000/kW or more,
     against USD 1,116-1,427 for plants completing 2026-27 and the ATB's USD 1,638 for 2030). The constant predates that
-    sourcing and its dollar year is not recorded; GridLab's figures are nominal 2025 dollars, so treat it as about 2025
-    dollars converted at R16.50, without a CPI step to 2026.
+    sourcing and its dollar year is not recorded; GridLab's figures are nominal, in-service-year dollars, so R34,965/kW
+    may sit a few percent above a 2026 real basis (user, 12 Oct 2026); converted at R16.50, without a CPI step.
   - 9F.05 OCGT (user's figures, 11 Oct 2026; build 2026-10-11f): heat rate 10,624 kJ/kWh (33.9% on the basis on which
     the CCGT's 6,900 gives 52.2%, the efficiency costCcgt and emisCcgt use), overnight R12,981/kW (the low capex case),
     fixed O&M R423.89/kW-yr, variable O&M R80.19/MWh; all x SA CPI 1.032 x 1.035 to January 2026. Life taken as the

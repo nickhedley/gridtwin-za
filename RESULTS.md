@@ -3751,10 +3751,15 @@ scheduled date. Offshore wind is a build option on the engine's offshore profile
 medium path (none before 2032, 1 GW by 2035, 5 GW by 2040). Utility solar's build cap grows 7% a year
 from 2.5 GW (6.4 GW by 2040), an assumption for a scaling industry, not a sourced rate.
 
-Coal schedule corrected: Camden, Hendrina and Grootvlei now close in 2030, not 2024-2027. Their 17
-units run under an emissions exemption to 31 March 2030, and the IRP 2025 requires the five older
-stations, with Arnot and Kriel, to close by 2030. Coal the optimiser sees in 2026 went 38.5 to
-41.4 GW. Life extension beyond the schedule is not offered; Eskom attributed R8.4bn of the MYPD 6
+Coal schedule corrected: Camden, Hendrina and Grootvlei now close in 2030, not 2024-2027. Coal the
+optimiser sees in 2026 went 38.5 to 41.4 GW. CORRECTED 12 Oct 2026 (user): this entry said the 17 units
+run under an emissions exemption to 31 March 2030 and that IRP 2025 requires the five older stations,
+with Arnot and Kriel, to close by 2030. IRP 2025 has no station-by-station schedule. It retires 8 GW
+between 2029 and 2030 (plan p.13, gazette p.24), naming Camden, Hendrina, Grootvlei and Arnot 'by the
+financial year 2030' (plan p.40, gazette p.51); it does not name Kriel or link the closures to the
+emissions exemption. Eskom's Integrated Report 2026 (p.77): the exemption to March 2030 covers six
+unnamed stations, and Eskom has challenged it in court. The same wrong reasoning sits in a code comment
+above UC_FLEET in index.html; it is corrected at the next build after the IRP comparison (TODO 14cr). Life extension beyond the schedule is not offered; Eskom attributed R8.4bn of the MYPD 6
 maintenance increase to keeping those five stations running, and that is inside fomCoal.
 
 Re-run of the pathway before the schedule correction (Today 2026 to 2040, gas from 2030, rooftop at

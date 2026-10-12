@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 17:30 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 19:00 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -38,6 +38,15 @@ penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, run
   branch claude/c4-frozen; tested with run 38257189156).
 - Dated estimates (SAST): c4-target 12 Oct 22:00 to 13 Oct 08:00 (pass times are rising: 5, 25, 78, 112 min); penalty
   c4 13 Oct morning to midday; the seeded set about 4-6 hours after c4-target. Refine from the job times above.
+
+- c4-target's stress loop (its own test, worst year, mean shed / target in GWh): pass 1 2038 85.11/2.48 (11 years
+  failing); pass 2 2040 37.37/2.61 (5); pass 3 2040 9.63/2.60 (2: 2039, 2040); pass 4 still failing (pass 5 started),
+  figure in pass 5's saved state. The loop stops when no year fails (half the standard) or at 14 passes (MAXP).
+- Reading results: artifacts cannot be downloaded here; use the print-only workflow on branch claude/print-results
+  (TODO 14cs): dispatch optimiser-long-run.yml on that ref with name, source_run, source_name. For the IRP note, run it
+  on c4-target's final run and on each seeded run's final run.
+- Inputs checked 12 Oct (user): combined-cycle capex flat real at 86bfea4 (SOURCES); coal schedule against IRP 2025
+  in TODO 14cr (an IRP coal-timing sensitivity is queued after the set; no switch exists yet).
 
 ## Seeded set (TODO 14co): 12 runs, start in parallel as soon as c4-target's chain finishes
 
