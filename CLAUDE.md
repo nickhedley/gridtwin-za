@@ -60,6 +60,11 @@ missing Eskom reference) and validate_benchmarks skips the fleet-normalised wind
 Never push to main. Make each change on a new branch and open a pull request, with a short
 description of what changed and the suite counts. Nick reviews and merges.
 
+## Render checks
+
+Render checks on a fresh page load use the Playwright tools (the 'playwright' MCP server in .mcp.json) when they are
+available; otherwise a Playwright script against /opt/pw-browsers/chromium.
+
 ## Writing and reporting
 
 - Lead with what changed and what it measured. Short. One flag beats five paragraphs.
