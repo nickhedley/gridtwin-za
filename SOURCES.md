@@ -628,6 +628,25 @@ takes coal, nuclear, wind and power-sector CO2 from the monthly file and prints 
 tried first and dropped: the proxy answered 'injection failed ("Ember")', HTTP 502, with the key as a network secret
 (body parameter api_key), and again with api_key=placeholder in the URL.
 
+Which Ember file (user, 12 Oct 2026). Ember's methodology (Ember Electricity Data Methodology, May 2024, South
+Africa section): yearly generation is the Energy Institute's annual series; monthly generation is Eskom's data,
+with coal topped up from Stats SA load data because Eskom's data undercounts coal; the latest year is the previous
+annual value moved by the change in the monthly data (so summed months need not equal the yearly figure). The two
+files agree within 2% to 2021; the coal gap opens in 2022 (3.2 TWh), 2023 (8.9), 2024 (12.0), and 2025 carries
+2024's 12.0 exactly (197.5 against 185.6 TWh; CO2 169.7 against 160.3 Mt, the same 6.4%). A steady block of captive
+plant, such as Sasol's own stations, would show in every year, so the gap is a divergence between the two source
+series since 2022, not an identified coverage item; the Energy Institute's coverage of autoproducers is not stated.
+Choice: the MONTHLY file, which follows the Eskom-connected system the model covers. validate_benchmarks prints the
+yearly figures beside it.
+
+Wind benchmark basis (user, 12 Oct 2026). The model sat 21.5% above Ember (12 months to March 2026) inside a 25%
+band. Cause: capacity. The model runs its 4,612 MW all year (wheeled private plant Ember does not count, about
+470 MW, and plants commissioned through 2025 and early 2026 counted from 1 January); the Eskom-metered fleet
+averaged about 3,652 MW in 2025: Ember's end-2024 3.44 GW (IRENA) and the REIPPPP fleet at end-2025, 3,763 MW
+(Engineering News, 9 Jan 2026, citing the IPP Office), plus Eskom's Sere, 100 MW. Capacity alone gives x1.263; the
+model reads x1.246 on calendar 2025. The benchmark is now calendar 2025 (the profile's year, so weather drops out),
+scaled to the model's fleet, with a 5% band (was 25%); the model reads -1.4%.
+
 Figures that moved with the switch (2025 unless stated): coal gross 185.6 TWh (was 177.7, not reproducible from
 the current files; the yearly file says 197.5, which includes generation outside Eskom's metering), nuclear 10.21 TWh
 (was 11.5), wind 11.64 TWh for the 12 months to March 2026 (was 11.60 to May 2026), CO2 160.3 Mt (was 175; yearly
