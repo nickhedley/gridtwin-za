@@ -1877,8 +1877,16 @@ on its independent outage draws, finds that system R101-130bn dearer and, on the
 2040. The stress-window shed penalty is 92% of the optimiser's objective on the 09c central (R25,673bn of R27,751bn
 in objective units, obj_decomp.py), which is why its objective fell 19% while engine-checked cost rose 2%.
 
-Caveat: one weather and outage sample per check; the effect is consistent in both directions. Implication for the new
-central (3 GW a year): its engine-checked cost may exceed a 2 GW plan's; compare when it completes. Outputs
+In short (user, 12 Oct): with lithium capped at 2 GW a year the optimiser builds iron-air and vanadium; at 4 GW it swaps
+them for lithium, and the engine finds more shortfall in 2038-40. Cost lines, R bn 2026 present value at 8%: optimiser
+build and running 2,078 (2 GW) against 2,145 (4 GW); optimiser stress-window shed term 25,673 against 20,347 (the line
+that moved); engine expected shed valued at VoLL 0.09 against 0.23. Working hypothesis, not yet tested: the stress
+windows under-represent long lulls. The windows are 14 days, three per failing year per pass, found by an adequacy test
+of two outage draws per weather year (24 runs) against the engine check's 120-480; a too-small sample of events would
+show the same signature. TODO 14bv tests both.
+
+Caveat: one weather and outage sample per check; the effect is consistent in both directions. The new central (3 GW a
+year) came in within R12bn of the 2 GW central (entry above). Outputs
 harness/pathway_v_half_c1_p1_09c_{win09c_li4000,winli4000_li2000}.json and their pathcheck files.
 
 ### Average system cost per MWh served: R1,393 on the IRP central path against R1,221 flat, 2026-2040, 11 Oct 2026
