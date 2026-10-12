@@ -198,6 +198,21 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
    return lp.slice(0, i + 8) + kept.concat(add).join('\n') + lp.slice(j); }
  // COSTSET (7 Oct 2026): a whole cost set, e.g. COSTSET=irp2025; see costset.js.
  require('./costset.js')(w, process.env.COSTSET);
+ // COAL_DATES=<file under harness/> (12 Oct 2026, TODO 14cr): per-unit coal decommissioning years for a sensitivity, e.g. the
+ // IRP 2025 timing (coal_dates_irp2025.json). A listed unit is gone from the start of its year; groups not listed keep
+ // UC_FLEET's date. Only the build LP's coal standing changes (bldCoalRawMW, and through it bldCoalMW and the coalMW
+ // written by year); the engine check reads coalMW from this run's output. Unset, nothing here runs and the LP is unchanged.
+ if (process.env.COAL_DATES){ const CD=JSON.parse(fs.readFileSync(process.env.COAL_DATES,'utf8')).units;
+   w.eval(`{ const CD = ${JSON.stringify(CD)};
+     for (const [k, v] of Object.entries(CD)){ const g = UC_FLEET.find(q => q.name === k);
+       if (!g) throw new Error('COAL_DATES: no fleet group ' + k);
+       if (!Array.isArray(v) || v.length !== Math.max(1, g.n || 1) || v.some(y => !(y > 2000))) throw new Error('COAL_DATES: ' + k + ' needs ' + (g.n || 1) + ' unit years'); }
+     bldCoalRawMW = function(year){ let cap = 0;
+       for (const g of UC_FLEET){ const d = CD[g.name];
+         if (d){ const per = g.cap / d.length; for (const y of d) if (y > year) cap += per; }
+         else { const dy = (g.decom === 'beyond 2050') ? 9999 : parseInt(g.decom, 10); if (dy > year) cap += g.cap; } }
+       return cap; }; }`);
+   console.log('coal dates from', process.env.COAL_DATES, JSON.stringify(Object.fromEntries([2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040].map(y=>[y, Math.round(+w.eval('bldCoalMW('+y+')'))])))); }
  await w.eval('loadWeatherYears()');
  // DEMAND (9 Oct 2026, user decision): central demand follows the IRP 2025 reference path year by year on the
  // measured 2026 base. 'irp_esrg' (default): public_data/esrg_irp_demand_ref.json (ESRG, CC BY 4.0), its
