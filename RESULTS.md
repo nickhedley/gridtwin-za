@@ -1825,6 +1825,35 @@ First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pump
 figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
 sourced caps.
 
+### Why the 4 GW lithium run cost R101bn more: the cap, not the stress windows; with the looser cap the optimiser swaps iron-air and vanadium for lithium, which the engine finds dearer and less reliable, 12 Oct 2026
+
+TODO 27 (user, 11 Oct: before using the 4 GW result, explain the R101bn; if it is the different stress windows, compare
+on the same window set). Method: pathway switch WIN_FROM (build 2026-10-11d harness) starts a run from a recorded run's
+final stress windows with their coal availability; with MAXP=1 the solve is on exactly that set. Checked: each run's own
+settings reproduce its final LP (09c central ef9baf664b, 4 GW 2d48aba5ac). Both cross-solves on the 09c central
+settings (gtza-09d, build 2026-10-09d code, DEMAND=irp_esrg, SOLVER=native, COMMIT=1 PSE=1 TF=0.5), engine checks
+pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive.
+
+```
+engine-checked, 2026-2040        09c windows (9)                  4 GW run's windows (12)
+lithium 2 GW a year              R4,863bn; worst year 34%         R4,840bn; worst year 23%
+                                 iron-air 0.75 GW, gas 4.9 GW     iron-air 0.67 GW, gas 4.3 GW
+lithium 4 GW a year              R4,970bn; 2039-40 above target   R4,964bn (after two more passes)
+                                 (3.74 and 4.00 against 2.84,     iron-air 0, gas 3.75 GW
+                                 2.91 GWh); iron-air 0, gas 4.45
+```
+
+The window set moves cost by at most R23bn; the cap moves it by R101-130bn. On both window sets the looser cap leads the
+optimiser to drop all iron-air and vanadium and some gas for about 5 GW more lithium by 2040: in its own terms build
+and running cost rise about R70bn (discounted) and the stress-window shed penalty falls about R1,100bn. The engine,
+on its independent outage draws, finds that system R101-130bn dearer and, on the 09c windows, below standard in 2039 and
+2040. The stress-window shed penalty is 92% of the optimiser's objective on the 09c central (R25,673bn of R27,751bn
+in objective units, obj_decomp.py), which is why its objective fell 19% while engine-checked cost rose 2%.
+
+Caveat: one weather and outage sample per check; the effect is consistent in both directions. Implication for the new
+central (3 GW a year): its engine-checked cost may exceed a 2 GW plan's; compare when it completes. Outputs
+harness/pathway_v_half_c1_p1_09c_{win09c_li4000,winli4000_li2000}.json and their pathcheck files.
+
 ### Average system cost per MWh served: R1,393 on the IRP central path against R1,221 flat, 2026-2040, 11 Oct 2026
 
 Build `2026-10-11d` (user, 11 Oct: every run report gives average system cost per MWh served, so demand paths can be
