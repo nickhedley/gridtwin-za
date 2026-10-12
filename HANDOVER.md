@@ -1,6 +1,7 @@
-# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 16:15 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 12 Oct 2026, 16:30 UTC)
 
-Read this block first. Everything below it is older and is superseded wherever it disagrees. A new session can
+Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
+when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
 take over at any point from this block, CLAUDE.md and TODO.md (items 14cn, 14co, 14bz, 14ay and the FOCUS line).
 
 ## Focus (user, 12 Oct 2026)
@@ -20,7 +21,7 @@ GitHub. The engine (index.html and harness) is not changed until the comparison 
   solve cache and basis passed on as artifact `state-<name>`, the next job started automatically, every job pinned
   to the chain's first commit (86bfea4). The last job runs pathcheck.js (artifact `results-<name>`). GitHub's passes
   reproduce the local LP keys (pass 2 a9e5c71dc2, pass 3 0d4fdcdd1e).
-- Status at 16:15 UTC, both running, nothing finished:
+- Status at 16:30 UTC, both running, nothing finished:
 
 ```
 c4-target (name c4t)   run 38255689961 pass 1, 5.4 min | 38256479696 pass 2, 25 min | 38259914914 pass 3, ~78 min
@@ -59,9 +60,12 @@ s_be6            LI_CAP=550 CAP_FROM=2026
 s_be7            NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350
 ```
 
-No-gas decision (user, 12 Oct): the two main runs as above (3 and 4 GW of lithium a year), plus the strict run; in
-all three report new diesel open-cycle GW (pathway output, ocgd by year) and diesel burned in TWh (engine check, by
-year). Nick asked to be told, once the set is running, that it is a good moment to start a new session; before
+No-gas decision (user, 12 Oct): the two main runs as above (3 and 4 GW of lithium a year), plus the strict run (existing
+peakers stay as in c4; OCGD=0 stops only new diesel open-cycle). In all three report by year: new diesel open-cycle GW
+(pathway output, ocgd), diesel burnt in TWh, existing and new (engine check; one fleet in the engine, so any split is
+by capacity share and labelled an estimate), shed against target on customer demand, cost (R bn, 2026 present value
+at 8% real, engine-checked) and CO2. A run added after the set has started goes in when a slot frees up; nothing
+running is restarted or changed. Nick asked to be told, once the set is running, that it is a good moment to start a new session; before
 saying so, cancel this session's pending check-ins (delete_trigger) so two sessions do not both act.
 
 ## After the set
