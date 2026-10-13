@@ -2209,6 +2209,40 @@ At 2,000 MW a year (s_roof2's build, same arithmetic): R190.1bn total, R118.9bn 
 15.4bn. Caveat: the two figures are one constant held twice (acapRooftop and BLD_COST.rooftop); no engine change before the
 note (TODO 14dc). s_roof2's shares will be given in both measures as asked.
 
+### Validation re-run against PyPSA, baseline winter week: the nodal engine is 4.2% above the PyPSA MIP optimum, not the recorded 0.42%; the c4 2040 comparison stops at the half-day timebox, 13 Oct 2026
+
+Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on
+main (bc21fc2); PyPSA 1.4.0 (MIT, github.com/PyPSA/PyPSA), linopy 0.10.0, highspy 1.15.1, pandas 3.0.6; data nodal/ as committed.
+Week: hours 3264-3431 (winter), coal EAF 64%, no new build. The engine compared is the nodal (10-region) engine,
+nodal/nodal_engine.js, which these scripts were built against, not the national engine of the pathway check. Its week is
+priced on PyPSA's basis (fleet marginal cost, heat rate x fuel price + variable O&M, per MWh; imports R550/MWh; renewables and
+storage zero; plus start-up costs), after its own cyclic warm-up (scratchpad heur_week.js).
+
+```
+                                                          R million   notes
+nodal engine                                              2,321.7    energy 2,318.2, start-ups 3.5; diesel 5.5 GWh (R23.7m);
+                                                                     storage discharge 74.9 GWh; curtailment 16.9 GWh; shed 0
+PyPSA LP, crossval script, engine's storage at hour 3264  2,210.7    storage discharge 10.0 GWh; no diesel
+PyPSA LP / MIP, mip_solver as shipped                     2,191.8 / 2,204.4   storage 50% / 30% full at the start, imports 0.85
+PyPSA LP / MIP, mip_solver matched to the engine          2,213.7 / 2,228.0   engine's storage state, battery split and
+                                                                     pumped-storage energy, imports 0.88; MIP gap 0.11%
+engine against matched MIP                                +93.7      +4.2% (against matched LP +4.9%)
+```
+
+The recorded 0.42% (validation_README.md, mip_solver.py) cannot be reproduced as recorded: neither script computes the
+engine's side, and its method and data predate this repository's history (1 Oct 2026); the README's own example (heuristic
+2,235, LP 2,264, MIP 2,275) no longer matches the data. Where the gap sits, against the crossval LP: diesel the LP never uses
+(R23.7m), 74.9 GWh of storage cycling against 10.0 GWh, and more Eskom coal (3,354.5 against 3,257.0 GWh) with less Sasol coal
+(78.3 against 122.3 GWh).
+
+Caveat (user, 13 Oct): PyPSA's optimum sees each week in advance (perfect foresight within the week, and no value on storage
+left at its end), so the gap is an upper bound on the engine's inefficiency. Other differences: PyPSA has no transmission
+losses (the engine's are 1.0 GWh) and no operating reserves. mip_solver.py runs only from the repository root (it looks for
+nodal/ beside itself; TODO 14dh).
+
+Step 2 (c4's 2040 build with its top-up, three weeks, against the national engine) stopped at the timebox: building a fair
+PyPSA counterpart of the national engine takes more than half a day; what is missing is listed in TODO 14df step 9.
+
 ### c4's pumped hydro: 1,354 MW in 2038-39, under both limits; 163 cycles a year in the engine in 2040; s_li8h builds 126 MW, 13 Oct 2026
 
 From existing outputs only. c4: final run 38359856512 (pathway_c4t.json), 14-hour pumped hydro on the ANU 2026 cost basis
