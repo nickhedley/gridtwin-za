@@ -172,8 +172,10 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
 - GCCA licence labels (user, 13 Oct): pull request nickhedley/gridtwin-za#29 (branch claude/gcca-terms, 8f76e26) relabels
   GCCA-derived data to NTCSA's website terms (June 2024, clauses 2.1, 2.2, 3.1); nothing removed; suite 724/725 against main's
   723/725 (stamp check fixed; EDMSA remains). Copyright and 'commercial licensing' lines left for Nick. Nick merges.
-- Validation (user, 13 Oct): step 1 done, nodal engine 4.2% above the matched PyPSA MIP on the baseline week (RESULTS); step 2
-  (c4 2040, national engine) stopped at the timebox, TODO 14df step 9. Coal dates are Meridian's ME IRP 2024 workbook (14cu);
+- Validation (user, 13 Oct): single-node engine (the note's) 2.2% above a single-node PyPSA unit-commitment optimum on the same
+  inputs, baseline week, linear coal cost (4.1% with part-load); nodal engine 4.2% above the matched 10-region MIP (RESULTS).
+  Pull request nickhedley/gridtwin-za#30 replaces the unreproduced figure in validation/ (not quoted until reproduced). c4 2040
+  comparison not done (TODO 14df step 9). Coal start-ups charged twice? (14dl). Coal dates are Meridian's ME IRP 2024 workbook (14cu);
   UC_FLEET's 0.5 minimum stable level on 16 coal rows is ours, unsourced (14dj); stale build outputs (14dk); s_phestub held
   (14di).
 - TODO 14df (c5: building and running agree, with done-when tests) and 14dg (finer network, GCCA supply areas), both after
