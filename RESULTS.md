@@ -2223,6 +2223,9 @@ representative days >= 51% x 8,760 h x the new CCGT the optimiser chooses to bui
 built it binds on nothing. In the engine (simulateGasAnnualFloor, about line 6736) it floors the first ccgtForceLoadMW
 (6,000 MW) of CCGT standing, existing plus new, at 51% a year; there is no existing CCGT. s_be4 built no CCGT until 2036 and
 built OCGT on LNG instead, so the floor covers 0 GW in 2030-35, 0.76 GW in 2036-37 and 0.99 GW in 2038-40.
+Note (user, 13 Oct): the engine counts toward the floor the first min(CCGT standing, 6,000 MW) of each hour's gas output from
+any gas plant, which includes OCGT on LNG and gas burnt to charge storage (index.html, stack.ccgt, about lines 8036-8114);
+the optimiser's floor counts CCGT output only.
 
 Gas capacity (new CCGT + new OCGT on LNG), engine gas output (CCGT and OCGT on LNG together) and capacity factor on that
 capacity, by year (prints 38383989561 and c4's; c4's output from its engine check):

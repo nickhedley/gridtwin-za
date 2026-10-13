@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 11:50 UTC; decisions 11:42)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 12:10 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -122,6 +122,22 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   windCase equals WIND_CASE given directly.
 - TODO 14da (c5 wind limit 3,500 MW a year after 2030) and 14db (s_irpgas floor: the optimiser floors all new CCGT, not only
   the 2029-30 6 GW; switch and reporting needed; settings asked of the user).
+- s_irpgas, s_pvirp, s_roof2 (user, 13 Oct, settings given 12:00): branch claude/c4-irp3 (0b08ca7; claude/c4-coalavail plus
+  GAS_LIFT, GASFLOOR_VINT, PV_CAP_YR, ROOF_MW, all off by default; pathcheck records gasFloorTWh). Rule A, seeded from the
+  central (c4, or s_coalavail if it crosses the thresholds; then add COAL_AVAIL=1 and seed from its run), with top-ups; report
+  wind and solar built by year beside the central's.
+  s_irpgas: GAS_FORCE=2029:3000,2030:3000 GAS_MIN=2032-2034:1250,2035:1000,2036:1250,2037:1500,2038-2040:1250 GAS_LIFT=1
+    GASFLOOR=1 GASFLOOR_VINT=2029-2030. Lifted: tcap 2029-30 2,000 to 3,000; gascap 2032-34 and 2036-40 to the minimum (2035
+    not); gascap 2029-30 set to 3,000 by GAS_FORCE. Report floored and unfloored gas output (check log, gasFloorTWh).
+  s_pvirp: PV_CAP_YR=2026:3553,2027:2886,2028:1760,2029:1314,2030:800,2031:1000,2032:1200,2033:1400,2034:1600,2035:2000,
+    2036-2040:1600.
+  s_roof2: ROOF_MW=2000 (rooftop fixed at 2,000 MW a year from 2027). Engine cost: new rooftop pays the BLD_COST.rooftop
+    annuity (R17,000/kW in 2026, -3.89% a year, 25 years, 8%) plus R495/kW-yr fixed O&M inside newCapexR, so in the engine's
+    system cost; btmCapexR (flat R1,150/kW-yr) only removes it from the grid-cost measure; the optimiser's objective has it
+    as a constant (fixed build).
+  Tests: off key e0b93ac712; s_irpgas 2a7e1ad4c8 (22d2267038 without the vintage switch); s_pvirp f45106c146 (only b_pv
+  bounds); s_roof2 f52ec8a659 (only b_rooftop bounds).
+- s_coalavail finished 11:40 (run 38382908890); print, top-up, tsl dispatched 12:05. The central decision follows from them.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
