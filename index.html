@@ -5321,6 +5321,11 @@ const FIXED = {
   coalEAFPct:65,
   nuclearMW:1880, hydroMW:602,
   importsMW:1150,
+  // REGIONAL IMPORTS END YEAR (user, 13 Oct 2026, TODO 14dv (6)): 0 keeps importsMW in every year; a year Y sets imports to
+  // zero in every scenario year after Y, in the engine (simulate, through scenarioYear) and in the build optimiser alike.
+  // For the no-imports-after-2030 sensitivity: the 1,150 MW Cahora Bassa contract ends on 31 Dec 2030 (Mozambique's
+  // energy transition strategy; SOURCES), and IRP 2025, as far as the sources reachable show, does not say what follows.
+  importsEndYear:0,
   // Import utilisation, added 31 Aug 2026 from Eskom's audited energy balance. Was the
   // literal 0.85 hardcoded at FOUR sites and duplicated as IMPORTS_CF in
   // nodal_engine.js - a rule 6 violation and a stale value at the same time.
@@ -6783,6 +6788,7 @@ function simulateGasAnnualFloor(u, prof, outPath){
 
 function simulate(u, prof, outPath, _soc0){
   const p={...FIXED,...u};
+  if (p.importsEndYear > 0 && (p.scenarioYear ?? 2026) > p.importsEndYear) p.importsMW = 0;   // importsEndYear, FIXED
   if (!_soc0 && u.__ccgtFloor === undefined && !p.ccgtForceHourly && ccgtFloorActive(p)) return simulateGasAnnualFloor(u, prof, outPath);
   // ── clean coal (CCS) ──────────────────────────────────────────────────────
   // Applied here so every downstream calculation - dispatch, cost, emissions,
@@ -10284,6 +10290,8 @@ function bldBuildLP(opts){
   const EMIS_COAL = S.emisCoal, EMIS_CCGT = S.emisCcgt, EMIS_DIESEL = S.emisDiesel;
   // Nuclear standing in year y: the existing fleet plus any decided in advance (bldNuclearAdd).
   const NUC = y => EX.nuclear + bldNuclearAddedMW(S, y);
+  // Imports standing in year y: none after importsEndYear when it is set (FIXED), as the engine does.
+  const IMP = y => (S.importsEndYear > 0 && y > S.importsEndYear) ? 0 : EX.imports;
   // Open-cycle gas options (FIXED notes, 11 Oct 2026). b_ocgt / go_: new OCGT on LNG, OC_K times a CCGT MWh's gas and
   // carbon. b_ocgd: new OCGT on diesel, dispatched in the diesel variable gd_ at the fleet's price.
   const OCGT_ON = (S.bldOcgtOn | 0) > 0, OCGD_ON = (S.bldOcgdOn | 0) > 0;
@@ -10547,7 +10555,7 @@ function bldBuildLP(opts){
       // 0.55 and importsCF - a second copy of three constants that disagreed with the first.
       // Nuclear alone was 451 MW of supply the LP counted in every hour and the engine never
       // had. Found by decomposing the stalled week of the adequacy loop.
-      const fixed = NUC(y)*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
+      const fixed = NUC(y)*AV_NUC + EX.hydro*AV_HYD + IMP(y)*AV_IMP
                   + EX.wind*wp*AV_CONG + EX.pv*sp*AV_CONG + EX.rooftop*sp*AV_ROOF + EX.csp*0.38;
       L.push(' bal_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '')
         + ' + u_' + k + ' - crt_' + k
@@ -10776,7 +10784,7 @@ function bldBuildLP(opts){
     for (const r of rdY(y)) if (!r.stress) for (let h = 0; h < 24; h++) peak = Math.max(peak, PROFILES.demand[(r.dem !== undefined ? r.dem : r.d)*24+h]*dg);
     // The annual-peak margin uses the mean coal availability, as before; the tail-day derate is
     // an hourly matter and lives in cmax_ and resv_ above.
-    const firm = coalCapMean + NUC(y)*AV_NUC + EX.hydro*AV_HYD + EX.imports*AV_IMP
+    const firm = coalCapMean + NUC(y)*AV_NUC + EX.hydro*AV_HYD + IMP(y)*AV_IMP
                + EX.ps + DSL(y) + EX.batt;
     // Long-duration storage counts toward firm capacity at its de-rated value:
     // a 100-hour store can be relied on through a long event in a way a 4-hour
@@ -18867,7 +18875,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14b';
+const BUILD_STAMP = '2026-10-14c';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

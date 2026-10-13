@@ -147,6 +147,23 @@ function check(label, ok, detail) {
               + `same rule for every store ${dur.creditAll ? 'yes' : 'NO - the long-duration tiers are still on fixed multiples'}`
             : `no energy variable in the LP: lithium is still one build decision at a fixed duration`);
   }
+  // ── IMPORTS END YEAR (importsEndYear) ─────────────────────────────────────
+  // Added 14 Oct 2026 (user, 13 Oct, TODO 14dv (6)): the no-imports-after-2030 sensitivity sets importsEndYear; the build LP
+  // and the engine must drop imports in the same years and no others. On a 2026-2032 horizon the LP may change only in
+  // 2031-2032, and simulate() must carry imports in 2030 and none in 2031.
+  const imp = await runProbe(w, `
+    const H0 = BLD_YEARS[BLD_YEARS.length - 1]; bldSetHorizon(2032);
+    const lp = (ex) => bldBuildLP({ growth: 0.02, eaf: 0.64, rate: bldRates(), state: { ...state, ...ex } }).lp.split(String.fromCharCode(10));
+    const a = lp({}), b = lp({ importsEndYear: 2030 }); bldSetHorizon(H0);
+    let early = 0, late = 0;
+    for (let i = 0; i < Math.max(a.length, b.length); i++) if (a[i] !== b[i]){
+      const m = (a[i] || b[i] || '').match(/_(20[0-9][0-9])/); if (m && +m[1] > 2030) late++; else early++; }
+    const e = (y, end) => simulate({ ...state, scenarioYear: y, importsEndYear: end }, PROFILES).E.imports / 1e6;
+    return { early, late, imp2030: e(2030, 2030), imp2031: e(2031, 2030), impOff: e(2031, 0) };`);
+  check('importsEndYear drops imports after its year in the build LP and the engine, and nowhere else',
+        imp && imp.early === 0 && imp.late > 0 && imp.imp2031 === 0 && imp.imp2030 > 0 && Math.abs(imp.imp2030 - imp.impOff) < 1e-9,
+        imp ? `LP lines changed: ${imp.early} up to 2030, ${imp.late} after; engine imports ${imp.imp2030.toFixed(2)} TWh in 2030, `
+              + `${imp.imp2031.toFixed(2)} in 2031 (${imp.impOff.toFixed(2)} with no end year)` : 'no result');
   check('bldBuildRegionalLP is reachable', avail.regional === true);
   check('Where To Build defaults to the regional LP', avail.defaultRegional === '1',
         `bldRegional = ${avail.defaultRegional}`);
