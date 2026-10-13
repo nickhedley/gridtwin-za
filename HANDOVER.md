@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 12:17 UTC; next check-in 12:57)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 12:35 UTC; next check-in 12:57)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -141,18 +141,18 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   (dispatched 12:01). As solved: engine R2,399bn (c4 R2,598bn), objective R1,514.3bn with no penalty (c4 R1,715.5bn without
   its R12.2bn), 1,864 Mt (c4 1,605); 2030 new diesel open-cycle 0.05 GW (c4 2.8), lithium 5.6 GW (c4 6.6); no wind until 2030
   (c4 2,500 a year from 2026). Fails the engine check and the loop's own test in every year 2030-40 (2040 2,816% of target).
-  Rule crossed on every test in: by the 11:42 rule the central is s_coalavail. Flagged to Nick: as solved it is inadequate
-  from 2030, so its cost rests on the top-up and is likely a lower bound; recommendation c4 stays the note's central (his
-  call). RESULTS 's_coalavail'.
-- Launched 12:10-12:11 UTC (names to confirm from each run's artifacts; ids in dispatch order). Rule A unless shown; all
-  print, top-up (claude/topup 27337aa: reads per-year turbine caps; records gasFloorTWh) and tsl when done.
-  From s_coalavail (seed 38382908890 / s_coalavail, c4's settings + COAL_AVAIL=1 WIN_FROM=seed/out/pathway_s_coalavail_lp2040.json):
-    s_irpgas_ca 38395398203, s_pvirp_ca 38395403267, s_roof2_ca 38395407641 (ref claude/c4-irp3, 0488f54);
-    s_nogas3_ca 38395481991, s_nogas4_ca 38395489267, s_nogas4strict_ca 38395492993 (rule B, MAXP=3, no top-up),
-    s_be6_ca 38395498884, s_committed_ca 38395502406 (ref claude/c4-coalavail, 1143a98).
-  From c4 as the fallback (seed 38359856512 / c4t, no COAL_AVAIL; ref claude/c4-irp3, 0488f54):
-    s_irpgas_c4 38395416019, s_pvirp_c4 38395420841, s_roof2_c4 38395424726.
-  Whichever central Nick confirms, the other set is cancelled or reported as labelled sensitivities.
+  Rule crossed on every test in. Decision (user, 13 Oct 12:25): c4 stays the note's central; s_coalavail is a finding only
+  (it drops c4's 2.8 GW of diesel open-cycle by 2030 and fails the engine check every year from 2030; the 2030 peaking build
+  is what the engine needs, given how it commits coal); no rule B run of it before the note; the s_be7 arithmetic stands
+  against c4; its top-up runs to the end and is recorded (MW, cost, cap breaches). c5: one stress-day coal rule (TODO 14de).
+- Launched 12:10-12:11 UTC, all cancelled 12:26 (decision (a); the six on claude/c4-irp3 could not be told apart while
+  running, so the three _c4 ones were cancelled too and relaunched): _ca 38395398203, 38395403267, 38395407641, 38395481991,
+  38395489267, 38395492993, 38395498884, 38395502406; first _c4 38395416019, 38395420841, 38395424726.
+- Running from c4 (relaunched 12:27, ref claude/c4-irp3 0488f54, seed 38359856512 / c4t, c4's settings + WIN_FROM, MAXP=1,
+  rule A; then print, top-up on claude/topup 27337aa, tsl): s_irpgas_c4 38397386689, s_pvirp_c4 38397404456, s_roof2_c4
+  38397420439 (dispatched one at a time; ids confirmed by run number 108, 109, 110). Report wind and solar by year beside
+  c4's; s_irpgas floored and unfloored gas and its 2029-30 diesel open-cycle beside c4's 1.8 GW; s_roof2 both measures with
+  rooftop's share.
 - s_irpgas turbine cap (user, 13 Oct 12:20): TCAP_YR=2029:4000,2030:4000 (3,000 MW forced CCGT plus diesel open-cycle's usual
   1,000 MW) so s_irpgas changes only the gas plan; key 9fb3b64f9d, only tcap_2029/2030 change (3,000 to 4,000). Report its
   2029-30 diesel open-cycle beside c4's 1.8 GW (1,000 in 2029, 800 in 2030). In both s_irpgas runs' settings.

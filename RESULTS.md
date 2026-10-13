@@ -2048,6 +2048,7 @@ the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' b
 s_be7 38380844927, s_li8h 38383985895, s_be4 38383995436. (h) s_wind35: wind limit 3,500 MW a year from 2028 (front-loaded); fails the engine check in 2037-40 as
 solved; lower bound; not in the note's headline findings (user, 13 Oct). (i) s_coalavail as solved: fails the engine check
 in every year 2030-40 (2040 at 2,816% of target); its top-up (38394240062) is running, so its engine figure and gap will change.
+Not the central (user, 13 Oct): reported as a finding only.
 ```
 
 Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
@@ -2131,7 +2132,7 @@ gas (4.3 against 5.1 GW in 2040) and more lithium. s_be7: R15bn dearer on the en
 the nuclear capital, so the R48bn the objective puts it below c4 is not a cost comparison. s_be7 is adequate without a
 top-up and emits 29 Mt less than c4.
 
-### s_coalavail (stress-window coal at the engine's available coal): R199bn below c4 on the engine check as solved and R201bn on the objective without the penalty, but it fails the engine check in every year 2030-40; top-up pending, 13 Oct 2026
+### s_coalavail (stress-window coal at the engine's available coal): with the stress-day coal limit lifted, the plan drops the 2.8 GW of diesel open-cycle c4 builds by 2030 and fails the engine check in every year from 2030 (2040 at 2,816%); c4 stays the central, 13 Oct 2026
 
 Run 38382908890 (ref claude/c4-coalavail, 1143a98; engine build 2026-10-12e, c4's): c4's settings plus COAL_AVAIL=1,
 WIN_FROM=seed/out/pathway_c4t_lp2040.json, MAXP=1 (rule A), seed 38359856512 / c4t. Pass 10:22-11:26 UTC (solved Optimal,
@@ -2170,14 +2171,22 @@ Shed by year, engine check, mean against target on customer demand, GWh: 2026-29
 2039, 84.96 against 2.55 GWh.
 
 Rule (user, 13 Oct 11:42): the thresholds are crossed on every test that is in: 2030 new diesel open-cycle -2.75 GW, 2030
-lithium -1.0 GW, objective without the penalty -R201bn, engine as solved -R199bn (with the top-up pending). By the rule the
-central becomes c4 + COAL_AVAIL=1, which is s_coalavail. Caveats: with the stress-day coal at available coal, c4's windows no
-longer bind (penalty zero) and one pass leaves the plan failing every year from 2030 on both the engine check and the loop's
-own test, so its cost rests on the top-up; a top-up above the diesel open-cycle cap (1,000 MW a year) makes it a lower bound.
-Launched 12:10-12:11 UTC, all rule A from s_coalavail (seed 38382908890 / s_coalavail, COAL_AVAIL=1,
-WIN_FROM=seed/out/pathway_s_coalavail_lp2040.json) unless shown: s_irpgas_ca, s_pvirp_ca, s_roof2_ca (ref claude/c4-irp3,
-0488f54); s_nogas3_ca, s_nogas4_ca, s_nogas4strict_ca (rule B, MAXP=3, no top-up), s_be6_ca, s_committed_ca (ref
-claude/c4-coalavail, 1143a98); and from c4 as the fallback (seed c4t, no COAL_AVAIL): s_irpgas_c4, s_pvirp_c4, s_roof2_c4.
+lithium -1.0 GW, objective without the penalty -R201bn, engine as solved -R199bn. Decision (user, 13 Oct 12:25): c4 stays the
+note's central; s_coalavail is not used as a seed (its plan fails the engine check every year from 2030); no rule B run of it
+before the note; the s_be7 arithmetic stands against c4. Its top-up (38394240062) runs to the end and is recorded (MW, cost,
+cap breaches).
+
+Finding (user, 13 Oct): with the stress-day coal limit lifted, the plan drops the 2.8 GW of diesel open-cycle c4 builds by
+2030 (1,000 MW in each of 2028 and 2029, 800 in 2030) and fails the engine check in every year from 2030 (2040 at 2,816% of
+target). The 2030 peaking build is what the engine needs, given how it commits coal. Caveat: the plan also builds 1.0 GW less
+lithium by 2030, no wind before 2030 and retires no coal early, so the shortfall is not the diesel alone; the top-up's 2030-31
+MW will show how much firm capacity the engine needs. One coal rule for stress days, shared by the optimiser and the engine,
+is TODO 14de (c5).
+
+Launched 12:10-12:11 UTC and cancelled 12:26 (user decision (a)): the eight runs seeded from s_coalavail (_ca) and, because
+their names could not be read while running, also the three _c4 runs started with them (38395398203-38395424726, 38395481991-
+38395502406). The three _c4 runs were relaunched 12:27 on claude/c4-irp3 (0488f54), seed c4t: s_irpgas_c4 38397386689,
+s_pvirp_c4 38397404456, s_roof2_c4 38397420439.
 
 ### Rooftop in the two cost measures (for s_roof2): the grid measure removes R1,150/kW-yr of rooftop, not its full R1,701-2,056, so a third or more of rooftop's cost stays in it, 13 Oct 2026
 
