@@ -5326,6 +5326,9 @@ const FIXED = {
   // For the no-imports-after-2030 sensitivity: the 1,150 MW Cahora Bassa contract ends on 31 Dec 2030 (Mozambique's
   // energy transition strategy; SOURCES), and IRP 2025, as far as the sources reachable show, does not say what follows.
   importsEndYear:0,
+  // OUTAGES ON THE UNITS STILL STANDING (TODO 14dr, user 13 Oct 2026: in c5). 1: the unit outage draw runs over the coal
+  // units ucUnitsStanding leaves for the year's coal installed; 0: over all 85 UC_FLEET units, as before 14 Oct 2026.
+  outageStandingUnits:1,
   // Import utilisation, added 31 Aug 2026 from Eskom's audited energy balance. Was the
   // literal 0.85 hardcoded at FOUR sites and duplicated as IMPORTS_CF in
   // nodal_engine.js - a rule 6 violation and a stale value at the same time.
@@ -7548,7 +7551,8 @@ function simulate(u, prof, outPath, _soc0){
   const unitOutage = (!outPath && (p.outageUnitLevel ?? 1))
     ? genUnitOutagePath(eafFraction, p.outageForcedSharePct,
                         p.outageMttrH, p.outageSeed, p.outagePlannedSeason,
-                        p.outageCmPerStationYr, p.outageCmMttrH, p.outageCmUnitShare)
+                        p.outageCmPerStationYr, p.outageCmMttrH, p.outageCmUnitShare,
+                        p.outageStandingUnits ? ucUnitsStanding(Math.max(0, coalInstalled)).units : undefined)
     : null;
   // MONTHLY MEAN AVAILABILITY (outageMonthlyAvail, 12 Oct 2026): rescale the draw so each month's mean availability is
   // eafFraction x that month's factor, hour by hour within the month, capped at 1. Off (null) changes nothing.
@@ -9250,13 +9254,20 @@ function priceStatsOf(mp, stack, E){
  * reproducible and the validators stay meaningful; the Monte Carlo panel varies
  * the seed across its runs, which is where the distribution belongs.
  */
-function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed, season, cmPerStationYr, cmMttrH, cmUnitShare){
+function genUnitOutagePath(eafFrac, forcedSharePct, mttrHours, seed, season, cmPerStationYr, cmMttrH, cmUnitShare, unitList){
   const HOURS = 8760;
   const rnd = mulberry32(seed >>> 0);
 
-  // Build the unit list once from the same fleet the UC scheduler uses.
+  // Build the unit list once from the same fleet the UC scheduler uses: the units still standing when unitList is
+  // given (ucUnitsStanding, TODO 14dr), else all of UC_FLEET.
   const units = [], stationOf = [], stationIx = new Map();
-  for (const g of UC_FLEET){
+  if (Array.isArray(unitList)){
+    for (const u of unitList){
+      const st = String(u.name).replace(/ U[0-9]+$/, '').replace(/\*+$/, '');
+      if (!stationIx.has(st)) stationIx.set(st, stationIx.size);
+      units.push(u.cap); stationOf.push(stationIx.get(st));
+    }
+  } else for (const g of UC_FLEET){
     const n = Math.max(1, g.n || 1);
     const uc = g.unit_cap || (g.cap / n);
     const st = String(g.name).replace(/\*+$/, '');
@@ -18875,7 +18886,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14c';
+const BUILD_STAMP = '2026-10-14d';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
