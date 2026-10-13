@@ -160,7 +160,10 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   O&M in) and the grid cost (pathcheck gridCost, flat R1,150/kW-yr of rooftop removed), with rooftop's share of each. The grid
   measure keeps R551-906/kW-yr of rooftop (c4: R42.7bn PV, 1.7%; total measure R114.1bn, 4.4%); RESULTS 'Rooftop in the two
   cost measures', TODO 14dc.
-- Still running: s_coal60 (38379671167), s_windlow (38392619799).
+- Check-in 13:25: _ca runs all cancelled. s_coalavail top-up done: 8,000 MW, R2,458bn with it (lower bound: over the caps in
+  2033 and 2038), 1,862 Mt; 500 MW restores 2030 (RESULTS). s_coal60 finished 12:50 (run 38379671167, name confirmed from
+  artifacts); print, top-up and tsl dispatched 13:25 (print-s_coal60, topup-s_coal60, tsl-s_coal60). Still running: s_windlow
+  (38392619799), s_irpgas_c4, s_pvirp_c4, s_roof2_c4. s_phestub held (TODO 14di).
 - Fleet table (user, 13 Oct): slim paused, no pull request; decision after the Meridian call. Branch claude/fleet-slim
   (a6dc99c, tests in its commit message); full original on gridtwin-data branch claude/pypsa-rsa-fleet; TODO 14dh. Main
   untouched (origin/main bc21fc2). SOURCES: the fleet file's origin (PyPSA-RSA ME IRP 2024 workbook; 16 coal minimum stable

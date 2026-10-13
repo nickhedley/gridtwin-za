@@ -2029,7 +2029,7 @@ s_be7                2,614 (d)      0   -           1,679.5       12.5    1,667.
 s_li8h               2,614      3,000   -           1,702.9        0.0    1,702.9       +15   |  -12.6      disagree (e)
 s_be4                2,618        750   -           1,731.5       10.8    1,720.6       +19   |   +5.1      agree
 s_battdecl           2,590          0   -           1,740.6       11.6    1,729.0        -9   |  +13.5      disagree (g)
-s_coalavail (i)      2,399 (i)  pending pending     1,514.3        0.0    1,514.3      -199   | -201.2      agree (i)
+s_coalavail (i)      2,458 LB   8,000   2033, 2038  1,514.3        0.0    1,514.3      -141   | -201.2      agree (i)
 s_nogas3             2,606 LB   4,250   2036        1,905.2      186.7    1,718.5        +7   |   +3.0      agree
 s_nogas4             2,612 LB   4,750   2036, 2038  1,887.8      163.2    1,724.6       +13   |   +9.1      agree
 s_nogas4strict       2,838      rule B  -           3,762.3    1,838.6    1,923.7      +239   | +208.2      agree
@@ -2047,8 +2047,8 @@ the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' b
 (17.6 GW and 103 GWh of lithium in 2040 against c4's 21.7 GW and 126 GWh), which the engine favours. tsl runs: s_battdecl 38389692464, s_gasprem 38380834231,
 s_be7 38380844927, s_li8h 38383985895, s_be4 38383995436. (h) s_wind35: wind limit 3,500 MW a year from 2028 (front-loaded); fails the engine check in 2037-40 as
 solved; lower bound; not in the note's headline findings (user, 13 Oct). (i) s_coalavail as solved: fails the engine check
-in every year 2030-40 (2040 at 2,816% of target); its top-up (38394240062) is running, so its engine figure and gap will change.
-Not the central (user, 13 Oct): reported as a finding only.
+in every year 2030-40 (2040 at 2,816% of target); R2,399bn as solved; top-up 38394240062 (8,000 MW, over the caps in 2033 and
+2038). Not the central (user, 13 Oct): reported as a finding only.
 ```
 
 Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
@@ -2173,14 +2173,20 @@ Shed by year, engine check, mean against target on customer demand, GWh: 2026-29
 Rule (user, 13 Oct 11:42): the thresholds are crossed on every test that is in: 2030 new diesel open-cycle -2.75 GW, 2030
 lithium -1.0 GW, objective without the penalty -R201bn, engine as solved -R199bn. Decision (user, 13 Oct 12:25): c4 stays the
 note's central; s_coalavail is not used as a seed (its plan fails the engine check every year from 2030); no rule B run of it
-before the note; the s_be7 arithmetic stands against c4. Its top-up (38394240062) runs to the end and is recorded (MW, cost,
-cap breaches).
+before the note; the s_be7 arithmetic stands against c4.
+
+Top-up (38394240062, claude/topup 047f9e9, finished 12:49 UTC): 8,000 MW of new diesel open-cycle in 250 MW steps, by year 2030
+500, 2031 250, 2032 1,000, 2033 1,250, 2034 1,000, 2035 500, 2036 750, 2037 750, 2038 1,000, 2039 500, 2040 500. Over the build
+caps in 2033 (diesel open-cycle 1,250 MW against 1,000 a year) and 2038 (turbines 2,020 MW against 2,000), so a lower bound.
+Engine PV R2,458bn with the top-up (R2,399bn as solved; top-up capex 49.0, fixed O&M 9.7, fuel 1.8, other -1.8), against c4's
+R2,599bn: R141bn below c4, lower bound. CO2 1,862 Mt (1,864 as solved) against 1,605. 2040 with the top-up: R358.8bn, 99.4 Mt.
 
 Finding (user, 13 Oct): with the stress-day coal limit lifted, the plan drops the 2.8 GW of diesel open-cycle c4 builds by
 2030 (1,000 MW in each of 2028 and 2029, 800 in 2030) and fails the engine check in every year from 2030 (2040 at 2,816% of
 target). The 2030 peaking build is what the engine needs, given how it commits coal. Caveat: the plan also builds 1.0 GW less
-lithium by 2030, no wind before 2030 and retires no coal early, so the shortfall is not the diesel alone; the top-up's 2030-31
-MW will show how much firm capacity the engine needs. One coal rule for stress days, shared by the optimiser and the engine,
+lithium by 2030, no wind before 2030 and retires no coal early, so the shortfall is not the diesel alone. The top-up restores
+the engine's 2030 adequacy with 500 MW of diesel open-cycle (750 MW by 2031), against the 2.75 GW less diesel open-cycle and 1.0
+GW less lithium this plan builds by 2030; the larger shortfall comes in 2032-38 (7.25 GW of the 8 GW top-up). One coal rule for stress days, shared by the optimiser and the engine,
 is TODO 14de (c5).
 
 Launched 12:10-12:11 UTC and cancelled 12:26 (user decision (a)): the eight runs seeded from s_coalavail (_ca) and, because

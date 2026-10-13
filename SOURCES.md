@@ -987,3 +987,17 @@ Our files built on it, and the licence each states now:
   the CORRIDORS limits in the nodal engines (via rsa_supply_regions.gpkg).
 - The repository LICENSE lists 'GCCA connection capacity data: NTCSA - public domain', which NTCSA's terms contradict.
 None of these self-assigned licences can grant more than NTCSA's terms allow for the underlying data. Nothing changed now.
+
+## Tubatse pumped storage: support for BLD_PHES_CAPS central and bldPhesHours 14 (user, 13 Oct 2026)
+
+- Eskom media statement, 13 Oct 2026 (as given by the user; eskom.co.za cannot be read from this environment, not checked here):
+  request for qualification for Tubatse pumped storage, 1.5 GW, about 21 GWh, up to 14 hours, near Roossenekal, Limpopo, water
+  from De Hoop Dam; closes 30 Nov 2026; Eskom is seeking an IRP 2025 allocation and a section 34 determination.
+- Engineering News, 22 May 2026 (checked by the user, 9 Oct; already cited at BLD_PHES_CAPS in index.html): construction from
+  2028, operation about 2038.
+- Supports: BLD_PHES_CAPS central (Tubatse alone, 1,500 MW from 2038) and bldPhesHours 14 (21 GWh on 1.5 GW).
+- Cost: c4's optimiser prices new pumped hydro on the 'anu2026' basis, R21,384/kW at 14 hours ((USD 1,100/kW + USD 14/kWh x 14)
+  x 16.5); the 'tubatse' basis gives R29,264/kW ((1,226 + 11.4 x 14) x 1.28 x 16.5). The engine check already charges new pumped
+  hydro at acapPs, R2,360/kW-yr, from Tubatse (R35.9bn in 2022 rands, JET plan, escalated to about R29,200/kW, 60 years at 8%),
+  so c4's engine cost already prices its 1,354 MW at Tubatse's cost; only the optimiser's build decision uses the cheaper basis.
+
