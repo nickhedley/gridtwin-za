@@ -138,6 +138,8 @@ Each step simulated in a scratch copy of main with the full suite (ESK19679.csv 
 1. Pull request #32, licence lines (1 commit, on main). Suite 724/725 (EDMSA only).
    Step 2 opened 13 Oct as pull request #35 (claude/merge-c4-frozen: #32 merged in, then c4-frozen; conflicts resolved): suite
    808/812 with audit, eng5 6/6; the GitHub stress suite needed one fix (stress_suite.js loads the modern wind map), now green.
+   Step 3 opened 13 Oct 22:30 UTC as pull request #36 (claude/merge-engine-fix: engine fixes 13f-14a and 14dp on step 2; build
+   14b): suite 807/813 with audit, eng5 6/6, stress suite 290/290. Merge #35 first.
 2. The c4 engine, claude/c4-frozen (115 commits, build 12e): per-year stress windows, grid cost and peakers (#20, #21), the
    build-costs code of #22 (BW3 batteries, modern wind, tracking option, hourly storage in the build LP), the 9-12 Oct engine
    and optimiser work (gas and diesel options, coal dates, customer-demand standard, adequacy test) and the long-run workflow.
