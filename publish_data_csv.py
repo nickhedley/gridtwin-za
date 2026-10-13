@@ -123,7 +123,7 @@ def substations():
     rows.sort(key=lambda r: str(r[0]))
     return write('transmission_substations.csv', [
         'GridTwin ZA - transmission substations with coordinates and supply areas',
-        'CC BY 4.0 - attribution required. gridtwinza.org',
+        "GCCA-derived content (supply areas, NTCSA coordinates): NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent. Other content: CC BY 4.0, gridtwinza.org",
         f'source fingerprint: {fingerprint(d)}',
         'NOTE: `planned` marks stations not yet energised. Coordinates are compiled from',
         'published sources and cross-checked against transmission line endpoints; a small',
@@ -141,7 +141,7 @@ def headroom():
     rows.sort(key=lambda r: -(r[1] or 0))
     return write('connection_headroom.csv', [
         'GridTwin ZA - NTCSA GCCA connection headroom by supply area',
-        'CC BY 4.0 - attribution required. gridtwinza.org',
+        "NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.",
         f'source fingerprint: {fingerprint(d)}',
         'NOTE: wind and solar SHARE headroom - they are not additive. The GCCA publishes',
         'the larger of the two per area, which is why the figures often match.',
@@ -170,6 +170,8 @@ DICTIONARY = """# GridTwin ZA published data
 
 CC BY 4.0. Attribution required; reuse, modification and commercial use permitted.
 Cite as: GridTwin ZA, gridtwinza.org, accessed <date>.
+Except NTCSA GCCA data: connection_headroom.csv, and the supply areas and NTCSA coordinates in
+transmission_substations.csv, come under the NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1) - non-commercial use only; publication needs NTCSA's written consent.
 
 Compiled from published South African sources. A project fact - name, capacity, technology,
 location, commissioning date - is not copyrightable; these files are the compilation, and
@@ -187,9 +189,11 @@ region, unallocated, and terminated. Terminated projects sit outside the procure
 
 **transmission_substations.csv** - 189 substations with coordinates, voltage and supply-area
 assignment.
+GCCA-derived content: NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 
 **connection_headroom.csv** - NTCSA GCCA connection headroom by supply area. Wind and solar
 share headroom and are not additive.
+NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 
 **environmental_authorisations.csv** - DFFE permits with coordinates. Permits, not plants:
 permitted capacity exceeds built by roughly ten times.

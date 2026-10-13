@@ -37,6 +37,6 @@ Data sources incorporated in this repository carry their own licences:
 - PVGIS SARAH2 solar profiles: European Commission JRC — open access
 - Renewables.ninja wind profiles: Pfenninger & Staffell — CC BY-NC 4.0
 - REIPPPP project data: DMRE / IPP Office — public domain
-- GCCA connection capacity data: NTCSA — public domain
+- GCCA 2025 connection capacity data and supply-area boundaries (NTCSA): NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 
 Users are responsible for complying with the terms of each upstream data source.
