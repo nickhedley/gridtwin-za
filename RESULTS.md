@@ -2209,7 +2209,7 @@ At 2,000 MW a year (s_roof2's build, same arithmetic): R190.1bn total, R118.9bn 
 15.4bn. Caveat: the two figures are one constant held twice (acapRooftop and BLD_COST.rooftop); no engine change before the
 note (TODO 14dc). s_roof2's shares will be given in both measures as asked.
 
-### Validation re-run against PyPSA, baseline winter week: the nodal engine is 4.2% above the PyPSA MIP optimum, not the recorded 0.42%; the c4 2040 comparison stops at the half-day timebox, 13 Oct 2026
+### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
 
 Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on
 main (bc21fc2); PyPSA 1.4.0 (MIT, github.com/PyPSA/PyPSA), linopy 0.10.0, highspy 1.15.1, pandas 3.0.6; data nodal/ as committed.
@@ -2229,9 +2229,11 @@ PyPSA LP / MIP, mip_solver matched to the engine          2,213.7 / 2,228.0   en
 engine against matched MIP                                +93.7      +4.2% (against matched LP +4.9%)
 ```
 
-The recorded 0.42% (validation_README.md, mip_solver.py) cannot be reproduced as recorded: neither script computes the
-engine's side, and its method and data predate this repository's history (1 Oct 2026); the README's own example (heuristic
-2,235, LP 2,264, MIP 2,275) no longer matches the data. Where the gap sits, against the crossval LP: diesel the LP never uses
+The agreement figure recorded in validation_README.md and mip_solver.py is not quoted until it is reproduced (user, 13 Oct):
+neither script computes the engine's side, its method and data predate this repository's history (1 Oct 2026), and the
+README's own example (engine 2,235, LP 2,264, MIP 2,275) has the engine 1.8% below the MIP, which an optimum should not allow.
+This harness runs the nodal engine (nodal/nodal_engine.js), not the single-node engine of c4's engine check (index.html
+simulate()); the single-node comparison follows (user, 13 Oct). Where the gap sits, against the crossval LP: diesel the LP never uses
 (R23.7m), 74.9 GWh of storage cycling against 10.0 GWh, and more Eskom coal (3,354.5 against 3,257.0 GWh) with less Sasol coal
 (78.3 against 122.3 GWh).
 
@@ -7796,7 +7798,8 @@ storage: half of 100 hours is 50 hours of free energy.
 It also diverged from this project's own cross-validation. `validation_README` records
 the PyPSA comparison's initial state of charge as computed with CYCLIC INITIALISATION
 rather than hardcoded, so the browser model and the comparison were not starting from
-the same system, and the 0.42% agreement between them was measured across that difference.
+the same system, and the agreement recorded in validation_README.md (not quoted until reproduced, user 13 Oct 2026) was
+measured across that difference.
 
 ---
 
