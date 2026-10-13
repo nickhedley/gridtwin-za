@@ -2153,6 +2153,44 @@ Caveat: with fixed O&M at the Koeberg figure (which the code calls an upper boun
 +R29bn a year and its 2026-40 PV about R29bn higher (R44bn above c4). A 60-year life would cut the annuity 3% (R10,180/kW a
 year, -R1.7bn in 2040). The note should quote s_be7 only with this basis stated; sourcing it is TODO 14cz, after the note.
 
+Arithmetic at three capex levels (user, 13 Oct: before the note, arithmetic only; the nuclear is forced and its capital and
+running costs are outside the optimiser's objective, and the engine runs it at its capacity factor, so the rest of the build
+and dispatch do not depend on these numbers). Each case: capital with interest during construction over the IRP's 6-year
+single-unit schedule (15, 15, 25, 25, 10, 10% a year, mid-year spending, 8%: x1.2876), annuity over the engine's 40 years at 8%,
+plus new-nuclear fixed O&M at the IRP's figure (R3,146/kW a year, 2026 rands), replacing the engine's R10,500/kW a year.
+Applied to s_be7's standing nuclear (1,250 MW 2036, 2,500 2037, 3,850 2038, 5,200 2039-40). Against c4 with its top-up.
+
+```
+basis                                          overnight    with IDC     annuity+FOM   s_be7 2026-40 PV   2040 annual gap
+                                               R/kW 2026    R/kW         R/kW a year   (gap to c4)        to c4, R bn a year
+engine as run (USD 7,500, no IDC, no FOM)       126,000     -            10,500        R2,614bn (+15)        +6.8
+ours: USD 7,500/kW at R16.8                     126,000     162,239      16,751        R2,657bn (+58)       +39.3
+EIA AEO2023, large LWR, USD 7,777/kW (2022$)    158,679     204,316      20,280        R2,681bn (+82)       +57.6
+IRP 2025 workbook, EPRI large nuclear           183,678     236,506      22,979        R2,700bn (+101)      +71.7
+```
+
+Bases, one line each:
+- Ours: USD 7,500/kW overnight (index.html acapNuclear comment, "mid of published USD 6,000-9,000/kW", no study, no price year) at R16.8/USD.
+- EIA: Annual Energy Outlook 2023, Cost and Performance Characteristics of New Generating Technologies, Table 1, nuclear light water
+  reactor 2,156 MW, total overnight USD 7,777/kW in 2022 dollars (base 7,406 x technological optimism 1.05; excludes interest; fixed
+  O&M USD 136.91/kW-yr; 6-year lead time); converted x1.041 (US CPI 2023) x R18.35/USD (both from the IRP workbook's Economic
+  Parameters) x 1.0681 (SA CPI Jan 2024 to Jan 2026, as the IRP cost set). A US estimate (Sargent and Lundy 2019, escalated).
+- IRP 2025 assumptions workbook, New Tech Properties, Large-Scale Nuclear (EPRI), "Plant cost estimates (2023)": total overnight
+  R167,264-176,885/kW across 1x1600 and 2x1600 MW AREVA, 1x1117 and 2x1117 MW AP1000 (mean R171,964), escalated x1.0681 as the
+  cost set does (it treats the workbook as January 2024 rands; the label says 2023, so a few percent more if mid-2023 rands).
+
+IRP workbook, the rest (same four columns): fixed O&M R2,627-3,337/kW a year (mean R2,945; R3,146 in 2026 rands); variable O&M
+R194.5-218.4/MWh; fuel R15.35/GJ at heat rates 10,000-11,250 kJ/kWh (R153-173/MWh); economic life 30 years; lead time 72, 84,
+72 and 96 months with expense schedules over 6 or 7 years; costs are overnight, so interest during construction is excluded
+(the expense schedule is given for computing it). Exchange rate R18.35/USD.
+
+Sensitivities, not in the range: the IRP's 30-year life adds R5.5-8.1bn to the PV and R4.2-6.1bn a year in 2040; the twin-unit
+7-year schedule (x1.3357) adds R3.5-5.1bn and R2.6-3.9bn a year; the IRP's variable O&M and fuel (R395/MWh in 2026 rands against
+the engine's R205) add R5.7bn in 2040 on s_be7's 30.1 TWh of new nuclear. A realised-cost benchmark (MIT CANES 2024, next
+AP1000s at Vogtle, USD 8,300-10,375/kW in 2024 dollars, as quoted in search results) could not be read at source here (the
+container's proxy blocks web.mit.edu), so it is not used.
+
+
 ### Seeded set, rule A: s_wind35, s_disc10 and s_disc113, both cost measures, 13 Oct 2026
 
 All seeded from c4 (seed 38359856512 / c4t, WIN_FROM), one pass (MAXP=1), claude/c4-frozen; engine check and top-up as for the
