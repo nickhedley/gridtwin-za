@@ -75,7 +75,32 @@ from Thursday to about Saturday; the engine's pass marks (TODO 14dt) are a separ
    annualised retrofit cost in the objective, a lower minimum and faster commitment ramp for that share (6-8 h); engine, the
    same share applied unit by unit in the commitment step (lower minimum stable level, faster ramp) and the charge on that
    share only (6-8 h); pathway and engine check carry it by year (2 h); sourcing first (4-6 h). About 16-22 h in all.
-3. Sources for Eskom-type subcritical units: being searched (13 Oct); listed here when the search reports.
+3. Sources for Eskom-type subcritical units (13 Oct; read = in the document, extract = search text only; not yet in SOURCES):
+   - Eskom RT&D, 'Gx Operational Flexibility', RES/TRR/21/1962944 (3 Nov 2023), in Eskom's public notice on its coal
+     flexibilisation studies (Oct 2025, an MES exemption condition), read pp. 1-25: procedure-only tests without oil support
+     reached about 44-62% of full load across eight stations, against design-data minimums of about 50-69%; mills (60-90% band,
+     at least three in service), oil support below 38% of boiler maximum steam flow and air-heater temperature bind first;
+     no ramp figures in the pages read; capital (Tier 2 and 3) work neither studied nor costed, targets for 2030-35; start-up
+     fuel oil 35-80 t a start. The best 'before' basis, and Eskom's own. Eskom's terms apply: cite and summarise, do not
+     reproduce its tables here.
+   - India, the closest analogue (500 MW drum subcritical units on high-ash coal): IGEF and vgbe pilots, 32-40% minimum and
+     1.5-3%/min (Andal read, others extract); CEA 2019 and 2023 (via Power Line summaries): 40% target, never below 35% on
+     high-ash coal, about 1.3%/min achieved with manual mills; capital Rs 60-70m a unit (up to Rs 300m for old units), Dadri
+     490 MW Rs 200m; CEA regulations 2023: 40% by 2030, 3%/min above 70% load (extract); NTPC: 7.6-8% heat-rate penalty at
+     55% load (extract).
+   - Agora Energiewende (2017), Flexibility in thermal power plants, read pp. 1-51: hard coal 25-40% minimum, 3-6%/min at the
+     state of the art; old South African plants no more than 1%/min; retrofit 100-500 EUR/kW case by case (citing NREL
+     60862); Weisweiler (lignite, not hard coal) about EUR 60m a unit. The current R223/kW-yr rests on Weisweiler alone.
+   - Kumar et al. (NREL and Intertek APTECH, 2012), Power Plant Cycling Costs, read: wear per start for large subcritical
+     units, USD 59 / 65 / 105 per MW (hot / warm / cold, 2011 USD, lower bounds).
+   - Also, extract only: IEA (2018) Advanced Power Plant Flexibility and its annexes; NREL (2013) Flexible Coal; Henderson
+     (2014, IEA Clean Coal Centre); Danish Energy Agency (2018); China (Ember 2026 citing the CEC, 500-1,500 CNY/kW).
+   - South African planning: CSIR (2020): no literature on how low the existing fleet can run; Meridian (2025): seasonal
+     shutdowns save more than a lower minimum; IRP 2025 publishes no coal minimum-generation assumption.
+   Best basis: before, Eskom's report; after, the Indian 500 MW pilots and CEA (about 40%, 35% floor; 1.5-3%/min set, about
+   1%/min achieved); cost, CEA's per-unit capital with Agora's 100-500 EUR/kW as the deep-retrofit bound, Kumar for wear per
+   start. Caveats: Eskom has done the procedure tier only and the mill backlog binds before design limits; sources mix sent-out
+   and generated MW and percentages of different ratings; Indian results are short tests; costs differ in year and currency.
 
 ## Merge order to main by Wed 21 Oct (proposal, 13 Oct; you merge)
 
