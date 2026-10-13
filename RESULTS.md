@@ -2003,6 +2003,48 @@ GEM start years), with no primary source for the earlier date (SOURCES, fleet ro
 (PyPSA-RSA fleet file, unsourced); s_coalirp's 2030 date comes from its closure rule; GEM lists planned retirement 2026; no
 primary source dates its closure.
 
+### Gas role and the method gap: c4 burns 68.8 TWh of gas output against penalty c4's 17.9; c4's extra 126 Mt is 105 Mt coal, 21 Mt gas, 0.1 Mt diesel, 13 Oct 2026
+
+Engine check re-run on each final build with gas, diesel and CO2 by fuel (harness/pathcheck.js plus gasrole.py, branch
+claude/topup 833852b, mode check; COMMIT=1 PSE=1 TF=0.5, adaptive draws; same draws and seeds as the engine check): c4 run
+38365615522 (source 38359856512, c4t), penalty c4 run 38365619101 (source 38257824027). Output is electricity generated
+(TWh); fuel is gas burnt, PJ at higher heating value (CCGT at 52% efficiency, open-cycle at 10,624 kJ/kWh); CF on the new MW
+built to date (no existing CCGT). Diesel is output of all diesel open-cycle units, existing and new. 2026-29: no gas in either.
+
+```
+c4         CCGT MW  out TWh  fuel PJ  CF    LNG-OCGT MW  out TWh  fuel PJ  CF    diesel TWh
+2030             0     0.00      0.0   0%         1200     0.04      0.5   0%    0.002
+2031             0     0.00      0.0   0%         1200     0.21      2.2   2%    0.011
+2032           730     0.24      1.6   4%         1449     0.39      4.1   3%    0.016
+2033          1899     0.96      6.6   6%         1449     0.32      3.4   3%    0.027
+2034          2017     2.49     17.2  14%         1449     0.89      9.4   7%    0.049
+2035          2017     3.04     21.1  17%         1449     1.13     12.0   9%    0.041
+2036          3217     4.94     34.2  18%         1449     1.20     12.8   9%    0.061
+2037          3217     6.24     43.2  22%         1449     1.69     17.9  13%    0.048
+2038          3656    10.64     73.7  33%         1449     2.86     30.3  23%    0.060
+2039          3656    11.55     80.0  36%         1449     3.16     33.6  25%    0.048
+2040          3656    13.00     90.0  41%         1449     3.81     40.5  30%    0.060
+2026-40                    53.1      368                       15.7      167          0.52
+
+penalty c4 CCGT MW  out TWh  fuel PJ  CF    (no LNG open-cycle)                    diesel TWh
+2030          1200     0.03      0.2   0%                                          0.001
+2031          1297     0.07      0.5   1%                                          0.001
+2032          1388     0.16      1.1   1%                                          0.002
+2033          2219     0.40      2.8   2%                                          0.005
+2034          3138     1.00      6.9   4%                                          0.018
+2035          3494     1.16      8.0   4%                                          0.027
+2036          4592     1.88     13.0   5%                                          0.051
+2037          4631     2.27     15.7   6%                                          0.050
+2038          5421     3.32     23.0   7%                                          0.074
+2039          5421     3.48     24.1   7%                                          0.058
+2040          5421     4.13     28.6   9%                                          0.048
+2026-40                    17.9      124                                           0.39
+```
+
+CO2 2026-40 by fuel (gas as the engine computes it; coal the remainder): c4 coal 1,578, gas 26.9, diesel 0.4, total 1,605 Mt;
+penalty c4 coal 1,472, gas 6.2, diesel 0.3, total 1,479 Mt. The 126 Mt gap: coal 105 Mt (none in 2026-30; 8.5 to 12.8 Mt a
+year in 2031-40), gas 21 Mt, diesel 0.1 Mt. Wind and solar built by 2040: c4 13.5 and 52.5 GW; penalty c4 24.9 and 43.5 GW.
+
 ### s_nogas4strict (no new gas or open-cycle, lithium 4 GW a year): adequate after one pass, R2,838bn PV and 1,331 Mt, R240bn dearer and 274 Mt less CO2 than c4, 13 Oct 2026
 
 Run: c4's settings with LI_CAP=4000 OCGD=0 GAS_CAP=0 (no new CCGT, OCGT or diesel open-cycle), seeded from c4's final run

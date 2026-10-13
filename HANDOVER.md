@@ -27,8 +27,9 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   engine check within target every year (worst 9%); R2,838bn PV, 1,331 Mt; no gas or new open-cycle (RESULTS). Print job
   38366303884. No top-up (rule B).
 - Gas role (user, 13 Oct, item 2): engine check re-run with gas, diesel and CO2 by fuel (claude/topup, mode check, 833852b):
-  c4 run 38365615522, penalty c4 run 38365619101 (done: CCGT 17.9 TWh output, 124 PJ, CF to 9% in 2040; no LNG open-cycle;
-  CO2 coal 1,472, gas 6.2, diesel 0.3 Mt).
+  c4 run 38365615522, penalty c4 run 38365619101, both done (RESULTS, 'Gas role and the method gap'): c4 gas output 68.8 TWh
+  (CCGT 53.1, LNG open-cycle 15.7; CF 41% and 30% in 2040), penalty c4 17.9 TWh (CCGT only, CF 9% in 2040); the 126 Mt gap
+  is coal 105, gas 21, diesel 0.1 Mt.
 - s_dieselhigh (user, 13 Oct): waits on the user's choice of diesel price basis (SOURCES, 'Diesel fuel price'; TODO 14cj).
   Switch DIESEL_R on branch claude/c4-diesel (3cc075f, tested: LP unchanged when unset). Launch: ref claude/c4-diesel,
   seed_run 38359856512, seed_name c4t, c4's settings plus WIN_FROM, MAXP=1 and DIESEL_R=<value>; then the top-up.
