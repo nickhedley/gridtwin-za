@@ -78,6 +78,11 @@ available; otherwise a Playwright script against /opt/pw-browsers/chromium.
 - End every message with a short running list of the pressing outstanding tasks.
 - Push back when something is asserted as safe or settled; never fudge a test to pass.
 
+## Research helpers
+
+Subagents follow the same rules as the main session (user, 13 Oct 2026): web search first; Firecrawl only for a page
+the web reader cannot open, never for long PDFs; no reads of eskom.co.za. Put these rules in every research brief.
+
 ## Long runs
 
 Pathway loops take 5 to 30 minutes and can use several GB of memory. Run them in the background,
