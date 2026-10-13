@@ -2637,6 +2637,59 @@ optimiser's figures do not change.
 Caveats: c4's build was optimised against windows the old engine picked (the loop's adequacy test runs simulate()); a re-solve
 on the fixed engine (c5) can build less. One weather-year draw set; the engine check's own convergence rule.
 
+### Engine fix (a) against its pass marks (TODO 14dt, set 13 Oct 17:00 UTC): marks (1) and (2) fail, (3) passes, (4) proposed; reported, not moved, 13 Oct 2026
+
+User, 13 Oct: marks written into TODO 14dt before (a) lands. Engine: claude/engine-fix d388ceb (build 13h). Cross-check:
+validation/single_node/ (scripts as #33), 24-hour rolling PyPSA unit-commitment optimum, rule 'all', each engine version on
+its own week.
+
+(1) Engine within 5% of the 24-hour rolling PyPSA cost on the 2026 baseline week and the three c4 2040 weeks: fails on three
+of four. Baseline +1.3% (pass); May +7.3%, November +12.4%, stress +6.6% (fail). Figures in entry 'Engine fixes'.
+
+(2) Engine shed in the stress weeks no more than the 24-hour rolling PyPSA's: fails on two of six. Stress weeks: the four
+from entries 'c4 2040, three weeks' and '24-hour dispatch sheds nothing' (the old engine's worst weeks), plus each state's
+worst week on the fixed engine (scan: 12 weather years x 2 draws; the loop's draws, seeds 20260816 + k x 104729 + year x
+7919, and for c4 2040 also the engine check's, 71830529 + ...).
+
+```
+R million a week, shed GWh                                engine (13h)        24 h rolling     gap     mark (2)
+c4 2030, weather 2017, hours 4425+ (old worst)            1,394.5 / 0         1,381.7 / 0      +0.9%   pass
+c4 2039, weather 2016, hours 6807+ (old worst)            2,366.0 / 0         2,216.1 / 0      +6.8%   pass
+s_coalavail 2030, weather 2017, 4425+ (old worst)         2,765.7 / 0         2,606.1 / 0      +6.1%   pass
+c4 2040 with top-up, weather 2016, 6807+ (old worst)      2,343.1 / 0         2,198.6 / 0      +6.6%   pass
+s_coalavail 2030, weather 2023, hours 728+ (new worst)    2,888.6 / 5.66      2,661.0 / 0      +8.6%   fail
+c4 2040 without top-up, weather 2021, 897+ (new worst)    2,663.6 / 0.45      2,191.6 / 0      +21.5%  fail
+```
+
+Whole-year shed on the fixed engine, 24 draws (loop's): c4 2030 none; c4 2039 none (old engine: 11 draws, mean 3.04 GWh);
+s_coalavail 2030 one draw, mean 0.24 GWh (old: 11 draws, 4.49); c4 2040 with top-up none; without top-up none on the loop's
+draws and one on the engine check's (mean 0.019 GWh).
+
+(3) The 2025 benchmarks still pass: pass. validate_benchmarks 28/28 on the c4 engine (12e) and on 13h. Values, 12e -> 13h
+(band): coal 164.24 -> 164.59 TWh (Ember 171.26, +/-6%); CO2 173.98 -> 174.06 Mt (160.30, +/-12%); nuclear 10.21, wind
+14.14, utility solar 7.11, hydro 2.90, imports 6.61 TWh unchanged; peaker season ratio 3.2 -> 4.4 (2.15-8.6); grid
+generation 212.8 -> 212.9 TWh (190-222); coal capacity factor 47.2 -> 47.3% (35-60); wind 35.0%, residual RE share 12.0%,
+surplus 1.5 and 5.9 GW, solar 24.8%, rooftop 19.6%, nuclear 62.0% unchanged.
+
+(4) Run time, proposed limits for your decision (proposed after measuring 13h, so not a bar set in advance):
+- Engine check: the worst case (15 years, each at the 480-run cap, 7,200 simulated years) finishes within 60 minutes on
+  GitHub, half the check job's 120-minute timeout. Measured: c4's check (12e) took 11 min 38 s on GitHub for 2,760 simulated
+  years (0.25 s each, run 38359856512, job 'check'); per simulated year here 318 ms (12e) and 381 ms (13h). Estimate at the
+  cap: 30 min (12e), 36 min (13h); c4's build on 13h about 9 min (1,800 simulated years: every year stopped at 120 runs).
+  Pass on the estimate; c5's first check job measures it.
+- Live app: a slider change recomputes on average no more than 25% slower than on the c4 engine, in Chromium on the same
+  machine (the app as served, charts drawn; Today 2026, 24 recomputes each, two engines interleaved). Measured: 12e 2.18 s
+  (fastest 1.21), 13h 3.19 s (fastest 1.51), +46%: fail. (Model only, jsdom: 1.44 against 1.84 s, +28%.) The look-ahead's
+  forecast terms are recomputed in every call (TODO 14ds); caching them gives identical results, estimate 2-3 h.
+
+Diagnostic, not a change: a 48-hour look-ahead (storageLookaheadH 48) on the same six weeks moves the gaps little:
+baseline 1.3%, May 7.3%, November 11.7%, c4 2040 stress 6.6%, s_coalavail 2030 new worst 7.5% (shed 0), c4 2040 without
+top-up 16.9% (shed still 0.45 GWh). Sight is not what is missing; nor is charging from coal
+against a 72-hour window (experiment, not committed: every gap within 0.6 points of 13h, shed unchanged). In the c4 2040 week without top-up the engine burns 91.5 GWh
+of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening and morning peaks diesel runs at 2.9-7.0 GW
+while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
+GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
+
 ### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
 
 Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on
