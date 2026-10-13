@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 09:08 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 09:14 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -52,6 +52,8 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   Top-up 38369545953: 4,750 MW, R2,612bn, 2036 and 2038 over the cap; diesel at most 0.48 TWh, so no high-diesel version.
 - s_committed finished 09:02 UTC (run 38361295036, name confirmed): engine check within target every year, R2,562bn,
   1,602 Mt; top-up 0 MW (38373578065). Same flag as s_be6: R36bn below c4 on the engine check, R9bn above on the LP objective.
+- s_wind35 finished 09:11 UTC (run 38361299620, name confirmed): as solved R2,518bn, 1,522 Mt, LP objective R1,661bn;
+  2037-40 fail the engine check (2040 500%). Print 38374615434; top-up running (claude/topup, dispatched 09:13).
 - After each run: print job (claude/print-results, source_run = its last run) and, for rule A runs, the top-up
   (claude/topup, same inputs). c4: report as solved and with the top-up beside penalty c4 (cost PV, CO2, gas, diesel
   open-cycle and lithium GW in 2030/2035/2040, shed by year; 2039-40 marked failing the loop's own test; Tutuka flag).
