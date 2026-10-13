@@ -7790,7 +7790,13 @@ function simulate(u, prof, outPath, _soc0){
     // few hours, given what it can physically ramp in that time.
 
     if(committedMW<prevCommittedMW-rampAllowedMW) committedMW=prevCommittedMW-rampAllowedMW;
-    if(committedMW>prevCommittedMW) startUpCostR+=(committedMW-prevCommittedMW)*p.coalStartUpCostRPerMW;
+    // COAL START-UPS CHARGED ONCE (TODO 14dl, 13 Oct 2026). This aggregate committedMW used to charge
+    // coalStartUpCostRPerMW (R224.52 per MW of commitment added) on top of the commitment pre-pass's own unit start
+    // costs (ucStartCost, UC_FLEET start cost x availability). Both priced the same starts from the same fleet data
+    // (R224.52 is UC_FLEET's R152.58 per installed MW over a 0.68 availability factor), and dispatch follows the
+    // pre-pass units (ucAvail, ucMSL), not this aggregate, whose minStableMW is unused. So only the pre-pass charges
+    // now; committedMW is kept as a diagnostic. The price model's start-up adder (coalStartUpCostRPerMW below) and
+    // the optimiser are unchanged.
     prevCommittedMW=committedMW;
     const minStableMW=committedMW*coalMinStableFrac(coalInstRem>0?committedMW/coalInstRem:0);
     // Ramp-aware floor. Raising committed capacity alone does not help, because the must-run
@@ -8214,7 +8220,8 @@ function simulate(u, prof, outPath, _soc0){
     const plF = partLoadF[h];
     E.coal+=coalGen;
     coalFuelMWh += coalGen * plF;   // fuel-equivalent MWh, for emissions
-    fuelCost+=coalGen*(p.costCoal*plF+p.vomCoal)+(isNaN(ucStartCost[h])?0:ucStartCost[h]);
+    fuelCost+=coalGen*(p.costCoal*plF+p.vomCoal);
+    startUpCostR+=(isNaN(ucStartCost[h])?0:ucStartCost[h]);   // the pre-pass's unit starts, reported as start-up cost (14dl)
     carbonCost+=coalGen*cC*plF;
     coalGenTotal[h]=coalGen;
     stack.coal[h]=coalGen;
@@ -18591,7 +18598,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-12e';
+const BUILD_STAMP = '2026-10-13f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
