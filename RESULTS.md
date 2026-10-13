@@ -2169,6 +2169,11 @@ EIA AEO2023, large LWR, USD 7,777/kW (2022$)    158,679     204,316      20,280 
 IRP 2025 workbook, EPRI large nuclear           183,678     236,506      22,979        R2,700bn (+101)      +71.7
 ```
 
+2040 CO2 (engine check, same draws): s_be7 93.5 Mt against c4 101.3 Mt (101.27 as solved, 101.26 with its top-up; run
+38362504364): 7.8 Mt less in that year, the whole plan's difference (gas fuel -13.1 bn, coal -2.6 bn), not nuclear alone.
+Beside the 2040 annual gap, the implied cost of the 7.8 Mt (gap / 7.8 Mt, net of the carbon tax already in the engine cost):
+engine as run R870/t; ours R5,040/t; EIA R7,380/t; IRP R9,190/t.
+
 Bases, one line each:
 - Ours: USD 7,500/kW overnight (index.html acapNuclear comment, "mid of published USD 6,000-9,000/kW", no study, no price year) at R16.8/USD.
 - EIA: Annual Energy Outlook 2023, Cost and Performance Characteristics of New Generating Technologies, Table 1, nuclear light water

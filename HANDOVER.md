@@ -96,7 +96,7 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   +R6.8bn against c4 with its top-up; R22bn a year of fixed O&M would be missing at Koeberg's figure (TODO 14cz).
 - s_be7 nuclear arithmetic (user, 13 Oct; RESULTS): with interest during construction and the IRP's fixed O&M, s_be7 is
   R2,657bn (ours, USD 7,500), R2,681bn (EIA AEO2023) or R2,700bn (IRP 2025 workbook): +R58, +82 or +101bn against c4; 2040
-  gap +R39, +58 or +72bn a year. Engine unchanged (TODO 14cz).
+  gap +R39, +58 or +72bn a year; 2040 CO2 93.5 against c4's 101.3 Mt (-7.8 Mt; R5,040-9,190/t). Engine unchanged (TODO 14cz).
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
