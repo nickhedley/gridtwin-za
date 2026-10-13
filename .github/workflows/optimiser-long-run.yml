@@ -20,6 +20,9 @@ on:
       source_name:
         description: 'The pathway run name, as in results-<name>'
         required: true
+      mode:
+        description: 'topup (default): the adequacy top-up; check: re-run the engine check and print gas, diesel and CO2 by year (gasrole.py)'
+        default: 'topup'
 
 permissions:
   contents: read
@@ -39,10 +42,12 @@ jobs:
           LABEL: ${{ inputs.name }}
           SRC_RUN: ${{ inputs.source_run }}
           SRC_NAME: ${{ inputs.source_name }}
+          MODE: ${{ inputs.mode }}
         run: |
           [[ "$LABEL" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "name: letters, digits, - and _ only"; exit 1; }
           [[ "$SRC_RUN" =~ ^[0-9]+$ ]] || { echo "source_run must be a run id"; exit 1; }
           [[ "$SRC_NAME" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "source_name: letters, digits, - and _ only"; exit 1; }
+          [[ "$MODE" == topup || "$MODE" == check ]] || { echo "mode: topup or check"; exit 1; }
 
       - uses: actions/checkout@v5
         with:
@@ -67,6 +72,7 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: Top-up
+        if: inputs.mode != 'check'
         working-directory: harness
         env:
           SRC_NAME: ${{ inputs.source_name }}
@@ -79,6 +85,20 @@ jobs:
           set -o pipefail
           env COMMIT=1 PSE=1 TF=0.5 IN="$P" CHECK="$C" OUT="out/topup_${SRC_NAME}.json" \
             node --max-old-space-size=8192 topup.js 2>&1 | tee "out/topup_${SRC_NAME}.log"
+
+      - name: Engine check with gas, diesel and CO2 by fuel
+        if: inputs.mode == 'check'
+        working-directory: harness
+        env:
+          SRC_NAME: ${{ inputs.source_name }}
+          SRC_RUN: ${{ inputs.source_run }}
+        run: |
+          P=$(find ../dl/results -name "pathway_${SRC_NAME}.json" | head -1)
+          [ -n "$P" ] || { echo "no pathway_${SRC_NAME}.json in run $SRC_RUN"; exit 1; }
+          mkdir -p out
+          set -o pipefail
+          env COMMIT=1 PSE=1 TF=0.5 IN="$P" OUTC="out/check_${SRC_NAME}.json" node --max-old-space-size=8192 pathcheck.js 2>&1 | tee "out/check_${SRC_NAME}.log"
+          python3 -I gasrole.py testroot/index.html "out/check_${SRC_NAME}.json" "$SRC_NAME" | tee "out/gasrole_${SRC_NAME}.txt"
 
       - name: Keep the top-up
         if: always()
