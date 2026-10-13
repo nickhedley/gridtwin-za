@@ -2055,6 +2055,32 @@ CO2 2026-40 by fuel (gas as the engine computes it; coal the remainder): c4 coal
 penalty c4 coal 1,472, gas 6.2, diesel 0.3, total 1,479 Mt. The 126 Mt gap: coal 105 Mt (none in 2026-30; 8.5 to 12.8 Mt a
 year in 2031-40), gas 21 Mt, diesel 0.1 Mt. Wind and solar built by 2040: c4 13.5 and 52.5 GW; penalty c4 24.9 and 43.5 GW.
 
+### s_committed (committed gas procurement): within target on the engine check every year, R2,562bn PV and 1,602 Mt, no top-up needed; again cheaper than c4 on the engine check (R36bn) but dearer on the optimiser's objective (R9bn), 13 Oct 2026
+
+Run: c4's settings plus the committed-procurement gas minimum (gasMin: 1,200 MW a year 2030-33, 200 MW in 2034), seeded from
+c4, rule A. Run 38361295036, claude/c4-frozen; pass 1 solved Optimal in 99 min from a cold start, 'pass limit reached'; loop
+test after pass 1: 2040 fails (3.20 against 2.60 GWh). Engine check: every year within target (2040 1.98 against 2.60, 76%;
+2039 32%). Print 38373527944; top-up 38373578065: 0 MW, R2,562bn.
+
+```
+                                 s_committed           c4 as solved
+cost 2026-40, PV at 8% real      R2,562bn              R2,598bn
+optimiser objective (LP)         R1,737bn              R1,728bn
+CO2 2026-40                      1,602 Mt              1,605 Mt
+gas GW 2030 / 2035 / 2040        1.2 / 5.0 / 6.2       1.2 / 3.5 / 5.1
+  of which OCGT on LNG           1.2 / 2.2 / 2.2       1.2 / 1.4 / 1.4
+diesel open-cycle GW (new)       2.8 / 2.8 / 2.8       2.8 / 2.8 / 3.6
+lithium GW                       6.2 / 9.2 / 19.9      6.6 / 11.2 / 21.7
+lithium GWh                      36 / 56 / 116
+onshore wind GW built            12.5 / 12.5 / 15.1    13.5 by 2040
+utility solar GW built           14.4 / 24.8 / 50.0    52.5 by 2040
+coal retired early               1,207 MW from 2026    588 MW from 2026
+gas output TWh, 2040             16.6                  16.8
+```
+
+Same flag as s_be6: the added gas minimum costs R9bn on the optimiser's objective, as a constraint should, while the engine
+check puts the plan R36bn below c4 (TODO 14cv). The loop's test fails 2040 (123%) where the engine check passes it (76%).
+
 ### s_be6 (lithium 550 MW a year from 2026): adequate after one pass, R2,550bn PV and 1,629 Mt, no top-up needed; the engine check puts it R48bn below c4 while the optimiser's own objective puts it R88bn above, 13 Oct 2026
 
 Run: c4's settings plus LI_CAP=550 CAP_FROM=2026, seeded from c4 (WIN_FROM, seed 38359856512 / c4t), rule A (MAXP=1). Run
