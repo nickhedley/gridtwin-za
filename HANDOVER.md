@@ -18,6 +18,8 @@ take over at any point from this block, CLAUDE.md and TODO.md (items 14cn, 14co,
 3. Adequacy top-up (TODO 14ct), branch claude/topup; run it on each finished run and report cost as solved and with the top-up.
 4. s_coalirp on IRP Figure 3 as digitised by Nick (ee92b00 on claude/c4-coalirp, tested); start it on its own with c4's final
    windows and the set's rule; do not hold the set for it.
+6. Coal (user, 13 Oct): sourced schedule recorded in SOURCES for the next central (TODO 14cu); s_coalirp keeps ee92b00 (sourced
+   order moves at most one unit a year, Kelvin aside); the c4 report flags Tutuka 2030-31 in c4 against 2035-40 at 50-year life.
 5. Penalty c4 finished 12 Oct 18:12 UTC without a handover (pass 2 ended 75 minutes inside the job limit); the handover is untested.
 
 ## Focus (user, 12 Oct 2026)
