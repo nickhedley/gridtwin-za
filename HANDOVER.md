@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 10:15 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 10:25 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -78,6 +78,13 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   windows: 2015 22 Mar-4 Apr, 2017 28 Jun-11 Jul, 2023 25 Jan-7 Feb plus the tail week; diesel 6,200 MW both sides; the
   optimiser caps stress-day coal at the engine's committed coal (lowest hour 576 MW) not available coal (never below
   12.6 GW there): TODO 14cx, after the note. Every new run gets a tsl job (claude/costsplit, mode tsl) beside print and top-up.
+- s_coalavail started 10:22 UTC (user, 13 Oct: test TODO 14cx before the note, one run): run 38382908890, ref
+  claude/c4-coalavail (1143a98; c4-frozen plus COAL_AVAIL, tested: off and on-without-windows key e0b93ac712; on with windows
+  only the stress-window cmax and resv numbers change, ramp rows and objective identical), c4's settings plus WIN_FROM,
+  MAXP=1 and COAL_AVAIL=1, seed 38359856512 / c4t, rule A: then print, top-up and tsl. Report against c4: 2030 builds (diesel
+  open-cycle, lithium), the 2030 penalty, cost on both measures.
+- Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
+  374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
   reports the optimiser objective without the stress-target penalty, and the note says where the two disagree on direction.
   No engine changes before the note.

@@ -2055,6 +2055,12 @@ full cycles a year (discharge / 129,339 MWh)   engine 119     optimiser 374 (3.1
 Upper bound: each hour taken on its own (not chained), limited by the curtailment, lithium's spare charging power (22,510 MW
 less all battery charging that hour, iron-air included, so conservative on power) and the room to 90% full divided by 0.88.
 
+For the note (user, 13 Oct): in 73% of curtailed hours (1,677 of 2,290) lithium is at least 90% full at the start of the
+hour, and it cycles 119 times a year in the engine against 374 in the optimiser. The note states engine costs for
+storage-heavy plans as an upper bound: the engine's dispatch is one feasible operation of the plan, so a better storage
+dispatch could only lower its cost. The bias runs against storage-heavy plans, the direction of s_be6's disagreement
+(s_be6 is the storage-light plan; the engine check favours it).
+
 3. c4's 2030 stress windows and the capacity each side sees (report only). Optimiser: c4's pass-9 window file
 (pathway_c4t_lp2040.json, 32 windows), from the lpsplit run 38380045109 (claude/costsplit 4b1fb49). Engine: same local setup,
 2030, 120 runs (10 draws x 12 years), plus the three windows replayed on their weather year and seed with c4's final build.
