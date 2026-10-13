@@ -227,6 +227,11 @@ try {
   if (typeof simulate === 'undefined') { console.log('vm eval error:', String(e).slice(0,150)); }
 }
 
+// Modern-turbine wind (bldWindModern) is on by default, so new wind needs the map the app loads at start-up; load it
+// the same way (setWindModMap, regional map alongside) rather than turning the option off for the suite.
+if (typeof setWindModMap === 'function'){
+  vm.runInThisContext(`(d => { setWindModMap(d.map, 'nodal/profiles_wind_modern_map.json'); WIND_MOD_REG = d.regional_map || null; })(${fs.readFileSync('nodal/profiles_wind_modern_map.json', 'utf8')})`);
+}
 if (typeof simulate !== 'function') { console.log('ERROR: simulate() not found after eval'); process.exit(1); }
 if (typeof genOutagePath !== 'function') { console.log('ERROR: genOutagePath() not found after eval'); process.exit(1); }
 console.log('  simulate() and genOutagePath() loaded successfully');
