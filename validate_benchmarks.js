@@ -27,6 +27,41 @@ const { JSDOM } = require('jsdom');
 
 const ROOT = process.argv[2] || '.';
 let pass = 0, fail = 0;
+
+// EMBER FIGURES FROM EMBER'S OWN FILES (user, 12 Oct 2026). Ember's South Africa figures are read from
+// public_data/ember_za.json, which fetch_ember.py writes from Ember's public bulk data files (CC BY 4.0, attribute
+// Ember), instead of being typed in. Calendar-year and twelve-month sums use the MONTHLY file, the Eskom-metered
+// system; Ember's yearly file adds generation outside it (2025 coal 197.5 TWh against 185.6 in the monthly file).
+// Re-run fetch_ember.py for a new release; the release date prints with the results.
+const EMBER = JSON.parse(fs.readFileSync(path.join(ROOT, 'public_data', 'ember_za.json'), 'utf8'));
+const EMBER_REL = `Ember monthly data, release of ${EMBER.meta.files.monthly.released}`;
+const AUX = { coal: 0.077, nuclear: 0.05 };          // station auxiliary, gross to sent-out (see BASIS above)
+function emberSum(variable, unit, fromYM, toYM) {
+  const r = EMBER.monthly.filter(x => x[3] === variable && x[4] === unit && x[0].slice(0, 7) >= fromYM && x[0].slice(0, 7) <= toYM);
+  const months = (+toYM.slice(0, 4) - +fromYM.slice(0, 4)) * 12 + (+toYM.slice(5) - +fromYM.slice(5)) + 1;
+  if (r.length !== months) throw new Error(`ember_za.json: ${variable} ${unit} has ${r.length} of ${months} months ${fromYM} to ${toYM}`);
+  return r.reduce((t, x) => t + x[5], 0);
+}
+const EMBER_COAL_25 = emberSum('Coal', 'TWh', '2025-01', '2025-12');
+const EMBER_NUC_25 = emberSum('Nuclear', 'TWh', '2025-01', '2025-12');
+const EMBER_CO2_25 = emberSum('Total emissions', 'mtCO2', '2025-01', '2025-12');
+const EMBER_WIND_25 = emberSum('Wind', 'TWh', '2025-01', '2025-12');
+function emberYear(category, variable, unit, year) {
+  const r = EMBER.yearly.filter(x => x[0] === String(year) && x[1] === category && x[3] === variable && x[4] === unit);
+  if (r.length !== 1) throw new Error(`ember_za.json yearly: ${category} ${variable} ${unit} ${year}: ${r.length} rows`);
+  return r[0][5];
+}
+// WHY THE YEARLY AND MONTHLY FILES DIFFER (user question, 12 Oct 2026). Ember's methodology (May 2024): South Africa's
+// yearly generation is the Energy Institute's annual series; the monthly is Eskom's data, with coal topped up from
+// Stats SA load data; the latest year is the previous annual value moved by the change in the monthly data. The two
+// agree within 2% to 2021; the gap opens in 2022 (coal 3.2 TWh), 2023 (8.9) and 2024 (12.0), and 2025 inherits 2024's
+// 12.0 exactly. A steady block of captive plant (Sasol's own stations) would show in every year, so the gap is a
+// divergence between the two source series since 2022, not a known coverage item. The model is the Eskom-connected
+// system, which the monthly file follows; it is the benchmark, and the yearly figures print beside it.
+// Eskom-metered wind capacity, mean over 2025: Ember's end-2024 capacity (IRENA; no private wind was wheeled then)
+// and the REIPPPP fleet at end-2025, 3,763 MW (Engineering News, 9 Jan 2026, citing the IPP Office), plus Eskom's
+// Sere, 100 MW. Ember's end-2025 4.33 GW includes wheeled private plant whose output Ember does not count.
+const WIND_METERED_MW_2025 = (emberYear('Capacity', 'Wind', 'GW', 2024) * 1000 + 3763 + 100) / 2;
 const rows = [], failures = [], notes = [];
 
 // ── the benchmark set ───────────────────────────────────────────────────────
@@ -38,14 +73,14 @@ const rows = [], failures = [], notes = [];
 // reason is how a real error hides.
 const BENCH = {
   coal: {
-    value: 164.0, tolPct: 6, unit: 'TWh',
-    source: 'Ember 2025 gross 177.7 TWh, converted at 7.7% station auxiliary',
+    value: +(EMBER_COAL_25 * (1 - AUX.coal)).toFixed(2), tolPct: 6, unit: 'TWh',
+    source: `${EMBER_REL}: 2025 gross ${EMBER_COAL_25.toFixed(1)} TWh, converted at ${AUX.coal * 100}% station auxiliary`,
     why: 'The model is sent-out and Ember is gross. Converting per carrier closed what looked ' +
          'like an 11% shortfall on 16 Aug 2026. Residual is dispatch timing, not level.',
   },
   nuclear: {
-    value: 10.95, tolPct: 8, unit: 'TWh',
-    source: 'Ember 2025 gross 11.5 TWh at 5% auxiliary',
+    value: +(EMBER_NUC_25 * (1 - AUX.nuclear)).toFixed(2), tolPct: 8, unit: 'TWh',
+    source: `${EMBER_REL}: 2025 gross ${EMBER_NUC_25.toFixed(2)} TWh at ${AUX.nuclear * 100}% auxiliary`,
     why: 'Koeberg output swings with refuelling outages, so a single year is a poor benchmark. ' +
          'CF was corrected 0.90 -> 0.75 -> 0.70 on 16 Aug once the sent-out basis was applied.',
   },
@@ -62,16 +97,20 @@ const BENCH = {
     // Widening a band to get green is what rule 2 forbids, so the tight check moved rather
     // than disappeared: see 'wind capacity factor reconciles with Eskom' below, which
     // compares CF against CF and reads 1.5%.
-    value: 11.60, tolPct: 25, unit: 'TWh',
-    source: 'Ember 12 months to May 2026, NTCSA-metered fleet',
-    why: 'The model INCLUDES privately wheeled wind that Ember does not count, and runs a ' +
-         'different weather year, so it should read ABOVE this by roughly 20%. A figure ' +
-         'BELOW the benchmark would be the real alarm. The FLEET-NORMALISED check is the ' +
-         'one that constrains accuracy.',
+    // 12 Oct 2026 (user: the model sat 21.5% above Ember and still passed a 25% band; find the cause, then tighten).
+    // The cause is capacity. The model runs FIXED.windMW for the whole year: the wheeled private plant Ember does not
+    // count (about 470 MW) and the plants commissioned through 2025 and early 2026, counted from 1 January. The
+    // benchmark is now calendar 2025, the year of the model's wind profile, so weather drops out, and Ember's energy
+    // is scaled to the model's fleet by FIXED.windMW over the 2025 metered mean. What is left is capacity factor and
+    // the capacity estimate, so the band is 5%. Set below once the model's fleet is known.
+    value: null, tolPct: 5, unit: 'TWh',
+    source: `${EMBER_REL}: 2025 wind ${EMBER_WIND_25.toFixed(2)} TWh, scaled to the model's fleet over the 2025 metered mean ${WIND_METERED_MW_2025.toFixed(0)} MW`,
+    why: 'Ember counts metered plant only, and plants from their commissioning; the model runs its whole fleet all ' +
+         'year. With that divided out, a gap above 5% is capacity factor or a wrong capacity figure.',
   },
   solarUtility: {
     value: 6.5, tolPct: 20, unit: 'TWh',
-    source: 'Ember utility-scale PV, 12 months to May 2026',
+    source: 'Ember utility-scale PV, 12 months to May 2026 (Ember website; the bulk files carry solar only in total, rooftop included)',
     why: 'Wide band: the utility/rooftop split differs between sources, and wheeled plant sits ' +
          'on the model side only.',
   },
@@ -97,8 +136,8 @@ const BENCH = {
          'a newer Eskom energy balance has been published before touching the constant.',
   },
   co2: {
-    value: 175, tolPct: 12, unit: 'Mt',
-    source: 'Ember 2025 power-sector CO2 for South Africa',
+    value: +EMBER_CO2_25.toFixed(1), tolPct: 12, unit: 'Mt',
+    source: `${EMBER_REL}: 2025 power-sector CO2, monthly sum (was 175; Ember's yearly file gives 169.7 Mt for 2025)`,
     // CROSS-CHECKED 1 Sep 2026 against Eskom's own coal burn, after EDMSA Scenario A put
     // 2025 emissions at 195 Mt against our 174.5. Eskom FY2026 burnt 96.5 Mt of coal for
     // about 165 TWh. The implied emission factor depends entirely on calorific value:
@@ -113,7 +152,9 @@ const BENCH = {
     //
     // THREE NUMBERS, THREE BOUNDARIES. Anyone challenging this should be asked which they
     // mean before the constant is touched. Ember's power-sector CO2 is the right
-    // comparator for a power-system model and we sit within 0.3% of it.
+    // comparator for a power-system model and we sat within 0.3% of the 175 Mt typed in then. 12 Oct 2026: from
+    // Ember's monthly file (release 7 Jul 2026) 2025 sums to 160.3 Mt and the model reads about 8.5% above it; the
+    // yearly file says 169.7. Which Ember series is the comparator is an open question, not settled here.
     why: 'Follows the coal reconciliation, plus the part-load heat-rate penalty added 17 Aug ' +
          'which raises emissions per MWh by ~1.5% at default.',
   },
@@ -347,6 +388,8 @@ const check = (name, ok, detail) => {
   if (!M || M.err) { console.log('FATAL:', M ? M.err : 'no result'); process.exit(1); }
 
   console.log('\nPER-CARRIER RECONCILIATION, sent-out basis');
+  console.log(`  Ember figures: ${EMBER_REL} (yearly ${EMBER.meta.files.yearly.released}), public_data/ember_za.json, CC BY 4.0, Ember`);
+  BENCH.wind.value = +(EMBER_WIND_25 * M.windMW / WIND_METERED_MW_2025).toFixed(2);
   console.log('  carrier          model    bench     gap    band');
   for (const [k, b] of Object.entries(BENCH)) {
     const v = M[k];
@@ -361,11 +404,21 @@ const check = (name, ok, detail) => {
     rows.push({ carrier: k, model: +v.toFixed(2), bench: b.value, gapPct: +gapPct.toFixed(1) });
   }
 
+  // Both Ember files, so the choice of the monthly one stays visible (user, 12 Oct 2026).
+  console.log(`  Ember 2025, monthly file (benchmark) against yearly file: coal ${EMBER_COAL_25.toFixed(1)} against ` +
+    `${emberYear('Electricity generation', 'Coal', 'TWh', 2025)} TWh gross; nuclear ${EMBER_NUC_25.toFixed(2)} against ` +
+    `${emberYear('Electricity generation', 'Nuclear', 'TWh', 2025)}; wind ${EMBER_WIND_25.toFixed(2)} against ` +
+    `${emberYear('Electricity generation', 'Wind', 'TWh', 2025)}; CO2 ${EMBER_CO2_25.toFixed(1)} against ` +
+    `${emberYear('Power sector emissions', 'Total emissions', 'mtCO2', 2025)} Mt`);
+  console.log(`  wind: model fleet ${M.windMW} MW all year against a 2025 metered mean of ${WIND_METERED_MW_2025.toFixed(0)} MW ` +
+    `(x${(M.windMW / WIND_METERED_MW_2025).toFixed(3)}); model ${M.wind.toFixed(2)} TWh against Ember ${EMBER_WIND_25.toFixed(2)} ` +
+    `(x${(M.wind / EMBER_WIND_25).toFixed(3)})`);
+
   // Wind must read ABOVE Ember, not merely near it: the model counts privately
   // wheeled plant that Ember excludes. Being below would mean capacity is missing.
   check('wind reads ABOVE the NTCSA-metered benchmark, as wheeling implies',
-        M.wind >= BENCH.wind.value,
-        `model ${M.wind.toFixed(2)} TWh vs Ember-comparable ${BENCH.wind.value} TWh — ` +
+        M.wind >= EMBER_WIND_25,
+        `model ${M.wind.toFixed(2)} TWh vs Ember ${EMBER_WIND_25.toFixed(2)} TWh (2025, metered) — ` +
         `the model includes wheeled wind that Ember does not, so below is wrong`);
 
   console.log('\nCAPACITY FACTORS — a separate test, because energy and CF errors can cancel');

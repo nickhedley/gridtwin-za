@@ -1,0 +1,59 @@
+{
+ "bias_factor": 1.0753,
+ "years": [
+  2016,
+  2019,
+  2021,
+  2023
+ ],
+ "turbine": [
+  "Vestas V162 5600",
+  120
+ ],
+ "farms": {
+  "Impofu": {
+   "raw_cf": 41.1,
+   "corrected_cf": 44.0,
+   "by_year": [
+    42.0,
+    46.4,
+    42.3,
+    45.2
+   ],
+   "stated_cf": 43.6
+  },
+  "San Kraal": {
+   "raw_cf": 47.4,
+   "corrected_cf": 50.7,
+   "by_year": [
+    49.2,
+    51.3,
+    50.1,
+    52.4
+   ],
+   "stated_cf": 50.2
+  },
+  "Phezukomoya": {
+   "raw_cf": 47.5,
+   "corrected_cf": 50.9,
+   "by_year": [
+    49.4,
+    51.4,
+    50.2,
+    52.5
+   ],
+   "stated_cf": null
+  },
+  "Umsobomvu": {
+   "raw_cf": 48.0,
+   "corrected_cf": 51.3,
+   "by_year": [
+    49.9,
+    51.9,
+    50.4,
+    53.1
+   ],
+   "stated_cf": null
+  }
+ }
+}

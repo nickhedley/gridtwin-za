@@ -20,7 +20,7 @@ A national-level (single-node) hourly dispatch simulation of one calendar year (
 3. **Nuclear, hydro, Cahora Bassa imports** — near-must-run
 4. **Coal** — 42 GW installed × EAF, with real ramp limits and unit commitment
 5. **Pumped storage & batteries** — discharge before peakers; recharge from surplus renewables and off-peak coal headroom
-6. **Gas CCGT** (if built) — LNG-fired at ~R2,800/MWh; dispatched only as backup
+6. **Gas CCGT** (if built) — LNG-fired at R2,003/MWh fuel; dispatched only as backup
 7. **Diesel OCGT** — last resort, ~R6,100/MWh
 8. **Unserved energy** — reported as load shedding; one stage ≈ 1,000 MW shed
 
@@ -85,7 +85,7 @@ Demand, wind and solar profiles are **actual Eskom hourly data for 2025** (Eskom
 | Item | Value | Basis |
 |---|---|---|
 | Coal marginal cost | R546/MWh | Eskom FY2025 primary energy cost |
-| Gas CCGT dispatch cost | **R2,800/MWh** | LNG-fired at ~$14–19/MMBtu spot (Jul 2026) × R19/$ × 8 GJ/MWh. IRP 2025 baseline of $10/MMBtu is below current market |
+| Gas CCGT fuel cost | **R2,003/MWh** | USD 18.50/MMBtu delivered (FY2026 JKM reference plus USD 2 regas and transport) × R16.50/USD ÷ 0.293071 MWh/MMBtu ÷ 52% efficiency; variable O&M R35/MWh is separate. IRP 2025 uses R260.89/GJ in January 2024 rands, flat real (about USD 15/MMBtu). Under review: TODO 14bo |
 | Diesel OCGT | R6,100/MWh | Eskom OCGT fuel cost |
 | Nuclear | R160/MWh | Variable O&M only |
 | Imports (Cahora Bassa) | R550/MWh | Published contract rates |
@@ -166,7 +166,7 @@ Benchmark scripts: `calibrate_heuristic.js`, `calibrate_block_commitment.js`.
 - **Storage dispatches with bounded heuristics**, not full optimisation.
 - **Monte Carlo varies outages only.** Weather and demand are fixed across the 60 runs.
 - **Rooftop PV is estimated**, not measured.
-- **Gas CCGT costs are highly uncertain** — LNG spot price is $14–19/MMBtu in mid-2026, well above the IRP's $10/MMBtu baseline assumption.
+- **Gas CCGT costs are highly uncertain** — LNG spot price was about $17–26/MMBtu in mid to late 2026 (JKM), against the IRP 2025 assumption of about $15/MMBtu (R260.89/GJ, January 2024 rands).
 - **Costs are indicative** — not a tariff (excludes distribution, retail and most network costs).
 
 For decision-grade analysis, use [PyPSA-RSA](https://github.com/MeridianEconomics/pypsa-rsa) (Meridian Economics).

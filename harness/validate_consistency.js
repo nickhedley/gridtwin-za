@@ -1396,6 +1396,17 @@ const num = t => {
       // only. See BLD_FOM in index.html for the sources. This is a correction, not an
       // inflation: the earlier figures understated the cost of every build.
       //
+      // UPDATED 7 Oct 2026 (third), R1.096 -> R1.205. Wind central on BW6 compliant bids, R21,000 -> R28,463/kW (user
+      // decision). Measured on build 07q: wind alone (old battery cost) gives R1.045, so wind adds R0.109 and the aged
+      // battery R0.160. Deliberate input change, tolerance unchanged.
+      //
+      // UPDATED 7 Oct 2026 (later), R1.160 -> R1.096. Lithium central is BW3 aged to January 2026 (equipment share at
+      // BNEF's 2025 decline; user decision), R13,699/kW. Measured on build 07p; old cost gives R0.936, BW3 as bid R1.160.
+      //
+      // UPDATED 7 Oct 2026, R0.936 -> R1.160. Lithium capex moved to BESIPPPP bid window 3, R8,105 -> R15,962/kW
+      // at 4 h (user decision, TODO 14ax; build 07j). Measured on build 07o; the same build with the old battery
+      // cost gives R0.936 exactly, so the whole move is the battery input. Deliberate input change, tolerance unchanged.
+      //
       // UPDATED 4 Oct 2026, R1.019 -> R0.936. The Deep decarbonisation preset was re-sized after
       // the congestion fix and common-mode outages (32.5 GW wind, 29.5 solar, 19 GW lithium,
       // 1.125 iron-air, from 35/35/17/1). Deliberate scenario change.
@@ -1424,8 +1435,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 0.936) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R0.936 for Deep `
+              Math.abs(ncap.newCap - 1.205) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.205 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

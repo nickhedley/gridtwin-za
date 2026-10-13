@@ -18,6 +18,15 @@ engine charging storage from coal ahead of stress, and is pessimistic by some am
 re-measured on three key entries all hold; levels do not. See "Which earlier findings the charging
 fix touches".
 
+Third caveat, 8 Oct 2026: every result from the build optimiser (the national build LP, bldBuildLP, and the
+regional one, bldBuildRegionalLP) on a build before `2026-10-08c` is provisional. Both LPs kept one storage energy
+balance per day, so a store could discharge in the morning energy it charged that afternoon (entry "Why the engine
+sheds where the optimiser served in full"). Build `2026-10-08c` gives the national LP an hourly state of charge (entry
+"Hourly state of charge in the build LP"); the regional LP still has the daily balance (TODO 14bn),
+and no regional optimiser result is to be published until it is fixed with 14bj (user, 8 Oct). Entries whose main
+finding is an optimiser output carry "pending the storage fix" in the heading and stay as written until re-run.
+Engine-only results (dispatch, adequacy checks of a fixed build, preset searches scored on the engine) are unaffected.
+
 CAVEAT ON EVERYTHING BELOW: all of it is ONE synthetic-normal weather year. The
 ten-year run is outstanding and will move these, probably outward, because a bad
 wind year is exactly what sets a capacity requirement.
@@ -688,7 +697,11 @@ year stays near 19-25 GWh at every level: 2020 is short of energy, which 6-hour 
 cover.
 
 Discount rate. Correction: the 22 Sep note that the IRP uses 11.3% is withdrawn; no discount rate
-appears in the IRP 2025 gazette text, and the figure was not sourced. The 11.3% results stand as a
+appears in the IRP 2025 gazette text, and the figure was not sourced. Corrected again 11 Oct 2026 (user, from the
+Gazette p.34): IRP 2025 states 'a discount rate of 11.3%', listed with R18.35/USD, '$15/GJ' gas and 'All costs are
+estimated to be in January 2024 rand terms'. Real or nominal is not stated; as its costs are in constant rands we
+infer real, and the methods say this is our inference. The '$15/GJ' conflicts with the workbook's R260.89/GJ (USD
+15/MMBtu at R18.35) and is treated as a unit slip; the workbook figure is kept. The 11.3% results stand as a
 sensitivity only. Evidence for South Africa:
 
 ```
@@ -1727,6 +1740,1161 @@ low demand, which on long, lightly loaded lines in the Northern and Eastern Cape
 or stability limits at specific substations, not national surplus. A single-node dispatch cannot
 produce that. The stopgap stays; its timing could be moved to wind at night.
 
+### The pathways' demand growth, +5% to 2040, has no source; every pathway result so far used it, 9 Oct 2026
+
+Checked 9 Oct 2026 (user request). Where it is set: harness/pathway/pathway_perfail.js and harness/pathcheck.js (DEM,
+default 5; demand reaches +5% in the horizon year, interpolated geometrically from 2026), and hard-coded in
+harness/gapdiag.js. What it is based on: nothing sourced. It is the transition presets' setting (Deep decarbonisation
+2035, Fossil-free 2040, IRP path 2035), whose comment gave "roughly half a percent a year to 2035: electrification and
+industrial recovery against efficiency and continued grid defection" and stated it was "not a forecast of this
+project's own"; documented 23 Sep 2026, chosen earlier. The 2040 pathways (first draft 4 Oct 2026) reused the same +5%
+over 2026-2040, which is 0.35% a year. Eskom's sales have fallen from over 224 TWh in FY2012 to 178.0 TWh in FY2026
+(SOURCES), so any positive setting is a forward assumption.
+
+Every pathway, preset search and optimiser comparison in this file ran on it, from the first-draft pathway (4 Oct) to
+the 09a central rerun. From build `2026-10-09b` the preset comment and the pathway scripts say it is unsourced, and runs
+on it are labelled "demand +5% (legacy, unsourced)". TODO 14be step 1 runs three sourced paths (IRP 2025 moderate,
+NTCSA, flat) on one demand basis. Central from build `2026-10-09c` (user, 9 Oct): the IRP reference path year by year
+on the measured 2026 base (next entry).
+
+### PROVISIONAL - On one basis, the IRP's demand forecast put 2026 about 12% above measured demand; the pathways now take the IRP's growth on the measured base, 9 Oct 2026
+
+Build `2026-10-09c`. Source: UCT Energy Systems Research Group, HourlyDemandModel_v10_IRP_v02_wExports.xlsm, scenario
+IRPDemandREF (the IRP 2023-24 revision of the forecast behind IRP 2025), Merven, doi:10.25375/uct.26942134.v5, CC BY 4.0.
+The workbook is not in the repository (size; the report carries a SANEDI no-redistribution notice). build_demand_paths.py
+extracts the AnnualDashboard sector rows, rebuilds the IRP's Mode 1 series (onsite generation not subtracted) and checks
+it against the workbook's own "Frozen Results" row within 1 GWh; it writes public_data/esrg_irp_demand_ref.json.
+
+```
+GWh, sent out     domestic grid   exports   distributed PV   other onsite   Mode 1 total   index vs 2026
+2024              208,901         11,055    6,892            12,390         239,238        0.9694
+2026              213,859         11,016    8,754            12,390         246,019        1.0000
+2030              232,722         11,016    12,460           12,390         268,588        1.1014
+2035                                                                                       1.2675
+2040              312,308         11,016    12,460           12,390         348,175        1.4589
+```
+
+Reconciliation, 2024, against Eskom contracted demand including exports, 219.7 TWh (ESK19679, entry "IRP demand verified
+against the IRP", 22 Sep): the IRP's domestic grid demand is 4.2 TWh above actual and its exports 3.9 TWh below, so the
+two offset and leave 0.26 TWh unexplained. The 1.3 TWh first reported was a rounding artefact. 2026 on one basis: the
+IRP's 246.0 TWh against 219.5 TWh measured (the model's 2026 profile, 200.62 TWh gross of rooftop, plus exports 6.53
+and other onsite generation 12.39) = +12.1%. The 218.9 TWh in the user's note was an earlier estimate with a smaller
+onsite figure. Like-for-like ratios, IRP level to the model's basis: IRP 1.089, NTCSA MTSAO 1.106; the 1.187 used
+earlier mixed definitions.
+
+Settings: harness/pathway/pathway_perfail.js DEMAND=irp_esrg (default from this build) passes opts.demandIndex
+(year to multiplier against 2026, the index column above: domestic grid demand plus distributed PV, the components the
+model's domestic profile gross of rooftop represents; the IRP holds exports and other onsite flat after 2025) to bldBuildLP, and bldStateForYear and harness/pathcheck.js
+read the same index, so the optimiser and the engine check use one demand path. The pathways therefore follow the IRP's
+growth year by year on the measured 2026 base and sit about 12% below the IRP's own levels. The like-for-like series (domestic grid plus
+distributed PV) grows 45.9% from 2026 to 2040; the IRP's full Mode 1 total, reported alongside it (user, 9 Oct), grows
+41.5% (246.0 to 348.2 TWh), because exports and other onsite generation are held flat. Alternatives: DEMAND=rate:2.3
+(the IRP's average 2.3% a year, flat, labelled alternative), rate:1.39 (NTCSA MTSAO extended), rate:0 (flat at the
+Eskom stabilisation level), rate:3.44 (TDP high peak growth converted to energy at constant load factor, labelled
+converted), legacy (+5% to 2040, unsourced). Check: DEMAND=legacy writes a pass-1 LP byte-identical to the 09a run's
+(c6e3fd9476); DEMAND=irp_esrg writes 07798fdcee, and gross demand solved from the two LPs agrees in the hours checked
+(17,004 MW at hour 2, 25,629 MW at hour 12, 2030 and 2040).
+
+Caveat: the reconciliation rests on one year (2024) and one Eskom series. Not yet checked: IRP 2025's executive summary
+gives about 255 TWh for 2030 against 268.6 TWh in this Mode 1 series; its basis is unknown and it is not to be quoted
+until identified (TODO 14be).
+
+### New pumped hydro capped by delivery, not siting: Tubatse alone by 2040 in the central case; duration 14 hours, 9 Oct 2026
+
+Build `2026-10-09d` (user decisions, 9 Oct). Cumulative caps on new pumped hydro in the build LP (BLD_PHES_CAPS):
+central 1,500 MW from 2038; high 1,500 MW from 2035 and 3,000 MW from 2038; none before. At most 1,500 MW a year
+(bldPhesRateMW). They replace the 6 GW total and the 2035 earliest year. Source for the central case: Engineering News,
+22 May 2026 (checked by the user): Tubatse, 4 x 375 MW, 21 GWh, construction 2028, operation about 2038, transaction
+adviser still being procured; Energize, 8 Nov 2024, had implementation 2025-2033. IRP 2025 Table 1 has 1,332 MW in 2037
+as its only new pumped storage to 2042. No second South African scheme was found in development. The engine's manual
+lever is capped at the high case's 3 GW (was 6 GW). Pumped hydro is still not offered by default (bldPhesOn 0), so no
+default result moves.
+
+Duration: the optimiser held pumped hydro at one fixed duration per run, 48 hours; energy is not a separate decision
+(lithium's is). The default is now 14 hours (Tubatse, 21 GWh on 1.5 GW); bldPhesHours2 offers a second duration beside
+it, so the optimiser can choose. At the ANU basis (USD 1,100/kW + 14/kWh, R16.50/USD), 14 hours costs R21,384/kW and 48
+hours R29,238/kW.
+
+Defect fixed: when a second duration was offered, its builds (b_phel) never reached the engine inside the pathway's
+adequacy loop (bldStateForYear passed b_phes only), so the loop under-counted storage. The final engine check
+(pathcheck.js) already added both. No recorded run built any new pumped hydro of either duration, so no result is
+affected.
+
+First-pass check, build `2026-10-09b`, 9 Oct: the 09a central settings with pumped hydro offered from 2033, up to 6 GW,
+48 hours, ANU basis, legacy demand: no pumped hydro built, objective equal to the 09a first pass to 15 significant
+figures (LP c04f39d5c7 against c6e3fd9476). The second pass, where the stress windows bind, was paused and is superseded by the run on the
+sourced caps.
+
+### New central, lithium 3 GW a year from 2028: cost within R12bn of the 2 GW central, CO2 42 Mt lower, gas burnt a quarter; iron-air not built, 12 Oct 2026
+
+User decision 11 Oct: central lithium pace 3 GW a year from 2028 (2 GW in 2026-27; energy 36,000 MWh a year), 8% real.
+Build `2026-10-11b` (gtza-11b, index.html carrying only the output-only gridServed patch), pathway_perfail.js SOLVER=native
+TL=72000 COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 (pumped hydro offered at the central cap, 14 h; gas R2,003/MWh;
+emisCcgt 0.348). Converged adequate in 4 passes, 23 h (pass solves 0.3, 5.4, 8.5 and 8.9 h). Engine check pathcheck.js
+COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive: every year within target, the closest 2040 at 2.61 of 2.91 GWh (90%). Outputs
+harness/pathway_v_half_c1_p1_11b_central.json and harness/pathcheck_v_half_c1_p1_11b_central.json.
+
+```
+                       09c central, 2 GW a year     new central, 3 GW a year     4 GW a year (09c settings)
+new gas 2030/35/40     1.2 / 4.9 / 4.9 GW           1.2 / 3.4 / 5.6 GW           1.2 / 3.0 / 3.75 GW
+lithium 2040           26.2 GW, 5.8 h               30.8 GW, 6.2 h               33.1 GW, 7.3 h
+iron-air 2040          0.75 GW                      0                            0
+wind / solar 2040      21.5 / 61.1 GW               28.8 / 62.8 GW               26.5 / 62.8 GW
+gas burnt 2026-40      16.6 TWh                     4.7 TWh                      5.3 TWh
+system cost 2026-40    R4,863bn                     R4,875bn (+R12bn, +0.25%)    R4,964bn (+R101bn)
+average, R/MWh served  1,393                        1,397                        1,424
+CO2 2026-40            1,460 Mt                     1,418 Mt                     1,453 Mt
+worst year shed        34% of target (2039)         90% (2040)                   95% (2038)
+```
+
+Caps binding (final LP): lithium power 2026-31 and 2037-40 (10 of 15 years), lithium energy 2026-31; utility solar every
+year; wind 2026-31, 2034 and 2037-39; gas 2030, 2031 and 2039; vanadium 2028-30. Pumped hydro not built. Caveat: one
+weather and outage sample per check; the 2 GW and 4 GW columns are on build 2026-10-09d code (emisCcgt 0.37, pumped hydro
+off), so CO2 differs by about 6% on gas from the emissions factor alone.
+
+### Retiring the coal availability trace: without it the 2025 backcast sheds three to four times as much; the trace's monthly means do not bring it back, 12 Oct 2026
+
+User, 12 Oct 2026: retire nodal/coal_availability_trace.json from the public repository (kept locally for
+validation); if the 2025 backcast's diesel burn or shed moves by more than about 10%, add monthly mean availability
+(12 derived constants) to the preset's outage draw. Preset '2025, as modelled', build 2026-10-12e, profiles.json as
+published; harness/backcast_trace.js; draws on the preset seed and on 20 further seeds. Eskom credited: the trace and
+the 12 factors come from Eskom's ESK19679; the analysis is GridTwin ZA's, not Eskom's.
+
+```
+2025 backcast                          diesel GWh            shed GWh
+hourly trace (as published)            2,249                 28.3
+outage draw, preset seed               2,423 (+7.7%)         67.0 (x2.4)
+outage draw, 20 seeds, mean (p10-p90)  1,759 (1,247-2,568)   88.5 (5.6-134)
+draw + 12 monthly factors, preset seed 2,644 (+17.6%)        89.6 (x3.2)
+draw + monthly factors, 20 seeds       2,593 (2,363-2,837)   110 (47-210)
+```
+
+Monthly factors (2025 coal-only availability by month over the year's mean): 0.857, 0.884, 0.910, 0.878, 0.939,
+0.967, 1.036, 1.087, 1.169, 1.076, 1.089, 1.102 (the fleet's recovery through the year, not a seasonal shape). They
+push diesel further from the trace and shed no closer: the difference is in the depth and duration of troughs within
+months, not the monthly level. For reference, Eskom shed 390 GWh in 2025 and burned 3.4 TWh of OCGT diesel (RESULTS,
+the '2025, as modelled' preset note), so every draw sits nearer the outturn than the trace does. Engine option
+outageMonthlyAvail added (off by default; no default run changes; suite 808/812 before and after).
+
+### profiles.json against an open-data candidate (ERA5 and ESRG): wind matches once anchored, solar and CSP read high, ESRG demand is flatter and peaks in May; on c3's build the demand shape moves cost +0.6% and the late-year shed down, 12 Oct 2026
+
+User, 12 Oct 2026: profiles.json (built from Eskom's ESK19679) against a replacement from openly licensed data, same
+format. Eskom data credited: Eskom Holdings SOC Ltd, hourly dataset ESK19679; the comparison and every figure derived
+from it are GridTwin ZA's analysis, not Eskom's. No Eskom hourly series is reproduced here. Builder build_open_profiles.py, ERA5 2025 from the Google Cloud copy (era5_band.py, raw
+daily files read by byte range), ESRG IRPDemandREF hourly; sites profile_sites.json, capacity
+regional_renewable_capacity.json. Candidate: two wind turbine classes (V112-3.075 at 90 m for BW1-3, 43%; N131-3.6 at
+115 m for BW4 onward and private, 57%), ERA5 speeds scaled by 1.285 to a REIPPPP-only public anchor of 35.9%, 60%
+single-axis PV, approximate CSP dispatch. Engine checks: c3's build (pathway_v_half_c1_p1_11b_central.json) with
+pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive, build 2026-10-12d engine, profiles.json swapped in a side folder.
+
+```
+calendar 2025                  profiles.json (Eskom)    open candidate
+wind CF                        35.45%                   35.90% anchored (24.25% raw ERA5)
+  hourly r / daily r           -                        0.885 / 0.934; hours below 2%: 0 against 5
+solar CF                       25.14%                   28.65% (no curtailment or outages modelled)
+CSP CF                         28.89%                   38.43% (approximate model; hourly r 0.856)
+demand 2026, TWh               200.6                    231.4 at ESRG's level, 202.8 shape only
+demand peak                    30.6 GW, 7 Jul 10:00     33.4 GW, 26 May 18:00 (29.2 GW shape only)
+top 100 demand hours           76 in Jun-Jul            51 in May (ESRG's model year, not 2025's weather)
+load factor                    75.0%                    79.0% (flatter); daily-mean r 0.55
+```
+
+Wind anchors (two classes): 29.8% on Ember's year-end 4.33 GW (RMSE against Eskom's hourly series 0.097 per unit),
+33.3% on the mean of Ember's year-ends 3.44 and 4.33 GW (0.081), 35.9% on 11.32 TWh over a REIPPPP-only mean of
+3.44 and 3.763 GW (Engineering News, Jan 2026, citing the IPP Office) (0.079). Ember's 4.33 GW appears to include
+wheeled private plant whose output it does not count. One turbine class against two, before any anchoring: CF 22.5%
+against 24.3%, RMSE 0.154 against 0.138, hours below 2% 20 against 11 (Eskom 5); after anchoring they converge
+(0.082 against 0.081).
+
+```
+c3's build, engine-checked       PV at 8%     CO2 2026-40    worst year, shed / target
+profiles.json                    R2,861bn     1,418 Mt       100% (2040)
+open wind, solar, CSP only       R2,866bn     1,414 Mt       shed within 0.2 GWh of the line above, every year
+open, demand shape at 185.3 TWh  R2,879bn     1,441 Mt       48% (2038)
+open, ESRG level (213.9 TWh)     R3,074bn     1,756 Mt       above target every year from 2030; 66x in 2036
+```
+
+Pathway runs take wind and solar from the weather-year file, so the renewable series move c3 little; the demand
+series is what matters. ESRG's level is 15% above the model's measured base (the same gap noted 9 Oct), so taking it
+would be a change of demand basis, not of data source; the build would have to be re-optimised. Caveats: ESRG's hourly year is a modelled year, not 2025's weather; the rooftop add-back runs
+on each file's own solar shape, so the shape-only case serves 1.2% more energy; the CSP model and the 60% tracker
+share are judgement; the wind anchor is a public annual figure with a REIPPPP capacity from a news report.
+
+### c3 checks: shed on customer demand, one cost basis, and what the 2026-30 lithium energy is for, 12 Oct 2026
+
+Run: the new central (c3, entry below), build `2026-10-11b`; re-measured 12 Oct with pathcheck.js on build `2026-10-12b`
+(same engine results; COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive).
+
+Shed standard on customer demand (user decision 12 Oct: the target is 0.002% of demand without storage charging, half
+standard, from the next runs; old runs not re-run, any year above 90% flagged marginal). c3 on that basis: 2040 2.61
+against 2.60 GWh (100%, marginal: at the line, within sampling error), 2039 2.40 against 2.54 (95%, marginal), 2038 65%,
+every other year at most 36%. The customer-demand target is 4% (2026) to 10% (2040) below the old one.
+
+One cost basis (user, 12 Oct): R bn, 2026 present value at 8% real, engine-checked, for every run whatever rate it was
+optimised at. c3 R2,867bn against the 2 GW central R2,864bn (+R3bn, +0.1%); the 4 GW run R2,918bn; the 6% run R2,726bn.
+The undiscounted sums quoted earlier (R4,875bn against R4,863bn) are the same engine figures summed without discounting.
+The optimiser's own build and running cost (R2,100bn against R2,078bn, +1.1%) is a different measure: each year's build
+at its own vintage cost and dispatch on 12 representative days, against the engine's midpoint-vintage capital and full
+dispatch of 12 weather years; it is reported only beside its stress-window term, as a diagnostic.
+
+Lithium energy (user question 12 Oct; no change made). The yearly energy cap is 12 hours of the power cap (eb_batt <=
+12 x lithium MW a year: 36 GWh a year at 3 GW, 24 GWh at 2 GW), with no recorded source; it matches the 12-hour duration
+of the high-renewables presets. c3 builds energy at the cap in 2026-31 (156 GWh on 13 GW by 2030, 192 GWh by 2032) and
+none after. In the final LP, 97% of the value of energy built in 2026, 2028 or 2030 comes from the stress windows of
+2030 and 2031 (the coal retirements of 2030, before gas can arrive at 1.2 GW a year), none from representative-day
+arbitrage; its value is about twice its cost, so the cap binds (eb_value.py). In the engine (12 runs a year), new
+lithium does 89 full cycles a year in 2027, 30 in 2030, 24 in 2032, 36 in 2035 and 90 in 2040; 93-100% of its discharge
+falls in hours with no diesel, gas or shed, that is, time-shifting against coal.
+
+### Why the 4 GW lithium run cost R101bn more: the cap, not the stress windows; with the looser cap the optimiser swaps iron-air and vanadium for lithium, which the engine finds dearer and less reliable, 12 Oct 2026
+
+TODO 27 (user, 11 Oct: before using the 4 GW result, explain the R101bn; if it is the different stress windows, compare
+on the same window set). Method: pathway switch WIN_FROM (build 2026-10-11d harness) starts a run from a recorded run's
+final stress windows with their coal availability; with MAXP=1 the solve is on exactly that set. Checked: each run's own
+settings reproduce its final LP (09c central ef9baf664b, 4 GW 2d48aba5ac). Both cross-solves on the 09c central
+settings (gtza-09d, build 2026-10-09d code, DEMAND=irp_esrg, SOLVER=native, COMMIT=1 PSE=1 TF=0.5), engine checks
+pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive.
+
+```
+engine-checked, 2026-2040        09c windows (9)                  4 GW run's windows (12)
+lithium 2 GW a year              R4,863bn; worst year 34%         R4,840bn; worst year 24%
+                                 iron-air 0.75 GW, gas 4.9 GW     iron-air 0.67 GW, gas 4.3 GW
+lithium 4 GW a year              R4,970bn; 2039-40 above target   R4,964bn (after two more passes)
+                                 (3.74 and 4.00 against 2.84,     iron-air 0, gas 3.75 GW
+                                 2.91 GWh); iron-air 0, gas 4.45
+```
+
+The window set moves cost by at most R23bn; the cap moves it by R101-130bn. On both window sets the looser cap leads the
+optimiser to drop all iron-air and vanadium and some gas for about 5 GW more lithium by 2040: in its own terms build
+and running cost rise about R70bn (discounted) and the stress-window shed penalty falls about R1,100bn. The engine,
+on its independent outage draws, finds that system R101-130bn dearer and, on the 09c windows, below standard in 2039 and
+2040. The stress-window shed penalty is 92% of the optimiser's objective on the 09c central (R25,673bn of R27,751bn
+in objective units, obj_decomp.py), which is why its objective fell 19% while engine-checked cost rose 2%.
+
+In short (user, 12 Oct): with lithium capped at 2 GW a year the optimiser builds iron-air and vanadium; at 4 GW it swaps
+them for lithium, and the engine finds more shortfall in 2038-40. Cost lines, R bn 2026 present value at 8%: optimiser
+build and running 2,078 (2 GW) against 2,145 (4 GW); optimiser stress-window shed term 25,673 against 20,347 (the line
+that moved); engine expected shed valued at VoLL 0.09 against 0.23. Working hypothesis, not yet tested: the stress
+windows under-represent long lulls. The windows are 14 days, three per failing year per pass, found by an adequacy test
+of two outage draws per weather year (24 runs) against the engine check's 120-480; a too-small sample of events would
+show the same signature. TODO 14bv tests both.
+
+Caveat: one weather and outage sample per check; the effect is consistent in both directions. The new central (3 GW a
+year) came in within R12bn of the 2 GW central (entry above). Outputs
+harness/pathway_v_half_c1_p1_09c_{win09c_li4000,winli4000_li2000}.json and their pathcheck files.
+
+### Average system cost per MWh served: R1,393 on the IRP central path against R1,221 flat, 2026-2040, 11 Oct 2026
+
+Build `2026-10-11d` (user, 11 Oct: every run report gives average system cost per MWh served, so demand paths can be
+compared). Measure: the engine's own avgCost, as the app reports it: grid cost (fuel, carbon, annualised new grid capex,
+fixed O&M, contracts, demand response, start-ups) less export revenue, over grid energy served (gridServed, which
+includes firm exports and storage losses). Rooftop capex and the shed penalty are outside it. Each year is
+served-weighted across runs; the 2026-2040 figure is total cost over total served, undiscounted. pathcheck.js records it
+from this build on. Runs checked before it: a 12-run companion check (K=1, the same 12 weather years, the check's own
+outage seeds) on the engine that checked them (gtza-09d, build 2026-10-09d plus the output-only gridServed patch); its
+grid cost matches the full 120-run check within 0.03% in every year, so the companion runs carry the figure.
+
+```
+R/MWh served          2026   2030   2035   2040   2026-2040   served TWh   cost (check)
+legacy (+5%, 09a)     1096   1174   1269   1241     1213         2820       R3,565bn
+flat                  1096   1181   1282   1243     1221         2746       R3,498bn
+NTCSA                 1188   1467   1409   1368     1386         3064       R4,390bn
+2.3% a year           1188   1436   1412   1384     1398         3291       R4,745bn
+IRP central (09c)     1178   1423   1432   1392     1393         3387       R4,863bn
+lithium 4 GW a year   1169   1479   1440   1443     1424         3385       R4,964bn
+relaxed gas cap       1103   1297   1274   1384     1272         3382       R4,447bn
+```
+
+Settings as each run's own entry (09c central and demand paths 10 Oct; lithium 4 GW 10 Oct; relaxed cap 11 Oct), half
+standard, adaptive engine check. Pumped hydro offered at the high cap (14 h and 48 h): R1,393.2 and R1,393.1, the same as
+the central, as nothing was built. Caveat: undiscounted; the per-MWh figure on the three growth paths is close
+(R1,386-1,398) while flat is R165-177 lower.
+
+### One discount rate and one life everywhere: three panels brought onto BLD_DISC and BLD_LIFE, 11 Oct 2026
+
+Build `2026-10-11c` (user, 11 Oct). The build optimiser annualises and discounts at BLD_DISC (8% real after tax) over
+BLD_LIFE; three readouts carried their own rates. Now: the gas LCOE readout (lcoeCcgt) is derived at load from
+BLD_COST.ccgt, BLD_DISC and BLD_LIFE.ccgt (30 years) at the 30% capacity factor the old constant assumed, plus fuel and
+carbon: R3,201/MWh, was a hand-derived R3,340 at 9% over 25 years with stale fuel. The CCS panel's return defaults to
+BLD_DISC (8%, was 9%, unsourced); its 20-year life stays, as a retrofit's remaining life on an existing unit, which
+BLD_LIFE (new build) does not cover. The site revenue check's NPV uses BLD_DISC over BLD_LIFE for the technology (was
+10% over 25 years). Only readouts move: lcoeCcgt feeds the all-new replacement-cost readout and nothing the optimiser
+or engine decides. validate_outputs.js's LCOE-against-SRMC check read the first 'lcoeCcgt: number' in the source,
+which after this change was a preset's 2500; it now reads the live values (same check, now on the value the model
+uses). Suite 804/809 plus eng5 6/6 without ESK19679.csv.
+
+### Diagnosis, not deliverable - With no gas deliverability cap the central builds 7.6 GW of gas in 2030, costs 8.6% less and emits 104 Mt more, 11 Oct 2026
+
+TODO 14be step 2 (user, 9 Oct): the relaxed cap run once, as a diagnosis only, to show what the system would build if
+gas could arrive sooner; not deliverable (GE Vernova about three-year lead times and about 10 GW of 2029-30 turbine slots
+left worldwide; no LNG terminal; procurement only started with the 7 Oct 2026 determination). Settings: the 09c central
+(build `2026-10-09d` code, DEMAND=irp_esrg, SOLVER=native TL=72000 COMMIT=1 PSE=1 TF=0.5, gas R2,003/MWh, emisCcgt 0.37)
+with new gas allowed from 2027 and no yearly limit (GAS_FIRST=2027 GAS_CAP=100000; central: from 2030, 1,200 MW a year).
+Converged in 4 passes, 10 h 48 min. Engine check: pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive; every year meets
+its target, the closest 2038 at 95%.
+
+```
+                         capped (central)        relaxed (not deliverable)
+new gas 2030/2035/2040   1.2 / 4.9 / 4.9 GW      7.6 / 7.6 / 7.65 GW, all built in 2030
+gas burnt 2026-2040      16.6 TWh                4.9 TWh
+lithium 2030 / 2040      10.0 / 26.2 GW          6.2 / 23.1 GW
+wind / solar 2040        21.5 / 61.1 GW          29.6 / 53.7 GW
+system cost 2026-2040    R4,863bn                R4,447bn (-R416bn, -8.6%)
+CO2 2026-2040            1,460 Mt                1,564 Mt (+104 Mt)
+```
+
+No gas is built in 2027-2029 although allowed: the stress windows that call for firm capacity start in 2030, so the
+binding part of the cap is the 1.2 GW a year pace, not the 2030 start. Uncapped, gas is built as cheap backup capacity
+(about 0.45 TWh a year on 7.6 GW, under 1% capacity factor) in place of early lithium, wind and solar, which lowers cost
+and raises CO2 while coal runs longer in the early years. For comparison, IRP 2025 earmarks 6 GW of gas by 2030 at a 51%
+minimum capacity factor (TODO 14be steps 4 and 5). Outputs harness/pathway_v_half_c1_p1_09c_gasrelaxed.json and
+harness/pathcheck_v_half_c1_p1_09c_gasrelaxed.json.
+
+Detail (user questions, 11 Oct). The 4.9 TWh is the 2026-2040 total, not a yearly figure. By year, relaxed run:
+
+```
+year   shed/target         gas GW   gas capacity factor   gas TWh | relaxed minus capped: lithium  wind   solar GW | coal TWh   CO2 Mt
+2026   0.17/2.00 (9%)      0        -                     0       |                       -0.3    -2.5   0        | +9.4       +9.7
+2028   0.14/2.06 (7%)      0        -                     0       |                       -2.4    -5.4   0        | +20.1      +20.6
+2030   0.00/2.21 (0%)      7.6      0.14%                 0.09    |                       -3.8    -5.4   0        | +18.4      +18.4
+2032   0.05/2.31 (2%)      7.6      0.50%                 0.33    |                       -4.9    -4.7   -2.4     | +13.5      +13.6
+2034   0.38/2.43 (15%)     7.6      0.82%                 0.54    |                       -3.5    -0.6   -3.9     | +2.2       +2.1
+2036   2.10/2.56 (82%)     7.6      1.11%                 0.73    |                       -3.2    -0.6   -5.2     | +1.5       +1.4
+2038   2.58/2.72 (95%)     7.6      0.98%                 0.65    |                       -3.2    +4.4   -5.2     | -6.3       -7.3
+2040   1.85/2.85 (65%)     7.65     0.72%                 0.48    |                       -3.2    +8.1   -7.4     | -10.7      -12.4
+```
+
+Every year meets its target; the margin is thin from 2036 (65-95% of target, against 2-34% when capped). What the gas
+displaces is mostly early wind and lithium (from 2026, before any gas can run, as the optimiser plans around the 2030
+gas) and later solar; in their place the existing coal fleet runs more, up to 21 TWh a year more in 2027-2029. From
+2037 the relaxed run has more wind and runs less coal and gas. CO2, 2026-2040: +104 Mt = coal +108 Mt, gas -4.3 Mt,
+diesel +0.2 Mt; the whole increase is coal running longer in 2026-2036. To rerun once on the gas price settings
+(terminal charge per GW, open-cycle option, central price) when built, to see whether the R416bn saving survives (user).
+
+### PROVISIONAL pending the gas price review - Demand paths (TODO 14be step 1): new gas does not rise with demand; cost does, by R1.4 trillion from flat to the IRP path, 10 Oct 2026
+
+All on build `2026-10-09d` code with the 09c central settings except demand (pathway_perfail.js SOLVER=native TL=72000
+COMMIT=1 PSE=1 TF=0.5; gas R2,003/MWh; emisCcgt 0.37; pumped hydro off), demand applied as growth on the measured 2026
+base: flat (DEMAND=rate:0, Eskom stabilisation), NTCSA MTSAO extended (rate:1.39), the IRP reference path year by year
+(irp_esrg, the central), the IRP's average 2.3% a year flat (rate:2.3, labelled alternative); legacy +5% is 09a
+(build 09a, otherwise the same). Engine checks: pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive; every year of
+every path meets its own target. Each converged in 2 passes.
+
+```
+path                  demand 2040   new gas GW          lithium   wind / solar   gas burnt   system cost   CO2       worst year
+                      against 2026  2030 / 2035 / 2040  2040 GW   2040 GW        2026-40     2026-40       2026-40   shed/target
+legacy +5% (09a)      +5%           1.2 / 3.6 / 3.6     14.4      13.1 / 26.7    3.0 TWh     R3,565bn      1,471 Mt  37%
+flat                  0%            1.2 / 3.6 / 3.6     13.7      12.5 / 24.7    3.1 TWh     R3,498bn      1,404 Mt  51%
+NTCSA 1.39%           +21%          1.2 / 2.1 / 2.1     20.7      17.9 / 44.3    12.5 TWh    R4,390bn      1,379 Mt  18%
+2.3% a year           +38%          1.2 / 2.4 / 2.4     24.9      20.2 / 56.5    15.0 TWh    R4,745bn      1,454 Mt  45%
+IRP path (central)    +46%          1.2 / 4.9 / 4.9     26.2      21.5 / 61.1    16.6 TWh    R4,863bn      1,460 Mt  34%
+TDP high 3.44%        +61%          1.2 / 5.6 / 7.2     27.3      37.5 / 62.8    7.3 TWh     R5,266bn      1,449 Mt  106% (2040)
+```
+
+TDP high (DEMAND=rate:3.44, labelled converted), added 11 Oct 2026: not converged after 5 passes; paused, since the last
+two passes no longer closed the gap (after pass 4, 2039 at 3.19 and 2040 at 3.88 GWh against 3.06 and 3.16; after pass
+5, 3.35 and 3.86). Reported on its pass-5 build (replayed from the solve cache with MAXP=5, the same LPs,
+harness/pathway_v_half_c1_p1_09c_tdphigh_p5.json). Engine check: every year within its own target except 2040, 3.34
+against 3.16 GWh (240 runs). New wind is at its 2.5 GW a year cap in every year. Average system cost R1,423/MWh served
+against R1,393 on the IRP path. Resumable from the cache (passes 1-5) if wanted.
+
+New gas capacity is not monotonic in demand: flat and legacy demand build 3.6 GW (on the deliverability cap in
+2030-32), NTCSA growth only 2.1 GW. With growth the optimiser builds more wind, solar and storage for energy, and
+these also carry capacity; with flat demand gas is the cheapest way to replace retiring coal. Gas burnt, lithium,
+wind, solar and cost all rise with demand. 2030 gas sits on the deliverability cap (1.2 GW) in every path. CO2 is
+lowest on the NTCSA path. Caveats: one run per path, so near-ties between builds cannot be ruled out; gas at the
+legacy price, before the gas price review (14bo) and without the OCGT option. Outputs
+harness/pathway_v_half_c1_p1_09c_{flat,ntcsa,r23}.json and harness/pathcheck_v_half_c1_p1_09c_{flat,ntcsa,r23}.json.
+
+### Lithium at 4 GW a year from 2028: the cap binds in 4 of 15 years, new gas falls 1.1 GW and gas burn by two thirds, system cost rises 2%, 10 Oct 2026
+
+Sensitivity TODO 14bt (user, 9 Oct): lithium build pace 4 GW a year from 2028, 2 GW in 2026-27 (LI_CAP=4000, CAP_FROM
+2028; yearly energy cap 48,000 MWh, twelve hours of the power cap), on the 09c central settings (build `2026-10-09d`
+code, DEMAND=irp_esrg, SOLVER=native TL=72000 COMMIT=1 PSE=1 TF=0.5, gas R2,003/MWh, emisCcgt 0.37). Benchmark (user):
+Australia's AEMO connections scorecard FY26 (12.9 GWh reaching full output; 2.7 GW of batteries in the June 2026
+quarter) and the Clean Energy Council (4.3 GW reaching financial close in 2025). Converged in 4 passes (central: 2),
+13 h 49 min including the restart (pass 1 from the cache). Engine check: pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1,
+adaptive (120 to 480 runs a year); every year meets its target, the closest 2038 at 95%. Outputs
+harness/pathway_v_half_c1_p1_09c_li4000.json and harness/pathcheck_v_half_c1_p1_09c_li4000.json.
+
+```
+                       2 GW a year (central)        4 GW a year
+lithium cap binds      power: 12 of 15 years        power: 2029, 2030, 2039, 2040; energy (48 GWh): 2028-31
+lithium by 2040        26.2 GW, 152 GWh             33.1 GW, 240 GWh
+new gas 2030/35/40     1.2 / 4.9 / 4.9 GW           1.2 / 3.0 / 3.75 GW
+gas burnt 2026-40      16.6 TWh                     5.3 TWh
+shed, worst year       0.97 of 2.84 GWh (2039)      2.60 of 2.75 GWh (2038)
+system cost 2026-40    R4,863bn                     R4,964bn (+R101bn, +2.1%)
+CO2 2026-40            1,460 Mt                     1,453 Mt
+```
+
+With the faster pace the optimiser builds early long-duration lithium (12 hours) up to the energy cap in 2028-31 and
+less gas after 2031; 2030 and 2031 gas still sit on the 1.2 GW a year deliverability cap. On the engine's system cost the
+faster pace costs R101bn more over 2026-2040 for 7 Mt less CO2 and two thirds less gas burnt; the optimiser's own
+objective falls 19%, but it carries the stress-window shed penalty and is not a system cost. The 2 GW a year central is
+already about 3.6 times the IRP's implied 0.55 GW a year (user, 9 Oct). Caveats: one run; the 2038 margin is thin
+(95% of target); the no-gas test at both paces is still to run (TODO 14bm).
+
+### New pumped hydro is not chosen on IRP demand even under the high cap: 0 MW at 14 hours, 10 MW at 48 hours, 10 Oct 2026
+
+Sensitivity agreed by the user (9 Oct, TODO 14bq), on the 09c central settings (build `2026-10-09d` code, DEMAND=irp_esrg,
+SOLVER=native TL=72000 COMMIT=1 PSE=1 TF=0.5, gas R2,003/MWh, emisCcgt 0.37) with new pumped hydro offered under the
+high cap (PHES=1 PHES_CAP=high: 1,500 MW from 2035, 3,000 MW from 2038, at most 1,500 MW a year), ANU basis (USD 1,100/kW
+plus USD 14/kWh, R16.50/USD), 60-year life, 78% round trip.
+
+```
+run                               passes   new pumped hydro    objective against the 09c central    build schedule
+14 hours (R21,384/kW)             2        none                equal to 15 significant figures       identical in every year
+48 hours (R29,238/kW)             2        10 MW in 2035       lower by about 1 part in 10^9         within 50 MW of it in every year
+14 and 48 hours offered together  -        -                   first pass unfinished after 6 h; lost in a restart
+```
+
+At 48 hours the 10 MW displaces about 40 MW of wind in 2035, 3 MW of gas in 2034 and 9 MW of lithium in 2036; the
+difference is within solver tolerance, so pumped hydro is effectively not chosen at either duration. The pathway's
+binding limits are elsewhere (lithium, solar and wind pace; RESULTS, central pathway on IRP demand). As the central cap
+(1,500 MW from 2038) is tighter than the high cap, it cannot bind either, so offering pumped hydro by default with the
+central cap does not move results (user rule, 9 Oct): done in build `2026-10-10a`. Outputs
+harness/pathway_v_half_c1_p1_09c_phes_high14.json and harness/pathway_v_half_c1_p1_09c_phes_high48.json; no engine
+check run, as the builds equal the central's (14 h) or differ by under 50 MW (48 h).
+
+### The 07s-to-09a shift is the storage fix: per-year windows alone move cost 0.1% and new gas by 0.55 GW, 9 Oct 2026
+
+Attribution run (user, 9 Oct): the 07s formulation (one storage energy balance per day, HSOC=0) with per-year stress
+windows (WPY=1), on build `2026-10-09d` code, legacy +5% demand, otherwise as 09a: SOLVER=native TL=72000 COMMIT=1
+PSE=1 TF=0.5. Converged in 5 passes, 6 h 52 min (07s: 2 passes; 09a: 2). Engine checks: pathcheck.js COMMIT=1 PSE=1
+TF=0.5 LNG=1, adaptive (120 to 480 runs a year); every year of all three meets its target. Outputs
+harness/pathway_v_half_c1_p1_09a_dailysoc.json and harness/pathcheck_v_half_c1_p1_09a_dailysoc.json.
+
+```
+                              07s        + per-year windows    + hourly storage (09a)
+new gas GW 2030/2035/2040     1.2/1.45/1.45   1.2/2.0/2.0     1.2/3.6/3.6
+lithium GW 2030 / 2040        7.2 / 23.6      7.2 / 23.6      4.4 / 14.4
+lithium hours 2030 / 2040     12.6 / 6.0      13.1 / 5.7      2.9 / 5.9
+wind GW 2030 / 2040           12.5 / 17.1     12.5 / 13.8     5.0 / 13.1
+utility solar GW 2030 / 2040  14.4 / 43.3     14.4 / 42.9     10.0 / 26.7
+coal retired GW 2040          26.2            26.2            22.5
+gas TWh 2026-2040             12.0            20.5            3.0
+cost 2026-2040, R bn          3,929           3,934 (+5)      3,565 (-369)
+CO2 2026-2040, Mt             1,195           1,239 (+44)     1,471 (+232)
+```
+
+Of the shift from 07s to 09a, per-year windows account for +R5bn of cost (+0.1%), +0.55 GW of new gas and +44 Mt of
+CO2, and leave the build up to 2034 almost unchanged; the hourly storage balance accounts for the rest: -R369bn,
++1.6 GW of gas, +232 Mt, 9 GW less lithium by 2040 at shorter durations early on, and wind and solar built later.
+With one energy balance per day the optimiser over-valued storage energy (12 to 15 hour lithium from 2027) and so built
+more lithium, wind and solar and retired more coal; the engine check accepts both, so the daily-balance builds were
+adequate but dearer on the engine's cost. Caveats: one run each; the 07s check used 07s code; costs are the engine's
+system cost; gas at the default R2,003/MWh, emisCcgt 0.37.
+
+### PROVISIONAL pending the gas price review - Central pathway on IRP demand: 4.9 GW of new gas, lithium on its 2 GW a year cap in 12 of 15 years, and the system cost 36% above the legacy-demand run, 9 Oct 2026
+
+Run on build `2026-10-09d` code (the LP is identical to 09c's; pumped hydro off). harness/pathway/pathway_perfail.js
+DEMAND=irp_esrg SOLVER=native TL=72000 COMMIT=1 PSE=1 TF=0.5 (half standard), hourly state of charge and per-year
+windows at their defaults, gas at the default R2,003/MWh, emisCcgt 0.37 (before 09e, so gas CO2 is 6.3% high), no OCGT
+option, twelve weather years. Converged in 2 passes, 4 h 21 min (pass 2 solve 4 h 18 min, simplex). Engine check:
+pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive, 120 runs a year, 95% half-width within 11.5% of target.
+Outputs harness/pathway_v_half_c1_p1_09c_irp.json, harness/pathcheck_v_half_c1_p1_09c_irp.json. Compared with 09a
+(legacy +5% demand, same settings otherwise); each run's shed is against its own target, which scales with demand.
+
+```
+year  demand  shed/target GWh: 09a legacy   09c IRP       new gas GW    lithium GW     cost R bn
+                                                          09a   09c     09a    09c     09a   09c
+2026   +0.0%   0.38/2.00 (19%)   0.04/2.02 ( 2%)          0.00  0.00    1.72   2.00    214   230
+2028   +4.1%   0.26/1.98 (13%)   0.00/2.11 ( 0%)          0.00  0.00    3.07   6.00    225   275
+2030  +10.1%   0.04/1.99 ( 2%)   0.00/2.19 ( 0%)          1.20  1.20    4.41  10.00    230   303
+2032  +16.7%   0.00/1.99 ( 0%)   0.00/2.29 ( 0%)          3.60  3.48    6.73  12.00    249   332
+2034  +23.6%   0.02/1.97 ( 1%)   0.00/2.43 ( 0%)          3.60  3.69   10.71  14.58    254   336
+2035  +26.7%   0.02/1.96 ( 1%)   0.02/2.47 ( 1%)          3.60  4.89   10.86  16.58    248   347
+2036  +30.1%   0.26/1.97 (13%)   0.06/2.56 ( 2%)          3.60  4.89   10.92  18.21    246   353
+2038  +38.1%   0.73/1.98 (37%)   0.70/2.76 (25%)          3.60  4.89   13.17  22.21    244   365
+2039  +42.1%   0.74/1.97 (37%)   0.97/2.84 (34%)          3.60  4.89   13.53  24.21    242   375
+2040  +45.9%   0.63/1.97 (32%)   0.84/2.91 (29%)          3.60  4.89   14.39  26.21    244   388
+2026-2040 total cost: 09a R3,565bn, 09c R4,863bn (+36%). CO2 1,471 against 1,460 Mt. Gas 3.0 against 16.6 TWh.
+```
+
+Every year meets the target in both runs, by a wide margin (at most 37% of target in 09a, 34% in 09c): the overshoot
+of TODO 14bk persists. New gas 2030/2035/2040: 1.2/4.9/4.9 GW on IRP demand against 1.2/3.6/3.6 GW on legacy demand;
+2030 sits on the deliverability cap in both. Gas runs 1,557 hours in 2040 (11% capacity factor) against 236.
+
+Caps that bind (build at the yearly limit), 09c: lithium power 2026-31, 2034-35, 2037-40 (12 of 15 years) and lithium
+energy 2026-31 (12-hour batteries early on); gas 2030, 2031, 2035; utility solar every year 2026-39; wind 2026-31;
+iron-air 2027-31; flow batteries 2026-31. 09a: lithium 2032, 2034, 2038; gas 2030-32; solar 2028-32, 2034; wind
+2029-32, 2034. On IRP demand the pathway builds at the pace limits in most years, so the limits, not costs, shape it:
+the lithium pace sensitivity (TODO 14bt) and the deliverability of the solar and wind paces matter more here than on
+legacy demand.
+
+### Gas price cases built: central R1,298/MWh fuel, about 35% below the R2,003 default, with the terminal now a fixed charge, 9 Oct 2026
+
+Build `2026-10-09f`. public_data/gas_price_cases.json (build_gas_cases.py; sources in SOURCES, "Gas price cases").
+LNG delivered at the coast, January 2026 dollars, and the fuel cost the model uses (52% HHV, R16.50/USD, variable
+regasification USD 0.25/MMBtu added except in the IRP case):
+
+```
+case                    2030 USD   2035 USD   2040 USD   fuel R/MWh 2030 / 2035 / 2040   terminal
+low                      8.19       8.67       9.15       914 / 966 / 1,018              R354-707/kW-yr
+central (Brent 80)      11.74      11.74      11.74       1,298                          R354-707/kW-yr
+central at Brent 100    14.05      14.05      14.05       1,549                          R354-707/kW-yr
+high (JKM 2026)         19.80      19.80      19.80       2,171                          R354-707/kW-yr
+IRP 2025 as published   17.82      17.82      17.82       1,929                          none
+```
+
+Before and after (double counting, user 9 Oct): the default costCcgt R2,003/MWh is USD 18.50 delivered, which
+already carries USD 2/MMBtu for regasification and transport, with no fixed terminal charge. The 14ak sensitivity
+(6 Oct) replaced the USD 2 with USD 0.25 of variable regasification (R1,813/MWh) and added R260/kW-yr. The cases
+carry only shipping and variable regasification in the fuel price, and the terminal as a fixed R354-707/kW-yr on new
+gas (send-out basis), so nothing is counted twice. The IRP case has neither, as in the IRP.
+
+Switch: harness/pathway/pathway_perfail.js GAS_CASE=<case> with GAS_FOM_ADD=<R/kW-yr> (required for every case but
+'irp', refused for 'irp'); the fuel cost reaches the optimiser by year (opts.gasFuelR, bldGasFuelR) and the engine
+check (pathcheck.js reads the recorded P.gas). Checks: without GAS_CASE the first-pass LP differs from 09d's only in
+the gas generation cost coefficients (the 09e emissions factor); GAS_CASE=central writes the same LP (f2820b1cf4) as
+the flat GAS_FUEL_R=1298.42 override. No runs yet: the run matrix, the OCGT option and its cap are with the user.
+
+### Gas emissions factor 0.37 to 0.348 t/MWh; gas comments corrected, 9 Oct 2026
+
+Build `2026-10-09e` (user decision, TODO 14bo). emisCcgt = 53.06 kg CO2/MMBtu (HHV, US EPA) / 0.293071 / 0.52 = 0.348
+t/MWh; 0.37 implied 48.9% efficiency against the 52% that costCcgt uses (SOURCES). Gas CO2 in every earlier result is
+6.3% high (0.37/0.348). No default output moves (no gas at the defaults): suite 804/809 plus eng5 6/6, identical to
+09d, with no printed value changed. Comments corrected: costCcgt's label 1968 to 2003, the retired GAS_DEFAULTS
+reference, two "gas clears near R1,968" notes, the slider's "x 52%" (a division), the slider's and README's
+unsourced "IRP 2025 assumed $10/MMBtu" (IRP 2025: R260.89/GJ in January 2024 rands, about USD 15/MMBtu). The JKM
+figures in the costCcgt derivation (Jan-Aug about $15.5, August $21.2) are lower than the sourced $16.8 and $22.0;
+noted at the constant, value unchanged until the gas price cases replace it. lcoeCcgt (R3,340) was derived with
+R1,968 fuel and is about R35 low; to be recomputed once, when the default fuel price is set.
+
+### PROVISIONAL pending the storage fix - The model's gas fuel cost was within 4% of IRP 2025's, so the gap between the two gas builds did not come from the fuel price, 9 Oct 2026
+
+Build `2026-10-09a` constants (unchanged since 5 Oct 2026). The model's CCGT fuel cost, costCcgt, is R2,003/MWh: USD 18.50/MMBtu
+delivered (a 2026 JKM reference of about USD 16.5 plus USD 2 for regasification and transport) x R16.50/USD / 0.293071
+MWh per MMBtu / 0.52. IRP 2025's gas price (assumptions workbook, sheet "New Tech Properties", "First year, ZAR/GJ" =
+R260.89 in January 2024 rands, flat in real terms, no terminal or inland adder) is R278.66/GJ in 2026 rands (x 1.0681,
+SA CPI January 2024 to January 2026), which is R1,929/MWh at 52% (R1,923 at the IRP's own CCGT heat rate, 6,900
+kJ/kWh). The model's figure is 3.8% higher. Both are all-in: the model's carries the terminal as USD 2/MMBtu, the IRP's
+has no separate charge.
+
+So the difference between the optimiser's new gas (1.2-1.45 GW on the central pathways, 07c and 07s) and the IRP's is
+not the fuel price. The IRP cost-set run of 7 Oct (entry "IRP 2025's own cost set on the central pathway") found
+about the same gas build with the IRP's cost set (capex, fuel, O&M, heat rate; the model's discount rate and lives kept):
+
+```
+new gas, cumulative GW                 2030    2035    2040
+central, 07c costs (build 07c)         1.20    3.22    3.22
+IRP cost set (build 07c)               1.20    3.87    3.87
+central, 07s costs (build 07s)         1.20    1.45    1.45
+IRP 2025 Table 1 (gas IPP + Eskom)     6.00   10.75   17.25   (18.25 by 2042)
+```
+
+All three model runs predate the storage fix. In each, 2030 sits on the build cap: no new gas before 2030
+(pathway_perfail.js GAS_FIRST) and at most 1,200 MW a year (BLD_PACE.deliverable, "gas at Masterplan pace").
+
+What differs between this setup and the IRP's, any of which could explain the gap (inputs for TODO 14bd and 14be):
+- Gas earmarked: the IRP's first 6 GW is 3 GW Eskom in 2029 and 3 GW IPP in 2030, and its reference case assumes "6
+  GW CCGT" (IRP p.34). The model chooses gas, and cannot build more than 1.2 GW by 2030 under its cap.
+- Minimum running: the IRP holds that 6 GW at a minimum annual capacity factor of 51%, 2030-2040 (p.34). The optimiser
+  has no floor; the engine has one only for the IRP presets (ccgtForceLoad).
+- Demand: the IRP's moderate forecast grows about 2.3% a year, to about 255 TWh in 2030, 300 in 2035 and 345 in 2040
+  (executive summary; Figure 2 read visually, +/-5 TWh). The pathways grow demand 5% in total over 2026-2040 (about
+  0.35% a year). Not yet on one basis: the IRP's includes network losses and deemed cross-border sales (14be).
+- Coal retirement: the IRP fixes a 50-year life, 8 GW off in 2029-2030 and a further 15 GW in 2034-2042 (3.2.1.1.3).
+  The optimiser chooses retirement: 28.9 GW by 2040 on 07c costs, 18.8 GW on the IRP's.
+- Discount rate: the IRP uses 11.3% (p.34); the model 8% real (BLD_DISC). The cost-set run kept 8%. A higher rate
+  favours low-capital, high-fuel plant such as gas over solar, wind and storage. Not yet tested.
+- Reliability basis: the model plans to half the 0.002% unserved-energy standard, checked hourly over twelve weather
+  years and outage draws, with no reserve margin. The IRP's reliability criterion or reserve margin is not in the
+  extract; to be sourced from the IRP before 14be.
+- Build pace for the alternatives: the model's default allows 2 GW a year of lithium and 2.5 GW of solar and of wind;
+  the pace implied by the IRP is 0.55, 1.5 and 2.2 GW (BLD_PACE.irp). Storage is what replaces gas in the model.
+- Also: 5.2 GW of new nuclear 2036-2039 in the IRP, not an option in the build LP; rooftop 0.9 GW a year in the IRP
+  against 1.2 in the pathways. Provisional with every optimiser result until the central pathway is rerun with the hourly
+storage fix (build `2026-10-09a`, running).
+
+### Cost scaling does not make the stress-window LP solvable; the build LP now binds each stress window only in the years it failed (per-year windows, build 2026-10-09a), 9 Oct 2026
+
+Cost scaling (user, 9 Oct; tested on two LPs because Bröchin, Pickering, Tröndle and Pfenninger (2022), "Harder,
+better, faster, stronger: understanding and improving the tractability of large energy system models",
+arXiv:2211.12299, found that scaling cuts average solve time but makes very long runs more likely). harness/ext/scale_test.py divides every objective coefficient by the factor and multiplies the reported
+objective back; the variables and constraints are unchanged. Interior point (HiGHS 1.15.1); "no crossover" stops at the
+interior point without the final vertex step. A: the 08c central first pass (hs_lp.js, 49.9 MB). B: the 08c pass-2 LP
+with only the four 2023 windows (98.5 MB).
+
+```
+LP  costs divided by   crossover   status    time      objective vs exact vertex   build decisions (165) vs exact
+A   1 (as built)       on          Optimal   806 s     exact                       -
+A   1                  off         Optimal   514 s     1.1e-9                      all within 0.1 MW
+A   1e6 (R million)    off         Optimal   492 s     1.7e-9                      all within 0.1 MW
+A   1e4                off         Optimal   527 s     1.3e-9                      all within 0.1 MW
+A   1e6                on          Optimal   527 s     5e-15                       all within 0.1 MW
+B   1                  on          Optimal   6,836 s   exact                       -
+B   1                  off         Unknown   450 s     unusable (6.5e15)
+B   1e6                off         Unknown   353 s     unusable (6.6e15)
+B   1e4                off         Unknown   313 s     unusable (6.1e15)
+B   1e6                on          Optimal   4,057 s   2.5e-13                     all within 0.1 MW
+```
+
+- The first-pass LP needs no scaling: without crossover it already solves to the same build. The LP with stress
+  windows does not converge without crossover at any of the three cost scales, so scaling the costs does not remove
+  the long vertex step. Costs run from 0.34 to 1.2e8 (median 1,550); dividing by 1e6 puts 2,352 of them within ten
+  times of the dual feasibility tolerance (1e-7), which is why 1e4 was tried as well.
+- Correction (user, 9 Oct): dividing every cost by one factor shifts the coefficient range but does not narrow it, so
+  this did not test the scaling Bröchin et al. describe, by quantity group. With crossover the one-factor scaling was
+  faster on both LPs (A 527 against 806 s, B 4,057 against 6,836 s) with the same answer; no long run appeared.
+- The largest costs (1.2e8) are not the stress-window penalty: they are new-build capital, iron-air in 2026 (R121m per
+  MW) and offshore wind (R82m per MW). Next come the stress-day shed and reserve-shortfall variables (u_, rsl_ at
+  VoLL x 365), above 1e7: 2,520 columns each on the first pass, 2,981 and 2,978 on B.
+- Queued as a diagnosis only, no method change (user, 9 Oct): on B, interior point without crossover with (a) the
+  stress-window shed penalty capped at VoLL x 10, (b) HiGHS's most aggressive scaling option.
+- The fallback agreed with the user follows.
+
+Per-year stress windows (bldWindowsPerYear, default 1 from build `2026-10-09a`; 0 restores the 6-8 Oct behaviour, LP
+unchanged: the central pass-2 LP is byte-identical to 08c's with it off). Each window the loop adds binds only in the
+model year where the engine found it failing, and in any other year where the same window fails later; before, it
+bound from that year to the horizon. ReEDS checks resource adequacy for each solve year in the same way: "for a given
+solve year t, ReEDS iterates with the PRAS model to dynamically update stress periods", and PRAS "is run after each
+ReEDS model year to evaluate the RA of the ReEDS-designed power system and add additional stress periods if necessary"
+(ReEDS documentation, github.com/NREL/ReEDS-2.0, docs/source/model_documentation.md, Resource Adequacy; method in Mai,
+Brown, Lavin, Dhulipala and Kuna 2024, Incorporating Stressful Grid Conditions for Reliable and Cost-Effective
+Electricity System Planning, SSRN, doi:10.2139/ssrn.4841668). The difference: ReEDS solves year by year, while this LP
+plans all years at once, so a window bound only in 2034 still shapes the builds that 2035 inherits.
+
+Central pathway pass 2 with the same pass-1 build: 121.4 MB against 237.7 MB (window days 420 against 1,036). The
+seed tail (the worst seven days across the twelve years) still binds every year. Stated in the page's methods notes.
+
+Suite 804/809 plus eng5 6/6 without ESK19679.csv, identical to 08d check by check.
+
+### The 08c central pass 2 did not solve in eight hours; a sparser LP and three ways to shrink it, tested on the first pass, 9 Oct 2026
+
+Central pathway on build `2026-10-08c` (v_half_c1_p1_08c: Today 2026, demand +5% to 2040, half standard, COMMIT 1,
+PSE 1, TF 0.5, WPP 3, MAXP 14, native HiGHS). Pass 1 solved in 23 min (simplex). Its engine check added 12 distinct
+14-day windows, bound from the first failing year to 2040: 1,036 window days over 2031-2040 (168 in 2040). The pass-2
+LP is 237.7 MB (07s: 204.2 MB). Simplex ran 7 h 52 min and interior point 4 h 52 min (net of a 58 min pause) on it,
+neither finishing; both were stopped at 01:00 UTC (user rule, 8 Oct). The 07s pass 2 took 7 h 58 min on simplex.
+
+Sparser LP (bldCumVars, build `2026-10-08d`, off by default). Two thirds of the first-pass LP's nonzeros (1.37 of 2.02
+million) are the same build sums repeated in every hourly row. One cumulative-capacity variable per technology and year
+(K_<t>_<y> = K_<t>_<y-1> + b_<t>_<y>) is an exact rewrite: 0.89 million nonzeros, 28.9 MB against 49.9. On the first
+pass (harness/ext/hs_lp.js) it gives the same objective to 14 significant figures and all 225 build decisions identical
+(no difference above 0.001 MW). Interior point 509 s against 806 s dense (1.6 times faster); simplex slower (stopped at
+2,962 s against 1,505 s). Below the user's threshold of twice as fast, so not used.
+
+Shrink options, first pass (the run's own pass-1 LP; interior point, which matched simplex to 14 significant figures;
+base objective R1,227.40bn). Cost is the option's build re-costed on the full 12-day model where the option changes the
+model. GW built by the year shown.
+
+```
+option                      LP size          solve     cost vs base   build moves (GW)
+base (12 days, 2026-2040)   49.9 MB          ~13 min(+) -
+8 representative days       38.3 MB (-23%)   ~7 min     +0.036%        2040: solar +1.7, wind -0.8, lithium -0.6, gas +0.17
+6 representative days       32.6 MB (-35%)   ~5 min     +0.21%         2030: solar -2.4; gas +0.36 throughout
+five-year blocks            11.4 / 28.0 /    <2, 2.5,   +1.47%         2030: solar +5.2, wind +2.3, gas -0.68, coal
+  (2026-30, then 2031-35,   49.9 MB (*)      4 min                     retired +1.5; 2040: lithium +1.9, solar +3.2
+  then 2036-40, earlier
+  builds fixed)
+```
+(+) Interior point on the near-identical first-pass LP of harness/ext/hs_lp.js (806 s); solve times include no page
+load. (*) The harness keeps earlier years in each block's LP with their builds fixed, so it measures the blocks' effect on
+cost and build, not their speed; true blocks need a start year in bldBuildLP. With every build to 2035 fixed, the full
+2026-2040 LP solved in about 4 min against 13: the build decisions that tie the years together are what make it hard.
+
+At pass 2 the calendar days are a small part of the LP (12 a year against up to 175 stress days), so fewer
+representative days shrink it by only about 5% (8 days) or 7% (6 days).
+
+Stress windows. Merging windows from the same weather year and outage draw that overlap (MERGE_WIN) cuts the pass-2 LP
+from 237.7 to 198.2 MB (-17%). Tested on a pass-2 LP holding only the four overlapping
+2023 windows (WIN_YEARS=2023), interior point:
+
+```
+                     windows in the LP                          LP MB   pass-2 solve   objective R bn   engine check after
+unmerged             4 x 14 days, binding from 2031/35/39/40    98.5    1 h 54 min     1,279.69         fails 2034, 2038, 2040
+merged (MERGE_WIN)   1 x 21 days, binding from 2031             85.6    2 h 31 min     1,409.53 (+10%)  passes every year
+```
+
+- Merging is not a neutral change, and on this test it was slower. Windows from the same weather year and outage draw
+  are not duplicates: each carries the coal availability of the fleet in the year it was found, and the four disagree
+  on 140 hours. The merged window takes the first one's where they overlap, and binds all 21 days from 2031, including
+  days first found failing in 2039 and 2040. Build moves by 2030: wind 0.4 -> 12.5 GW, gas 0.6 -> 1.2 GW, coal retired
+  0 -> 4.4 GW. Not recommended in this form.
+- Interior point without crossover (HIGHS_CROSSOVER=off) on the unmerged LP stopped after 450 s with status Unknown and
+  an unusable point (objective 6.5e15, negative builds). The vertex step does most of the work, which points to the
+  LP's numerics: costs run from 0.34 to 1.2e8 and matrix coefficients from 1e-5 to 1e2 (first pass). Not tested
+  further.
+Binding each window only in the years it failed, not from then to 2040, would cut window days from 1,036 to 420 (or
+588 with the following year): about -45% on the pass-2 LP, at the risk of more passes. Not tested.
+
+Harness: pathway_perfail.js switches REP_DAYS, MERGE_WIN, WIN_YEARS, FIX_FROM/FIX_TO, GROWTH_PA and CUMV; outputs in the
+session scratchpad (shrink/). The harness with no switch set writes the run's pass-1 and pass-2 LPs byte for byte.
+
+### Hourly state of charge in the build LP (bldHourlySoc): no store borrows within a day any more, 8 Oct 2026
+
+Build `2026-10-08c` (user decision 8 Oct, TODO 14bl): (1) an hourly level for every store on stress days; (2) the
+window start a free level, with the window ending where it started; (3) calendar days measured first and given an
+hourly level too if the problem showed up on more than a handful of days.
+
+Calendar days, measured first on the 07s central pass-2 LP (hash a8a71a7a) and its cached solution
+(harness/ext/soc_borrow_cal.py): on 244 of 358 calendar store-days that move energy within the day, the within-day dip
+exceeds the lowest start level the daily balance allows. Lithium 132 (largest shortfall 103 GWh), pumped storage 67,
+iron-air 45. So calendar days are included.
+
+What changed in bldBuildLP (FIXED.bldHourlySoc, default 1):
+- Stress days (weight 1): a level per store per hour, s_<store>_<y>_<d>_<h> (hour 23 is the day's e_), moved each hour
+  by that hour's charge and discharge (sh_ rows), between zero and capacity (shc_ rows). This replaces the daily soc_
+  row, the half-full opening and send_ on those days. The first day of each window starts from the window's own closing
+  level, a free variable: the window opens with no energy it did not store, and puts back what it takes. Battery
+  reserve is limited by the level at the start and at the end of each hour.
+- Calendar days (weight about 30): the day-to-day chain stays (soc_: e_d = e_prev + weight x net), and c_ (the
+  cumulative movement within the day, free) holds the hourly level between zero and capacity on the first real day of
+  the block (from e_prev) and on the last (from e_d - c_23). The days in between lie on a straight line between those
+  two, so both ends cover them. Battery reserve uses the same two levels.
+- Not as first asked, accepted by the user 8 Oct (stated in the page's methods notes from build `2026-10-08d`): each
+  calendar day is not made to cycle. A cycle per representative day
+  would stop storage moving energy from one day to the next, which is what the chain is for (iron-air and pumped
+  storage across a still week). The rule above enforces the hourly limits without that loss.
+- bldHourlySoc 2: stress days only. 0: the old daily balance; the LP text is byte-identical to 08b (central
+  first-pass LP: same length, 33,676,729, and hash).
+
+Central first-pass LP (harness/ext/hs_lp.js: Today 2026, demand +5% to 2040, coal minimum, pumped-storage energy, two
+outage draws, half standard), native HiGHS, simplex; two solves at a time:
+
+```
+bldHourlySoc      LP MB   lines     solve s   objective R bn   calendar store-days borrowing
+0 (old)           33.7    243,680   297       1,174.27         178 of 266 (lithium 115, up to 51.3 GWh; pumped storage 63)
+2 stress days     36.5    263,330   475       1,174.32         180 of 262 (lithium 112, up to 53.6 GWh; pumped storage 68)
+1 (default)       49.9    365,930   1,505     1,180.47         0 of 285
+```
+
+- Only storage rows differ between 0 and 1 (rbe, rbq, soc, send; added sh, shc, cr, cla, cua, clb, cub), plus the
+  free bounds of the 17,280 c_ variables. On 1 the lowest stress-day hourly level is zero (-5e-12).
+- The objective rises with each step, as it must when the LP loses energy it could borrow: stress days alone add
+  R0.05bn, calendar days R6.15bn (0.52%). On 0, lithium also borrows on 2 of the 7 seed stress days of 2040 (up to
+  32.7 GWh).
+- Solve time: 1 takes 5.1 times as long as 0 on the first pass. The 07s central pass 2 took 7 h 58 min on simplex;
+  scaled alike it would take about 40 h, longer than the container stays up. Interior point is being timed on the
+  same LP; the runtime estimate and the solver choice follow. (9 Oct: on pass 2 neither finished in eight hours;
+  entry above.)
+
+Suite 804/809 plus eng5 6/6 without ESK19679.csv, identical to 08b check by check (validate_lp's LP grows from 7.56
+to 11.42 million characters, 51/51). The central pathway, the no-gas test and the Fossil-free proposal are being rerun
+on 08c; the runtime estimate and the solver question follow from the central run's pass 2.
+
+### Why the engine sheds where the optimiser served in full: the LP's storage keeps one energy balance per day, 8 Oct 2026
+
+07s central pathway (v_half_c1_p1_07s), model year 2040, the window where the engine shed most: weather year 2016,
+outage draw 0 (seed 36225520), days 279-292 (LP stress period 1, days 1130-1143). Engine: pathcheck.js
+WINDOW_DUMP=2016,36225520,279,14 on the same 2040 build (K=1 YEARS=2040). LP: the pass-2 LP regenerated with
+DUMP_LP (hash a8a71a7a) and its cached solution. Hour by hour (scripts in the session scratchpad, to be committed with
+the fix):
+
+- The shed: day 290, hours 13-14, 6.6 and 5.1 GW (11.7 GWh). Engine lithium starts day 290 at 89 GWh, runs dry at hour
+  13 and sheds; diesel, gas and coal are all at their limits. The LP starts the day at 75 GWh, discharges 117 GWh by
+  hour 14 with no charging before hour 15, then charges 27, 19 and 9 GW in hours 15-17. Tracked by the hour, its
+  lithium would sit about 42 GWh below zero at hour 14. Pumped storage does the same: empty in the engine from hour
+  12, discharging at 2,724 MW in the LP in hours 13-14.
+- Cause: in the LP each store has one energy balance per day (soc_<store>_<y>_<d>: end-of-day energy = previous day's
+  + 0.88 x charge - discharge, summed over the day), with no hourly state of charge, so the order of hours within a day
+  is not enforced: energy charged at 15:00 can serve 13:00. The engine tracks state of charge every hour.
+- How widespread, 2040: within-day energy goes below zero on 106 of 203 stress days for lithium (deepest -113 GWh),
+  10 for pumped storage (-7 GWh), 7 for iron-air (under 1 GWh). Typical case: the window's first day starts from a
+  fixed 1.6 GWh of lithium and the morning peak (hours 7-8) is covered with energy stored from midday solar.
+- Ruled out on this window: coal availability (identical, 7.3-7.4 GW, both at it in the shed hours), coal commitment
+  and ramps (coal at availability in both), pumped-storage constants (2,724 MW and 60,000 MWh in both), imports and
+  demand (the energy each model asks of dispatchable plant and storage agrees within 2% on days 289-291: 279 against
+  274, 276 against 272, 176 against 172 GWh), reserves (engine requirement 2.3 GW against 16 GW available, so no
+  shedding to hold reserve; the LP holds none on the battery).
+- Secondary differences, not the cause here: the LP starts every window from fixed constants (lithium 1.6 GWh, half
+  the existing 3.2 GWh with nothing for new build; pumped storage 30 GWh; iron-air 0), while the engine carries its own
+  state in (lithium 137 GWh at day 279); and in the run-up days the LP cycles storage on the midday surplus and burns
+  no coal, while the engine holds its storage near full and burns 73-194 GWh of coal a day.
+- Calendar days use the same daily balance with day weights; not measured here.
+
+### PROVISIONAL pending the storage fix - Stress windows planned to the standard under-build ninefold against the engine: 2038 planned 2.17 GWh, engine 19.4 GWh, 8 Oct 2026
+
+Run v_half_c1_p1_08b_st, build `2026-10-08b`, bldStressTarget 1 (STRESS_TARGET=1), otherwise as the central pathway
+(half standard, COMMIT=1, PSE=1, demand +5%, legislated carbon tax, stress loop per year, 14-day windows, three windows
+per failing year per pass, simplex). Stopped after pass 3 (user decision, 8 Oct 2026; pass 4 was cut off by a
+container restart). The LP's own expected shed against the engine's mean over the loop's 24 runs, GWh:
+
+```
+pass  windows  LP slack used           LP planned 2038   engine mean, failing years (limit about 2.0)
+1     seed     none                    2.17              2030 2.8, 2034 11.9, 2036 18.5, 2038 27.3, 2040 27.8
+2     33       2030: 1.20 GWh          2.17              2035 2.0, 2036 9.5, 2037 10.3, 2038 21.0, 2039 19.9, 2040 19.4
+3     51       2030: 1.18 GWh          2.17              2034 7.1, 2036 8.2, 2037 8.1, 2038 19.4, 2039 18.5, 2040 17.3
+```
+
+- The target row binds in most years from 2030 (the LP plans to the target, as built), but the engine sheds about nine
+  times more on the same build, and each pass of 18 windows moves the late years by about 1-2 GWh: at that pace the
+  loop would not converge inside its 14 passes.
+- Two causes: shed in runs and weeks with no window counts in the engine's mean but nowhere in the LP; and on the
+  windows themselves the engine sheds more than the LP plans (as on the central build, below). VoLL x 365 hid both by
+  serving every window in full.
+- Solve times: pass 2 35 min, pass 3 1 h 50 min (the central pathway's pass 2, VoLL x 365, took 7 h 58 min).
+- Decision (user, 8 Oct 2026): keep the VoLL x 365 method (option D); bldStressTarget stays in the code, off. The
+  LP-engine divergence on a single window is investigated first (TODO 14bl).
+
+### PROVISIONAL pending the storage fix - Build LP option: stress windows planned to the standard (bldStressTarget), and reported shed on an adaptive sample, 8 Oct 2026
+
+Build `2026-10-08b` (user decision, TODO 14bk (a), option (i)). bldStressTarget 1: every operating cost on a stress day
+(the loop's windows and the seed tail) is weighted as one run of the loop's check, 1 / (draws x weather years) = 1/24,
+so shedding stays above diesel in the merit order; a row per year, tgt_<y>, holds expected unserved energy plus reserve
+shortfall (calendar days at their weights, stress days at 1/24) to targetFrac x 0.002% of the LP's annual demand
+(2030: 2,110 MWh at the half standard), with a slack tsl_<y> priced at VoLL x 365 per expected MWh. The loop logs, per
+pass and year, the LP's expected shed, the target and the slack used (bldStressLog lpTarget). Default 0: the LP text is
+byte-identical to 07u (checked on the central pathway's first-pass LP: same length and hash), so the central case and
+the solve cache are untouched. Harness: STRESS_TARGET=1 in pathway_perfail.js.
+
+pathcheck.js now samples reported shed adaptively (user, 8 Oct 2026): batches of 10 draws (120 runs) until the 95%
+interval of the mean is within +/-20% of the target, at most 480 runs; each year reports nRuns, ci95Half and
+ciPctOfTarget. K=<n> keeps a fixed sample. Checked on the 07s central pathway, 2039: 480 runs, mean 0.910 GWh, standard
+error 0.173, interval +/-17% of the target, identical to the fixed 480-run check above.
+
+Suite 804/809 plus eng5 6/6 without ESK19679.csv, unchanged.
+
+### PROVISIONAL pending the storage fix - The 07s central pathway overshoots the half standard: pace caps and fully served stress windows, 8 Oct 2026
+
+MEASURED 8 Oct 2026 (TODO 14bk (c)): 480 runs a year (12 weather years x 40 outage draws) on the final build, 2036-2040,
+in both seed schemes (pathcheck.js K=40 YEARS=2036-2040; SEED_BASE=20260816 is the loop's own scheme, the default
+71830529 the engine check's). Mean shed, GWh (standard error); target about 1.97:
+
+```
+year   loop 24 runs   loop seeds 480    engine 24 runs   engine seeds 480   pooled 960   share of target
+2036   0.44           0.41 (0.08)       0.00             0.26 (0.06)        0.33         17%
+2037   0.22           0.33 (0.07)       0.00             0.19 (0.06)        0.26         13%
+2038   1.11           1.02 (0.18)       0.02             0.72 (0.14)        0.87         44%
+2039   1.51           1.25 (0.21)       0.28             0.91 (0.17)        1.08         55%
+2040   0.73           0.56 (0.14)       0.36             0.36 (0.10)        0.46         23%
+```
+
+- The overshoot is real but about half the target in the tightest year (2039, 55%, roughly 40-70% at 95%), not the
+  factor of seven the 24-run engine check implied: its 24 runs were mild (0.28 in 2039 against 0.91 on 480 runs of
+  the same seed base). The two 480-run sets differ by 1.2-1.4 standard errors each year; they lean the same way every
+  year because the draws reuse seeds across model years. Worst single run 27-40 GWh in 2038-2040.
+- Implication: two draws a year is too few to report shed against the target. Shed figures from pathcheck at K=2 in
+  earlier entries are samples, not measurements.
+
+The figures below were the first, 24-run reading and are superseded by the table above for 2036-2040.
+
+Same run as below (v_half_c1_p1_07s). Engine check mean shed against the half-standard target (about 1.97 GWh):
+0.00 GWh every year 2026-2037, then 0.02 (2038), 0.28 (2039), 0.26 (2040), so the worst year sits at 14% of the
+target. The loop's own pass-2 check, on its own outage seeds, puts 2038-2040 at 1.11, 1.51 and 0.73 GWh (56-76%):
+two draws a year is a small sample and the mean is set by rare draws.
+
+What drives it, from the cached pass-2 solution (lpcache a8a71a7a..., reduced costs on the build variables):
+- Pace caps, 2026-2030: wind at its 2.5 GW/yr cap with reduced cost about -R160m per MW, solar on its cap path
+  (-R118m per MW to 2030, binding to 2034), new gas at 0 before 2030 and at its 1.2 GW cap in 2030 (-R649m per MW),
+  iron-air at its 150 MW cap 2029-2030, lithium at 2 GW/yr in eleven of fifteen years (small reduced costs).
+- CORRECTED 8 Oct 2026 (user question): this entry first said the capped early build was set by energy value, not the
+  reliability target. Wrong. Splitting each reduced cost into the rows it enters (pass-2 LP regenerated with
+  DUMP_LP, hash a8a71a7a matching the cached solution; each hour's price matched to the cost of the resource that sets
+  it; parts sum exactly to the reported reduced cost):
+
+```
+value per MW of the 2030 build                       gas      wind     solar
+stress hours priced by shedding (VoLL x 365)         66%      60%      27%
+stress hours, scarcity carried by storage/energy     22%      32%      68%
+hourly reserve rows (stress shortfall at VoLL x 365) 14%      -1%      -2%
+fuel, VOM and carbon, all hours                      0.6%     3.7%     2.3%
+other                                                -2%       5%       5%
+total value, R m per MW (discounted)                 670      184      126
+share from the year 2030 itself                      97%      91%      93%
+```
+
+  The 2030 stress windows drive it: the caps stop the build covering them (28.1 GWh still shed there), and with that
+  shortage priced at VoLL x 365 every capped resource in 2026-2030 is worth far more than it costs. The zero shed in
+  other years is the by-product of building at full pace for 2030's worst windows. The planning-margin row (res_)
+  does not bind.
+- Stress windows served in full: pass 1 added 33 windows (the worst 14 days of failing draws, 55-102 GWh shed each).
+  With shedding there priced at VoLL x 365, the pass-2 LP leaves no unserved energy in any stress hour except in 2030
+  (28.1 GWh in 9 hours). Serving the worst week of each failing draw is a far stricter test than a mean over 24 runs.
+- On those same windows the LP is more optimistic than the engine in 2036-2040: re-dispatched on the final build the
+  engine sheds in 6 to 13 windows a year, up to 11.7 GWh in one window (2040), where the LP shed none. 2030-2035 agree
+  (no shed). This remaining optimiser-engine gap offsets part of the overshoot but not much of it.
+- Caveat: the cost of the overshoot needs a run (TODO 14bk); probability-weighting the stress windows, option (a),
+  bears directly on the 2030 windows that drive the capped build.
+
+### PROVISIONAL pending the storage fix - Central pathway on the final costs: new gas 3.22 -> 1.45 GW, no LNG window above one cargo, 8 Oct 2026
+
+Pathway v_half_c1_p1_07s, build `2026-10-07s` (worktree frozen at 92b5d1a), against v_half_c1_p1 on `2026-10-07c`: half
+standard (TF=0.5), coal commitment on (COMMIT=1), pumped-storage energy on (PSE=1), demand +5% to 2040, legislated
+carbon tax path, stress loop per year, SOLVER=native simplex, TL 28800. Converged: pass 1 added 33 stress windows,
+pass 2 none; verdict adequate. Engine check (pathcheck, LNG=1): twelve weather years x two outage draws. Final
+central costs: wind BW6 R28,462/kW on the modern-turbine profile at 1.064, lithium BW3 aged R13,699/kW. Each run
+costed at its own prices.
+
+```
+                              07c (old costs)              07s (final costs)
+new gas GW, 2030/35/40        1.20 / 3.22 / 3.22           1.20 / 1.45 / 1.45
+gas CF and hours, 2030        0.1%, 6 h                    0.0%, 2 h
+gas CF and hours, 2033        2.6%, 372 h                  3.7%, 363 h
+gas CF and hours, 2035        6.5%, 844 h                  7.3%, 684 h
+gas CF and hours, 2038        16.2%, 1,767 h               16.2%, 1,482 h
+gas CF and hours, 2040        20.6%, 2,147 h               19.6%, 1,773 h
+coal retired by 2040          28.9 GW                      26.2 GW
+2040 wind / solar GW          17.5 / 49.6                  17.1 / 43.3
+2040 lithium GW               27.4                         23.6
+2040 iron-air / vanadium GW   0.75 / 1.25                  0.30 / 0
+2040 pumped hydro GW          0                            0
+CO2 2026-2040                 1,212 Mt                     1,195 Mt
+system cost 2026-2040         R3,981bn                     R3,929bn
+worst-year mean shed          0.92 GWh                     0.28 GWh (24 runs; 1.08 on 960 runs, see above)
+LNG check by year: stress windows binding the year above one cargo, of those tested (worst 14 days
+of the year's 24 runs, in cargoes):
+  2030                        0 of 3 (0.03)                0 of 3 (0.02)
+  2033                        0 of 12 (0.39)               0 of 12 (0.35)
+  2035                        0 of 18 (0.76)               0 of 18 (0.52)
+  2038                        8 of 27 (1.23)               0 of 27 (0.56)
+  2040                        10 of 33 (1.23)              0 of 33 (0.57)
+```
+
+- Solver: simplex solved pass 2 in 7 h 58 min; interior point (HIGHS_SOLVER=ipm) on the same LP did not finish in 8 h.
+  On the regional LP (07u, Deep decarbonisation inputs, 2040) interior point solved in 26 min where simplex did not
+  finish in 4 h. National runs stay on simplex, regional on interior point (user rule, 8 Oct 2026). The objective
+  check across the two methods is still to do, on a solve both can finish.
+- Caveat: the gas figures are the half-standard pathway's; the 07c column predates wind and battery bid costs.
+
+### Preset re-search on the final central costs: Deep decarbonisation R289.7bn from two starts within 0.7%; Fossil-free R348.9bn from one so far, 7-8 Oct 2026
+
+Build `2026-10-07s` engine (07t and 07u change only the build LPs), harness/ext/preset_search.js, EXT=1, the 4 Oct
+method: target half of 0.002% of served energy, fixed at the start; steps 2, 1, 0.5 GW (iron-air 0.5, 0.25, 0.125;
+offshore 1, 0.5, 0.25); rooftop fixed; lithium at 12 h; offshore capped at 1 GW (2035) and 5 GW (2040). Costs: wind
+BW6 R28,462/kW on the modern-turbine profile at 1.064, lithium BW3 aged R13,699/kW. Deep scored on twelve weather
+years x 2 outage draws, confirmed on 40 draws (480 runs); Fossil-free on twelve years x 1 (no coal). Start A: the
+current preset. Start B: the build optimiser's proposal at half the standard (HORIZON 2035, GAS_CAP 0, COAL_DECOM
+27000, COMMIT 1, PSE 1; vanadium 1.75 GW and CCGT 0 held from it). Outputs: harness/ext/search_*.json.
+
+```
+                      wind    solar   Li 12h  iron-air  offshore  vanadium   R bn/yr   shed GWh (target)
+Deep, preset as is    32.5    29.5    19.0    1.125     0         -          325.2     0.00
+Deep, A final         32.5    27.5     9.0    1.5       0         -          289.7     1.98 (2.01), 480 runs
+Deep, B start         23.6    34.5    14.0    1.0       0.5       1.75       301.3     1.91
+Deep, B final         30.6    25.5     7.0    2.0       0.5       1.75       291.8     1.94 (2.07), 480 runs
+FF, preset as is      35      45      32      2.25      5         -          386.5     0.00
+FF, A final           35      51      22      4.25      1         -          348.9     1.84 (2.01), 12 runs
+```
+
+- Deep: the two starts end on different builds, R2.1bn (0.7%) apart; both meet the stricter target (2.01 GWh). The
+  cheapest found by the stated method is A, R289.7bn: lithium 19 -> 9 GW at 12 h, iron-air 1.125 -> 1.5 GW.
+- Method extension, 7 Oct 2026: A missed the target on the 480-run confirmation (2.56 GWh) and no single smallest
+  top-up met it (2.07 to 2.42); top-up rounds now repeat from the most cost-effective top-up until one does (round 2:
+  solar +0.5 GW after iron-air +0.125 GW). B needed none.
+- Fossil-free B: the proposal (HORIZON 2040, GAS_CAP 0, COAL_DECOM 42000, DSL_DECOM 3400) was infeasible on 07s
+  (fixed in 07t), then timed out at 4 h and was cut off twice by container restarts and memory; still to run.
+- Caveat: the targets differ slightly by start (fixed at each start's served energy); presets are not yet changed.
+
+### Regional optimiser: new wind on the modern-turbine profile, matching its capex, 7 Oct 2026
+
+Build `2026-10-07u` (TODO 14bh). Since 07r the regional LP priced new wind at the modern capex (R28,463/kW) on the
+regional file's V90 output (nodal/profiles_regional.json). Every wind MW in that LP is new build, so its output now
+takes the modern profile: a per-region map from raw V90 to V162 output (build_wind_modern.py, the same fit as the national
+profile; profiles_wind_modern_map.json regional_map) times WIND_NEW_CORR. Regional new-wind capacity factor, Deep
+decarbonisation 2035 inputs, V90 -> modern at 1.064: Eastern Cape 36.7 -> 46.3%, Hydra Central 42.5 -> 53.6%,
+KwaZulu-Natal 21.6 -> 29.3%, Limpopo 23.5 -> 32.7% (all ten in the run log). The tracking-solar option now raises an
+error in the regional LP (no regional tracking profile). A guard as in the national LP keeps opts.state and the page
+state on one cost case. Suite 804/809 plus eng5 6/6, unchanged.
+
+- Found on the way (TODO 14bi): profiles_regional.json is raw V90 output (maximum 0.991; no scaling recorded), while
+  the national file carries the fleet factor 1.0753. With modern wind off, the regional LP's wind is on a lower basis
+  than the national model's.
+
+### Build LP: coal-limit rounding made retiring all coal infeasible; fixed, 7 Oct 2026
+
+Build `2026-10-07t`. The Fossil-free 2040 optimiser proposal (HORIZON=2040, GAS_CAP=0, COAL_DECOM=42000, DSL_DECOM=3400,
+COMMIT=1, PSE=1, TF=0.5) solved its first pass and returned Infeasible on the second. IIS: one row, cmax_2040_1190_0
+(cm + 0.5092 rc_2040 <= 10,614.9) against rc_2040 >= 20,847.5. The coefficient was written to 4 decimals and the
+right-hand side to 1, so the coal capacity each cmax row implied ranged 20,841 to 20,847.6 MW in 2040; forcing all coal
+out then needed negative commitment. The right-hand side is now written from the rounded coefficient and rounded up to
+0.1 MW. Affects only runs that force all coal out; suite unchanged at 804/809 (lp 51/51, solve 8/8). The 07s national
+runs never bind rc_ at its bound.
+
+### PROVISIONAL - With gas, 100-hour iron-air removes July gas on the modern-turbine profile (was: barely moves it); depends on the new-wind correction, 7 Oct 2026
+
+Build `2026-10-07s`, default profile set, the validate_findings LDES scenario: slider defaults; Seriti build (20 GW wind,
+25 GW solar, 20 GW lithium at 10 h, 32 GW coal retired, EAF 70%) plus 25 GW new CCGT; then 20 GW of iron-air at 100 h.
+Iron-air charging tagged by source on an instrumented copy of 07s (scratch only, not committed); the tagged total
+equals the engine's own tierChg.fe in every case (4,970, 6,256 and 6,265 GWh).
+
+```
+GWh                      Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec    year
+modern off    charge       0     0     0     0     0     0    78   448   110  2113  1654   567    4970
+              disch.       0    48  1315   637     0     0     9   228     0     0     0     0    2237
+              gas, no      0    57  1316  1799  1166   757   846  1256     0     0     0     0    7197
+              gas, Fe      0     0     0  1166  1166   755   832  1023     0     0     0     0    4942
+modern 1.00   charge       0     0     0     0    87   358   662   705   885  2894   665     0    6256
+              disch.       0     0   573  1112   315    41   340   434     0     0     0     0    2815
+              gas, no      0     0   581  1122   524   265   524   887     0     0     0     0    3903
+              gas, Fe      0     0     0     0   214   224   184   438     0     0     0     0    1060
+modern 1.064  charge       0     0     0     0   242   543   926   811  1177  2566     0     0    6265
+              disch.       0     0   336   857   341   151   426   708     0     0     0     0    2819
+              gas, no      0     0   346   869   338   151   425   713     0     0     0     0    2842
+              gas, Fe      0     0     0     0     0     0     0     0     0     0     0     0       0
+```
+
+- July gas with iron-air: 846 -> 832 GWh on the current-turbine profile, 524 -> 184 at 1.00, 425 -> 0 at 1.064. Gas
+  for the year: 7,197 -> 4,942, 3,903 -> 1,060, 2,842 -> 0 GWh. The finding reverses at both correction cases.
+- Source of iron-air charge: renewable surplus 96-97%, forced surplus 2-3%, coal headroom 1%, at all three. In the
+  surplus hours that fill it, generation is 48-56% solar, 30-39% wind, 5% coal.
+- What changes: on the current profile iron-air fills only from July to December and empties in February to April.
+  On the modern profile it also fills from May to August, 2.5 TWh at 1.064 against 0.5 TWh, on winter wind
+  surplus, and discharges in the same months.
+- Caveats: one weather year (the default profile); the year is cyclic (the second pass starts from the first pass's
+  year-end state of charge, so the February-April discharge is last spring's surplus); the 1.064 correction rests on two
+  Eastern Cape farms (TODO 14bf). Provisional until re-measured on the twelve weather years.
+
+### New wind on the modern-turbine profile at 1.064: six suite results move, a pinned corner re-pinned, 7 Oct 2026
+
+Build `2026-10-07s`: nodal/profiles_wind_modern.json stored uncorrected; new wind's output x 1.064 (bldWindCorr 'central';
+'low' 1.00), clipped at 1, in engine and LP (WIND_NEW_CORR). Fixes two 07r defects found by the suite: the national map
+was built only with the weather years, so any dispatch with new wind threw before they loaded (invariants, response and
+outputs could not run); and the switch's fallback read 0 against a default of 1. ESK19679.csv absent.
+
+```
+suite                       07o          07r (before)    07s
+passed                      807 of 809   718 of 760      801 of 809 (799 before the map licence and the re-pin below)
+eng5                        6/6        6/6            6/6
+```
+
+Moved by the profile (each check returns to its 07o value with bldWindModern 0, measured on a copy of 07s):
+
+```
+check                                        modern off      modern on (1.064)    band
+CSIR 2030 coal share                         50.5%           46.1%                55% +/-6
+CSIR 2030 renewable share                    43.8%           48.1%                40% +/-8
+EDMSA Scenario A CO2 2035                    88.4 Mt         76.8 Mt              124 +/-22 (already failing)
+EDMSA Scenario A wind 2035                   within band     85.2 TWh             64 +/-12
+wind capture at 110 GW, no storage           86%             79%                  85-115%
+July gas with 20 GW iron-air, with gas       846 -> 832      425 -> 0 GWh         < 2% change
+preset curtailment, default profile          in band         Deep 71.6, FF 124.4  52.7, 96.3 +/-15%
+coal-curtailment corner, curtailFuelCost     R14.10bn        R16.67bn             re-pinned 13.9 -> 16.7
+```
+
+- Existing farms keep the old profile: Today 2026 and '2025, as modelled' give identical results on 07o and 07s, every
+  engine output compared on the default profile and all twelve weather years (26 runs, no difference). Both carry no
+  new wind, so the modern path is never entered.
+- Presets on the default profile (Deep decarbonisation 2035): wind 101.2 TWh at 1.064 against 98.2 at 1.00; system cost
+  R321.1bn against R322.2bn; no unserved energy in either.
+- Decided 7 Oct (user): CSIR and EDMSA builds run on the current-turbine profile, their own basis (validate_external,
+  bldWindModern 0); the modern-profile values above are kept as a sensitivity and printed by the harness, not checked.
+  The two findings are recorded as updated, not re-pinned; the preset curtailment pin is re-pinned after the re-search. The corner is a
+  pin whose purpose (a non-zero term) still holds; available wind there 200.7 -> 247.3 TWh, curtailment 373.4 -> 433.4.
+- Caveat: one sample year (2019) sets the modern mapping; the preset searches restart on this build (TODO 14ay).
+
+Published findings updated (user, 7 Oct 2026: recorded here, checks not re-pinned; reason for both: new wind on the
+modern-turbine profile at 1.064, build 07s, against the current-turbine profile, 07o):
+
+- Wind holds its capture rate, solar does not (validate_findings 3). Scenario: 50 GW wind, 60 GW solar in total, no
+  storage, default profile. Wind capture 86% -> 79% (check: 85-115%); solar 2.6% -> 0.4%. Wind now loses some value at
+  this build; the asymmetry with solar stands.
+- With gas, 100-hour iron-air barely moves July (validate_findings, LDES scope; RESULTS "Long-duration storage in a
+  system that has gas"). Scenario: Seriti build (20 GW wind, 25 GW solar, 20 GW lithium at 10 h, 32 GW coal retired,
+  EAF 70%) plus 25 GW new CCGT, then 20 GW of 100-hour iron-air. July gas 846 -> 832 GWh (-1.7%) becomes 425 -> 0 GWh
+  (-100%; check: under 2%). On the modern profile July gas halves before iron-air, and iron-air then removes the rest:
+  the finding reverses in this scenario.
+
+External comparisons, each further from its benchmark (modern off -> 1.00 -> 1.064):
+
+```
+check                         scenario                                       off     1.00    1.064   published
+CSIR 2030 coal share          20 GW wind, 15 GW solar, 285 TWh, EAF 65%      50.5%   47.5%   46.1%   55% +/-6
+CSIR 2030 renewable share     same                                           43.8%   46.8%   48.1%   40% +/-8
+EDMSA Scenario A CO2 2035     24.6 GW wind, 28 GW solar, 8 GW 4 h, 4 GW CCGT 88.4    80.1    76.8    124 +/-22 Mt
+EDMSA Scenario A wind 2035    same                                           72.1    81.5    85.2    64 +/-12 TWh
+```
+
+### Modern-turbine wind against developer-stated output: the factor that matches is 1.063 to 1.065, not the fleet's 1.0753, 7 Oct 2026
+
+Build `2026-10-07r` data, check_wind_farms.py (output ninja_farm_check.json): Vestas V162 5600 at 120 m, Renewables.ninja
+MERRA-2, local_time=true, at each farm's REEA location, weather years 2016, 2019, 2021, 2023, capacity factor clipped at 1.
+Stated output is the developer's annual figure (net, P50 by convention), treated as an expected value, possibly optimistic.
+
+```
+                 raw CF    x 1.0753    stated    factor matching stated
+Impofu (330 MW)  41.1%     44.0%       43.6%     1.0645
+San Kraal (140)  47.4%     50.7%       50.2%     1.0628
+Phezukomoya      47.5%     50.9%       none      -
+Umsobomvu        48.0%     51.3%       none      -
+```
+
+- Uncorrected, the modern profile sits about 6% below both stated figures; with the fleet's 1.0753 about 1% above.
+- The two farms agree on the matching factor to 0.2%. Phezukomoya and Umsobomvu sit within 0.6 points of their
+  neighbour San Kraal, so the nearby sites are consistent.
+- Weather spread: Impofu 39.2% to 43.3% raw across the four years, so one year's figure is not a fair test.
+- Caveat: two farms with stated output, both Eastern Cape; stated figures may be optimistic, which would put the
+  right factor lower. Decided 7 Oct (user): 1.064 central, 1.00 low; re-check when measured output exists (TODO 14bf).
+
+### PROVISIONAL pending the storage fix - IRP 2025's own cost set on the central pathway: about the same gas build, a fifth of its running, 10 GW more coal kept, 7 Oct 2026
+
+Pathway v_half_c1_p1_costirp against v_half_c1_p1, both build `2026-10-07c` code: half standard, coal commitment on,
+pumped-storage energy on, demand +5% to 2040, legislated carbon tax path, stress loop per year. COSTSET=irp2025: the IRP
+2025 assumptions workbook's capex paths (wind, solar, lithium, CCGT, offshore), CCGT fuel, O&M and heat rate, x 1.068
+to 2026 rands (harness/pathway/costset_irp2025.json). Engine check: twelve weather years x two outage draws, LNG on.
+Each run is costed at its own prices, so the cost totals do not rank the two.
+
+```
+                         central (07c costs)        IRP cost set
+new gas GW 2030/35/40    1.20 / 3.22 / 3.22         1.20 / 3.87 / 3.87
+gas CF 2035, 2040        6.5%, 20.6%                2.6%, 3.2%
+gas hours 2035, 2040     844, 2,147                 399, 395
+coal retired by 2040     28.9 GW                    18.8 GW
+2040 wind/solar/Li GW    17.5 / 49.6 / 27.4         14.2 / 10.2 / 7.3
+CO2 2026-2040            1,212 Mt                   1,785 Mt
+system cost 2026-2040    R3,981bn                   R3,395bn
+LNG, worst 14-day lull   1.23 cargoes (2038-40)     0.97 cargoes
+```
+
+- The IRP cost set prices lithium at R24,362/kW at 4 h in 2026, about 78% above the central lithium cost now in use
+  (BESIPPPP bid window 3 aged to January 2026, R13,699/kW) and three times the 07c figure (R8,105). Its solar
+  (R15,734) and wind (R27,446) are also above the 07c figures; its CCGT (R18,610) is about half.
+- Caveat: the central column is the 07c baseline, not today's central costs (wind on BW6 bids, lithium on BW3 aged);
+  the comparison is re-run on those (TODO 14bd).
+
+### Wind and lithium on South African bid data: Deep decarbonisation's new-build capital R0.936 to R1.205/kWh, 7 Oct 2026
+
+Build `2026-10-07q`. Wind central on BW6 compliant bids (R28,463/kW, was R21,000 unsourced; IRENA 2024 global onshore
+USD 1,041/kW, R17,180) and lithium on BW3 aged to January 2026 (R13,699/kW, was R8,105). Deep decarbonisation 2035,
+retail year 2035, 40% margin, vintage 2030.5: new-build capital R0.936 -> R1.205/kWh; wind alone gives R1.045 (+0.109),
+the battery the rest (+0.160). The preset builds are being re-searched on these costs (TODO 14ay).
+
+### Lithium on BESIPPPP bid window 3, aged to January 2026: Deep decarbonisation's new-build capital R0.936 to R1.096/kWh, 7 Oct 2026
+
+Superseded the same day by the aged central (user decision): BW3's equipment share at the bid date (BNEF global
+turnkey interpolated to May 2025, USD 143/kWh at R16.50, 61% of the bid) aged to January 2026 at BNEF's 2025 rate
+(x 0.795), the rest held at CPI: R3,425/kWh, R13,699/kW at 4 h (R3,373 at the May 2025 rate of about R18/USD).
+Build `2026-10-07p`: Deep decarbonisation 2035 new-build capital R1.096/kWh (central), R1.160 (high, BW3 as bid),
+R0.936 (low, R2,026/kWh). The entry below records the as-bid figure.
+
+### Lithium on BESIPPPP bid window 3 as bid raises Deep decarbonisation's new-build capital from R0.936 to R1.160/kWh, 7 Oct 2026
+
+Build `2026-10-07o` (lithium at BESIPPPP bid window 3, R15,962/kW at 4 h, inclusions not stated) against the
+same build with the previous R8,105/kW. Deep decarbonisation 2035 preset, retail year 2035, panel at 40%
+margin, vintage 2030.5 (validate_consistency.js, 'new-build capital matches the hand computation').
+
+- New-build capital per kWh sold: R0.936 -> R1.160 (+24%). The battery input is the whole change.
+- The preset carries 19 GW of lithium at 12 h, so it is the most battery-heavy preset and moves most.
+- The effect on the central pathway's build (v_half_c1_p1_battbw3) is queued; not yet measured.
+- Caveat: the BW3 figure is a project value whose inclusions are not published.
+
+### PROVISIONAL pending the storage fix - Existing diesel peakers run almost never from 2030 on the half-standard pathway, 7 Oct 2026
+
+Pathway pathway_v_half_c1_p1.json (build `2026-10-07c`: half standard, coal commitment on, pumped-storage
+energy on, demand +5% to 2040, legislated carbon tax path), dispatched by the engine in each year, twelve
+weather years (2014-2025) x two outage draws (seed base 71830529). Fleet 3,400 MW in every year: no
+retirement dates were applied before build 07h. Script: peakers.js (scratch), as pathcheck.js.
+
+```
+year   TWh     mean hours   worst-draw hours   peak MW
+2026   0.063   94           126                2,492
+2028   0.002   3            19                 592
+2030   0       0            0                  0
+2032   0       0            0                  0
+2034   0.001   0            4                  478
+2035   0.001   0            4                  568
+2036   0.001   0            2                  429
+2038   0       0            2                  283
+2040   0.001   0            4                  283
+```
+
+- Hours are fleet hours with output above 1 MW, mean over the 24 runs.
+- The fleet is still counted in every adequacy test and pays fixed O&M (R360/kW-yr, about R1.2bn a year).
+- IRP 2025 (3.2.1.2.2, p.13) retires Acacia and Port Rex in 2025-2026 and Ankerlig and Gourikwa in the
+  mid-2040s; the retirement option (bldPeakerRet, build 07h) tests what replacing them costs.
+
 ### IRP presets rebuilt from Table 1; the 2030 presets had 300 MW of storage, not 3,724, 7 Oct 2026
 
 Build `2026-10-07f` against `2026-10-07e`. Each preset at its own defaults, default weather year,
@@ -1864,7 +3032,7 @@ The 2030 presets move by under 2%. IRP path 2035 moves because only 6 of its 11.
 floor. Unserved energy unchanged in all three. The toggle does nothing before 2030 or after 2040,
 so at the Today 2026 default it has no effect; validate_response now sweeps it at scenario year 2030.
 
-### External test, Kerwin et al. 2026, part 2: our optimiser on their inputs builds more solar and storage, less gas, 6 Oct 2026
+### PROVISIONAL pending the storage fix - External test, Kerwin et al. 2026, part 2: our optimiser on their inputs builds more solar and storage, less gas, 6 Oct 2026
 
 Builds on `2026-10-05j`; pathchecks on `2026-10-06a` (only pumped hydro's default and the stamp differ;
 pumped hydro is off). harness/ext/kerwin_part2.js (LOOP=0 and LOOP=1, SOLVER=native, TL=3600),
@@ -2024,7 +3192,7 @@ importsMW -> loleHrs, now responsive: 1 hour at zero imports, 0 from 2,000 MW (1
 Caveat: four of the seven causes are inferred from dated entries, not reproduced; the builds that
 would show them are not in git.
 
-### Pumped storage: the optimiser does not over-use it and the engine does not under-use it; the gap is foresight, 7 Oct 2026
+### PROVISIONAL pending the storage fix - Pumped storage: the optimiser does not over-use it and the engine does not under-use it; the gap is foresight, 7 Oct 2026
 
 Build `2026-10-06e` (optimiser run) and `2026-10-06h` (engine).
 - Run: half-standard coal-minimum pathway with existing pumped storage modelled as energy in the
@@ -2065,7 +3233,7 @@ on (07a default)        1.2 / 3.22 GW      20.6% / 2,147   3,981      1,212   0.
 The gas, LNG-cost and storage variants of 6-7 Oct (entry below) ran with it off. They stand as
 comparisons with each other, but need re-running with it on before any is quoted (TODO 26).
 
-### PROVISIONAL - Half-standard pathway: a coal minimum in the optimiser brings 3.6 GW of backup gas that neither LNG costs nor long-duration storage displace, 6-7 Oct 2026
+### PROVISIONAL, and pending the storage fix - Half-standard pathway: a coal minimum in the optimiser brings 3.6 GW of backup gas that neither LNG costs nor long-duration storage displace, 6-7 Oct 2026
 
 Builds `2026-10-06e` (optimiser runs) and `2026-10-06h` (checks; the engine is unchanged between them).
 harness/pathway/pathway_perfail.js and pathcheck.js.
@@ -2150,7 +3318,7 @@ TF=1, LEAD=14). It does not reproduce on `06b` or later, where windows are added
 (windowsPerPass, default scope the failing year itself). `05f` was never committed; sd14 and ph160a can
 only be re-run approximately, on `05g` with the same options.
 
-### Build 05j changed stress-window scope; the 5 Oct pathways do not reproduce on it, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Build 05j changed stress-window scope; the 5 Oct pathways do not reproduce on it, 5 Oct 2026
 
 Build `2026-10-05j`. Between `05g` (pathway_op recorded) and `05j` each stress window became scoped to
 its fromYear on: the failing model year minus opts.windowLeadYears (default 4). At `05g` every window
@@ -2187,7 +3355,7 @@ below) is superseded as a test of the target: it was scoped too narrowly to repa
 
 Caveat: not converged; no build or cost to quote. Two draws per weather year.
 
-### Pathways re-checked on independent outage draws: both still meet the standard every year, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Pathways re-checked on independent outage draws: both still meet the standard every year, 5 Oct 2026
 
 Build `2026-10-05j`, suite 803/812 with ESK19679.csv absent (see the half-standard entry below).
 pathcheck.js until now drew the same outage seeds as the loop's own adequacy test, so its means
@@ -2244,7 +3412,7 @@ stricter target found a better build. Not to be quoted as the cost of the preset
 Second caveat: this check used the loop's own outage seeds (20260816 + k x 104729 + y x 7919 in
 both), so its means reproduce the loop's exactly. Fixed since; see the independent-seed entry above.
 
-### Outage-path stress windows replace the capacity margin: no margin needed, R17bn cheaper, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Outage-path stress windows replace the capacity margin: no margin needed, R17bn cheaper, 5 Oct 2026
 
 PROVISIONAL, 6 Oct 2026: the "no gas" build below came from a build LP with no coal minimum and no
 pumped-storage energy, the two gaps the 2040 decomposition found (RESULTS, 6 Oct). Re-runs with both
@@ -2268,7 +3436,7 @@ the line, 3.90 against 3.91 GWh, so the build is on the
 standard with no spare margin, unlike the presets' 2x design. Over 2026-2040: cost R3,463bn against
 R3,480bn for the flat-derate 14-day pathway, CO2 1,522 Mt against 1,514.
 
-### Fourteen-day pathway verified; pumped hydro not chosen even at its best case, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Fourteen-day pathway verified; pumped hydro not chosen even at its best case, 5 Oct 2026
 
 Build `2026-10-05f`, suite 805/806. The 14-day pathway (pathway_sd14) checked year by year on twelve
 weather years x two outage draws (corrected 5 Oct: the loop's own draws, not fresh ones): every year meets the standard, worst mean shed 3.38 GWh
@@ -2287,7 +3455,7 @@ pumped hydro is good at, energy over a long lull, is only partly visible to the 
 still needs a 4,000 MW margin. Not a finding that pumped hydro is uneconomic in South Africa: a
 finding that this optimiser, with this margin method, cannot value it yet.
 
-### Fourteen-day stress windows: margin 5,000 to 4,000 MW; coal derate already at the bad-outage level, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Fourteen-day stress windows: margin 5,000 to 4,000 MW; coal derate already at the bad-outage level, 5 Oct 2026
 
 Build `2026-10-05f` (suite not yet run), pathway_sd14.js. The per-year loop can now add stress
 windows of stressDays (here 14) that open a week before the failing week, so the optimiser must
@@ -2303,7 +3471,7 @@ derate already sits at the engine's bad-outage level; what remains is storage en
 
 Pumped hydro fixed O&M sourced: NREL ATB 2022, USD 18/kW-yr, R297 at R16.50 (was an assumed R250).
 
-### Battery reserve in the optimiser now energy-limited, as in the engine; small effect, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Battery reserve in the optimiser now energy-limited, as in the engine; small effect, 5 Oct 2026
 
 Build `2026-10-05e`. Confirmed: the storage held back while load is shed is the engine's reserve rule
 (shed load before reserve falls below the requirement; storage counts as reserve up to what its
@@ -2315,7 +3483,7 @@ Effect on the 2040 build at zero stress margin: engine mean shed 8.9 to 8.6 GWh,
 unchanged. Correct, but not the main gap. What remains is multi-day lulls draining a 6.7-hour
 lithium fleet, with outage timing the optimiser's single tail derate cannot represent.
 
-### Optimiser-engine gap, first decomposition: the engine's storage, not coal, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Optimiser-engine gap, first decomposition: the engine's storage, not coal, 5 Oct 2026
 
 Build `2026-10-05d`, gapdiag.js (harness folder). The reference pathway's 2040 build as the optimiser
 sizes it with no stress margin, run in the engine on twelve weather years x two outage draws: mean
@@ -2347,7 +3515,7 @@ reads diesel and VOLL from FIXED. TDP edition named. costCcgt 1,968 to 2,003 R/M
 R16.50/USD rate, not R16.21 (fallbacks, the methods table, validate_consistency and audit.py follow).
 Suite 805/806.
 
-### Pathway sensitivities: solar build-cap growth and a shadow carbon price, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Pathway sensitivities: solar build-cap growth and a shadow carbon price, 5 Oct 2026
 
 Build `2026-10-05b`, same method and checks as the reference pathway below (every year on twelve
 weather years x two outage draws; every year meets the standard in both). pathway_pv15.js and
@@ -2378,7 +3546,7 @@ against R3,629bn: 165 Mt less CO2 for about R281bn, about R1,700/t abated.
 Caveat: the 8,000 MW stress margin shows the optimiser-engine gap widening as coal leaves; the
 emissions-cap pathway still needs a sourced electricity cap.
 
-### Reference pathway on the legislated carbon tax, with CO2 and both cost measures, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Reference pathway on the legislated carbon tax, with CO2 and both cost measures, 5 Oct 2026
 
 Build `2026-10-05b`. The build optimiser now prices carbon on the legislated Phase 2 path
 (carbonTaxPathOn): headline R308/t in 2026 to R462/t in 2030 (2022 Budget), allowances cut 2.5
@@ -2437,7 +3605,7 @@ rising 7% a year; the IEA-ETSAP TIAM framework allows additions to grow 15% a ye
 cost; ReEDS applies a growth penalty relative to the previous year. Proposal: keep 7% as central,
 15% as a sensitivity.
 
-### Least-cost pathway to 2040, adequate in every year, 5 Oct 2026
+### PROVISIONAL pending the storage fix - Least-cost pathway to 2040, adequate in every year, 5 Oct 2026
 
 Build `2026-10-05a`; pathway.js and pathcheck.js in the harness folder, outputs pathway6.json and
 pathcheck6.json. Supersedes the two pathway drafts below.
@@ -2489,7 +3657,7 @@ reserve margin. Gas in 2030 assumes an import terminal that is not financed. The
 an assumption. At an effective carbon price of about R46/t nothing retires early; a carbon-price
 sensitivity is open. CO2 not yet reported. Tested every second year in the loop, every year after.
 
-### Coal schedule scaled to Eskom's 39,692 MW; pathway re-run falls further short, 4 Oct 2026
+### PROVISIONAL pending the storage fix - Coal schedule scaled to Eskom's 39,692 MW; pathway re-run falls further short, 4 Oct 2026
 
 Build `2026-10-04f`. UC_FLEET's unit sizes summed to 41.4 GW in 2026 against Eskom's nominal
 39,692 MW (integrated report FY2026). Both build LPs now scale the schedule's shape so 2026 equals
@@ -2502,7 +3670,7 @@ retirement and no offshore. The adequacy loop stalls further out than before: 20
 2040, the optimiser's builds fall further short of what the hourly engine needs. The optimiser-
 engine gap, not the schedule, is now the blocker for a publishable pathway. Suite 804/805.
 
-### Build optimiser: coal retirement and offshore are decisions; the solar cap grows, 4 Oct 2026
+### PROVISIONAL pending the storage fix - Build optimiser: coal retirement and offshore are decisions; the solar cap grows, 4 Oct 2026
 
 Build `2026-10-04e`. Three changes to bldBuildLP. Coal may retire ahead of Eskom's unit schedule
 (rc_<y>, cumulative, irreversible), saving fomCoal (R1,160/kW-yr) a year; it may not run past its
@@ -2523,7 +3691,7 @@ the growing cap, 3.0-3.5 GW a year in 2029-32, 25 GW new by 2040; wind 10.8 GW, 
 about 6.4 hours. Mean shed still exceeds the standard in 2038-2040 (4.2-4.4 against 3.9 GWh). To be
 re-run on the corrected schedule. Suite 804/805.
 
-### Least-cost pathway to 2040: first draft, short of the standard from 2038, 4 Oct 2026
+### PROVISIONAL pending the storage fix - Least-cost pathway to 2040: first draft, short of the standard from 2038, 4 Oct 2026
 
 Build `2026-10-04d`, pathway.js and pathcheck.js (harness folder). Start: Today 2026. Build optimiser,
 annual steps to 2040, stress-period loop on. Demand +5% by 2040. Coal retires on Eskom's unit
@@ -3001,7 +4169,7 @@ A first version placed gas after the reserve cap and raised Grid delay's worst y
 GWh. All seven presets unchanged across twelve years. The coal-only charging forecast still uses the
 mean EAF; switching it takes Today 2026 from 1.93 GWh mean shed to zero.
 
-### Adequacy loop decomposed: idle gas, then storage spent before idle gas, 2 Oct 2026
+### PROVISIONAL pending the storage fix - Adequacy loop decomposed: idle gas, then storage spent before idle gas, 2 Oct 2026
 
 Build `2026-10-02e`. Fossil-free 2040 preset, horizon 2040, the loop's stalled build (14.6 GW wind,
 32.7 solar, 2 rooftop, 13.0 lithium at 5h, 2.8 CCGT, 0.5 vanadium, 0.15 iron-air, 21.8 GW coal
@@ -3623,7 +4791,7 @@ kilowatt-hours, with the state-of-charge cap on the second, as PyPSA does - is w
 optimise duration rather than take it as given. The cost split that would price it now exists,
 so this is wiring rather than sourcing.
 
-### The build LP now chooses lithium's duration, 23 Sep 2026
+### PROVISIONAL pending the storage fix - The build LP now chooses lithium's duration, 23 Sep 2026
 
 Build `2026-09-23h`. Lithium is two build decisions rather than one: b_batt in megawatts for
 inverters and balance of plant, eb_batt in megawatt-hours for cells, which is the PyPSA
@@ -3648,7 +4816,7 @@ formulation: the two coefficients must recombine to the 4-hour annuity, the powe
 match the constant, and the duration rows must exist. On the previous build it reports that
 lithium is still one build decision at a fixed duration.
 
-### Solving it found a second thing: capacity credit was free of duration
+### PROVISIONAL pending the storage fix - Solving it found a second thing: capacity credit was free of duration
 
 Build `2026-09-23i`, 23 Sep 2026. With power and energy separated, the build LP was solved rather
 than just built - dumped from the page and run through HiGHS offline (lp_dump.js).
@@ -3678,7 +4846,7 @@ harness check was matching diesel rows rather than the new ones and would have p
 duration bounds missing entirely. Renamed battdur_min_/battdur_max_, and the check now requires
 the capacity-credit rows too.
 
-### The build pace was the answer, not the economics, 23 Sep 2026
+### PROVISIONAL pending the storage fix - The build pace was the answer, not the economics, 23 Sep 2026
 
 Build `2026-09-23j`. The build LP defaulted to the IRP 2025 pace, whose 550 MW a year of storage
 comes from the plan's 8.5 GW by 2039. That cap bound in every scenario solved, so the LP was
@@ -3707,7 +4875,7 @@ is allowed to arrive fast enough. The same question the IRP is answering with 16
 Neither run is at the new cap, so these are economics rather than a constraint - which was the
 point of lifting it.
 
-### Gas and the build pace: the sensitivities, 23 Sep 2026
+### PROVISIONAL pending the storage fix - Gas and the build pace: the sensitivities, 23 Sep 2026
 
 Build `2026-09-23k`, Fossil-free 2040 through the build LP, solved offline with HiGHS.
 
@@ -3751,7 +4919,7 @@ of actual projects puts recent combined-cycle capital at USD 2,000/kW or more ag
 1,116-1,427 for 2026 and 2027 completions, and the model's R34,965/kW is USD 2,119. The negative
 decline rate is deliberate: gas turbine capital is rising.
 
-### What South Africa is actually building, against the pace the gas result needs
+### PROVISIONAL pending the storage fix - What South Africa is actually building, against the pace the gas result needs
 
 Build `2026-09-23l`, 23 Sep 2026. The no-gas result holds above about 1.5 GW a year of storage,
 so the question is what the country has actually procured.
@@ -4297,7 +5465,7 @@ Both look like casualties of the 21 to 22 Sep reserve rework, which introduced t
 series and the continuous LOLP curve. Recorded because a defect reported and silently fixed is
 indistinguishable from one still live.
 
-### The no-gas result is a five-year result. At 2040 the optimiser builds gas.
+### PROVISIONAL pending the storage fix - The no-gas result is a five-year result. At 2040 the optimiser builds gas.
 
 Measured 30 Sep 2026 on build `2026-09-30a`, with BLD_YEARS extended to 2040 in a variant copy -
 eight two-year steps rather than five annual ones. Not installed; this is a scoping measurement
@@ -4329,7 +5497,7 @@ and the build-rate caps apply per step rather than per year. And the LP screens 
 days with perfect foresight - 6.6 GW of gas is a proposal to be checked against twelve weather
 years, not a result, exactly as the presets were.
 
-### Meridian's own work says the same thing about gas, on the same horizon
+### PROVISIONAL pending the storage fix - Meridian's own work says the same thing about gas, on the same horizon
 
 30 Sep 2026. A numerical cross-check against PyPSA-RSA is not available: it is a tool rather than
 a published results set, its multi-horizon runs need a commercial solver, and Meridian's scenario
@@ -4970,7 +6138,7 @@ change is as much a question as one that flips red. The new value has not yet be
 The adequacy loop still stalls, now at 30 GWh against a 4.4 GWh standard, a factor of about 7 where
 it was 19 this afternoon and 1,800 this morning.
 
-### Three more disagreements, and the last of the gap is the engine's, not the optimiser's
+### PROVISIONAL pending the storage fix - Three more disagreements, and the last of the gap is the engine's, not the optimiser's
 
 Build `2026-10-02a`, 2 Oct 2026, evening. The sweep and the second decomposition.
 
@@ -5028,7 +6196,7 @@ loop's 83. The difference was 2 GW of rooftop the optimiser had built and I had 
 copying the build by hand - which is the lesson of the apply-button bug, learned again an hour later.
 The probe that records what the loop actually tested is the one to trust.
 
-### The stall was not foresight. Four constants the optimiser and engine disagreed on.
+### PROVISIONAL pending the storage fix - The stall was not foresight. Four constants the optimiser and engine disagreed on.
 
 Build `2026-10-02a`, 2 Oct 2026, later the same day. Both open questions from the entry below were
 measured, and the first overturns its conclusion.
@@ -5070,7 +6238,7 @@ across the year moves the worst week from mid-January to late May, and barely mo
 worst year 365 to 350 GWh, mean 193 to 194. The January finding below was an artefact of where the
 engine schedules outages and should not be repeated as a property of the system.
 
-### The stress-period loop works, and it stalls - which locates the remaining gap
+### PROVISIONAL pending the storage fix - The stress-period loop works, and it stalls - which locates the remaining gap
 
 Build `2026-10-02a`, 2 Oct 2026. The build optimiser now has the iteration NREL's ReEDS uses: solve,
 test the build against the full chronological dispatch across twelve weather years, add the worst
@@ -5113,7 +6281,7 @@ iron-air stayed on top of the optimiser's build. On Fossil-free that meant 7 GW 
 adequate at 3 GWh. Without them it sheds 366. Both paths now carry every technology the optimiser
 decides and zero the ones it does not.
 
-### The same fix for the regional model was built, measured, and reverted
+### PROVISIONAL pending the storage fix - The same fix for the regional model was built, measured, and reverted
 
 Build `2026-10-02a`, 2 Oct 2026. The regional build optimiser was given the national model's
 three fixes: tail days carrying each region's OWN worst-week wind and solar from the twelve-year
@@ -5145,7 +6313,7 @@ they were simply not running. And one check that came back clean - the weights t
 aggregation divides by sum to exactly 1, so a division that looked like a double normalisation is
 a no-op, as it should be.
 
-### The optimiser now holds reserve and expects outages. The gap closed from 250 to 60.
+### PROVISIONAL pending the storage fix - The optimiser now holds reserve and expects outages. The gap closed from 250 to 60.
 
 Build `2026-10-02a`, 2 Oct 2026. Two of the three structural gaps between the build optimiser and
 the dispatch engine are closed; the third is inherent to a screening LP.
@@ -5191,7 +6359,7 @@ still the arbiter. But the proposals are now in the right neighbourhood.
 The regional model does not have any of this yet: it screens on eight calendar days with mean
 coal and no reserve, and says so in its code.
 
-### Four fixes to the build optimiser, and the one that did not work
+### PROVISIONAL pending the storage fix - Four fixes to the build optimiser, and the one that did not work
 
 Build `2026-10-01a`, 1 Oct 2026, following the correction below.
 
@@ -5235,7 +6403,7 @@ So the build optimiser is a screen and only a screen, and the panel now says so 
 Closing the gap properly means putting the engine's reserve and an outage allowance into the LP,
 which is a session of its own and is on the list.
 
-### CORRECTION: the no-wind result is not what the economics want. It is what coal and a
+### PROVISIONAL pending the storage fix - CORRECTION: the no-wind result is not what the economics want. It is what coal and a
 ### representative-day screen allow.
 
 Build `2026-10-01a`, 1 Oct 2026, same day as the entry it corrects below. The claim that wind,
@@ -5276,7 +6444,7 @@ user selecting Fossil-free 2040 and reading a least-cost path is being shown a c
 under a fossil-free label. And every optimiser result needs the twelve-year dispatch run before it
 is reported - which this one got only because someone asked.
 
-### What the economics actually want: utility solar and batteries, and nothing else
+### PROVISIONAL pending the storage fix - What the economics actually want: utility solar and batteries, and nothing else
 
 Build `2026-10-01a`, 1 Oct 2026. The build caps were raised until they stopped binding. Fossil-free
 2040, annual steps, every cap scaled by the same multiple:
@@ -5320,7 +6488,7 @@ and less easily explained away, and deserves its own test: this model's wind is 
 profiled and capacity-weighted, so a result that says 'no wind at all' should be interrogated
 before it is repeated.
 
-### Raising the solar caps nearly removes the gas, 1 Oct 2026
+### PROVISIONAL pending the storage fix - Raising the solar caps nearly removes the gas, 1 Oct 2026
 
 Build `2026-10-01a`. The deliverable pace now allows 2.5 GW a year of utility solar and 2 GW of
 rooftop, against 2.0 and 1.0. The schedule below was cap-bound in almost every year, so this moves
@@ -5353,7 +6521,7 @@ STILL cap-bound: solar runs at 2,500 MW in all fifteen years and rooftop at 2,00
 the optimiser would take more if offered it. The binding constraint is the assumption, not the
 economics, and no run has yet found the level at which that stops being true.
 
-### The least-cost path to 2040, and the year it reaches for gas
+### PROVISIONAL pending the storage fix - The least-cost path to 2040, and the year it reaches for gas
 
 Build `2026-10-01a`, 1 Oct 2026. The build optimiser's horizon is now a control - 2030, 2035 or
 2040 - where it was fixed at five years. Fifteen annual steps is 93,156 rows and solves in 7.6
@@ -5818,6 +6986,9 @@ Eskom-owned plant.
 ---
 
 ## Long-duration storage in a system that has gas - SCOPE CORRECTED
+
+UPDATED 7 Oct 2026, build 07s: with new wind on the modern-turbine profile, the with-gas test reads July gas
+425 -> 0 GWh with 20 GW of 100-hour iron-air (was 846 -> 832); provisional, see "PROVISIONAL - With gas, 100-hour iron-air removes July gas".
 
 Their conclusion is that the deficit needs firm wind or SEASONAL STORAGE. Tested
 directly. July gas energy, Seriti scenario:
