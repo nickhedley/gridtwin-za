@@ -602,7 +602,9 @@ User decision 12 Oct 2026: Eskom-derived constants stay for now; the open questi
 datasets were obtained on request, all rights reserved. Terms checked (user, 12 Oct 2026): they came through the Data
 Portal's five-year request with no licence of their own, so Eskom's website terms and the portal disclaimer apply:
 personal, educational or non-commercial use only; no reproduction, distribution or publication without written
-consent; no automated collection from the website without written consent (clause 2.10). Consent requested. Until
+consent; no automated collection from the website without written consent (clause 2.10). Consent requested: email
+'Permission request: Eskom Data Portal data in GridTwin ZA' from nick.hedley@gridtwinza.org to Eskom's Media Desk, 12 Oct 2026
+11:57 UTC; acknowledged by the Media Desk on 13 Oct 07:43 UTC ('attending to it'); no answer yet (checked 13 Oct). Until
 it is given: ESK files stay local; derived results and single calibration constants (as listed below) may be
 published, with Eskom credited and a note that the analysis is GridTwin ZA's, not Eskom's; no raw or per-unit hourly
 series; no scripted fetches from eskom.co.za beyond one-off checks (the gridtwin-data weekly fetch is disabled).

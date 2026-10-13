@@ -1,4 +1,27 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 13:25 UTC; next check-in 13:59)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 15:40 UTC)
+
+## Note date and plan to Fri 23 Oct (user, 13 Oct: note moved to Fri 23 Oct so the engine is fixed first; plan is a draft for approval)
+
+No more c4-based runs (user, 13 Oct). Estimates use today's measured times: a rule A pass took 1.5-2.8 h on GitHub (LP solve
+5,300-10,000 s), the engine check 12-40 min, print, top-up and tsl 1-20 min; c4's own loop took 9 passes over about 3 days.
+GitHub: 20 jobs at once on the Free plan (GitHub's stated limit); 12 seeded runs ran at once today without queueing.
+
+1. Engine fixes, branch claude/engine-fix (Tue 13 - Wed 14): (b) start-up double count, about 1 h; (c) coal units standing in
+   later years, about 2 h; (a) 24-hour look-ahead storage dispatch, 6-10 h (design, code, tune against the cross-check). Each:
+   full suite before and after (7 min each), the four cross-check weeks (15 min), engine-check and app run times. Pull request
+   for review.
+2. c4's existing build through the fixed engine, no re-solve (Wed 14, about 1 h): years failing, top-up, both measures.
+3. Stress-day coal rule, 14de (Wed 14 - Thu 15, about 1 day, needs your choice of rule: committed or available coal on stress
+   days, one rule in the optimiser and the engine): code, LP tests, suite.
+4. c5 central run from scratch (Thu 15 - Sat 17): c4's settings with the fixed engine and the 14de rule; passes 1.5-4 h each;
+   c4 needed 9; estimate 1-2 days to a pass cap or adequacy (stopping rule to agree before launch).
+5. Sensitivities on c5, seeded from its windows, rule A, all at once (Sat 17 - Sun 18, 3-4 h wall clock for one wave of up to
+   20): proposed, for you to cut: s_be7, s_nogas4strict_bd with s_battdecl, s_coalirp, s_coal60, s_irpgas, s_pvirp, s_windlow,
+   s_roof2, s_li8h, s_be4, s_be6, s_committed, s_gasprem, s_disc10, s_disc113, s_wind35 (17 runs); then print, top-up and tsl
+   for each (about 30 min).
+6. Write-ups, both measures, cross-check of c5's 2040 weeks, note draft (Mon 19 - Thu 22); note Fri 23 Oct.
+Risks: (a) may take longer; 14de waits on your choice; c5's pass count is unknown.
+
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
