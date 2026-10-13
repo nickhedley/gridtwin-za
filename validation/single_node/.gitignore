@@ -1,0 +1,8 @@
+# Hourly week files written by the scripts here: keep them local (derived hourly series)
+wk_*.json
+base_*.json
+lp*_*.json
+mip*_*.json
+roll_*.json
+scan.json
+repro_*.json
