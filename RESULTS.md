@@ -2026,6 +2026,8 @@ s_committed          2,562          0   -           1,736.6       43.6    1,693.
 s_coalirp            2,592 LB   3,250   2039, 2040  1,686.2        0.0    1,686.2        -7   |  -29.3      agree
 s_gasprem            2,617 LB   1,750   2040        1,734.4       11.3    1,723.0       +18   |   +7.5      agree
 s_be7                2,614 (d)      0   -           1,679.5       12.5    1,667.1       +15   |   (c)       not comparable
+s_li8h               2,614      3,000   -           1,702.9        0.0    1,702.9       +15   |  -12.6      disagree (e)
+s_be4                2,618        750   -           1,731.5       10.8    1,720.6       +19   |   +5.1      agree
 s_nogas3             2,606 LB   4,250   2036        1,905.2      186.7    1,718.5        +7   |   +3.0      agree
 s_nogas4             2,612 LB   4,750   2036, 2038  1,887.8      163.2    1,724.6       +13   |   +9.1      agree
 s_nogas4strict       2,838      rule B  -           3,762.3    1,838.6    1,923.7      +239   | +208.2      agree
@@ -2038,8 +2040,9 @@ fix within them costs at least as much if diesel open-cycle is the cheapest firm
 runs get no top-up (both adequate). (a) s_coalirp R2,588bn as solved, 2039-40 failing (183%, 439%); top-up 38379712300.
 (b) top-up 38377995864: 250 MW in 2040, R2,763bn, CO2 1,641 Mt. (c) the optimiser objective leaves out the capital of s_be7's
 fixed 5.2 GW of nuclear (2036-39; a constant to the LP, index.html ~6501), which the engine check charges. (d) understated:
-the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' below). tsl runs: s_gasprem 38380834231,
-s_be7 38380844927.
+the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' below). (e) s_li8h is the storage-heavy plan
+(8-hour lithium): its engine cost is an upper bound, the direction of the disagreement. tsl runs: s_gasprem 38380834231,
+s_be7 38380844927, s_li8h 38383985895, s_be4 38383995436.
 ```
 
 Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
@@ -2122,6 +2125,34 @@ s_gasprem: R18bn dearer than c4 on the engine check, R7.5bn on the objective wit
 gas (4.3 against 5.1 GW in 2040) and more lithium. s_be7: R15bn dearer on the engine check; its objective (c) leaves out
 the nuclear capital, so the R48bn the objective puts it below c4 is not a cost comparison. s_be7 is adequate without a
 top-up and emits 29 Mt less than c4.
+
+### s_li8h (lithium with 8 hours of energy) and s_be4 (IRP gas floor, 51% on 6 GW 2030-40), rule A, 13 Oct 2026
+
+Seeded from c4 (38359856512 / c4t, WIN_FROM), MAXP=1, claude/c4-frozen, c4's settings plus LI_EH=8 (s_li8h, run 38361303412)
+or GASFLOOR=1 (s_be4, run 38361321669; floor in the optimiser and the engine). Prints 38383979621 and 38383989561; top-ups
+38383982619 and 38383992755; tsl 38383985895 and 38383995436. Engine PV at 8% real.
+
+```
+                               s_li8h                          s_be4                          c4
+verdict                        pass limit (2037-40 fail loop)  pass limit (2039-40 fail loop)
+engine PV, as solved           R2,608bn                        R2,617bn                       R2,598bn
+  with the top-up              R2,614bn (3,000 MW: 250 in      R2,618bn (750 MW in 2040,      R2,599bn
+                               2037, 750 2038, 1,000 in 2039   within the caps)
+                               and 2040; within the caps)
+objective / without penalty    R1,702.9 / 1,702.9bn            R1,731.5 / 1,720.6bn           R1,727.7 / 1,715.5bn
+CO2 2026-40                    1,577 Mt                        1,611 Mt                       1,605 Mt
+gas GW 2030/35/40              1.2 / 3.4 / 5.6                 1.0 / 2.9 / 4.3                1.2 / 3.5 / 5.1
+new diesel open-cycle GW       2.8 / 2.8 / 2.8 (+3.0 top-up)   3.0 / 3.0 / 3.7 (+0.75 top-up) 2.8 / 2.8 / 3.6
+lithium GW                     6.5 / 14.0 / 25.6               6.5 / 12.3 / 23.7              6.6 / 11.2 / 21.7
+early coal retirement          1,708 MW                        104 MW                         588 MW
+worst year, engine check       2040 345% as solved             2040 148% as solved            2040 161%
+2030 stress-target penalty     0                               R10.8bn (465 MWh)              R12.2bn (523 MWh)
+```
+
+s_li8h: R15bn dearer than c4 on the engine check but R12.6bn cheaper on the objective without the penalty; it is the
+storage-heavy plan (25.6 GW of 8-hour lithium by 2040), so its engine cost is an upper bound, and the disagreement runs the
+way the storage caveat predicts. It has no 2030 penalty. s_be4: R19bn dearer on the engine check and R5.1bn on the objective;
+agree.
 
 ### s_be7: nuclear cost basis, and its 2040 annual cost against c4 (+R6.8bn a year against c4 with its top-up); the engine charges new nuclear no fixed O&M, 13 Oct 2026
 

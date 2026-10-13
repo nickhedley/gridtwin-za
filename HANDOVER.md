@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 11:35 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 11:30 UTC check-in)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -97,6 +97,9 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
 - s_be7 nuclear arithmetic (user, 13 Oct; RESULTS): with interest during construction and the IRP's fixed O&M, s_be7 is
   R2,657bn (ours, USD 7,500), R2,681bn (EIA AEO2023) or R2,700bn (IRP 2025 workbook): +R58, +82 or +101bn against c4; 2040
   gap +R39, +58 or +72bn a year; 2040 CO2 93.5 against c4's 101.3 Mt (-7.8 Mt; R5,040-9,190/t). Engine unchanged (TODO 14cz).
+- Check-in 11:21: s_li8h R2,614bn with a 3,000 MW top-up (within the caps), objective R1,702.9bn, no penalty: disagrees with
+  the engine on direction (storage-heavy, 8-hour lithium). s_be4 R2,618bn with 750 MW, objective without penalty R1,720.6bn:
+  agree. s_battdecl finished 10:47 (run 38367769821); print, top-up and tsl dispatched 11:23. Running: s_coal60, s_coalavail.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
