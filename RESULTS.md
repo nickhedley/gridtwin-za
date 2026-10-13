@@ -2020,7 +2020,7 @@ R bn.
                      engine PV  top-up  years over   objective   penalty   objective    gap to c4: engine |   direction
                      (top-up)   MW      the cap     as solved             without it   objective w/o penalty
 c4                   2,599      1,000   -           1,727.7       12.2    1,715.5         -   |    -
-s_wind35             2,526 LB   3,000   2038        1,661.5        0.0    1,661.5       -73   |  -54.0      agree
+s_wind35 (h)         2,526 LB   3,000   2038        1,661.5        0.0    1,661.5       -73   |  -54.0      agree
 s_be6                2,550          0   -           1,816.2       90.3    1,725.9       -49   |  +10.4      disagree
 s_committed          2,562          0   -           1,736.6       43.6    1,693.0       -37   |  -22.5      agree (disagreed with the penalty)
 s_coalirp            2,592 LB   3,250   2039, 2040  1,686.2        0.0    1,686.2        -7   |  -29.3      agree
@@ -2044,7 +2044,8 @@ fixed 5.2 GW of nuclear (2036-39; a constant to the LP, index.html ~6501), which
 the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' below). (e) s_li8h is the storage-heavy plan
 (8-hour lithium): its engine cost is an upper bound, the direction of the disagreement. (g) s_battdecl is storage-light
 (17.6 GW and 103 GWh of lithium in 2040 against c4's 21.7 GW and 126 GWh), which the engine favours. tsl runs: s_battdecl 38389692464, s_gasprem 38380834231,
-s_be7 38380844927, s_li8h 38383985895, s_be4 38383995436.
+s_be7 38380844927, s_li8h 38383985895, s_be4 38383995436. (h) s_wind35: wind limit 3,500 MW a year from 2028 (front-loaded); fails the engine check in 2037-40 as
+solved; lower bound; not in the note's headline findings (user, 13 Oct).
 ```
 
 Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
@@ -2128,6 +2129,18 @@ gas (4.3 against 5.1 GW in 2040) and more lithium. s_be7: R15bn dearer on the en
 the nuclear capital, so the R48bn the objective puts it below c4 is not a cost comparison. s_be7 is adequate without a
 top-up and emits 29 Mt less than c4.
 
+### c4's wind build by year; c4's wind limit stays (user, 13 Oct 2026)
+
+New onshore wind, MW (c4t print; the optimiser's limit is 2,500 MW a year, bldRates, binding only in 2026-30):
+
+```
+2026  2027  2028  2029  2030  2031  2032  2033  2034  2035  2036  2037  2038  2039  2040    total
+2,500 2,500 2,500 2,500 2,500     0     0     0     0     0   448     0     0   539     0   13,487 MW (12,500 by 2030)
+```
+
+Decision (user, 13 Oct): keep c4's wind limit; c4 is not limit-bound on wind after 2030. s_wind35 is relabelled 'wind limit
+3,500 MW a year from 2028 (front-loaded)' and kept out of the note's headline findings.
+
 ### 2040 against c4 with its top-up, for the note: annual cost gap, CO2 gap and their ratio; s_battdecl; the strict no-gas premium, 13 Oct 2026
 
 From existing outputs only (user, 13 Oct). Engine check, 2040, each run with its top-up (top-up runs' "2040" lines; rule B and
@@ -2144,7 +2157,7 @@ s_nogas3                     +4.8           -10.7          446                  
 s_nogas4                     +9.5           -10.4          915                         UB, LB (166 GWh; cap 2036, 2038)
 s_nogas4strict              +54.6           -36.7        1,490                         UB (176 GWh)
 s_nogas4strict_bd           +62.2           -37.5        1,661                         UB (171 GWh); lithium -3% a year
-s_wind35                    -14.1            -7.6        cheaper and cleaner           LB (cap 2038)
+s_wind35 (h)                -14.1            -7.6        cheaper and cleaner           LB (cap 2038)
 s_li8h                      +13.7            -2.5        5,540                         UB (149 GWh)
 s_be4                        +6.1            +0.9        emits more                    (133 GWh, +6%)
 s_be6                       -26.6            -5.4        cheaper and cleaner
@@ -2161,6 +2174,7 @@ Sources: top-ups 38368114518 (s_nogas3), 38369545953 (s_nogas4), 38374666197 (s_
 to 0.1); s_be6 and s_be7 local re-runs of their checks (120 runs each, reproducing them). s_nogas4strict_bd and s_battdecl
 price lithium at -3% a year against c4's -5%, so against c4 they mix the plan and the cost assumption; compare them with each
 other (below).
+(h) s_wind35: wind limit 3,500 MW a year from 2028 (front-loaded); fails the engine check in 2037-40 as solved; lower bound; not in the note's headline findings.
 
 s_battdecl (c4's settings, lithium capex -3% a year; run 38367769821, ref claude/c4-battdecl 1edd42b; print 38389685382, top-up
 38389689628, tsl 38389692464): adequate after one pass, no top-up; R2,590bn, 1,603 Mt; objective R1,740.6bn, R1,729.0bn without
@@ -2304,7 +2318,7 @@ AP1000s at Vogtle, USD 8,300-10,375/kW in 2024 dollars, as quoted in search resu
 container's proxy blocks web.mit.edu), so it is not used.
 
 
-### Seeded set, rule A: s_wind35, s_disc10 and s_disc113, both cost measures, 13 Oct 2026
+### Seeded set, rule A: s_wind35 (wind limit 3,500 MW a year from 2028 (front-loaded)), s_disc10 and s_disc113, both cost measures, 13 Oct 2026
 
 All seeded from c4 (seed 38359856512 / c4t, WIN_FROM), one pass (MAXP=1), claude/c4-frozen; engine check and top-up as for the
 other rule A runs. Engine cost PV at 8% real (the one cost basis) whatever the run's own discount rate. The optimiser objective
@@ -2312,7 +2326,8 @@ is shown beside it (TODO 14cv: report both until the measure is agreed); for s_d
 own rate, so it is not comparable with c4's. c4: engine R2,598bn as solved, R2,599bn with its top-up; objective R1,728bn.
 
 ```
-                           s_wind35 (wind 3.5 GW a yr)  s_disc10 (10% real)      s_disc113 (11.3% real)
+                           s_wind35 (limit 3.5 GW a yr  s_disc10 (10% real)      s_disc113 (11.3% real)
+                           from 2028, front-loaded)
 run                        38361299620                  38361281441              38361285970
 engine PV, as solved       R2,518bn                     R2,688bn                 R2,763bn
   with the top-up          R2,526bn (3,000 MW;          R2,688bn (500 MW in      R2,763bn (250 MW in
@@ -2325,7 +2340,9 @@ lithium GW                 5.4 / 10.6 / 20.8            6.3 / 10.3 / 21.0       
 worst year, engine check   2040 500% (2037-40 fail)     2040 112%                2040 109%
 ```
 
-s_wind35 builds 15.5 GW of wind, all by 2030 (3.5 GW a year in 2028-30), and none after; the two measures agree on its
+s_wind35 (wind limit 3,500 MW a year from 2028 (front-loaded); user, 13 Oct: label, adequacy failures and lower bound stated, kept out of the note's headline
+findings) builds 15.5 GW of wind, all by 2030 (3.5 GW a year in 2028-30), and none after; as solved it fails the engine check
+in 2037-40 (2040 at 500%), and its 3,000 MW top-up breaks the diesel build limit in 2038, so its cost is a lower bound; the two measures agree on its
 direction against c4 (engine -R73bn with top-ups, objective -R67bn). s_disc10 and s_disc113 cost more on the 8% basis because
 their higher capital charge buys a similar plan.
 

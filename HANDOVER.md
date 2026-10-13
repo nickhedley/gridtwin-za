@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 11:50 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 11:50 UTC; decisions 11:42)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -105,6 +105,15 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   objective +R13.5bn against c4: disagree). Strict no-gas premium (s_nogas4strict_bd against s_battdecl): engine +R272bn,
   objective +R219bn, -275 Mt; 2040 +R71bn and -35 Mt. The note's 2040 table (cost gap, CO2 gap, R/t, UB and LB marks) is in
   RESULTS ('2040 against c4 with its top-up'). Still running: s_coal60, s_coalavail.
+- Decision (user, 13 Oct 11:42, replaces the 11:37 message): c4's wind limit unchanged (2,500 MW a year; c4 builds 12.5 GW in
+  2026-30, 0.45 GW in 2036, 0.54 GW in 2039). s_wind35 relabelled 'wind limit 3,500 MW a year from 2028 (front-loaded)', its
+  2037-40 failures and lower bound noted, out of the note's headline findings. When s_coalavail finishes: if its 2030 new
+  diesel open-cycle or lithium differs from c4's by more than 0.5 GW, or its cost by more than R10bn on either measure (engine
+  with top-up, or objective without penalty), the new central is c4 + COAL_AVAIL=1, which is s_coalavail itself (same
+  settings, rule A from c4, topped up); then rerun from it (ref claude/c4-coalavail, COAL_AVAIL=1, WIN_FROM = its windows):
+  s_nogas3, s_nogas4, s_nogas4strict (rule B), s_be6, s_committed and s_irpgas, plus the s_be7 arithmetic against it. If not, c4
+  stays the central and only s_irpgas runs, from c4. s_pvirp and s_roof2 go ahead. s_irpgas, s_pvirp and s_roof2 are not
+  defined in this session's record: settings asked of the user before any launch. Rooftop stays 1,200 MW a year until s_roof2.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
@@ -210,7 +219,7 @@ s_disc10         DISC=0.10
 s_disc113        DISC=0.113
 s_gasprem        GAS_PREM=0.015
 s_committed      GAS_MIN=2030-2033:1200,2034:200 LI_MIN=2030:4600:18400
-s_wind35         WIND_CAP=3500                     (from 2028)
+s_wind35         WIND_CAP=3500                     (wind limit 3,500 MW a year from 2028 (front-loaded); not a headline run)
 s_li8h           LI_EH=8
 s_nogas3         GAS_CAP=0                         (no new CCGT or OCGT on LNG; new diesel open-cycle allowed)
 s_nogas4         GAS_CAP=0 LI_CAP=4000
