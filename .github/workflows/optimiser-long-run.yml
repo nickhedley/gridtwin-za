@@ -83,7 +83,7 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: Top-up
-        if: inputs.mode != 'check'
+        if: inputs.mode == 'topup'
         working-directory: harness
         env:
           SRC_NAME: ${{ inputs.source_name }}
