@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 08:05 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 08:15 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -33,6 +33,10 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
 - s_dieselhigh (user, 13 Oct): waits on the user's choice of diesel price basis (SOURCES, 'Diesel fuel price'; TODO 14cj).
   Switch DIESEL_R on branch claude/c4-diesel (3cc075f, tested: LP unchanged when unset). Launch: ref claude/c4-diesel,
   seed_run 38359856512, seed_name c4t, c4's settings plus WIN_FROM, MAXP=1 and DIESEL_R=<value>; then the top-up.
+- s_battdecl started 08:13 UTC (user, 13 Oct; TODO 14cw): run 38367769821, ref claude/c4-battdecl (1edd42b; c4-frozen plus
+  BATT_DECL, tested: off key e0b93ac712, on only the 28 lithium build cost coefficients change), c4's settings plus
+  WIN_FROM, MAXP=1 and BATT_DECL=0.03 (lithium capex -3% a year real, against the engine's 5%), seed 38359856512 / c4t,
+  rule A: then print and top-up (claude/topup applies battDecl from 89f3ed0).
 - After each run: print job (claude/print-results, source_run = its last run) and, for rule A runs, the top-up
   (claude/topup, same inputs). c4: report as solved and with the top-up beside penalty c4 (cost PV, CO2, gas, diesel
   open-cycle and lithium GW in 2030/2035/2040, shed by year; 2039-40 marked failing the loop's own test; Tutuka flag).

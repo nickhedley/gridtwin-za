@@ -844,6 +844,18 @@ harness/ext/grid_distances.py.
   build-up holding levies fixed would fall in between; the levies are not yet sourced. Choice of basis for s_dieselhigh:
   the user's.
 
+## Lithium capex decline: the engine's rate against its cited source (TODO 14cw, 13 Oct 2026)
+
+- Engine: BLD_COST.batt (and its high and low cases) decl 0.05, a 5% real fall a year from 2026: -37% by 2035, -51% by
+  2040. The BLD_COST comment cites BNEF's 2035 forecasts, -25% for storage, about 3.1% a year over 2026-35. Solar (decl
+  0.0389, -30% by 2035) and onshore wind (0.0286, -23%) match their cited rates; storage does not, and no source for 5%
+  is recorded.
+- Public forecasts, as given by the user (13 Oct 2026), not re-read here: NREL 2025 battery cost projections, mid case,
+  2024 dollars, about -23% over 2026-35 (2.9% a year); Wood Mackenzie, Middle East and Africa 4-hour storage cost, -33%
+  over 2026-35 (4.4% a year).
+- Sensitivity s_battdecl (BATT_DECL=0.03, -24% by 2035, -35% by 2040) on c4's settings measures the effect. The next
+  central uses a sourced decline rate (user, 13 Oct 2026).
+
 ## Build costs from South African bid data (TODO 14av, 14aw, 14ax; builds 07j and 07k, 7 Oct 2026)
 
 Decisions are the user's (7 Oct 2026).
