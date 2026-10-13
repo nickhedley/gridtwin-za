@@ -1,8 +1,31 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 06:45 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 07:20 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
 take over at any point from this block, CLAUDE.md and TODO.md (items 14cn, 14co, 14bz, 14ay and the FOCUS line).
+
+## Runs, 13 Oct 2026 07:20 UTC
+
+- c4 final: c4-target stopped after pass 9 (user). Pass 9 solved 02:59-06:58 UTC (job 38338261578, 4 h 14 min with the
+  replay); the automatic job 10 (38359803131) was cancelled before it started pass 10; replacement job 10 = run
+  38359856512 (same settings plus MAXP=9, prev_run 38338261578, code 86bfea4): replayed passes 1-9 from the cache (pass 9
+  key 1e8b5aa62a), 'done pass limit reached', exit 0, wrote pathway_c4t.json and pathway_c4t_lp2040.json; its check job
+  runs the engine check. This run is c4's final run and the seed of the set.
+- Seeded set launched 07:13 UTC (user rules, 13 Oct): rule A, MAXP=1 (one solve on c4's pass-9 windows, then engine
+  check, then top-up) for every run but s_nogas4strict; s_nogas4strict rule B, MAXP=3, no top-up. All seed_run
+  38359856512, seed_name c4t, settings c4t's plus WIN_FROM=seed/out/pathway_c4t_lp2040.json and MAXP. Run ids by
+  dispatch order (names to confirm from each job log's RUN_NAME):
+
+```
+s_disc10 38361281441      s_disc113 38361285970     s_gasprem 38361289574     s_committed 38361295036
+s_wind35 38361299620      s_li8h 38361303412        s_nogas3 38361308336      s_nogas4 38361312903
+s_nogas4strict 38361317217 (MAXP=3)                  s_be4 38361321669         s_be6 38361326157
+s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00, Figure 3 dates)
+```
+
+- After each run: print job (claude/print-results, source_run = its last run) and, for rule A runs, the top-up
+  (claude/topup, same inputs). c4: report as solved and with the top-up beside penalty c4 (cost PV, CO2, gas, diesel
+  open-cycle and lithium GW in 2030/2035/2040, shed by year; 2039-40 marked failing the loop's own test; Tutuka flag).
 
 ## Decisions, 13 Oct 2026 (user), in force
 
@@ -14,7 +37,8 @@ take over at any point from this block, CLAUDE.md and TODO.md (items 14cn, 14co,
    failing the loop's own test.
 2. The 12 seeded runs start from every window found through pass 9 (WIN_FROM, the windows pass 9 solved with). Before launch Nick is
    told each run's pass cap and stopping rule; all runs use the same rule. Proposed 13 Oct: A, one pass (MAXP=1, all on c4's windows),
-   or B, c4's rule capped at 3 passes. Waiting for Nick's choice.
+   or B, c4's rule capped at 3 passes. Nick chose A for all but s_nogas4strict (B, no top-up; if it still fails after
+   3 passes, report shed against target by year and diesel burnt by the existing peakers).
 3. Adequacy top-up (TODO 14ct), branch claude/topup; run it on each finished run and report cost as solved and with the top-up.
 4. s_coalirp on IRP Figure 3 as digitised by Nick (ee92b00 on claude/c4-coalirp, tested); start it on its own with c4's final
    windows and the set's rule; do not hold the set for it.
