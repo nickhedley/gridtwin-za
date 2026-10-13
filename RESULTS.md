@@ -2017,25 +2017,29 @@ s_be6 and s_committed from the lpsplit runs (entry 'TODO 14cv' below). Engine PV
 R bn.
 
 ```
-                     engine PV     objective   penalty   objective     gap to c4: engine |   direction
-                     (top-up)      as solved             without it    objective w/o penalty
-c4                   2,599         1,727.7       12.2    1,715.5          -   |    -
-s_wind35             2,526         1,661.5        0.0    1,661.5        -73   |  -54.0      agree
-s_be6                2,550         1,816.2       90.3    1,725.9        -49   |  +10.4      disagree
-s_committed          2,562         1,736.6       43.6    1,693.0        -37   |  -22.5      agree (disagreed with the penalty)
-s_coalirp            2,592 (a)     1,686.2        0.0    1,686.2         -7   | -29.3      agree
-s_gasprem            2,617         1,734.4       11.3    1,723.0        +18   |   +7.5      agree
-s_be7                2,614         1,679.5       12.5    1,667.1        +15   |   (c)       not comparable
-s_nogas3             2,606         1,905.2      186.7    1,718.5         +7   |   +3.0      agree
-s_nogas4             2,612         1,887.8      163.2    1,724.6        +13   |   +9.1      agree
-s_nogas4strict       2,838         3,762.3    1,838.6    1,923.7       +239   | +208.2      agree
-s_nogas4strict_bd    2,862         3,786.6    1,838.6    1,948.0       +263   | +232.5      agree
-s_disc10             2,688         1,636.6       37.0    1,599.5        +89   |   at 10%, not comparable
-s_disc113            2,763 (b)     1,582.0       35.3    1,546.7       +164   |   at 11.3%, not comparable
-(a) R2,588bn as solved, 2039-40 failing (183%, 439%); top-up 38379712300: 3,250 MW (1,250 in 2039, 2,000 in 2040), over the
-build caps in both years. (b) top-up 38377995864: 250 MW in 2040, R2,763bn, CO2 1,641 Mt, within the caps. (c) the optimiser
-objective leaves out the capital of s_be7's fixed 5.2 GW of nuclear (2036-39; a constant to the LP, index.html ~6501), which
-the engine check charges. tsl runs: s_gasprem 38380834231, s_be7 38380844927.
+                     engine PV  top-up  years over   objective   penalty   objective    gap to c4: engine |   direction
+                     (top-up)   MW      the cap     as solved             without it   objective w/o penalty
+c4                   2,599      1,000   -           1,727.7       12.2    1,715.5         -   |    -
+s_wind35             2,526 LB   3,000   2038        1,661.5        0.0    1,661.5       -73   |  -54.0      agree
+s_be6                2,550          0   -           1,816.2       90.3    1,725.9       -49   |  +10.4      disagree
+s_committed          2,562          0   -           1,736.6       43.6    1,693.0       -37   |  -22.5      agree (disagreed with the penalty)
+s_coalirp            2,592 LB   3,250   2039, 2040  1,686.2        0.0    1,686.2        -7   |  -29.3      agree
+s_gasprem            2,617 LB   1,750   2040        1,734.4       11.3    1,723.0       +18   |   +7.5      agree
+s_be7                2,614 (d)      0   -           1,679.5       12.5    1,667.1       +15   |   (c)       not comparable
+s_nogas3             2,606 LB   4,250   2036        1,905.2      186.7    1,718.5        +7   |   +3.0      agree
+s_nogas4             2,612 LB   4,750   2036, 2038  1,887.8      163.2    1,724.6       +13   |   +9.1      agree
+s_nogas4strict       2,838      rule B  -           3,762.3    1,838.6    1,923.7      +239   | +208.2      agree
+s_nogas4strict_bd    2,862      rule B  -           3,786.6    1,838.6    1,948.0      +263   | +232.5      agree
+s_disc10             2,688        500   -           1,636.6       37.0    1,599.5       +89   |   at 10%, not comparable
+s_disc113            2,763 (b)    250   -           1,582.0       35.3    1,546.7      +164   |   at 11.3%, not comparable
+LB: the top-up breaks the diesel open-cycle build cap (1,000 MW a year; s_coalirp also the 2,000 MW turbine cap) in the years
+shown, all in 2036-40, so the cost is a lower bound (user, 13 Oct): the plan as costed cannot be built within the caps, and a
+fix within them costs at least as much if diesel open-cycle is the cheapest firm capacity, which the top-up assumes. Rule B
+runs get no top-up (both adequate). (a) s_coalirp R2,588bn as solved, 2039-40 failing (183%, 439%); top-up 38379712300.
+(b) top-up 38377995864: 250 MW in 2040, R2,763bn, CO2 1,641 Mt. (c) the optimiser objective leaves out the capital of s_be7's
+fixed 5.2 GW of nuclear (2036-39; a constant to the LP, index.html ~6501), which the engine check charges. (d) understated:
+the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' below). tsl runs: s_gasprem 38380834231,
+s_be7 38380844927.
 ```
 
 Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
@@ -2118,6 +2122,36 @@ s_gasprem: R18bn dearer than c4 on the engine check, R7.5bn on the objective wit
 gas (4.3 against 5.1 GW in 2040) and more lithium. s_be7: R15bn dearer on the engine check; its objective (c) leaves out
 the nuclear capital, so the R48bn the objective puts it below c4 is not a cost comparison. s_be7 is adequate without a
 top-up and emits 29 Mt less than c4.
+
+### s_be7: nuclear cost basis, and its 2040 annual cost against c4 (+R6.8bn a year against c4 with its top-up); the engine charges new nuclear no fixed O&M, 13 Oct 2026
+
+Basis (index.html, FIXED.acapNuclear, about line 6406; build 2026-10-12e): R10,500/kW a year, a capital annuity only. Its
+comment derives it from USD 7,500/kW overnight, "mid of published USD 6,000-9,000/kW ranges" (no study named, no price year
+stated), at about R16.8/USD (R126,000/kW), over a 40-year life at about 8% (capital recovery factor 0.0839, R10,567). Flat
+across build years; no interest during construction. Fuel and variable O&M as Koeberg: costNuclear R160/MWh plus vomNuclear
+R45/MWh. Fixed O&M: none for new nuclear; fixedOMR charges fomNuclear (R4,260/kW a year) on the existing fleet only.
+
+The 2026-40 PV counts nuclear annuities for 2036-40 only: R72bn PV of nuclear capital (R13bn in 2036, R54.6bn a year from
+2039) of a 40-year stream. s_be7's +R15bn is the net of that and its savings elsewhere.
+
+2040, one year, R bn. Engine check on each build with the check's own draws and adaptive rule (local, pathcheck.js with a
+per-run cost recorder, scratchpad): s_be7 120 runs, R379.4bn, reproducing its check; c4 480 runs, R369.9bn as solved,
+R372.6bn with its 1,000 MW top-up (R2.71bn: capital 2.29, fixed O&M 0.45, fuel 0.05, other -0.09).
+
+```
+                                          s_be7 minus c4 as solved    s_be7 minus c4 with top-up
+capital annuities (engine newCapexR)              +20.3                        +18.0
+  of which new nuclear (5,200 MW)                 +54.6
+  of which everything else                        -34.3 (transmission -4.1)
+running costs                                     -10.8                        -11.2
+  fuel: gas -13.1, coal -2.6, diesel -0.3, nuclear, hydro and imports +6.2; carbon -0.9; fixed O&M -0.1; other 0.0
+total, 2040                                        +9.5                         +6.8
+not charged: new-nuclear fixed O&M at the engine's Koeberg figure (R4,260/kW a year x 5,200 MW)    +22.2 a year
+```
+
+Caveat: with fixed O&M at the Koeberg figure (which the code calls an upper bound for Koeberg) s_be7's 2040 gap would be about
++R29bn a year and its 2026-40 PV about R29bn higher (R44bn above c4). A 60-year life would cut the annuity 3% (R10,180/kW a
+year, -R1.7bn in 2040). The note should quote s_be7 only with this basis stated; sourcing it is TODO 14cz, after the note.
 
 ### Seeded set, rule A: s_wind35, s_disc10 and s_disc113, both cost measures, 13 Oct 2026
 

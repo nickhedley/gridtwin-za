@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 10:45 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 11:10 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -88,6 +88,12 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   1,750 MW top-up (2040 over the cap), objective without penalty R1,723.0bn: both above c4. s_be7 adequate, R2,614bn, 1,576 Mt;
   its objective leaves out the fixed nuclear's capital, so not comparable. s_li8h (38361303412) and s_be4 (38361321669)
   finished ~10:04; print, top-up and tsl dispatched 10:35. Running: s_battdecl, s_coal60, s_coalavail.
+- Decisions (user, 13 Oct, after 10:45): (1) s_coalavail's reserve row stays as built: stress days see the same coal as
+  ordinary days. (2) In the note's table every run shows its top-up MW and the years over the build cap in their own
+  columns; runs whose top-up breaks a cap (now s_nogas3, s_nogas4, s_wind35, s_gasprem, s_coalirp, all 2036-40) have their
+  cost called a lower bound (RESULTS table, 'LB'). (3) s_be7: nuclear basis R10,500/kW a year (USD 7,500/kW overnight, no
+  study or price year, 40 years, 8%), no fixed O&M charged for new nuclear; 2040 cost +R9.5bn a year against c4 as solved,
+  +R6.8bn against c4 with its top-up; R22bn a year of fixed O&M would be missing at Koeberg's figure (TODO 14cz).
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
