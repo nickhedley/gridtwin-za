@@ -827,7 +827,8 @@ harness/ext/grid_distances.py.
 
 - Engine: FIXED.costDiesel R6,100/MWh of output, fuel only (vomDiesel R70 separate). Its note reads 'Eskom OCGT: recent
   runs reported at ~R6,011/MWh (Mar 2026)': Eskom's realised diesel spend per MWh of open-cycle output for 2025/26 to
-  date. No Brent price, exchange rate or source document was recorded with it; R6,100 is R6,011 rounded up.
+  date. No Brent price, exchange rate or source document was recorded with it; R6,100 is 1.5% above R6,011, reason not
+  recorded (in the engine since the repository's first commit, 1 Oct 2026).
 - Parliamentary reply NW1243, Minister of Electricity and Energy, 7 May 2026 (pmg.org.za/committee-question/37559):
   diesel consumed at Eskom's open-cycle stations, costs before rebates. 2024/25: 686,386,567 litres, R13,182,984,487
   (R19.21/litre). April 2025 to February 2026: 258,389,725 litres, R4,750,701,063 (R18.39/litre). Purchases 2025/26:
