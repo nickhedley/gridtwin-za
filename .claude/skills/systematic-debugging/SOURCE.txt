@@ -1,0 +1,6 @@
+Copied unchanged from github.com/obra/superpowers, skills/systematic-debugging,
+commit bb92a77741419a4ab5f06e711a283343f1ada0c3 (9 Oct 2026).
+Licence: MIT, in LICENSE. No files modified.
+Left out: CREATION-LOG.md and the test-*.md files, which are for developing the skill.
+SKILL.md mentions two other Superpowers skills (test-driven-development and
+verification-before-completion) that are not installed here.
