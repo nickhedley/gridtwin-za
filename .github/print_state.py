@@ -10,8 +10,8 @@ import json, os, sys
 name, dirs = sys.argv[1], sys.argv[2:]
 def find(fn):
     for d in dirs:
-        p = os.path.join(d, 'out', fn)
-        if os.path.exists(p): return p
+        for p in (os.path.join(d, 'out', fn), os.path.join(d, fn)):   # state-<n> holds out/; results-<n> unpacks its files at the top
+            if os.path.exists(p): return p
     return None
 
 for d in dirs:
