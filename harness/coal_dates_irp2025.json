@@ -1,33 +1,31 @@
 {
  "meta": {
   "what": "Coal unit decommissioning years for the IRP-timing sensitivity (TODO 14cr): a unit listed here is gone from the start of the year given; every unit not listed keeps c4's date (UC_FLEET).",
-  "basis": "Tracks IRP 2025's total coal path, scaled to our 39,692 MW base (x 39,692/40,960). The path is from the plan's text, since Figure 3 (plan p.12, gazette p.23) could not be read here: 40,960 MW installed (Table 1); 8 GW gone by the start of 2030 (plan p.13); a further 15 GW in 12 equal steps at the starts of 2031 to 2042 (50-year end of life for Kendal, Majuba, Lethabo, Matimba and Tutuka from 2031, plan p.24; p.13 says 2034). Camden, Hendrina, Grootvlei and Arnot go at the start of 2030 (plan p.40, gazette p.51); then the oldest units first by start year (ties by the station's first unit, then unit order), retiring a unit in a year while the fleet stands at least half that unit above the path. Units still standing at the start of 2042 keep c4's date if later, else 2043; both lie beyond the model's last year (2040). User decisions, 12 Oct 2026.",
-  "path_mw_start_of_year_unscaled": {
-   "2026": 40960,
-   "2027": 40960,
-   "2028": 40960,
-   "2029": 40960,
-   "2030": 32960,
-   "2031": 31710,
-   "2032": 30460,
-   "2033": 29210,
-   "2034": 27960,
-   "2035": 26710,
-   "2036": 25460,
-   "2037": 24210,
-   "2038": 22960,
-   "2039": 21710,
-   "2040": 20460,
-   "2041": 19210,
-   "2042": 17960
-  },
-  "source_start_years": "Global Energy Monitor, Global Coal Plant Tracker, unit tables on gem.wiki (Kelvin, Kriel, Matla, Duvha, Tutuka, Lethabo, Matimba, Kendal pages), read 12 Oct 2026. Units mapped to the fleet file's half-station groups in unit order (units 1-3 to *, 4-6 to **); Duvha's mothballed unit 3 is not in the fleet file; Kelvin's two fleet-file units take GEM's two oldest operating units (1962, 1964).",
+  "basis": "Tracks IRP 2025's total coal path as read from Figure 3 (plan p.12, gazette p.23) by Nick Hedley, 13 Oct 2026: 50-year-life annual averages scaled to our 39,692 MW base, accuracy about +-250 MW (path_mw_scaled below). Closure order: the units of Camden, Hendrina, Grootvlei and Arnot first (named 'by the financial year 2030', plan p.40, gazette p.51), then every other unit, each group oldest first by GEM start year (ties: the station's first unit, then unit order); a unit retires in a year while the fleet stands at least half that unit above the path, so the schedule is within half a unit of the path every year (largest gap 243 MW; units 160-640 MW). Units still standing after 2040 keep c4's date if later, else 2041; neither reaches the LP (last model year 2040). Replaces the text-based path of 12 Oct (66819c2).",
+  "source_start_years": "Global Energy Monitor, Global Coal Plant Tracker, unit tables on gem.wiki (Arnot, Camden, Grootvlei, Hendrina, Kelvin, Kriel, Matla, Duvha, Tutuka, Lethabo, Matimba, Kendal pages), read 12 Oct 2026. Our file's operating units take GEM's operating units in unit order (half-station groups: first units to *, the rest to **); mothballed units (Duvha 3; Grootvlei 4-6; Hendrina 1, 3, 8, 9) are not in our file; Kelvin's two units take GEM's two oldest operating units (1962, 1964).",
   "licence": "Derived from gem.wiki content, CC BY-NC-SA 4.0 (attribution: Global Energy Monitor); kept separate from CC BY files",
-  "built": "12 Oct 2026 (rebuild; replaces the hybrid of the same day, which kept c4's Kriel, Matla and Duvha dates and left 14.4 GW in 2040)"
+  "built": "13 Oct 2026 (Figure 3 path; replaces the text-path build of 12 Oct, 66819c2, and the hybrid of 12 Oct, fdf0b40)",
+  "path_mw_scaled": {
+   "2026": 39692,
+   "2027": 39692,
+   "2028": 39692,
+   "2029": 37064,
+   "2030": 32388,
+   "2031": 30839,
+   "2032": 29324,
+   "2033": 27886,
+   "2034": 26403,
+   "2035": 26029,
+   "2036": 25350,
+   "2037": 23415,
+   "2038": 21819,
+   "2039": 19825,
+   "2040": 17958
+  }
  },
  "units": {
   "Arnot*": [
-   2030,
+   2029,
    2030,
    2030
   ],
@@ -37,37 +35,37 @@
    2030
   ],
   "Camden*": [
-   2030,
-   2030,
-   2030
+   2029,
+   2029,
+   2029
   ],
   "Camden**": [
-   2030,
-   2030,
-   2030,
-   2030,
-   2030
+   2029,
+   2029,
+   2029,
+   2029,
+   2029
   ],
   "Duvha*": [
    2032,
-   2033
+   2032
   ],
   "Duvha**": [
    2034,
-   2035,
+   2034,
    2035
   ],
   "Grootvlei*": [
-   2030,
+   2029,
    2030
   ],
   "Grootvlei**": [
-   2030
+   2029
   ],
   "Hendrina*": [
-   2030,
-   2030,
-   2030,
+   2029,
+   2029,
+   2029,
    2030
   ],
   "Hendrina**": [
@@ -79,7 +77,7 @@
    2030
   ],
   "Kendal*": [
-   2041,
+   2040,
    2044,
    2044
   ],
@@ -91,7 +89,7 @@
   "Kriel**": [
    2030,
    2030,
-   2030
+   2031
   ],
   "Lethabo*": [
    2036,
@@ -100,18 +98,13 @@
   ],
   "Lethabo**": [
    2038,
-   2042,
-   2043
-  ],
-  "Matimba*": [
-   2039,
    2040,
    2041
   ],
-  "Matimba**": [
-   2042,
-   2044,
-   2044
+  "Matimba*": [
+   2039,
+   2039,
+   2040
   ],
   "Matla*": [
    2031,
@@ -124,14 +117,14 @@
    2034
   ],
   "Tutuka*": [
-   2036,
+   2037,
    2037,
    2038
   ],
   "Tutuka**": [
+   2038,
    2039,
-   2040,
-   2043
+   2041
   ]
  }
 }
