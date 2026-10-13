@@ -11,15 +11,16 @@ WHY THIS IS A SEPARATE SCRIPT, NOT IN THE BROWSER:
   the interactive app unusable. The heuristic (what the app shows) runs the full year
   in ~3s.
 
-  Measured 13 Oct 2026 (week of hours 3264-3431 of the 2025 data, coal EAF 64%, no new build): the
-  10-region heuristic (nodal/nodal_engine.js, main bc21fc2) costs R2,321.7m against R2,228.0m for this
-  MIP, 4.2% more, when the MIP is given the engine's starting storage, battery split, pumped-storage
-  energy and imports (CF 0.88); PyPSA 1.4.0, HiGHS 1.15.1, mip_rel_gap 0.5% (0.11% reached). The
-  heuristic's week is priced on this script's basis (fleet marginal cost per MWh, imports R550/MWh,
-  renewables and storage zero, plus start-ups). The MIP sees the whole week in advance, so the gap is
-  an upper bound on the heuristic's inefficiency. The single-node engine of the pathway check
-  (index.html simulate()), on the same hours of its own baseline (Today 2026, one outage draw), given the same inputs and a linear coal cost, is 2.2% above
-  a single-node PyPSA unit-commitment optimum (RESULTS.md, 13 Oct 2026).
+  Measured 13 Oct 2026, baseline winter week (the default --week winter, hours 3264-3431 of the 2025
+  data), coal EAF 64%, no new build, matched starting state: the 10-region heuristic
+  (nodal/nodal_engine.js, main bc21fc2) costs R2,321.7m against R2,228.0m for this MIP, 4.2% more,
+  when the MIP is given the engine's starting storage, battery split, pumped-storage energy and
+  imports (CF 0.88); PyPSA 1.4.0, HiGHS 1.15.1, mip_rel_gap 0.5% (0.11% reached). The heuristic's
+  week is priced on this script's basis (fleet marginal cost per MWh, imports R550/MWh, renewables
+  and storage zero, plus start-ups). The MIP sees the whole week in advance, so the gap is an upper
+  bound on the heuristic's inefficiency. This checks the 10-region engine only. The single-node
+  engine behind the pathway costs (index.html simulate()) has no optimiser cross-check in the
+  repository yet.
 
 SETUP:
   pip install pypsa highspy pandas  (you likely already have these from the crossval work)
