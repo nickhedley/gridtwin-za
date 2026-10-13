@@ -2003,6 +2003,31 @@ GEM start years), with no primary source for the earlier date (SOURCES, fleet ro
 (PyPSA-RSA fleet file, unsourced); s_coalirp's 2030 date comes from its closure rule; GEM lists planned retirement 2026; no
 primary source dates its closure.
 
+### Seeded set, rule A: s_wind35, s_disc10 and s_disc113, both cost measures, 13 Oct 2026
+
+All seeded from c4 (seed 38359856512 / c4t, WIN_FROM), one pass (MAXP=1), claude/c4-frozen; engine check and top-up as for the
+other rule A runs. Engine cost PV at 8% real (the one cost basis) whatever the run's own discount rate. The optimiser objective
+is shown beside it (TODO 14cv: report both until the measure is agreed); for s_disc10 and s_disc113 it discounts at the run's
+own rate, so it is not comparable with c4's. c4: engine R2,598bn as solved, R2,599bn with its top-up; objective R1,728bn.
+
+```
+                           s_wind35 (wind 3.5 GW a yr)  s_disc10 (10% real)      s_disc113 (11.3% real)
+run                        38361299620                  38361281441              38361285970
+engine PV, as solved       R2,518bn                     R2,688bn                 R2,763bn
+  with the top-up          R2,526bn (3,000 MW;          R2,688bn (500 MW in      running
+                           2038 over the cap)           2040; within the caps)
+optimiser objective        R1,661bn (c4 R1,728bn)       R1,637bn at 10%          R1,582bn at 11.3%
+CO2 2026-40                1,522 Mt                     1,636 Mt                 1,641 Mt
+gas GW 2030/35/40          1.2 / 4.0 / 5.7              1.0 / 3.6 / 5.7          1.1 / 3.8 / 6.0
+diesel open-cycle GW       2.8 / 2.8 / 3.5              3.0 / 3.3 / 4.1          3.0 / 3.3 / 4.1
+lithium GW                 5.4 / 10.6 / 20.8            6.3 / 10.3 / 21.0        6.3 / 9.7 / 20.9
+worst year, engine check   2040 500% (2037-40 fail)     2040 112%                2040 109%
+```
+
+s_wind35 builds 15.5 GW of wind, all by 2030 (3.5 GW a year in 2028-30), and none after; the two measures agree on its
+direction against c4 (engine -R73bn with top-ups, objective -R67bn). s_disc10 and s_disc113 cost more on the 8% basis because
+their higher capital charge buys a similar plan.
+
 ### TODO 14cv: why the two cost measures rank plans in opposite order. The optimiser's objective carries a 2030 stress-target penalty for shed the engine check does not find, and its dispatch burns far more gas for low-storage plans than the engine does; the note should use the engine check, 13 Oct 2026
 
 Method (analysis only, nothing solved). Optimiser side: each run's last LP rebuilt from its settings and stress windows
