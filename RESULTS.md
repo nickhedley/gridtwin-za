@@ -1961,6 +1961,48 @@ lithium energy 4 hours of power), profiles.json and the weather-year file as com
 run's next LP (key a9e5c71dc2). Penalty c4, the same without STRESS_TARGET (run 38255695323), is the method check. The
 seeded set (TODO 14co) runs on claude/c4-frozen, whose engine and harness are identical to 86bfea4. Results to follow.
 
+### c4 final (c4-target stopped after pass 9): R2,598bn PV and 1,605 Mt, R83bn cheaper and 126 Mt more CO2 than penalty c4; 2040 fails the engine check (161%) and needs 1,000 MW of diesel open-cycle to pass, 13 Oct 2026
+
+Run: c4-target (COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central GAS_FOM_ADD=530.5
+STRESS_TARGET=1, SOLVER=native, code 86bfea4, build 2026-10-12e), stopped after pass 9 (user, 13 Oct): final run
+38359856512 (MAXP=9 replay of the cached passes; pass 9 solved in run 38338261578). Engine check pathcheck.js COMMIT=1 PSE=1
+TF=0.5 LNG=1, adaptive draws; top-up harness/topup.js (branch claude/topup, run 38362504364). Penalty c4: the same without
+STRESS_TARGET (entry below, run 38257824027). Gas = new CCGT plus OCGT on LNG; MW built to date.
+
+```
+                                 c4 as solved          c4 with top-up        penalty c4
+cost 2026-40, PV at 8% real      R2,598bn              R2,599bn              R2,681bn
+CO2 2026-40                      1,605 Mt              1,605 Mt              1,479 Mt
+gas GW 2030 / 2035 / 2040        1.2 / 3.5 / 5.1       1.2 / 3.5 / 5.1       1.2 / 3.5 / 5.4
+  of which OCGT on LNG           1.2 / 1.4 / 1.4       same                  0
+diesel open-cycle GW             2.8 / 2.8 / 3.6       2.8 / 2.8 / 4.6       2.8 / 2.8 / 2.8
+lithium GW                       6.6 / 11.2 / 21.7     same                  7.4 / 9.1 / 17.3
+gas burnt 2026-40                68.8 TWh              68.8 TWh              17.9 TWh
+loop passes, own-test verdict    9, 2039-40 failing    -                     2, adequate
+```
+
+Shed by year, engine check, mean against target on customer demand (half of 0.002%), GWh: c4 / penalty c4. 2026 0.05 /
+0.02 (target 1.94); 2027 0.04 / 0.02 (1.96); 2028-2033 0.00 / 0.00; 2034 0.12 / 0.01 (2.26); 2035 0.26 / 0.01 (2.31); 2036
+0.19 / 0.05 (2.35); 2037 0.69 / 0.08 (2.41); 2038 1.22 / 0.45 (2.48); 2039 2.08 / 0.87 (2.54); 2040 4.18 / 1.17 (2.60). c4's
+2040 is 161% of target (2.59 with the top-up); 2039 passes the engine check (82%) but fails the loop's own test (3.04 against
+2.54, pass 9), as does 2040 (5.32 against 2.60). Top-up: 1,000 MW in 2040 (four 250 MW steps), R2.71bn that year (capex
+2.29, fixed O&M 0.45, fuel 0.05, other -0.09); within the run's caps (1,000 MW a year of diesel open-cycle).
+
+Against c3 (the previous central, build 2026-10-11b, its build re-checked on c4's engine): c3 R2,861bn PV (R4,862bn
+undiscounted), 1,418 Mt, gas 1.2 / 3.4 / 5.6 GW, lithium 30.8 GW at 6.2 hours, wind and solar built 28.8 and 62.8 GW,
+no open-cycle, gas burnt 4.7 TWh, worst year 2040 at 100% of target. c4: R2,598bn PV (R4,416bn undiscounted), 1,605 Mt,
+lithium 21.7 GW at 5.8 hours, wind and solar 13.5 and 52.5 GW, iron-air 0.6 GW, pumped hydro 1.35 GW, diesel open-cycle
+3.6 GW, 588 MW of coal retired early from 2026, worst year 2040 at 161%. Settings differ beyond the method (c4: open-cycle
+options, 4-hour lithium energy, flat CCGT capex, customer-demand standard), so c3 to c4 is not the method's effect;
+penalty c4 to c4 is.
+
+Caveats: c4 ended at a pass cap, not adequacy; penalty c4 and c4 end on different window sets. Coal schedule in both is
+c4's (UC_FLEET, PyPSA-RSA dates): it retires Tutuka in 2030-31, against 2035-40 at 50-year life in IRP 2025 (plan p.24,
+GEM start years), with no primary source for the earlier date (SOURCES, fleet row). Kelvin (not Eskom) is not in Eskom's
+39,692 MW, but the fleet file is scaled to that total with Kelvin in it, so it is modelled as 153 MW; c4 closes it from 2027
+(PyPSA-RSA fleet file, unsourced); s_coalirp's 2030 date comes from its closure rule; GEM lists planned retirement 2026; no
+primary source dates its closure.
+
 ### Penalty c4 finished: adequate after 2 passes, every year within target, PV R2,681bn, 1,479 Mt, 12 Oct 2026
 
 Method check for c4 (TODO 14cn): COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central
