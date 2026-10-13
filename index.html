@@ -5805,7 +5805,7 @@ const FIXED = {
   // issue in profiles.json, listed in HANDOVER, not something to paper over with
   // a fabricated loss factor in the engine.
   chargeFromThermal:1,   // engine may charge storage from coal headroom when its forecast says stress is coming
-  storageLookaheadH:24,  // short-duration storage plans over the next 24 hours (14do, 13 Oct 2026); 0 restores the earlier rule
+  storageLookaheadH:48,  // storage plans over the next 48 hours (14do 13 Oct, 24; engine fix (B) 14 Oct 2026, 48); 0 restores the earlier rule
   nuclearCF:0.66,
   // part-load heat RATE. A coal unit burns more fuel per MWh the further it is
   // backed off: auxiliaries, mill and fan power and boiler losses are largely
@@ -7118,7 +7118,7 @@ function simulate(u, prof, outPath, _soc0){
   // Hourly state of charge per tier, diagnostic only - the storage questions of 22 Sep 2026
   // could not be answered without it, because only throughput was visible.
   const tierSoc = {}; for (const t of battTiers) tierSoc[t.k] = new Float64Array(HOURS);
-  const _hourGave = { li:0, vrfb:0, fe:0 };   // MW each tier has already given this hour (look-ahead discharge, 14do)
+  const _hourGave = { li:0, vrfb:0, fe:0, ps:0 };   // MW each tier has already given this hour (look-ahead discharge, 14do)
   const tierDischarge = (mw, shortCap = Infinity) => {
     let got = 0, shortLeft = shortCap;   // _hourGave holds the power each tier has given this hour, across both passes and calls
     const _li = battTiers.find(t => t.k === 'li');
@@ -7503,7 +7503,35 @@ function simulate(u, prof, outPath, _soc0){
     ? RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100
       + Math.max(0, _vreMW[h] - p.reserveVreBaseMW) * p.reserveVrePct / 100   // no fallback: both are FIXED keys
     : 0;
-  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(netLoadPre, Math.max(0, coalInstalled), eafFraction, RESERVE);
+  // STORAGE-AWARE COMMITMENT (TODO 14dq, engine fix (B), 14 Oct 2026). The commitment pre-pass sized coal to each block's
+  // peak net load as if no store existed, so on c4's 2040 build it kept 12.7 GW committed overnight (6.6 GW minimum) where
+  // a 24-hour rolling unit-commitment optimum kept 4-10 GW and let lithium carry the night; the minimum then crowded the
+  // stores out and the midday surplus was spilled. With the look-ahead on, each run of hours with net load above zero is
+  // shaved by what the short stores and pumped storage can give from the surplus run before it (its energy, at most their
+  // power, times their round-trip efficiency and UC_STORE_MARGIN), highest hours first, and coal is committed for the
+  // rest. A run with no surplus before it is not shaved, so a system without surplus (2026) commits as before.
+  const UC_STORE_MARGIN = 0.9;
+  let _ucNet = netLoadPre;
+  if (Math.round(p.storageLookaheadH) > 0 && !p._forceStorageSchedule && !p._forcedDischargeMW && !p._laNoUC){
+    const _sh = battTiers.filter(t => t.mwh < 100 * t.mw - 1e-6);
+    const _P = _sh.reduce((a, t) => a + t.mw, 0) + psPowerTot, _E = _sh.reduce((a, t) => a + t.mwh, 0) + psEnergyTot;
+    if (_P > 0 && _E > 0){
+      const _eta = (_sh.reduce((a, t) => a + t.eff * t.mwh, 0) + psEffTot * psEnergyTot) / _E;
+      _ucNet = Float64Array.from(netLoadPre);
+      let k = 0;
+      while (k < HOURS){
+        let sur = 0; while (k < HOURS && netLoadPre[k] < 0){ sur += Math.min(_P, -netLoadPre[k]); k++; }
+        const a = k; while (k < HOURS && netLoadPre[k] >= 0) k++; const b = k;
+        const B = Math.min(_E, _eta * sur) * UC_STORE_MARGIN;
+        if (!(B > 0) || b <= a) continue;
+        const cut = (L) => { let t = 0; for (let j = a; j < b; j++) t += Math.min(_P, Math.max(0, netLoadPre[j] - L)); return t; };
+        let lo = 0, hi = 0; for (let j = a; j < b; j++) hi = Math.max(hi, netLoadPre[j]);
+        if (cut(0) <= B) hi = 0; else for (let i = 0; i < 30; i++){ const m = (lo + hi) / 2; if (cut(m) > B) lo = m; else hi = m; }
+        for (let j = a; j < b; j++) _ucNet[j] = netLoadPre[j] - Math.min(_P, Math.max(0, netLoadPre[j] - hi));
+      }
+    }
+  }
+  const {ucAvail, ucMinStable, ucStartCost} = buildUCSchedule(_ucNet, Math.max(0, coalInstalled), eafFraction, RESERVE);
   // Lumpy unit availability. Skipped when an explicit Monte Carlo path is
   // supplied (that path is already the outage draw for the run) and when the
   // toggle is off, which restores the smooth-derate behaviour exactly.
@@ -7649,6 +7677,10 @@ function simulate(u, prof, outPath, _soc0){
   // Long stores (100 hours or more) keep their own week-long rule, and pumped storage its daily one. A forecast with
   // perfect sight of load, weather and outages for the window, as the other look-aheads here; storageLookaheadH 0
   // restores the earlier rule exactly, and so does a forced storage schedule.
+  // 48 HOURS FROM ENGINE FIX (B), 14 Oct 2026. The rolling optimum it is checked against solves 48 hours and keeps 24, so it
+  // sees 24 to 48 hours ahead. At 24 hours the engine shed 1.0-6.8 GWh in two weeks of c4's 2040 build without the top-up
+  // where the optimum shed none: it spent pumped storage and lithium in the run-up to a peak 30-40 hours away, where the
+  // optimum burned diesel early and kept them. At 48 the same weeks shed none; the mean simulate() time rose 15%.
   const _LA_H = Math.max(0, Math.round(p.storageLookaheadH));
   const _laOn = _LA_H > 0 && !_forceTwoSided && !_forcedDis;
   const _shortTiers = battTiers.filter(t => t.mwh < 100 * t.mw - 1e-6), _longTiers = battTiers.filter(t => t.mwh >= 100 * t.mw - 1e-6);
@@ -7666,6 +7698,34 @@ function simulate(u, prof, outPath, _soc0){
     return r;
   };
   const _laSoc = () => _shortTiers.reduce((a, t) => a + t.soc, 0);
+  // Energy the surplus in the next _LA_H hours will pump into pumped storage (it takes surplus first; engine fix (B), 14 Oct 2026).
+  const _laPsRefill = (h) => {
+    let e = 0;
+    for (let k = h + 1; k <= Math.min(HOURS - 1, h + _LA_H); k++){
+      const floorK = Math.min(ucAvail[k] > 0 ? ucAvail[k] : 0, ucMinStable[k] > 0 ? ucMinStable[k] : 0);
+      e += Math.min(psPowerTot, Math.max(0, floorK - netLoadPre[k])) * psEffTot;
+    }
+    return Math.min(psEnergyTot, e);
+  };
+  // PUMPED STORAGE IN THE LOOK-AHEAD (engine fix (B), 14 Oct 2026). Pumped storage used to give first in every expensive
+  // hour and next after coal in the others, with lithium held back, so it ran down each evening and its 2.7-4.1 GW of
+  // pumping could not refill it by the next stress: in c4's 2040 stress week and s_coalavail's 2030 week the 24-hour rolling
+  // optimum ran lithium daily and kept pumped storage back, and the engine burned 20-40 GWh more diesel. Now lithium and
+  // vanadium serve first and hold their own share (_laReq); pumped storage holds what the short stores and it together
+  // need for the window beyond coal and gas, less what the short stores hold (_laPsHold). p._laNoPsHold restores the old
+  // order (measurement only).
+  const _laJP = _laP + psPowerTot, _laJE = _laE + psEnergyTot;
+  const _laJEff = _laJE > 0 ? (_laEff * _laE + psEffTot * psEnergyTot) / _laJE : 1;
+  const _laPsOn = _laOn && psEnergyTot > 0 && !p._laNoPsHold;
+  const _laPsHold = (h, c0, ramp, gas) => {
+    let r = 0;
+    for (let k = Math.min(HOURS - 1, h + _LA_H); k > h; k--){
+      const floorK = Math.min(ucAvail[k] > 0 ? ucAvail[k] : 0, ucMinStable[k] > 0 ? ucMinStable[k] : 0);
+      const need = Math.max(0, netLoadPre[k] - Math.min(_fcCoal(h, k), c0 + ramp * (k - h)) - gas), sur = Math.max(0, floorK - netLoadPre[k]);
+      r = Math.min(_laJE, Math.max(0, r + Math.min(need, _laJP) - _laJEff * Math.min(sur, _laJP)));
+    }
+    return Math.max(0, r - _laSoc());
+  };
   // The ramp-aware coal floor below held coal up to the next 12 hours' net load less what coal can ramp, as if no store
   // could cover the gap: in c4's 2040 May week it kept coal at 10-13 GW overnight (minimum stable 6.6 GW) and 5.6-8.1 GW
   // at midday into a 24 GW surplus. With the look-ahead on, the floor is the lowest coal level from which coal ramping
@@ -7951,6 +8011,17 @@ function simulate(u, prof, outPath, _soc0){
       // export only what storage cannot absorb.
       const exp1=Math.min(surplus, exportCap);
       if(exp1>0){ exportMW[h]+=exp1; E.exported+=exp1; surplus-=exp1; }
+      // Look-ahead (engine fix (B), 14 Oct 2026): with the whole surplus taken, coal tops the short stores up towards what the
+      // window will need beyond coal, within its ramp and what is committed, as the rolling optimum does at midday.
+      if (_laOn && _laP > 0 && surplus <= 1e-6 && !p._laNoSurCoal){
+        const _tgt = _laReq(h, 0, coalGen, rampAllowedMW), _sNow = _laSoc();
+        let w = Math.min(Math.max(0, _laP - btChg), _tgt - _sNow, Math.min(cAvail, prevCoalGen + rampAllowedMW) - coalGen);
+        if (w > 1e-6){
+          const _cc = coalMarginalCost(coalGen) * ccsCostMult + ccsCostAdd + cC + p.vomCoal;
+          w = _chargeGroup(w, h, _cc, _shortTiers);
+          if (w > 0){ coalGen += w; addCharge(h, 'batt', w, _cc); syncBattSoc(); chargeMW[h] += w; }
+        }
+      }
       // clamp AT ZERO. This branch is guarded by residual < 0, so surplus starts
       // strictly positive and every subtraction above is a Math.min against it. The
       // only way it can go negative is tierCharge() returning marginally more than
@@ -8079,9 +8150,13 @@ function simulate(u, prof, outPath, _soc0){
       // Look-ahead (14do): the short stores give, ahead of coal, what the window's surplus will put back. After coal they
       // give what they hold above the later hours' need beyond coal and gas (_laHold), so gas serves now what it can.
       const _laHold = () => Math.max(0, _laSoc() - _laReq(h, 0, coalGen, rampAllowedMW, ccgtCap));
-      _hourGave.li = _hourGave.vrfb = _hourGave.fe = 0;
+      _hourGave.li = _hourGave.vrfb = _hourGave.fe = _hourGave.ps = 0;
       let _laDis = 0;
-      // Called first in an ordinary hour; in an expensive hour after pumped storage, which keeps its place there.
+      // Pumped storage gives up to cap MW-hours this hour, within its power left (engine fix (B)).
+      const _psGive = (cap) => { const x = Math.min(residual, psPowerTot - _hourGave.ps, Math.max(0, cap));
+        if (x > 0){ psSoc -= x; residual -= x; E.ps += x; stack.ps[h] += x; _hourGave.ps += x; } };
+      // With pumped storage in the look-ahead (_laPsOn) it opens the single order below; otherwise it is called first in an
+      // ordinary hour, and in an expensive hour after pumped storage.
       const _laAhead = () => {
         if (!(_laOn && _laP > 0 && residual > 0)) return;
         const s0 = _laSoc(), room = s0 - _laReq(h, s0, coalGen, rampAllowedMW);
@@ -8102,7 +8177,29 @@ function simulate(u, prof, outPath, _soc0){
         if (!_fcDef) _buildForecast();
         return _liShortAhead(li, h, 0);
       })();
-      if(isExpensiveHour && !_holdForAdequacy && !_gasFirst){
+      if (_laPsOn){
+        // One order for every hour (engine fix (B)), all ahead of coal first: pumped storage gives what the window's surplus
+        // would otherwise spill (it pumps first, so its refill is the sure one); the short stores give what the surplus will
+        // put back; in the day's expensive hours pumped storage gives what it holds above the window's need beyond coal, so
+        // it still meets the evening peak each day, as Eskom's schemes do, and is kept back only when a shortfall is coming.
+        // Then coal, the short stores above their hold, and pumped storage above its own. Without the first and third
+        // steps pumped storage sat idle (2026 default 0.3 cycles a year on 60 GWh; high VRE with storage 0.0 on 130 GWh).
+        let psDis1 = Math.min(residual, psPowerTot, Math.max(0, psSoc), Math.max(0, _laPsRefill(h) + psSoc - psEnergyTot));
+        psSoc -= psDis1; residual -= psDis1; E.ps += psDis1;
+        _laAhead();
+        if (isExpensiveHour && !p._laNoPsPeak && residual > 1e-6){
+          const x = Math.min(residual, psPowerTot - psDis1, Math.max(0, psSoc - _laPsHold(h, coalGen, rampAllowedMW, 0)));
+          if (x > 0){ psSoc -= x; residual -= x; E.ps += x; psDis1 += x; }
+        }
+        const topUp = Math.min(residual, Math.max(0, coalCeiling - coalGen)); coalGen += topUp; residual -= topUp;
+        _disHour = h; const btDis = tierDischarge(Math.min(residual, btLim), _laHold()); _disHour = -1; syncBattSoc(); residual -= btDis; E.batt += btDis; stack.batt[h] = _laDis + btDis;
+        const psDis2 = Math.min(residual, psPowerTot - psDis1, Math.max(0, psSoc - _laPsHold(h, coalGen, rampAllowedMW, ccgtCap))); psSoc -= psDis2; residual -= psDis2; E.ps += psDis2;
+        _hourGave.ps = psDis1 + psDis2; stack.ps[h] = psDis1 + psDis2;
+        if (btDis > 1 && btDis < btLim - 1) storageMarginal[h] = 'batt';
+        else if (psDis2 > 1 && psDis2 < psPowerTot - psDis1 - 1) storageMarginal[h] = 'ps';
+        else if (topUp <= 1 && _laDis > 1) storageMarginal[h] = 'batt';
+        else if (topUp <= 1 && psDis1 > 1) storageMarginal[h] = 'ps';
+      } else if(isExpensiveHour && !_holdForAdequacy && !_gasFirst){
         // a real expensive hour (top 25% net load, real scarcity) - storage sells ahead of
         // coal, the arbitrage payoff for whatever it bought as near-free curtailed solar earlier
         const psDis=Math.min(residual,psLim); psSoc-=psDis; residual-=psDis; E.ps+=psDis; stack.ps[h]=psDis;
@@ -8169,12 +8266,19 @@ function simulate(u, prof, outPath, _soc0){
         _ccgtFloorUnmet+=excess;
       }
       const g=Math.min(residual,Math.max(0,ccgtCap-ccgtMustRun-_gasEarly))+_gasEarly; residual-=g-_gasEarly; E.ccgt+=g; stack.ccgt[h]=(stack.ccgt[h]||0)+g; fuelCost+=g*(p.costCcgt+p.vomCcgt); carbonCost+=g*cG;
+      // Before diesel (engine fix (B)): pumped storage, then the short stores, give what they hold above the later hours'
+      // need beyond coal, gas and diesel. Pumped storage goes first in the scarce hours: it holds energy for many hours at
+      // little power, and spending its power first keeps the short stores' energy for hours that need more power than it
+      // has (s_coalavail 2030, weather 2017: 0.47 GWh shed in the last hour of the week with 17.5 GWh still pumped).
+      // p._laNoPsFirst puts it after them (measurement only).
+      if (_laPsOn && !p._laNoPsFirst && residual > 1e-6) _psGive(psSoc - _laPsHold(h, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p)));
       // Look-ahead (14do): after gas, the short stores give what they hold above the later hours' need beyond coal, gas and
       // diesel (energy held against later shedding stays), ahead of diesel; the rest only against this hour's shed, below.
       if (_laOn && residual > 1e-6){
         const _lim = Math.min(battPower - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
         if (_lim > 0){ _disHour = h; const _b3 = tierDischarge(Math.min(residual, _lim), Math.max(0, _laSoc() - _laReq(h, 0, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p)))); _disHour = -1; syncBattSoc(); residual -= _b3; E.batt += _b3; stack.batt[h] += _b3; }
       }
+      if (_laPsOn && p._laNoPsFirst && residual > 1e-6) _psGive(psSoc - _laPsHold(h, coalGen, rampAllowedMW, ccgtCap + dieselAvailMW(p)));
       const _mo=_monthOfHour[h % 8760];
       // Independent peakers first, then Eskom's own from the tank, so the tank is conserved.
       const _dslAll = dieselAvailMW(p), _dslEsk = Math.min(_dslAll, Math.max(0, p.dslTankMW));
@@ -8233,7 +8337,8 @@ function simulate(u, prof, outPath, _soc0){
         // stopping - 987 GWh idle while 116 TWh was curtailed.
         const battFleetHours = battPower > 0 ? battEnergy / battPower : (p.battHours ?? 4);
         const battDailyFloor= Math.min(battEnergy*0.60, battPower*battFleetHours*0.75);
-        const psTargetCeiling=Math.min(psEnergyTot*0.85, _offPeak ? Math.max(anticipatedShortfall[h], psDailyFloor) : anticipatedShortfall[h]);
+        const psTargetCeiling=Math.max(0, Math.min(psEnergyTot*0.85, _offPeak ? Math.max(anticipatedShortfall[h], psDailyFloor) : anticipatedShortfall[h])
+          - (_laOn && !p._laNoPs ? _laPsRefill(h) : 0));   // look-ahead (B): less what the coming surplus will pump in
         const battTargetCeiling=Math.min(battEnergy*0.8, _offPeak ? Math.max(anticipatedShortfall[h], battDailyFloor) : anticipatedShortfall[h]);
         const chgC=coalMarginalCost(coalGen)*ccsCostMult+ccsCostAdd+cC+p.vomCoal;  // this charge is bought from coal
         if(head>0&&psSoc<psTargetCeiling){const w=Math.min(psPowerTot*0.8,psTargetCeiling-psSoc,head); coalGen+=w; addCharge(h,'ps',w,chgC); psSoc+=w*psEffTot; head-=w; chargeMW[h]+=w;}
@@ -8256,7 +8361,8 @@ function simulate(u, prof, outPath, _soc0){
         // its first shed hour.
         if(_stressAhead && anticipatedShortfallG[h] > 0){
           let gh=ccgtCap-ccgtMustRun-g; const gC=p.costCcgt+p.vomCcgt+cG;
-          const psG=Math.min(psEnergyTot*0.85, anticipatedShortfallG[h]);
+          const psG=(_laOn && !p._laNoPs) ? Math.min(psEnergyTot*0.85, Math.max(0, _laReq(h, 0, coalGen, rampAllowedMW, ccgtCap) - _laSoc()))
+                                          : Math.min(psEnergyTot*0.85, anticipatedShortfallG[h]);   // look-ahead (B): gas only for need beyond gas
           const btG=Math.min(battEnergy*0.8, anticipatedShortfallG[h]);
           if(gh>0&&psSoc<psG){const w=Math.min(psPowerTot*0.8,psG-psSoc,gh); if(w>0){addCharge(h,'ps',w,gC); psSoc+=w*psEffTot; gh-=w; chargeMW[h]+=w; E.ccgt+=w; stack.ccgt[h]=(stack.ccgt[h]||0)+w; fuelCost+=w*(p.costCcgt+p.vomCcgt); carbonCost+=w*cG;}}
           if(!_laOn){
@@ -8302,11 +8408,14 @@ function simulate(u, prof, outPath, _soc0){
       // shortfall is not load shedding, and counting it would put a stage-1 event in the
       // record for a rounding residual. So the energy is now always recorded and only the
       // stage counting keeps the threshold.
+      // Before shed: what pumped storage still holds, then the short stores (engine fix (B); order as before diesel).
+      if (_laPsOn && !p._laNoPsFirst && residual > 1e-6) _psGive(psSoc);
       // Look-ahead (14do): energy still held for later hours serves this hour's shed.
       if (_laOn && residual > 1e-6){
         const _lim = Math.min(battPower - (_hourGave.li + _hourGave.vrfb + _hourGave.fe), Math.max(0, battSoc));
         if (_lim > 0){ _disHour = h; const _b4 = tierDischarge(Math.min(residual, _lim)); _disHour = -1; syncBattSoc(); residual -= _b4; E.batt += _b4; stack.batt[h] += _b4; }
       }
+      if (_laPsOn && p._laNoPsFirst && residual > 1e-6) _psGive(psSoc);
       if(residual>0){
         E.unserved+=residual; shedMWh+=residual;
         stack.unserved[h]=residual;
@@ -18754,7 +18863,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-13h';
+const BUILD_STAMP = '2026-10-14a';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
