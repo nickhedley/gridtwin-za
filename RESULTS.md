@@ -2209,6 +2209,42 @@ At 2,000 MW a year (s_roof2's build, same arithmetic): R190.1bn total, R118.9bn 
 15.4bn. Caveat: the two figures are one constant held twice (acapRooftop and BLD_COST.rooftop); no engine change before the
 note (TODO 14dc). s_roof2's shares will be given in both measures as asked.
 
+### Single-node engine (the note's) against a single-node PyPSA unit-commitment optimum, same inputs, baseline week: 2.2% above the optimum on a linear coal cost, 4.1% with the engine's part-load penalty, 13 Oct 2026
+
+Engine: index.html simulate(), c4's code (claude/c4-frozen fa7d8af, engine build 2026-10-12e), run from a scratch copy with a
+read-only hook that records each hour (no engine change; scratchpad sn_run.js). Today 2026 preset, default profiles, outageSeed
+12345, hours 3264-3431. PyPSA 1.4.0, one bus, HiGHS 1.15.1, MIP gap 0.1% (scratchpad sn_pypsa.py).
+
+Same inputs on both sides: load (grid demand net of rooftop, firm exports included); wind, solar, CSP and RMIPPPP hybrid
+availability; nuclear 1,240.8, hydro 331.1 and imports 1,012 MW must-take; coal available each hour as the engine had it (its
+reserve withholding included, which is none this week: fast-start 6,924 MW against a 2,200-2,343 MW need); the 84 UC_FLEET units
+standing in 2026, scaled to 39,692 MW (39,692/41,530, as the engine's commitment pre-pass), with their minimum stable levels
+(the 16 rows at 0.5 included) and minimum up and down times; the engine's starting commitment (34.9 of 39.6 GW online); coal ramp
+6,192 MW an hour on the fleet; diesel 3,400 MW; pumped storage 2,724 MW and 60 GWh at 76%, batteries 800 MW and 3.2 GWh at 88%,
+both starting at the engine's level (1,656 and 422 MWh) and ending at least there; unserved energy at R9,530/MWh. Costs: coal
+R673.84/MWh (fuel 546, O&M 80, carbon 47.84) at full load; start-ups at the engine's two charges (UC_FLEET start cost per unit
+times the availability factor, plus R224.52/MW).
+
+```
+                                                   R million   detail
+engine, linear coal cost (part-load factor 1)        2,210.6   coal 2,040.7, nuclear 42.7, hydro 1.7, imports 93.5, diesel 3.0,
+                                                               start-ups 29.1 (10.5 per unit + 18.5 per MW); coal 3,028.5 GWh
+engine as it reports (part-load factor applied)      2,252.1   part-load adds 41.5
+PyPSA MIP, engine's starting commitment              2,162.9   start-ups 0.8; coal 3,004.0 GWh; storage discharge 2.3 GWh; no diesel
+PyPSA MIP, all units online at the start             2,161.8   LP without commitment: 2,161.8
+engine (linear) minus MIP                              +47.8   +2.2%; engine as it reports against the MIP +4.1%
+```
+
+The engine comes out above the optimum, as it should. Where the R47.8m sits: coal start-ups R28.3m, storage cycling R16.5m (the
+engine charges 113.5 GWh and discharges 88.1 GWh; PyPSA discharges 2.3 GWh) and diesel R3.0m. Constraints that still differ:
+the part-load heat rate (the engine's cost function only; compared here on the linear basis); the engine's outage draw is per
+unit, PyPSA spreads the available coal evenly over units; the diesel budget is not modelled (PyPSA uses no diesel). PyPSA's
+optimum sees the week in advance, so the gap is an upper bound on the engine's inefficiency. One week, one draw, the 2026
+system: not yet c4's 2040 build (TODO 14df step 9).
+
+Finding to check: the engine charges coal start-ups twice, per unit in its commitment pre-pass (ucStartCost, inside fuelCost)
+and per MW of newly committed capacity (startUpCostR, R224.52/MW, added to totalCost): R10.5m and R18.5m this week (TODO 14dl).
+
 ### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
 
 Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on
