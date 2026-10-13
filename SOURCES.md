@@ -917,15 +917,35 @@ carry CC-BY-4.0 headers; a few scripts carry MIT or GPL-3.0-or-later headers. It
 as BY, NC, SA with changes marked, so those boundaries carry the GCCA terms, not AGPL. The 10-supply resolution is built on the
 GCCA 2025 transmission supply regions (README).
 
-What we take from it:
-- the 10-region topology (the 10-supply regions);
-- inter-regional transfer limits (our nodal/corridor_electrical.json, built from nodal/transmission_lines.geojson; the public
-  repository at 89872c1 has no transfer-limit file beyond scenarios/*/sub_scenarios/transmission_expansion.xlsx, so which
-  PyPSA-RSA file or release our limits came from is to confirm);
-- nodal/fleet_by_region_v2.csv (UC_FLEET in index.html: unit sizes, ramp and minimum-load parameters, heat rates, GPS,
-  decommissioning dates). Not in the public repository at 89872c1; committed in our public repository.
+What we take from it (every file found, 13 Oct 2026; repository searched for PyPSA-RSA, Existing_Lines, reipppp_, fleet_by_region):
+- fleet_by_region_v2.csv (nodal/fleet_by_region_v2.csv): the thermal fleet; UC_FLEET in index.html (unit sizes, ramp and
+  minimum-load parameters, heat rates, GPS, decommissioning dates) and the unit parameters in nodal/nodal_dispatch.js. Not in
+  the public repository at 89872c1; committed in our public repository.
+- Existing_Lines.shp: topology and transfer limits. The CORRIDORS tables (limit MW, length km) in nodal/nodal_engine.py,
+  nodal/nodal_engine.js, validation/pypsa_crossval_uc.py and validation/mip_solver.py were rebuilt from its line geometries
+  (nodal_engine.py header); two corridors (Free State-KwaZulu Natal, North West-Western Cape) keep an earlier estimate. The
+  corridor reactances in nodal/corridor_electrical.json come from nodal/transmission_lines.geojson, whose own metadata gives
+  Eskom TDP plus SAPP planning data, not PyPSA-RSA.
+- rsa_supply_regions.gpkg: the 10-region GCCA boundaries used to assign each line to its two regions (nodal_engine.py
+  header); PyPSA-RSA's naming, origin to confirm. PyPSA-RSA's licence table puts its supply-region files under the GCCA's
+  BY-NC-SA terms.
+- reipppp_wind_data.csv and reipppp_solar_data.csv: capacity-weighted centroids of REIPPPP plants, used as the coordinates for
+  the regional wind and solar profiles (nodal/profiles_regional.json meta 'coords'; fetch_real_regional_profiles.py). Not on
+  disk (build_profile_sites.py); the multi-site rebuild (profiles_regional_rebuilt.json) takes locations from REEA instead.
+- data/eskom_pu_profiles.csv: the CSP per-unit hourly profile (Eskom, calendar 2021) in profiles.json and nodal/profiles.json
+  (meta csp_source). Eskom data in origin; not in PyPSA-RSA's data-licence table.
+Our LICENSE file lists 'PyPSA-RSA network topology and fleet data (Meridian Economics) - MIT', which disagrees with the
+repository's own AGPL v3; to correct once Meridian has answered.
 
 Our use: to confirm with Meridian (user raising it on the 13 Oct call): the terms for the fleet file and the transfer limits,
 whether the NC-SA terms on the GCCA region boundaries reach our 10-region topology, and the attribution they want. TODO 14df
 step 8 and 14dg step 2 depend on the answer. The app's footer links PyPSA-RSA to
 github.com/PyPSA/pypsa-za (the earlier PyPSA-ZA repository), not MeridianEconomics/pypsa-rsa; fix with the next app change.
+
+## PyPSA, the library (validation/), not PyPSA-RSA (user, 13 Oct 2026)
+
+validation/pypsa_crossval_uc.py and validation/mip_solver.py import the PyPSA library (pypsa, github.com/PyPSA/PyPSA) and solve
+with HiGHS through linopy. Licence, from its own repository (checked 13 Oct 2026): MIT (LICENSE on master: 'MIT License,
+Copyright (c) 2015-2026 PyPSA contributors'; README SPDX-License-Identifier MIT). The scripts build their own network from
+GridTwin ZA's data files and do not run PyPSA-RSA's code; their CORRIDORS table is the Existing_Lines.shp-derived one above, so
+they use PyPSA-RSA data but not its code.
