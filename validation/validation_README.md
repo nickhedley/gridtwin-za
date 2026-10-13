@@ -20,16 +20,11 @@ pip install pypsa highspy pandas linopy
 python3 pypsa_crossval_uc.py
 ```
 
-**Output — example (baseline, 64% EAF):**
-```
-Metric                    Heuristic    LP      MIP
-Total cost (R million)     2,235      2,264   2,275
-Coal min (MW)              9,074      9,010   9,182
-Ramp violations                0          0       0
-MIP gap                     —         —      0.00%
-```
+**Output, measured 13 Oct 2026 (baseline week, 64% EAF, storage starting at the nodal engine's state):** the script prints the LP
+objective (R2,210.7m) and generation by carrier; it does not compute the heuristic's side. The earlier example here had the heuristic below
+the MIP, which an optimum does not allow, and could not be reproduced.
 
-**Honest framing:** This is *not* a run of the PyPSA-RSA pipeline (that requires GIS files and conda). It builds an equivalent network from GridTwin ZA's own data files and solves the same dispatch problem. The 0.42% gap between the heuristic and the MIP on the baseline scenario is the model's validated accuracy bound.
+**Honest framing:** This is *not* a run of the PyPSA-RSA pipeline (that requires GIS files and conda). It builds an equivalent network from GridTwin ZA's own data files and solves the same dispatch problem. Measured 13 Oct 2026 (week of hours 3264-3431 of the 2025 data, coal EAF 64%, no new build): the 10-region heuristic (nodal/nodal_engine.js, main bc21fc2) costs R2,321.7m against R2,228.0m for the matched PyPSA MIP (mip_solver.py), 4.2% more, when the MIP is given the engine's starting storage, battery split, pumped-storage energy and imports (CF 0.88); PyPSA 1.4.0, HiGHS 1.15.1, mip_rel_gap 0.5% (0.11% reached). The heuristic's week is priced on this script's basis (fleet marginal cost per MWh, imports R550/MWh, renewables and storage zero, plus start-ups). The MIP sees the whole week in advance, so the gap is an upper bound on the heuristic's inefficiency. The single-node engine of the pathway check (index.html simulate()), on the same hours of its own baseline (Today 2026, one outage draw), given the same inputs and a linear coal cost, is 2.2% above a single-node PyPSA unit-commitment optimum (RESULTS.md, 13 Oct 2026).
 
 **Reproducibility:** Storage initial SoC is computed by running `nodal_engine.js` with cyclic initialisation (not hardcoded), so the script produces the same result for any scenario.
 
@@ -62,15 +57,14 @@ python3 mip_solver.py --lp-only
 python3 mip_solver.py --help
 ```
 
-**Output — example:**
+**Output, measured 13 Oct 2026 (default winter week, as shipped: storage 50% / 30% full, imports CF 0.85):**
 ```
-Metric                    GridTwin ZA    LP        MIP
-Total cost (R million)      2,240.2    2,235.8   2,252.3
-Coal min (MW)              14,111      14,089    15,458
-Coal max (MW)              25,099      24,966    24,219
-Solve time (s)                 ~3          3        47
-Heuristic vs MIP gap                             0.52%
+Metric                              LP          MIP
+Total cost (R million)          2191.75      2204.35
+Coal min (MW)                     12789        14389
+Coal max (MW)                     25099        24219
 ```
+The script does not compute the heuristic's side; the earlier example could not be reproduced. Run it from the repository root (it looks for nodal/ beside itself).
 
 ---
 
