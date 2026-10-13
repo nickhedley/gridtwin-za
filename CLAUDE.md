@@ -48,7 +48,8 @@ run today has 815 checks. Without ESK19679.csv, validate_weather adds a failure 
 validate_benchmarks skips the fleet-normalised wind check; those totals were not re-measured on 13 Oct.
 Engine branches (13 Oct 2026, ESK19679.csv present): claude/c4-frozen 720/725 (stale stamp; 721 with today's); claude/engine-fix
 (build 13h) 715/725 plus audit 87/87, so 802/812, eng5 6/6: the six extra failures are the engine fix's, causes in RESULTS
-'Engine fixes', waiting on your decisions (TODO 14dp).
+'Engine fixes', waiting on your decisions (TODO 14dp). claude/engine-fix build 14a (engine fix (B), 14 Oct): 715/726 plus audit
+87/87, so 802/813, eng5 6/6; failures and causes in RESULTS 'Engine fix (B) against the same pass marks' (TODO 14dp, 14dt).
 
 ## Rules that matter most (RULES.md has the full set)
 

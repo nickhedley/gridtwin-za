@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 17:30 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 22:00 UTC)
 
 ## Note date and plan to Fri 23 Oct (user, 13 Oct: note moved to Fri 23 Oct so the engine is fixed first; plan is a draft for approval)
 
@@ -6,7 +6,12 @@ No more c4-based runs (user, 13 Oct). Estimates use today's measured times: a ru
 5,300-10,000 s), the engine check 12-40 min, print, top-up and tsl 1-20 min; c4's own loop took 9 passes over about 3 days.
 GitHub: 20 jobs at once on the Free plan (GitHub's stated limit); 12 seeded runs ran at once today without queueing.
 
-1. Pass marks set (TODO 14dt, 17:00): (1) and (2) fail, (3) passes, (4) proposed; reported, not moved; your decision on the
+1. Engine (B) done (TODO 14dv (1); build 14a, claude/engine-fix 016bb49; RESULTS 'Engine fix (B) against the same pass marks'):
+   mark (1) passes (1.2, 1.7, 4.0, 2.7%); (2) fails on 3 of 15 weeks by 0.15-1.00 GWh (last hour of the week, stores empty,
+   coal held for operating reserve the PyPSA check does not hold); (3) fails on the 2025 peaker season ratio (9.3x against
+   2.15-8.6x); (4) engine check about 41-45 min worst case (pass), live app 4.37 s (fail, 14ds after the note). c4's build on
+   14a: no year fails, engine PV R2,525.8bn, CO2 1,465 Mt. Suite 715/726 plus audit 87/87, eng5 6/6. Proposed: c5 runs on 14a.
+   Earlier: pass marks set (TODO 14dt, 17:00): (1) and (2) fail, (3) passes, (4) proposed; reported, not moved; your decision on the
    next step (RESULTS 'Engine fix (a) against its pass marks'). Done 13 Oct (RESULTS 'Engine fixes'): (b) 13f 20729cc, (c) 13g 99b5b92, (a) 13h d388ceb on claude/engine-fix; draft pull request
    for review; the four cross-check weeks 1.3-12.4% above the 24-hour rolling optimum (were 2.2-48.4%); six suite failures wait on
    your decisions (TODO 14dp). Was: Engine fixes, branch claude/engine-fix (Tue 13 - Wed 14): (b) start-up double count, about 1 h; (c) coal units standing in
@@ -102,10 +107,27 @@ from Thursday to about Saturday; the engine's pass marks (TODO 14dt) are a separ
    start. Caveats: Eskom has done the procedure tier only and the mill backlog binds before design limits; sources mix sent-out
    and generated MW and percentages of different ratings; Indian results are short tests; costs differ in year and currency.
 
+## c5 inputs and stopping rule (13 Oct 2026, 22:00 UTC; proposals for your decision before launch)
+
+- Imports after 2030 (TODO 14dv (6)): IRP 2025 does not say, as far as the sources reachable here show. Table 1 carries hydro at
+  1,600 MW from end 2025 with no additions to 2042, but it lists new capacity only; two web searches (13 Oct) found the
+  contract's end (Mozambique's strategy: 31 Dec 2030, about 1,150 MW) and nothing on the IRP's assumption. The gazette's full
+  text was not read (long PDF). So, per your rule: 1,150 MW kept, plus a no-imports-after-2030 sensitivity. That needs a
+  year-by-year imports setting in the pathway LP and the engine check (none exists; about 1-2 h).
+- Rooftop 0.9 GW a year: the ROOF_MW setting exists on claude/c4-irp3 (merge step 6), not on main or c4-frozen; c5 needs it
+  merged or carried. Grid cost: GRID=1 exists on c4-frozen.
+- Stopping rule (TODO 14dv (9)), proposed: the loop's own adequacy test as in c4 (stop when no year's mean shed is above its
+  target); a pass cap of 6 (MAXP=6); and a stall stop: from pass 4, stop when a pass cuts the worst year's shed above target by
+  less than 10% (c4's passes 4-7 cut 7-19% each). Whatever stops it: the engine check, then the top-up on any failing year,
+  both costs reported, and the stop reason recorded. Time: passes of 1.5-4 h, so at most about 10-20 h; on 14a c4's own build
+  already passes the engine check, so c5 may stop sooner.
+
 ## Merge order to main by Wed 21 Oct (proposal, 13 Oct; you merge)
 
 Each step simulated in a scratch copy of main with the full suite (ESK19679.csv present; audit 87/87 and eng5 6/6 at every step).
 1. Pull request #32, licence lines (1 commit, on main). Suite 724/725 (EDMSA only).
+   Step 2 opened 13 Oct as pull request #35 (claude/merge-c4-frozen: #32 merged in, then c4-frozen; conflicts resolved): suite
+   808/812 with audit, eng5 6/6; the GitHub stress suite needed one fix (stress_suite.js loads the modern wind map), now green.
 2. The c4 engine, claude/c4-frozen (115 commits, build 12e): per-year stress windows, grid cost and peakers (#20, #21), the
    build-costs code of #22 (BW3 batteries, modern wind, tracking option, hourly storage in the build LP), the 9-12 Oct engine
    and optimiser work (gas and diesel options, coal dates, customer-demand standard, adequacy test) and the long-run workflow.

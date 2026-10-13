@@ -2690,6 +2690,100 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### Engine fix (B) against the same pass marks (build 2026-10-14a): (1) passes; (2) fails on 3 of 15 weeks, by 0.15-1.00 GWh; (3) fails on one benchmark (peaker season ratio); (4) engine check passes, live app fails; reported, not moved, 14 Oct 2026
+
+User, 13 Oct (TODO 14dv (1)): option (B), capped at Wed 14, on the hold on battery energy and on coal committed before storage
+(14dq), judged against 14dt's marks. Engine: claude/engine-fix 016bb49 (build 2026-10-14a), on 13h (d388ceb). Cross-check as
+for (a): validation/single_node/ scripts (as #33), 24-hour rolling PyPSA unit commitment (48-hour window, 24 kept), rule 'all',
+each engine version on its own week.
+
+What changed in simulate(), each measured on the cross-check weeks before it was kept:
+- Commitment (14dq): the pre-pass commits coal for net load less what the short stores and pumped storage can give from the
+  surplus run before it (water-filled, at 90% of their energy, power and round trip). A run with no surplus before it is not
+  shaved, so 2026 commits as before.
+- Surplus hours: once the surplus is taken, coal tops the short stores up towards the window's need beyond coal.
+- Pumped storage joins the look-ahead. It used to give first in every expensive hour and next after coal otherwise, with lithium
+  held back; the optimum ran lithium daily and kept pumped storage back. Now, ahead of coal: pumped storage gives what the
+  window's surplus would spill, the short stores what the surplus will put back, and in the day's expensive hours pumped storage
+  what it holds above the window's need beyond coal. After coal: the short stores, then pumped storage, above their holds.
+  Before diesel and before shed, pumped storage gives first. Its coal and gas charging targets net the coming refill.
+- Look-ahead 24 to 48 hours (storageLookaheadH): the rolling optimum sees 24-48 hours ahead.
+
+```
+gap to the 24 h rolling optimum, %          baseline   May    Nov   stress   worst shed found, GWh (optimum 0)
+13h                                            1.3      7.3   12.4    6.6     5.66 (s_coalavail 2030)
+B1  commitment, surplus charging, refill       1.3      3.5    4.4    7.1     2.68
+B3  + lithium before pumped storage            0.5      2.4    4.2    4.4     1.34 (rescan)
+B6  + pumped storage peak rule, spill first    1.2      2.2    4.0    4.7     6.81 (two weeks without top-up)
+B7  = B6 at 48 hours (build 14a)               1.2      1.7    4.0    2.7     1.00
+```
+
+B3 left pumped storage idle in four suite scenarios (0.0-0.3 cycles a year; check > 5; the optimum's 2026 week also leaves it
+idle, 0.1-0.2 GWh, but Eskom's schemes cycle daily), so B6 added the peak rule. At 24 hours B6 spent pumped storage and lithium
+in the run-up to peaks 30-40 hours away where the optimum burned diesel early, and eng5's 'storage cuts unserved' fell to a 6.1%
+cut (needs 10%); at 48 hours both weeks shed none and eng5 cuts 17.5%.
+
+(1) Within 5% on the 2026 baseline week and the three c4 2040 weeks: pass. Baseline +1.2%, May +1.7%, November +4.0%, stress
++2.7% (R million a week, engine against optimum: 2,188.2 / 2,162.5; 1,589.6 / 1,562.7; 992.0 / 953.6; 2,289.6 / 2,228.4).
+
+(2) Engine shed no more than the optimum's in the stress weeks: fails on 3 of 15. Weeks: the six of 13h's judgement, three
+more from 13h's table, the four worst from a rescan on B3 and two new from a rescan on 14a (12 weather years x 2 draws, five
+states, the loop's and the engine check's seeds).
+
+```
+R million a week / shed GWh                               engine (14a)       24 h rolling     gap     mark (2)
+c4 2030, weather 2017, 4425+                              1,405.6 / 0        1,431.7 / 0      -1.8%   pass
+c4 2039, weather 2016, 6807+                              2,327.3 / 0        2,276.0 / 0      +2.3%   pass
+c4 2039, weather 2019, 3273+ (seed 36249277)              1,969.5 / 0        1,889.9 / 0      +4.2%   pass
+c4 2039, weather 2019, 3273+ (seed 36354006)              1,973.7 / 0.15     1,976.1 / 0      -0.1%   fail
+s_coalavail 2030, weather 2017, 4425+                     2,951.1 / 0        2,640.5 / 0     +11.8%   pass
+s_coalavail 2030, weather 2023, 728+                      2,891.5 / 0        2,766.8 / 0      +4.5%   pass
+s_coalavail 2030, weather 2016, 1256+ (seed 87899962)     2,478.3 / 1.00     2,340.6 / 0      +5.9%   fail
+s_coalavail 2030, weather 2016, 392+ (seed 36330249)      2,609.8 / 0.50     2,534.3 / 0      +3.0%   fail
+c4 2040 with top-up, weather 2016, 6807+                  2,289.6 / 0        2,228.4 / 0      +2.7%   pass
+c4 2040 without top-up, weather 2021, 897+                2,509.4 / 0        2,324.3 / 0      +8.0%   pass
+c4 2040 without top-up, weather 2016, 6807+ (check draw)  2,395.8 / 0        2,362.1 / 0      +1.4%   pass
+c4 2040 without top-up, weather 2016, 6807+ (loop draw)   2,517.6 / 0        2,450.7 / 0      +2.7%   pass
+c4 2040 with top-up, May and November                     see (1), no shed on either side             pass
+2026 baseline                                             see (1)                                     pass
+```
+
+The three: each shed falls in the week's last hour, with the stores empty and coal held 2.2-2.5 GW below what is available as
+operating reserve, which the PyPSA check does not hold; in the 1.00 GWh week pumped storage ran empty from about hour 130 where
+the optimum kept 21 GWh. Rescan on 14a: worst week in any state 1.00 GWh (13h 5.66), mean shed at most 0.05 GWh a year.
+
+(3) The 2025 benchmarks still pass: fails, 27/28. peakerSeasonRatio 9.3x against a band of 2.15-8.6x (Eskom 2025 4.3x; 13h
+4.4x). The new engine burns 42 GWh of peaker fuel in Jul-Sep 2025 against 108 (13h) and 387 in Jan-Mar against 473; pumped
+storage delivers 3.83 TWh a year against 2.73 (the invariant check cites 3-4 TWh for the real fleet); the 2025 run sheds 4.6
+GWh against 5.7. Not tuned back: the check itself warns against fitting peaker output. Other values 13h -> 14a: coal 164.59 ->
+165.22 TWh; CO2 174.06 -> 174.41 Mt; residual RE share 12.0 -> 11.9%; grid generation 212.9 -> 214.2 TWh; coal capacity
+factor 47.3 -> 47.5%; nuclear, wind, utility solar, hydro, imports and the rest unchanged. B6 at 24 hours reads 6.1x (pass),
+with marks (1)-(2) and eng5 worse.
+
+(4) Run time, limits set by the user on 13 Oct (TODO 14dv (2)):
+- Engine check within 60 minutes worst case on GitHub: pass on the estimate. Mean simulate() on c4's 2040 state (jsdom, 24
+  simulated years): 346 ms (13h), 346 ms (B6 at 24 hours), 398 ms (14a). Scaling 13h's 36-minute estimate: about 41 minutes.
+- Live app within 2.5 s per recompute in Chromium: fail, as expected until 14ds (after the note). Today 2026, 24 recomputes
+  each, interleaved: 13h 3.02 s, 14a 4.37 s (+45%). jsdom run(): 1.71 -> 1.98 s.
+
+Suite on 14a (ESK19679.csv present): 715/726 node checks, audit 87/87 (802/813); eng5 6/6. 13h: 715/725, 802/812. Failures:
+- Already on c4-frozen: EDMSA Scenario A CO2 2035; wind capture at 110 GW (83.7%); iron-air with gas in July (437 -> 202
+  GWh, 53.8%); preset curtailment band (Fossil-free 2040 124.4 against 96.3 +/-15%; Deep decarbonisation 2035 back in band).
+- From (a), TODO 14dp, new figures: demand shifting (7.5% shift R210.38bn against R210.30bn at zero); demand-response rebound
+  (30% shift R211.89bn); instant heuristic (ratio 2.05, was 2.56); response matrix (29 cells, was 17); must-run gas
+  (generation exceeds served, exported and charged energy by 15.9 TWh against 22.5 TWh charged, was 8.1 against 14.6; the
+  formula's gap equals charging less firm exports, as before). 14dp's lcoeIronAir dead control now passes.
+- New from (B): iron-air July gas, no gas cap (1,312 -> 1,295 GWh with 20 GW of iron-air, 1.3% against a 1% limit); the
+  peaker season ratio (mark (3)).
+
+c4's build through 14a, no re-solve (P_c4t, pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, seeds as before): no year fails (worst
+2038, 0.044 GWh against 2.48), no top-up; engine cost R2,525.8bn PV against R2,540.2bn on 13h and R2,597.7bn on c4's own engine
+(12e); CO2 1,465 Mt against 1,480 and 1,605. 1,800 simulated years took 11 min 20 s here (0.38 s each; the 7,200-year worst
+case would take 45 min at this rate). The optimiser's figures do not change.
+
+Not yet measured: each part's own contribution (switches _laNoUC, _laNoSurCoal, _laNoPs, _laNoPsHold, _laNoPsFirst,
+_laNoPsPeak; no effect unless set). Scratch scripts not committed: runweeks.py, cmp_hourly.py, scanall.sh, marks_table.py.
+
 ### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
 
 Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on
