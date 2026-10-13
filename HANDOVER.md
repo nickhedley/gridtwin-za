@@ -161,6 +161,8 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   measure keeps R551-906/kW-yr of rooftop (c4: R42.7bn PV, 1.7%; total measure R114.1bn, 4.4%); RESULTS 'Rooftop in the two
   cost measures', TODO 14dc.
 - Still running: s_coal60 (38379671167), s_windlow (38392619799).
+- TODO 14df (c5: building and running agree, with done-when tests) and 14dg (finer network, GCCA supply areas), both after
+  Friday's note (user, 13 Oct); nothing changes now.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
