@@ -2003,6 +2003,40 @@ GEM start years), with no primary source for the earlier date (SOURCES, fleet ro
 (PyPSA-RSA fleet file, unsourced); s_coalirp's 2030 date comes from its closure rule; GEM lists planned retirement 2026; no
 primary source dates its closure.
 
+### s_nogas4strict (no new gas or open-cycle, lithium 4 GW a year): adequate after one pass, R2,838bn PV and 1,331 Mt, R240bn dearer and 274 Mt less CO2 than c4, 13 Oct 2026
+
+Run: c4's settings with LI_CAP=4000 OCGD=0 GAS_CAP=0 (no new CCGT, OCGT or diesel open-cycle), seeded from c4's final run
+(seed_run 38359856512, seed_name c4t, WIN_FROM=seed/out/pathway_c4t_lp2040.json), rule B (MAXP=3, stop when no tested year
+fails; no top-up). Run 38361317217, branch claude/c4-frozen (engine identical to 86bfea4), pass 1 solved Optimal in 30 min
+from a cold start; loop test after pass 1: no failing year (worst 2040, 0.39 against 2.60 GWh), so it stopped. Engine check
+pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, 10 draws per weather year (120 runs) every year; print job 38366303884.
+
+```
+                                 s_nogas4strict        c4 as solved
+cost 2026-40, PV at 8% real      R2,838bn              R2,598bn
+CO2 2026-40                      1,331 Mt              1,605 Mt
+gas GW 2030 / 2035 / 2040        0 / 0 / 0             1.2 / 3.5 / 5.1
+diesel open-cycle GW (new)       0 / 0 / 0             2.8 / 2.8 / 3.6
+lithium GW                       8.7 / 19.7 / 28.5     6.6 / 11.2 / 21.7
+wind (onshore) GW built          12.5 / 25.0 / 31.4    13.5 by 2040
+solar PV GW built                14.4 / 34.5 / 62.5    52.5 by 2040
+offshore GW                      0 / 0.8 / 3.4
+iron-air GW                      0.8 / 1.5 / 2.1
+vanadium GW                      0.8 / 2.0 / 2.25
+pumped hydro GW                  1.5 from 2038
+coal retired early (standing)    1,589 MW by 2040      588 MW from 2026
+worst year, engine check         2040 and 2034, 9%     2040, 161%
+```
+
+Shed by year, engine check, mean against target (GWh): 2026 0.03 / 1.94; 2027 0.03 / 1.96; 2028-29 0.00; 2030 0.02 / 2.06;
+2031 0.04 / 2.12; 2032 0.08 / 2.16; 2033 0.11 / 2.21; 2034 0.20 / 2.26; 2035 0.08 / 2.31; 2036 0.03 / 2.35; 2037 0.05 / 2.41;
+2038 0.01 / 2.48; 2039 0.08 / 2.54; 2040 0.24 / 2.60. Existing diesel peakers burn 0.05 TWh in 2026 and under 0.01 TWh a year
+from 2028. Curtailment 4 TWh in 2030, 50 in 2035, 102 in 2040.
+
+Caveats: one pass on c4's windows, so the build is shaped by c4's stress weeks; c4 itself fails 2040 (R2,599bn with its
+top-up, so the gap to c4 topped up is R239bn, about R870 per tonne of CO2 avoided). The loop's own test again reads above
+the engine check (2040: 0.39 against 0.24; TODO 14cv).
+
 ### Penalty c4 finished: adequate after 2 passes, every year within target, PV R2,681bn, 1,479 Mt, 12 Oct 2026
 
 Method check for c4 (TODO 14cn): COMMIT=1 PSE=1 TF=0.5 DEMAND=irp_esrg LI_CAP=3000 OCGT=1 OCGD=1 GAS_CASE=central

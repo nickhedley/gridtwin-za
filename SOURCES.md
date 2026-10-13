@@ -823,6 +823,26 @@ harness/ext/grid_distances.py.
 - Running hours on the half-standard pathway (pathway_v_half_c1_p1.json, build 07c, twelve weather years x
   two outage draws): 94 h a year in 2026, 3 in 2028, zero from 2030 (worst draw at most 4 h).
 
+## Diesel fuel price, costDiesel: basis (TODO 14cj, 13 Oct 2026)
+
+- Engine: FIXED.costDiesel R6,100/MWh of output, fuel only (vomDiesel R70 separate). Its note reads 'Eskom OCGT: recent
+  runs reported at ~R6,011/MWh (Mar 2026)': Eskom's realised diesel spend per MWh of open-cycle output for 2025/26 to
+  date. No Brent price, exchange rate or source document was recorded with it; R6,100 is R6,011 rounded up.
+- Parliamentary reply NW1243, Minister of Electricity and Energy, 7 May 2026 (pmg.org.za/committee-question/37559):
+  diesel consumed at Eskom's open-cycle stations, costs before rebates. 2024/25: 686,386,567 litres, R13,182,984,487
+  (R19.21/litre). April 2025 to February 2026: 258,389,725 litres, R4,750,701,063 (R18.39/litre). Purchases 2025/26:
+  270,017,374 litres, R4,818,471,905 (R17.85/litre). At R18.39/litre, R6,011/MWh is 327 litres per MWh (our division).
+- Reply NW1530, same date (committee-question/37553): 2025/26 diesel expenditure R6.4bn (Eskom weekly power alert,
+  3 Apr 2026), 62.46% below 2024/25.
+- Brent and rand over the consumption period, April 2025 to February 2026, means of monthly values: Brent $67.21/bbl
+  (EIA, FRED MCOILBRENTEU), R17.39/$ (Federal Reserve G.5, FRED EXSFUS), Brent in rand R1,169/bbl (mean of the monthly
+  products). 2024/25 (April 2024 to March 2025): R1,437/bbl. Dated basis: R6,100/MWh goes with Brent about $67 at R17.39/$.
+- Scaling to the 12 Oct weekly check (Brent $103.3, R16.49/$, R1,703/bbl, x1.457): R8,887/MWh if the whole price moves
+  with Brent in rand. Eskom's own price moved less: from 2024/25 to 2025/26 its cost per litre fell 4.3% while Brent in
+  rand fell 18.6% (about 0.23 of the move), consistent with fixed levies, margins and contract terms in the price. A
+  build-up holding levies fixed would fall in between; the levies are not yet sourced. Choice of basis for s_dieselhigh:
+  the user's.
+
 ## Build costs from South African bid data (TODO 14av, 14aw, 14ax; builds 07j and 07k, 7 Oct 2026)
 
 Decisions are the user's (7 Oct 2026).
