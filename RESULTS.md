@@ -2781,8 +2781,25 @@ c4's build through 14a, no re-solve (P_c4t, pathcheck.js COMMIT=1 PSE=1 TF=0.5 L
 (12e); CO2 1,465 Mt against 1,480 and 1,605. 1,800 simulated years took 11 min 20 s here (0.38 s each; the 7,200-year worst
 case would take 45 min at this rate). The optimiser's figures do not change.
 
-Not yet measured: each part's own contribution (switches _laNoUC, _laNoSurCoal, _laNoPs, _laNoPsHold, _laNoPsFirst,
-_laNoPsPeak; no effect unless set). Scratch scripts not committed: runweeks.py, cmp_hourly.py, scanall.sh, marks_table.py.
+Each part switched off in turn on 14a (gap to the optimum, %, shed GWh where any; the optimum sheds none in these weeks):
+
+```
+                                  baseline   May    Nov   stress   s_coalavail 2030   c4 2040 no top-up, wy 2016
+                                                                   wy 2016, 1256+     check draw   loop draw
+14a                                  1.2      1.7    4.0    2.7     5.9 / 1.00          1.4          2.7
+_laNoUC      commitment             1.2      1.8    4.1    5.5     5.9 / 1.00          3.8          4.8
+_laNoSurCoal surplus-hour charging  1.2      3.3    3.7    2.9     5.9 / 1.00          1.6          2.9
+_laNoPs      pumped storage refill  1.2      7.2   14.0    5.8     3.7                 5.2          4.9
+_laNoPsHold  old pumped order       1.3      2.3    4.3    7.1     5.8 / 1.00          6.2          6.5
+_laNoPsFirst pumped not first       1.2      1.7    4.0    2.7     4.5                 1.4          2.1
+_laNoPsPeak  no daily peak rule     0.5      2.6    4.1    1.7     5.9 / 1.00          1.2          1.2
+```
+
+The refill rule carries May and November; the commitment and the new order carry the stress weeks. Without the daily peak
+rule the engine is closer to the optimum on cost, but pumped storage sits idle in 2026 (the invariant check, above). Without
+'pumped storage first' the s_coalavail 1256+ week sheds none, but on all 15 weeks two fail instead of three and the worst rises
+to 2.62 GWh (s_coalavail 2030, weather 2017, 4425+), so 14a keeps it. Scratch scripts not committed: runweeks.py,
+cmp_hourly.py, scanall.sh, marks_table.py; outputs in the session scratchpad.
 
 ### TODO 14dp settled on build 14a: two findings restated, one check replaced, the response baseline regenerated, the gas balance made exact; no limit widened, 14 Oct 2026
 
