@@ -43,6 +43,11 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // WINDMOD / WIND_CASE (7 Oct 2026): new wind on the modern-turbine profile with bid capex (1, default) or the previous
  // R21,000 on the current profile (0); wind cost case central, high or low; WIND_CORR the new-wind correction, central or low.
  w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:''));
+ // windCase (13 Oct 2026, user: s_windlow): a run made with WIND_CASE records it; the check prices new wind the same way.
+ // Absent or null: unchanged. A WIND_CASE given here as well must agree.
+ if (P.windCase!=null){ if (!['central','high','low'].includes(P.windCase)) throw new Error('windCase must be central, high or low: '+P.windCase);
+   if (process.env.WIND_CASE!==undefined && process.env.WIND_CASE!==P.windCase) throw new Error('WIND_CASE '+process.env.WIND_CASE+' disagrees with the run\'s windCase '+P.windCase);
+   w.eval(`state.bldWindCase=${JSON.stringify(P.windCase)};`); }
  // COSTSET (7 Oct 2026): the same cost set as the pathway run; see pathway/costset.js.
  require('./pathway/costset.js')(w, process.env.COSTSET);
  // The pathway's lithium capex decline (BATT_DECL, 13 Oct 2026) when it recorded one, so the check prices lithium as the optimiser did.
