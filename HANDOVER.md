@@ -114,6 +114,14 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   s_nogas3, s_nogas4, s_nogas4strict (rule B), s_be6, s_committed and s_irpgas, plus the s_be7 arithmetic against it. If not, c4
   stays the central and only s_irpgas runs, from c4. s_pvirp and s_roof2 go ahead. s_irpgas, s_pvirp and s_roof2 are not
   defined in this session's record: settings asked of the user before any launch. Rooftop stays 1,200 MW a year until s_roof2.
+- s_windlow started 11:47 UTC (user, 13 Oct): run 38392619799, ref claude/c4-windlow (71d076e; c4-frozen plus windCase
+  recorded in the run and applied by pathcheck.js; the same on claude/topup, 047f9e9), c4's settings plus WIN_FROM, MAXP=1,
+  WIND_CASE=low (IRENA global USD 1,041/kW), WIND_CAP=3500 WIND_CAP_FROM=2031; seed 38359856512 / c4t; rule A: then print,
+  top-up (claude/topup applies windCase) and tsl. Report wind built by year beside c4's (RESULTS, c4's wind build). Tests:
+  off key e0b93ac712; on a9ce3eea84, only the 14 b_wind cost terms and the 2031-40 wind bounds change; check with a recorded
+  windCase equals WIND_CASE given directly.
+- TODO 14da (c5 wind limit 3,500 MW a year after 2030) and 14db (s_irpgas floor: the optimiser floors all new CCGT, not only
+  the 2029-30 6 GW; switch and reporting needed; settings asked of the user).
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
