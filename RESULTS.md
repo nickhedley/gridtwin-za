@@ -2003,6 +2003,65 @@ GEM start years), with no primary source for the earlier date (SOURCES, fleet ro
 (PyPSA-RSA fleet file, unsourced); s_coalirp's 2030 date comes from its closure rule; GEM lists planned retirement 2026; no
 primary source dates its closure.
 
+### TODO 14cv: why the two cost measures rank plans in opposite order. The optimiser's objective carries a 2030 stress-target penalty for shed the engine check does not find, and its dispatch burns far more gas for low-storage plans than the engine does; the note should use the engine check, 13 Oct 2026
+
+Method (analysis only, nothing solved). Optimiser side: each run's last LP rebuilt from its settings and stress windows
+(pathway_perfail.js, DUMP_LP) on branch claude/costsplit (82a49d4, mode lpsplit, harness/costsplit_lp.py), keys identical to
+the solved LPs (c4 1e8b5aa62a = c4-target pass 9; s_be6 c9bc9b5f4b; s_committed 395b93b52a), coefficients times the cached
+solutions reproducing each recorded objective to the rand. Runs 38376701277, 38376691555, 38376697597. Engine side: the engine
+check (pathcheck.js, same draws, seeds and adaptive rule) re-run locally on each build with every cost term recorded per run,
+reproducing the official totals (R2,597.7bn, R2,550.4bn, R2,561.9bn); capital by technology from the engine's own functions
+(midpoint vintage), matching its new-build charge to R0.0bn once its own transmission charge (txCapexR) is used. PV at 8%
+real over 2026-40, R bn.
+
+```
+                                                     optimiser objective        engine check
+                                                     c4    s_be6  s_comm   |    c4    s_be6  s_comm
+new build capital and fixed O&M                     979.3  930.8  945.4    |  970.7  917.8  940.8
+transmission charge on new wind and solar             0.0    0.0    0.0    |   53.4   45.5   49.1
+coal: fuel, variable O&M, carbon                    683.9  709.4  687.1    |  705.5  718.0  705.4
+gas: fuel, variable O&M, carbon                      43.8   76.0   61.6    |   43.4   34.7   46.6
+diesel: fuel, variable O&M, carbon                    7.3    5.6    5.5    |    1.8    2.4    2.2
+shed and reserve shortfall                            1.1    1.2    0.9    |    0.0    0.0    0.0
+stress-target penalty (VoLL x 365, all in 2030)      12.2   90.3   43.6    |    0      0      0
+curtailment charge and storage wear                   6.4    3.0    5.5    |    0      0      0
+coal fixed O&M saved by early retirement             -6.3    0.0  -12.9    |   -6.3    0.0  -12.9
+existing fleet, PPAs, other IPPs, nuclear, hydro,
+  imports, start-up, exports (engine only)              0      0      0    |  829.2  832.0  830.8
+total                                              1727.7 1816.2 1736.6    | 2597.7 2550.4 2561.9
+
+gap, c4 minus the run                               c4-be6 (LP | engine)       c4-comm (LP | engine)
+new build                                            48.5 |  52.8             33.9 |  29.9
+transmission                                          0.0 |   7.9              0.0 |   4.3
+coal                                                -25.5 | -12.5             -3.2 |   0.1
+gas                                                 -32.2 |   8.7            -17.8 |  -3.1
+stress-target penalty                               -78.1 |   0.0            -31.4 |   0.0
+other                                                -1.2 |  -9.6              8.8 |   4.5
+total                                               -88.5 |  47.3             -8.9 |  35.7
+```
+
+The stress-target penalty falls on 2030 in all three: expected shed (and reserve shortfall, zero here) over the year in the
+optimiser's representation, against the 2030 target of 2,287 MWh: c4 2,809 MWh, s_committed 4,156, s_be6 6,154; the excess is
+charged at VoLL x 365 (R23m per MWh PV in 2030). The engine check finds 0.00 GWh of shed in 2030 for all three. Every other
+year sits at or below its target in the optimiser. Of the 136bn swing between the measures for c4 against s_be6, the penalty
+is 78bn, gas 41bn, coal 13bn, transmission 8bn; for c4 against s_committed (45bn), penalty 31bn, gas 15bn.
+
+Generation in 2040, c4, TWh (optimiser: representative days at their weight plus stress-window days at theirs; engine: mean
+of 480 runs): coal 78.6 against 90.4; CCGT 9.5 against 13.0; OCGT on LNG 1.2 against 3.8; diesel 0.7 against 0.06; lithium
+discharged 48.3 against 15.4; pumped storage discharged (existing and new) 12.3 against 12.9; iron-air 0.8 against under 0.01;
+curtailment 15.9 against 41.9; shed 0.003 against 0.004. New wind, solar and rooftop before curtailment in the optimiser 41.1,
+117.6 and 29.8 (existing fleet folded into its demand row); engine wind, solar and rooftop after curtailment, all fleets, 58.5,
+75.0 and 39.4. The optimiser's 2040 also carries 8.2 TWh of stress-window residual demand on top of a plain year's 242.9.
+
+Cause (one line): the optimiser's objective includes a 2030 stress-target penalty, R12bn for c4, R44bn for s_committed and
+R90bn for s_be6, for shed the engine check does not find, and its representative-day dispatch burns about twice the engine's gas
+for the low-storage plans while cycling lithium about three times as hard; these, not the build costs, reverse the ranking.
+Measure for the note: the engine check (a cost, not a planning objective; the same full-year simulation with outage draws for
+every plan; the measure adequacy is judged on). Caveats: its storage dispatch uses lithium a third as hard as the optimiser and
+curtails 2.6 times as much (c4, 2040), so it may overstate the cost of storage-heavy plans against gas-heavy ones; it carries a
+transmission charge the optimiser does not see (GRID off); it prices shed at R9,530/MWh against the optimiser's R87,000. Neither
+measure changed (user, 13 Oct).
+
 ### High diesel price, bound for c4: at most R1.4bn undiscounted (R0.8bn PV), 0.03% of system cost; s_dieselhigh held, 13 Oct 2026
 
 c4 (final run 38359856512, engine check by fuel run 38365615522) produces 0.52 TWh from diesel over 2026-40 (0.05 TWh in
