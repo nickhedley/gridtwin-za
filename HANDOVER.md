@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 10:25 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 10:45 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -83,6 +83,11 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   only the stress-window cmax and resv numbers change, ramp rows and objective identical), c4's settings plus WIN_FROM,
   MAXP=1 and COAL_AVAIL=1, seed 38359856512 / c4t, rule A: then print, top-up and tsl. Report against c4: 2030 builds (diesel
   open-cycle, lithium), the 2030 penalty, cost on both measures.
+- Check-in 10:31: s_coalavail passed its COAL_AVAIL check (still solving after 8 min). s_coalirp top-up 3,250 MW, R2,592bn
+  (2039-40 over the caps), still R7bn below c4 on the engine check and R29bn on the objective: agree. s_gasprem R2,617bn with a
+  1,750 MW top-up (2040 over the cap), objective without penalty R1,723.0bn: both above c4. s_be7 adequate, R2,614bn, 1,576 Mt;
+  its objective leaves out the fixed nuclear's capital, so not comparable. s_li8h (38361303412) and s_be4 (38361321669)
+  finished ~10:04; print, top-up and tsl dispatched 10:35. Running: s_battdecl, s_coal60, s_coalavail.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also

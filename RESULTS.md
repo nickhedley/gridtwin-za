@@ -2023,15 +2023,19 @@ c4                   2,599         1,727.7       12.2    1,715.5          -   | 
 s_wind35             2,526         1,661.5        0.0    1,661.5        -73   |  -54.0      agree
 s_be6                2,550         1,816.2       90.3    1,725.9        -49   |  +10.4      disagree
 s_committed          2,562         1,736.6       43.6    1,693.0        -37   |  -22.5      agree (disagreed with the penalty)
-s_coalirp            2,588 (a)     1,686.2        0.0    1,686.2        -11 (a)| -29.3      agree as solved; top-up running
+s_coalirp            2,592 (a)     1,686.2        0.0    1,686.2         -7   | -29.3      agree
+s_gasprem            2,617         1,734.4       11.3    1,723.0        +18   |   +7.5      agree
+s_be7                2,614         1,679.5       12.5    1,667.1        +15   |   (c)       not comparable
 s_nogas3             2,606         1,905.2      186.7    1,718.5         +7   |   +3.0      agree
 s_nogas4             2,612         1,887.8      163.2    1,724.6        +13   |   +9.1      agree
 s_nogas4strict       2,838         3,762.3    1,838.6    1,923.7       +239   | +208.2      agree
 s_nogas4strict_bd    2,862         3,786.6    1,838.6    1,948.0       +263   | +232.5      agree
 s_disc10             2,688         1,636.6       37.0    1,599.5        +89   |   at 10%, not comparable
 s_disc113            2,763 (b)     1,582.0       35.3    1,546.7       +164   |   at 11.3%, not comparable
-(a) as solved; 2039-40 fail the engine check (183%, 439%), top-up 38379712300 running. (b) top-up 38377995864: 250 MW in
-2040, R2,763bn, CO2 1,641 Mt, within the caps.
+(a) R2,588bn as solved, 2039-40 failing (183%, 439%); top-up 38379712300: 3,250 MW (1,250 in 2039, 2,000 in 2040), over the
+build caps in both years. (b) top-up 38377995864: 250 MW in 2040, R2,763bn, CO2 1,641 Mt, within the caps. (c) the optimiser
+objective leaves out the capital of s_be7's fixed 5.2 GW of nuclear (2036-39; a constant to the LP, index.html ~6501), which
+the engine check charges. tsl runs: s_gasprem 38380834231, s_be7 38380844927.
 ```
 
 Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
@@ -2088,6 +2092,32 @@ Finding: on stress-window days the optimiser's coal cap is the engine draw's com
 committed and available), not its available coal; the 2023 window's lowest hour, 576 MW, matches the engine's committed
 minimum in the replay. Available coal never falls below 12.6 GW in those windows. The optimiser's 2030 shed above target
 (523 MWh expected, R12.2bn) arises on these days; the engine finds none. Not tested; no change before the note (TODO 14cx).
+
+### s_gasprem (gas capital at a 1.5-point finance premium) and s_be7 (IRP nuclear, 5.2 GW 2036-39), rule A, 13 Oct 2026
+
+Seeded from c4 (38359856512 / c4t, WIN_FROM), MAXP=1, claude/c4-frozen, c4's settings plus GAS_PREM=0.015 (s_gasprem, run
+38361289574) or NUC_FORCE=2036:1250,2037:1250,2038:1350,2039:1350 (s_be7, run 38361331510). Prints 38380827566 and
+38380838044; top-ups 38380830885 and 38380841342; tsl 38380834231 and 38380844927. Engine PV at 8% real. Against c4:
+engine R2,599bn with its top-up, 1,605 Mt; objective R1,727.7bn, R1,715.5bn without the stress-target penalty.
+
+```
+                               s_gasprem                       s_be7                     c4
+verdict                        pass limit (2038-40 fail loop)  adequate after one pass
+engine PV, as solved           R2,616bn                        R2,614bn                  R2,598bn
+  with the top-up              R2,617bn (1,750 MW: 250 in      R2,614bn (0 MW)           R2,599bn
+                               2039, 1,500 in 2040, over cap)
+objective / without penalty    R1,734.4 / 1,723.0bn            R1,679.5 / 1,667.1bn (c)  R1,727.7 / 1,715.5bn
+CO2 2026-40                    1,609 Mt                        1,576 Mt                  1,605 Mt
+gas GW 2030/35/40              1.0 / 2.9 / 4.3                 1.2 / 3.5 / 4.7           1.2 / 3.5 / 5.1
+new diesel open-cycle GW       3.0 / 3.1 / 3.9 (+1.75 top-up)  2.8 / 2.8 / 2.9           2.8 / 2.8 / 3.6
+lithium GW                     6.5 / 12.2 / 22.8               6.6 / 11.4 / 18.5         6.6 / 11.2 / 21.7
+worst year, engine check       2040 207% as solved             2040 29%                  2040 161%
+```
+
+s_gasprem: R18bn dearer than c4 on the engine check, R7.5bn on the objective without the penalty; agree. It builds less
+gas (4.3 against 5.1 GW in 2040) and more lithium. s_be7: R15bn dearer on the engine check; its objective (c) leaves out
+the nuclear capital, so the R48bn the objective puts it below c4 is not a cost comparison. s_be7 is adequate without a
+top-up and emits 29 Mt less than c4.
 
 ### Seeded set, rule A: s_wind35, s_disc10 and s_disc113, both cost measures, 13 Oct 2026
 
