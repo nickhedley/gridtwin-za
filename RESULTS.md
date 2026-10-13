@@ -2003,6 +2003,86 @@ GEM start years), with no primary source for the earlier date (SOURCES, fleet ro
 (PyPSA-RSA fleet file, unsourced); s_coalirp's 2030 date comes from its closure rule; GEM lists planned retirement 2026; no
 primary source dates its closure.
 
+### Both measures for every run: without its stress-target penalty the optimiser's objective agrees with the engine check on direction for every run but s_be6; c4 2040 curtails in 613 hours with lithium below 90% full; the optimiser's 2030 stress windows cap coal at what the engine had committed, not what was available, 13 Oct 2026
+
+Measure (user, 13 Oct): the engine check is the note's cost measure, with its storage caveat each time; every run also reports
+the optimiser objective without the stress-target penalty, and the note says where the two disagree on direction. Analysis only;
+nothing solved, no engine change. Engine build 2026-10-12e (c4's, commit 86bfea4).
+
+1. Objective without the penalty. Branch claude/costsplit (4b1fb49), mode tsl (harness/costsplit_tsl.py): penalty = sum over
+years of VoLL 87,000 x 365 x tsl_y / (1+r)^(y-2026), from each run's cached final solution (key shown in each job log), r the
+run's own rate. Runs 38380018380 (s_nogas3), 38380021594 (s_nogas4), 38380025241 (s_nogas4strict), 38380029484
+(s_nogas4strict_bd), 38380032393 (s_wind35), 38380035524 (s_disc10), 38380038346 (s_disc113), 38380041963 (s_coalirp); c4,
+s_be6 and s_committed from the lpsplit runs (entry 'TODO 14cv' below). Engine PV at 8% real, with the top-up where one was run.
+R bn.
+
+```
+                     engine PV     objective   penalty   objective     gap to c4: engine |   direction
+                     (top-up)      as solved             without it    objective w/o penalty
+c4                   2,599         1,727.7       12.2    1,715.5          -   |    -
+s_wind35             2,526         1,661.5        0.0    1,661.5        -73   |  -54.0      agree
+s_be6                2,550         1,816.2       90.3    1,725.9        -49   |  +10.4      disagree
+s_committed          2,562         1,736.6       43.6    1,693.0        -37   |  -22.5      agree (disagreed with the penalty)
+s_coalirp            2,588 (a)     1,686.2        0.0    1,686.2        -11 (a)| -29.3      agree as solved; top-up running
+s_nogas3             2,606         1,905.2      186.7    1,718.5         +7   |   +3.0      agree
+s_nogas4             2,612         1,887.8      163.2    1,724.6        +13   |   +9.1      agree
+s_nogas4strict       2,838         3,762.3    1,838.6    1,923.7       +239   | +208.2      agree
+s_nogas4strict_bd    2,862         3,786.6    1,838.6    1,948.0       +263   | +232.5      agree
+s_disc10             2,688         1,636.6       37.0    1,599.5        +89   |   at 10%, not comparable
+s_disc113            2,763 (b)     1,582.0       35.3    1,546.7       +164   |   at 11.3%, not comparable
+(a) as solved; 2039-40 fail the engine check (183%, 439%), top-up 38379712300 running. (b) top-up 38377995864: 250 MW in
+2040, R2,763bn, CO2 1,641 Mt, within the caps.
+```
+
+Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
+identical in both). With the penalty taken out, s_be6 is the one run whose direction differs: R10bn dearer than c4 on the
+objective, R49bn cheaper on the engine check. Most of what remains is gas dispatch (objective: s_be6 R76bn of gas against
+c4's R44bn; engine: R35bn against R43bn; entry below). Caveat for every engine figure: the engine's storage dispatch is the weaker of the two (point 2).
+
+2. c4 2040, engine check (diagnostic only). Local, engine identical to c4's (86bfea4), c4's build, pathcheck.js with a
+per-run recorder (scratchpad, not committed), the check's own draws (SEED_BASE 71830529, 40 draws x 12 weather years = 480
+runs, COMMIT=1 PSE=1 TF=0.5), reproducing the 2040 check (shed 4.18 GWh, cost R369.9bn). Means a year over the 480 runs.
+Lithium in 2040: 22,510 MW, 129,339 MWh, round-trip 0.88.
+
+```
+curtailment (hours above 1 MW)                                     2,290 h      41.9 TWh
+  of which lithium below 90% full at the start of the hour           613 h (27%)
+  MWh lithium could have absorbed in those hours, upper bound                    4.7 TWh (11% of curtailment)
+lithium discharged                       engine 15.4 TWh      optimiser 48.3 TWh (47.0 on representative days, 1.3 on stress days)
+full cycles a year (discharge / 129,339 MWh)   engine 119     optimiser 374 (3.1 times)
+```
+
+Upper bound: each hour taken on its own (not chained), limited by the curtailment, lithium's spare charging power (22,510 MW
+less all battery charging that hour, iron-air included, so conservative on power) and the room to 90% full divided by 0.88.
+
+3. c4's 2030 stress windows and the capacity each side sees (report only). Optimiser: c4's pass-9 window file
+(pathway_c4t_lp2040.json, 32 windows), from the lpsplit run 38380045109 (claude/costsplit 4b1fb49). Engine: same local setup,
+2030, 120 runs (10 draws x 12 years), plus the three windows replayed on their weather year and seed with c4's final build.
+Day numbers count from 0 at 1 January of the weather year.
+
+```
+2030 windows (each 14 days, weight 1/24 a day; all added in pass 1)
+  weather year 2015, days 80-93  (22 Mar - 4 Apr),  draw seed 36322330, pass-1 engine shed 23.2 GWh
+  weather year 2017, days 178-191 (28 Jun - 11 Jul), draw seed 36338168, pass-1 engine shed 31.1 GWh
+  weather year 2023, days 24-37  (25 Jan - 7 Feb),  draw seed 36280953, pass-1 engine shed 16.0 GWh
+  plus the built-in 7-day tail week at a flat coal derate: 49 stress days in 2030
+
+2030 capacity, MW                         optimiser                       engine check
+coal standing                             29,708 (588 MW retired early)   29,708
+coal, representative days / all hours     19,310 every hour (65% EAF)     available after outages: mean 19,267, lowest hour 12,066
+                                                                          committed by its unit commitment: mean 14,798
+coal, stress-window days                  mean 15,670, lowest hour 576    replay of the three windows on c4's build:
+                                                                          available mean 16,730-17,105, lowest 12,579
+                                                                          committed mean 14,218-15,811, lowest 544-6,225
+                                                                          shed 0 GWh in all three
+diesel open-cycle                         6,200 (3,400 + 2,800 new)       6,200 (3,400 + 2,800 new)
+```
+
+Finding: on stress-window days the optimiser's coal cap is the engine draw's committed coal (coalAvailFrac, the lower of
+committed and available), not its available coal; the 2023 window's lowest hour, 576 MW, matches the engine's committed
+minimum in the replay. Available coal never falls below 12.6 GW in those windows. The optimiser's 2030 shed above target
+(523 MWh expected, R12.2bn) arises on these days; the engine finds none. Not tested; no change before the note (TODO 14cx).
+
 ### Seeded set, rule A: s_wind35, s_disc10 and s_disc113, both cost measures, 13 Oct 2026
 
 All seeded from c4 (seed 38359856512 / c4t, WIN_FROM), one pass (MAXP=1), claude/c4-frozen; engine check and top-up as for the
@@ -2014,8 +2094,8 @@ own rate, so it is not comparable with c4's. c4: engine R2,598bn as solved, R2,5
                            s_wind35 (wind 3.5 GW a yr)  s_disc10 (10% real)      s_disc113 (11.3% real)
 run                        38361299620                  38361281441              38361285970
 engine PV, as solved       R2,518bn                     R2,688bn                 R2,763bn
-  with the top-up          R2,526bn (3,000 MW;          R2,688bn (500 MW in      running
-                           2038 over the cap)           2040; within the caps)
+  with the top-up          R2,526bn (3,000 MW;          R2,688bn (500 MW in      R2,763bn (250 MW in
+                           2038 over the cap)           2040; within the caps)   2040; within the caps)
 optimiser objective        R1,661bn (c4 R1,728bn)       R1,637bn at 10%          R1,582bn at 11.3%
 CO2 2026-40                1,522 Mt                     1,636 Mt                 1,641 Mt
 gas GW 2030/35/40          1.2 / 4.0 / 5.7              1.0 / 3.6 / 5.7          1.1 / 3.8 / 6.0

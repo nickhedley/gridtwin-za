@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 09:58 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 10:15 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -66,7 +66,18 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
 - s_coal60 started 09:54 UTC (user, 13 Oct): run 38379671167, ref claude/c4-coalirp (53e9ba8), c4's settings plus WIN_FROM,
   MAXP=1 and COAL_DATES=coal_dates_irp2025_60y.json (IRP Figure 3 60-year line; tests: off e0b93ac712, on d27891bfb8, right-hand
   sides only), seed 38359856512 / c4t, rule A: then print and top-up.
-- s_coalirp finished 09:49 UTC (run 38361335715); print and top-up dispatched 09:55.
+- s_coalirp finished 09:49 UTC (run 38361335715): pass limit after one pass, engine R2,588bn as solved, 2039 183% and 2040 439%
+  of target; print 38379708616; top-up 38379712300 running. Objective R1,686.2bn, no stress-target penalty.
+- s_disc113 top-up (38377995864): 250 MW in 2040, R2,763bn, within the caps.
+- s_gasprem finished 09:49 (run 38361289574) and s_be7 10:02 (run 38361331510): print, top-up and tsl dispatched 10:05
+  (claude/print-results, claude/topup, claude/costsplit mode tsl). Still running: s_li8h, s_be4, s_battdecl, s_coal60.
+- Three items (user, 13 Oct) done (RESULTS, 'Both measures for every run'): objective without the stress-target penalty for
+  every run (claude/costsplit mode tsl, runs 38380018380-38380041963): only s_be6 disagrees on direction with the engine
+  check (+R10bn against -R49bn); s_committed now agrees. c4 2040 (engine, 480 runs): curtailment in 2,290 h, 613 with lithium
+  below 90% full, at most 4.7 of 41.9 TWh absorbable; lithium 119 cycles a year in the engine, 374 in the optimiser. c4 2030
+  windows: 2015 22 Mar-4 Apr, 2017 28 Jun-11 Jul, 2023 25 Jan-7 Feb plus the tail week; diesel 6,200 MW both sides; the
+  optimiser caps stress-day coal at the engine's committed coal (lowest hour 576 MW) not available coal (never below
+  12.6 GW there): TODO 14cx, after the note. Every new run gets a tsl job (claude/costsplit, mode tsl) beside print and top-up.
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
   reports the optimiser objective without the stress-target penalty, and the note says where the two disagree on direction.
   No engine changes before the note.
