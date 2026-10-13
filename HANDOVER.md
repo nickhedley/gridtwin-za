@@ -1,8 +1,24 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 03:15 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 06:45 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
 take over at any point from this block, CLAUDE.md and TODO.md (items 14cn, 14co, 14bz, 14ay and the FOCUS line).
+
+## Decisions, 13 Oct 2026 (user), in force
+
+1. c4-target stops after pass 9; no pass 10. Pass 9's solve is never cut (if it reaches the job limit it carries over). Method: when
+   pass 9's job ends, cancel the automatic next job and dispatch a replacement on ref claude/build-costs with the same inputs plus
+   MAXP=9 in settings (prev_run = the last c4t run, job_no = next, code_sha 86bfea4931d4b0823835c0f7f6ae147cb237b189). It replays
+   passes 1-9 from the cache, tests pass 9, writes pathway_c4t.json (verdict 'pass limit reached') and pathway_c4t_lp2040.json, and
+   its check job runs the engine check. Report c4 against c3 in the standard table (RESULTS, 'New central'), 2039-40 marked as
+   failing the loop's own test.
+2. The 12 seeded runs start from every window found through pass 9 (WIN_FROM, the windows pass 9 solved with). Before launch Nick is
+   told each run's pass cap and stopping rule; all runs use the same rule. Proposed 13 Oct: A, one pass (MAXP=1, all on c4's windows),
+   or B, c4's rule capped at 3 passes. Waiting for Nick's choice.
+3. Adequacy top-up (TODO 14ct), branch claude/topup; run it on each finished run and report cost as solved and with the top-up.
+4. s_coalirp on IRP Figure 3 as digitised by Nick (ee92b00 on claude/c4-coalirp, tested); start it on its own with c4's final
+   windows and the set's rule; do not hold the set for it.
+5. Penalty c4 finished 12 Oct 18:12 UTC without a handover (pass 2 ended 75 minutes inside the job limit); the handover is untested.
 
 ## Focus (user, 12 Oct 2026)
 
