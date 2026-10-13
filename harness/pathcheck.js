@@ -45,6 +45,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:''));
  // COSTSET (7 Oct 2026): the same cost set as the pathway run; see pathway/costset.js.
  require('./pathway/costset.js')(w, process.env.COSTSET);
+ // The pathway's lithium capex decline (BATT_DECL, 13 Oct 2026) when it recorded one, so the check prices lithium as the optimiser did.
+ if (P.battDecl!=null) { if (process.env.COSTSET) throw new Error('BATT_DECL with COSTSET: the cost set replaces the decline'); const d=+P.battDecl; if (!(d>-0.5 && d<0.5)) throw new Error('BATT_DECL out of range: '+d); w.eval(`for (const k of ['batt','batt_high','batt_low']){ if(!BLD_COST[k] || !('decl' in BLD_COST[k])) throw new Error('BLD_COST.'+k+'.decl missing'); BLD_COST[k].decl=${d}; }`); }
  // Gas infrastructure sensitivity, TODO 14ak (6 Oct 2026): the same overrides as pathway_perfail.js.
  // From build 2026-10-09f the pathway records its gas settings (P.gas): they are applied here, by year for a GAS_CASE,
  // and passing GAS_FUEL_R or GAS_FOM_ADD as well is refused, so the check cannot price gas differently from the optimiser.
