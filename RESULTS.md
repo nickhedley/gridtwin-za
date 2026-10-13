@@ -2017,29 +2017,35 @@ s_be6 and s_committed from the lpsplit runs (entry 'TODO 14cv' below). Engine PV
 R bn.
 
 ```
-                     engine PV  top-up  years over   objective   penalty   objective    gap to c4: engine |   direction
-                     (top-up)   MW      the cap     as solved             without it   objective w/o penalty
-c4                   2,599      1,000   -           1,727.7       12.2    1,715.5         -   |    -
-s_wind35 (h)         2,526 LB   3,000   2038        1,661.5        0.0    1,661.5       -73   |  -54.0      agree
-s_be6                2,550          0   -           1,816.2       90.3    1,725.9       -49   |  +10.4      disagree
-s_committed          2,562          0   -           1,736.6       43.6    1,693.0       -37   |  -22.5      agree (disagreed with the penalty)
-s_coalirp            2,592 LB   3,250   2039, 2040  1,686.2        0.0    1,686.2        -7   |  -29.3      agree
-s_coal60 (j)         2,578          0   -           1,667.7        0.0    1,667.7       -21   |  -47.8      agree
-s_pvirp_c4 (k)       2,525          0   -           1,829.3      128.6    1,700.7       -74   |  -14.8      agree
-s_windlow (l)        2,441          0   -           1,618.5       22.7    1,595.8      -158   | -119.7      agree
-s_roof2_c4 (m)       2,601      (run.)  -           1,719.1        0.0    1,719.1        +2   |   +3.6      agree (as solved)
-s_gasprem            2,617 LB   1,750   2040        1,734.4       11.3    1,723.0       +18   |   +7.5      agree
-s_be7                2,614 (d)      0   -           1,679.5       12.5    1,667.1       +15   |   (c)       not comparable
-s_li8h               2,614      3,000   -           1,702.9        0.0    1,702.9       +15   |  -12.6      disagree (e)
-s_be4                2,618        750   -           1,731.5       10.8    1,720.6       +19   |   +5.1      agree
-s_battdecl           2,590          0   -           1,740.6       11.6    1,729.0        -9   |  +13.5      disagree (g)
-s_coalavail (i)      2,458 LB   8,000   2033, 2038  1,514.3        0.0    1,514.3      -141   | -201.2      agree (i)
-s_nogas3             2,606 LB   4,250   2036        1,905.2      186.7    1,718.5        +7   |   +3.0      agree
-s_nogas4             2,612 LB   4,750   2036, 2038  1,887.8      163.2    1,724.6       +13   |   +9.1      agree
-s_nogas4strict       2,838      rule B  -           3,762.3    1,838.6    1,923.7      +239   | +208.2      agree
-s_nogas4strict_bd    2,862      rule B  -           3,786.6    1,838.6    1,948.0      +263   | +232.5      agree
-s_disc10             2,688        500   -           1,636.6       37.0    1,599.5       +89   |   at 10%, not comparable
-s_disc113            2,763 (b)    250   -           1,582.0       35.3    1,546.7      +164   |   at 11.3%, not comparable
+                     engine PV  top-up  years over   objective   penalty   objective    gap to c4: engine |   direction                          li GWh 2040
+                     (top-up)   MW      the cap     as solved             without it   objective w/o penalty                                     (s: >10% from c4)
+c4                   2,599      1,000   -           1,727.7       12.2    1,715.5         -   |    -                                             126.1
+s_wind35 (h)         2,526 LB   3,000   2038        1,661.5        0.0    1,661.5       -73   |  -54.0      agree                                122.4 (-3%)
+s_be6                2,550          0   -           1,816.2       90.3    1,725.9       -49   |  +10.4      disagree                             33.0 (-74%) s
+s_committed          2,562          0   -           1,736.6       43.6    1,693.0       -37   |  -22.5      agree (disagreed with the penalty)   115.8 (-8%)
+s_coalirp            2,592 LB   3,250   2039, 2040  1,686.2        0.0    1,686.2        -7   |  -29.3      agree                                128.6 (+2%)
+s_coal60 (j)         2,578          0   -           1,667.7        0.0    1,667.7       -21   |  -47.8      agree                                123.4 (-2%)
+s_pvirp_c4 (k)       2,525          0   -           1,829.3      128.6    1,700.7       -74   |  -14.8      agree                                76.1 (-40%) s
+s_windlow (l)        2,441          0   -           1,618.5       22.7    1,595.8      -158   | -119.7      agree                                100.5 (-20%) s
+s_roof2_c4 (m)       2,601      (run.)  -           1,719.1        0.0    1,719.1        +2   |   +3.6      agree (as solved)                    130.0 (+3%)
+s_gasprem            2,617 LB   1,750   2040        1,734.4       11.3    1,723.0       +18   |   +7.5      agree                                132.7 (+5%)
+s_be7                2,614 (d)      0   -           1,679.5       12.5    1,667.1       +15   |   (c)       not comparable                       107.4 (-15%) s
+s_li8h               2,614      3,000   -           1,702.9        0.0    1,702.9       +15   |  -12.6      disagree (e)                         149.0 (+18%) s
+s_be4                2,618        750   -           1,731.5       10.8    1,720.6       +19   |   +5.1      agree                                133.0 (+5%)
+s_battdecl           2,590          0   -           1,740.6       11.6    1,729.0        -9   |  +13.5      disagree (g)                         103.3 (-18%) s
+s_coalavail (i)      2,458 LB   8,000   2033, 2038  1,514.3        0.0    1,514.3      -141   | -201.2      agree (i)                            131.5 (+4%)
+s_nogas3             2,606 LB   4,250   2036        1,905.2      186.7    1,718.5        +7   |   +3.0      agree                                152.0 (+21%) s
+s_nogas4             2,612 LB   4,750   2036, 2038  1,887.8      163.2    1,724.6       +13   |   +9.1      agree                                166.0 (+32%) s
+s_nogas4strict       2,838      rule B  -           3,762.3    1,838.6    1,923.7      +239   | +208.2      agree                                176.0 (+40%) s
+s_nogas4strict_bd    2,862      rule B  -           3,786.6    1,838.6    1,948.0      +263   | +232.5      agree                                171.0 (+36%) s
+s_disc10             2,688        500   -           1,636.6       37.0    1,599.5       +89   |   at 10%, not comparable                         120.0 (-5%)
+s_disc113            2,763 (b)    250   -           1,582.0       35.3    1,546.7      +164   |   at 11.3%, not comparable                       117.5 (-7%)
+li GWh 2040: new lithium energy built 2026-40 (sum of battMWh in each run's print; prints listed in the subagent check of 13 Oct,
+e.g. c4 38362500776, s_be6 38369358547, s_be7 38380838044). s: more than 10% from c4's 126.1 GWh, so the engine figure is
+storage-affected (user, 13 Oct): above c4 the engine overstates the plan's operating cost against c4's, below c4 it understates
+it (entry 'c4 2040, three weeks': the engine runs 30-48% above a 24-hour rolling optimum on c4's 2040 build). s_be6 caps lithium
+at 550 MW a year at 4 hours (2,200 MWh a year, 33 GWh by 2040): the storage-light end, which fits the one disagreement in
+direction. Rows with s: s_be6, s_be7, s_li8h, s_battdecl, s_nogas3, s_nogas4, s_nogas4strict, s_nogas4strict_bd, s_pvirp_c4, s_windlow.
 LB: the top-up breaks the diesel open-cycle build cap (1,000 MW a year; s_coalirp also the 2,000 MW turbine cap) in the years
 shown, all in 2036-40, so the cost is a lower bound (user, 13 Oct): the plan as costed cannot be built within the caps, and a
 fix within them costs at least as much if diesel open-cycle is the cheapest firm capacity, which the top-up assumes. Rule B
@@ -2352,7 +2358,7 @@ system: not yet c4's 2040 build (TODO 14df step 9).
 Finding to check: the engine charges coal start-ups twice, per unit in its commitment pre-pass (ucStartCost, inside fuelCost)
 and per MW of newly committed capacity (startUpCostR, R224.52/MW, added to totalCost): R10.5m and R18.5m this week (TODO 14dl).
 
-### c4 2040, three weeks: the single-node engine is 31-50% above a single-node PyPSA unit-commitment optimum on the same inputs (2.2% in the 2026 baseline week); the gap is storage scheduling, 13 Oct 2026
+### c4 2040, three weeks: the single-node engine is 31-50% above a single-node PyPSA unit-commitment optimum on the same inputs (2.2% in the 2026 baseline week), and 30-48% above a 24-hour rolling optimum; the gap is the engine's storage rule, not foresight; PyPSA sheds nothing in the stress week against the engine's 37.3 GWh, 13 Oct 2026
 
 TODO 14df step 9 (user, 13 Oct 14:20; three-hour limit, the baseline week's rules). Engine: index.html simulate() at c4's
 code (86bfea4, build 2026-10-12e) in a scratch copy with a read-only hourly hook; c4's 2040 state as pathcheck builds it, plus
@@ -2412,14 +2418,48 @@ For 14dl (user): the engine charges coal start-ups twice, once per unit start in
 loop's aggregate commitment rising. In 2040 the second charge is R11.0-14.6m a week, 0.3-1.0% of the week's engine cost; at
 that rate about R0.6-0.8bn a year against c4's R372.6bn in 2040 (rough scale, three weeks only).
 
-Caveats: PyPSA sees each week in advance, so the gap is an upper bound on the engine's inefficiency; a 24-hour rolling optimum
-would show how much is foresight (not run). Single node, as the engine. Three weeks, not a year. Both sides use the engine's
+24-hour rolling optimum (user, 13 Oct 15:00; scripts validation/single_node/sn_pypsa40_roll.py on branch claude/sn-crosscheck):
+the same model and inputs, but each day is optimised seeing that day and the next 24 hours (a 48-hour window, the last one 48
+hours to the week's end); the first 24 hours are kept and the window moves on a day, carrying each unit's status and hours in
+it, each store's state of charge and the coal ramp. A store's energy left at a window's end has no value to the optimiser, so a
+rule is needed: 'fe' holds iron-air (100 hours) at least at its level at the window's start; 'all' does that for every store.
+The last window keeps the engine's end-of-week levels. HiGHS, mip_rel_gap 0.1%, every window optimal.
+
+```
+R million a week                    May           November        stress
+engine, coal at full-load cost      2,165.6        1,485.0         3,202.5
+rolling 24 h, 'fe'                  1,744.8        1,001.7         2,347.8
+rolling 24 h, 'all'                 1,664.7        1,000.4         2,192.0
+full-week optimum                   1,655.2          990.7         2,191.5
+engine over rolling 'all'           +30.1%         +48.4%          +46.1%
+rolling over full week     'fe' +5.4%, 'all' +0.6%   +1.1%, +1.0%    +7.1%, +0.0%
+shed, GWh: engine / rolling 'fe' / 'all' / full week      0 / 0 / 0 / 0     0 / 0 / 0 / 0     37.3 / 0 / 0 / 0
+lithium cycles: engine / 'fe' / 'all' / full    2.10 / 5.44 / 5.51 / 5.45   2.53 / 6.02 / 6.11 / 6.18   1.62 / 5.71 / 5.79 / 5.80
+start-ups, 'all': unit / per MW      4.1 / 10.3     6.7 / 17.2      6.8 / 16.9
+```
+
+Finding (user, 13 Oct): with 24 hours of sight PyPSA lands within 0.0-1.0% of the full-week optimum (rule 'all') or 1.1-7.1%
+('fe'), and the engine stays 30-48% above it, so the gap is the engine's storage rule, not foresight. In the stress week PyPSA
+sheds nothing, with the full week's sight and with 24 hours, against the engine's 37.3 GWh on the same build (c4 with its 1,000
+MW top-up), the same weather and the same outage draw. So the engine check's 2040 shortfalls, and the top-ups sized to them,
+are partly the engine's storage scheduling rule (which discharges only in each day's top-quarter hours or against a forecast
+shortfall), not only a lack of capacity. One week of one draw; the share of the 2040 top-up this explains is not measured.
+
+Operating share, for sizing (user, 13 Oct; c4's engine check, the 480-run local re-run of 13 Oct, scratchpad engsplit): fuel
+(variable O&M and the pre-pass start-ups included), carbon, the per-MW start-ups and shed are R826.8bn of c4's R2,597.7bn PV
+2026-40 at 8% (31.8%), R760.3bn (29.3%) without nuclear, hydro and imports; coal fuel R611.6bn, gas R42.2bn, diesel R1.7bn,
+nuclear, hydro and imports R66.5bn, carbon R95.2bn, per-MW start-ups R9.6bn, shed R0.03bn. The rest: new capital R1,024.1bn,
+fixed O&M R460.2bn, IPP contracts R367.5bn, less export earnings R80.8bn. In 2040 operating cost is R102.9bn of R369.9bn
+(27.8%). If the three weeks' gap against the rolling optimum (23-33% of the engine's operating cost) held across 2040, c4's
+2040 engine cost would be overstated by R24-34bn (6-9%); earlier years carry less storage (2026 baseline week 2.2%), so the
+2026-40 overstatement is smaller than 31.8% x 23-33%; not measured.
+
+Caveats: three weeks, not a year; one outage draw each. Single node, as the engine. Three weeks, not a year. Both sides use the engine's
 2040 coal representation: all 85 units at 49% of their size, not the units still standing (a question for 14df). PyPSA's
 per-MW start charge applies to scaled nominal MW where the engine's applies to committed available MW, so if anything PyPSA's
 start-ups are overcharged. The 2026 baseline week (2.2%) has 0.8 GW of lithium and no curtailment; this build has 22.5 GW.
 For the note: the engine check overstates 2040 operating cost for storage-heavy builds by far more than the baseline week
-suggested, which strengthens the storage caveat already attached to every engine figure. Scripts in the session scratchpad
-(val/scripts/sn_run40.js, sn_pypsa40.py, eng40_cost.py); not yet committed.
+suggested, which strengthens the storage caveat already attached to every engine figure. Scripts: validation/single_node/ on branch claude/sn-crosscheck (pull request, user 13 Oct).
 
 ### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
 

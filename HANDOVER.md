@@ -196,6 +196,14 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   CLAUDE.md on this branch updated. c4 2040 three weeks (RESULTS): engine 31-50% above the UC optimum, storage scheduling;
   14dl sized; 14dn added. s_pvirp_c4, s_windlow, s_roof2_c4 recorded (RESULTS); s_roof2_c4 top-up 38415714043 running;
   s_irpgas_c4 (38397386689) running.
+- 13 Oct ~15:25 (user's six items): 24-hour rolling optimum on the three 2040 weeks (RESULTS): within 0.0-1.0% of the
+  full-week optimum (rule 'all'), engine 30-48% above; stress week shed 0 against the engine's 37.3 GWh, recorded as partly the
+  storage rule; c5 TODO 14do. Operating share of c4's engine PV 31.8% (2040: 27.8%). Both-measures table has a 2040 lithium
+  column with 's' marks (>10% from c4's 126.1 GWh). Scripts on claude/sn-crosscheck, pull request nickhedley/gridtwin-za#31
+  (reproduction checked). #29 merged 15:01 (unsubscribed); follow-up branch claude/licence-terms (LICENSE three lines, TDP
+  labels, footer line, BUILD_STAMP 2026-10-13d), suite running. The 815 against 812: validate_response's three 'control ... still
+  exists' checks for reserveContingencyMW, reserveRegulatingPct and reserveVrePct, controls merged into reserveOperatingMW on
+  1 Oct (774dc8d); the stale baselines were regenerated on 6 Oct (9959106), which dropped the three checks.
 - TODO 14df (c5: building and running agree, with done-when tests) and 14dg (finer network, GCCA supply areas), both after
   Friday's note (user, 13 Oct); nothing changes now.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against

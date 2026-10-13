@@ -586,6 +586,16 @@ pathcheck.js as GAS_FUEL_R and GAS_FOM_ADD. Not an index.html default.
   against the new central: at least 5 GW of new gas at the 1.2 GW a year cap from 2030 (GAS_MIN), technology not stated
   in the determination, modelled as CCGT (judgement).
 
+## IPP Office website terms (REIPPPP data): no open licence (read 13 Oct 2026)
+
+https://www.ipp-projects.co.za/WebsiteDisclaimer, 'Website terms and conditions', version May 2016, read 13 Oct 2026 through
+Firecrawl (the site does not resolve from this environment through WebFetch). Clause 7.1: the site's contents are protected by
+copyright and are the IPP Office's property unless stated otherwise; 7.2: any unauthorised use of its contents, information or
+materials is prohibited; 9.1: no link to the site without written permission; footer '(c) IPP Office May 2016. All rights remain
+reserved.' No open licence is published. So LICENSE's 'REIPPPP project data: DMRE / IPP Office - public domain' was wrong; the
+follow-up pull request to #29 corrects it (TODO 14dm). Our REIPPPP-derived files (regional_renewable_capacity.json,
+ipp_pipeline.json and others) hold project facts and figures cited from IPP Office reports, credited.
+
 ## Values derived from Eskom's ESK19679 and ESK19243 (register, user 12 Oct 2026)
 
 User decision 12 Oct 2026: Eskom-derived constants stay for now; the open question is the hourly series only. Both
