@@ -101,6 +101,23 @@ print('objective from coefficients x solution: R%.3f bn (solver %.3f, run %.3f)'
 for k in sorted(comp, key=lambda k: -abs(comp[k])):
     if abs(comp[k]) > 1e6: print('  %-62s R%10.2f bn' % (k, comp[k] / 1e9))
 
+# The stress target by year: expected shed and reserve shortfall on stress-window days (the tgt_ row's left-hand side, with
+# the solution), its target (right-hand side) and the excess tsl_ priced at VoLL x 365; and plain shed (u) alone.
+tgt = re.compile(r'^ tgt_(\d{4}): (.*) - tsl_\d{4} <= (-?[0-9.eE+]+)$', re.M)
+tpair = re.compile(r'([0-9.]+) ((u|rsl)_\d{4}_\d+_\d+)')
+st = {}
+for m in tgt.finditer(text):
+    y = int(m.group(1)); lhs = {'u': 0.0, 'rsl': 0.0}
+    for c, v, k in tpair.findall(m.group(2)): lhs[k] += float(c) * val.get(v, 0.0)
+    st[y] = {'shedMWh': lhs['u'], 'reserveShortMWh': lhs['rsl'], 'targetMWh': float(m.group(3)), 'tslMWh': val.get('tsl_%d' % y, 0.0),
+             'penaltyBn': coef.get('tsl_%d' % y, 0.0) * val.get('tsl_%d' % y, 0.0) / 1e9}
+if st:
+    print('stress target by year, expected MWh over the year (representative days at their weight, stress-window days at theirs): shed + reserve shortfall vs target -> excess penalised at VoLL x 365 (R bn PV)')
+    for y in sorted(st):
+        z = st[y]
+        if z['shedMWh'] + z['reserveShortMWh'] > 0 or z['tslMWh'] > 0:
+            print('  %d  shed %9.1f + reserve shortfall %9.1f = %9.1f vs target %9.1f -> excess %9.1f (R%6.2f bn)' % (y, z['shedMWh'], z['reserveShortMWh'], z['shedMWh'] + z['reserveShortMWh'], z['targetMWh'], z['tslMWh'], z['penaltyBn']))
+
 # Generation in year GY, TWh, weighted to a year: representative days at their weight, stress-window days at theirs.
 gen = collections.defaultdict(lambda: [0.0, 0.0])   # [representative days, stress-window days]
 for v, x in val.items():
@@ -120,5 +137,5 @@ for m in row.finditer(text):
     gen['demand less existing fixed supply'][j] += w * rhs / 1e6
 print('generation %d, TWh (representative days | stress-window days):' % GY)
 for k in sorted(gen): print('  %-40s %9.2f | %7.2f' % (k, gen[k][0], gen[k][1]))
-json.dump({'key': key, 'solution': how, 'objective': total, 'recorded': P.get('objective'), 'components': comp,
+json.dump({'stressTarget': st, 'key': key, 'solution': how, 'objective': total, 'recorded': P.get('objective'), 'components': comp,
            'byYear': {y: dict(v) for y, v in byyear.items()}, 'gen': {'year': GY, **{k: v for k, v in gen.items()}}}, open(outf, 'w'), indent=1)
