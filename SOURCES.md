@@ -918,9 +918,17 @@ as BY, NC, SA with changes marked, so those boundaries carry the GCCA terms, not
 GCCA 2025 transmission supply regions (README).
 
 What we take from it (every file found, 13 Oct 2026; repository searched for PyPSA-RSA, Existing_Lines, reipppp_, fleet_by_region):
-- fleet_by_region_v2.csv (nodal/fleet_by_region_v2.csv): the thermal fleet; UC_FLEET in index.html (unit sizes, ramp and
-  minimum-load parameters, heat rates, GPS, decommissioning dates) and the unit parameters in nodal/nodal_dispatch.js. Not in
-  the public repository at 89872c1; committed in our public repository.
+- fleet_by_region_v2.csv (nodal/fleet_by_region_v2.csv, identical copies at the root and in 'nodal old/', and in 'nodal old.zip'):
+  the thermal fleet; UC_FLEET in index.html (unit sizes, ramp and minimum-load parameters, heat rates, GPS, decommissioning
+  dates) and the unit parameters in nodal/nodal_dispatch.js. Origin (checked 13 Oct 2026): the 51 BASE rows of the
+  'conventional' sheet of PyPSA-RSA's public workbook scenarios/ME IRP 2024/sub_scenarios/fixed_technologies.xlsx (commit
+  89872c1), equal in all 25 shared columns except Min Stable Level, which is 0.5 in ours and 0 in the workbook for 16 coal
+  rows (Camden*, Camden**, Hendrina*, Kendal*, Kendal**, Komati, Kusile*, Kusile**, Kusile***, Lethabo**, Majuba*, Majuba**,
+  Matimba*, Matimba**, Medupi*, Medupi**); plus five spatial-join columns (geometry, NAME_1, index_right, name, region) assigning
+  each plant to a GCCA supply region. Who made those two changes, and when, is not recorded: this repository's history starts
+  on 1 Oct 2026 (774dc8d), with the file already present, and no build script or note for it was found. Committed in our public
+  repository. A slimmed replacement (branch claude/fleet-slim) and a private copy of the full file (gridtwin-data, branch
+  claude/pypsa-rsa-fleet) are paused, user, 13 Oct: decision after the Meridian call.
 - Existing_Lines.shp: topology and transfer limits. The CORRIDORS tables (limit MW, length km) in nodal/nodal_engine.py,
   nodal/nodal_engine.js, validation/pypsa_crossval_uc.py and validation/mip_solver.py were rebuilt from its line geometries
   (nodal_engine.py header); two corridors (Free State-KwaZulu Natal, North West-Western Cape) keep an earlier estimate. The
@@ -949,3 +957,33 @@ with HiGHS through linopy. Licence, from its own repository (checked 13 Oct 2026
 Copyright (c) 2015-2026 PyPSA contributors'; README SPDX-License-Identifier MIT). The scripts build their own network from
 GridTwin ZA's data files and do not run PyPSA-RSA's code; their CORRIDORS table is the Existing_Lines.shp-derived one above, so
 they use PyPSA-RSA data but not its code.
+
+## NTCSA GCCA 2025 data: NTCSA's own terms, and our files built on it (user, 13 Oct 2026)
+
+We took the GCCA 2025 supply-area boundaries and headroom figures from NTCSA directly (ntcsa.co.za/gcca/: 'GCCA 2025 GIS files
+(zip)', 'GCCA 2025 Results (xlsx)', 'GCCA 2025 (pdf)'). Checked 13 Oct 2026 (ntcsa.co.za read through Firecrawl; the report
+PDF and the zip not opened):
+- No licence specific to the GCCA data on the GCCA page or found in the report; the report editions carry a liability
+  disclaimer ('provided "AS IS"', from search summaries, wording of the 2025 PDF not confirmed).
+- The site-wide Website Terms and Conditions (NTCSA, 'Last updated: June 2024', linked as 'Terms of use' from every page)
+  govern: 2.1 'The NTCSA licenses the user to view, download, and print the content of the NTCSA website, provided that such
+  content is used for private, personal, educational, and/or noncommercial purposes only.' 2.2 'Content from the NTCSA website
+  may not be used or exploited by users for any commercial and non-private purposes without the prior written consent of the
+  NTCSA.' 2.8 small, accurate quotations in inverted commas, acknowledged. 2.10 no crawlers or robots without consent. 3.1 all
+  intellectual property, including downloads and databases, is NTCSA's or licensed to it; other rights reserved. 3.1.2 no
+  unauthorised copying, reproduction, distribution, dissemination or publication. Page footer: '@2024 National Transmission
+  Company South Africa SOC Ltd ... All rights reserved'. Website enquiries: webmaster2@eskom.co.za; GCCA page: info@ntcsa.co.za.
+- So publishing GCCA-derived boundaries or headroom in a public repository is not clearly permitted without NTCSA's written
+  consent (not legal advice). Eskom's old GCCA page (eskom.co.za/eskom-divisions/tx/gcca/) returns 404.
+
+Our files built on it, and the licence each states now:
+- public_data/connection_headroom.csv: 'CC BY 4.0 - attribution required'; public_data/README.md: CC BY 4.0.
+- nodal/substation_bands.json, nodal/firm_headroom_lookup.json, nodal/region_headroom_lookup.json: CC BY 4.0.
+- nodal/substations_compact.json: CC BY 4.0 ('changed from CC BY-NC-ND on 6 Sep 2026'), copyright Nick Hedley.
+- nodal/headroom_summary.json, nodal/bq_queue.json: CC BY-NC-ND 4.0, copyright Nick Hedley.
+- nodal/supply_area_split_draft.json: CC BY-NC-ND 4.0 (licence said to cover the compilation).
+- Built on the 10 GCCA supply regions without naming GCCA: nodal/regional_renewable_capacity.json, nodal/profiles_regional.json,
+  nodal/rooftop_mw_by_region.json (CC BY 4.0 each); nodal/demand_2025_regional.csv (no licence line; ESRG regional demand);
+  the CORRIDORS limits in the nodal engines (via rsa_supply_regions.gpkg).
+- The repository LICENSE lists 'GCCA connection capacity data: NTCSA - public domain', which NTCSA's terms contradict.
+None of these self-assigned licences can grant more than NTCSA's terms allow for the underlying data. Nothing changed now.

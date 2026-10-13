@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 12:35 UTC; next check-in 12:57)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 13:20 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -161,6 +161,11 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   measure keeps R551-906/kW-yr of rooftop (c4: R42.7bn PV, 1.7%; total measure R114.1bn, 4.4%); RESULTS 'Rooftop in the two
   cost measures', TODO 14dc.
 - Still running: s_coal60 (38379671167), s_windlow (38392619799).
+- Fleet table (user, 13 Oct): slim paused, no pull request; decision after the Meridian call. Branch claude/fleet-slim
+  (a6dc99c, tests in its commit message); full original on gridtwin-data branch claude/pypsa-rsa-fleet; TODO 14dh. Main
+  untouched (origin/main bc21fc2). SOURCES: the fleet file's origin (PyPSA-RSA ME IRP 2024 workbook; 16 coal minimum stable
+  levels differ) and NTCSA's GCCA terms (non-commercial, no redistribution without written consent) with our files' stated
+  licences. RESULTS: c4's pumped hydro.
 - TODO 14df (c5: building and running agree, with done-when tests) and 14dg (finer network, GCCA supply areas), both after
   Friday's note (user, 13 Oct); nothing changes now.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against

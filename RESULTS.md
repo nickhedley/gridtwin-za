@@ -2203,6 +2203,24 @@ At 2,000 MW a year (s_roof2's build, same arithmetic): R190.1bn total, R118.9bn 
 15.4bn. Caveat: the two figures are one constant held twice (acapRooftop and BLD_COST.rooftop); no engine change before the
 note (TODO 14dc). s_roof2's shares will be given in both measures as asked.
 
+### c4's pumped hydro: 1,354 MW in 2038-39, under both limits; 163 cycles a year in the engine in 2040; s_li8h builds 126 MW, 13 Oct 2026
+
+From existing outputs only. c4: final run 38359856512 (pathway_c4t.json), 14-hour pumped hydro on the ANU 2026 cost basis
+(bldPhesHours 14, bldPhesCostBasis anu2026), cumulative cap 'central' (BLD_PHES_CAPS: 0 before 2038, 1,500 MW from 2038) and at
+most 1,500 MW a year (bldPhesRateMW). Engine: c4's 2040 build in the engine check, 480 runs (local, engine build 2026-10-12e,
+the cost-split run eng_c4t, entry 'TODO 14cv').
+
+- Build: 1,018 MW in 2038 and 336 MW in 2039; 1,354 MW by 2040; none before 2038 (the cap allows none) or in 2040.
+- Limits: neither binds. The cumulative cap is 1,500 MW and the yearly limit 1,500 MW; c4 stops at 1,354 MW. It builds in the
+  first year the cap allows, so the 2038 start may be what holds it back; the outputs carry no shadow prices to show it.
+- Region: none. c4's optimiser and engine are single-node, so new pumped hydro has no region; the regional siting on the ANU
+  shortlist is separate work (pumped hydro grid connection and regional siting tasks), not in c4.
+- Engine use: one pooled store in the engine (existing 2,724 MW and 60 GWh plus the new 1,354 MW at 14 hours, 19.0 GWh; 79.0
+  GWh in all). Discharge in 2040: 12.90 TWh, 163 full cycles a year on 79.0 GWh, capacity factor 36% on 4,078 MW. Before the new
+  build, 2037: 9.15 TWh, 153 cycles on 60 GWh; 2038 12.10 TWh (163 cycles), 2039 13.04 TWh (165). The new plant's own cycles
+  cannot be separated in a pooled store; 2040 discharge is 3.75 TWh above 2037.
+- s_li8h (8-hour lithium, run 38361303412, print 38383979621): builds 126 MW of pumped hydro, in 2038 only.
+
 ### c4's wind build by year; c4's wind limit stays (user, 13 Oct 2026)
 
 New onshore wind, MW (c4t print; the optimiser's limit is 2,500 MW a year, bldRates, binding only in 2026-30):
