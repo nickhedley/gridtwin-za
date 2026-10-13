@@ -189,6 +189,13 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   (RESULTS); TODO 14dm (LICENSE data lines); Tubatse statement read by the advisor, figures match (SOURCES).
 - User, 13 Oct ~14:20: c4 2040 three-week single-node comparison approved (TODO 14df step 9; three hours; lithium cycles, both
   start-up charges), after the four scenario write-ups; s_coal60 about R620/t against c4 (RESULTS).
+- 13 Oct ~14:50: #29 extended (9c4670b: 'nodal old/' relabel; commercial-licensing line excludes third-party data in LICENSE and
+  the index.html header; BUILD_STAMP 2026-10-13c; suite 724/725 before and after, audit 87/87, eng5 6/6); subscribed to #29.
+  #30 reworded (4539704): measured 4.2%, pathway engine has no optimiser cross-check in the repository yet. Suite counts:
+  main 810/812 with audit (EDMSA, stale stamp); main's 805/806 line is stale (its 5 Oct commit run today has 815 checks);
+  CLAUDE.md on this branch updated. c4 2040 three weeks (RESULTS): engine 31-50% above the UC optimum, storage scheduling;
+  14dl sized; 14dn added. s_pvirp_c4, s_windlow, s_roof2_c4 recorded (RESULTS); s_roof2_c4 top-up 38415714043 running;
+  s_irpgas_c4 (38397386689) running.
 - TODO 14df (c5: building and running agree, with done-when tests) and 14dg (finer network, GCCA supply areas), both after
   Friday's note (user, 13 Oct); nothing changes now.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against

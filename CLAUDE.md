@@ -40,10 +40,12 @@ terms, ask a clarifying question when a request is ambiguous, and never assume h
     node validate_outputs.js testroot     python3 audit.py testroot/index.html
     node eng5.js
 
-Expected (12 Oct 2026): 808/812 with ESK19679.csv present, 804/809 without it; eng5 6/6. The four known failures:
-EDMSA Scenario A CO2 2035 (validate_external); wind capture at 110 GW, iron-air in July, and the preset curtailment
-band (validate_findings). The last three wait on #22. Without the file, validate_weather adds a fifth failure (the
-missing Eskom reference) and validate_benchmarks skips the fleet-normalised wind check.
+Expected (13 Oct 2026, main bc21fc2, ESK19679.csv present): 723/725 in the 15 node scripts plus audit 87/87, so 810/812;
+eng5 6/6. The two failures: EDMSA Scenario A CO2 2035 (validate_external) and 'the build stamp is not stale'
+(validate_structure), which fails whenever BUILD_STAMP is older than the day the suite runs. A branch with today's stamp
+shows 811/812. The 805/806 on main's copy of this file (5 Oct) does not match today's scripts: main's own 5 Oct commit
+run today has 815 checks. Without ESK19679.csv, validate_weather adds a failure (the missing Eskom reference) and
+validate_benchmarks skips the fleet-normalised wind check; those totals were not re-measured on 13 Oct.
 
 ## Rules that matter most (RULES.md has the full set)
 
