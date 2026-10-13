@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 00:15 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 03:15 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -21,13 +21,13 @@ GitHub. The engine (index.html and harness) is not changed until the comparison 
   solve cache and basis passed on as artifact `state-<name>`, the next job started automatically, every job pinned
   to the chain's first commit (86bfea4). The last job runs pathcheck.js (artifact `results-<name>`). GitHub's passes
   reproduce the local LP keys (pass 2 a9e5c71dc2, pass 3 0d4fdcdd1e).
-- Status at 13 Oct 00:15 UTC: penalty c4 finished; c4-target running (pass 8):
+- Status at 13 Oct 03:15 UTC: penalty c4 finished; c4-target running (pass 9):
 
 ```
 c4-target (name c4t)   run 38255689961 pass 1, 5.4 min | 38256479696 pass 2, 25 min | 38259914914 pass 3, ~78 min
                        | 38269533084 pass 4, ~112 min | 38282680097 pass 5, 118 min (17:13-19:11 UTC)
                        | 38295943224 pass 6, 138 min (19:11-21:29 UTC) | 38310964088 pass 7, ~128 min (21:30-23:37 UTC)
-                       | 38323088802 pass 8, started 23:37 UTC
+                       | 38323088802 pass 8, 186 min (23:37-02:43 UTC) | 38338261578 pass 9, started 02:43 UTC
 penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, 4 h 25 min (13:46-18:10 UTC, cold
                        start, 75 min inside the job deadline, so no handover was needed), 'done adequate', engine
                        check ran (artifact results-c4): every year within target (2040 1.17 / 2.60 GWh), cost PV
@@ -40,19 +40,20 @@ penalty c4 (name c4)   run 38255695323 pass 1, ~18 min | 38257824027 pass 2, 4 h
 - Artifacts cannot be downloaded into the container (the blob host is blocked, and network settings are not to be
   changed until c4 is done), so seeded runs fetch c4-target's state themselves (inputs seed_run and seed_name, on
   branch claude/c4-frozen; tested with run 38257189156).
-- Dated estimates (SAST, 13 Oct 02:15): the loop is near a plateau: 2040 85.11, 37.37, 9.63, 7.84, 7.27, 6.36 GWh
-  against 2.60 after passes 1-6 (cuts of 56%, 74%, 19%, 7%, 12%); pass times 5, 25, 78, 112, 118, 138, ~128 min. At
-  about 10% a pass it would reach target around pass 13-14, so expect the 14-pass cap: about 13 Oct 17:00-19:00,
-  possibly still failing 2039-40 on its own test. The seeded set then takes about 4-6 hours. Penalty c4's plan
-  passes the engine check in every year (2040 1.17/2.60). Open question to Nick (12 Oct 23:45): run to the cap
+- Dated estimates (SAST, 13 Oct 05:15): 2040 85.11, 37.37, 9.63, 7.84, 7.27, 6.36, 5.69 GWh against 2.60 after
+  passes 1-7 (cuts 56%, 74%, 19%, 7%, 12%, 11%); pass times 5, 25, 78, 112, 118, 138, ~128, 186 min. At about 10% a
+  pass it does not reach target by the 14-pass cap. Six more passes at about 3 hours: chain ends about 13 Oct 23:00
+  (range 21:00-02:00), still failing 2039-40 on its own test; the seeded set then takes about 4-6 hours. Penalty c4's
+  plan passes the engine check in every year (2040 1.17/2.60). Open question to Nick (12 Oct 23:45): run to the cap
   (default), stop at a chosen pass, or seed the set from the windows so far.
 
 - c4-target's stress loop (its own test, worst year, mean shed / target in GWh): pass 1 2038 85.11/2.48 (11 years
   failing); pass 2 2040 37.37/2.61 (5); pass 3 2040 9.63/2.60 (2: 2039, 2040); pass 4 2040 7.84/2.60 (2: 2039 4.59/2.54, 2040);
   pass 5 2040 7.27/2.60 (2: 2039 3.71/2.54, 2040);
-  pass 6 2040 6.36/2.60 (2: 2039 3.27/2.54, 2040). Each job tests the previous pass's plan, then solves the next, so
+  pass 6 2040 6.36/2.60 (2: 2039 3.27/2.54, 2040); pass 7 2040 5.69/2.60 (2: 2039 3.13/2.54, 2040; only 2 new windows
+  added, against 6 before). Each job tests the previous pass's plan, then solves the next, so
   pass N's figure is in pass N+1's saved state. The windows each pass added (weather year, days) are printed by the
-  print job (run 38326032777 for passes 1-6; the windows added after pass 5 carried 1.1-4.9 GWh of shed each, after
+  print job (run 38340311636 for passes 1-7; the windows added after pass 5 carried 1.1-4.9 GWh of shed each, after
   pass 6 0.16-1.27 GWh). The loop stops when no year fails (half the standard) or at 14 passes (MAXP).
 - Reading results: artifacts cannot be downloaded here; use the print-only workflow on branch claude/print-results
   (TODO 14cs): dispatch optimiser-long-run.yml on that ref with name, source_run, source_name. For the IRP note, run it
