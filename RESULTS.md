@@ -2003,6 +2003,16 @@ GEM start years), with no primary source for the earlier date (SOURCES, fleet ro
 (PyPSA-RSA fleet file, unsourced); s_coalirp's 2030 date comes from its closure rule; GEM lists planned retirement 2026; no
 primary source dates its closure.
 
+### High diesel price, bound for c4: at most R1.4bn undiscounted (R0.8bn PV), 0.03% of system cost; s_dieselhigh held, 13 Oct 2026
+
+c4 (final run 38359856512, engine check by fuel run 38365615522) produces 0.52 TWh from diesel over 2026-40 (0.05 TWh in
+2026, 0.06 in 2040; existing and new open-cycle). Priced at option (a), R8,887/MWh (R6,100 scaled by Brent in rand from the
+April 2025 to February 2026 average, $67.21 at R17.39/$, to the 12 Oct check, $103.3 at R16.49/$; SOURCES, 'Diesel fuel
+price') instead of R6,100, the same plan costs R1.44bn more undiscounted (R0.79bn PV at 8%), 0.03% of c4's R4,416bn
+undiscounted (R2,598bn PV). A re-optimised plan can only cost less than that, so this bounds the effect. s_dieselhigh is held
+(user, 13 Oct). Rule: if s_nogas3 or s_nogas4 produce more than 1 TWh from diesel in any year, run high-diesel versions of
+them at option (a) (DIESEL_R, branch claude/c4-diesel), labelled an upper bound.
+
 ### Gas role and the method gap: c4 burns 68.8 TWh of gas output against penalty c4's 17.9; c4's extra 126 Mt is 105 Mt coal, 21 Mt gas, 0.1 Mt diesel, 13 Oct 2026
 
 Engine check re-run on each final build with gas, diesel and CO2 by fuel (harness/pathcheck.js plus gasrole.py, branch
@@ -2070,10 +2080,22 @@ coal retired early (standing)    1,589 MW by 2040      588 MW from 2026
 worst year, engine check         2040 and 2034, 9%     2040, 161%
 ```
 
+Built by 2030 / 2035 / 2040 (from the run's schedule, cumulative): onshore wind 12.5 / 25.0 / 31.4 GW; utility solar 14.4 /
+34.5 / 62.5 GW (rooftop a further 4.8 / 10.8 / 16.8 GW); lithium 8.7 / 19.7 / 28.5 GW and 64 / 144 / 176 GWh (7.3 / 7.3 / 6.2
+hours); iron-air 0.75 / 1.5 / 2.1 GW; vanadium 0.75 / 2.0 / 2.25 GW.
+
+By year, engine check means: existing peakers' diesel output (GWh) and curtailment (TWh). 2026 49 / 0.0; 2027 25 / 0.1;
+2028 6.3 / 0.5; 2029 0.08 / 0.8; 2030 0.67 / 4.0; 2031 0.88 / 10.3; 2032 0.80 / 19.0; 2033 0.69 / 28.6; 2034 0.85 / 38.4;
+2035 0.54 / 50.0; 2036 0.39 / 63.7; 2037 0.33 / 73.5; 2038 0.28 / 88.9; 2039 0.42 / 95.4; 2040 0.84 / 102.1. For comparison,
+2040 curtailment: c4 41.9 TWh, penalty c4 47.0 TWh.
+
 Shed by year, engine check, mean against target (GWh): 2026 0.03 / 1.94; 2027 0.03 / 1.96; 2028-29 0.00; 2030 0.02 / 2.06;
 2031 0.04 / 2.12; 2032 0.08 / 2.16; 2033 0.11 / 2.21; 2034 0.20 / 2.26; 2035 0.08 / 2.31; 2036 0.03 / 2.35; 2037 0.05 / 2.41;
 2038 0.01 / 2.48; 2039 0.08 / 2.54; 2040 0.24 / 2.60. Existing diesel peakers burn 0.05 TWh in 2026 and under 0.01 TWh a year
 from 2028. Curtailment 4 TWh in 2030, 50 in 2035, 102 in 2040.
+
+The no-gas cost premium is not quotable until s_nogas4strict_bd (the same with BATT_DECL=0.03, against s_battdecl) is in
+(user, 13 Oct 2026): both sides here carry the engine's 5% a year lithium decline (TODO 14cw).
 
 Caveats: one pass on c4's windows, so the build is shaped by c4's stress weeks; c4 itself fails 2040 (R2,599bn with its
 top-up, so the gap to c4 topped up is R239bn, about R870 per tonne of CO2 avoided). The loop's own test again reads above
