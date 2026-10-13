@@ -97,6 +97,8 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
    // solves it already finished (identical LP, identical answer) and only redoes the one that was cut off.
    const LPT=liMinRows(gasMinRows(fixBuild(fix(lp)))), key=require('crypto').createHash('sha1').update(LPT).digest('hex'), cdir=path.join(process.cwd(),'lpcache'), cf=path.join(cdir,key+'.json');
    // DUMP_LP=<prefix> (8 Oct 2026, diagnostics): write each LP to <prefix>_pass<n>.lp; DUMP_STOP=<n> exits after the n-th.
+   if (w.__coalAvailSum && !w.__coalAvailPrinted){ w.__coalAvailPrinted=1; console.log('COAL_AVAIL: stress-window coal limit = available coal; per window: weather year, start day, days, seed, recorded mean / min, available mean / min (fraction of standing coal), hours equal / hours');
+     for (const r of w.__coalAvailSum) console.log('  '+r[0]+' '+r[1]+' '+r[2]+' '+r[3]+'  recorded '+r[4].toFixed(4)+' / '+r[5].toFixed(4)+'  available '+r[6].toFixed(4)+' / '+r[7].toFixed(4)+'  equal '+r[8]+' / '+r[9]); }
    if (process.env.DUMP_LP){ w.__dumpN=(w.__dumpN||0)+1; fs.writeFileSync(process.env.DUMP_LP+'_pass'+w.__dumpN+'.lp', LPT); console.log('dumped LP pass', w.__dumpN, key.slice(0,10)); if (process.env.DUMP_STOP && w.__dumpN>=+process.env.DUMP_STOP) process.exit(0); }
    // WARM=1 (11 Oct 2026): each pass starts from the previous pass's basis, kept beside its cached solution
    // (<key>.basis.json); a pass whose predecessor has no saved basis starts cold. Off by default.
@@ -182,6 +184,33 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
      return out; };
    const _b = bldBuildLP; bldBuildLP = function(o){ const keep = bldStressPeriods; bldStressPeriods = shrink(keep); window.__lpWindows = bldStressPeriods.map(p => [p.year, p.seed, p.start, p.n, p.fromYear, p.merged || 1]);
      try { return _b(o); } finally { bldStressPeriods = keep; } }; }`);
+ // COAL_AVAIL=1 (user, 13 Oct 2026, TODO 14cx; run s_coalavail): on stress-window days the LP's coal limit is the engine
+ // draw's AVAILABLE coal for that hour (after outages, switched on or not) instead of the window's recorded coalFrac, which
+ // is the lower of available and what the draw's unit commitment had switched on. Re-derived from each window's own outage
+ // draw (its seed, on the run's base state) as simulate's coalAvailableMW over the standing fleet; every hour is checked to
+ // be at least the recorded fraction, or the run stops. Applied while each LP is built: the recorded windows and the _lp
+ // file keep coalFrac. Only the stress-window hours' coal limit (cmax) and the reserve row that reads it (resv) change; the
+ // ramp rows (cru, crd) read the year's mean and do not. Unset or 0: no change.
+ if (process.env.COAL_AVAIL!==undefined && !['0','1'].includes(process.env.COAL_AVAIL)) throw new Error('COAL_AVAIL must be 0 or 1: '+process.env.COAL_AVAIL);
+ if (process.env.COAL_AVAIL==='1') w.eval(`{ const cache = {};
+   const availOf = p => { const key = p.year + '_' + p.seed; if (!cache[key]){
+       const nat = weatherYearNational(String(p.year)); if (!nat) throw new Error('COAL_AVAIL: no weather year ' + p.year);
+       const st = { ...state, outageSeed: p.seed }, eaf = (st.coalEAFPct ?? FIXED.coalEAFPct) / 100;
+       const x = simulate(st, { demand: PROFILES.demand, solar: nat.solar, wind: nat.wind, csp: PROFILES.csp, real: true });
+       const inst = x.coalAvail / eaf;
+       if (!(inst > 0) || !x.coalAvailableMW) throw new Error('COAL_AVAIL: no standing coal or no coalAvailableMW in the base state');
+       cache[key] = Array.from(x.coalAvailableMW, v => v / inst); }
+     return cache[key]; };
+   const _bc = bldBuildLP; bldBuildLP = function(o){ const keep = bldStressPeriods, sum = [];
+     bldStressPeriods = keep.map(p => { if (!p.coalFrac || p.seed === undefined) return p;
+       const A = availOf(p), cf = new Array(p.coalFrac.length); let eq = 0, mr = 1, ma = 1, sr = 0, sa = 0;
+       for (let i = 0; i < cf.length; i++){ const a = A[p.start * 24 + i], c = p.coalFrac[i];
+         if (!(a >= c - 1e-6)) throw new Error('COAL_AVAIL: available below recorded, window ' + p.year + ' day ' + p.start + ' seed ' + p.seed + ' hour ' + i + ': ' + a + ' < ' + c);
+         cf[i] = a; if (Math.abs(a - c) < 1e-6) eq++; mr = Math.min(mr, c); ma = Math.min(ma, a); sr += c; sa += a; }
+       sum.push([p.year, p.start, p.n, p.seed, sr / cf.length, mr, sa / cf.length, ma, eq, cf.length]);
+       return { ...p, coalFrac: cf }; });
+     if (!window.__coalAvailSum) window.__coalAvailSum = sum;
+     try { return _bc(o); } finally { bldStressPeriods = keep; } }; }`);
  // WIN_FROM=<run>_lp2040.json (11 Oct 2026, TODO 27): start from a recorded run's final stress windows (its periods,
  // with their coal availability) instead of none, so two settings can be compared on one window set. With MAXP=1 the
  // first solve is on exactly those windows; the same settings as the recorded run reproduce its final LP (same hash).
@@ -243,6 +272,6 @@ const ROOT='testroot', OUT=process.env.OUT||'pathway.json', GAS_FIRST=+(process.
    fs.writeFileSync(OUT.replace(/\.json$/,'')+'_lp'+DY+'.json', JSON.stringify({year:DY, periods, lpv})); }
  const peakerExt=Object.fromEntries(Object.entries(cols).filter(([c])=>c.startsWith('le_')).map(([c,v])=>[c.slice(3),Math.round(v.Primal||0)]));   // TODO 14as
  const build=Object.fromEntries(Object.entries(cols).filter(([n])=>/^(b_[a-z]+|eb_batt|rc|cc_[a-z]+)_20\d\d$/.test(n)).map(([n,c])=>[n,c.Primal]));   // exact, for FIX_FROM
- fs.writeFileSync(OUT, JSON.stringify({demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, gas:{case:GAS_CASE, fuelR:GAS_FUEL, fuelRFlat:process.env.GAS_FUEL_R?+process.env.GAS_FUEL_R:null, fomAdd:+(process.env.GAS_FOM_ADD||0)}, disc:+w.eval('BLD_DISC'), liEnergyHours:+w.eval('state.bldLiEnergyHours ?? FIXED.bldLiEnergyHours ?? 12'), adequacyBasis:w.eval('state.bldAdequacyBasis ?? FIXED.bldAdequacyBasis ?? "withCharging"'), nuclearAdd:JSON.parse(w.eval('JSON.stringify(state.bldNuclearAdd||null)')), gasForce:Object.keys(GAS_FORCE).length?GAS_FORCE:null, gasMin:Object.keys(GAS_MIN).length?GAS_MIN:null, gasMinCovers:Object.keys(GAS_MIN).length?(Object.keys(cols).some(c=>c.startsWith('b_ocgt_'))?'ccgt+ocgt':'ccgt'):null, liMin:LI_MIN.length?LI_MIN:null, ocgt:JSON.parse(w.eval(`JSON.stringify((()=>{ const S={...FIXED,...state}; return {lng:S.bldOcgtOn|0, diesel:S.bldOcgdOn|0, dieselRateMW:S.bldOcgdRateMW, dieselFrom:S.bldOcgdFromYear, turbineCapMW:S.bldTurbineCapMW, costCase:S.bldOcgtCostCase}; })())`)), gasFinPremium:+(+w.eval('bldAnnuityRate("ccgt")-BLD_DISC')).toFixed(6), liCap:LI_CAP, windCap:WIND_CAP||null, windCapFrom:WIND_CAP?WIND_CAP_FROM:null, liCapFrom:CAP_FROM, gasFloor:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+(S.bldGasFloorOn||0), engine:+(S.ccgtForceLoad||0), pct:S.ccgtForceLoadPct, mw:S.ccgtForceLoadMW, from:S.ccgtForceFromYear, to:S.ccgtForceToYear}); })()`)), phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
+ fs.writeFileSync(OUT, JSON.stringify({demand:{spec:DEMAND, index:DEM_INDEX, legacyPct:DEM_INDEX?null:DEM}, coalAvail:process.env.COAL_AVAIL==='1'?1:null, gas:{case:GAS_CASE, fuelR:GAS_FUEL, fuelRFlat:process.env.GAS_FUEL_R?+process.env.GAS_FUEL_R:null, fomAdd:+(process.env.GAS_FOM_ADD||0)}, disc:+w.eval('BLD_DISC'), liEnergyHours:+w.eval('state.bldLiEnergyHours ?? FIXED.bldLiEnergyHours ?? 12'), adequacyBasis:w.eval('state.bldAdequacyBasis ?? FIXED.bldAdequacyBasis ?? "withCharging"'), nuclearAdd:JSON.parse(w.eval('JSON.stringify(state.bldNuclearAdd||null)')), gasForce:Object.keys(GAS_FORCE).length?GAS_FORCE:null, gasMin:Object.keys(GAS_MIN).length?GAS_MIN:null, gasMinCovers:Object.keys(GAS_MIN).length?(Object.keys(cols).some(c=>c.startsWith('b_ocgt_'))?'ccgt+ocgt':'ccgt'):null, liMin:LI_MIN.length?LI_MIN:null, ocgt:JSON.parse(w.eval(`JSON.stringify((()=>{ const S={...FIXED,...state}; return {lng:S.bldOcgtOn|0, diesel:S.bldOcgdOn|0, dieselRateMW:S.bldOcgdRateMW, dieselFrom:S.bldOcgdFromYear, turbineCapMW:S.bldTurbineCapMW, costCase:S.bldOcgtCostCase}; })())`)), gasFinPremium:+(+w.eval('bldAnnuityRate("ccgt")-BLD_DISC')).toFixed(6), liCap:LI_CAP, windCap:WIND_CAP||null, windCapFrom:WIND_CAP?WIND_CAP_FROM:null, liCapFrom:CAP_FROM, gasFloor:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+(S.bldGasFloorOn||0), engine:+(S.ccgtForceLoad||0), pct:S.ccgtForceLoadPct, mw:S.ccgtForceLoadMW, from:S.ccgtForceFromYear, to:S.ccgtForceToYear}); })()`)), phes:JSON.parse(w.eval(`(function(){ const S={...FIXED,...state}; return JSON.stringify({on:+S.bldPhesOn, hours:S.bldPhesHours, hours2:S.bldPhesHours2||0, basis:S.bldPhesCostBasis, cap:S.bldPhesCap, rateMW:S.bldPhesRateMW}); })()`)), build, lpWindows:w.__lpWindows||null, mergeMismatch:w.__mergeMismatch||0, margin:out.margin, secs:(Date.now()-t0)/1000, verdict:out.verdict, log:out.log, sched, objective:out.res.ObjectiveValue, status:out.res.Status, peakerExt},null,1));
  console.log('done', out.verdict, ((Date.now()-t0)/1000).toFixed(0)+'s'); process.exit(0);
 })();
