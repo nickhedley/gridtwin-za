@@ -2860,7 +2860,7 @@ gap to the 24 h rolling optimum, %, shed GWh          14a (B)               14d 
 weeks of 15 where the engine sheds and the optimum     3 (0.15-1.00)          6 (0.24-4.79)
   does not (mark 2)
 rescan, worst week in any state                        1.00                   4.79 (c4 2039-40, weather 2016, 6807+)
-rescan, mean shed a year, c4 2039 / 2040               0.02 / 0.06            0.27 / 0.41 (target about 2.5)
+rescan, mean shed a year, c4 2039 / 2040               0.01 / 0.00            0.27 / 0.41 (target about 2.5)
 ```
 
 Every shortfall above falls in the week's last hour, with lithium and pumped storage empty and diesel at its limit; the
