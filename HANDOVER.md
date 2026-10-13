@@ -183,6 +183,12 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   2.7 GW of coal retired early from 2026 (c4 588 MW). Artifact downloads are blocked by the network policy here; figures come
   from the job logs. s_pvirp_c4 pass done 13:56, check running. Still running: s_windlow (pass since 11:47), s_irpgas_c4,
   s_roof2_c4.
+- User, 13 Oct ~14:15: watch nickhedley/gridtwin-za#29 (subscribed); add 'nodal old/' relabel and a commercial-licensing line
+  that excludes third-party data (LICENSE, index.html header; suite and stamp); 0.42% lines to the measured 4.2% with 'no
+  optimiser cross-check yet' for the pathway engine; reconcile suite counts with CLAUDE.md; s_coalavail finding reworded
+  (RESULTS); TODO 14dm (LICENSE data lines); Tubatse statement read by the advisor, figures match (SOURCES).
+- User, 13 Oct ~14:20: c4 2040 three-week single-node comparison approved (TODO 14df step 9; three hours; lithium cycles, both
+  start-up charges), after the four scenario write-ups; s_coal60 about R620/t against c4 (RESULTS).
 - TODO 14df (c5: building and running agree, with done-when tests) and 14dg (finer network, GCCA supply areas), both after
   Friday's note (user, 13 Oct); nothing changes now.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against

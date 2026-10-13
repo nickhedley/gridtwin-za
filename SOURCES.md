@@ -990,7 +990,8 @@ None of these self-assigned licences can grant more than NTCSA's terms allow for
 
 ## Tubatse pumped storage: support for BLD_PHES_CAPS central and bldPhesHours 14 (user, 13 Oct 2026)
 
-- Eskom media statement, 13 Oct 2026 (as given by the user; eskom.co.za cannot be read from this environment, not checked here):
+- Eskom media statement, 13 Oct 2026 (as given by the user; read by the advisor on 13 Oct 2026, figures match; eskom.co.za cannot
+  be read from this environment):
   request for qualification for Tubatse pumped storage, 1.5 GW, about 21 GWh, up to 14 hours, near Roossenekal, Limpopo, water
   from De Hoop Dam; closes 30 Nov 2026; Eskom is seeking an IRP 2025 allocation and a section 34 determination.
 - Engineering News, 22 May 2026 (checked by the user, 9 Oct; already cited at BLD_PHES_CAPS in index.html): construction from

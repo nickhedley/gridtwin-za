@@ -2185,11 +2185,11 @@ R2,599bn: R141bn below c4, lower bound. CO2 1,862 Mt (1,864 as solved) against 1
 
 Finding (user, 13 Oct): with the stress-day coal limit lifted, the plan drops the 2.8 GW of diesel open-cycle c4 builds by
 2030 (1,000 MW in each of 2028 and 2029, 800 in 2030) and fails the engine check in every year from 2030 (2040 at 2,816% of
-target). The 2030 peaking build is what the engine needs, given how it commits coal. Caveat: the plan also builds 1.0 GW less
-lithium by 2030, no wind before 2030 and retires no coal early, so the shortfall is not the diesel alone. The top-up restores
-the engine's 2030 adequacy with 500 MW of diesel open-cycle (750 MW by 2031), against the 2.75 GW less diesel open-cycle and 1.0
-GW less lithium this plan builds by 2030; the larger shortfall comes in 2032-38 (7.25 GW of the 8 GW top-up). One coal rule for stress days, shared by the optimiser and the engine,
-is TODO 14de (c5).
+target). The top-up restores 2030 with 500 MW of diesel open-cycle (750 MW by 2031), against the 2.8 GW c4 builds by 2030;
+the larger shortfall comes in 2032-38 (7.25 GW of the 8 GW top-up). Caveat: s_coalavail keeps the 588 MW of coal c4 retires
+early, builds 1.0 GW less lithium by 2030 (and no wind before 2030), and the top-up adds diesel only. The 12:25 decision (c4
+stays the central) predates the top-up, which finished at 12:49. One coal rule for stress days, shared by the optimiser and the
+engine, is TODO 14de (c5).
 
 Launched 12:10-12:11 UTC and cancelled 12:26 (user decision (a)): the eight runs seeded from s_coalavail (_ca) and, because
 their names could not be read while running, also the three _c4 runs started with them (38395398203-38395424726, 38395481991-
@@ -2230,7 +2230,8 @@ Coal on schedule: bldCoalMW on each run's dates (s_coal60 from the print, standi
 
 Finding: on the 60-year line the plan needs no top-up (2040 at 29% of target against c4's 161%) and costs R21bn less on the
 engine check and R47.8bn less on the objective without the penalty (directions agree), with 34 Mt more CO2 over 2026-40 and
-9.1 Mt more in 2040. The optimiser takes 2.7 GW of the line's extra coal off from 2026 for its fixed O&M; standing coal is
+9.1 Mt more in 2040. Cost per tonne against c4, both engine figures (c4 with its top-up): R21bn less for 34 Mt more over
+2026-40, about R620/t saved per extra tonne (R618/t; cost is PV at 8% real, tonnes undiscounted). The optimiser takes 2.7 GW of the line's extra coal off from 2026 for its fixed O&M; standing coal is
 level with c4 in 2030 and 2.4 GW above c4's schedule in 2040 (before c4's own early retirement). Caveats: rule A (one pass on c4's windows); the line is
 digitised to about +-250 MW; lithium 2% below c4's, so not storage-heavy; against s_coalirp (50-year line, R2,592bn lower
 bound, objective R1,686.2bn) both measures are lower here.
