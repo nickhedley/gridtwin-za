@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 18:10 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 17:30 UTC)
 
 ## Note date and plan to Fri 23 Oct (user, 13 Oct: note moved to Fri 23 Oct so the engine is fixed first; plan is a draft for approval)
 
@@ -6,7 +6,8 @@ No more c4-based runs (user, 13 Oct). Estimates use today's measured times: a ru
 5,300-10,000 s), the engine check 12-40 min, print, top-up and tsl 1-20 min; c4's own loop took 9 passes over about 3 days.
 GitHub: 20 jobs at once on the Free plan (GitHub's stated limit); 12 seeded runs ran at once today without queueing.
 
-1. Done 13 Oct (RESULTS 'Engine fixes'): (b) 13f 20729cc, (c) 13g 99b5b92, (a) 13h d388ceb on claude/engine-fix; draft pull request
+1. Pass marks set (TODO 14dt, 17:00): (1) and (2) fail, (3) passes, (4) proposed; reported, not moved; your decision on the
+   next step (RESULTS 'Engine fix (a) against its pass marks'). Done 13 Oct (RESULTS 'Engine fixes'): (b) 13f 20729cc, (c) 13g 99b5b92, (a) 13h d388ceb on claude/engine-fix; draft pull request
    for review; the four cross-check weeks 1.3-12.4% above the 24-hour rolling optimum (were 2.2-48.4%); six suite failures wait on
    your decisions (TODO 14dp). Was: Engine fixes, branch claude/engine-fix (Tue 13 - Wed 14): (b) start-up double count, about 1 h; (c) coal units standing in
    later years, about 2 h; (a) 24-hour look-ahead storage dispatch, 6-10 h (design, code, tune against the cross-check). Each:
@@ -26,7 +27,57 @@ GitHub: 20 jobs at once on the Free plan (GitHub's stated limit); 12 seeded runs
 Risks: (a) may take longer; 14de waits on your choice; c5's pass count is unknown.
 
 
-## Merge order to main by Wed 21 Oct (proposal, 13 Oct 18:00 UTC; you merge)
+## c5 options: scope for the Thursday input freeze (13 Oct 2026; scope only, nothing built; your decision)
+
+Rule (user, 13 Oct): the least-cost run chooses among every option we can cost and size from a source. Today the national
+build LP chooses wind, utility solar, rooftop (pinned by the pathway at 1.2 GW a year), lithium power and energy, vanadium,
+iron-air, CCGT, offshore wind, pumped hydro and early coal retirement; open-cycle gas on LNG and on diesel (on in c4); peaker
+life extension and repurposed connections (off in c4). Hours are work plus tests (LP-key test, suite, cross-check), at today's
+pace. Held = in SOURCES.md already; new = found 13 Oct, to add. First-hand = read in the document; extract = search-engine
+text, to verify before use.
+
+| option | sourced cost | sourced ceiling | work, h | single node | recommendation |
+|---|---|---|---|---|---|
+| Coal flexibilisation | no: R223/kW-yr is one German lignite plant (Weisweiler, EUR 125m for 1,200 MW, no year or exchange rate); post-retrofit minimum load and ramp unsourced (the 100%/h is not IRENA's 3-6%/min) | no: the standing fleet only | 16-22 incl. 4-6 sourcing | yes | after the note (your call after the Meridian call) |
+| Virtual power plants | no SA cost (Brattle 2023, US only) | partly: IEA 2026, 600 MW from 1.2m households (held); LBNL/Wits 2024, 5.2m geysers, 6.6 GW winter peak (new, extract) | 10-12 | yes | after the note |
+| Demand response, interruptible | partly: availability R521m FY2026 (NTCSA MYPD 6, held), about R366/kW-yr derived over 1,422 MW; the R4,000/MWh call price is unsourced | yes for what is contracted: 1,014 + 346 + 62 MW (NREL/CSIR 2024, held, extract); 4 GW outer, unverified | 5-7 | yes | c5: the contracted MW as a dispatch choice in the LP (the engine already calls 1.2 GW the LP does not have); growth after the note |
+| Demand response, shiftable | partly: LBNL-2001576, R3.5m/MW (held, price year not stated) | partly: IEA 2026, about 1 TWh a year for industry (held); 4 GW outer, unverified | 12-14 | yes | after the note (the LP needs a shift formulation; two findings on it already fail after fix (a)) |
+| New nuclear | yes: IRP 2025 workbook, 1x1600 MW R176,885/kW, fixed O&M R2,837/kW-yr, 72 months, 30 years (held, first-hand); SMR 12x73 MW R153,378/kW, 48 months (new, first-hand) | yes, by policy: IRP 2025 Table 1, 5,200 MW in 2036-39 (held) | 8-11 | yes | c5: earliest 2036, cumulative cap 5,200 MW by 2039; the engine also needs new nuclear's fixed O&M (missing now) |
+| CSP, new | yes: IRP 2025 workbook, trough 0-12 h R83,198-195,045/kW, tower 3-12 h R106,475-158,985/kW, fixed O&M R1,228-1,663/kW-yr, capacity factor at Upington 0.26-0.70 (new, first-hand) | technical only: Fluri 2009, 548 GW (new, abstract); the binding limit is Northern Cape grid headroom (GCCA 2025: none), which a single node cannot see | 16-22 | partly | after the note |
+| New coal | no: no unabated coal row in the IRP 2025 workbook; the code's R5,000/kW-yr names no study; Kerwin et al. USD 3,297/kW (held) | 0 by policy (IRP 2025: no new coal) | 8-10 | yes | after the note; a sensitivity at most |
+| Carbon capture | partly: IRP 2025 workbook, new coal with 90% capture R149,567/kW (new, first-hand); no retrofit cost; the code's R38,000/kW and R260/MWh disagree | storage: Council for Geoscience atlas 2010, 150 Gt, 98% offshore (new, extract); nothing deployable before the mid-2030s | 12-16 | yes | after the note; first check a possible engine error (the share is not applied to the coal cost at ix:6815) |
+| Grid-enhancing technologies | no SA cost: one case, about R3m/km to reconductor a 275 kV line (Energize, Dec 2025, new, first-hand); the 20% uplift is assumed | no SA potential estimate | 6-10, regional LP only | no (no corridors) | after the note |
+| Transmission build | yes: TDP 2024 R440bn for 14,500 km, R402/kW-yr (held); the grid-cost switch bldGridCost exists, off in c4 | yes: GCCA 2025 headroom 19.94 GW; delivery 270.8 km a year (held) | 0-2 to switch the grid cost on, plus its run time to measure; corridors only in the regional LP | as the grid-cost adder | c5: decide whether new build pays the grid cost (an existing, sourced option); corridors after the note |
+| Imports | no: R550/MWh names no document; no Cahora Bassa tariff; SAPP day-ahead 12.3-17.6 USc/kWh (new, extract) | the 1,150 MW contract ends in 2030 and Mozambique plans to take the power (Engineering News, Feb 2024, new, extract); c4 holds it to 2040 | 4-8 | yes | c5 input, not an option: decide the post-2030 assumption; imports as a choice after the note |
+| Rooftop solar | partly: Kerwin et al. USD 1,406, 1,258, 1,110/kW for 2020/30/40 (held); BLD_COST's R17,000/kW unsourced (14ba) | uptake: IRP 2025, 0.9 GW a year (held); 1.2 GW a year unsourced; technical 72 GW (Senatla et al. 2020, new, abstract) | 1-2 | yes | keep as an input, at the sourced 0.9 GW a year: households decide it, and as a planner's choice the LP builds none (RESULTS: zero rooftop is the cost optimum, not a forecast) |
+
+Also offered by the app but not choosable (one line each): solar tracking (a global switch; fixed-tilt R12,000/kW unsourced);
+RMIPPPP hybrids (the LP leaves out the existing 335 MW); diesel peaker early retirement (not offered) and life extension (a
+R1,500/kW placeholder); coal life extension (not offered); coal availability improvement (no cost); synchronous condensers
+(14bc); surplus exports (14by); grid-forming battery share (fixed 0.30, no cost); electrolysers (hydrogen panel only); biomass,
+small hydro and compressed air (absent).
+
+Time: the c5 recommendations (interruptible demand response, new nuclear, the grid-cost decision, the import input, the
+rooftop basis) add up to 15-22 h with tests, about two working days. Building them after Thursday's freeze moves c5's launch
+from Thursday to about Saturday; the engine's pass marks (TODO 14dt) are a separate decision before that.
+
+### Coal flexibilisation (user, 13 Oct)
+
+1. Confirmed in the code (build 13h): c4's build LP and engine check run with it off. The switch is a toggle, default off;
+   'Today 2026' leaves it off and both pipeline scripts start from that preset and never set it (pathway_perfail.js:128,
+   pathcheck.js:26). In the engine it changes the ramp rate only, from coalRampBasePct 24 to coalRampFlexPct 100 %/h
+   (ix:7173-7179), plus a capital charge (ix:8574). It does not change minimum stable level, commitment, start costs or
+   part-load. The build LP never reads it: its coal rows are a 0.65 minimum on committed coal and a commitment ramp of
+   available coal / 48 per hour (ix:10411, 10455-10463), with no output ramp. Faults found: the charge falls on all standing
+   coal, not a retrofitted share; the toggle's value 1 reaches the nodal engine as 1% of the way (nodal_engine.js:457); the
+   frontier caption reads it as 'not flexibilised' (ix:4242).
+2. Work to make it an optimiser choice, year by year: LP, flexibilised MW by year (cumulative, at most the standing fleet),
+   annualised retrofit cost in the objective, a lower minimum and faster commitment ramp for that share (6-8 h); engine, the
+   same share applied unit by unit in the commitment step (lower minimum stable level, faster ramp) and the charge on that
+   share only (6-8 h); pathway and engine check carry it by year (2 h); sourcing first (4-6 h). About 16-22 h in all.
+3. Sources for Eskom-type subcritical units: being searched (13 Oct); listed here when the search reports.
+
+## Merge order to main by Wed 21 Oct (proposal, 13 Oct; you merge)
 
 Each step simulated in a scratch copy of main with the full suite (ESK19679.csv present; audit 87/87 and eng5 6/6 at every step).
 1. Pull request #32, licence lines (1 commit, on main). Suite 724/725 (EDMSA only).
