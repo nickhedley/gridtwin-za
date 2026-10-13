@@ -23,7 +23,10 @@ under their own licences and are credited in the application footer.
 
 Full licence text: https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode
 
-For commercial licensing enquiries, contact the author via the repository.
+For commercial licensing enquiries about the original work described above, contact
+the author via the repository. Such a licence covers only that work: it cannot cover
+third-party data, including NTCSA's GCCA data (see below), which stays under its own
+terms.
 
 ---
 
@@ -37,6 +40,6 @@ Data sources incorporated in this repository carry their own licences:
 - PVGIS SARAH2 solar profiles: European Commission JRC — open access
 - Renewables.ninja wind profiles: Pfenninger & Staffell — CC BY-NC 4.0
 - REIPPPP project data: DMRE / IPP Office — public domain
-- GCCA connection capacity data: NTCSA — public domain
+- GCCA 2025 connection capacity data and supply-area boundaries (NTCSA): NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent.
 
 Users are responsible for complying with the terms of each upstream data source.

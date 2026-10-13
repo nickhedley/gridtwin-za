@@ -1,5 +1,5 @@
 # GridTwin ZA - transmission substations with coordinates and supply areas
-# CC BY 4.0 - attribution required. gridtwinza.org
+# GCCA-derived content (supply areas, NTCSA coordinates): NTCSA website terms (June 2024, clauses 2.1, 2.2 and 3.1): non-commercial use only; publication needs NTCSA's written consent. Other content: CC BY 4.0, gridtwinza.org
 # source fingerprint: gtza-0fe0a41096f9685a
 # NOTE: `planned` marks stations not yet energised. Coordinates are compiled from
 # published sources and cross-checked against transmission line endpoints; a small
