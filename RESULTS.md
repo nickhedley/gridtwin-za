@@ -2784,6 +2784,42 @@ case would take 45 min at this rate). The optimiser's figures do not change.
 Not yet measured: each part's own contribution (switches _laNoUC, _laNoSurCoal, _laNoPs, _laNoPsHold, _laNoPsFirst,
 _laNoPsPeak; no effect unless set). Scratch scripts not committed: runweeks.py, cmp_hourly.py, scanall.sh, marks_table.py.
 
+### TODO 14dp settled on build 14a: two findings restated, one check replaced, the response baseline regenerated, the gas balance made exact; no limit widened, 14 Oct 2026
+
+User, 13 Oct (TODO 14dv (3)): checks 1, 2, 4, 5 and 6 as proposed, each new figure and its cause here; check 3 not widened
+but replaced by a test of what the look-ahead should do. Engine build 14a (claude/engine-fix 016bb49); harness changes on the
+same branch (8b6d41d). Suite after: 720/726 node checks, audit 87/87 (807/813), eng5 6/6.
+
+1. Restated finding: demand shifting no longer lowers system cost. On the dashboard default, a 7.5% shift gives R210.38bn
+   against R210.30bn at zero (+0.04%; 13h +0.03%, 12e lower than zero). The stores, planning 24-48 hours ahead, already move
+   energy from the midday surplus to the evening, which is what shifting did. Check: a 7.5% shift moves system cost by under
+   0.1% (was: lowers it).
+2. Restated finding: a large shift still costs more, but the rebound peak has gone. 30% gives R211.89bn (+R1.59bn, the 6%
+   lost on shifted load) and a 29,589 MW peak against 29,628 at zero. Check: a 30% shift raises system cost (the peak test
+   dropped, since storage now absorbs the rebound).
+3. Replaced: 'the instant heuristic discharges near the median price, not the peak' (ratio under 1.5) described the rule
+   before the look-ahead (13h 2.56, 14a 2.05). New check: each fleet discharges at a higher volume-weighted marginal price
+   than it charges. Default build with 1 GW / 4 h of new batteries: R1,531 against R747/MWh. IRP path 2035: batteries R2,054
+   against R1,886, pumped storage R2,052 against R1,821. (13h: R1,912 against R747; R2,054 against R1,925; R2,051 against
+   R1,949.)
+4. Response baseline regenerated (response_matrix.json) on 14a: 29 cells changed against the old baseline. 25 went from
+   responsive to inert, 4 the other way. The main group: in the default 2026 scenario new batteries, vanadium and iron-air
+   no longer move coal output, CO2, replAvg or the renewable share (newBattMW 4 cells, newBattHours 2, newVrfbMW 2,
+   newIronAirMW 4). 2026
+   has no midday surplus and no shortfall beyond coal, so the look-ahead leaves new storage nearly idle (the 24-hour rolling
+   optimum's 2026 week cycles lithium 0.5-0.7 times a week). The others are small effects that fell under or rose over the
+   matrix's threshold: battHours, outageUnitLevel, dieselDecomMW, dieselBudgetTWh, coalFlexPct, nuclearCF, newCcgtMW,
+   newCoalMW, newNuclearMW, drInterruptMW, reserveEnabled, importsMW (one or two cells each).
+5. 'lcoeIronAir moves at least one dispatch output' passes on 14a with no change: its probe dispatches iron-air again.
+6. 'must-run gas energy goes somewhere' rewritten as the exact balance: generation plus shed equals the demand line (which
+   carries charging and firm exports) plus surplus exports, within 0.01 TWh. Measured on IRP path 2035: 1.6e-12 TWh on 208.9
+   TWh generated (default 6e-14). The old formula took charging off a line that already includes it, so its gap was
+   charging less firm exports: 15.9 TWh against 22.5 TWh charged on 14a. The IRP gas floor still goes unmet by 5.5 TWh
+   (13h 11.6), which the check reports.
+
+Still failing, your decision: 'iron-air changes July gas by essentially nothing' (no gas cap; 1,312 -> 1,295 GWh, 1.3%
+against a 1% limit) and the 2025 peaker season ratio (9.3x, mark (3) in TODO 14dt). Neither check changed.
+
 ### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
 
 Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on

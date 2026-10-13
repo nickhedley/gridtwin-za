@@ -116,6 +116,16 @@ from Thursday to about Saturday; the engine's pass marks (TODO 14dt) are a separ
   year-by-year imports setting in the pathway LP and the engine check (none exists; about 1-2 h).
 - Rooftop 0.9 GW a year: the ROOF_MW setting exists on claude/c4-irp3 (merge step 6), not on main or c4-frozen; c5 needs it
   merged or carried. Grid cost: GRID=1 exists on c4-frozen.
+- Stress-day coal, 14de (TODO 14dv (5)), evidence and proposal. On c4's three 2030 windows the fixed engine (14a) commits a mean
+  of 14.0-15.8 GW against 16.7-17.1 GW available; its lowest hours are 0.36-5.8 GW (midday, low net load); it sheds none.
+  The optimiser's stress-window coal (coalAvailFrac) is already the engine's own hourly ceiling, the commitment capped by
+  outages, so both sides use one rule on the draw. The gap is which build the draw was made on: the window carries the
+  commitment made for the previous pass's plan, and the low hours bind if the new plan has more net load there. Options:
+  (A) as now, on 14a (no code; c5 inherits the lag, which shrinks as passes converge); (B) after each solve, re-run each
+  window's draw on the plan just solved and re-solve if the commitment moved (one engine run per window per pass, about
+  3-4 h of code); (C) first, a GitHub engine-check job of s_coalavail's plan on 14a (about 1 h): if the plan that used
+  available coal now passes, the old engine was the cause of its failure. Recommended: C now, then A for c5 unless C
+  passes; B after the note.
 - Stopping rule (TODO 14dv (9)), proposed: the loop's own adequacy test as in c4 (stop when no year's mean shed is above its
   target); a pass cap of 6 (MAXP=6); and a stall stop: from pass 4, stop when a pass cuts the worst year's shed above target by
   less than 10% (c4's passes 4-7 cut 7-19% each). Whatever stops it: the engine check, then the top-up on any failing year,
