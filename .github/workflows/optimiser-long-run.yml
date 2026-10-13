@@ -6,6 +6,8 @@ name: Optimiser long run
 # above target, new diesel open-cycle capacity in 250 MW steps until it is at or below target, with the cost of the
 # topped-up system and the build caps it breaks. The engine and harness on this branch are those of claude/c4-frozen
 # (identical to c4's commit 86bfea4) plus topup.js and an EXTRA_OCGD_MW setting in pathcheck.js that is off by default.
+# Mode lpsplit (claude/costsplit only, TODO 14cv, 13 Oct 2026): rebuilds a finished run's last LP from its settings and
+# stress windows and splits the objective into components with its cached solution (costsplit_lp.py). Solves nothing.
 # The solving workflow is the one on main, claude/build-costs and claude/c4-frozen; this branch is never merged.
 
 on:
@@ -21,8 +23,17 @@ on:
         description: 'The pathway run name, as in results-<name>'
         required: true
       mode:
-        description: 'topup (default): the adequacy top-up; check: re-run the engine check and print gas, diesel and CO2 by year (gasrole.py)'
+        description: 'topup (default): the adequacy top-up; check: re-run the engine check and print gas, diesel and CO2 by year (gasrole.py); lpsplit: split the optimiser objective into components (costsplit_lp.py)'
         default: 'topup'
+      settings:
+        description: 'lpsplit only: the pathway run settings, KEY=VALUE separated by spaces, exactly as the run used them'
+        default: ''
+      seed_run:
+        description: 'lpsplit only: the run holding state-<seed_name> (the stress windows named in WIN_FROM)'
+        default: ''
+      seed_name:
+        description: 'lpsplit only: the seed pathway run name'
+        default: ''
 
 permissions:
   contents: read
@@ -47,7 +58,7 @@ jobs:
           [[ "$LABEL" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "name: letters, digits, - and _ only"; exit 1; }
           [[ "$SRC_RUN" =~ ^[0-9]+$ ]] || { echo "source_run must be a run id"; exit 1; }
           [[ "$SRC_NAME" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "source_name: letters, digits, - and _ only"; exit 1; }
-          [[ "$MODE" == topup || "$MODE" == check ]] || { echo "mode: topup or check"; exit 1; }
+          [[ "$MODE" == topup || "$MODE" == check || "$MODE" == lpsplit ]] || { echo "mode: topup, check or lpsplit"; exit 1; }
 
       - uses: actions/checkout@v5
         with:
@@ -60,7 +71,7 @@ jobs:
       - name: Install the harness dependencies
         working-directory: harness
         run: |
-          npm install --no-save --no-package-lock jsdom@29.1.1
+          npm install --no-save --no-package-lock jsdom@29.1.1 highs@1.15.3
           ln -s .. testroot
 
       - name: Fetch the pathway and its engine check
@@ -99,6 +110,40 @@ jobs:
           set -o pipefail
           env COMMIT=1 PSE=1 TF=0.5 IN="$P" OUTC="out/check_${SRC_NAME}.json" node --max-old-space-size=8192 pathcheck.js 2>&1 | tee "out/check_${SRC_NAME}.log"
           python3 -I gasrole.py testroot/index.html "out/check_${SRC_NAME}.json" "$SRC_NAME" | tee "out/gasrole_${SRC_NAME}.txt"
+
+      - name: Fetch the run's saved state (lpsplit)
+        if: inputs.mode == 'lpsplit'
+        uses: actions/download-artifact@v4
+        with:
+          name: state-${{ inputs.source_name }}
+          path: harness
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+
+      - name: Fetch the seed run's state (lpsplit)
+        if: inputs.mode == 'lpsplit' && inputs.seed_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: state-${{ inputs.seed_name }}
+          path: harness/seed
+          run-id: ${{ inputs.seed_run }}
+          github-token: ${{ github.token }}
+
+      - name: Split the optimiser objective (lpsplit; rebuilds the LP text, solves nothing)
+        if: inputs.mode == 'lpsplit'
+        working-directory: harness
+        env:
+          SRC_NAME: ${{ inputs.source_name }}
+          SETTINGS: ${{ inputs.settings }}
+        run: |
+          mkdir -p out
+          set -o pipefail
+          ls lpcache | head -20; ls out seed/out 2>/dev/null | head -20
+          node costsplit_consts.js 2>/dev/null | tail -1 > out/consts.json
+          cat out/consts.json
+          env $SETTINGS SOLVER=native TL=72000 DUMP_LP=out/split DUMP_STOP=1 OUT=out/split_dummy.json node --max-old-space-size=8192 pathway/pathway_perfail.js 2>&1 | grep -v -E '^\s+at ' | tail -20
+          python3 -I costsplit_lp.py out/split_pass1.lp lpcache "out/pathway_${SRC_NAME}.json" out/consts.json "out/lpsplit_${SRC_NAME}.json" 2040 | tee "out/lpsplit_${SRC_NAME}.txt"
+          rm -f out/split_pass1.lp
 
       - name: Keep the top-up
         if: always()
