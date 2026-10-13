@@ -2128,6 +2128,29 @@ the build caps in 2036 (1,500 MW of diesel open-cycle in the year against the 1,
 stays under 0.5 TWh a year, so no high-diesel version (user rule). Caveat: engine-check cost gaps of this size are inside
 the measurement question in TODO 14cv (see s_be6).
 
+### s_nogas4strict_bd (s_nogas4strict with lithium capex falling 3% a year): adequate after one pass, R2,862bn PV and 1,328 Mt, R24bn above s_nogas4strict; the no-gas premium waits on s_battdecl, 13 Oct 2026
+
+Run: s_nogas4strict's settings (LI_CAP=4000 OCGD=0 GAS_CAP=0) plus BATT_DECL=0.03, seeded from c4 (seed 38359856512 / c4t),
+rule B (MAXP=3, no top-up). Run 38367947315, ref claude/c4-battdecl (1edd42b); pass 1 solved Optimal in 37 min from a cold
+start; loop test after pass 1: no failing year (worst 2040, 0.44 against 2.60 GWh), so it stopped. Engine check within target
+every year (at most 9%, 2034 and 2040). Print 38373115718.
+
+```
+                                 s_nogas4strict_bd     s_nogas4strict (5% decline)
+cost 2026-40, PV at 8% real      R2,862bn              R2,838bn
+optimiser objective (LP)         R3,787bn              R3,762bn
+CO2 2026-40                      1,328 Mt              1,331 Mt
+lithium GW                       8.7 / 19.7 / 27.7     8.7 / 19.7 / 28.5
+lithium GWh                      64 / 144 / 171        64 / 144 / 176
+onshore wind GW built            12.5 / 25.0 / 31.9    12.5 / 25.0 / 31.4
+utility solar GW built           14.4 / 34.5 / 62.7    14.4 / 34.5 / 62.5
+offshore / iron-air GW, 2040     3.4 / 2.0             3.4 / 2.1
+```
+
+The slower lithium decline adds R24bn on both measures (engine check and optimiser objective agree here) and changes the build
+only after 2036. The no-gas premium is quoted as this run against s_battdecl (c4 with BATT_DECL=0.03), still running (user,
+13 Oct).
+
 ### s_nogas4strict (no new gas or open-cycle, lithium 4 GW a year): adequate after one pass, R2,838bn PV and 1,331 Mt, R240bn dearer and 274 Mt less CO2 than c4, 13 Oct 2026
 
 Run: c4's settings with LI_CAP=4000 OCGD=0 GAS_CAP=0 (no new CCGT, OCGT or diesel open-cycle), seeded from c4's final run

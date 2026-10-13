@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 09:00 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 09:05 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -37,9 +37,9 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   BATT_DECL, tested: off key e0b93ac712, on only the 28 lithium build cost coefficients change), c4's settings plus
   WIN_FROM, MAXP=1 and BATT_DECL=0.03 (lithium capex -3% a year real, against the engine's 5%), seed 38359856512 / c4t,
   rule A: then print and top-up (claude/topup applies battDecl from 89f3ed0).
-- s_nogas4strict_bd started 08:14 UTC (user, 13 Oct): run 38367947315, ref claude/c4-battdecl (1edd42b), s_nogas4strict's
-  settings plus BATT_DECL=0.03, rule B (MAXP=3, no top-up), seed 38359856512 / c4t. The no-gas premium is quoted only as
-  s_nogas4strict_bd against s_battdecl.
+- s_nogas4strict_bd finished 08:58 UTC (run 38367947315, ref claude/c4-battdecl 1edd42b; s_nogas4strict plus BATT_DECL=0.03,
+  rule B): adequate after one pass, R2,862bn, 1,328 Mt (R24bn above s_nogas4strict). Print 38373115718. The no-gas premium
+  is quoted only as s_nogas4strict_bd against s_battdecl (still running).
 - s_dieselhigh held (user, 13 Oct): c4's diesel at option (a) adds at most R1.4bn undiscounted (RESULTS). If s_nogas3 or
   s_nogas4 produce more than 1 TWh from diesel in any year (engine check, 'dieselTWh'), run high-diesel versions of them
   at option (a), DIESEL_R=8887, ref claude/c4-diesel, rule A, seeded from c4, labelled an upper bound.
