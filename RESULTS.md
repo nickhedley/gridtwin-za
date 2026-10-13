@@ -2029,6 +2029,7 @@ s_be7                2,614 (d)      0   -           1,679.5       12.5    1,667.
 s_li8h               2,614      3,000   -           1,702.9        0.0    1,702.9       +15   |  -12.6      disagree (e)
 s_be4                2,618        750   -           1,731.5       10.8    1,720.6       +19   |   +5.1      agree
 s_battdecl           2,590          0   -           1,740.6       11.6    1,729.0        -9   |  +13.5      disagree (g)
+s_coalavail (i)      2,399 (i)  pending pending     1,514.3        0.0    1,514.3      -199   | -201.2      agree (i)
 s_nogas3             2,606 LB   4,250   2036        1,905.2      186.7    1,718.5        +7   |   +3.0      agree
 s_nogas4             2,612 LB   4,750   2036, 2038  1,887.8      163.2    1,724.6       +13   |   +9.1      agree
 s_nogas4strict       2,838      rule B  -           3,762.3    1,838.6    1,923.7      +239   | +208.2      agree
@@ -2045,7 +2046,8 @@ the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' b
 (8-hour lithium): its engine cost is an upper bound, the direction of the disagreement. (g) s_battdecl is storage-light
 (17.6 GW and 103 GWh of lithium in 2040 against c4's 21.7 GW and 126 GWh), which the engine favours. tsl runs: s_battdecl 38389692464, s_gasprem 38380834231,
 s_be7 38380844927, s_li8h 38383985895, s_be4 38383995436. (h) s_wind35: wind limit 3,500 MW a year from 2028 (front-loaded); fails the engine check in 2037-40 as
-solved; lower bound; not in the note's headline findings (user, 13 Oct).
+solved; lower bound; not in the note's headline findings (user, 13 Oct). (i) s_coalavail as solved: fails the engine check
+in every year 2030-40 (2040 at 2,816% of target); its top-up (38394240062) is running, so its engine figure and gap will change.
 ```
 
 Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
@@ -2128,6 +2130,69 @@ s_gasprem: R18bn dearer than c4 on the engine check, R7.5bn on the objective wit
 gas (4.3 against 5.1 GW in 2040) and more lithium. s_be7: R15bn dearer on the engine check; its objective (c) leaves out
 the nuclear capital, so the R48bn the objective puts it below c4 is not a cost comparison. s_be7 is adequate without a
 top-up and emits 29 Mt less than c4.
+
+### s_coalavail (stress-window coal at the engine's available coal): R199bn below c4 on the engine check as solved and R201bn on the objective without the penalty, but it fails the engine check in every year 2030-40; top-up pending, 13 Oct 2026
+
+Run 38382908890 (ref claude/c4-coalavail, 1143a98; engine build 2026-10-12e, c4's): c4's settings plus COAL_AVAIL=1,
+WIN_FROM=seed/out/pathway_c4t_lp2040.json, MAXP=1 (rule A), seed 38359856512 / c4t. Pass 10:22-11:26 UTC (solved Optimal,
+3,791 s, 'done pass limit reached'), engine check to 11:40. Print 38394235656, tsl 38394244895 (solution 8e94741415), top-up
+38394240062 (running). The switch applied to all 32 of c4's windows: recorded coal (committed) mean 0.51-0.62 of standing coal,
+lowest hour 0.003-0.33; available mean 0.53-0.74, lowest hour 0.42-0.71; equal in 0-303 of each window's 336 hours.
+
+```
+                                     s_coalavail as solved      c4 as solved (with top-up)
+engine PV at 8% real                 R2,399bn                   R2,598bn (R2,599bn)
+objective / without penalty          R1,514.3 / 1,514.3bn       R1,727.7 / 1,715.5bn
+stress-target penalty                R0.0bn (none in any year)  R12.2bn (523 MWh in 2030)
+CO2 2026-40                          1,864 Mt                   1,605 Mt
+gas GW 2030/35/40                    1.2 / 3.1 / 5.2            1.2 / 3.5 / 5.1
+new diesel open-cycle GW             0.05 / 0.05 / 0.05         2.8 / 2.8 / 3.6 (4.6)
+lithium GW                           5.6 / 13.1 / 22.6          6.6 / 11.2 / 21.7
+lithium GWh 2040                     131.5                      126.1
+coal retired early                   0                          588 MW from 2026
+years failing, engine check          11 (2030-40)               1 (2040, 161%)
+years failing, loop's own test       11 (2030-40)               2 (2039-40)
+```
+
+Wind and solar built, MW a year, s_coalavail / c4:
+
+```
+        2026  2027  2028  2029  2030  2031  2032  2033  2034  2035  2036  2037  2038  2039  2040   total
+wind s     0     0     0     0  2500   613  2500  1783   957   554   702  1145   799   919  1203  13,675
+wind c4 2500  2500  2500  2500  2500     0     0     0     0     0   448     0     0   539     0  13,487
+pv s       0  1667  2862  3063  3277  3506  3752  3813  4256  3996  3769  3583  3857  3571  3605  48,577
+pv c4   2500  2675  2862  3063  3277  1596  3752  1615  4296  2597  4918  3759  5631  6025  3907  52,473
+```
+
+Shed by year, engine check, mean against target on customer demand, GWh: 2026-29 0.23-0.66 (within target); 2030 2.84 /
+2.06 (137%); 2031 3.88 / 2.12; 2032 8.16 / 2.16; 2033 16.55 / 2.21; 2034 30.48 / 2.26; 2035 34.26 / 2.31; 2036 49.73 / 2.35;
+2037 57.02 / 2.41; 2038 79.00 / 2.48; 2039 78.54 / 2.54; 2040 73.17 / 2.60 (2,816%). The loop's own test after pass 1: worst
+2039, 84.96 against 2.55 GWh.
+
+Rule (user, 13 Oct 11:42): the thresholds are crossed on every test that is in: 2030 new diesel open-cycle -2.75 GW, 2030
+lithium -1.0 GW, objective without the penalty -R201bn, engine as solved -R199bn (with the top-up pending). By the rule the
+central becomes c4 + COAL_AVAIL=1, which is s_coalavail. Caveats: with the stress-day coal at available coal, c4's windows no
+longer bind (penalty zero) and one pass leaves the plan failing every year from 2030 on both the engine check and the loop's
+own test, so its cost rests on the top-up; a top-up above the diesel open-cycle cap (1,000 MW a year) makes it a lower bound.
+Launched 12:10-12:11 UTC, all rule A from s_coalavail (seed 38382908890 / s_coalavail, COAL_AVAIL=1,
+WIN_FROM=seed/out/pathway_s_coalavail_lp2040.json) unless shown: s_irpgas_ca, s_pvirp_ca, s_roof2_ca (ref claude/c4-irp3,
+0488f54); s_nogas3_ca, s_nogas4_ca, s_nogas4strict_ca (rule B, MAXP=3, no top-up), s_be6_ca, s_committed_ca (ref
+claude/c4-coalavail, 1143a98); and from c4 as the fallback (seed c4t, no COAL_AVAIL): s_irpgas_c4, s_pvirp_c4, s_roof2_c4.
+
+### Rooftop in the two cost measures (for s_roof2): the grid measure removes R1,150/kW-yr of rooftop, not its full R1,701-2,056, so a third or more of rooftop's cost stays in it, 13 Oct 2026
+
+Arithmetic only, from the engine's own functions (engine build 2026-10-12e; jsdom script in the scratchpad, harness/node_modules).
+The engine check's cost is systemCostR, which includes new rooftop at acapAt('rooftop'): the annuity of BLD_COST.rooftop
+(R17,000/kW in 2026, -3.89% a year, 25 years at 8%) at the midpoint vintage plus R495/kW-yr fixed O&M, times the cumulative new
+rooftop MW (index.html ~8411). Its grid cost (pathcheck: systemCostR - btmCapexR) subtracts btmCapexR = new rooftop MW x
+acapRooftop, a flat R1,150/kW-yr (index.html ~6349, ~8441). R/kW-yr charged in the check year, total / removed / left in the
+grid measure: 2027 2,056 / 1,150 / 906; 2030 1,966 / 1,150 / 816; 2035 1,827 / 1,150 / 677; 2040 1,701 / 1,150 / 551.
+
+c4 (1,200 MW a year from 2027; its engine check, 480 runs): rooftop R114.1bn of R2,597.7bn PV (4.4%) in the total measure; the
+grid measure removes R71.4bn (R2,526.3bn) and keeps R42.7bn of rooftop (1.7%). 2040: R28.6bn total, R19.3bn removed, R9.3bn kept.
+At 2,000 MW a year (s_roof2's build, same arithmetic): R190.1bn total, R118.9bn removed, R71.2bn kept; 2040 R47.6 / 32.2 /
+15.4bn. Caveat: the two figures are one constant held twice (acapRooftop and BLD_COST.rooftop); no engine change before the
+note (TODO 14dc). s_roof2's shares will be given in both measures as asked.
 
 ### c4's wind build by year; c4's wind limit stays (user, 13 Oct 2026)
 

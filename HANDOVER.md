@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 12:10 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 12:35 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -137,7 +137,30 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
     as a constant (fixed build).
   Tests: off key e0b93ac712; s_irpgas 2a7e1ad4c8 (22d2267038 without the vintage switch); s_pvirp f45106c146 (only b_pv
   bounds); s_roof2 f52ec8a659 (only b_rooftop bounds).
-- s_coalavail finished 11:40 (run 38382908890); print, top-up, tsl dispatched 12:05. The central decision follows from them.
+- s_coalavail finished 11:40 (run 38382908890); print 38394235656, tsl 38394244895 done; top-up 38394240062 running
+  (dispatched 12:01). As solved: engine R2,399bn (c4 R2,598bn), objective R1,514.3bn with no penalty (c4 R1,715.5bn without
+  its R12.2bn), 1,864 Mt (c4 1,605); 2030 new diesel open-cycle 0.05 GW (c4 2.8), lithium 5.6 GW (c4 6.6); no wind until 2030
+  (c4 2,500 a year from 2026). Fails the engine check and the loop's own test in every year 2030-40 (2040 2,816% of target).
+  Rule crossed on every test in: by the 11:42 rule the central is s_coalavail. Flagged to Nick: as solved it is inadequate
+  from 2030, so its cost rests on the top-up and is likely a lower bound; recommendation c4 stays the note's central (his
+  call). RESULTS 's_coalavail'.
+- Launched 12:10-12:11 UTC (names to confirm from each run's artifacts; ids in dispatch order). Rule A unless shown; all
+  print, top-up (claude/topup 27337aa: reads per-year turbine caps; records gasFloorTWh) and tsl when done.
+  From s_coalavail (seed 38382908890 / s_coalavail, c4's settings + COAL_AVAIL=1 WIN_FROM=seed/out/pathway_s_coalavail_lp2040.json):
+    s_irpgas_ca 38395398203, s_pvirp_ca 38395403267, s_roof2_ca 38395407641 (ref claude/c4-irp3, 0488f54);
+    s_nogas3_ca 38395481991, s_nogas4_ca 38395489267, s_nogas4strict_ca 38395492993 (rule B, MAXP=3, no top-up),
+    s_be6_ca 38395498884, s_committed_ca 38395502406 (ref claude/c4-coalavail, 1143a98).
+  From c4 as the fallback (seed 38359856512 / c4t, no COAL_AVAIL; ref claude/c4-irp3, 0488f54):
+    s_irpgas_c4 38395416019, s_pvirp_c4 38395420841, s_roof2_c4 38395424726.
+  Whichever central Nick confirms, the other set is cancelled or reported as labelled sensitivities.
+- s_irpgas turbine cap (user, 13 Oct 12:20): TCAP_YR=2029:4000,2030:4000 (3,000 MW forced CCGT plus diesel open-cycle's usual
+  1,000 MW) so s_irpgas changes only the gas plan; key 9fb3b64f9d, only tcap_2029/2030 change (3,000 to 4,000). Report its
+  2029-30 diesel open-cycle beside c4's 1.8 GW (1,000 in 2029, 800 in 2030). In both s_irpgas runs' settings.
+- s_roof2 (user, 13 Oct 12:25): report both measures against the central, the engine's total system cost (rooftop capex and
+  O&M in) and the grid cost (pathcheck gridCost, flat R1,150/kW-yr of rooftop removed), with rooftop's share of each. The grid
+  measure keeps R551-906/kW-yr of rooftop (c4: R42.7bn PV, 1.7%; total measure R114.1bn, 4.4%); RESULTS 'Rooftop in the two
+  cost measures', TODO 14dc.
+- Still running: s_coal60 (38379671167), s_windlow (38392619799).
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
