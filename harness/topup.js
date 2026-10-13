@@ -35,6 +35,7 @@ const runYear = (y, extra) => {
       w.fetch = async (u) => { try { const cl = String(u).split('?')[0].replace(/^file:.*?\/(?=nodal\/|profiles|config)/, ''); const t = fs.readFileSync(path.join(path.resolve(ROOT), cl), 'utf8'); return { ok: true, json: async () => JSON.parse(t), text: async () => t }; } catch (e) { return { ok: false, json: async () => { throw e; }, text: async () => { throw e; } }; } }; } });
   await new Promise(r => setTimeout(r, 6000)); const w = dom.window;
   if (P.disc != null) w.eval(`BLD_DISC=${+P.disc};`);
+  if (P.dieselR != null) w.eval(`state.costDiesel=${+P.dieselR};`);   // the run's diesel price (DIESEL_R), for the fuel line
   if (P.ocgt && P.ocgt.costCase) w.eval(`state.bldOcgtCostCase=${JSON.stringify(P.ocgt.costCase)};`);
   const K = JSON.parse(w.eval(`JSON.stringify((()=>{ const S={...FIXED,...state}; return { disc: BLD_DISC, life: BLD_LIFE.ocgd, capexRkW: bldCapex('ocgd', 2026),
     annRkW: bldAnnuity(bldCapex('ocgd', 2026), BLD_LIFE.ocgd, 'ocgd'), fomRkW: bldFom('ocgd', 2026), costDiesel: S.costDiesel,

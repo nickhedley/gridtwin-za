@@ -48,6 +48,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // Gas infrastructure sensitivity, TODO 14ak (6 Oct 2026): the same overrides as pathway_perfail.js.
  // From build 2026-10-09f the pathway records its gas settings (P.gas): they are applied here, by year for a GAS_CASE,
  // and passing GAS_FUEL_R or GAS_FOM_ADD as well is refused, so the check cannot price gas differently from the optimiser.
+ // The pathway's diesel price (DIESEL_R, 13 Oct 2026) when it recorded one, so the check prices diesel as the optimiser did.
+ if (P.dieselR!=null) w.eval(`if(!('costDiesel' in FIXED)) throw new Error('costDiesel missing'); state.costDiesel=${+P.dieselR};`);
  // The pathway's discount rate (TODO 14be step 3), so the check annualises capital as the optimiser did.
  if (P.disc!=null) w.eval(`BLD_DISC=${+P.disc};`);
  // The pathway's gas finance premium (bldGasFinPremium), so new gas capital is annualised as the optimiser did.
