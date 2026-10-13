@@ -2126,10 +2126,10 @@ gas (4.3 against 5.1 GW in 2040) and more lithium. s_be7: R15bn dearer on the en
 the nuclear capital, so the R48bn the objective puts it below c4 is not a cost comparison. s_be7 is adequate without a
 top-up and emits 29 Mt less than c4.
 
-### s_li8h (lithium with 8 hours of energy) and s_be4 (IRP gas floor, 51% on 6 GW 2030-40), rule A, 13 Oct 2026
+### s_li8h (lithium with 8 hours of energy) and s_be4 (51% minimum capacity factor on new CCGT, 2030-40; 6 GW not forced), rule A, 13 Oct 2026
 
 Seeded from c4 (38359856512 / c4t, WIN_FROM), MAXP=1, claude/c4-frozen, c4's settings plus LI_EH=8 (s_li8h, run 38361303412)
-or GASFLOOR=1 (s_be4, run 38361321669; floor in the optimiser and the engine). Prints 38383979621 and 38383989561; top-ups
+or GASFLOOR=1 (s_be4, run 38361321669; a floor on whatever new CCGT is built, in the optimiser and the engine; entry below). Prints 38383979621 and 38383989561; top-ups
 38383982619 and 38383992755; tsl 38383985895 and 38383995436. Engine PV at 8% real.
 
 ```
@@ -2153,6 +2153,35 @@ s_li8h: R15bn dearer than c4 on the engine check but R12.6bn cheaper on the obje
 storage-heavy plan (25.6 GW of 8-hour lithium by 2040), so its engine cost is an upper bound, and the disagreement runs the
 way the storage caveat predicts. It has no 2030 penalty. s_be4: R19bn dearer on the engine check and R5.1bn on the objective;
 agree.
+
+What s_be4's floor applies to (user, 13 Oct; from the code and the existing outputs). It does not force 6 GW to be built, and
+it is not the IRP's requirement (IRP 2025 reference case: 6 GW of CCGT at a minimum 51% annual capacity factor, 2030-40). In
+the optimiser (index.html, gasfloor_<y>, about line 10399) the floor is a row per year 2030-40: CCGT output on the
+representative days >= 51% x 8,760 h x the new CCGT the optimiser chooses to build; OCGT on LNG is not in it, and with no CCGT
+built it binds on nothing. In the engine (simulateGasAnnualFloor, about line 6736) it floors the first ccgtForceLoadMW
+(6,000 MW) of CCGT standing, existing plus new, at 51% a year; there is no existing CCGT. s_be4 built no CCGT until 2036 and
+built OCGT on LNG instead, so the floor covers 0 GW in 2030-35, 0.76 GW in 2036-37 and 0.99 GW in 2038-40.
+
+Gas capacity (new CCGT + new OCGT on LNG), engine gas output (CCGT and OCGT on LNG together) and capacity factor on that
+capacity, by year (prints 38383989561 and c4's; c4's output from its engine check):
+
+```
+2030  c4 0.00 + 1.20 = 1.20 GW   0.04 TWh   0.4%   |  s_be4 0.00 + 1.00 = 1.00 GW   0.04 TWh   0.5%   floored CCGT 0.00 GW needs 0.00 TWh
+2031  c4 0.00 + 1.20 = 1.20 GW   0.21 TWh   2.0%   |  s_be4 0.00 + 1.00 = 1.00 GW   0.18 TWh   2.1%   floored CCGT 0.00 GW needs 0.00 TWh
+2032  c4 0.73 + 1.45 = 2.18 GW   0.62 TWh   3.2%   |  s_be4 0.00 + 2.06 = 2.06 GW   0.51 TWh   2.8%   floored CCGT 0.00 GW needs 0.00 TWh
+2033  c4 1.90 + 1.45 = 3.35 GW   1.28 TWh   4.4%   |  s_be4 0.00 + 2.76 = 2.76 GW   1.06 TWh   4.4%   floored CCGT 0.00 GW needs 0.00 TWh
+2034  c4 2.02 + 1.45 = 3.47 GW   3.37 TWh  11.1%   |  s_be4 0.00 + 2.91 = 2.91 GW   2.84 TWh  11.1%   floored CCGT 0.00 GW needs 0.00 TWh
+2035  c4 2.02 + 1.45 = 3.47 GW   4.17 TWh  13.7%   |  s_be4 0.00 + 2.91 = 2.91 GW   3.59 TWh  14.1%   floored CCGT 0.00 GW needs 0.00 TWh
+2036  c4 3.22 + 1.45 = 4.67 GW   6.15 TWh  15.0%   |  s_be4 0.76 + 3.35 = 4.11 GW   6.93 TWh  19.3%   floored CCGT 0.76 GW needs 3.37 TWh
+2037  c4 3.22 + 1.45 = 4.67 GW   7.92 TWh  19.4%   |  s_be4 0.76 + 3.35 = 4.11 GW   8.07 TWh  22.4%   floored CCGT 0.76 GW needs 3.37 TWh
+2038  c4 3.66 + 1.45 = 5.11 GW  13.50 TWh  30.2%   |  s_be4 0.99 + 3.35 = 4.34 GW  12.76 TWh  33.6%   floored CCGT 0.99 GW needs 4.41 TWh
+2039  c4 3.66 + 1.45 = 5.11 GW  14.71 TWh  32.9%   |  s_be4 0.99 + 3.35 = 4.34 GW  13.63 TWh  35.9%   floored CCGT 0.99 GW needs 4.41 TWh
+2040  c4 3.66 + 1.45 = 5.11 GW  16.81 TWh  37.6%   |  s_be4 0.99 + 3.35 = 4.34 GW  14.87 TWh  39.1%   floored CCGT 0.99 GW needs 4.41 TWh
+```
+
+The printed outputs do not split s_be4's gas output between CCGT and OCGT on LNG, so the floored CCGT's own capacity factor is
+not shown; the engine check enforces it. Against c4, the floor moved new gas from CCGT to OCGT on LNG (c4: 3.66 GW CCGT and
+1.45 GW OCGT by 2040; s_be4: 0.99 and 3.35 GW) and left total gas output lower in 2038-40.
 
 ### s_be7: nuclear cost basis, and its 2040 annual cost against c4 (+R6.8bn a year against c4 with its top-up); the engine charges new nuclear no fixed O&M, 13 Oct 2026
 
