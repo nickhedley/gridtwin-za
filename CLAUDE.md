@@ -46,6 +46,9 @@ eng5 6/6. The two failures: EDMSA Scenario A CO2 2035 (validate_external) and 't
 shows 811/812. The 805/806 on main's copy of this file (5 Oct) does not match today's scripts: main's own 5 Oct commit
 run today has 815 checks. Without ESK19679.csv, validate_weather adds a failure (the missing Eskom reference) and
 validate_benchmarks skips the fleet-normalised wind check; those totals were not re-measured on 13 Oct.
+Engine branches (13 Oct 2026, ESK19679.csv present): claude/c4-frozen 720/725 (stale stamp; 721 with today's); claude/engine-fix
+(build 13h) 715/725 plus audit 87/87, so 802/812, eng5 6/6: the six extra failures are the engine fix's, causes in RESULTS
+'Engine fixes', waiting on your decisions (TODO 14dp).
 
 ## Rules that matter most (RULES.md has the full set)
 

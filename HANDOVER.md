@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 15:40 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 18:10 UTC)
 
 ## Note date and plan to Fri 23 Oct (user, 13 Oct: note moved to Fri 23 Oct so the engine is fixed first; plan is a draft for approval)
 
@@ -6,11 +6,14 @@ No more c4-based runs (user, 13 Oct). Estimates use today's measured times: a ru
 5,300-10,000 s), the engine check 12-40 min, print, top-up and tsl 1-20 min; c4's own loop took 9 passes over about 3 days.
 GitHub: 20 jobs at once on the Free plan (GitHub's stated limit); 12 seeded runs ran at once today without queueing.
 
-1. Engine fixes, branch claude/engine-fix (Tue 13 - Wed 14): (b) start-up double count, about 1 h; (c) coal units standing in
+1. Done 13 Oct (RESULTS 'Engine fixes'): (b) 13f 20729cc, (c) 13g 99b5b92, (a) 13h d388ceb on claude/engine-fix; draft pull request
+   for review; the four cross-check weeks 1.3-12.4% above the 24-hour rolling optimum (were 2.2-48.4%); six suite failures wait on
+   your decisions (TODO 14dp). Was: Engine fixes, branch claude/engine-fix (Tue 13 - Wed 14): (b) start-up double count, about 1 h; (c) coal units standing in
    later years, about 2 h; (a) 24-hour look-ahead storage dispatch, 6-10 h (design, code, tune against the cross-check). Each:
    full suite before and after (7 min each), the four cross-check weeks (15 min), engine-check and app run times. Pull request
    for review.
-2. c4's existing build through the fixed engine, no re-solve (Wed 14, about 1 h): years failing, top-up, both measures.
+2. Done 13 Oct (RESULTS 'c4's build through the fixed engine'): no year fails, no top-up; engine PV R2,540bn against R2,598bn;
+   CO2 1,480 Mt against 1,605; the optimiser's objective unchanged (no re-solve).
 3. Stress-day coal rule, 14de (Wed 14 - Thu 15, about 1 day, needs your choice of rule: committed or available coal on stress
    days, one rule in the optimiser and the engine): code, LP tests, suite.
 4. c5 central run from scratch (Thu 15 - Sat 17): c4's settings with the fixed engine and the 14de rule; passes 1.5-4 h each;
@@ -22,6 +25,30 @@ GitHub: 20 jobs at once on the Free plan (GitHub's stated limit); 12 seeded runs
 6. Write-ups, both measures, cross-check of c5's 2040 weeks, note draft (Mon 19 - Thu 22); note Fri 23 Oct.
 Risks: (a) may take longer; 14de waits on your choice; c5's pass count is unknown.
 
+
+## Merge order to main by Wed 21 Oct (proposal, 13 Oct 18:00 UTC; you merge)
+
+Each step simulated in a scratch copy of main with the full suite (ESK19679.csv present; audit 87/87 and eng5 6/6 at every step).
+1. Pull request #32, licence lines (1 commit, on main). Suite 724/725 (EDMSA only).
+2. The c4 engine, claude/c4-frozen (115 commits, build 12e): per-year stress windows, grid cost and peakers (#20, #21), the
+   build-costs code of #22 (BW3 batteries, modern wind, tracking option, hourly storage in the build LP), the 9-12 Oct engine
+   and optimiser work (gas and diesel options, coal dates, customer-demand standard, adequacy test) and the long-run workflow.
+   Two conflicts: BUILD_STAMP (new stamp) and the workflow file (c4-frozen's, a superset of main's). Suite 721/725 (EDMSA and the
+   three findings that wait on #22's preset re-search).
+3. Engine fixes, claude/engine-fix (3 commits, 13f-13h). Conflict: BUILD_STAMP only. Suite 715/725 (the six in TODO 14dp; 721 if
+   those are settled first). The live site (GitHub Pages, nickhedley.github.io/gridtwin-za) follows main from here.
+4. Docs, claude/build-costs's own 65 commits (RESULTS, TODO, HANDOVER, SOURCES, CLAUDE). Clean.
+5. Tools, claude/topup and claude/costsplit (topup.js, gasrole.py, costsplit scripts, pathcheck additions, the workflow's
+   top-up and tsl modes). Clean.
+6. Sensitivity switches: claude/c4-irp3 (contains c4-coalavail), c4-coalirp, c4-windlow, c4-battdecl, c4-diesel. Three conflicts
+   in pathcheck.js and pathway_perfail.js where two branches add a field to the same line; kept both. Best done as one branch
+   with the LP-key test.
+7. .github/print_state.py from claude/print-results (the script only; that branch's print-only workflow stays off main).
+   Suite after 4-7: 715/725, the same checks as after 3.
+Also any time: #33 (cross-check scripts). Close without merging: #22 (code in 2, docs in 4); claude/stress-per-year, grid-cost and
+peakers (inside 2). Hold: regional-phes-07u (regional pumped hydro, inconclusive; its build 08a is not in c4-frozen),
+kerwin-demand, gas-annual-flex-regroup (6 Oct notes), fleet-slim (paused). Timing: 1-3 by Thu 15 so c5 can launch from main;
+4-7 by Wed 21. For 2, 3 and 6 I would open merge branches with the conflicts resolved, once you approve the order.
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can

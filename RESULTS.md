@@ -2537,6 +2537,106 @@ adequacy test runs simulate(), two draws per weather year), so the optimiser's b
 one outage draw per case; single node; 24-hour sight is still perfect within the day. How much of each top-up would remain under
 a 24-hour dispatch is not measured; the engine fix (TODO 14df, step 'first') answers it on c4's build.
 
+### Engine fixes (builds 2026-10-13f to 13h, branch claude/engine-fix): the single-node engine is 1-12% above the 24-hour rolling optimum on the four cross-check weeks (was 2-48%) and sheds nothing in c4's 2040 stress week (was 37.3 GWh); c4's 2040 costs 8.4% less to run, 13 Oct 2026
+
+User, 13 Oct: three fixes on claude/engine-fix (from claude/c4-frozen fa7d8af, engine 2026-10-12e), one commit each, full suite
+before and after each, the single-node cross-check after each (validation/single_node/; updated scripts on claude/sn-crosscheck-2).
+- (b) 20729cc, build 13f, TODO 14dl: coal start-ups charged once. The per-MW charge (R224.52/MW of commitment added) priced the
+  same starts as the commitment pre-pass's unit start costs (R224.52 = UC_FLEET's R152.58 per installed MW / 0.68); only the
+  pre-pass charges now. Dispatch identical hour by hour.
+- (c) 99b5b92, build 13g, TODO 14dn: the commitment pre-pass keeps the units still standing (nearest published date retires
+  first, whole units, sized to the coal installed), instead of all 85 units at coal installed / 41,530 (49% each in c4's 2040).
+  2026: 84 units at 95.8% of nameplate; c4's 2040: 32 units at 95.8%.
+- (a) d388ceb, build 13h, TODO 14do: short-duration storage looks storageLookaheadH = 24 hours ahead. Each hour lithium and
+  vanadium discharge ahead of coal what the window's surplus will put back; charge from coal only to the window's need beyond
+  coal (from gas, beyond coal and gas); after coal they hold what later hours need beyond gas, release it ahead of diesel down
+  to what later hours need beyond diesel, and the rest against the hour's own shed. The ramp-aware coal floor counts what the
+  stores can deliver. Pumped storage keeps its place; stores of 100 hours or more keep their week rule (charged from coal only
+  against the forecast shortfall). storageLookaheadH 0 restores 13g exactly (checked hour by hour).
+
+Cross-check, R million a week (engine at full-load coal cost) against the 24-hour rolling PyPSA unit-commitment optimum (rule
+'all'), each engine's own week (inputs, starting commitment and the end-of-week storage floor from that engine's run; PyPSA
+charges the same start-ups and uses the same coal units as the engine it is compared with). Weeks and seeds as entry 'c4 2040,
+three weeks'; baseline: Today 2026, default profiles, hours 3264-3431, seed 12345.
+
+```
+                         c4 engine (12e)        + (b) 13f              + (c) 13g              + (a) 13h
+2026 baseline            2,210.6 / 2,163.2 +2.2%   2,192.1 / 2,162.6 +1.4%   2,191.0 / 2,162.3 +1.3%   2,189.8 / 2,162.3 +1.3%
+c4 2040 May              2,165.6 / 1,664.7 +30.1%  2,152.4 / 1,657.2 +29.9%  2,186.8 / 1,615.5 +35.4%  1,651.5 / 1,539.2 +7.3%
+c4 2040 November         1,485.0 / 1,000.4 +48.4%  1,470.3 /   982.2 +49.7%  1,545.6 /   974.5 +58.6%  1,081.6 /   962.1 +12.4%
+c4 2040 stress           3,202.5 / 2,192.0 +46.1%  3,191.5 / 2,174.9 +46.7%  3,221.2 / 2,175.6 +48.1%  2,343.1 / 2,198.6 +6.6%
+stress-week shed, GWh    37.3 / 0                  37.3 / 0                  37.3 / 0                  0 / 0
+```
+
+13h, engine / optimum: lithium cycles a week May 4.07 / 5.25, November 5.96 / 6.17, stress 5.26 / 5.71 (c4 engine 1.6-2.5);
+curtailment GWh May 7 / 5, November 127 / 31, stress 427 / 246 (c4 engine 458-1,062). (c) alone raises the engine's 2040 weeks
+1-5% (fewer, full-size units: a higher midday coal floor) while the optimum on the same units falls; (a) then removes most of
+the gap. What is left in November is mainly coal committed for net load before storage (the pre-pass does not see storage):
+the engine spills 127 GWh against 31.
+
+c4's 2040 with its 1,000 MW top-up, 12 weather years x 2 draws (seeds 71830529 + k x 104729 + year x 7919): mean shed 4.07 GWh
+(12e), 4.07 (13f), 3.66 (13g), 0 (13h; no draw sheds); system cost R369.8bn, 369.1, 372.1, 341.0 a year.
+
+2026 under (a) (Today 2026, a year): lithium discharges 18 GWh against 744 (the old rule cycled it daily from coal into
+coal-served peaks), diesel 25.9 GWh against 61.5, system cost R210.39bn against R210.67bn.
+
+Run time (same machine, two passes in alternating order): one engine-check year (c4's 2040, 24 simulated years) and one
+live-app recompute (Today 2026, run()):
+```
+                                      12e      13f      13g      13h
+one simulated year, ms (mean of 48)   318      304      272      381
+live-app recompute, ms (mean of 10)   1,443    1,444    1,436    1,842
+```
+(a) adds 20% per simulated year against the c4 engine (40% against 13g) and 0.4 s (28%) to each slider change. The engine
+check's total time falls where years are clearly adequate: c4's check stopped every year at the first 120 runs (2% of its
+target or less), where the old engine needed more draws in its marginal years.
+
+Suite (ESK19679.csv present; audit 87/87 and eng5 6/6 throughout): fa7d8af 720/725 (stale stamp); 13f 721/725; 13g 721/725;
+13h 715/725. The four failures before (a): EDMSA Scenario A CO2 2035; wind capture at 110 GW, iron-air in July, preset
+curtailment band. Six new with (a), causes established, no check changed (user to decide each):
+1. 'modest demand shifting lowers system cost': 7.5% shift R210.46bn against R210.39bn at zero.
+2. 'demand response reverses at high shift': at 30% the peak is 29,589 MW against 29,628 at zero.
+3. 'the instant heuristic discharges near the median price': now R1,912/MWh against a median of R747 (ratio 2.56, limit 1.5).
+4. 'response matrix matches baseline': 17 cells changed.
+5. 'lcoeIronAir moves at least one dispatch output': its probe (Today 2026 with 5 GW of iron-air) now dispatches 2 GWh of
+   iron-air a year against 1.5 TWh, because diesel is already zero; the control only scales that energy.
+6. 'must-run gas energy goes somewhere' (IRP path 2035): the check's gap equals charging less firm exports (the hourly
+   balance closes to 1e-11 MW), so it fails whenever charging passes about 10 TWh a year; (a) takes charging from 8.5 to 14.6 TWh.
+Findings 1-3 describe the old storage rule; 4 is a baseline; 5 and 6 are how the checks are built.
+
+Caveats: one bus; four weeks and one outage draw each; the optimum has no operating reserve (the engine holds 2,200 MW; with
+reserve off the engine's May week costs 1.1% more, so the reserve is not what separates them); the look-ahead has perfect sight of load, weather and outages for 24 hours, as the
+optimum has; the commitment pre-pass is still storage-blind; (a) changes 2026 battery use as above, which the live app shows.
+
+### c4's build through the fixed engine (build 2026-10-13h), no re-solve: no year fails, so no top-up; engine cost R2,540bn PV against R2,598bn, CO2 1,480 Mt against 1,605, 13 Oct 2026
+
+User, 13 Oct. c4's pathway as solved (P_c4t, run 38359856512), engine check as its own job ran it (pathcheck.js, COMMIT=1 PSE=1
+TF=0.5 LNG=1, adaptive draws, seeds 71830529 + k x 104729 + year x 7919), engine claude/engine-fix d388ceb against c4's own
+check (engine 86bfea4, identical to fa7d8af). No top-up applied on either side.
+
+```
+mean shed against target (GWh), engine cost (R bn)    c4 engine (12e)          fixed engine (13h)
+2026                                                   0.055 / 1.94   218.0     0.038 / 1.94   216.9
+2034                                                   0.118 / 2.26   296.4     0      / 2.26   290.1
+2037                                                   0.694 / 2.41   323.5     0      / 2.41   309.7
+2038                                                   1.225 / 2.48   343.1     0      / 2.48   323.8
+2039                                                   2.082 / 2.54   356.9     0.009 / 2.54   332.1
+2040                                                   4.185 / 2.60   369.9     0.016 / 2.60   341.0
+years over target                                      2040 (161%)              none (worst 2026, 2%)
+top-up                                                 1,000 MW in 2040         none
+engine cost 2026-40, PV at 8% / undiscounted           R2,597.7bn / R4,415.6bn  R2,540.2bn / R4,286.7bn
+CO2 2026-40                                            1,605 Mt                 1,480 Mt
+```
+
+Both measures: the optimiser's objective is unchanged (no re-solve): R1,727.7bn as solved, R1,715.5bn without its stress-target
+penalty. The engine measure falls R57.5bn PV (2.2%), all of it operating cost: c4's engine operating share was R826.8bn PV
+(entry 'c4 2040, three weeks'), so the fixed engine's operating cost is about 7% lower. Every engine-check figure recorded
+before today (verdicts, top-ups, engine PVs, CO2 by the engine) is on the old engine and would move the same way; the
+optimiser's figures do not change.
+
+Caveats: c4's build was optimised against windows the old engine picked (the loop's adequacy test runs simulate()); a re-solve
+on the fixed engine (c5) can build less. One weather-year draw set; the engine check's own convergence rule.
+
 ### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
 
 Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on
