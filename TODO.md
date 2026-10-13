@@ -107,12 +107,13 @@ FOCUS (user, 12 Oct 2026). Until the IRP comparison is drafted, the only goal is
   2. One stress-day coal rule for the optimiser and the engine, based on how the engine commits coal (14de, 14cx).
   3. The loop's adequacy test matches the engine check (14cv).
   4. More representative days per year. Now (index.html bldRepDays, called with 12 in bldBuildLP ~9965): 12 days from the default profile year, each weighted 365/12, plus a 7-day tail from the worst other weather year, plus the stress windows (c4: 32 windows of 14 days). Test 24 and report the change in cost and runtime.
-  5. Done when, on the same plan: the two cost measures agree within 3%, component by component; lithium discharge within 20%; the loop's shed within 10% of the engine's; and c5's loop stops on adequacy, not the pass cap, with no top-up beyond the build caps.
-  6. Then run the full-year 10-region model on c5's 2030, 2035 and 2040 builds, to check transfer limits and coal commitment over every hour.
-  7. Optional: a PyPSA-RSA cross-check for one or more target years, at 10 regions with HiGHS, subject to its licence (not yet recorded in SOURCES; confirm first).
+  5. Before the 3% test (user, 13 Oct): add the costs the optimiser cannot change back to its objective (fixed nuclear and rooftop capital, the existing fleet, PPAs and anything else the engine counts), so both measures cover the same items; the cost split's constants (claude/costsplit, TODO 14cv) are the starting list.
+  6. Done when, on the same plan: the two cost measures agree within 3%, component by component; lithium discharge within 20%; the loop's shed within 10% of the engine's; and c5's loop stops on adequacy, not the pass cap, with no top-up beyond the build caps.
+  7. Then run the full-year 10-region model on c5's 2030, 2035 and 2040 builds, to check transfer limits and coal commitment over every hour.
+  8. Optional: a PyPSA-RSA cross-check for one or more target years, at 10 regions with HiGHS, subject to its licence (AGPL v3 for the code; data terms vary; our use to confirm with Meridian: SOURCES 'PyPSA-RSA: licence and what we take').
 14dg. A finer network (user, 13 Oct 2026; after c5).
   1. Target: NTCSA's GCCA supply areas (27-34), matching one of PyPSA-RSA's resolutions.
-  2. Data: area boundaries and headroom (GCCA 2025, held: public_data/connection_headroom.csv; the Annexure A substation limits are not yet loaded, SOURCES); demand by area (to be sourced, or downscaled from ESRG's 10 regions with the method stated); wind and solar profiles by area (ERA5, PVGIS); transfer limits between areas (TDP, NTCSA, PyPSA-RSA if the licence allows); corridor upgrade costs (TDP 2025). List the gaps before building anything.
+  2. Data: area boundaries and headroom (GCCA 2025, held: public_data/connection_headroom.csv; the Annexure A substation limits are not yet loaded, SOURCES); demand by area (to be sourced, or downscaled from ESRG's 10 regions with the method stated); wind and solar profiles by area (ERA5, PVGIS); transfer limits between areas (TDP, NTCSA, PyPSA-RSA if Meridian confirms; SOURCES 'PyPSA-RSA: licence and what we take'); corridor upgrade costs (TDP 2025). List the gaps before building anything.
   3. Transmission expansion between areas as an optimiser choice.
   4. Runtime test before adopting it.
   5. Done when merging the areas back to 10 regions reproduces the 10-region results within 2% on cost and build.
