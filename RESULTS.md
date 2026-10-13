@@ -2055,6 +2055,30 @@ CO2 2026-40 by fuel (gas as the engine computes it; coal the remainder): c4 coal
 penalty c4 coal 1,472, gas 6.2, diesel 0.3, total 1,479 Mt. The 126 Mt gap: coal 105 Mt (none in 2026-30; 8.5 to 12.8 Mt a
 year in 2031-40), gas 21 Mt, diesel 0.1 Mt. Wind and solar built by 2040: c4 13.5 and 52.5 GW; penalty c4 24.9 and 43.5 GW.
 
+### s_nogas3 (no new gas, diesel open-cycle allowed, lithium 3 GW a year), as solved: R2,593bn PV and 1,547 Mt, but 2036-40 fail the engine check (2040 at 968%); top-up running, 13 Oct 2026
+
+Run: c4's settings plus GAS_CAP=0, seeded from c4's final run (WIN_FROM, seed 38359856512 / c4t), rule A (MAXP=1). Run
+38361308336, claude/c4-frozen; pass 1 solved Optimal in 43 min from a cold start, 'pass limit reached'; loop test after
+pass 1: 7 failing years, 2034-40, worst 2040 27.38 against 2.60 GWh. Engine check (adaptive draws) and print job 38368110683.
+
+```
+                                 s_nogas3 as solved    c4 as solved
+cost 2026-40, PV at 8% real      R2,593bn              R2,598bn
+CO2 2026-40                      1,547 Mt              1,605 Mt
+gas GW 2030 / 2035 / 2040        0 / 0 / 0             1.2 / 3.5 / 5.1
+diesel open-cycle GW (new)       3.0 / 5.5 / 6.5       2.8 / 2.8 / 3.6
+lithium GW                       6.2 / 15.8 / 27.1     6.6 / 11.2 / 21.7
+lithium GWh                      44 / 92 / 152
+onshore wind GW built            12.5 / 13.5 / 18.5    13.5 by 2040
+utility solar GW built           14.4 / 34.5 / 60.0    52.5 by 2040
+```
+
+Shed by year, engine check, mean against target (GWh): 2026-33 at most 0.13 (6%); 2034 1.55 / 2.26 (69%); 2035 2.05 / 2.31
+(89%); 2036 3.50 / 2.35 (149%); 2037 6.62 / 2.41 (274%); 2038 12.54 / 2.48 (506%); 2039 17.98 / 2.54 (707%); 2040 25.16 / 2.60
+(968%). Diesel output, all open-cycle units: at most 0.43 TWh a year (2038), so as solved it is under the 1 TWh rule for a
+high-diesel version (user, 13 Oct); to be re-read with the top-up. Cost as solved is not comparable with c4 until the top-up
+is in (run 38368114518, claude/topup).
+
 ### s_nogas4strict (no new gas or open-cycle, lithium 4 GW a year): adequate after one pass, R2,838bn PV and 1,331 Mt, R240bn dearer and 274 Mt less CO2 than c4, 13 Oct 2026
 
 Run: c4's settings with LI_CAP=4000 OCGD=0 GAS_CAP=0 (no new CCGT, OCGT or diesel open-cycle), seeded from c4's final run

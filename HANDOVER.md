@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 08:25 UTC)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 08:20 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -43,6 +43,9 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
 - s_dieselhigh held (user, 13 Oct): c4's diesel at option (a) adds at most R1.4bn undiscounted (RESULTS). If s_nogas3 or
   s_nogas4 produce more than 1 TWh from diesel in any year (engine check, 'dieselTWh'), run high-diesel versions of them
   at option (a), DIESEL_R=8887, ref claude/c4-diesel, rule A, seeded from c4, labelled an upper bound.
+- s_nogas3 finished 08:15 UTC (run 38361308336, name confirmed): as solved R2,593bn, 1,547 Mt, 2036-40 failing the engine
+  check (2040 968%); diesel at most 0.43 TWh a year as solved. Print 38368110683; top-up 38368114518 running (re-read diesel
+  with the top-up against the 1 TWh rule).
 - After each run: print job (claude/print-results, source_run = its last run) and, for rule A runs, the top-up
   (claude/topup, same inputs). c4: report as solved and with the top-up beside penalty c4 (cost PV, CO2, gas, diesel
   open-cycle and lithium GW in 2030/2035/2040, shed by year; 2039-40 marked failing the loop's own test; Tutuka flag).
