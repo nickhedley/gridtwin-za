@@ -1,0 +1,23 @@
+{
+ "costCcgt": 1298.42,
+ "newWindMW": 13487,
+ "newPvMW": 52473,
+ "newRooftopMW": 16800,
+ "newBattMW": 21710,
+ "newBattHours": 5.810179640718563,
+ "newVrfbMW": 0,
+ "newIronAirMW": 600,
+ "newCcgtMW": 3656,
+ "newOcgtMW": 1449,
+ "newOcgdMW": 4579,
+ "newOffshoreMW": 0,
+ "newNuclearMW": 0,
+ "newPsMW": 1354,
+ "newPsHours": 14,
+ "coalDecomMW": 19432,
+ "demandGrowthPct": 45.889599999999994,
+ "scenarioYear": 2040,
+ "carbonTaxRPerT": 115.5,
+ "newPsMaxMW": 10000000,
+ "acapPs": 2024.7833363617985
+}
