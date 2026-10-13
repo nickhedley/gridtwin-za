@@ -2083,7 +2083,7 @@ so engine-check cost gaps of this size between seeded runs are not the setting's
 nested: CAP_FROM=2026 also lets s_be6 build 461 and 550 MW of lithium in 2026-27, where c4 built 0 and 400, and c4 retires
 588 MW of coal early from 2026 where s_be6 retires none.
 
-### s_nogas4 (no new gas, diesel open-cycle allowed, lithium 4 GW a year), as solved: R2,597bn PV and 1,553 Mt, but 2035-40 fail the engine check (2040 at 1,035%); top-up running, 13 Oct 2026
+### s_nogas4 (no new gas, diesel open-cycle allowed, lithium 4 GW a year): R2,597bn PV as solved, 2035-40 failing; with a 4,750 MW diesel open-cycle top-up R2,612bn and 1,553 Mt, 2036 and 2038 over the build cap, 13 Oct 2026
 
 Run: c4's settings plus LI_CAP=4000 GAS_CAP=0, seeded from c4, rule A. Run 38361312903, claude/c4-frozen; pass 1 solved
 Optimal in 58 min, 'pass limit reached'; loop test: 7 failing years, 2034-40, worst 2040 29.17 against 2.60 GWh. Print
@@ -2091,9 +2091,14 @@ Optimal in 58 min, 'pass limit reached'; loop test: 7 failing years, 2034-40, wo
 15.6 / 29.4 GW and 56 / 89 / 166 GWh; onshore wind 12.5 / 12.9 / 17.8 GW; utility solar 14.4 / 34.5 / 62.0 GW; no gas.
 Shed (engine check, GWh against target): 2034 1.65 / 2.26 (73%); 2035 2.65 / 2.31 (115%); 2036 3.87 / 2.35; 2037 7.12 / 2.41;
 2038 15.48 / 2.48; 2039 21.37 / 2.54; 2040 26.89 / 2.60 (1,035%); 2026-33 at most 7%. Diesel output at most 0.45 TWh a year
-(2038), under the 1 TWh rule as solved; to be re-read with the top-up (run 38369545953).
+(2038), under the 1 TWh rule as solved.
 
-### s_nogas3 (no new gas, diesel open-cycle allowed, lithium 3 GW a year), as solved: R2,593bn PV and 1,547 Mt, but 2036-40 fail the engine check (2040 at 968%); top-up running, 13 Oct 2026
+Top-up (run 38369545953): 4,750 MW of new diesel open-cycle (250 MW in 2035, 500 in 2036, 750 in 2037, 1,500 in 2038, 1,000 in
+2039, 750 in 2040); every year then within target (2040 2.39 against 2.60). Cost with the top-up R2,612bn PV (capex 12.4,
+fixed O&M 2.4, fuel 0.3, other -0.3): R13bn more than c4 with its top-up, 52 Mt less CO2. Over the build caps in 2036 and 2038
+(1,500 MW in the year against 1,000). Diesel output with the top-up at most 0.48 TWh (2038): no high-diesel version.
+
+### s_nogas3 (no new gas, diesel open-cycle allowed, lithium 3 GW a year): R2,593bn PV as solved, 2036-40 failing; with a 4,250 MW diesel open-cycle top-up R2,606bn and 1,547 Mt, 2036 over the build cap, 13 Oct 2026
 
 Run: c4's settings plus GAS_CAP=0, seeded from c4's final run (WIN_FROM, seed 38359856512 / c4t), rule A (MAXP=1). Run
 38361308336, claude/c4-frozen; pass 1 solved Optimal in 43 min from a cold start, 'pass limit reached'; loop test after
@@ -2114,8 +2119,14 @@ utility solar GW built           14.4 / 34.5 / 60.0    52.5 by 2040
 Shed by year, engine check, mean against target (GWh): 2026-33 at most 0.13 (6%); 2034 1.55 / 2.26 (69%); 2035 2.05 / 2.31
 (89%); 2036 3.50 / 2.35 (149%); 2037 6.62 / 2.41 (274%); 2038 12.54 / 2.48 (506%); 2039 17.98 / 2.54 (707%); 2040 25.16 / 2.60
 (968%). Diesel output, all open-cycle units: at most 0.43 TWh a year (2038), so as solved it is under the 1 TWh rule for a
-high-diesel version (user, 13 Oct); to be re-read with the top-up. Cost as solved is not comparable with c4 until the top-up
-is in (run 38368114518, claude/topup).
+high-diesel version (user, 13 Oct).
+
+Top-up (run 38368114518, claude/topup 89f3ed0): 4,250 MW of new diesel open-cycle, added 500 MW in 2036, 1,000 in each of
+2037-39 and 750 in 2040; every year then within target (2040 2.59 against 2.60). Cost with the top-up R2,606bn PV (capex
+10.5, fixed O&M 2.1, fuel 0.3, other -0.3), against c4 with its top-up R2,599bn: R7bn more, 58 Mt less CO2 (1,547 Mt). Over
+the build caps in 2036 (1,500 MW of diesel open-cycle in the year against the 1,000 MW cap). Diesel output with the top-up
+stays under 0.5 TWh a year, so no high-diesel version (user rule). Caveat: engine-check cost gaps of this size are inside
+the measurement question in TODO 14cv (see s_be6).
 
 ### s_nogas4strict (no new gas or open-cycle, lithium 4 GW a year): adequate after one pass, R2,838bn PV and 1,331 Mt, R240bn dearer and 274 Mt less CO2 than c4, 13 Oct 2026
 
