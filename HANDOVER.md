@@ -178,6 +178,11 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   comparison not done (TODO 14df step 9). Coal start-ups charged twice? (14dl). Coal dates are Meridian's ME IRP 2024 workbook (14cu);
   UC_FLEET's 0.5 minimum stable level on 16 coal rows is ours, unsourced (14dj); stale build outputs (14dk); s_phestub held
   (14di).
+- Check-in 14:05: s_coal60 recorded (RESULTS, both tables and its own entry): adequate after one pass, no top-up, engine
+  R2,578bn (-21 against c4), objective without the penalty R1,667.7bn (-47.8, agree), 1,639 Mt (+34); 2040 -R5.7bn, +9.1 Mt;
+  2.7 GW of coal retired early from 2026 (c4 588 MW). Artifact downloads are blocked by the network policy here; figures come
+  from the job logs. s_pvirp_c4 pass done 13:56, check running. Still running: s_windlow (pass since 11:47), s_irpgas_c4,
+  s_roof2_c4.
 - TODO 14df (c5: building and running agree, with done-when tests) and 14dg (finer network, GCCA supply areas), both after
   Friday's note (user, 13 Oct); nothing changes now.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against

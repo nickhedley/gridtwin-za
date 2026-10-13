@@ -2024,6 +2024,7 @@ s_wind35 (h)         2,526 LB   3,000   2038        1,661.5        0.0    1,661.
 s_be6                2,550          0   -           1,816.2       90.3    1,725.9       -49   |  +10.4      disagree
 s_committed          2,562          0   -           1,736.6       43.6    1,693.0       -37   |  -22.5      agree (disagreed with the penalty)
 s_coalirp            2,592 LB   3,250   2039, 2040  1,686.2        0.0    1,686.2        -7   |  -29.3      agree
+s_coal60 (j)         2,578          0   -           1,667.7        0.0    1,667.7       -21   |  -47.8      agree
 s_gasprem            2,617 LB   1,750   2040        1,734.4       11.3    1,723.0       +18   |   +7.5      agree
 s_be7                2,614 (d)      0   -           1,679.5       12.5    1,667.1       +15   |   (c)       not comparable
 s_li8h               2,614      3,000   -           1,702.9        0.0    1,702.9       +15   |  -12.6      disagree (e)
@@ -2048,7 +2049,8 @@ the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' b
 s_be7 38380844927, s_li8h 38383985895, s_be4 38383995436. (h) s_wind35: wind limit 3,500 MW a year from 2028 (front-loaded); fails the engine check in 2037-40 as
 solved; lower bound; not in the note's headline findings (user, 13 Oct). (i) s_coalavail as solved: fails the engine check
 in every year 2030-40 (2040 at 2,816% of target); R2,399bn as solved; top-up 38394240062 (8,000 MW, over the caps in 2033 and
-2038). Not the central (user, 13 Oct): reported as a finding only.
+2038). Not the central (user, 13 Oct): reported as a finding only. (j) s_coal60: IRP Figure 3's 60-year coal line; adequate after
+one pass, no top-up (38403003928, 0 MW); tsl 38403007199; entry 's_coal60' below.
 ```
 
 Every penalty sits in 2030 except the strict no-gas pair (2030 R774bn, 2032 R455bn, 2033 R390bn, 2034 R213bn, 2036 R6bn,
@@ -2194,6 +2196,45 @@ their names could not be read while running, also the three _c4 runs started wit
 38395502406). The three _c4 runs were relaunched 12:27 on claude/c4-irp3 (0488f54), seed c4t: s_irpgas_c4 38397386689,
 s_pvirp_c4 38397404456, s_roof2_c4 38397420439.
 
+### s_coal60 (IRP 2025 Figure 3's 60-year, delayed-shutdown coal line): adequate after one pass with no top-up; R21bn below c4 on the engine check and R47.8bn on the objective without the penalty; 34 Mt more CO2; the optimiser retires 2.7 GW of coal early from 2026, 13 Oct 2026
+
+Run 38379671167 (ref claude/c4-coalirp, 53e9ba8; index.html as c4's 86bfea4, build 2026-10-12e): c4's settings plus
+COAL_DATES=coal_dates_irp2025_60y.json (SOURCES, 'IRP 2025 Figure 3, 60-year line'), WIN_FROM=seed/out/pathway_c4t_lp2040.json,
+MAXP=1 (rule A), seed 38359856512 / c4t. Pass solved Optimal (9,953 s), verdict adequate after pass 1 (loop's own test, worst
+2040: 1.53 against 2.60 GWh, 59%); finished 12:50 UTC. Print 38403000256, top-up 38403003928 (claude/topup 27337aa), tsl
+38403007199 (solution bf44ada914). Engine PV at 8% real.
+
+```
+                                     s_coal60                   c4 as solved (with top-up)
+engine PV                            R2,578bn, no top-up        R2,598bn (R2,599bn, 1,000 MW)
+objective / without penalty          R1,667.7 / 1,667.7bn       R1,727.7 / 1,715.5bn
+stress-target penalty                R0.0bn                     R12.2bn (2030)
+CO2 2026-40                          1,639 Mt                   1,605 Mt
+coal on schedule MW 2030/35/40       32,433 / 25,916 / 25,916   30,296 / 24,206 / 20,848
+coal retired early (rc)              2,700 MW from 2026         588 MW from 2026
+coal standing MW 2030/35/40          29,733 / 23,216 / 23,216   29,708 in 2030
+gas GW 2030/35/40                    1.2 / 3.4 / 5.1            1.2 / 3.5 / 5.1
+new diesel open-cycle GW             2.8 / 2.8 / 3.4            2.8 / 2.8 / 3.6 (4.6)
+lithium GW                           6.5 / 11.5 / 21.5          6.6 / 11.2 / 21.7
+lithium GWh 2040                     123.4                      126.1
+wind / solar built 2026-40 GW        12.6 / 50.4                13.5 / 52.5
+pumped hydro GW 2040                 1.5 (2038-39)              1.35
+worst year, engine check             2040 at 29%                2040 at 161% (100% with top-up)
+2040, engine check                   R366.9bn, 110.4 Mt         R372.6bn, 101.3 Mt (with top-up)
+```
+
+Shed by year, engine check, mean against target on customer demand, GWh: 2026 0.20 / 1.94; 2027 0.04 / 1.96; 2028-31 0.00;
+2032 0.00; 2033 0.01; 2034 0.16 / 2.26; 2035 0.53 / 2.31; 2036 0.05; 2037 0.23; 2038 0.21; 2039 0.39 / 2.54; 2040 0.74 / 2.60.
+Coal on schedule: bldCoalMW on each run's dates (s_coal60 from the print, standing plus rc; c4 from UC_FLEET scaled to
+39,692 MW). rc is one cumulative MW figure a year (rcmono), not named units, so which stations go early is not defined.
+
+Finding: on the 60-year line the plan needs no top-up (2040 at 29% of target against c4's 161%) and costs R21bn less on the
+engine check and R47.8bn less on the objective without the penalty (directions agree), with 34 Mt more CO2 over 2026-40 and
+9.1 Mt more in 2040. The optimiser takes 2.7 GW of the line's extra coal off from 2026 for its fixed O&M; standing coal is
+level with c4 in 2030 and 2.4 GW above c4's schedule in 2040 (before c4's own early retirement). Caveats: rule A (one pass on c4's windows); the line is
+digitised to about +-250 MW; lithium 2% below c4's, so not storage-heavy; against s_coalirp (50-year line, R2,592bn lower
+bound, objective R1,686.2bn) both measures are lower here.
+
 ### Rooftop in the two cost measures (for s_roof2): the grid measure removes R1,150/kW-yr of rooftop, not its full R1,701-2,056, so a third or more of rooftop's cost stays in it, 13 Oct 2026
 
 Arithmetic only, from the engine's own functions (engine build 2026-10-12e; jsdom script in the scratchpad, harness/node_modules).
@@ -2336,11 +2377,12 @@ s_be7, ours USD 7,500       +39.3            -7.8        5,034                  
 s_be7, EIA AEO2023          +57.6            -7.8        7,386                         with IDC and IRP fixed O&M
 s_be7, IRP 2025             +71.7            -7.8        9,186                         with IDC and IRP fixed O&M
 s_coalirp                   +16.0           -16.0        1,000                         LB (cap 2039, 2040)
+s_coal60                     -5.7            +9.1        emits more                    (123 GWh, -2%); no top-up
 s_battdecl                   -9.0            -2.6        cheaper and cleaner           (103 GWh); lithium -3% a year
 ```
 
 Sources: top-ups 38368114518 (s_nogas3), 38369545953 (s_nogas4), 38374666197 (s_wind35), 38383982619 (s_li8h), 38383992755
-(s_be4), 38379712300 (s_coalirp), 38389689628 (s_battdecl, 0 MW); prints 38366303884 and 38373115718 (strict runs, figures
+(s_be4), 38379712300 (s_coalirp), 38389689628 (s_battdecl, 0 MW), 38403003928 (s_coal60, 0 MW); prints 38366303884 and 38373115718 (strict runs, figures
 to 0.1); s_be6 and s_be7 local re-runs of their checks (120 runs each, reproducing them). s_nogas4strict_bd and s_battdecl
 price lithium at -3% a year against c4's -5%, so against c4 they mix the plan and the cost assumption; compare them with each
 other (below).
