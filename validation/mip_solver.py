@@ -19,8 +19,7 @@ WHY THIS IS A SEPARATE SCRIPT, NOT IN THE BROWSER:
   week is priced on this script's basis (fleet marginal cost per MWh, imports R550/MWh, renewables
   and storage zero, plus start-ups). The MIP sees the whole week in advance, so the gap is an upper
   bound on the heuristic's inefficiency. This checks the 10-region engine only. The single-node
-  engine behind the pathway costs (index.html simulate()) has no optimiser cross-check in the
-  repository yet.
+  engine behind the pathway costs (index.html simulate()) is cross-checked in validation/single_node/.
 
 SETUP:
   pip install pypsa highspy pandas  (you likely already have these from the crossval work)
