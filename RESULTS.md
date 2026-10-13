@@ -2028,6 +2028,7 @@ s_gasprem            2,617 LB   1,750   2040        1,734.4       11.3    1,723.
 s_be7                2,614 (d)      0   -           1,679.5       12.5    1,667.1       +15   |   (c)       not comparable
 s_li8h               2,614      3,000   -           1,702.9        0.0    1,702.9       +15   |  -12.6      disagree (e)
 s_be4                2,618        750   -           1,731.5       10.8    1,720.6       +19   |   +5.1      agree
+s_battdecl           2,590          0   -           1,740.6       11.6    1,729.0        -9   |  +13.5      disagree (g)
 s_nogas3             2,606 LB   4,250   2036        1,905.2      186.7    1,718.5        +7   |   +3.0      agree
 s_nogas4             2,612 LB   4,750   2036, 2038  1,887.8      163.2    1,724.6       +13   |   +9.1      agree
 s_nogas4strict       2,838      rule B  -           3,762.3    1,838.6    1,923.7      +239   | +208.2      agree
@@ -2041,7 +2042,8 @@ runs get no top-up (both adequate). (a) s_coalirp R2,588bn as solved, 2039-40 fa
 (b) top-up 38377995864: 250 MW in 2040, R2,763bn, CO2 1,641 Mt. (c) the optimiser objective leaves out the capital of s_be7's
 fixed 5.2 GW of nuclear (2036-39; a constant to the LP, index.html ~6501), which the engine check charges. (d) understated:
 the engine charges new nuclear no fixed O&M (entry 's_be7: nuclear cost basis' below). (e) s_li8h is the storage-heavy plan
-(8-hour lithium): its engine cost is an upper bound, the direction of the disagreement. tsl runs: s_gasprem 38380834231,
+(8-hour lithium): its engine cost is an upper bound, the direction of the disagreement. (g) s_battdecl is storage-light
+(17.6 GW and 103 GWh of lithium in 2040 against c4's 21.7 GW and 126 GWh), which the engine favours. tsl runs: s_battdecl 38389692464, s_gasprem 38380834231,
 s_be7 38380844927, s_li8h 38383985895, s_be4 38383995436.
 ```
 
@@ -2125,6 +2127,52 @@ s_gasprem: R18bn dearer than c4 on the engine check, R7.5bn on the objective wit
 gas (4.3 against 5.1 GW in 2040) and more lithium. s_be7: R15bn dearer on the engine check; its objective (c) leaves out
 the nuclear capital, so the R48bn the objective puts it below c4 is not a cost comparison. s_be7 is adequate without a
 top-up and emits 29 Mt less than c4.
+
+### 2040 against c4 with its top-up, for the note: annual cost gap, CO2 gap and their ratio; s_battdecl; the strict no-gas premium, 13 Oct 2026
+
+From existing outputs only (user, 13 Oct). Engine check, 2040, each run with its top-up (top-up runs' "2040" lines; rule B and
+zero-top-up runs as solved, prints or the local cost-split re-runs reproducing them). c4 with its 1,000 MW top-up: R372.6bn
+and 101.3 Mt in 2040 (run 38362504364). Ratio: cost gap divided by the CO2 avoided, R/t; where both gaps are negative the plan
+is cheaper and cleaner than c4 in 2040, shown as such. UB: storage-heavy (more than 10% above c4's 126 GWh of lithium in
+2040), engine cost an upper bound. LB: top-up over a build cap, cost a lower bound. A run marked both has no known direction
+of bias.
+
+```
+run                      2040 cost gap   CO2 gap 2040   R per tonne avoided            marks
+                         R bn a year     Mt
+s_nogas3                     +4.8           -10.7          446                         UB, LB (152 GWh; cap 2036)
+s_nogas4                     +9.5           -10.4          915                         UB, LB (166 GWh; cap 2036, 2038)
+s_nogas4strict              +54.6           -36.7        1,490                         UB (176 GWh)
+s_nogas4strict_bd           +62.2           -37.5        1,661                         UB (171 GWh); lithium -3% a year
+s_wind35                    -14.1            -7.6        cheaper and cleaner           LB (cap 2038)
+s_li8h                      +13.7            -2.5        5,540                         UB (149 GWh)
+s_be4                        +6.1            +0.9        emits more                    (133 GWh, +6%)
+s_be6                       -26.6            -5.4        cheaper and cleaner
+s_be7, engine as run         +6.8            -7.8          868                         no new-nuclear fixed O&M or IDC
+s_be7, ours USD 7,500       +39.3            -7.8        5,034                         with IDC and IRP fixed O&M
+s_be7, EIA AEO2023          +57.6            -7.8        7,386                         with IDC and IRP fixed O&M
+s_be7, IRP 2025             +71.7            -7.8        9,186                         with IDC and IRP fixed O&M
+s_coalirp                   +16.0           -16.0        1,000                         LB (cap 2039, 2040)
+s_battdecl                   -9.0            -2.6        cheaper and cleaner           (103 GWh); lithium -3% a year
+```
+
+Sources: top-ups 38368114518 (s_nogas3), 38369545953 (s_nogas4), 38374666197 (s_wind35), 38383982619 (s_li8h), 38383992755
+(s_be4), 38379712300 (s_coalirp), 38389689628 (s_battdecl, 0 MW); prints 38366303884 and 38373115718 (strict runs, figures
+to 0.1); s_be6 and s_be7 local re-runs of their checks (120 runs each, reproducing them). s_nogas4strict_bd and s_battdecl
+price lithium at -3% a year against c4's -5%, so against c4 they mix the plan and the cost assumption; compare them with each
+other (below).
+
+s_battdecl (c4's settings, lithium capex -3% a year; run 38367769821, ref claude/c4-battdecl 1edd42b; print 38389685382, top-up
+38389689628, tsl 38389692464): adequate after one pass, no top-up; R2,590bn, 1,603 Mt; objective R1,740.6bn, R1,729.0bn without
+its R11.6bn 2030 penalty. Gas 1.2 / 4.3 / 6.3 GW (2030/35/40), new diesel open-cycle 2.8 / 2.8 / 3.3 GW, lithium 6.6 / 9.2 /
+17.6 GW (103 GWh in 2040); worst year 2040 at 28%. Against c4 it is R9bn cheaper on the engine check but R13.5bn dearer on the
+objective without the penalty: the measures disagree, the engine favouring the storage-light plan.
+
+Strict no-gas premium (user: quoted only as s_nogas4strict_bd against s_battdecl, both at -3% a year): engine check +R272bn
+(R2,862bn against R2,590bn; neither topped up), objective without the penalty +R219bn (R1,948.0bn against R1,729.0bn); CO2
+-275 Mt over 2026-40 (1,328 against 1,603); in 2040 +R71.3bn and -34.9 Mt, R2,041/t. The two measures agree on direction.
+Caveat: s_nogas4strict_bd holds 171 GWh of lithium against s_battdecl's 103, so the engine's storage bias widens the engine
+premium; the objective's R219bn is the lower of the two.
 
 ### s_li8h (lithium with 8 hours of energy) and s_be4 (51% minimum capacity factor on new CCGT, 2030-40; 6 GW not forced), rule A, 13 Oct 2026
 

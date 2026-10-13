@@ -1,4 +1,4 @@
-# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 11:30 UTC check-in)
+# GridTwin ZA - handover, current state (kept current; updated 13 Oct 2026, 11:50 UTC)
 
 Read this block first. Everything below it is older and is superseded wherever it disagrees. Upkeep (user, 12 Oct):
 when a run finishes or a decision changes, update this block (run IDs, status, headline numbers) in the same commit. A new session can
@@ -101,6 +101,10 @@ s_be7 38361331510         s_coalirp 38361335715 (ref claude/c4-coalirp, ee92b00,
   the engine on direction (storage-heavy, 8-hour lithium). s_be4 R2,618bn with 750 MW, objective without penalty R1,720.6bn:
   agree. s_be4's floor (user, 13 Oct): 51% on whatever new CCGT is built, not 6 GW forced; it built CCGT only from 2036
   (0.99 GW by 2040) and OCGT on LNG instead; not the IRP's requirement (RESULTS). s_battdecl finished 10:47 (run 38367769821); print, top-up and tsl dispatched 11:23. Running: s_coal60, s_coalavail.
+- s_battdecl in (11:40): adequate, no top-up, R2,590bn, 1,603 Mt, objective without penalty R1,729.0bn (engine -R9bn,
+  objective +R13.5bn against c4: disagree). Strict no-gas premium (s_nogas4strict_bd against s_battdecl): engine +R272bn,
+  objective +R219bn, -275 Mt; 2040 +R71bn and -35 Mt. The note's 2040 table (cost gap, CO2 gap, R/t, UB and LB marks) is in
+  RESULTS ('2040 against c4 with its top-up'). Still running: s_coal60, s_coalavail.
 - Note wording (user, 13 Oct): in 73% of curtailed hours lithium is at least 90% full; it cycles 119 times a year against
   374; the note states engine costs for storage-heavy plans as an upper bound (RESULTS).
 - Measure (user, 13 Oct): the engine check is the note's cost measure, its storage caveat stated each time; every run also
