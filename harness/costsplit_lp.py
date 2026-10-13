@@ -118,6 +118,39 @@ if st:
         if z['shedMWh'] + z['reserveShortMWh'] > 0 or z['tslMWh'] > 0:
             print('  %d  shed %9.1f + reserve shortfall %9.1f = %9.1f vs target %9.1f -> excess %9.1f (R%6.2f bn)' % (y, z['shedMWh'], z['reserveShortMWh'], z['shedMWh'] + z['reserveShortMWh'], z['targetMWh'], z['tslMWh'], z['penaltyBn']))
 
+# 2030 diagnostics (TODO 14cv, user, 13 Oct): the stress windows binding in 2030 (from the windows file the run used, WINDOWS
+# env), and the coal and diesel capacity the LP allows in 2030, by representative and stress-window day: coal from the
+# cmax_ rows (right-hand side less the early-retirement term at the solution), diesel from the dmax_ rows plus new open-cycle.
+WY = 2030
+WF = os.environ.get('WINDOWS')
+if WF and os.path.exists(WF):
+    W = json.load(open(WF)); per = W.get('periods') or []
+    print('windows file %s: %d periods; keys of the first: %s' % (WF, len(per), sorted(per[0].keys()) if per else None))
+    for p in per:
+        ys = p.get('years'); fy = p.get('fromYear', p.get('forModelYear'))
+        binds = (WY in ys) if isinstance(ys, list) else (fy is not None and fy <= WY)
+        if binds:
+            print('  binds %d: weather year %s, days %s-%s (%s days), draw seed %s, for model year %s, years %s, shed %s GWh' % (WY, p.get('year'), p.get('start'),
+                  (p['start'] + p['n'] - 1) if isinstance(p.get('start'), int) and isinstance(p.get('n'), int) else '?', p.get('n'), p.get('seed'), p.get('forModelYear'), ys, p.get('shedGWh')))
+cm = re.compile(r'^ cmax_%d_(\d+)_(\d+): .*?(?: \+ ([0-9.]+) rc_%d)? <= (-?[0-9.]+)$' % (WY, WY), re.M)
+dm = re.compile(r'^ dmax_%d_(\d+)_(\d+): gd_\S+((?: - b_ocgd_\d{4})*) <= (-?[0-9.]+)$' % WY, re.M)
+rcv = val.get('rc_%d' % WY, 0.0)
+cap = collections.defaultdict(lambda: {'coal': [], 'diesel': []})
+for m in cm.finditer(text):
+    d, h, k, rhs = m.group(1), m.group(2), m.group(3), float(m.group(4))
+    cap[d]['coal'].append(rhs - (float(k) if k else 0) * rcv)
+ocgd = sum(val.get('b_ocgd_%d' % y, 0.0) for y in range(2026, WY + 1))
+for m in dm.finditer(text):
+    cap[m.group(1)]['diesel'].append(float(m.group(4)) + ocgd)
+rep = [d for d in cap if weight(WY, d, '0') >= 1]; tail = [d for d in cap if weight(WY, d, '0') < 1]
+def stats(ds, k):
+    xs = [x for d in ds for x in cap[d][k]]
+    return (sum(xs) / len(xs), min(xs), max(xs)) if xs else (0, 0, 0)
+for lab, ds in (('representative days', rep), ('stress-window days', tail)):
+    c, dd = stats(ds, 'coal'), stats(ds, 'diesel')
+    print('%d LP capacity, %s (%d days): coal available mean %.0f MW (min %.0f, max %.0f); diesel open-cycle %.0f MW (existing plus %.0f new)' % (WY, lab, len(ds), c[0], c[1], c[2], dd[0], ocgd))
+print('%d coal standing in the LP: early retirement rc_%d = %.0f MW' % (WY, WY, rcv))
+
 # Generation in year GY, TWh, weighted to a year: representative days at their weight, stress-window days at theirs.
 gen = collections.defaultdict(lambda: [0.0, 0.0])   # [representative days, stress-window days]
 for v, x in val.items():

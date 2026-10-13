@@ -23,7 +23,7 @@ on:
         description: 'The pathway run name, as in results-<name>'
         required: true
       mode:
-        description: 'topup (default): the adequacy top-up; check: re-run the engine check and print gas, diesel and CO2 by year (gasrole.py); lpsplit: split the optimiser objective into components (costsplit_lp.py)'
+        description: 'topup (default): the adequacy top-up; check: re-run the engine check and print gas, diesel and CO2 by year (gasrole.py); lpsplit: split the optimiser objective into components (costsplit_lp.py); tsl: the objective with and without its stress-target penalty (costsplit_tsl.py)'
         default: 'topup'
       settings:
         description: 'lpsplit only: the pathway run settings, KEY=VALUE separated by spaces, exactly as the run used them'
@@ -58,7 +58,7 @@ jobs:
           [[ "$LABEL" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "name: letters, digits, - and _ only"; exit 1; }
           [[ "$SRC_RUN" =~ ^[0-9]+$ ]] || { echo "source_run must be a run id"; exit 1; }
           [[ "$SRC_NAME" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "source_name: letters, digits, - and _ only"; exit 1; }
-          [[ "$MODE" == topup || "$MODE" == check || "$MODE" == lpsplit ]] || { echo "mode: topup, check or lpsplit"; exit 1; }
+          [[ "$MODE" == topup || "$MODE" == check || "$MODE" == lpsplit || "$MODE" == tsl ]] || { echo "mode: topup, check, lpsplit or tsl"; exit 1; }
 
       - uses: actions/checkout@v5
         with:
@@ -111,8 +111,8 @@ jobs:
           env COMMIT=1 PSE=1 TF=0.5 IN="$P" OUTC="out/check_${SRC_NAME}.json" node --max-old-space-size=8192 pathcheck.js 2>&1 | tee "out/check_${SRC_NAME}.log"
           python3 -I gasrole.py testroot/index.html "out/check_${SRC_NAME}.json" "$SRC_NAME" | tee "out/gasrole_${SRC_NAME}.txt"
 
-      - name: Fetch the run's saved state (lpsplit)
-        if: inputs.mode == 'lpsplit'
+      - name: Fetch the run's saved state (lpsplit, tsl)
+        if: inputs.mode == 'lpsplit' || inputs.mode == 'tsl'
         uses: actions/download-artifact@v4
         with:
           name: state-${{ inputs.source_name }}
@@ -142,8 +142,18 @@ jobs:
           node costsplit_consts.js 2>/dev/null | tail -1 > out/consts.json
           cat out/consts.json
           env $SETTINGS SOLVER=native TL=72000 DUMP_LP=out/split DUMP_STOP=1 OUT=out/split_dummy.json node --max-old-space-size=8192 pathway/pathway_perfail.js 2>&1 | grep -v -E '^\s+at ' | tail -20
-          python3 -I costsplit_lp.py out/split_pass1.lp lpcache "out/pathway_${SRC_NAME}.json" out/consts.json "out/lpsplit_${SRC_NAME}.json" 2040 | tee "out/lpsplit_${SRC_NAME}.txt"
+          WINDOWS=seed/out/pathway_c4t_lp2040.json python3 -I costsplit_lp.py out/split_pass1.lp lpcache "out/pathway_${SRC_NAME}.json" out/consts.json "out/lpsplit_${SRC_NAME}.json" 2040 | tee "out/lpsplit_${SRC_NAME}.txt"
           rm -f out/split_pass1.lp
+
+      - name: Stress-target penalty from the saved solution (tsl; solves nothing)
+        if: inputs.mode == 'tsl'
+        working-directory: harness
+        env:
+          SRC_NAME: ${{ inputs.source_name }}
+        run: |
+          mkdir -p out
+          node costsplit_consts.js 2>/dev/null | tail -1 > out/consts.json
+          python3 -I costsplit_tsl.py lpcache "out/pathway_${SRC_NAME}.json" out/consts.json "out/tsl_${SRC_NAME}.json" | tee "out/tsl_${SRC_NAME}.txt"
 
       - name: Keep the top-up
         if: always()
