@@ -42,7 +42,11 @@ const runYear = (y, extra) => {
     ocgdOn: S.bldOcgdOn, rateMW: S.bldOcgdRateMW, fromYear: S.bldOcgdFromYear, turbineCapMW: S.bldTurbineCapMW }; })())`));
   // The run's own caps where it recorded them (P.ocgt), else the engine defaults.
   const O = P.ocgt || {}, cap = { on: O.diesel ?? K.ocgdOn, rate: O.dieselRateMW ?? K.rateMW, from: O.dieselFrom ?? K.fromYear, turb: O.turbineCapMW ?? K.turbineCapMW, lng: O.lng ?? 0 };
-  console.log('engine figures', JSON.stringify(K), 'run caps', JSON.stringify(cap));
+  // Turbine caps the run lifted in named years (GAS_LIFT, then TCAP_YR; 13 Oct 2026, s_irpgas), recorded as
+  // 'tcap_<y>: <from> -> <to>'; a year not named keeps the run's cap.
+  const turbY = {}; for (const e of [...(P.gasLift || []), ...(P.tcapYr || [])]) { if (!e.startsWith('tcap_')) continue;
+    const m = /^tcap_(\d{4}): [0-9.]+ -> ([0-9.]+)$/.exec(e); if (!m) throw new Error('unreadable turbine cap record: ' + e); turbY[+m[1]] = +m[2]; }
+  console.log('engine figures', JSON.stringify(K), 'run caps', JSON.stringify(cap), 'turbine caps by year', JSON.stringify(turbY));
   let extra = 0; const rows = [];
   for (const s of C.slice().sort((a, b) => a.y - b.y)) {
     const y = s.y; let t = s, add = 0, steps = 0;
@@ -54,7 +58,8 @@ const runYear = (y, extra) => {
     const flags = [];
     if (add > 0 && !cap.on) flags.push('new diesel open-cycle not allowed in this run');
     else if (add > 0 && (b.ocgd || 0) + add > allowed) flags.push(`diesel open-cycle ${(b.ocgd || 0) + add} MW > cap ${allowed}`);
-    if (add > 0 && cap.turb > 0 && (b.ccgt || 0) + (b.ocgt || 0) + (b.ocgd || 0) + add > cap.turb) flags.push(`turbines ${(b.ccgt || 0) + (b.ocgt || 0) + (b.ocgd || 0) + add} MW > cap ${cap.turb}`);
+    const turb = turbY[y] ?? cap.turb;
+    if (add > 0 && turb > 0 && (b.ccgt || 0) + (b.ocgt || 0) + (b.ocgd || 0) + add > turb) flags.push(`turbines ${(b.ccgt || 0) + (b.ocgt || 0) + (b.ocgd || 0) + add} MW > cap ${turb}`);
     const capexBn = extra * 1000 * K.annRkW / 1e9, fomBn = extra * 1000 * K.fomRkW / 1e9, fuelBn = (t.diesel - s.diesel) * 1e6 * K.costDiesel / 1e9;
     const dBn = t.cost - s.cost;
     const row = { y, addedMW: add, extraMW: extra, steps, solved: { mean: s.mean, target: s.target, cost: s.cost, diesel: s.diesel, co2: s.co2 },
