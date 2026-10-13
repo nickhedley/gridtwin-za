@@ -2837,6 +2837,41 @@ same branch (8b6d41d). Suite after: 720/726 node checks, audit 87/87 (807/813), 
 Still failing, your decision: 'iron-air changes July gas by essentially nothing' (no gas cap; 1,312 -> 1,295 GWh, 1.3%
 against a 1% limit) and the 2025 peaker season ratio (9.3x, mark (3) in TODO 14dt). Neither check changed.
 
+### c5 inputs: the imports end year (no-imports-after-2030 sensitivity) and 14dr (outage draw over the standing units); 14dr makes mark (2) worse, your decision, 14 Oct 2026
+
+Branch claude/c5-imports, from step 3 (#36, build 14b); two commits, each with the full suite (ESK19679.csv present).
+
+1. Imports end year, f0d5dc8 (build 14c; TODO 14dv (6)). IRP 2025 does not say what follows the Cahora Bassa contract as far as
+   the sources reachable here show (HANDOVER 'c5 inputs'), so 1,150 MW is kept and a no-imports-after-2030 sensitivity
+   added: FIXED importsEndYear (0, imports every year) and pathway setting IMP_END. Imports are zero after that year in
+   simulate() (through scenarioYear, so in the optimiser's stress loop and the engine check alike) and in the build LP's
+   hourly balance and firm-capacity rows; the pathway records it and the engine check applies it. New check (validate_lp):
+   on a 2026-2032 horizon the LP changes only after 2030 (914 lines), and the engine carries 8.87 TWh of imports in 2030 and
+   none in 2031. Suite 721/727 node checks (the new one passes), audit 87/87, eng5 6/6; the same six failures as step 3.
+
+2. TODO 14dr, 835b618 (build 14d; user, 13 Oct: in c5 if under two hours, with the cross-check weeks and the 2025
+   benchmarks re-run). The unit outage draw now runs over the units ucUnitsStanding leaves for the year's coal installed,
+   not all 85 (outageStandingUnits 1; 0 restores the old draw). About 1.5 hours with the re-runs. Every seeded draw
+   changes, 2026 slightly.
+
+```
+gap to the 24 h rolling optimum, %, shed GWh          14a (B)               14d (14dr)
+2026 baseline / May / Nov / stress (mark 1)            1.2 / 1.7 / 4.0 / 2.7  1.2 / 3.3 / 4.1 / 2.3
+weeks of 15 where the engine sheds and the optimum     3 (0.15-1.00)          6 (0.24-4.79)
+  does not (mark 2)
+rescan, worst week in any state                        1.00                   4.79 (c4 2039-40, weather 2016, 6807+)
+rescan, mean shed a year, c4 2039 / 2040               0.02 / 0.06            0.27 / 0.41 (target about 2.5)
+```
+
+Every shortfall above falls in the week's last hour, with lithium and pumped storage empty and diesel at its limit; the
+optimum on the same week sheds none. With all units drawn the draw averaged out; over the 32 units still standing in 2039-40
+availability swings more, as 14dr intended, and the engine's end-of-week shortfall against the optimum shows more often.
+2025 benchmarks: 27/28 as on 14a (peaker season ratio 9.3x unchanged); coal 165.22 -> 165.57 TWh, CO2 174.41 -> 174.63 Mt,
+surplus 1.5 -> 2.4 GW (band 1.2-4), 2026 surplus 5.9 -> 5.0 GW (4-8), grid generation 214.2 -> 214.4 TWh, coal capacity
+factor 47.5 -> 47.6%. Suite 720/727, audit 87/87, eng5 6/6; against 14c: iron-air July gas without a gas cap now passes;
+two new failures from the changed draw, neither check changed: 'high-season off-peak is the cheapest block modelled'
+(low-season off-peak now cheapest) and the response baseline (11 cells).
+
 ### Validation re-run against PyPSA, baseline winter week: the nodal (10-region) engine is 4.2% above the matched PyPSA MIP; not yet the single-node engine the note quotes, 13 Oct 2026
 
 Local, scratch copies only (running jobs untouched). Scripts validation/pypsa_crossval_uc.py and validation/mip_solver.py as on

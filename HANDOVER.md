@@ -114,6 +114,8 @@ from Thursday to about Saturday; the engine's pass marks (TODO 14dt) are a separ
   contract's end (Mozambique's strategy: 31 Dec 2030, about 1,150 MW) and nothing on the IRP's assumption. The gazette's full
   text was not read (long PDF). So, per your rule: 1,150 MW kept, plus a no-imports-after-2030 sensitivity. That needs a
   year-by-year imports setting in the pathway LP and the engine check (none exists; about 1-2 h).
+- Built 14 Oct on claude/c5-imports (from step 3): the imports end year (IMP_END=2030 for s_noimp; f0d5dc8, build 14c) and 14dr
+  (835b618, build 14d, separate so it can be dropped; it makes mark (2) worse: RESULTS 'c5 inputs').
 - Rooftop 0.9 GW a year: the ROOF_MW setting exists on claude/c4-irp3 (merge step 6), not on main or c4-frozen; c5 needs it
   merged or carried. Grid cost: GRID=1 exists on c4-frozen.
 - Stress-day coal, 14de (TODO 14dv (5)), evidence and proposal. On c4's three 2030 windows the fixed engine (14a) commits a mean
