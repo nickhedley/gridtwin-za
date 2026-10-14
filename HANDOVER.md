@@ -114,7 +114,8 @@ Final c5 inputs (your decisions, 14 Oct, second message): tracking on (PVTRK=1);
 coal on IRP 2025 Figure 3's 50-year line (COAL_DATES=coal_dates_irp2025.json), with Meridian's ME IRP 2024 dates (UC_FLEET,
 c4's, no COAL_DATES) and the 60-year line (coal_dates_irp2025_60y.json) as sensitivities; wind 2.5 GW a year to 2030 and
 3.5 GW from 2031 (WIND_CAP=3500 WIND_CAP_FROM=2031); lithium capex decline 3% a year (BATT_DECL=0.03, as s_battdecl), with the
-model's 5% as a sensitivity. Launch on your 'go'. Settings line and tests: RESULTS 'c5 inputs, final'.
+model's 5% as a sensitivity. Launched 14 Oct 08:31 UTC: run 38535760468 (#128), claude/c5 at a74d581 (build 14i), pinned.
+Settings line and tests: RESULTS 'c5 inputs, final'. Next: its engine check (workflow), stop reason, top-up from claude/recheck-14d.
 
 Update 14 Oct (your decisions, TODO 14dx): #32, #33, #35 and #36 merged (main 7135caf); #34 closed. c5's own branch is
 claude/c5, from main: the imports end year (5d5dc10, 14c), 14dr (a89df58, 14d), c4-irp3's three off-by-default pathway

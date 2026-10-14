@@ -2895,6 +2895,10 @@ mean 0.447 / 0.537 / 0.552 of standing coal, available 0.449 / 0.550 / 0.559). P
 battDecl 0.03, coalAvail 1, roofMW 900, stall 0.1 from pass 4. New wind is first built in 2032 and peaks at 2,308 MW in
 2039, so the 3,500 MW cap does not bind on this run. Caveat: a local run; the GitHub run is c5 of record and re-solves.
 
+Launched 14 Oct 2026, 08:31:50 UTC (user: 'Go'): run 38535760468 (Optimiser long run #128), ref claude/c5, commit a74d581
+(a74d5816fd0273a5e07fb731e3e8c7a88766c9fa, build 2026-10-14i), pinned through code_sha so every job checks out that commit; name
+c5, one pass per job, max_jobs 30, no seed, the settings line above. Results to follow, with the stop reason.
+
 ### COAL_AVAIL stopped a c5 test run under 14dr; fixed (windows carry their own available coal); s_coalavail's results unchanged, 14 Oct 2026
 
 Found testing c5's settings on claude/c5 (build 14h; local, JS solver, no files kept): with COAL_DATES on, pass 1 failed the
