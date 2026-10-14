@@ -3097,6 +3097,132 @@ operable is neither charged for them nor flagged.
 Effect on results: not quantified. Direction: renewable-heavy builds and early coal retirement look cheaper than they are;
 the no-gas case most. TODO 14ed (after the note).
 
+### TODO 14eg step 1: the engine's 2026 coal availability matches Eskom's January-August 2026 in level (65.5% against 64.5% coal-only) but not in shape (Eskom's April trough is 9 points deeper); Eskom's open-cycle output is 89% IPP turbines running in most hours, not tracking availability, 14 Oct 2026
+
+User, 14 Oct (message 82 (2)): first of four tests, no run. Engine: c5b's 2026 state (coalEAFPct 65, coal-only; 39,692 MW
+standing; unit-level outage draw over the standing units with the planned-outage season outagePlannedSeason, forced share 61%,
+480-hour repair, common-mode trips), the engine check's 120 seeds, availability from genUnitOutagePath alone (no dispatch).
+Eskom: ESK19679, January-August 2026, energy-weighted (sum of installed less PCLF, UCLF and OCLF over sum of installed, hourly),
+aggregates only, author's analysis, Eskom data credited; converted to coal-only with the app's coalEafFromFleet (nuclear 1,880 MW
+at the app's 0.66, hydro, pumped storage and open-cycle at 90%).
+
+{F}
+January-August 2026             engine (120 draws)                 Eskom
+coal-only availability          65.5% (p10 63.2, p90 67.3)         64.5% (63.4-65.3% for nuclear 0.9-0.5)
+fleet EAF                       -                                  68.1% (PCLF 12.3, UCLF 19.4, OCLF 0.3% of 47,270 MW)
+by month, coal-only, %          Jan 61.5  Feb 62.7  Mar 64.2  Apr 63.3  May 67.5  Jun 68.6  Jul 68.8  Aug 66.8
+                                Jan 68.0  Feb 64.7  Mar 62.6  Apr 54.5  May 61.4  Jun 62.8  Jul 73.6  Aug 68.3   (Eskom)
+full year (engine only)         65.0%
+{F}
+
+Level: the engine is about 1 point above Eskom on January-August, inside its own run spread. Shape: the engine's monthly
+pattern is the 2023-25 average planned-outage season; 2026's April trough (54.5%) and high July (73.6%) are not in it.
+
+Open-cycle composition (same data): of Eskom's 0.803 TWh, 0.715 TWh (89%) is dispatchable IPP open-cycle, above 1 MW in 4,568
+of 5,832 hours, averaging about 145-190 MW through the day and 430 MW at 18:00-19:00; Eskom's own open-cycle 0.088 TWh in 228
+hours (none in January, February or July). Monthly open-cycle output is 86-124 GWh in every month, including January and July,
+when availability was highest. So the 2026 under-run is not explained by coal availability; it points to the dispatch rule,
+step 2. The model's open-cycle diesel fleet (ocgtDieselMW 3,400) is held as emergency reserve as one block.
+
+### PROVISIONAL until TODO 14eg is settled (user, 14 Oct 2026, message 82): c5b sensitivities launched, 21 runs from c5b's windows, up to 3 passes each; if 14eg changes the engine or the optimiser, c5b and all of these rerun
+
+Launched 13:53-13:55 UTC on GitHub, workflow 'Optimiser long run', ref main, code_sha babb78d (build 2026-10-14l) in every job,
+seed_run 38566438283 (c5b's second job), seed_name c5b. Each run's settings = c5b's line with MAXP=3 and
+WIN_FROM=seed/out/pathway_c5b_lp2040.json, plus its one change (KEY=VALUE replaces or adds, -KEY removes):
+
+{F}
+run                 change from c5b's line                                          GitHub run    pass-1 LP key   LP rows changed
+s_be7_c5b           NUC_FORCE 2036:1250,2037:1250,2038:1350,2039:1350               38575629148   be48edd177      balance rows 2036-39
+s_nogas4strict_c5b  GAS_CAP=0, OCGD 1->0, LI_CAP 3000->4000                          38575637663   6addb787c2      gas, open-cycle, lithium bounds
+s_coal60_c5b        COAL_DATES=coal_dates_irp2025_60y.json                          38575646908   2b5bced1c3      coal rows 2036-40
+s_irpgas_c5b        IRP gas plan (as s_irpgas_c5)                                   38575655575   1b8e7f75bd      gas rows; gasfloor, gmin added
+s_pvirp_c5b         PV_CAP_YR (Table 1 solar)                                       38575664128   8f26028fd6      solar bounds
+s_windlow_c5b       WIND_CASE=low                                                   38575672886   f5cc633c98      wind objective terms
+s_roof2_c5b         ROOF_MW 900->2000                                               38575681163   a8b45da648      rooftop bounds
+s_li8h_c5b          LI_EH=8                                                         38575689927   32f300244e      lithium energy bounds
+s_be4_c5b           GASFLOOR=1                                                      38575699011   dbc4941be8      gasfloor rows added
+s_be6_c5b           LI_CAP 3000->550, CAP_FROM=2026                                 38575708428   3c25b7ac54      lithium bounds
+s_committed_c5b     GAS_MIN 2030-2033:1200,2034:200; LI_MIN adds 2030:4600:18400    38575717527   7385f99cb3      gmin, limin, lemin rows added
+                    to c5b's own (2026:360:1440, 2027:666:2664; the floors are cumulative)
+s_gasprem_c5b       GAS_PREM=0.015                                                  38575727701   6baa6901a3      gas objective terms
+s_disc10_c5b        DISC=0.10                                                       38575737436   856dab5785      objective terms
+s_disc113_c5b       DISC=0.113                                                      38575746740   fb05f30cd1      objective terms
+s_noimp_c5b         IMP_END=2030                                                    38575756619   dfcd71a381      balance rows 2031-40
+s_carbonfull_c5b    CTAX_FULL=1                                                     38575766326   7c8cd03420      generation cost terms
+s_coalme_c5b        COAL_DATES removed (c4's dates)                                 38575775895   e2d4c03bc0      coal rows 2027-40
+s_batt5_c5b         BATT_DECL removed (5% a year)                                   38575785177   5fa5b3cbf1      lithium objective terms
+s_gmcv2029_c5b      DEM_BLOCK 2027:930 -> 2027:930,2029:675,2030:493                38575795879   f43601f73b      balance rows 2029-40
+s_measured_c5b      DEM_BLOCK removed (no smelter block)                            38575805161   aeb769e937      balance rows 2027-40
+s_cape10_c5b        CAPE_WIND 1580:4 -> 3470:10                                     38575815405   0f3c7eaac1      balance rows, Cape pool
+{F}
+
+Before launch each run's first LP was built locally at babb78d (DUMP_LP, solves nothing): with no change the seeded LP is
+c5b's own final LP (key 458f2a9e13, the pass-2 solution), and each change alters only its own rows, bounds or objective
+terms. Dropped as duplicates of c5b, as for c5: s_coalirp and s_battdecl (c5b carries both), s_wind35 (c5b builds at most
+1,745 MW of wind a year before 2031 and 2,917 MW after, so a 3,500 MW cap from 2028 cannot bind). Results, engine checks,
+top-ups and both cost measures against c5b follow when the runs finish; pass mark 5 (TODO 14dt) is judged then.
+
+### c5b beside IRP 2025 Table 1 (every technology, open-cycle gas and diesel included; CO2 in 2030 and 2035); cost without carbon tax R2,290.7bn; optimiser objective R1,566.3bn with no stress-target penalty, 14 Oct 2026
+
+User, 14 Oct (message 82 (3)), as for c5 ('c5 for the write-up'). Build from the local reproduction of c5b at babb78d
+(identical to GitHub's run 38566438283 on the 2026 engine check); CO2 from GitHub's engine check. IRP 2025 Table 1 from
+public_data/irp2025_extract.csv (IRP p.31, gazette p.42); IRP coal standing is Figure 3's 50-year line as read by Nick (plan
+p.12, gazette p.23); IRP CO2 168 Mt (2030) and 142 Mt (2035), SOURCES 'IRP 2025 emissions'.
+
+```
+A. Renewables and storage, new MW a year (c5b / IRP 2025 Table 1)
+year   wind c5b / IRP    solar c5b / IRP  rooftop c5b / IRP DG  lithium c5b GW, GWh   IRP storage   PHES c5b / IRP   iron-air c5b
+2026     696 /   964      354 /  3553       - /   900       0.36    1.4           144         - /     -        -
+2027     190 /  2847      255 /  2886     900 /   900       0.31    1.2           150         - /     -        -
+2028       - /   770      240 /  1760     900 /   900       0.18    0.4           615         - /     -        -
+2029       - /   760     2925 /  1314     900 /   900       2.12    8.8          2615         - /     -        -
+2030    1745 /  2000     3277 /   800     900 /   900       2.56   10.3           200         - /     -        -
+2031       - /  2500     3506 /  1000     900 /   900       1.21    4.8           200         - /     -        -
+2032       - /  2600     3752 /  1200     900 /   900       1.01    4.0           200         - /     -        -
+2033    2528 /  2600     1560 /  1400     900 /   900       1.69    6.7           200         - /     -        -
+2034    1264 /  3000     1398 /  1600     900 /   900       1.30    5.2           200         - /     -        -
+2035     742 /  3000      787 /  2000     900 /   900       0.80    3.2           200         - /     -        -
+2036     351 /  2000     1442 /  1600     900 /     -       0.74    3.0           500         - /     -        -
+2037    2917 /  3000     4384 /  1600     900 /     -       2.27    9.1           500         - /  1332        -
+2038    2442 /  3000     3920 /  1600     900 /     -       1.60   12.0           500         - /     -        -
+2039    2254 /  3500     4920 /  1600     900 /     -       2.18   12.0           500         - /     -        -
+2040    1384 /  3500     4197 /  1600     900 /     -       1.67   12.0           500         - /     -        -
+total  16513 / 36041    36917 / 25513   12600 /  9000      20.00   94.2          7224         - /  1332        -
+
+B. Firm capacity, coal and CO2 (c5b / IRP 2025)
+year   CCGT  OCGT-LNG  OCGT-diesel | IRP gas  IRP nuclear | coal standing c5b / IRP Fig 3  early ret c5b | CO2 Mt c5b (engine) / IRP
+2026      -         -            - |       -            - |  39692 /  39692                       -      |  155.8 / -
+2027      -         -            - |       -            - |  39692 /  39692                       -      |  165.7 / -
+2028      -         -            - |       -            - |  39692 /  39692                       -      |  167.8 / -
+2029      -         -            - |    3000            - |  37027 /  37064                       -      |  163.4 / -
+2030    603       597          446 |    3000            - |  32433 /  32388                       -      |  153.2 / 168
+2031    993         -            - |       -            - |  30876 /  30839                       -      |  149.3 / -
+2032   1010         -            - |    1250            - |  29223 /  29324                       -      |  143.1 / -
+2033    108         -            - |    1250            - |  28121 /  27886                       -      |  134.7 / -
+2034    986         -            - |    1250            - |  26467 /  26403                       -      |  130.3 / -
+2035    569         -            - |    1000            - |  25916 /  26029                       -      |  129.2 / 142
+2036    709         -            - |    1250         1250 |  25348 /  25350                       -      |  127.8 / -
+2037    100         -            - |    1500         1250 |  23658 /  23415                       -      |  112.8 / -
+2038    852         -            - |    1250         1350 |  21969 /  21819                       -      |  101.3 / -
+2039    647         -            - |    1250         1350 |  19661 /  19825                       -      |   88.5 / -
+2040    720         -            - |    1250            - |  17890 /  17958                       -      |   80.3 / -
+total  7297       597          446 |   17250         5200 | CO2 2026-40 c5b 2003 Mt
+```
+
+CO2: c5b 153.2 Mt in 2030 against the IRP's 168 (-14.8 Mt), 129.2 Mt in 2035 against 142 (-12.8 Mt). Caveats as for c5: the
+IRP's 2026-28 rows include build under construction that c5b holds only as the committed floors (wind 886 MW, solar 849 MW,
+lithium 666 MW / 2.66 GWh by 2027-28); Table 1 gives storage in MW only; Table 1's gas is not split by cycle; the IRP's
+168 Mt goes with 255 TWh, c5b's 2030 check serves 220.6 TWh of customer demand.
+
+Cost without carbon tax (method as 'c5's cost without carbon tax payments'; rate = carbonTaxAt on the kept2030 path,
+R46.0/t in 2026 to R61.3/t from 2030, read by costsplit_consts.js from c5b's record): carbon payments R7.2bn in 2026,
+R9.4bn in 2030, R4.9bn in 2040; R116.9bn undiscounted 2026-40; PV at 8% real R74.7bn. Engine PV without carbon tax
+R2,290.7bn (with it R2,365.4bn). c5: R2,225.6bn (R2,300.6bn), so +R65.1bn without carbon tax, +R64.8bn with it.
+
+Optimiser objective (costsplit_tsl.py on c5b's cached pass-2 solution 458f2a9e13): R1,566.3bn at 8% real; stress-target
+penalty R0.0bn, so R1,566.3bn without it. c5: R1,479.5bn. Both measures put c5b above c5 (engine +R64.8bn, objective
++R86.8bn), the same direction, which is what pass mark 5 (TODO 14dt) asks of each sensitivity against its base.
+
 ### TODO 14eg: c5b's 2026 in the pathway engine runs open-cycle plant far less than Eskom did in January-August 2026, and prices scarcity in about a quarter of the hours Eskom called on interruptible supply; NTCSA's 2030 case points the other way; cause not established, 14 Oct 2026
 
 Method: c5b's 2026 state (local reproduction at babb78d, identical to GitHub's on the 2026 check) through the engine as the
