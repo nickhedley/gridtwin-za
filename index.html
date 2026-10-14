@@ -5760,9 +5760,14 @@ const FIXED = {
   // (Jan 2026, pp. 6-12, as read by the user): instantaneous and regulating from online headroom (coal; pumped storage and batteries
   // only while they hold enough energy to sustain the product), ten-minute from pumped storage with energy, quick-start hydro and
   // dispatchable demand (none modelled), and coal for any balance; open-cycle plant and interruptible load are emergency reserve
-  // only, outside the 2,200 MW, called to restore it, interruptible first (it costs less). Quantities in ASTR_RESERVE.
-  // reserveRegHours, reserveTenHours and the peak hours are the author's assumptions until read from the document.
-  reserveRule:'legacy', reserveRegHours:1, reserveTenHours:2, reservePeakFrom:6, reservePeakTo:22,
+  // only, outside the 2,200 MW, called to restore it, interruptible first (ASTR p.10 sets no order; its cost rule, p.9, supports
+  // cheapest first). Quantities in ASTR_RESERVE, peak hours in astrPeakHour (p.29). Sustain times: instantaneous 10 minutes
+  // (p.6); regulating none stated (p.7), 1 hour is the author's assumption; ten-minute none stated, 3 hours from its use cap of
+  // 600 hours a year, 'assuming a usage over 50 weeks, 4 days, and 3 hours per day' (p.9). Approved by the user, message 86.
+  // After 2030/31 the requirement grows by reserveVrePct of wind and solar output above the 2030 fleet's (reserveVreRefWindMW,
+  // reserveVreRefPvMW, set by the pathway from its own 2030 build; null: today's fleet), so there is no step at 2031.
+  // 'legacy' keeps the rule before 14 Oct 2026 for comparison.
+  reserveRule:'astr', reserveRegHours:1, reserveTenHours:3, reserveVreRefWindMW:null, reserveVreRefPvMW:null,
   // Regulating reserve grows with variable generation, and the ASTR figure above does not:
   // it is sized to 2030/31 on today's fleet. NREL's Operating Reserves and Variable Generation
   // (TP-5500-51978, 2011) sets out the 3+5 rule, 3% of load plus 5% of variable generation,
@@ -7563,10 +7568,16 @@ function simulate(u, prof, outPath, _soc0){
     vreMW: _vreMW,
   };
   const _astr = (p.reserveRule ?? FIXED.reserveRule) === 'astr';
-  const _astrPeak = h => { const d = h % 24; return d >= (p.reservePeakFrom ?? FIXED.reservePeakFrom) && d < (p.reservePeakTo ?? FIXED.reservePeakTo); };
+  const _astrPeak = astrPeakHour;
   const _astrQ = [astrReserveAt(p.scenarioYear ?? 2026, false), astrReserveAt(p.scenarioYear ?? 2026, true)];
+  // After 2030/31: reserveVrePct of wind and solar output above what the 2030 fleet would give this hour (no step at 2031).
+  const _astrVreGrow = (() => {
+    if (!_astr || (p.scenarioYear ?? 2026) <= ASTR_RESERVE.y1) return null;
+    const dW = (p.windMW + p.newWindMW) - (p.reserveVreRefWindMW ?? p.windMW), dP = (p.pvUtilityMW + p.newPvMW) - (p.reserveVreRefPvMW ?? p.pvUtilityMW);
+    return h => Math.max(0, dW * windU[h] + dP * solarU[h]) * p.reserveVrePct / 100;
+  })();
   const reserveMWAt = h => !RESERVE.on ? 0
-    : _astr ? (q => q.inst + q.reg + q.ten)(_astrQ[_astrPeak(h) ? 1 : 0])
+    : _astr ? (q => q.inst + q.reg + q.ten)(_astrQ[_astrPeak(h) ? 1 : 0]) + (_astrVreGrow ? _astrVreGrow(h) : 0)
     : RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100
       + Math.max(0, _vreMW[h] - p.reserveVreBaseMW) * p.reserveVrePct / 100;   // no fallback: both are FIXED keys
   // ASTR cover (reserveRule 'astr'): what storage and quick-start hydro can hold of each product this hour, the rest falls to
@@ -7578,7 +7589,7 @@ function simulate(u, prof, outPath, _soc0){
       const b = Math.max(0, Math.min(need - got, bP, bE / H)); bP -= b; bE -= b * H; got += b;
       const s = Math.max(0, Math.min(need - got, pP, pE / H)); pP -= s; pE -= s * H; got += s;
       return need - got; };
-    const inst = take(q.inst, 1 / 6), reg = take(q.reg, Math.max(0.1, p.reserveRegHours ?? FIXED.reserveRegHours));
+    const inst = take(q.inst, 1 / 6), reg = take(q.reg + (_astrVreGrow ? _astrVreGrow(h) : 0), Math.max(0.1, p.reserveRegHours ?? FIXED.reserveRegHours));
     const tenH = Math.max(0.1, p.reserveTenHours ?? FIXED.reserveTenHours);
     let ten = q.ten;
     const s = Math.max(0, Math.min(ten, pP, pE / tenH)); ten -= s; pP -= s; pE -= s * tenH;
@@ -10666,6 +10677,16 @@ function bldBuildLP(opts){
   const RES_MW  = (S.reserveEnabled ?? 1) ? (S.reserveOperatingMW || 0) : 0;
   const RES_VRE = (S.reserveEnabled ?? 1) ? (S.reserveVrePct || 0) / 100 : 0;
   const RES_VRE_BASE = S.reserveVreBaseMW || 0;
+  // ASTR reserve in the LP (user, message 86): same products, peak periods and growth term as the engine.
+  const ASTR_ON = (S.reserveEnabled ?? 1) && (S.reserveRule ?? FIXED.reserveRule) === 'astr';
+  const ASTR_REG_H = Math.max(0.1, S.reserveRegHours ?? FIXED.reserveRegHours), ASTR_TEN_H = Math.max(0.1, S.reserveTenHours ?? FIXED.reserveTenHours);
+  // Wind and solar built after 2030 (cumulative to y less cumulative to 2030), as LP terms with the given coefficients.
+  const astrGrowTerms = (y, cw, cp) => ['wind', 'pv'].map(t => {
+    const c = t === 'wind' ? cw : cp;
+    const up = cum(t, y), base = cum(t, ASTR_RESERVE.y1);
+    if (CUMV) return up.map(v => ' + ' + c.toFixed(5) + ' ' + v).join('') + base.map(v => ' - ' + c.toFixed(5) + ' ' + v).join('');
+    const bs = new Set(base); return up.filter(v => !bs.has(v)).map(v => ' + ' + c.toFixed(5) + ' ' + v).join('');
+  }).join('');
   const COMMIT_ON = !!S.bldCoalCommit, COMMIT_MIN = Math.max(0, Math.min(1, S.bldCoalMinFrac)), COMMIT_H = Math.max(1, S.bldCoalCommitHours);
   for (const y of Y){
     const dg = bldDemandIndex(opts, y), dBlk = bldDemandBlockMW(opts, y);
@@ -10745,15 +10766,24 @@ function bldBuildLP(opts){
         // engine's min(power, soc / holdH)), and only the power it is not already discharging.
         // Before this the LP counted the full battery power as reserve even when empty, so it
         // served load the engine had to shed to protect reserve (gap decomposition, RESULTS).
-        const rhs = coalCap + DSL(y) - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE)
+        // ASTR RESERVE (user, message 86): the engine's products for this hour (year, peak period), the requirement less what
+        // quick-start hydro holds of the ten-minute product; diesel and open-cycle capacity are emergency reserve and do not count
+        // (their energy still frees coal headroom, as in the engine); batteries count up to the product-weighted sustain time;
+        // after 2030 the wind-and-solar growth term on builds since 2030 only.
+        const _qA = ASTR_ON ? astrReserveAt(y, astrPeakHour(i)) : null;
+        const _reqA = _qA ? _qA.inst + _qA.reg + _qA.ten : 0;
+        const _hydQ = _qA ? Math.min(_qA.ten, Math.max(0, (S.hydroMW || 0) * (1 - AV_HYD))) : 0;
+        const rhs = ASTR_ON ? coalCap - _reqA + _hydQ - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0)
+                    : coalCap + DSL(y) - RES_MW - RES_VRE * Math.max(0, exVre - RES_VRE_BASE)
                     - (r.tail ? Math.max(0, opts.stressMarginMW || 0) : 0);
+        const _holdA = _qA ? (_qA.inst / 6 + _qA.reg * ASTR_REG_H + _qA.ten * ASTR_TEN_H) / Math.max(1, _reqA) : RES_HOLD_H;
         // STORAGE CREDIT BY DURATION ON TAIL DAYS, 6 Oct 2026. Tail days carry the stress margin, and
         // there a battery is credited at min(1, duration / bldMarginHoldHours) of its power: stored
         // energy over 4 h (CAISO and MISO full-credit rule; ISO-NE 2 h), not over asHoldHours (1 h),
         // and at most bldMarginCreditMax x power. Before this a full one-hour battery counted as
         // fully firm for a whole stress window. PJM 2027/28 sensitivity: hold 8, max 0.70. Placeholder
         // until South African ELCC by duration is measured (TODO).
-        const _hold = r.tail ? Math.max(RES_HOLD_H, S.bldMarginHoldHours) : RES_HOLD_H;
+        const _hold = r.tail ? Math.max(_holdA, S.bldMarginHoldHours) : _holdA;
         const _cmax = r.tail ? Math.min(1, Math.max(0, S.bldMarginCreditMax)) : 1;
         const _eNow = 'e_batt_' + y + '_' + r.d, _ePrev = (r.prevD !== undefined) ? 'e_batt_' + y + '_' + r.prevD : null;
         L.push(' rbp_' + k + ': rb_' + k + ' + bdis_' + k + ' - ' + cum('batt',y).map(v => _cmax.toFixed(4) + ' ' + v).join(' - ') + ' <= ' + (_cmax * EX.batt).toFixed(1));
@@ -10771,7 +10801,12 @@ function bldBuildLP(opts){
         L.push(' rbe_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _eNow + ' <= 0');
         if (_ePrev) L.push(' rbq_' + k + ': ' + _hold.toFixed(3) + ' rb_' + k + ' - ' + _ePrev + ' <= 0');
         }
-        L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '') + ' - rb_' + k + ' - rsl_' + k
+        if (ASTR_ON) L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' - rb_' + k + ' - rsl_' + k
+          + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
+          + (Y.some(yy => yy <= y) ? ' - ' + cum('ccgt',y).join(' - ') : '')
+          + (y > ASTR_RESERVE.y1 && RES_VRE > 0 ? astrGrowTerms(y, RES_VRE * wpN, RES_VRE * spN) : '')
+          + ' <= ' + rhs.toFixed(1));
+        else L.push(' resv_' + k + ': gc_' + k + ' + gg_' + k + ' + gd_' + k + (OCGT_ON ? ' + go_' + k : '') + ' - rb_' + k + ' - rsl_' + k
           + (RC_ON ? ' + ' + _rcf.toFixed(4) + ' rc_' + y : '')
           + ' - ' + cum('ccgt',y).join(' - ')
           + OC_T.map(t => ' - ' + cum(t,y).join(' - ')).join('')
@@ -11073,6 +11108,17 @@ function bldSolveLP(lp){
 
 // The build a solve implies, as slider overrides - the same mapping bldApplyToSliders uses,
 // including the coal the optimiser assumed, so the adequacy test is apples to apples.
+// The ASTR reserve's post-2030 growth term is measured from the run's own 2030 wind and solar fleet (user, message 86).
+function bldAstrVreRef(cols, y, st){
+  if (y <= ASTR_RESERVE.y1) return {};
+  let w = 0, pv = 0;
+  for (const [c, v] of Object.entries(cols || {})){
+    const m = c.match(/^b_(wind|pv)_([0-9]+)$/);
+    if (m && +m[2] <= ASTR_RESERVE.y1) { if (m[1] === 'wind') w += v.Primal || 0; else pv += v.Primal || 0; }
+  }
+  const S0 = { ...FIXED, ...(st || {}) };
+  return { reserveVreRefWindMW: Math.round(S0.windMW + w), reserveVreRefPvMW: Math.round(S0.pvUtilityMW + pv) };
+}
 function bldBuildToState(res){
   const tot = {}; let eb = 0;
   for (const [c, v] of Object.entries(res.Columns || {})){
@@ -11101,6 +11147,7 @@ function bldBuildToState(res){
   // Set, not added to the current value: applying a build twice must not retire the fleet twice.
   if ((_ps.bldPeakerRet | 0) > 0) o.dieselDecomMW = bldPeakerDecomMW(endY, _ps, res && res.Columns);
   if ((tot.batt || 0) > 1 && eb > 0) o.newBattHours = Math.max(1, Math.round(eb / tot.batt));
+  Object.assign(o, bldAstrVreRef(res && res.Columns, endY, _ps));
   return o;
 }
 
@@ -11178,6 +11225,7 @@ function bldStateForYear(res, y, opts){
       : (opts.state.bldPhesHours ?? FIXED.bldPhesHours),
     coalDecomMW: Math.max(0, Math.round(FIXED.coalInstalledMW - bldCoalMW(y) + rc)),
     demandGrowthPct: (bldDemandIndex(opts, y) - 1) * 100, demandBlockMW: bldDemandBlockMW(opts, y), scenarioYear: y,
+    ...bldAstrVreRef(res.Columns, y, opts.state),
     windCapeMW: Math.round(Object.entries(res.Columns || {}).reduce((a, [c, v]) => { const m = c.match(/^cw_([0-9]+)$/); return a + (m && +m[1] <= y ? (v.Primal || 0) : 0); }, 0)),
     ...(opts.gasFuelR ? { costCcgt: bldGasFuelR(opts, y, { ...FIXED, ...opts.state }) } : {}),
     ...(((opts.state.bldPeakerRet ?? FIXED.bldPeakerRet) | 0) > 0
@@ -13177,6 +13225,17 @@ function astrReserveAt(year, peak){
   const A = ASTR_RESERVE, f = Math.max(0, Math.min(1, ((year ?? A.y0) - A.y0) / (A.y1 - A.y0)));
   const lin = a => a[0] + (a[1] - a[0]) * f;
   return { inst: peak ? A.instPeak : A.instOff, reg: lin(A.reg), ten: lin(peak ? A.tenPeak : A.tenOff) };
+}
+// ASTR peak periods (p.29): weekdays only; winter (May-August) 06:00-09:00 and 17:00-20:00, summer 09:00-12:00 and 18:00-21:00;
+// weekends and public holidays have none. On the demand profile's own calendar, 2026 (1 January a Thursday), with South Africa's
+// 2026 public holidays by day of year (9 August falls on a Sunday and moves to Monday 10 August; 21 March and 26 December are
+// Saturdays). Hour h is the hour of the year from 00:00 on 1 January.
+const ASTR_HOLIDAYS_2026 = new Set([0, 92, 95, 116, 120, 166, 221, 266, 349, 358]);
+function astrPeakHour(h){
+  const d = Math.floor(h / 24) % 365, dow = (4 + d) % 7;            // 0 Sunday
+  if (dow === 0 || dow === 6 || ASTR_HOLIDAYS_2026.has(d)) return false;
+  const hr = h % 24, m = hourMonth(h % 8760);
+  return (m >= 4 && m <= 7) ? ((hr >= 6 && hr < 9) || (hr >= 17 && hr < 20)) : ((hr >= 9 && hr < 12) || (hr >= 18 && hr < 21));
 }
 function coalEafFromFleet(fleetPct, nuclearFactor, p){
   const P = p || FIXED;
@@ -19038,7 +19097,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14l';
+const BUILD_STAMP = '2026-10-14m';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

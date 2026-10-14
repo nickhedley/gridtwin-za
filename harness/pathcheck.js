@@ -99,6 +99,10 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
      demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
+   // ASTR reserve after 2030/31 (user, message 86): the growth term is measured from this run's own 2030 wind and solar fleet,
+   // as the pathway's adequacy test measures it (index.html bldAstrVreRef).
+   if (y > 2030){ let w30=0, p30=0; for (const yy of Object.keys(P.sched)) if (+yy <= 2030){ w30 += +P.sched[yy].wind||0; p30 += +P.sched[yy].pv||0; }
+     over.reserveVreRefWindMW=Math.round(+w.eval('FIXED.windMW')+w30); over.reserveVreRefPvMW=Math.round(+w.eval('FIXED.pvUtilityMW')+p30); }
    // New pumped hydro built by the optimiser (6 Oct 2026): charge what the optimiser charged, not the engine's
    // fixed Tubatse 14-hour acapPs. PHES_BASIS names the basis (bldPhesCapexKW); PH the hours (bldPhesHours).
    // Two durations (PH and PH2): the engine has one new pumped-storage block, so power adds, energy adds (hours
