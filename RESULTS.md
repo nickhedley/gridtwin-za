@@ -2872,6 +2872,29 @@ factor 47.5 -> 47.6%. Suite 720/727, audit 87/87, eng5 6/6; against 14c: iron-ai
 two new failures from the changed draw, neither check changed: 'high-season off-peak is the cheapest block modelled'
 (low-season off-peak now cheapest) and the response baseline (11 cells).
 
+### COAL_AVAIL stopped a c5 test run under 14dr; fixed (windows carry their own available coal); s_coalavail's results unchanged, 14 Oct 2026
+
+Found testing c5's settings on claude/c5 (build 14h; local, JS solver, no files kept): with COAL_DATES on, pass 1 failed the
+loop's test, windows were added, and building pass 2 stopped at COAL_AVAIL's own check: 'available below recorded, window
+2020 day 1 seed 36361925 hour 174: 0.5462 < 0.5511'. Without COAL_DATES pass 1 was adequate, so no window was built and the
+check never ran. Cause: COAL_AVAIL re-derived each window's available coal by re-running its outage draw on the 2026 state.
+That equals the recorded draw only while outages are drawn over all units in every year; since 14dr a later year draws over
+its own standing units. Fix (a74d581, build 14i): the engine returns coalAvailOnlyFrac from the same run as coalAvailFrac;
+each shedding row and each window carries it (availFrac); COAL_AVAIL reads it, and refuses the re-derivation when
+outageStandingUnits is on and a window has none. validate_lp 55/55 with a new check (12 shedding runs, 105,120 hours:
+available below committed in 0, above 1 in 0).
+
+```
+re-derived available coal against the recorded value       outages over all units     over the units standing (14dr)
+(a later-year state that sheds; 24 rows, 52,560 hours)     (c4's engine, s_coalavail)
+largest gap, share of standing coal                        3e-8                        0.32
+hours where the re-derived value is below committed        0                           19,104
+```
+
+s_coalavail (run 38382908890, c4's engine, outages over all units) is unchanged: there the re-derivation equals the recorded
+value to float precision, and windows without availFrac (c4's, through WIN_FROM) keep the old path with outageStandingUnits
+off. Its re-checks on 14a and 14d were engine checks only and did not use COAL_AVAIL.
+
 ### 14de re-check: on the fixed engine s_coalavail's plan passes the engine check in every year (14a: 2040 at 15% of target; 14d, c5's engine: 2040 at 55%), on 14a R171bn below c4 on the engine and 303 Mt more CO2 (c4 not re-checked on 14d); on c4's engine it failed 11 years; c5 takes COAL_AVAIL=1, 14 Oct 2026
 
 User, 14 Oct (TODO 14dx (4)): re-check s_coalavail's plan (built with the stress-window coal limit at the engine's available
