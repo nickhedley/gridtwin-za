@@ -2897,7 +2897,57 @@ battDecl 0.03, coalAvail 1, roofMW 900, stall 0.1 from pass 4. New wind is first
 
 Launched 14 Oct 2026, 08:31:50 UTC (user: 'Go'): run 38535760468 (Optimiser long run #128), ref claude/c5, commit a74d581
 (a74d5816fd0273a5e07fb731e3e8c7a88766c9fa, build 2026-10-14i), pinned through code_sha so every job checks out that commit; name
-c5, one pass per job, max_jobs 30, no seed, the settings line above. Results to follow, with the stop reason.
+c5, one pass per job, max_jobs 30, no seed, the settings line above. Results in the next entry.
+
+### c5 result: adequate after two passes (stop reason: no year failing the loop's test); the engine check passes every year with no top-up; R2,300.6bn engine PV, 2,019 Mt CO2 2026-40, 14 Oct 2026
+
+Run 38535760468 (job 1, pass 1, 08:31-08:37 UTC) and 38536463416 (job 2: pass 1 replayed from the cache, pass 2 solved;
+check job 08:46-09:01), commit a74d581 (build 2026-10-14i) in every job, settings as in 'c5 inputs, final'. The GitHub
+solves are the same LPs as the local run before launch (pass 1 key 8e2860a0c8, pass 2 key 619b507795), so the pass verdicts,
+windows and build are those recorded there: pass 1 failed 2030 only (2.12 against 2.08 GWh) and added three 2030 windows;
+pass 2 had no failing year (worst 2030, 1.83 against 2.08 GWh, 88%); log 'done adequate'. Stop reason: adequacy, so neither
+the pass cap (MAXP=6) nor the stall stop (STALL=0.1 from pass 4) applied. Solve times 3.6 and 4.2 min. Not shown in the
+GitHub log: the per-window available-coal table (printed once, at the first solve, before any window existed); the run's
+own check would have stopped it had available coal been below committed coal in any window hour.
+
+Engine check (pathcheck.js COMMIT=1 PSE=1 TF=0.5 LNG=1, adaptive draws, 120-480 runs a year, 15 min). Mean shed against
+target on customer demand, GWh, with the upper end of the 95% interval as a share of target:
+
+```
+year  runs  mean / target   share  upper   worst run   cost Rbn   CO2 Mt   gas TWh   diesel TWh
+2026   120   0.01 / 1.94       0%     1%       0.5       211.5     157.3     0.00      0.011
+2027   120   0.03 / 1.96       2%     3%       2.1       219.3     160.2     0.00      0.015
+2028   120   0.04 / 1.99       2%     4%       1.6       224.5     163.0     0.00      0.021
+2029   120   0.13 / 2.02       7%    13%       8.0       220.3     159.2     0.00      0.037
+2030   120   0.29 / 2.08      14%    32%      23.4       233.7     155.5     0.90      0.143
+2031   480   1.04 / 2.14      49%    81%     128.4       243.3     151.4     2.30      0.182
+2032   360   0.53 / 2.19      24%    42%      39.8       254.5     142.9     3.92      0.219
+2033   240   0.25 / 2.24      11%    24%      34.4       265.2     139.8     5.31      0.204
+2034   360   0.38 / 2.30      17%    33%      59.8       266.1     133.8     7.90      0.260
+2035   240   0.55 / 2.35      23%    40%      29.3       268.0     131.1     8.96      0.272
+2036   480   0.83 / 2.40      34%    58%     113.8       277.5     126.7    10.32      0.307
+2037   480   1.11 / 2.46      45%    67%      60.2       282.2     115.5    12.50      0.336
+2038   480   1.21 / 2.53      48%    74%      79.2       295.7     104.8    14.00      0.363
+2039   120   0.03 / 2.60       1%     2%       1.3       306.4      92.8    15.58      0.334
+2040   240   0.57 / 2.66      21%    38%      34.3       319.1      84.8    17.07      0.387
+2026-40, PV at 8% real from 2026: R2,300.6bn; CO2 2,019 Mt; gas 98.8 TWh; diesel 3.09 TWh
+```
+
+No year fails, so no top-up. 2031 and 2036-2038 ran the full 40 draws without the interval narrowing to +/-20% of target;
+their upper ends stay below target (2031 the highest, 81%). Optimiser objective R1,479.5bn at 8% real with no stress-target
+penalty (costsplit_tsl.py on the local cache of the same pass-2 LP; the GitHub report run confirms it). Build by 2040 (new,
+cumulative): wind 12.9 GW (none before 2032; at most 2,308 MW a year, so neither wind cap binds), utility solar 34.8 GW
+(single-axis tracking), rooftop 12.6 GW (900 MW a year, fixed), lithium 17.6 GW / 89.2 GWh, CCGT 7.5 GW, OCGT on LNG 0.75 GW
+(2030), diesel open-cycle 0.77 GW (2030); no pumped hydro, vanadium, iron-air, offshore wind or early coal retirement. Coal
+standing as Figure 3's 50-year line (17,890 MW in 2040).
+
+LNG (engine check, LNG=1): from 2034 one or two of the three stress windows burn more than one floating storage unit's
+cargo in 14 days (worst 2.03 cargoes, 2038, the 2021 window); the worst 14 days of the year's runs rise to 4.0 cargoes in
+2040. The plan assumes resupply within a two-week event from 2034.
+
+Caveats: the engine check is the note's cost measure, with its storage-dispatch caveat (RESULTS '24-hour dispatch sheds
+nothing where the engine sheds'). Not like for like with c4 on 14a (R2,525.8bn, 1,465 Mt): engine build and five inputs
+differ (tracking, carbon path, coal dates, battery decline, wind cap), and c4 has not been checked on 14i.
 
 ### COAL_AVAIL stopped a c5 test run under 14dr; fixed (windows carry their own available coal); s_coalavail's results unchanged, 14 Oct 2026
 
