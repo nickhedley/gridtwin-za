@@ -184,6 +184,14 @@ jobs:
           python3 -I costsplit_tsl.py ../dl/state/lpcache "$P" out/consts.json "out/tsl_${SRC_NAME}.json" | tee "out/tsl_${SRC_NAME}.txt"
           echo "== $BASE_NAME"
           python3 -I costsplit_tsl.py ../dl/base_state/lpcache "$B" out/consts.json "out/tsl_${BASE_NAME}.json" | tee "out/tsl_${BASE_NAME}.txt"
+          # Short summary last, so the end of the log carries what the comparison needs.
+          echo "== SUMMARY $SRC_NAME (run $SRC_RUN) against $BASE_NAME (run $BASE_RUN)"
+          cat "out/record_${SRC_NAME}.txt"
+          grep -E "^== pathway_|^pass |^ +failing:|^cost 2026" "out/print_${SRC_NAME}.txt" || true
+          C=$(find ../dl/results -name "pathcheck_${SRC_NAME}.json" | head -1)
+          [ -n "$C" ] && python3 -I -c 'import json,sys; R=json.load(open(sys.argv[1])); R=R if isinstance(R,list) else R.get("rows",[]); f=[r for r in R if r["mean"]>r["target"]]; w=max(R,key=lambda r:r["mean"]/r["target"]); print("engine check: %d years failing%s; worst %d at %.0f%% of target" % (len(f), (" ("+", ".join("%d %.2f/%.2f" % (r["y"],r["mean"],r["target"]) for r in f)+")") if f else "", w["y"], 100*w["mean"]/w["target"]))' "$C"
+          cat "out/tsl_${SRC_NAME}.txt" | head -1
+          cat "out/tsl_${BASE_NAME}.txt" | head -1
 
       - name: Keep the top-up
         if: always()
