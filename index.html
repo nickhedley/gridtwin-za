@@ -5777,16 +5777,17 @@ const FIXED = {
   reserveGasMinStableFrac:0.5,
   // AVON AND DEDISA MUST-RUN (user, message 88). Both IPP peakers ran every day in 2025-26 on their contracts, not on merit:
   // 1.460 TWh in 2025, 0.715 TWh January-August 2026 (Eskom data, ESK19679, 'Dispatchable IPP OCGT'; the analysis is ours, not
-  // Eskom's). Modelled as a daytime level (hours beginning 05-16) and an evening-peak level (17-20) by month, MW, each the mean
-  // of the 2025 month and, January-August, the 2026 month; nights (21-04) zero, which leaves out 11.2% of 2025's energy and 4.5%
-  // of 2026's. Derived by harness/derive_avon_dedisa.py from the local file; recompute there, never edit here. Until each
+  // Eskom's). Modelled as a daytime level (hours beginning 05-16) and an evening-peak level (17-20) by month, MW: January-August
+  // the 2026 month (user, message 93); September-December the 2025 month times 0.693, January-August 2026's energy over 2025's,
+  // so 2025's seasonal shape at 2026's level. Nights (21-04) zero, 4.5% of 2026's energy. January-August 683 GWh against 715
+  // measured; full year 899 GWh. Derived by harness/derive_avon_dedisa.py from the local file; recompute there, never edit here. Until each
   // contract ends: Dedisa (335 MW) commissioned end-2015, Avon (670 MW) 20 July 2016, 15-year terms (POWER Magazine, 25 July
   // 2016; IRP 2025 3.2.1.2.2, contracts expire 2030-31), so both through 2030 and Avon's two-thirds share to 20 July 2031.
   // Then they revert to ordinary peakers. Fuel and CO2 counted at the diesel fleet's rates; the rest of their capacity stays
   // in dispatch and emergency reserve; while running they hold online headroom (message 90). 0 turns it off.
   avonDedisaMustRun:1,
-  avonDedisaDayMW:[232, 226, 224, 209, 146, 134, 145, 163, 130, 151, 158, 168],
-  avonDedisaEveMW:[244, 309, 391, 460, 266, 243, 237, 288, 138, 223, 180, 186],
+  avonDedisaDayMW:[175, 172, 168, 170, 144, 129, 152, 157, 90, 105, 110, 117],
+  avonDedisaEveMW:[186, 271, 222, 369, 161, 136, 201, 280, 96, 155, 125, 129],
   avonMW:670, dedisaMW:335, dedisaEndYear:2030, avonEndYear:2031, avonEndDoy:200,
   // Regulating reserve grows with variable generation, and the ASTR figure above does not:
   // it is sized to 2030/31 on today's fleet. NREL's Operating Reserves and Variable Generation
@@ -7248,6 +7249,7 @@ function simulate(u, prof, outPath, _soc0){
   const _mdIpp = Math.max(0, dieselAvailMW(p) - Math.min(dieselAvailMW(p), Math.max(0, p.dslTankMW ?? FIXED.dslTankMW)));
   const _mdAt = h => Math.min(_mdIpp, avonDedisaMustRunMW(p.scenarioYear ?? 2026, h, p));
   let _mdUnmet = 0, _mdMWh = 0;
+  const _mdArr = new Float64Array(HOURS);   // must-run output by hour: price-taking, so it never sets the price (message 93)
   const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
   // Coal ramp-rate limit: how much coal generation can change hour-to-hour, blended between
   // today's real SA fleet rate and the flexibilised rate based on the flexibilisation slider.
@@ -8413,16 +8415,14 @@ function simulate(u, prof, outPath, _soc0){
         residual-=take;
         _ccgtFloorUnmet+=excess;
       }
-      // Avon and Dedisa must-run (message 88): serve the residual, then back coal to its floor, then charge storage; what still
-      // cannot be absorbed is not generated and is recorded, as for the gas floor. Fuel and CO2 at the diesel fleet's rates.
+      // Avon and Dedisa must-run (message 88): serve the residual, then back coal to its floor; what still cannot be absorbed is
+      // not generated and is recorded, as in a surplus hour. Never pumped into storage: that charged stores at diesel's cost and
+      // raised their bids (message 93). Fuel and CO2 at the diesel fleet's rates.
       const _md = _mdAt(h); let _mdGenH = 0;
       if (_md > 0){
         const take = Math.min(_md, Math.max(0, residual)); let excess = _md - take;
         if (excess > 0){ const back = Math.min(excess, Math.max(0, coalGen - coalFloorBase)); coalGen -= back; excess -= back; }
-        const _dc = p.costDiesel + p.vomDiesel + cD;
-        if (excess > 0){ const psChg = Math.min(excess, psPowerTot, psEnergyTot - psSoc); addCharge(h,'ps',psChg,_dc); psSoc += psChg*psEffTot; excess -= psChg; chargeMW[h] += psChg; }
-        if (excess > 0){ let btChg = Math.min(excess, battPower, battEnergy - battSoc); btChg = tierChargeAt(btChg,h,_dc); addCharge(h,'batt',btChg,_dc); syncBattSoc(); excess -= btChg; chargeMW[h] += btChg; }
-        _mdGenH = _md - excess; residual -= take; _mdUnmet += excess; _mdMWh += _mdGenH;
+        _mdGenH = _md - excess; residual -= take; _mdUnmet += excess; _mdMWh += _mdGenH; _mdArr[h] = _mdGenH;
         E.diesel += _mdGenH; stack.diesel[h] = (stack.diesel[h] || 0) + _mdGenH;
         fuelCost += _mdGenH * (p.costDiesel + p.vomDiesel); carbonCost += _mdGenH * cD; _dslUsed[_monthOfHour[h % 8760]] += _mdGenH;
       }
@@ -8633,7 +8633,7 @@ function simulate(u, prof, outPath, _soc0){
     if (_ocMW > 0){ _ocgtMWh += _ocMW; fuelCost += _ocMW*(p.costCcgt*(_ocK-1) + p.vomOcgt - p.vomCcgt); carbonCost += _ocMW*cG*(_ocK-1); }
     thermalP[h] =
         ((stack.unserved[h]||0) > 1)     ? (_pnmCapped ? _pnmLowCap : p.voll)
-      : ((stack.diesel[h]||0) > 1)       ? p.costDiesel + cD + p.vomDiesel
+      : ((stack.diesel[h]||0) - _mdArr[h] > 1) ? p.costDiesel + cD + p.vomDiesel
       : ((stack.ccgt[h]||0) > 1)         ? (_ocMW > 1 ? (p.costCcgt + cG)*_ocK + p.vomOcgt : p.costCcgt + cG + p.vomCcgt)
       : ((curtailMW[h]||0) > 1)          ? 0
       : (coalGen > 1)                    ? coalMarginalCost(coalGen) * partLoadF[h] * ccsCostMult + ccsCostAdd + cC * partLoadF[h] + p.vomCoal
@@ -8652,7 +8652,7 @@ function simulate(u, prof, outPath, _soc0){
     }
     marginalTech[h] =
         ((stack.unserved[h]||0) > 1)     ? 'unserved'
-      : ((stack.diesel[h]||0) > 1)       ? 'diesel'
+      : ((stack.diesel[h]||0) - _mdArr[h] > 1) ? 'diesel'
       : ((stack.ccgt[h]||0) > 1)         ? 'ccgt'
       : ((curtailMW[h]||0) > 1)          ? 'curtail'
       : (storageMarginal[h])             ? storageMarginal[h]
@@ -19224,7 +19224,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14o';
+const BUILD_STAMP = '2026-10-14p';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

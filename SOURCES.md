@@ -844,6 +844,17 @@ harness/ext/grid_distances.py.
   harness/derive_avon_dedisa.py from the local file, 24 monthly figures published with Eskom credited, the analysis ours, not
   Eskom's; no hourly series.
 
+## Interruptible load: contracted size (user, message 94; 14 Oct 2026; not yet applied)
+
+- NREL, Demand Response at the Grid Edge (FY24; data to about 2022), https://docs.nrel.gov/docs/fy24osti/88042.pdf: Eskom's
+  certified instantaneous demand response 1,014 MW; supplemental 346 MW; critical peak day 62 MW.
+- Meridian Economics, Resolving the power crisis part A: insights from 2021 (June 2022),
+  https://meridianeconomics.co.za/wp-content/uploads/2022/06/Resolving-Load-Shedding-Part-A-2021-analysis-01.pdf: interruptible
+  load shed up to 842 MW over 218 hours, 57 GWh in 2021.
+- NTCSA ASTR 2026/27-2030/31 (January 2026), p.10: emergency reserve 1,200 MW, made up of interruptible loads, generator emergency
+  capacity (EL1) and gas turbines; the engine's drInterruptMW 1,200 has no source of its own.
+- Eskom data ESK19679, aggregates only: ILS and IOS together 2025 at most 1,541 MW, 99th percentile 515 MW.
+
 ## Gas and diesel turbines' minimum stable level for online reserve headroom (user, message 90; build 2026-10-14n)
 
 - SONI (System Operator for Northern Ireland), CCGT Minimum Function Specification: continuous stable operation at 50% of
