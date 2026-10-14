@@ -2948,6 +2948,29 @@ Caveats: the engine check is the note's cost measure, with its storage-dispatch 
 nothing where the engine sheds'). Not like for like with c4 on 14a (R2,525.8bn, 1,465 Mt): engine build and five inputs
 differ (tracking, carbon path, coal dates, battery decline, wind cap), and c4 has not been checked on 14i.
 
+### Known limitation: no inertia or system-strength requirement in the build; the engine's 6 GW synchronous floor charges nothing when coal is gone (user, 14 Oct 2026, message 75; no change to c5b)
+
+User, 14 Oct (message 75): synchronous condensers, no change to c5b; record the limitation; say whether the model has any
+minimum synchronous generation rule today; add a TODO item for after the note.
+
+The limitation: the build optimiser (bldBuildLP) has no inertia, system-strength or minimum-synchronous constraint, so a
+high-renewable build pays nothing for synchronous condensers or grid-forming batteries. That flatters the renewable-heavy
+results, the no-gas case (s_nogas4strict) most, since it removes the synchronous gas plant as well as coal.
+
+What the model has today (engine only, index.html at build 2026-10-14l): a minimum synchronous generation floor in the dispatch
+engine, SYNC_MIN_MW 6,000 MW (slider syncMinMW, on by default), described as about 15% of peak and 'consistent with Eskom's
+historical operating practice', with no source recorded. Counted towards it: nuclear, hydro, imports at IMPORTS_CF (0.88, not
+the run's importsCF), the grid-forming share of battery power (SYNC_GFM_SHARE 30%, at no extra cost) and synchronous
+condensers (SYNC_CONDENSER_MW 0, none in service in the model). Gas plant is not counted. When the rest falls short, the
+engine raises coal output to cover the gap, which costs coal fuel; when no coal is available, the shortfall is only counted
+(syncUnmetH, hours the floor could not be met) and costs nothing; the engine check does not report it. Inertia pricing exists
+as an off-by-default toggle (asInertiaOn) for revenue panels, not as a requirement. So in c5's later years and in the no-gas
+case the floor binds less as coal retires, and a build that would need condensers or grid-forming inverters to be
+operable is neither charged for them nor flagged.
+
+Effect on results: not quantified. Direction: renewable-heavy builds and early coal retirement look cheaper than they are;
+the no-gas case most. TODO 14ed (after the note).
+
 ### c5b proposal for the user's approval (messages 64 (2)-(3), 68, 71 (7)); nothing launched, 14 Oct 2026
 
 Built already (entry below; branch claude/c5b-demand, build 2026-10-14k): demand with September-December at 0.9766, the 930
