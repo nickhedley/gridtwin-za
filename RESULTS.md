@@ -2696,11 +2696,52 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### Interruptible load cap tried and withdrawn (build 2026-10-14r, branch claude/reserve-rule; user, 14 Oct 2026, message 101)
+
+Rule: interruptible load 1,000 MW with no annual energy cap (drInterruptAnnualMWh 0; a positive value still caps it, for
+sensitivities). Order unchanged from message 100: restoring reserve uses open-cycle plant first, interruptible load only once
+open-cycle is exhausted; in energy shortfalls interruptible load is the last resource before shedding.
+
+Tried and withdrawn: a 177 GWh annual cap (message 98, build 14q), Eskom's 2025 use of ILS and IOS. It was observed use in a calm
+year, not a contract limit, and once interruptible load is called after open-cycle plant (message 100) the overuse it was meant to
+stop does not arise: in 2025 the engine calls 89 GWh against Eskom's 177 (416 GWh under the message 86 order, uncapped). The
+evidence against it, measured on 14q:
+- 'unserved energy never rises as the reserve requirement rises' (Today 2026, 55% EAF, requirement 0 / 2,200 / 6,000 MW): capped
+  0.80 / 0.59 / 4.94 GWh, failing, because restoring reserve used up the cap at 6,000 MW; uncapped 0.80 / 0.59 / 0.35, passing.
+- NTCSA MTSAO 2030 risk-adjusted case (validate_external, mean of 24 draws): capped, unserved 8.1 TWh (band 3-8) and open-cycle
+  utilisation 58.2% (band 35-58), both failing; uncapped 5.1 TWh and 57.3%, both passing (MTSAO: more than 4 TWh, about 45%).
+  Open-cycle utilisation is 10.2 points above 14p's 47.1%; with interruptible load called before diesel (uncapped) it is 49.2%,
+  so the message 100 order accounts for 8.1 points, by design. 0.7 points inside the ceiling, which is not moved.
+
+2025 benchmark (validate_benchmarks scenario, as in the 14q entry), capped and uncapped identical because the cap never binds:
+unserved 41.8 GWh; reserve shortfall 99 GWh in 120 hours; interruptible load 89 GWh (Eskom 177); restored by open-cycle 418 GWh,
+by interruptible load 13 GWh; open-cycle output 2,080 GWh, of which must-run 899 and dispatched 1,181 (Eskom's own turbines 1,909,
+Avon and Dedisa excluded); pumped storage 3.335 TWh.
+
+Wind capture at 110 GW (validate_findings; 50 GW wind, 60 GW solar in total, no storage, default profile, scenario year 2026):
+81.49% on 14r (14q 81.49%, the cap does not touch it). Traced from 14p's 85.06% by reverting one 14q change at a time on 14r:
+| Variant on 14r | Wind capture |
+|---|---|
+| 14r | 81.49% |
+| interruptible before diesel (message 86 order) | 84.34% |
+| plus interruptible 1,200 MW | 85.06% |
+| plus ten-minute sustain 3 hours and no restore step | 85.06% |
+So the order gives 2.85 points and the interruptible size 0.72; the storage-reserve rule, the sustain times and the restore step
+give none. Real; pass mark (85%) not moved.
+
+Suite on 14r (ESK19679.csv present): 811/820 (14q 808/820); eng5 6/6. The guard and the two MTSAO checks pass again. Failing:
+wind capture (above), pumped storage (known miss), peaker season ratio, iron-air in July, the preset curtailment band, the Megaflex
+block, EDMSA Scenario A CO2 2035, and the response matrix and average-cost pin (re-pinned once on the final build).
+
+Wind capture is a range, not a point: this week it read 85.1% (main, before the reserve rule), 83.7% (14n, reserve rule only),
+85.1% (14p, with must-run) and 81.5% (14q and 14r), each move traced to which plant sets the price in a few scarcity hours. Quote it
+as about 81-85% at this build, not as a single figure; the 85% pass mark sits inside that range.
+
 ### Storage reserve decided with dispatch, the restore step, interruptible load capped and called last, and pumped storage at 3.35 TWh as a known miss (build 2026-10-14q, branch claude/reserve-rule; user, 14 Oct 2026, messages 95-100)
 
 Rules (all in engine and optimiser alike where both apply):
 - Interruptible load 1,000 MW (NREL, Demand Response at the Grid Edge, FY24: Eskom's certified instantaneous demand response
-  1,014 MW), with its annual energy capped at 177 GWh, Eskom's 2025 use of ILS and IOS (Eskom data, aggregate): a calibration to
+  1,014 MW), with its annual energy capped (cap withdrawn in 14r, message 101) at 177 GWh, Eskom's 2025 use of ILS and IOS (Eskom data, aggregate): a calibration to
   observed use, not a sourced contract limit. Called after open-cycle plant and before shedding (message 100; the ASTR sets no
   order, p.10). Superseded: 1,200 MW unsourced and uncapped, called before diesel (message 86).
 - Storage reserve (message 97): decided together with dispatch, not set aside first. Each hour pumped storage and batteries hold
@@ -2780,12 +2821,33 @@ back at a time on 14q:
   consequences of the adopted rules; the MTSAO's own figures are "more than 4 TWh" and "about 45%". Ceilings not moved.
 - 'wind holds its capture rate at 110 GW of build' fails: 81.5% against the pass mark of 85 (14p 85.06%). Interruptible before
   diesel gives 84.3%, so 2.8 points come from the new order; the cap, the restore step and the 1,000 MW size each change it by
-  less than 0.01 points; the remaining 0.7 points are not separated (the storage-reserve rule is the other engine change). Real. Supersedes 83.7% (14m) and 85.1% (14p).
+  less than 0.01 points; the remaining 0.7 points are the interruptible size (1,000 MW in place of 1,200, which matters only while interruptible load is
+  called before diesel; traced on 14r, below). Real. Supersedes 83.7% (14m) and 85.1% (14p).
   Pass mark not moved.
 - Response matrix (7 cells) and the average-cost pin (R1,101/MWh): to be re-pinned once on the final build, each with its cause
   (message 95).
 - Unchanged failures: pumped storage (known miss above), peaker season ratio 1.8x, iron-air in July, the preset curtailment band,
   the Megaflex block, EDMSA Scenario A CO2 2035.
+
+### c5b, reserve rule plus Avon and Dedisa must-run (build 2026-10-14p): adequate after two passes; the engine check passes every year; R2,385.6bn engine PV (+R22.7bn on reserve only), 2,001 Mt CO2 2026-40 (+2.7 Mt); superseded as the base by the final c5b on 14r (user, 14 Oct 2026, messages 89 and 100)
+
+Run: workflow 'Optimiser long run', name c5b_mr2, code 299ad1a (build 2026-10-14p: reserve rule with the fixes of messages 90 and
+92, must-run on January-August 2026 levels, the price and storage-charging bug fixes), runs 38600985844 (pass 1) and 38602136451
+(pass 2, 'done adequate', and the engine check). Settings: the c5b line, unchanged. Build from a local reproduction at 299ad1a,
+adequate after two passes, whose 2035 engine check matches GitHub's to every printed digit (R274.6455bn, 129.1994 Mt, 0.386411 GWh).
+
+The must-run step (c5b_mr2 against c5b_res): +R22.7bn PV, +2.7 Mt CO2. By year the cost is about +R5bn a year 2026-2030 (the
+contracts run), +R1.89bn in 2031 (Avon to 20 July), under R0.3bn a year after. Build 2026-40, MW:
+
+| | Reserve only (c5b_res) | Plus must-run (c5b_mr2) | Change |
+|---|---|---|---|
+| Wind | 16,276 | 16,111 | -165 |
+| Utility PV | 36,425 | 36,495 | +70 |
+| Rooftop | 12,600 | 12,600 | 0 |
+| Lithium | 19,871 | 19,817 | -54 |
+| CCGT | 7,480 | 7,541 | +61 |
+| OCGT on LNG | 666 | 616 | -50 |
+| OCGT on diesel | 320 | 364 | +44 |
 
 ### c5b, reserve rule only (build 2026-10-14n): adequate after two passes; the engine check passes every year with no top-up; R2,362.9bn engine PV (c5b R2,365.4bn, -R2.5bn), 1,998 Mt CO2 2026-40 (c5b 2,003, -4.8 Mt); provisional (user, 14 Oct 2026, messages 89, 93, 94)
 
@@ -5798,6 +5860,8 @@ modern-turbine profile at 1.064, build 07s, against the current-turbine profile,
   this build; the asymmetry with solar stands.
   Updated 14 Oct 2026 (user, message 93): 85.1% on main superseded; 83.7% with the reserve rule alone (build 14n), 85.1% with the
   Avon and Dedisa must-run as well (build 14p); cause and scenario year in 'Every check moved by the reserve rule and the must-run'.
+  Updated 14 Oct 2026 (user, message 101): 81.5% on builds 14q and 14r, traced to the interruptible order and size. Quote as a range,
+  about 81-85% this week (85.1, 83.7, 85.1, 81.5), not a point: it swings with a few scarcity hours (RESULTS 14r).
 - With gas, 100-hour iron-air barely moves July (validate_findings, LDES scope; RESULTS "Long-duration storage in a
   system that has gas"). Scenario: Seriti build (20 GW wind, 25 GW solar, 20 GW lithium at 10 h, 32 GW coal retired,
   EAF 70%) plus 25 GW new CCGT, then 20 GW of 100-hour iron-air. July gas 846 -> 832 GWh (-1.7%) becomes 425 -> 0 GWh

@@ -5781,10 +5781,10 @@ const FIXED = {
   // Function Specification sets continuous stable operation at 50% of module MCR (35% for its gas turbines in open cycle); the
   // author's assumption for all gas and diesel turbines here, not a South African figure. The optimiser uses the same rule.
   reserveGasMinStableFrac:0.5,
-  // Interruptible load's annual energy (user, message 98): 177 GWh, Eskom's 2025 use of its two interruptible products (ILS and
-  // IOS, Eskom data ESK19679, aggregate) - a calibration to observed use, not a sourced contract limit. Restoring reserve beyond it
-  // falls to open-cycle plant. 0 lifts the cap.
-  drInterruptAnnualMWh:177000,
+  // Interruptible load's annual energy cap: none (user, message 101). Tried and withdrawn: 177 GWh, Eskom's 2025 use of ILS and IOS
+  // (message 98), was observed use in a calm year, not a contract limit, and with interruptible load called after open-cycle plant
+  // (message 100) the overuse it was meant to stop no longer arises; RESULTS 14r. A positive value caps the year's energy (MWh).
+  drInterruptAnnualMWh:0,
   // AVON AND DEDISA MUST-RUN (user, message 88). Both IPP peakers ran every day in 2025-26 on their contracts, not on merit:
   // 1.460 TWh in 2025, 0.715 TWh January-August 2026 (Eskom data, ESK19679, 'Dispatchable IPP OCGT'; the analysis is ours, not
   // Eskom's). Modelled as a daytime level (hours beginning 05-16) and an evening-peak level (17-20) by month, MW: January-August
@@ -5923,8 +5923,8 @@ const FIXED = {
   // defaults to zero and is a scenario lever rather than a description of today.
   // 1,000 MW (user, message 95): NREL, Demand Response at the Grid Edge (FY24, data to about 2022), Eskom's certified
   // instantaneous demand response 1,014 MW. Was 1,200 MW, unsourced, and equal to the ASTR's whole emergency reserve (p.10:
-  // interruptible load, EL1 and gas turbines together). No cap on hours or energy (user): in 2025 the engine calls 416 GWh against
-  // Eskom's 177 GWh of ILS and IOS, a recorded limitation (RESULTS).
+  // interruptible load, EL1 and gas turbines together). No cap on hours or energy (user, messages 95 and 101; a
+  // 177 GWh cap was tried and withdrawn). Called after open-cycle plant (message 100); 2025 use against Eskom's 177 GWh in RESULTS.
   drInterruptMW:1000, drInterruptCostR:4000, drShiftPct:0,
   // Shifting load is NOT free. A geyser reheated six hours later has lost standing heat; a
   // pre-cooled building cools space that did not need it. Until 19 Sep 2026 the shift was
@@ -7749,7 +7749,7 @@ function simulate(u, prof, outPath, _soc0){
   const drMW=new Float64Array(HOURS);
   const DR_INT  = Math.max(0, p.drInterruptMW ?? FIXED.drInterruptMW);
   const DR_COST = Math.max(0, p.drInterruptCostR ?? 4000);
-  // Annual energy cap (message 98): what is left of drInterruptAnnualMWh this year; 0 lifts it.
+  // Annual energy cap, off by default (message 101): what is left of drInterruptAnnualMWh this year; 0 means no cap.
   const DR_CAP = Math.max(0, p.drInterruptAnnualMWh ?? FIXED.drInterruptAnnualMWh);
   const _drLeft = () => DR_CAP > 0 ? Math.max(0, DR_CAP - E.dr) : Infinity;
   let drCostR = 0;   // total compensation paid to interruptible customers
@@ -8474,8 +8474,8 @@ function simulate(u, prof, outPath, _soc0){
       // Independent peakers first, then Eskom's own from the tank, so the tank is conserved.
       const _dslAll = dieselAvailMW(p), _dslEsk = Math.min(_dslAll, Math.max(0, p.dslTankMW));
       const _dslLim = Math.max(0, (_dslTankOn ? (_dslAll - _dslEsk) + Math.min(_dslEsk, _dslStock) : _dslAll) - _mdGenH);   // less Avon and Dedisa's must-run
-      // Interruptible load is called after open-cycle plant and before shedding (user, message 100: its annual energy is capped, so it
-      // is kept for the hours customers would otherwise be cut; the ASTR sets no order, p.10). p._drFirst restores the order of
+      // Interruptible load is called after open-cycle plant and before shedding (user, messages 100 and 101: it is kept for the hours
+      // customers would otherwise be cut; the ASTR sets no order, p.10). p._drFirst restores the order of
       // message 86, interruptible before diesel (measurement only).
       if (_astr && p._drFirst && residual > 1 && DR_INT > 0){ const _drE = Math.min(residual, DR_INT, _drLeft()); drMW[h] = _drE; E.dr += _drE; residual -= _drE; drCostR += _drE * DR_COST; }
       let dsl=Math.max(0, Math.min(residual,_dslLim, _dslMonthCap - _dslUsed[_mo]));
@@ -19289,7 +19289,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14q';
+const BUILD_STAMP = '2026-10-14r';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
