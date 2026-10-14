@@ -744,6 +744,10 @@ const num = t => {
           (Math.max(...meds) - Math.min(...meds)) / Math.min(...meds) < 0.05,
           `medians span ${(100*(Math.max(...meds)-Math.min(...meds))/Math.min(...meds)).toFixed(1)}% `
           + `- the surviving NERSA claim is that they separate on the tail, not the level`);
+    // FAILS from build 14d (14dr outage draw), left failing to investigate after the IRP note (user,
+    // 14 Oct 2026). Means at these 2025 settings, R/MWh, 14a -> 14d: high off-peak 778 -> 914, low
+    // off-peak 868 -> 792; shed 12 -> 37 GWh, more of it in the high season. Medians 743-750 on both.
+    // This check guards a claim in the NERSA correction note.
     check('high-season off-peak is the cheapest block modelled',
           tou.cheapest === 'high offpeak',
           `cheapest is "${tou.cheapest}" - the surviving NERSA claim is that Megaflex `

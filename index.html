@@ -11121,8 +11121,18 @@ async function bldStressLoopPerYear(opts, onProgress){
         return { y, targetGWh: +(built.stressTarget.targetMWh[y] / 1e3).toFixed(3), expectedShedGWh: +(((rows.get('tgt_' + y) || 0) + sl) / 1e3).toFixed(3), slackGWh: +(sl / 1e3).toFixed(3) }; });
       entry.lpTargetRuns = built.stressTarget.runs;
     }
+    // STALL STOP (user, 14 Oct 2026, the stopping rule for c5, TODO 14dv (9)). Every pass records the shed above target
+    // in the worst year (excessGWh) and how much this pass cut it (cutFrac). With opts.stallFrac set (c5: 0.1) the loop
+    // stops from pass opts.stallFrom on (c5: 4) when a pass cuts it by less than that share; the verdict says so. Unset:
+    // no change.
+    const excess = years.reduce((m, q) => (q.limit > 0 && q.mean > q.limit) ? Math.max(m, q.mean - q.limit) : m, 0);
+    const prevEx = bldStressLog.length ? bldStressLog[bldStressLog.length - 1].excessGWh : null;
+    entry.excessGWh = +excess.toFixed(4);
+    if (prevEx > 0) entry.cutFrac = +((prevEx - excess) / prevEx).toFixed(4);
     bldStressLog.push(entry);
     if (!fails.length){ verdict = 'adequate'; break; }
+    if (opts.stallFrac > 0 && it >= (opts.stallFrom || 1) && entry.cutFrac != null && entry.cutFrac < opts.stallFrac){
+      verdict = 'stall stop'; break; }
     if (it === maxP) break;
     // opts.stressDays (default 7): a longer window opens before the failing week, so the LP must
     // carry storage through the run-up as well as the lull itself (5 Oct 2026; multi-day lulls
@@ -18886,7 +18896,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14d';
+const BUILD_STAMP = '2026-10-14f';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate

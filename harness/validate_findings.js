@@ -65,6 +65,10 @@ setTimeout(()=>{
   // SCENARIO: Seriti Green - 20 GW wind, 25 GW solar, 32 GW coal retired, 25 GW gas,
   // 20 GW/10h lithium, EAF 70. METRIC: July gas energy, with and without 20 GW iron-air.
   // PUBLISHED: identical to the MWh. Survived a heuristic, an LP and a reserve-constrained LP.
+  // RESTATED 14 Oct 2026 (user), tolerance kept at 1%: build 14a 1,312 -> 1,295 GWh (1.3%, fails);
+  // build 14d 1,641 -> 1,636 GWh (0.3%). Iron-air starts July empty on both. The change is coal
+  // moved through storage: on 14a July coal +65 GWh, storage charging +70 GWh, iron-air gives
+  // 16.6 GWh in 3 hours. Not summer surplus carried into winter.
   {
     const r=probe(`
       const sc={newWindMW:20000-FIXED.windMW,newPvMW:25000-FIXED.pvUtilityMW,newNuclearMW:0,
