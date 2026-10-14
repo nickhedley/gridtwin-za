@@ -14,6 +14,9 @@ const SEED_BASE=+(process.env.SEED_BASE||71830529);
 // 5 Jun 2026). 53.37 GJ/t: IRP 2025 additional assumptions (gas fuel energy content). 0.45 t/m3 and no heel: unsourced.
 const LNG_M3=+(process.env.LNG_M3||170000), LNG_GJ_M3=+(process.env.LNG_GJ_M3||0.45*53.37), LNG_HEEL=+(process.env.LNG_HEEL||0), CCGT_EFF=+(process.env.CCGT_EFF||0.52);
 // DEM: demand growth to 2040, %, as the pathway; default 5 is the legacy, unsourced setting (RESULTS 9 Oct 2026).
+// EXTRA_OCGD_MW (13 Oct 2026, adequacy top-up, harness/topup.js; branch claude/topup only): new diesel open-cycle MW added
+// on top of the pathway's build in every checked year (use with YEARS=<y>). Unset: 0, the check unchanged.
+const EXTRA_OCGD=+(process.env.EXTRA_OCGD_MW||0);
 const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.json')), K=+(process.env.K||2), DEM=+(process.env.DEM||5);
 (async()=>{
  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
@@ -40,11 +43,20 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  // WINDMOD / WIND_CASE (7 Oct 2026): new wind on the modern-turbine profile with bid capex (1, default) or the previous
  // R21,000 on the current profile (0); wind cost case central, high or low; WIND_CORR the new-wind correction, central or low.
  w.eval(`if(!('bldWindModern' in FIXED)) throw new Error('bldWindModern missing');`+(process.env.WINDMOD!==undefined?` state.bldWindModern=${+process.env.WINDMOD};`:'')+(process.env.WIND_CASE!==undefined?` state.bldWindCase=${JSON.stringify(process.env.WIND_CASE)};`:'')+(process.env.WIND_CORR!==undefined?` state.bldWindCorr=${JSON.stringify(process.env.WIND_CORR)};`:''));
+ // windCase (13 Oct 2026, user: s_windlow): a run made with WIND_CASE records it; the check prices new wind the same way.
+ // Absent or null: unchanged. A WIND_CASE given here as well must agree.
+ if (P.windCase!=null){ if (!['central','high','low'].includes(P.windCase)) throw new Error('windCase must be central, high or low: '+P.windCase);
+   if (process.env.WIND_CASE!==undefined && process.env.WIND_CASE!==P.windCase) throw new Error('WIND_CASE '+process.env.WIND_CASE+' disagrees with the run\'s windCase '+P.windCase);
+   w.eval(`state.bldWindCase=${JSON.stringify(P.windCase)};`); }
  // COSTSET (7 Oct 2026): the same cost set as the pathway run; see pathway/costset.js.
  require('./pathway/costset.js')(w, process.env.COSTSET);
+ // The pathway's lithium capex decline (BATT_DECL, 13 Oct 2026) when it recorded one, so the check prices lithium as the optimiser did.
+ if (P.battDecl!=null) { if (process.env.COSTSET) throw new Error('BATT_DECL with COSTSET: the cost set replaces the decline'); const d=+P.battDecl; if (!(d>-0.5 && d<0.5)) throw new Error('BATT_DECL out of range: '+d); w.eval(`for (const k of ['batt','batt_high','batt_low']){ if(!BLD_COST[k] || !('decl' in BLD_COST[k])) throw new Error('BLD_COST.'+k+'.decl missing'); BLD_COST[k].decl=${d}; }`); }
  // Gas infrastructure sensitivity, TODO 14ak (6 Oct 2026): the same overrides as pathway_perfail.js.
  // From build 2026-10-09f the pathway records its gas settings (P.gas): they are applied here, by year for a GAS_CASE,
  // and passing GAS_FUEL_R or GAS_FOM_ADD as well is refused, so the check cannot price gas differently from the optimiser.
+ // The pathway's diesel price (DIESEL_R, 13 Oct 2026) when it recorded one, so the check prices diesel as the optimiser did.
+ if (P.dieselR!=null) w.eval(`if(!('costDiesel' in FIXED)) throw new Error('costDiesel missing'); state.costDiesel=${+P.dieselR};`);
  // The pathway's discount rate (TODO 14be step 3), so the check annualises capital as the optimiser did.
  if (P.disc!=null) w.eval(`BLD_DISC=${+P.disc};`);
  // The pathway's gas finance premium (bldGasFinPremium), so new gas capital is annualised as the optimiser did.
@@ -61,16 +73,16 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (P.ocgt && P.ocgt.costCase) w.eval(`state.bldOcgtCostCase=${JSON.stringify(P.ocgt.costCase)};`);
  // GAS_CAPEX (7 Oct 2026): CCGT capex at 2026, R/kW, for the IRP-capex sensitivity; read by engine and optimiser alike.
  if (process.env.GAS_CAPEX) w.eval(`if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`);
-  // Imports end year (TODO 14dv (6)): the pathway's own, so the engine runs without imports where the optimiser did.
+ // Imports end year (TODO 14dv (6)): the pathway's own, so the engine runs without imports where the optimiser did.
  if (P.importsEndYear) w.eval(`state.importsEndYear=${+P.importsEndYear};`);
-const rows=[];
+ const rows=[];
  for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0;
    // YEARS=2036,2037 (8 Oct 2026, TODO 14bk): check only these years; builds of the skipped years still accumulate.
    if (process.env.YEARS && !process.env.YEARS.split(',').map(Number).includes(y)) continue;
    // The pathway's own demand path when it recorded one (DEMAND, 9 Oct 2026); else the legacy DEM to 2040.
    const frac=(y-2026)/(2040-2026), dg=(P.demand && P.demand.index) ? (P.demand.index[y]-1)*100 : (Math.pow(1+DEM/100,frac)-1)*100;
    const over={...(PG && PG.fuelR ? {costCcgt:PG.fuelR[y]} : {}),newWindMW:cum.wind,newPvMW:cum.pv,newRooftopMW:cum.rooftop,newBattMW:cum.batt,newBattHours:cum.batt>0?Math.max(1,Math.min(20,cum.battMWh/cum.batt)):4,
-     newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
+     newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd+EXTRA_OCGD,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
      demandGrowthPct:dg,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
    // New pumped hydro built by the optimiser (6 Oct 2026): charge what the optimiser charged, not the engine's
@@ -86,7 +98,7 @@ const rows=[];
       for(let k=${k0};k<${k1};k++){ const st={...state,...${JSON.stringify(over)},outageSeed:${SEED_BASE}+k*104729+yy*7919};
        const x=simulate(st,{demand:PROFILES.demand,solar:nat.solar,wind:nat.wind,csp:PROFILES.csp,real:true});
        let dem=0, chg=0; for(let i=0;i<x.loadS.length;i++){ dem+=x.loadS[i]; chg+=(x.chargePsMW?x.chargePsMW[i]||0:0)+(x.chargeBattMW?x.chargeBattMW[i]||0:0); }
-       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0}]); } }
+       o.push([x.E.unserved/1e3,x.systemCostR/1e9,x.E.curtailed/1e6,dem*0.00002/1e3,x.co2,x.E.coal/1e6,x.E.diesel/1e6,(x.systemCostR-x.btmCapexR)/1e9,(x.E.ccgt||0)/1e6,(()=>{let n=0;for(let i=0;i<x.stack.ccgt.length;i++) if(x.stack.ccgt[i]>1) n++; return n;})(),x.caps.ccgtCap,(()=>{const g=x.stack.ccgt,W=14*24;let s=0,m=0;for(let i=0;i<g.length;i++){s+=g[i];if(i>=W)s-=g[i-W];if(s>m)m=s;}return m/1e3;})(),x.avgCost,x.gridServed/1e6,(dem-chg)*0.00002/1e3,(x.ocgtMWh||0)/1e6,{fl:x.ccgtFloorFleetMWh||0,tg:x.ccgtFloorTargetMWh||0,un:x.ccgtFloorUnmetMWh||0,gas:x.E.ccgt||0}]); } }
       return JSON.stringify(o); })()`));
    // REPORTED SHED, 8 Oct 2026 (user): K unset draws in batches of 10 (120 runs) until the 95% interval of the mean shed
    // is within +/-20% of the target (TF x the 0.002% standard), at most 40 draws (480 runs). K set: exactly K draws.
@@ -94,7 +106,7 @@ const rows=[];
    // penalty excluded, export revenue netted, as the app) over its gridServed, served-weighted across runs.
    const TFR=+(process.env.TF||0.5), KMAX=+(process.env.KMAX||40), KSTEP=10;
    const agg=(o)=>{      const n=o.length,m=i=>o.reduce((a,b)=>a+b[i],0)/n; return ({seMean:n>1?Math.sqrt(o.reduce((a,b)=>a+(b[0]-m(0))**2,0)/(n-1)/n):null,nRuns:n,mean:m(0),worst:Math.max(...o.map(a=>a[0])),cost:m(1),curt:m(2),std:m(3),co2:m(4),coal:m(5),diesel:m(6),gridCost:m(7),gasTWh:m(8),gasHours:m(9),gasCF:m(10)>0?m(8)*1e6/(m(10)*8760):0,gas14dMaxGWh:Math.max(...o.map(a=>a[11])),
-     stdCust:m(14),servedTWh:m(13),avgCostRMWh:o.reduce((a,b)=>a+b[12]*b[13],0)/o.reduce((a,b)=>a+b[13],0)}); };
+     stdCust:m(14),servedTWh:m(13),ocgtLngTWh:m(15),avgCostRMWh:o.reduce((a,b)=>a+b[12]*b[13],0)/o.reduce((a,b)=>a+b[13],0)}); };
    let o=[], kk=0, r=null;
    for(;;){ const k1=process.env.K?K:Math.min(KMAX,kk+KSTEP); o=o.concat(batch(kk,k1)); kk=k1; r=agg(o);
      // STANDARD ON CUSTOMER DEMAND (user, 12 Oct 2026): from these runs the target is TFR x 0.002% of demand without
