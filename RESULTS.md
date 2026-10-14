@@ -3460,6 +3460,29 @@ Proposed c5b settings line (build 14l; awaiting the user's go): c5's line with D
 CAPE_WIND=1580:4 RP_EXCL=wind MIN_BUILD=wind:2026:696,wind:2027:886,pv:2026:354,pv:2027:609,pv:2028:849
 LI_MIN=2026:360:1440,2027:666:2664.
 
+### Known limitation: the engine's look-aheads read the actual future, not a forecast (perfect foresight over 12-48 hours); build 2026-10-14r (user, message 91, 14 Oct 2026)
+
+Checked in index.html (simulate), build 14r. Every look-ahead in the dispatch engine reads the run's own future demand, wind
+and solar, the same hours it will then be dispatched against, so the engine plans with perfect foresight of net load over
+each window. Coal outages are not foreseen in the storage forecasts: coal available in a future hour is the commitment plan
+capped by the current hour's outage state, held forward (_fcCoal, persistence). Windows:
+- storage look-ahead (storageLookaheadH 48, engine fix (B)): the short stores' energy target (_laReq) is built from netLoadPre
+  (actual demand less actual wind and solar) for the next 48 hours, against that coal forecast; the code comment still says
+  'perfect sight of load, weather and outages', which overstates it for outages;
+- pumped storage's refill estimate (_laPsRefill) and engine B's pumped-storage hold over the same 48 hours;
+- storage-aware coal commitment and the 24-hour solar-aware commitment window (next day's actual net load);
+- coal's ramp-aware floor over coalLookaheadH (12 hours of actual net load);
+- the long stores' rule (ldesLookaheadH 168: a week of actual net load, the code's own note that past a week foresight 'does
+  more work than the storage does').
+
+Effect, direction only (not measured): a real operator works from forecasts with error, so it holds more in reserve, commits
+more coal, starts peakers earlier or sheds where the engine does not. The engine therefore tends to understate operating
+cost, open-cycle and diesel use, unserved energy and reserve shortfall, and to overstate how much storage can do, most in
+renewable-heavy years and weeks. The PyPSA cross-check (validation/single_node, a 48-hour rolling optimum keeping 24 hours)
+has the same foresight, so it cannot detect this. The optimiser's representative windows are solved with full knowledge of
+each window too. Not changed. Measuring it needs forecast series with realistic error, which is what TODO 14ea's ten-day
+outlook would supply (ECMWF and GFS forecasts), so this links to 14ea. Reviewer pack: limitation 19.
+
 ### Known limitation: no inertia or system-strength requirement in the build; the engine's 6 GW synchronous floor charges nothing when coal is gone (user, 14 Oct 2026, message 75; no change to c5b)
 
 User, 14 Oct (message 75): synchronous condensers, no change to c5b; record the limitation; say whether the model has any
