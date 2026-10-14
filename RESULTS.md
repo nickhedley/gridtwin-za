@@ -3127,6 +3127,18 @@ validate_findings 40/42, so 813/818. Remaining failures: the Megaflex tariff blo
 and the preset curtailment band (all four also fail on main), and the market-price invariant (split proposed, not applied).
 Main is 812/818. Pushed to #39: 7b15f13, 4d4c5d1, f14d684; none changes engine or optimiser code, so c5b (babb78d) stands.
 
+Update, message 81 (user, 14 Oct 2026).
+- Stress-suite imports factor: the fix (4d4c5d1) also moved the stress suite's imports factor from 0.85 (the hand copy it
+  removed) to 0.88 (nodal_engine.js, IMPORTS_CF), because the suite now reads the engine's constant. Measured on main, before
+  and with the fix: no check changes state (290/290 both), and the single-node figures move slightly, for example zero EAF shed
+  80,187.5 -> 79,912.5 GWh; EAF 45% against 55% shed 2,499.2 -> 74.8 becomes 2,427.0 -> 70.7 GWh; +wind 11,441.8 -> 42.7
+  becomes 11,254.1 -> 45.3 GWh; +50 GW solar curtailment 79,073 -> 79,086 GWh. The nodal suites (1-4) are unchanged.
+- Market-price invariant: left failing, split not applied (not now; revisit once the cause is known). Cause recorded: the
+  scarcity term grows with the sourced 68 MW battery fleet. Today 2026, build 14l against 14j: scarcity hours 100 against 46,
+  mean scarcity adder R0.079 against R0.028/kWh, market price R0.841 against engine R0.762/kWh (10.3%, limit 5%); without the
+  adder the two agree within 0.03%. Eskom's 348 interruptible-supply hours in January-August 2026 against the model's 78 go
+  to TODO 14eg, after c5b.
+
 Moved checks (message 79 (3)), on branch claude/c5b-demand, commit 7b15f13, no tolerance changed:
 - (a) lcoeBatt: tested on c5's 2030 lithium fleet, { newBattMW: 2240, newBattHours: 4, scenarioYear: 2030 }, pass rule
   unchanged; passes. Reason: the existing fleet is 68 MW / 292 MWh and no new batteries are in the base scenario, so the cost
