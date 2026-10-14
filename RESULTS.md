@@ -3028,10 +3028,10 @@ validate_lint          3/3        3/3        -
 validate_findings      39/42      39/42      same count, different checks (below)
 validate_invariants    176/176    175/176    battery fleet: Today 2026 market price R0.841 against engine R0.762/kWh (limit 5%)
 validate_response      87/87      85/87      battery fleet: lcoeBatt inert in its sweep; response matrix 15 cells changed
-validate_consistency   79/80      78/80      O&M: new-build capital, Deep decarbonisation 2035, R1.118 against pinned R1.205/kWh
+validate_consistency   79/80      78/80      O&M and profile: new-build capital, Deep decarbonisation 2035, R1.118 against pinned R1.205/kWh
 validate_benchmarks    28/29      29/29      battery and demand profile: peaker seasonal ratio 9.3x -> 4.6x (band 2.15-8.6x)
 validate_external      7/8        6/8        demand profile: MTSAO 2030 OCGT utilisation 59.5% against about 45%
-validate_outputs       42/42      41/42      battery fleet and demand profile: avgCost has moved (1,075.3 R/MWh), a pin
+validate_outputs       42/42      41/42      O&M and demand profile (corrected 14 Oct, entry above): avgCost 1,075.3 R/MWh, a pin
 other 7 scripts        same       same
 node checks            725/731    720/731
 audit                  87/87      87/87
@@ -3096,6 +3096,74 @@ operable is neither charged for them nor flagged.
 
 Effect on results: not quantified. Direction: renewable-heavy builds and early coal retirement look cheaper than they are;
 the no-gas case most. TODO 14ed (after the note).
+
+### c5b launched on the branch commit; the stress suite on #39 stops loading before its checks run (a harness gap, not a result); moved checks settled or proposed (user, 14 Oct 2026, messages 78-79)
+
+c5b runs on the branch commit before #39 merges (user, message 79 (1)). Workflow 'Optimiser long run', ref claude/c5b-demand,
+code_sha babb78d4f3b03b91b29b826527a3f0c325fa9e4e (build 2026-10-14l) passed explicitly so every job checks out that commit,
+name c5b, one pass per job, max_jobs 30, no seed, first run 38565675653 (12:40 UTC). Settings: the c5b line in 'c5b build'
+above. If any engine or optimiser code changes on the branch before #39 merges (index.html, nodal/, harness/pathway/,
+harness/pathcheck.js), c5b is rerun. Branch commits since babb78d: 7b15f13 (harness checks and response_matrix.json only).
+
+Stress suite on #39 (message 78). GitHub run 38562782391 on babb78d fails; main passes (290/290). It is not one of the checks
+the battery correction moved: no stress check fails. The suite stops while loading the single-node engine, after its first four
+nodal suites. stress_suite.js runs index.html's script outside a browser and supplies by hand the one constant that file reads
+from nodal_engine.js (IMPORTS_CF, copied there as 0.85; the engine's is 0.88). Build 14l's FIXED also reads EXISTING_BATT_MW
+from nodal_engine.js, which the suite does not supply, so the script stops at FIXED; WIND_MOD_MAP is never initialised and the
+next step fails with "Cannot access 'WIND_MOD_MAP' before initialization", the error GitHub shows. Same class as the lint
+failure fixed in babb78d. Fix trialled on scratch copies, not applied (message 78: report first): run nodal_engine.js in the
+same context before index.html, as the browser does, instead of the hand copy; 290/290 on the branch and 290/290 on main. It
+changes stress_suite.js only, so c5b is unaffected. Side effect: the suite's single-node section then uses IMPORTS_CF 0.88, not
+the stale 0.85.
+
+Moved checks (message 79 (3)), on branch claude/c5b-demand, commit 7b15f13, no tolerance changed:
+- (a) lcoeBatt: tested on c5's 2030 lithium fleet, { newBattMW: 2240, newBattHours: 4, scenarioYear: 2030 }, pass rule
+  unchanged; passes. Reason: the existing fleet is 68 MW / 292 MWh and no new batteries are in the base scenario, so the cost
+  slider has nothing to price. Response baseline rewritten (--write-baseline). Base row: coal 145.906 -> 148.305 TWh, CO2
+  155.161 -> 157.650 Mt, avgCost 1,089.11 -> 1,075.31, replAvg 1,507.31 -> 1,507.98, avgPrice 749.20 -> 762.05 R/MWh, RE share
+  21.443 -> 21.187%. Fourteen response cells changed: now responding, outageUnitLevel (coal, avgCost, replAvg),
+  dieselDecomMW (RE share), coalFlexPct (coal), nuclearCF (RE share), newCcgtMW (CO2, replAvg), newCoalMW (coal),
+  newBattHours (avgPrice), newIronAirMW (replAvg), drInterruptMW (avgCost); no longer responding, newBattHours (replAvg),
+  newVrfbMW (replAvg). Cause: the 14l inputs (battery fleet, O&M, demand profile), traced in 'c5b build'.
+- (b) NTCSA MTSAO 2030: the growth is now solved each run so that served demand (the profile times growth, plus the flat block,
+  less rooftop) equals the 222.4 TWh target in each weather year, instead of a fixed 18%. Mean derived growth +17.2%; served
+  222.4 TWh; unserved energy 4.4 TWh (MTSAO: more than 4); OCGT utilisation 57.4% against the MTSAO's about 45%, which
+  passes the 35-58% band by 0.6 points (59.5% at the fixed 18%). The check passes narrowly; the model's open-cycle use in this
+  case sits well above the MTSAO's. validate_external's notes print these figures each run.
+- (d) Pins re-pinned, each with the input that moved it (each change applied alone to main e00e430, build 14j):
+  new-build capital, Deep decarbonisation 2035: R1.205 -> R1.118/kWh (O&M alone R1.134, -0.071; demand profile alone R1.188,
+  -0.016, a larger sales base; batteries alone R1.205, no change). avgCost at defaults: R1,090.0 pin, R1,089.1 measured on
+  main -> R1,075.3 (O&M alone R1,080.1, -9.0; demand profile alone R1,083.9, -5.2; batteries alone R1,089.3, +0.2).
+  Correction to the 'c5b build' table, which attributed avgCost to the battery fleet and demand profile and the capital pin
+  to O&M alone: avgCost moved with O&M and the demand profile, the batteries move it by +0.2; the capital pin moved with
+  O&M (-0.071) and the demand profile (-0.016).
+- (e) Ancillary knee (published finding 'Battery saturation in South Africa', corrected 23 Sep 2026): not re-pinned; reported
+  for the user's decision. The saturation curve is identical on main and the branch (reserve price R52/MWh, defaults:
+  R68,328/MW-yr flat from 0.5 to 4 GW, R50,950 at 6 GW, R38,213 at 8 GW, R30,570 at 10 GW), so the knee is unchanged,
+  between 4 and 6 GW (about 4.5 GW, twice the mean requirement). The existing fleet moves 3,524 -> 2,792 MW (pumped storage
+  2,724 MW plus batteries 800 -> 68 MW). The check's ratio (upper knee point over fleet) moves 1.70 -> 2.15, outside its
+  0.8-2.0 band. The conclusion holds: South Africa is approaching the knee, not past it, and a battery built today still
+  earns the full ancillary rate. What changes is the distance: about 1.7 GW of new storage reaches the knee, not about 1 GW,
+  so the finding's "one procurement round of storage reaches it" needs restating. Proposed: mark that sentence superseded,
+  restate the distance as about 1.7 GW against a 2.8 GW fleet, and re-pin the check's band on the ratio to the new fleet.
+- (f) Preset curtailment band: stays failing until the preset re-search (TODO 14ay), after the note (TODO 14ef).
+- (c) Market-price invariant: proposal below, not applied.
+
+Market-price invariant, split proposed (message 79 (3c)); not applied until the user agrees. Measured on Today 2026 (branch,
+build 14l; main 14j in brackets): engine price R0.7620/kWh (R0.7492); market price R0.8406 (R0.7768); market price less the
+scarcity adder R0.7618 (R0.7492); mean scarcity adder R0.0788 (R0.0276); scarcity hours 100 (46), of which January-August 78
+(45); no hours of load shed (vollHours 0). Two checks would replace the one:
+1. Engine price against market price without the scarcity adder (shed-hour pricing and the low cap kept), within 5% as now.
+   Caveat: in a year with no shed hours the two are equal by construction (gap 0.03%), so this half tests only shed-hour
+   pricing and the price cap. It would catch a change to those, not to the engine.
+2. The scarcity adder's hours against Eskom's. Comparator, ESK19679 January-August 2026 (aggregates only, author's analysis,
+   Eskom data credited): hours with interruptible supply above 1 MW, 348 (ILS usage 32 hours, other interruptible supply
+   341 hours, manual load reduction none; 360 hours above 0 MW; 0.030 TWh). The earlier entry listed manual load reduction
+   among the three; it was zero in 2026. Proposed band: a factor of two, as the peaker benchmark uses (174-696 hours). On
+   that band the check fails today: 78 hours on the branch, 45 on main, so the model prices scarcity in about a quarter of
+   the hours Eskom called on interruptible supply. Open-cycle use points the same way (Eskom 0.803 TWh in 149 hours above
+   500 MW; model 0.011 TWh in 18 hours). The cause is not established (candidates: the reserve requirement, the outage draw,
+   or a fleet the model holds more available than Eskom did).
 
 ### c5b proposal for the user's approval (messages 64 (2)-(3), 68, 71 (7)); nothing launched, 14 Oct 2026
 
