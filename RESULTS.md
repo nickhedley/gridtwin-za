@@ -2872,7 +2872,7 @@ factor 47.5 -> 47.6%. Suite 720/727, audit 87/87, eng5 6/6; against 14c: iron-ai
 two new failures from the changed draw, neither check changed: 'high-season off-peak is the cheapest block modelled'
 (low-season off-peak now cheapest) and the response baseline (11 cells).
 
-### 14de re-check: on the fixed engine s_coalavail's plan passes the engine check in every year (2040 at 15% of target), R171bn below c4 on the engine and 303 Mt more CO2; on c4's engine it failed 11 years, 14 Oct 2026
+### 14de re-check: on the fixed engine s_coalavail's plan passes the engine check in every year (14a: 2040 at 15% of target; 14d, c5's engine: 2040 at 55%), on 14a R171bn below c4 on the engine and 303 Mt more CO2 (c4 not re-checked on 14d); on c4's engine it failed 11 years; c5 takes COAL_AVAIL=1, 14 Oct 2026
 
 User, 14 Oct (TODO 14dx (4)): re-check s_coalavail's plan (built with the stress-window coal limit at the engine's available
 coal, COAL_AVAIL=1) on 14a; if it passes the engine check, propose c5 on available coal before launch. Run 38523346361, ref
@@ -2894,6 +2894,22 @@ diesel burnt 2026-40               1.34 TWh              0.41 TWh           -
 
 s_coalavail's mean shed by year on 14a, GWh (target): 2030 0.04 (2.06); 2033 0.20 (2.21); 2037 0.21 (2.41); 2039 0.34
 (2.54); 2040 0.39 (2.60); every other year below 0.15. The old engine caused the failure: the same plan passes on 14a.
+
+On c5's engine (build 14d: 14a with 14dr, the outage draw over the coal units still standing): run 38525055636, ref
+claude/recheck-14d (5d696ac: claude/c5 with the top-up workflow merged), same mode, source and settings; 17 minutes. Every
+year passes. Mean shed / target, GWh, with the upper end of the 95% interval: 2030 0.26 / 2.06 (13%, upper 23%); 2034 0.49
+/ 2.26 (21%, 37%); 2036 1.13 / 2.35 (48%, 78%); 2037 1.30 / 2.41 (54%, 87%); 2038 1.22 / 2.48 (49%, 81%); 2039 1.40 / 2.54
+(55%, 88%); 2040 1.43 / 2.60 (55%, 88%); all other years at most 10%. 2036-2040 ran the full 40 draws (480 runs) without the
+interval narrowing to +/-20% of target; the upper ends stay below target. Worst single run 133 GWh (2037). Engine PV
+R2,358.9bn (on 14a R2,354.9bn), CO2 1,765 Mt, gas 32.1 TWh (CCGT 23.1, OCGT on LNG 9.0), diesel 2.08 TWh. 14dr raises the
+mean shed of 2036-2040 about threefold against 14a, as it did on c4's build (RESULTS 'c5 inputs'), and moves no year
+over target.
+
+Decision (user, 14 Oct, TODO 14dx (4) and the follow-up): it passes on 14d as well, so COAL_AVAIL=1 goes into c5's
+settings. With available coal in the windows, the window's coal no longer depends on the previous pass's commitment, so
+the one-pass lag of 14de does not arise. Caveat: the engine still commits less coal than is available in stress hours
+(c4's 2030 windows: 14.0-15.8 GW against 16.7-17.1), so the optimiser plans on coal the engine holds back; the engine
+check is what catches that, and here it found no failing year.
 
 ### Checks after engine (B) and 14dr, as decided on 14 Oct: pumped storage's 2025 output now checked against Eskom (model 3.8 TWh, Eskom 4.49); iron-air in July restated; the peaker ratio and tariff-block checks left failing with their causes, 14 Oct 2026
 
