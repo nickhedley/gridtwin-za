@@ -2696,6 +2696,34 @@ of diesel against 8.9 and discharges lithium 577 GWh against 812: in its evening
 while lithium holds 12-42 GWh for later hours (the hold against later shortfalls is too cautious), pumped storage runs 296
 GWh against 143, and coal runs 1,636 GWh against 1,697. November's remaining gap is coal committed before storage (14dq).
 
+### c5b, reserve rule only (build 2026-10-14n): adequate after two passes; the engine check passes every year with no top-up; R2,362.9bn engine PV (c5b R2,365.4bn, -R2.5bn), 1,998 Mt CO2 2026-40 (c5b 2,003, -4.8 Mt); provisional (user, 14 Oct 2026, messages 89, 93, 94)
+
+Run: workflow 'Optimiser long run', name c5b_res, code ee5d840 (build 2026-10-14n: ASTR reserve rule with the fix of messages 90
+and 92, no must-run), jobs 38592170779 (pass 1) and 38593162610 (pass 2, 'done adequate', and the engine check). Settings: the c5b
+line, unchanged. It isolates the reserve rule's effect on c5b. Build from a local reproduction at ee5d840 (SOLVER=native; adequate
+after two passes) whose engine check matches GitHub's to every printed digit in 2026 (R213.6734bn, 155.7497 Mt) and 2035
+(R274.4693bn, 128.8285 Mt, 0.373268 GWh), the results artifact not being downloadable from this session.
+
+| Year | Cost c5b, R bn | Cost reserve only | Change | CO2 change, Mt | Gas c5b / reserve only, TWh | Mean unserved, GWh |
+|---|---|---|---|---|---|---|
+| 2026 | 213.7 | 213.7 | -0.04 | -0.01 | 0 / 0 | 0.000 |
+| 2028 | 233.6 | 233.4 | -0.27 | -0.02 | 0 / 0 | 0.026 |
+| 2030 | 244.6 | 244.5 | -0.02 | -0.85 | 0.75 / 0.68 | 0.424 |
+| 2032 | 264.0 | 263.6 | -0.32 | -0.71 | 3.78 / 3.46 | 0.441 |
+| 2034 | 272.9 | 272.5 | -0.47 | -0.81 | 6.76 / 6.36 | 0.451 |
+| 2036 | 285.1 | 283.6 | -1.50 | -3.11 | 11.69 / 10.06 | 0.668 |
+| 2038 | 298.3 | 297.5 | -0.78 | -0.61 | 11.99 / 11.52 | 1.061 |
+| 2040 | 318.3 | 318.5 | +0.13 | +1.27 | 14.26 / 14.84 | 0.947 |
+
+Every year's mean unserved energy is below its target (2.0-2.8 GWh). PV at 8% real from 2026 of the engine cost: R2,362.9bn
+against c5b's R2,365.4bn, computed the same way from both check outputs.
+
+Build 2026-40, MW (lithium MWh), c5b then reserve only: wind 16,513 / 16,276 (-237); utility PV 36,917 / 36,425 (-492); rooftop
+12,600 / 12,600; lithium 19,998 / 19,871 MW and about 94,200 / 94,060 MWh; CCGT 7,297 / 7,480 (+183); open-cycle on LNG 597 / 666
+(+69); open-cycle on diesel 446 / 320 (-126). Optimiser objective R1,566.7bn (c5b R1,566.3bn). The rule moves c5b little: the
+optimiser now counts only running gas as reserve and the engine holds reserve once; the difference is within 2% on every
+technology.
+
 ### Every check moved by the reserve rule and the must-run, with cause and verdict (build 2026-10-14p); wind capture finding updated; two assumptions and one limitation recorded; interruptible load at 1,200 MW unsourced (user, 14 Oct 2026, messages 93 and 94)
 
 Suite on build 14p (ESK19679.csv present): 810/819 (main 813/818, one check added); eng5 6/6. Every moved check, none re-pinned or
