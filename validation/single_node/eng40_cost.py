@@ -7,7 +7,11 @@ s = lambda k: sum(H[h][k] for h in hs)
 coal_mc = c['costCoal'] + c['vomCoal'] + c['cC']; gas_mc = c['costCcgt'] + c['vomCcgt'] + c['cG']; dsl_mc = c['costDiesel'] + c['vomDiesel'] + c['cD']
 coal_flat = s('coalGen') * coal_mc
 coal_pl = sum(H[h]['coalGen'] * ((c['costCoal'] + c['cC']) * H[h]['plF'] + c['vomCoal']) for h in hs)
-uc = s('ucStart'); permw = b['startUpCostR'] - a['startUpCostR']
+uc = s('ucStart'); su_all = b['startUpCostR'] - a['startUpCostR']
+# Engine builds before 2026-10-13f put the pre-pass unit starts (ucStart) in fuelCost and charged a separate per-MW start-up
+# in startUpCostR; from 13f (14dl) startUpCostR holds the pre-pass starts and nothing else. Detect which, from the totals.
+FIXED_SU = abs(su_all - uc) < 1.0
+permw = 0.0 if FIXED_SU else su_all
 OCK = 10624 / 3600 * 0.52; VOM_OC = 80.19 * 1.032 * 1.035          # index.html FIXED heatRateOcgtKJ, effCcgtHHV, vomOcgt (c4f l.6489)
 cc_cap = c['ccgtCap'] - c['ocgtLngMW']
 oc = [min(c['ocgtLngMW'], max(0, H[h]['ccgt'] - cc_cap)) for h in hs]
@@ -15,6 +19,7 @@ gas = s('ccgt') * gas_mc + sum(oc) * ((c['costCcgt'] + c['cG']) * (OCK - 1) + VO
 nuc = s('nuc') * (c['costNuclear'] + c['vomNuclear']); hyd = s('hyd') * c['costHydro']; imp = s('imp') * c['costImports']
 shed = s('unservedH') * c['costUnservedR']
 fc = (b['fuelCost'] - a['fuelCost']) + (b['carbonCost'] - a['carbonCost'])
+if FIXED_SU: fc += uc          # put the unit starts back beside fuel so the parts below add up as before
 parts = coal_pl + uc + gas + dsl + nuc + hyd + imp
 li = R['tiers']['li']; disLi = sum(R['disLi'][1:]); disFe = sum(R['disFe'][1:]) if R['disFe'] else 0
 out = dict(week=sys.argv[1].split('/')[-1], engineRm=(fc + permw + shed) / 1e6, engineFlatRm=(fc - coal_pl + coal_flat + permw + shed) / 1e6,

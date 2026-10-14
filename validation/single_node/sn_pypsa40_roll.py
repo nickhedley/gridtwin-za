@@ -18,12 +18,24 @@ load, csp, hyb = ser('load') - ser('dr'), ser('cspGen'), ser('hyb')
 vre = ser('windGen') + ser('pvGen') + ser('curtail')
 nuc, hyd, imp, cav = ser('nuc'), ser('hyd'), ser('imp'), ser('cAvail')
 ramp = float(H[hs[0]]['rampAllowedMW'])
-scale = (c['coalInstalledMW'] - ov['coalDecomMW']) / 41530.0
-units = []
-for g in d['uc']:
-    for k in range(int(g['n'])):
-        units.append(dict(name=f"{g['name']}#{k+1}", cap=g['cap'] / g['n'] * scale, msl=g['msl'], up=int(g['min_up']), dn=int(g['min_dn']),
-                          su=g['startup_cost'] / g['n']))
+# Engine version, from the week file. Start-ups: builds before 2026-10-13f charged a per-MW start-up on top of the pre-pass's unit
+# starts; from 13f (14dl) only the unit starts. Coal units: before 13g every year kept all 85 UC_FLEET units scaled by coal
+# standing / 41,530; from 13g (14dn) the pre-pass keeps the units still standing and the hook exports them (consts ucUnits).
+_su = H[str(S + N - 1)]['startUpCostR'] - H[str(S - 1)]['startUpCostR']; _uc = sum(H[h]['ucStart'] for h in hs)
+if abs(_su - _uc) >= 1.0: PERMW = c['coalStartUpCostRPerMW']
+elif _uc > 0: PERMW = 0.0
+else: PERMW = float(os.environ['SU_PERMW'])          # no starts in the week: say which engine (R/MW, or 0)
+if c.get('ucUnits'):
+    scale = c['ucScale']
+    units = [dict(name=u['name'], cap=u['cap'], msl=u['msl'], up=int(u['min_up']), dn=int(u['min_dn']), su=u['startup_cost']) for u in c['ucUnits']]
+else:
+    scale = (c['coalInstalledMW'] - ov['coalDecomMW']) / 41530.0          # buildUCSchedule before 13g: coalInstalled / 41530, all units
+    units = []
+    for g in d['uc']:
+        for k in range(int(g['n'])):
+            units.append(dict(name=f"{g['name']}#{k+1}", cap=g['cap'] / g['n'] * scale, msl=g['msl'], up=int(g['min_up']), dn=int(g['min_dn']),
+                              su=g['startup_cost'] / g['n']))
+print('engine: per-MW start-up', PERMW, '| coal units', len(units), 'scale %.4f' % scale, flush=True)
 fleet = sum(u['cap'] for u in units); pmax_all = np.minimum(1.0, cav / fleet)
 coal_mc = c['costCoal'] + c['vomCoal'] + c['cC']; eaf_factor = c['eaf'] / 100 * scale
 gas_mc = c['costCcgt'] + c['vomCcgt'] + c['cG']
@@ -60,7 +72,7 @@ for t0 in range(0, N, 24):
         st = state[u['name']]
         n.add('Generator', u['name'], bus='za', p_nom=u['cap'], p_max_pu=pmax, marginal_cost=coal_mc, carrier='coal', committable=True,
               p_min_pu=np.minimum(u['msl'] * pmax, pmax), min_up_time=u['up'], min_down_time=u['dn'],
-              start_up_cost=u['su'] * eaf_factor + c['coalStartUpCostRPerMW'] * u['cap'],
+              start_up_cost=u['su'] * eaf_factor + PERMW * u['cap'],
               up_time_before=(min(st['hrs'], u['up']) if st['on'] else 0), down_time_before=(0 if st['on'] else min(st['hrs'], u['dn'])))
     n.add('Generator', 'gas', bus='za', p_nom=max(c['ccgtCap'] - c['ocgtLngMW'], 1.0), marginal_cost=gas_mc)
     n.add('Generator', 'ocgt_lng', bus='za', p_nom=max(c['ocgtLngMW'], 1.0), marginal_cost=oc_mc)
@@ -103,7 +115,7 @@ for t0 in range(0, N, 24):
         for i in range(keep):
             on = status[u['name']].iloc[i] > 0.5
             if on and not on_prev:
-                starts += 1; acc['su_unit'] += u['su'] * eaf_factor; acc['su_mw'] += c['coalStartUpCostRPerMW'] * u['cap']
+                starts += 1; acc['su_unit'] += u['su'] * eaf_factor; acc['su_mw'] += PERMW * u['cap']
             hrs = hrs + 1 if on == on_prev else 1; on_prev = on
         state[u['name']] = dict(on=on_prev, hrs=hrs)
     socs = n.storage_units_t.state_of_charge.iloc[keep - 1]
