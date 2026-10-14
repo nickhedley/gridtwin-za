@@ -3097,6 +3097,41 @@ operable is neither charged for them nor flagged.
 Effect on results: not quantified. Direction: renewable-heavy builds and early coal retirement look cheaper than they are;
 the no-gas case most. TODO 14ed (after the note).
 
+### Known limitation: Avon and Dedisa's running is not in the model; about R6.6bn a year at the model's own diesel price on 2026's pace (R9.0-9.3bn in 2024-25), the same in every scenario until their contracts end in 2030-31 (user, 14 Oct 2026, message 83; no engine change before the note)
+
+What runs: the dispatchable IPP open-cycle plant in ESK19679 (Avon 670 MW and Dedisa 335 MW, the DoE peakers) produced
+1.507 TWh in 2024 (above 1 MW in 6,406 hours), 1.460 TWh in 2025 (6,331 hours) and 0.715 TWh in January-August 2026 (4,568
+of 5,832 hours; 1.074 TWh a year at that pace), about 150-190 MW through the day and 430 MW at the evening peak, in every
+month whatever the coal availability (RESULTS '14eg step 1'). Aggregates only, author's analysis, Eskom data credited. The
+user reads it as contract-driven; the data shows the pattern, not its cause, and no source here states the dispatch terms.
+
+What the model does: the two plants are inside the 3,400 MW open-cycle fleet (ocgtDieselMW, Eskom's 2,380 plus 1,005), held
+as fast-start reserve and dispatched only when nothing else meets load; c5b's 2026 engine runs the whole fleet for 0.014 TWh
+a year. Their capacity charge is in the model (otherIppCostR, DoE peakers R2,174m a year to 2030); their energy is not.
+
+Cost at the model's own prices (costDiesel R6,100 + vomDiesel R70 = R6,170/MWh; carbon 0.78 t/MWh at R46.0/t in 2026, R35.9/MWh):
+
+```
+volume basis                      TWh     fuel and running   carbon   CO2 Mt   net of the coal it displaces (R674/MWh)
+2024 actual                       1.507   R9.30bn            R0.05bn  1.18     R8.34bn
+2025 actual                       1.460   R9.01bn            R0.05bn  1.14     R8.08bn
+2026 pace (Jan-Aug x 8760/5832)   1.074   R6.63bn            R0.04bn  0.84     R5.94bn
+```
+
+At the 2026 pace to the contract ends (Dedisa to end-2030, Avon to about July 2031, Avon's share of output assumed in
+proportion to MW): PV at 8% real 2026-31 R30.4bn gross, R27.1bn net of displaced coal; R35.8bn undiscounted.
+
+Same in every scenario: yes for the running itself, while it is set by the contracts rather than by the system: no scenario
+changes the 2026-31 fleet that drives it, so the fuel, carbon and CO2 above are common to c5b and every sensitivity and cancel
+in every difference between runs. The net figure would differ slightly where a scenario changes what it displaces, which in
+2026-31 is coal in all of them. It does shift every run's absolute cost (about R30bn of PV) and its 2026-31 CO2 (about 0.8-1.2
+Mt a year, about 5 Mt to 2031), which matters when c5b is set beside the IRP's totals or Eskom's actuals.
+
+Contract dates: both on 15-year PPAs with Eskom, awarded by the DoE on a build, own and operate basis; Dedisa commissioned at
+the end of 2015, Avon in full commercial operation on 20 July 2016 (Avon Peaking Power press release, POWER Magazine, 25 July
+2016). IRP 2025 section 3.2.1.2.2 (p.13, gazette p.24) gives the contracts as expiring in 2030-31. End dates by 15 years from
+each start: Dedisa about end-2030, Avon about July 2031; the exact contractual dates are not published in the sources found.
+
 ### TODO 14eg step 1: the engine's 2026 coal availability matches Eskom's January-August 2026 in level (65.5% against 64.5% coal-only) but not in shape (Eskom's April trough is 9 points deeper); Eskom's open-cycle output is 89% IPP turbines running in most hours, not tracking availability, 14 Oct 2026
 
 User, 14 Oct (message 82 (2)): first of four tests, no run. Engine: c5b's 2026 state (coalEAFPct 65, coal-only; 39,692 MW
