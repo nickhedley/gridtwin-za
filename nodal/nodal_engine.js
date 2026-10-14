@@ -67,7 +67,20 @@ const PS_EFF = 0.76;
 //
 // Phase 2 (a further 144 MW / 616 MWh across four distribution sites and one transmission
 // site) is on hold pending Treasury clarification, so it is excluded until sites are firm.
-const BATT_SHARE_BY_REGION = { 'Western Cape': 0.5754, 'Kwazulu Natal': 0.2412, 'Eastern Cape': 0.1759, 'Northern Cape': 0.0075 };
+// 14 Oct 2026 (user, message 74): the shares are now those of the sites OPERATING at mid-2026 and end-2026, not all eight
+// phase 1 sites: Hex 20 MW / 100 MWh (commercial operation 27 Oct 2023; AfDB web page, 2 Mar 2026), Pongola 40 / 160 and
+// Elandskop 8 / 32 (commissioned November 2024; AfDB IPR, 1 Jul 2025, PDF p.2 and p.4: 'Total BESS installed to date is
+// 68MW'; three operating facilities, Green Building Africa, 12 Oct 2026). Skaapvlei 80, Paleisheuwel 9.5 and Graafwater 5
+// add nothing before 31 Mar 2027 (Minister's reply NW4150, PMG, 21 Sep 2026); Melkhout 35 and Rietfontein 1.5 were at
+// contracting (AfDB, 1 Jul 2025). The single-node app reads EXISTING_BATT_MW and EXISTING_BATT_MWH (FIXED.battPowerMW).
+const ESKOM_BESS_OPERATING = [
+  { site: 'Hex',       region: 'Western Cape',  mw: 20, mwh: 100 },
+  { site: 'Pongola',   region: 'Kwazulu Natal', mw: 40, mwh: 160 },
+  { site: 'Elandskop', region: 'Kwazulu Natal', mw: 8,  mwh: 32 },
+];
+const EXISTING_BATT_MW = ESKOM_BESS_OPERATING.reduce((a, b) => a + b.mw, 0);
+const EXISTING_BATT_MWH = ESKOM_BESS_OPERATING.reduce((a, b) => a + b.mwh, 0);
+const BATT_SHARE_BY_REGION = ESKOM_BESS_OPERATING.reduce((o, b) => (o[b.region] = (o[b.region] || 0) + b.mw / EXISTING_BATT_MW, o), {});
 
 // IPP battery storage procured under the DMRE's BESIPPPP programme - 1,744 MW /
 // 6,980 MWh across three bid windows, versus Eskom's own 199 MW. This is now the
@@ -442,7 +455,7 @@ class NodalEngine {
       // It is exposed as a preset instead, so users can model it explicitly.
       const battShare = BATT_SHARE_BY_REGION[r] || 0;
       const ippShare = NEW_BATT_SHARE_BY_REGION[r] || 0;
-      this.battMw[r] = 800 * battShare        // Eskom BESS (800MW = single-node app's existing total)
+      this.battMw[r] = EXISTING_BATT_MW * battShare   // Eskom BESS operating (ESKOM_BESS_OPERATING)
                      + newBattMW * ippShare   // slider-driven new build, sited per BESIPPPP
                      + (extraBattByRegion[r] || 0);
       // start at the same fractions the single-node engine uses (70% pumped storage, 50% batteries)

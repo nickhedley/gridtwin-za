@@ -1400,6 +1400,11 @@ const num = t => {
       // only. See BLD_FOM in index.html for the sources. This is a correction, not an
       // inflation: the earlier figures understated the cost of every build.
       //
+      // UPDATED 14 Oct 2026, R1.205 -> R1.118, build 2026-10-14l (user decision, message 79). Measured R1.205 on main (build
+      // 14j); BW6 fixed O&M for wind and solar alone R1.134 (-0.071), the rebuilt 2026 demand profile alone R1.188 (-0.016, a
+      // larger sales base), the existing batteries at 68 MW alone R1.205 (no change), all together R1.118. Deliberate input
+      // changes, tolerance unchanged.
+      //
       // UPDATED 7 Oct 2026 (third), R1.096 -> R1.205. Wind central on BW6 compliant bids, R21,000 -> R28,463/kW (user
       // decision). Measured on build 07q: wind alone (old battery cost) gives R1.045, so wind adds R0.109 and the aged
       // battery R0.160. Deliberate input change, tolerance unchanged.
@@ -1439,8 +1444,8 @@ const num = t => {
       `);
       if (ncap && !ncap.err && ncap.newCap){
         check('new-build capital matches the hand computation',
-              Math.abs(ncap.newCap - 1.205) < 0.06,
-              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.205 for Deep `
+              Math.abs(ncap.newCap - 1.118) < 0.06,
+              `R${ncap.newCap.toFixed(3)}/kWh against a measured R1.118 for Deep `
               + `decarbonisation at 2035. Vintage ${ncap.vintage}. This is the sensitive check - the `
               + `Australian one above is deliberately loose and will not catch a component.`);
       }

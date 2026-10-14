@@ -69,6 +69,14 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
  if (process.env.GAS_CAPEX) w.eval(`if(!('ccgt' in BLD_COST)) throw new Error('BLD_COST.ccgt missing'); BLD_COST.ccgt.c2026=${+process.env.GAS_CAPEX};`);
  // Imports end year (TODO 14dv (6)): the pathway's own, so the engine runs without imports where the optimiser did.
  if (P.importsEndYear) w.eval(`state.importsEndYear=${+P.importsEndYear};`);
+ // Imports flow and the flat demand block (user, 14 Oct 2026, message 72): the pathway's own, where it recorded them.
+ if (P.importsMW != null) w.eval(`state.importsMW=${+P.importsMW};`);
+ if (P.importsCF != null) w.eval(`state.importsCF=${+P.importsCF};`);
+ const BLK = (P.demand && P.demand.block) ? P.demand.block : null;
+ if (BLK) console.log('demand block from the pathway:', JSON.stringify(BLK));
+ // Cape wind allowance (14 Oct 2026): the pathway's curtailment share; each year's MW from sched[y].cw, cumulated below.
+ if (P.capeWind) { w.eval(`state.bldCapeCurtPct=${+P.capeWind.curtPct};`); console.log('Cape wind allowance from the pathway:', JSON.stringify(P.capeWind)); }
+ let cwCum=0;
  // Carbon path (user, 14 Oct 2026): the pathway's own (carbonPath; carbonFull for s_carbonfull). CFLAT cannot be given with
  // carbonFull.
  { const cPath = P.carbonPath ?? 'cut2027';
@@ -82,14 +90,14 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
    if (process.env.PVTRK !== undefined && +process.env.PVTRK !== +P.pvTracking) throw new Error('PVTRK '+process.env.PVTRK+' disagrees with the run\'s pvTracking '+P.pvTracking);
    w.eval(`state.bldPvTracking=${+P.pvTracking};`); console.log('pvTracking from the pathway:', +P.pvTracking); }
  const rows=[];
- for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0;
+ for (const y of Y){ for (const k of Object.keys(cum)) cum[k]+=P.sched[y][k]||0; cwCum+=P.sched[y].cw||0;
    // YEARS=2036,2037 (8 Oct 2026, TODO 14bk): check only these years; builds of the skipped years still accumulate.
    if (process.env.YEARS && !process.env.YEARS.split(',').map(Number).includes(y)) continue;
    // The pathway's own demand path when it recorded one (DEMAND, 9 Oct 2026); else the legacy DEM to 2040.
    const frac=(y-2026)/(2040-2026), dg=(P.demand && P.demand.index) ? (P.demand.index[y]-1)*100 : (Math.pow(1+DEM/100,frac)-1)*100;
    const over={...(PG && PG.fuelR ? {costCcgt:PG.fuelR[y]} : {}),newWindMW:cum.wind,newPvMW:cum.pv,newRooftopMW:cum.rooftop,newBattMW:cum.batt,newBattHours:cum.batt>0?Math.max(1,Math.min(20,cum.battMWh/cum.batt)):4,
      newVrfbMW:cum.vrfb,newIronAirMW:cum.ironair,newCcgtMW:cum.ccgt,newOcgtMW:cum.ocgt,newOcgdMW:cum.ocgd,newOffshoreMW:cum.off,newNuclearMW:+w.eval(`bldNuclearAddedMW({bldNuclearAdd:${JSON.stringify(P.nuclearAdd||null)}},${y})`),newPsMW:cum.phes,newPsHours:+(process.env.PH||14),coalDecomMW:Math.max(0,Math.round(w.eval('FIXED.coalInstalledMW')-P.sched[y].coalMW)),
-     demandGrowthPct:dg,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
+     demandGrowthPct:dg,demandBlockMW:BLK ? +w.eval(`bldDemandBlockMW({demandBlock:${JSON.stringify(BLK)}},${y})`) : 0,windCapeMW:cwCum,scenarioYear:y, carbonTaxRPerT: CTAX(y)};
    if (PEAK_ON){ if (P.sched[y].dslDecomMW===undefined) throw new Error('PEAK set but the schedule has no dslDecomMW'); over.dieselDecomMW=P.sched[y].dslDecomMW; }
    // New pumped hydro built by the optimiser (6 Oct 2026): charge what the optimiser charged, not the engine's
    // fixed Tubatse 14-hour acapPs. PHES_BASIS names the basis (bldPhesCapexKW); PH the hours (bldPhesHours).
@@ -150,6 +158,8 @@ const ROOT='testroot', P=JSON.parse(fs.readFileSync(process.env.IN||'pathway.jso
      const ga=JSON.parse(w.eval(`JSON.stringify(Object.fromEntries(['wind','pv','batt','vrfb','ironair','ccgt','offshore','phes','phel','ocgt','ocgd'].map(t=>[t,bldGridAnn(t,{...FIXED,...state})])))`));
      const built={wind:cum.wind,pv:cum.pv,batt:cum.batt,vrfb:cum.vrfb,ironair:cum.ironair,ccgt:cum.ccgt,offshore:cum.off,phes:cum.phes,phel:cum.phel,ocgt:cum.ocgt,ocgd:cum.ocgd};
      let g=0; for (const t of Object.keys(built)) g+=Math.max(0,built[t]-(rpCum[t]||0))*ga[t]*1000;
+     // Wind on the Cape curtailment allowance pays no integration charge (14 Oct 2026).
+     g-=Math.min(cwCum, Math.max(0,cum.wind-(rpCum.wind||0)))*(+w.eval('state.txRPerKWyr ?? FIXED.txRPerKWyr'))*1000;
      const engTx=+w.eval(`txChargeFor(${cum.wind},${cum.pv},${cum.off},{...FIXED,...state,...${JSON.stringify(over)}})`);
      r.gridOptBn=g/1e9; r.engTxBn=engTx/1e9; r.costGrid=r.cost-r.engTxBn+r.gridOptBn; r.rpCumMW=Object.values(rpCum).reduce((a,b)=>a+b,0);
    }
