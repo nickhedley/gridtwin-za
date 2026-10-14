@@ -11121,9 +11121,10 @@ async function bldStressLoopPerYear(opts, onProgress){
         return { y, targetGWh: +(built.stressTarget.targetMWh[y] / 1e3).toFixed(3), expectedShedGWh: +(((rows.get('tgt_' + y) || 0) + sl) / 1e3).toFixed(3), slackGWh: +(sl / 1e3).toFixed(3) }; });
       entry.lpTargetRuns = built.stressTarget.runs;
     }
-    // STALL STOP (user, 14 Oct 2026, c5's stopping rule, TODO 14dv (9)). Every pass records the worst year's shed above
-    // its target (excessGWh) and how much this pass cut it (cutFrac). With opts.stallFrac set (c5: 0.1) the loop stops
-    // from pass opts.stallFrom on (c5: 4) when a pass cuts it by less than that share; the verdict says so. Unset: no change.
+    // STALL STOP (user, 14 Oct 2026, the stopping rule for c5, TODO 14dv (9)). Every pass records the shed above target
+    // in the worst year (excessGWh) and how much this pass cut it (cutFrac). With opts.stallFrac set (c5: 0.1) the loop
+    // stops from pass opts.stallFrom on (c5: 4) when a pass cuts it by less than that share; the verdict says so. Unset:
+    // no change.
     const excess = years.reduce((m, q) => (q.limit > 0 && q.mean > q.limit) ? Math.max(m, q.mean - q.limit) : m, 0);
     const prevEx = bldStressLog.length ? bldStressLog[bldStressLog.length - 1].excessGWh : null;
     entry.excessGWh = +excess.toFixed(4);
