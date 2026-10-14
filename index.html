@@ -5755,6 +5755,14 @@ const FIXED = {
   // Operating reserve: NTCSA ASTR 2026/27-2030/31 Table 7, 2,200 MW, flat to 2030/31 and
   // held flat beyond it. Held every hour whether priced or not. 21 Sep 2026.
   reserveEnabled:1, reserveOperatingMW:2200,
+  // RESERVE BY PRODUCT (user, 14 Oct 2026, message 85; TODO 14eh). 'legacy': one 2,200 MW requirement that open-cycle plant and
+  // pumped storage at full power excuse coal from holding. 'astr': NTCSA Ancillary Services Technical Requirements 2026/27-2030/31
+  // (Jan 2026, pp. 6-12, as read by the user): instantaneous and regulating from online headroom (coal; pumped storage and batteries
+  // only while they hold enough energy to sustain the product), ten-minute from pumped storage with energy, quick-start hydro and
+  // dispatchable demand (none modelled), and coal for any balance; open-cycle plant and interruptible load are emergency reserve
+  // only, outside the 2,200 MW, called to restore it, interruptible first (it costs less). Quantities in ASTR_RESERVE.
+  // reserveRegHours, reserveTenHours and the peak hours are the author's assumptions until read from the document.
+  reserveRule:'legacy', reserveRegHours:1, reserveTenHours:2, reservePeakFrom:6, reservePeakTo:22,
   // Regulating reserve grows with variable generation, and the ASTR figure above does not:
   // it is sized to 2030/31 on today's fleet. NREL's Operating Reserves and Variable Generation
   // (TP-5500-51978, 2011) sets out the 3+5 rule, 3% of load plus 5% of variable generation,
@@ -7554,10 +7562,30 @@ function simulate(u, prof, outPath, _soc0){
     vrePct: 0,
     vreMW: _vreMW,
   };
-  const reserveMWAt = h => RESERVE.on
-    ? RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100
-      + Math.max(0, _vreMW[h] - p.reserveVreBaseMW) * p.reserveVrePct / 100   // no fallback: both are FIXED keys
-    : 0;
+  const _astr = (p.reserveRule ?? FIXED.reserveRule) === 'astr';
+  const _astrPeak = h => { const d = h % 24; return d >= (p.reservePeakFrom ?? FIXED.reservePeakFrom) && d < (p.reservePeakTo ?? FIXED.reservePeakTo); };
+  const _astrQ = [astrReserveAt(p.scenarioYear ?? 2026, false), astrReserveAt(p.scenarioYear ?? 2026, true)];
+  const reserveMWAt = h => !RESERVE.on ? 0
+    : _astr ? (q => q.inst + q.reg + q.ten)(_astrQ[_astrPeak(h) ? 1 : 0])
+    : RESERVE.contingencyMW + netLoadPre[h] * RESERVE.regPct/100
+      + Math.max(0, _vreMW[h] - p.reserveVreBaseMW) * p.reserveVrePct / 100;   // no fallback: both are FIXED keys
+  // ASTR cover (reserveRule 'astr'): what storage and quick-start hydro can hold of each product this hour, the rest falls to
+  // coal headroom. Batteries then pumped storage for instantaneous (10 minutes) and regulating (reserveRegHours); pumped storage,
+  // batteries and hydro headroom for ten-minute (reserveTenHours). Each megawatt and megawatt-hour counts once.
+  const _astrCoalNeed = (h, bP, bE, pP, pE) => {
+    const q = _astrQ[_astrPeak(h) ? 1 : 0];
+    const take = (need, H) => { let got = 0;
+      const b = Math.max(0, Math.min(need - got, bP, bE / H)); bP -= b; bE -= b * H; got += b;
+      const s = Math.max(0, Math.min(need - got, pP, pE / H)); pP -= s; pE -= s * H; got += s;
+      return need - got; };
+    const inst = take(q.inst, 1 / 6), reg = take(q.reg, Math.max(0.1, p.reserveRegHours ?? FIXED.reserveRegHours));
+    const tenH = Math.max(0.1, p.reserveTenHours ?? FIXED.reserveTenHours);
+    let ten = q.ten;
+    const s = Math.max(0, Math.min(ten, pP, pE / tenH)); ten -= s; pP -= s; pE -= s * tenH;
+    const b = Math.max(0, Math.min(ten, bP, bE / tenH)); ten -= b;
+    ten -= Math.min(ten, Math.max(0, (p.hydroMW || 0) * (1 - (p.hydroCF ?? FIXED.hydroCF))));
+    return inst + reg + Math.max(0, ten);
+  };
   // STORAGE-AWARE COMMITMENT (TODO 14dq, engine fix (B), 14 Oct 2026). The commitment pre-pass sized coal to each block's
   // peak net load as if no store existed, so on c4's 2040 build it kept 12.7 GW committed overnight (6.6 GW minimum) where
   // a 24-hour rolling unit-commitment optimum kept 4-10 GW and let lithium carry the night; the minimum then crowded the
@@ -7915,7 +7943,8 @@ function simulate(u, prof, outPath, _soc0){
     // price above coal SRMC - without this the system prices flat all year.
     const reserveNeed = reserveMWAt(h);
     const fastStart   = dieselAvailMW(p) + (p.ccgtMW||0) + ocgtLngMW + battPower + psPowerTot;
-    const reserveOnCoal = Math.max(0, reserveNeed - fastStart);
+    const reserveOnCoal = !RESERVE.on ? 0 : _astr ? _astrCoalNeed(h, battPower, Math.max(0, battSoc), psPowerTot, Math.max(0, psSoc))
+      : Math.max(0, reserveNeed - fastStart);
     reserveMWArr[h] = reserveNeed;
     const cAvail = Math.max(ucMSLraw(h), cAvailRaw - reserveOnCoal);
     // UC-derived minimum stable load replaces the fleet-average minStableMW.
@@ -8201,7 +8230,8 @@ function simulate(u, prof, outPath, _soc0){
         const _spin = Math.max(0, coalCeiling - coalGen)
           + Math.min(psPowerTot, Math.max(0, psSoc) / _asHoldH)
           + Math.min(battPower, Math.max(0, battSoc) / _asHoldH);
-        const _allow = Math.max(0, _spin - reserveMWAt(h));
+        const _allow = _astr ? Math.max(0, Math.max(0, coalCeiling - coalGen) - _astrCoalNeed(h, battPower, Math.max(0, battSoc), psPowerTot, Math.max(0, psSoc)))
+          : Math.max(0, _spin - reserveMWAt(h));
         if (residual > _allow){ _resShed = residual - _allow; residual = _allow; }
       }
       // Look-ahead (14do): the short stores give, ahead of coal, what the window's surplus will put back. After coal they
@@ -8340,6 +8370,9 @@ function simulate(u, prof, outPath, _soc0){
       // Independent peakers first, then Eskom's own from the tank, so the tank is conserved.
       const _dslAll = dieselAvailMW(p), _dslEsk = Math.min(_dslAll, Math.max(0, p.dslTankMW));
       const _dslLim = _dslTankOn ? (_dslAll - _dslEsk) + Math.min(_dslEsk, _dslStock) : _dslAll;
+      // ASTR (reserveRule 'astr'): emergency reserve restores the operating reserve, interruptible load first (R4,000/MWh, below
+      // diesel), then open-cycle plant. Compensation is booked here; the later interruptible block takes only what is left.
+      if (_astr && residual > 1 && DR_INT > 0){ const _drE = Math.min(residual, DR_INT); drMW[h] = _drE; E.dr += _drE; residual -= _drE; drCostR += _drE * DR_COST; }
       const dsl=Math.max(0, Math.min(residual,_dslLim, _dslMonthCap - _dslUsed[_mo]));
       if (_dslTankOn) _dslStock -= Math.max(0, dsl - (_dslAll - _dslEsk)); _dslUsed[_mo]+=dsl; residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
       // stack.coal is set from coalGenTotal in the shared block below, after the off-peak charging
@@ -8441,9 +8474,10 @@ function simulate(u, prof, outPath, _soc0){
       // it. Booked separately from unserved because it is a managed reduction
       // under contract, not a blackout, and conflating the two would overstate
       // both reliability and its cost.
-      if (residual > 1 && DR_INT > 0){
-        const drUse = Math.min(residual, DR_INT);
-        drMW[h] = drUse; E.dr += drUse; residual -= drUse;
+      const _drPre = _astr ? (drMW[h] || 0) : 0;   // legacy: nothing called earlier this hour
+      if (residual > 1 && DR_INT - _drPre > 0){
+        const drUse = Math.min(residual, DR_INT - _drPre);
+        drMW[h] = _drPre + drUse; E.dr += drUse; residual -= drUse;
         // Interruptible load is a demand reduction, not a generator. It is taken
         // off the demand line where that line is built, further down - writing it
         // here was silently discarded, because loadS[h] is reassigned from
@@ -13135,6 +13169,15 @@ const TX_SHALLOW = 0.25, TX_BEYOND = 1.5;
 // scenarios, which is higher than either; that is a separate open item, and it moves a
 // conversion by 0.4 points.
 const EAF_NONCOAL_AVAIL = 0.90;
+// NTCSA ASTR 2026/27-2030/31 (January 2026), operating reserve by product, MW (user's reading, message 85, pp. 6-12). Calendar
+// year y takes financial year y/y+1; years between the document's first and last are interpolated linearly; years after 2030/31
+// hold 2030/31's quantities (no basis in the document beyond it). Totals are 2,200 MW peak and off-peak in every year.
+const ASTR_RESERVE = { y0: 2026, y1: 2030, instPeak: 650, instOff: 850, reg: [830, 1140], tenPeak: [720, 410], tenOff: [520, 210] };
+function astrReserveAt(year, peak){
+  const A = ASTR_RESERVE, f = Math.max(0, Math.min(1, ((year ?? A.y0) - A.y0) / (A.y1 - A.y0)));
+  const lin = a => a[0] + (a[1] - a[0]) * f;
+  return { inst: peak ? A.instPeak : A.instOff, reg: lin(A.reg), ten: lin(peak ? A.tenPeak : A.tenOff) };
+}
 function coalEafFromFleet(fleetPct, nuclearFactor, p){
   const P = p || FIXED;
   const other = P.hydroMW + P.psPowerMW + P.ocgtDieselMW;
