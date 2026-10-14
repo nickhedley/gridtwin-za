@@ -837,6 +837,19 @@ harness/ext/grid_distances.py.
   after a Baringa study), a policy threshold set for CCGTs, not a measured cost. Sensitivity R4,000/kW.
   No South African figure found.
 - Fixed O&M: fomDiesel R360/kW-yr on every MW online, Avon and Dedisa included after their contracts.
+- Avon and Dedisa must-run to contract end (user, 14 Oct 2026, message 88; build 2026-10-14o): Dedisa commissioned end-2015,
+  Avon 20 July 2016 (POWER Magazine, 25 July 2016), 15-year terms, so Dedisa to end-2030 and Avon to 20 July 2031 (IRP 2025
+  3.2.1.2.2, contracts expire 2030-2031). Levels: Eskom data ESK19679, column 'Dispatchable IPP OCGT' (Avon and Dedisa
+  together), monthly means of the daytime block (05-16) and evening block (17-20), 2025 and January-August 2026; derived by
+  harness/derive_avon_dedisa.py from the local file, 24 monthly figures published with Eskom credited, the analysis ours, not
+  Eskom's; no hourly series.
+
+## Gas and diesel turbines' minimum stable level for online reserve headroom (user, message 90; build 2026-10-14n)
+
+- SONI (System Operator for Northern Ireland), CCGT Minimum Function Specification: continuous stable operation at 50% of
+  module MCR, 35% for its gas turbines in open cycle. Read from a web-search excerpt on 14 Oct 2026; the document's host could not
+  be reached from this environment, so the page and revision are not confirmed. Used as 0.5 for every gas and diesel turbine
+  (reserveGasMinStableFrac), the author's assumption; no South African figure found.
 - Running hours on the half-standard pathway (pathway_v_half_c1_p1.json, build 07c, twelve weather years x
   two outage draws): 94 h a year in 2026, 3 in 2028, zero from 2030 (worst draw at most 4 h).
 

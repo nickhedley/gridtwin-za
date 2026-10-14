@@ -5775,6 +5775,19 @@ const FIXED = {
   // Function Specification sets continuous stable operation at 50% of module MCR (35% for its gas turbines in open cycle); the
   // author's assumption for all gas and diesel turbines here, not a South African figure. The optimiser uses the same rule.
   reserveGasMinStableFrac:0.5,
+  // AVON AND DEDISA MUST-RUN (user, message 88). Both IPP peakers ran every day in 2025-26 on their contracts, not on merit:
+  // 1.460 TWh in 2025, 0.715 TWh January-August 2026 (Eskom data, ESK19679, 'Dispatchable IPP OCGT'; the analysis is ours, not
+  // Eskom's). Modelled as a daytime level (hours beginning 05-16) and an evening-peak level (17-20) by month, MW, each the mean
+  // of the 2025 month and, January-August, the 2026 month; nights (21-04) zero, which leaves out 11.2% of 2025's energy and 4.5%
+  // of 2026's. Derived by harness/derive_avon_dedisa.py from the local file; recompute there, never edit here. Until each
+  // contract ends: Dedisa (335 MW) commissioned end-2015, Avon (670 MW) 20 July 2016, 15-year terms (POWER Magazine, 25 July
+  // 2016; IRP 2025 3.2.1.2.2, contracts expire 2030-31), so both through 2030 and Avon's two-thirds share to 20 July 2031.
+  // Then they revert to ordinary peakers. Fuel and CO2 counted at the diesel fleet's rates; the rest of their capacity stays
+  // in dispatch and emergency reserve; while running they hold online headroom (message 90). 0 turns it off.
+  avonDedisaMustRun:1,
+  avonDedisaDayMW:[232, 226, 224, 209, 146, 134, 145, 163, 130, 151, 158, 168],
+  avonDedisaEveMW:[244, 309, 391, 460, 266, 243, 237, 288, 138, 223, 180, 186],
+  avonMW:670, dedisaMW:335, dedisaEndYear:2030, avonEndYear:2031, avonEndDoy:200,
   // Regulating reserve grows with variable generation, and the ASTR figure above does not:
   // it is sized to 2030/31 on today's fleet. NREL's Operating Reserves and Variable Generation
   // (TP-5500-51978, 2011) sets out the 3+5 rule, 3% of load plus 5% of variable generation,
@@ -7231,6 +7244,10 @@ function simulate(u, prof, outPath, _soc0){
   const ccgtMustRunMW = (!_ccgtFloorArr && p.ccgtForceHourly && ccgtFloorActive(p))
     ? Math.round(Math.min(ccgtCap, p.ccgtForceLoadMW) * p.ccgtForceLoadPct / 100) : 0;
   const _mustAt = h => _ccgtFloorArr ? Math.min(ccgtCap, _ccgtFloorArr[h]) : ccgtMustRunMW;
+  // Avon and Dedisa must-run (message 88), within the independent peakers' diesel capacity.
+  const _mdIpp = Math.max(0, dieselAvailMW(p) - Math.min(dieselAvailMW(p), Math.max(0, p.dslTankMW ?? FIXED.dslTankMW)));
+  const _mdAt = h => Math.min(_mdIpp, avonDedisaMustRunMW(p.scenarioYear ?? 2026, h, p));
+  let _mdUnmet = 0, _mdMWh = 0;
   const cC=p.carbonTaxRPerT*p.emisCoal, cG=p.carbonTaxRPerT*p.emisCcgt, cD=p.carbonTaxRPerT*p.emisDiesel;
   // Coal ramp-rate limit: how much coal generation can change hour-to-hour, blended between
   // today's real SA fleet rate and the flexibilised rate based on the flexibilisation slider.
@@ -8122,6 +8139,7 @@ function simulate(u, prof, outPath, _soc0){
       // so it is unmet; counted here so ccgtFloorUnmetMWh is the whole shortfall (6 Oct 2026: it
       // omitted these hours and understated IRP path 2035's shortfall by 9.1 TWh at build 06f).
       _ccgtFloorUnmet += _mustAt(h);
+      _mdUnmet += _mdAt(h);   // Avon and Dedisa: as the gas floor, not run into a surplus; recorded
       // Ramp-down floor: inflexible coal can't instantly drop to zero just because there's a
       // renewable surplus this hour - it's forced to keep producing at least this much, which
       // adds to what needs absorbing (storage charging first, then wasted/curtailed).
@@ -8272,7 +8290,7 @@ function simulate(u, prof, outPath, _soc0){
         // ASTR: coal and storage may serve the residual up to coal headroom less coal's share of the reserve, plus the storage power
         // left after its own share; gas already running this hour (must-run and early gas) holds its online headroom.
         const _cv = _astr ? _astrCover(h, battPower, Math.max(0, battSoc), psPowerTot, Math.max(0, psSoc),
-          astrOnlineHeadroom(_mustAt(h) + _gasEarly, ccgtCap, _gasMSF)) : null;
+          astrOnlineHeadroom(_mustAt(h) + _gasEarly, ccgtCap, _gasMSF) + astrOnlineHeadroom(_mdAt(h), dieselAvailMW(p), _gasMSF)) : null;
         const _allow = _astr ? Math.max(0, Math.max(0, coalCeiling - coalGen) - _cv.coal) + _cv.left
           : Math.max(0, _spin - reserveMWAt(h));
         if (residual > _allow){ _resShed = residual - _allow; residual = _allow; }
@@ -8395,6 +8413,19 @@ function simulate(u, prof, outPath, _soc0){
         residual-=take;
         _ccgtFloorUnmet+=excess;
       }
+      // Avon and Dedisa must-run (message 88): serve the residual, then back coal to its floor, then charge storage; what still
+      // cannot be absorbed is not generated and is recorded, as for the gas floor. Fuel and CO2 at the diesel fleet's rates.
+      const _md = _mdAt(h); let _mdGenH = 0;
+      if (_md > 0){
+        const take = Math.min(_md, Math.max(0, residual)); let excess = _md - take;
+        if (excess > 0){ const back = Math.min(excess, Math.max(0, coalGen - coalFloorBase)); coalGen -= back; excess -= back; }
+        const _dc = p.costDiesel + p.vomDiesel + cD;
+        if (excess > 0){ const psChg = Math.min(excess, psPowerTot, psEnergyTot - psSoc); addCharge(h,'ps',psChg,_dc); psSoc += psChg*psEffTot; excess -= psChg; chargeMW[h] += psChg; }
+        if (excess > 0){ let btChg = Math.min(excess, battPower, battEnergy - battSoc); btChg = tierChargeAt(btChg,h,_dc); addCharge(h,'batt',btChg,_dc); syncBattSoc(); excess -= btChg; chargeMW[h] += btChg; }
+        _mdGenH = _md - excess; residual -= take; _mdUnmet += excess; _mdMWh += _mdGenH;
+        E.diesel += _mdGenH; stack.diesel[h] = (stack.diesel[h] || 0) + _mdGenH;
+        fuelCost += _mdGenH * (p.costDiesel + p.vomDiesel); carbonCost += _mdGenH * cD; _dslUsed[_monthOfHour[h % 8760]] += _mdGenH;
+      }
       let g=Math.min(residual,Math.max(0,ccgtCap-ccgtMustRun-_gasEarly))+_gasEarly; residual-=g-_gasEarly;
       // ASTR (message 90): running gas holds online headroom, so coal held for reserve takes over what the gas headroom then covers.
       if (_astr && RESERVE.on && g > 1e-6){
@@ -8419,7 +8450,7 @@ function simulate(u, prof, outPath, _soc0){
       const _mo=_monthOfHour[h % 8760];
       // Independent peakers first, then Eskom's own from the tank, so the tank is conserved.
       const _dslAll = dieselAvailMW(p), _dslEsk = Math.min(_dslAll, Math.max(0, p.dslTankMW));
-      const _dslLim = _dslTankOn ? (_dslAll - _dslEsk) + Math.min(_dslEsk, _dslStock) : _dslAll;
+      const _dslLim = Math.max(0, (_dslTankOn ? (_dslAll - _dslEsk) + Math.min(_dslEsk, _dslStock) : _dslAll) - _mdGenH);   // less Avon and Dedisa's must-run
       // ASTR (reserveRule 'astr'): emergency reserve restores the operating reserve, interruptible load first (R4,000/MWh, below
       // diesel), then open-cycle plant. Compensation is booked here; the later interruptible block takes only what is left.
       if (_astr && residual > 1 && DR_INT > 0){ const _drE = Math.min(residual, DR_INT); drMW[h] = _drE; E.dr += _drE; residual -= _drE; drCostR += _drE * DR_COST; }
@@ -8428,10 +8459,10 @@ function simulate(u, prof, outPath, _soc0){
       if (_astr && RESERVE.on && dsl > 1e-6){
         const _need = _astrCoalNeed(h, Math.max(0, battPower - (stack.batt[h] || 0)), Math.max(0, battSoc), Math.max(0, psPowerTot - (stack.ps[h] || 0)), Math.max(0, psSoc), 0);
         const _gH = astrOnlineHeadroom(stack.ccgt[h] || 0, ccgtCap, _gasMSF);
-        const _c = _astrSwap(dsl, _dslAll, Math.max(0, coalCeiling - coalGen), _need, _gH, dsl);
+        const _c = _astrSwap(_mdGenH + dsl, _dslAll, Math.max(0, coalCeiling - coalGen), _need, _gH, dsl);
         if (_c > 0){ dsl -= _c; coalGen += _c; residual -= _c; }
       }
-      if (_dslTankOn) _dslStock -= Math.max(0, dsl - (_dslAll - _dslEsk)); _dslUsed[_mo]+=dsl; residual-=dsl; E.diesel+=dsl; stack.diesel[h]=dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
+      if (_dslTankOn) _dslStock -= Math.max(0, dsl - Math.max(0, _dslAll - _dslEsk - _mdGenH)); _dslUsed[_mo]+=dsl; residual-=dsl; E.diesel+=dsl; stack.diesel[h]=(stack.diesel[h]||0)+dsl; fuelCost+=dsl*(p.costDiesel+p.vomDiesel); carbonCost+=dsl*cD;
       // stack.coal is set from coalGenTotal in the shared block below, after the off-peak charging
       // bonus, so it reflects every MWh coal actually generated. That is correct now the demand
       // line includes storage charging: coal burned to charge storage is real generation meeting
@@ -9296,7 +9327,7 @@ function simulate(u, prof, outPath, _soc0){
 
   // gridServed returned (11 Oct 2026, user): the denominator of avgCost, so harness reports can give average
   // system cost per MWh served on the same basis as the app.
-  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
+  return {E,unservedCostR,systemCostR,reserveToPeakersMWh:_resShedMWh,reserveShortMWh:_resShortMWh,reserveShortH:_resShortH,avonDedisaMustRunMWh:_mdMWh,avonDedisaUnmetMWh:_mdUnmet,dslStockEndMWh:_dslStock,fixedOMR,ppaCostR,otherIppCostR,reipppOutputMWh,syncUnmetH,ccgtFloorUnmetMWh:_ccgtFloorUnmet,shiftCapH:_shiftCapH,shiftCappedMWh:_shiftCappedMWh,shiftMovedMWh:_shiftMovedMWh,pnmR:_pnm,pnmThresholdR:_pnmThreshold,pnmCapped:_pnmCapped,pnmCappedH:_pnmCappedH,tierDis,tierChg,tierDrift,deratedMW,congestTurnUpR,txCapexR:_txCapexR,capacityRevenueR,asReserveRevenueR,asInertiaRevenueR,asRevenueR,costDecomposition:_cd,battByTier:tierSeries,socByTier:tierSoc,chargePsMW,chargeBattMW,battTierTWh:{li:tierDis.li/1e6,vrfb:tierDis.vrfb/1e6,fe:tierDis.fe/1e6},reserveHeldMW,_forceClipped:(_forceTwoSided?{disGWh:_forceClipDis/1000,chgGWh:_forceClipChg/1000,hours:_forceHours}:null),resReqMeanMW:_resReqMean,resReqMaxMW:_resReqMax,resReqGrossMeanMW:_resGrossMean,resVreProvidedMeanMW:_resVreMean,asProductRevenue,asSaturation:_satur,inertiaCapableMW,inertiaGVAs,exportMW,exportRevenueR,firmExportRevenueR,fuelCost,curtailFuelCost,carbonCost,newCapexR,btmCapexR,gridCapexR,totalCost,gridCost,avgCost,gridServed,ocgtMWh:_ocgtMWh,co2,marginalP,marginalTech,priceStats:priceStatsOf(marginalP,stack,E),replTotal,replAvg,shedHours,maxStage,shedMWh,stack,loadS,peak,peakGridLoad,peakChargeMW,coalAvail,coalAvailFrac,coalAvailOnlyFrac,
           netLoadPre, expensiveThresholdByHour, dieselCap: dieselAvailMW(p), socAtWeekStart, coalGenTotal, startUpCostR, chargeMW, curtailMW, congestMW, congestTot, reserveMW:reserveMWArr, reserveAvailMW:reserveAvailArr, coalAvailableMW:coalAvailableArr, drMW, drCostR, partLoadF,
           caps:{windCap,pvCap,rooftopCap,battPower,ccgtCap}};
 }
@@ -10889,6 +10920,7 @@ function bldBuildLP(opts){
           + ' <= ' + rhs.toFixed(1));
       }
       L.push(' dmax_' + k + ': gd_' + k + LEV(y).map(v => ' - ' + v).join('') + (OCGD_ON ? ' - ' + cum('ocgd',y).join(' - ') : '') + ' <= ' + DSL(y));
+      { const _mdr = avonDedisaMustRunMW(y, i, S); if (_mdr > 0) L.push(' mdr_' + k + ': gd_' + k + ' >= ' + _mdr.toFixed(1)); }   // Avon and Dedisa (message 88)
       L.push(' bdmax_' + k + ': bdis_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       L.push(' bcmax_' + k + ': bchg_' + k + ' - ' + cum('batt',y).join(' - ') + ' <= ' + EX.batt);
       // Same power limits for vanadium and iron-air: neither can charge or
@@ -13306,6 +13338,20 @@ function astrOnlineHeadroom(gen, cap, m){
   if (!(gen > 0) || !(cap > 0)) return 0;
   const mm = Math.max(0.05, Math.min(1, m ?? FIXED.reserveGasMinStableFrac));
   return Math.max(0, Math.min(cap - gen, gen * (1 - mm) / mm));
+}
+// Avon and Dedisa's contract-driven output in hour h of year y, MW (FIXED.avonDedisaMustRun notes): the month's daytime or
+// evening level, times the share of the pair still under contract (both through dedisaEndYear; Avon's share in avonEndYear
+// before day avonEndDoy, 20 July; none after).
+function avonDedisaMustRunMW(y, h, P){
+  const F = P || FIXED;
+  if (!(F.avonDedisaMustRun ?? FIXED.avonDedisaMustRun)) return 0;
+  const yr = y ?? 2026, hy = h % 8760, hr = hy % 24, m = hourMonth(hy);
+  const lvl = (hr >= 5 && hr <= 16) ? (F.avonDedisaDayMW ?? FIXED.avonDedisaDayMW)[m]
+            : (hr >= 17 && hr <= 20) ? (F.avonDedisaEveMW ?? FIXED.avonDedisaEveMW)[m] : 0;
+  const av = F.avonMW ?? FIXED.avonMW, de = F.dedisaMW ?? FIXED.dedisaMW;
+  const share = yr <= (F.dedisaEndYear ?? FIXED.dedisaEndYear) ? 1
+    : (yr === (F.avonEndYear ?? FIXED.avonEndYear) && Math.floor(hy / 24) < (F.avonEndDoy ?? FIXED.avonEndDoy)) ? av / (av + de) : 0;
+  return lvl * share;
 }
 // ASTR peak periods (p.29): weekdays only; winter (May-August) 06:00-09:00 and 17:00-20:00, summer 09:00-12:00 and 18:00-21:00;
 // weekends and public holidays have none. On the demand profile's own calendar, 2026 (1 January a Thursday), with South Africa's
@@ -19178,7 +19224,7 @@ let lastRes=null, rafPending=false, detStage=0;
 // 2 Sep, so when the user reported a missing panel line there was no way to tell whether
 // they were on the build that contained it. A stamp that does not move is worse than none:
 // it looks like evidence.
-const BUILD_STAMP = '2026-10-14n';
+const BUILD_STAMP = '2026-10-14o';
 let mipPricedHours=0;   // hours carrying a real pricing-run dual; the rest keep instant prices
 let nodalActiveRes=null; // {stack,loadS} for whichever week - set after a successful nodal run, cleared on any slider change
 let nodalUnservedGwh=null; // deterministic unserved from the last nodal run - shown in the risk panel as the best single-year network-aware estimate
