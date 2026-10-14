@@ -3097,15 +3097,46 @@ operable is neither charged for them nor flagged.
 Effect on results: not quantified. Direction: renewable-heavy builds and early coal retirement look cheaper than they are;
 the no-gas case most. TODO 14ed (after the note).
 
-### c5b result: adequate after two passes (stop reason: no year failing the loop's test); the engine check passes every year with no top-up; 2,003 Mt CO2 2026-40 (c5: 2,019), 14 Oct 2026
+### TODO 14eg: c5b's 2026 in the pathway engine runs open-cycle plant far less than Eskom did in January-August 2026, and prices scarcity in about a quarter of the hours Eskom called on interruptible supply; NTCSA's 2030 case points the other way; cause not established, 14 Oct 2026
+
+Method: c5b's 2026 state (local reproduction at babb78d, identical to GitHub's on the 2026 check) through the engine as the
+engine check runs it (pathcheck.js COMMIT=1 PSE=1 TF=0.5, twelve weather years x ten outage draws, 120 runs), with a probe
+added to a scratch copy of pathcheck.js only: per run, hours 1-5,832 (January-August) and the full year. Open-cycle output is
+the engine's diesel open-cycle plus gas (none in 2026). Scarcity hours: hours without shed in which the market price's
+scarcity adder exceeds R1/MWh (ordcLolp of available reserve against the requirement x VoLL, as marketPriceSeries).
+Eskom (ESK19679, January-August 2026, aggregates only, author's analysis): Eskom OCGT plus dispatchable IPP OCGT; hours with
+interruptible supply above 1 MW (ILS usage 32 hours, other interruptible supply 341, manual load reduction none).
+
+```
+January-August 2026                    Eskom      c5b engine, 120 runs: mean (p10 / p50 / p90 / max)
+open-cycle output, TWh                 0.803      0.010 (0.002 / 0.007 / 0.020 / 0.078)
+hours with open-cycle above 500 MW     149        7.3 (1 / 5 / 15 / 40)
+scarcity or interruptible hours        348        scarcity 95.7 (47 / 97 / 134 / 201); interruptible load used 0.1; shed 0.03
+full year 2026 (model only)                       open-cycle 0.014 TWh; above 500 MW 9.8 hours; scarcity 158.7 hours
+```
+
+The model's open-cycle output is about 1/80th of Eskom's on the mean and about 1/10th at its highest run. Its scarcity hours
+are about a quarter of Eskom's interruptible hours on the mean and about 58% at the highest run. The single Today 2026 run
+(78 hours, build 14l) sits inside this spread. Against NTCSA's MTSAO 2030 risk-adjusted case the same engine runs open-cycle
+plant at 57.4% against NTCSA's about 45% (validate_external, passing by 0.6 points). The two point opposite ways: low against
+2026 actuals, high against NTCSA's 2030 study.
+
+Cause not established. Candidates, none tested: the engine holds open-cycle plant as emergency reserve and dispatches it only
+when coal, imports and storage fall short (RESULTS 22 Sep 2026, 'OCGTs moved to emergency reserve'), whereas Eskom also ran
+OCGTs for peaking and reserve; the model's 2026 coal availability against Eskom's actual January-August 2026; the reserve
+requirement; interruptible load, which the engine almost never calls (0.1 hours). Effect on c5b: 2026-29 dispatch cost and
+adequacy, where diesel is under 0.06 TWh a year; the market-price split waits on this (user, message 81).
+
+### c5b result: adequate after two passes (stop reason: no year failing the loop's test); the engine check passes every year with no top-up; R2,365.4bn engine PV (c5: R2,300.6bn), 2,003 Mt CO2 2026-40 (c5: 2,019), 14 Oct 2026
 
 Run: workflow 'Optimiser long run', name c5b, code babb78d (build 2026-10-14l), jobs 38565675653 (pass 1, 6 min) and
 38566438283 (pass 2 and the engine check; pathway 'done adequate' after 396 s of solving, check 17 min). Settings: the c5b line in
 'c5b build'. The carbon path read by the check: kept2030 (R46.0 in 2026, R61.3 from 2030). Imports 1,150 MW x 0.927.
 
 Engine check (pathcheck.js, all twelve weather years and the outage draws; 120 runs a year, 240 or 480 where the first draws
-were close), from the job log; the results artifact cannot be downloaded from this session (the artifact host is blocked by
-the session's network), so the engine PV and build table come from a local reproduction at babb78d (running):
+were close), from the job log. The results artifact cannot be downloaded from this session (the artifact host is blocked by
+the session's network), so the build below comes from a local reproduction: the same line at babb78d with SOLVER=native,
+adequate after two passes, whose 2026 engine check matches GitHub's to every printed digit (mean 0.010999 GWh, CO2 155.756 Mt):
 
 ```
 year  mean GWh  target GWh  runs   worst GWh   CO2 Mt   open-cycle diesel TWh   gas TWh   served TWh   avg cost R/MWh
@@ -3126,9 +3157,21 @@ year  mean GWh  target GWh  runs   worst GWh   CO2 Mt   open-cycle diesel TWh   
 2040     1.100       2.779   480       72.90     80.3                   0.410     14.26        284.0          1070.0
 ```
 
-Every year's mean unserved energy is below its target. Open-cycle output in 2026 (diesel, mean of 120 runs, full year): 0.014 TWh;
-Eskom's January-August 2026 was 0.803 TWh (TODO 14eg). Not quoted for the note until the local reproduction gives the engine
-PV and the build, and the sensitivities are rerun against c5b.
+Every year's mean unserved energy is below its target, so no top-up. 2026-40, PV at 8% real from 2026 of the engine cost
+(cost column of the check, not shown above): R2,365.4bn (c5 R2,300.6bn; the same method gives R2,300.5bn from c5's table);
+CO2 2,003 Mt (c5 2,019); gas 88.1 TWh (c5 98.8); diesel 2.88 TWh (c5 3.09). Optimiser objective R1,566.3bn as recorded by the
+pathway, including any stress-target term; c5's R1,479.5bn was without it, so the two are not compared.
+
+Build by 2040 (new, cumulative; c5 in brackets): wind 16.5 GW (12.9), including the committed 886 MW by 2027 (696 MW in
+2026, 190 in 2027; the floor is cumulative); the Cape allowance used in full, 1,580 MW (696 in 2026, 190 in 2027, 694 in 2030);
+at most 2,917 MW a year; utility solar
+36.9 GW (34.8); rooftop 12.6 GW (12.6); lithium 20.0 GW / 94.2 GWh (17.6 / 89.2); CCGT 7.3 GW (7.5); OCGT on LNG 0.60 GW
+(0.75); diesel open-cycle 0.45 GW (0.77); no pumped hydro, vanadium, iron-air, offshore wind or early coal retirement; coal
+17.9 GW standing in 2040.
+
+The R64.8bn above c5 is not attributed: c5b differs in demand (the profile and the 930 MW block), imports, forced builds, the
+Cape allowance, freed connections without wind, existing batteries and O&M. Not quoted for the note until TODO 14eg is
+settled and the sensitivities are rerun against c5b.
 
 ### c5b launched on the branch commit; the stress suite on #39 stops loading before its checks run (a harness gap, not a result); moved checks settled or proposed (user, 14 Oct 2026, messages 78-79)
 
