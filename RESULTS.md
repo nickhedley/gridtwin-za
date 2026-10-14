@@ -2948,6 +2948,114 @@ Caveats: the engine check is the note's cost measure, with its storage-dispatch 
 nothing where the engine sheds'). Not like for like with c4 on 14a (R2,525.8bn, 1,465 Mt): engine build and five inputs
 differ (tracking, carbon path, coal dates, battery decline, wind cap), and c4 has not been checked on 14i.
 
+### c5b proposal for the user's approval (messages 64 (2)-(3), 68, 71 (7)); nothing launched, 14 Oct 2026
+
+Built already (entry below; branch claude/c5b-demand, build 2026-10-14k): demand with September-December at 0.9766, the 930
+MW smelter block from 2027, exports at the measured 745 MW, imports at the measured 1,066 MW flow. Proposed in addition:
+
+A. Committed projects forced as minimum builds (at financial close or in construction, named; research helper 14 Oct, notes
+in the session scratchpad 'committed'; dates are expected commercial operation):
+
+```
+year   wind (MW)                                         solar PV (MW)                       stand-alone batteries              hybrid
+2026   696: BW5 Eastern Cape 84 (construction);          354: Virginia 240 (BW6,             360 MW / 1,440 MWh: BESIPPPP       Oya 128, Hydra 75, Avondale 20
+       Castle 89 (operating since March 2025);           construction); SunCentral 1 114     BW1 Mogobe 103 and the Oasis
+       Hartebeesthoek 140, Umsinde Emoyeni 140,          (operating October 2026)            cluster 257 (late 2026)            (all due 2026; the model's
+       Khangela Emoyeni 140 (H2 2026, PFL);                                                                                     335.1 MW hybrid bucket
+       Witberg 103 (end 2026)                                                                                                   already holds them)
+2027   190: Chariot/Etana (mid-2027)                     255: Thakadu                        306 MW / 1,224 MWh: Red Sands      -
+                                                                                             153; BW2 Mercury 76 and
+                                                                                             Hartebeesfontein 77 (Q4 2027)
+2028   -                                                 240: Middelpunt (BW7, closed        -                                  -
+                                                         April 2026)
+gas    none committed for 2026-28
+```
+
+The 2026 wind and solar rows close the fleet gap to IRP Table 1's 2025 base (0.7 GW wind, 0.4 GW solar). Not forced
+(financial close not confirmed): De Aar 2 PV 120 and Paarde Valley PV2 110 (H2 2026), Overberg 230, Ishwati Emoyeni 140,
+Wind Garden 94.5. Provinces of the private wind plants are to be confirmed before the run, for the Cape allowance (C).
+
+B. Existing batteries: battPowerMW 800 has no source. Sourced figure for stand-alone grid batteries operating at 30 June 2026:
+68 MW / 292 MWh, Eskom phase 1 at Hex (20 MW / 100 MWh, commercial operation 27 Oct 2023), Pongola (40 / 160) and Elandskop
+(8 / 32), both commissioned November 2024 (AfDB, Implementation Progress and Results Report, Eskom Distributed Battery Energy
+Storage Programme, 1 Jul 2025, PDF p.2 and p.4: 'Total BESS installed to date is 68MW'; AfDB web page, 2 Mar 2026, for Hex's
+date). Skaapvlei, Paleisheuwel and Graafwater not commissioned (Minister's reply NW4150, PMG, 21 Sep 2026); no BESIPPPP,
+municipal or private stand-alone battery operating by mid-2026 (Scatec Q2 2026 call, 21 Aug 2026; TechCentral, 15 Jan 2026;
+Engineering News, 9 Oct 2026). Batteries inside the RMIPPPP hybrids are excluded (they sit in the hybrid bucket). Proposal:
+FIXED battPowerMW 800 -> 68 and its energy to 292 MWh, regional split Western Cape 20, KwaZulu-Natal 48; BW1 forced in A.
+This changes the app's 'Today 2026' fleet as well as c5b.
+
+C. Cape wind under the curtailment allowance (approved by the user, message 71 (7)): up to 1,580 MW of new wind (Western
+Cape 1,180, Eastern Cape 400) without the R402/kW-yr integration charge (the spur still paid), output cut 4%; committed Cape
+wind in A counts against it first; other new wind pays the full grid cost. Sensitivity: 3,470 MW at 10%. Provincial totals
+only, no substation figures.
+
+D. Freed coal connections (rp_): solar PV, storage and gas; wind excluded (the user's lean). Sources: Eskom's repowering
+pipeline at six stations, solar PV 3,184 MW, batteries 700, gas 1,000 (Kriel), wind 168 (Arnot) (Engineering News, 17 Jun
+2025); Komati's 70 MW of wind 'is not currently being pursued' (Minister's reply NW5134, PMG, 7 Oct 2026); World Bank
+P514521 (disclosed 9 Dec 2025): 'up to 1,572 MW of solar and wind' and 850 MW of batteries around five stations, no split;
+grid capacity allocation is first ready, first served, with nothing reserved for freed coal capacity (Approved Grid Capacity
+Allocation Rules, July 2025, search summary). In c5 the optimiser's credit for wind on freed connections was R9.95bn of the
+objective (costsplit, 14 Oct). Option: allow wind up to Arnot's 168 MW.
+
+E. Wind fixed O&M: BW6 compliant bids R367/kW-yr (January 2024 rands; IPP Office REIPPPP historical data note, 7 Nov 2025)
+x 1.068 = R392/kW-yr in 2026 rands, replacing R693 ('from NREL ATB', edition not recorded). It comes from the same bid set as
+wind's capex, which is a reason for it. Caveats: compliant bids from a window that awarded no wind; what the figure includes
+(insurance, land, community obligations) is not defined. Effect on wind's cost: about -R76/MWh at a 45.2% capacity factor.
+The same basis for solar would give R287 (BW6 R269) against the model's R396.
+
+F. Runs once approved: c5b (c5's rule: one pass a job, up to 6, stall stop from pass 4), then s_gmcv2029 (block 930 to May
+2029, 675 in 2029, 493 from 2030), s_measured (no block), s_cape10 (3,470 MW at 10%), and all 18 sensitivities against c5b
+(s_nogas4strict as 'no new gas or diesel, lithium up to 4 GW a year', up to 3 passes).
+
+Code still to build for A-E (each off by default, recorded in the run record, suite before and after): a minimum-build
+setting for wind and solar by year (lithium already has LI_MIN); the Cape tranche; a technology list for freed connections;
+wind fixed O&M; the battery fleet constants.
+
+### c5b demand inputs built (build 2026-10-14k, branch claude/c5b-demand): September-December at 0.9766, a flat 930 MW smelter block from 2027, imports at the measured April-August 2026 flow; LP and engine checks; 14 Oct 2026
+
+User, 14 Oct (message 72): smelter block 0.93 GW flat from 2027, with a sensitivity ending Glencore-Merafe's share in June 2029;
+exports at the measured 745 MW (Mozal out); Cahora Bassa imports at the measured April-August 2026 level; rebuild the demand
+profile with September-December at 0.9766 and add the flat block to the optimiser, the engine check and the run record, on a
+branch, with the suite before and after.
+
+What is visible so far (recorded at the user's request): only about 0.5 GW of the smelter load is back by June-August 2026
+(night-time load against 2024), and Stats SA shows the smelter provinces flat year on year in August 2026 (North West -2.4%,
+Limpopo +2.9%; P4141 August 2026, printed p.6). The 0.93 GW block is contracted (80% take-or-pay from 1 June 2026), not yet
+measured.
+
+Mozal (recorded at the user's request): the IRP's 11.0 TWh of exports is ESRG's line, 2023's exports (11.25 TWh, equal to
+Eskom's) held flat at 11.02; about 8.3-8.8 TWh of it is Mozal's. Mozal shut in March 2026: Eskom's exports stepped down by
+about 1,000 MW that month (monthly means 1,703 MW in February, 987 in March, 600-822 from April to August). c5b runs exports at
+the measured 745 MW (FIXED.exportsMW, unchanged).
+
+Changes (branch claude/c5b-demand, commit 53ecdea, on main e00e430, which holds c5's a74d581 and the slider change; build
+2026-10-14k):
+- build_demand_2026.py: January-August scaled by 0.9519 as before; September-December by RATIO_LATE, domestic August 2026
+  over August 2025 (0.9766, computed from ESK19679), plus the H1 2026 wheeled fleet's own September-December output (0.91
+  TWh). profiles.json demand 200.62 -> 203.03 TWh; domestic 185.27 -> 187.67 TWh; the first 5,832 hours and demand_2025
+  are unchanged byte for byte.
+- index.html: FIXED.demandBlockMW (default 0), added to every hour after growth in simulate; bldDemandBlockMW(opts, y) in the
+  build LP's balance rows and annual peak; bldBuildToState passes it to the loop's engine checks.
+- pathway_perfail.js: DEM_BLOCK=year:MW[,year:MW] (recorded as demand.block); IMP_AVG_MW, the average imported flow, sets
+  importsCF = IMP_AVG_MW / importsMW so the 1,150 MW contract stays (recorded as importsMW, importsCF). pathcheck.js applies
+  both from the run record.
+
+Imports: the app's importsCF is 0.88 (nodal_engine.js, 22 Sep: January-August 2026 mean 1,012 MW on the 1,150 MW contract),
+so c5 already ran 1,012 MW. IMP_AVG_MW=1066 (April-August 2026 mean 1,066.3 MW, 3,672 hours, ESK19679, local) adds 54 MW.
+
+Checks (local, no solves): with the old profile and neither setting, c5's line builds a pass-1 LP of key 8e2860a0c8, c5's own,
+so the code is neutral when off (checked again after rebasing onto main). New profile: 558101d9e4. DEM_BLOCK=2027:930: objective and bounds unchanged; the balance
+right-hand side rises exactly 930 MW in every hour of 2027-2040 and not in 2026 (for example 14,880.7 -> 15,810.7 MW, 2027 day 0
+hour 18), and the reserve and stress-target rows of those 14 years change with it (key a570bb13d8). IMP_AVG_MW=1066: balance
+and reserve rows of all 15 years, 54.0 MW less to supply (key fa74a059fc). Engine check (pathcheck.js, c5's build, 2030 only,
+K=1, 12 weather years): served energy 212.46 -> 220.68 TWh with the block and imports set (+8.22 TWh; 930 MW x 8,760 h =
+8.15); c5's build then sheds a mean 0.355 against 0.090 GWh, as expected for a build not sized for the block.
+
+c5b settings line (proposed; not launched): c5's line with DEM_BLOCK=2027:930 and IMP_AVG_MW=1066 on build 14k.
+Sensitivity s_gmcv2029: DEM_BLOCK=2027:930,2029:675,2030:493 (Glencore-Merafe's share, about 47%, 437 MW, ends 1 June 2029:
+2029 averages 930 - 437 x 7/12 = 675).
+
 ### Smelter block sized, 2030 test against 255 passes with no uniform factor, and Mozal in the export line (user, 14 Oct, message 71), 14 Oct 2026
 
 User decisions (message 71): September-December 2025 scaled at 0.9766; returning smelter load as a flat block, not a factor,
