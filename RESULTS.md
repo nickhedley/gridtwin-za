@@ -3143,6 +3143,24 @@ bring to 130-170 against 348.
 Effect on c5b and the sensitivities: any change to the reserve rule moves 2026 adequacy and cost (T2: R5.6bn and a failing
 2026), so a rule change means c5b and every sensitivity rerun. They stay provisional (message 83 (3)). Nothing changed.
 
+### Known limitation: the engine lets open-cycle plant and pumped storage cover the operating reserve, so coal holds none back, and it has no rule for Eskom's reserve-restoring interruptible product (user, 14 Oct 2026, message 84; no change to the base rule before the note; TODO 14eg closed)
+
+The engine withholds operating reserve from coal only beyond what fast-start plant can cover, and it counts every fast-start
+megawatt at full power: open-cycle 3,400 MW (Avon and Dedisa included), pumped storage 2,724 MW whatever it holds, batteries,
+CCGT and open-cycle gas, against a requirement of about 2.2 GW (the ASTR's, plus a variable-generation term). So in 2026 coal
+holds no reserve back and open-cycle plant runs only when nothing else meets load: c5b's 2026 engine runs open-cycle plant for
+10 GWh in January-August against 88 GWh from Eskom's own turbines (Avon and Dedisa apart, limitation below), with scarcity in
+96 hours against Eskom's 348 hours of interruptible supply. The engine also calls its 1,200 MW of interruptible load only to
+meet an energy shortfall (0.1 hours in 2026); Eskom's 'other interruptible supply' (341 of the 348 hours, about 65 MW on
+average) reads as reserve restoration, which the engine has no rule for.
+
+Bounds (RESULTS '14eg steps 2-4', scratch tests on c5b's 2026): with coal carrying the whole reserve the engine overshoots
+(715 GWh of open-cycle in January-August, 1,203 scarcity hours) and 2026 fails the adequacy test; Eskom sits between the two
+rules. Direction: the base rule understates open-cycle running and its cost in the early years and flatters early-year
+adequacy. The middle rule (pumped storage counts only up to the energy it holds; open-cycle plant does not count) is to be
+added as a switch, off by default, and run as one sensitivity, s_reserve_c5b, to bound the effect for the note; c5b stays
+the base.
+
 ### Known limitation: Avon and Dedisa's running is not in the model; about R6.6bn a year at the model's own diesel price on 2026's pace (R9.0-9.3bn in 2024-25), the same in every scenario until their contracts end in 2030-31 (user, 14 Oct 2026, message 83; no engine change before the note)
 
 What runs: the dispatchable IPP open-cycle plant in ESK19679 (Avon 670 MW and Dedisa 335 MW, the DoE peakers) produced
@@ -3205,7 +3223,7 @@ hours (none in January, February or July). Monthly open-cycle output is 86-124 G
 when availability was highest. So the 2026 under-run is not explained by coal availability; it points to the dispatch rule,
 step 2. The model's open-cycle diesel fleet (ocgtDieselMW 3,400) is held as emergency reserve as one block.
 
-### PROVISIONAL until TODO 14eg is settled (user, 14 Oct 2026, message 82): c5b sensitivities launched, 21 runs from c5b's windows, up to 3 passes each; if 14eg changes the engine or the optimiser, c5b and all of these rerun
+### c5b sensitivities launched, 21 runs from c5b's windows, up to 3 passes each (user, 14 Oct 2026, message 82); provisional label lifted 14 Oct (message 84: 14eg closed with the reserve-rule gap recorded as a limitation and no change to the base rule)
 
 Launched 13:53-13:55 UTC on GitHub, workflow 'Optimiser long run', ref main, code_sha babb78d (build 2026-10-14l) in every job,
 seed_run 38566438283 (c5b's second job), seed_name c5b. Each run's settings = c5b's line with MAXP=3 and
@@ -3290,7 +3308,9 @@ year   CCGT  OCGT-LNG  OCGT-diesel | IRP gas  IRP nuclear | coal standing c5b / 
 total  7297       597          446 |   17250         5200 | CO2 2026-40 c5b 2003 Mt
 ```
 
-CO2: c5b 153.2 Mt in 2030 against the IRP's 168 (-14.8 Mt), 129.2 Mt in 2035 against 142 (-12.8 Mt). Caveats as for c5: the
+CO2: c5b 153.2 Mt in 2030 against the IRP's 168 (-14.8 Mt), 129.2 Mt in 2035 against 142 (-12.8 Mt). c5b's 2026-31 CO2 leaves out
+Avon and Dedisa's contract-driven running, 0.8-1.2 Mt a year (limitation 'Avon and Dedisa's running is not in the model'); with it
+2030 would read about 154-154.4 Mt, still about 14 Mt under the IRP's 168. Caveats as for c5: the
 IRP's 2026-28 rows include build under construction that c5b holds only as the committed floors (wind 886 MW, solar 849 MW,
 lithium 666 MW / 2.66 GWh by 2027-28); Table 1 gives storage in MW only; Table 1's gas is not split by cycle; the IRP's
 168 Mt goes with 255 TWh, c5b's 2030 check serves 220.6 TWh of customer demand.
