@@ -10,6 +10,10 @@ name: Optimiser long run
 # BRANCH claude/recheck-14d (user, 14 Oct 2026, TODO 14de): the same workflow on c5's engine (build 14d: 14a with the 14dr
 # outage draw, branch claude/c5), to re-run the engine check of s_coalavail's plan (mode check) and, after c5, its
 # engine check and top-up. Never merged.
+# REPORT MODE and ENGINE_ENV (user, 14 Oct 2026: c5's sensitivities): mode report prints the run's recorded settings against
+# the central's (recordcmp.js) and its optimiser objective with and without the stress-target penalty, beside the
+# central's (costsplit_tsl.py, from each run's own cached solution; solves nothing). engine_env passes WIND_CASE to the
+# engine check and the top-up, for a run whose wind cost case the pathway does not record (s_windlow).
 
 on:
   workflow_dispatch:
@@ -24,8 +28,17 @@ on:
         description: 'The pathway run name, as in results-<name>'
         required: true
       mode:
-        description: 'topup (default): the adequacy top-up; check: re-run the engine check and print gas, diesel and CO2 by year (gasrole.py)'
+        description: 'topup (default): the adequacy top-up; check: re-run the engine check and print gas, diesel and CO2 by year (gasrole.py); report: recorded settings against the central and the stress-target split of both objectives'
         default: 'topup'
+      engine_env:
+        description: 'Optional, for check and topup: WIND_CASE=<case> for the engine (the pathway does not record it)'
+        default: ''
+      base_run:
+        description: 'For report: the central run (default c5, run 38536463416)'
+        default: '38536463416'
+      base_name:
+        description: 'For report: the central run name'
+        default: 'c5'
 
 permissions:
   contents: read
@@ -46,11 +59,17 @@ jobs:
           SRC_RUN: ${{ inputs.source_run }}
           SRC_NAME: ${{ inputs.source_name }}
           MODE: ${{ inputs.mode }}
+          ENGINE_ENV: ${{ inputs.engine_env }}
+          BASE_RUN: ${{ inputs.base_run }}
+          BASE_NAME: ${{ inputs.base_name }}
         run: |
           [[ "$LABEL" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "name: letters, digits, - and _ only"; exit 1; }
           [[ "$SRC_RUN" =~ ^[0-9]+$ ]] || { echo "source_run must be a run id"; exit 1; }
           [[ "$SRC_NAME" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "source_name: letters, digits, - and _ only"; exit 1; }
-          [[ "$MODE" == topup || "$MODE" == check ]] || { echo "mode: topup or check"; exit 1; }
+          [[ "$MODE" == topup || "$MODE" == check || "$MODE" == report ]] || { echo "mode: topup, check or report"; exit 1; }
+          [[ -z "$ENGINE_ENV" || "$ENGINE_ENV" =~ ^WIND_CASE=[a-z]{1,20}$ ]] || { echo "engine_env: empty or WIND_CASE=<case>"; exit 1; }
+          [[ "$BASE_RUN" =~ ^[0-9]+$ ]] || { echo "base_run must be a run id"; exit 1; }
+          [[ "$BASE_NAME" =~ ^[A-Za-z0-9_-]{1,60}$ ]] || { echo "base_name: letters, digits, - and _ only"; exit 1; }
 
       - uses: actions/checkout@v5
         with:
@@ -66,6 +85,11 @@ jobs:
           npm install --no-save --no-package-lock jsdom@29.1.1
           ln -s .. testroot
 
+      - uses: actions/setup-python@v5
+        if: inputs.mode == 'report'
+        with:
+          python-version: '3.12'
+
       - name: Fetch the pathway and its engine check
         uses: actions/download-artifact@v4
         with:
@@ -75,18 +99,20 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: Top-up
-        if: inputs.mode != 'check'
+        if: inputs.mode == 'topup'
         working-directory: harness
         env:
           SRC_NAME: ${{ inputs.source_name }}
           SRC_RUN: ${{ inputs.source_run }}
+          ENGINE_ENV: ${{ inputs.engine_env }}
         run: |
           P=$(find ../dl/results -name "pathway_${SRC_NAME}.json" | head -1)
           C=$(find ../dl/results -name "pathcheck_${SRC_NAME}.json" | head -1)
           [ -n "$P" ] && [ -n "$C" ] || { echo "no pathway_${SRC_NAME}.json or pathcheck_${SRC_NAME}.json in run $SRC_RUN"; exit 1; }
           mkdir -p out
           set -o pipefail
-          env COMMIT=1 PSE=1 TF=0.5 IN="$P" CHECK="$C" OUT="out/topup_${SRC_NAME}.json" \
+          echo "engine env: ${ENGINE_ENV:-none}"
+          env $ENGINE_ENV COMMIT=1 PSE=1 TF=0.5 IN="$P" CHECK="$C" OUT="out/topup_${SRC_NAME}.json" \
             node --max-old-space-size=8192 topup.js 2>&1 | tee "out/topup_${SRC_NAME}.log"
 
       - name: Engine check with gas, diesel and CO2 by fuel
@@ -95,13 +121,66 @@ jobs:
         env:
           SRC_NAME: ${{ inputs.source_name }}
           SRC_RUN: ${{ inputs.source_run }}
+          ENGINE_ENV: ${{ inputs.engine_env }}
         run: |
           P=$(find ../dl/results -name "pathway_${SRC_NAME}.json" | head -1)
           [ -n "$P" ] || { echo "no pathway_${SRC_NAME}.json in run $SRC_RUN"; exit 1; }
           mkdir -p out
           set -o pipefail
-          env COMMIT=1 PSE=1 TF=0.5 IN="$P" OUTC="out/check_${SRC_NAME}.json" node --max-old-space-size=8192 pathcheck.js 2>&1 | tee "out/check_${SRC_NAME}.log"
+          echo "engine env: ${ENGINE_ENV:-none}"
+          env $ENGINE_ENV COMMIT=1 PSE=1 TF=0.5 IN="$P" OUTC="out/check_${SRC_NAME}.json" node --max-old-space-size=8192 pathcheck.js 2>&1 | tee "out/check_${SRC_NAME}.log"
           python3 -I gasrole.py testroot/index.html "out/check_${SRC_NAME}.json" "$SRC_NAME" | tee "out/gasrole_${SRC_NAME}.txt"
+
+      - name: Fetch the run's saved state (report)
+        if: inputs.mode == 'report'
+        uses: actions/download-artifact@v4
+        with:
+          name: state-${{ inputs.source_name }}
+          path: dl/state
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+
+      - name: Fetch the central's results and state (report)
+        if: inputs.mode == 'report'
+        uses: actions/download-artifact@v4
+        with:
+          name: results-${{ inputs.base_name }}
+          path: dl/base_results
+          run-id: ${{ inputs.base_run }}
+          github-token: ${{ github.token }}
+
+      - name: Fetch the central's state (report)
+        if: inputs.mode == 'report'
+        uses: actions/download-artifact@v4
+        with:
+          name: state-${{ inputs.base_name }}
+          path: dl/base_state
+          run-id: ${{ inputs.base_run }}
+          github-token: ${{ github.token }}
+
+      - name: Recorded settings against the central, and both objectives' stress-target split (report; solves nothing)
+        if: inputs.mode == 'report'
+        working-directory: harness
+        env:
+          SRC_NAME: ${{ inputs.source_name }}
+          SRC_RUN: ${{ inputs.source_run }}
+          BASE_NAME: ${{ inputs.base_name }}
+          BASE_RUN: ${{ inputs.base_run }}
+        run: |
+          P=$(find ../dl/results -name "pathway_${SRC_NAME}.json" | head -1)
+          B=$(find ../dl/base_results -name "pathway_${BASE_NAME}.json" | head -1)
+          [ -n "$P" ] && [ -n "$B" ] || { echo "no pathway_${SRC_NAME}.json in run $SRC_RUN or pathway_${BASE_NAME}.json in run $BASE_RUN"; exit 1; }
+          mkdir -p out
+          set -o pipefail
+          echo "== settings recorded by $SRC_NAME (run $SRC_RUN) against $BASE_NAME (run $BASE_RUN)"
+          node recordcmp.js "$B" "$P" | tee "out/record_${SRC_NAME}.txt"
+          grep -h "settings:" ../dl/state/out/pathway_${SRC_NAME}.log | head -1 || true
+          node costsplit_consts.js 2>/dev/null | tail -1 > out/consts.json
+          cat out/consts.json
+          echo "== $SRC_NAME"
+          python3 -I costsplit_tsl.py ../dl/state/lpcache "$P" out/consts.json "out/tsl_${SRC_NAME}.json" | tee "out/tsl_${SRC_NAME}.txt"
+          echo "== $BASE_NAME"
+          python3 -I costsplit_tsl.py ../dl/base_state/lpcache "$B" out/consts.json "out/tsl_${BASE_NAME}.json" | tee "out/tsl_${BASE_NAME}.txt"
 
       - name: Keep the top-up
         if: always()
