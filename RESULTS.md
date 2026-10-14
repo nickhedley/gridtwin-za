@@ -27,9 +27,14 @@ and no regional optimiser result is to be published until it is fixed with 14bj 
 finding is an optimiser output carry "pending the storage fix" in the heading and stay as written until re-run.
 Engine-only results (dispatch, adequacy checks of a fixed build, preset searches scored on the engine) are unaffected.
 
-CAVEAT ON EVERYTHING BELOW: all of it is ONE synthetic-normal weather year. The
-ten-year run is outstanding and will move these, probably outward, because a bad
-wind year is exactly what sets a capacity requirement.
+WEATHER YEARS (corrected 14 Oct 2026, user; this caveat used to say all of it was one synthetic-normal year).
+One year of hourly shapes, the default profile set (profiles.json): the app's single runs, every preset figure, and the
+suite's findings, invariants, consistency, response and outputs checks; the build optimiser's representative days also come
+from it. Twelve weather years (2014-2025, with outage draws): the pathway engine check (pathcheck.js) behind every c-run's
+adequacy verdict and engine PV, the build loop's per-year adequacy test and the stress windows it adds, the weather and
+benchmark checks that say so, and the MTSAO external check. Entries before 8 Oct 2026 mostly rest on the one year; each
+entry's own settings say which. A bad wind year is what sets a capacity requirement, so one-year results are the ones
+to read as optimistic.
 
 ---
 
@@ -2948,6 +2953,125 @@ Caveats: the engine check is the note's cost measure, with its storage-dispatch 
 nothing where the engine sheds'). Not like for like with c4 on 14a (R2,525.8bn, 1,465 Mt): engine build and five inputs
 differ (tracking, carbon path, coal dates, battery decline, wind cap), and c4 has not been checked on 14i.
 
+### PR #22 closed unmerged: all its code is on main; the three findings 'waiting on #22' fail for the reasons recorded on 7 Oct, and what #22 still had to do was never done; its documents are not on main (user, 14 Oct 2026, message 76)
+
+User, 14 Oct (message 76): #22 was closed unmerged at 06:37 UTC today; check whether its changes are on main; if so, why the
+three findings still fail (wind capture at 110 GW, iron-air in July, the preset curtailment band), without touching the checks;
+if not, what is missing.
+
+On main or not: #22's head (claude/build-costs at c1f8c70, base claude/peakers) has 77 commits that are not ancestors of main
+(e00e430). Every one of them changes documents only (174 .md file changes; no index.html, harness, data or workflow file). So
+all of #22's code reached main by other merges. What is not on main: those documents (RESULTS, TODO, HANDOVER, SOURCES and
+others on claude/build-costs, including every entry written since; the branch has had no open pull request since #22 closed).
+
+Why the three still fail, from the record (RESULTS 'New wind on the modern-turbine profile at 1.064', build 07s, 7 Oct):
+- Wind capture at 110 GW (check 85-115%): new wind on the modern-turbine profile at 1.064 lowered it from 86% to 79% (07s);
+  83.7% on main today. Decided 7 Oct: 'recorded as updated, not re-pinned'. On the c5b branch it passes (the battery fleet
+  correction alone gives the same; RESULTS 'c5b build').
+- Iron-air in July (check: under 2% change): on the modern profile July gas halves before iron-air and iron-air removes the
+  rest, so 'the finding reverses in this scenario' (07s: 425 -> 0 GWh); main today 600 -> 475 GWh, 20.9%. Recorded as updated,
+  not re-pinned.
+- Preset curtailment band (Fossil-free 2040 124.4 TWh against 96.3 +/-15%): to be 're-pinned after the re-search' (07s). The
+  re-search (TODO 14ay) and the re-pin were among #22's open items ('Still to come before this leaves draft': the preset updates
+  and the preset curtailment re-pin; TODO 14ck) and were never done.
+So: the code is on main; the three are known effects of the modern-turbine profile, two of them findings the user chose to
+record rather than re-pin, and one a pin waiting on a preset re-search that no branch now carries. No check was touched.
+
+### c5b build (build 2026-10-14l, branch claude/c5b-demand): Cape allowance, freed connections without wind, committed builds, existing batteries 68 MW / 292 MWh, BW6 O&M; suite 807/818 against main's 812/818, every moved check traced; one benchmark moved (peaker seasonal ratio 9.3x -> 4.6x, now passing); c5b's first pass solves; 14 Oct 2026
+
+User, 14 Oct (message 74): freed coal connections take gas as well as solar and storage, within the coal retired (Kriel's
+1,000 MW: Eskom's repowering plan, Engineering News, 17 Jun 2025); solar fixed O&M to BW6 (R287/kW-yr, 2026 rands), as wind;
+De Aar 2 and Paarde Valley PV2 left out of the forced builds; correct the existing battery fleet in the app and c5b from a 2026
+source; suite before and after; one PR; then the c5b settings line.
+
+Existing batteries, checked against 2026 sources: Eskom's phase 1 is eight sites, 199.0 MW (Hex 20, Pongola 40, Elandskop 8,
+Skaapvlei 80, Paleisheuwel 9.5, Graafwater 5, Melkhout 35, Rietfontein 1.5). Operating at mid-2026 and at end-2026: Hex,
+Pongola and Elandskop, 68 MW / 292 MWh. Skaapvlei 90%, Paleisheuwel 40%, Graafwater 70% complete and 'no megawatts will be
+added to the grid in FY27 from the three BESS sites' (Minister's reply NW4150, PMG, 21 Sep 2026; FY27 is 1 April 2026 to 31
+March 2027). Hex in commercial operation since 27 Oct 2023 (AfDB web page, 2 Mar 2026); Pongola and Elandskop commissioned
+November 2024, 'Total BESS installed to date is 68MW' (AfDB IPR, 1 Jul 2025, PDF p.2 and p.4); three Eskom battery facilities
+(Green Building Africa, 12 Oct 2026, photo caption, search summary). Melkhout and Rietfontein at contracting (AfDB, 1 Jul 2025;
+no later source found). No stand-alone BESIPPPP, municipal or private battery operating by mid-2026 (RESULTS 'c5b proposal').
+
+Changes (commits 94e04af and babb78d on 53ecdea; all settings off by default):
+- CAPE_WIND=MW[:pct] (FIXED.bldCapeWindMW, bldCapeCurtPct): cw_<y> in the build LP, at most that year's wind build, in total
+  at most the allowance, credited the integration charge from then on, and its output cut by the share in the balance rows;
+  the engine cuts the same share of that wind (windCapeMW) and pathcheck takes the integration charge off it. Recorded as
+  capeWind; each year's MW as sched[y].cw.
+- RP_EXCL=wind (FIXED.bldRpExclude): technologies barred from freed coal connections; solar, storage and gas keep them within
+  the coal retired so far (rppool rows, unchanged). Recorded as rpExclude.
+- MIN_BUILD=tech:year:MW, floors on new wind and solar by year (mbmin_ rows), as LI_MIN is for lithium. Recorded as minBuild.
+- Existing batteries: ESKOM_BESS_OPERATING (nodal_engine.js) sets EXISTING_BATT_MW 68, EXISTING_BATT_MWH 292 and the regional
+  shares (Western Cape 20, KwaZulu-Natal 48); FIXED.battPowerMW and battHours read them; '2025, as modelled' reads FIXED
+  (the same three sites ran all of 2025); BLD_EX_BATT and the nodal engine follow. Was 800 MW x 4 h, no source.
+- BLD_FOM wind 367 and solar 269 x CPI_JAN24_TO_JAN26 (1.032 x 1.035, now one constant for every January 2024 restatement):
+  R392.0 and R287.3/kW-yr. Was 693 and 396.
+- validate_lint: EXISTING_BATT_MW, EXISTING_BATT_MWH and BATT_SHARE_BY_REGION declared as nodal_engine.js globals, as IMPORTS_CF
+  is (the first branch run failed lint 2/3 on them; 3/3 after).
+
+LP checks (c5's line, pass-1 LP, no solve): each setting alone changes only its own rows: CAPE_WIND adds cw_ to the objective
+(15), the balance rows and rpb_wind, and one cwpool row; RP_EXCL removes rp_wind (objective, rpb_wind_Y, rppool_Y); MIN_BUILD
+adds five floor rows. The constant changes touch only the battery rows (bcmax, bdmax, cua, cla, cub, ecap, dur, rbe, rbp, res,
+soc, send, shc) and the wind and solar cost coefficients: per MW built in 2026, wind R35.55m -> R32.77m and solar R22.26m ->
+R21.25m, exactly the O&M change over 2026-40 at 8%.
+
+Local first pass of the c5b line (MAXP=1, 445 s): status Optimal, objective R1,565.3bn. Forced builds met exactly (2026 wind
+696, solar 354, lithium 360 MW / 1,440 MWh; 2027 wind 190, solar 255, lithium 306 / 1,224; 2028 solar 240); the Cape allowance
+is used in full, 696 MW in 2026, 190 in 2027 and 694 in 2030. The loop's test fails 2030 only (2.51 against 2.19 GWh), as c5's
+first pass did; later passes add windows.
+
+Suite (ESK19679.csv present), main e00e430 (build 14j) before, branch babb78d (build 14l) after:
+
+```
+script                 main       branch     moved by (each change applied alone to main)
+validate_lint          3/3        3/3        -
+validate_findings      39/42      39/42      same count, different checks (below)
+validate_invariants    176/176    175/176    battery fleet: Today 2026 market price R0.841 against engine R0.762/kWh (limit 5%)
+validate_response      87/87      85/87      battery fleet: lcoeBatt inert in its sweep; response matrix 15 cells changed
+validate_consistency   79/80      78/80      O&M: new-build capital, Deep decarbonisation 2035, R1.118 against pinned R1.205/kWh
+validate_benchmarks    28/29      29/29      battery and demand profile: peaker seasonal ratio 9.3x -> 4.6x (band 2.15-8.6x)
+validate_external      7/8        6/8        demand profile: MTSAO 2030 OCGT utilisation 59.5% against about 45%
+validate_outputs       42/42      41/42      battery fleet and demand profile: avgCost has moved (1,075.3 R/MWh), a pin
+other 7 scripts        same       same
+node checks            725/731    720/731
+audit                  87/87      87/87
+total                  812/818    807/818    eng5 6/6 both
+```
+
+Findings: wind capture at 110 GW now passes on the branch (the battery fleet alone gives the same), and 'the ancillary knee sits
+close to the existing fleet' now fails (knee 4.0-6.0 GW against an existing fleet of 2.8 GW, the battery fleet alone gives the
+same); iron-air in July and the preset curtailment band fail on both. No check, pin or tolerance was changed.
+
+The benchmark that moved (message 77 (3)): peakerSeasonRatio, the modelled 2025 ratio of January-March to July-September peaker
+output: main 9.3x (failing), battery fleet alone 5.2x, demand profile alone 8.3x, O&M alone 9.3x, branch 4.6x, against Eskom's
+4.3x in 2025 (ESK19679, author's analysis) and the band 2.15-8.6x. No other 2025 benchmark left its band.
+
+Market-price invariant (message 77 (2)). The engine's price (marginalP) is the running cost of the marginal unit each hour and
+has no scarcity term. The market price (marketPriceSeries) adds, in every hour without shed, an operating-reserve demand curve
+adder: the loss-of-load probability from the reserve available against the requirement (ordcLolp) times VoLL, R87,000/MWh.
+Available reserve includes battery headroom, so with 68 MW instead of 800 MW the evening reserve is thinner and the adder fires
+more often: Today 2026, 46 scarcity hours on main against 100 on the branch (main with the battery change alone: 91), mean adder
+R0.028 against R0.079/kWh. Against Eskom's actual 2026 to date (ESK19679, January-August 2026, aggregates only, author's
+analysis): open-cycle output (Eskom OCGT plus dispatchable IPP OCGT) 0.803 TWh, in 149 hours above 500 MW; hours with load
+reduction (manual load reduction, interruptible load, other interruptible supply) 348, 0.030 TWh. The model's Today 2026,
+January-August: open-cycle output 0.004 TWh in 7 hours on main, 0.011 TWh in 18 hours on the branch; scarcity hours 45 on main,
+78 on the branch. Both are far below 2026's actual open-cycle use; the branch is nearer on both. Nothing proposed yet (user).
+
+MTSAO OCGT utilisation: the check reaches the MTSAO's 222.4 TWh on this model's basis with demandGrowthPct 18 on the profile; the
+profile is now 2.4 TWh larger, so 18% lands about 2.9 TWh higher and open-cycle plant runs more (59.3% with the profile alone).
+The check's own note says the target is the TWh, not the percentage; the mapping is the user's call.
+
+Response checks (message 77 (1)), proposed, not applied: give lcoeBatt a context with a material battery fleet, as newBattHours
+already has (newBattMW 20000): lcoeBatt { newBattMW: 2240, newBattHours: 4, scenarioYear: 2030 }, c5's 2030 lithium (2.24 GW /
+9.0 GWh); same pass rule (moves at least one dispatch output). Trial on a scratch copy of the branch: 'lcoeBatt moves at least one
+dispatch output' passes; 'response matrix matches baseline' still reports 14 changed cells, which needs the baseline rewritten
+(--write-baseline) once the user accepts the battery fleet's effect on the matrix. Reason: the check exists to prove the battery
+cost slider moves results; at 292 MWh of existing batteries and no new ones in its base scenario it no longer can.
+
+Proposed c5b settings line (build 14l; awaiting the user's go): c5's line with DEM_BLOCK=2027:930 IMP_AVG_MW=1066
+CAPE_WIND=1580:4 RP_EXCL=wind MIN_BUILD=wind:2026:696,wind:2027:886,pv:2026:354,pv:2027:609,pv:2028:849
+LI_MIN=2026:360:1440,2027:666:2664.
+
 ### Known limitation: no inertia or system-strength requirement in the build; the engine's 6 GW synchronous floor charges nothing when coal is gone (user, 14 Oct 2026, message 75; no change to c5b)
 
 User, 14 Oct (message 75): synchronous condensers, no change to c5b; record the limitation; say whether the model has any
@@ -2956,6 +3080,8 @@ minimum synchronous generation rule today; add a TODO item for after the note.
 The limitation: the build optimiser (bldBuildLP) has no inertia, system-strength or minimum-synchronous constraint, so a
 high-renewable build pays nothing for synchronous condensers or grid-forming batteries. That flatters the renewable-heavy
 results, the no-gas case (s_nogas4strict) most, since it removes the synchronous gas plant as well as coal.
+
+In short (user, message 77 (4)): the engine enforces a 6 GW synchronous minimum; the optimiser does not.
 
 What the model has today (engine only, index.html at build 2026-10-14l): a minimum synchronous generation floor in the dispatch
 engine, SYNC_MIN_MW 6,000 MW (slider syncMinMW, on by default), described as about 15% of peak and 'consistent with Eskom's
